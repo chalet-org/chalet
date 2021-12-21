@@ -24,7 +24,7 @@ struct SourceCache
 	void addArch(const std::string& inExecutable, const std::string& inValue);
 
 	bool dirty() const;
-	Json asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles, const std::string& kKeyDataCache) const;
+	Json asJson() const;
 
 	bool updateInitializedTime(const std::time_t inTime = 0);
 
@@ -41,8 +41,8 @@ struct SourceCache
 private:
 	friend struct WorkspaceInternalCacheFile;
 
-	const std::string& dataCache(const std::string& inMainKey, const std::string& inKey) noexcept;
-	void addDataCache(const std::string& inMainKey, const std::string& inKey, const std::string& inValue);
+	const std::string& dataCache(const std::string& inMainKey, const char* inKey) noexcept;
+	void addDataCache(const std::string& inMainKey, const char* inKey, const std::string& inValue);
 
 	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
 	LastWrite& getLastWrite(const std::string& inFile) const;
@@ -50,9 +50,6 @@ private:
 	Dictionary<Dictionary<std::string>> m_dataCache;
 
 	mutable SourceLastWriteMap m_lastWrites;
-
-	const std::string kDataVersion;
-	const std::string kDataArch;
 
 	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildTime = 0;

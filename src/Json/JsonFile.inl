@@ -9,7 +9,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey) const
+bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const
 {
 	if (!containsKeyForType<T>(inNode, inKey))
 		return false;
@@ -21,7 +21,7 @@ bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const std::stri
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignNodeIfEmpty(Json& outNode, const std::string& inKey, const std::function<T()>& onAssign)
+bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::function<T()>& onAssign)
 {
 	bool result = false;
 	bool notFound = !outNode.contains(inKey);
@@ -81,7 +81,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const std::string& inKey, const 
 }
 
 template <typename T>
-bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::optional<T>& inValueA, const T& inValueB)
+bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB)
 {
 	bool result = false;
 	bool valid = containsKeyForType<T>(outNode, inKey) && !inValueA.has_value();
@@ -104,7 +104,7 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const std::string& i
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::containsKeyForType(const Json& inNode, const std::string& inKey) const
+bool JsonFile::containsKeyForType(const Json& inNode, const char*inKey) const
 {
 	if (!inNode.contains(inKey))
 		return false;

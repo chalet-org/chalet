@@ -13,13 +13,14 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 {
-	auto getLanguage = [](CxxSpecialization inSpecialization) -> std::string {
+	auto getLanguage = [](CxxSpecialization inSpecialization) -> const char* {
 		switch (inSpecialization)
 		{
 			case CxxSpecialization::CPlusPlus: return "C++";
@@ -31,8 +32,8 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 
 	const bool cpp = inProps.language == CodeLanguage::CPlusPlus;
 	const bool objectiveCxx = inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus;
-	const std::string language = getLanguage(inProps.specialization);
-	const std::string langStandardKey = cpp ? "cppStandard" : "cStandard";
+	auto language = getLanguage(inProps.specialization);
+	auto langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const auto& project = inProps.projectName;
 
 	std::string langStandard;
@@ -41,67 +42,61 @@ Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
 		langStandard = cpp ? fmt::format("c++{}", inProps.langStandard) : fmt::format("c{}", inProps.langStandard);
 	}
 
-	const std::string kAbstractsAll = "abstracts:*";
-	const std::string kSettingsCxx = "settings:Cxx";
-	const std::string kTargets = "targets";
-	const std::string kDistribution = "distribution";
-	const std::string kDefaultConfigurations = "defaultConfigurations";
-
 	Json ret;
-	ret["workspace"] = inProps.workspaceName;
-	ret["version"] = inProps.version;
+	ret[Keys::Workspace] = inProps.workspaceName;
+	ret[Keys::Version] = inProps.version;
 
 	if (inProps.defaultConfigs)
 	{
-		ret[kDefaultConfigurations] = Json::array();
-		ret[kDefaultConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
+		ret[Keys::DefaultConfigurations] = Json::array();
+		ret[Keys::DefaultConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	}
 
-	ret[kAbstractsAll] = Json::object();
-	ret[kAbstractsAll]["language"] = language;
-	ret[kAbstractsAll][kSettingsCxx] = Json::object();
-	ret[kAbstractsAll][kSettingsCxx][langStandardKey] = std::move(langStandard);
-	ret[kAbstractsAll][kSettingsCxx]["warnings"] = "pedantic";
+	ret[Keys::AbstractsAll] = Json::object();
+	ret[Keys::AbstractsAll]["language"] = language;
+	ret[Keys::AbstractsAll][Keys::SettingsCxx] = Json::object();
+	ret[Keys::AbstractsAll][Keys::SettingsCxx][langStandardKey] = std::move(langStandard);
+	ret[Keys::AbstractsAll][Keys::SettingsCxx]["warnings"] = "pedantic";
 
 	if (objectiveCxx)
 	{
-		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"] = Json::array();
-		ret[kAbstractsAll][kSettingsCxx]["macosFrameworks"][0] = "Foundation";
+		ret[Keys::AbstractsAll][Keys::SettingsCxx]["macosFrameworks"] = Json::array();
+		ret[Keys::AbstractsAll][Keys::SettingsCxx]["macosFrameworks"][0] = "Foundation";
 	}
 
-	ret[kTargets] = Json::object();
-	ret[kTargets][project] = Json::object();
-	ret[kTargets][project]["kind"] = "executable";
+	ret[Keys::Targets] = Json::object();
+	ret[Keys::Targets][project] = Json::object();
+	ret[Keys::Targets][project][Keys::Kind] = "executable";
 
 	if (inProps.useLocation)
 	{
-		ret[kTargets][project]["location"] = inProps.location;
+		ret[Keys::Targets][project]["location"] = inProps.location;
 	}
 	else
 	{
-		ret[kTargets][project]["files"] = Json::array();
-		ret[kTargets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
+		ret[Keys::Targets][project]["files"] = Json::array();
+		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
 	}
 
 	if (!inProps.precompiledHeader.empty())
 	{
-		ret[kTargets][project][kSettingsCxx] = Json::object();
-		ret[kTargets][project][kSettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
+		ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
+		ret[Keys::Targets][project][Keys::SettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
 	}
 
 	if (inProps.modules)
 	{
-		if (!ret[kTargets][project][kSettingsCxx].is_object())
-			ret[kTargets][project][kSettingsCxx] = Json::object();
+		if (!ret[Keys::Targets][project][Keys::SettingsCxx].is_object())
+			ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
 
-		ret[kTargets][project][kSettingsCxx]["cppModules"] = true;
+		ret[Keys::Targets][project][Keys::SettingsCxx]["cppModules"] = true;
 	}
 
 	std::string distTarget = "all";
-	ret[kDistribution] = Json::object();
-	ret[kDistribution][distTarget] = Json::object();
-	ret[kDistribution][distTarget]["kind"] = "bundle";
-	ret[kDistribution][distTarget]["buildTargets"] = "*";
+	ret[Keys::Distribution] = Json::object();
+	ret[Keys::Distribution][distTarget] = Json::object();
+	ret[Keys::Distribution][distTarget][Keys::Kind] = "bundle";
+	ret[Keys::Distribution][distTarget]["buildTargets"] = "*";
 
 	return ret;
 }
@@ -310,35 +305,32 @@ std::string StarterFileTemplates::getDotEnv()
 /*****************************************************************************/
 Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inProps)
 {
-	const std::string kTargets = "targets";
-	const std::string kDistribution = "distribution";
-	const std::string kDefaultConfigurations = "defaultConfigurations";
 	const auto& project = inProps.projectName;
 
 	Json ret;
-	ret["workspace"] = inProps.workspaceName;
-	ret["version"] = inProps.version;
+	ret[Keys::Workspace] = inProps.workspaceName;
+	ret[Keys::Version] = inProps.version;
 
-	ret[kDefaultConfigurations] = Json::array();
-	ret[kDefaultConfigurations] = {
+	ret[Keys::DefaultConfigurations] = Json::array();
+	ret[Keys::DefaultConfigurations] = {
 		"Release",
 		"Debug",
 		"MinSizeRel",
 		"RelWithDebInfo",
 	};
 
-	ret[kTargets] = Json::object();
-	ret[kTargets][project] = Json::object();
-	ret[kTargets][project]["kind"] = "cmakeProject";
-	ret[kTargets][project]["location"] = ".";
-	ret[kTargets][project]["recheck"] = true;
-	ret[kTargets][project]["runExecutable"] = project;
+	ret[Keys::Targets] = Json::object();
+	ret[Keys::Targets][project] = Json::object();
+	ret[Keys::Targets][project][Keys::Kind] = "cmakeProject";
+	ret[Keys::Targets][project]["location"] = ".";
+	ret[Keys::Targets][project]["recheck"] = true;
+	ret[Keys::Targets][project]["runExecutable"] = project;
 
-	ret[kDistribution] = Json::object();
-	ret[kDistribution][project] = Json::object();
-	ret[kDistribution][project]["kind"] = "bundle";
-	ret[kDistribution][project]["include"] = Json::array();
-	ret[kDistribution][project]["include"][0] = fmt::format("${{buildDir}}/{}", project);
+	ret[Keys::Distribution] = Json::object();
+	ret[Keys::Distribution][project] = Json::object();
+	ret[Keys::Distribution][project][Keys::Kind] = "bundle";
+	ret[Keys::Distribution][project]["include"] = Json::array();
+	ret[Keys::Distribution][project]["include"][0] = fmt::format("${{buildDir}}/{}", project);
 
 	return ret;
 }

@@ -8,7 +8,6 @@
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
-#include "SettingsJson/ISettingsJsonParser.hpp"
 
 namespace chalet
 {
@@ -17,7 +16,7 @@ struct JsonFile;
 struct StatePrototype;
 struct GlobalSettingsState;
 
-struct SettingsJsonParser final : ISettingsJsonParser
+struct SettingsJsonParser
 {
 	explicit SettingsJsonParser(CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 
@@ -38,28 +37,6 @@ private:
 	CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
-
-	// should match executables
-	const std::string kKeyBash = "bash";
-	const std::string kKeyCodesign = "codesign";
-	const std::string kKeyCommandPrompt = "command_prompt";
-	const std::string kKeyGit = "git";
-	const std::string kKeyHdiutil = "hdiutil";
-	const std::string kKeyInstallNameTool = "install_name_tool";
-	const std::string kKeyInstruments = "instruments";
-	const std::string kKeyLdd = "ldd";
-	const std::string kKeyMakeNsis = "makensis";
-	const std::string kKeyOsascript = "osascript";
-	const std::string kKeyOtool = "otool";
-	const std::string kKeyPlutil = "plutil";
-	const std::string kKeyPowershell = "powershell";
-	const std::string kKeySample = "sample";
-	const std::string kKeySips = "sips";
-	const std::string kKeyTiffutil = "tiffutil";
-	const std::string kKeyXcodebuild = "xcodebuild";
-	// const std::string kKeyXcodegen = "xcodegen";
-	const std::string kKeyXcrun = "xcrun";
-	const std::string kKeyZip = "zip";
 };
 }
 

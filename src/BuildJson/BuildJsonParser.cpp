@@ -26,6 +26,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -44,8 +45,6 @@ BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototy
 	m_chaletJson(inPrototype.chaletJson()),
 	m_filename(inPrototype.filename()),
 	m_state(inState),
-	kKeyTargets("targets"),
-	kKeyAbstracts("abstracts"),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
@@ -154,22 +153,22 @@ bool BuildJsonParser::validRunTargetRequestedFromInput() const
 /*****************************************************************************/
 bool BuildJsonParser::parseTarget(const Json& inNode)
 {
-	if (!inNode.contains(kKeyTargets))
+	if (!inNode.contains(Keys::Targets))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_filename, kKeyTargets);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_filename, Keys::Targets);
 		return false;
 	}
 
-	const Json& targets = inNode.at(kKeyTargets);
+	const Json& targets = inNode.at(Keys::Targets);
 	if (!targets.is_object() || targets.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one target.", m_filename, kKeyTargets);
+		Diagnostic::error("{}: '{}' must contain at least one target.", m_filename, Keys::Targets);
 		return false;
 	}
 
-	if (inNode.contains(kKeyAbstracts))
+	if (inNode.contains(Keys::Abstracts))
 	{
-		const Json& abstracts = inNode.at(kKeyAbstracts);
+		const Json& abstracts = inNode.at(Keys::Abstracts);
 		for (auto& [name, templateJson] : abstracts.items())
 		{
 			if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
@@ -194,7 +193,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 
 	for (auto& [prefixedName, abstractJson] : inNode.items())
 	{
-		std::string prefix{ fmt::format("{}:", kKeyAbstracts) };
+		std::string prefix{ fmt::format("{}:", Keys::Abstracts) };
 		if (!String::startsWith(prefix, prefixedName))
 			continue;
 

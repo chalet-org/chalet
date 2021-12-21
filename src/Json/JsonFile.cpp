@@ -100,42 +100,20 @@ const std::string& JsonFile::filename() const noexcept
 }
 
 /*****************************************************************************/
-void JsonFile::makeNode(const std::string& inName, const JsonDataType inType)
+void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
 {
-	if (json.contains(inName))
+	if (json.contains(inKey))
 	{
-		if (json.at(inName).type() == inType)
+		if (json.at(inKey).type() == inType)
 			return;
 	}
 
-	json[inName] = initializeDataType(inType);
+	json[inKey] = initializeDataType(inType);
 	setDirty(true);
 }
 
 /*****************************************************************************/
-bool JsonFile::assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey)
-{
-	if (!inNode.contains(inKey))
-		return false;
-
-	const Json& list = inNode.at(inKey);
-	if (!list.is_array())
-		return false;
-
-	for (auto& itemRaw : list)
-	{
-		if (!itemRaw.is_string())
-			return false;
-
-		std::string item = itemRaw.get<std::string>();
-		List::addIfDoesNotExist(outList, std::move(item));
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
+bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
 {
 	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
 	{
@@ -162,19 +140,6 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const std::string&
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-bool JsonFile::containsKeyThatStartsWith(const Json& inNode, const std::string& inFind) const
-{
-	bool res = false;
-
-	for (auto& [key, value] : inNode.items())
-	{
-		res |= String::startsWith(inFind, key);
-	}
-
-	return res;
 }
 
 /*****************************************************************************/

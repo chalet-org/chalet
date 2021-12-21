@@ -11,6 +11,7 @@
 #include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
@@ -136,9 +137,9 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 {
 	bool addedDefaults = false;
-	if (inNode.contains(kKeyDefaultConfigurations))
+	if (inNode.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = inNode.at(kKeyDefaultConfigurations);
+		const Json& defaultConfigurations = inNode.at(Keys::DefaultConfigurations);
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -149,7 +150,7 @@ bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 					auto name = configJson.get<std::string>();
 					if (name.empty())
 					{
-						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, Keys::Configurations);
 						return false;
 					}
 
@@ -186,9 +187,9 @@ bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 {
-	if (inNode.contains(kKeyConfigurations))
+	if (inNode.contains(Keys::Configurations))
 	{
-		const Json& configurations = inNode.at(kKeyConfigurations);
+		const Json& configurations = inNode.at(Keys::Configurations);
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -201,7 +202,7 @@ bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 
 				if (name.empty())
 				{
-					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, kKeyConfigurations);
+					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, Keys::Configurations);
 					return false;
 				}
 
@@ -254,13 +255,13 @@ bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 /*****************************************************************************/
 bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 {
-	if (!inNode.contains(kKeyDistribution))
+	if (!inNode.contains(Keys::Distribution))
 		return true;
 
-	const Json& distributionJson = inNode.at(kKeyDistribution);
+	const Json& distributionJson = inNode.at(Keys::Distribution);
 	if (!distributionJson.is_object() || distributionJson.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_filename, kKeyDistribution);
+		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_filename, Keys::Distribution);
 		return false;
 	}
 
@@ -532,22 +533,20 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 		}
 	}
 
-	const std::string kKeyTargets{ "targets" };
 	if (outTarget.hasAllBuildTargets())
 	{
-		if (inRoot.contains(kKeyTargets))
+		if (inRoot.contains(Keys::Targets))
 		{
-			const Json& targetsJson = inRoot.at(kKeyTargets);
+			const Json& targetsJson = inRoot.at(Keys::Targets);
 			if (targetsJson.is_object())
 			{
-				const std::string kKeyKind{ "kind" };
 				const StringList validKinds{ "executable", "sharedLibrary", "staticLibrary" };
 				StringList targetList;
 				for (auto& [name, targetJson] : targetsJson.items())
 				{
-					if (targetJson.is_object() && targetJson.contains(kKeyKind))
+					if (targetJson.is_object() && targetJson.contains(Keys::Kind))
 					{
-						const Json& targetKind = targetJson.at(kKeyKind);
+						const Json& targetKind = targetJson.at(Keys::Kind);
 						if (targetKind.is_string())
 						{
 							auto kind = targetKind.get<std::string>();
@@ -570,9 +569,9 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 	{
 		StringList targets;
 		const auto& buildTargets = outTarget.buildTargets();
-		if (inRoot.contains(kKeyTargets))
+		if (inRoot.contains(Keys::Targets))
 		{
-			const Json& targetsJson = inRoot.at(kKeyTargets);
+			const Json& targetsJson = inRoot.at(Keys::Targets);
 			if (targetsJson.is_object())
 			{
 				for (auto& [name, _] : targetsJson.items())
@@ -716,13 +715,13 @@ bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstalle
 bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
 {
 	// don't care if there aren't any dependencies
-	if (!inNode.contains(kKeyExternalDependencies))
+	if (!inNode.contains(Keys::ExternalDependencies))
 		return true;
 
-	const Json& externalDependencies = inNode.at(kKeyExternalDependencies);
+	const Json& externalDependencies = inNode.at(Keys::ExternalDependencies);
 	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, kKeyExternalDependencies);
+		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, Keys::ExternalDependencies);
 		return false;
 	}
 

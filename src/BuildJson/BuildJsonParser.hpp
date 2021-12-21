@@ -65,9 +65,6 @@ private:
 	const std::string& m_filename;
 	BuildState& m_state;
 
-	const std::string kKeyTargets;
-	const std::string kKeyAbstracts;
-
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
 
 	StringList m_notPlatforms;

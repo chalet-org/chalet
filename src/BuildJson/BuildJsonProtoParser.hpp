@@ -70,11 +70,6 @@ private:
 
 	StringList m_notPlatforms;
 	std::string m_platform;
-
-	const std::string kKeyDistribution = "distribution";
-	const std::string kKeyConfigurations = "configurations";
-	const std::string kKeyDefaultConfigurations = "defaultConfigurations";
-	const std::string kKeyExternalDependencies = "externalDependencies";
 };
 }
 

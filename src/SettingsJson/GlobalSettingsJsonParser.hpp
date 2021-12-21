@@ -7,7 +7,6 @@
 #define CHALET_GLOBAL_SETTINGS_JSON_PARSER_HPP
 
 #include "Libraries/Json.hpp"
-#include "SettingsJson/ISettingsJsonParser.hpp"
 
 namespace chalet
 {
@@ -16,7 +15,7 @@ struct JsonFile;
 struct StatePrototype;
 struct GlobalSettingsState;
 
-struct GlobalSettingsJsonParser final : ISettingsJsonParser
+struct GlobalSettingsJsonParser
 {
 	explicit GlobalSettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
 

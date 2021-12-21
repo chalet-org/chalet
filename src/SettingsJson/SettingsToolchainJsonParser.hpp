@@ -8,7 +8,6 @@
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
-#include "SettingsJson/ISettingsJsonParser.hpp"
 
 namespace chalet
 {
@@ -31,22 +30,6 @@ private:
 	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
-
-	const std::string kKeyStrategy = "strategy";
-	const std::string kKeyBuildPathStyle = "buildPathStyle";
-	const std::string kKeyArchiver = "archiver";
-	const std::string kKeyCompilerCpp = "compilerCpp";
-	const std::string kKeyCompilerC = "compilerC";
-	const std::string kKeyCompilerWindowsResource = "compilerWindowsResource";
-	const std::string kKeyVersion = "version";
-	const std::string kKeyLinker = "linker";
-	const std::string kKeyProfiler = "profiler";
-	const std::string kKeyDisassembler = "disassembler";
-
-	//
-	const std::string kKeyCmake = "cmake";
-	const std::string kKeyMake = "make";
-	const std::string kKeyNinja = "ninja";
 };
 }
 

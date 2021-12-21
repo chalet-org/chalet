@@ -13,23 +13,12 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() :
-	kKeyHashes("h"),
-	kKeyHashBuild("b"),
-	kKeyHashTheme("t"),
-	kKeyHashVersionDebug("vd"),
-	kKeyHashVersionRelease("vr"),
-	kKeyHashExtra("e"),
-	kKeyLastChaletJsonWriteTime("c"),
-	kKeyBuilds("d"),
-	kKeyBuildLastBuilt("l"),
-	kKeyBuildNative("n"),
-	kKeyBuildFiles("f"),
-	kKeyDataCache("x")
+WorkspaceInternalCacheFile::WorkspaceInternalCacheFile()
 {
 }
 
@@ -78,15 +67,15 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 		m_sources = nullptr;
 
 		auto& rootNode = m_dataFile->json;
-		if (rootNode.contains(kKeyBuilds))
+		if (rootNode.contains(CacheKeys::Builds))
 		{
-			auto& builds = rootNode.at(kKeyBuilds);
+			auto& builds = rootNode.at(CacheKeys::Builds);
 			if (builds.is_object() && builds.contains(inId))
 			{
 				auto& value = builds.at(inId);
 				if (value.is_object())
 				{
-					if (std::string rawValue; m_dataFile->assignFromKey(rawValue, value, kKeyBuildLastBuilt))
+					if (std::string rawValue; m_dataFile->assignFromKey(rawValue, value, CacheKeys::BuildLastBuilt))
 					{
 						std::time_t lastBuild = strtoll(rawValue.c_str(), NULL, 0);
 						auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(lastBuild));
@@ -101,12 +90,12 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 
 					if (m_sources != nullptr)
 					{
-						if (bool val; m_dataFile->assignFromKey(val, value, kKeyBuildNative))
+						if (bool val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildNative))
 							m_sources->setNative(val);
 
-						if (value.contains(kKeyDataCache))
+						if (value.contains(CacheKeys::DataCache))
 						{
-							auto& dataJson = value.at(kKeyDataCache);
+							auto& dataJson = value.at(CacheKeys::DataCache);
 							if (dataJson.is_object())
 							{
 								for (auto& [file, data] : dataJson.items())
@@ -116,9 +105,9 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 										for (auto& [key, val] : data.items())
 										{
 											auto rawValue = val.get<std::string>();
-											m_sources->addDataCache(file, key, rawValue);
+											m_sources->addDataCache(file, key.data(), rawValue);
 
-											if (key == kKeyBuildFiles)
+											if (key == CacheKeys::BuildFiles)
 											{
 												std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
 												m_sources->addLastWrite(file, lastWrite);
@@ -129,9 +118,9 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 							}
 						}
 
-						if (value.contains(kKeyBuildFiles))
+						if (value.contains(CacheKeys::BuildFiles))
 						{
-							auto& files = value.at(kKeyBuildFiles);
+							auto& files = value.at(CacheKeys::BuildFiles);
 							if (files.is_object())
 							{
 								for (auto& [file, val] : files.items())
@@ -171,9 +160,9 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 {
 	bool result = false;
 	auto& rootNode = m_dataFile->json;
-	if (rootNode.contains(kKeyBuilds))
+	if (rootNode.contains(CacheKeys::Builds))
 	{
-		auto& builds = rootNode.at(kKeyBuilds);
+		auto& builds = rootNode.at(CacheKeys::Builds);
 		if (builds.is_object())
 		{
 			if (builds.contains(inId))
@@ -181,7 +170,7 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 				bool removeId = false;
 				{
 					auto& build = builds.at(inId);
-					removeId = !build.is_object() || !build.contains(kKeyBuildNative);
+					removeId = !build.is_object() || !build.contains(CacheKeys::BuildNative);
 				}
 				if (removeId)
 				{
@@ -251,26 +240,26 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 		m_dataFile->json = Json::object();
 
 	auto& rootNode = m_dataFile->json;
-	if (rootNode.contains(kKeyHashes))
+	if (rootNode.contains(CacheKeys::Hashes))
 	{
-		auto& hashes = rootNode.at(kKeyHashes);
+		auto& hashes = rootNode.at(CacheKeys::Hashes);
 		if (hashes.is_object())
 		{
-			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashBuild))
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashBuild))
 				m_buildHash = std::move(val);
 
-			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashTheme))
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashTheme))
 				m_hashTheme = std::move(val);
 
-			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionRelease))
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashVersionRelease))
 				m_hashVersion = std::move(val);
 
-			if (std::string val; m_dataFile->assignFromKey(val, hashes, kKeyHashVersionDebug))
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashVersionDebug))
 				m_hashVersionDebug = std::move(val);
 
-			if (hashes.contains(kKeyHashExtra))
+			if (hashes.contains(CacheKeys::HashExtra))
 			{
-				auto& extra = hashes.at(kKeyHashExtra);
+				auto& extra = hashes.at(CacheKeys::HashExtra);
 				if (extra.is_array())
 				{
 					for (auto& item : extra)
@@ -287,7 +276,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 		}
 	}
 
-	if (std::string rawValue; m_dataFile->assignFromKey(rawValue, rootNode, kKeyLastChaletJsonWriteTime))
+	if (std::string rawValue; m_dataFile->assignFromKey(rawValue, rootNode, CacheKeys::LastChaletJsonWriteTime))
 	{
 		std::time_t val = strtoll(rawValue.c_str(), NULL, 0);
 		m_buildFileChanged = val != m_lastBuildFileWrite;
@@ -317,36 +306,36 @@ bool WorkspaceInternalCacheFile::save()
 	{
 		Json rootNode = Json::object();
 
-		rootNode[kKeyHashes] = Json::object();
+		rootNode[CacheKeys::Hashes] = Json::object();
 
 		if (!m_buildHash.empty())
-			rootNode[kKeyHashes][kKeyHashBuild] = m_buildHash;
+			rootNode[CacheKeys::Hashes][CacheKeys::HashBuild] = m_buildHash;
 
 		if (!m_hashTheme.empty())
-			rootNode[kKeyHashes][kKeyHashTheme] = m_hashTheme;
+			rootNode[CacheKeys::Hashes][CacheKeys::HashTheme] = m_hashTheme;
 
 		if (!m_hashVersionDebug.empty())
-			rootNode[kKeyHashes][kKeyHashVersionDebug] = m_hashVersionDebug;
+			rootNode[CacheKeys::Hashes][CacheKeys::HashVersionDebug] = m_hashVersionDebug;
 
 		if (!m_hashVersion.empty())
-			rootNode[kKeyHashes][kKeyHashVersionRelease] = m_hashVersion;
+			rootNode[CacheKeys::Hashes][CacheKeys::HashVersionRelease] = m_hashVersion;
 
-		rootNode[kKeyHashes][kKeyHashExtra] = Json::array();
+		rootNode[CacheKeys::Hashes][CacheKeys::HashExtra] = Json::array();
 		for (auto& hash : m_extraHashes)
 		{
-			rootNode[kKeyHashes][kKeyHashExtra].push_back(hash);
+			rootNode[CacheKeys::Hashes][CacheKeys::HashExtra].push_back(hash);
 		}
 
-		rootNode[kKeyLastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);
+		rootNode[CacheKeys::LastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);
 
-		if (!m_dataFile->json.contains(kKeyBuilds))
-			rootNode[kKeyBuilds] = Json::object();
+		if (!m_dataFile->json.contains(CacheKeys::Builds))
+			rootNode[CacheKeys::Builds] = Json::object();
 		else
-			rootNode[kKeyBuilds] = m_dataFile->json.at(kKeyBuilds);
+			rootNode[CacheKeys::Builds] = m_dataFile->json.at(CacheKeys::Builds);
 
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
-			rootNode[kKeyBuilds][id] = sourceCache->asJson(kKeyBuildLastBuilt, kKeyBuildNative, kKeyBuildFiles, kKeyDataCache);
+			rootNode[CacheKeys::Builds][id] = sourceCache->asJson();
 		}
 
 		m_dataFile->setContents(std::move(rootNode));
@@ -500,9 +489,9 @@ StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
 	}
 
 	auto& rootNode = m_dataFile->json;
-	if (rootNode.contains(kKeyBuilds))
+	if (rootNode.contains(CacheKeys::Builds))
 	{
-		auto& builds = rootNode.at(kKeyBuilds);
+		auto& builds = rootNode.at(CacheKeys::Builds);
 		if (builds.is_object())
 		{
 			for (auto [id, _] : builds.items())

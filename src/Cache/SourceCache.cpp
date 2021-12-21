@@ -6,14 +6,13 @@
 #include "Cache/SourceCache.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
 
 /*****************************************************************************/
 SourceCache::SourceCache(const std::time_t inLastBuildTime) :
-	kDataVersion("v"),
-	kDataArch("a"),
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
@@ -33,17 +32,17 @@ void SourceCache::setNative(const bool inValue) noexcept
 /*****************************************************************************/
 void SourceCache::addVersion(const std::string& inExecutable, const std::string& inValue)
 {
-	addDataCache(inExecutable, kDataVersion, inValue);
+	addDataCache(inExecutable, CacheKeys::DataVersion, inValue);
 }
 
 /*****************************************************************************/
 void SourceCache::addArch(const std::string& inExecutable, const std::string& inValue)
 {
-	addDataCache(inExecutable, kDataArch, inValue);
+	addDataCache(inExecutable, CacheKeys::DataArch, inValue);
 }
 
 /*****************************************************************************/
-const std::string& SourceCache::dataCache(const std::string& inMainKey, const std::string& inKey) noexcept
+const std::string& SourceCache::dataCache(const std::string& inMainKey, const char* inKey) noexcept
 {
 	if (m_dataCache.find(inMainKey) == m_dataCache.end())
 	{
@@ -59,7 +58,7 @@ const std::string& SourceCache::dataCache(const std::string& inMainKey, const st
 	return m_dataCache.at(inMainKey).at(inKey);
 }
 
-void SourceCache::addDataCache(const std::string& inMainKey, const std::string& inKey, const std::string& inValue)
+void SourceCache::addDataCache(const std::string& inMainKey, const char* inKey, const std::string& inValue)
 {
 	m_dataCache[inMainKey][inKey] = inValue;
 	m_dirty = true;
@@ -72,19 +71,19 @@ bool SourceCache::dirty() const
 }
 
 /*****************************************************************************/
-Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::string& kKeyBuildNative, const std::string& kKeyBuildFiles, const std::string& kKeyDataCache) const
+Json SourceCache::asJson() const
 {
 	Json ret = Json::object();
 
 	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
-	ret[kKeyBuildLastBuilt] = std::to_string(++lastBuilt);
+	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
 	if (m_native)
-		ret[kKeyBuildNative] = true;
+		ret[CacheKeys::BuildNative] = true;
 
 	if (!m_dataCache.empty())
 	{
-		ret[kKeyDataCache] = Json::object();
+		ret[CacheKeys::DataCache] = Json::object();
 
 		for (auto& [file, data] : m_dataCache)
 		{
@@ -93,11 +92,11 @@ Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::strin
 
 			if (!data.empty())
 			{
-				ret[kKeyDataCache][file] = Json::object();
+				ret[CacheKeys::DataCache][file] = Json::object();
 				for (auto& [key, value] : data)
 				{
 					if (!value.empty())
-						ret[kKeyDataCache][file][key] = value;
+						ret[CacheKeys::DataCache][file][key] = value;
 				}
 			}
 		}
@@ -105,7 +104,7 @@ Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::strin
 
 	if (!m_lastWrites.empty())
 	{
-		ret[kKeyBuildFiles] = Json::object();
+		ret[CacheKeys::BuildFiles] = Json::object();
 
 		for (auto& [file, data] : m_lastWrites)
 		{
@@ -116,13 +115,13 @@ Json SourceCache::asJson(const std::string& kKeyBuildLastBuilt, const std::strin
 				makeUpdate(file, data);
 
 			if (m_dataCache.find(file) != m_dataCache.end())
-				ret[kKeyDataCache][file][kKeyBuildFiles] = std::to_string(data.lastWrite);
+				ret[CacheKeys::DataCache][file][CacheKeys::BuildFiles] = std::to_string(data.lastWrite);
 			else
-				ret[kKeyBuildFiles][file] = std::to_string(data.lastWrite);
+				ret[CacheKeys::BuildFiles][file] = std::to_string(data.lastWrite);
 		}
 
-		if (ret[kKeyBuildFiles].empty())
-			ret.erase(kKeyBuildFiles);
+		if (ret[CacheKeys::BuildFiles].empty())
+			ret.erase(CacheKeys::BuildFiles);
 	}
 
 	return ret;
@@ -205,7 +204,7 @@ bool SourceCache::fileChangedOrDependantChanged(const std::string& inFile, const
 /*****************************************************************************/
 bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
-	outExistingValue = dataCache(inFile, kDataVersion);
+	outExistingValue = dataCache(inFile, CacheKeys::DataVersion);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
 	return result;
 }
@@ -213,7 +212,7 @@ bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& 
 /*****************************************************************************/
 bool SourceCache::archRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
-	outExistingValue = dataCache(inFile, kDataArch);
+	outExistingValue = dataCache(inFile, CacheKeys::DataArch);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
 	return result;
 }

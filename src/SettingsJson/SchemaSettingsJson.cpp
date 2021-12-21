@@ -9,6 +9,7 @@
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -80,17 +81,11 @@ enum class Defs : ushort
 /*****************************************************************************/
 Json SchemaSettingsJson::get()
 {
-	const std::string kEnum{ "enum" };
-	const std::string kDefinitions{ "definitions" };
-	const std::string kProperties{ "properties" };
-	const std::string kOneOf{ "oneOf" };
-	const std::string kRequired{ "required" };
-
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
-	/*ret[kRequired] = {
+	/*ret[SKeys::Required] = {
 		"options",
 		"tools",
 		"toolchains"
@@ -434,21 +429,21 @@ Json SchemaSettingsJson::get()
 			}
 		]
 	})json"_ojson;
-	defs[Defs::Theme][kOneOf][0][kEnum] = ColorTheme::presets();
-	defs[Defs::Theme][kOneOf][1][kProperties] = Json::object();
+	defs[Defs::Theme][SKeys::OneOf][0][SKeys::Enum] = ColorTheme::presets();
+	defs[Defs::Theme][SKeys::OneOf][1][SKeys::Properties] = Json::object();
 
 	Json themeRef = Json::object();
 	themeRef["$ref"] = std::string("#/definitions/theme-color");
 	for (const auto& key : ColorTheme::getKeys())
 	{
-		defs[Defs::Theme][kOneOf][1][kProperties][key] = themeRef;
+		defs[Defs::Theme][SKeys::OneOf][1][SKeys::Properties][key] = themeRef;
 	}
 
 	defs[Defs::ThemeColor] = R"json({
 		"type": "string",
 		"description": "An ANSI color to apply."
 	})json"_ojson;
-	defs[Defs::ThemeColor][kEnum] = ColorTheme::getJsonColors();
+	defs[Defs::ThemeColor][SKeys::Enum] = ColorTheme::getJsonColors();
 
 	//
 
@@ -456,92 +451,88 @@ Json SchemaSettingsJson::get()
 		"type": "object",
 		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
-	toolchain[kProperties] = Json::object();
-	toolchain[kProperties]["version"] = defs[Defs::Version];
-	toolchain[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
-	toolchain[kProperties]["buildPathStyle"] = defs[Defs::BuildPathStyle];
-	toolchain[kProperties]["archiver"] = defs[Defs::Archiver];
-	toolchain[kProperties]["compilerCpp"] = defs[Defs::CompilerCpp];
-	toolchain[kProperties]["compilerC"] = defs[Defs::CompilerC];
-	toolchain[kProperties]["compilerWindowsResource"] = defs[Defs::CompilerWindowsResource];
-	toolchain[kProperties]["cmake"] = defs[Defs::CMake];
-	toolchain[kProperties]["linker"] = defs[Defs::Linker];
-	toolchain[kProperties]["profiler"] = defs[Defs::Profiler];
-	toolchain[kProperties]["make"] = defs[Defs::Make];
-	toolchain[kProperties]["ninja"] = defs[Defs::Ninja];
-	toolchain[kProperties]["disassembler"] = defs[Defs::Disassembler];
+	toolchain[SKeys::Properties] = Json::object();
+	toolchain[SKeys::Properties][Keys::ToolchainVersion] = defs[Defs::Version];
+	toolchain[SKeys::Properties][Keys::ToolchainStrategy] = defs[Defs::ToolchainStrategy];
+	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::BuildPathStyle];
+	toolchain[SKeys::Properties][Keys::ToolchainArchiver] = defs[Defs::Archiver];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerCpp] = defs[Defs::CompilerCpp];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerC] = defs[Defs::CompilerC];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerWindowsResource] = defs[Defs::CompilerWindowsResource];
+	toolchain[SKeys::Properties][Keys::ToolchainCMake] = defs[Defs::CMake];
+	toolchain[SKeys::Properties][Keys::ToolchainLinker] = defs[Defs::Linker];
+	toolchain[SKeys::Properties][Keys::ToolchainProfiler] = defs[Defs::Profiler];
+	toolchain[SKeys::Properties][Keys::ToolchainMake] = defs[Defs::Make];
+	toolchain[SKeys::Properties][Keys::ToolchainNinja] = defs[Defs::Ninja];
+	toolchain[SKeys::Properties][Keys::ToolchainDisassembler] = defs[Defs::Disassembler];
 
 	//
-	ret[kDefinitions] = Json::object();
-	ret[kDefinitions]["theme-color"] = defs[Defs::ThemeColor];
+	ret[SKeys::Definitions] = Json::object();
+	ret[SKeys::Definitions]["theme-color"] = defs[Defs::ThemeColor];
 
-	ret[kProperties] = Json::object();
+	ret[SKeys::Properties] = Json::object();
 
-	const std::string kKeyTools{ "tools" };
-	ret[kProperties][kKeyTools] = R"json({
+	ret[SKeys::Properties][Keys::Tools] = R"json({
 		"type": "object",
 		"description": "A list of additional tools for the platform."
 	})json"_ojson;
-	ret[kProperties][kKeyTools][kProperties] = Json::object();
-	ret[kProperties][kKeyTools][kProperties]["bash"] = defs[Defs::Bash];
-	ret[kProperties][kKeyTools][kProperties]["command_prompt"] = defs[Defs::CommandPrompt];
-	ret[kProperties][kKeyTools][kProperties]["codesign"] = defs[Defs::CodeSign];
-	ret[kProperties][kKeyTools][kProperties]["git"] = defs[Defs::Git];
-	ret[kProperties][kKeyTools][kProperties]["hdiutil"] = defs[Defs::HdiUtil];
-	ret[kProperties][kKeyTools][kProperties]["install_name_tool"] = defs[Defs::InstallNameTool];
-	ret[kProperties][kKeyTools][kProperties]["instruments"] = defs[Defs::Instruments];
-	ret[kProperties][kKeyTools][kProperties]["ldd"] = defs[Defs::Ldd];
-	ret[kProperties][kKeyTools][kProperties]["makensis"] = defs[Defs::MakeNsis];
-	ret[kProperties][kKeyTools][kProperties]["osascript"] = defs[Defs::OsaScript];
-	ret[kProperties][kKeyTools][kProperties]["otool"] = defs[Defs::Otool];
-	ret[kProperties][kKeyTools][kProperties]["plutil"] = defs[Defs::PlUtil];
-	ret[kProperties][kKeyTools][kProperties]["powershell"] = defs[Defs::Powershell];
-	ret[kProperties][kKeyTools][kProperties]["sample"] = defs[Defs::Sample];
-	ret[kProperties][kKeyTools][kProperties]["sips"] = defs[Defs::Sips];
-	ret[kProperties][kKeyTools][kProperties]["tiffutil"] = defs[Defs::TiffUtil];
-	ret[kProperties][kKeyTools][kProperties]["xcodebuild"] = defs[Defs::XcodeBuild];
-	// ret[kProperties][kKeyTools][kProperties]["xcodegen"] = defs[Defs::XcodeGen];
-	ret[kProperties][kKeyTools][kProperties]["xcrun"] = defs[Defs::XcRun];
-	ret[kProperties][kKeyTools][kProperties]["zip"] = defs[Defs::Zip];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties] = Json::object();
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["bash"] = defs[Defs::Bash];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["command_prompt"] = defs[Defs::CommandPrompt];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["codesign"] = defs[Defs::CodeSign];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["git"] = defs[Defs::Git];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["hdiutil"] = defs[Defs::HdiUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["install_name_tool"] = defs[Defs::InstallNameTool];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["instruments"] = defs[Defs::Instruments];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["ldd"] = defs[Defs::Ldd];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["makensis"] = defs[Defs::MakeNsis];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["osascript"] = defs[Defs::OsaScript];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["otool"] = defs[Defs::Otool];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["plutil"] = defs[Defs::PlUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["powershell"] = defs[Defs::Powershell];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["sample"] = defs[Defs::Sample];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["sips"] = defs[Defs::Sips];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["tiffutil"] = defs[Defs::TiffUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcodebuild"] = defs[Defs::XcodeBuild];
+	// ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcodegen"] = defs[Defs::XcodeGen];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcrun"] = defs[Defs::XcRun];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["zip"] = defs[Defs::Zip];
 
-	ret[kProperties]["appleSdks"] = R"json({
+	ret[SKeys::Properties][Keys::AppleSdks] = R"json({
 		"type": "object",
 		"description": "A list of Apple platform SDK paths. (MacOS)"
 	})json"_ojson;
 
-	const std::string kKeyOptions{ "options" };
-	ret[kProperties][kKeyOptions] = R"json({
+	ret[SKeys::Properties][Keys::Options] = R"json({
 		"type": "object",
 		"description": "A list of settings related to the build."
 	})json"_ojson;
-	ret[kProperties][kKeyOptions][kProperties] = Json::object();
-	ret[kProperties][kKeyOptions][kProperties]["dumpAssembly"] = defs[Defs::DumpAssembly];
-	ret[kProperties][kKeyOptions][kProperties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
-	ret[kProperties][kKeyOptions][kProperties]["maxJobs"] = defs[Defs::MaxJobs];
-	ret[kProperties][kKeyOptions][kProperties]["showCommands"] = defs[Defs::ShowCommands];
-	ret[kProperties][kKeyOptions][kProperties]["benchmark"] = defs[Defs::Benchmark];
-	ret[kProperties][kKeyOptions][kProperties]["launchProfiler"] = defs[Defs::LaunchProfiler];
-	ret[kProperties][kKeyOptions][kProperties]["configuration"] = defs[Defs::LastBuildConfiguration];
-	ret[kProperties][kKeyOptions][kProperties]["toolchain"] = defs[Defs::LastToolchain];
-	ret[kProperties][kKeyOptions][kProperties]["architecture"] = defs[Defs::LastArchitecture];
-	ret[kProperties][kKeyOptions][kProperties]["signingIdentity"] = defs[Defs::SigningIdentity];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties] = Json::object();
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["dumpAssembly"] = defs[Defs::DumpAssembly];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["maxJobs"] = defs[Defs::MaxJobs];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["showCommands"] = defs[Defs::ShowCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["benchmark"] = defs[Defs::Benchmark];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["launchProfiler"] = defs[Defs::LaunchProfiler];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBuildConfiguration] = defs[Defs::LastBuildConfiguration];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsArchitecture] = defs[Defs::LastArchitecture];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["signingIdentity"] = defs[Defs::SigningIdentity];
 
-	ret[kProperties][kKeyOptions][kProperties]["inputFile"] = defs[Defs::InputFile];
-	ret[kProperties][kKeyOptions][kProperties]["envFile"] = defs[Defs::EnvFile];
-	ret[kProperties][kKeyOptions][kProperties]["rootDir"] = defs[Defs::RootDir];
-	ret[kProperties][kKeyOptions][kProperties]["outputDir"] = defs[Defs::OutputDir];
-	ret[kProperties][kKeyOptions][kProperties]["externalDir"] = defs[Defs::ExternalDir];
-	ret[kProperties][kKeyOptions][kProperties]["distributionDir"] = defs[Defs::DistributionDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["inputFile"] = defs[Defs::InputFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["envFile"] = defs[Defs::EnvFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["rootDir"] = defs[Defs::RootDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["outputDir"] = defs[Defs::OutputDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["externalDir"] = defs[Defs::ExternalDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["distributionDir"] = defs[Defs::DistributionDir];
 
-	const std::string kKeyTheme{ "theme" };
-	ret[kProperties][kKeyTheme] = defs[Defs::Theme];
+	ret[SKeys::Properties][Keys::Theme] = defs[Defs::Theme];
 
-	const std::string kKeyToolchains{ "toolchains" };
-	ret[kProperties][kKeyToolchains] = R"json({
+	ret[SKeys::Properties][Keys::Toolchains] = R"json({
 		"type": "object",
 		"description": "A list of toolchains."
 	})json"_ojson;
-	ret[kProperties][kKeyToolchains]["patternProperties"][R"(^[\w\-+.]{3,}$)"] = toolchain;
+	ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][R"(^[\w\-+.]{3,}$)"] = toolchain;
 
 	return ret;
 }

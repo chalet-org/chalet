@@ -13,6 +13,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -44,19 +45,19 @@ bool GlobalSettingsJsonParser::serialize(GlobalSettingsState& outState)
 bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 {
 	// Create the json cache
-	m_jsonFile.makeNode(kKeyOptions, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyToolchains, JsonDataType::object);
-	m_jsonFile.makeNode(kKeyTools, JsonDataType::object);
+	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
+	m_jsonFile.makeNode(Keys::Toolchains, JsonDataType::object);
+	m_jsonFile.makeNode(Keys::Tools, JsonDataType::object);
 
 #if defined(CHALET_MACOS)
-	m_jsonFile.makeNode(kKeyAppleSdks, JsonDataType::object);
+	m_jsonFile.makeNode(Keys::AppleSdks, JsonDataType::object);
 #endif
 
 	initializeTheme();
 
-	Json& buildSettings = m_jsonFile.json.at(kKeyOptions);
+	Json& buildSettings = m_jsonFile.json.at(Keys::Options);
 
-	auto assignSettingsBool = [&](const std::string& inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
+	auto assignSettingsBool = [&](const char* inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
@@ -67,7 +68,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		}
 	};
 
-	auto assignSettingsUint = [&](const std::string& inKey, const uint inDefault, const std::function<std::optional<uint>()>& onGetValue) {
+	auto assignSettingsUint = [&](const char* inKey, const uint inDefault, const std::function<std::optional<uint>()>& onGetValue) {
 		m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, inKey, [&inDefault]() {
 			return inDefault;
 		});
@@ -78,7 +79,7 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		}
 	};
 
-	auto assignSettingsString = [&](const std::string& inKey, const std::function<std::string()>& onAssign) {
+	auto assignSettingsString = [&](const char* inKey, const std::function<std::string()>& onAssign) {
 		m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, inKey, []() {
 			return std::string();
 		});
@@ -89,80 +90,80 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 		}
 	};
 
-	assignSettingsBool(kKeyDumpAssembly, outState.dumpAssembly, [&]() {
+	assignSettingsBool(Keys::OptionsDumpAssembly, outState.dumpAssembly, [&]() {
 		return m_inputs.dumpAssembly();
 	});
 
-	assignSettingsBool(kKeyShowCommands, outState.showCommands, [&]() {
+	assignSettingsBool(Keys::OptionsShowCommands, outState.showCommands, [&]() {
 		return m_inputs.showCommands();
 	});
 
-	assignSettingsBool(kKeyBenchmark, outState.benchmark, [&]() {
+	assignSettingsBool(Keys::OptionsBenchmark, outState.benchmark, [&]() {
 		return m_inputs.benchmark();
 	});
 
-	assignSettingsBool(kKeyLaunchProfiler, outState.launchProfiler, [&]() {
+	assignSettingsBool(Keys::OptionsLaunchProfiler, outState.launchProfiler, [&]() {
 		return m_inputs.launchProfiler();
 	});
 
-	assignSettingsBool(kKeyGenerateCompileCommands, outState.generateCompileCommands, [&]() {
+	assignSettingsBool(Keys::OptionsGenerateCompileCommands, outState.generateCompileCommands, [&]() {
 		return m_inputs.generateCompileCommands();
 	});
 
 	{
 		uint maxJobs = outState.maxJobs == 0 ? std::thread::hardware_concurrency() : outState.maxJobs;
-		assignSettingsUint(kKeyMaxJobs, maxJobs, [&]() {
+		assignSettingsUint(Keys::OptionsMaxJobs, maxJobs, [&]() {
 			return m_inputs.maxJobs();
 		});
 	}
 
-	assignSettingsString(kKeyLastBuildConfiguration, [&]() {
+	assignSettingsString(Keys::OptionsBuildConfiguration, [&]() {
 		outState.buildConfiguration = m_inputs.buildConfiguration();
 		return outState.buildConfiguration;
 	});
 
-	assignSettingsString(kKeyLastToolchain, [&]() {
+	assignSettingsString(Keys::OptionsToolchain, [&]() {
 		m_inputs.detectToolchainPreference();
 		outState.toolchainPreference = m_inputs.toolchainPreferenceName();
 		return outState.toolchainPreference;
 	});
 
-	assignSettingsString(kKeyLastArchitecture, [&]() {
+	assignSettingsString(Keys::OptionsArchitecture, [&]() {
 		outState.architecturePreference = m_inputs.architectureRaw();
 		return outState.architecturePreference;
 	});
 
-	assignSettingsString(kKeyInputFile, [&]() {
+	assignSettingsString(Keys::OptionsInputFile, [&]() {
 		outState.inputFile = m_inputs.defaultInputFile();
 		return outState.inputFile;
 	});
 
-	assignSettingsString(kKeyEnvFile, [&]() {
+	assignSettingsString(Keys::OptionsEnvFile, [&]() {
 		outState.envFile = m_inputs.defaultEnvFile();
 		return outState.envFile;
 	});
 
-	assignSettingsString(kKeyRootDirectory, [&]() {
+	assignSettingsString(Keys::OptionsRootDirectory, [&]() {
 		outState.rootDirectory = m_inputs.rootDirectory();
 		return outState.rootDirectory;
 	});
 
-	assignSettingsString(kKeyOutputDirectory, [&]() {
+	assignSettingsString(Keys::OptionsOutputDirectory, [&]() {
 		outState.outputDirectory = m_inputs.defaultOutputDirectory();
 		return outState.outputDirectory;
 	});
 
-	assignSettingsString(kKeyExternalDirectory, [&]() {
+	assignSettingsString(Keys::OptionsExternalDirectory, [&]() {
 		outState.externalDirectory = m_inputs.defaultExternalDirectory();
 		return outState.externalDirectory;
 	});
 
-	assignSettingsString(kKeyDistributionDirectory, [&]() {
+	assignSettingsString(Keys::OptionsDistributionDirectory, [&]() {
 		outState.distributionDirectory = m_inputs.defaultDistributionDirectory();
 		return outState.distributionDirectory;
 	});
 
-	assignSettingsString(kKeySigningIdentity, [&]() {
+	assignSettingsString(Keys::OptionsSigningIdentity, [&]() {
 		outState.signingIdentity = std::string();
 		return outState.signingIdentity;
 	});
@@ -173,19 +174,19 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 /*****************************************************************************/
 void GlobalSettingsJsonParser::initializeTheme()
 {
-	if (!m_jsonFile.json.contains(kKeyTheme))
-		m_jsonFile.makeNode(kKeyTheme, JsonDataType::string);
+	if (!m_jsonFile.json.contains(Keys::Theme))
+		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
-	Json& themeJson = m_jsonFile.json.at(kKeyTheme);
+	Json& themeJson = m_jsonFile.json.at(Keys::Theme);
 	if (!themeJson.is_string() && !themeJson.is_object())
-		m_jsonFile.makeNode(kKeyTheme, JsonDataType::string);
+		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
 	if (themeJson.is_string())
 	{
 		auto preset = themeJson.get<std::string>();
 		if (!ColorTheme::isValidPreset(preset))
 		{
-			m_jsonFile.json[kKeyTheme] = ColorTheme::defaultPresetName();
+			m_jsonFile.json[Keys::Theme] = ColorTheme::defaultPresetName();
 		}
 	}
 	else if (themeJson.is_object())
@@ -234,13 +235,13 @@ bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, GlobalSetting
 /*****************************************************************************/
 bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeyOptions))
+	if (!inNode.contains(Keys::Options))
 		return true;
 
-	const Json& buildSettings = inNode.at(kKeyOptions);
+	const Json& buildSettings = inNode.at(Keys::Options);
 	if (!buildSettings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyOptions);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
 		return false;
 	}
 
@@ -248,43 +249,43 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 	{
 		if (value.is_string())
 		{
-			if (String::equals(kKeyLastBuildConfiguration, key))
+			if (String::equals(Keys::OptionsBuildConfiguration, key))
 				outState.buildConfiguration = value.get<std::string>();
-			else if (String::equals(kKeyLastToolchain, key))
+			else if (String::equals(Keys::OptionsToolchain, key))
 				outState.toolchainPreference = value.get<std::string>();
-			else if (String::equals(kKeyLastArchitecture, key))
+			else if (String::equals(Keys::OptionsArchitecture, key))
 				outState.architecturePreference = value.get<std::string>();
-			else if (String::equals(kKeySigningIdentity, key))
+			else if (String::equals(Keys::OptionsSigningIdentity, key))
 				outState.signingIdentity = value.get<std::string>();
-			else if (String::equals(kKeyInputFile, key))
+			else if (String::equals(Keys::OptionsInputFile, key))
 				outState.inputFile = value.get<std::string>();
-			else if (String::equals(kKeyEnvFile, key))
+			else if (String::equals(Keys::OptionsEnvFile, key))
 				outState.envFile = value.get<std::string>();
-			else if (String::equals(kKeyRootDirectory, key))
+			else if (String::equals(Keys::OptionsRootDirectory, key))
 				outState.rootDirectory = value.get<std::string>();
-			else if (String::equals(kKeyOutputDirectory, key))
+			else if (String::equals(Keys::OptionsOutputDirectory, key))
 				outState.outputDirectory = value.get<std::string>();
-			else if (String::equals(kKeyExternalDirectory, key))
+			else if (String::equals(Keys::OptionsExternalDirectory, key))
 				outState.externalDirectory = value.get<std::string>();
-			else if (String::equals(kKeyDistributionDirectory, key))
+			else if (String::equals(Keys::OptionsDistributionDirectory, key))
 				outState.distributionDirectory = value.get<std::string>();
 		}
 		else if (value.is_boolean())
 		{
-			if (String::equals(kKeyShowCommands, key))
+			if (String::equals(Keys::OptionsShowCommands, key))
 				outState.showCommands = value.get<bool>();
-			else if (String::equals(kKeyDumpAssembly, key))
+			else if (String::equals(Keys::OptionsDumpAssembly, key))
 				outState.dumpAssembly = value.get<bool>();
-			else if (String::equals(kKeyBenchmark, key))
+			else if (String::equals(Keys::OptionsBenchmark, key))
 				outState.benchmark = value.get<bool>();
-			else if (String::equals(kKeyLaunchProfiler, key))
+			else if (String::equals(Keys::OptionsLaunchProfiler, key))
 				outState.launchProfiler = value.get<bool>();
-			else if (String::equals(kKeyGenerateCompileCommands, key))
+			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 				outState.generateCompileCommands = value.get<bool>();
 		}
 		else if (value.is_number())
 		{
-			if (String::equals(kKeyMaxJobs, key))
+			if (String::equals(Keys::OptionsMaxJobs, key))
 				outState.maxJobs = static_cast<uint>(value.get<int>());
 		}
 	}
@@ -295,13 +296,13 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 /*****************************************************************************/
 bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeyToolchains))
+	if (!inNode.contains(Keys::Toolchains))
 		return true;
 
-	const Json& toolchains = inNode.at(kKeyToolchains);
+	const Json& toolchains = inNode.at(Keys::Toolchains);
 	if (!toolchains.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyToolchains);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Toolchains);
 		return false;
 	}
 
@@ -313,13 +314,13 @@ bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, GlobalSetting
 /*****************************************************************************/
 bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeyTools))
+	if (!inNode.contains(Keys::Tools))
 		return true;
 
-	const Json& tools = inNode.at(kKeyTools);
+	const Json& tools = inNode.at(Keys::Tools);
 	if (!tools.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Tools);
 		return false;
 	}
 
@@ -332,13 +333,13 @@ bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, GlobalSet
 #if defined(CHALET_MACOS)
 bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState)
 {
-	if (!inNode.contains(kKeyAppleSdks))
+	if (!inNode.contains(Keys::AppleSdks))
 		return true;
 
-	const Json& sdks = inNode.at(kKeyAppleSdks);
+	const Json& sdks = inNode.at(Keys::AppleSdks);
 	if (!sdks.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyAppleSdks);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::AppleSdks);
 		return false;
 	}
 

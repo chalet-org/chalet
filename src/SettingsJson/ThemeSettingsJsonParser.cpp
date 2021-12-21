@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -60,11 +61,9 @@ bool ThemeSettingsJsonParser::serialize()
 /*****************************************************************************/
 bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const bool inGlobal)
 {
-	const std::string kKeyTheme{ "theme" };
-
-	if (inJson.is_object() && inJson.contains(kKeyTheme))
+	if (inJson.is_object() && inJson.contains(Keys::Theme))
 	{
-		const auto& themeJson = inJson.at(kKeyTheme);
+		const auto& themeJson = inJson.at(Keys::Theme);
 		if (themeJson.is_string())
 		{
 			auto preset = themeJson.get<std::string>();

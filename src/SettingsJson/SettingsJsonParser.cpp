@@ -17,6 +17,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 // #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -95,16 +96,16 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
 	// Create the json cache
-	m_jsonFile.makeNode(kKeyOptions, JsonDataType::object);
+	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
 
-	if (!m_jsonFile.json.contains(kKeyToolchains) || !m_jsonFile.json[kKeyToolchains].is_object())
+	if (!m_jsonFile.json.contains(Keys::Toolchains) || !m_jsonFile.json[Keys::Toolchains].is_object())
 	{
-		m_jsonFile.json[kKeyToolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
+		m_jsonFile.json[Keys::Toolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
 	}
 
-	if (!m_jsonFile.json.contains(kKeyTools) || !m_jsonFile.json[kKeyTools].is_object())
+	if (!m_jsonFile.json.contains(Keys::Tools) || !m_jsonFile.json[Keys::Tools].is_object())
 	{
-		m_jsonFile.json[kKeyTools] = inState.tools.is_object() ? inState.tools : Json::object();
+		m_jsonFile.json[Keys::Tools] = inState.tools.is_object() ? inState.tools : Json::object();
 	}
 	else
 	{
@@ -112,18 +113,18 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		{
 			for (auto& [key, value] : inState.tools.items())
 			{
-				if (!m_jsonFile.json[kKeyTools].contains(key))
+				if (!m_jsonFile.json[Keys::Tools].contains(key))
 				{
-					m_jsonFile.json[kKeyTools][key] = value;
+					m_jsonFile.json[Keys::Tools][key] = value;
 				}
 			}
 		}
 	}
 
 #if defined(CHALET_MACOS)
-	if (!m_jsonFile.json.contains(kKeyAppleSdks) || !m_jsonFile.json[kKeyAppleSdks].is_object())
+	if (!m_jsonFile.json.contains(Keys::AppleSdks) || !m_jsonFile.json[Keys::AppleSdks].is_object())
 	{
-		m_jsonFile.json[kKeyAppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
+		m_jsonFile.json[Keys::AppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
 	}
 	else
 	{
@@ -131,42 +132,42 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		{
 			for (auto& [key, value] : inState.appleSdks.items())
 			{
-				if (!m_jsonFile.json[kKeyAppleSdks].contains(key))
+				if (!m_jsonFile.json[Keys::AppleSdks].contains(key))
 				{
-					m_jsonFile.json[kKeyAppleSdks][key] = value;
+					m_jsonFile.json[Keys::AppleSdks][key] = value;
 				}
 			}
 		}
 	}
 #endif
 
-	Json& buildSettings = m_jsonFile.json[kKeyOptions];
+	Json& buildSettings = m_jsonFile.json[Keys::Options];
 
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyShowCommands, m_inputs.showCommands(), inState.showCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyBenchmark, m_inputs.benchmark(), inState.benchmark);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, kKeyGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, kKeyMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
 		m_inputs.detectToolchainPreference();
 	});
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyLastArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyInputFile, m_inputs.inputFile(), inState.inputFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyEnvFile, m_inputs.envFile(), inState.envFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, kKeyDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
 
-	if (!buildSettings.contains(kKeySigningIdentity) || !buildSettings[kKeySigningIdentity].is_string())
+	if (!buildSettings.contains(Keys::OptionsSigningIdentity) || !buildSettings[Keys::OptionsSigningIdentity].is_string())
 	{
 		// Note: don't check if string is empty - empty is valid
-		buildSettings[kKeySigningIdentity] = inState.signingIdentity;
+		buildSettings[Keys::OptionsSigningIdentity] = inState.signingIdentity;
 	}
 
 	//
@@ -201,76 +202,76 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		return true;
 	};
 
-	Json& tools = m_jsonFile.json[kKeyTools];
+	Json& tools = m_jsonFile.json[Keys::Tools];
 
-	whichAdd(tools, kKeyBash);
+	whichAdd(tools, Keys::ToolsBash);
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsCodesign, HostPlatform::MacOS);
 #endif
 
 #if defined(CHALET_WIN32)
-	if (!tools.contains(kKeyCommandPrompt))
+	if (!tools.contains(Keys::ToolsCommandPrompt))
 	{
 		auto res = Commands::which("cmd");
 		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
-		tools[kKeyCommandPrompt] = std::move(res);
+		tools[Keys::ToolsCommandPrompt] = std::move(res);
 		m_jsonFile.setDirty(true);
 	}
 #endif
 
-	whichAdd(tools, kKeyGit);
+	whichAdd(tools, Keys::ToolsGit);
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyHdiutil, HostPlatform::MacOS);
-	whichAdd(tools, kKeyInstallNameTool, HostPlatform::MacOS);
-	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsHdiutil, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsInstallNameTool, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsInstruments, HostPlatform::MacOS);
 #endif
-	whichAdd(tools, kKeyLdd);
+	whichAdd(tools, Keys::ToolsLdd);
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	whichAdd(tools, kKeyMakeNsis);
+	whichAdd(tools, Keys::ToolsMakeNsis);
 #endif
 
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
-	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsOsascript, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsOtool, HostPlatform::MacOS);
 #endif
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyPlutil, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsPlutil, HostPlatform::MacOS);
 #endif
 
-	if (!tools.contains(kKeyPowershell))
+	if (!tools.contains(Keys::ToolsPowershell))
 	{
 		auto powershell = Commands::which("pwsh"); // Powershell OS 6+ (ex: C:/Program Files/Powershell/6)
 #if defined(CHALET_WIN32)
 		if (powershell.empty())
-			powershell = Commands::which(kKeyPowershell);
+			powershell = Commands::which(Keys::ToolsPowershell);
 #endif
-		tools[kKeyPowershell] = std::move(powershell);
+		tools[Keys::ToolsPowershell] = std::move(powershell);
 		m_jsonFile.setDirty(true);
 	}
 
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeySample, HostPlatform::MacOS);
-	whichAdd(tools, kKeySips, HostPlatform::MacOS);
-	whichAdd(tools, kKeyTiffutil, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcodebuild, HostPlatform::MacOS);
-	// whichAdd(tools, kKeyXcodegen, HostPlatform::MacOS);
-	whichAdd(tools, kKeyXcrun, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsSample, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsSips, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsTiffutil, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsXcodebuild, HostPlatform::MacOS);
+	// whichAdd(tools, Keys::ToolsXcodegen, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsXcrun, HostPlatform::MacOS);
 #endif
 
 #if !defined(CHALET_WIN32)
-	whichAdd(tools, kKeyZip);
+	whichAdd(tools, Keys::ToolsZip);
 #endif
 
 #if defined(CHALET_WIN32)
 	{
 		// Try really hard to find these tools
 
-		auto& gitNode = tools.at(kKeyGit);
+		auto& gitNode = tools.at(Keys::ToolsGit);
 		auto gitPath = gitNode.get<std::string>();
 		if (gitPath.empty())
 		{
 			gitPath = m_prototype.tools.getPathToGit();
-			tools[kKeyGit] = gitPath;
+			tools[Keys::ToolsGit] = gitPath;
 		}
 		else
 		{
@@ -278,12 +279,12 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 			if (String::contains("Git/mingw64/bin/git.exe", gitPath))
 			{
 				String::replaceAll(gitPath, "mingw64/", "");
-				tools[kKeyGit] = gitPath;
+				tools[Keys::ToolsGit] = gitPath;
 			}
 			else if (String::contains("Git/cmd/git.exe", gitPath))
 			{
 				String::replaceAll(gitPath, "cmd/", "bin");
-				tools[kKeyGit] = gitPath;
+				tools[Keys::ToolsGit] = gitPath;
 			}
 		}
 
@@ -293,25 +294,25 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 			const auto gitBinFolder = String::getPathFolder(gitPath);
 			const auto gitRoot = String::getPathFolder(gitBinFolder);
 
-			auto& bashNode = tools.at(kKeyBash);
+			auto& bashNode = tools.at(Keys::ToolsBash);
 			auto bashPath = bashNode.get<std::string>();
 			if (bashPath.empty() && !gitPath.empty())
 			{
 				bashPath = fmt::format("{}/{}", gitBinFolder, "bash.exe");
 				if (Commands::pathExists(bashPath))
 				{
-					tools[kKeyBash] = bashPath;
+					tools[Keys::ToolsBash] = bashPath;
 				}
 			}
 
-			auto& lddNode = tools.at(kKeyLdd);
+			auto& lddNode = tools.at(Keys::ToolsLdd);
 			auto lddPath = lddNode.get<std::string>();
 			if (lddPath.empty() && !gitPath.empty())
 			{
 				lddPath = fmt::format("{}/usr/bin/{}", gitRoot, "ldd.exe");
 				if (Commands::pathExists(lddPath))
 				{
-					tools[kKeyLdd] = lddPath;
+					tools[Keys::ToolsLdd] = lddPath;
 				}
 			}
 		}
@@ -326,7 +327,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	// WatchSimulator.platform
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
-	Json& appleSkdsJson = m_jsonFile.json[kKeyAppleSdks];
+	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
 
 	auto xcrun = Commands::which("xcrun");
 	for (auto sdk : {
@@ -367,16 +368,16 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 		return false;
 
 		/*
-	if (!inNode.contains(kKeyCompilerTools))
+	if (!inNode.contains(Keys::CompilerTools))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyCompilerTools);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::CompilerTools);
 		return false;
 	}
 
-	Json& toolchains = inNode.at(kKeyCompilerTools);
+	Json& toolchains = inNode.at(Keys::CompilerTools);
 	if (!toolchains.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyCompilerTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::CompilerTools);
 		return false;
 	}
 */
@@ -391,16 +392,16 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 /*****************************************************************************/
 bool SettingsJsonParser::parseSettings(Json& inNode)
 {
-	if (!inNode.contains(kKeyOptions))
+	if (!inNode.contains(Keys::Options))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyOptions);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::Options);
 		return false;
 	}
 
-	Json& buildSettings = inNode.at(kKeyOptions);
+	Json& buildSettings = inNode.at(Keys::Options);
 	if (!buildSettings.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyOptions);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
 		return false;
 	}
 
@@ -409,56 +410,56 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 	{
 		if (value.is_string())
 		{
-			if (String::equals(kKeyLastBuildConfiguration, key))
+			if (String::equals(Keys::OptionsBuildConfiguration, key))
 			{
 				if (m_inputs.buildConfiguration().empty())
 					m_inputs.setBuildConfiguration(value.get<std::string>());
 			}
-			else if (String::equals(kKeyLastToolchain, key))
+			else if (String::equals(Keys::OptionsToolchain, key))
 			{
 				if (m_inputs.toolchainPreferenceName().empty())
 					m_inputs.setToolchainPreference(value.get<std::string>());
 			}
-			else if (String::equals(kKeyLastArchitecture, key))
+			else if (String::equals(Keys::OptionsArchitecture, key))
 			{
 				if (m_inputs.architectureRaw().empty())
 					m_inputs.setArchitectureRaw(value.get<std::string>());
 			}
-			else if (String::equals(kKeySigningIdentity, key))
+			else if (String::equals(Keys::OptionsSigningIdentity, key))
 			{
 				m_prototype.tools.setSigningIdentity(value.get<std::string>());
 			}
-			else if (String::equals(kKeyInputFile, key))
+			else if (String::equals(Keys::OptionsInputFile, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.inputFile().empty() || !String::equals({ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
 					m_inputs.setInputFile(std::move(val));
 			}
-			else if (String::equals(kKeyEnvFile, key))
+			else if (String::equals(Keys::OptionsEnvFile, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.envFile().empty() || !String::equals({ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
 					m_inputs.setEnvFile(std::move(val));
 			}
-			else if (String::equals(kKeyRootDirectory, key))
+			else if (String::equals(Keys::OptionsRootDirectory, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.rootDirectory().empty() || !String::equals(m_inputs.rootDirectory(), val))
 					m_inputs.setRootDirectory(std::move(val));
 			}
-			else if (String::equals(kKeyOutputDirectory, key))
+			else if (String::equals(Keys::OptionsOutputDirectory, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
 					m_inputs.setOutputDirectory(std::move(val));
 			}
-			else if (String::equals(kKeyExternalDirectory, key))
+			else if (String::equals(Keys::OptionsExternalDirectory, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.externalDirectory().empty() || !String::equals({ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
 					m_inputs.setExternalDirectory(std::move(val));
 			}
-			else if (String::equals(kKeyDistributionDirectory, key))
+			else if (String::equals(Keys::OptionsDistributionDirectory, key))
 			{
 				auto val = value.get<std::string>();
 				if (m_inputs.distributionDirectory().empty() || !String::equals({ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
@@ -469,12 +470,12 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 		}
 		else if (value.is_boolean())
 		{
-			if (String::equals(kKeyDumpAssembly, key))
+			if (String::equals(Keys::OptionsDumpAssembly, key))
 			{
 				if (!m_inputs.dumpAssembly().has_value())
 					m_inputs.setDumpAssembly(value.get<bool>());
 			}
-			else if (String::equals(kKeyShowCommands, key))
+			else if (String::equals(Keys::OptionsShowCommands, key))
 			{
 				bool val = value.get<bool>();
 
@@ -483,7 +484,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 
 				Output::setShowCommands(val);
 			}
-			else if (String::equals(kKeyBenchmark, key))
+			else if (String::equals(Keys::OptionsBenchmark, key))
 			{
 				bool val = value.get<bool>();
 
@@ -492,12 +493,12 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 
 				Output::setShowBenchmarks(val);
 			}
-			else if (String::equals(kKeyLaunchProfiler, key))
+			else if (String::equals(Keys::OptionsLaunchProfiler, key))
 			{
 				if (!m_inputs.launchProfiler().has_value())
 					m_inputs.setLaunchProfiler(value.get<bool>());
 			}
-			else if (String::equals(kKeyLaunchProfiler, key))
+			else if (String::equals(Keys::OptionsLaunchProfiler, key))
 			{
 				if (!m_inputs.generateCompileCommands().has_value())
 					m_inputs.setGenerateCompileCommands(value.get<bool>());
@@ -507,7 +508,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 		}
 		else if (value.is_number())
 		{
-			if (String::equals(kKeyMaxJobs, key))
+			if (String::equals(Keys::OptionsMaxJobs, key))
 			{
 				if (!m_inputs.maxJobs().has_value())
 					m_inputs.setMaxJobs(static_cast<uint>(value.get<int>()));
@@ -531,16 +532,16 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 /*****************************************************************************/
 bool SettingsJsonParser::parseTools(Json& inNode)
 {
-	if (!inNode.contains(kKeyTools))
+	if (!inNode.contains(Keys::Tools))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyTools);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::Tools);
 		return false;
 	}
 
-	Json& tools = inNode.at(kKeyTools);
+	Json& tools = inNode.at(Keys::Tools);
 	if (!tools.is_object())
 	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyTools);
+		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Tools);
 		return false;
 	}
 
@@ -549,46 +550,46 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 	{
 		if (value.is_string())
 		{
-			if (String::equals(kKeyBash, key))
+			if (String::equals(Keys::ToolsBash, key))
 				m_prototype.tools.setBash(value.get<std::string>());
-			else if (String::equals(kKeyCodesign, key))
+			else if (String::equals(Keys::ToolsCodesign, key))
 				m_prototype.tools.setCodesign(value.get<std::string>());
-			else if (String::equals(kKeyCommandPrompt, key))
+			else if (String::equals(Keys::ToolsCommandPrompt, key))
 				m_prototype.tools.setCommandPrompt(value.get<std::string>());
-			else if (String::equals(kKeyGit, key))
+			else if (String::equals(Keys::ToolsGit, key))
 				m_prototype.tools.setGit(value.get<std::string>());
-			else if (String::equals(kKeyHdiutil, key))
+			else if (String::equals(Keys::ToolsHdiutil, key))
 				m_prototype.tools.setHdiutil(value.get<std::string>());
-			else if (String::equals(kKeyInstallNameTool, key))
+			else if (String::equals(Keys::ToolsInstallNameTool, key))
 				m_prototype.tools.setInstallNameTool(value.get<std::string>());
-			else if (String::equals(kKeyInstruments, key))
+			else if (String::equals(Keys::ToolsInstruments, key))
 				m_prototype.tools.setInstruments(value.get<std::string>());
-			else if (String::equals(kKeyLdd, key))
+			else if (String::equals(Keys::ToolsLdd, key))
 				m_prototype.tools.setLdd(value.get<std::string>());
-			else if (String::equals(kKeyMakeNsis, key))
+			else if (String::equals(Keys::ToolsMakeNsis, key))
 				m_prototype.tools.setMakeNsis(value.get<std::string>());
-			else if (String::equals(kKeyOsascript, key))
+			else if (String::equals(Keys::ToolsOsascript, key))
 				m_prototype.tools.setOsascript(value.get<std::string>());
-			else if (String::equals(kKeyOtool, key))
+			else if (String::equals(Keys::ToolsOtool, key))
 				m_prototype.tools.setOtool(value.get<std::string>());
 
-			else if (String::equals(kKeyPlutil, key))
+			else if (String::equals(Keys::ToolsPlutil, key))
 				m_prototype.tools.setPlutil(value.get<std::string>());
-			else if (String::equals(kKeyPowershell, key))
+			else if (String::equals(Keys::ToolsPowershell, key))
 				m_prototype.tools.setPowershell(value.get<std::string>());
-			else if (String::equals(kKeySample, key))
+			else if (String::equals(Keys::ToolsSample, key))
 				m_prototype.tools.setSample(value.get<std::string>());
-			else if (String::equals(kKeySips, key))
+			else if (String::equals(Keys::ToolsSips, key))
 				m_prototype.tools.setSips(value.get<std::string>());
-			else if (String::equals(kKeyTiffutil, key))
+			else if (String::equals(Keys::ToolsTiffutil, key))
 				m_prototype.tools.setTiffutil(value.get<std::string>());
-			else if (String::equals(kKeyXcodebuild, key))
+			else if (String::equals(Keys::ToolsXcodebuild, key))
 				m_prototype.tools.setXcodebuild(value.get<std::string>());
-			// else if (String::equals(kKeyXcodegen, key))
+			// else if (String::equals(Keys::ToolsXcodegen, key))
 			// 	m_prototype.tools.setXcodegen(value.get<std::string>());
-			else if (String::equals(kKeyXcrun, key))
+			else if (String::equals(Keys::ToolsXcrun, key))
 				m_prototype.tools.setXcrun(value.get<std::string>());
-			else if (String::equals(kKeyZip, key))
+			else if (String::equals(Keys::ToolsZip, key))
 				m_prototype.tools.setZip(value.get<std::string>());
 			else
 				removeKeys.push_back(key);
@@ -610,13 +611,13 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 /*****************************************************************************/
 bool SettingsJsonParser::parseAppleSdks(Json& inNode)
 {
-	if (!inNode.contains(kKeyAppleSdks))
+	if (!inNode.contains(Keys::AppleSdks))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), kKeyAppleSdks);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::AppleSdks);
 		return false;
 	}
 
-	Json& appleSdks = inNode.at(kKeyAppleSdks);
+	Json& appleSdks = inNode.at(Keys::AppleSdks);
 	for (auto& [key, pathJson] : appleSdks.items())
 	{
 		if (!pathJson.is_string())

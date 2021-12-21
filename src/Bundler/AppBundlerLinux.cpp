@@ -37,11 +37,9 @@ namespace chalet
 AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap) :
 	IAppBundler(inState, inBundle, inDependencyMap)
 {
-	const std::string kUserApplications{ ".local/share/applications" };
-
 	m_home = m_state.paths.homeDirectory();
 
-	m_applicationsPath = fmt::format("{}/{}", m_home, kUserApplications);
+	m_applicationsPath = fmt::format("{}/.local/share/applications", m_home);
 }
 
 /*****************************************************************************/

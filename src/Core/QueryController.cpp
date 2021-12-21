@@ -14,6 +14,7 @@
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -138,13 +139,10 @@ StringList QueryController::getBuildConfigurationList() const
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
 	const auto& buildJson = m_prototype.chaletJson().json;
 
-	const std::string kKeyDefaultConfigurations = "defaultConfigurations";
-	const std::string kKeyConfigurations = "configurations";
-
 	bool addedDefaults = false;
-	if (buildJson.contains(kKeyDefaultConfigurations))
+	if (buildJson.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = buildJson.at(kKeyDefaultConfigurations);
+		const Json& defaultConfigurations = buildJson.at(Keys::DefaultConfigurations);
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -167,9 +165,9 @@ StringList QueryController::getBuildConfigurationList() const
 		ret = defaultBuildConfigurations;
 	}
 
-	if (buildJson.contains(kKeyConfigurations))
+	if (buildJson.contains(Keys::Configurations))
 	{
-		const Json& configurations = buildJson.at(kKeyConfigurations);
+		const Json& configurations = buildJson.at(Keys::Configurations);
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -190,14 +188,12 @@ StringList QueryController::getUserToolchainList() const
 {
 	StringList ret;
 
-	const std::string kKeyToolchains = "toolchains";
-
 	const auto& settingsFile = getSettingsJson();
 	if (!settingsFile.is_null())
 	{
-		if (settingsFile.contains(kKeyToolchains))
+		if (settingsFile.contains(Keys::Toolchains))
 		{
-			const auto& toolchains = settingsFile.at(kKeyToolchains);
+			const auto& toolchains = settingsFile.at(Keys::Toolchains);
 			for (auto& [key, _] : toolchains.items())
 			{
 				ret.emplace_back(key);
@@ -318,18 +314,15 @@ StringList QueryController::getCurrentArchitecture() const
 {
 	StringList ret;
 
-	const std::string kKeyOptions = "options";
-	const std::string kKeyArchitecture = "architecture";
-
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeyOptions))
+		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(kKeyOptions);
-			if (settings.contains(kKeyArchitecture))
+			const auto& settings = settingsFile.at(Keys::Options);
+			if (settings.contains(Keys::OptionsArchitecture))
 			{
-				const auto& arch = settings.at(kKeyArchitecture);
+				const auto& arch = settings.at(Keys::OptionsArchitecture);
 				if (arch.is_string())
 				{
 					auto value = arch.get<std::string>();
@@ -355,18 +348,15 @@ StringList QueryController::getCurrentBuildConfiguration() const
 {
 	StringList ret;
 
-	const std::string kKeyOptions = "options";
-	const std::string kKeyConfiguration = "configuration";
-
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeyOptions))
+		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(kKeyOptions);
-			if (settings.contains(kKeyConfiguration))
+			const auto& settings = settingsFile.at(Keys::Options);
+			if (settings.contains(Keys::OptionsBuildConfiguration))
 			{
-				const auto& configuration = settings.at(kKeyConfiguration);
+				const auto& configuration = settings.at(Keys::OptionsBuildConfiguration);
 				if (configuration.is_string())
 				{
 					auto value = configuration.get<std::string>();
@@ -392,18 +382,15 @@ StringList QueryController::getCurrentToolchain() const
 {
 	StringList ret;
 
-	const std::string kKeyOptions = "options";
-	const std::string kKeyToolchain = "toolchain";
-
 	const auto& settingsFile = getSettingsJson();
 	if (settingsFile.is_object())
 	{
-		if (settingsFile.contains(kKeyOptions))
+		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(kKeyOptions);
-			if (settings.contains(kKeyToolchain))
+			const auto& settings = settingsFile.at(Keys::Options);
+			if (settings.contains(Keys::OptionsToolchain))
 			{
-				const auto& toolchain = settings.at(kKeyToolchain);
+				const auto& toolchain = settings.at(Keys::OptionsToolchain);
 				if (toolchain.is_string())
 				{
 					auto value = toolchain.get<std::string>();
@@ -432,21 +419,17 @@ StringList QueryController::getCurrentRunTarget() const
 	const auto& buildJson = m_prototype.chaletJson().json;
 
 	StringList executableProjects;
-	const std::string kKeyTargets{ "targets" };
 	if (buildJson.is_object())
 	{
-		if (buildJson.contains(kKeyTargets))
+		if (buildJson.contains(Keys::Targets))
 		{
-			const std::string kKeyKind{ "kind" };
-			const std::string kKeyRunTarget{ "runTarget" };
-			const std::string kKeyRunExecutable{ "runExecutable" };
-			const auto& targets = buildJson.at(kKeyTargets);
+			const auto& targets = buildJson.at(Keys::Targets);
 			for (auto& [key, target] : targets.items())
 			{
-				if (!target.is_object() || !target.contains(kKeyKind))
+				if (!target.is_object() || !target.contains(Keys::Kind))
 					continue;
 
-				const auto& kind = target.at(kKeyKind);
+				const auto& kind = target.at(Keys::Kind);
 				if (!kind.is_string())
 					continue;
 
@@ -457,22 +440,22 @@ StringList QueryController::getCurrentRunTarget() const
 				bool isExecutable = true;
 				if (String::equals("script", kindValue))
 				{
-					if (!target.contains(kKeyRunTarget))
+					if (!target.contains(Keys::RunTarget))
 						isExecutable = false;
 				}
 				else if (String::equals("cmakeProject", kindValue))
 				{
-					if (!target.contains(kKeyRunExecutable))
+					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
 				}
 
 				if (isExecutable)
 					executableProjects.push_back(key);
 
-				if (!target.contains(kKeyRunTarget))
+				if (!target.contains(Keys::RunTarget))
 					continue;
 
-				const auto& runTarget = target.at(kKeyRunTarget);
+				const auto& runTarget = target.at(Keys::RunTarget);
 				if (!runTarget.is_boolean())
 					continue;
 

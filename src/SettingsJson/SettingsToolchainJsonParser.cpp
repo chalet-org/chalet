@@ -14,6 +14,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -136,19 +137,19 @@ bool SettingsToolchainJsonParser::validatePaths()
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
 {
-	if (!toolchain.contains(kKeyVersion) || !toolchain[kKeyVersion].is_string() || toolchain[kKeyVersion].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainVersion) || !toolchain[Keys::ToolchainVersion].is_string() || toolchain[Keys::ToolchainVersion].get<std::string>().empty())
 	{
-		toolchain[kKeyVersion] = std::string();
+		toolchain[Keys::ToolchainVersion] = std::string();
 	}
 
-	if (!toolchain.contains(kKeyStrategy) || !toolchain[kKeyStrategy].is_string() || toolchain[kKeyStrategy].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainStrategy) || !toolchain[Keys::ToolchainStrategy].is_string() || toolchain[Keys::ToolchainStrategy].get<std::string>().empty())
 	{
-		toolchain[kKeyStrategy] = std::string();
+		toolchain[Keys::ToolchainStrategy] = std::string();
 	}
 
-	if (!toolchain.contains(kKeyBuildPathStyle) || !toolchain[kKeyBuildPathStyle].is_string() || toolchain[kKeyBuildPathStyle].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainBuildPathStyle) || !toolchain[Keys::ToolchainBuildPathStyle].is_string() || toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
 	{
-		toolchain[kKeyBuildPathStyle] = std::string();
+		toolchain[Keys::ToolchainBuildPathStyle] = std::string();
 	}
 
 	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
@@ -156,7 +157,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	std::string cpp;
 	std::string cc;
-	if (!toolchain.contains(kKeyCompilerCpp))
+	if (!toolchain.contains(Keys::ToolchainCompilerCpp))
 	{
 		// auto varCXX = Environment::get("CXX");
 		// if (varCXX != nullptr)
@@ -167,10 +168,10 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			cpp = Commands::which(preference.cpp);
 		}
 
-		toolchain[kKeyCompilerCpp] = cpp;
+		toolchain[Keys::ToolchainCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
-	if (!toolchain.contains(kKeyCompilerC) || !toolchain[kKeyCompilerC].is_string() || toolchain[kKeyCompilerC].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainCompilerC) || !toolchain[Keys::ToolchainCompilerC].is_string() || toolchain[Keys::ToolchainCompilerC].get<std::string>().empty())
 	{
 		// auto varCC = Environment::get("CC");
 		// if (varCC != nullptr)
@@ -181,11 +182,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			cc = Commands::which(preference.cc);
 		}
 
-		toolchain[kKeyCompilerC] = cc;
+		toolchain[Keys::ToolchainCompilerC] = cc;
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(kKeyCompilerWindowsResource) || !toolchain[kKeyCompilerWindowsResource].is_string() || toolchain[kKeyCompilerWindowsResource].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainCompilerWindowsResource) || !toolchain[Keys::ToolchainCompilerWindowsResource].is_string() || toolchain[Keys::ToolchainCompilerWindowsResource].get<std::string>().empty())
 	{
 		std::string rc;
 		StringList searches;
@@ -198,11 +199,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 				break;
 		}
 
-		toolchain[kKeyCompilerWindowsResource] = std::move(rc);
+		toolchain[Keys::ToolchainCompilerWindowsResource] = std::move(rc);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(kKeyLinker) || !toolchain[kKeyLinker].is_string() || toolchain[kKeyLinker].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainLinker) || !toolchain[Keys::ToolchainLinker].is_string() || toolchain[Keys::ToolchainLinker].get<std::string>().empty())
 	{
 		std::string link;
 		StringList searches;
@@ -246,11 +247,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		}
 #endif
 
-		toolchain[kKeyLinker] = std::move(link);
+		toolchain[Keys::ToolchainLinker] = std::move(link);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(kKeyArchiver) || !toolchain[kKeyArchiver].is_string() || toolchain[kKeyArchiver].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainArchiver) || !toolchain[Keys::ToolchainArchiver].is_string() || toolchain[Keys::ToolchainArchiver].get<std::string>().empty())
 	{
 		std::string ar;
 		StringList searches;
@@ -282,11 +283,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 				break;
 		}
 
-		toolchain[kKeyArchiver] = std::move(ar);
+		toolchain[Keys::ToolchainArchiver] = std::move(ar);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(kKeyProfiler) || !toolchain[kKeyProfiler].is_string() || toolchain[kKeyProfiler].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainProfiler) || !toolchain[Keys::ToolchainProfiler].is_string() || toolchain[Keys::ToolchainProfiler].get<std::string>().empty())
 	{
 		std::string prof;
 		StringList searches;
@@ -308,11 +309,11 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 				break;
 		}
 
-		toolchain[kKeyProfiler] = std::move(prof);
+		toolchain[Keys::ToolchainProfiler] = std::move(prof);
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(kKeyDisassembler) || !toolchain[kKeyDisassembler].is_string() || toolchain[kKeyDisassembler].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainDisassembler) || !toolchain[Keys::ToolchainDisassembler].is_string() || toolchain[Keys::ToolchainDisassembler].get<std::string>().empty())
 	{
 		std::string disasm;
 		StringList searches;
@@ -338,17 +339,17 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 				break;
 		}
 
-		toolchain[kKeyDisassembler] = std::move(disasm);
+		toolchain[Keys::ToolchainDisassembler] = std::move(disasm);
 		m_jsonFile.setDirty(true);
 	}
 
 	// if (!result)
 	// {
-	// 	toolchain.erase(kKeyCompilerCpp);
-	// 	toolchain.erase(kKeyCompilerC);
-	// 	toolchain.erase(kKeyLinker);
-	// 	toolchain.erase(kKeyArchiver);
-	// 	toolchain.erase(kKeyCompilerWindowsResource);
+	// 	toolchain.erase(Keys::ToolchainCompilerCpp);
+	// 	toolchain.erase(Keys::ToolchainCompilerC);
+	// 	toolchain.erase(Keys::ToolchainLinker);
+	// 	toolchain.erase(Keys::ToolchainArchiver);
+	// 	toolchain.erase(Keys::ToolchainCompilerWindowsResource);
 	// }
 
 	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
@@ -366,9 +367,9 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		return true;
 	};
-	whichAdd(toolchain, kKeyCmake);
+	whichAdd(toolchain, Keys::ToolchainCMake);
 
-	if (!toolchain.contains(kKeyMake) || !toolchain[kKeyMake].is_string() || toolchain[kKeyMake].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainMake) || !toolchain[Keys::ToolchainMake].is_string() || toolchain[Keys::ToolchainMake].get<std::string>().empty())
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
@@ -386,7 +387,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			searches.emplace_back("mingw32-make");
 		}
 
-		searches.push_back(kKeyMake);
+		searches.push_back(Keys::ToolchainMake);
 		for (const auto& search : searches)
 		{
 			make = Commands::which(search);
@@ -396,64 +397,64 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			}
 		}
 #else
-		std::string make = Commands::which(kKeyMake);
+		std::string make = Commands::which(Keys::ToolchainMake);
 #endif
 
-		toolchain[kKeyMake] = std::move(make);
+		toolchain[Keys::ToolchainMake] = std::move(make);
 		m_jsonFile.setDirty(true);
 	}
 
-	whichAdd(toolchain, kKeyNinja);
+	whichAdd(toolchain, Keys::ToolchainNinja);
 
-	if (toolchain[kKeyStrategy].get<std::string>().empty())
+	if (toolchain[Keys::ToolchainStrategy].get<std::string>().empty())
 	{
-		auto make = toolchain.at(kKeyMake).get<std::string>();
-		auto ninja = toolchain.at(kKeyNinja).get<std::string>();
+		auto make = toolchain.at(Keys::ToolchainMake).get<std::string>();
+		auto ninja = toolchain.at(Keys::ToolchainNinja).get<std::string>();
 		bool notNative = preference.strategy != StrategyType::Native;
 
 		// Note: this is only for validation. it gets changed later
 		if (!ninja.empty() && (preference.strategy == StrategyType::Ninja || (notNative && make.empty())))
 		{
-			toolchain[kKeyStrategy] = "ninja";
+			toolchain[Keys::ToolchainStrategy] = "ninja";
 		}
 		else if (!make.empty() && (preference.strategy == StrategyType::Makefile || (notNative && ninja.empty())))
 		{
-			toolchain[kKeyStrategy] = "makefile";
+			toolchain[Keys::ToolchainStrategy] = "makefile";
 		}
 		else if (preference.strategy == StrategyType::Native || (make.empty() && ninja.empty()))
 		{
-			toolchain[kKeyStrategy] = "native-experimental";
+			toolchain[Keys::ToolchainStrategy] = "native-experimental";
 		}
 
 		m_jsonFile.setDirty(true);
 	}
 
-	if (toolchain[kKeyBuildPathStyle].get<std::string>().empty())
+	if (toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
 	{
 		// Note: this is only for validation. it gets changed later
 		if (preference.buildPathStyle == BuildPathStyle::TargetTriple)
 		{
-			toolchain[kKeyBuildPathStyle] = "target-triple";
+			toolchain[Keys::ToolchainBuildPathStyle] = "target-triple";
 		}
 		else if (preference.buildPathStyle == BuildPathStyle::ToolchainName)
 		{
-			toolchain[kKeyBuildPathStyle] = "toolchain-name";
+			toolchain[Keys::ToolchainBuildPathStyle] = "toolchain-name";
 		}
 		else if (preference.buildPathStyle == BuildPathStyle::Configuration)
 		{
-			toolchain[kKeyBuildPathStyle] = "configuration";
+			toolchain[Keys::ToolchainBuildPathStyle] = "configuration";
 		}
 		else if (preference.buildPathStyle == BuildPathStyle::ArchConfiguration)
 		{
-			toolchain[kKeyBuildPathStyle] = "architecture";
+			toolchain[Keys::ToolchainBuildPathStyle] = "architecture";
 		}
 
 		m_jsonFile.setDirty(true);
 	}
 
-	if (toolchain[kKeyVersion].get<std::string>().empty())
+	if (toolchain[Keys::ToolchainVersion].get<std::string>().empty())
 	{
-		toolchain[kKeyVersion] = std::string();
+		toolchain[Keys::ToolchainVersion] = std::string();
 	}
 
 	return true;
@@ -467,32 +468,32 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 	{
 		if (value.is_string())
 		{
-			if (String::equals(kKeyStrategy, key))
+			if (String::equals(Keys::ToolchainStrategy, key))
 				m_state.toolchain.setStrategy(value.get<std::string>());
-			else if (String::equals(kKeyBuildPathStyle, key))
+			else if (String::equals(Keys::ToolchainBuildPathStyle, key))
 				m_state.toolchain.setBuildPathStyle(value.get<std::string>());
-			else if (String::equals(kKeyVersion, key))
+			else if (String::equals(Keys::ToolchainVersion, key))
 				m_state.toolchain.setVersion(value.get<std::string>());
-			else if (String::equals(kKeyArchiver, key))
+			else if (String::equals(Keys::ToolchainArchiver, key))
 				m_state.toolchain.setArchiver(value.get<std::string>());
-			else if (String::equals(kKeyCompilerCpp, key))
+			else if (String::equals(Keys::ToolchainCompilerCpp, key))
 				m_state.toolchain.setCompilerCpp(value.get<std::string>());
-			else if (String::equals(kKeyCompilerC, key))
+			else if (String::equals(Keys::ToolchainCompilerC, key))
 				m_state.toolchain.setCompilerC(value.get<std::string>());
-			else if (String::equals(kKeyCompilerWindowsResource, key))
+			else if (String::equals(Keys::ToolchainCompilerWindowsResource, key))
 				m_state.toolchain.setCompilerWindowsResource(value.get<std::string>());
-			else if (String::equals(kKeyLinker, key))
+			else if (String::equals(Keys::ToolchainLinker, key))
 				m_state.toolchain.setLinker(value.get<std::string>());
-			else if (String::equals(kKeyProfiler, key))
+			else if (String::equals(Keys::ToolchainProfiler, key))
 				m_state.toolchain.setProfiler(value.get<std::string>());
 			//
-			else if (String::equals(kKeyCmake, key))
+			else if (String::equals(Keys::ToolchainCMake, key))
 				m_state.toolchain.setCmake(value.get<std::string>());
-			else if (String::equals(kKeyMake, key))
+			else if (String::equals(Keys::ToolchainMake, key))
 				m_state.toolchain.setMake(value.get<std::string>());
-			else if (String::equals(kKeyNinja, key))
+			else if (String::equals(Keys::ToolchainNinja, key))
 				m_state.toolchain.setNinja(value.get<std::string>());
-			else if (String::equals(kKeyDisassembler, key))
+			else if (String::equals(Keys::ToolchainDisassembler, key))
 				m_state.toolchain.setDisassembler(value.get<std::string>());
 			else
 				removeKeys.push_back(key);

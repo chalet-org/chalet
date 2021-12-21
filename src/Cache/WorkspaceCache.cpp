@@ -15,6 +15,7 @@
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -262,61 +263,56 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	const auto& settingsFile = inInputs.settingsFile();
 	const auto& preference = inInputs.toolchainPreferenceName();
-	const std::string kKeyOptions{ "options" };
-	const std::string kKeyToolchains{ "toolchains" };
 
-	if (!settingsJson.json.contains(kKeyOptions))
+	if (!settingsJson.json.contains(Keys::Options))
 	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyOptions);
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Options);
 		return false;
 	}
-	if (!settingsJson.json.contains(kKeyToolchains))
+	if (!settingsJson.json.contains(Keys::Toolchains))
 	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Toolchains);
 		return false;
 	}
 
-	auto& toolchains = settingsJson.json.at(kKeyToolchains);
+	auto& toolchains = settingsJson.json.at(Keys::Toolchains);
 	if (!toolchains.contains(preference))
 	{
-		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, kKeyToolchains);
+		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Toolchains);
 		return false;
 	}
 
-	auto& optionsJson = settingsJson.json.at(kKeyOptions);
+	auto& optionsJson = settingsJson.json.at(Keys::Options);
 	auto& toolchain = toolchains.at(preference);
 
-	const std::string kKeyToolchain{ "toolchain" };
-	if (optionsJson.contains(kKeyToolchain))
+	if (optionsJson.contains(Keys::OptionsToolchain))
 	{
-		auto& toolchainSetting = optionsJson.at(kKeyToolchain);
+		auto& toolchainSetting = optionsJson.at(Keys::OptionsToolchain);
 		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
 		{
-			optionsJson[kKeyToolchain] = preference;
+			optionsJson[Keys::OptionsToolchain] = preference;
 			settingsJson.setDirty(true);
 		}
 	}
 
-	const std::string kKeyArchitecture{ "architecture" };
-	if (optionsJson.contains(kKeyArchitecture))
+	if (optionsJson.contains(Keys::OptionsArchitecture))
 	{
 		std::string archString = inInputs.targetArchitecture().empty() ? "auto" : inInputs.targetArchitecture();
-		auto& arch = optionsJson.at(kKeyArchitecture);
+		auto& arch = optionsJson.at(Keys::OptionsArchitecture);
 		if (arch.is_string() && arch.get<std::string>() != archString)
 		{
-			optionsJson[kKeyArchitecture] = archString;
+			optionsJson[Keys::OptionsArchitecture] = archString;
 			settingsJson.setDirty(true);
 		}
 	}
 
-	const std::string kKeyVersion{ "version" };
-	if (toolchain.contains(kKeyVersion))
+	if (toolchain.contains(Keys::ToolchainVersion))
 	{
 		const auto& versionString = inToolchain.version();
-		auto& version = toolchain.at(kKeyVersion);
+		auto& version = toolchain.at(Keys::ToolchainVersion);
 		if (version.is_string() && version.get<std::string>() != versionString)
 		{
-			toolchain[kKeyVersion] = versionString;
+			toolchain[Keys::ToolchainVersion] = versionString;
 			settingsJson.setDirty(true);
 		}
 	}

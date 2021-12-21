@@ -73,19 +73,6 @@ private:
 	std::string m_externalDependencyCachePath;
 	HeapDictionary<SourceCache> m_sourceCaches;
 
-	const std::string kKeyHashes;
-	const std::string kKeyHashBuild;
-	const std::string kKeyHashTheme;
-	const std::string kKeyHashVersionDebug;
-	const std::string kKeyHashVersionRelease;
-	const std::string kKeyHashExtra;
-	const std::string kKeyLastChaletJsonWriteTime;
-	const std::string kKeyBuilds;
-	const std::string kKeyBuildLastBuilt;
-	const std::string kKeyBuildNative;
-	const std::string kKeyBuildFiles;
-	const std::string kKeyDataCache;
-
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;

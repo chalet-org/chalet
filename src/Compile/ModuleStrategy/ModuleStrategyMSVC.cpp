@@ -13,6 +13,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -39,12 +40,6 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 {
 	// Version 1.1
 
-	const std::string kKeyVersion{ "Version" };
-	const std::string kKeyData{ "Data" };
-	const std::string kKeyProvidedModule{ "ProvidedModule" };
-	const std::string kKeyImportedModules{ "ImportedModules" };
-	const std::string kKeyImportedHeaderUnits{ "ImportedHeaderUnits" };
-
 	for (auto& group : inOutputs.groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
@@ -60,68 +55,68 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			return false;
 		}
 
-		if (!json.contains(kKeyVersion) || !json.at(kKeyVersion).is_string())
+		if (!json.contains(MSVCKeys::Version) || !json.at(MSVCKeys::Version).is_string())
 		{
-			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyVersion);
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::Version);
 			return false;
 		}
 
-		std::string version = json.at(kKeyVersion).get<std::string>();
+		std::string version = json.at(MSVCKeys::Version).get<std::string>();
 		if (!String::equals("1.1", version))
 		{
 			Diagnostic::error("{}: Found version '{}', but only '1.1' is supported", group->dependencyFile, version);
 			return false;
 		}
 
-		if (!json.contains(kKeyData) || !json.at(kKeyData).is_object())
+		if (!json.contains(MSVCKeys::Data) || !json.at(MSVCKeys::Data).is_object())
 		{
-			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyData);
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::Data);
 			return false;
 		}
 
-		const auto& data = json.at(kKeyData);
-		if (!data.contains(kKeyProvidedModule) || !data.at(kKeyProvidedModule).is_string())
+		const auto& data = json.at(MSVCKeys::Data);
+		if (!data.contains(MSVCKeys::ProvidedModule) || !data.at(MSVCKeys::ProvidedModule).is_string())
 		{
-			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyProvidedModule);
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ProvidedModule);
 			return false;
 		}
 
-		if (!data.contains(kKeyImportedModules) || !data.at(kKeyImportedModules).is_array())
+		if (!data.contains(MSVCKeys::ImportedModules) || !data.at(MSVCKeys::ImportedModules).is_array())
 		{
-			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedModules);
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ImportedModules);
 			return false;
 		}
 
-		if (!data.contains(kKeyImportedHeaderUnits) || !data.at(kKeyImportedHeaderUnits).is_array())
+		if (!data.contains(MSVCKeys::ImportedHeaderUnits) || !data.at(MSVCKeys::ImportedHeaderUnits).is_array())
 		{
-			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
+			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ImportedHeaderUnits);
 			return false;
 		}
 
-		auto name = data.at(kKeyProvidedModule).get<std::string>();
+		auto name = data.at(MSVCKeys::ProvidedModule).get<std::string>();
 		if (name.empty())
 			name = kRootModule;
 
 		outModules[name].source = group->sourceFile;
 
-		for (auto& moduleItr : data.at(kKeyImportedModules).items())
+		for (auto& moduleItr : data.at(MSVCKeys::ImportedModules).items())
 		{
 			auto& mod = moduleItr.value();
 			if (!mod.is_string())
 			{
-				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedModules);
+				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, MSVCKeys::ImportedModules);
 				return false;
 			}
 
 			List::addIfDoesNotExist(outModules[name].importedModules, mod.get<std::string>());
 		}
 
-		for (auto& fileItr : data.at(kKeyImportedHeaderUnits).items())
+		for (auto& fileItr : data.at(MSVCKeys::ImportedHeaderUnits).items())
 		{
 			auto& file = fileItr.value();
 			if (!file.is_string())
 			{
-				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, kKeyImportedHeaderUnits);
+				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, MSVCKeys::ImportedHeaderUnits);
 				return false;
 			}
 

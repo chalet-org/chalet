@@ -31,27 +31,23 @@ struct JsonFile
 	void setContents(Json&& inJson);
 
 	const std::string& filename() const noexcept;
-	void makeNode(const std::string& inName, const JsonDataType inType);
+	void makeNode(const char* inKey, const JsonDataType inType);
 
 	bool validate(Json&& inSchemaJson);
 
 	template <typename T>
-	bool assignFromKey(T& outVariable, const Json& inNode, const std::string& inKey) const;
+	bool assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const;
 
 	template <typename T>
-	bool assignNodeIfEmpty(Json& outNode, const std::string& inKey, const std::function<T()>& onAssign);
+	bool assignNodeIfEmpty(Json& outNode, const char* inKey, const std::function<T()>& onAssign);
 
 	template <typename T>
-	bool assignNodeIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::optional<T>& inValueA, const T& inValueB);
+	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
 
-	bool assignStringListAndValidate(StringList& outList, const Json& inNode, const std::string& inKey);
-
-	bool assignStringIfEmptyWithFallback(Json& outNode, const std::string& inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA = nullptr);
+	bool assignStringIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA = nullptr);
 
 	template <typename T>
-	bool containsKeyForType(const Json& inNode, const std::string& inKey) const;
-
-	bool containsKeyThatStartsWith(const Json& inNode, const std::string& inFind) const;
+	bool containsKeyForType(const Json& inNode, const char* inKey) const;
 
 	Json json;
 

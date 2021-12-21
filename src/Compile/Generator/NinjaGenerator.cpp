@@ -62,7 +62,7 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 		}
 	}
 
-	const std::string keyword = m_project->isStaticLibrary() ? "archive" : "link";
+	auto keyword = m_project->isStaticLibrary() ? "archive" : "link";
 
 	//
 	//
