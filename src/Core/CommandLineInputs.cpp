@@ -518,6 +518,50 @@ std::string CommandLineInputs::platformEnv() const noexcept
 }
 
 /*****************************************************************************/
+void CommandLineInputs::resolveEnvFile()
+{
+	auto searchDotEnv = [this](const std::string& inRelativeEnv, const std::string& inEnv) {
+		if (String::endsWith(kDefaultEnvFile, inRelativeEnv))
+		{
+			auto toSearch = String::getPathFolder(inRelativeEnv);
+			if (!toSearch.empty())
+			{
+				toSearch = fmt::format("{}/{}", toSearch, inEnv);
+				if (Commands::pathExists(toSearch))
+					return toSearch;
+			}
+		}
+		else
+		{
+			if (Commands::pathExists(inRelativeEnv))
+				return inRelativeEnv;
+		}
+
+		if (Commands::pathExists(inEnv))
+			return inEnv;
+
+		return std::string();
+	};
+
+	std::string tmp = searchDotEnv(m_envFile, platformEnv());
+	if (tmp.empty())
+	{
+		tmp = searchDotEnv(m_envFile, kDefaultEnvFile);
+	}
+
+	if (tmp.empty())
+	{
+		if (Commands::pathExists(m_envFile))
+			tmp = m_envFile;
+	}
+
+	if (!tmp.empty())
+	{
+		setEnvFile(std::move(tmp));
+	}
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::architectureRaw() const noexcept
 {
 	return m_architectureRaw;

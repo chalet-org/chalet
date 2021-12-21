@@ -30,9 +30,8 @@ pacman -S mingw-w64-x86_64-toolchain
 ### MacOS
 
 1. Install Xcode or Command Line Tools
-2. Install Homebrew
-3. Install CMake (via Homebrew is easiest)
-4. Run `bash ./build_all.sh` from the project root
+2. Install CMake (via Homebrew is easiest)
+3. Run `bash ./build_all.sh` from the project root
 
 ---
 ### Linux

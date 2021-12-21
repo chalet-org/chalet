@@ -143,6 +143,14 @@
 			"kind": "script",
 			"file": "scripts/script_lua_env.lua"
 		}*/
+		,
+		"script-perl": {
+			"kind": "process",
+			"path": "perl",
+			"arguments": [
+				"scripts/script_perl.pl"
+			]
+		}
 	},
 	"distribution": {
 		"Chalet": {

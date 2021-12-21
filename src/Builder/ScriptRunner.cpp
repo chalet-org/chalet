@@ -127,43 +127,6 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 					shellFound = true;
 				}
 			}
-			else if (String::endsWith(".py", outScriptPath))
-			{
-				if (!m_tools.python3().empty())
-				{
-					shell = m_tools.python3();
-					shellFound = true;
-				}
-				else if (!m_tools.python().empty())
-				{
-					shell = m_tools.python();
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".rb", outScriptPath))
-			{
-				if (!m_tools.ruby().empty())
-				{
-					shell = m_tools.ruby();
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".pl", outScriptPath))
-			{
-				if (!m_tools.perl().empty())
-				{
-					shell = m_tools.perl();
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".lua", outScriptPath))
-			{
-				if (!m_tools.lua().empty())
-				{
-					shell = m_tools.lua();
-					shellFound = true;
-				}
-			}
 		}
 
 		if (shellFound)

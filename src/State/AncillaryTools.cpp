@@ -36,7 +36,6 @@ bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 bool AncillaryTools::validate(const std::string& inHomeDirectory)
 {
 	fetchBashVersion();
-	fetchBrewVersion();
 
 #if defined(CHALET_MACOS)
 	Environment::replaceCommonVariables(m_signingIdentity, inHomeDirectory);
@@ -63,22 +62,6 @@ void AncillaryTools::fetchBashVersion()
 		m_bashAvailable = true;
 #endif
 	}
-}
-
-/*****************************************************************************/
-void AncillaryTools::fetchBrewVersion()
-{
-#if defined(CHALET_MACOS)
-	if (!m_brew.empty())
-	{
-		/*if (Commands::pathExists(m_brew))
-		{
-			std::string version = Commands::subprocessOutput({ m_brew, "--version" });
-			m_brewAvailable = String::startsWith("Homebrew ", version);
-		}*/
-		m_brewAvailable = Commands::pathExists(m_brew);
-	}
-#endif
 }
 
 /*****************************************************************************/
@@ -159,20 +142,6 @@ void AncillaryTools::setBash(std::string&& inValue) noexcept
 bool AncillaryTools::bashAvailable() const noexcept
 {
 	return m_bashAvailable;
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::brew() const noexcept
-{
-	return m_brew;
-}
-void AncillaryTools::setBrew(std::string&& inValue) noexcept
-{
-	m_brew = std::move(inValue);
-}
-bool AncillaryTools::brewAvailable() const noexcept
-{
-	return m_brewAvailable;
 }
 
 /*****************************************************************************/
@@ -281,16 +250,6 @@ void AncillaryTools::setLdd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::lua() const noexcept
-{
-	return m_lua;
-}
-void AncillaryTools::setLua(std::string&& inValue) noexcept
-{
-	m_lua = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& AncillaryTools::makeNsis() const noexcept
 {
 	return m_makeNsis;
@@ -322,16 +281,6 @@ void AncillaryTools::setOtool(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::perl() const noexcept
-{
-	return m_perl;
-}
-void AncillaryTools::setPerl(std::string&& inValue) noexcept
-{
-	m_perl = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string& AncillaryTools::plutil() const noexcept
 {
 	return m_plutil;
@@ -349,36 +298,6 @@ const std::string& AncillaryTools::powershell() const noexcept
 void AncillaryTools::setPowershell(std::string&& inValue) noexcept
 {
 	m_powershell = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::python() const noexcept
-{
-	return m_python;
-}
-void AncillaryTools::setPython(std::string&& inValue) noexcept
-{
-	m_python = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::python3() const noexcept
-{
-	return m_python3;
-}
-void AncillaryTools::setPython3(std::string&& inValue) noexcept
-{
-	m_python3 = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::ruby() const noexcept
-{
-	return m_ruby;
-}
-void AncillaryTools::setRuby(std::string&& inValue) noexcept
-{
-	m_ruby = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -479,24 +398,6 @@ const std::string& AncillaryTools::vsperfcmd() const noexcept
 void AncillaryTools::setVsperfcmd(std::string&& inValue) noexcept
 {
 	m_vsperfcmd = std::move(inValue);
-}
-
-/*****************************************************************************/
-bool AncillaryTools::installHomebrewPackage(const std::string& inPackage) const
-{
-#if defined(CHALET_MACOS)
-	const std::string result = Commands::subprocessOutput({ m_brew, "ls", "--versions", inPackage });
-	if (result.empty())
-	{
-		if (!Commands::subprocess({ m_brew, "install", inPackage }))
-			return false;
-	}
-
-	return true;
-#else
-	UNUSED(inPackage);
-	return false;
-#endif
 }
 
 /*****************************************************************************/

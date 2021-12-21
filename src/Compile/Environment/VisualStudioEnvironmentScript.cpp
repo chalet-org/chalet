@@ -120,7 +120,6 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 	if (!m_envVarsFileDeltaExists)
 	{
-
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
 			auto temp = Commands::subprocessOutput(inCmd);
 			auto split = String::split(temp, "\n");
@@ -216,11 +215,17 @@ void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 	Dictionary<std::string> variables;
 	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
 
+#if !defined(CHALET_WIN32)
 	const auto pathKey = Environment::getPathKey();
+#endif
 	const char pathSep = Environment::getPathSeparator();
 	for (auto& [name, var] : variables)
 	{
+#if defined(CHALET_WIN32)
+		if (String::equals("path", String::toLowerCase(name)))
+#else
 		if (String::equals(pathKey, name))
+#endif
 		{
 			if (String::contains(m_pathInject, m_pathVariable))
 			{

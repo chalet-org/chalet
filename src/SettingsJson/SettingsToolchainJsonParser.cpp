@@ -462,6 +462,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 /*****************************************************************************/
 bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 {
+	StringList removeKeys;
 	for (const auto& [key, value] : inNode.items())
 	{
 		if (value.is_string())
@@ -493,8 +494,18 @@ bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
 				m_state.toolchain.setNinja(value.get<std::string>());
 			else if (String::equals(kKeyDisassembler, key))
 				m_state.toolchain.setDisassembler(value.get<std::string>());
+			else
+				removeKeys.push_back(key);
 		}
 	}
+
+	for (auto& key : removeKeys)
+	{
+		inNode.erase(key);
+	}
+
+	if (!removeKeys.empty())
+		m_jsonFile.setDirty(true);
 
 	return true;
 }

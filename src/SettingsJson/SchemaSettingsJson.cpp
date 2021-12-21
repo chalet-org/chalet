@@ -18,7 +18,6 @@ enum class Defs : ushort
 {
 	/* Tools */
 	Bash,
-	Brew,
 	CommandPrompt,
 	CodeSign,
 	Git,
@@ -26,16 +25,11 @@ enum class Defs : ushort
 	InstallNameTool,
 	Instruments,
 	Ldd,
-	Lua,
 	MakeNsis,
 	OsaScript,
 	Otool,
-	Perl,
 	PlUtil,
 	Powershell,
-	Python,
-	Python3,
-	Ruby,
 	Sample,
 	Sips,
 	TiffUtil,
@@ -110,12 +104,6 @@ Json SchemaSettingsJson::get()
 		"default": "/usr/bin/bash"
 	})json"_ojson;
 
-	defs[Defs::Brew] = R"json({
-		"type": "string",
-		"description": "The executable path to the Homebrew package manager. (MacOS)",
-		"default": "/usr/local/bin/brew"
-	})json"_ojson;
-
 	defs[Defs::CommandPrompt] = R"json({
 		"type": "string",
 		"description": "The executable path to Command Prompt. (Windows)",
@@ -158,12 +146,6 @@ Json SchemaSettingsJson::get()
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
-	defs[Defs::Lua] = R"json({
-		"type": "string",
-		"description": "The executable path to Lua.",
-		"default": "/usr/local/bin/lua"
-	})json"_ojson;
-
 	defs[Defs::MakeNsis] = R"json({
 		"type": "string",
 		"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
@@ -182,12 +164,6 @@ Json SchemaSettingsJson::get()
 		"default": "/usr/bin/otool"
 	})json"_ojson;
 
-	defs[Defs::Perl] = R"json({
-		"type": "string",
-		"description": "The executable path to Perl.",
-		"default": "/usr/local/bin/perl"
-	})json"_ojson;
-
 	defs[Defs::PlUtil] = R"json({
 		"type": "string",
 		"description": "The executable path to Apple's plutil command-line utility. (MacOS)",
@@ -198,24 +174,6 @@ Json SchemaSettingsJson::get()
 		"type": "string",
 		"description": "The executable path to Powershell. (Windows)",
 		"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
-	})json"_ojson;
-
-	defs[Defs::Python] = R"json({
-		"type": "string",
-		"description": "The executable path to Python 2.",
-		"default": "/usr/bin/python"
-	})json"_ojson;
-
-	defs[Defs::Python3] = R"json({
-		"type": "string",
-		"description": "The executable path to Python 3.",
-		"default": "/usr/local/bin/python3"
-	})json"_ojson;
-
-	defs[Defs::Ruby] = R"json({
-		"type": "string",
-		"description": "The executable path to Ruby.",
-		"default": "/usr/bin/ruby"
 	})json"_ojson;
 
 	defs[Defs::Sample] = R"json({
@@ -494,25 +452,24 @@ Json SchemaSettingsJson::get()
 
 	//
 
-	auto toolchains = R"json({
+	auto toolchain = R"json({
 		"type": "object",
-		"additionalProperties": false,
 		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
-	toolchains[kProperties] = Json::object();
-	toolchains[kProperties]["version"] = defs[Defs::Version];
-	toolchains[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
-	toolchains[kProperties]["buildPathStyle"] = defs[Defs::BuildPathStyle];
-	toolchains[kProperties]["archiver"] = defs[Defs::Archiver];
-	toolchains[kProperties]["compilerCpp"] = defs[Defs::CompilerCpp];
-	toolchains[kProperties]["compilerC"] = defs[Defs::CompilerC];
-	toolchains[kProperties]["compilerWindowsResource"] = defs[Defs::CompilerWindowsResource];
-	toolchains[kProperties]["cmake"] = defs[Defs::CMake];
-	toolchains[kProperties]["linker"] = defs[Defs::Linker];
-	toolchains[kProperties]["profiler"] = defs[Defs::Profiler];
-	toolchains[kProperties]["make"] = defs[Defs::Make];
-	toolchains[kProperties]["ninja"] = defs[Defs::Ninja];
-	toolchains[kProperties]["disassembler"] = defs[Defs::Disassembler];
+	toolchain[kProperties] = Json::object();
+	toolchain[kProperties]["version"] = defs[Defs::Version];
+	toolchain[kProperties]["strategy"] = defs[Defs::ToolchainStrategy];
+	toolchain[kProperties]["buildPathStyle"] = defs[Defs::BuildPathStyle];
+	toolchain[kProperties]["archiver"] = defs[Defs::Archiver];
+	toolchain[kProperties]["compilerCpp"] = defs[Defs::CompilerCpp];
+	toolchain[kProperties]["compilerC"] = defs[Defs::CompilerC];
+	toolchain[kProperties]["compilerWindowsResource"] = defs[Defs::CompilerWindowsResource];
+	toolchain[kProperties]["cmake"] = defs[Defs::CMake];
+	toolchain[kProperties]["linker"] = defs[Defs::Linker];
+	toolchain[kProperties]["profiler"] = defs[Defs::Profiler];
+	toolchain[kProperties]["make"] = defs[Defs::Make];
+	toolchain[kProperties]["ninja"] = defs[Defs::Ninja];
+	toolchain[kProperties]["disassembler"] = defs[Defs::Disassembler];
 
 	//
 	ret[kDefinitions] = Json::object();
@@ -523,12 +480,10 @@ Json SchemaSettingsJson::get()
 	const std::string kKeyTools{ "tools" };
 	ret[kProperties][kKeyTools] = R"json({
 		"type": "object",
-		"additionalProperties": false,
 		"description": "A list of additional tools for the platform."
 	})json"_ojson;
 	ret[kProperties][kKeyTools][kProperties] = Json::object();
 	ret[kProperties][kKeyTools][kProperties]["bash"] = defs[Defs::Bash];
-	ret[kProperties][kKeyTools][kProperties]["brew"] = defs[Defs::Brew];
 	ret[kProperties][kKeyTools][kProperties]["command_prompt"] = defs[Defs::CommandPrompt];
 	ret[kProperties][kKeyTools][kProperties]["codesign"] = defs[Defs::CodeSign];
 	ret[kProperties][kKeyTools][kProperties]["git"] = defs[Defs::Git];
@@ -536,16 +491,11 @@ Json SchemaSettingsJson::get()
 	ret[kProperties][kKeyTools][kProperties]["install_name_tool"] = defs[Defs::InstallNameTool];
 	ret[kProperties][kKeyTools][kProperties]["instruments"] = defs[Defs::Instruments];
 	ret[kProperties][kKeyTools][kProperties]["ldd"] = defs[Defs::Ldd];
-	ret[kProperties][kKeyTools][kProperties]["lua"] = defs[Defs::Lua];
 	ret[kProperties][kKeyTools][kProperties]["makensis"] = defs[Defs::MakeNsis];
 	ret[kProperties][kKeyTools][kProperties]["osascript"] = defs[Defs::OsaScript];
 	ret[kProperties][kKeyTools][kProperties]["otool"] = defs[Defs::Otool];
-	ret[kProperties][kKeyTools][kProperties]["perl"] = defs[Defs::Perl];
 	ret[kProperties][kKeyTools][kProperties]["plutil"] = defs[Defs::PlUtil];
 	ret[kProperties][kKeyTools][kProperties]["powershell"] = defs[Defs::Powershell];
-	ret[kProperties][kKeyTools][kProperties]["python"] = defs[Defs::Python];
-	ret[kProperties][kKeyTools][kProperties]["python3"] = defs[Defs::Python3];
-	ret[kProperties][kKeyTools][kProperties]["ruby"] = defs[Defs::Ruby];
 	ret[kProperties][kKeyTools][kProperties]["sample"] = defs[Defs::Sample];
 	ret[kProperties][kKeyTools][kProperties]["sips"] = defs[Defs::Sips];
 	ret[kProperties][kKeyTools][kProperties]["tiffutil"] = defs[Defs::TiffUtil];
@@ -562,7 +512,6 @@ Json SchemaSettingsJson::get()
 	const std::string kKeyOptions{ "options" };
 	ret[kProperties][kKeyOptions] = R"json({
 		"type": "object",
-		"additionalProperties": false,
 		"description": "A list of settings related to the build."
 	})json"_ojson;
 	ret[kProperties][kKeyOptions][kProperties] = Json::object();
@@ -590,10 +539,9 @@ Json SchemaSettingsJson::get()
 	const std::string kKeyToolchains{ "toolchains" };
 	ret[kProperties][kKeyToolchains] = R"json({
 		"type": "object",
-		"additionalProperties": false,
 		"description": "A list of toolchains."
 	})json"_ojson;
-	ret[kProperties][kKeyToolchains]["patternProperties"][R"(^[\w\-+.]{3,}$)"] = toolchains;
+	ret[kProperties][kKeyToolchains]["patternProperties"][R"(^[\w\-+.]{3,}$)"] = toolchain;
 
 	return ret;
 }

@@ -28,7 +28,7 @@ private:
 	bool makeSettingsJson(const GlobalSettingsState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
 
-	bool parseSettings(const Json& inNode);
+	bool parseSettings(Json& inNode);
 
 	bool parseTools(Json& inNode);
 #if defined(CHALET_MACOS)
@@ -41,7 +41,6 @@ private:
 
 	// should match executables
 	const std::string kKeyBash = "bash";
-	const std::string kKeyBrew = "brew";
 	const std::string kKeyCodesign = "codesign";
 	const std::string kKeyCommandPrompt = "command_prompt";
 	const std::string kKeyGit = "git";
@@ -49,16 +48,11 @@ private:
 	const std::string kKeyInstallNameTool = "install_name_tool";
 	const std::string kKeyInstruments = "instruments";
 	const std::string kKeyLdd = "ldd";
-	const std::string kKeyLua = "lua";
 	const std::string kKeyMakeNsis = "makensis";
 	const std::string kKeyOsascript = "osascript";
 	const std::string kKeyOtool = "otool";
-	const std::string kKeyPerl = "perl";
 	const std::string kKeyPlutil = "plutil";
 	const std::string kKeyPowershell = "powershell";
-	const std::string kKeyPython = "python";
-	const std::string kKeyPython3 = "python3";
-	const std::string kKeyRuby = "ruby";
 	const std::string kKeySample = "sample";
 	const std::string kKeySips = "sips";
 	const std::string kKeyTiffutil = "tiffutil";

@@ -78,18 +78,12 @@
 	"properties": {
 		"tools": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "A list of additional tools for the platform.",
 			"properties": {
 				"bash": {
 					"type": "string",
 					"description": "The executable path to GNU Bourne-Again SHell.",
 					"default": "/usr/bin/bash"
-				},
-				"brew": {
-					"type": "string",
-					"description": "The executable path to the Homebrew package manager. (MacOS)",
-					"default": "/usr/local/bin/brew"
 				},
 				"command_prompt": {
 					"type": "string",
@@ -126,11 +120,6 @@
 					"description": "The executable path to ldd.",
 					"default": "/usr/bin/ldd"
 				},
-				"lua": {
-					"type": "string",
-					"description": "The executable path to Lua.",
-					"default": "/usr/local/bin/lua"
-				},
 				"makensis": {
 					"type": "string",
 					"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
@@ -146,11 +135,6 @@
 					"description": "The executable path to Apple's otool command-line utility. (MacOS)",
 					"default": "/usr/bin/otool"
 				},
-				"perl": {
-					"type": "string",
-					"description": "The executable path to Perl.",
-					"default": "/usr/local/bin/perl"
-				},
 				"plutil": {
 					"type": "string",
 					"description": "The executable path to Apple's plutil command-line utility. (MacOS)",
@@ -160,21 +144,6 @@
 					"type": "string",
 					"description": "The executable path to Powershell. (Windows)",
 					"default": "C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
-				},
-				"python": {
-					"type": "string",
-					"description": "The executable path to Python 2.",
-					"default": "/usr/bin/python"
-				},
-				"python3": {
-					"type": "string",
-					"description": "The executable path to Python 3.",
-					"default": "/usr/local/bin/python3"
-				},
-				"ruby": {
-					"type": "string",
-					"description": "The executable path to Ruby.",
-					"default": "/usr/bin/ruby"
 				},
 				"sample": {
 					"type": "string",
@@ -214,7 +183,6 @@
 		},
 		"options": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "A list of settings related to the build.",
 			"properties": {
 				"dumpAssembly": {
@@ -354,12 +322,10 @@
 		},
 		"toolchains": {
 			"type": "object",
-			"additionalProperties": false,
 			"description": "A list of toolchains.",
 			"patternProperties": {
 				"^[\\w\\-+.]{3,}$": {
 					"type": "object",
-					"additionalProperties": false,
 					"description": "A list of compilers and tools needing for the build itself.",
 					"properties": {
 						"version": {

@@ -89,11 +89,17 @@ void IntelEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 
 	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
 
+#if !defined(CHALET_WIN32)
 	const auto pathKey = Environment::getPathKey();
+#endif
 	const char pathSep = Environment::getPathSeparator();
 	for (auto& [name, var] : variables)
 	{
+#if defined(CHALET_WIN32)
+		if (String::equals("path", String::toLowerCase(name)))
+#else
 		if (String::equals(pathKey, name))
+#endif
 		{
 			Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
 		}

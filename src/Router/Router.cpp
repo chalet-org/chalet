@@ -289,8 +289,6 @@ bool Router::routeXcodeGenTest(BuildState& inState)
 	// Run xcodebuild from the command line if possible
 	// This would be a lightweight BuildManager
 
-	LOG("brew available:", inState.tools.brewAvailable());
-
 	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
 
 	return true;

@@ -155,6 +155,7 @@ bool StatePrototype::validate()
 bool StatePrototype::createCache()
 {
 	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
+	cache.file().checkIfThemeChanged();
 
 	if (!cache.createCacheFolder(CacheType::Local))
 	{
@@ -361,6 +362,8 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 /*****************************************************************************/
 bool StatePrototype::parseEnvFile()
 {
+	m_inputs.resolveEnvFile();
+
 	DotEnvFileParser envParser(m_inputs);
 	return envParser.readVariablesFromInputs();
 }

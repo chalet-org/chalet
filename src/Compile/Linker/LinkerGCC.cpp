@@ -465,7 +465,6 @@ void LinkerGCC::addObjectiveCxxLink(StringList& outArgList) const
 void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
-	// TODO: Test Homebrew LLVM/GCC with this
 	{
 		const std::string prefix = "-F";
 		for (auto& path : m_project.libDirs())

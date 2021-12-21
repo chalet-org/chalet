@@ -205,7 +205,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 
 	whichAdd(tools, kKeyBash);
 #if defined(CHALET_MACOS)
-	whichAdd(tools, kKeyBrew, HostPlatform::MacOS);
 	whichAdd(tools, kKeyCodesign, HostPlatform::MacOS);
 #endif
 
@@ -226,7 +225,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyInstruments, HostPlatform::MacOS);
 #endif
 	whichAdd(tools, kKeyLdd);
-	whichAdd(tools, kKeyLua);
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	whichAdd(tools, kKeyMakeNsis);
 #endif
@@ -235,12 +233,9 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 	whichAdd(tools, kKeyOsascript, HostPlatform::MacOS);
 	whichAdd(tools, kKeyOtool, HostPlatform::MacOS);
 #endif
-	whichAdd(tools, kKeyPerl);
 #if defined(CHALET_MACOS)
 	whichAdd(tools, kKeyPlutil, HostPlatform::MacOS);
 #endif
-	whichAdd(tools, kKeyPython);
-	whichAdd(tools, kKeyPython3);
 
 	if (!tools.contains(kKeyPowershell))
 	{
@@ -252,8 +247,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		tools[kKeyPowershell] = std::move(powershell);
 		m_jsonFile.setDirty(true);
 	}
-
-	whichAdd(tools, kKeyRuby);
 
 #if defined(CHALET_MACOS)
 	whichAdd(tools, kKeySample, HostPlatform::MacOS);
@@ -319,18 +312,6 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 				if (Commands::pathExists(lddPath))
 				{
 					tools[kKeyLdd] = lddPath;
-				}
-			}
-
-			// we can also do the same for perl
-			auto& perlNode = tools.at(kKeyPerl);
-			auto perlPath = perlNode.get<std::string>();
-			if (perlPath.empty() && !gitPath.empty())
-			{
-				perlPath = fmt::format("{}/usr/bin/{}", gitRoot, "perl.exe");
-				if (Commands::pathExists(perlPath))
-				{
-					tools[kKeyPerl] = perlPath;
 				}
 			}
 		}
@@ -408,7 +389,7 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::parseSettings(const Json& inNode)
+bool SettingsJsonParser::parseSettings(Json& inNode)
 {
 	if (!inNode.contains(kKeyOptions))
 	{
@@ -416,13 +397,14 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 		return false;
 	}
 
-	const Json& buildSettings = inNode.at(kKeyOptions);
+	Json& buildSettings = inNode.at(kKeyOptions);
 	if (!buildSettings.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), kKeyOptions);
 		return false;
 	}
 
+	StringList removeKeys;
 	for (const auto& [key, value] : buildSettings.items())
 	{
 		if (value.is_string())
@@ -482,6 +464,8 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 				if (m_inputs.distributionDirectory().empty() || !String::equals({ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
 					m_inputs.setDistributionDirectory(std::move(val));
 			}
+			else
+				removeKeys.push_back(key);
 		}
 		else if (value.is_boolean())
 		{
@@ -518,6 +502,8 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 				if (!m_inputs.generateCompileCommands().has_value())
 					m_inputs.setGenerateCompileCommands(value.get<bool>());
 			}
+			else
+				removeKeys.push_back(key);
 		}
 		else if (value.is_number())
 		{
@@ -526,8 +512,18 @@ bool SettingsJsonParser::parseSettings(const Json& inNode)
 				if (!m_inputs.maxJobs().has_value())
 					m_inputs.setMaxJobs(static_cast<uint>(value.get<int>()));
 			}
+			else
+				removeKeys.push_back(key);
 		}
 	}
+
+	for (auto& key : removeKeys)
+	{
+		buildSettings.erase(key);
+	}
+
+	if (!removeKeys.empty())
+		m_jsonFile.setDirty(true);
 
 	return true;
 }
@@ -548,14 +544,13 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		return false;
 	}
 
+	StringList removeKeys;
 	for (const auto& [key, value] : tools.items())
 	{
 		if (value.is_string())
 		{
 			if (String::equals(kKeyBash, key))
 				m_prototype.tools.setBash(value.get<std::string>());
-			else if (String::equals(kKeyBrew, key))
-				m_prototype.tools.setBrew(value.get<std::string>());
 			else if (String::equals(kKeyCodesign, key))
 				m_prototype.tools.setCodesign(value.get<std::string>());
 			else if (String::equals(kKeyCommandPrompt, key))
@@ -570,27 +565,17 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_prototype.tools.setInstruments(value.get<std::string>());
 			else if (String::equals(kKeyLdd, key))
 				m_prototype.tools.setLdd(value.get<std::string>());
-			else if (String::equals(kKeyLua, key))
-				m_prototype.tools.setLua(value.get<std::string>());
 			else if (String::equals(kKeyMakeNsis, key))
 				m_prototype.tools.setMakeNsis(value.get<std::string>());
 			else if (String::equals(kKeyOsascript, key))
 				m_prototype.tools.setOsascript(value.get<std::string>());
 			else if (String::equals(kKeyOtool, key))
 				m_prototype.tools.setOtool(value.get<std::string>());
-			else if (String::equals(kKeyPerl, key))
-				m_prototype.tools.setPerl(value.get<std::string>());
 
 			else if (String::equals(kKeyPlutil, key))
 				m_prototype.tools.setPlutil(value.get<std::string>());
 			else if (String::equals(kKeyPowershell, key))
 				m_prototype.tools.setPowershell(value.get<std::string>());
-			else if (String::equals(kKeyPython, key))
-				m_prototype.tools.setPython(value.get<std::string>());
-			else if (String::equals(kKeyPython3, key))
-				m_prototype.tools.setPython3(value.get<std::string>());
-			else if (String::equals(kKeyRuby, key))
-				m_prototype.tools.setRuby(value.get<std::string>());
 			else if (String::equals(kKeySample, key))
 				m_prototype.tools.setSample(value.get<std::string>());
 			else if (String::equals(kKeySips, key))
@@ -605,8 +590,18 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_prototype.tools.setXcrun(value.get<std::string>());
 			else if (String::equals(kKeyZip, key))
 				m_prototype.tools.setZip(value.get<std::string>());
+			else
+				removeKeys.push_back(key);
 		}
 	}
+
+	for (auto& key : removeKeys)
+	{
+		tools.erase(key);
+	}
+
+	if (!removeKeys.empty())
+		m_jsonFile.setDirty(true);
 
 	return true;
 }

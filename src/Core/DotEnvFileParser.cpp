@@ -26,19 +26,9 @@ DotEnvFileParser::DotEnvFileParser(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool DotEnvFileParser::readVariablesFromInputs()
 {
-	std::string envFile = searchDotEnv(m_inputs.envFile(), m_inputs.platformEnv());
-	if (envFile.empty())
-	{
-		envFile = searchDotEnv(m_inputs.envFile(), m_inputs.defaultEnvFile());
-	}
-
-	if (envFile.empty())
-	{
-		if (Commands::pathExists(m_inputs.envFile()))
-			envFile = m_inputs.envFile();
-		else
-			return true; // don't care
-	}
+	const auto& envFile = m_inputs.envFile();
+	if (envFile.empty() || !Commands::pathExists(envFile))
+		return true; // don't care
 
 #if defined(CHALET_DEBUG)
 	Timer timer;
@@ -149,31 +139,6 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 	input.close();
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string DotEnvFileParser::searchDotEnv(const std::string& inRelativeEnv, const std::string& inEnv) const
-{
-	if (String::endsWith(m_inputs.defaultEnvFile(), inRelativeEnv))
-	{
-		auto toSearch = String::getPathFolder(inRelativeEnv);
-		if (!toSearch.empty())
-		{
-			toSearch = fmt::format("{}/{}", toSearch, inEnv);
-			if (Commands::pathExists(toSearch))
-				return toSearch;
-		}
-	}
-	else
-	{
-		if (Commands::pathExists(inRelativeEnv))
-			return inRelativeEnv;
-	}
-
-	if (Commands::pathExists(inEnv))
-		return inEnv;
-
-	return std::string();
 }
 
 }

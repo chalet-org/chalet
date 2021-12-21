@@ -95,6 +95,7 @@ struct CommandLineInputs
 	const std::string& envFile() const noexcept;
 	void setEnvFile(std::string&& inValue) noexcept;
 	std::string platformEnv() const noexcept;
+	void resolveEnvFile();
 
 	const std::string& architectureRaw() const noexcept;
 	void setArchitectureRaw(std::string&& inValue) const noexcept;

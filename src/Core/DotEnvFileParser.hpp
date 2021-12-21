@@ -18,8 +18,6 @@ struct DotEnvFileParser
 	bool readVariablesFromFile(const std::string& inFile) const;
 
 private:
-	std::string searchDotEnv(const std::string& inRelativeEnv, const std::string& inEnv) const;
-
 	const CommandLineInputs& m_inputs;
 };
 }

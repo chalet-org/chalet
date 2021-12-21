@@ -15,7 +15,6 @@ struct AncillaryTools
 	bool validate(const std::string& inHomeDirectory);
 
 	void fetchBashVersion();
-	void fetchBrewVersion();
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
 
@@ -27,10 +26,6 @@ struct AncillaryTools
 	const std::string& bash() const noexcept;
 	void setBash(std::string&& inValue) noexcept;
 	bool bashAvailable() const noexcept;
-
-	const std::string& brew() const noexcept;
-	void setBrew(std::string&& inValue) noexcept;
-	bool brewAvailable() const noexcept;
 
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
@@ -57,9 +52,6 @@ struct AncillaryTools
 	const std::string& ldd() const noexcept;
 	void setLdd(std::string&& inValue) noexcept;
 
-	const std::string& lua() const noexcept;
-	void setLua(std::string&& inValue) noexcept;
-
 	const std::string& makeNsis() const noexcept;
 	void setMakeNsis(std::string&& inValue) noexcept;
 
@@ -69,23 +61,11 @@ struct AncillaryTools
 	const std::string& otool() const noexcept;
 	void setOtool(std::string&& inValue) noexcept;
 
-	const std::string& perl() const noexcept;
-	void setPerl(std::string&& inValue) noexcept;
-
 	const std::string& plutil() const noexcept;
 	void setPlutil(std::string&& inValue) noexcept;
 
 	const std::string& powershell() const noexcept;
 	void setPowershell(std::string&& inValue) noexcept;
-
-	const std::string& python() const noexcept;
-	void setPython(std::string&& inValue) noexcept;
-
-	const std::string& python3() const noexcept;
-	void setPython3(std::string&& inValue) noexcept;
-
-	const std::string& ruby() const noexcept;
-	void setRuby(std::string&& inValue) noexcept;
 
 	const std::string& sample() const noexcept;
 	void setSample(std::string&& inValue) noexcept;
@@ -120,8 +100,6 @@ struct AncillaryTools
 
 	// Commands
 
-	bool installHomebrewPackage(const std::string& inPackage) const;
-
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;
@@ -145,7 +123,6 @@ private:
 	std::string m_chalet;
 
 	std::string m_bash;
-	std::string m_brew;
 	std::string m_codesign;
 	std::string m_commandPrompt;
 	std::string m_git;
@@ -184,7 +161,6 @@ private:
 	uint m_xcodegenVersionMinor = 0;
 	uint m_xcodegenVersionPatch = 0;
 
-	bool m_brewAvailable = false;
 	bool m_bashAvailable = false;
 };
 }

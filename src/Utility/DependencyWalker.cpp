@@ -72,7 +72,7 @@ typedef struct
 }
 #endif
 
-#ifdef __clang__
+#if !defined(CHALET_WIN32) && defined(__clang__)
 	#pragma clang diagnostic push
 	#pragma clang diagnostic ignored "-Wcast-align"
 #endif
@@ -97,7 +97,8 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 {
 	if (Commands::pathExists(inFile))
 	{
-		return String::endsWith({ ".dll", ".DLL", ".exe", ".EXE" }, inFile);
+		auto lower = String::toLowerCase(inFile);
+		return String::endsWith({ ".dll", ".exe" }, lower);
 	}
 
 	return false;
@@ -279,6 +280,6 @@ std::vector<char> DependencyWalker::readAllBytes(const std::string& inFile)
 // #endif
 }
 
-#ifdef __clang__
+#if !defined(CHALET_WIN32) && defined(__clang__)
 	#pragma clang diagnostic pop
 #endif

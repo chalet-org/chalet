@@ -386,8 +386,6 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	m_impl->prototype.cache.file().checkIfThemeChanged();
-
 	m_impl->prototype.cache.saveSettings(SettingsType::Local);
 	m_impl->prototype.cache.saveSettings(SettingsType::Global);
 }
