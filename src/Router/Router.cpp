@@ -77,8 +77,6 @@ bool Router::run()
 
 	if (route != Route::Init && !isSettings)
 	{
-		Output::lineBreak();
-
 		prototype = std::make_unique<StatePrototype>(m_inputs);
 
 		if (!prototype->initialize())

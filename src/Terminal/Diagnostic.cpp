@@ -254,8 +254,6 @@ void Diagnostic::printErrors()
 		}
 	}
 
-	Output::lineBreak();
-
 	StringList warnings;
 	StringList errors;
 	std::reverse(state.errorList.begin(), state.errorList.end());
@@ -271,11 +269,11 @@ void Diagnostic::printErrors()
 			errors.emplace_back(std::move(err.message));
 	}
 
-	// bool hasWarnings = false;
+	bool hasWarnings = false;
 	if (warnings.size() > 0)
 	{
 		Type type = Type::Warning;
-		// Output::lineBreak();
+		Output::lineBreak();
 
 		Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
 
@@ -287,14 +285,18 @@ void Diagnostic::printErrors()
 		if (errors.size() == 0)
 			Output::lineBreak();
 
-		// hasWarnings = true;
+		hasWarnings = true;
 	}
 
-	if (errors.size() > 0)
+	if (errors.size() == 1)
+	{
+		Diagnostic::fatalError(errors.front());
+	}
+	else if (errors.size() > 0)
 	{
 		Type type = Type::Error;
-		// if (!hasWarnings)
-		// 	Output::lineBreakStderr();
+		if (!hasWarnings)
+			Output::lineBreakStderr();
 
 		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledX()));
 
