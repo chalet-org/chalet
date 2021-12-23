@@ -72,9 +72,9 @@ typedef struct
 }
 #endif
 
-#if !defined(CHALET_WIN32) && defined(__clang__)
-	#pragma clang diagnostic push
-	#pragma clang diagnostic ignored "-Wcast-align"
+#if !defined(CHALET_WIN32) && defined(__GNUC__)
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wcast-align"
 #endif
 
 namespace chalet
@@ -280,6 +280,6 @@ std::vector<char> DependencyWalker::readAllBytes(const std::string& inFile)
 // #endif
 }
 
-#if !defined(CHALET_WIN32) && defined(__clang__)
-	#pragma clang diagnostic pop
+#if !defined(CHALET_WIN32) && defined(__GNUC__)
+	#pragma GCC diagnostic pop
 #endif
