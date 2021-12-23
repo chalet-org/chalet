@@ -134,52 +134,40 @@ void LinkerVisualStudioLINK::addLibDirs(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 {
-	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
-	const bool hasDynamicLinks = m_project.links().size() > 0;
+	// const bool hasStaticLinks = m_project.staticLinks().size() > 0;
+	// const bool hasDynamicLinks = m_project.links().size() > 0;
 
-	if (hasStaticLinks)
+	StringList links = m_project.links();
+	for (auto& link : m_project.staticLinks())
 	{
+		links.push_back(link);
+	}
+
+	for (auto& link : links)
+	{
+		bool found = false;
 		for (auto& target : m_state.targets)
 		{
 			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
-				if (List::contains(m_project.projectStaticLinks(), project.name()))
+				if (project.name() == link && project.isSharedLibrary())
 				{
-					List::addIfDoesNotExist(outArgList, project.outputFile());
-				}
-			}
-		}
-	}
-
-	if (hasDynamicLinks)
-	{
-		for (auto& link : m_project.links())
-		{
-			bool found = false;
-			for (auto& target : m_state.targets)
-			{
-				if (target->isSources())
-				{
-					auto& project = static_cast<const SourceTarget&>(*target);
-					if (project.name() == link && project.isSharedLibrary())
+					auto outputFile = project.outputFile();
+					if (String::endsWith(".dll", outputFile))
 					{
-						auto outputFile = project.outputFile();
-						if (String::endsWith(".dll", outputFile))
-						{
-							String::replaceAll(outputFile, ".dll", ".lib");
-							List::addIfDoesNotExist(outArgList, std::move(outputFile));
-							found = true;
-							break;
-						}
+						String::replaceAll(outputFile, ".dll", ".lib");
+						List::addIfDoesNotExist(outArgList, std::move(outputFile));
+						found = true;
+						break;
 					}
 				}
 			}
+		}
 
-			if (!found)
-			{
-				List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
-			}
+		if (!found)
+		{
+			List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
 		}
 	}
 

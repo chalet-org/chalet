@@ -498,7 +498,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 				if (!m_inputs.launchProfiler().has_value())
 					m_inputs.setLaunchProfiler(value.get<bool>());
 			}
-			else if (String::equals(Keys::OptionsLaunchProfiler, key))
+			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 			{
 				if (!m_inputs.generateCompileCommands().has_value())
 					m_inputs.setGenerateCompileCommands(value.get<bool>());
