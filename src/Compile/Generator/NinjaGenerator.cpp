@@ -345,8 +345,8 @@ std::string NinjaGenerator::getLinkRule()
 
 	if (!linkerCommand.empty())
 	{
-		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-		const std::string keyword = m_project->isStaticLibrary() ? "archive" : "link";
+		const char* description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+		const char* keyword = m_project->isStaticLibrary() ? "archive" : "link";
 
 		ret = fmt::format(R"ninja(
 rule {keyword}_{hash}

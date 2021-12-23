@@ -116,16 +116,6 @@ private:
 
 	std::string m_routeString;
 
-	const std::string kArgRunTarget;
-	const std::string kArgRemainingArguments;
-	const std::string kArgInitName;
-	const std::string kArgInitPath;
-	const std::string kArgSettingsKey;
-	const std::string kArgSettingsKeyQuery;
-	const std::string kArgSettingsValue;
-	const std::string kArgQueryType;
-	const std::string kArgQueryData;
-
 	Route m_route;
 };
 }

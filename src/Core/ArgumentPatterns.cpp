@@ -16,6 +16,23 @@
 
 namespace chalet
 {
+#define CH_STR(x) static constexpr const char x[]
+
+namespace Arg
+{
+CH_STR(RunTarget) = "[<runTarget>]";
+CH_STR(RemainingArguments) = "[ARG...]";
+// CH_STR(InitName) = "<name>";
+CH_STR(InitPath) = "<path>";
+CH_STR(SettingsKey) = "<key>";
+CH_STR(SettingsKeyQuery) = "<query>";
+CH_STR(SettingsValue) = "<value>";
+CH_STR(QueryType) = "<type>";
+// CH_STR(QueryData) = "<data>";
+}
+
+#undef CH_STR
+
 /*****************************************************************************/
 MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
 	id(inId),
@@ -76,16 +93,7 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ "unset", Route::SettingsUnset },
 		{ "query", Route::Query },
 		{ "colortest", Route::ColorTest },
-	}),
-	kArgRunTarget("[<runTarget>]"),
-	kArgRemainingArguments("[ARG...]"),
-	kArgInitName("<name>"),
-	kArgInitPath("<path>"),
-	kArgSettingsKey("<key>"),
-	kArgSettingsKeyQuery("<query>"),
-	kArgSettingsValue("<value>"),
-	kArgQueryType("<type>"),
-	kArgQueryData("<data>")
+	})
 {
 #if defined(CHALET_DEBUG)
 	m_subCommands.emplace(Route::Debug, &ArgumentPatterns::populateDebugArguments);
@@ -436,8 +444,8 @@ std::string ArgumentPatterns::getHelp()
 
 	if (m_route == Route::SettingsGetKeys)
 	{
-		String::replaceAll(ret, fmt::format("{} {}", kArgSettingsKeyQuery, kArgRemainingArguments), kArgSettingsKeyQuery);
-		String::replaceAll(ret, fmt::format("\n{}     	RMV", kArgRemainingArguments), "");
+		String::replaceAll(ret, fmt::format("{} {}", Arg::SettingsKeyQuery, Arg::RemainingArguments), Arg::SettingsKeyQuery);
+		String::replaceAll(ret, fmt::format("\n{}     	RMV", Arg::RemainingArguments), "");
 	}
 
 	return ret;
@@ -557,13 +565,13 @@ void ArgumentPatterns::populateMainArguments()
    set {key} {value}
    unset {key}
    query {queryType})",
-		fmt::arg("runTarget", kArgRunTarget),
-		fmt::arg("runArgs", kArgRemainingArguments),
-		fmt::arg("key", kArgSettingsKey),
-		fmt::arg("keyQuery", kArgSettingsKeyQuery),
-		fmt::arg("value", kArgSettingsValue),
-		fmt::arg("path", kArgInitPath),
-		fmt::arg("queryType", kArgQueryType));
+		fmt::arg("runTarget", Arg::RunTarget),
+		fmt::arg("runArgs", Arg::RemainingArguments),
+		fmt::arg("key", Arg::SettingsKey),
+		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
+		fmt::arg("value", Arg::SettingsValue),
+		fmt::arg("path", Arg::InitPath),
+		fmt::arg("queryType", Arg::QueryType));
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));
@@ -713,14 +721,14 @@ void ArgumentPatterns::addBuildConfigurationArg()
 /*****************************************************************************/
 void ArgumentPatterns::addRunTargetArg()
 {
-	addStringArgument(ArgumentIdentifier::RunTargetName, kArgRunTarget.c_str(), std::string())
+	addStringArgument(ArgumentIdentifier::RunTargetName, Arg::RunTarget, std::string())
 		.help("An executable or script target to run");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRunArgumentsArg()
 {
-	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, kArgRemainingArguments.c_str())
+	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, Arg::RemainingArguments)
 		.help("The arguments to pass to the run target");
 }
 
@@ -850,7 +858,7 @@ void ArgumentPatterns::populateInitArguments()
 	addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template")
 		.help(fmt::format("The project template to use during initialization (ex: {})", String::join(templates, ", ")));
 
-	addStringArgument(ArgumentIdentifier::InitPath, kArgInitPath.c_str(), ".")
+	addStringArgument(ArgumentIdentifier::InitPath, Arg::InitPath, ".")
 		.help("The path of the project to initialize")
 		.required();
 }
@@ -861,7 +869,7 @@ void ArgumentPatterns::populateSettingsGetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str(), std::string())
+	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey, std::string())
 		.help("The config key to get");
 }
 
@@ -871,10 +879,10 @@ void ArgumentPatterns::populateSettingsGetKeysArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKeyQuery.c_str(), std::string())
+	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKeyQuery, std::string())
 		.help("The config key to query for");
 
-	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, kArgRemainingArguments.c_str())
+	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Arg::RemainingArguments)
 		.help("RMV");
 }
 
@@ -884,11 +892,11 @@ void ArgumentPatterns::populateSettingsSetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str())
+	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey)
 		.help("The config key to change")
 		.required();
 
-	addStringArgument(ArgumentIdentifier::SettingsValue, kArgSettingsValue.c_str(), std::string())
+	addStringArgument(ArgumentIdentifier::SettingsValue, Arg::SettingsValue, std::string())
 		.help("The config value to change to");
 }
 
@@ -898,7 +906,7 @@ void ArgumentPatterns::populateSettingsUnsetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, kArgSettingsKey.c_str())
+	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey)
 		.help("The config key to remove")
 		.required();
 }
@@ -907,11 +915,11 @@ void ArgumentPatterns::populateSettingsUnsetArguments()
 void ArgumentPatterns::populateQueryArguments()
 {
 	auto listNames = m_inputs.getCliQueryOptions();
-	addStringArgument(ArgumentIdentifier::QueryType, kArgQueryType.c_str())
+	addStringArgument(ArgumentIdentifier::QueryType, Arg::QueryType)
 		.help(fmt::format("The data type to query ({})", String::join(listNames, ", ")))
 		.required();
 
-	addRemainingArguments(ArgumentIdentifier::QueryDataRemainingArgs, kArgRemainingArguments.c_str())
+	addRemainingArguments(ArgumentIdentifier::QueryDataRemainingArgs, Arg::RemainingArguments)
 		.help("Data to provide to the query (architecture: <toolchain-name>)");
 }
 
