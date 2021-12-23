@@ -417,7 +417,7 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const CxxSpecia
 			{
 				String::replaceAll(ret, "20", "2a");
 			}
-			else if (String::equals("17", yearOnly) && (isGcc && m_versionMajorMinor < 730))
+			else if (String::equals("17", yearOnly) && (isGcc && m_versionMajorMinor < 703))
 			{
 				String::replaceAll(ret, "17", "1z");
 			}

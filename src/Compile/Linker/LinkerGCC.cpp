@@ -387,7 +387,7 @@ void LinkerGCC::addEntryPoint(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addCppFilesystem(StringList& outArgList) const
 {
-	if (m_project.cppFilesystem() && m_versionMajorMinor >= 710 && m_versionMajorMinor < 910)
+	if (m_project.cppFilesystem() && m_versionMajorMinor >= 701 && m_versionMajorMinor < 901)
 	{
 		std::string option{ "-lstdc++-fs" };
 		// if (isFlagSupported(option))
