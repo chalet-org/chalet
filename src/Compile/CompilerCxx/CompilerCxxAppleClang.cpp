@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -117,7 +118,7 @@ bool CompilerCxxAppleClang::addMultiArchOptionsToCommand(StringList& outArgList,
 	}
 	else
 	{
-		for (auto& arch : inState.info.universalArches())
+		for (auto& arch : inState.inputs.universalArches())
 		{
 			outArgList.emplace_back("-arch");
 			outArgList.emplace_back(arch);
@@ -201,7 +202,7 @@ void CompilerCxxAppleClang::addPchInclude(StringList& outArgList) const
 			outArgList.emplace_back("-include");
 			outArgList.emplace_back(std::move(filename));
 
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto pchPath = fmt::format("{}_{}", baseFolder, arch);
 

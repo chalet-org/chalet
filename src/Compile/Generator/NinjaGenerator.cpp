@@ -6,6 +6,7 @@
 #include "Compile/Generator/NinjaGenerator.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -198,7 +199,7 @@ std::string NinjaGenerator::getPchRule()
 			auto baseFolder = String::getPathFolder(object);
 			auto filename = String::getPathFilename(object);
 
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 
@@ -382,7 +383,7 @@ std::string NinjaGenerator::getPchBuildRule(const std::string& pchTarget)
 			auto filename = String::getPathFilename(pchTarget);
 
 			std::string lastArch;
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto dependencies = pch;
@@ -445,7 +446,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		{
 			auto baseFolder = String::getPathFolder(pchTarget);
 			auto filename = String::getPathFilename(pchTarget);
-			auto& lastArch = m_state.info.universalArches().back();
+			auto& lastArch = m_state.inputs.universalArches().back();
 			pches.push_back(fmt::format("{}_{}/{}", baseFolder, lastArch, filename));
 		}
 		else

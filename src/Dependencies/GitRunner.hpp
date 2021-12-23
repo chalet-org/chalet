@@ -11,11 +11,10 @@ namespace chalet
 struct StatePrototype;
 struct GitDependency;
 class ExternalDependencyCache;
-struct CommandLineInputs;
 
 struct GitRunner
 {
-	explicit GitRunner(StatePrototype& inPrototype, const CommandLineInputs& inInputs, const GitDependency& inDependency);
+	explicit GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency);
 
 	bool run(const bool inDoNotUpdate);
 
@@ -36,7 +35,6 @@ private:
 	const std::string& getCheckoutTo();
 
 	StatePrototype& m_prototype;
-	const CommandLineInputs& m_inputs;
 	const GitDependency& m_dependency;
 	ExternalDependencyCache& m_dependencyCache;
 

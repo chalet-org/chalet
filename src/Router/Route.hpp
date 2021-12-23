@@ -20,6 +20,7 @@ enum class Route : ushort
 	Clean,
 	Configure,
 	Init,
+	Export,
 	SettingsGet,
 	SettingsGetKeys,
 	SettingsSet,

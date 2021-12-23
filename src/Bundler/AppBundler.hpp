@@ -16,14 +16,13 @@ struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
-struct CommandLineInputs;
 struct StatePrototype;
 class BinaryDependencyMap;
 struct IAppBundler;
 
 struct AppBundler
 {
-	explicit AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
+	explicit AppBundler(StatePrototype& inPrototype);
 	CHALET_DISALLOW_COPY_MOVE(AppBundler);
 	~AppBundler();
 
@@ -53,7 +52,6 @@ private:
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);
 	BuildState* getBuildState(const std::string& inBuildConfiguration) const;
 
-	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 
 	HeapDictionary<BuildState> m_states;

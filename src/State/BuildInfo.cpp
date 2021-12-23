@@ -16,23 +16,22 @@ namespace chalet
 {
 /*****************************************************************************/
 BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
-	m_inputs(inInputs),
 	m_processorCount(std::thread::hardware_concurrency())
 {
-	m_hostArchitecture.set(m_inputs.hostArchitecture());
-	setTargetArchitecture(m_inputs.targetArchitecture());
+	m_hostArchitecture.set(inInputs.hostArchitecture());
+	setTargetArchitecture(inInputs.targetArchitecture());
 
-	if (m_inputs.maxJobs().has_value())
-		m_maxJobs = *m_inputs.maxJobs();
+	if (inInputs.maxJobs().has_value())
+		m_maxJobs = *inInputs.maxJobs();
 
-	if (m_inputs.dumpAssembly().has_value())
-		m_dumpAssembly = *m_inputs.dumpAssembly();
+	if (inInputs.dumpAssembly().has_value())
+		m_dumpAssembly = *inInputs.dumpAssembly();
 
-	if (m_inputs.generateCompileCommands().has_value())
-		m_generateCompileCommands = *m_inputs.generateCompileCommands();
+	if (inInputs.generateCompileCommands().has_value())
+		m_generateCompileCommands = *inInputs.generateCompileCommands();
 
-	if (m_inputs.launchProfiler().has_value())
-		m_launchProfiler = *m_inputs.launchProfiler();
+	if (inInputs.launchProfiler().has_value())
+		m_launchProfiler = *inInputs.launchProfiler();
 }
 
 /*****************************************************************************/
@@ -129,18 +128,6 @@ void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 	{
 		m_targetArchitecture.set(inValue);
 	}
-}
-
-/*****************************************************************************/
-const StringList& BuildInfo::archOptions() const noexcept
-{
-	return m_inputs.archOptions();
-}
-
-/*****************************************************************************/
-const StringList& BuildInfo::universalArches() const noexcept
-{
-	return m_inputs.universalArches();
 }
 
 /*****************************************************************************/

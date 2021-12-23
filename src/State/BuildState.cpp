@@ -60,7 +60,7 @@ struct BuildState::Impl
 };
 
 /*****************************************************************************/
-BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype) :
+BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inPrototype) :
 	m_impl(std::make_unique<Impl>(std::move(inInputs), inPrototype, *this)),
 	tools(m_impl->prototype.tools),
 	cache(m_impl->prototype.cache),

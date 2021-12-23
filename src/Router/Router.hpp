@@ -25,6 +25,8 @@ public:
 	bool run();
 
 private:
+	bool runRoutesThatRequireState(const Route inRoute);
+
 	bool routeConfigure(BuildState& inState);
 	bool routeBundle(StatePrototype& inPrototype);
 	bool routeInit();

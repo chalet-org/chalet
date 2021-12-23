@@ -20,9 +20,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitRunner::GitRunner(StatePrototype& inPrototype, const CommandLineInputs& inInputs, const GitDependency& inDependency) :
+GitRunner::GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency) :
 	m_prototype(inPrototype),
-	m_inputs(inInputs),
 	m_dependency(inDependency),
 	m_dependencyCache(m_prototype.cache.file().externalDependencies()),
 	m_repository(m_dependency.repository()),
@@ -142,8 +141,8 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 	if (m_submodules)
 	{
 		uint maxJobs = 0;
-		if (m_inputs.maxJobs().has_value())
-			maxJobs = *m_inputs.maxJobs();
+		if (m_prototype.inputs().maxJobs().has_value())
+			maxJobs = *m_prototype.inputs().maxJobs();
 		else
 			maxJobs = std::thread::hardware_concurrency();
 

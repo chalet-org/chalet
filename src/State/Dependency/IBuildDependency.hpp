@@ -12,7 +12,6 @@ namespace chalet
 {
 struct IBuildDependency;
 struct StatePrototype;
-struct CommandLineInputs;
 using BuildDependency = Unique<IBuildDependency>;
 
 struct IBuildDependency
@@ -20,7 +19,7 @@ struct IBuildDependency
 	explicit IBuildDependency(const StatePrototype& inPrototype, const BuildDependencyType inType);
 	virtual ~IBuildDependency() = default;
 
-	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const CommandLineInputs& inInputs, const StatePrototype& inPrototype);
+	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const StatePrototype& inPrototype);
 
 	virtual bool validate() = 0;
 

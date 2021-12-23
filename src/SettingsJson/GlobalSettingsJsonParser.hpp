@@ -10,14 +10,13 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
 struct JsonFile;
 struct StatePrototype;
 struct GlobalSettingsState;
 
 struct GlobalSettingsJsonParser
 {
-	explicit GlobalSettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit GlobalSettingsJsonParser(StatePrototype& inPrototype, JsonFile& inJsonFile);
 
 	bool serialize(GlobalSettingsState& outState);
 
@@ -33,7 +32,6 @@ private:
 	bool parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState);
 #endif
 
-	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 	JsonFile& m_jsonFile;
 };

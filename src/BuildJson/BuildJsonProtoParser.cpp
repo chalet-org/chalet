@@ -32,8 +32,7 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-BuildJsonProtoParser::BuildJsonProtoParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
-	m_inputs(inInputs),
+BuildJsonProtoParser::BuildJsonProtoParser(StatePrototype& inPrototype) :
 	m_prototype(inPrototype),
 	m_chaletJson(inPrototype.chaletJson()),
 	m_filename(inPrototype.filename()),
@@ -64,7 +63,7 @@ bool BuildJsonProtoParser::validateAgainstSchema() const
 	SchemaBuildJson schemaBuilder;
 	Json buildJsonSchema = schemaBuilder.get();
 
-	if (m_inputs.saveSchemaToFile())
+	if (m_prototype.inputs().saveSchemaToFile())
 	{
 		JsonFile::saveToFile(buildJsonSchema, "schema/chalet.schema.json");
 	}
@@ -94,7 +93,7 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) con
 	if (!parseExternalDependencies(inNode))
 		return false;
 
-	if (m_inputs.route() != Route::Configure)
+	if (m_prototype.inputs().route() != Route::Configure)
 	{
 		if (!parseDistribution(inNode))
 			return false;
@@ -728,7 +727,7 @@ bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
 	BuildDependencyType type = BuildDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = IBuildDependency::make(type, m_inputs, m_prototype);
+		auto dependency = IBuildDependency::make(type, m_prototype);
 		dependency->setName(name);
 
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))

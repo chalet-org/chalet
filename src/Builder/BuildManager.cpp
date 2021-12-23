@@ -370,10 +370,10 @@ void BuildManager::printBuildInformation()
 	{
 		arch += fmt::format(" ({})", String::join(m_state.inputs.archOptions(), ','));
 	}
-	if (m_state.info.universalArches().empty())
+	if (m_state.inputs.universalArches().empty())
 		Diagnostic::info("Target Architecture: {}", arch);
 	else
-		Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.info.universalArches(), " / "));
+		Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.inputs.universalArches(), " / "));
 
 	const auto strategy = getBuildStrategyName();
 	Diagnostic::info("Strategy: {}", strategy);

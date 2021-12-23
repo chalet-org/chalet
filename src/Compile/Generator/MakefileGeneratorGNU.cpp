@@ -5,6 +5,7 @@
 
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -212,7 +213,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 			auto filename = String::getPathFilename(object);
 
 			std::string lastArch;
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto dependencies = source;
@@ -354,7 +355,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 			{
 				auto baseFolder = String::getPathFolder(pchTarget);
 				auto filename = String::getPathFilename(pchTarget);
-				auto& lastArch = m_state.info.universalArches().back();
+				auto& lastArch = m_state.inputs.universalArches().back();
 				pch = fmt::format("{}_{}/{}", baseFolder, lastArch, filename);
 			}
 			else

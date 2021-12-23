@@ -183,7 +183,7 @@ void StatePrototype::saveCaches()
 /*****************************************************************************/
 bool StatePrototype::runDependencyManager()
 {
-	DependencyManager depMgr(m_inputs, *this);
+	DependencyManager depMgr(*this);
 	if (!depMgr.run())
 	{
 		Diagnostic::error("There was an error creating the dependencies.");
@@ -311,6 +311,12 @@ bool StatePrototype::validateBuildFile()
 }
 
 /*****************************************************************************/
+const CommandLineInputs& StatePrototype::inputs() const noexcept
+{
+	return m_inputs;
+}
+
+/*****************************************************************************/
 JsonFile& StatePrototype::chaletJson() noexcept
 {
 	return m_chaletJson;
@@ -371,7 +377,7 @@ bool StatePrototype::parseEnvFile()
 bool StatePrototype::parseGlobalSettingsJson()
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
-	GlobalSettingsJsonParser parser(m_inputs, *this, settingsFile);
+	GlobalSettingsJsonParser parser(*this, settingsFile);
 	return parser.serialize(m_globalSettingsState);
 }
 
@@ -386,7 +392,7 @@ bool StatePrototype::parseLocalSettingsJson()
 /*****************************************************************************/
 bool StatePrototype::parseBuildJson()
 {
-	BuildJsonProtoParser parser(m_inputs, *this);
+	BuildJsonProtoParser parser(*this);
 	return parser.serialize();
 }
 

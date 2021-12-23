@@ -6,6 +6,7 @@
 #include "Builder/CmakeBuilder.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -357,9 +358,9 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 #elif defined(CHALET_MACOS)
 	if (m_state.environment->isAppleClang() && !isDefined["CMAKE_OSX_ARCHITECTURES"])
 	{
-		if (!m_state.info.universalArches().empty())
+		if (!m_state.inputs.universalArches().empty())
 		{
-			auto value = String::join(m_state.info.universalArches(), ';');
+			auto value = String::join(m_state.inputs.universalArches(), ';');
 			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(value));
 		}
 		else

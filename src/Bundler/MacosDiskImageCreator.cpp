@@ -17,8 +17,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-MacosDiskImageCreator::MacosDiskImageCreator(const CommandLineInputs& inInputs, const StatePrototype& inPrototype) :
-	m_inputs(inInputs),
+MacosDiskImageCreator::MacosDiskImageCreator(const StatePrototype& inPrototype) :
 	m_prototype(inPrototype)
 {
 }
@@ -29,7 +28,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 #if defined(CHALET_MACOS)
 	m_diskName = String::getPathFolderBaseName(inDiskImage.name());
 
-	const auto& distributionDirectory = m_inputs.distributionDirectory();
+	const auto& distributionDirectory = m_prototype.inputs().distributionDirectory();
 
 	auto& hdiutil = m_prototype.tools.hdiutil();
 	auto& tiffutil = m_prototype.tools.tiffutil();

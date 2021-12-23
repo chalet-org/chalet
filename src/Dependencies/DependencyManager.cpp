@@ -21,8 +21,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyManager::DependencyManager(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
-	m_inputs(inInputs),
+DependencyManager::DependencyManager(StatePrototype& inPrototype) :
 	m_prototype(inPrototype)
 {
 }
@@ -30,7 +29,7 @@ DependencyManager::DependencyManager(const CommandLineInputs& inInputs, StatePro
 /*****************************************************************************/
 bool DependencyManager::run()
 {
-	m_prototype.cache.file().loadExternalDependencies(m_inputs.externalDirectory());
+	m_prototype.cache.file().loadExternalDependencies(m_prototype.inputs().externalDirectory());
 
 	// Output::lineBreak();
 
@@ -68,9 +67,9 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 	if (m_prototype.tools.git().empty())
 		return true;
 
-	bool doNotUpdate = m_inputs.route() != Route::Configure;
+	bool doNotUpdate = m_prototype.inputs().route() != Route::Configure;
 
-	GitRunner git(m_prototype, m_inputs, inDependency);
+	GitRunner git(m_prototype, inDependency);
 	if (!git.run(doNotUpdate))
 	{
 		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
@@ -102,7 +101,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 {
 	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
 
-	const auto& externalDir = m_inputs.externalDirectory();
+	const auto& externalDir = m_prototype.inputs().externalDirectory();
 	for (auto& it : inList)
 	{
 		if (Commands::pathExists(it))
@@ -126,7 +125,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 /*****************************************************************************/
 bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 {
-	const auto& externalDir = m_inputs.externalDirectory();
+	const auto& externalDir = m_prototype.inputs().externalDirectory();
 	if (Commands::pathIsEmpty(externalDir, {}, true))
 	{
 		if (!Commands::remove(externalDir))

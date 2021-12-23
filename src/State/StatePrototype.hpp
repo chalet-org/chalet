@@ -31,6 +31,7 @@ struct StatePrototype
 
 	bool initializeForList();
 
+	const CommandLineInputs& inputs() const noexcept;
 	JsonFile& chaletJson() noexcept;
 	const JsonFile& chaletJson() const noexcept;
 	const std::string& filename() const noexcept;

@@ -31,9 +31,6 @@ struct BuildInfo
 	const std::string& targetArchitectureTripleSuffix() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 
-	const StringList& archOptions() const noexcept;
-	const StringList& universalArches() const noexcept;
-
 	const std::string& osTarget() const noexcept;
 	const std::string& osTargetVersion() const noexcept;
 
@@ -43,8 +40,6 @@ struct BuildInfo
 	bool launchProfiler() const noexcept;
 
 private:
-	const CommandLineInputs& m_inputs;
-
 	std::string m_buildConfiguration;
 	std::string m_osTarget;
 	std::string m_osTargetVersion;

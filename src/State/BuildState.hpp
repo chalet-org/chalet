@@ -29,7 +29,7 @@ class BuildState
 	Unique<Impl> m_impl;
 
 public:
-	explicit BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype);
+	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inPrototype);
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 

@@ -10,11 +10,9 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
-
 struct GitDependency final : public IBuildDependency
 {
-	explicit GitDependency(const CommandLineInputs& inInputs, const StatePrototype& inPrototype);
+	explicit GitDependency(const StatePrototype& inPrototype);
 
 	virtual bool validate() final;
 
@@ -37,8 +35,6 @@ struct GitDependency final : public IBuildDependency
 
 private:
 	bool parseDestination();
-
-	const CommandLineInputs& m_inputs;
 
 	std::string m_repository;
 	std::string m_branch;

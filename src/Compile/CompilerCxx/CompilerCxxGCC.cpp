@@ -7,6 +7,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -63,7 +64,7 @@ bool CompilerCxxGCC::initialize()
 			auto baseFolder = String::getPathFolder(pchIntermediate);
 			auto filename = String::getPathFilename(pchIntermediate);
 
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outFile = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 

@@ -19,8 +19,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-QueryController::QueryController(const CommandLineInputs& inInputs, const StatePrototype& inPrototype) :
-	m_inputs(inInputs),
+QueryController::QueryController(const StatePrototype& inPrototype) :
 	m_prototype(inPrototype)
 {
 }
@@ -28,7 +27,7 @@ QueryController::QueryController(const CommandLineInputs& inInputs, const StateP
 /*****************************************************************************/
 bool QueryController::printListOfRequestedType()
 {
-	QueryOption query = m_inputs.queryOption();
+	QueryOption query = m_prototype.inputs().queryOption();
 	if (query == QueryOption::None)
 		return false;
 
@@ -36,7 +35,7 @@ bool QueryController::printListOfRequestedType()
 	switch (query)
 	{
 		case QueryOption::Commands:
-			output = m_inputs.commandList();
+			output = m_prototype.inputs().commandList();
 			break;
 
 		case QueryOption::Configurations:
@@ -44,7 +43,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::ToolchainPresets:
-			output = m_inputs.getToolchainPresets();
+			output = m_prototype.inputs().getToolchainPresets();
 			break;
 
 		case QueryOption::UserToolchains:
@@ -56,7 +55,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::QueryNames:
-			output = m_inputs.getCliQueryOptions();
+			output = m_prototype.inputs().getCliQueryOptions();
 			break;
 
 		case QueryOption::ThemeNames:
@@ -80,7 +79,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::AllToolchains: {
-			StringList presets = m_inputs.getToolchainPresets();
+			StringList presets = m_prototype.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
 			output = List::combine(std::move(userToolchains), std::move(presets));
 			break;
@@ -207,7 +206,7 @@ StringList QueryController::getUserToolchainList() const
 /*****************************************************************************/
 StringList QueryController::getArchitectures() const
 {
-	const auto& queryData = m_inputs.queryData();
+	const auto& queryData = m_prototype.inputs().queryData();
 	if (!queryData.empty())
 	{
 		const auto& toolchain = queryData.front();
@@ -260,7 +259,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 #else
 		return {
 			std::move(kAuto),
-			m_inputs.hostArchitecture(),
+			m_prototype.inputs().hostArchitecture(),
 		};
 #endif
 	}
@@ -337,7 +336,7 @@ StringList QueryController::getCurrentArchitecture() const
 
 	if (ret.empty())
 	{
-		ret.emplace_back(m_inputs.defaultArchPreset());
+		ret.emplace_back(m_prototype.inputs().defaultArchPreset());
 	}
 
 	return ret;
@@ -405,7 +404,7 @@ StringList QueryController::getCurrentToolchain() const
 
 	if (ret.empty())
 	{
-		ret.emplace_back(m_inputs.defaultToolchainPreset());
+		ret.emplace_back(m_prototype.inputs().defaultToolchainPreset());
 	}
 
 	return ret;
@@ -500,7 +499,7 @@ StringList QueryController::getSettingsJsonState() const
 	StringList ret;
 
 	Json output = Json::object();
-	auto toolchainPresets = m_inputs.getToolchainPresets();
+	auto toolchainPresets = m_prototype.inputs().getToolchainPresets();
 	auto userToolchains = getUserToolchainList();
 	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
 	output["toolchainPresets"] = std::move(toolchainPresets);

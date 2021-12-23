@@ -8,6 +8,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -174,7 +175,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 			auto baseFolder = String::getPathFolder(pchTarget);
 			auto filename = String::getPathFilename(pchTarget);
 
-			for (auto& arch : m_state.info.universalArches())
+			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);

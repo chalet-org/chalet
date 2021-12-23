@@ -49,109 +49,102 @@ bool Router::run()
 		return false;
 
 	Route route = m_inputs.route();
-	if (route == Route::Query)
-		return routeQuery();
-	else if (route == Route::ColorTest)
-		return routeColorTest();
-
 	if (route == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(route) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
-		Diagnostic::error("Command not recognized.");
+		Diagnostic::fatalError("Command not recognized.");
 		return false;
 	}
 
-	if (m_inputs.generator() == IdeType::Unknown)
+	// Routes that don't require state
+	switch (route)
+	{
+		case Route::Query:
+			return routeQuery();
+
+		case Route::ColorTest:
+			return routeColorTest();
+
+		case Route::Init:
+			return routeInit();
+
+		case Route::SettingsGet:
+		case Route::SettingsSet:
+		case Route::SettingsUnset:
+		case Route::SettingsGetKeys:
+			return routeSettings(route);
+
+#if defined(CHALET_DEBUG)
+		case Route::Debug:
+			return routeDebug();
+#endif
+
+		default: break;
+	}
+
+	if (route == Route::Export && m_inputs.generator() == IdeType::Unknown)
 	{
 		Diagnostic::error("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.generatorRaw());
 		return false;
 	}
 
-	Unique<StatePrototype> prototype;
+	return runRoutesThatRequireState(route);
+}
+
+/*****************************************************************************/
+bool Router::runRoutesThatRequireState(const Route inRoute)
+{
+	auto prototype = std::make_unique<StatePrototype>(m_inputs);
 	Unique<BuildState> buildState;
 
-	const bool isSettings = route == Route::SettingsGet
-		|| route == Route::SettingsSet
-		|| route == Route::SettingsUnset
-		|| route == Route::SettingsGetKeys;
+	if (!prototype->initialize())
+		return false;
 
-	if (route != Route::Init && !isSettings)
+	if (inRoute != Route::Bundle)
 	{
-		prototype = std::make_unique<StatePrototype>(m_inputs);
-
-		if (!prototype->initialize())
+		buildState = std::make_unique<BuildState>(prototype->inputs(), *prototype);
+		if (!buildState->initialize())
 			return false;
-
-		if (route != Route::Bundle)
-		{
-			chalet_assert(prototype != nullptr, "");
-			auto inputs = m_inputs;
-			buildState = std::make_unique<BuildState>(std::move(inputs), *prototype);
-			if (!buildState->initialize())
-				return false;
-		}
-	}
-
-	if (m_inputs.generator() != IdeType::None)
-	{
-		LOG(fmt::format("generator: '{}'", m_inputs.generatorRaw()));
 	}
 
 	bool result = false;
-
-	if (m_inputs.generator() == IdeType::XCode)
+	switch (inRoute)
 	{
-		chalet_assert(buildState != nullptr, "");
-		result = routeXcodeGenTest(*buildState);
-	}
-	else
-	{
-		switch (route)
-		{
-#if defined(CHALET_DEBUG)
-			case Route::Debug: {
-				result = routeDebug();
-				break;
-			}
-#endif
-			case Route::Bundle: {
-				chalet_assert(prototype != nullptr, "");
-				result = routeBundle(*prototype);
-				break;
-			}
-
-			case Route::Configure: {
-				chalet_assert(buildState != nullptr, "");
-				result = routeConfigure(*buildState);
-				break;
-			}
-
-			case Route::Init: {
-				result = routeInit();
-				break;
-			}
-
-			case Route::SettingsGet:
-			case Route::SettingsSet:
-			case Route::SettingsUnset:
-			case Route::SettingsGetKeys: {
-				result = routeSettings(route);
-				break;
-			}
-
-			case Route::BuildRun:
-			case Route::Build:
-			case Route::Rebuild:
-			case Route::Run:
-			case Route::Clean: {
-				chalet_assert(buildState != nullptr, "");
-				result = buildState->doBuild();
-				break;
-			}
-
-			default:
-				break;
+		case Route::Bundle: {
+			result = routeBundle(*prototype);
+			break;
 		}
+
+		case Route::Configure: {
+			chalet_assert(buildState != nullptr, "");
+			result = routeConfigure(*buildState);
+			break;
+		}
+
+		case Route::BuildRun:
+		case Route::Build:
+		case Route::Rebuild:
+		case Route::Run:
+		case Route::Clean: {
+			chalet_assert(buildState != nullptr, "");
+			result = buildState->doBuild();
+			break;
+		}
+
+		case Route::Export: {
+			chalet_assert(buildState != nullptr, "");
+
+			LOG(fmt::format("generator: '{}'", m_inputs.generatorRaw()));
+
+			if (m_inputs.generator() == IdeType::XCode)
+			{
+				result = routeXcodeGenTest(*buildState);
+			}
+			break;
+		}
+
+		default:
+			break;
 	}
 
 	if (prototype != nullptr)
@@ -196,7 +189,7 @@ bool Router::routeBundle(StatePrototype& inPrototype)
 		return false;
 	}*/
 
-	AppBundler bundler(m_inputs, inPrototype);
+	AppBundler bundler(inPrototype);
 
 	if (!bundler.runBuilds())
 		return false;
@@ -260,7 +253,7 @@ bool Router::routeQuery()
 	if (!prototype.initializeForList())
 		return false;
 
-	QueryController query(m_inputs, prototype);
+	QueryController query(prototype);
 	return query.printListOfRequestedType();
 }
 

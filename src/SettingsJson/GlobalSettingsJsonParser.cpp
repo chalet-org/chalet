@@ -18,12 +18,11 @@
 namespace chalet
 {
 /*****************************************************************************/
-GlobalSettingsJsonParser::GlobalSettingsJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
-	m_inputs(inInputs),
+GlobalSettingsJsonParser::GlobalSettingsJsonParser(StatePrototype& inPrototype, JsonFile& inJsonFile) :
 	m_prototype(inPrototype),
 	m_jsonFile(inJsonFile)
 {
-	UNUSED(m_inputs, m_prototype, m_jsonFile);
+	UNUSED(m_prototype, m_jsonFile);
 }
 
 /*****************************************************************************/
@@ -91,75 +90,75 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	};
 
 	assignSettingsBool(Keys::OptionsDumpAssembly, outState.dumpAssembly, [&]() {
-		return m_inputs.dumpAssembly();
+		return m_prototype.inputs().dumpAssembly();
 	});
 
 	assignSettingsBool(Keys::OptionsShowCommands, outState.showCommands, [&]() {
-		return m_inputs.showCommands();
+		return m_prototype.inputs().showCommands();
 	});
 
 	assignSettingsBool(Keys::OptionsBenchmark, outState.benchmark, [&]() {
-		return m_inputs.benchmark();
+		return m_prototype.inputs().benchmark();
 	});
 
 	assignSettingsBool(Keys::OptionsLaunchProfiler, outState.launchProfiler, [&]() {
-		return m_inputs.launchProfiler();
+		return m_prototype.inputs().launchProfiler();
 	});
 
 	assignSettingsBool(Keys::OptionsGenerateCompileCommands, outState.generateCompileCommands, [&]() {
-		return m_inputs.generateCompileCommands();
+		return m_prototype.inputs().generateCompileCommands();
 	});
 
 	{
 		uint maxJobs = outState.maxJobs == 0 ? std::thread::hardware_concurrency() : outState.maxJobs;
 		assignSettingsUint(Keys::OptionsMaxJobs, maxJobs, [&]() {
-			return m_inputs.maxJobs();
+			return m_prototype.inputs().maxJobs();
 		});
 	}
 
 	assignSettingsString(Keys::OptionsBuildConfiguration, [&]() {
-		outState.buildConfiguration = m_inputs.buildConfiguration();
+		outState.buildConfiguration = m_prototype.inputs().buildConfiguration();
 		return outState.buildConfiguration;
 	});
 
 	assignSettingsString(Keys::OptionsToolchain, [&]() {
-		m_inputs.detectToolchainPreference();
-		outState.toolchainPreference = m_inputs.toolchainPreferenceName();
+		m_prototype.inputs().detectToolchainPreference();
+		outState.toolchainPreference = m_prototype.inputs().toolchainPreferenceName();
 		return outState.toolchainPreference;
 	});
 
 	assignSettingsString(Keys::OptionsArchitecture, [&]() {
-		outState.architecturePreference = m_inputs.architectureRaw();
+		outState.architecturePreference = m_prototype.inputs().architectureRaw();
 		return outState.architecturePreference;
 	});
 
 	assignSettingsString(Keys::OptionsInputFile, [&]() {
-		outState.inputFile = m_inputs.defaultInputFile();
+		outState.inputFile = m_prototype.inputs().defaultInputFile();
 		return outState.inputFile;
 	});
 
 	assignSettingsString(Keys::OptionsEnvFile, [&]() {
-		outState.envFile = m_inputs.defaultEnvFile();
+		outState.envFile = m_prototype.inputs().defaultEnvFile();
 		return outState.envFile;
 	});
 
 	assignSettingsString(Keys::OptionsRootDirectory, [&]() {
-		outState.rootDirectory = m_inputs.rootDirectory();
+		outState.rootDirectory = m_prototype.inputs().rootDirectory();
 		return outState.rootDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsOutputDirectory, [&]() {
-		outState.outputDirectory = m_inputs.defaultOutputDirectory();
+		outState.outputDirectory = m_prototype.inputs().defaultOutputDirectory();
 		return outState.outputDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsExternalDirectory, [&]() {
-		outState.externalDirectory = m_inputs.defaultExternalDirectory();
+		outState.externalDirectory = m_prototype.inputs().defaultExternalDirectory();
 		return outState.externalDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsDistributionDirectory, [&]() {
-		outState.distributionDirectory = m_inputs.defaultDistributionDirectory();
+		outState.distributionDirectory = m_prototype.inputs().defaultDistributionDirectory();
 		return outState.distributionDirectory;
 	});
 

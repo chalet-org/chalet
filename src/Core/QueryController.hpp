@@ -10,12 +10,11 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
 struct StatePrototype;
 
 struct QueryController
 {
-	QueryController(const CommandLineInputs& inInputs, const StatePrototype& inPrototype);
+	QueryController(const StatePrototype& inPrototype);
 
 	bool printListOfRequestedType();
 
@@ -35,7 +34,6 @@ private:
 	StringList getChaletSchema() const;
 	StringList getSettingsSchema() const;
 
-	const CommandLineInputs& m_inputs;
 	const StatePrototype& m_prototype;
 
 	const Json kEmptyJson;

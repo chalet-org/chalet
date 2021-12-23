@@ -5,7 +5,6 @@
 
 #include "State/Dependency/IBuildDependency.hpp"
 
-#include "Core/CommandLineInputs.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
@@ -20,12 +19,12 @@ IBuildDependency::IBuildDependency(const StatePrototype& inPrototype, const Buil
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const CommandLineInputs& inInputs, const StatePrototype& inPrototype)
+[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const StatePrototype& inPrototype)
 {
 	switch (inType)
 	{
 		case BuildDependencyType::Git:
-			return std::make_unique<GitDependency>(inInputs, inPrototype);
+			return std::make_unique<GitDependency>(inPrototype);
 		case BuildDependencyType::SVN:
 		default:
 			break;

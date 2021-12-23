@@ -16,7 +16,6 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
 struct StatePrototype;
 struct JsonFile;
 struct GitDependency;
@@ -30,7 +29,7 @@ struct WindowsNullsoftInstallerTarget;
 
 struct BuildJsonProtoParser
 {
-	explicit BuildJsonProtoParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype);
+	explicit BuildJsonProtoParser(StatePrototype& inPrototype);
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonProtoParser);
 	~BuildJsonProtoParser();
 
@@ -63,7 +62,6 @@ private:
 
 	bool conditionIsValid(const std::string& inContent) const;
 
-	const CommandLineInputs& m_inputs;
 	StatePrototype& m_prototype;
 	JsonFile& m_chaletJson;
 	const std::string& m_filename;

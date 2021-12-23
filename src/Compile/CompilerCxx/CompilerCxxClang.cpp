@@ -6,6 +6,7 @@
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -146,7 +147,7 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);
 
-	const auto& archOptions = inState.info.archOptions();
+	const auto& archOptions = inState.inputs.archOptions();
 	if (archOptions.size() == 3) // <cpu-name>,<fpu-name>,<fabi>
 	{
 		outArgList.emplace_back(fmt::format("-mcpu={}", archOptions[0]));

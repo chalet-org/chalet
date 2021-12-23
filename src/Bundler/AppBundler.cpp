@@ -35,8 +35,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundler::AppBundler(const CommandLineInputs& inInputs, StatePrototype& inPrototype) :
-	m_inputs(inInputs),
+AppBundler::AppBundler(StatePrototype& inPrototype) :
 	m_prototype(inPrototype)
 {
 }
@@ -48,13 +47,13 @@ AppBundler::~AppBundler() = default;
 bool AppBundler::runBuilds()
 {
 	// Build all required configurations
-	m_detectedArch = m_inputs.targetArchitecture().empty() ? "auto" : m_inputs.targetArchitecture();
+	m_detectedArch = m_prototype.inputs().targetArchitecture().empty() ? "auto" : m_prototype.inputs().targetArchitecture();
 
 	auto makeState = [&](std::string arch, const std::string& inConfig) {
 		auto configName = fmt::format("{}_{}", arch, inConfig);
 		if (m_states.find(configName) == m_states.end())
 		{
-			CommandLineInputs inputs = m_inputs;
+			CommandLineInputs inputs = m_prototype.inputs();
 			inputs.setBuildConfiguration(std::string(inConfig));
 			inputs.setTargetArchitecture(arch);
 			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
@@ -126,7 +125,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(*buildState);
-		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_inputs.inputFile());
+		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_prototype.inputs().inputFile());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
@@ -253,7 +252,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// Timer timer;
 
-	const auto cwd = m_inputs.workingDirectory() + '/';
+	const auto cwd = m_prototype.inputs().workingDirectory() + '/';
 
 	const auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
@@ -453,7 +452,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 
 	displayHeader("Script", inTarget);
 
-	ScriptRunner scriptRunner(m_inputs, m_prototype.tools);
+	ScriptRunner scriptRunner(m_prototype.inputs(), m_prototype.tools);
 	bool showExitCode = false;
 	if (!scriptRunner.run(file, showExitCode))
 	{
@@ -500,7 +499,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
 	bool result = Commands::subprocessWithInput(inCmd);
 
-	m_inputs.clearWorkingDirectory(outputFile);
+	m_prototype.inputs().clearWorkingDirectory(outputFile);
 
 	int lastExitCode = ProcessController::getLastExitCode();
 	if (lastExitCode != 0)
@@ -565,16 +564,16 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	StringList resolvedIncludes;
 	for (auto& include : inTarget.includes())
 	{
-		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
+		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_prototype.inputs().distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
 	Diagnostic::infoEllipsis("Compressing files");
 
 	ZipArchiver zipArchiver(m_prototype);
-	if (!zipArchiver.archive(baseName, resolvedIncludes, m_inputs.distributionDirectory(), m_archives))
+	if (!zipArchiver.archive(baseName, resolvedIncludes, m_prototype.inputs().distributionDirectory(), m_archives))
 		return false;
 
-	m_archives.emplace_back(fmt::format("{}/{}", m_inputs.distributionDirectory(), filename));
+	m_archives.emplace_back(fmt::format("{}/{}", m_prototype.inputs().distributionDirectory(), filename));
 
 	Diagnostic::printDone(timer.asString());
 	return true;
@@ -585,7 +584,7 @@ bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
 	displayHeader("Disk Image", inTarget);
 
-	MacosDiskImageCreator diskImageCreator(m_inputs, m_prototype);
+	MacosDiskImageCreator diskImageCreator(m_prototype);
 	if (!diskImageCreator.make(inTarget))
 		return false;
 
@@ -621,7 +620,7 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, const BuildState
 {
 	auto buildFolder = String::getPathFolder(inState.paths.buildOutputDir());
 	String::replaceAll(outName, "${targetTriple}", inState.info.targetArchitectureTriple());
-	String::replaceAll(outName, "${toolchainName}", m_inputs.toolchainPreferenceName());
+	String::replaceAll(outName, "${toolchainName}", m_prototype.inputs().toolchainPreferenceName());
 	String::replaceAll(outName, "${configuration}", inState.info.buildConfiguration());
 	String::replaceAll(outName, "${architecture}", inState.info.targetArchitectureString());
 	String::replaceAll(outName, "${buildDir}", buildFolder);

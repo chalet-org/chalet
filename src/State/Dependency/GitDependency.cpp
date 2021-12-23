@@ -14,9 +14,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitDependency::GitDependency(const CommandLineInputs& inInputs, const StatePrototype& inPrototype) :
-	IBuildDependency(inPrototype, BuildDependencyType::Git),
-	m_inputs(inInputs)
+GitDependency::GitDependency(const StatePrototype& inPrototype) :
+	IBuildDependency(inPrototype, BuildDependencyType::Git)
 {
 }
 
@@ -109,7 +108,7 @@ bool GitDependency::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDir = m_inputs.externalDirectory();
+	const auto& externalDir = m_prototype.inputs().externalDirectory();
 	chalet_assert(!externalDir.empty(), "externalDir can't be blank.");
 
 	auto& targetName = this->name();
