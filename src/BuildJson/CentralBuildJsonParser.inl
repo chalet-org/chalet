@@ -3,13 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildJsonProtoParser.hpp"
+#include "BuildJson/CentralBuildJsonParser.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool BuildJsonProtoParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
+bool CentralBuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
 {
 	if (!String::equals(inSearch, inKey))
 	{

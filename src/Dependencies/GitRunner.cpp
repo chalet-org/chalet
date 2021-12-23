@@ -9,8 +9,8 @@
 
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
@@ -20,10 +20,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitRunner::GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency) :
-	m_prototype(inPrototype),
+GitRunner::GitRunner(CentralState& inCentralState, const GitDependency& inDependency) :
+	m_centralState(inCentralState),
 	m_dependency(inDependency),
-	m_dependencyCache(m_prototype.cache.file().externalDependencies()),
+	m_dependencyCache(m_centralState.cache.file().externalDependencies()),
 	m_repository(m_dependency.repository()),
 	m_destination(m_dependency.destination()),
 	m_branch(m_dependency.branch()),
@@ -104,7 +104,7 @@ bool GitRunner::fetchDependency()
 
 	if (!m_commit.empty())
 	{
-		if (!m_prototype.tools.resetGitRepositoryToCommit(m_destination, m_commit))
+		if (!m_centralState.tools.resetGitRepositoryToCommit(m_destination, m_commit))
 			return false;
 	}
 
@@ -118,7 +118,7 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 {
 	StringList ret;
 
-	ret.push_back(m_prototype.tools.git());
+	ret.push_back(m_centralState.tools.git());
 	ret.emplace_back("clone");
 	ret.emplace_back("--quiet");
 
@@ -141,8 +141,8 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 	if (m_submodules)
 	{
 		uint maxJobs = 0;
-		if (m_prototype.inputs().maxJobs().has_value())
-			maxJobs = *m_prototype.inputs().maxJobs();
+		if (m_centralState.inputs().maxJobs().has_value())
+			maxJobs = *m_centralState.inputs().maxJobs();
 		else
 			maxJobs = std::thread::hardware_concurrency();
 
@@ -191,7 +191,7 @@ bool GitRunner::needsUpdate()
 		displayCheckingForUpdates();
 
 		const auto& refToCheck = !m_tag.empty() ? m_tag : m_lastCachedBranch;
-		auto latestRemote = m_prototype.tools.getLatestGitRepositoryHashWithoutClone(m_repository, refToCheck);
+		auto latestRemote = m_centralState.tools.getLatestGitRepositoryHashWithoutClone(m_repository, refToCheck);
 		if (latestRemote != m_lastCachedCommit)
 		{
 			m_lastCachedCommit = latestRemote;
@@ -230,11 +230,11 @@ void GitRunner::displayFetchingMessageStart()
 /*****************************************************************************/
 bool GitRunner::updateDependencyCache()
 {
-	m_lastCachedCommit = m_prototype.tools.getCurrentGitRepositoryHash(m_destination);
+	m_lastCachedCommit = m_centralState.tools.getCurrentGitRepositoryHash(m_destination);
 
 	if (m_lastCachedBranch.empty())
 	{
-		m_lastCachedBranch = m_prototype.tools.getCurrentGitRepositoryBranch(m_destination);
+		m_lastCachedBranch = m_centralState.tools.getCurrentGitRepositoryBranch(m_destination);
 	}
 
 	auto lastBranch = m_lastCachedBranch.empty() ? "." : m_lastCachedBranch;
@@ -273,7 +273,7 @@ bool GitRunner::updateDependencyCache()
 			if (String::equals(".git", path))
 			{
 				Path::sanitizeForWindows(outPath);
-				if (!Commands::subprocess({ m_prototype.tools.commandPrompt(), "/c", fmt::format("rmdir /q /s {}", outPath) }))
+				if (!Commands::subprocess({ m_centralState.tools.commandPrompt(), "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}
 			else

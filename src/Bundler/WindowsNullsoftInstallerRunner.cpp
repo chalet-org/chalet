@@ -6,8 +6,8 @@
 #include "Bundler/WindowsNullsoftInstallerRunner.hpp"
 
 #include "State/AncillaryTools.hpp"
+#include "State/CentralState.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
-#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -18,8 +18,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-WindowsNullsoftInstallerRunner::WindowsNullsoftInstallerRunner(const StatePrototype& inPrototype) :
-	m_prototype(inPrototype)
+WindowsNullsoftInstallerRunner::WindowsNullsoftInstallerRunner(const CentralState& inCentralState) :
+	m_centralState(inCentralState)
 {
 }
 
@@ -35,7 +35,7 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	else
 		Diagnostic::infoEllipsis("Creating the Windows installer executable");
 
-	StringList cmd{ m_prototype.tools.makeNsis() };
+	StringList cmd{ m_centralState.tools.makeNsis() };
 	cmd.emplace_back("-WX");
 	cmd.emplace_back("-V3");
 	cmd.emplace_back("-NOCD");

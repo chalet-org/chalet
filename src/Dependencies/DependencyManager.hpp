@@ -8,13 +8,13 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 struct GitDependency;
 
 class DependencyManager
 {
 public:
-	explicit DependencyManager(StatePrototype& inPrototype);
+	explicit DependencyManager(CentralState& inCentralState);
 
 	bool run();
 
@@ -25,7 +25,7 @@ private:
 	bool removeUnusedDependencies(const StringList& inList);
 	bool removeExternalDependencyDirectoryIfEmpty() const;
 
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 
 	StringList m_destinationCache;
 

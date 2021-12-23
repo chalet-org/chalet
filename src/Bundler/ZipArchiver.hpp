@@ -8,16 +8,16 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 
 struct ZipArchiver
 {
-	explicit ZipArchiver(const StatePrototype& inPrototype);
+	explicit ZipArchiver(const CentralState& inCentralState);
 
 	bool archive(const std::string& inFilename, const StringList& inFiles, const std::string& inCwd, const StringList& inExcludes);
 
 private:
-	const StatePrototype& m_prototype;
+	const CentralState& m_centralState;
 };
 }
 

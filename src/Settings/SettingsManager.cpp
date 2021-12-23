@@ -5,9 +5,9 @@
 
 #include "Settings/SettingsManager.hpp"
 
-#include "BuildJson/SchemaBuildJson.hpp"
+#include "BuildJson/BuildJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "SettingsJson/SchemaSettingsJson.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
@@ -305,7 +305,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 	{
 		if (String::endsWith(settings.filename(), ".chaletrc"))
 		{
-			SchemaSettingsJson schemaBuilder;
+			SettingsJsonSchema schemaBuilder;
 			Json schema = schemaBuilder.get();
 			if (!settings.validate(std::move(schema)))
 			{
@@ -315,7 +315,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		}
 		else if (String::endsWith(settings.filename(), m_inputs.inputFile()))
 		{
-			SchemaBuildJson schemaBuilder;
+			BuildJsonSchema schemaBuilder;
 			Json schema = schemaBuilder.get();
 			if (!settings.validate(std::move(schema)))
 			{

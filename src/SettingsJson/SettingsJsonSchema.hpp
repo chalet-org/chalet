@@ -3,18 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCHEMA_SETTINGS_JSON_HPP
-#define CHALET_SCHEMA_SETTINGS_JSON_HPP
+#ifndef CHALET_SETTINGS_JSON_SCHEMA_HPP
+#define CHALET_SETTINGS_JSON_SCHEMA_HPP
 
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
-class SchemaSettingsJson
+class SettingsJsonSchema
 {
 public:
 	Json get();
 };
 }
 
-#endif // CHALET_SCHEMA_SETTINGS_JSON_HPP
+#endif // CHALET_SETTINGS_JSON_SCHEMA_HPP

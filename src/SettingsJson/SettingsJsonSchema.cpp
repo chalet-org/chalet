@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "SettingsJson/SchemaSettingsJson.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
 
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/String.hpp"
@@ -79,7 +79,7 @@ enum class Defs : ushort
 };
 }
 /*****************************************************************************/
-Json SchemaSettingsJson::get()
+Json SettingsJsonSchema::get()
 {
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";

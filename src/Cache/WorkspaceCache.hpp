@@ -14,7 +14,7 @@
 namespace chalet
 {
 struct CommandLineInputs;
-struct StatePrototype;
+struct CentralState;
 struct CompilerTools;
 class BuildState;
 
@@ -39,7 +39,7 @@ struct WorkspaceCache
 
 private:
 	friend class BuildState;
-	friend struct StatePrototype;
+	friend struct CentralState;
 	friend struct SettingsManager;
 
 	const std::string& getCacheRef(const CacheType inCacheType) const;

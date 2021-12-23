@@ -8,13 +8,13 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 struct GitDependency;
 class ExternalDependencyCache;
 
 struct GitRunner
 {
-	explicit GitRunner(StatePrototype& inPrototype, const GitDependency& inDependency);
+	explicit GitRunner(CentralState& inCentralState, const GitDependency& inDependency);
 
 	bool run(const bool inDoNotUpdate);
 
@@ -34,7 +34,7 @@ private:
 
 	const std::string& getCheckoutTo();
 
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 	const GitDependency& m_dependency;
 	ExternalDependencyCache& m_dependencyCache;
 

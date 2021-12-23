@@ -10,11 +10,11 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 
 struct QueryController
 {
-	QueryController(const StatePrototype& inPrototype);
+	QueryController(const CentralState& inCentralState);
 
 	bool printListOfRequestedType();
 
@@ -34,7 +34,7 @@ private:
 	StringList getChaletSchema() const;
 	StringList getSettingsSchema() const;
 
-	const StatePrototype& m_prototype;
+	const CentralState& m_centralState;
 
 	const Json kEmptyJson;
 };

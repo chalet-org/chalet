@@ -8,14 +8,14 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/BuildPaths.hpp"
-#include "State/StatePrototype.hpp"
+#include "State/CentralState.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-GitDependency::GitDependency(const StatePrototype& inPrototype) :
-	IBuildDependency(inPrototype, BuildDependencyType::Git)
+GitDependency::GitDependency(const CentralState& inCentralState) :
+	IBuildDependency(inCentralState, BuildDependencyType::Git)
 {
 }
 
@@ -108,7 +108,7 @@ bool GitDependency::parseDestination()
 	if (!m_destination.empty())
 		return false;
 
-	const auto& externalDir = m_prototype.inputs().externalDirectory();
+	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	chalet_assert(!externalDir.empty(), "externalDir can't be blank.");
 
 	auto& targetName = this->name();

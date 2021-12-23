@@ -11,28 +11,28 @@
 namespace chalet
 {
 struct JsonFile;
-struct StatePrototype;
-struct GlobalSettingsState;
+struct CentralState;
+struct IntermediateSettingsState;
 
 struct GlobalSettingsJsonParser
 {
-	explicit GlobalSettingsJsonParser(StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit GlobalSettingsJsonParser(CentralState& inCentralState, JsonFile& inJsonFile);
 
-	bool serialize(GlobalSettingsState& outState);
+	bool serialize(IntermediateSettingsState& outState);
 
 private:
-	bool makeCache(GlobalSettingsState& outState);
+	bool makeCache(IntermediateSettingsState& outState);
 	void initializeTheme();
 
-	bool serializeFromJsonRoot(Json& inJson, GlobalSettingsState& outState);
-	bool parseSettings(const Json& inNode, GlobalSettingsState& outState);
-	bool parseToolchains(const Json& inNode, GlobalSettingsState& outState);
-	bool parseAncillaryTools(const Json& inNode, GlobalSettingsState& outState);
+	bool serializeFromJsonRoot(Json& inJson, IntermediateSettingsState& outState);
+	bool parseSettings(const Json& inNode, IntermediateSettingsState& outState);
+	bool parseToolchains(const Json& inNode, IntermediateSettingsState& outState);
+	bool parseAncillaryTools(const Json& inNode, IntermediateSettingsState& outState);
 #if defined(CHALET_MACOS)
-	bool parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState);
+	bool parseApplePlatformSdks(const Json& inNode, IntermediateSettingsState& outState);
 #endif
 
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 	JsonFile& m_jsonFile;
 };
 }

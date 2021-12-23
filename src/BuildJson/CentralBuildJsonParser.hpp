@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_PROTO_PARSER_HPP
-#define CHALET_BUILD_JSON_PROTO_PARSER_HPP
+#ifndef CHALET_CENTRAL_BUILD_JSON_PARSER_HPP
+#define CHALET_CENTRAL_BUILD_JSON_PARSER_HPP
 
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
@@ -16,7 +16,7 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 struct JsonFile;
 struct GitDependency;
 struct IDistTarget;
@@ -27,11 +27,11 @@ struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
 
-struct BuildJsonProtoParser
+struct CentralBuildJsonParser
 {
-	explicit BuildJsonProtoParser(StatePrototype& inPrototype);
-	CHALET_DISALLOW_COPY_MOVE(BuildJsonProtoParser);
-	~BuildJsonProtoParser();
+	explicit CentralBuildJsonParser(CentralState& inCentralState);
+	CHALET_DISALLOW_COPY_MOVE(CentralBuildJsonParser);
+	~CentralBuildJsonParser();
 
 	bool serialize() const;
 
@@ -62,7 +62,7 @@ private:
 
 	bool conditionIsValid(const std::string& inContent) const;
 
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 	JsonFile& m_chaletJson;
 	const std::string& m_filename;
 
@@ -71,6 +71,6 @@ private:
 };
 }
 
-#include "BuildJson/BuildJsonProtoParser.inl"
+#include "BuildJson/CentralBuildJsonParser.inl"
 
-#endif // CHALET_BUILD_JSON_PROTO_PARSER_HPP
+#endif // CHALET_CENTRAL_BUILD_JSON_PARSER_HPP

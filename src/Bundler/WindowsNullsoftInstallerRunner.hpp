@@ -8,19 +8,19 @@
 
 namespace chalet
 {
-struct StatePrototype;
+struct CentralState;
 struct WindowsNullsoftInstallerTarget;
 
 struct WindowsNullsoftInstallerRunner
 {
-	explicit WindowsNullsoftInstallerRunner(const StatePrototype& inPrototype);
+	explicit WindowsNullsoftInstallerRunner(const CentralState& inCentralState);
 
 	bool compile(const WindowsNullsoftInstallerTarget& inTarget);
 
 private:
 	StringList getPluginPaths(const WindowsNullsoftInstallerTarget& inTarget);
 
-	const StatePrototype& m_prototype;
+	const CentralState& m_centralState;
 };
 }
 

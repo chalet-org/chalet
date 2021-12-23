@@ -3,13 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_PROTOTYPE_HPP
-#define CHALET_BUILD_JSON_PROTOTYPE_HPP
+#ifndef CHALET_CENTRAL_STATE_HPP
+#define CHALET_CENTRAL_STATE_HPP
 
 #include "Libraries/Json.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "SettingsJson/GlobalSettingsState.hpp"
+#include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
@@ -21,9 +21,9 @@ namespace chalet
 {
 struct CommandLineInputs;
 
-struct StatePrototype
+struct CentralState
 {
-	explicit StatePrototype(CommandLineInputs& inInputs);
+	explicit CentralState(CommandLineInputs& inInputs);
 
 	bool initialize();
 	bool validate();
@@ -48,7 +48,7 @@ struct StatePrototype
 	BuildDependencyList externalDependencies;
 
 private:
-	friend struct BuildJsonProtoParser;
+	friend struct CentralBuildJsonParser;
 
 	bool createCache();
 
@@ -71,7 +71,7 @@ private:
 
 	CommandLineInputs& m_inputs;
 
-	GlobalSettingsState m_globalSettingsState;
+	IntermediateSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
 	StringList m_allowedBuildConfigurations;
@@ -84,4 +84,4 @@ private:
 };
 }
 
-#endif // CHALET_BUILD_JSON_PARSER_LITE_HPP
+#endif // CHALET_CENTRAL_STATE_HPP

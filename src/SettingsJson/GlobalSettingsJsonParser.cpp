@@ -8,8 +8,8 @@
 #include <thread>
 
 #include "Core/CommandLineInputs.hpp"
-#include "SettingsJson/GlobalSettingsState.hpp"
-#include "State/StatePrototype.hpp"
+#include "SettingsJson/IntermediateSettingsState.hpp"
+#include "State/CentralState.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -18,15 +18,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-GlobalSettingsJsonParser::GlobalSettingsJsonParser(StatePrototype& inPrototype, JsonFile& inJsonFile) :
-	m_prototype(inPrototype),
+GlobalSettingsJsonParser::GlobalSettingsJsonParser(CentralState& inCentralState, JsonFile& inJsonFile) :
+	m_centralState(inCentralState),
 	m_jsonFile(inJsonFile)
 {
-	UNUSED(m_prototype, m_jsonFile);
+	UNUSED(m_centralState, m_jsonFile);
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::serialize(GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::serialize(IntermediateSettingsState& outState)
 {
 	if (!makeCache(outState))
 		return false;
@@ -41,7 +41,7 @@ bool GlobalSettingsJsonParser::serialize(GlobalSettingsState& outState)
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 {
 	// Create the json cache
 	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
@@ -90,75 +90,75 @@ bool GlobalSettingsJsonParser::makeCache(GlobalSettingsState& outState)
 	};
 
 	assignSettingsBool(Keys::OptionsDumpAssembly, outState.dumpAssembly, [&]() {
-		return m_prototype.inputs().dumpAssembly();
+		return m_centralState.inputs().dumpAssembly();
 	});
 
 	assignSettingsBool(Keys::OptionsShowCommands, outState.showCommands, [&]() {
-		return m_prototype.inputs().showCommands();
+		return m_centralState.inputs().showCommands();
 	});
 
 	assignSettingsBool(Keys::OptionsBenchmark, outState.benchmark, [&]() {
-		return m_prototype.inputs().benchmark();
+		return m_centralState.inputs().benchmark();
 	});
 
 	assignSettingsBool(Keys::OptionsLaunchProfiler, outState.launchProfiler, [&]() {
-		return m_prototype.inputs().launchProfiler();
+		return m_centralState.inputs().launchProfiler();
 	});
 
 	assignSettingsBool(Keys::OptionsGenerateCompileCommands, outState.generateCompileCommands, [&]() {
-		return m_prototype.inputs().generateCompileCommands();
+		return m_centralState.inputs().generateCompileCommands();
 	});
 
 	{
 		uint maxJobs = outState.maxJobs == 0 ? std::thread::hardware_concurrency() : outState.maxJobs;
 		assignSettingsUint(Keys::OptionsMaxJobs, maxJobs, [&]() {
-			return m_prototype.inputs().maxJobs();
+			return m_centralState.inputs().maxJobs();
 		});
 	}
 
 	assignSettingsString(Keys::OptionsBuildConfiguration, [&]() {
-		outState.buildConfiguration = m_prototype.inputs().buildConfiguration();
+		outState.buildConfiguration = m_centralState.inputs().buildConfiguration();
 		return outState.buildConfiguration;
 	});
 
 	assignSettingsString(Keys::OptionsToolchain, [&]() {
-		m_prototype.inputs().detectToolchainPreference();
-		outState.toolchainPreference = m_prototype.inputs().toolchainPreferenceName();
+		m_centralState.inputs().detectToolchainPreference();
+		outState.toolchainPreference = m_centralState.inputs().toolchainPreferenceName();
 		return outState.toolchainPreference;
 	});
 
 	assignSettingsString(Keys::OptionsArchitecture, [&]() {
-		outState.architecturePreference = m_prototype.inputs().architectureRaw();
+		outState.architecturePreference = m_centralState.inputs().architectureRaw();
 		return outState.architecturePreference;
 	});
 
 	assignSettingsString(Keys::OptionsInputFile, [&]() {
-		outState.inputFile = m_prototype.inputs().defaultInputFile();
+		outState.inputFile = m_centralState.inputs().defaultInputFile();
 		return outState.inputFile;
 	});
 
 	assignSettingsString(Keys::OptionsEnvFile, [&]() {
-		outState.envFile = m_prototype.inputs().defaultEnvFile();
+		outState.envFile = m_centralState.inputs().defaultEnvFile();
 		return outState.envFile;
 	});
 
 	assignSettingsString(Keys::OptionsRootDirectory, [&]() {
-		outState.rootDirectory = m_prototype.inputs().rootDirectory();
+		outState.rootDirectory = m_centralState.inputs().rootDirectory();
 		return outState.rootDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsOutputDirectory, [&]() {
-		outState.outputDirectory = m_prototype.inputs().defaultOutputDirectory();
+		outState.outputDirectory = m_centralState.inputs().defaultOutputDirectory();
 		return outState.outputDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsExternalDirectory, [&]() {
-		outState.externalDirectory = m_prototype.inputs().defaultExternalDirectory();
+		outState.externalDirectory = m_centralState.inputs().defaultExternalDirectory();
 		return outState.externalDirectory;
 	});
 
 	assignSettingsString(Keys::OptionsDistributionDirectory, [&]() {
-		outState.distributionDirectory = m_prototype.inputs().defaultDistributionDirectory();
+		outState.distributionDirectory = m_centralState.inputs().defaultDistributionDirectory();
 		return outState.distributionDirectory;
 	});
 
@@ -206,7 +206,7 @@ void GlobalSettingsJsonParser::initializeTheme()
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, IntermediateSettingsState& outState)
 {
 	if (!inJson.is_object())
 	{
@@ -232,7 +232,7 @@ bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, GlobalSetting
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSettingsState& outState)
 {
 	if (!inNode.contains(Keys::Options))
 		return true;
@@ -293,7 +293,7 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, GlobalSettingsS
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, IntermediateSettingsState& outState)
 {
 	if (!inNode.contains(Keys::Toolchains))
 		return true;
@@ -311,7 +311,7 @@ bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, GlobalSetting
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, IntermediateSettingsState& outState)
 {
 	if (!inNode.contains(Keys::Tools))
 		return true;
@@ -330,7 +330,7 @@ bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, GlobalSet
 
 /*****************************************************************************/
 #if defined(CHALET_MACOS)
-bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, GlobalSettingsState& outState)
+bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, IntermediateSettingsState& outState)
 {
 	if (!inNode.contains(Keys::AppleSdks))
 		return true;

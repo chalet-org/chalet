@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_TOOLCHAIN_JSON_PARSER_HPP
-#define CHALET_SETTINGS_TOOLCHAIN_JSON_PARSER_HPP
+#ifndef CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP
+#define CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
@@ -14,9 +14,9 @@ namespace chalet
 class BuildState;
 struct JsonFile;
 
-struct SettingsToolchainJsonParser
+struct ToolchainSettingsJsonParser
 {
-	explicit SettingsToolchainJsonParser(BuildState& inState, JsonFile& inJsonFile);
+	explicit ToolchainSettingsJsonParser(BuildState& inState, JsonFile& inJsonFile);
 
 	bool serialize();
 	bool validatePaths();
@@ -31,4 +31,4 @@ private:
 };
 }
 
-#endif // CHALET_SETTINGS_TOOLCHAIN_JSON_PARSER_HPP
+#endif // CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP

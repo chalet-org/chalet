@@ -12,13 +12,13 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Core/DotEnvFileGenerator.hpp"
 #include "Core/DotEnvFileParser.hpp"
-#include "SettingsJson/SettingsToolchainJsonParser.hpp"
+#include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
-#include "State/StatePrototype.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -36,7 +36,7 @@ namespace chalet
 struct BuildState::Impl
 {
 	const CommandLineInputs inputs;
-	StatePrototype& prototype;
+	CentralState& centralState;
 
 	BuildInfo info;
 	WorkspaceEnvironment workspace;
@@ -49,21 +49,21 @@ struct BuildState::Impl
 
 	bool checkForEnvironment = false;
 
-	Impl(CommandLineInputs&& inInputs, StatePrototype& inPrototype, BuildState& inState) :
+	Impl(CommandLineInputs&& inInputs, CentralState& inCentralState, BuildState& inState) :
 		inputs(std::move(inInputs)),
-		prototype(inPrototype),
+		centralState(inCentralState),
 		info(inputs),
-		workspace(prototype.workspace), // copy
+		workspace(centralState.workspace), // copy
 		paths(inState)
 	{
 	}
 };
 
 /*****************************************************************************/
-BuildState::BuildState(CommandLineInputs inInputs, StatePrototype& inPrototype) :
-	m_impl(std::make_unique<Impl>(std::move(inInputs), inPrototype, *this)),
-	tools(m_impl->prototype.tools),
-	cache(m_impl->prototype.cache),
+BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState) :
+	m_impl(std::make_unique<Impl>(std::move(inInputs), inCentralState, *this)),
+	tools(m_impl->centralState.tools),
+	cache(m_impl->centralState.cache),
 	info(m_impl->info),
 	workspace(m_impl->workspace),
 	toolchain(m_impl->toolchain),
@@ -107,7 +107,7 @@ bool BuildState::initialize()
 	}
 	else
 	{
-		auto& cacheFile = m_impl->prototype.cache.file();
+		auto& cacheFile = m_impl->centralState.cache.file();
 		m_uniqueId = getUniqueIdForState();
 		cacheFile.setSourceCache(m_uniqueId, true);
 
@@ -142,10 +142,10 @@ bool BuildState::initializeBuildConfiguration()
 	auto buildConfiguration = inputs.buildConfiguration();
 	if (buildConfiguration.empty())
 	{
-		buildConfiguration = m_impl->prototype.anyConfiguration();
+		buildConfiguration = m_impl->centralState.anyConfiguration();
 	}
 
-	const auto& buildConfigurations = m_impl->prototype.buildConfigurations();
+	const auto& buildConfigurations = m_impl->centralState.buildConfigurations();
 
 	if (buildConfigurations.find(buildConfiguration) == buildConfigurations.end())
 	{
@@ -192,8 +192,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->checkForEnvironment = true;
 	}
 
-	auto& cacheFile = m_impl->prototype.cache.getSettings(SettingsType::Local);
-	SettingsToolchainJsonParser parser(*this, cacheFile);
+	auto& cacheFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
+	ToolchainSettingsJsonParser parser(*this, cacheFile);
 	if (!parser.serialize())
 		return false;
 
@@ -237,7 +237,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-	BuildJsonParser parser(m_impl->prototype, *this);
+	BuildJsonParser parser(m_impl->centralState, *this);
 	return parser.serialize();
 }
 
@@ -290,7 +290,7 @@ bool BuildState::initializeBuild()
 
 	Diagnostic::infoEllipsis("Initializing");
 
-	auto& cacheFile = m_impl->prototype.cache.file();
+	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
 	cacheFile.setSourceCache(m_uniqueId, true);
 
@@ -387,8 +387,8 @@ bool BuildState::initializeBuild()
 /*****************************************************************************/
 void BuildState::initializeCache()
 {
-	m_impl->prototype.cache.saveSettings(SettingsType::Local);
-	m_impl->prototype.cache.saveSettings(SettingsType::Global);
+	m_impl->centralState.cache.saveSettings(SettingsType::Local);
+	m_impl->centralState.cache.saveSettings(SettingsType::Global);
 }
 
 /*****************************************************************************/
@@ -460,7 +460,7 @@ bool BuildState::validateState()
 		}
 	}
 
-	auto& cacheFile = m_impl->prototype.cache.file();
+	auto& cacheFile = m_impl->centralState.cache.file();
 	auto strat = toolchain.strategy();
 	if (strat == StrategyType::Makefile)
 	{
@@ -519,9 +519,9 @@ bool BuildState::validateState()
 		return false;
 	}
 
-	if (hasSubChaletTargets && !m_impl->prototype.tools.resolveOwnExecutable(inputs.appPath()))
+	if (hasSubChaletTargets && !m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
 	{
-		Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->prototype.tools.chalet());
+		Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->centralState.tools.chalet());
 		return false;
 	}
 
@@ -575,7 +575,7 @@ bool BuildState::validateState()
 #endif
 
 #if defined(CHALET_MACOS)
-		m_impl->prototype.tools.fetchXcodeVersion();
+		m_impl->centralState.tools.fetchXcodeVersion();
 #endif
 	}
 

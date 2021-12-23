@@ -8,14 +8,14 @@
 #include "Json/JsonFile.hpp"
 //
 #include "BuildJson/BuildJsonParser.hpp"
-#include "BuildJson/SchemaBuildJson.hpp"
+#include "BuildJson/BuildJsonSchema.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/CentralState.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
-#include "State/StatePrototype.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
@@ -41,9 +41,9 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-BuildJsonParser::BuildJsonParser(StatePrototype& inPrototype, BuildState& inState) :
-	m_chaletJson(inPrototype.chaletJson()),
-	m_filename(inPrototype.filename()),
+BuildJsonParser::BuildJsonParser(CentralState& inCentralState, BuildState& inState) :
+	m_chaletJson(inCentralState.chaletJson()),
+	m_filename(inCentralState.filename()),
 	m_state(inState),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())

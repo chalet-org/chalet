@@ -17,8 +17,8 @@
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
-#include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/ColorTest.hpp"
 #include "Terminal/Commands.hpp"
@@ -94,15 +94,15 @@ bool Router::run()
 /*****************************************************************************/
 bool Router::runRoutesThatRequireState(const Route inRoute)
 {
-	auto prototype = std::make_unique<StatePrototype>(m_inputs);
+	auto centralState = std::make_unique<CentralState>(m_inputs);
 	Unique<BuildState> buildState;
 
-	if (!prototype->initialize())
+	if (!centralState->initialize())
 		return false;
 
 	if (inRoute != Route::Bundle)
 	{
-		buildState = std::make_unique<BuildState>(prototype->inputs(), *prototype);
+		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
 			return false;
 	}
@@ -111,7 +111,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	switch (inRoute)
 	{
 		case Route::Bundle: {
-			result = routeBundle(*prototype);
+			result = routeBundle(*centralState);
 			break;
 		}
 
@@ -147,8 +147,8 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 			break;
 	}
 
-	if (prototype != nullptr)
-		prototype->saveCaches();
+	if (centralState != nullptr)
+		centralState->saveCaches();
 
 	return result;
 }
@@ -174,27 +174,27 @@ bool Router::routeConfigure(BuildState& inState)
 }
 
 /*****************************************************************************/
-bool Router::routeBundle(StatePrototype& inPrototype)
+bool Router::routeBundle(CentralState& inCentralState)
 {
 	const auto& inputFile = m_inputs.inputFile();
-	if (inPrototype.distribution.empty())
+	if (inCentralState.distribution.empty())
 	{
 		Diagnostic::error("{}: There are no distribution targets: missing 'distribution'", inputFile);
 		return false;
 	}
 
-	/*if (inPrototype.requiredBuildConfigurations().empty())
+	/*if (inCentralState.requiredBuildConfigurations().empty())
 	{
 		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", inputFile);
 		return false;
 	}*/
 
-	AppBundler bundler(inPrototype);
+	AppBundler bundler(inCentralState);
 
 	if (!bundler.runBuilds())
 		return false;
 
-	for (auto& target : inPrototype.distribution)
+	for (auto& target : inCentralState.distribution)
 	{
 		if (!bundler.run(target))
 			return false;
@@ -249,11 +249,11 @@ bool Router::routeSettings(const Route inRoute)
 /*****************************************************************************/
 bool Router::routeQuery()
 {
-	StatePrototype prototype(m_inputs);
-	if (!prototype.initializeForList())
+	CentralState centralState(m_inputs);
+	if (!centralState.initializeForList())
 		return false;
 
-	QueryController query(prototype);
+	QueryController query(centralState);
 	return query.printListOfRequestedType();
 }
 

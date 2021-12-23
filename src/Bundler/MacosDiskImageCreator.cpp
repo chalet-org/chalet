@@ -7,9 +7,9 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
+#include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
-#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -17,8 +17,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-MacosDiskImageCreator::MacosDiskImageCreator(const StatePrototype& inPrototype) :
-	m_prototype(inPrototype)
+MacosDiskImageCreator::MacosDiskImageCreator(const CentralState& inCentralState) :
+	m_centralState(inCentralState)
 {
 }
 
@@ -28,10 +28,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 #if defined(CHALET_MACOS)
 	m_diskName = String::getPathFolderBaseName(inDiskImage.name());
 
-	const auto& distributionDirectory = m_prototype.inputs().distributionDirectory();
+	const auto& distributionDirectory = m_centralState.inputs().distributionDirectory();
 
-	auto& hdiutil = m_prototype.tools.hdiutil();
-	auto& tiffutil = m_prototype.tools.tiffutil();
+	auto& hdiutil = m_centralState.tools.hdiutil();
+	auto& tiffutil = m_centralState.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
 
 	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
@@ -48,7 +48,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		if (String::equals("Applications", path))
 			continue;
 
-		for (auto& target : m_prototype.distribution)
+		for (auto& target : m_centralState.distribution)
 		{
 			if (target->isDistributionBundle() && String::equals(target->name(), path))
 			{
@@ -138,7 +138,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	const auto applescriptText = getDmgApplescript(inDiskImage);
 
-	if (!Commands::subprocess({ m_prototype.tools.osascript(), "-e", applescriptText }))
+	if (!Commands::subprocess({ m_centralState.tools.osascript(), "-e", applescriptText }))
 		return false;
 
 	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
@@ -165,7 +165,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 /*****************************************************************************/
 bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 {
-	if (m_prototype.tools.signingIdentity().empty())
+	if (m_centralState.tools.signingIdentity().empty())
 	{
 		Diagnostic::warn("dmg '{}' was not signed - signingIdentity is not set, or was empty.", inPath);
 		return true;
@@ -174,7 +174,7 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 	Timer timer;
 	Diagnostic::infoEllipsis("Signing the disk image");
 
-	if (!m_prototype.tools.macosCodeSignDiskImage(inPath))
+	if (!m_centralState.tools.macosCodeSignDiskImage(inPath))
 	{
 		Diagnostic::error("Failed to sign: {}", inPath);
 		return false;

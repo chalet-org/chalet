@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildJsonProtoParser.hpp"
+#include "BuildJson/CentralBuildJsonParser.hpp"
 
-#include "BuildJson/SchemaBuildJson.hpp"
+#include "BuildJson/BuildJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/StatePrototype.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -32,20 +32,20 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-BuildJsonProtoParser::BuildJsonProtoParser(StatePrototype& inPrototype) :
-	m_prototype(inPrototype),
-	m_chaletJson(inPrototype.chaletJson()),
-	m_filename(inPrototype.filename()),
+CentralBuildJsonParser::CentralBuildJsonParser(CentralState& inCentralState) :
+	m_centralState(inCentralState),
+	m_chaletJson(inCentralState.chaletJson()),
+	m_filename(inCentralState.filename()),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
 }
 
 /*****************************************************************************/
-BuildJsonProtoParser::~BuildJsonProtoParser() = default;
+CentralBuildJsonParser::~CentralBuildJsonParser() = default;
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serialize() const
+bool CentralBuildJsonParser::serialize() const
 {
 	if (!validateAgainstSchema())
 		return false;
@@ -58,12 +58,12 @@ bool BuildJsonProtoParser::serialize() const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::validateAgainstSchema() const
+bool CentralBuildJsonParser::validateAgainstSchema() const
 {
-	SchemaBuildJson schemaBuilder;
+	BuildJsonSchema schemaBuilder;
 	Json buildJsonSchema = schemaBuilder.get();
 
-	if (m_prototype.inputs().saveSchemaToFile())
+	if (m_centralState.inputs().saveSchemaToFile())
 	{
 		JsonFile::saveToFile(buildJsonSchema, "schema/chalet.schema.json");
 	}
@@ -76,7 +76,7 @@ bool BuildJsonProtoParser::validateAgainstSchema() const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) const
+bool CentralBuildJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 		return false;
@@ -93,7 +93,7 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) con
 	if (!parseExternalDependencies(inNode))
 		return false;
 
-	if (m_prototype.inputs().route() != Route::Configure)
+	if (m_centralState.inputs().route() != Route::Configure)
 	{
 		if (!parseDistribution(inNode))
 			return false;
@@ -103,7 +103,7 @@ bool BuildJsonProtoParser::serializeRequiredFromJsonRoot(const Json& inNode) con
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
+bool CentralBuildJsonParser::parseRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 	{
@@ -117,15 +117,15 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 		if (value.is_string())
 		{
 			if (String::equals("workspace", key))
-				m_prototype.workspace.setWorkspaceName(value.get<std::string>());
+				m_centralState.workspace.setWorkspaceName(value.get<std::string>());
 			else if (String::equals("version", key))
-				m_prototype.workspace.setVersion(value.get<std::string>());
+				m_centralState.workspace.setVersion(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
-				m_prototype.workspace.addSearchPaths(std::move(val));
+				m_centralState.workspace.addSearchPaths(std::move(val));
 		}
 	}
 
@@ -133,7 +133,7 @@ bool BuildJsonProtoParser::parseRoot(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
+bool CentralBuildJsonParser::parseDefaultConfigurations(const Json& inNode) const
 {
 	bool addedDefaults = false;
 	if (inNode.contains(Keys::DefaultConfigurations))
@@ -160,15 +160,15 @@ bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 						return false;
 					}
 
-					if (m_prototype.releaseConfiguration().empty())
+					if (m_centralState.releaseConfiguration().empty())
 					{
 						if (!config.isDebuggable())
 						{
-							m_prototype.setReleaseConfiguration(config.name());
+							m_centralState.setReleaseConfiguration(config.name());
 						}
 					}
 
-					m_prototype.addBuildConfiguration(name, std::move(config));
+					m_centralState.addBuildConfiguration(name, std::move(config));
 				}
 			}
 		}
@@ -176,7 +176,7 @@ bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 
 	if (!addedDefaults)
 	{
-		if (!m_prototype.makeDefaultBuildConfigurations())
+		if (!m_centralState.makeDefaultBuildConfigurations())
 			return false;
 	}
 
@@ -184,7 +184,7 @@ bool BuildJsonProtoParser::parseDefaultConfigurations(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
+bool CentralBuildJsonParser::parseConfigurations(const Json& inNode) const
 {
 	if (inNode.contains(Keys::Configurations))
 	{
@@ -235,15 +235,15 @@ bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 					}
 				}
 
-				if (m_prototype.releaseConfiguration().empty())
+				if (m_centralState.releaseConfiguration().empty())
 				{
 					if (!config.isDebuggable())
 					{
-						m_prototype.setReleaseConfiguration(config.name());
+						m_centralState.setReleaseConfiguration(config.name());
 					}
 				}
 
-				m_prototype.addBuildConfiguration(name, std::move(config));
+				m_centralState.addBuildConfiguration(name, std::move(config));
 			}
 		}
 	}
@@ -252,7 +252,7 @@ bool BuildJsonProtoParser::parseConfigurations(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
+bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
 {
 	if (!inNode.contains(Keys::Distribution))
 		return true;
@@ -354,14 +354,14 @@ bool BuildJsonProtoParser::parseDistribution(const Json& inNode) const
 		if (!target->includeInDistribution())
 			continue;
 
-		m_prototype.distribution.emplace_back(std::move(target));
+		m_centralState.distribution.emplace_back(std::move(target));
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -387,7 +387,7 @@ bool BuildJsonProtoParser::parseDistributionScript(ScriptDistTarget& outTarget, 
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -419,7 +419,7 @@ bool BuildJsonProtoParser::parseDistributionProcess(ProcessDistTarget& outTarget
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -447,7 +447,7 @@ bool BuildJsonProtoParser::parseDistributionArchive(BundleArchiveTarget& outTarg
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
+bool CentralBuildJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -460,7 +460,7 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 			if (String::equals("configuration", key))
 			{
 				outTarget.setConfiguration(value.get<std::string>());
-				m_prototype.addRequiredBuildConfiguration(outTarget.configuration());
+				m_centralState.addRequiredBuildConfiguration(outTarget.configuration());
 			}
 			else if (String::equals("buildTargets", key))
 				outTarget.addBuildTarget(value.get<std::string>());
@@ -597,7 +597,7 @@ bool BuildJsonProtoParser::parseDistributionBundle(BundleTarget& outTarget, cons
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -684,7 +684,7 @@ bool BuildJsonProtoParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, 
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -711,7 +711,7 @@ bool BuildJsonProtoParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstalle
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
+bool CentralBuildJsonParser::parseExternalDependencies(const Json& inNode) const
 {
 	// don't care if there aren't any dependencies
 	if (!inNode.contains(Keys::ExternalDependencies))
@@ -727,20 +727,20 @@ bool BuildJsonProtoParser::parseExternalDependencies(const Json& inNode) const
 	BuildDependencyType type = BuildDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = IBuildDependency::make(type, m_prototype);
+		auto dependency = IBuildDependency::make(type, m_centralState);
 		dependency->setName(name);
 
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 			return false;
 
-		m_prototype.externalDependencies.emplace_back(std::move(dependency));
+		m_centralState.externalDependencies.emplace_back(std::move(dependency));
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
+bool CentralBuildJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -785,7 +785,7 @@ bool BuildJsonProtoParser::parseGitDependency(GitDependency& outDependency, cons
 }
 
 /*****************************************************************************/
-bool BuildJsonProtoParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
+bool CentralBuildJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
 {
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
 	{
@@ -797,7 +797,7 @@ bool BuildJsonProtoParser::parseTargetCondition(IDistTarget& outTarget, const Js
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool BuildJsonProtoParser::conditionIsValid(const std::string& inContent) const
+bool CentralBuildJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	if (!String::equals(m_platform, inContent))
 	{

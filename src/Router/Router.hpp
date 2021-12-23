@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CommandLineInputs;
 class BuildState;
-struct StatePrototype;
+struct CentralState;
 
 class Router
 {
@@ -28,7 +28,7 @@ private:
 	bool runRoutesThatRequireState(const Route inRoute);
 
 	bool routeConfigure(BuildState& inState);
-	bool routeBundle(StatePrototype& inPrototype);
+	bool routeBundle(CentralState& inCentralState);
 	bool routeInit();
 	bool routeSettings(const Route inRoute);
 	bool routeQuery();

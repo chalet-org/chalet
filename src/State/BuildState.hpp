@@ -16,7 +16,7 @@ struct BuildPaths;
 struct AncillaryTools;
 struct CompilerTools;
 struct CommandLineInputs;
-struct StatePrototype;
+struct CentralState;
 struct WorkspaceCache;
 struct WorkspaceEnvironment;
 struct ICompileEnvironment;
@@ -29,7 +29,7 @@ class BuildState
 	Unique<Impl> m_impl;
 
 public:
-	explicit BuildState(CommandLineInputs inInputs, StatePrototype& inPrototype);
+	explicit BuildState(CommandLineInputs inInputs, CentralState& inCentralState);
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 

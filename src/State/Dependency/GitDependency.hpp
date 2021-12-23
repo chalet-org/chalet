@@ -12,7 +12,7 @@ namespace chalet
 {
 struct GitDependency final : public IBuildDependency
 {
-	explicit GitDependency(const StatePrototype& inPrototype);
+	explicit GitDependency(const CentralState& inCentralState);
 
 	virtual bool validate() final;
 

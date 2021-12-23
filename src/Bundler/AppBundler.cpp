@@ -17,13 +17,13 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
-#include "State/StatePrototype.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -35,8 +35,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundler::AppBundler(StatePrototype& inPrototype) :
-	m_prototype(inPrototype)
+AppBundler::AppBundler(CentralState& inCentralState) :
+	m_centralState(inCentralState)
 {
 }
 
@@ -47,23 +47,23 @@ AppBundler::~AppBundler() = default;
 bool AppBundler::runBuilds()
 {
 	// Build all required configurations
-	m_detectedArch = m_prototype.inputs().targetArchitecture().empty() ? "auto" : m_prototype.inputs().targetArchitecture();
+	m_detectedArch = m_centralState.inputs().targetArchitecture().empty() ? "auto" : m_centralState.inputs().targetArchitecture();
 
 	auto makeState = [&](std::string arch, const std::string& inConfig) {
 		auto configName = fmt::format("{}_{}", arch, inConfig);
 		if (m_states.find(configName) == m_states.end())
 		{
-			CommandLineInputs inputs = m_prototype.inputs();
+			CommandLineInputs inputs = m_centralState.inputs();
 			inputs.setBuildConfiguration(std::string(inConfig));
 			inputs.setTargetArchitecture(arch);
-			auto state = std::make_unique<BuildState>(std::move(inputs), m_prototype);
+			auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
 
 			m_states.emplace(configName, std::move(state));
 		}
 	};
 
 	StringList arches;
-	for (auto& target : m_prototype.distribution)
+	for (auto& target : m_centralState.distribution)
 	{
 		if (target->isDistributionBundle())
 		{
@@ -125,7 +125,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(*buildState);
-		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_prototype.inputs().inputFile());
+		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_centralState.inputs().inputFile());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
@@ -180,7 +180,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 	else if (inTarget->isWindowsNullsoftInstaller())
 	{
 #if defined(CHALET_LINUX)
-		BuildState* state = getBuildState(m_prototype.anyConfiguration());
+		BuildState* state = getBuildState(m_centralState.anyConfiguration());
 		if (state == nullptr)
 		{
 			Diagnostic::error("No associated build found for target: {}", inTarget->name());
@@ -252,7 +252,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// Timer timer;
 
-	const auto cwd = m_prototype.inputs().workingDirectory() + '/';
+	const auto cwd = m_centralState.inputs().workingDirectory() + '/';
 
 	const auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
@@ -452,7 +452,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 
 	displayHeader("Script", inTarget);
 
-	ScriptRunner scriptRunner(m_prototype.inputs(), m_prototype.tools);
+	ScriptRunner scriptRunner(m_centralState.inputs(), m_centralState.tools);
 	bool showExitCode = false;
 	if (!scriptRunner.run(file, showExitCode))
 	{
@@ -499,7 +499,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
 	bool result = Commands::subprocessWithInput(inCmd);
 
-	m_prototype.inputs().clearWorkingDirectory(outputFile);
+	m_centralState.inputs().clearWorkingDirectory(outputFile);
 
 	int lastExitCode = ProcessController::getLastExitCode();
 	if (lastExitCode != 0)
@@ -518,7 +518,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 	}
 	else if (lastExitCode < 0)
 	{
-		auto state = getBuildState(m_prototype.anyConfiguration());
+		auto state = getBuildState(m_centralState.anyConfiguration());
 		if (state != nullptr)
 		{
 			BinaryDependencyMap tmpMap(*state);
@@ -547,7 +547,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 
 	auto baseName = inTarget.name();
 
-	BuildState* state = getBuildState(m_prototype.anyConfiguration());
+	BuildState* state = getBuildState(m_centralState.anyConfiguration());
 	if (state == nullptr)
 	{
 		Diagnostic::error("No associated build found for target: {}", inTarget.name());
@@ -564,16 +564,16 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	StringList resolvedIncludes;
 	for (auto& include : inTarget.includes())
 	{
-		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_prototype.inputs().distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
+		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
 	Diagnostic::infoEllipsis("Compressing files");
 
-	ZipArchiver zipArchiver(m_prototype);
-	if (!zipArchiver.archive(baseName, resolvedIncludes, m_prototype.inputs().distributionDirectory(), m_archives))
+	ZipArchiver zipArchiver(m_centralState);
+	if (!zipArchiver.archive(baseName, resolvedIncludes, m_centralState.inputs().distributionDirectory(), m_archives))
 		return false;
 
-	m_archives.emplace_back(fmt::format("{}/{}", m_prototype.inputs().distributionDirectory(), filename));
+	m_archives.emplace_back(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), filename));
 
 	Diagnostic::printDone(timer.asString());
 	return true;
@@ -584,7 +584,7 @@ bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
 	displayHeader("Disk Image", inTarget);
 
-	MacosDiskImageCreator diskImageCreator(m_prototype);
+	MacosDiskImageCreator diskImageCreator(m_centralState);
 	if (!diskImageCreator.make(inTarget))
 		return false;
 
@@ -596,7 +596,7 @@ bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstalle
 {
 	displayHeader("Nullsoft Installer", inTarget);
 
-	WindowsNullsoftInstallerRunner nsis(m_prototype);
+	WindowsNullsoftInstallerRunner nsis(m_centralState);
 	if (!nsis.compile(inTarget))
 		return false;
 
@@ -620,7 +620,7 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, const BuildState
 {
 	auto buildFolder = String::getPathFolder(inState.paths.buildOutputDir());
 	String::replaceAll(outName, "${targetTriple}", inState.info.targetArchitectureTriple());
-	String::replaceAll(outName, "${toolchainName}", m_prototype.inputs().toolchainPreferenceName());
+	String::replaceAll(outName, "${toolchainName}", m_centralState.inputs().toolchainPreferenceName());
 	String::replaceAll(outName, "${configuration}", inState.info.buildConfiguration());
 	String::replaceAll(outName, "${architecture}", inState.info.targetArchitectureString());
 	String::replaceAll(outName, "${buildDir}", buildFolder);

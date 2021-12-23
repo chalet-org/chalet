@@ -3,9 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/StatePrototype.hpp"
+#include "State/CentralState.hpp"
 
-#include "BuildJson/BuildJsonProtoParser.hpp"
+#include "BuildJson/CentralBuildJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
@@ -25,13 +25,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-StatePrototype::StatePrototype(CommandLineInputs& inInputs) :
+CentralState::CentralState(CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 }
 
 /*****************************************************************************/
-bool StatePrototype::initialize()
+bool CentralState::initialize()
 {
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initializeCreateProcess();
@@ -115,7 +115,7 @@ bool StatePrototype::initialize()
 }
 
 /*****************************************************************************/
-bool StatePrototype::initializeForList()
+bool CentralState::initializeForList()
 {
 	Route route = m_inputs.route();
 	chalet_assert(route == Route::Query, "");
@@ -140,7 +140,7 @@ bool StatePrototype::initializeForList()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validate()
+bool CentralState::validate()
 {
 	// if (!validateConfigurations())
 	// 	return false;
@@ -152,7 +152,7 @@ bool StatePrototype::validate()
 }
 
 /*****************************************************************************/
-bool StatePrototype::createCache()
+bool CentralState::createCache()
 {
 	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
 	cache.file().checkIfThemeChanged();
@@ -167,7 +167,7 @@ bool StatePrototype::createCache()
 }
 
 /*****************************************************************************/
-void StatePrototype::saveCaches()
+void CentralState::saveCaches()
 {
 	cache.saveSettings(SettingsType::Global);
 
@@ -181,7 +181,7 @@ void StatePrototype::saveCaches()
 }
 
 /*****************************************************************************/
-bool StatePrototype::runDependencyManager()
+bool CentralState::runDependencyManager()
 {
 	DependencyManager depMgr(*this);
 	if (!depMgr.run())
@@ -194,7 +194,7 @@ bool StatePrototype::runDependencyManager()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validateDistribution()
+bool CentralState::validateDistribution()
 {
 	auto& distributionDirectory = m_inputs.distributionDirectory();
 
@@ -252,7 +252,7 @@ bool StatePrototype::validateDistribution()
 }
 
 /*****************************************************************************/
-/*bool StatePrototype::validateConfigurations()
+/*bool CentralState::validateConfigurations()
 {
 	// Unrestricted for now
 
@@ -272,7 +272,7 @@ bool StatePrototype::validateDistribution()
 }*/
 
 /*****************************************************************************/
-bool StatePrototype::validateExternalDependencies()
+bool CentralState::validateExternalDependencies()
 {
 	for (auto& dependency : externalDependencies)
 	{
@@ -287,7 +287,7 @@ bool StatePrototype::validateExternalDependencies()
 }
 
 /*****************************************************************************/
-bool StatePrototype::validateBuildFile()
+bool CentralState::validateBuildFile()
 {
 	if (!tools.validate(m_inputs.homeDirectory()))
 	{
@@ -311,49 +311,49 @@ bool StatePrototype::validateBuildFile()
 }
 
 /*****************************************************************************/
-const CommandLineInputs& StatePrototype::inputs() const noexcept
+const CommandLineInputs& CentralState::inputs() const noexcept
 {
 	return m_inputs;
 }
 
 /*****************************************************************************/
-JsonFile& StatePrototype::chaletJson() noexcept
+JsonFile& CentralState::chaletJson() noexcept
 {
 	return m_chaletJson;
 }
 
 /*****************************************************************************/
-const JsonFile& StatePrototype::chaletJson() const noexcept
+const JsonFile& CentralState::chaletJson() const noexcept
 {
 	return m_chaletJson;
 }
 
 /*****************************************************************************/
-const std::string& StatePrototype::filename() const noexcept
+const std::string& CentralState::filename() const noexcept
 {
 	return m_chaletJson.filename();
 }
 
 /*****************************************************************************/
-const BuildConfigurationMap& StatePrototype::buildConfigurations() const noexcept
+const BuildConfigurationMap& CentralState::buildConfigurations() const noexcept
 {
 	return m_buildConfigurations;
 }
 
 /*****************************************************************************/
-const StringList& StatePrototype::requiredBuildConfigurations() const noexcept
+const StringList& CentralState::requiredBuildConfigurations() const noexcept
 {
 	return m_requiredBuildConfigurations;
 }
 
 /*****************************************************************************/
-const std::string& StatePrototype::releaseConfiguration() const noexcept
+const std::string& CentralState::releaseConfiguration() const noexcept
 {
 	return m_releaseConfiguration;
 }
 
 /*****************************************************************************/
-const std::string& StatePrototype::anyConfiguration() const noexcept
+const std::string& CentralState::anyConfiguration() const noexcept
 {
 	if (!m_requiredBuildConfigurations.empty() && !m_requiredBuildConfigurations.front().empty())
 	{
@@ -366,7 +366,7 @@ const std::string& StatePrototype::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-bool StatePrototype::parseEnvFile()
+bool CentralState::parseEnvFile()
 {
 	m_inputs.resolveEnvFile();
 
@@ -374,7 +374,7 @@ bool StatePrototype::parseEnvFile()
 	return envParser.readVariablesFromInputs();
 }
 /*****************************************************************************/
-bool StatePrototype::parseGlobalSettingsJson()
+bool CentralState::parseGlobalSettingsJson()
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
 	GlobalSettingsJsonParser parser(*this, settingsFile);
@@ -382,7 +382,7 @@ bool StatePrototype::parseGlobalSettingsJson()
 }
 
 /*****************************************************************************/
-bool StatePrototype::parseLocalSettingsJson()
+bool CentralState::parseLocalSettingsJson()
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Local);
 	SettingsJsonParser parser(m_inputs, *this, settingsFile);
@@ -390,14 +390,14 @@ bool StatePrototype::parseLocalSettingsJson()
 }
 
 /*****************************************************************************/
-bool StatePrototype::parseBuildJson()
+bool CentralState::parseBuildJson()
 {
-	BuildJsonProtoParser parser(*this);
+	CentralBuildJsonParser parser(*this);
 	return parser.serialize();
 }
 
 /*****************************************************************************/
-bool StatePrototype::makeDefaultBuildConfigurations()
+bool CentralState::makeDefaultBuildConfigurations()
 {
 	m_buildConfigurations.clear();
 
@@ -421,7 +421,7 @@ bool StatePrototype::makeDefaultBuildConfigurations()
 }
 
 /*****************************************************************************/
-void StatePrototype::addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig)
+void CentralState::addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig)
 {
 	if (m_buildConfigurations.find(inName) != m_buildConfigurations.end())
 	{
@@ -434,13 +434,13 @@ void StatePrototype::addBuildConfiguration(const std::string& inName, BuildConfi
 }
 
 /*****************************************************************************/
-void StatePrototype::setReleaseConfiguration(const std::string& inName)
+void CentralState::setReleaseConfiguration(const std::string& inName)
 {
 	m_releaseConfiguration = inName;
 }
 
 /*****************************************************************************/
-void StatePrototype::addRequiredBuildConfiguration(std::string inValue)
+void CentralState::addRequiredBuildConfiguration(std::string inValue)
 {
 	List::addIfDoesNotExist(m_allowedBuildConfigurations, std::move(inValue));
 }

@@ -7,10 +7,10 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
-#include "SettingsJson/GlobalSettingsState.hpp"
-#include "SettingsJson/SchemaSettingsJson.hpp"
+#include "SettingsJson/IntermediateSettingsState.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
 
-#include "State/StatePrototype.hpp"
+#include "State/CentralState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -23,19 +23,19 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile) :
+SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, CentralState& inCentralState, JsonFile& inJsonFile) :
 	m_inputs(inInputs),
-	m_prototype(inPrototype),
+	m_centralState(inCentralState),
 	m_jsonFile(inJsonFile)
 {
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
+bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 {
 	// Timer timer;
 
-	SchemaSettingsJson schemaBuilder;
+	SettingsJsonSchema schemaBuilder;
 	Json schema = schemaBuilder.get();
 
 	if (m_inputs.saveSchemaToFile())
@@ -43,7 +43,7 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 		JsonFile::saveToFile(schema, "schema/chalet-settings.schema.json");
 	}
 
-	/*bool cacheExists = m_prototype.cache.exists();
+	/*bool cacheExists = m_centralState.cache.exists();
 	if (cacheExists)
 	{
 		Diagnostic::infoEllipsis("Reading Settings [{}]", m_jsonFile.filename());
@@ -77,7 +77,7 @@ bool SettingsJsonParser::serialize(const GlobalSettingsState& inState)
 bool SettingsJsonParser::validatePaths()
 {
 #if defined(CHALET_MACOS)
-	if (!Commands::pathExists(m_prototype.tools.applePlatformSdk("macosx")))
+	if (!Commands::pathExists(m_centralState.tools.applePlatformSdk("macosx")))
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -91,7 +91,7 @@ bool SettingsJsonParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
+bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inState)
 {
 	// TODO: Copy from global cache. If one doesn't exist, do this
 
@@ -270,7 +270,7 @@ bool SettingsJsonParser::makeSettingsJson(const GlobalSettingsState& inState)
 		auto gitPath = gitNode.get<std::string>();
 		if (gitPath.empty())
 		{
-			gitPath = m_prototype.tools.getPathToGit();
+			gitPath = m_centralState.tools.getPathToGit();
 			tools[Keys::ToolsGit] = gitPath;
 		}
 		else
@@ -427,7 +427,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			}
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 			{
-				m_prototype.tools.setSigningIdentity(value.get<std::string>());
+				m_centralState.tools.setSigningIdentity(value.get<std::string>());
 			}
 			else if (String::equals(Keys::OptionsInputFile, key))
 			{
@@ -551,46 +551,46 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		if (value.is_string())
 		{
 			if (String::equals(Keys::ToolsBash, key))
-				m_prototype.tools.setBash(value.get<std::string>());
+				m_centralState.tools.setBash(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCodesign, key))
-				m_prototype.tools.setCodesign(value.get<std::string>());
+				m_centralState.tools.setCodesign(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCommandPrompt, key))
-				m_prototype.tools.setCommandPrompt(value.get<std::string>());
+				m_centralState.tools.setCommandPrompt(value.get<std::string>());
 			else if (String::equals(Keys::ToolsGit, key))
-				m_prototype.tools.setGit(value.get<std::string>());
+				m_centralState.tools.setGit(value.get<std::string>());
 			else if (String::equals(Keys::ToolsHdiutil, key))
-				m_prototype.tools.setHdiutil(value.get<std::string>());
+				m_centralState.tools.setHdiutil(value.get<std::string>());
 			else if (String::equals(Keys::ToolsInstallNameTool, key))
-				m_prototype.tools.setInstallNameTool(value.get<std::string>());
+				m_centralState.tools.setInstallNameTool(value.get<std::string>());
 			else if (String::equals(Keys::ToolsInstruments, key))
-				m_prototype.tools.setInstruments(value.get<std::string>());
+				m_centralState.tools.setInstruments(value.get<std::string>());
 			else if (String::equals(Keys::ToolsLdd, key))
-				m_prototype.tools.setLdd(value.get<std::string>());
+				m_centralState.tools.setLdd(value.get<std::string>());
 			else if (String::equals(Keys::ToolsMakeNsis, key))
-				m_prototype.tools.setMakeNsis(value.get<std::string>());
+				m_centralState.tools.setMakeNsis(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOsascript, key))
-				m_prototype.tools.setOsascript(value.get<std::string>());
+				m_centralState.tools.setOsascript(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOtool, key))
-				m_prototype.tools.setOtool(value.get<std::string>());
+				m_centralState.tools.setOtool(value.get<std::string>());
 
 			else if (String::equals(Keys::ToolsPlutil, key))
-				m_prototype.tools.setPlutil(value.get<std::string>());
+				m_centralState.tools.setPlutil(value.get<std::string>());
 			else if (String::equals(Keys::ToolsPowershell, key))
-				m_prototype.tools.setPowershell(value.get<std::string>());
+				m_centralState.tools.setPowershell(value.get<std::string>());
 			else if (String::equals(Keys::ToolsSample, key))
-				m_prototype.tools.setSample(value.get<std::string>());
+				m_centralState.tools.setSample(value.get<std::string>());
 			else if (String::equals(Keys::ToolsSips, key))
-				m_prototype.tools.setSips(value.get<std::string>());
+				m_centralState.tools.setSips(value.get<std::string>());
 			else if (String::equals(Keys::ToolsTiffutil, key))
-				m_prototype.tools.setTiffutil(value.get<std::string>());
+				m_centralState.tools.setTiffutil(value.get<std::string>());
 			else if (String::equals(Keys::ToolsXcodebuild, key))
-				m_prototype.tools.setXcodebuild(value.get<std::string>());
+				m_centralState.tools.setXcodebuild(value.get<std::string>());
 			// else if (String::equals(Keys::ToolsXcodegen, key))
-			// 	m_prototype.tools.setXcodegen(value.get<std::string>());
+			// 	m_centralState.tools.setXcodegen(value.get<std::string>());
 			else if (String::equals(Keys::ToolsXcrun, key))
-				m_prototype.tools.setXcrun(value.get<std::string>());
+				m_centralState.tools.setXcrun(value.get<std::string>());
 			else if (String::equals(Keys::ToolsZip, key))
-				m_prototype.tools.setZip(value.get<std::string>());
+				m_centralState.tools.setZip(value.get<std::string>());
 			else
 				removeKeys.push_back(key);
 		}
@@ -627,7 +627,7 @@ bool SettingsJsonParser::parseAppleSdks(Json& inNode)
 		}
 
 		auto path = pathJson.get<std::string>();
-		m_prototype.tools.addApplePlatformSdk(key, std::move(path));
+		m_centralState.tools.addApplePlatformSdk(key, std::move(path));
 	}
 
 	return true;

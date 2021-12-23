@@ -5,12 +5,12 @@
 
 #include "Core/QueryController.hpp"
 
-#include "BuildJson/SchemaBuildJson.hpp"
+#include "BuildJson/BuildJsonSchema.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsManager.hpp"
-#include "SettingsJson/SchemaSettingsJson.hpp"
-#include "State/StatePrototype.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
+#include "State/CentralState.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -19,15 +19,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-QueryController::QueryController(const StatePrototype& inPrototype) :
-	m_prototype(inPrototype)
+QueryController::QueryController(const CentralState& inCentralState) :
+	m_centralState(inCentralState)
 {
 }
 
 /*****************************************************************************/
 bool QueryController::printListOfRequestedType()
 {
-	QueryOption query = m_prototype.inputs().queryOption();
+	QueryOption query = m_centralState.inputs().queryOption();
 	if (query == QueryOption::None)
 		return false;
 
@@ -35,7 +35,7 @@ bool QueryController::printListOfRequestedType()
 	switch (query)
 	{
 		case QueryOption::Commands:
-			output = m_prototype.inputs().commandList();
+			output = m_centralState.inputs().commandList();
 			break;
 
 		case QueryOption::Configurations:
@@ -43,7 +43,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::ToolchainPresets:
-			output = m_prototype.inputs().getToolchainPresets();
+			output = m_centralState.inputs().getToolchainPresets();
 			break;
 
 		case QueryOption::UserToolchains:
@@ -55,7 +55,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::QueryNames:
-			output = m_prototype.inputs().getCliQueryOptions();
+			output = m_centralState.inputs().getCliQueryOptions();
 			break;
 
 		case QueryOption::ThemeNames:
@@ -79,7 +79,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 
 		case QueryOption::AllToolchains: {
-			StringList presets = m_prototype.inputs().getToolchainPresets();
+			StringList presets = m_centralState.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
 			output = List::combine(std::move(userToolchains), std::move(presets));
 			break;
@@ -116,14 +116,14 @@ bool QueryController::printListOfRequestedType()
 /*****************************************************************************/
 const Json& QueryController::getSettingsJson() const
 {
-	if (m_prototype.cache.exists(CacheType::Local))
+	if (m_centralState.cache.exists(CacheType::Local))
 	{
-		const auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Local);
+		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Local);
 		return settingsFile.json;
 	}
-	else if (m_prototype.cache.exists(CacheType::Global))
+	else if (m_centralState.cache.exists(CacheType::Global))
 	{
-		const auto& settingsFile = m_prototype.cache.getSettings(SettingsType::Global);
+		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Global);
 		return settingsFile.json;
 	}
 
@@ -136,7 +136,7 @@ StringList QueryController::getBuildConfigurationList() const
 	StringList ret;
 
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
-	const auto& buildJson = m_prototype.chaletJson().json;
+	const auto& buildJson = m_centralState.chaletJson().json;
 
 	bool addedDefaults = false;
 	if (buildJson.contains(Keys::DefaultConfigurations))
@@ -206,7 +206,7 @@ StringList QueryController::getUserToolchainList() const
 /*****************************************************************************/
 StringList QueryController::getArchitectures() const
 {
-	const auto& queryData = m_prototype.inputs().queryData();
+	const auto& queryData = m_centralState.inputs().queryData();
 	if (!queryData.empty())
 	{
 		const auto& toolchain = queryData.front();
@@ -259,7 +259,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 #else
 		return {
 			std::move(kAuto),
-			m_prototype.inputs().hostArchitecture(),
+			m_centralState.inputs().hostArchitecture(),
 		};
 #endif
 	}
@@ -336,7 +336,7 @@ StringList QueryController::getCurrentArchitecture() const
 
 	if (ret.empty())
 	{
-		ret.emplace_back(m_prototype.inputs().defaultArchPreset());
+		ret.emplace_back(m_centralState.inputs().defaultArchPreset());
 	}
 
 	return ret;
@@ -370,7 +370,7 @@ StringList QueryController::getCurrentBuildConfiguration() const
 
 	/*if (ret.empty())
 	{
-		ret.emplace_back(m_prototype.releaseConfiguration());
+		ret.emplace_back(m_centralState.releaseConfiguration());
 	}*/
 
 	return ret;
@@ -404,7 +404,7 @@ StringList QueryController::getCurrentToolchain() const
 
 	if (ret.empty())
 	{
-		ret.emplace_back(m_prototype.inputs().defaultToolchainPreset());
+		ret.emplace_back(m_centralState.inputs().defaultToolchainPreset());
 	}
 
 	return ret;
@@ -415,7 +415,7 @@ StringList QueryController::getCurrentRunTarget() const
 {
 	StringList ret;
 
-	const auto& buildJson = m_prototype.chaletJson().json;
+	const auto& buildJson = m_centralState.chaletJson().json;
 
 	StringList executableProjects;
 	if (buildJson.is_object())
@@ -499,7 +499,7 @@ StringList QueryController::getSettingsJsonState() const
 	StringList ret;
 
 	Json output = Json::object();
-	auto toolchainPresets = m_prototype.inputs().getToolchainPresets();
+	auto toolchainPresets = m_centralState.inputs().getToolchainPresets();
 	auto userToolchains = getUserToolchainList();
 	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
 	output["toolchainPresets"] = std::move(toolchainPresets);
@@ -531,7 +531,7 @@ StringList QueryController::getChaletSchema() const
 {
 	StringList ret;
 
-	SchemaBuildJson schemaBuilder;
+	BuildJsonSchema schemaBuilder;
 	Json schema = schemaBuilder.get();
 	ret.emplace_back(schema.dump());
 
@@ -543,7 +543,7 @@ StringList QueryController::getSettingsSchema() const
 {
 	StringList ret;
 
-	SchemaSettingsJson schemaBuilder;
+	SettingsJsonSchema schemaBuilder;
 	Json schema = schemaBuilder.get();
 	ret.emplace_back(schema.dump());
 

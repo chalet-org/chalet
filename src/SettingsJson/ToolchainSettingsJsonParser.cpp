@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "SettingsJson/SettingsToolchainJsonParser.hpp"
+#include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -19,14 +19,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsToolchainJsonParser::SettingsToolchainJsonParser(BuildState& inState, JsonFile& inJsonFile) :
+ToolchainSettingsJsonParser::ToolchainSettingsJsonParser(BuildState& inState, JsonFile& inJsonFile) :
 	m_state(inState),
 	m_jsonFile(inJsonFile)
 {
 }
 
 /*****************************************************************************/
-bool SettingsToolchainJsonParser::serialize()
+bool ToolchainSettingsJsonParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
@@ -54,7 +54,7 @@ bool SettingsToolchainJsonParser::serialize()
 }
 
 /*****************************************************************************/
-bool SettingsToolchainJsonParser::serialize(Json& inNode)
+bool ToolchainSettingsJsonParser::serialize(Json& inNode)
 {
 	if (!inNode.is_object())
 		return false;
@@ -69,7 +69,7 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 }
 
 /*****************************************************************************/
-bool SettingsToolchainJsonParser::validatePaths()
+bool ToolchainSettingsJsonParser::validatePaths()
 {
 	// TODO: move
 	bool result = true;
@@ -134,7 +134,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
+bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
 {
 	if (!toolchain.contains(Keys::ToolchainVersion) || !toolchain[Keys::ToolchainVersion].is_string() || toolchain[Keys::ToolchainVersion].get<std::string>().empty())
 	{
@@ -460,7 +460,7 @@ bool SettingsToolchainJsonParser::makeToolchain(Json& toolchain, const Toolchain
 }
 
 /*****************************************************************************/
-bool SettingsToolchainJsonParser::parseToolchain(Json& inNode)
+bool ToolchainSettingsJsonParser::parseToolchain(Json& inNode)
 {
 	StringList removeKeys;
 	for (const auto& [key, value] : inNode.items())

@@ -24,12 +24,12 @@ struct SourceTarget;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct SubChaletTarget;
-struct StatePrototype;
+struct CentralState;
 class BuildState;
 
 struct BuildJsonParser
 {
-	explicit BuildJsonParser(StatePrototype& inPrototype, BuildState& inState);
+	explicit BuildJsonParser(CentralState& inCentralState, BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
 	~BuildJsonParser();
 

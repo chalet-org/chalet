@@ -16,13 +16,13 @@ struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
-struct StatePrototype;
+struct CentralState;
 class BinaryDependencyMap;
 struct IAppBundler;
 
 struct AppBundler
 {
-	explicit AppBundler(StatePrototype& inPrototype);
+	explicit AppBundler(CentralState& inCentralState);
 	CHALET_DISALLOW_COPY_MOVE(AppBundler);
 	~AppBundler();
 
@@ -52,7 +52,7 @@ private:
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);
 	BuildState* getBuildState(const std::string& inBuildConfiguration) const;
 
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 
 	HeapDictionary<BuildState> m_states;
 	Unique<BinaryDependencyMap> m_dependencyMap;

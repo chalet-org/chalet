@@ -13,18 +13,18 @@ namespace chalet
 {
 struct CommandLineInputs;
 struct JsonFile;
-struct StatePrototype;
-struct GlobalSettingsState;
+struct CentralState;
+struct IntermediateSettingsState;
 
 struct SettingsJsonParser
 {
-	explicit SettingsJsonParser(CommandLineInputs& inInputs, StatePrototype& inPrototype, JsonFile& inJsonFile);
+	explicit SettingsJsonParser(CommandLineInputs& inInputs, CentralState& inCentralState, JsonFile& inJsonFile);
 
-	bool serialize(const GlobalSettingsState& inState);
+	bool serialize(const IntermediateSettingsState& inState);
 
 private:
 	bool validatePaths();
-	bool makeSettingsJson(const GlobalSettingsState& inState);
+	bool makeSettingsJson(const IntermediateSettingsState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseSettings(Json& inNode);
@@ -35,7 +35,7 @@ private:
 #endif
 
 	CommandLineInputs& m_inputs;
-	StatePrototype& m_prototype;
+	CentralState& m_centralState;
 	JsonFile& m_jsonFile;
 };
 }

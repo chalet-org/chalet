@@ -11,15 +11,15 @@
 namespace chalet
 {
 struct IBuildDependency;
-struct StatePrototype;
+struct CentralState;
 using BuildDependency = Unique<IBuildDependency>;
 
 struct IBuildDependency
 {
-	explicit IBuildDependency(const StatePrototype& inPrototype, const BuildDependencyType inType);
+	explicit IBuildDependency(const CentralState& inCentralState, const BuildDependencyType inType);
 	virtual ~IBuildDependency() = default;
 
-	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const StatePrototype& inPrototype);
+	[[nodiscard]] static BuildDependency make(const BuildDependencyType inType, const CentralState& inCentralState);
 
 	virtual bool validate() = 0;
 
@@ -30,7 +30,7 @@ struct IBuildDependency
 	void setName(const std::string& inValue) noexcept;
 
 protected:
-	const StatePrototype& m_prototype;
+	const CentralState& m_centralState;
 
 private:
 	std::string m_name;

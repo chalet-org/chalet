@@ -8,8 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/GitRunner.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "State/StatePrototype.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -21,21 +21,21 @@
 namespace chalet
 {
 /*****************************************************************************/
-DependencyManager::DependencyManager(StatePrototype& inPrototype) :
-	m_prototype(inPrototype)
+DependencyManager::DependencyManager(CentralState& inCentralState) :
+	m_centralState(inCentralState)
 {
 }
 
 /*****************************************************************************/
 bool DependencyManager::run()
 {
-	m_prototype.cache.file().loadExternalDependencies(m_prototype.inputs().externalDirectory());
+	m_centralState.cache.file().loadExternalDependencies(m_centralState.inputs().externalDirectory());
 
 	// Output::lineBreak();
 
 	m_fetched = false;
 
-	for (auto& dependency : m_prototype.externalDependencies)
+	for (auto& dependency : m_centralState.externalDependencies)
 	{
 		if (dependency->isGit())
 		{
@@ -54,7 +54,7 @@ bool DependencyManager::run()
 	// if (!m_fetched)
 	// 	Output::previousLine();
 
-	m_prototype.cache.file().saveExternalDependencies();
+	m_centralState.cache.file().saveExternalDependencies();
 
 	return true;
 }
@@ -64,12 +64,12 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 {
 	m_destinationCache.push_back(inDependency.destination());
 
-	if (m_prototype.tools.git().empty())
+	if (m_centralState.tools.git().empty())
 		return true;
 
-	bool doNotUpdate = m_prototype.inputs().route() != Route::Configure;
+	bool doNotUpdate = m_centralState.inputs().route() != Route::Configure;
 
-	GitRunner git(m_prototype, inDependency);
+	GitRunner git(m_centralState, inDependency);
 	if (!git.run(doNotUpdate))
 	{
 		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
@@ -86,7 +86,7 @@ StringList DependencyManager::getUnusedDependencies() const
 {
 	StringList ret;
 
-	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
+	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
 	for (auto& [key, value] : dependencyCache)
 	{
 		if (!List::contains(m_destinationCache, key))
@@ -99,9 +99,9 @@ StringList DependencyManager::getUnusedDependencies() const
 /*****************************************************************************/
 bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 {
-	auto& dependencyCache = m_prototype.cache.file().externalDependencies();
+	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
 
-	const auto& externalDir = m_prototype.inputs().externalDirectory();
+	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	for (auto& it : inList)
 	{
 		if (Commands::pathExists(it))
@@ -125,7 +125,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 /*****************************************************************************/
 bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 {
-	const auto& externalDir = m_prototype.inputs().externalDirectory();
+	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	if (Commands::pathIsEmpty(externalDir, {}, true))
 	{
 		if (!Commands::remove(externalDir))

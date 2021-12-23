@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_GLOBAL_SETTINGS_STATE_HPP
-#define CHALET_GLOBAL_SETTINGS_STATE_HPP
+#ifndef CHALET_INTERMEDIATE_SETTINGS_STATE_HPP
+#define CHALET_INTERMEDIATE_SETTINGS_STATE_HPP
 
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
-struct GlobalSettingsState
+struct IntermediateSettingsState
 {
 	Json toolchains;
 	Json tools;
@@ -37,4 +37,4 @@ struct GlobalSettingsState
 };
 }
 
-#endif // CHALET_GLOBAL_SETTINGS_STATE_HPP
+#endif // CHALET_INTERMEDIATE_SETTINGS_STATE_HPP
