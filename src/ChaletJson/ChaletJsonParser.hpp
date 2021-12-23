@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_PARSER_HPP
-#define CHALET_BUILD_JSON_PARSER_HPP
+#ifndef CHALET_CHALET_JSON_PARSER_HPP
+#define CHALET_CHALET_JSON_PARSER_HPP
 
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
@@ -27,11 +27,11 @@ struct SubChaletTarget;
 struct CentralState;
 class BuildState;
 
-struct BuildJsonParser
+struct ChaletJsonParser
 {
-	explicit BuildJsonParser(CentralState& inCentralState, BuildState& inState);
-	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
-	~BuildJsonParser();
+	explicit ChaletJsonParser(CentralState& inCentralState, BuildState& inState);
+	CHALET_DISALLOW_COPY_MOVE(ChaletJsonParser);
+	~ChaletJsonParser();
 
 	bool serialize();
 
@@ -60,7 +60,6 @@ private:
 	bool valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	JsonFile& m_chaletJson;
-	const std::string& m_filename;
 	BuildState& m_state;
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
@@ -70,6 +69,6 @@ private:
 };
 }
 
-#include "BuildJson/BuildJsonParser.inl"
+#include "ChaletJson/ChaletJsonParser.inl"
 
-#endif // CHALET_BUILD_JSON_PARSER_HPP
+#endif // CHALET_CHALET_JSON_PARSER_HPP

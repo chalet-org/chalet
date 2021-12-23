@@ -7,21 +7,21 @@
 #define CHALET_STARTER_FILE_TEMPLATES_HPP
 
 #include "Compile/CxxSpecialization.hpp"
-#include "Init/BuildJsonProps.hpp"
+#include "Init/ChaletJsonProps.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
 namespace StarterFileTemplates
 {
-Json getStandardChaletJson(const BuildJsonProps& inProps);
+Json getStandardChaletJson(const ChaletJsonProps& inProps);
 std::string getMainCxx(const CxxSpecialization inSpecialization, const bool inModules);
 std::string getPch(const std::string& inFile, const CodeLanguage inLanguage, const CxxSpecialization inSpecialization);
 std::string getGitIgnore(const std::string& inBuildFolder, const std::string& inSettingsFile);
 std::string getDotEnv();
 //
-Json getCMakeStarterChaletJson(const BuildJsonProps& inProps);
-std::string getCMakeStarter(const BuildJsonProps& inProps);
+Json getCMakeStarterChaletJson(const ChaletJsonProps& inProps);
+std::string getCMakeStarter(const ChaletJsonProps& inProps);
 }
 }
 

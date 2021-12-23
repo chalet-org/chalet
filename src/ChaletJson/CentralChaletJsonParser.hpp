@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CENTRAL_BUILD_JSON_PARSER_HPP
-#define CHALET_CENTRAL_BUILD_JSON_PARSER_HPP
+#ifndef CHALET_CENTRAL_CHALET_JSON_PARSER_HPP
+#define CHALET_CENTRAL_CHALET_JSON_PARSER_HPP
 
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
@@ -27,11 +27,11 @@ struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
 struct WindowsNullsoftInstallerTarget;
 
-struct CentralBuildJsonParser
+struct CentralChaletJsonParser
 {
-	explicit CentralBuildJsonParser(CentralState& inCentralState);
-	CHALET_DISALLOW_COPY_MOVE(CentralBuildJsonParser);
-	~CentralBuildJsonParser();
+	explicit CentralChaletJsonParser(CentralState& inCentralState);
+	CHALET_DISALLOW_COPY_MOVE(CentralChaletJsonParser);
+	~CentralChaletJsonParser();
 
 	bool serialize() const;
 
@@ -64,13 +64,12 @@ private:
 
 	CentralState& m_centralState;
 	JsonFile& m_chaletJson;
-	const std::string& m_filename;
 
 	StringList m_notPlatforms;
 	std::string m_platform;
 };
 }
 
-#include "BuildJson/CentralBuildJsonParser.inl"
+#include "ChaletJson/CentralChaletJsonParser.inl"
 
-#endif // CHALET_CENTRAL_BUILD_JSON_PARSER_HPP
+#endif // CHALET_CENTRAL_CHALET_JSON_PARSER_HPP

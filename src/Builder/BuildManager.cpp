@@ -964,7 +964,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 /*****************************************************************************/
 std::string BuildManager::getRunTarget()
 {
-	// Note: validated in BuildJsonParser::validRunTargetRequestedFromInput()
+	// Note: validated in ChaletJsonParser::validRunTargetRequestedFromInput()
 	//  before BuildManager is run
 	//
 	const auto& inputRunTarget = m_state.inputs.runTarget();

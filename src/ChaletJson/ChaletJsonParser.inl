@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildJsonParser.hpp"
+#include "ChaletJson/ChaletJsonParser.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 
@@ -11,7 +11,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
+bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
 {
 	if (!String::equals(inSearch, inKey))
 	{
@@ -60,7 +60,7 @@ bool BuildJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& i
 
 /*****************************************************************************/
 template <typename T>
-bool BuildJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
+bool ChaletJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const
 {
 	chalet_assert(m_state.environment != nullptr, "");
 

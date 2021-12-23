@@ -7,8 +7,8 @@
 #include "State/BuildState.hpp"
 #include "Json/JsonFile.hpp"
 //
-#include "BuildJson/BuildJsonParser.hpp"
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
@@ -41,9 +41,8 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-BuildJsonParser::BuildJsonParser(CentralState& inCentralState, BuildState& inState) :
+ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inState) :
 	m_chaletJson(inCentralState.chaletJson()),
-	m_filename(inCentralState.filename()),
 	m_state(inState),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
@@ -51,31 +50,31 @@ BuildJsonParser::BuildJsonParser(CentralState& inCentralState, BuildState& inSta
 }
 
 /*****************************************************************************/
-BuildJsonParser::~BuildJsonParser() = default;
+ChaletJsonParser::~ChaletJsonParser() = default;
 
 /*****************************************************************************/
-bool BuildJsonParser::serialize()
+bool ChaletJsonParser::serialize()
 {
 	// Timer timer;
-	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
+	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_chaletJson.filename());
 
 	const Json& jRoot = m_chaletJson.json;
 	if (!serializeFromJsonRoot(jRoot))
 	{
-		Diagnostic::error("{}: There was an error parsing the file.", m_filename);
+		Diagnostic::error("{}: There was an error parsing the file.", m_chaletJson.filename());
 		return false;
 	}
 
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of 'condition' property", m_filename, buildConfiguration);
+		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of 'condition' property", m_chaletJson.filename(), buildConfiguration);
 		return false;
 	}
 
 	if (!validRunTargetRequestedFromInput())
 	{
-		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_filename, m_state.inputs.runTarget(), m_state.configuration.name());
+		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
 		return false;
 	}
 
@@ -87,7 +86,7 @@ bool BuildJsonParser::serialize()
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
+bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 {
 	if (!parseTarget(inJson))
 		return false;
@@ -96,7 +95,7 @@ bool BuildJsonParser::serializeFromJsonRoot(const Json& inJson)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::validBuildRequested() const
+bool ChaletJsonParser::validBuildRequested() const
 {
 	int count = 0;
 	for (auto& target : m_state.targets)
@@ -108,7 +107,7 @@ bool BuildJsonParser::validBuildRequested() const
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.language() == CodeLanguage::None)
 			{
-				Diagnostic::error("{}: All targets must have 'language' defined, but '{}' was found without one.", m_filename, project.name());
+				Diagnostic::error("{}: All targets must have 'language' defined, but '{}' was found without one.", m_chaletJson.filename(), project.name());
 				return false;
 			}
 		}
@@ -117,7 +116,7 @@ bool BuildJsonParser::validBuildRequested() const
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::validRunTargetRequestedFromInput() const
+bool ChaletJsonParser::validRunTargetRequestedFromInput() const
 {
 	const auto& inputRunTarget = m_state.inputs.runTarget();
 	if (inputRunTarget.empty())
@@ -151,18 +150,18 @@ bool BuildJsonParser::validRunTargetRequestedFromInput() const
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseTarget(const Json& inNode)
+bool ChaletJsonParser::parseTarget(const Json& inNode)
 {
 	if (!inNode.contains(Keys::Targets))
 	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_filename, Keys::Targets);
+		Diagnostic::error("{}: '{}' is required, but was not found.", m_chaletJson.filename(), Keys::Targets);
 		return false;
 	}
 
 	const Json& targets = inNode.at(Keys::Targets);
 	if (!targets.is_object() || targets.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one target.", m_filename, Keys::Targets);
+		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Targets);
 		return false;
 	}
 
@@ -176,7 +175,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 				auto abstract = std::make_unique<SourceTarget>(m_state);
 				if (!parseSourceTarget(*abstract, templateJson, true))
 				{
-					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
+					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
 					return false;
 				}
 
@@ -185,7 +184,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			else
 			{
 				// not sure if this would actually get triggered?
-				Diagnostic::error("{}: project template '{}' already exists.", m_filename, name);
+				Diagnostic::error("{}: project template '{}' already exists.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -199,7 +198,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 
 		if (!abstractJson.is_object())
 		{
-			Diagnostic::error("{}: abstract target '{}' must be an object.", m_filename, prefixedName);
+			Diagnostic::error("{}: abstract target '{}' must be an object.", m_chaletJson.filename(), prefixedName);
 			return false;
 		}
 
@@ -211,7 +210,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			auto abstract = std::make_unique<SourceTarget>(m_state);
 			if (!parseSourceTarget(*abstract, abstractJson, true))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
 				return false;
 			}
 
@@ -220,7 +219,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		else
 		{
 			// not sure if this would actually get triggered?
-			Diagnostic::error("{}: project template '{}' already exists.", m_filename, name);
+			Diagnostic::error("{}: project template '{}' already exists.", m_chaletJson.filename(), name);
 			return false;
 		}
 	}
@@ -235,7 +234,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 	{
 		if (!targetJson.is_object())
 		{
-			Diagnostic::error("{}: target '{}' must be an object.", m_filename, name);
+			Diagnostic::error("{}: target '{}' must be an object.", m_chaletJson.filename(), name);
 			return false;
 		}
 
@@ -268,13 +267,13 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 			{}
 			else
 			{
-				Diagnostic::error("{}: Found unrecognized target kind of '{}'", m_filename, val);
+				Diagnostic::error("{}: Found unrecognized target kind of '{}'", m_chaletJson.filename(), val);
 				return false;
 			}
 		}
 		else
 		{
-			Diagnostic::error("{}: Found unrecognized target of '{}'", m_filename, name);
+			Diagnostic::error("{}: Found unrecognized target of '{}'", m_chaletJson.filename(), name);
 			return false;
 		}
 
@@ -287,7 +286,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (type == BuildTargetType::Project && !String::equals('*', extends))
 			{
-				Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_filename, extends, name);
+				Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_chaletJson.filename(), extends, name);
 				return false;
 			}
 
@@ -305,7 +304,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseSubChaletTarget(static_cast<SubChaletTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'chaletProject'.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'chaletProject'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -313,7 +312,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseCMakeTarget(static_cast<CMakeTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -321,7 +320,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseProcessTarget(static_cast<ProcessBuildTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -329,7 +328,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 		{
 			if (!parseSourceTarget(static_cast<SourceTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' project target.", m_filename, name);
+				Diagnostic::error("{}: Error parsing the '{}' project target.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -344,7 +343,7 @@ bool BuildJsonParser::parseTarget(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
+bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true; // true to skip project
@@ -407,12 +406,12 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 
 		if (hasFiles && hasLocations)
 		{
-			Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_filename);
+			Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_chaletJson.filename());
 			return false;
 		}
 		else if (!hasFiles && !hasLocations)
 		{
-			Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_filename, outTarget.name());
+			Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_chaletJson.filename(), outTarget.name());
 			return false;
 		}
 	}
@@ -448,7 +447,7 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 
 		if (outTarget.kind() == ProjectKind::None)
 		{
-			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_filename, outTarget.name());
+			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_chaletJson.filename(), outTarget.name());
 			return false;
 		}
 	}
@@ -457,7 +456,7 @@ bool BuildJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inN
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -486,7 +485,7 @@ bool BuildJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -522,7 +521,7 @@ bool BuildJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Jso
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -571,7 +570,7 @@ bool BuildJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNod
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -603,7 +602,7 @@ bool BuildJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Js
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
 {
 	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
 	if (!buildConfiguration.empty())
@@ -616,7 +615,7 @@ bool BuildJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& 
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -641,7 +640,7 @@ bool BuildJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Js
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const
+bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -757,7 +756,7 @@ bool BuildJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const Js
 }
 
 /*****************************************************************************/
-bool BuildJsonParser::conditionIsValid(const std::string& inContent) const
+bool ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	if (!String::equals(m_platform, inContent))
 	{

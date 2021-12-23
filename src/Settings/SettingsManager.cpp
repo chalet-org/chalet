@@ -5,7 +5,7 @@
 
 #include "Settings/SettingsManager.hpp"
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 #include "Terminal/Commands.hpp"
@@ -315,7 +315,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		}
 		else if (String::endsWith(settings.filename(), m_inputs.inputFile()))
 		{
-			BuildJsonSchema schemaBuilder;
+			ChaletJsonSchema schemaBuilder;
 			Json schema = schemaBuilder.get();
 			if (!settings.validate(std::move(schema)))
 			{

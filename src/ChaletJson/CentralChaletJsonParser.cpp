@@ -3,9 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/CentralBuildJsonParser.hpp"
+#include "ChaletJson/CentralChaletJsonParser.hpp"
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
@@ -32,20 +32,19 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-CentralBuildJsonParser::CentralBuildJsonParser(CentralState& inCentralState) :
+CentralChaletJsonParser::CentralChaletJsonParser(CentralState& inCentralState) :
 	m_centralState(inCentralState),
 	m_chaletJson(inCentralState.chaletJson()),
-	m_filename(inCentralState.filename()),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
 }
 
 /*****************************************************************************/
-CentralBuildJsonParser::~CentralBuildJsonParser() = default;
+CentralChaletJsonParser::~CentralChaletJsonParser() = default;
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::serialize() const
+bool CentralChaletJsonParser::serialize() const
 {
 	if (!validateAgainstSchema())
 		return false;
@@ -58,25 +57,25 @@ bool CentralBuildJsonParser::serialize() const
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::validateAgainstSchema() const
+bool CentralChaletJsonParser::validateAgainstSchema() const
 {
-	BuildJsonSchema schemaBuilder;
-	Json buildJsonSchema = schemaBuilder.get();
+	ChaletJsonSchema schemaBuilder;
+	Json jsonSchema = schemaBuilder.get();
 
 	if (m_centralState.inputs().saveSchemaToFile())
 	{
-		JsonFile::saveToFile(buildJsonSchema, "schema/chalet.schema.json");
+		JsonFile::saveToFile(jsonSchema, "schema/chalet.schema.json");
 	}
 
 	// TODO: schema versioning
-	if (!m_chaletJson.validate(std::move(buildJsonSchema)))
+	if (!m_chaletJson.validate(std::move(jsonSchema)))
 		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) const
+bool CentralChaletJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 		return false;
@@ -103,11 +102,11 @@ bool CentralBuildJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) c
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseRoot(const Json& inNode) const
+bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
 {
 	if (!inNode.is_object())
 	{
-		Diagnostic::error("{}: Json root must be an object.", m_filename);
+		Diagnostic::error("{}: Json root must be an object.", m_chaletJson.filename());
 		return false;
 	}
 
@@ -133,7 +132,7 @@ bool CentralBuildJsonParser::parseRoot(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDefaultConfigurations(const Json& inNode) const
+bool CentralChaletJsonParser::parseDefaultConfigurations(const Json& inNode) const
 {
 	bool addedDefaults = false;
 	if (inNode.contains(Keys::DefaultConfigurations))
@@ -149,14 +148,14 @@ bool CentralBuildJsonParser::parseDefaultConfigurations(const Json& inNode) cons
 					auto name = configJson.get<std::string>();
 					if (name.empty())
 					{
-						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, Keys::Configurations);
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
 						return false;
 					}
 
 					BuildConfiguration config;
 					if (!BuildConfiguration::makeDefaultConfiguration(config, name))
 					{
-						Diagnostic::error("{}: Error creating the default build configuration '{}'", m_filename, name);
+						Diagnostic::error("{}: Error creating the default build configuration '{}'", m_chaletJson.filename(), name);
 						return false;
 					}
 
@@ -184,7 +183,7 @@ bool CentralBuildJsonParser::parseDefaultConfigurations(const Json& inNode) cons
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseConfigurations(const Json& inNode) const
+bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 {
 	if (inNode.contains(Keys::Configurations))
 	{
@@ -195,13 +194,13 @@ bool CentralBuildJsonParser::parseConfigurations(const Json& inNode) const
 			{
 				if (!configJson.is_object())
 				{
-					Diagnostic::error("{}: configuration '{}' must be an object.", m_filename, name);
+					Diagnostic::error("{}: configuration '{}' must be an object.", m_chaletJson.filename(), name);
 					return false;
 				}
 
 				if (name.empty())
 				{
-					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_filename, Keys::Configurations);
+					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
 					return false;
 				}
 
@@ -252,7 +251,7 @@ bool CentralBuildJsonParser::parseConfigurations(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
+bool CentralChaletJsonParser::parseDistribution(const Json& inNode) const
 {
 	if (!inNode.contains(Keys::Distribution))
 		return true;
@@ -260,7 +259,7 @@ bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
 	const Json& distributionJson = inNode.at(Keys::Distribution);
 	if (!distributionJson.is_object() || distributionJson.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_filename, Keys::Distribution);
+		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_chaletJson.filename(), Keys::Distribution);
 		return false;
 	}
 
@@ -268,7 +267,7 @@ bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
 	{
 		if (!targetJson.is_object())
 		{
-			Diagnostic::error("{}: distribution bundle '{}' must be an object.", m_filename, name);
+			Diagnostic::error("{}: distribution bundle '{}' must be an object.", m_chaletJson.filename(), name);
 			return false;
 		}
 
@@ -307,13 +306,13 @@ bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
 			{}
 			else
 			{
-				Diagnostic::error("{}: Found unrecognized distribution kind of '{}'", m_filename, val);
+				Diagnostic::error("{}: Found unrecognized distribution kind of '{}'", m_chaletJson.filename(), val);
 				return false;
 			}
 		}
 		else
 		{
-			Diagnostic::error("{}: Found unrecognized distribution of '{}'", m_filename, name);
+			Diagnostic::error("{}: Found unrecognized distribution of '{}'", m_chaletJson.filename(), name);
 			return false;
 		}
 
@@ -361,7 +360,7 @@ bool CentralBuildJsonParser::parseDistribution(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -387,7 +386,7 @@ bool CentralBuildJsonParser::parseDistributionScript(ScriptDistTarget& outTarget
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -419,7 +418,7 @@ bool CentralBuildJsonParser::parseDistributionProcess(ProcessDistTarget& outTarg
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -447,7 +446,7 @@ bool CentralBuildJsonParser::parseDistributionArchive(BundleArchiveTarget& outTa
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
+bool CentralChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true;
@@ -587,7 +586,7 @@ bool CentralBuildJsonParser::parseDistributionBundle(BundleTarget& outTarget, co
 		{
 			if (!List::contains(targets, target))
 			{
-				Diagnostic::error("{}: Distribution bundle '{}' contains a build target that was not found: '{}'", m_filename, outTarget.name(), target);
+				Diagnostic::error("{}: Distribution bundle '{}' contains a build target that was not found: '{}'", m_chaletJson.filename(), outTarget.name(), target);
 				return false;
 			}
 		}
@@ -597,7 +596,7 @@ bool CentralBuildJsonParser::parseDistributionBundle(BundleTarget& outTarget, co
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -684,7 +683,7 @@ bool CentralBuildJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -711,7 +710,7 @@ bool CentralBuildJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstal
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseExternalDependencies(const Json& inNode) const
+bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) const
 {
 	// don't care if there aren't any dependencies
 	if (!inNode.contains(Keys::ExternalDependencies))
@@ -720,7 +719,7 @@ bool CentralBuildJsonParser::parseExternalDependencies(const Json& inNode) const
 	const Json& externalDependencies = inNode.at(Keys::ExternalDependencies);
 	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
-		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_filename, Keys::ExternalDependencies);
+		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_chaletJson.filename(), Keys::ExternalDependencies);
 		return false;
 	}
 
@@ -740,7 +739,7 @@ bool CentralBuildJsonParser::parseExternalDependencies(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
+bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -768,7 +767,7 @@ bool CentralBuildJsonParser::parseGitDependency(GitDependency& outDependency, co
 
 	if (!hasRepository)
 	{
-		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_filename);
+		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_chaletJson.filename());
 		return false;
 	}
 
@@ -776,7 +775,7 @@ bool CentralBuildJsonParser::parseGitDependency(GitDependency& outDependency, co
 	{
 		if (!outDependency.tag().empty())
 		{
-			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_filename, outDependency.repository());
+			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_chaletJson.filename(), outDependency.repository());
 			return false;
 		}
 	}
@@ -785,7 +784,7 @@ bool CentralBuildJsonParser::parseGitDependency(GitDependency& outDependency, co
 }
 
 /*****************************************************************************/
-bool CentralBuildJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
+bool CentralChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
 {
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
 	{
@@ -797,7 +796,7 @@ bool CentralBuildJsonParser::parseTargetCondition(IDistTarget& outTarget, const 
 
 /*****************************************************************************/
 /*****************************************************************************/
-bool CentralBuildJsonParser::conditionIsValid(const std::string& inContent) const
+bool CentralChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	if (!String::equals(m_platform, inContent))
 	{

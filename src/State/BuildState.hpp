@@ -57,7 +57,7 @@ public:
 private:
 	bool initializeBuildConfiguration();
 	bool parseToolchainFromSettingsJson();
-	bool parseBuildJson();
+	bool parseChaletJson();
 
 	bool initializeToolchain();
 	bool initializeBuild();

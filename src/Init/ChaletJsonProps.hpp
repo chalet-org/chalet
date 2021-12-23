@@ -3,15 +3,15 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_PROPS_HPP
-#define CHALET_BUILD_JSON_PROPS_HPP
+#ifndef CHALET_CHALET_JSON_PROPS_HPP
+#define CHALET_CHALET_JSON_PROPS_HPP
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CxxSpecialization.hpp"
 
 namespace chalet
 {
-struct BuildJsonProps
+struct ChaletJsonProps
 {
 	std::string workspaceName;
 	std::string version;
@@ -30,4 +30,4 @@ struct BuildJsonProps
 };
 }
 
-#endif // CHALET_BUILD_JSON_PROPS_HPP
+#endif // CHALET_CHALET_JSON_PROPS_HPP

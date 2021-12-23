@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Json StarterFileTemplates::getStandardChaletJson(const BuildJsonProps& inProps)
+Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 {
 	auto getLanguage = [](CxxSpecialization inSpecialization) -> const char* {
 		switch (inSpecialization)
@@ -303,7 +303,7 @@ std::string StarterFileTemplates::getDotEnv()
 }
 
 /*****************************************************************************/
-Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inProps)
+Json StarterFileTemplates::getCMakeStarterChaletJson(const ChaletJsonProps& inProps)
 {
 	const auto& project = inProps.projectName;
 
@@ -336,7 +336,7 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const BuildJsonProps& inPro
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getCMakeStarter(const BuildJsonProps& inProps)
+std::string StarterFileTemplates::getCMakeStarter(const ChaletJsonProps& inProps)
 {
 	UNUSED(inProps);
 	const auto& version = inProps.version;

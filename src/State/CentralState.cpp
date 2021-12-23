@@ -5,7 +5,7 @@
 
 #include "State/CentralState.hpp"
 
-#include "BuildJson/CentralBuildJsonParser.hpp"
+#include "ChaletJson/CentralChaletJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
@@ -77,7 +77,7 @@ bool CentralState::initialize()
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
-		if (!parseBuildJson())
+		if (!parseChaletJson())
 			return false;
 
 		if (!validateDistribution())
@@ -93,7 +93,7 @@ bool CentralState::initialize()
 	}
 	else
 	{
-		if (!parseBuildJson())
+		if (!parseChaletJson())
 			return false;
 
 		// if (!externalDependencies.empty())
@@ -390,9 +390,9 @@ bool CentralState::parseLocalSettingsJson()
 }
 
 /*****************************************************************************/
-bool CentralState::parseBuildJson()
+bool CentralState::parseChaletJson()
 {
-	CentralBuildJsonParser parser(*this);
+	CentralChaletJsonParser parser(*this);
 	return parser.serialize();
 }
 

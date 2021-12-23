@@ -11,7 +11,7 @@
 
 namespace chalet
 {
-struct BuildJsonProps;
+struct ChaletJsonProps;
 struct CommandLineInputs;
 
 struct ProjectInitializer
@@ -21,15 +21,15 @@ struct ProjectInitializer
 	bool run();
 
 private:
-	bool initializeNormalWorkspace(BuildJsonProps& outProps);
-	bool initializeCMakeWorkspace(BuildJsonProps& outProps);
+	bool initializeNormalWorkspace(ChaletJsonProps& outProps);
+	bool initializeCMakeWorkspace(ChaletJsonProps& outProps);
 
-	bool doRun(const BuildJsonProps& inProps);
+	bool doRun(const ChaletJsonProps& inProps);
 
-	bool makeBuildJson(const BuildJsonProps& inProps);
-	bool makeMainCpp(const BuildJsonProps& inProps);
-	bool makePch(const BuildJsonProps& inProps);
-	bool makeCMakeLists(const BuildJsonProps& inProps);
+	bool makeChaletJson(const ChaletJsonProps& inProps);
+	bool makeMainCpp(const ChaletJsonProps& inProps);
+	bool makePch(const ChaletJsonProps& inProps);
+	bool makeCMakeLists(const ChaletJsonProps& inProps);
 	bool makeGitIgnore();
 	bool makeReadme();
 	bool makeDotEnv();

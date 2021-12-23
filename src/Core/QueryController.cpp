@@ -5,7 +5,7 @@
 
 #include "Core/QueryController.hpp"
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Settings/SettingsManager.hpp"
@@ -136,12 +136,12 @@ StringList QueryController::getBuildConfigurationList() const
 	StringList ret;
 
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
-	const auto& buildJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().json;
 
 	bool addedDefaults = false;
-	if (buildJson.contains(Keys::DefaultConfigurations))
+	if (chaletJson.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = buildJson.at(Keys::DefaultConfigurations);
+		const Json& defaultConfigurations = chaletJson.at(Keys::DefaultConfigurations);
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -164,9 +164,9 @@ StringList QueryController::getBuildConfigurationList() const
 		ret = defaultBuildConfigurations;
 	}
 
-	if (buildJson.contains(Keys::Configurations))
+	if (chaletJson.contains(Keys::Configurations))
 	{
-		const Json& configurations = buildJson.at(Keys::Configurations);
+		const Json& configurations = chaletJson.at(Keys::Configurations);
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -415,14 +415,14 @@ StringList QueryController::getCurrentRunTarget() const
 {
 	StringList ret;
 
-	const auto& buildJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().json;
 
 	StringList executableProjects;
-	if (buildJson.is_object())
+	if (chaletJson.is_object())
 	{
-		if (buildJson.contains(Keys::Targets))
+		if (chaletJson.contains(Keys::Targets))
 		{
-			const auto& targets = buildJson.at(Keys::Targets);
+			const auto& targets = chaletJson.at(Keys::Targets);
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object() || !target.contains(Keys::Kind))
@@ -531,7 +531,7 @@ StringList QueryController::getChaletSchema() const
 {
 	StringList ret;
 
-	BuildJsonSchema schemaBuilder;
+	ChaletJsonSchema schemaBuilder;
 	Json schema = schemaBuilder.get();
 	ret.emplace_back(schema.dump());
 

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "BuildJson/BuildJsonSchema.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
@@ -16,7 +16,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildJsonSchema::BuildJsonSchema() :
+ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
 	kPatternAbstractName(R"([A-Za-z\-_]+)"),
 	kPatternTargetSourceLinks(R"(^[\w\-+.]+$)"),
@@ -32,7 +32,7 @@ BuildJsonSchema::BuildJsonSchema() :
 }
 
 /*****************************************************************************/
-BuildJsonSchema::DefinitionMap BuildJsonSchema::getDefinitions()
+ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 {
 	DefinitionMap defs;
 
@@ -1714,7 +1714,7 @@ BuildJsonSchema::DefinitionMap BuildJsonSchema::getDefinitions()
 }
 
 /*****************************************************************************/
-std::string BuildJsonSchema::getDefinitionName(const Defs inDef)
+std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 {
 	switch (inDef)
 	{
@@ -1845,7 +1845,7 @@ std::string BuildJsonSchema::getDefinitionName(const Defs inDef)
 }
 
 /*****************************************************************************/
-Json BuildJsonSchema::getDefinition(const Defs inDef)
+Json ChaletJsonSchema::getDefinition(const Defs inDef)
 {
 	if (m_useRefs)
 	{
@@ -1862,7 +1862,7 @@ Json BuildJsonSchema::getDefinition(const Defs inDef)
 }
 
 /*****************************************************************************/
-Json BuildJsonSchema::get()
+Json ChaletJsonSchema::get()
 {
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";

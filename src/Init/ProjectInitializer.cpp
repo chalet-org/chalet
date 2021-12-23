@@ -8,7 +8,7 @@
 #include "FileTemplates/StarterFileTemplates.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Init/BuildJsonProps.hpp"
+#include "Init/ChaletJsonProps.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
@@ -63,7 +63,7 @@ bool ProjectInitializer::run()
 	bool isCmakeTemplate = m_inputs.initTemplate() == InitTemplateType::CMake;
 
 	bool result = false;
-	BuildJsonProps props;
+	ChaletJsonProps props;
 	if (isCmakeTemplate)
 	{
 		result = initializeCMakeWorkspace(props);
@@ -92,7 +92,7 @@ bool ProjectInitializer::run()
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
+bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 {
 	outProps.workspaceName = getWorkspaceName();
 	outProps.version = getWorkspaceVersion();
@@ -151,7 +151,7 @@ bool ProjectInitializer::initializeNormalWorkspace(BuildJsonProps& outProps)
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
+bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 {
 	Diagnostic::info("Template: CMake");
 
@@ -208,14 +208,14 @@ bool ProjectInitializer::initializeCMakeWorkspace(BuildJsonProps& outProps)
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
+bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 {
 	Diagnostic::infoEllipsis("Initializing a new workspace called '{}'", inProps.workspaceName);
 	// Commands::sleep(1.5);
 
 	bool result = true;
 
-	if (!makeBuildJson(inProps))
+	if (!makeChaletJson(inProps))
 		result = false;
 
 	if (result)
@@ -303,9 +303,9 @@ bool ProjectInitializer::doRun(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
+bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 {
-	const auto buildJsonPath = fmt::format("{}/chalet.json", m_rootPath);
+	const auto filePath = fmt::format("{}/chalet.json", m_rootPath);
 
 	Json jsonFile;
 	if (m_inputs.initTemplate() == InitTemplateType::CMake)
@@ -317,11 +317,11 @@ bool ProjectInitializer::makeBuildJson(const BuildJsonProps& inProps)
 		jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
 	}
 
-	return JsonFile::saveToFile(jsonFile, buildJsonPath);
+	return JsonFile::saveToFile(jsonFile, filePath);
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
+bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
 	const auto contents = StarterFileTemplates::getMainCxx(inProps.specialization, inProps.modules);
@@ -330,7 +330,7 @@ bool ProjectInitializer::makeMainCpp(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
+bool ProjectInitializer::makePch(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
 	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language, inProps.specialization);
@@ -339,7 +339,7 @@ bool ProjectInitializer::makePch(const BuildJsonProps& inProps)
 }
 
 /*****************************************************************************/
-bool ProjectInitializer::makeCMakeLists(const BuildJsonProps& inProps)
+bool ProjectInitializer::makeCMakeLists(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/CMakeLists.txt", m_rootPath);
 	const auto contents = StarterFileTemplates::getCMakeStarter(inProps);

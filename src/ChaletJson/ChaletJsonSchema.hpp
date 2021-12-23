@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_JSON_SCHEMA_HPP
-#define CHALET_BUILD_JSON_SCHEMA_HPP
+#ifndef CHALET_CHALET_JSON_SCHEMA_HPP
+#define CHALET_CHALET_JSON_SCHEMA_HPP
 
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
-class BuildJsonSchema
+class ChaletJsonSchema
 {
 	enum class Defs : ushort
 	{
@@ -139,7 +139,7 @@ class BuildJsonSchema
 	using DefinitionMap = std::map<Defs, Json>;
 
 public:
-	BuildJsonSchema();
+	ChaletJsonSchema();
 
 	Json get();
 
@@ -167,4 +167,4 @@ private:
 };
 }
 
-#endif // CHALET_BUILD_JSON_SCHEMA_HPP
+#endif // CHALET_CHALET_JSON_SCHEMA_HPP

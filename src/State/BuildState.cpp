@@ -5,9 +5,9 @@
 
 #include "State/BuildState.hpp"
 
-#include "BuildJson/BuildJsonParser.hpp"
 #include "Builder/BuildManager.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "ChaletJson/ChaletJsonParser.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/DotEnvFileGenerator.hpp"
@@ -92,7 +92,7 @@ bool BuildState::initialize()
 	if (!initializeBuildConfiguration())
 		return false;
 
-	if (!parseBuildJson())
+	if (!parseChaletJson())
 		return false;
 
 	if (inputs.route() != Route::Configure)
@@ -235,9 +235,9 @@ bool BuildState::parseToolchainFromSettingsJson()
 }
 
 /*****************************************************************************/
-bool BuildState::parseBuildJson()
+bool BuildState::parseChaletJson()
 {
-	BuildJsonParser parser(m_impl->centralState, *this);
+	ChaletJsonParser parser(m_impl->centralState, *this);
 	return parser.serialize();
 }
 

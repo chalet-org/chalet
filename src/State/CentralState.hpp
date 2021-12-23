@@ -48,14 +48,14 @@ struct CentralState
 	BuildDependencyList externalDependencies;
 
 private:
-	friend struct CentralBuildJsonParser;
+	friend struct CentralChaletJsonParser;
 
 	bool createCache();
 
 	bool parseEnvFile();
 	bool parseGlobalSettingsJson();
 	bool parseLocalSettingsJson();
-	bool parseBuildJson();
+	bool parseChaletJson();
 
 	// bool validateConfigurations();
 	bool validateExternalDependencies();
