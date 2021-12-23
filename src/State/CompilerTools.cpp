@@ -109,7 +109,11 @@ bool CompilerTools::parseVersionString(CompilerInfo& outInfo)
 
 			if (split.size() >= 2)
 			{
-				outInfo.versionMajorMinor += atoi(split[1].c_str());
+				int raw = atoi(split[1].c_str());
+				if (raw < 10)
+					outInfo.versionMajorMinor += (raw * 10);
+				else
+					outInfo.versionMajorMinor += raw;
 
 				if (split.size() >= 3)
 				{

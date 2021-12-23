@@ -333,7 +333,8 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 		if (m_state.configuration.sanitizeUndefinedBehavior())
 			addFlag("-static-libubsan");
 
-		addFlag("-static-libstdc++");
+		if (m_project.language() == CodeLanguage::CPlusPlus)
+			addFlag("-static-libstdc++");
 	}
 }
 
