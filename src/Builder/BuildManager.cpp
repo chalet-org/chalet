@@ -42,8 +42,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildManager::BuildManager(const CommandLineInputs& inInputs, BuildState& inState) :
-	m_inputs(inInputs),
+BuildManager::BuildManager(BuildState& inState) :
 	m_state(inState),
 	m_buildRoutes({
 		{ Route::BuildRun, &BuildManager::cmdBuild },
@@ -106,7 +105,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	{
 		if (m_state.info.dumpAssembly())
 		{
-			m_asmDumper = std::make_unique<AssemblyDumper>(m_inputs, m_state);
+			m_asmDumper = std::make_unique<AssemblyDumper>(m_state);
 			if (!m_asmDumper->validate())
 				return false;
 		}
@@ -367,9 +366,9 @@ void BuildManager::printBuildInformation()
 	}
 
 	auto arch = m_state.info.targetArchitectureTriple();
-	if (!m_inputs.archOptions().empty())
+	if (!m_state.inputs.archOptions().empty())
 	{
-		arch += fmt::format(" ({})", String::join(m_inputs.archOptions(), ','));
+		arch += fmt::format(" ({})", String::join(m_state.inputs.archOptions(), ','));
 	}
 	if (m_state.info.universalArches().empty())
 		Diagnostic::info("Target Architecture: {}", arch);
@@ -386,7 +385,8 @@ std::string BuildManager::getBuildStrategyName() const
 {
 	std::string ret;
 
-	switch (m_state.toolchain.strategy())
+	auto strategy = m_state.toolchain.strategy();
+	switch (strategy)
 	{
 		case StrategyType::Native:
 			ret = "Native";
@@ -518,7 +518,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTa
 /*****************************************************************************/
 bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable)
 {
-	ProfilerRunner profiler(m_inputs, m_state, inProject);
+	ProfilerRunner profiler(m_state, inProject);
 	return profiler.run(inCommand, inExecutable);
 }
 
@@ -528,7 +528,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 
-	const auto& inputBuild = m_inputs.buildConfiguration();
+	const auto& inputBuild = m_state.inputs.buildConfiguration();
 	// const auto& build = m_state.buildConfiguration();
 
 	std::string dirToClean;
@@ -595,7 +595,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 /*****************************************************************************/
 bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 {
-	auto outputLocation = fmt::format("{}/{}", m_inputs.outputDirectory(), inTarget.name());
+	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
 	Path::sanitize(outputLocation);
 
 	if (inTarget.rebuild() && Commands::pathExists(outputLocation))
@@ -648,7 +648,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	else
 		Output::lineBreak();
 
-	ScriptRunner scriptRunner(m_inputs, m_state.tools);
+	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	if (!scriptRunner.run(file, inRunCommand))
 		return false;
 
@@ -809,7 +809,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		return false;
 	}
 
-	const auto& runOptions = m_inputs.runOptions();
+	const auto& runOptions = m_state.inputs.runOptions();
 	const auto& runArguments = inTarget.runArguments();
 
 	if (!inTarget.description().empty())
@@ -853,7 +853,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 
 	bool result = Commands::subprocessWithInput(inCmd);
 
-	m_inputs.clearWorkingDirectory(outputFile);
+	m_state.inputs.clearWorkingDirectory(outputFile);
 
 	int lastExitCode = ProcessController::getLastExitCode();
 
@@ -894,7 +894,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 /*****************************************************************************/
 bool BuildManager::cmdClean()
 {
-	const auto& inputBuild = m_inputs.buildConfiguration();
+	const auto& inputBuild = m_state.inputs.buildConfiguration();
 	const auto& buildConfiguration = m_state.info.buildConfiguration();
 
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
@@ -926,7 +926,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
-	SubChaletBuilder subChalet(m_state, inTarget, m_inputs);
+	SubChaletBuilder subChalet(m_state, inTarget);
 	if (!subChalet.run())
 		return false;
 
@@ -967,7 +967,7 @@ std::string BuildManager::getRunTarget()
 	// Note: validated in BuildJsonParser::validRunTargetRequestedFromInput()
 	//  before BuildManager is run
 	//
-	const auto& inputRunTarget = m_inputs.runTarget();
+	const auto& inputRunTarget = m_state.inputs.runTarget();
 	if (!inputRunTarget.empty())
 		return inputRunTarget;
 

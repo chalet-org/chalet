@@ -21,10 +21,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs) :
+SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget) :
 	m_state(inState),
-	m_target(inTarget),
-	m_inputs(inInputs)
+	m_target(inTarget)
 {
 }
 
@@ -54,7 +53,7 @@ bool SubChaletBuilder::run()
 	}
 	else
 	{
-		m_buildFile = fmt::format("{}/{}", location, m_inputs.defaultInputFile());
+		m_buildFile = fmt::format("{}/{}", location, m_state.inputs.defaultInputFile());
 	}
 
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
@@ -96,8 +95,8 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back("build");
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Commands::getProximatePath(m_inputs.outputDirectory(), inLocation);
-	auto proximateSettings = Commands::getProximatePath(m_inputs.settingsFile(), inLocation);
+	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
+	auto proximateSettings = Commands::getProximatePath(m_state.inputs.settingsFile(), inLocation);
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(inLocation);
@@ -112,7 +111,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back(std::move(proximateSettings));
 
 	cmd.emplace_back("--external-dir");
-	cmd.push_back(m_inputs.externalDirectory());
+	cmd.push_back(m_state.inputs.externalDirectory());
 
 	cmd.emplace_back("--output-dir");
 	cmd.emplace_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
@@ -120,26 +119,26 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	cmd.emplace_back("--configuration");
 	cmd.push_back(m_state.info.buildConfiguration());
 
-	if (!m_inputs.toolchainPreferenceName().empty())
+	if (!m_state.inputs.toolchainPreferenceName().empty())
 	{
 		cmd.emplace_back("--toolchain");
-		cmd.push_back(m_inputs.toolchainPreferenceName());
+		cmd.push_back(m_state.inputs.toolchainPreferenceName());
 	}
 
-	if (!m_inputs.envFile().empty())
+	if (!m_state.inputs.envFile().empty())
 	{
-		if (Commands::pathExists(m_inputs.envFile()))
+		if (Commands::pathExists(m_state.inputs.envFile()))
 		{
-			auto envAbsolute = Commands::getAbsolutePath(m_inputs.envFile());
+			auto envAbsolute = Commands::getAbsolutePath(m_state.inputs.envFile());
 			cmd.emplace_back("--env-file");
 			cmd.push_back(envAbsolute);
 		}
 	}
 
-	if (!m_inputs.architectureRaw().empty())
+	if (!m_state.inputs.architectureRaw().empty())
 	{
 		cmd.emplace_back("--arch");
-		cmd.push_back(m_inputs.architectureRaw());
+		cmd.push_back(m_state.inputs.architectureRaw());
 	}
 
 	return cmd;

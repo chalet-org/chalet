@@ -25,8 +25,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inType, inInputs, inState)
+CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const ToolchainType inType, BuildState& inState) :
+	ICompileEnvironment(inType, inState)
 {
 }
 
@@ -66,7 +66,7 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	};
 
 	std::string host;
-	std::string target = gnuArchToMsvcArch(m_inputs.targetArchitecture());
+	std::string target = gnuArchToMsvcArch(m_state.inputs.targetArchitecture());
 
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 	if (!compiler.empty())
@@ -107,29 +107,29 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 		}
 		else
 		{
-			const auto& preferenceName = m_inputs.toolchainPreferenceName();
+			const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 			Diagnostic::error("Expected host '{}' and target '{}'. Please use a different toolchain or create a new one for this architecture.", hostFromCompilerPath, targetFromCompilerPath);
-			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", m_inputs.targetArchitecture(), preferenceName);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", m_state.inputs.targetArchitecture(), preferenceName);
 			return false;
 		}
 	}
 	else
 	{
 		if (target.empty())
-			target = gnuArchToMsvcArch(m_inputs.hostArchitecture());
+			target = gnuArchToMsvcArch(m_state.inputs.hostArchitecture());
 
 		splitHostTarget(host, target);
 
 		if (host.empty())
-			host = gnuArchToMsvcArch(m_inputs.hostArchitecture());
+			host = gnuArchToMsvcArch(m_state.inputs.hostArchitecture());
 	}
 
 	m_state.info.setHostArchitecture(host);
 
 	m_config = std::make_unique<VisualStudioEnvironmentScript>();
-	m_config->setArchitecture(host, target, m_inputs.archOptions());
+	m_config->setArchitecture(host, target, m_state.inputs.archOptions());
 
-	m_inputs.setTargetArchitecture(m_config->architecture());
+	m_state.inputs.setTargetArchitecture(m_config->architecture());
 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", Arch::toGnuArch(target)));
 
 	m_isWindowsTarget = true;
@@ -147,7 +147,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 
 	Timer timer;
 
-	m_config->setVersion(inVersion, m_inputs.visualStudioVersion());
+	m_config->setVersion(inVersion, m_state.inputs.visualStudioVersion());
 
 	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
 	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
@@ -168,7 +168,7 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 
 	if (m_config->isPreset())
 	{
-		m_inputs.setToolchainPreferenceName(makeToolchainName(m_config->architecture()));
+		m_state.inputs.setToolchainPreferenceName(makeToolchainName(m_config->architecture()));
 	}
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));

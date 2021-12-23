@@ -23,8 +23,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProfilerRunner::ProfilerRunner(const CommandLineInputs& inInputs, BuildState& inState, const SourceTarget& inProject) :
-	m_inputs(inInputs),
+ProfilerRunner::ProfilerRunner(BuildState& inState, const SourceTarget& inProject) :
 	m_state(inState),
 	m_project(inProject)
 {
@@ -99,7 +98,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 void ProfilerRunner::printExitedWithCode(const bool inResult) const
 {
 	auto outFile = m_state.paths.getTargetFilename(m_project);
-	m_inputs.clearWorkingDirectory(outFile);
+	m_state.inputs.clearWorkingDirectory(outFile);
 
 	auto message = fmt::format("{} exited with code: {}", outFile, ProcessController::getLastExitCode());
 

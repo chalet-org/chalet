@@ -5,6 +5,8 @@
 
 #include "BuildJson/BuildJsonParser.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -67,7 +69,7 @@ bool BuildJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const J
 		using Type = std::decay_t<T>;
 
 		const auto& triple = m_state.info.targetArchitectureTriple();
-		const auto& toolchainName = m_inputs.toolchainPreferenceName();
+		const auto& toolchainName = m_state.inputs.toolchainPreferenceName();
 
 		inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
 

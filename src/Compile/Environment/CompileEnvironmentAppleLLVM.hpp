@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileEnvironmentAppleLLVM final : CompileEnvironmentLLVM
 {
-	explicit CompileEnvironmentAppleLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentAppleLLVM(const ToolchainType inType, BuildState& inState);
 
 protected:
 	virtual std::string getIdentifier() const noexcept final;

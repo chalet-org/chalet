@@ -6,7 +6,6 @@
 #include "State/Distribution/BundleTarget.hpp"
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -59,11 +58,11 @@ bool BundleTarget::initialize(const BuildState& inState)
 	const auto& targetName = this->name();
 	for (auto& dir : m_rawIncludes)
 	{
-		inState.paths.replaceVariablesInPath(dir, targetName);
+		inState.replaceVariablesInPath(dir, targetName);
 	}
 	for (auto& dir : m_excludes)
 	{
-		inState.paths.replaceVariablesInPath(dir, targetName);
+		inState.replaceVariablesInPath(dir, targetName);
 	}
 
 	if (!resolveIncludesFromState(inState))

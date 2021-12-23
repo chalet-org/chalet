@@ -7,7 +7,7 @@
 
 #include "Libraries/FileSystem.hpp"
 
-#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
+bool WorkspaceEnvironment::initialize(const BuildState& inState)
 {
 	auto originalPathVar = Environment::getPath();
 	std::string addedPath;
@@ -27,7 +27,7 @@ bool WorkspaceEnvironment::initialize(BuildPaths& inPaths)
 		if (String::contains(path + Environment::getPathSeparator(), originalPathVar))
 			continue;
 
-		inPaths.replaceVariablesInPath(path, std::string());
+		inState.replaceVariablesInPath(path, std::string());
 		addedPath += path;
 		addedPath += Environment::getPathSeparator();
 	}

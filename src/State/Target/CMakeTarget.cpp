@@ -7,7 +7,6 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -29,15 +28,15 @@ bool CMakeTarget::initialize()
 		return false;
 
 	const auto& targetName = this->name();
-	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
-	m_state.paths.replaceVariablesInPath(m_location, targetName);
+	m_state.replaceVariablesInPath(m_buildFile, targetName);
+	m_state.replaceVariablesInPath(m_location, targetName);
 
 	for (auto& define : m_defines)
 	{
-		m_state.paths.replaceVariablesInPath(define, targetName);
+		m_state.replaceVariablesInPath(define, targetName);
 	}
 
-	m_state.paths.replaceVariablesInPath(m_runExecutable, targetName);
+	m_state.replaceVariablesInPath(m_runExecutable, targetName);
 
 	return true;
 }

@@ -5,7 +5,6 @@
 
 #include "State/AncillaryTools.hpp"
 
-#include "Core/CommandLineInputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"

@@ -17,8 +17,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	ICompileEnvironment(inType, inInputs, inState)
+CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, BuildState& inState) :
+	ICompileEnvironment(inType, inState)
 {
 }
 
@@ -226,7 +226,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
-	bool emptyInputArch = m_inputs.targetArchitecture().empty();
+	bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
 	if (emptyInputArch || !String::contains('-', archTriple))
 	{
 		auto& sourceCache = m_state.cache.file().sources();
@@ -261,9 +261,9 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 			if (m_genericGcc)
 			{
 				const auto& arch = m_state.info.targetArchitectureString();
-				auto name = m_inputs.toolchainPreferenceName();
+				auto name = m_state.inputs.toolchainPreferenceName();
 				String::replaceAll(name, arch, expectedArch.str);
-				m_inputs.setToolchainPreferenceName(std::move(name));
+				m_state.inputs.setToolchainPreferenceName(std::move(name));
 			}
 			return false;
 		}
@@ -280,12 +280,12 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 /*****************************************************************************/
 bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
-	auto& toolchain = m_inputs.toolchainPreferenceName();
+	auto& toolchain = m_state.inputs.toolchainPreferenceName();
 	// If the tooclhain was a preset and was not a target triple
-	if (m_inputs.isToolchainPreset() && (String::equals("gcc", toolchain) || String::startsWith("gcc-", toolchain)))
+	if (m_state.inputs.isToolchainPreset() && (String::equals("gcc", toolchain) || String::startsWith("gcc-", toolchain)))
 	{
 		const auto& arch = m_state.info.targetArchitectureString();
-		m_inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
+		m_state.inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
 		m_genericGcc = true;
 	}
 

@@ -5,7 +5,6 @@
 
 #include "State/Target/ProcessBuildTarget.hpp"
 
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -26,7 +25,7 @@ bool ProcessBuildTarget::initialize()
 		return false;
 
 	const auto& targetName = this->name();
-	m_state.paths.replaceVariablesInPath(m_path, targetName);
+	m_state.replaceVariablesInPath(m_path, targetName);
 
 	return true;
 }

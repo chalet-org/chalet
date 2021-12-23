@@ -54,7 +54,7 @@ struct BuildState::Impl
 		prototype(inPrototype),
 		info(inputs),
 		workspace(prototype.workspace), // copy
-		paths(inputs, inState)
+		paths(inState)
 	{
 	}
 };
@@ -69,7 +69,8 @@ BuildState::BuildState(CommandLineInputs&& inInputs, StatePrototype& inPrototype
 	toolchain(m_impl->toolchain),
 	paths(m_impl->paths),
 	configuration(m_impl->configuration),
-	targets(m_impl->targets)
+	targets(m_impl->targets),
+	inputs(m_impl->inputs)
 {
 }
 
@@ -94,7 +95,7 @@ bool BuildState::initialize()
 	if (!parseBuildJson())
 		return false;
 
-	if (m_impl->inputs.route() != Route::Configure)
+	if (inputs.route() != Route::Configure)
 	{
 		if (!initializeBuild())
 			return false;
@@ -120,13 +121,13 @@ bool BuildState::initialize()
 /*****************************************************************************/
 bool BuildState::doBuild(const bool inShowSuccess)
 {
-	BuildManager mgr(m_impl->inputs, *this);
-	return mgr.run(m_impl->inputs.route(), inShowSuccess);
+	BuildManager mgr(*this);
+	return mgr.run(inputs.route(), inShowSuccess);
 }
 
 bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
 {
-	BuildManager mgr(m_impl->inputs, *this);
+	BuildManager mgr(*this);
 	return mgr.run(inRoute, inShowSuccess);
 }
 
@@ -138,7 +139,7 @@ const std::string& BuildState::uniqueId() const noexcept
 /*****************************************************************************/
 bool BuildState::initializeBuildConfiguration()
 {
-	auto buildConfiguration = m_impl->inputs.buildConfiguration();
+	auto buildConfiguration = inputs.buildConfiguration();
 	if (buildConfiguration.empty())
 	{
 		buildConfiguration = m_impl->prototype.anyConfiguration();
@@ -150,9 +151,9 @@ bool BuildState::initializeBuildConfiguration()
 	{
 		auto defaultBuildConfigs = BuildConfiguration::getDefaultBuildConfigurationNames();
 		if (List::contains(defaultBuildConfigs, buildConfiguration))
-			Diagnostic::error("{}: The build configuration '{}' is disabled in this workspace.", m_impl->inputs.inputFile(), buildConfiguration);
+			Diagnostic::error("{}: The build configuration '{}' is disabled in this workspace.", inputs.inputFile(), buildConfiguration);
 		else
-			Diagnostic::error("{}: The build configuration '{}' was not found.", m_impl->inputs.inputFile(), buildConfiguration);
+			Diagnostic::error("{}: The build configuration '{}' was not found.", inputs.inputFile(), buildConfiguration);
 		return false;
 	}
 
@@ -166,7 +167,7 @@ bool BuildState::initializeBuildConfiguration()
 bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto createEnvironment = [this]() {
-		m_impl->environment = ICompileEnvironment::make(m_impl->inputs.toolchainPreference().type, m_impl->inputs, *this);
+		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
 			Diagnostic::error("The environment must be created when the toolchain is initialized.");
@@ -180,7 +181,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	};
 
 	m_impl->checkForEnvironment = false;
-	auto& preference = m_impl->inputs.toolchainPreference();
+	auto& preference = inputs.toolchainPreference();
 	if (preference.type != ToolchainType::Unknown)
 	{
 		if (!createEnvironment())
@@ -192,7 +193,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	}
 
 	auto& cacheFile = m_impl->prototype.cache.getSettings(SettingsType::Local);
-	SettingsToolchainJsonParser parser(m_impl->inputs, *this, cacheFile);
+	SettingsToolchainJsonParser parser(*this, cacheFile);
 	if (!parser.serialize())
 		return false;
 
@@ -202,7 +203,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
 		//
 
-		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", m_impl->inputs.toolchainPreferenceName(), Environment::getPathKey());
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", inputs.toolchainPreferenceName(), Environment::getPathKey());
 		return false;
 	}
 
@@ -236,7 +237,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 /*****************************************************************************/
 bool BuildState::parseBuildJson()
 {
-	BuildJsonParser parser(m_impl->inputs, m_impl->prototype, *this);
+	BuildJsonParser parser(m_impl->prototype, *this);
 	return parser.serialize();
 }
 
@@ -247,14 +248,14 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  m_impl->inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
 			Output::lineBreak();
-			auto& toolchainName = m_impl->inputs.toolchainPreferenceName();
-			if (m_impl->inputs.isToolchainPreset())
+			auto& toolchainName = inputs.toolchainPreferenceName();
+			if (inputs.isToolchainPreset())
 				Diagnostic::error("Architecture '{}' is not supported by the detected '{}' toolchain.", targetArch, toolchainName);
 			else
 				Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
@@ -268,7 +269,7 @@ bool BuildState::initializeToolchain()
 	if (!toolchain.initialize(*m_impl->environment))
 		return onError();
 
-	if (!cache.updateSettingsFromToolchain(m_impl->inputs, toolchain))
+	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
 		return false;
 
 	if (!configuration.validateSanitizers(*this))
@@ -343,13 +344,13 @@ bool BuildState::initializeBuild()
 			project.addMacosFrameworkPath("/System/Library/Frameworks");
 #endif
 
-			if (!project.resolveLinksFromProject(targets, m_impl->inputs.inputFile()))
+			if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
 				return false;
 		}
 	}
 
 	{
-		workspace.initialize(paths);
+		workspace.initialize(*this);
 
 		for (auto& target : targets)
 		{
@@ -396,11 +397,11 @@ bool BuildState::validateState()
 	auto workingDirectory = Commands::getWorkingDirectory();
 	Path::sanitize(workingDirectory, true);
 
-	if (String::toLowerCase(m_impl->inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
+	if (String::toLowerCase(inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 	{
-		if (!Commands::changeWorkingDirectory(m_impl->inputs.workingDirectory()))
+		if (!Commands::changeWorkingDirectory(inputs.workingDirectory()))
 		{
-			Diagnostic::error("Error changing directory to '{}'", m_impl->inputs.workingDirectory());
+			Diagnostic::error("Error changing directory to '{}'", inputs.workingDirectory());
 			return false;
 		}
 	}
@@ -417,26 +418,26 @@ bool BuildState::validateState()
 			{
 				if (project.language() != CodeLanguage::CPlusPlus)
 				{
-					Diagnostic::error("{}: C++ modules are only supported with C++. Found C target with 'modules' enabled.", m_impl->inputs.inputFile());
+					Diagnostic::error("{}: C++ modules are only supported with C++. Found C target with 'modules' enabled.", inputs.inputFile());
 					return false;
 				}
 
 				if (!environment->isMsvc())
 				{
-					Diagnostic::error("{}: C++ modules are only supported with MSVC.", m_impl->inputs.inputFile());
+					Diagnostic::error("{}: C++ modules are only supported with MSVC.", inputs.inputFile());
 					return false;
 				}
 
 				uint versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
 				if (versionMajorMinor < 1928)
 				{
-					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", m_impl->inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
+					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
 					return false;
 				}
 
 				if (project.objectiveCxx())
 				{
-					Diagnostic::error("{}: C++ modules are not supported alongside Objective-C++", m_impl->inputs.inputFile());
+					Diagnostic::error("{}: C++ modules are not supported alongside Objective-C++", inputs.inputFile());
 					return false;
 				}
 
@@ -446,14 +447,14 @@ bool BuildState::validateState()
 
 				if (langStandard.empty() || langStandard.front() != '2')
 				{
-					Diagnostic::error("{}: C++ modules are only supported with the c++20 standard or higher.", m_impl->inputs.inputFile());
+					Diagnostic::error("{}: C++ modules are only supported with the c++20 standard or higher.", inputs.inputFile());
 					return false;
 				}
 			}
 
 			if (!environment->isAppleClang() && project.objectiveCxx())
 			{
-				Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang.", m_impl->inputs.inputFile());
+				Diagnostic::error("{}: Objective-C / Objective-C++ is currently only supported on MacOS using Apple clang.", inputs.inputFile());
 				return false;
 			}
 		}
@@ -518,7 +519,7 @@ bool BuildState::validateState()
 		return false;
 	}
 
-	if (hasSubChaletTargets && !m_impl->prototype.tools.resolveOwnExecutable(m_impl->inputs.appPath()))
+	if (hasSubChaletTargets && !m_impl->prototype.tools.resolveOwnExecutable(inputs.appPath()))
 	{
 		Diagnostic::error("(Welp.) The path to the chalet executable could not be resolved: {}", m_impl->prototype.tools.chalet());
 		return false;
@@ -585,7 +586,7 @@ bool BuildState::validateState()
 bool BuildState::validateSigningIdentity()
 {
 	// Right now, only used w/ Bundle
-	if (m_impl->inputs.route() == Route::Bundle)
+	if (inputs.route() == Route::Bundle)
 	{
 		if (!tools.isSigningIdentityValid())
 			return false;
@@ -745,7 +746,7 @@ void BuildState::makeLibraryPathVariables()
 
 	dotEnvGen.save();
 
-	DotEnvFileParser parser(m_impl->inputs);
+	DotEnvFileParser parser(inputs);
 	parser.readVariablesFromFile(dotEnvGen.filename());
 }
 
@@ -767,7 +768,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (m_impl->inputs.toolchainPreference().type != ToolchainType::VisualStudio)
+	if (inputs.toolchainPreference().type != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 
@@ -811,11 +812,48 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
+void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool inBuildTarget) const
+{
+	const auto& distributionDir = inputs.distributionDirectory();
+	const auto& externalDir = inputs.externalDirectory();
+	const auto& cwd = inputs.workingDirectory();
+	const auto& homeDirectory = inputs.homeDirectory();
+	const auto& buildDir = paths.buildOutputDir();
+
+	String::replaceAll(outPath, "${cwd}", cwd);
+
+	if (inBuildTarget)
+	{
+		String::replaceAll(outPath, "${buildDir}", buildDir);
+		String::replaceAll(outPath, "${configuration}", configuration.name());
+	}
+	else if (!distributionDir.empty())
+	{
+		String::replaceAll(outPath, "${distributionDir}", distributionDir);
+	}
+
+	if (!externalDir.empty())
+	{
+		String::replaceAll(outPath, "${externalDir}", externalDir);
+
+		if (inBuildTarget)
+			String::replaceAll(outPath, "${externalBuildDir}", fmt::format("{}/{}", buildDir, externalDir));
+	}
+
+	if (!inName.empty())
+	{
+		String::replaceAll(outPath, "${name}", inName);
+	}
+
+	Environment::replaceCommonVariables(outPath, homeDirectory);
+}
+
+/*****************************************************************************/
 std::string BuildState::getUniqueIdForState() const
 {
 	std::string ret;
 	const auto& hostArch = info.hostArchitectureString();
-	const auto targetArch = m_impl->inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
+	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
 	const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();

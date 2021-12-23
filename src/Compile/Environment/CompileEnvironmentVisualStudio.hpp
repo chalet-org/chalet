@@ -12,12 +12,11 @@
 namespace chalet
 {
 class BuildState;
-struct CommandLineInputs;
 struct VisualStudioEnvironmentScript;
 
 struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 {
-	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentVisualStudio(const ToolchainType inType, BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentVisualStudio);
 	~CompileEnvironmentVisualStudio();
 

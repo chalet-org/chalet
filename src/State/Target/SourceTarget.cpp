@@ -37,17 +37,17 @@ bool SourceTarget::initialize()
 	replaceVariablesInPathList(m_locationExcludes);
 
 	const auto& targetName = this->name();
-	m_state.paths.replaceVariablesInPath(m_pch, targetName);
+	m_state.replaceVariablesInPath(m_pch, targetName);
 
 	if (!m_compileOptionsRaw.empty())
 	{
-		m_state.paths.replaceVariablesInPath(m_compileOptionsRaw, targetName);
+		m_state.replaceVariablesInPath(m_compileOptionsRaw, targetName);
 		m_compileOptions = parseCommandLineOptions(m_compileOptionsRaw);
 	}
 
 	if (!m_linkerOptionsRaw.empty())
 	{
-		m_state.paths.replaceVariablesInPath(m_linkerOptionsRaw, targetName);
+		m_state.replaceVariablesInPath(m_linkerOptionsRaw, targetName);
 		m_linkerOptions = parseCommandLineOptions(m_linkerOptionsRaw);
 	}
 

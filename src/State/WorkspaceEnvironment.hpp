@@ -8,13 +8,13 @@
 
 namespace chalet
 {
-struct BuildPaths;
+class BuildState;
 
 struct WorkspaceEnvironment
 {
 	WorkspaceEnvironment() = default;
 
-	bool initialize(BuildPaths& inPaths);
+	bool initialize(const BuildState& inPaths);
 
 	const std::string& workspaceName() const noexcept;
 	void setWorkspaceName(std::string&& inValue) noexcept;

@@ -5,7 +5,6 @@
 
 #include "State/Target/IBuildTarget.hpp"
 
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
@@ -61,7 +60,7 @@ void IBuildTarget::replaceVariablesInPathList(StringList& outList)
 	const auto& targetName = this->name();
 	for (auto& dir : outList)
 	{
-		m_state.paths.replaceVariablesInPath(dir, targetName);
+		m_state.replaceVariablesInPath(dir, targetName);
 	}
 }
 

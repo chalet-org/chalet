@@ -13,7 +13,6 @@
 namespace chalet
 {
 class BuildState;
-struct CommandLineInputs;
 
 struct ICompileEnvironment;
 using CompileEnvironment = Unique<ICompileEnvironment>;
@@ -54,9 +53,9 @@ protected:
 	friend struct CompilerTools;
 	friend struct BuildPaths;
 
-	explicit ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit ICompileEnvironment(const ToolchainType inType, BuildState& inState);
 
-	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState);
+	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable);
 
 	virtual std::string getIdentifier() const noexcept = 0;
@@ -79,7 +78,6 @@ protected:
 
 	std::string getVarsPath(const std::string& inUniqueId) const;
 
-	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
 	Dictionary<bool> m_supportedFlags;

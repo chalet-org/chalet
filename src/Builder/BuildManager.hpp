@@ -20,7 +20,6 @@ struct SourceTarget;
 struct AssemblyDumper;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
-struct CommandLineInputs;
 
 class BuildManager
 {
@@ -28,7 +27,7 @@ class BuildManager
 	using BuildRouteList = std::unordered_map<Route, BuildAction>;
 
 public:
-	explicit BuildManager(const CommandLineInputs& inInputs, BuildState& inState);
+	explicit BuildManager(BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(BuildManager);
 	~BuildManager();
 
@@ -64,7 +63,6 @@ private:
 
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
 
-	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 
 	BuildRouteList m_buildRoutes;

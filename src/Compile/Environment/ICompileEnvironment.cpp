@@ -135,16 +135,15 @@ bool ICompileEnvironment::ouptuttedDescription() const noexcept
 /*****************************************************************************/
 // Protected/Private Town
 //
-ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	m_inputs(inInputs),
+ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState& inState) :
 	m_state(inState),
 	m_type(inType)
 {
-	UNUSED(m_inputs, m_state);
+	UNUSED(m_state.inputs, m_state);
 }
 
 /*****************************************************************************/
-[[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(ToolchainType type, const CommandLineInputs& inInputs, BuildState& inState)
+[[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(ToolchainType type, BuildState& inState)
 {
 	if (type == ToolchainType::Unknown)
 	{
@@ -160,19 +159,19 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, const Comma
 	switch (type)
 	{
 		case ToolchainType::VisualStudio:
-			return std::make_unique<CompileEnvironmentVisualStudio>(type, inInputs, inState);
+			return std::make_unique<CompileEnvironmentVisualStudio>(type, inState);
 		case ToolchainType::AppleLLVM:
-			return std::make_unique<CompileEnvironmentAppleLLVM>(type, inInputs, inState);
+			return std::make_unique<CompileEnvironmentAppleLLVM>(type, inState);
 		case ToolchainType::LLVM:
 		case ToolchainType::MingwLLVM:
-			return std::make_unique<CompileEnvironmentLLVM>(type, inInputs, inState);
+			return std::make_unique<CompileEnvironmentLLVM>(type, inState);
 		case ToolchainType::GNU:
 		case ToolchainType::MingwGNU:
-			return std::make_unique<CompileEnvironmentGNU>(type, inInputs, inState);
+			return std::make_unique<CompileEnvironmentGNU>(type, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-			return std::make_unique<CompileEnvironmentIntel>(type, inInputs, inState);
+			return std::make_unique<CompileEnvironmentIntel>(type, inState);
 #endif
 		case ToolchainType::Unknown:
 		default:
@@ -384,8 +383,8 @@ std::string ICompileEnvironment::getVarsPath(const std::string& inUniqueId) cons
 	const auto id = identifier();
 	const auto& hostArch = m_state.info.hostArchitecture();
 	const auto& archString = m_state.info.targetArchitectureTriple();
-	// auto archString = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-	const auto& uniqueId = String::equals('0', inUniqueId) ? m_inputs.toolchainPreferenceName() : inUniqueId;
+	// auto archString = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+	const auto& uniqueId = String::equals('0', inUniqueId) ? m_state.inputs.toolchainPreferenceName() : inUniqueId;
 
 	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId), CacheType::Local);
 }

@@ -14,7 +14,7 @@ struct IntelEnvironmentScript;
 
 struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 {
-	explicit CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentIntel(const ToolchainType inType, BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentIntel);
 	~CompileEnvironmentIntel();
 

@@ -20,8 +20,7 @@
 
 namespace chalet
 {
-BuildPaths::BuildPaths(const CommandLineInputs& inInputs, const BuildState& inState) :
-	m_inputs(inInputs),
+BuildPaths::BuildPaths(const BuildState& inState) :
 	m_state(inState),
 	m_cExts({
 		"c",
@@ -64,14 +63,14 @@ bool BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	const auto& outputDirectory = m_inputs.outputDirectory();
+	const auto& outputDirectory = m_state.inputs.outputDirectory();
 	if (!Commands::pathExists(outputDirectory))
 	{
 		Commands::makeDirectory(outputDirectory);
 	}
 
 	const auto& buildConfig = m_state.info.buildConfiguration();
-	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
+	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
 
 	auto style = m_state.toolchain.buildPathStyle();
 	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
@@ -89,7 +88,7 @@ bool BuildPaths::initialize()
 	}
 	else // BuildPathStyle::TargetTriple
 	{
-		const auto& arch = m_inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+		const auto& arch = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 
@@ -127,19 +126,19 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 /*****************************************************************************/
 const std::string& BuildPaths::homeDirectory() const noexcept
 {
-	return m_inputs.homeDirectory();
+	return m_state.inputs.homeDirectory();
 }
 
 /*****************************************************************************/
 const std::string& BuildPaths::rootDirectory() const noexcept
 {
-	return m_inputs.rootDirectory();
+	return m_state.inputs.rootDirectory();
 }
 
 /*****************************************************************************/
 const std::string& BuildPaths::outputDirectory() const noexcept
 {
-	return m_inputs.outputDirectory();
+	return m_state.inputs.outputDirectory();
 }
 
 const std::string& BuildPaths::buildOutputDir() const noexcept
@@ -300,31 +299,6 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	ret->target = getTargetFilename(inProject);
 
 	return ret;
-}
-
-/*****************************************************************************/
-void BuildPaths::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
-{
-	const auto& buildDir = buildOutputDir();
-
-	String::replaceAll(outPath, "${cwd}", m_inputs.workingDirectory());
-	String::replaceAll(outPath, "${buildDir}", buildDir);
-	String::replaceAll(outPath, "${configuration}", m_state.configuration.name());
-
-	const auto& externalDir = m_inputs.externalDirectory();
-	if (!externalDir.empty())
-	{
-		String::replaceAll(outPath, "${externalDir}", externalDir);
-		String::replaceAll(outPath, "${externalBuildDir}", fmt::format("{}/{}", buildDir, externalDir));
-	}
-
-	if (!inName.empty())
-	{
-		String::replaceAll(outPath, "${name}", inName);
-	}
-
-	const auto& homeDirectory = m_inputs.homeDirectory();
-	Environment::replaceCommonVariables(outPath, homeDirectory);
 }
 
 /*****************************************************************************/
@@ -755,9 +729,9 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 				Path::sanitize(outPath, true);
 
 #if defined(CHALET_MACOS)
-				if (!m_inputs.universalArches().empty())
+				if (!m_state.inputs.universalArches().empty())
 				{
-					for (auto& arch : m_inputs.universalArches())
+					for (auto& arch : m_state.inputs.universalArches())
 					{
 						auto path = fmt::format("{}_{}", outPath, arch);
 						ret.emplace_back(std::move(path));

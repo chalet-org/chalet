@@ -12,8 +12,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironmentLLVM(inType, inInputs, inState)
+CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const ToolchainType inType, BuildState& inState) :
+	CompileEnvironmentLLVM(inType, inState)
 {
 }
 

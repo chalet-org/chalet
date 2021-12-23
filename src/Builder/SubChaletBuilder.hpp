@@ -10,12 +10,11 @@ namespace chalet
 {
 class BuildState;
 struct SubChaletTarget;
-struct CommandLineInputs;
 
 class SubChaletBuilder
 {
 public:
-	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const CommandLineInputs& inInputs);
+	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget);
 
 	bool run();
 
@@ -24,7 +23,6 @@ private:
 
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;
-	const CommandLineInputs& m_inputs;
 
 	std::string m_outputLocation;
 	std::string m_buildFile;

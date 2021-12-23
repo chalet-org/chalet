@@ -11,13 +11,12 @@
 
 namespace chalet
 {
-struct CommandLineInputs;
 class BuildState;
 struct JsonFile;
 
 struct SettingsToolchainJsonParser
 {
-	explicit SettingsToolchainJsonParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile);
+	explicit SettingsToolchainJsonParser(BuildState& inState, JsonFile& inJsonFile);
 
 	bool serialize();
 	bool validatePaths();
@@ -27,7 +26,6 @@ private:
 	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
 	bool parseToolchain(Json& inNode);
 
-	const CommandLineInputs& m_inputs;
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
 };

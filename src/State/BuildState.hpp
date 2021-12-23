@@ -42,6 +42,7 @@ public:
 	BuildPaths& paths;
 	BuildConfiguration& configuration;
 	std::vector<Unique<IBuildTarget>>& targets;
+	const CommandLineInputs& inputs;
 	ICompileEnvironment* environment = nullptr;
 
 	bool initialize();
@@ -50,6 +51,7 @@ public:
 
 	void makeLibraryPathVariables();
 
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool inBuildTarget = true) const;
 	const std::string& uniqueId() const noexcept;
 
 private:

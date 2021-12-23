@@ -10,6 +10,7 @@
 #include "BuildJson/BuildJsonParser.hpp"
 #include "BuildJson/SchemaBuildJson.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/Dependency/BuildDependencyType.hpp"
@@ -40,8 +41,7 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-BuildJsonParser::BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState) :
-	m_inputs(inInputs),
+BuildJsonParser::BuildJsonParser(StatePrototype& inPrototype, BuildState& inState) :
 	m_chaletJson(inPrototype.chaletJson()),
 	m_filename(inPrototype.filename()),
 	m_state(inState),
@@ -75,7 +75,7 @@ bool BuildJsonParser::serialize()
 
 	if (!validRunTargetRequestedFromInput())
 	{
-		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_filename, m_inputs.runTarget(), m_state.configuration.name());
+		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_filename, m_state.inputs.runTarget(), m_state.configuration.name());
 		return false;
 	}
 
@@ -119,7 +119,7 @@ bool BuildJsonParser::validBuildRequested() const
 /*****************************************************************************/
 bool BuildJsonParser::validRunTargetRequestedFromInput() const
 {
-	const auto& inputRunTarget = m_inputs.runTarget();
+	const auto& inputRunTarget = m_state.inputs.runTarget();
 	if (inputRunTarget.empty())
 		return true;
 

@@ -11,7 +11,6 @@
 namespace chalet
 {
 struct CompilerTools;
-struct CommandLineInputs;
 struct BuildInfo;
 struct SourceTarget;
 struct WorkspaceEnvironment;
@@ -47,12 +46,10 @@ struct BuildPaths
 	void clearOutputCaches();
 	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
 
-	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
-
 private:
 	friend class BuildState;
 
-	explicit BuildPaths(const CommandLineInputs& inInputs, const BuildState& inState);
+	explicit BuildPaths(const BuildState& inState);
 
 	bool initialize();
 	void populateFileList(const SourceTarget& inProject);
@@ -74,7 +71,6 @@ private:
 	StringList getFileList(const SourceTarget& inProject) const;
 	StringList getDirectoryList(const SourceTarget& inProject) const;
 
-	const CommandLineInputs& m_inputs;
 	const BuildState& m_state;
 
 	const StringList m_cExts;

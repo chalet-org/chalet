@@ -19,8 +19,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SettingsToolchainJsonParser::SettingsToolchainJsonParser(const CommandLineInputs& inInputs, BuildState& inState, JsonFile& inJsonFile) :
-	m_inputs(inInputs),
+SettingsToolchainJsonParser::SettingsToolchainJsonParser(BuildState& inState, JsonFile& inJsonFile) :
 	m_state(inState),
 	m_jsonFile(inJsonFile)
 {
@@ -32,11 +31,11 @@ bool SettingsToolchainJsonParser::serialize()
 	Output::setShowCommandOverride(false);
 
 	auto& rootNode = m_jsonFile.json;
-	const auto& preferenceName = m_inputs.toolchainPreferenceName();
+	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 	auto& toolchains = rootNode["toolchains"];
 	bool containsPref = toolchains.contains(preferenceName);
 
-	if (!containsPref && !m_inputs.isToolchainPreset())
+	if (!containsPref && !m_state.inputs.isToolchainPreset())
 	{
 		Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
 		return false;
@@ -60,7 +59,7 @@ bool SettingsToolchainJsonParser::serialize(Json& inNode)
 	if (!inNode.is_object())
 		return false;
 
-	if (!makeToolchain(inNode, m_inputs.toolchainPreference()))
+	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference()))
 		return false;
 
 	if (!parseToolchain(inNode))
@@ -127,7 +126,7 @@ bool SettingsToolchainJsonParser::validatePaths()
 #endif
 	if (!result)
 	{
-		auto& preference = m_inputs.toolchainPreferenceName();
+		auto& preference = m_state.inputs.toolchainPreferenceName();
 		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, Environment::getPathKey());
 	}
 

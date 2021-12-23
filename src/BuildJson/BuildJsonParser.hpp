@@ -6,7 +6,6 @@
 #ifndef CHALET_BUILD_JSON_PARSER_HPP
 #define CHALET_BUILD_JSON_PARSER_HPP
 
-#include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -30,7 +29,7 @@ class BuildState;
 
 struct BuildJsonParser
 {
-	explicit BuildJsonParser(const CommandLineInputs& inInputs, StatePrototype& inPrototype, BuildState& inState);
+	explicit BuildJsonParser(StatePrototype& inPrototype, BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(BuildJsonParser);
 	~BuildJsonParser();
 
@@ -60,7 +59,6 @@ private:
 	template <typename T>
 	bool valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
-	const CommandLineInputs& m_inputs;
 	JsonFile& m_chaletJson;
 	const std::string& m_filename;
 	BuildState& m_state;

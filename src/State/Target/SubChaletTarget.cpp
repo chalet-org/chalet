@@ -5,7 +5,6 @@
 
 #include "State/Target/SubChaletTarget.hpp"
 
-#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 
@@ -24,8 +23,8 @@ bool SubChaletTarget::initialize()
 		return false;
 
 	const auto& targetName = this->name();
-	m_state.paths.replaceVariablesInPath(m_buildFile, targetName);
-	m_state.paths.replaceVariablesInPath(m_location, targetName);
+	m_state.replaceVariablesInPath(m_buildFile, targetName);
+	m_state.replaceVariablesInPath(m_location, targetName);
 
 	return true;
 }

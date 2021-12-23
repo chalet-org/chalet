@@ -22,8 +22,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-AssemblyDumper::AssemblyDumper(const CommandLineInputs& inInputs, BuildState& inState) :
-	m_inputs(inInputs),
+AssemblyDumper::AssemblyDumper(BuildState& inState) :
 	m_state(inState),
 	m_commandPool(m_state.info.maxJobs())
 {
@@ -35,11 +34,11 @@ bool AssemblyDumper::validate() const
 	if (m_state.toolchain.disassembler().empty())
 	{
 #if defined(CHALET_WIN32)
-		Diagnostic::error("{}: dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.", m_inputs.settingsFile());
+		Diagnostic::error("{}: dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.", m_state.inputs.settingsFile());
 #elif defined(CHALET_MACOS)
-		Diagnostic::error("{}: dumpAssembly feature requires otool or objdump as the disassembler, which is blank in the toolchain settings.", m_inputs.settingsFile());
+		Diagnostic::error("{}: dumpAssembly feature requires otool or objdump as the disassembler, which is blank in the toolchain settings.", m_state.inputs.settingsFile());
 #else
-		Diagnostic::error("{}: dumpAssembly feature requires objdump as the disassembler, which is blank in the toolchain settings.", m_inputs.settingsFile());
+		Diagnostic::error("{}: dumpAssembly feature requires objdump as the disassembler, which is blank in the toolchain settings.", m_state.inputs.settingsFile());
 #endif
 		return false;
 	}
@@ -51,9 +50,9 @@ bool AssemblyDumper::validate() const
 		!m_state.tools.bashAvailable())
 	{
 #if defined(CHALET_MACOS)
-		Diagnostic::error("{}: dumpAssembly feature for otool and objdump require bash, but what not detected or blank in tools.", m_inputs.settingsFile());
+		Diagnostic::error("{}: dumpAssembly feature for otool and objdump require bash, but what not detected or blank in tools.", m_state.inputs.settingsFile());
 #else
-		Diagnostic::error("{}: dumpAssembly feature for objdump require bash, but what not detected or blank in tools.", m_inputs.settingsFile());
+		Diagnostic::error("{}: dumpAssembly feature for objdump require bash, but what not detected or blank in tools.", m_state.inputs.settingsFile());
 #endif
 		return false;
 	}

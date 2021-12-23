@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileEnvironmentLLVM : CompileEnvironmentGNU
 {
-	explicit CompileEnvironmentLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentLLVM(const ToolchainType inType, BuildState& inState);
 
 protected:
 	virtual std::string getIdentifier() const noexcept override;

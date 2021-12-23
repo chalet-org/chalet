@@ -23,8 +23,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironmentLLVM(inType, inInputs, inState)
+CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, BuildState& inState) :
+	CompileEnvironmentLLVM(inType, inState)
 {
 }
 
@@ -126,13 +126,13 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 /*****************************************************************************/
 bool CompileEnvironmentIntel::validateArchitectureFromInput()
 {
-	std::string target = m_inputs.targetArchitecture();
+	std::string target = m_state.inputs.targetArchitecture();
 	if (target.empty())
 	{
-		target = m_inputs.hostArchitecture();
+		target = m_state.inputs.hostArchitecture();
 
-		m_inputs.setTargetArchitecture(target);
-		m_state.info.setTargetArchitecture(m_inputs.targetArchitecture());
+		m_state.inputs.setTargetArchitecture(target);
+		m_state.info.setTargetArchitecture(m_state.inputs.targetArchitecture());
 	}
 
 	return true;
@@ -145,7 +145,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	Timer timer;
 
-	m_config = std::make_unique<IntelEnvironmentScript>(m_inputs);
+	m_config = std::make_unique<IntelEnvironmentScript>(m_state.inputs);
 
 	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
 	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
@@ -164,7 +164,7 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 	m_config->readEnvironmentVariablesFromDeltaFile();
 
 	if (m_config->isPreset())
-		m_inputs.setToolchainPreferenceName(makeToolchainName(m_state.info.targetArchitectureString()));
+		m_state.inputs.setToolchainPreferenceName(makeToolchainName(m_state.info.targetArchitectureString()));
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 
@@ -178,18 +178,18 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 		Timer vsTimer;
 
 		VisualStudioEnvironmentConfig vsConfig;
-		vsConfig.inVersion = m_inputs.visualStudioVersion();
+		vsConfig.inVersion = m_state.inputs.visualStudioVersion();
 
 		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
 			vsConfig.varsAllArch += "x64";
 		if (m_state.info.targetArchitecture() == Arch::Cpu::X86)
 			vsConfig.varsAllArch += "x86";
 
-		vsConfig.varsAllArchOptions = m_inputs.archOptions();
+		vsConfig.varsAllArchOptions = m_state.inputs.archOptions();
 		vsConfig.varsFileOriginal = m_state.cache.getHashPath("msvc_original.env", CacheType::Local);
 		vsConfig.varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
 		vsConfig.varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}_delta.env", vsConfig.varsAllArch), CacheType::Local);
-		vsConfig.varsAllArchOptions = m_inputs.archOptions();
+		vsConfig.varsAllArchOptions = m_state.inputs.archOptions();
 		vsConfig.isPreset = isPresetFromInput;
 
 		if (!CompileEnvironmentVisualStudio::makeEnvironment(vsConfig, std::string()))
@@ -216,7 +216,7 @@ std::string CompileEnvironmentIntel::makeToolchainName(const std::string& inArch
 		ret = fmt::format("{}-intel-llvm", inArch);
 
 #if defined(CHALET_WIN32)
-		const auto vsVersion = m_inputs.visualStudioVersion();
+		const auto vsVersion = m_state.inputs.visualStudioVersion();
 		if (vsVersion == VisualStudioVersion::VisualStudio2022)
 			ret += "-vs-2022";
 		if (vsVersion == VisualStudioVersion::VisualStudio2019)

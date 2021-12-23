@@ -19,8 +19,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileEnvironmentLLVM::CompileEnvironmentLLVM(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState) :
-	CompileEnvironmentGNU(inType, inInputs, inState)
+CompileEnvironmentLLVM::CompileEnvironmentLLVM(const ToolchainType inType, BuildState& inState) :
+	CompileEnvironmentGNU(inType, inState)
 {
 }
 
@@ -84,7 +84,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	{
 		const auto& archTriple = m_state.info.targetArchitectureTriple();
 
-		bool emptyInputArch = m_inputs.targetArchitecture().empty();
+		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
 		if (emptyInputArch || !String::contains('-', archTriple))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });

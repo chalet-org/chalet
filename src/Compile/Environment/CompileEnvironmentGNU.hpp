@@ -12,7 +12,7 @@ namespace chalet
 {
 struct CompileEnvironmentGNU : ICompileEnvironment
 {
-	explicit CompileEnvironmentGNU(const ToolchainType inType, const CommandLineInputs& inInputs, BuildState& inState);
+	explicit CompileEnvironmentGNU(const ToolchainType inType, BuildState& inState);
 
 protected:
 	virtual std::string getIdentifier() const noexcept override;
