@@ -23,7 +23,7 @@
 		"settings:Cxx": {
 			"cppStandard": "c++17",
 			"rtti": false,
-			"staticLinking": true,
+			"staticLinking.windows": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"defines.debug": [
