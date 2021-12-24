@@ -38,7 +38,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	Timer timer;
 
-	Diagnostic::infoEllipsis("Creating the distribution disk image");
+	Diagnostic::stepInfoEllipsis("Creating the distribution disk image");
 
 	const std::string tmpDmg = fmt::format("{}/.tmp.dmg", distributionDirectory);
 
@@ -172,7 +172,7 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 	}
 
 	Timer timer;
-	Diagnostic::infoEllipsis("Signing the disk image");
+	Diagnostic::stepInfoEllipsis("Signing the disk image");
 
 	if (!m_centralState.tools.macosCodeSignDiskImage(inPath))
 	{

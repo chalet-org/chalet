@@ -70,14 +70,11 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// treat it like linux/windows
 	if (m_bundle.macosBundleType() == MacOSBundleType::None)
 	{
-		Output::lineBreak();
-
 		return signAppBundle();
 	}
 	else
 	{
 		// TODO: Generalized version of this in AppBundler
-		Output::lineBreak();
 
 		if (!createBundleIcon())
 			return false;
@@ -330,7 +327,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 					addedFrameworks.push_back(framework);
 
-					if (!Commands::copySkipExisting(filename, m_frameworksPath))
+					if (!Commands::copy(filename, m_frameworksPath, fs::copy_options::skip_existing))
 						return false;
 
 					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworksPath, framework);
@@ -345,8 +342,6 @@ bool AppBundlerMacOS::setExecutablePaths() const
 			}
 		}
 	}
-	if (i > 0)
-		Output::lineBreak();
 
 	return true;
 }
@@ -365,12 +360,12 @@ bool AppBundlerMacOS::signAppBundle() const
 #if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
 	{
-		Diagnostic::infoEllipsis("Signing the application bundle");
+		Diagnostic::stepInfoEllipsis("Signing the application bundle");
 	}
 	else
 #endif
 	{
-		Diagnostic::infoEllipsis("Signing binaries");
+		Diagnostic::stepInfoEllipsis("Signing binaries");
 	}
 
 	// TODO: Entitlements

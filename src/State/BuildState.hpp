@@ -33,6 +33,15 @@ public:
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
 
+	bool initialize();
+	bool doBuild(const bool inShowSuccess = true);
+	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
+
+	void makeLibraryPathVariables();
+
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
+	const std::string& uniqueId() const noexcept;
+
 	AncillaryTools& tools;
 	WorkspaceCache& cache;
 
@@ -44,15 +53,6 @@ public:
 	std::vector<Unique<IBuildTarget>>& targets;
 	const CommandLineInputs& inputs;
 	ICompileEnvironment* environment = nullptr;
-
-	bool initialize();
-	bool doBuild(const bool inShowSuccess = true);
-	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
-
-	void makeLibraryPathVariables();
-
-	void replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool inBuildTarget = true) const;
-	const std::string& uniqueId() const noexcept;
 
 private:
 	bool initializeBuildConfiguration();

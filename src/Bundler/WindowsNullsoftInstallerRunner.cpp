@@ -29,12 +29,6 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	const auto& file = inTarget.file();
 	chalet_assert(!file.empty(), "WindowsNullsoftInstallerRunner: validate target first");
 
-	Timer timer;
-	if (Output::showCommands())
-		Diagnostic::info("Creating the Windows installer executable");
-	else
-		Diagnostic::infoEllipsis("Creating the Windows installer executable");
-
 	StringList cmd{ m_centralState.tools.makeNsis() };
 	cmd.emplace_back("-WX");
 	cmd.emplace_back("-V3");
@@ -66,8 +60,6 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 		Diagnostic::error("NSIS Installer failed to compile: {}", file);
 		return false;
 	}
-
-	Diagnostic::printDone(timer.asString());
 
 	return true;
 }

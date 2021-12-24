@@ -812,38 +812,34 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool inBuildTarget) const
+void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
 {
-	const auto& distributionDir = inputs.distributionDirectory();
+	if (outPath.empty())
+		return;
+
 	const auto& externalDir = inputs.externalDirectory();
 	const auto& cwd = inputs.workingDirectory();
 	const auto& homeDirectory = inputs.homeDirectory();
 	const auto& buildDir = paths.buildOutputDir();
 
-	String::replaceAll(outPath, "${cwd}", cwd);
+	if (!cwd.empty())
+		String::replaceAll(outPath, "${cwd}", cwd);
 
-	if (inBuildTarget)
-	{
+	if (!buildDir.empty())
 		String::replaceAll(outPath, "${buildDir}", buildDir);
-		String::replaceAll(outPath, "${configuration}", configuration.name());
-	}
-	else if (!distributionDir.empty())
-	{
-		String::replaceAll(outPath, "${distributionDir}", distributionDir);
-	}
+
+	String::replaceAll(outPath, "${configuration}", configuration.name());
 
 	if (!externalDir.empty())
 	{
 		String::replaceAll(outPath, "${externalDir}", externalDir);
 
-		if (inBuildTarget)
+		if (!buildDir.empty())
 			String::replaceAll(outPath, "${externalBuildDir}", fmt::format("{}/{}", buildDir, externalDir));
 	}
 
 	if (!inName.empty())
-	{
 		String::replaceAll(outPath, "${name}", inName);
-	}
 
 	Environment::replaceCommonVariables(outPath, homeDirectory);
 }

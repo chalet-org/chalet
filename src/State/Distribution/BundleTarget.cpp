@@ -7,6 +7,7 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -47,28 +48,23 @@ MacOSBundleType getBundleTypeFromString(const std::string& inValue)
 #endif
 
 /*****************************************************************************/
-BundleTarget::BundleTarget() :
-	IDistTarget(DistTargetType::DistributionBundle)
+BundleTarget::BundleTarget(const CentralState& inCentralState) :
+	IDistTarget(inCentralState, DistTargetType::DistributionBundle)
 {
 }
 
 /*****************************************************************************/
-bool BundleTarget::initialize(const BuildState& inState)
+bool BundleTarget::initialize()
 {
 	const auto& targetName = this->name();
 	for (auto& dir : m_rawIncludes)
 	{
-		inState.replaceVariablesInPath(dir, targetName);
+		m_centralState.replaceVariablesInPath(dir, targetName);
 	}
 	for (auto& dir : m_excludes)
 	{
-		inState.replaceVariablesInPath(dir, targetName);
+		m_centralState.replaceVariablesInPath(dir, targetName);
 	}
-
-	if (!resolveIncludesFromState(inState))
-		return false;
-
-	m_includesResolved = true;
 
 	return true;
 }
@@ -143,6 +139,89 @@ bool BundleTarget::validate()
 #endif
 
 	return result;
+}
+
+/*****************************************************************************/
+bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
+{
+	const auto add = [this](std::string in) {
+		Path::sanitize(in);
+		List::addIfDoesNotExist(m_includes, std::move(in));
+	};
+
+	for (auto& dependency : m_rawIncludes)
+	{
+		if (Commands::pathExists(dependency))
+		{
+			add(dependency);
+			continue;
+		}
+
+		/*std::string resolved = fmt::format("{}/{}", inState.paths.buildOutputDir(), inValue);
+		if (Commands::pathExists(resolved))
+		{
+			add(resolved);
+			continue;
+		}*/
+
+		std::string resolved;
+		bool found = false;
+		for (auto& target : inState.targets)
+		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+
+				const auto& compilerPathBin = inState.toolchain.compilerCxx(project.language()).binDir;
+
+				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
+				if (Commands::pathExists(resolved))
+				{
+					add(std::move(resolved));
+					found = true;
+					break;
+				}
+
+				// LOG(resolved, ' ', project.outputFile());
+				if (String::contains(project.outputFile(), resolved))
+				{
+					add(std::move(resolved));
+					found = true;
+					break;
+				}
+			}
+		}
+
+		if (!found)
+		{
+
+			for (auto& path : inState.workspace.searchPaths())
+			{
+				resolved = fmt::format("{}/{}", path, dependency);
+				if (Commands::pathExists(resolved))
+				{
+					add(std::move(resolved));
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found)
+		{
+			resolved = Commands::which(dependency);
+			if (!resolved.empty())
+			{
+				add(std::move(resolved));
+			}
+			else
+			{
+				Diagnostic::warn("Included path '{}' for distribution target '{}' was not found.", dependency, this->name());
+			}
+		}
+	}
+
+	m_includesResolved = true;
+	return true;
 }
 
 /*****************************************************************************/
@@ -264,88 +343,6 @@ void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::sanitize(inValue);
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
-}
-
-/*****************************************************************************/
-bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
-{
-	const auto add = [this](std::string in) {
-		Path::sanitize(in);
-		List::addIfDoesNotExist(m_includes, std::move(in));
-	};
-
-	for (auto& dependency : m_rawIncludes)
-	{
-		if (Commands::pathExists(dependency))
-		{
-			add(dependency);
-			continue;
-		}
-
-		/*std::string resolved = fmt::format("{}/{}", inState.paths.buildOutputDir(), inValue);
-		if (Commands::pathExists(resolved))
-		{
-			add(resolved);
-			continue;
-		}*/
-
-		std::string resolved;
-		bool found = false;
-		for (auto& target : inState.targets)
-		{
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-
-				const auto& compilerPathBin = inState.toolchain.compilerCxx(project.language()).binDir;
-
-				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
-				if (Commands::pathExists(resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
-
-				// LOG(resolved, ' ', project.outputFile());
-				if (String::contains(project.outputFile(), resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
-			}
-		}
-
-		if (!found)
-		{
-
-			for (auto& path : inState.workspace.searchPaths())
-			{
-				resolved = fmt::format("{}/{}", path, dependency);
-				if (Commands::pathExists(resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
-			}
-		}
-		if (!found)
-		{
-			resolved = Commands::which(dependency);
-			if (!resolved.empty())
-			{
-				add(std::move(resolved));
-			}
-			else
-			{
-				Diagnostic::warn("Included path '{}' for distribution target '{}' was not found.", dependency, this->name());
-			}
-		}
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

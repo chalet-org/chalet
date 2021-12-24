@@ -345,7 +345,6 @@ CommandPool::CmdList CompileStrategyNative::getLinkCommand(const std::string& in
 
 		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);
-		// ret.symbol = Unicode::rightwardsTripleArrow();
 
 		ret.emplace_back(std::move(out));
 	}

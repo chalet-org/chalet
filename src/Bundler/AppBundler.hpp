@@ -10,6 +10,7 @@
 
 namespace chalet
 {
+class BuildState;
 struct BundleTarget;
 struct ScriptDistTarget;
 struct ProcessDistTarget;

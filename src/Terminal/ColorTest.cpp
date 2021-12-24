@@ -131,8 +131,6 @@ void ColorTest::printUnicodeCharacters()
 	characters.emplace_back(Unicode::warning());
 	characters.emplace_back(Unicode::circledX());
 	characters.emplace_back(Unicode::heavyCurvedDownRightArrow());
-	characters.emplace_back(Unicode::heavyCurvedUpRightArrow());
-	characters.emplace_back(Unicode::rightwardsTripleArrow());
 	characters.emplace_back(Unicode::registered());
 
 	printBanner("Supported Unicode Characters");

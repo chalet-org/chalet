@@ -12,8 +12,9 @@ namespace chalet
 {
 struct WindowsNullsoftInstallerTarget final : public IDistTarget
 {
-	explicit WindowsNullsoftInstallerTarget();
+	explicit WindowsNullsoftInstallerTarget(const CentralState& inCentralState);
 
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	const std::string& file() const noexcept;

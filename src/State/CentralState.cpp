@@ -366,6 +366,34 @@ const std::string& CentralState::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
+void CentralState::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
+{
+	if (outPath.empty())
+		return;
+
+	const auto& distributionDir = m_inputs.distributionDirectory();
+	const auto& externalDir = m_inputs.externalDirectory();
+	const auto& cwd = m_inputs.workingDirectory();
+	const auto& homeDirectory = m_inputs.homeDirectory();
+
+	if (!cwd.empty())
+		String::replaceAll(outPath, "${cwd}", cwd);
+
+	String::replaceAll(outPath, "${configuration}", anyConfiguration());
+
+	if (!distributionDir.empty())
+		String::replaceAll(outPath, "${distributionDir}", distributionDir);
+
+	if (!externalDir.empty())
+		String::replaceAll(outPath, "${externalDir}", externalDir);
+
+	if (!inName.empty())
+		String::replaceAll(outPath, "${name}", inName);
+
+	Environment::replaceCommonVariables(outPath, homeDirectory);
+}
+
+/*****************************************************************************/
 bool CentralState::parseEnvFile()
 {
 	m_inputs.resolveEnvFile();

@@ -140,11 +140,6 @@ std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file
 
 	if (Output::cleanOutput())
 	{
-		// Note: If trying to echo "=   Linking (file)", nmake will eat up the additional spaces,
-		//   so both them and the symbol are taken out since
-
-		// const auto arrow = Unicode::rightwardsTripleArrow();
-
 		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
 		printer = getPrinter(fmt::format("{blue}{description} {file}{reset}", FMT_ARG(blue), FMT_ARG(description), FMT_ARG(file), FMT_ARG(reset)));

@@ -17,7 +17,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-SourceTarget::SourceTarget(BuildState& inState) :
+SourceTarget::SourceTarget(const BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
 	m_warningsPresetString("none")
 {

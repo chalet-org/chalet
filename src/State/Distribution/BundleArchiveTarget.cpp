@@ -6,7 +6,7 @@
 #include "State/Distribution/BundleArchiveTarget.hpp"
 
 #include "State/BuildPaths.hpp"
-#include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/GlobMatch.hpp"
 #include "Utility/List.hpp"
@@ -14,9 +14,17 @@
 namespace chalet
 {
 /*****************************************************************************/
-BundleArchiveTarget::BundleArchiveTarget() :
-	IDistTarget(DistTargetType::BundleArchive)
+BundleArchiveTarget::BundleArchiveTarget(const CentralState& inCentralState) :
+	IDistTarget(inCentralState, DistTargetType::BundleArchive)
 {
+}
+
+/*****************************************************************************/
+bool BundleArchiveTarget::initialize()
+{
+	replaceVariablesInPathList(m_includes);
+
+	return true;
 }
 
 /*****************************************************************************/

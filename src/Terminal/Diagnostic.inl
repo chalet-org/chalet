@@ -25,6 +25,22 @@ void Diagnostic::infoEllipsis(std::string_view inFmt, Args&&... args)
 
 /*****************************************************************************/
 template <typename... Args>
+void Diagnostic::stepInfo(std::string_view inFmt, Args&&... args)
+{
+	bool lineBreak = true;
+	Diagnostic::showStepInfo(fmt::format(std::move(inFmt), (std::forward<Args>(args))...), lineBreak);
+}
+
+/*****************************************************************************/
+template <typename... Args>
+void Diagnostic::stepInfoEllipsis(std::string_view inFmt, Args&&... args)
+{
+	bool lineBreak = false;
+	Diagnostic::showStepInfo(fmt::format(std::move(inFmt), (std::forward<Args>(args))...), lineBreak);
+}
+
+/*****************************************************************************/
+template <typename... Args>
 void Diagnostic::warn(std::string_view inFmt, Args&&... args)
 {
 	auto type = Type::Warning;

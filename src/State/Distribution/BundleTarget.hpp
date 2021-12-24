@@ -11,12 +11,16 @@
 
 namespace chalet
 {
+class BuildState;
+
 struct BundleTarget final : public IDistTarget
 {
-	explicit BundleTarget();
+	explicit BundleTarget(const CentralState& inCentralState);
 
-	bool initialize(const BuildState& inState);
+	virtual bool initialize() final;
 	virtual bool validate() final;
+
+	bool resolveIncludesFromState(const BuildState& inState);
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;
@@ -77,8 +81,6 @@ struct BundleTarget final : public IDistTarget
 #endif
 
 private:
-	bool resolveIncludesFromState(const BuildState& inState);
-
 	StringList m_buildTargets;
 	StringList m_rawIncludes;
 	StringList m_includes;

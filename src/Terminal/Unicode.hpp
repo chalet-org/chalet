@@ -17,8 +17,6 @@ const char* heavyBallotX();
 const char* warning();
 const char* circledX();
 const char* heavyCurvedDownRightArrow();
-const char* heavyCurvedUpRightArrow();
-const char* rightwardsTripleArrow();
 const char* registered();
 }
 }

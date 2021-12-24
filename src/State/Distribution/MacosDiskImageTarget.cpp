@@ -5,8 +5,7 @@
 
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 
-#include "State/BuildPaths.hpp"
-#include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -15,9 +14,20 @@
 namespace chalet
 {
 /*****************************************************************************/
-MacosDiskImageTarget::MacosDiskImageTarget() :
-	IDistTarget(DistTargetType::MacosDiskImage)
+MacosDiskImageTarget::MacosDiskImageTarget(const CentralState& inCentralState) :
+	IDistTarget(inCentralState, DistTargetType::MacosDiskImage)
 {
+}
+
+/*****************************************************************************/
+bool MacosDiskImageTarget::initialize()
+{
+	const auto& targetName = this->name();
+
+	m_centralState.replaceVariablesInPath(m_background1x, targetName);
+	m_centralState.replaceVariablesInPath(m_background2x, targetName);
+
+	return true;
 }
 
 /*****************************************************************************/

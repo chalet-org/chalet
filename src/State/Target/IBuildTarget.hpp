@@ -20,7 +20,7 @@ struct IBuildTarget
 	explicit IBuildTarget(const BuildState& inState, const BuildTargetType inType);
 	virtual ~IBuildTarget() = default;
 
-	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, BuildState& inState);
+	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual bool validate() = 0;
 

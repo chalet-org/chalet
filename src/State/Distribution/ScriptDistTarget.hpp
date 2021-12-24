@@ -12,8 +12,9 @@ namespace chalet
 {
 struct ScriptDistTarget final : public IDistTarget
 {
-	explicit ScriptDistTarget();
+	explicit ScriptDistTarget(const CentralState& inCentralState);
 
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	const std::string& file() const noexcept;

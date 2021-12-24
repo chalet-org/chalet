@@ -5,6 +5,7 @@
 
 #include "State/Distribution/IDistTarget.hpp"
 
+#include "State/CentralState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
@@ -15,31 +16,32 @@
 namespace chalet
 {
 /*****************************************************************************/
-IDistTarget::IDistTarget(const DistTargetType inType) :
+IDistTarget::IDistTarget(const CentralState& inCentralState, const DistTargetType inType) :
+	m_centralState(inCentralState),
 	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType)
+[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType, const CentralState& inCentralState)
 {
 	switch (inType)
 	{
 		case DistTargetType::DistributionBundle:
-			return std::make_unique<BundleTarget>();
+			return std::make_unique<BundleTarget>(inCentralState);
 		case DistTargetType::Script:
-			return std::make_unique<ScriptDistTarget>();
+			return std::make_unique<ScriptDistTarget>(inCentralState);
 		case DistTargetType::Process:
-			return std::make_unique<ProcessDistTarget>();
+			return std::make_unique<ProcessDistTarget>(inCentralState);
 		case DistTargetType::BundleArchive:
-			return std::make_unique<BundleArchiveTarget>();
+			return std::make_unique<BundleArchiveTarget>(inCentralState);
 #if defined(CHALET_MACOS)
 		case DistTargetType::MacosDiskImage:
-			return std::make_unique<MacosDiskImageTarget>();
+			return std::make_unique<MacosDiskImageTarget>(inCentralState);
 #endif
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 		case DistTargetType::WindowsNullsoftInstaller:
-			return std::make_unique<WindowsNullsoftInstallerTarget>();
+			return std::make_unique<WindowsNullsoftInstallerTarget>(inCentralState);
 #endif
 		default:
 			break;
@@ -77,6 +79,16 @@ bool IDistTarget::isMacosDiskImage() const noexcept
 bool IDistTarget::isWindowsNullsoftInstaller() const noexcept
 {
 	return m_type == DistTargetType::WindowsNullsoftInstaller;
+}
+
+/*****************************************************************************/
+void IDistTarget::replaceVariablesInPathList(StringList& outList)
+{
+	const auto& targetName = this->name();
+	for (auto& dir : outList)
+	{
+		m_centralState.replaceVariablesInPath(dir, targetName);
+	}
 }
 
 /*****************************************************************************/

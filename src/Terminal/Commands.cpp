@@ -23,6 +23,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 #ifdef CHALET_MSVC
 	#define popen _popen
@@ -439,7 +440,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	CHALET_TRY
 	{
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("create directory symlink: {} {}", inFrom, inTo));
+			Output::printCommand(fmt::format("create directory symlink: {} -> {}", inFrom, inTo));
 
 		fs::create_directory_symlink(inFrom, inTo);
 
@@ -463,7 +464,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	CHALET_TRY
 	{
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("create symlink: {} {}", inFrom, inTo));
+			Output::printCommand(fmt::format("create symlink: {} -> {}", inFrom, inTo));
 
 		fs::create_symlink(inFrom, inTo);
 
@@ -486,9 +487,9 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 		fs::path to{ inTo / from.filename() };
 
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("copy to path: {} {}", inFrom, inTo));
+			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 		else
-			Output::msgCopying(inFrom, inTo);
+			Output::msgCopying(inFrom, fmt::format("{}/{}", inTo, String::getPathFilename(inFrom)));
 
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, inOptions);
@@ -505,7 +506,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 }
 
 /*****************************************************************************/
-bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
+bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	CHALET_TRY
 	{
@@ -513,39 +514,12 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo)
 		fs::path to{ inTo / from.filename() };
 
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("copy to path: {} {}", inFrom, inTo));
+			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 
 		if (fs::is_directory(from))
-			return copyDirectory(from, to, fs::copy_options::overwrite_existing);
+			return copyDirectory(from, to, inOptions);
 		else
-			fs::copy(from, to, fs::copy_options::overwrite_existing);
-
-		return true;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
-}
-
-/*****************************************************************************/
-bool Commands::copySkipExisting(const std::string& inFrom, const std::string& inTo)
-{
-	CHALET_TRY
-	{
-		fs::path from{ inFrom };
-		fs::path to{ inTo / from.filename() };
-
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("copy to path: {} {}", inFrom, inTo));
-		else
-			Output::msgCopying(inFrom, inTo);
-
-		if (fs::is_directory(from))
-			return copyDirectory(from, to, fs::copy_options::skip_existing);
-		else
-			fs::copy(from, to, fs::copy_options::skip_existing);
+			fs::copy(from, to, inOptions);
 
 		return true;
 	}
@@ -564,7 +538,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 		if (!inSilent)
 		{
 			if (Output::showCommands())
-				Output::printCommand(fmt::format("copy: {} {}", inFrom, inTo));
+				Output::printCommand(fmt::format("copy: {} -> {}", inFrom, inTo));
 			else
 				Output::msgCopying(inFrom, inTo);
 		}
@@ -586,7 +560,7 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 	CHALET_TRY
 	{
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("rename: {} {}", inFrom, inTo));
+			Output::printCommand(fmt::format("rename: {} -> {}", inFrom, inTo));
 
 		if (!Commands::pathExists(inFrom))
 			return inSkipNonExisting;

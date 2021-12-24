@@ -20,7 +20,7 @@ class BuildState;
 
 struct SourceTarget final : public IBuildTarget
 {
-	explicit SourceTarget(BuildState& inState);
+	explicit SourceTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;

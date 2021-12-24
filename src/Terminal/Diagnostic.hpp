@@ -29,6 +29,12 @@ struct Diagnostic
 	static void infoEllipsis(std::string_view inFmt, Args&&... args);
 
 	template <typename... Args>
+	static void stepInfo(std::string_view inFmt, Args&&... args);
+
+	template <typename... Args>
+	static void stepInfoEllipsis(std::string_view inFmt, Args&&... args);
+
+	template <typename... Args>
 	static void warn(std::string_view inFmt, Args&&... args);
 
 	template <typename... Args>
@@ -49,6 +55,7 @@ struct Diagnostic
 
 private:
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);
+	static void showStepInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showFatalError(std::string&& inMessage);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);

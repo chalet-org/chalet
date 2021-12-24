@@ -114,7 +114,46 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	{
 		if (Output::showCommands())
 		{
+			output = fmt::format("{} ... {}", color, reset);
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
+		}
+		else
+		{
+			std::cout.write(color.data(), color.size());
+			std::cout.flush();
 
+			destroySpinnerThread();
+			state.spinnerThread = std::make_unique<Spinner>();
+			state.spinnerThread->start();
+		}
+	}
+}
+
+/*****************************************************************************/
+void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto& theme = Output::theme();
+	const auto color = Output::getAnsiStyle(theme.flair);
+	const auto infoColor = Output::getAnsiStyle(theme.build);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+
+	auto output = fmt::format("{}   {}{}", color, infoColor, inMessage);
+	std::cout.write(output.data(), output.size());
+
+	if (inLineBreak)
+	{
+		std::cout.write(reset.data(), reset.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
+	}
+	else
+	{
+		if (Output::showCommands())
+		{
 			output = fmt::format("{} ... {}", color, reset);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();

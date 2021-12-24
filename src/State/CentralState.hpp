@@ -41,6 +41,8 @@ struct CentralState
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
+
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;

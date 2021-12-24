@@ -10,18 +10,19 @@
 
 namespace chalet
 {
-class BuildState;
+struct CentralState;
 
 struct IDistTarget;
 using DistTarget = Unique<IDistTarget>;
 
 struct IDistTarget
 {
-	explicit IDistTarget(const DistTargetType inType);
+	explicit IDistTarget(const CentralState& inCentralState, const DistTargetType inType);
 	virtual ~IDistTarget() = default;
 
-	[[nodiscard]] static DistTarget make(const DistTargetType inType);
+	[[nodiscard]] static DistTarget make(const DistTargetType inType, const CentralState& inCentralState);
 
+	virtual bool initialize() = 0;
 	virtual bool validate() = 0;
 
 	DistTargetType type() const noexcept;
@@ -40,6 +41,11 @@ struct IDistTarget
 
 	bool includeInDistribution() const noexcept;
 	void setIncludeInDistribution(const bool inValue);
+
+protected:
+	void replaceVariablesInPathList(StringList& outList);
+
+	const CentralState& m_centralState;
 
 private:
 	std::string m_name;

@@ -91,6 +91,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 	if (!inTarget->isArchive() && !isTargetNameValid(*inTarget))
 		return false;
 
+	if (!inTarget->initialize())
+		return false;
+
+	Timer timer;
+
 	if (inTarget->isDistributionBundle())
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
@@ -132,7 +137,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 			return false;
 		}
 
-		if (!bundle.initialize(*buildState))
+		if (!bundle.resolveIncludesFromState(*buildState))
 			return false;
 
 		if (!gatherDependencies(bundle, *buildState))
@@ -141,60 +146,52 @@ bool AppBundler::run(const DistTarget& inTarget)
 		if (!runBundleTarget(*bundler, *buildState))
 			return false;
 	}
-	else if (inTarget->isScript())
+	else
 	{
-		Timer buildTimer;
-
-		if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
-			return false;
-
-		auto res = buildTimer.stop();
-		if (res > 0 && Output::showBenchmarks())
+		if (inTarget->isScript())
 		{
-			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
+				return false;
 		}
-	}
-	else if (inTarget->isProcess())
-	{
-		Timer buildTimer;
-
-		if (!runProcessTarget(static_cast<const ProcessDistTarget&>(*inTarget)))
-			return false;
-
-		auto res = buildTimer.stop();
-		if (res > 0 && Output::showBenchmarks())
+		else if (inTarget->isProcess())
 		{
-			Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+			if (!runProcessTarget(static_cast<const ProcessDistTarget&>(*inTarget)))
+				return false;
 		}
-	}
-	else if (inTarget->isArchive())
-	{
-		if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
-			return false;
-	}
-	else if (inTarget->isMacosDiskImage())
-	{
-		if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
-			return false;
-	}
-	else if (inTarget->isWindowsNullsoftInstaller())
-	{
+		else if (inTarget->isArchive())
+		{
+			if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
+				return false;
+		}
+		else if (inTarget->isMacosDiskImage())
+		{
+			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+				return false;
+		}
+		else if (inTarget->isWindowsNullsoftInstaller())
+		{
 #if defined(CHALET_LINUX)
-		BuildState* state = getBuildState(m_centralState.anyConfiguration());
-		if (state == nullptr)
-		{
-			Diagnostic::error("No associated build found for target: {}", inTarget->name());
-			return false;
-		}
+			BuildState* state = getBuildState(m_centralState.anyConfiguration());
+			if (state == nullptr)
+			{
+				Diagnostic::error("No associated build found for target: {}", inTarget->name());
+				return false;
+			}
 
-		if (!state->environment->isMingw())
-			return true;
+			if (!state->environment->isMingw())
+				return true;
 #endif
 
-		if (!runWindowsNullsoftInstallerTarget(static_cast<const WindowsNullsoftInstallerTarget&>(*inTarget)))
-			return false;
+			if (!runWindowsNullsoftInstallerTarget(static_cast<const WindowsNullsoftInstallerTarget&>(*inTarget)))
+				return false;
+		}
 	}
 
+	auto res = timer.stop();
+	if (res > 0 && Output::showBenchmarks())
+	{
+		Output::printInfo(fmt::format("   Time: {}", timer.asString()));
+	}
 	Output::lineBreak();
 
 	return true;
@@ -254,7 +251,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	const auto cwd = m_centralState.inputs().workingDirectory() + '/';
 
-	const auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
+	auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
 		{
 			const auto filename = String::getPathFilename(inDep);
@@ -543,8 +540,6 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	if (includes.empty())
 		return false;
 
-	Timer timer;
-
 	auto baseName = inTarget.name();
 
 	BuildState* state = getBuildState(m_centralState.anyConfiguration());
@@ -567,7 +562,9 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
-	Diagnostic::infoEllipsis("Compressing files");
+	Timer timer;
+
+	Diagnostic::stepInfoEllipsis("Compressing files");
 
 	ZipArchiver zipArchiver(m_centralState);
 	if (!zipArchiver.archive(baseName, resolvedIncludes, m_centralState.inputs().distributionDirectory(), m_archives))
@@ -576,6 +573,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	m_archives.emplace_back(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), filename));
 
 	Diagnostic::printDone(timer.asString());
+
 	return true;
 }
 
@@ -595,6 +593,8 @@ bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget)
 {
 	displayHeader("Nullsoft Installer", inTarget);
+
+	Diagnostic::info("Creating the Windows installer executable");
 
 	WindowsNullsoftInstallerRunner nsis(m_centralState);
 	if (!nsis.compile(inTarget))

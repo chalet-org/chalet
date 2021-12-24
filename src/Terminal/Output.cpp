@@ -683,9 +683,10 @@ void Output::msgModulesCompiling()
 /*****************************************************************************/
 void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 {
-	auto symbol = Unicode::heavyCurvedUpRightArrow();
-	std::string message = fmt::format("Copying: '{}' to '{}'", inFrom, inTo);
+	const auto reset = getAnsiStyle(Color::Reset);
+	const auto flair = getAnsiStyle(state.theme.flair);
+	const auto build = getAnsiStyle(state.theme.build);
 
-	displayStyledSymbol(state.theme.build, symbol, message);
+	Diagnostic::stepInfo("{}Copying: {} {}->{} {}", build, inFrom, flair, reset, inTo);
 }
 }

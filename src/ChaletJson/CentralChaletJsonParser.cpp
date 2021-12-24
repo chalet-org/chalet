@@ -316,7 +316,7 @@ bool CentralChaletJsonParser::parseDistribution(const Json& inNode) const
 			return false;
 		}
 
-		DistTarget target = IDistTarget::make(type);
+		DistTarget target = IDistTarget::make(type, m_centralState);
 		target->setName(name);
 
 		if (target->isScript())
