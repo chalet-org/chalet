@@ -318,8 +318,8 @@ void Diagnostic::printErrors()
 		Type type = Type::Warning;
 		Output::lineBreak();
 
-		// Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
-		Diagnostic::showHeader(type, warnings.size() == 1 ? "Warning" : "Warnings");
+		auto label = warnings.size() == 1 ? "Warning" : "Warnings";
+		Diagnostic::showHeader(type, fmt::format("{}  {}", Unicode::warning(), label));
 
 		for (auto& message : warnings)
 		{
@@ -338,7 +338,8 @@ void Diagnostic::printErrors()
 		if (!hasWarnings)
 			Output::lineBreakStderr();
 
-		Diagnostic::showHeader(type, errors.size() == 1 ? "Error" : "Errors");
+		auto label = errors.size() == 1 ? "Error" : "Errors";
+		Diagnostic::showHeader(type, fmt::format("{}  {}", Unicode::circledX(), label));
 
 		for (auto& message : errors)
 		{
