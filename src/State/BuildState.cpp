@@ -100,6 +100,9 @@ bool BuildState::initialize()
 		if (!initializeBuild())
 			return false;
 
+		if (!validateState())
+			return false;
+
 		// calls enforceArchitectureInPath 2nd time
 		makePathVariable();
 
@@ -365,13 +368,7 @@ bool BuildState::initializeBuild()
 		initializeCache();
 	}
 
-	if (!validateState())
-		return false;
-
 	if (!info.initialize())
-		return false;
-
-	if (!validateSigningIdentity())
 		return false;
 
 	m_uniqueId = getUniqueIdForState();
@@ -579,12 +576,6 @@ bool BuildState::validateState()
 #endif
 	}
 
-	return true;
-}
-
-/*****************************************************************************/
-bool BuildState::validateSigningIdentity()
-{
 	// Right now, only used w/ Bundle
 	if (inputs.route() == Route::Bundle)
 	{

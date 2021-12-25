@@ -173,7 +173,11 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 /*****************************************************************************/
 void Diagnostic::showFatalError(std::string&& inMessage)
 {
-	const auto color = Output::getAnsiStyle(Color::Red);
+	auto theme = Output::theme();
+	if (!theme.isPreset())
+		theme.error = Color::RedBold;
+
+	const auto color = Output::getAnsiStyle(theme.error);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 	auto output = fmt::format("{}Error: {}{}", color, reset, inMessage);
 
@@ -314,7 +318,8 @@ void Diagnostic::printErrors()
 		Type type = Type::Warning;
 		Output::lineBreak();
 
-		Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
+		// Diagnostic::showHeader(type, fmt::format("{}  Warnings", Unicode::warning()));
+		Diagnostic::showHeader(type, warnings.size() == 1 ? "Warning" : "Warnings");
 
 		for (auto& message : warnings)
 		{
@@ -327,17 +332,13 @@ void Diagnostic::printErrors()
 		hasWarnings = true;
 	}
 
-	if (errors.size() == 1)
-	{
-		Diagnostic::fatalError(errors.front());
-	}
-	else if (errors.size() > 0)
+	if (errors.size() > 0)
 	{
 		Type type = Type::Error;
 		if (!hasWarnings)
 			Output::lineBreakStderr();
 
-		Diagnostic::showHeader(type, fmt::format("{}  Errors", Unicode::circledX()));
+		Diagnostic::showHeader(type, errors.size() == 1 ? "Error" : "Errors");
 
 		for (auto& message : errors)
 		{

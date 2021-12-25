@@ -64,7 +64,6 @@ private:
 	void initializeCache();
 
 	bool validateState();
-	bool validateSigningIdentity();
 
 	bool makePathVariable();
 	void makeCompilerDiagnosticsVariables();
