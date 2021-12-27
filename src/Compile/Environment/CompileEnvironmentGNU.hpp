@@ -15,7 +15,6 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 	explicit CompileEnvironmentGNU(const ToolchainType inType, BuildState& inState);
 
 protected:
-	virtual std::string getIdentifier() const noexcept override;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;

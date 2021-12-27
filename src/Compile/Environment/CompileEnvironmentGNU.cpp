@@ -23,15 +23,6 @@ CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, BuildSt
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentGNU::getIdentifier() const noexcept
-{
-	if (m_type == ToolchainType::MingwGNU)
-		return std::string("mingw");
-	else
-		return std::string("gcc");
-}
-
-/*****************************************************************************/
 StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
 	return { inExecutable, "-v" };

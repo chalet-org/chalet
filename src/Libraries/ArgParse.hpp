@@ -16,7 +16,7 @@
 #include <argparse/argparse.hpp>
 
 #ifdef CHALET_MSVC
-	#pragma warning(push)
+	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop
 #endif

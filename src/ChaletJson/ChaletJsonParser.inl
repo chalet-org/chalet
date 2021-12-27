@@ -29,6 +29,15 @@ bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& 
 				return false;
 		}
 
+		/*if (String::contains(fmt::format(".!{}", m_toolchain), inKey))
+			return false;
+
+		for (auto& notPlatform : m_notToolchains)
+		{
+			if (String::contains(fmt::format(".{}", notPlatform), inKey))
+				return false;
+		}*/
+
 		const auto debug = m_state.configuration.debugSymbols() ? "!" : "";
 		if (String::contains(fmt::format(".{}debug", debug), inKey))
 			return false;
@@ -80,7 +89,7 @@ bool ChaletJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const 
 			{
 				if (value.is_array())
 				{
-					if (String::equals("*", key) || String::equals(triple, key) || String::equals(toolchainName, key))
+					if (String::equals("*", key) || String::contains(key, triple) || String::contains(key, toolchainName))
 					{
 						for (auto& item : value)
 						{
@@ -96,7 +105,7 @@ bool ChaletJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const 
 			{
 				if (value.is_string())
 				{
-					if (String::equals("*", key) || String::equals(triple, key) || String::equals(toolchainName, key))
+					if (String::equals("*", key) || String::contains(key, triple) || String::contains(key, toolchainName))
 					{
 						outVariable = value.template get<Type>();
 					}

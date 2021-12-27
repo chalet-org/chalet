@@ -25,12 +25,6 @@ CompileEnvironmentLLVM::CompileEnvironmentLLVM(const ToolchainType inType, Build
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentLLVM::getIdentifier() const noexcept
-{
-	return std::string("llvm");
-}
-
-/*****************************************************************************/
 StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecutable) const
 {
 	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };

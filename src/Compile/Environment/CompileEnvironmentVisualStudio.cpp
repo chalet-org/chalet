@@ -34,12 +34,6 @@ CompileEnvironmentVisualStudio::CompileEnvironmentVisualStudio(const ToolchainTy
 CompileEnvironmentVisualStudio::~CompileEnvironmentVisualStudio() = default;
 
 /*****************************************************************************/
-std::string CompileEnvironmentVisualStudio::getIdentifier() const noexcept
-{
-	return std::string("msvc");
-}
-
-/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 {
 	auto gnuArchToMsvcArch = [](const std::string& inArch) -> std::string {
