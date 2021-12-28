@@ -114,19 +114,8 @@
 			"type": "object",
 			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
-			"anyOf": [
-				{
-					"required": [
-						"kind",
-						"buildTargets"
-					]
-				},
-				{
-					"required": [
-						"kind",
-						"include"
-					]
-				}
+			"required": [
+				"kind"
 			],
 			"properties": {
 				"buildTargets": {
@@ -331,8 +320,7 @@
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
 			"required": [
-				"kind",
-				"include"
+				"kind"
 			],
 			"properties": {
 				"condition": {

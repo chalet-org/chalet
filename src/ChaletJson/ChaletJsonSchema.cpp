@@ -1355,19 +1355,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
-			"anyOf": [
-				{
-					"required": [
-						"kind",
-						"buildTargets"
-					]
-				},
-				{
-					"required": [
-						"kind",
-						"include"
-					]
-				}
+			"required": [
+				"kind"
 			]
 		})json"_ojson;
 		distributionTarget[SKeys::Properties] = Json::object();
@@ -1394,8 +1383,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
 			"required": [
-				"kind",
-				"include"
+				"kind"
 			]
 		})json"_ojson;
 		distributionArchive[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
@@ -1560,7 +1548,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		auto targetSource = R"json({
 			"type": "object",
 			"additionalProperties": false,
-			"required": [ "kind" ]
+			"required": [
+				"kind"
+			]
 		})json"_ojson;
 		targetSource[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetSource[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
