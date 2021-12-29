@@ -14,41 +14,45 @@ class ExternalDependencyCache;
 
 struct GitRunner
 {
-	explicit GitRunner(CentralState& inCentralState, const GitDependency& inDependency);
+	explicit GitRunner(CentralState& inCentralState);
 
-	bool run(const bool inDoNotUpdate);
+	bool run(const GitDependency& inDependency, const bool inDoNotUpdate);
 
 	bool fetched() const noexcept;
 
 private:
-	bool gitRepositoryShouldUpdate(const bool inDoNotUpdate);
+	bool gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDoNotUpdate);
 
-	bool fetchDependency();
-	StringList getGitCloneCommand(const std::string& inCheckoutTo);
+	bool fetchDependency(const GitDependency& inDependency);
+	StringList getCloneCommand(const GitDependency& inDependency);
 
-	bool needsUpdate();
-	bool updateDependencyCache();
+	bool needsUpdate(const GitDependency& inDependency);
+	bool updateDependencyCache(const GitDependency& inDependency);
 
-	void displayCheckingForUpdates();
-	void displayFetchingMessageStart();
+	void displayCheckingForUpdates(const std::string& inDestination);
+	void displayFetchingMessageStart(const GitDependency& inDependency);
 
-	const std::string& getCheckoutTo();
+	const std::string& getCheckoutTo(const GitDependency& inDependency);
+
+	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;
+	std::string getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const;
+	std::string getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const;
+	bool updateGitRepositoryShallow(const std::string& inRepoPath) const;
+	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
 
 	CentralState& m_centralState;
-	const GitDependency& m_dependency;
 	ExternalDependencyCache& m_dependencyCache;
 
-	const std::string& m_repository;
-	const std::string& m_destination;
-	const std::string& m_branch;
-	const std::string& m_tag;
-	const std::string& m_commit;
+#if defined(CHALET_WIN32)
+	const std::string m_commandPrompt;
+#endif
+	const std::string m_git;
 
 	std::string m_lastCachedCommit;
 	std::string m_lastCachedBranch;
-	std::string m_checkoutBranch;
 
-	const bool m_submodules;
 	bool m_destinationExists = false;
 	bool m_fetched = false;
 };

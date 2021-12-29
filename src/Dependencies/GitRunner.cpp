@@ -20,32 +20,29 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitRunner::GitRunner(CentralState& inCentralState, const GitDependency& inDependency) :
+GitRunner::GitRunner(CentralState& inCentralState) :
 	m_centralState(inCentralState),
-	m_dependency(inDependency),
 	m_dependencyCache(m_centralState.cache.file().externalDependencies()),
-	m_repository(m_dependency.repository()),
-	m_destination(m_dependency.destination()),
-	m_branch(m_dependency.branch()),
-	m_tag(m_dependency.tag()),
-	m_commit(m_dependency.commit()),
-	m_submodules(m_dependency.submodules())
+#if defined(CHALET_WIN32)
+	m_commandPrompt(m_centralState.tools.commandPrompt()),
+#endif
+	m_git(m_centralState.tools.git())
 {
 }
 
 /*****************************************************************************/
-bool GitRunner::run(const bool inDoNotUpdate)
+bool GitRunner::run(const GitDependency& inDependency, const bool inDoNotUpdate)
 {
-	if (!gitRepositoryShouldUpdate(inDoNotUpdate))
+	if (!gitRepositoryShouldUpdate(inDependency, inDoNotUpdate))
 		return true;
 
-	if (fetchDependency())
-	{
-		return updateDependencyCache();
-	}
+	if (fetchDependency(inDependency))
+		return updateDependencyCache(inDependency);
 
-	if (Commands::pathExists(m_destination))
-		Commands::removeRecursively(m_destination);
+	const auto& destination = inDependency.destination();
+
+	if (Commands::pathExists(destination))
+		Commands::removeRecursively(destination);
 
 	return false;
 }
@@ -57,25 +54,26 @@ bool GitRunner::fetched() const noexcept
 }
 
 /*****************************************************************************/
-bool GitRunner::gitRepositoryShouldUpdate(const bool inDoNotUpdate)
+bool GitRunner::gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDoNotUpdate)
 {
-	m_destinationExists = Commands::pathExists(m_destination);
+	const auto& destination = inDependency.destination();
+	m_destinationExists = Commands::pathExists(destination);
 	// During the build, just continue if the path already exists
 
-	if (!m_dependencyCache.contains(m_destination))
+	if (!m_dependencyCache.contains(destination))
 	{
 		if (m_destinationExists)
-			return Commands::removeRecursively(m_destination);
+			return Commands::removeRecursively(destination);
 
 		return true;
 	}
 
-	const auto& cachedValue = m_dependencyCache.get(m_destination);
+	const auto& cachedValue = m_dependencyCache.get(destination);
 	auto split = String::split(cachedValue, ' ');
 	if (split.size() != 5 || split[0].empty())
 	{
 		if (m_destinationExists)
-			return Commands::removeRecursively(m_destination);
+			return Commands::removeRecursively(destination);
 
 		return true;
 	}
@@ -86,25 +84,27 @@ bool GitRunner::gitRepositoryShouldUpdate(const bool inDoNotUpdate)
 	if (inDoNotUpdate)
 		return false;
 
-	return needsUpdate();
+	return needsUpdate(inDependency);
 }
 
 /*****************************************************************************/
-bool GitRunner::fetchDependency()
+bool GitRunner::fetchDependency(const GitDependency& inDependency)
 {
-	if (m_destinationExists && m_dependencyCache.contains(m_destination))
+	if (m_destinationExists && m_dependencyCache.contains(inDependency.destination()))
 		return true;
 
-	const auto& checkoutTo = getCheckoutTo();
-	displayFetchingMessageStart();
+	displayFetchingMessageStart(inDependency);
 
-	StringList cmd = getGitCloneCommand(checkoutTo);
+	StringList cmd = getCloneCommand(inDependency);
 	if (!Commands::subprocess(cmd))
 		return false;
 
-	if (!m_commit.empty())
+	const auto& commit = inDependency.commit();
+	const auto& destination = inDependency.destination();
+
+	if (!commit.empty())
 	{
-		if (!m_centralState.tools.resetGitRepositoryToCommit(m_destination, m_commit))
+		if (!resetGitRepositoryToCommit(destination, commit))
 			return false;
 	}
 
@@ -114,21 +114,28 @@ bool GitRunner::fetchDependency()
 }
 
 /*****************************************************************************/
-StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
+StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
 {
 	StringList ret;
+
+	const auto& destination = inDependency.destination();
+	const auto& repository = inDependency.repository();
+	const auto& commit = inDependency.commit();
+	const bool submodules = inDependency.submodules();
+
+	const auto& checkoutTo = getCheckoutTo(inDependency);
 
 	ret.push_back(m_centralState.tools.git());
 	ret.emplace_back("clone");
 	ret.emplace_back("--quiet");
 
-	if (!inCheckoutTo.empty() && !String::equals("HEAD", inCheckoutTo))
+	if (!checkoutTo.empty() && !String::equals("HEAD", checkoutTo))
 	{
 		ret.emplace_back("-b");
-		ret.push_back(inCheckoutTo);
+		ret.push_back(checkoutTo);
 	}
 
-	if (!m_commit.empty())
+	if (!commit.empty())
 	{
 		ret.emplace_back("--single-branch");
 	}
@@ -138,7 +145,7 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 		ret.emplace_back("1");
 	}
 
-	if (m_submodules)
+	if (submodules)
 	{
 		uint maxJobs = 0;
 		if (m_centralState.inputs().maxJobs().has_value())
@@ -155,19 +162,25 @@ StringList GitRunner::getGitCloneCommand(const std::string& inCheckoutTo)
 
 	ret.emplace_back("--config");
 	ret.emplace_back("advice.detachedHead=false");
-	ret.push_back(m_repository);
-	ret.push_back(m_destination);
+	ret.push_back(repository);
+	ret.push_back(destination);
 
 	return ret;
 }
 
 /*****************************************************************************/
-bool GitRunner::needsUpdate()
+bool GitRunner::needsUpdate(const GitDependency& inDependency)
 {
-	if (!m_dependencyCache.contains(m_destination))
+	const auto& destination = inDependency.destination();
+	const auto& repository = inDependency.repository();
+	const auto& commit = inDependency.commit();
+	const auto& branch = inDependency.branch();
+	const auto& tag = inDependency.tag();
+
+	if (!m_dependencyCache.contains(destination))
 		return true;
 
-	const auto& cachedValue = m_dependencyCache.get(m_destination);
+	const auto& cachedValue = m_dependencyCache.get(destination);
 	auto split = String::split(cachedValue, ' ');
 	if (split.size() != 5)
 		return true;
@@ -178,20 +191,20 @@ bool GitRunner::needsUpdate()
 	const auto& cachedBranch = split[3] == "." ? std::string() : split[3];
 	const auto& cachedTag = split[4] == "." ? std::string() : split[4];
 
-	bool commitNeedsUpdate = !m_commit.empty() && (!String::startsWith(m_commit, cachedCommit) || !String::startsWith(m_commit, m_lastCachedCommit));
-	bool branchNeedsUpdate = cachedBranch != m_branch;
-	bool tagNeedsUpdate = cachedTag != m_tag;
+	bool commitNeedsUpdate = !commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, m_lastCachedCommit));
+	bool branchNeedsUpdate = cachedBranch != branch;
+	bool tagNeedsUpdate = cachedTag != tag;
 
-	// LOG(commitNeedsUpdate, branchNeedsUpdate, tagNeedsUpdate, m_destination);
+	// LOG(commitNeedsUpdate, branchNeedsUpdate, tagNeedsUpdate, destination);
 
 	bool update = commitNeedsUpdate || branchNeedsUpdate || tagNeedsUpdate;
 	if (!update && !m_lastCachedBranch.empty())
 	{
 		Timer timer;
-		displayCheckingForUpdates();
+		displayCheckingForUpdates(destination);
 
-		const auto& refToCheck = !m_tag.empty() ? m_tag : m_lastCachedBranch;
-		auto latestRemote = m_centralState.tools.getLatestGitRepositoryHashWithoutClone(m_repository, refToCheck);
+		const auto& refToCheck = !tag.empty() ? tag : m_lastCachedBranch;
+		auto latestRemote = getLatestGitRepositoryHashWithoutClone(repository, refToCheck);
 		if (latestRemote != m_lastCachedCommit)
 		{
 			m_lastCachedCommit = latestRemote;
@@ -205,7 +218,7 @@ bool GitRunner::needsUpdate()
 
 	if (update)
 	{
-		if (!Commands::removeRecursively(m_destination))
+		if (!Commands::removeRecursively(destination))
 			return false;
 
 		m_destinationExists = false;
@@ -215,45 +228,52 @@ bool GitRunner::needsUpdate()
 }
 
 /*****************************************************************************/
-void GitRunner::displayCheckingForUpdates()
+void GitRunner::displayCheckingForUpdates(const std::string& inDestination)
 {
-	Diagnostic::infoEllipsis("Checking remote for updates: {}", m_destination);
+	Diagnostic::infoEllipsis("Checking remote for updates: {}", inDestination);
 }
 
 /*****************************************************************************/
-void GitRunner::displayFetchingMessageStart()
+void GitRunner::displayFetchingMessageStart(const GitDependency& inDependency)
 {
-	const auto& checkoutTo = getCheckoutTo();
-	Output::msgFetchingDependency(m_repository, checkoutTo);
+	const auto& checkoutTo = getCheckoutTo(inDependency);
+	const auto& repository = inDependency.repository();
+
+	Output::msgFetchingDependency(repository, checkoutTo);
 }
 
 /*****************************************************************************/
-bool GitRunner::updateDependencyCache()
+bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 {
-	m_lastCachedCommit = m_centralState.tools.getCurrentGitRepositoryHash(m_destination);
+	const auto& destination = inDependency.destination();
+	const auto& commit = inDependency.commit();
+	const auto& branch = inDependency.branch();
+	const auto& tag = inDependency.tag();
+
+	m_lastCachedCommit = getCurrentGitRepositoryHash(destination);
 
 	if (m_lastCachedBranch.empty())
 	{
-		m_lastCachedBranch = m_centralState.tools.getCurrentGitRepositoryBranch(m_destination);
+		m_lastCachedBranch = getCurrentGitRepositoryBranch(destination);
 	}
 
 	auto lastBranch = m_lastCachedBranch.empty() ? "." : m_lastCachedBranch;
-	auto commit = m_commit.empty() ? "." : m_commit;
-	auto branch = m_branch.empty() ? "." : m_branch;
-	auto tag = m_tag.empty() ? "." : m_tag;
+	auto valueCommit = commit.empty() ? "." : commit;
+	auto valueBranch = branch.empty() ? "." : branch;
+	auto valueTag = tag.empty() ? "." : tag;
 
-	auto value = fmt::format("{} {} {} {} {}", m_lastCachedCommit, lastBranch, commit, branch, tag);
+	auto value = fmt::format("{} {} {} {} {}", m_lastCachedCommit, lastBranch, valueCommit, valueBranch, valueTag);
 
-	if (m_dependencyCache.contains(m_destination))
+	if (m_dependencyCache.contains(destination))
 	{
-		if (m_dependencyCache.get(m_destination) != value)
+		if (m_dependencyCache.get(destination) != value)
 		{
-			m_dependencyCache.set(m_destination, std::move(value));
+			m_dependencyCache.set(destination, std::move(value));
 		}
 	}
 	else
 	{
-		m_dependencyCache.emplace(m_destination, std::move(value));
+		m_dependencyCache.emplace(destination, std::move(value));
 	}
 
 	// Note: Some (bad) repos have source files in the root. using that as an include path
@@ -266,14 +286,14 @@ bool GitRunner::updateDependencyCache()
 			 ".github",
 		 })
 	{
-		auto outPath = fmt::format("{}/{}", m_destination, path);
+		auto outPath = fmt::format("{}/{}", destination, path);
 		if (Commands::pathExists(outPath))
 		{
 #if defined(CHALET_WIN32)
 			if (String::equals(".git", path))
 			{
 				Path::sanitizeForWindows(outPath);
-				if (!Commands::subprocess({ m_centralState.tools.commandPrompt(), "/c", fmt::format("rmdir /q /s {}", outPath) }))
+				if (!Commands::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}
 			else
@@ -289,13 +309,66 @@ bool GitRunner::updateDependencyCache()
 }
 
 /*****************************************************************************/
-const std::string& GitRunner::getCheckoutTo()
+const std::string& GitRunner::getCheckoutTo(const GitDependency& inDependency)
 {
-	if (m_checkoutBranch.empty())
-	{
-		m_checkoutBranch = m_branch;
-	}
+	const auto& branch = inDependency.branch();
+	const auto& tag = inDependency.tag();
 
-	return !m_tag.empty() ? m_tag : m_checkoutBranch;
+	return !tag.empty() ? tag : branch;
 }
+
+/*****************************************************************************/
+std::string GitRunner::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
+{
+	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
+	return branch;
+}
+
+/*****************************************************************************/
+std::string GitRunner::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
+{
+	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
+	return tag;
+}
+
+/*****************************************************************************/
+std::string GitRunner::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
+{
+	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
+	return hash;
+}
+
+/*****************************************************************************/
+std::string GitRunner::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
+{
+	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
+	return originHash;
+}
+
+std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
+{
+	std::string result = Commands::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
+	if (result.empty())
+		return result;
+
+	auto split = String::split(result, '\n');
+	if (split.front().empty())
+		return std::string();
+
+	auto ref = String::split(split.front(), '\t');
+	return ref.front();
+}
+
+/*****************************************************************************/
+bool GitRunner::updateGitRepositoryShallow(const std::string& inRepoPath) const
+{
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
+}
+
+/*****************************************************************************/
+bool GitRunner::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
+{
+	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
+}
+
 }

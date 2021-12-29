@@ -400,60 +400,6 @@ void AncillaryTools::setVsperfcmd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
-{
-	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
-	return branch;
-}
-
-/*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
-{
-	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
-	return tag;
-}
-
-/*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
-{
-	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
-	return hash;
-}
-
-/*****************************************************************************/
-std::string AncillaryTools::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
-{
-	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
-	return originHash;
-}
-
-std::string AncillaryTools::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
-{
-	std::string result = Commands::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
-	if (result.empty())
-		return result;
-
-	auto split = String::split(result, '\n');
-	if (split.front().empty())
-		return std::string();
-
-	auto ref = String::split(split.front(), '\t');
-	return ref.front();
-}
-
-/*****************************************************************************/
-bool AncillaryTools::updateGitRepositoryShallow(const std::string& inRepoPath) const
-{
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
-}
-
-/*****************************************************************************/
-bool AncillaryTools::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
-{
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
-}
-
-/*****************************************************************************/
 // TODO: remove "--deep" and figure out the proper Apple-approved way of doing things
 //
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const

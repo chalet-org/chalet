@@ -69,8 +69,8 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 
 	bool doNotUpdate = m_centralState.inputs().route() != Route::Configure;
 
-	GitRunner git(m_centralState, inDependency);
-	if (!git.run(doNotUpdate))
+	GitRunner git(m_centralState);
+	if (!git.run(inDependency, doNotUpdate))
 	{
 		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
 		return false;

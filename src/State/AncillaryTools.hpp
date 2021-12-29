@@ -100,14 +100,6 @@ struct AncillaryTools
 
 	// Commands
 
-	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
-	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
-	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;
-	std::string getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const;
-	std::string getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const;
-	bool updateGitRepositoryShallow(const std::string& inRepoPath) const;
-	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
-
 	bool macosCodeSignFile(const std::string& inPath, const bool inForce = true) const;
 	bool macosCodeSignDiskImage(const std::string& inPath) const;
 	bool macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const;
