@@ -8,6 +8,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -102,6 +103,9 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 
 	if (Output::showCommands())
 		command.emplace_back("-v");
+
+	command.emplace_back("-j");
+	command.emplace_back(std::to_string(m_state.info.maxJobs()));
 
 	command.emplace_back("-f");
 	command.push_back(m_cacheFile);

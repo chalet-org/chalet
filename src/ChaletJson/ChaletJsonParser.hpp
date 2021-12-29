@@ -65,7 +65,9 @@ private:
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
 
 	StringList m_notPlatforms;
+	// StringList m_notToolchains;
 	std::string m_platform;
+	// std::string m_toolchain;
 };
 }
 

@@ -10,6 +10,7 @@
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
@@ -57,6 +58,9 @@ bool ChaletJsonParser::serialize()
 {
 	// Timer timer;
 	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_chaletJson.filename());
+
+	// m_toolchain = m_state.environment->identifier();
+	// m_notToolchains = ToolchainTypes::getNotTypes(m_toolchain);
 
 	const Json& jRoot = m_chaletJson.json;
 	if (!serializeFromJsonRoot(jRoot))
@@ -758,23 +762,35 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 /*****************************************************************************/
 bool ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
-	if (!String::equals(m_platform, inContent))
+	auto split = String::split(inContent, '.');
+	if (List::contains(split, fmt::format(".!{}", m_platform)))
+		return false;
+
+	for (auto& notPlatform : m_notPlatforms)
 	{
-		auto split = String::split(inContent, '.');
-		for (auto& notPlatform : m_notPlatforms)
-		{
-			if (List::contains(split, notPlatform))
-				return false;
-		}
-
-		const auto incDebug = m_state.configuration.debugSymbols() ? "" : "!";
-		if (!List::contains(split, fmt::format("{}debug", incDebug)))
+		if (List::contains(split, notPlatform))
 			return false;
-
-		// const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
-		// if (!List::contains(split, fmt::format("{}ci", incCi)))
-		// 	return false;
 	}
+
+	/*if (List::contains(split, fmt::format(".!{}", m_toolchain)))
+		return false;
+
+	for (auto& notToolchain : m_notToolchains)
+	{
+		if (List::contains(split, notToolchain))
+			return false;
+	}*/
+
+	if (List::contains(split, fmt::format("!{}", m_state.environment->identifier())))
+		return false;
+
+	const auto incDebug = m_state.configuration.debugSymbols() ? "!" : "";
+	if (List::contains(split, fmt::format("{}debug", incDebug)))
+		return false;
+
+	// const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
+	// if (!List::contains(split, fmt::format("{}ci", incCi)))
+	// 	return false;
 
 	return true;
 }

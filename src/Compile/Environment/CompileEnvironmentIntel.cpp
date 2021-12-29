@@ -32,15 +32,6 @@ CompileEnvironmentIntel::CompileEnvironmentIntel(const ToolchainType inType, Bui
 CompileEnvironmentIntel::~CompileEnvironmentIntel() = default;
 
 /*****************************************************************************/
-std::string CompileEnvironmentIntel::getIdentifier() const noexcept
-{
-	if (m_type == ToolchainType::IntelLLVM)
-		return std::string("intel-llvm");
-	else
-		return std::string("intel-classic");
-}
-
-/*****************************************************************************/
 StringList CompileEnvironmentIntel::getVersionCommand(const std::string& inExecutable) const
 {
 	if (m_type == ToolchainType::IntelLLVM)

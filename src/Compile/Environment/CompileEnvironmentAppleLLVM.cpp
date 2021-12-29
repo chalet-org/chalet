@@ -18,12 +18,6 @@ CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const ToolchainType inT
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentAppleLLVM::getIdentifier() const noexcept
-{
-	return std::string("apple-llvm");
-}
-
-/*****************************************************************************/
 std::string CompileEnvironmentAppleLLVM::getFullCxxCompilerString(const std::string& inVersion) const
 {
 	return fmt::format("Apple Clang version {}", inVersion);

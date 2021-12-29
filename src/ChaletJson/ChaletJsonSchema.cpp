@@ -23,10 +23,11 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
 	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
 	kPatternConditionConfigurations(R"regex((\.!?(debug)\b\.?)?)regex"),
+	kPatternDistributionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionPlatforms(R"regex((\.!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
-	kPatternConditionPlatformsInner(R"regex((!?(ci|windows|macos|linux)\b))regex"),
-	kPatternConditionConfigurationsPlatformsInner(R"regex((!?(debug|windows|macos|linux)\b){1,2})regex"),
+	kPatternDistributionCondition(R"regex((!?(ci|windows|macos|linux)\b))regex"),
+	kPatternTargetCondition(R"regex((!?(debug|windows|macos|linux)\b){1,2})regex"),
 	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
 {
 }
@@ -483,14 +484,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "A rule describing when to include this target in the build.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::TargetCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternConditionConfigurationsPlatformsInner);
+	defs[Defs::TargetCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternTargetCondition);
 
 	defs[Defs::DistributionCondition] = R"json({
 		"type": "string",
 		"description": "A rule describing when to include this target in the distribution.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::DistributionCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternConditionPlatformsInner);
+	defs[Defs::DistributionCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternDistributionCondition);
 
 	defs[Defs::TargetSourceExtends] = R"json({
 		"type": "string",
@@ -1354,19 +1355,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
-			"anyOf": [
-				{
-					"required": [
-						"kind",
-						"buildTargets"
-					]
-				},
-				{
-					"required": [
-						"kind",
-						"include"
-					]
-				}
+			"required": [
+				"kind"
 			]
 		})json"_ojson;
 		distributionTarget[SKeys::Properties] = Json::object();
@@ -1382,8 +1372,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		distributionTarget[SKeys::Properties]["macosBundle"] = m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle];
 		distributionTarget[SKeys::Properties]["mainExecutable"] = getDefinition(Defs::DistributionBundleMainExecutable);
 		distributionTarget[SKeys::Properties]["subdirectory"] = getDefinition(Defs::DistributionBundleOutputDirectory);
-		distributionTarget[SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionBundleInclude);
-		distributionTarget[SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionBundleExclude);
+		distributionTarget[SKeys::PatternProperties][fmt::format("^include{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::DistributionBundleInclude);
+		distributionTarget[SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::DistributionBundleExclude);
 		defs[Defs::DistributionBundle] = std::move(distributionTarget);
 	}
 
@@ -1393,15 +1383,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
 			"required": [
-				"kind",
-				"include"
+				"kind"
 			]
 		})json"_ojson;
 		distributionArchive[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
 		distributionArchive[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionArchive[SKeys::Properties]["include"] = getDefinition(Defs::DistributionArchiveInclude);
 		distributionArchive[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionArchive[SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionPlatforms)] = getDefinition(Defs::DistributionArchiveInclude);
+		distributionArchive[SKeys::PatternProperties][fmt::format("^include{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::DistributionArchiveInclude);
 		defs[Defs::DistributionArchive] = std::move(distributionArchive);
 	}
 
@@ -1559,7 +1548,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		auto targetSource = R"json({
 			"type": "object",
 			"additionalProperties": false,
-			"required": [ "kind" ]
+			"required": [
+				"kind"
+			]
 		})json"_ojson;
 		targetSource[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetSource[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
@@ -1615,7 +1606,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		distributionScript[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
 		distributionScript[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
-		distributionScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetScriptFile);
+		distributionScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::DistributionScript] = std::move(distributionScript);
 	}
 
@@ -1635,8 +1626,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		distProcess[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
 		distProcess[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distProcess[SKeys::Properties]["path"] = getDefinition(Defs::TargetProcessPath);
-		distProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetProcessArguments);
-		distProcess[SKeys::PatternProperties][fmt::format("^path{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetProcessPath);
+		distProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::TargetProcessArguments);
+		distProcess[SKeys::PatternProperties][fmt::format("^path{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::TargetProcessPath);
 		defs[Defs::DistributionProcess] = std::move(distProcess);
 	}
 	{

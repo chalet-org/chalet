@@ -92,6 +92,11 @@ bool BuildState::initialize()
 	if (!initializeBuildConfiguration())
 		return false;
 
+	{
+		if (!initializeToolchain())
+			return false;
+	}
+
 	if (!parseChaletJson())
 		return false;
 
@@ -107,15 +112,6 @@ bool BuildState::initialize()
 		makePathVariable();
 
 		makeCompilerDiagnosticsVariables();
-	}
-	else
-	{
-		auto& cacheFile = m_impl->centralState.cache.file();
-		m_uniqueId = getUniqueIdForState();
-		cacheFile.setSourceCache(m_uniqueId, true);
-
-		if (!initializeToolchain())
-			return false;
 	}
 
 	return true;
@@ -249,6 +245,10 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
+	auto& cacheFile = m_impl->centralState.cache.file();
+	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
+	cacheFile.setSourceCache(m_uniqueId, true);
+
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
 			  inputs.targetArchitecture() :
@@ -292,13 +292,6 @@ bool BuildState::initializeBuild()
 	Output::setShowCommandOverride(false);
 
 	Diagnostic::infoEllipsis("Initializing");
-
-	auto& cacheFile = m_impl->centralState.cache.file();
-	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setSourceCache(m_uniqueId, true);
-
-	if (!initializeToolchain())
-		return false;
 
 	if (!paths.initialize())
 		return false;
@@ -371,6 +364,7 @@ bool BuildState::initializeBuild()
 	if (!info.initialize())
 		return false;
 
+	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState();
 	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy() == StrategyType::Native);
 

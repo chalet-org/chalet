@@ -811,8 +811,8 @@ bool CentralChaletJsonParser::conditionIsValid(const std::string& inContent) con
 				return false;
 		}
 
-		const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
-		if (!List::contains(split, fmt::format("{}ci", incCi)))
+		const auto incCi = Environment::isContinuousIntegrationServer() ? "!" : "";
+		if (List::contains(split, fmt::format("{}ci", incCi)))
 			return false;
 	}
 

@@ -6,6 +6,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -192,7 +193,7 @@ bool ICompileEnvironment::create(const std::string& inVersion)
 	}
 
 	m_initialized = true;
-	m_identifier = getIdentifier();
+	m_identifier = ToolchainTypes::getTypeName(this->type());
 
 	if (!validateArchitectureFromInput())
 		return false;

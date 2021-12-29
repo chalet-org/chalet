@@ -34,7 +34,7 @@
 				"bundle"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/../cruise-engine",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [

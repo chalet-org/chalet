@@ -155,10 +155,11 @@ private:
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
 	const std::string kPatternConditionConfigurations;
+	const std::string kPatternDistributionPlatforms;
 	const std::string kPatternConditionPlatforms;
 	const std::string kPatternConditionConfigurationsPlatforms;
-	const std::string kPatternConditionPlatformsInner;
-	const std::string kPatternConditionConfigurationsPlatformsInner;
+	const std::string kPatternDistributionCondition;
+	const std::string kPatternTargetCondition;
 	const std::string kPatternCompilers;
 
 	DefinitionMap m_defs;

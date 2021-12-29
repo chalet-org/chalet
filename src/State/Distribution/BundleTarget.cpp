@@ -74,6 +74,12 @@ bool BundleTarget::validate()
 {
 	bool result = true;
 
+	if (m_buildTargets.empty() && m_rawIncludes.empty())
+	{
+		Diagnostic::error("bundle.include or bundle.buildTargets must be defined, but neither were found.");
+		result = false;
+	}
+
 #if defined(CHALET_MACOS)
 	if (!m_macosBundleIcon.empty())
 	{

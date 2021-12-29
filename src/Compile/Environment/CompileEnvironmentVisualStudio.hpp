@@ -28,7 +28,6 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const final;
 
 protected:
-	virtual std::string getIdentifier() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool verifyToolchain() final;

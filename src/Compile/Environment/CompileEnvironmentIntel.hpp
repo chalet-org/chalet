@@ -19,7 +19,6 @@ struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 	~CompileEnvironmentIntel();
 
 protected:
-	virtual std::string getIdentifier() const noexcept final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
