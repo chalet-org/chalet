@@ -781,8 +781,9 @@ bool ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 			return false;
 	}*/
 
-	if (List::contains(split, fmt::format("!{}", m_state.environment->identifier())))
-		return false;
+	// future
+	// if (List::contains(split, fmt::format("!{}", m_state.environment->identifier())))
+	// 	return false;
 
 	const auto incDebug = m_state.configuration.debugSymbols() ? "!" : "";
 	if (List::contains(split, fmt::format("{}debug", incDebug)))
