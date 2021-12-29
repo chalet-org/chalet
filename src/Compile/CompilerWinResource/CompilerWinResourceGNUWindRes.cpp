@@ -75,14 +75,6 @@ void CompilerWinResourceGNUWindRes::addIncludes(StringList& outArgList) const
 
 		outArgList.emplace_back(getPathCommand(prefix, outDir));
 	}
-	for (const auto& dir : m_project.locations())
-	{
-		std::string outDir = dir;
-		if (String::endsWith('/', outDir))
-			outDir.pop_back();
-
-		outArgList.emplace_back(getPathCommand(prefix, outDir));
-	}
 
 	if (m_project.usesPch())
 	{
@@ -92,7 +84,7 @@ void CompilerWinResourceGNUWindRes::addIncludes(StringList& outArgList) const
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	// must be last
-	std::string localInclude{ "/usr/local/include/" };
+	std::string localInclude{ "/usr/local/include" };
 	if (Commands::pathExists(localInclude))
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localInclude));
 #endif

@@ -25,25 +25,6 @@ BuildPaths::BuildPaths(const BuildState& inState) :
 	m_cExts({
 		"c",
 	}),
-	m_cppExts({
-		"cpp",
-		"cc",
-		"cxx",
-		"c++",
-		"C",
-		"CPP",
-		"CC",
-		"CXX",
-		"C++",
-	}),
-	m_cppModuleExts({
-		"cppm",
-		"mpp",
-		"ixx",
-		"mxx",
-		"ccm",
-		"cpm",
-	}),
 	m_resourceExts({
 		"rc",
 		"RC",
@@ -118,7 +99,7 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 		List::addIfDoesNotExist(m_allFileExtensions, std::move(ext));
 	}
 
-	std::sort(m_allFileExtensions.begin(), m_allFileExtensions.end());
+	List::sort(m_allFileExtensions);
 
 	m_fileList.emplace(inProject.name(), std::make_unique<SourceGroup>(std::move(files)));
 }
@@ -187,10 +168,6 @@ StringList BuildPaths::buildDirectories() const
 const StringList& BuildPaths::allFileExtensions() const noexcept
 {
 	return m_allFileExtensions;
-}
-StringList BuildPaths::cxxExtensions() const noexcept
-{
-	return List::combine(m_cExts, m_cppExts, m_cppModuleExts);
 }
 StringList BuildPaths::objectiveCxxExtensions() const noexcept
 {
@@ -515,11 +492,7 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	const auto ext = String::getPathSuffix(inSource);
 	if (!ext.empty())
 	{
-		if (String::equals(m_cppExts, ext) || String::equals(m_cppModuleExts, ext))
-		{
-			return SourceType::CPlusPlus;
-		}
-		else if (String::equals(m_cExts, ext))
+		if (String::equals(m_cExts, ext))
 		{
 			return SourceType::C;
 		}
@@ -534,6 +507,10 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 		else if (String::equals(m_objectiveCppExts, ext))
 		{
 			return SourceType::ObjectiveCPlusPlus;
+		}
+		else
+		{
+			return SourceType::CPlusPlus;
 		}
 	}
 
@@ -586,50 +563,53 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	auto iconResource = getWindowsIconResourceFilename(inProject);
 
-	StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
+	// StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
 
 	const auto& files = inProject.files();
-	if (files.size() > 0)
+	// if (!files.empty())
+	// {
+	auto& pch = inProject.pch();
+	bool usesPch = inProject.usesPch();
+	StringList fileList;
+
+	for (auto& file : files)
 	{
-		auto& pch = inProject.pch();
-		bool usesPch = inProject.usesPch();
-		StringList fileList;
-
-		for (auto& file : files)
+		if (usesPch && String::equals(pch, file))
 		{
-			if (usesPch && String::equals(pch, file))
-			{
-				Diagnostic::warn("Precompiled header explicitly included in 'files': {} (ignored)", file);
-				continue;
-			}
+			Diagnostic::warn("Precompiled header explicitly included in 'files': {} (ignored)", file);
+			continue;
+		}
 
-			if (!String::endsWith(extensions, file))
-			{
-				Diagnostic::warn("File type in 'files' is not required or supported: {} (ignored)", file);
-				continue;
-			}
+		/*if (!String::endsWith(extensions, file))
+		{
+			Diagnostic::warn("File type in 'files' is not required or supported: {} (ignored)", file);
+			continue;
+		}*/
 
-			if (!Commands::pathExists(file))
-			{
-				Diagnostic::warn("File not found: {}", file);
-				continue;
-			}
+		if (!Commands::pathExists(file))
+		{
+			Diagnostic::warn("File not found: {}", file);
+			continue;
+		}
 
+		if (Commands::pathIsFile(file))
+		{
 			List::addIfDoesNotExist(fileList, file);
 		}
-
-		if (!manifestResource.empty())
-		{
-			List::addIfDoesNotExist(fileList, std::move(manifestResource));
-		}
-
-		if (!iconResource.empty())
-		{
-			List::addIfDoesNotExist(fileList, std::move(iconResource));
-		}
-
-		return fileList;
 	}
+
+	if (!manifestResource.empty())
+	{
+		List::addIfDoesNotExist(fileList, std::move(manifestResource));
+	}
+
+	if (!iconResource.empty())
+	{
+		List::addIfDoesNotExist(fileList, std::move(iconResource));
+	}
+
+	return fileList;
+	/*}
 
 	const auto& locations = inProject.locations();
 
@@ -711,7 +691,7 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 		List::addIfDoesNotExist(ret, std::move(iconResource));
 	}
 
-	return ret;
+	return ret;*/
 }
 
 /*****************************************************************************/
@@ -743,23 +723,23 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		}
 
 		const auto& files = inProject.files();
-		if (files.size() > 0)
+		// if (!files.empty())
+		// {
+		for (auto& file : files)
 		{
-			for (auto& file : files)
-			{
-				if (!Commands::pathExists(file))
-					continue;
+			if (!Commands::pathExists(file))
+				continue;
 
-				std::string outPath = String::getPathFolder(file);
-				Path::sanitize(outPath, true);
+			std::string outPath = String::getPathFolder(file);
+			Path::sanitize(outPath, true);
 
-				ret.emplace_back(std::move(outPath));
-			}
-
-			return ret;
+			List::addIfDoesNotExist(ret, std::move(outPath));
 		}
 
-		const auto& locations = inProject.locations();
+		return ret;
+		// }
+
+		/*const auto& locations = inProject.locations();
 		const auto& locationExcludes = inProject.locationExcludes();
 
 		std::string excludes = String::join(locationExcludes);
@@ -812,7 +792,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 
 			// if (m_useCache && !List::contains(m_directoryCache, loc))
 			// 	m_directoryCache.push_back(loc);
-		}
+		}*/
 	}
 	CHALET_CATCH(const std::exception& err)
 	{

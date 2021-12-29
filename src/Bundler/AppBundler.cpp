@@ -338,7 +338,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	m_dependencyMap->populateToList(dependenciesToCopy, excludes);
 
-	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end());
+	List::sort(dependenciesToCopy);
 	for (auto& dep : dependenciesToCopy)
 	{
 #if defined(CHALET_MACOS)

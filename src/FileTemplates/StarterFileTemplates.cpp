@@ -68,20 +68,25 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	ret[Keys::Targets][project] = Json::object();
 	ret[Keys::Targets][project][Keys::Kind] = "executable";
 
+	ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
+	if (!inProps.precompiledHeader.empty())
+	{
+		ret[Keys::Targets][project][Keys::SettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
+	}
+	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"] = Json::array();
+	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"][0] = inProps.location;
+
 	if (inProps.useLocation)
 	{
-		ret[Keys::Targets][project]["location"] = inProps.location;
+		// ret[Keys::Targets][project]["location"] = inProps.location;
+		ret[Keys::Targets][project]["files"] = Json::array();
+		auto extension = String::getPathSuffix(inProps.mainSource);
+		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/**/*.{}", inProps.location, extension);
 	}
 	else
 	{
 		ret[Keys::Targets][project]["files"] = Json::array();
 		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
-	}
-
-	if (!inProps.precompiledHeader.empty())
-	{
-		ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
-		ret[Keys::Targets][project][Keys::SettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
 	}
 
 	if (inProps.modules)

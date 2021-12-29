@@ -339,15 +339,6 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 
-	for (const auto& dir : m_project.locations())
-	{
-		std::string outDir = dir;
-		if (String::endsWith('/', outDir))
-			outDir.pop_back();
-
-		outArgList.emplace_back(getPathCommand(option, outDir));
-	}
-
 	if (m_project.usesPch())
 	{
 		auto outDir = String::getPathFolder(m_project.pch());

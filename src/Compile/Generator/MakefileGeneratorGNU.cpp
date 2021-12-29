@@ -120,7 +120,9 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 
 	std::string recipes = getPchRecipe(pch, pchTarget);
 
-	for (auto& ext : String::filterIf(m_state.paths.cxxExtensions(), inOutputs.fileExtensions))
+	auto nonCxxExtensions = List::combine(m_state.paths.objectiveCxxExtensions(), m_state.paths.resourceExtensions());
+
+	for (auto& ext : String::excludeIf(nonCxxExtensions, inOutputs.fileExtensions))
 	{
 		recipes += getCxxRecipe(ext, pchTarget);
 	}
@@ -285,40 +287,31 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 	const auto& objDir = m_state.paths.objDir();
 	const auto compileEcho = getCompileEchoSources();
 
-	for (auto& location : m_project->locations())
+	const auto dependency = fmt::format("{}/$<.d", depDir);
+
+	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$<", "$@", m_generateDependencies, dependency));
+	if (!rcCompile.empty())
 	{
-		if (locationExists(location, ext))
-			continue;
-
-		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
-
-		auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$<", "$@", m_generateDependencies, dependency));
-		if (!rcCompile.empty())
+		std::string makeDependency;
+		if (m_generateDependencies && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
 		{
-			std::string makeDependency;
-			if (m_generateDependencies && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
-			{
-				makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, "$<", "$@"));
-			}
+			makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, "$<", "$@"));
+		}
 
-			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.res: {location}/%.{ext} {pchTarget} | {depDir}/{location}/%.{ext}.d
+		ret += fmt::format(R"makefile(
+{objDir}/%.{ext}.res: %.{ext} {pchTarget} | {depDir}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{rcCompile}{makeDependency}
 )makefile",
-				FMT_ARG(objDir),
-				FMT_ARG(depDir),
-				FMT_ARG(ext),
-				FMT_ARG(location),
-				FMT_ARG(pchTarget),
-				FMT_ARG(dependency),
-				FMT_ARG(compileEcho),
-				FMT_ARG(quietFlag),
-				FMT_ARG(rcCompile),
-				FMT_ARG(makeDependency));
-
-			m_locationCache[location].push_back(ext);
-		}
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(pchTarget),
+			FMT_ARG(dependency),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(rcCompile),
+			FMT_ARG(makeDependency));
 	}
 
 	return ret;
@@ -338,49 +331,40 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 	const auto compileEcho = getCompileEchoSources();
 	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 
-	for (auto& location : m_project->locations())
+	const auto dependency = fmt::format("{}/$<.d", depDir);
+
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+	if (!cppCompile.empty())
 	{
-		if (locationExists(location, ext))
-			continue;
-
-		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
-
-		auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
-		if (!cppCompile.empty())
-		{
-			std::string pch = pchTarget;
+		std::string pch = pchTarget;
 
 #if defined(CHALET_MACOS)
-			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && m_project->usesPch())
-			{
-				auto baseFolder = String::getPathFolder(pchTarget);
-				auto filename = String::getPathFilename(pchTarget);
-				auto& lastArch = m_state.inputs.universalArches().back();
-				pch = fmt::format("{}_{}/{}", baseFolder, lastArch, filename);
-			}
-			else
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && m_project->usesPch())
+		{
+			auto baseFolder = String::getPathFolder(pchTarget);
+			auto filename = String::getPathFilename(pchTarget);
+			auto& lastArch = m_state.inputs.universalArches().back();
+			pch = fmt::format("{}_{}/{}", baseFolder, lastArch, filename);
+		}
+		else
 #endif
-			{
-				pch = pchTarget;
-			}
+		{
+			pch = pchTarget;
+		}
 
-			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext} {pch} | {depDir}/{location}/%.{ext}.d
+		ret += fmt::format(R"makefile(
+{objDir}/%.{ext}.o: %.{ext} {pch} | {depDir}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{cppCompile}
 )makefile",
-				FMT_ARG(objDir),
-				FMT_ARG(depDir),
-				FMT_ARG(ext),
-				FMT_ARG(location),
-				FMT_ARG(pch),
-				FMT_ARG(dependency),
-				FMT_ARG(compileEcho),
-				FMT_ARG(quietFlag),
-				FMT_ARG(cppCompile));
-
-			m_locationCache[location].push_back(ext);
-		}
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(pch),
+			FMT_ARG(dependency),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(cppCompile));
 	}
 
 	return ret;
@@ -401,56 +385,28 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext)
 	const auto& objDir = m_state.paths.objDir();
 	const auto compileEcho = getCompileEchoSources();
 
-	for (auto& location : m_project->locations())
+	const auto dependency = fmt::format("{}/$<.d", depDir);
+
+	const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
+	auto objcCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+	if (!objcCompile.empty())
 	{
-		if (locationExists(location, ext))
-			continue;
 
-		const auto dependency = fmt::format("{}/{}/$*.{}.d", depDir, location, ext);
-
-		const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
-		auto objcCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
-		if (!objcCompile.empty())
-		{
-
-			ret += fmt::format(R"makefile(
-{objDir}/{location}/%.{ext}.o: {location}/%.{ext} | {depDir}/{location}/%.{ext}.d
+		ret += fmt::format(R"makefile(
+{objDir}/%.{ext}.o: %.{ext} | {depDir}/%.{ext}.d
 	{compileEcho}
 	{quietFlag}{objcCompile}
 )makefile",
-				FMT_ARG(objDir),
-				FMT_ARG(depDir),
-				FMT_ARG(ext),
-				FMT_ARG(location),
-				FMT_ARG(dependency),
-				FMT_ARG(compileEcho),
-				FMT_ARG(quietFlag),
-				FMT_ARG(objcCompile));
-
-			m_locationCache[location].push_back(ext);
-		}
+			FMT_ARG(objDir),
+			FMT_ARG(depDir),
+			FMT_ARG(ext),
+			FMT_ARG(dependency),
+			FMT_ARG(compileEcho),
+			FMT_ARG(quietFlag),
+			FMT_ARG(objcCompile));
 	}
 
 	return ret;
-}
-
-/*****************************************************************************/
-bool MakefileGeneratorGNU::locationExists(const std::string& location, const std::string& ext) const
-{
-	if (m_locationCache.find(location) == m_locationCache.end())
-		return false;
-
-	bool found = false;
-	for (auto& e : m_locationCache.at(location))
-	{
-		if (e == ext)
-		{
-			found = true;
-			break;
-		}
-	}
-
-	return found;
 }
 
 /*****************************************************************************/
@@ -568,5 +524,4 @@ std::string MakefileGeneratorGNU::getPrinter(const std::string& inPrint, const b
 	return fmt::format("printf '{}{}'", inPrint, inNewLine ? "\\n" : "");
 #endif
 }
-
 }

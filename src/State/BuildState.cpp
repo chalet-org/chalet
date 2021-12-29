@@ -303,26 +303,52 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			project.parseOutputFilename();
 
-			if (!project.isStaticLibrary())
+			/*if (project.files().size() > 0)
 			{
-				if (project.files().size() > 0)
+				StringList locations;
+				for (auto& file : project.files())
 				{
-					StringList locations;
-					for (auto& file : project.files())
-					{
-						List::addIfDoesNotExist(locations, String::getPathFolder(file));
-					}
-					project.addLocations(std::move(locations));
+					List::addIfDoesNotExist(locations, String::getPathFolder(file));
 				}
 
+				{
+					auto itr = locations.begin();
+					while (itr != locations.end())
+					{
+						if (!itr->empty())
+						{
+							auto parentLoc = String::getPathFolder(*itr);
+							if (!List::contains(locations, parentLoc))
+							{
+								needsRebuild.push_back(group);
+								itr = dependencyGraphCopy.erase(itr);
+								itr = dependencyGraphCopy.begin(); // We need to rescan
+							}
+							else
+							{
+								++itr;
+							}
+						}
+						else
+						{
+							itr = locations.erase(itr);
+						}
+					}
+				}
+				List::sort(locations);
+				project.addLocations(std::move(locations));
+			}*/
+
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
+			if (!project.isStaticLibrary())
+			{
 				if (toolchain.canCompilerWindowsResources())
 				{
 					std::string intermediateDir = paths.intermediateDir();
-					project.addLocation(std::move(intermediateDir));
+					project.addIncludeDir(std::move(intermediateDir));
 				}
-#endif
 			}
+#endif
 
 			const bool isMsvc = environment->isMsvc();
 			if (!isMsvc)

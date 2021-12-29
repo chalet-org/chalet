@@ -659,7 +659,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
 
-	defs[Defs::TargetSourceLocation] = R"json({
+	/*defs[Defs::TargetSourceLocation] = R"json({
 		"description": "The root path of the source files, relative to the working directory.",
 		"oneOf": [
 			{
@@ -721,7 +721,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		]
 	})json"_ojson;
 	defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::Properties]["exclude"];
-	defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::Properties]["include"];
+	defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::Properties]["include"];*/
 
 	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = R"json({
 		"type": "array",
@@ -1558,7 +1558,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
 		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
-		targetSource[SKeys::Properties]["location"] = getDefinition(Defs::TargetSourceLocation);
+		// targetSource[SKeys::Properties]["location"] = getDefinition(Defs::TargetSourceLocation);
 		targetSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
 			"description": "Settings for each language",
@@ -1566,6 +1566,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		targetSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
+		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceFiles);
 		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::TargetSourceLibrary] = std::move(targetSource);
 
@@ -1769,7 +1770,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";
-		case Defs::TargetSourceLocation: return "target-source-location";
+		// case Defs::TargetSourceLocation: return "target-source-location";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		//
 		case Defs::TargetAbstract: return "target-abstract";

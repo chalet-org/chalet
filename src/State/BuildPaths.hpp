@@ -30,7 +30,6 @@ struct BuildPaths
 	StringList buildDirectories() const;
 
 	const StringList& allFileExtensions() const noexcept;
-	StringList cxxExtensions() const noexcept;
 	StringList objectiveCxxExtensions() const noexcept;
 	const StringList& resourceExtensions() const noexcept;
 
@@ -74,8 +73,6 @@ private:
 	const BuildState& m_state;
 
 	const StringList m_cExts;
-	const StringList m_cppExts;
-	const StringList m_cppModuleExts;
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
 	const StringList m_objectiveCppExts;

@@ -357,7 +357,7 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_object())
 		{
-			if (String::equals("location", key))
+			/*if (String::equals("location", key))
 			{
 				for (const auto& [k, v] : value.items())
 				{
@@ -379,15 +379,15 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 							outTarget.addLocationExcludes(std::move(val));
 					}
 				}
-			}
+			}*/
 		}
 		else if (value.is_string())
 		{
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
 				outTarget.setDescription(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
-				outTarget.addLocation(std::move(val));
+			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
+			// 	outTarget.addLocation(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
@@ -398,8 +398,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFiles(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
-				outTarget.addLocations(std::move(val));
+			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
+			// 	outTarget.addLocations(std::move(val));
 		}
 	}
 

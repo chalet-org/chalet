@@ -46,39 +46,47 @@
 	"targets": {
 		"json-schema-validator": {
 			"kind": "staticLibrary",
-			"location": "vendor/json-schema-validator/src"
+			"files": [
+				"vendor/json-schema-validator/src/*.cpp"
+			]
 		},
 		"chalet": {
 			"kind": "executable",
-			"location": "src",
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
 					"json-schema-validator"
+				],
+				"includeDirs": [
+					"src"
 				]
 			},
+			"files": [
+				"src/**/*.cpp",
+				"src/**/*.rc"
+			],
 			"runTarget": true
 		},
 		"tests_chalet": {
 			"kind": "executable",
 			"condition": "!debug",
-			"location": {
-				"include": [
-					"src",
-					"test"
-				],
-				"exclude": "src/Main.cpp"
-			},
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
 					"json-schema-validator"
 				],
 				"includeDirs": [
+					"src",
+					"test",
 					"vendor/catch2/single_include"
 				]
 			},
+			"files": [
+				"src/*/**/*.cpp",
+				"src/**/*.rc",
+				"test/*.cpp"
+			],
 			"runArguments": [
 				"-w",
 				"NoTests",

@@ -454,7 +454,7 @@ void SourceTarget::addFile(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& SourceTarget::locations() const noexcept
+/*const StringList& SourceTarget::locations() const noexcept
 {
 	return m_locations;
 }
@@ -467,10 +467,10 @@ void SourceTarget::addLocations(StringList&& inList)
 void SourceTarget::addLocation(std::string&& inValue)
 {
 	Commands::addPathToListWithGlob(std::move(inValue), m_locations, GlobMatch::Folders);
-}
+}*/
 
 /*****************************************************************************/
-const StringList& SourceTarget::locationExcludes() const noexcept
+/*const StringList& SourceTarget::locationExcludes() const noexcept
 {
 	return m_locationExcludes;
 }
@@ -483,7 +483,7 @@ void SourceTarget::addLocationExcludes(StringList&& inList)
 void SourceTarget::addLocationExclude(std::string&& inValue)
 {
 	Commands::addPathToListWithGlob(std::move(inValue), m_locationExcludes, GlobMatch::FilesAndFolders);
-}
+}*/
 
 /*****************************************************************************/
 const std::string& SourceTarget::pch() const noexcept

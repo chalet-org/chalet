@@ -786,9 +786,6 @@
 				"language": {
 					"$ref": "#/definitions/target-source-language"
 				},
-				"location": {
-					"$ref": "#/definitions/target-source-location"
-				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -813,6 +810,9 @@
 				}
 			},
 			"patternProperties": {
+				"^files(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-files"
+				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				},
@@ -849,9 +849,6 @@
 				"language": {
 					"$ref": "#/definitions/target-source-language"
 				},
-				"location": {
-					"$ref": "#/definitions/target-source-location"
-				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -867,6 +864,9 @@
 				}
 			},
 			"patternProperties": {
+				"^files(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-files"
+				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-description"
 				}
@@ -888,103 +888,6 @@
 				"type": "string",
 				"minLength": 1
 			}
-		},
-		"target-source-location": {
-			"description": "The root path of the source files, relative to the working directory.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"required": [
-						"include"
-					],
-					"properties": {
-						"include": {
-							"oneOf": [
-								{
-									"type": "string",
-									"minLength": 1
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string",
-										"minLength": 1
-									}
-								}
-							]
-						},
-						"exclude": {
-							"oneOf": [
-								{
-									"type": "string",
-									"minLength": 1
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string",
-										"minLength": 1
-									}
-								}
-							]
-						}
-					},
-					"patternProperties": {
-						"^exclude(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-							"oneOf": [
-								{
-									"type": "string",
-									"minLength": 1
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string",
-										"minLength": 1
-									}
-								}
-							]
-						},
-						"^include(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-							"oneOf": [
-								{
-									"type": "string",
-									"minLength": 1
-								},
-								{
-									"type": "array",
-									"uniqueItems": true,
-									"minItems": 1,
-									"items": {
-										"type": "string",
-										"minLength": 1
-									}
-								}
-							]
-						}
-					}
-				}
-			]
 		},
 		"target-source-language": {
 			"type": "string",
