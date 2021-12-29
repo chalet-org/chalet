@@ -406,14 +406,16 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 	if (!inAbstract)
 	{
 		bool hasFiles = !outTarget.files().empty();
-		bool hasLocations = !outTarget.locations().empty();
+		// bool hasLocations = !outTarget.locations().empty();
 
-		if (hasFiles && hasLocations)
+		/*if (hasFiles && hasLocations)
 		{
 			Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_chaletJson.filename());
 			return false;
 		}
-		else if (!hasFiles && !hasLocations)
+		else if (!hasFiles && !hasLocations)*/
+
+		if (!hasFiles)
 		{
 			Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_chaletJson.filename(), outTarget.name());
 			return false;

@@ -33,8 +33,8 @@ bool SourceTarget::initialize()
 	replaceVariablesInPathList(m_includeDirs);
 	replaceVariablesInPathList(m_macosFrameworkPaths);
 	replaceVariablesInPathList(m_files);
-	replaceVariablesInPathList(m_locations);
-	replaceVariablesInPathList(m_locationExcludes);
+	// replaceVariablesInPathList(m_locations);
+	// replaceVariablesInPathList(m_locationExcludes);
 
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_pch, targetName);
@@ -61,7 +61,7 @@ bool SourceTarget::validate()
 
 	const auto& targetName = this->name();
 	bool result = true;
-	for (auto& location : m_locations)
+	/*for (auto& location : m_locations)
 	{
 		if (String::equals(m_state.paths.intermediateDir(), location))
 			continue;
@@ -71,7 +71,7 @@ bool SourceTarget::validate()
 			Diagnostic::error("location for project target '{}' doesn't exist: {}", targetName, location);
 			result = false;
 		}
-	}
+	}*/
 
 	if (!m_pch.empty())
 	{
