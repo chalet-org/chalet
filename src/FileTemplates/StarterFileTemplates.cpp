@@ -75,7 +75,7 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	if (inProps.useLocation)
 	{
 		auto extension = String::getPathSuffix(inProps.mainSource);
-		ret[Keys::Targets][project]["files"] = fmt::format("{}/**/*.{}", inProps.location, extension);
+		ret[Keys::Targets][project]["files"] = fmt::format("{}/**.{}", inProps.location, extension);
 	}
 	else
 	{
