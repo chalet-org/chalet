@@ -705,6 +705,7 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '[', "\\[");
 	String::replaceAll(pattern, '[', "\\]");
 	String::replaceAll(pattern, '.', "\\.");
+	String::replaceAll(pattern, '+', "\\+");
 	String::replaceAll(pattern, "**/*", "(.+)");
 	String::replaceAll(pattern, "**", "(.+)");
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
