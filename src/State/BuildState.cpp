@@ -303,13 +303,11 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			project.parseOutputFilename();
 
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 			if (toolchain.canCompilerWindowsResources())
 			{
 				std::string intermediateDir = paths.intermediateDir();
 				project.addIncludeDir(std::move(intermediateDir));
 			}
-#endif
 
 			const bool isMsvc = environment->isMsvc();
 			if (!isMsvc)

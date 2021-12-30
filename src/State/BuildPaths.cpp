@@ -644,6 +644,11 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 			List::addIfDoesNotExist(ret, std::move(outPath));
 		}
 
+		if (m_state.toolchain.canCompilerWindowsResources())
+		{
+			List::addIfDoesNotExist(ret, intermediateDir());
+		}
+
 		return ret;
 	}
 	CHALET_CATCH(const std::exception& err)
