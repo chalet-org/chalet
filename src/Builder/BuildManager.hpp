@@ -37,7 +37,7 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool copyRunDependencies(const IBuildTarget& inProject);
+	bool copyRunDependencies(const IBuildTarget& inProject, uint& outCopied);
 	StringList getResolvedRunDependenciesList(const IBuildTarget& inProject);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);

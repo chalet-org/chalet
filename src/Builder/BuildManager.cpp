@@ -448,7 +448,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget)
+bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCopied)
 {
 	bool result = true;
 
@@ -457,19 +457,18 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget)
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
 
-	int copied = 0;
 	for (auto& dep : runDependencies)
 	{
 		auto depFile = String::getPathFilename(dep);
 		if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
 		{
+			if (outCopied == 0)
+				Output::lineBreak();
+
 			result &= Commands::copy(dep, outputFolder);
-			copied++;
+			++outCopied;
 		}
 	}
-
-	if (copied > 0)
-		Output::lineBreak();
 
 	return result;
 }
@@ -760,18 +759,6 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 {
-	for (auto& target : m_state.targets)
-	{
-		if (target->runDependencies().empty())
-			continue;
-
-		if (!copyRunDependencies(*target))
-		{
-			Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
-			return false;
-		}
-	}
-
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	std::string outputFile;
@@ -823,6 +810,25 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		Diagnostic::error("Couldn't find file: {}", file);
 		return false;
 	}
+
+	uint copied = 0;
+	for (auto& target : m_state.targets)
+	{
+		if (!target->runDependencies().empty())
+		{
+			if (!copyRunDependencies(*target, copied))
+			{
+				Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
+				return false;
+			}
+		}
+
+		if (String::equals(inTarget.name(), target->name()))
+			break;
+	}
+
+	if (copied > 0)
+		Output::lineBreak();
 
 	const auto& args = !runOptions.empty() ? runOptions : runArguments;
 
