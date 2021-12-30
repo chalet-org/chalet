@@ -106,12 +106,12 @@ bool SourceTarget::initialize()
 /*****************************************************************************/
 bool SourceTarget::validate()
 {
-	chalet_assert(m_kind != ProjectKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
+	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
 
 	const auto& targetName = this->name();
 	bool result = true;
 
-	if (m_kind == ProjectKind::None)
+	if (m_kind == SourceKind::None)
 	{
 		Diagnostic::error("A valid 'kind' was not found.");
 		result = false;
@@ -175,17 +175,17 @@ bool SourceTarget::validate()
 /*****************************************************************************/
 bool SourceTarget::isExecutable() const noexcept
 {
-	return m_kind == ProjectKind::Executable;
+	return m_kind == SourceKind::Executable;
 }
 
 bool SourceTarget::isSharedLibrary() const noexcept
 {
-	return m_kind == ProjectKind::SharedLibrary;
+	return m_kind == SourceKind::SharedLibrary;
 }
 
 bool SourceTarget::isStaticLibrary() const noexcept
 {
-	return m_kind == ProjectKind::StaticLibrary;
+	return m_kind == SourceKind::StaticLibrary;
 }
 
 /*****************************************************************************/
@@ -232,7 +232,7 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
 			const auto& projectName = project.name();
-			if (project.kind() == ProjectKind::StaticLibrary)
+			if (project.kind() == SourceKind::StaticLibrary)
 			{
 				for (auto& link : m_links)
 				{
@@ -579,12 +579,12 @@ void SourceTarget::setWindowsApplicationIcon(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-ProjectKind SourceTarget::kind() const noexcept
+SourceKind SourceTarget::kind() const noexcept
 {
 	return m_kind;
 }
 
-void SourceTarget::setKind(const ProjectKind inValue) noexcept
+void SourceTarget::setKind(const SourceKind inValue) noexcept
 {
 	m_kind = inValue;
 }
@@ -757,18 +757,18 @@ void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-ProjectKind SourceTarget::parseProjectKind(const std::string& inValue)
+SourceKind SourceTarget::parseProjectKind(const std::string& inValue)
 {
 	if (String::equals("executable", inValue))
-		return ProjectKind::Executable;
+		return SourceKind::Executable;
 
 	if (String::equals("staticLibrary", inValue))
-		return ProjectKind::StaticLibrary;
+		return SourceKind::StaticLibrary;
 
 	if (String::equals("sharedLibrary", inValue))
-		return ProjectKind::SharedLibrary;
+		return SourceKind::SharedLibrary;
 
-	return ProjectKind::None;
+	return SourceKind::None;
 }
 
 /*****************************************************************************/
@@ -831,7 +831,7 @@ void SourceTarget::parseOutputFilename() noexcept
 	const auto& projectName = name();
 	chalet_assert(!projectName.empty(), "parseOutputFilename: name is blank");
 
-	bool staticLib = m_kind == ProjectKind::StaticLibrary;
+	bool staticLib = m_kind == SourceKind::StaticLibrary;
 
 #if defined(CHALET_WIN32)
 	std::string executableExtension{ ".exe" };
@@ -859,13 +859,13 @@ void SourceTarget::parseOutputFilename() noexcept
 
 	switch (m_kind)
 	{
-		case ProjectKind::Executable: {
+		case SourceKind::Executable: {
 			m_outputFile = projectName + executableExtension;
 			m_outputFileNoPrefix = m_outputFile;
 			break;
 		}
-		case ProjectKind::SharedLibrary:
-		case ProjectKind::StaticLibrary: {
+		case SourceKind::SharedLibrary:
+		case SourceKind::StaticLibrary: {
 			if (unixSharedLibraryNamingConvention())
 			{
 				// TODO: version number

@@ -109,8 +109,8 @@ void LinkerLLVMClang::addSubSystem(StringList& outArgList) const
 {
 	if (m_state.environment->isWindowsClang())
 	{
-		const ProjectKind kind = m_project.kind();
-		if (kind == ProjectKind::Executable)
+		const SourceKind kind = m_project.kind();
+		if (kind == SourceKind::Executable)
 		{
 			// bit of a hack for now
 			const auto subSystem = LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(m_project);

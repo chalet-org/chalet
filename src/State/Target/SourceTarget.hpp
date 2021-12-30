@@ -7,8 +7,8 @@
 #define CHALET_SOURCE_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "State/ProjectKind.hpp"
 #include "State/ProjectWarningPresets.hpp"
+#include "State/SourceKind.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WindowsEntryPoint.hpp"
 #include "State/WindowsSubSystem.hpp"
@@ -113,8 +113,8 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsApplicationIcon(std::string&& inValue) noexcept;
 
 	//
-	ProjectKind kind() const noexcept;
-	void setKind(const ProjectKind inValue) noexcept;
+	SourceKind kind() const noexcept;
+	void setKind(const SourceKind inValue) noexcept;
 	void setKind(const std::string& inValue);
 
 	WindowsSubSystem windowsSubSystem() const noexcept;
@@ -162,7 +162,7 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
 private:
-	ProjectKind parseProjectKind(const std::string& inValue);
+	SourceKind parseProjectKind(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
@@ -195,7 +195,7 @@ private:
 	std::string m_windowsApplicationManifest;
 	std::string m_windowsApplicationIcon;
 
-	ProjectKind m_kind = ProjectKind::None;
+	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;

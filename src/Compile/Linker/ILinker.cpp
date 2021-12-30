@@ -60,12 +60,12 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 /*****************************************************************************/
 StringList ILinker::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
-	ProjectKind kind = m_project.kind();
-	if (kind == ProjectKind::SharedLibrary)
+	SourceKind kind = m_project.kind();
+	if (kind == SourceKind::SharedLibrary)
 	{
 		return getSharedLibTargetCommand(outputFile, sourceObjs, outputFileBase);
 	}
-	else if (kind == ProjectKind::Executable)
+	else if (kind == SourceKind::Executable)
 	{
 		return getExecutableTargetCommand(outputFile, sourceObjs, outputFileBase);
 	}

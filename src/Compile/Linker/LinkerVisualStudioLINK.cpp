@@ -216,12 +216,12 @@ void LinkerVisualStudioLINK::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 {
-	const ProjectKind kind = m_project.kind();
+	const SourceKind kind = m_project.kind();
 
 	// TODO: Support for /driver:WDM (NativeWDM or something)
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
-	if (kind == ProjectKind::Executable)
+	if (kind == SourceKind::Executable)
 	{
 		const auto subSystem = LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(m_project);
 		List::addIfDoesNotExist(outArgList, fmt::format("/subsystem:{}", subSystem));
@@ -435,10 +435,10 @@ std::string LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(const SourceTarge
 /*****************************************************************************/
 std::string LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(const SourceTarget& inProject)
 {
-	const ProjectKind kind = inProject.kind();
+	const SourceKind kind = inProject.kind();
 	const WindowsEntryPoint entryPoint = inProject.windowsEntryPoint();
 
-	if (kind == ProjectKind::Executable)
+	if (kind == SourceKind::Executable)
 	{
 		switch (entryPoint)
 		{
@@ -453,7 +453,7 @@ std::string LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(const SourceTarg
 
 		return "mainCRTStartup";
 	}
-	else if (kind == ProjectKind::SharedLibrary)
+	else if (kind == SourceKind::SharedLibrary)
 	{
 		if (entryPoint == WindowsEntryPoint::DllMain)
 		{

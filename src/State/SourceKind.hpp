@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_KIND_HPP
-#define CHALET_PROJECT_KIND_HPP
+#ifndef CHALET_SOURCE_KIND_HPP
+#define CHALET_SOURCE_KIND_HPP
 
 namespace chalet
 {
-enum class ProjectKind : ushort
+enum class SourceKind : ushort
 {
 	None,
 	StaticLibrary,
@@ -17,4 +17,4 @@ enum class ProjectKind : ushort
 };
 }
 
-#endif // CHALET_PROJECT_KIND_HPP
+#endif // CHALET_SOURCE_KIND_HPP
