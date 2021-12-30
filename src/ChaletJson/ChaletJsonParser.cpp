@@ -177,7 +177,7 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 			if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
 			{
 				auto abstract = std::make_unique<SourceTarget>(m_state);
-				if (!parseSourceTarget(*abstract, templateJson, true))
+				if (!parseSourceTarget(*abstract, templateJson))
 				{
 					Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
 					return false;
@@ -212,7 +212,7 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 		if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
 		{
 			auto abstract = std::make_unique<SourceTarget>(m_state);
-			if (!parseSourceTarget(*abstract, abstractJson, true))
+			if (!parseSourceTarget(*abstract, abstractJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
 				return false;
@@ -347,7 +347,7 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract) const
+bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const
 {
 	if (!parseTargetCondition(outTarget, inNode))
 		return true; // true to skip project
@@ -357,7 +357,7 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_object())
 		{
-			/*if (String::equals("location", key))
+			if (String::equals("files", key))
 			{
 				for (const auto& [k, v] : value.items())
 				{
@@ -366,28 +366,28 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 					{
 						std::string val;
 						if (valueMatchesSearchKeyPattern(val, v, k, "include", s))
-							outTarget.addLocation(std::move(val));
+							outTarget.addFile(std::move(val));
 						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
-							outTarget.addLocationExclude(std::move(val));
+							outTarget.addFileExclude(std::move(val));
 					}
 					else if (v.is_array())
 					{
 						StringList val;
 						if (valueMatchesSearchKeyPattern(val, v, k, "include", s))
-							outTarget.addLocations(std::move(val));
+							outTarget.addFiles(std::move(val));
 						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
-							outTarget.addLocationExcludes(std::move(val));
+							outTarget.addFileExcludes(std::move(val));
 					}
 				}
-			}*/
+			}
 		}
 		else if (value.is_string())
 		{
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
 				outTarget.setDescription(std::move(val));
-			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
-			// 	outTarget.addLocation(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "files", status))
+				outTarget.addFile(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
@@ -398,27 +398,6 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFiles(std::move(val));
-			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "location", status))
-			// 	outTarget.addLocations(std::move(val));
-		}
-	}
-
-	if (!inAbstract)
-	{
-		bool hasFiles = !outTarget.files().empty();
-		// bool hasLocations = !outTarget.locations().empty();
-
-		/*if (hasFiles && hasLocations)
-		{
-			Diagnostic::error("{}: Define either 'files' or 'location', not both.", m_chaletJson.filename());
-			return false;
-		}
-		else if (!hasFiles && !hasLocations)*/
-
-		if (!hasFiles)
-		{
-			Diagnostic::error("{}: 'location' or 'files' is required for project '{}', but was not found.", m_chaletJson.filename(), outTarget.name());
-			return false;
 		}
 	}
 
@@ -444,17 +423,6 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 			const Json& node = inNode.at(compilerSettingsCpp);
 			if (!parseCompilerSettingsCxx(outTarget, node))
 				return false;
-		}
-	}
-
-	if (!inAbstract)
-	{
-		// Do some final error checking here
-
-		if (outTarget.kind() == ProjectKind::None)
-		{
-			Diagnostic::error("{}: project '{}' must contain 'kind'.", m_chaletJson.filename(), outTarget.name());
-			return false;
 		}
 	}
 

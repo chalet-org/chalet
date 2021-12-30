@@ -43,7 +43,7 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 
 	m_needsMsvcDepsPrefix |= m_state.environment->isMsvc();
 
-	const std::string rules = getRules(inOutputs.types);
+	const std::string rules = getRules(inOutputs);
 	const std::string buildRules = getBuildRules(inOutputs);
 
 	auto objects = String::join(inOutputs.objectListLinker);
@@ -134,22 +134,28 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 }
 
 /*****************************************************************************/
-std::string NinjaGenerator::getRules(const SourceTypeList& inTypes)
+std::string NinjaGenerator::getRules(const SourceOutputs& inOutputs)
 {
 	chalet_assert(m_project != nullptr, "");
 
 	const bool objectiveCxx = m_project->objectiveCxx();
 
+	std::vector<SourceType> addedRules;
+
 	std::string rules;
-	for (auto& type : inTypes)
+	for (auto& group : inOutputs.groups)
 	{
-		if (m_rules.find(type) == m_rules.end())
+		if (List::contains(addedRules, group->type))
 			continue;
 
-		if (!objectiveCxx && (type == SourceType::ObjectiveC || type == SourceType::ObjectiveCPlusPlus))
+		if (m_rules.find(group->type) == m_rules.end())
 			continue;
 
-		rules += m_rules[type](*this);
+		if (!objectiveCxx && (group->type == SourceType::ObjectiveC || group->type == SourceType::ObjectiveCPlusPlus))
+			continue;
+
+		rules += m_rules[group->type](*this);
+		addedRules.push_back(group->type);
 	}
 
 	rules += getLinkRule();

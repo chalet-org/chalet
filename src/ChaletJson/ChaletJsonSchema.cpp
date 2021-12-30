@@ -502,7 +502,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^{}$", kPatternAbstractName);
 
-	defs[Defs::TargetSourceFiles] = R"json({
+	/*defs[Defs::TargetSourceFiles] = R"json({
 		"type": "array",
 		"uniqueItems": true,
 		"minItems": 1,
@@ -511,7 +511,70 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "string",
 			"minLength": 1
 		}
+	})json"_ojson;*/
+	defs[Defs::TargetSourceFiles] = R"json({
+		"description": "Define the source files, relative to the working directory.",
+		"oneOf": [
+			{
+				"type": "string",
+				"minLength": 1
+			},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {
+					"type": "string",
+					"minLength": 1
+				}
+			},
+			{
+				"type": "object",
+				"additionalProperties": false,
+				"required": [
+					"include"
+				],
+				"properties": {
+					"include" : {
+						"oneOf": [
+							{
+								"type": "string",
+								"minLength": 1
+							},
+							{
+								"type": "array",
+								"uniqueItems": true,
+								"minItems": 1,
+								"items": {
+									"type": "string",
+									"minLength": 1
+								}
+							}
+						]
+					},
+					"exclude" : {
+						"oneOf": [
+							{
+								"type": "string",
+								"minLength": 1
+							},
+							{
+								"type": "array",
+								"uniqueItems": true,
+								"minItems": 1,
+								"items": {
+									"type": "string",
+									"minLength": 1
+								}
+							}
+						]
+					}
+				}
+			}
+		]
 	})json"_ojson;
+	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["exclude"];
+	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["include"];
 
 	defs[Defs::TargetKind] = R"json({
 		"type": "string",
@@ -658,70 +721,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		}
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
-
-	/*defs[Defs::TargetSourceLocation] = R"json({
-		"description": "The root path of the source files, relative to the working directory.",
-		"oneOf": [
-			{
-				"type": "string",
-				"minLength": 1
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			},
-			{
-				"type": "object",
-				"additionalProperties": false,
-				"required": [
-					"include"
-				],
-				"properties": {
-					"include" : {
-						"oneOf": [
-							{
-								"type": "string",
-								"minLength": 1
-							},
-							{
-								"type": "array",
-								"uniqueItems": true,
-								"minItems": 1,
-								"items": {
-									"type": "string",
-									"minLength": 1
-								}
-							}
-						]
-					},
-					"exclude" : {
-						"oneOf": [
-							{
-								"type": "string",
-								"minLength": 1
-							},
-							{
-								"type": "array",
-								"uniqueItems": true,
-								"minItems": 1,
-								"items": {
-									"type": "string",
-									"minLength": 1
-								}
-							}
-						]
-					}
-				}
-			}
-		]
-	})json"_ojson;
-	defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::Properties]["exclude"];
-	defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditionConfigurationsPlatforms)] = defs[Defs::TargetSourceLocation][SKeys::OneOf][2][SKeys::Properties]["include"];*/
 
 	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = R"json({
 		"type": "array",
@@ -1534,6 +1533,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		abstractSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
+		abstractSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
 		abstractSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		abstractSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
@@ -1541,6 +1541,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		abstractSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
+		abstractSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceFiles);
 		abstractSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::TargetAbstract] = std::move(abstractSource);
 	}
@@ -1558,7 +1559,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
 		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
-		// targetSource[SKeys::Properties]["location"] = getDefinition(Defs::TargetSourceLocation);
 		targetSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
 			"description": "Settings for each language",
@@ -1770,7 +1770,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";
-		// case Defs::TargetSourceLocation: return "target-source-location";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		//
 		case Defs::TargetAbstract: return "target-abstract";

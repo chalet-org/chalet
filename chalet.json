@@ -46,9 +46,7 @@
 	"targets": {
 		"json-schema-validator": {
 			"kind": "staticLibrary",
-			"files": [
-				"vendor/json-schema-validator/src/*.cpp"
-			]
+			"files": "vendor/json-schema-validator/src/*.cpp"
 		},
 		"chalet": {
 			"kind": "executable",
@@ -62,10 +60,7 @@
 					"src"
 				]
 			},
-			"files": [
-				"src/**/*.cpp",
-				"src/**/*.rc"
-			],
+			"files": "src/**/*.{cpp,rc}",
 			"runTarget": true
 		},
 		"tests_chalet": {
@@ -83,8 +78,7 @@
 				]
 			},
 			"files": [
-				"src/*/**/*.cpp",
-				"src/**/*.rc",
+				"src/*/**/*.{cpp,rc}",
 				"test/*.cpp"
 			],
 			"runArguments": [

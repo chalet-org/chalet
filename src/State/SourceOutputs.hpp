@@ -13,7 +13,6 @@ namespace chalet
 struct SourceOutputs
 {
 	SourceFileGroupList groups;
-	SourceTypeList types;
 
 	std::string target;
 	std::string pch;

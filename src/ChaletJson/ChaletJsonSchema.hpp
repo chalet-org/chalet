@@ -80,7 +80,6 @@ class ChaletJsonSchema
 		TargetSourceLibrary,
 		TargetSourceExtends,
 		TargetSourceFiles,
-		TargetSourceLocation,
 		TargetSourceLanguage,
 		//
 		TargetSourceCxx,

@@ -221,11 +221,6 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	ret->objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(outFileCache, files.list);
 	ret->groups = getSourceFileGroupList(std::move(files), inProject, outFileCache, inDumpAssembly);
-	for (auto& group : ret->groups)
-	{
-		SourceType type = group->type;
-		List::addIfDoesNotExist(ret->types, std::move(type));
-	}
 
 	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
 	// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
@@ -566,8 +561,6 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	// StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
 
 	const auto& files = inProject.files();
-	// if (!files.empty())
-	// {
 	auto& pch = inProject.pch();
 	bool usesPch = inProject.usesPch();
 	StringList fileList;
@@ -609,89 +602,6 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	}
 
 	return fileList;
-	/*}
-
-	const auto& locations = inProject.locations();
-
-	const auto searchString = "." + String::join(extensions, " .");
-
-	const auto& excludesList = inProject.locationExcludes();
-	std::string excludes = String::join(excludesList);
-	Path::sanitize(excludes);
-
-	StringList ret;
-
-	CHALET_TRY
-	{
-		for (auto& locRaw : locations)
-		{
-			std::string loc = locRaw;
-			Path::sanitize(loc);
-
-			if (String::equals(m_intermediateDir, locRaw))
-				continue;
-
-			if (!Commands::pathExists(loc))
-			{
-				Diagnostic::warn("Path not found: {}", loc);
-				continue;
-			}
-
-			int j = 0;
-			for (auto& item : fs::recursive_directory_iterator(loc))
-			{
-				if (item.is_directory())
-					continue;
-
-				const auto& path = item.path();
-
-				if (!path.has_extension())
-					continue;
-
-				const std::string ext = path.extension().string();
-				if (!String::contains(ext, searchString))
-					continue;
-
-				std::string source = path.string();
-				Path::sanitize(source, true);
-
-				if (String::contains(source, excludes))
-					continue;
-
-				bool excluded = false;
-				for (auto& exclude : excludesList)
-				{
-					if (String::contains(exclude, source))
-					{
-						excluded = true;
-						break;
-					}
-				}
-				if (excluded)
-					continue;
-
-				List::addIfDoesNotExist(ret, std::move(source));
-				j++;
-			}
-		}
-	}
-	CHALET_CATCH(const std::exception& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what());
-		ret.clear();
-		return ret;
-	}
-
-	if (!manifestResource.empty())
-	{
-		List::addIfDoesNotExist(ret, std::move(manifestResource));
-	}
-	if (!iconResource.empty())
-	{
-		List::addIfDoesNotExist(ret, std::move(iconResource));
-	}
-
-	return ret;*/
 }
 
 /*****************************************************************************/
@@ -723,8 +633,6 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		}
 
 		const auto& files = inProject.files();
-		// if (!files.empty())
-		// {
 		for (auto& file : files)
 		{
 			if (!Commands::pathExists(file))
@@ -737,62 +645,6 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		}
 
 		return ret;
-		// }
-
-		/*const auto& locations = inProject.locations();
-		const auto& locationExcludes = inProject.locationExcludes();
-
-		std::string excludes = String::join(locationExcludes);
-		Path::sanitize(excludes);
-
-		for (auto& locRaw : locations)
-		{
-			std::string loc = locRaw;
-			Path::sanitize(loc);
-
-			// if (m_useCache && List::contains(m_directoryCache, loc))
-			// 	continue;
-
-			ret.push_back(loc);
-
-			if (String::equals(m_intermediateDir, locRaw))
-				continue;
-
-			if (!Commands::pathExists(loc))
-			{
-				Diagnostic::warn("Path not found: {}", loc);
-				continue;
-			}
-
-			for (auto& item : fs::recursive_directory_iterator(loc))
-			{
-				if (!item.is_directory())
-					continue;
-
-				std::string path = item.path().string();
-				Path::sanitize(path, true);
-
-				if (String::contains(path, excludes))
-					continue;
-
-				bool excluded = false;
-				for (auto& exclude : locationExcludes)
-				{
-					if (String::contains(exclude, path))
-					{
-						excluded = true;
-						break;
-					}
-				}
-				if (excluded)
-					continue;
-
-				ret.push_back(path);
-			}
-
-			// if (m_useCache && !List::contains(m_directoryCache, loc))
-			// 	m_directoryCache.push_back(loc);
-		}*/
 	}
 	CHALET_CATCH(const std::exception& err)
 	{

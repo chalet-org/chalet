@@ -27,7 +27,7 @@ public:
 private:
 	std::string getDepFile(const std::string& inDependency);
 
-	std::string getRules(const SourceTypeList& inTypes);
+	std::string getRules(const SourceOutputs& inOutputs);
 	std::string getBuildRules(const SourceOutputs& inOutputs);
 
 	std::string getDependencyRule();

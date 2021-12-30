@@ -52,23 +52,14 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 		ret[Keys::DefaultConfigurations] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	}
 
-	ret[Keys::AbstractsAll] = Json::object();
-	ret[Keys::AbstractsAll]["language"] = language;
-	ret[Keys::AbstractsAll][Keys::SettingsCxx] = Json::object();
-	ret[Keys::AbstractsAll][Keys::SettingsCxx][langStandardKey] = std::move(langStandard);
-	ret[Keys::AbstractsAll][Keys::SettingsCxx]["warnings"] = "pedantic";
-
-	if (objectiveCxx)
-	{
-		ret[Keys::AbstractsAll][Keys::SettingsCxx]["macosFrameworks"] = Json::array();
-		ret[Keys::AbstractsAll][Keys::SettingsCxx]["macosFrameworks"][0] = "Foundation";
-	}
-
 	ret[Keys::Targets] = Json::object();
 	ret[Keys::Targets][project] = Json::object();
 	ret[Keys::Targets][project][Keys::Kind] = "executable";
+	ret[Keys::Targets][project]["language"] = language;
 
 	ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
+	ret[Keys::Targets][project][Keys::SettingsCxx][langStandardKey] = std::move(langStandard);
+	ret[Keys::Targets][project][Keys::SettingsCxx]["warnings"] = "pedantic";
 	if (!inProps.precompiledHeader.empty())
 	{
 		ret[Keys::Targets][project][Keys::SettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
@@ -76,12 +67,15 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"] = Json::array();
 	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"][0] = inProps.location;
 
+	if (objectiveCxx)
+	{
+		ret[Keys::Targets][project][Keys::SettingsCxx]["macosFrameworks"] = Json::array();
+		ret[Keys::Targets][project][Keys::SettingsCxx]["macosFrameworks"][0] = "Foundation";
+	}
 	if (inProps.useLocation)
 	{
-		// ret[Keys::Targets][project]["location"] = inProps.location;
-		ret[Keys::Targets][project]["files"] = Json::array();
 		auto extension = String::getPathSuffix(inProps.mainSource);
-		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/**/*.{}", inProps.location, extension);
+		ret[Keys::Targets][project]["files"] = fmt::format("{}/**/*.{}", inProps.location, extension);
 	}
 	else
 	{

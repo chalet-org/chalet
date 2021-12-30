@@ -29,12 +29,24 @@ bool SourceTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	replaceVariablesInPathList(m_libDirs);
-	replaceVariablesInPathList(m_includeDirs);
-	replaceVariablesInPathList(m_macosFrameworkPaths);
-	replaceVariablesInPathList(m_files);
-	// replaceVariablesInPathList(m_locations);
-	// replaceVariablesInPathList(m_locationExcludes);
+	processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
+		Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
+	});
+
+	processEachPathList(std::move(m_libDirs), [this](std::string&& inValue) {
+		Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
+	});
+
+	processEachPathList(std::move(m_includeDirs), [this](std::string&& inValue) {
+		Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
+	});
+
+	processEachPathList(std::move(m_files), [this](std::string&& inValue) {
+		Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
+	});
+	processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
+		Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
+	});
 
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_pch, targetName);
@@ -51,6 +63,43 @@ bool SourceTarget::initialize()
 		m_linkerOptions = parseCommandLineOptions(m_linkerOptionsRaw);
 	}
 
+	if (!m_fileExcludes.empty())
+	{
+		std::string excludes = String::join(m_fileExcludes);
+
+		auto itr = m_files.begin();
+		while (itr != m_files.end())
+		{
+			if (!itr->empty())
+			{
+				auto& path = *itr;
+				bool excluded = false;
+
+				if (!String::contains(path, excludes))
+				{
+					for (auto& exclude : m_fileExcludes)
+					{
+						if (String::contains(exclude, path))
+						{
+							excluded = true;
+							break;
+						}
+					}
+				}
+
+				if (excluded)
+					itr = m_files.erase(itr);
+				else
+					++itr;
+			}
+			else
+			{
+				// no dependencies - we don't care about it
+				itr = m_files.erase(itr);
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -61,24 +110,25 @@ bool SourceTarget::validate()
 
 	const auto& targetName = this->name();
 	bool result = true;
-	/*for (auto& location : m_locations)
-	{
-		if (String::equals(m_state.paths.intermediateDir(), location))
-			continue;
 
-		if (!Commands::pathExists(location))
-		{
-			Diagnostic::error("location for project target '{}' doesn't exist: {}", targetName, location);
-			result = false;
-		}
-	}*/
+	if (m_kind == ProjectKind::None)
+	{
+		Diagnostic::error("A valid 'kind' was not found.");
+		result = false;
+	}
+
+	if (m_files.empty())
+	{
+		Diagnostic::error("No 'files' were specified, but are required.", targetName);
+		result = false;
+	}
 
 	if (!m_pch.empty())
 	{
 		const auto& pch = !m_state.paths.rootDirectory().empty() ? fmt::format("{}/{}", m_state.paths.rootDirectory(), m_pch) : m_pch;
 		if (!Commands::pathExists(pch))
 		{
-			Diagnostic::error("Precompiled header '{}' for target '{}' was not found.", pch, targetName);
+			Diagnostic::error("Precompiled header '{}' was not found.", pch);
 			result = false;
 		}
 	}
@@ -248,7 +298,7 @@ void SourceTarget::addLibDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
+	List::addIfDoesNotExist(m_libDirs, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -268,7 +318,7 @@ void SourceTarget::addIncludeDir(std::string&& inValue)
 	if (inValue.back() != '/')
 		inValue += '/';
 
-	Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
+	List::addIfDoesNotExist(m_includeDirs, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -330,7 +380,7 @@ const StringList& SourceTarget::linkerOptions() const noexcept
 }
 void SourceTarget::addLinkerOptions(std::string&& inValue)
 {
-	m_compileOptionsRaw = std::move(inValue);
+	m_linkerOptionsRaw = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -450,40 +500,24 @@ void SourceTarget::addFiles(StringList&& inList)
 
 void SourceTarget::addFile(std::string&& inValue)
 {
-	Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
+	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
 
 /*****************************************************************************/
-/*const StringList& SourceTarget::locations() const noexcept
+const StringList& SourceTarget::fileExcludes() const noexcept
 {
-	return m_locations;
+	return m_fileExcludes;
 }
 
-void SourceTarget::addLocations(StringList&& inList)
+void SourceTarget::addFileExcludes(StringList&& inList)
 {
-	List::forEach(inList, this, &SourceTarget::addLocation);
+	List::forEach(inList, this, &SourceTarget::addFileExclude);
 }
 
-void SourceTarget::addLocation(std::string&& inValue)
+void SourceTarget::addFileExclude(std::string&& inValue)
 {
-	Commands::addPathToListWithGlob(std::move(inValue), m_locations, GlobMatch::Folders);
-}*/
-
-/*****************************************************************************/
-/*const StringList& SourceTarget::locationExcludes() const noexcept
-{
-	return m_locationExcludes;
+	List::addIfDoesNotExist(m_fileExcludes, std::move(inValue));
 }
-
-void SourceTarget::addLocationExcludes(StringList&& inList)
-{
-	List::forEach(inList, this, &SourceTarget::addLocationExclude);
-}
-
-void SourceTarget::addLocationExclude(std::string&& inValue)
-{
-	Commands::addPathToListWithGlob(std::move(inValue), m_locationExcludes, GlobMatch::FilesAndFolders);
-}*/
 
 /*****************************************************************************/
 const std::string& SourceTarget::pch() const noexcept

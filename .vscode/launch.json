@@ -31,10 +31,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"bundle"
+				"build"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/../cruise-engine",
+			"cwd": "${workspaceFolder}/",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [

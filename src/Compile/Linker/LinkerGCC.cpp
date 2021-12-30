@@ -157,13 +157,6 @@ void LinkerGCC::addLibDirs(StringList& outArgList) const
 	}
 
 	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
-
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	// must be last
-	std::string localLib{ "/usr/local/lib/" };
-	if (Commands::pathExists(localLib))
-		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localLib));
-#endif
 }
 
 /*****************************************************************************/
@@ -437,13 +430,6 @@ void LinkerGCC::addCompilerSearchPaths(StringList& outArgList) const
 	}
 
 	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
-
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	// must be last
-	std::string localLib{ "/usr/local/lib/" };
-	if (Commands::pathExists(localLib))
-		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localLib));
-#endif
 }
 
 /*****************************************************************************/

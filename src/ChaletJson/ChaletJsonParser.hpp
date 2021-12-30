@@ -39,7 +39,7 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseTarget(const Json& inNode);
-	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode, const bool inAbstract = false) const;
+	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
 	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;
 	bool parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const;

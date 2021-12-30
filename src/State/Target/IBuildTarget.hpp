@@ -54,7 +54,8 @@ struct IBuildTarget
 	void setIncludeInBuild(const bool inValue);
 
 protected:
-	void replaceVariablesInPathList(StringList& outList);
+	void replaceVariablesInPathList(StringList& outList) const;
+	void processEachPathList(StringList&& outList, std::function<void(std::string&& inValue)> onProcess) const;
 
 	const BuildState& m_state;
 

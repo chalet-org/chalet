@@ -55,12 +55,24 @@ bool IBuildTarget::initialize()
 }
 
 /*****************************************************************************/
-void IBuildTarget::replaceVariablesInPathList(StringList& outList)
+void IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 {
 	const auto& targetName = this->name();
 	for (auto& dir : outList)
 	{
 		m_state.replaceVariablesInPath(dir, targetName);
+	}
+}
+
+/*****************************************************************************/
+void IBuildTarget::processEachPathList(StringList&& outList, std::function<void(std::string&& inValue)> onProcess) const
+{
+	replaceVariablesInPathList(outList);
+
+	StringList tmpList = std::move(outList);
+	for (auto&& val : tmpList)
+	{
+		onProcess(std::move(val));
 	}
 }
 

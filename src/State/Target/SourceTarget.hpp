@@ -92,13 +92,9 @@ struct SourceTarget final : public IBuildTarget
 	void addFiles(StringList&& inList);
 	void addFile(std::string&& inValue);
 
-	// const StringList& locations() const noexcept;
-	// void addLocations(StringList&& inList);
-	// void addLocation(std::string&& inValue);
-
-	// const StringList& locationExcludes() const noexcept;
-	// void addLocationExcludes(StringList&& inList);
-	// void addLocationExclude(std::string&& inValue);
+	const StringList& fileExcludes() const noexcept;
+	void addFileExcludes(StringList&& inList);
+	void addFileExclude(std::string&& inValue);
 
 	const std::string& pch() const noexcept;
 	void setPch(std::string&& inValue) noexcept;
@@ -173,7 +169,6 @@ private:
 	StringList parseWarnings(const std::string& inValue);
 	StringList parseCommandLineOptions(std::string inString) const;
 
-	StringList m_fileExtensions;
 	StringList m_defines;
 	StringList m_links;
 	StringList m_projectStaticLinks;
@@ -186,11 +181,8 @@ private:
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
 	StringList m_files;
-	// StringList m_locations;
-	// StringList m_locationExcludes;
+	StringList m_fileExcludes;
 
-	std::string m_productionDependencies;
-	std::string m_productionExcludes;
 	std::string m_warningsPresetString;
 	std::string m_outputFile;
 	std::string m_outputFileNoPrefix;

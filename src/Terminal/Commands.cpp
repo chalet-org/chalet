@@ -7,6 +7,7 @@
 
 #include <array>
 #include <chrono>
+#include <regex>
 #include <sys/stat.h>
 #include <thread>
 
@@ -666,27 +667,82 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		return isRegularFile || isDirectory;
 	};
 
-	bool recursive = true;
-	bool dirOnly = inSettings == GlobMatch::Folders;
-
-	if (String::contains("**/*", inPattern))
+	auto pattern = inPattern;
+	auto start = pattern.find(".{");
+	if (start != std::string::npos)
 	{
-		auto pattern = inPattern;
-		// this will get the root
-		String::replaceAll(pattern, "**/*", "*");
-
-		for (auto& match : glob::glob(pattern, recursive, dirOnly))
+		auto prefix = pattern.substr(0, start + 1);
+		start += 2;
+		auto end = pattern.find("}", start);
+		if (end != std::string::npos)
 		{
-			if (matchIsValid(match))
-				onFound(match);
+			auto suffix = pattern.substr(end + 1);
+			auto arr = pattern.substr(start, end - start);
+			if (String::contains(',', arr))
+			{
+				String::replaceAll(arr, ',', '|');
+				pattern = fmt::format("{}({}){}", prefix, arr, suffix);
+			}
 		}
 	}
 
-	for (auto& match : glob::glob(inPattern, recursive, dirOnly))
+	std::string basePath;
+	auto pos = pattern.find("*");
+	if (pos != std::string::npos)
 	{
-		if (matchIsValid(match))
-			onFound(match);
+		auto tmp = pattern.substr(0, pos);
+		basePath = String::getPathFolder(tmp);
+		if (basePath.empty())
+			basePath = std::move(tmp);
 	}
+
+	if (basePath.empty())
+		basePath = Commands::getWorkingDirectory();
+
+	String::replaceAll(pattern, ".", R"(\.)");
+	String::replaceAll(pattern, "**/*", ".+");
+	String::replaceAll(pattern, "**", ".+");
+	String::replaceAll(pattern, "*", ".+");
+#if defined(CHALET_WIN32)
+	String::replaceAll(pattern, "/", R"([\/\\]{1,2})");
+#endif
+
+	if (Commands::pathIsDirectory(basePath))
+	{
+		std::regex re(pattern);
+		for (auto& it : fs::recursive_directory_iterator(basePath))
+		{
+			const auto& fsPath = it.path();
+			if (matchIsValid(fsPath))
+			{
+				auto p = fsPath.string();
+				if (std::regex_search(p, re, std::regex_constants::match_default))
+					onFound(fsPath);
+			}
+		}
+	}
+
+	// bool recursive = true;
+	// bool dirOnly = inSettings == GlobMatch::Folders;
+
+	// if (String::contains("**/*", inPattern))
+	// {
+	// 	auto pattern = inPattern;
+	// 	// this will get the root
+	// 	String::replaceAll(pattern, "**/*", "*");
+
+	// 	for (auto& match : glob::glob(pattern, recursive, dirOnly))
+	// 	{
+	// 		if (matchIsValid(match))
+	// 			onFound(match);
+	// 	}
+	// }
+
+	// for (auto& match : glob::glob(inPattern, recursive, dirOnly))
+	// {
+	// 	if (matchIsValid(match))
+	// 		onFound(match);
+	// }
 }
 
 /*****************************************************************************/

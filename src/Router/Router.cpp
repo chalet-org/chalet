@@ -298,6 +298,14 @@ bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
 
+	Timer timer;
+
+	Commands::forEachGlobMatch("src/**/*.{cpp,rc}", GlobMatch::Files, [](auto& path) {
+		LOG(path.string());
+	});
+
+	LOG("glob took:", timer.asString());
+
 	return true;
 }
 #endif

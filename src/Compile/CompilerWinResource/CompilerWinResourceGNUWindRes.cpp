@@ -81,13 +81,6 @@ void CompilerWinResourceGNUWindRes::addIncludes(StringList& outArgList) const
 		auto outDir = String::getPathFolder(m_project.pch());
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, outDir));
 	}
-
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	// must be last
-	std::string localInclude{ "/usr/local/include" };
-	if (Commands::pathExists(localInclude))
-		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, localInclude));
-#endif
 }
 
 /*****************************************************************************/
