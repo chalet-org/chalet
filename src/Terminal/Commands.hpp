@@ -45,10 +45,10 @@ bool copySilent(const std::string& inFrom, const std::string& inTo, const fs::co
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent = false);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
 
-void forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
-void forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
-void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
-void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(const fs::path&)>& onFound);
+void forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
+void forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
+void forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
 
 void addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings);
 

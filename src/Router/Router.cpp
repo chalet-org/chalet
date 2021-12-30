@@ -300,10 +300,12 @@ bool Router::routeDebug()
 
 	Timer timer;
 
-	Commands::forEachGlobMatch("src/**/*.{cpp,rc}", GlobMatch::Files, [](auto& path) {
-		LOG(path.string());
+	std::string paths;
+	Commands::forEachGlobMatch("src/**/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
+		paths += path + '\n';
 	});
 
+	LOG(paths);
 	LOG("glob took:", timer.asString());
 
 	return true;
