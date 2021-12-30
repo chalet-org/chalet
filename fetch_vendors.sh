@@ -8,7 +8,6 @@ vendors=(
 	'ctre'
 	'fmt'
 	'ghc'
-	'glob'
 	'json-schema-validator'
 	'nlohmann'
 )
@@ -19,7 +18,6 @@ repositories=(
 	'hanickadot/compile-time-regular-expressions'
 	'fmtlib/fmt'
 	'gulrak/filesystem'
-	'chalet-org/glob'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
 )
@@ -30,7 +28,6 @@ tags=(
 	'8.0.0'
 	'v1.5.6'
 	'master'
-	'master'
 	'v3.10.2'
 )
 
@@ -38,7 +35,6 @@ commits=(
 	0
 	0
 	1
-	0
 	0
 	0
 	0

@@ -17,7 +17,6 @@
 	#include <winuser.h>
 #endif
 
-#include "Libraries/Glob.hpp"
 #include "Process/ProcessController.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -698,10 +697,11 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		basePath = Commands::getWorkingDirectory();
 
 	Path::sanitize(pattern);
-	String::replaceAll(pattern, '.', R"(\.)");
-	String::replaceAll(pattern, "**/*", ".+");
-	String::replaceAll(pattern, "**", ".+");
-	String::replaceAll(pattern, '*', ".+");
+	String::replaceAll(pattern, '.', "\\.");
+	String::replaceAll(pattern, "**/*", "(.+)");
+	String::replaceAll(pattern, "**", "(.+)");
+	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
+	String::replaceAll(pattern, "(.+)", "(.*)");
 
 	if (Commands::pathIsDirectory(basePath))
 	{
@@ -718,28 +718,6 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			}
 		}
 	}
-
-	// bool recursive = true;
-	// bool dirOnly = inSettings == GlobMatch::Folders;
-
-	// if (String::contains("**/*", inPattern))
-	// {
-	// 	auto pattern = inPattern;
-	// 	// this will get the root
-	// 	String::replaceAll(pattern, "**/*", "*");
-
-	// 	for (auto& match : glob::glob(pattern, recursive, dirOnly))
-	// 	{
-	// 		if (matchIsValid(match))
-	// 			onFound(match);
-	// 	}
-	// }
-
-	// for (auto& match : glob::glob(inPattern, recursive, dirOnly))
-	// {
-	// 	if (matchIsValid(match))
-	// 		onFound(match);
-	// }
 }
 
 /*****************************************************************************/

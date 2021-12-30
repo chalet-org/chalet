@@ -301,11 +301,20 @@ bool Router::routeDebug()
 	Timer timer;
 
 	std::string paths;
-	Commands::forEachGlobMatch("src/**/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
+	Commands::forEachGlobMatch("src/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
 		paths += path + '\n';
 	});
 
+	paths += '\n';
 	LOG(paths);
+	paths.clear();
+	Commands::forEachGlobMatch("src/**.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
+		paths += path + '\n';
+	});
+
+	paths += '\n';
+	LOG(paths);
+
 	LOG("glob took:", timer.asString());
 
 	return true;
