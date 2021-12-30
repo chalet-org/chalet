@@ -678,11 +678,9 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		{
 			auto suffix = pattern.substr(end + 1);
 			auto arr = pattern.substr(start, end - start);
-			if (String::contains(',', arr))
-			{
-				String::replaceAll(arr, ',', '|');
-				pattern = fmt::format("{}({}){}", prefix, arr, suffix);
-			}
+
+			String::replaceAll(arr, ',', '|');
+			pattern = fmt::format("{}({}){}", prefix, arr, suffix);
 		}
 	}
 
@@ -699,13 +697,11 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	if (basePath.empty())
 		basePath = Commands::getWorkingDirectory();
 
+	Path::sanitize(pattern);
 	String::replaceAll(pattern, '.', R"(\.)");
 	String::replaceAll(pattern, "**/*", ".+");
 	String::replaceAll(pattern, "**", ".+");
 	String::replaceAll(pattern, '*', ".+");
-#if defined(CHALET_WIN32)
-	String::replaceAll(pattern, '/', R"([\/\\]{1,2})");
-#endif
 
 	if (Commands::pathIsDirectory(basePath))
 	{
