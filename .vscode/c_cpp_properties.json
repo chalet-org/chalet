@@ -10,7 +10,6 @@
                 "${workspaceFolder}/vendor/json-schema-validator/src",
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
-                "${workspaceFolder}/vendor/glob/single_include",
                 "${workspaceFolder}/vendor/catch2/single_include",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
@@ -41,7 +40,6 @@
                 "${workspaceFolder}/vendor/json-schema-validator/src",
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
-                "${workspaceFolder}/vendor/glob/single_include",
                 "${workspaceFolder}/vendor/catch2/single_include",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test",
@@ -66,7 +64,6 @@
                 "${workspaceFolder}/vendor/json-schema-validator/src",
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
-                "${workspaceFolder}/vendor/glob/single_include",
                 "${workspaceFolder}/vendor/catch2/single_include",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"
@@ -93,7 +90,6 @@
                 "${workspaceFolder}/vendor/json-schema-validator/src",
                 "${workspaceFolder}/vendor/fmt/include",
                 "${workspaceFolder}/vendor/argparse/include",
-                "${workspaceFolder}/vendor/glob/single_include",
                 "${workspaceFolder}/vendor/catch2/single_include",
                 "${workspaceFolder}/vendor",
                 "${workspaceFolder}/test"

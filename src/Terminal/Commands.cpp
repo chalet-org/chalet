@@ -667,6 +667,9 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	};
 
 	auto pattern = inPattern;
+	String::replaceAll(pattern, '(', "\\(");
+	String::replaceAll(pattern, ')', "\\)");
+
 	auto start = pattern.find(".{");
 	if (start != std::string::npos)
 	{
@@ -697,6 +700,10 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		basePath = Commands::getWorkingDirectory();
 
 	Path::sanitize(pattern);
+	String::replaceAll(pattern, '{', "\\{");
+	String::replaceAll(pattern, '}', "\\}");
+	String::replaceAll(pattern, '[', "\\[");
+	String::replaceAll(pattern, '[', "\\]");
 	String::replaceAll(pattern, '.', "\\.");
 	String::replaceAll(pattern, "**/*", "(.+)");
 	String::replaceAll(pattern, "**", "(.+)");
