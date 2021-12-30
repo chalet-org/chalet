@@ -59,7 +59,7 @@
 					"src"
 				]
 			},
-			"files": "src/**/*.{cpp,rc}",
+			"files": "src/**.{cpp,rc}",
 			"runTarget": true
 		},
 		"tests_chalet": {
@@ -77,7 +77,7 @@
 				]
 			},
 			"files": [
-				"src/*/**/*.{cpp,rc}",
+				"src/*/**.{cpp,rc}",
 				"test/*.cpp"
 			],
 			"runArguments": [
