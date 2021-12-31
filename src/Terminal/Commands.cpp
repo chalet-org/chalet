@@ -670,11 +670,11 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '(', "\\(");
 	String::replaceAll(pattern, ')', "\\)");
 
-	auto start = pattern.find(".{");
+	auto start = pattern.find("{");
 	if (start != std::string::npos)
 	{
-		auto prefix = pattern.substr(0, start + 1);
-		start += 2;
+		auto prefix = pattern.substr(0, start);
+		start += 1;
 		auto end = pattern.find("}", start);
 		if (end != std::string::npos)
 		{
@@ -706,6 +706,7 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '[', "\\]");
 	String::replaceAll(pattern, '.', "\\.");
 	String::replaceAll(pattern, '+', "\\+");
+	String::replaceAll(pattern, '?', '.');
 	String::replaceAll(pattern, "**/*", "(.+)");
 	String::replaceAll(pattern, "**", "(.+)");
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
