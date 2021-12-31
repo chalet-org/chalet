@@ -598,6 +598,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			std::string langStandard = String::toLowerCase(m_project.cppStandard());
 			String::replaceAll(langStandard, "gnu++", "");
 			String::replaceAll(langStandard, "c++", "");
+
 			if (String::equals({ "20", "2a" }, langStandard))
 			{
 				if (m_versionMajorMinor >= 1929)

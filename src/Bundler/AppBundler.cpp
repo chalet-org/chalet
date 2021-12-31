@@ -374,9 +374,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
-	Commands::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [&](std::string inPath) {
-		Commands::remove(inPath);
-	});
+	if (!Commands::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [&](std::string inPath) {
+			Commands::remove(inPath);
+		}))
+		return false;
 
 	if (!inBundler.bundleForPlatform())
 		return false;

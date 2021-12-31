@@ -645,13 +645,13 @@ bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& 
 // Should match:
 //   https://www.digitalocean.com/community/tools/glob?comments=true&glob=src%2F%2A%2A%2F%2A.cpp&matches=false&tests=src&tests=src%2Fmain.cpp&tests=src%2Fpch.hpp&tests=src%2Ffoo&tests=src%2Ffoo%2Ffoo.cpp&tests=src%2Ffoo%2Ffoo.hpp&tests=src%2Fbar&tests=src%2Fbar%2Fbar&tests=src%2Fbar%2Fbar%2Fbar.cpp&tests=src%2Fbar%2Fbar%2Fbar.hpp
 //
-void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	if (onFound == nullptr)
-		return;
+		return false;
 
-	if (!String::contains('*', inPattern))
-		return;
+	if (String::contains("${", inPattern))
+		return false;
 
 	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
 		bool isDirectory = fs::is_directory(inmatch);
@@ -670,8 +670,9 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '(', "\\(");
 	String::replaceAll(pattern, ')', "\\)");
 
-	auto start = pattern.find("{");
-	if (start != std::string::npos)
+	std::size_t start = 0;
+	start = pattern.find("{", start);
+	while (start != std::string::npos)
 	{
 		auto prefix = pattern.substr(0, start);
 		start += 1;
@@ -684,6 +685,7 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			String::replaceAll(arr, ',', '|');
 			pattern = fmt::format("{}({}){}", prefix, arr, suffix);
 		}
+		start = pattern.find("{", start);
 	}
 
 	std::string basePath;
@@ -712,60 +714,71 @@ void Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
 	String::replaceAll(pattern, "(.+)", "(.*)");
 
-	if (Commands::pathIsDirectory(basePath))
+	if (!Commands::pathIsDirectory(basePath))
+		return false;
+
+	std::regex re(pattern);
+	for (auto& it : fs::recursive_directory_iterator(basePath))
 	{
-		std::regex re(pattern);
-		for (auto& it : fs::recursive_directory_iterator(basePath))
+		const auto& fsPath = it.path();
+		if (matchIsValid(fsPath))
 		{
-			const auto& fsPath = it.path();
-			if (matchIsValid(fsPath))
-			{
-				auto p = fsPath.string();
-				Path::sanitize(p);
-				if (std::regex_search(p, re, std::regex_constants::match_default))
-					onFound(std::move(p));
-			}
+			auto p = fsPath.string();
+			Path::sanitize(p);
+			if (std::regex_search(p, re, std::regex_constants::match_default))
+				onFound(std::move(p));
 		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void Commands::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Commands::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
-		forEachGlobMatch(pattern, inSettings, onFound);
+		if (!forEachGlobMatch(pattern, inSettings, onFound))
+			return false;
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void Commands::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Commands::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
-	forEachGlobMatch(fmt::format("{}/{}", inPath, inPattern), inSettings, onFound);
+	return forEachGlobMatch(fmt::format("{}/{}", inPath, inPattern), inSettings, onFound);
 }
 
 /*****************************************************************************/
-void Commands::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Commands::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
-		forEachGlobMatch(inPath, pattern, inSettings, onFound);
+		if (!forEachGlobMatch(inPath, pattern, inSettings, onFound))
+			return false;
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
+bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
 {
 	if (String::contains('*', inValue))
 	{
-		Commands::forEachGlobMatch(inValue, inSettings, [&](std::string inPath) {
-			List::addIfDoesNotExist(outList, std::move(inPath));
-		});
+		if (!Commands::forEachGlobMatch(inValue, inSettings, [&](std::string inPath) {
+				List::addIfDoesNotExist(outList, std::move(inPath));
+			}))
+			return false;
 	}
 	else
 	{
 		List::addIfDoesNotExist(outList, std::move(inValue));
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
