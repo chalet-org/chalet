@@ -29,6 +29,9 @@ bool SourceTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
+	if (!m_warnings.empty())
+		m_warningsPreset = ProjectWarningPresets::Custom;
+
 	processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
 		Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
 	});
@@ -330,7 +333,6 @@ const StringList& SourceTarget::warnings() const noexcept
 void SourceTarget::addWarnings(StringList&& inList)
 {
 	List::forEach(inList, this, &SourceTarget::addWarning);
-	m_warningsPreset = ProjectWarningPresets::Custom;
 }
 
 void SourceTarget::addWarning(std::string&& inValue)
@@ -348,7 +350,7 @@ void SourceTarget::addWarning(std::string&& inValue)
 void SourceTarget::setWarningPreset(std::string&& inValue)
 {
 	m_warningsPresetString = std::move(inValue);
-	m_warnings = parseWarnings(m_warningsPresetString);
+	m_warningsPreset = parseWarnings(m_warningsPresetString);
 }
 
 ProjectWarningPresets SourceTarget::warningsPreset() const noexcept
@@ -888,87 +890,31 @@ void SourceTarget::parseOutputFilename() noexcept
 /*****************************************************************************/
 // TODO: These will need numerous discussions as to how they can be categorized
 //
-StringList SourceTarget::parseWarnings(const std::string& inValue)
+ProjectWarningPresets SourceTarget::parseWarnings(const std::string& inValue)
 {
-	StringList ret;
-
 	if (String::equals("none", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::None;
-		return ret;
-	}
+		return ProjectWarningPresets::None;
 
-	ret.emplace_back("all");
 	if (String::equals("minimal", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::Minimal;
-		return ret;
-	}
+		return ProjectWarningPresets::Minimal;
 
-	ret.emplace_back("extra");
 	if (String::equals("extra", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::Extra;
-		return ret;
-	}
-
-	ret.emplace_back("pedantic");
-	// ret.emplace_back("pedantic-errors"); // Not on OSX?
+		return ProjectWarningPresets::Extra;
 
 	if (String::equals("pedantic", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::Pedantic;
-		return ret;
-	}
+		return ProjectWarningPresets::Pedantic;
 
-	ret.emplace_back("error");
 	if (String::equals("error", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::Error;
-		return ret;
-	}
-
-	ret.emplace_back("unused");
-	ret.emplace_back("cast-align");
-	ret.emplace_back("double-promotion");
-	ret.emplace_back("format=2");
-	ret.emplace_back("missing-declarations");
-	ret.emplace_back("missing-include-dirs");
-	ret.emplace_back("non-virtual-dtor");
-	ret.emplace_back("redundant-decls");
+		return ProjectWarningPresets::Error;
 
 	if (String::equals("strict", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::Strict;
-		return ret;
-	}
-
-	ret.emplace_back("unreachable-code"); // clang only
-	ret.emplace_back("shadow");
+		return ProjectWarningPresets::Strict;
 
 	if (String::equals("strictPedantic", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::StrictPedantic;
-		return ret;
-	}
-
-	ret.emplace_back("noexcept");
-	ret.emplace_back("undef");
-	ret.emplace_back("conversion");
-	ret.emplace_back("cast-qual");
-	ret.emplace_back("float-equal");
-	ret.emplace_back("inline");
-	ret.emplace_back("old-style-cast");
-	ret.emplace_back("strict-null-sentinel");
-	ret.emplace_back("overloaded-virtual");
-	ret.emplace_back("sign-conversion");
-	ret.emplace_back("sign-promo");
+		return ProjectWarningPresets::StrictPedantic;
 
 	if (String::equals("veryStrict", inValue))
-	{
-		m_warningsPreset = ProjectWarningPresets::VeryStrict;
-		return ret;
-	}
+		return ProjectWarningPresets::VeryStrict;
 
 	// More?
 	// can't be ignored in GCC 10.2.0, so best not to use it at all
@@ -976,7 +922,7 @@ StringList SourceTarget::parseWarnings(const std::string& inValue)
 
 	m_invalidWarningPreset = true;
 
-	return ret;
+	return ProjectWarningPresets::None;
 }
 
 /*****************************************************************************/

@@ -22,6 +22,9 @@ struct CompilerCxxVisualStudioCL : public ICompilerCxx
 	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType) override;
 
 protected:
+	bool createPrecompiledHeaderSource();
+	bool configureWarnings();
+
 	virtual void addIncludes(StringList& outArgList) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;
@@ -57,15 +60,15 @@ protected:
 
 	virtual void addCppCoroutines(StringList& outArgList) const;
 
-	bool createPrecompiledHeaderSource();
-
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;
 
-	mutable std::string m_warningFlag;
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
 	std::string m_ifcDirectory;
+	std::string m_warningFlag;
+
+	bool m_warningsAsErrors = false;
 };
 }
 

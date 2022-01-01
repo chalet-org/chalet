@@ -29,6 +29,9 @@ CompilerCxxVisualStudioCL::CompilerCxxVisualStudioCL(const BuildState& inState, 
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::initialize()
 {
+	if (!configureWarnings())
+		return false;
+
 	if (!createPrecompiledHeaderSource())
 		return false;
 
@@ -60,6 +63,128 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 		}
 	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool CompilerCxxVisualStudioCL::configureWarnings()
+{
+	m_warningsAsErrors = false;
+
+	switch (m_project.warningsPreset())
+	{
+		case ProjectWarningPresets::Minimal:
+			m_warningFlag = "W1";
+			break;
+
+		case ProjectWarningPresets::Extra:
+			m_warningFlag = "W2";
+			break;
+
+		case ProjectWarningPresets::Pedantic:
+			m_warningFlag = "W3";
+			break;
+
+		case ProjectWarningPresets::Error:
+			m_warningFlag = "W3";
+			m_warningsAsErrors = true;
+			break;
+
+		case ProjectWarningPresets::Strict:
+		case ProjectWarningPresets::StrictPedantic:
+			m_warningFlag = "W4";
+			m_warningsAsErrors = true;
+			break;
+
+		case ProjectWarningPresets::VeryStrict:
+			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
+			m_warningFlag = "W4";
+			m_warningsAsErrors = true;
+			break;
+
+		case ProjectWarningPresets::Custom: {
+			// TODO: Refactor this so the strict warnings are stored somewhere GNU can use
+			auto& warnings = m_project.warnings();
+
+			StringList veryStrict{
+				"noexcept",
+				"undef",
+				"conversion",
+				"cast-qual",
+				"float-equal",
+				"inline",
+				"old-style-cast",
+				"strict-null-sentinel",
+				"overloaded-virtual",
+				"sign-conversion",
+				"sign-promo",
+			};
+
+			bool strictSet = false;
+			for (auto& w : warnings)
+			{
+				if (!String::equals(veryStrict, w))
+					continue;
+
+				// m_warningFlag = "Wall";
+				m_warningFlag = "W4";
+				strictSet = true;
+				break;
+			}
+
+			if (!strictSet)
+			{
+				StringList strictPedantic{
+					"unused",
+					"cast-align",
+					"double-promotion",
+					"format=2",
+					"missing-declarations",
+					"missing-include-dirs",
+					"non-virtual-dtor",
+					"redundant-decls",
+					"unreachable-code",
+					"shadow",
+				};
+				for (auto& w : warnings)
+				{
+					if (!String::equals(strictPedantic, w))
+						continue;
+
+					m_warningFlag = "W4";
+					strictSet = true;
+					break;
+				}
+			}
+
+			if (!strictSet)
+			{
+				if (List::contains<std::string>(warnings, "pedantic"))
+				{
+					m_warningFlag = "W3";
+				}
+				else if (List::contains<std::string>(warnings, "extra"))
+				{
+					m_warningFlag = "W2";
+				}
+				else if (List::contains<std::string>(warnings, "all"))
+				{
+					m_warningFlag = "W1";
+				}
+			}
+
+			if (List::contains<std::string>(warnings, "pedantic"))
+			{
+				m_warningsAsErrors = true;
+			}
+
+			break;
+		}
+
+		case ProjectWarningPresets::None:
+		default:
+			break;
+	}
 	return true;
 }
 
@@ -349,130 +474,11 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 {
-	m_warningFlag.clear();
-	bool warningsAsErrors = false;
-
-	switch (m_project.warningsPreset())
-	{
-		case ProjectWarningPresets::Minimal:
-			m_warningFlag = "W1";
-			break;
-
-		case ProjectWarningPresets::Extra:
-			m_warningFlag = "W2";
-			break;
-
-		case ProjectWarningPresets::Pedantic: {
-			m_warningFlag = "W3";
-			break;
-		}
-		case ProjectWarningPresets::Error: {
-			m_warningFlag = "W3";
-			warningsAsErrors = true;
-			break;
-		}
-		case ProjectWarningPresets::Strict:
-		case ProjectWarningPresets::StrictPedantic: {
-			m_warningFlag = "W4";
-			warningsAsErrors = true;
-			break;
-		}
-		case ProjectWarningPresets::VeryStrict: {
-			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
-			m_warningFlag = "W4";
-			warningsAsErrors = true;
-			break;
-		}
-
-		case ProjectWarningPresets::Custom: {
-			// TODO: Refactor this so the strict warnings are stored somewhere GNU can use
-			auto& warnings = m_project.warnings();
-
-			StringList veryStrict{
-				"noexcept",
-				"undef",
-				"conversion",
-				"cast-qual",
-				"float-equal",
-				"inline",
-				"old-style-cast",
-				"strict-null-sentinel",
-				"overloaded-virtual",
-				"sign-conversion",
-				"sign-promo",
-			};
-
-			bool strictSet = false;
-			for (auto& w : warnings)
-			{
-				if (!String::equals(veryStrict, w))
-					continue;
-
-				// m_warningFlag = "Wall";
-				m_warningFlag = "W4";
-				strictSet = true;
-				break;
-			}
-
-			if (!strictSet)
-			{
-				StringList strictPedantic{
-					"unused",
-					"cast-align",
-					"double-promotion",
-					"format=2",
-					"missing-declarations",
-					"missing-include-dirs",
-					"non-virtual-dtor",
-					"redundant-decls",
-					"unreachable-code",
-					"shadow",
-				};
-				for (auto& w : warnings)
-				{
-					if (!String::equals(strictPedantic, w))
-						continue;
-
-					m_warningFlag = "W4";
-					strictSet = true;
-					break;
-				}
-			}
-
-			if (!strictSet)
-			{
-				if (List::contains<std::string>(warnings, "pedantic"))
-				{
-					m_warningFlag = "W3";
-				}
-				else if (List::contains<std::string>(warnings, "extra"))
-				{
-					m_warningFlag = "W2";
-				}
-				else if (List::contains<std::string>(warnings, "all"))
-				{
-					m_warningFlag = "W1";
-				}
-			}
-
-			if (List::contains<std::string>(warnings, "pedantic"))
-			{
-				warningsAsErrors = true;
-			}
-
-			break;
-		}
-
-		case ProjectWarningPresets::None:
-		default:
-			break;
-	}
-
 	if (!m_warningFlag.empty())
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("/{}", m_warningFlag));
 
-		if (warningsAsErrors)
+		if (m_warningsAsErrors)
 			List::addIfDoesNotExist(outArgList, "/WX");
 	}
 }

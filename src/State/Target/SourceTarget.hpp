@@ -166,7 +166,7 @@ private:
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
-	StringList parseWarnings(const std::string& inValue);
+	ProjectWarningPresets parseWarnings(const std::string& inValue);
 	StringList parseCommandLineOptions(std::string inString) const;
 
 	StringList m_defines;

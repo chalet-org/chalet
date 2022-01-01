@@ -31,6 +31,9 @@ CompilerCxxGCC::CompilerCxxGCC(const BuildState& inState, const SourceTarget& in
 /*****************************************************************************/
 bool CompilerCxxGCC::initialize()
 {
+	if (!configureWarnings())
+		return false;
+
 	if (m_project.usesPch())
 	{
 		auto makeIntermediateHeader = [this](const std::string outPath, const std::string& pch) -> bool {
@@ -81,6 +84,73 @@ bool CompilerCxxGCC::initialize()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CompilerCxxGCC::configureWarnings()
+{
+	m_warnings.clear();
+
+	bool result = true;
+	auto warningsPreset = m_project.warningsPreset();
+	if (warningsPreset == ProjectWarningPresets::None || warningsPreset == ProjectWarningPresets::Custom)
+		return result;
+
+	m_warnings.emplace_back("all");
+
+	if (warningsPreset == ProjectWarningPresets::Minimal)
+		return result;
+
+	m_warnings.emplace_back("extra");
+
+	if (warningsPreset == ProjectWarningPresets::Extra)
+		return result;
+
+	m_warnings.emplace_back("pedantic");
+	// m_warnings.emplace_back("pedantic-errors"); // Not on OSX?
+
+	if (warningsPreset == ProjectWarningPresets::Pedantic)
+		return result;
+
+	m_warnings.emplace_back("error");
+
+	if (warningsPreset == ProjectWarningPresets::Error)
+		return result;
+
+	m_warnings.emplace_back("unused");
+	m_warnings.emplace_back("cast-align");
+	m_warnings.emplace_back("double-promotion");
+	m_warnings.emplace_back("format=2");
+	m_warnings.emplace_back("missing-declarations");
+	m_warnings.emplace_back("missing-include-dirs");
+	m_warnings.emplace_back("non-virtual-dtor");
+	m_warnings.emplace_back("redundant-decls");
+
+	if (warningsPreset == ProjectWarningPresets::Strict)
+		return result;
+
+	m_warnings.emplace_back("unreachable-code"); // clang only
+	m_warnings.emplace_back("shadow");
+
+	if (warningsPreset == ProjectWarningPresets::StrictPedantic)
+		return result;
+
+	m_warnings.emplace_back("noexcept");
+	m_warnings.emplace_back("undef");
+	m_warnings.emplace_back("conversion");
+	m_warnings.emplace_back("cast-qual");
+	m_warnings.emplace_back("float-equal");
+	m_warnings.emplace_back("inline");
+	m_warnings.emplace_back("old-style-cast");
+	m_warnings.emplace_back("strict-null-sentinel");
+	m_warnings.emplace_back("overloaded-virtual");
+	m_warnings.emplace_back("sign-conversion");
+	m_warnings.emplace_back("sign-promo");
+
+	// if (warningsPreset == ProjectWarningPresets::VeryStrict)
+	// 	return result;
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -262,6 +332,21 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 	auto excludes = getWarningExclusions();
 
 	const std::string prefix{ "-W" };
+	for (auto& warning : m_warnings)
+	{
+		if (List::contains(excludes, warning))
+			continue;
+
+		std::string out;
+		if (String::equals(warning, "pedantic-errors"))
+			out = "-" + warning;
+		else
+			out = prefix + warning;
+
+		// if (isFlagSupported(out))
+		List::addIfDoesNotExist(outArgList, std::move(out));
+	}
+
 	for (auto& warning : m_project.warnings())
 	{
 		if (List::contains(excludes, warning))
@@ -269,16 +354,12 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 
 		std::string out;
 		if (String::equals(warning, "pedantic-errors"))
-		{
 			out = "-" + warning;
-		}
 		else
-		{
 			out = prefix + warning;
-		}
 
 		// if (isFlagSupported(out))
-		outArgList.emplace_back(std::move(out));
+		List::addIfDoesNotExist(outArgList, std::move(out));
 	}
 
 	if (m_project.usesPch())

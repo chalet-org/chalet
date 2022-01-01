@@ -23,6 +23,8 @@ struct CompilerCxxGCC : public ICompilerCxx
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
+	bool configureWarnings();
+
 	virtual std::string getPragmaId() const;
 	virtual StringList getWarningExclusions() const;
 	virtual bool isFlagSupported(const std::string& inFlag) const;
@@ -59,6 +61,8 @@ protected:
 private:
 	static const StringList& getSupportedX86Architectures();
 	// static const StringList& getSupportedX64Architectures();
+
+	StringList m_warnings;
 };
 }
 
