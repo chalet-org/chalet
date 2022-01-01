@@ -141,12 +141,15 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 		CommandPool::Settings settings;
 		settings.color = Output::theme().build;
 		settings.msvcCommand = m_state.environment->isMsvc();
+		settings.keepGoing = m_state.info.keepGoing();
 		settings.showCommands = Output::showCommands();
 		settings.quiet = Output::quietNonBuild();
 
 		if (!m_commandPool.runAll(m_targets.at(inProject.name()), settings))
 		{
 			m_state.cache.file().setDisallowSave(true);
+
+			Output::lineBreak();
 			return false;
 		}
 

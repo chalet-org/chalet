@@ -772,11 +772,18 @@ void ArgumentPatterns::addBenchmarkArg()
 		.help("Show all build times (total build time, build targets, other steps)");
 }
 
+/*****************************************************************************/
 void ArgumentPatterns::addLaunchProfilerArg()
 {
-	// --launch-profiler
 	addOptionalBoolArgument(ArgumentIdentifier::LaunchProfiler, "--launch-profiler")
 		.help("If running profile targets, launch the preferred profiler afterwards");
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::addKeepGoingArg()
+{
+	addOptionalBoolArgument(ArgumentIdentifier::KeepGoing, "--keep-going")
+		.help("If there's a build error, continue as much of the build as possible");
 }
 
 /*****************************************************************************/
@@ -798,6 +805,7 @@ void ArgumentPatterns::addOptionalArguments()
 	addDumpAssemblyArg();
 	addBenchmarkArg();
 	addLaunchProfilerArg();
+	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
 	addSaveSchemaArg();
 	addQuietArgs();

@@ -147,6 +147,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
 	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 
@@ -497,6 +498,11 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			{
 				if (!m_inputs.launchProfiler().has_value())
 					m_inputs.setLaunchProfiler(value.get<bool>());
+			}
+			else if (String::equals(Keys::OptionsKeepGoing, key))
+			{
+				if (!m_inputs.keepGoing().has_value())
+					m_inputs.setKeepGoing(value.get<bool>());
 			}
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 			{

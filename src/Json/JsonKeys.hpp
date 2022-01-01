@@ -42,6 +42,7 @@ CH_STR(OptionsMaxJobs) = "maxJobs";
 CH_STR(OptionsShowCommands) = "showCommands";
 CH_STR(OptionsBenchmark) = "benchmark";
 CH_STR(OptionsLaunchProfiler) = "launchProfiler";
+CH_STR(OptionsKeepGoing) = "keepGoing";
 CH_STR(OptionsSigningIdentity) = "signingIdentity";
 CH_STR(OptionsInputFile) = "inputFile";
 CH_STR(OptionsEnvFile) = "envFile";

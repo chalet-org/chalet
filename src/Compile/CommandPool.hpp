@@ -37,6 +37,7 @@ struct CommandPool
 		uint total = 0;
 		bool quiet = false;
 		bool showCommands = false;
+		bool keepGoing = false;
 		bool msvcCommand = false;
 	};
 

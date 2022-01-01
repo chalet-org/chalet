@@ -137,9 +137,15 @@ bool CompileStrategyMakefile::buildMake(const SourceTarget& inProject) const
 		{
 			command.push_back(jobs);
 		}
+
 		// command.emplace_back("-d");
+
 		command.emplace_back("-C");
 		command.emplace_back(".");
+
+		if (m_state.info.keepGoing())
+			command.emplace_back("--keep-going");
+
 		command.emplace_back("-f");
 		command.push_back(buildFile);
 
@@ -192,6 +198,10 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 		command.clear();
 		command.push_back(makeExec);
 		command.emplace_back("/NOLOGO");
+
+		if (m_state.info.keepGoing())
+			command.emplace_back("/K");
+
 		command.emplace_back("/F");
 		command.push_back(buildFile);
 	}

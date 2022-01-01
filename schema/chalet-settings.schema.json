@@ -187,33 +187,38 @@
 			"properties": {
 				"dumpAssembly": {
 					"type": "boolean",
-					"description": "true to use create an asm dump of each file in the build, false otherwise.",
+					"description": "true to use create an asm dump of each file in the build, false otherwise (default).",
 					"default": false
 				},
 				"generateCompileCommands": {
 					"type": "boolean",
-					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise.",
+					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
 					"default": false
 				},
 				"maxJobs": {
 					"type": "integer",
-					"description": "The number of jobs to run during compilation.",
+					"description": "The number of jobs to run during compilation (default: the number of cpu cores).",
 					"minimum": 1
 				},
 				"showCommands": {
-					"description": "true to show the commands run during the build, false to just show the source file.",
+					"description": "true to show the commands run during the build, false to just show the source file (default).",
 					"type": "boolean",
 					"default": false
 				},
 				"benchmark": {
-					"description": "true to show all build times (total build time, build targets, other steps), false to hide them.",
+					"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 					"type": "boolean",
 					"default": true
 				},
 				"launchProfiler": {
-					"description": "If running profile targets, true to launch the preferred profiler afterwards, false to just generate the output files.",
+					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 					"type": "boolean",
 					"default": true
+				},
+				"keepGoing": {
+					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
+					"type": "boolean",
+					"default": false
 				},
 				"configuration": {
 					"description": "The build configuration to use for building, if not the previous one.",

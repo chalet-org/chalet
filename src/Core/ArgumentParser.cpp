@@ -201,6 +201,10 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 						m_inputs.setLaunchProfiler(value);
 						break;
 
+					case ArgumentIdentifier::KeepGoing:
+						m_inputs.setKeepGoing(value);
+						break;
+
 					case ArgumentIdentifier::GenerateCompileCommands:
 						m_inputs.setGenerateCompileCommands(value);
 						break;
@@ -293,6 +297,7 @@ StringList ArgumentParser::parseRawArguments(const int argc, const char* const a
 		"--generate-compile-commands",
 		"--show-commands",
 		"--launch-profiler",
+		"--keep-going",
 		"--benchmark"
 	};
 

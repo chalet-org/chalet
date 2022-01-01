@@ -105,6 +105,10 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 		return m_centralState.inputs().launchProfiler();
 	});
 
+	assignSettingsBool(Keys::OptionsKeepGoing, outState.keepGoing, [&]() {
+		return m_centralState.inputs().keepGoing();
+	});
+
 	assignSettingsBool(Keys::OptionsGenerateCompileCommands, outState.generateCompileCommands, [&]() {
 		return m_centralState.inputs().generateCompileCommands();
 	});
@@ -279,6 +283,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.benchmark = value.get<bool>();
 			else if (String::equals(Keys::OptionsLaunchProfiler, key))
 				outState.launchProfiler = value.get<bool>();
+			else if (String::equals(Keys::OptionsKeepGoing, key))
+				outState.keepGoing = value.get<bool>();
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 				outState.generateCompileCommands = value.get<bool>();
 		}

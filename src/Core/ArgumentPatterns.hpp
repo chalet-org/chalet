@@ -84,6 +84,7 @@ private:
 	void addShowCommandsArg();
 	void addBenchmarkArg();
 	void addLaunchProfilerArg();
+	void addKeepGoingArg();
 	void addOptionalArguments();
 
 	void populateBuildRunArguments();

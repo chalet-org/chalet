@@ -74,6 +74,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	CommandPool::Settings settings;
 	settings.color = Output::theme().build;
 	settings.msvcCommand = m_state.environment->isMsvc();
+	settings.keepGoing = m_state.info.keepGoing();
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
 

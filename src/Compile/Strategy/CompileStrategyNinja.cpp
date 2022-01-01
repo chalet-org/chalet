@@ -107,6 +107,9 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 	command.emplace_back("-j");
 	command.emplace_back(std::to_string(m_state.info.maxJobs()));
 
+	command.emplace_back("-k");
+	command.push_back(m_state.info.keepGoing() ? "0" : "1");
+
 	command.emplace_back("-f");
 	command.push_back(m_cacheFile);
 

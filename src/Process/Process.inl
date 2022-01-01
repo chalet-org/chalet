@@ -21,11 +21,7 @@ void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const
 	while (true)
 	{
 		if (m_killed)
-		{
-			std::cout.put(std::cout.widen('\n'));
-			std::cout.flush();
 			break;
-		}
 
 #if defined(CHALET_WIN32)
 		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(inBuffer.data()), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;

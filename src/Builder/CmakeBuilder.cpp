@@ -413,10 +413,13 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 	if (isMake)
 	{
 		ret.emplace_back("--");
+
 		if (m_state.toolchain.makeVersionMajor() >= 4)
-		{
 			ret.emplace_back("--output-sync=target");
-		}
+
+		if (m_state.info.keepGoing())
+			ret.emplace_back("--keep-going");
+
 		ret.emplace_back("--no-builtin-rules");
 		ret.emplace_back("--no-builtin-variables");
 		ret.emplace_back("--no-print-directory");
@@ -424,7 +427,12 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 	else if (isNinja && Output::showCommands())
 	{
 		ret.emplace_back("--");
-		ret.emplace_back("-v");
+
+		if (Output::showCommands())
+			ret.emplace_back("-v");
+
+		ret.emplace_back("-k");
+		ret.push_back(m_state.info.keepGoing() ? "0" : "1");
 	}
 
 	// LOG(String::join(ret));

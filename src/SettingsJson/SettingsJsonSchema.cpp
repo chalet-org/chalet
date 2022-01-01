@@ -60,6 +60,7 @@ enum class Defs : ushort
 	MaxJobs,
 	ShowCommands,
 	Benchmark,
+	KeepGoing,
 	LaunchProfiler,
 	LastBuildConfiguration,
 	LastToolchain,
@@ -324,36 +325,42 @@ Json SettingsJsonSchema::get()
 
 	defs[Defs::DumpAssembly] = R"json({
 		"type": "boolean",
-		"description": "true to use create an asm dump of each file in the build, false otherwise.",
+		"description": "true to use create an asm dump of each file in the build, false otherwise (default).",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::GenerateCompileCommands] = R"json({
 		"type": "boolean",
-		"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise.",
+		"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::MaxJobs] = R"json({
 		"type": "integer",
-		"description": "The number of jobs to run during compilation.",
+		"description": "The number of jobs to run during compilation (default: the number of cpu cores).",
 		"minimum": 1
 	})json"_ojson;
 
 	defs[Defs::ShowCommands] = R"json({
-		"description": "true to show the commands run during the build, false to just show the source file.",
+		"description": "true to show the commands run during the build, false to just show the source file (default).",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::Benchmark] = R"json({
-		"description": "true to show all build times (total build time, build targets, other steps), false to hide them.",
+		"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 		"type": "boolean",
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::KeepGoing] = R"json({
+		"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
+		"type": "boolean",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::LaunchProfiler] = R"json({
-		"description": "If running profile targets, true to launch the preferred profiler afterwards, false to just generate the output files.",
+		"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 		"type": "boolean",
 		"default": true
 	})json"_ojson;
@@ -477,26 +484,26 @@ Json SettingsJsonSchema::get()
 		"description": "A list of additional tools for the platform."
 	})json"_ojson;
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties] = Json::object();
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["bash"] = defs[Defs::Bash];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["command_prompt"] = defs[Defs::CommandPrompt];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["codesign"] = defs[Defs::CodeSign];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["git"] = defs[Defs::Git];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["hdiutil"] = defs[Defs::HdiUtil];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["install_name_tool"] = defs[Defs::InstallNameTool];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["instruments"] = defs[Defs::Instruments];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["ldd"] = defs[Defs::Ldd];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["makensis"] = defs[Defs::MakeNsis];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["osascript"] = defs[Defs::OsaScript];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["otool"] = defs[Defs::Otool];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["plutil"] = defs[Defs::PlUtil];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["powershell"] = defs[Defs::Powershell];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["sample"] = defs[Defs::Sample];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["sips"] = defs[Defs::Sips];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["tiffutil"] = defs[Defs::TiffUtil];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcodebuild"] = defs[Defs::XcodeBuild];
-	// ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcodegen"] = defs[Defs::XcodeGen];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["xcrun"] = defs[Defs::XcRun];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties]["zip"] = defs[Defs::Zip];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsBash] = defs[Defs::Bash];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCommandPrompt] = defs[Defs::CommandPrompt];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCodesign] = defs[Defs::CodeSign];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsGit] = defs[Defs::Git];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsHdiutil] = defs[Defs::HdiUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstallNameTool] = defs[Defs::InstallNameTool];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstruments] = defs[Defs::Instruments];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsLdd] = defs[Defs::Ldd];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsMakeNsis] = defs[Defs::MakeNsis];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOsascript] = defs[Defs::OsaScript];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOtool] = defs[Defs::Otool];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPlutil] = defs[Defs::PlUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPowershell] = defs[Defs::Powershell];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsSample] = defs[Defs::Sample];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsSips] = defs[Defs::Sips];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTiffutil] = defs[Defs::TiffUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodebuild] = defs[Defs::XcodeBuild];
+	// ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodeGen] = defs[Defs::XcodeGen];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcrun] = defs[Defs::XcRun];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsZip] = defs[Defs::Zip];
 
 	ret[SKeys::Properties][Keys::AppleSdks] = R"json({
 		"type": "object",
@@ -508,23 +515,24 @@ Json SettingsJsonSchema::get()
 		"description": "A list of settings related to the build."
 	})json"_ojson;
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties] = Json::object();
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["dumpAssembly"] = defs[Defs::DumpAssembly];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["generateCompileCommands"] = defs[Defs::GenerateCompileCommands];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["maxJobs"] = defs[Defs::MaxJobs];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["showCommands"] = defs[Defs::ShowCommands];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["benchmark"] = defs[Defs::Benchmark];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["launchProfiler"] = defs[Defs::LaunchProfiler];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDumpAssembly] = defs[Defs::DumpAssembly];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsGenerateCompileCommands] = defs[Defs::GenerateCompileCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBenchmark] = defs[Defs::Benchmark];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBuildConfiguration] = defs[Defs::LastBuildConfiguration];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsArchitecture] = defs[Defs::LastArchitecture];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["signingIdentity"] = defs[Defs::SigningIdentity];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
 
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["inputFile"] = defs[Defs::InputFile];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["envFile"] = defs[Defs::EnvFile];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["rootDir"] = defs[Defs::RootDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["outputDir"] = defs[Defs::OutputDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["externalDir"] = defs[Defs::ExternalDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties]["distributionDir"] = defs[Defs::DistributionDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsEnvFile] = defs[Defs::EnvFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRootDirectory] = defs[Defs::RootDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsExternalDirectory] = defs[Defs::ExternalDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDistributionDirectory] = defs[Defs::DistributionDir];
 
 	ret[SKeys::Properties][Keys::Theme] = defs[Defs::Theme];
 

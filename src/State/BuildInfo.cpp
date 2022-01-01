@@ -32,6 +32,9 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
 
 	if (inInputs.launchProfiler().has_value())
 		m_launchProfiler = *inInputs.launchProfiler();
+
+	if (inInputs.keepGoing().has_value())
+		m_keepGoing = *inInputs.keepGoing();
 }
 
 /*****************************************************************************/
@@ -163,6 +166,11 @@ bool BuildInfo::generateCompileCommands() const noexcept
 bool BuildInfo::launchProfiler() const noexcept
 {
 	return m_launchProfiler;
+}
+
+bool BuildInfo::keepGoing() const noexcept
+{
+	return m_keepGoing;
 }
 
 }

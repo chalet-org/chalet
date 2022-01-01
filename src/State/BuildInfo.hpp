@@ -38,6 +38,7 @@ struct BuildInfo
 	bool dumpAssembly() const noexcept;
 	bool generateCompileCommands() const noexcept;
 	bool launchProfiler() const noexcept;
+	bool keepGoing() const noexcept;
 
 private:
 	std::string m_buildConfiguration;
@@ -53,6 +54,7 @@ private:
 	bool m_dumpAssembly = false;
 	bool m_generateCompileCommands = false;
 	bool m_launchProfiler = true;
+	bool m_keepGoing = false;
 };
 }
 

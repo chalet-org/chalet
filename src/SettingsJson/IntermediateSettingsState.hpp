@@ -31,6 +31,7 @@ struct IntermediateSettingsState
 	uint maxJobs = 0;
 	bool benchmark = true;
 	bool launchProfiler = true;
+	bool keepGoing = false;
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;
