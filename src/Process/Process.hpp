@@ -48,7 +48,6 @@ private:
 #endif
 	ProcessPipe& getFilePipe(const HandleInput inFileNo);
 
-	CmdPtrArray m_cmd;
 #if defined(CHALET_WIN32)
 	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };
 #else

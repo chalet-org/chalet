@@ -106,6 +106,7 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 /*****************************************************************************/
 bool executeCommandCarriageReturn(StringList command)
 {
+#if defined(CHALET_WIN32)
 	ProcessOptions options;
 	auto onStdOut = [](std::string inData) {
 		String::replaceAll(inData, '\n', "\r\n");
@@ -152,24 +153,28 @@ bool executeCommandCarriageReturn(StringList command)
 	}
 
 	return result;
+#else
+	UNUSED(command);
+	return false;
+#endif
 }
 
 /*****************************************************************************/
 bool executeCommand(StringList command)
 {
 	ProcessOptions options;
-	auto onStdOut = [](std::string inData) {
-		std::lock_guard<std::mutex> lock(s_mutex);
-		std::cout.write(inData.data(), inData.size());
-	};
+	// auto onStdOut = [](std::string inData) {
+	// 	std::lock_guard<std::mutex> lock(s_mutex);
+	// 	std::cout.write(inData.data(), inData.size());
+	// };
 
 	std::string errorOutput;
 	auto onStdErr = [&errorOutput](std::string inData) {
 		errorOutput += std::move(inData);
 	};
-	options.stdoutOption = PipeOption::Pipe;
+	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = onStdOut;
+	// options.onStdOut = onStdOut;
 	options.onStdErr = onStdErr;
 
 	bool result = true;
@@ -267,6 +272,12 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	m_quiet = quiet;
 
 	state.shutdownHandler = [this]() -> bool {
+		// if (state.errorCode != CommandPoolErrorCode::None)
+		// 	return false;
+
+		// this->m_threadPool.stop();
+		// state.errorCode = CommandPoolErrorCode::Aborted;
+
 		this->m_threadPool.stop();
 
 		if (state.errorCode == CommandPoolErrorCode::None)
@@ -361,7 +372,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 			{}
 			CHALET_CATCH(const std::exception& err)
 			{
-				if (m_exceptionThrown.empty())
+				if (state.errorCode != CommandPoolErrorCode::None && m_exceptionThrown.empty())
 				{
 					signalHandler(SIGTERM);
 					if (String::equals("build error", err.what()))

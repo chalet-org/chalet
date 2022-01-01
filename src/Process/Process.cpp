@@ -306,7 +306,6 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 	}
 
 #else
-	m_cmd = getCmdVector(inCmd);
 
 	bool openStdOut = inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close;
 	bool openStdErr = inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close;
@@ -373,7 +372,8 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 			ProcessPipe::duplicate(FileNo::StdErr, FileNo::StdOut);
 		}
 
-		int result = execve(inCmd.front().c_str(), m_cmd.data(), environ);
+		CmdPtrArray cmd = getCmdVector(inCmd);
+		int result = execve(inCmd.front().c_str(), cmd.data(), environ);
 		_exit(result == EXIT_SUCCESS ? 0 : errno);
 	}
 
@@ -409,7 +409,6 @@ void Process::close()
 #endif
 
 	m_pid = 0;
-	m_cmd.clear();
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	m_cwd.clear();
 #endif
