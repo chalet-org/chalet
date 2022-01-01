@@ -67,8 +67,6 @@ private:
 	std::string m_pchMinusLocation;
 	std::string m_ifcDirectory;
 	std::string m_warningFlag;
-
-	bool m_warningsAsErrors = false;
 };
 }
 

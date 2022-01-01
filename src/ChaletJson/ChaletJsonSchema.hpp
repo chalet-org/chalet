@@ -106,6 +106,7 @@ class ChaletJsonSchema
 		TargetSourceCxxStaticLinking,
 		TargetSourceCxxStaticLinks,
 		TargetSourceCxxWarnings,
+		TargetSourceCxxTreatWarningsAsErrors,
 		TargetSourceCxxWindowsAppManifest,
 		TargetSourceCxxWindowsAppIcon,
 		TargetSourceCxxWindowsOutputDef,

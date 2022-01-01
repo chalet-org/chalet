@@ -384,7 +384,7 @@ void LinkerVisualStudioLINK::addVerbosity(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addWarningsTreatedAsErrors(StringList& outArgList) const
 {
-	if (m_project.warningsTreatedAsErrors())
+	if (m_project.treatWarningsAsErrors())
 		outArgList.emplace_back("/WX");
 }
 

@@ -84,7 +84,7 @@ void ArchiverVisualStudioLIB::addLinkTimeCodeGeneration(StringList& outArgList) 
 /*****************************************************************************/
 void ArchiverVisualStudioLIB::addWarningsTreatedAsErrors(StringList& outArgList) const
 {
-	if (m_project.warningsTreatedAsErrors())
+	if (m_project.treatWarningsAsErrors())
 		outArgList.emplace_back("/WX");
 }
 

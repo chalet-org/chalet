@@ -32,6 +32,9 @@ bool SourceTarget::initialize()
 	if (!m_warnings.empty())
 		m_warningsPreset = ProjectWarningPresets::Custom;
 
+	if (List::contains<std::string>(m_warnings, "error"))
+		m_treatWarningsAsErrors = true;
+
 	processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
 		Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
 	});
@@ -359,12 +362,6 @@ ProjectWarningPresets SourceTarget::warningsPreset() const noexcept
 }
 
 /*****************************************************************************/
-bool SourceTarget::warningsTreatedAsErrors() const noexcept
-{
-	return static_cast<int>(m_warningsPreset) >= static_cast<int>(ProjectWarningPresets::Error);
-}
-
-/*****************************************************************************/
 const StringList& SourceTarget::compileOptions() const noexcept
 {
 	return m_compileOptions;
@@ -604,6 +601,16 @@ bool SourceTarget::threads() const noexcept
 void SourceTarget::setThreads(const bool inValue) noexcept
 {
 	m_threads = inValue;
+}
+
+/*****************************************************************************/
+bool SourceTarget::treatWarningsAsErrors() const noexcept
+{
+	return m_treatWarningsAsErrors;
+}
+void SourceTarget::setTreatWarningsAsErrors(const bool inValue) noexcept
+{
+	m_treatWarningsAsErrors = inValue;
 }
 
 /*****************************************************************************/
@@ -903,9 +910,6 @@ ProjectWarningPresets SourceTarget::parseWarnings(const std::string& inValue)
 
 	if (String::equals("pedantic", inValue))
 		return ProjectWarningPresets::Pedantic;
-
-	if (String::equals("error", inValue))
-		return ProjectWarningPresets::Error;
 
 	if (String::equals("strict", inValue))
 		return ProjectWarningPresets::Strict;

@@ -14,7 +14,6 @@ enum class ProjectWarningPresets : ushort
 	Custom,
 	Minimal,
 	Extra,
-	Error,
 	Pedantic,
 	Strict,
 	StrictPedantic,

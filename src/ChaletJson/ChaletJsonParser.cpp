@@ -653,6 +653,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setWindowsApplicationManifestGenerationEnabled(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "threads", status))
 				outTarget.setThreads(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "treatWarningsAsErrors", status))
+				outTarget.setTreatWarningsAsErrors(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rtti", status))
 				outTarget.setRtti(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppFilesystem", status))

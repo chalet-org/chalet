@@ -69,8 +69,6 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::configureWarnings()
 {
-	m_warningsAsErrors = false;
-
 	switch (m_project.warningsPreset())
 	{
 		case ProjectWarningPresets::Minimal:
@@ -85,21 +83,14 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 			m_warningFlag = "W3";
 			break;
 
-		case ProjectWarningPresets::Error:
-			m_warningFlag = "W3";
-			m_warningsAsErrors = true;
-			break;
-
 		case ProjectWarningPresets::Strict:
 		case ProjectWarningPresets::StrictPedantic:
 			m_warningFlag = "W4";
-			m_warningsAsErrors = true;
 			break;
 
 		case ProjectWarningPresets::VeryStrict:
 			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
 			m_warningFlag = "W4";
-			m_warningsAsErrors = true;
 			break;
 
 		case ProjectWarningPresets::Custom: {
@@ -171,11 +162,6 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 				{
 					m_warningFlag = "W1";
 				}
-			}
-
-			if (List::contains<std::string>(warnings, "pedantic"))
-			{
-				m_warningsAsErrors = true;
 			}
 
 			break;
@@ -475,12 +461,10 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 {
 	if (!m_warningFlag.empty())
-	{
 		List::addIfDoesNotExist(outArgList, fmt::format("/{}", m_warningFlag));
 
-		if (m_warningsAsErrors)
-			List::addIfDoesNotExist(outArgList, "/WX");
-	}
+	if (m_project.treatWarningsAsErrors())
+		List::addIfDoesNotExist(outArgList, "/WX");
 }
 
 /*****************************************************************************/

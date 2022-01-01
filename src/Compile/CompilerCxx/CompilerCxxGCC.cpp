@@ -112,11 +112,6 @@ bool CompilerCxxGCC::configureWarnings()
 	if (warningsPreset == ProjectWarningPresets::Pedantic)
 		return result;
 
-	m_warnings.emplace_back("error");
-
-	if (warningsPreset == ProjectWarningPresets::Error)
-		return result;
-
 	m_warnings.emplace_back("unused");
 	m_warnings.emplace_back("cast-align");
 	m_warnings.emplace_back("double-promotion");
@@ -372,6 +367,13 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 			// if (isFlagSupported(option))
 			List::addIfDoesNotExist(outArgList, std::move(option));
 		}
+	}
+
+	if (m_project.treatWarningsAsErrors())
+	{
+		std::string option = prefix + "error";
+		// if (isFlagSupported(option))
+		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
 }
 

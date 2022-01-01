@@ -57,7 +57,6 @@ struct SourceTarget final : public IBuildTarget
 	void addWarning(std::string&& inValue);
 	void setWarningPreset(std::string&& inValue);
 	ProjectWarningPresets warningsPreset() const noexcept;
-	bool warningsTreatedAsErrors() const noexcept;
 
 	const StringList& compileOptions() const noexcept;
 	void addCompileOptions(std::string&& inValue);
@@ -127,6 +126,9 @@ struct SourceTarget final : public IBuildTarget
 
 	bool threads() const noexcept;
 	void setThreads(const bool inValue) noexcept;
+
+	bool treatWarningsAsErrors() const noexcept;
+	void setTreatWarningsAsErrors(const bool inValue) noexcept;
 
 	bool cppFilesystem() const noexcept;
 	void setCppFilesystem(const bool inValue) noexcept;
@@ -211,6 +213,7 @@ private:
 	bool m_exceptions = true;
 	bool m_fastMath = false;
 	bool m_staticLinking = false;
+	bool m_treatWarningsAsErrors = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
 	bool m_windowsApplicationManifestGenerationEnabled = true;

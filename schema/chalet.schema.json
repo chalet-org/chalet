@@ -1153,6 +1153,9 @@
 				"threads": {
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
+				"treatWarningsAsErrors": {
+					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
+				},
 				"warnings": {
 					"$ref": "#/definitions/target-source-cxx-warnings"
 				},
@@ -1222,6 +1225,9 @@
 					"$ref": "#/definitions/target-source-cxx-staticLinking"
 				},
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-threads"
+				},
+				"^treatWarningsAsErrors(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^windowsApplicationIcon(\\.!?(debug)\\b\\.?)?$": {
@@ -1388,7 +1394,6 @@
 					"enum": [
 						"none",
 						"minimal",
-						"error",
 						"pedantic",
 						"strict",
 						"strictPedantic",
@@ -2011,6 +2016,11 @@
 					}
 				}
 			]
+		},
+		"target-source-cxx-treatWarningsAsErrors": {
+			"description": "true to treat all warnings as errors. false to disable (default).",
+			"type": "boolean",
+			"default": false
 		},
 		"target-source-cxx-windowsApplicationManifest": {
 			"description": "The path to a Windows application manifest, or false to disable automatic generation. Only applies to executable (kind=executable) and shared library (kind=sharedLibrary) targets",

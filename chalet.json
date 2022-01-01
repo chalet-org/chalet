@@ -26,6 +26,7 @@
 			"staticLinking.windows": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
+			"treatWarningsAsErrors": true,
 			"defines.debug": [
 				"_DEBUG",
 				"JSON_NOEXCEPTION"

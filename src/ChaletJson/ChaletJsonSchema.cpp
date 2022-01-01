@@ -816,6 +816,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxStaticLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
 
+	defs[Defs::TargetSourceCxxTreatWarningsAsErrors] = R"json({
+		"description": "true to treat all warnings as errors. false to disable (default).",
+		"type": "boolean",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxWarnings] = R"json({
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
 		"oneOf": [
@@ -825,7 +831,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"enum": [
 					"none",
 					"minimal",
-					"error",
 					"pedantic",
 					"strict",
 					"strictPedantic",
@@ -1493,6 +1498,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::Properties]["staticLinking"] = getDefinition(Defs::TargetSourceCxxStaticLinking);
 		sourceTargetCxx[SKeys::Properties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxStaticLinks);
 		sourceTargetCxx[SKeys::Properties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
+		sourceTargetCxx[SKeys::Properties]["treatWarningsAsErrors"] = getDefinition(Defs::TargetSourceCxxTreatWarningsAsErrors);
 		sourceTargetCxx[SKeys::Properties]["warnings"] = getDefinition(Defs::TargetSourceCxxWarnings);
 		// sourceTargetCxx[SKeys::Properties]["windowsOutputDef"] = getDefinition(Defs::TargetSourceCxxWindowsOutputDef);
 		sourceTargetCxx[SKeys::Properties]["windowsApplicationIcon"] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
@@ -1518,6 +1524,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinking);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
+		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^treatWarningsAsErrors{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppManifest);
@@ -1798,6 +1805,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxStaticLinking: return "target-source-cxx-staticLinking";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
+		case Defs::TargetSourceCxxTreatWarningsAsErrors: return "target-source-cxx-treatWarningsAsErrors";
 		case Defs::TargetSourceCxxWindowsAppManifest: return "target-source-cxx-windowsApplicationManifest";
 		case Defs::TargetSourceCxxWindowsAppIcon: return "target-source-cxx-windowsAppIcon";
 		case Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention: return "target-source-cxx-mingwUnixSharedLibraryNamingConvention";
