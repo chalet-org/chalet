@@ -428,7 +428,7 @@ std::string ProjectInitializer::getWorkspaceName() const
 
 	onValidate(result);
 
-	Output::getUserInput("Workspace name:", result, "This should identify the entire workspace, as opposed to a build target", onValidate);
+	Output::getUserInput("Workspace name:", result, "This should identify the entire workspace.", onValidate);
 
 	return result;
 }
@@ -438,7 +438,7 @@ std::string ProjectInitializer::getWorkspaceVersion() const
 {
 	std::string result{ "1.0.0" };
 
-	Output::getUserInput("Version:", result, "The initial version of the application or library", [](std::string& input) {
+	Output::getUserInput("Version:", result, "The initial version of the workspace.", [](std::string& input) {
 		return input.find_first_not_of("1234567890.") == std::string::npos;
 	});
 
@@ -464,7 +464,7 @@ std::string ProjectInitializer::getRootSourceDirectory() const
 {
 	std::string result{ "src" };
 
-	Output::getUserInput("Root source directory:", result, "The primary location for source files", [](std::string& input) {
+	Output::getUserInput("Root source directory:", result, "The primary location for source files.", [](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-") == std::string::npos;
 		return validChars && input.size() >= 3;
@@ -481,7 +481,7 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 	std::string result = fmt::format("main{}", m_sourceExts.front());
 
 	const bool isC = inLang == CodeLanguage::C;
-	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("Must end in: {}", String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
+	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("Recommended extensions: {}", String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 		if (validChars && ((isC && !String::endsWith(m_sourceExts, input)) || (!isC && !String::endsWith(m_sourceExts, lower))))
@@ -519,7 +519,7 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 
 			result = fmt::format("pch{}", headerExts.front());
 
-			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("Must end in: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("Recommended extensions: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
 				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
 				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
@@ -646,7 +646,7 @@ bool ProjectInitializer::getUseCxxModules(const CodeLanguage inLang, std::string
 
 	if (!langStandard.empty() && langStandard.front() == '2')
 	{
-		return Output::getUserInputYesNo("Enable C++20 modules?", false, "If true, C++ source files in are treated as modules (experimental)");
+		return Output::getUserInputYesNo("Enable C++20 modules?", false, "If true, C++ source files are treated as modules. (MSVC Only)");
 	}
 
 	return false;
@@ -655,32 +655,25 @@ bool ProjectInitializer::getUseCxxModules(const CodeLanguage inLang, std::string
 /*****************************************************************************/
 bool ProjectInitializer::getUseLocation() const
 {
-	if (m_inputs.initTemplate() == InitTemplateType::CMake)
-	{
-		return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, sources are globbed, otherwise they must be managed explicitly");
-	}
-	else
-	{
-		return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, 'location' is used, otherwise 'files' must be managed explicitly");
-	}
+	return Output::getUserInputYesNo("Detect source files automatically?", true, "If yes, sources are globbed, otherwise they must be managed explicitly.");
 }
 
 /*****************************************************************************/
 bool ProjectInitializer::getIncludeDefaultBuildConfigurations() const
 {
-	return Output::getUserInputYesNo("Include default build configurations in build file?", false, "Optional, but can be customized or restricted to certain configurations");
+	return Output::getUserInputYesNo("Include default build configurations in build file?", false, "Optional, but can be customized or restricted to certain configurations.");
 }
 
 /*****************************************************************************/
 bool ProjectInitializer::getMakeEnvFile() const
 {
-	return Output::getUserInputYesNo("Include a .env file?", false, "Optionally add environment variables or search paths to the build");
+	return Output::getUserInputYesNo("Include a .env file?", false, "Optionally add environment variables or search paths to the build.");
 }
 
 /*****************************************************************************/
 bool ProjectInitializer::getMakeGitRepository() const
 {
-	return Output::getUserInputYesNo("Initialize a git repository?", false, "This will also create a .gitignore file");
+	return Output::getUserInputYesNo("Initialize a git repository?", false, "This will also create a .gitignore file.");
 }
 
 /*****************************************************************************/

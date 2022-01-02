@@ -224,7 +224,7 @@ bool BuildConfiguration::validateSanitizers(const BuildState& inState)
 				result = false;
 			}
 		}
-		else if (inState.environment->isMingwGcc())
+		else if (inState.environment->isMingw())
 		{
 			Diagnostic::error("Sanitizers are not yet supported in MinGW.");
 			result = false;
