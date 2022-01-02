@@ -102,6 +102,12 @@ struct SourceTarget final : public IBuildTarget
 	const std::string& linkerScript() const noexcept;
 	void setLinkerScript(std::string&& inValue) noexcept;
 
+	const std::string& inputCharset() const noexcept;
+	void setInputCharset(std::string&& inValue) noexcept;
+
+	const std::string& executionCharset() const noexcept;
+	void setExecutionCharset(std::string&& inValue) noexcept;
+
 	const std::string& windowsApplicationManifest() const noexcept;
 	void setWindowsApplicationManifest(std::string&& inValue) noexcept;
 
@@ -194,6 +200,8 @@ private:
 	std::string m_compileOptionsRaw;
 	std::string m_linkerOptionsRaw;
 	std::string m_linkerScript;
+	std::string m_inputCharset;
+	std::string m_executionCharset;
 	std::string m_windowsApplicationManifest;
 	std::string m_windowsApplicationIcon;
 

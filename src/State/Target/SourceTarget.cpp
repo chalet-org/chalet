@@ -19,7 +19,9 @@ namespace chalet
 /*****************************************************************************/
 SourceTarget::SourceTarget(const BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Project),
-	m_warningsPresetString("none")
+	m_warningsPresetString("none"),
+	m_inputCharset("UTF-8"),
+	m_executionCharset("UTF-8")
 {
 }
 
@@ -543,6 +545,34 @@ const std::string& SourceTarget::linkerScript() const noexcept
 void SourceTarget::setLinkerScript(std::string&& inValue) noexcept
 {
 	m_linkerScript = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SourceTarget::inputCharset() const noexcept
+{
+	return m_inputCharset;
+}
+
+void SourceTarget::setInputCharset(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_inputCharset = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SourceTarget::executionCharset() const noexcept
+{
+	return m_executionCharset;
+}
+
+void SourceTarget::setExecutionCharset(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_executionCharset = std::move(inValue);
 }
 
 /*****************************************************************************/

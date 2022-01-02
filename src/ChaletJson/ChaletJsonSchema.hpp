@@ -103,6 +103,8 @@ class ChaletJsonSchema
 		TargetSourceCxxRunTimeTypeInfo,
 		TargetSourceCxxFastMath,
 		TargetSourceCxxExceptions,
+		TargetSourceCxxInputCharSet,
+		TargetSourceCxxExecutionCharSet,
 		TargetSourceCxxStaticLinking,
 		TargetSourceCxxStaticLinks,
 		TargetSourceCxxWarnings,

@@ -131,9 +131,9 @@ void ICompilerCxx::addDiagnosticColorOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void ICompilerCxx::addCharsets(StringList& outArgList) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

@@ -196,7 +196,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	ret.emplace_back(getQuotedExecutablePath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
-	ret.emplace_back("/utf-8");
+	addCharsets(ret);
 
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 	if (generateDependency && isNinja)
@@ -270,7 +270,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	ret.emplace_back(getQuotedExecutablePath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
-	ret.emplace_back("/utf-8");
+	addCharsets(ret);
 	// ret.emplace_back("/MP");
 
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
@@ -344,7 +344,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	ret.emplace_back(executable);
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
-	ret.emplace_back("/utf-8");
+	addCharsets(ret);
 	// ret.emplace_back("/MP");
 
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
@@ -627,6 +627,14 @@ void CompilerCxxVisualStudioCL::addCompileOptions(StringList& outArgList) const
 	{
 		outArgList.emplace_back(option);
 	}
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addCharsets(StringList& outArgList) const
+{
+	outArgList.emplace_back(fmt::format("/source-charset:{}", m_project.inputCharset()));
+	outArgList.emplace_back(fmt::format("/execution-charset:{}", m_project.executionCharset()));
+	outArgList.emplace_back("/validate-charset");
 }
 
 /*****************************************************************************/

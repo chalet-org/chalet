@@ -750,6 +750,20 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxInputCharSet] = R"json({
+		"type": "string",
+		"description": "The character set used by input source files in this target. Default: UTF-8",
+		"minLength": 1,
+		"default": "UTF-8"
+	})json"_ojson;
+
+	defs[Defs::TargetSourceCxxExecutionCharSet] = R"json({
+		"type": "string",
+		"description": "The execution character set to be given to the compiler. Default: UTF-8",
+		"minLength": 1,
+		"default": "UTF-8"
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxThreads] = R"json({
 		"type": "boolean",
 		"description": "true to enable the preferred thread implementation of the compiler, such as pthreads (default), false to disable.",
@@ -852,7 +866,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetSourceCxxWarnings][SKeys::OneOf][1] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "Warnings specific to each compiler"
+		"description": "Warnings specific to each compiler."
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxWarnings][SKeys::OneOf][1][SKeys::PatternProperties][kPatternCompilers] = defs[Defs::TargetSourceCxxWarnings][SKeys::OneOf][2];
 
@@ -1484,8 +1498,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::Properties]["cppStandard"] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[SKeys::Properties]["defines"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxDefines);
 		sourceTargetCxx[SKeys::Properties]["exceptions"] = getDefinition(Defs::TargetSourceCxxExceptions);
+		sourceTargetCxx[SKeys::Properties]["executionCharset"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxExecutionCharSet);
 		sourceTargetCxx[SKeys::Properties]["fastMath"] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[SKeys::Properties]["includeDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxIncludeDirs);
+		sourceTargetCxx[SKeys::Properties]["inputCharset"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxInputCharSet);
 		sourceTargetCxx[SKeys::Properties]["libDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxLibDirs);
 		sourceTargetCxx[SKeys::Properties]["linkerScript"] = getDefinition(Defs::TargetSourceCxxLinkerScript);
 		sourceTargetCxx[SKeys::Properties]["linkerOptions"] = m_nonIndexedDefs[Defs::TargetSourceCxxLinkerOptions];
@@ -1514,8 +1530,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppStandard{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxCppStandard);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxDefines);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^exceptions{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExceptions);
+		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^executionCharset{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExecutionCharSet);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^fastMath{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxFastMath);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^includeDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxIncludeDirs);
+		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^inputCharset{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxInputCharSet);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^libDirs{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxLibDirs);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^linkerScript{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceCxxLinkerScript);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxLinks);
@@ -1794,6 +1812,8 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxMacOsFrameworkPaths: return "target-source-cxx-macosFrameworkPaths";
 		case Defs::TargetSourceCxxMacOsFrameworks: return "target-source-cxx-macosFrameworks";
 		case Defs::TargetSourceCxxPrecompiledHeader: return "target-source-cxx-pch";
+		case Defs::TargetSourceCxxInputCharSet: return "target-source-cxx-inputCharset";
+		case Defs::TargetSourceCxxExecutionCharSet: return "target-source-cxx-executionCharset";
 		case Defs::TargetSourceCxxThreads: return "target-source-cxx-threads";
 		case Defs::TargetSourceCxxCppFilesystem: return "target-source-cxx-cppFilesystem";
 		case Defs::TargetSourceCxxCppModules: return "target-source-cxx-cppModules";

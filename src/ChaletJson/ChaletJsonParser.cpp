@@ -640,6 +640,10 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setWarningPreset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerScript", status))
 				outTarget.setLinkerScript(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "inputCharset", status))
+				outTarget.setInputCharset(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "executionCharset", status))
+				outTarget.setExecutionCharset(std::move(val));
 			//
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
 				outTarget.addCompileOptions(std::move(val));
@@ -708,6 +712,10 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 					outTarget.addCompileOptions(std::move(val));
 				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "linkerOptions", status))
 					outTarget.addLinkerOptions(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "inputCharset", status))
+					outTarget.setInputCharset(std::move(val));
+				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "executionCharset", status))
+					outTarget.setExecutionCharset(std::move(val));
 			}
 			if (isUnread(status))
 			{

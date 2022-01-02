@@ -39,8 +39,9 @@ protected:
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
+	virtual void addCharsets(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
-	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;

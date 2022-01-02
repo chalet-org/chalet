@@ -1047,6 +1047,23 @@
 				"exceptions": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
+				"executionCharset": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/target-source-cxx-executionCharset"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/target-source-cxx-executionCharset"
+								}
+							}
+						}
+					]
+				},
 				"fastMath": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
@@ -1062,6 +1079,23 @@
 							"patternProperties": {
 								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 									"$ref": "#/definitions/target-source-cxx-includeDirs"
+								}
+							}
+						}
+					]
+				},
+				"inputCharset": {
+					"oneOf": [
+						{
+							"$ref": "#/definitions/target-source-cxx-inputCharset"
+						},
+						{
+							"type": "object",
+							"additionalProperties": false,
+							"description": "Options specific to each compiler",
+							"patternProperties": {
+								"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
+									"$ref": "#/definitions/target-source-cxx-inputCharset"
 								}
 							}
 						}
@@ -1197,11 +1231,17 @@
 				"^exceptions(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
+				"^executionCharset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-executionCharset"
+				},
 				"^fastMath(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
 				"^includeDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-includeDirs"
+				},
+				"^inputCharset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-inputCharset"
 				},
 				"^libDirs(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
@@ -1369,6 +1409,18 @@
 			"description": "true to use exceptions (default), false to turn off exceptions.",
 			"default": true
 		},
+		"target-source-cxx-inputCharset": {
+			"type": "string",
+			"description": "The character set used by input source files in this target. Default: UTF-8",
+			"minLength": 1,
+			"default": "UTF-8"
+		},
+		"target-source-cxx-executionCharset": {
+			"type": "string",
+			"description": "The execution character set to be given to the compiler. Default: UTF-8",
+			"minLength": 1,
+			"default": "UTF-8"
+		},
 		"target-source-cxx-staticLinking": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 			"type": "boolean",
@@ -1403,7 +1455,7 @@
 				{
 					"type": "object",
 					"additionalProperties": false,
-					"description": "Warnings specific to each compiler",
+					"description": "Warnings specific to each compiler.",
 					"patternProperties": {
 						"^(\\*|[\\w\\-+.]{3,})(\\.!?(debug|windows|macos|linux)\\b){0,2}$": {
 							"type": "array",

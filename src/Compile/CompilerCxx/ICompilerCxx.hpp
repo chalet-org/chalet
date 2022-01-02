@@ -37,7 +37,7 @@ protected:
 	virtual void addSanitizerOptions(StringList& outArgList) const;
 	virtual void addCompileOptions(StringList& outArgList) const;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const;
-	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
+	virtual void addCharsets(StringList& outArgList) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const;
 	virtual void addNoExceptionsOption(StringList& outArgList) const;

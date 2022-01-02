@@ -207,6 +207,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addCppConcepts(ret);
 	addWarnings(ret);
 
+	addCharsets(ret);
 	addLibStdCppCompileOption(ret, specialization);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
@@ -269,6 +270,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addWarnings(ret);
 	addObjectiveCxxCompileOption(ret, specialization);
 
+	addCharsets(ret);
 	addLibStdCppCompileOption(ret, specialization);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
@@ -585,6 +587,19 @@ void CompilerCxxGCC::addCompileOptions(StringList& outArgList) const
 	{
 		List::addIfDoesNotExist(outArgList, option);
 	}
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addCharsets(StringList& outArgList) const
+{
+	auto inputCharset = String::toUpperCase(m_project.inputCharset());
+	outArgList.emplace_back(fmt::format("-finput-charset={}", inputCharset));
+
+	auto execCharset = String::toUpperCase(m_project.executionCharset());
+	outArgList.emplace_back(fmt::format("-fexec-charset={}", execCharset));
+
+	// Note: also, -fwide-exec-charset=charset
+	//   Setting this to a value higher than wchar_t is not recommended
 }
 
 /*****************************************************************************/
