@@ -607,10 +607,10 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 /*****************************************************************************/
 StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 {
-	StringList ret;
-
 	CHALET_TRY
 	{
+		StringList ret;
+
 		if (inProject.usesPch())
 		{
 			if (Commands::pathExists(inProject.pch()))
@@ -654,11 +654,8 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what());
-		ret.clear();
-		return ret;
+		return StringList();
 	}
-
-	return ret;
 }
 
 /*****************************************************************************/
