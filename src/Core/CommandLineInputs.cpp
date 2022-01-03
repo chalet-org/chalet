@@ -89,7 +89,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 	return {
 		// { "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
-		// { "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 }
 	#endif
