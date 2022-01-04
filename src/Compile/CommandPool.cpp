@@ -59,9 +59,6 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 {
 	std::string output;
 	auto onOutput = [&sourceFile, &output](std::string inData) {
-		if (!sourceFile.empty() && String::startsWith(sourceFile, inData))
-			return;
-
 		output += std::move(inData);
 	};
 
@@ -75,10 +72,14 @@ bool executeCommandMsvc(StringList command, std::string sourceFile)
 	if (ProcessController::run(command, options) != EXIT_SUCCESS)
 		result = false;
 
+	// String::replaceAll(output, "\r\n", "\n");
+	// String::replaceAll(output, '\n', "\r\n");
+	if (String::startsWith(sourceFile, output))
+		String::replaceAll(output, fmt::format("{}\r\n", sourceFile), "");
+
 	if (!output.empty())
 	{
 		std::lock_guard<std::mutex> lock(s_mutex);
-		String::replaceAll(output, '\n', "\r\n");
 
 		if (result)
 		{
