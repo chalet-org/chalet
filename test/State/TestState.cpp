@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "TestState.hpp"
+#include "State/TestState.hpp"
 
 #include "Utility/String.hpp"
 
@@ -14,7 +14,7 @@ namespace
 static std::string g_chalet;
 }
 
-bool setChaletPath(const int argc, const char* argv[])
+bool TestState::setChaletPath(const int argc, const char* const argv[])
 {
 	if (argc == 0)
 		return false;
@@ -31,7 +31,7 @@ bool setChaletPath(const int argc, const char* argv[])
 	return true;
 }
 
-const std::string& chaletExec()
+const std::string& TestState::chaletExec()
 {
 	return g_chalet;
 }

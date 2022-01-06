@@ -3,11 +3,11 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
-using namespace chalet;
-
-TEST_CASE("chalet::TestArgument", "[args]")
+namespace chalet
 {
-	const auto& exec = chaletExec();
+TEST_CASE("chalet::ArgumentsTest", "[args]")
+{
+	const auto& exec = TestState::chaletExec();
 
 	std::string res;
 	res = Commands::subprocessOutput({ exec, "badarg" });
@@ -21,4 +21,5 @@ TEST_CASE("chalet::TestArgument", "[args]")
 
 	res = Commands::subprocessOutput({ exec, "set" });
 	REQUIRE(String::endsWith("1 argument(s) expected. 0 provided. See 'chalet --help' or 'chalet <subcommand> --help'.", res));
+}
 }

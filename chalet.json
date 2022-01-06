@@ -79,7 +79,7 @@
 			},
 			"files": [
 				"src/*/**.{cpp,rc}",
-				"test/*.cpp"
+				"test/**.cpp"
 			],
 			"runArguments": [
 				"-w",

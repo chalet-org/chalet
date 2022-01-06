@@ -5,6 +5,6 @@
 
 #include "Utility/SuppressIntellisense.hpp"
 
-#include "TestState.hpp"
+#include "State/TestState.hpp"
 
 #endif // TESTS_TEST_CASE_HPP

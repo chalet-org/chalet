@@ -8,8 +8,11 @@
 
 namespace chalet
 {
-bool setChaletPath(const int argc, const char* argv[]);
+namespace TestState
+{
+bool setChaletPath(const int argc, const char* const argv[]);
 const std::string& chaletExec();
+}
 }
 
 #endif // CHALET_TEST_STATE_HPP
