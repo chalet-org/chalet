@@ -10,6 +10,6 @@ TEST_CASE("chalet::HashTest", "[hash]")
 
 	REQUIRE(Hash::string(val) == "d23987548777d0e4");
 
-	REQUIRE(Hash::uint64(val) == 15148287618757152996);
+	REQUIRE(Hash::uint64(val) == 15148287618757152996UL);
 }
 }
