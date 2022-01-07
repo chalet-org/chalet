@@ -58,7 +58,19 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
-	Output::print(Color::Reset, getBannerV2());
+	{
+		/*auto banner = String::split(getBannerV2(), '\n');
+		for (auto& line : banner)
+		{
+			std::cout.write(line.data(), line.size());
+			std::cout.put(std::cout.widen('\n'));
+			std::cout.flush();
+		}*/
+		auto banner = getBannerV2();
+		std::cout.write(banner.data(), banner.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
+	}
 
 	bool isCmakeTemplate = m_inputs.initTemplate() == InitTemplateType::CMake;
 
@@ -397,8 +409,8 @@ std::string ProjectInitializer::getBannerV2() const
                           {c1}./J/'{c3}¦ '     ¦¦     ' ¦{c1} '\L\.{reset}
                        {c1}./J/'{c3}==¦¦================¦¦=={c1}'\L\.{reset}
                     {c1}./J/'{c3}¦¦   ¦¦ /'          '\ ¦¦   ¦¦{c1}'\L\.{reset}
-                 {c1}./J/'{c3}   ¦¦===¦¦{c2}     {c1}CHALET{c3}     {c3}¦¦===¦¦   {c1}'\L\.{reset}
-             {c1}./:''{c2}  |  U {c3}¦¦   ¦¦{c2}    ___  ___    {c3}¦¦   ¦¦{c2} U  |  {c1}'':\.{reset}
+                 {c1}./J/'{c3}   ¦¦===¦¦{c2}     {c3}{c1}CHALET{c3}     {c3}¦¦===¦¦   {c1}'\L\.{reset}
+             {c1}./:''{c2}  |  U {c3}¦¦   ¦¦{c2}    ___  ___    {c3}¦¦   ¦¦{c2} U  |  {c3}{c1}'':\.{reset}
          {c1}./:''{c3}.{c2} O U | O  {c3}¦¦   ¦¦{c2}   |   ||   |   {c3}¦¦   ¦¦{c2}  O | U O {c3}.{c1}'':\.{reset}
              {c3}||{c2}  O  |  U {c3}MMMMMMM{c2}   |   ||o  |   {c3}MMMMMMM{c2} U  |  O  {c3}||{reset}
              {c3}||{c2}_____|____{c3}MMMMMMM{c2}___|___||___|___{c3}MMMMMMM{c2}____|_____{c3}||{reset}

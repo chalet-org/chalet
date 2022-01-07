@@ -31,10 +31,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"build"
+				"init"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/../chalet-example-modules",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [
