@@ -44,7 +44,7 @@
 		}
 	},
 	"targets": {
-		"json-schema-validator": {
+		"json-schema-validator-s": {
 			"kind": "staticLibrary",
 			"files": "vendor/json-schema-validator/src/*.cpp"
 		},
@@ -54,7 +54,7 @@
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": [
-					"json-schema-validator"
+					"json-schema-validator-s"
 				],
 				"includeDirs": [
 					"src"
@@ -69,7 +69,7 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"staticLinks": [
-					"json-schema-validator"
+					"json-schema-validator-s"
 				],
 				"includeDirs": [
 					"src",

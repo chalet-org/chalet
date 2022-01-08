@@ -537,10 +537,6 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 				continue;
 
 			auto file = project.name();
-			if (project.isStaticLibrary())
-			{
-				file += "-s";
-			}
 			projectLinks.emplace_back(std::move(file));
 		}
 		else if (target->isCMake())

@@ -232,8 +232,6 @@ void SourceTarget::addLink(std::string&& inValue)
 
 bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTargets, const std::string& inInputFile)
 {
-	std::string suffix{ "-s" };
-
 	for (auto& target : inTargets)
 	{
 		if (target->isSources())
@@ -257,7 +255,6 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 						continue;
 
 					List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
-					link += suffix;
 				}
 			}
 		}
@@ -891,9 +888,9 @@ void SourceTarget::parseOutputFilename() noexcept
 	if (staticLib)
 	{
 		if (m_state.environment->isMsvc() || m_state.environment->isWindowsClang())
-			libraryExtension = "-s.lib";
+			libraryExtension = ".lib";
 		else
-			libraryExtension = "-s.a";
+			libraryExtension = ".a";
 	}
 
 	switch (m_kind)
