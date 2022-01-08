@@ -187,10 +187,10 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 	if (input.empty())
 		input = outResult;
-	else
-		outResult = input;
 
 	bool result = onValidate(input);
+
+	outResult = input;
 
 	auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
 		FMT_ARG(cleanLine),

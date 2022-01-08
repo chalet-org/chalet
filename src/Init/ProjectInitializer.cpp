@@ -493,10 +493,11 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 	std::string result = fmt::format("main{}", m_sourceExts.front());
 
 	const bool isC = inLang == CodeLanguage::C;
-	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("Recommended extensions: {}", String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
+	auto label = isC ? "Must end in" : "Recommended extensions";
+	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("{}: {}", label, String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
 		auto lower = String::toLowerCase(input);
 		bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-		if (validChars && ((isC && !String::endsWith(m_sourceExts, input)) || (!isC && !String::endsWith(m_sourceExts, lower))))
+		if (validChars && (isC && !String::endsWith(m_sourceExts, input)))
 		{
 			input = String::getPathBaseName(input) + m_sourceExts.front();
 		}
@@ -531,10 +532,11 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 
 			result = fmt::format("pch{}", headerExts.front());
 
-			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("Recommended extensions: {}", String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			auto label = isC ? "Must end in" : "Recommended extensions";
+			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
 				auto lower = String::toLowerCase(input);
 				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-				if (validChars && ((isC && !String::endsWith(headerExts, input)) || (!isC && !String::endsWith(headerExts, lower))))
+				if (validChars && (isC && !String::endsWith(headerExts, input)))
 				{
 					input = String::getPathBaseName(input) + headerExts.front();
 				}
@@ -610,15 +612,16 @@ StringList ProjectInitializer::getSourceExtensions(const CxxSpecialization inCxx
 	{
 		if (inModules)
 		{
-			ret.emplace_back(".cppm");
-			ret.emplace_back(".mpp");
+			ret.emplace_back(".cc");
 			ret.emplace_back(".ixx");
-			ret.emplace_back(".mxx");
 		}
 
 		ret.emplace_back(".cpp");
+
+		if (!inModules)
+			ret.emplace_back(".cc");
+
 		ret.emplace_back(".cxx");
-		ret.emplace_back(".cc");
 	}
 
 	return ret;
