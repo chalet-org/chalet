@@ -194,7 +194,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 void LinkerGCC::addRunPath(StringList& outArgList) const
 {
 #if defined(CHALET_LINUX)
-	outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
+	outArgList.emplace_back("-Wl,-rpath,'$ORIGIN'"); // Note: Single quotes are required!
 #else
 	UNUSED(outArgList);
 #endif
