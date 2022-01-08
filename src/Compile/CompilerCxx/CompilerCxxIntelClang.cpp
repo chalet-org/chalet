@@ -26,11 +26,12 @@ bool CompilerCxxIntelClang::initialize()
 		return false;
 
 	// TODO: needed?
-	/*if (m_project.usesPch())
+	/*const auto& cxxExt = m_state.paths.cxxExtension();
+	if (m_project.usesPch())
 	{
 		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.pch();
-		m_pchSource = fmt::format("{}/{}.cpp", objDir, pch);
+		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
 
 		if (!Commands::pathExists(m_pchSource))
 		{

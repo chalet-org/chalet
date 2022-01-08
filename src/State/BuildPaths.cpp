@@ -177,6 +177,10 @@ const StringList& BuildPaths::resourceExtensions() const noexcept
 {
 	return m_resourceExts;
 }
+const std::string& BuildPaths::cxxExtension() const
+{
+	return m_cxxExtension;
+}
 
 /*****************************************************************************/
 void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject)
@@ -505,6 +509,9 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 		}
 		else
 		{
+			if (m_cxxExtension.empty())
+				m_cxxExtension = ext;
+
 			return SourceType::CPlusPlus;
 		}
 	}

@@ -32,6 +32,7 @@ struct BuildPaths
 	const StringList& allFileExtensions() const noexcept;
 	StringList objectiveCxxExtensions() const noexcept;
 	const StringList& resourceExtensions() const noexcept;
+	const std::string& cxxExtension() const;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
@@ -85,6 +86,8 @@ private:
 	std::string m_depDir;
 	std::string m_asmDir;
 	std::string m_intermediateDir;
+
+	mutable std::string m_cxxExtension;
 
 	bool m_initialized = false;
 	bool m_useCache = true;

@@ -223,8 +223,9 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					out.command = std::move(command);
 
 #if defined(CHALET_WIN32)
-					if (m_state.environment->isMsvc())
-						out.outputReplace = String::getPathFilename(out.output);
+					const auto& cxxExt = m_state.paths.cxxExtension();
+					if (m_state.environment->isMsvc() && !cxxExt.empty())
+						out.outputReplace = fmt::format("{}.{}", String::getPathFilename(out.output), cxxExt);
 #endif
 
 					ret.emplace_back(std::move(out));
