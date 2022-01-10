@@ -205,7 +205,7 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 
 		const auto& refToCheck = !tag.empty() ? tag : m_lastCachedBranch;
 		auto latestRemote = getLatestGitRepositoryHashWithoutClone(repository, refToCheck);
-		if (latestRemote != m_lastCachedCommit)
+		if (commit.empty() && !String::equals(m_lastCachedCommit, latestRemote))
 		{
 			m_lastCachedCommit = latestRemote;
 			update = true;
