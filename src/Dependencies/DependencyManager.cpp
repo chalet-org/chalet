@@ -84,24 +84,18 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 /*****************************************************************************/
 StringList DependencyManager::getUnusedDependencies() const
 {
-	StringList ret;
-
 	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
-	for (auto& [key, value] : dependencyCache)
-	{
-		if (!List::contains(m_destinationCache, key))
-			ret.push_back(key);
-	}
-
-	return ret;
+	return dependencyCache.getKeys([this](const std::string key) {
+		return !List::contains(m_destinationCache, key);
+	});
 }
 
 /*****************************************************************************/
 bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 {
+	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
 
-	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	for (auto& it : inList)
 	{
 		if (Commands::pathExists(it))

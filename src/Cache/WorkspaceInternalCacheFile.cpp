@@ -18,9 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-WorkspaceInternalCacheFile::WorkspaceInternalCacheFile()
-{
-}
+WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() = default;
 
 /*****************************************************************************/
 WorkspaceInternalCacheFile::~WorkspaceInternalCacheFile() = default;
@@ -355,31 +353,13 @@ bool WorkspaceInternalCacheFile::save()
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::loadExternalDependencies(const std::string& inPath)
 {
-	UNUSED(inPath);
-
-	m_externalDependencyCachePath = fmt::format("{}/.chalet_git", inPath);
-	return m_externalDependencies.loadFromFilename(m_externalDependencyCachePath);
+	return m_externalDependencies.loadFromPath(inPath);
 }
 
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::saveExternalDependencies()
 {
-	m_dirty |= m_externalDependencies.dirty();
-
-	chalet_assert(!m_externalDependencyCachePath.empty(), "");
-
-	if (m_externalDependencies.dirty())
-	{
-		std::ofstream(m_externalDependencyCachePath) << m_externalDependencies.asString()
-													 << std::endl;
-	}
-
-	if (m_externalDependencies.empty())
-	{
-		if (Commands::pathExists(m_externalDependencyCachePath))
-			Commands::remove(m_externalDependencyCachePath);
-	}
-
+	m_dirty |= m_externalDependencies.save();
 	return true;
 }
 

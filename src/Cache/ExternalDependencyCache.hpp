@@ -13,13 +13,20 @@ class ExternalDependencyCache
 	using StringMap = Dictionary<std::string>;
 
 public:
+	/*struct GitCache
+	{
+		std::string commit;
+		std::string branch;
+		std::string targetCommit;
+		std::string targetBranch;
+		std::string targetTag;
+	};*/
 	ExternalDependencyCache() = default;
 
-	bool loadFromFilename(const std::string& inFilename);
+	bool loadFromPath(const std::string& inPath);
 
-	bool dirty() const noexcept;
-	bool empty() const noexcept;
 	bool contains(const std::string& inKey);
+	bool save() const;
 
 	const std::string& get(const std::string& inKey);
 	void set(const std::string& inKey, std::string&& inValue);
@@ -29,12 +36,12 @@ public:
 
 	void erase(const std::string& inKey);
 
-	StringMap::iterator begin() noexcept;
-	StringMap::iterator end() noexcept;
+	StringList getKeys(const std::function<bool(const std::string&)>& onWhere) const;
 
 	std::string asString() const;
 
 private:
+	std::string m_filename;
 	StringMap m_cache;
 
 	bool m_dirty = false;

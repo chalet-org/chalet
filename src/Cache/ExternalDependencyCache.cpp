@@ -5,14 +5,17 @@
 
 #include "Cache/ExternalDependencyCache.hpp"
 
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-bool ExternalDependencyCache::loadFromFilename(const std::string& inFilename)
+bool ExternalDependencyCache::loadFromPath(const std::string& inPath)
 {
-	std::ifstream input(inFilename);
+	m_filename = fmt::format("{}/.chalet_git", inPath);
+
+	std::ifstream input(m_filename);
 	for (std::string line; std::getline(input, line);)
 	{
 		auto split = String::split(line, '|');
@@ -26,21 +29,29 @@ bool ExternalDependencyCache::loadFromFilename(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool ExternalDependencyCache::dirty() const noexcept
-{
-	return m_dirty;
-}
-
-/*****************************************************************************/
-bool ExternalDependencyCache::empty() const noexcept
-{
-	return m_cache.empty();
-}
-
-/*****************************************************************************/
 bool ExternalDependencyCache::contains(const std::string& inKey)
 {
 	return m_cache.find(inKey) != m_cache.end();
+}
+
+/*****************************************************************************/
+bool ExternalDependencyCache::save() const
+{
+	chalet_assert(!m_filename.empty(), "");
+
+	if (!m_dirty || m_filename.empty())
+		return false;
+
+	std::ofstream(m_filename) << this->asString()
+							  << std::endl;
+
+	if (m_cache.empty())
+	{
+		if (Commands::pathExists(m_filename))
+			Commands::remove(m_filename);
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -78,15 +89,17 @@ void ExternalDependencyCache::erase(const std::string& inKey)
 }
 
 /*****************************************************************************/
-ExternalDependencyCache::StringMap::iterator ExternalDependencyCache::begin() noexcept
+StringList ExternalDependencyCache::getKeys(const std::function<bool(const std::string&)>& onWhere) const
 {
-	return m_cache.begin();
-}
+	StringList ret;
 
-/*****************************************************************************/
-ExternalDependencyCache::StringMap::iterator ExternalDependencyCache::end() noexcept
-{
-	return m_cache.end();
+	std::for_each(m_cache.begin(), m_cache.end(), [&ret, &onWhere](auto& item) {
+		const auto& [key, _] = item;
+		if (onWhere(key))
+			ret.push_back(key);
+	});
+
+	return ret;
 }
 
 /*****************************************************************************/

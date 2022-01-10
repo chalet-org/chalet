@@ -70,7 +70,6 @@ private:
 	SourceCache* m_sources = nullptr;
 
 	ExternalDependencyCache m_externalDependencies;
-	std::string m_externalDependencyCachePath;
 	HeapDictionary<SourceCache> m_sourceCaches;
 
 	bool m_buildHashChanged = false;
