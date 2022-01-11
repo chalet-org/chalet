@@ -55,15 +55,24 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 		Commands::copySilent(file, tmpDirectory);
 	}
 
-	StringList cmd{
-		powershell,
-		"-Command",
+	StringList pwshCmd{
 		"Compress-Archive",
 		"-Force",
 		"-Path",
 		inFilename,
 		"-DestinationPath",
 		filename,
+	};
+
+	// Note: We need to hide the weird MS progress dialog (Write-Progress),
+	//   which is done with $ProgressPreference
+
+	StringList cmd{
+		powershell,
+		"-Command",
+		"$ProgressPreference = \"SilentlyContinue\";",
+		fmt::format("{};", String::join(pwshCmd)),
+		"$ProgressPreference = \"Continue\";",
 	};
 #else
 	StringList cmd{
