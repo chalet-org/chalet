@@ -20,7 +20,7 @@ namespace chalet
 
 namespace Arg
 {
-CH_STR(RunTarget) = "[<runTarget>]";
+CH_STR(RunTarget) = "[<run-target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";

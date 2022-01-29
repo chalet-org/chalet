@@ -411,6 +411,81 @@ StringList QueryController::getCurrentToolchain() const
 }
 
 /*****************************************************************************/
+StringList QueryController::getAllBuildTargets() const
+{
+	StringList ret;
+
+	const auto& chaletJson = m_centralState.chaletJson().json;
+
+	if (chaletJson.is_object())
+	{
+		if (chaletJson.contains(Keys::Targets))
+		{
+			const auto& targets = chaletJson.at(Keys::Targets);
+			for (auto& [key, target] : targets.items())
+			{
+				if (!target.is_object() || !target.contains(Keys::Kind))
+					continue;
+
+				const auto& kind = target.at(Keys::Kind);
+				if (!kind.is_string())
+					continue;
+
+				ret.push_back(key);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getAllRunTargets() const
+{
+	StringList ret;
+
+	const auto& chaletJson = m_centralState.chaletJson().json;
+
+	if (chaletJson.is_object())
+	{
+		if (chaletJson.contains(Keys::Targets))
+		{
+			const auto& targets = chaletJson.at(Keys::Targets);
+			for (auto& [key, target] : targets.items())
+			{
+				if (!target.is_object() || !target.contains(Keys::Kind))
+					continue;
+
+				const auto& kind = target.at(Keys::Kind);
+				if (!kind.is_string())
+					continue;
+
+				auto kindValue = kind.get<std::string>();
+				if (!String::equals({ "executable", "script", "cmakeProject" }, kindValue))
+					continue;
+
+				bool isExecutable = true;
+				if (String::equals("script", kindValue))
+				{
+					if (!target.contains(Keys::RunTarget))
+						isExecutable = false;
+				}
+				else if (String::equals("cmakeProject", kindValue))
+				{
+					if (!target.contains(Keys::RunExecutable))
+						isExecutable = false;
+				}
+
+				if (isExecutable)
+					ret.push_back(key);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 StringList QueryController::getCurrentRunTarget() const
 {
 	StringList ret;
@@ -483,10 +558,12 @@ StringList QueryController::getChaletJsonState() const
 
 	Json output = Json::object();
 	output["configurations"] = getBuildConfigurationList();
+	output["targets"] = getAllBuildTargets();
+	output["runTargets"] = getAllRunTargets();
 
 	auto runTargetRes = getCurrentRunTarget();
 	if (!runTargetRes.empty())
-		output["runTarget"] = std::move(runTargetRes.front());
+		output["defaultRunTarget"] = std::move(runTargetRes.front());
 
 	ret.emplace_back(output.dump());
 
