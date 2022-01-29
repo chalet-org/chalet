@@ -19,6 +19,6 @@
 		"platform/windows/installer/plugins": true
 	},
 	"cmake.revealLog": "never",
-	// "cmake.statusbar.visibility": "hidden",
+	"cmake.statusbar.visibility": "hidden",
 	"cmake.configureOnOpen": false
 }
