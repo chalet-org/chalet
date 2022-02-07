@@ -26,7 +26,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Utility/ThreadPool.hpp"
+#include "Libraries/ThreadPool.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Libraries/WindowsApi.hpp"
