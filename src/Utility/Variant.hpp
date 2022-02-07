@@ -9,7 +9,7 @@
 #include <any>
 #include <optional>
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(push)
 #else
 	#pragma GCC diagnostic push
@@ -62,7 +62,7 @@ private:
 
 #include "Utility/Variant.inl"
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop

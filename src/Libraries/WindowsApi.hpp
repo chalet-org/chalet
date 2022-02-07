@@ -7,7 +7,7 @@
 #define CHALET_WINDOWS_API_HPP
 
 // Windows
-#ifdef CHALET_WIN32
+#if defined(CHALET_WIN32)
 	#ifndef UNICODE
 		#define UNICODE
 	#endif
@@ -24,7 +24,7 @@
 	#include <windows.h>
 	#include <winuser.h>
 
-	#ifdef CHALET_MSVC
+	#if defined(CHALET_MSVC)
 		#pragma execution_character_set("utf-8")
 	#endif
 #endif

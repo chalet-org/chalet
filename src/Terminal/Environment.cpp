@@ -463,7 +463,7 @@ std::string Environment::getAsString(const char* inName, std::string inFallback)
 /*****************************************************************************/
 void Environment::set(const char* inName, const std::string& inValue)
 {
-#ifdef CHALET_WIN32
+#if defined(CHALET_WIN32)
 	std::string outValue = fmt::format("{}={}", inName, inValue);
 	// LOG(outValue);
 	int result = putenv(outValue.c_str());
@@ -546,7 +546,7 @@ void Environment::setPath(const std::string& inValue)
 /*****************************************************************************/
 std::string Environment::getUserDirectory()
 {
-#ifdef CHALET_WIN32
+#if defined(CHALET_WIN32)
 	auto user = Environment::get("USERPROFILE");
 	if (user == nullptr)
 	{
@@ -669,6 +669,6 @@ void Environment::readEnvFileToDictionary(const std::string& inFile, Dictionary<
 }
 }
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(pop)
 #endif

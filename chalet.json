@@ -184,14 +184,14 @@
 			"kind": "archive",
 			"include": "*"
 		},
-		/*"chalet-windows-installer": {
+		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
 			"file": "platform/windows/installer/install_script.nsi",
 			"pluginDirs": [
 				"platform/windows/installer/plugins"
 			]
-		},*/
-		"chalet-windows-installer": {
+		},
+		/*"chalet-windows-installer": {
 			"kind": "process",
 			"condition": "windows.mingw",
 			"path": "makensis",
@@ -202,7 +202,7 @@
 				"-X!addplugindir \"platform\\windows\\installer\\plugins\\Plugins\"",
 				"platform/windows/installer/install_script.nsi"
 			]
-		},
+		},*/
 		"chalet-${targetTriple}-installer": {
 			"kind": "archive",
 			"condition": "windows",
