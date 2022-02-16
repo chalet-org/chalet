@@ -6,7 +6,7 @@
 #ifndef CHALET_ARG_PARSE_HPP
 #define CHALET_ARG_PARSE_HPP
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(push)
 #else
 	#pragma GCC diagnostic push
@@ -15,7 +15,7 @@
 
 #include <argparse/argparse.hpp>
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop

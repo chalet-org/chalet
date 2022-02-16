@@ -25,7 +25,7 @@
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#define popen _popen
 	#define pclose _pclose
 	#define stat _stat

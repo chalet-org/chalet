@@ -10,7 +10,7 @@
 	#define FMT_HEADER_ONLY
 #endif
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(push)
 #else
 	#pragma GCC diagnostic push
@@ -26,7 +26,7 @@
 #include <fmt/format-inl.h>
 #include <fmt/format.h>
 
-#ifdef CHALET_MSVC
+#if defined(CHALET_MSVC)
 	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop

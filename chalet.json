@@ -191,6 +191,18 @@
 				"platform/windows/installer/plugins"
 			]
 		},
+		/*"chalet-windows-installer": {
+			"kind": "process",
+			"condition": "windows.mingw",
+			"path": "makensis",
+			"arguments": [
+				"-WX",
+				"-V3",
+				"-NOCD",
+				"-X!addplugindir \"platform\\windows\\installer\\plugins\\Plugins\"",
+				"platform/windows/installer/install_script.nsi"
+			]
+		},*/
 		"chalet-${targetTriple}-installer": {
 			"kind": "archive",
 			"condition": "windows",
