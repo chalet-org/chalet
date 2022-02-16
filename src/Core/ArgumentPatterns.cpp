@@ -807,7 +807,9 @@ void ArgumentPatterns::addOptionalArguments()
 	addLaunchProfilerArg();
 	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
+	#if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
+	#endif
 	addQuietArgs();
 }
 
