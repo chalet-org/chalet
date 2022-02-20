@@ -21,7 +21,7 @@ namespace chalet
 namespace Arg
 {
 CH_STR(RunTarget) = "[<run-target>]";
-CH_STR(RemainingArguments) = "[ARG...]";
+CH_STR(RemainingArguments) = "[<args>...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
 CH_STR(SettingsKey) = "<key>";
@@ -554,8 +554,8 @@ void ArgumentPatterns::populateMainArguments()
 	auto help = fmt::format(R"(
    init [{path}]
    configure
-   buildrun {runTarget} {runArgs}
-   run {runTarget} {runArgs}
+   buildrun {runTarget} {args}
+   run {runTarget} {args}
    build
    rebuild
    clean
@@ -564,9 +564,9 @@ void ArgumentPatterns::populateMainArguments()
    getkeys {keyQuery}
    set {key} {value}
    unset {key}
-   query {queryType})",
+   query {queryType} {args})",
 		fmt::arg("runTarget", Arg::RunTarget),
-		fmt::arg("runArgs", Arg::RemainingArguments),
+		fmt::arg("args", Arg::RemainingArguments),
 		fmt::arg("key", Arg::SettingsKey),
 		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
 		fmt::arg("value", Arg::SettingsValue),
@@ -807,9 +807,9 @@ void ArgumentPatterns::addOptionalArguments()
 	addLaunchProfilerArg();
 	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
-	#if defined(CHALET_DEBUG)
+#if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
-	#endif
+#endif
 	addQuietArgs();
 }
 
