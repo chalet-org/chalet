@@ -95,7 +95,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 
 		auto name = data.at(MSVCKeys::ProvidedModule).get<std::string>();
 		if (name.empty())
-			name = kRootModule;
+			name = fmt::format("@{}", group->sourceFile);
 
 		outModules[name].source = group->sourceFile;
 

@@ -59,11 +59,9 @@ protected:
 
 	BuildState& m_state;
 
-	const std::string kRootModule;
-
 	std::string m_previousSource;
 
-	std::string m_rootModule;
+	StringList m_implementationUnits;
 	Dictionary<bool> m_compileCache;
 
 	StrategyType m_oldStrategy = StrategyType::None;

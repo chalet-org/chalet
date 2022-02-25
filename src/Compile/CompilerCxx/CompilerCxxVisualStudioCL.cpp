@@ -361,7 +361,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	ret.emplace_back("/stdIfcDir");
 	ret.emplace_back(m_ifcDirectory);
 
-	if (inType != ModuleFileType::ModuleObjectRoot)
+	if (inType != ModuleFileType::ModuleImplementationUnit)
 	{
 		ret.emplace_back("/ifcOutput");
 		ret.emplace_back(interfaceFile);
@@ -376,7 +376,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 
 	if (isHeaderUnit)
 		ret.emplace_back("/exportHeader");
-	else if (inType != ModuleFileType::ModuleObjectRoot)
+	else if (inType != ModuleFileType::ModuleImplementationUnit)
 		ret.emplace_back("/interface");
 
 	for (const auto& item : inModuleReferences)

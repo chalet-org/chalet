@@ -14,7 +14,7 @@ enum class ModuleFileType : ushort
 	HeaderUnitDependency,
 	HeaderUnitObject,
 	ModuleObject,
-	ModuleObjectRoot,
+	ModuleImplementationUnit,
 };
 }
 

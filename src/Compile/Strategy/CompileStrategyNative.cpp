@@ -222,11 +222,9 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					out.output = std::move(source);
 					out.command = std::move(command);
 
-#if defined(CHALET_WIN32)
 					const auto& cxxExt = m_state.paths.cxxExtension();
-					if (m_state.environment->isMsvc() && !cxxExt.empty())
-						out.outputReplace = fmt::format("{}.{}", String::getPathFilename(out.output), cxxExt);
-#endif
+					if (!cxxExt.empty())
+						out.reference = fmt::format("{}.{}", out.output, cxxExt);
 
 					ret.emplace_back(std::move(out));
 				}
@@ -278,11 +276,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = getRcCompile(source, target);
-
-#if defined(CHALET_WIN32)
-						if (m_state.environment->isMsvc())
-							out.outputReplace = String::getPathFilename(out.output);
-#endif
+						out.reference = out.output;
 
 						ret.emplace_back(std::move(out));
 					}
@@ -311,11 +305,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 						CommandPool::Cmd out;
 						out.output = std::move(source);
 						out.command = getCxxCompile(source, target, specialization);
-
-#if defined(CHALET_WIN32)
-						if (m_state.environment->isMsvc())
-							out.outputReplace = String::getPathFilename(out.output);
-#endif
+						out.reference = out.output;
 
 						ret.emplace_back(std::move(out));
 					}

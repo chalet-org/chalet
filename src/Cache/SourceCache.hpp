@@ -38,6 +38,8 @@ struct SourceCache
 	bool versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
 	bool archRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
 
+	void markForLater(const std::string& inFile);
+
 private:
 	friend struct WorkspaceInternalCacheFile;
 

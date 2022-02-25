@@ -21,7 +21,7 @@ namespace chalet
 namespace Arg
 {
 CH_STR(RunTarget) = "[<run-target>]";
-CH_STR(RemainingArguments) = "[<args>...]";
+CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
 CH_STR(SettingsKey) = "<key>";
@@ -554,8 +554,8 @@ void ArgumentPatterns::populateMainArguments()
 	auto help = fmt::format(R"(
    init [{path}]
    configure
-   buildrun {runTarget} {args}
-   run {runTarget} {args}
+   buildrun {runTarget} {runArgs}
+   run {runTarget} {runArgs}
    build
    rebuild
    clean
@@ -564,14 +564,15 @@ void ArgumentPatterns::populateMainArguments()
    getkeys {keyQuery}
    set {key} {value}
    unset {key}
-   query {queryType} {args})",
+   query {queryType} {queryArgs})",
 		fmt::arg("runTarget", Arg::RunTarget),
-		fmt::arg("args", Arg::RemainingArguments),
+		fmt::arg("runArgs", Arg::RemainingArguments),
 		fmt::arg("key", Arg::SettingsKey),
 		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
 		fmt::arg("value", Arg::SettingsValue),
 		fmt::arg("path", Arg::InitPath),
-		fmt::arg("queryType", Arg::QueryType));
+		fmt::arg("queryType", Arg::QueryType),
+		fmt::arg("queryArgs", Arg::RemainingArguments));
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));

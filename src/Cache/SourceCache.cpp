@@ -202,6 +202,17 @@ bool SourceCache::fileChangedOrDependantChanged(const std::string& inFile, const
 }
 
 /*****************************************************************************/
+void SourceCache::markForLater(const std::string& inFile)
+{
+	if (m_lastWrites.find(inFile) != m_lastWrites.end())
+	{
+		auto& fileData = m_lastWrites.at(inFile);
+		fileData.lastWrite = std::numeric_limits<std::time_t>::max();
+		fileData.needsUpdate = false;
+	}
+}
+
+/*****************************************************************************/
 bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
 	outExistingValue = dataCache(inFile, CacheKeys::DataVersion);

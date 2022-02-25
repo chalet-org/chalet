@@ -16,10 +16,8 @@ struct CommandPool
 	struct Cmd
 	{
 		std::string output;
+		std::string reference;
 		StringList command;
-#if defined(CHALET_WIN32)
-		std::string outputReplace;
-#endif
 	};
 	using CmdList = std::vector<Cmd>;
 
@@ -42,9 +40,13 @@ struct CommandPool
 	};
 
 	explicit CommandPool(const std::size_t inThreads);
+	CHALET_DISALLOW_COPY_MOVE(CommandPool);
+	~CommandPool();
 
 	bool runAll(JobList& inJobs, Settings& inSettings);
 	bool run(const Job& inTarget, const Settings& inSettings);
+
+	const StringList& failures() const;
 
 private:
 	std::string getPrintedText(std::string inText, uint inTotal);
@@ -52,6 +54,8 @@ private:
 	void cleanup();
 
 	ThreadPool m_threadPool;
+
+	StringList m_failures;
 
 	std::string m_reset;
 	std::string m_exceptionThrown;

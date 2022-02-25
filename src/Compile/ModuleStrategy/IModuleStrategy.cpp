@@ -26,8 +26,7 @@ namespace chalet
 {
 /*****************************************************************************/
 IModuleStrategy::IModuleStrategy(BuildState& inState) :
-	m_state(inState),
-	kRootModule{ "__root_module__" }
+	m_state(inState)
 {
 }
 
@@ -53,7 +52,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
-	m_rootModule.clear();
+	m_implementationUnits.clear();
 	m_previousSource.clear();
 
 	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
@@ -66,8 +65,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	auto moduleId = getModuleId();
 
 	auto onFailure = [this]() -> bool {
+		Output::lineBreak();
+
 		m_state.toolchain.setStrategy(m_oldStrategy);
-		m_state.cache.file().setDisallowSave(true);
+		// m_state.cache.file().setDisallowSave(true);
 		return false;
 	};
 
@@ -116,8 +117,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		StringList addedHeaderUnits;
 		for (auto& [name, module] : modules)
 		{
-			if (String::equals(name, kRootModule))
-				m_rootModule = module.source;
+			if (String::startsWith('@', name))
+				m_implementationUnits.push_back(module.source);
 
 			modulePayload[module.source] = ModulePayload();
 
@@ -425,7 +426,9 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	}
 
 	bool targetExists = Commands::pathExists(inOutputs->target);
-	if (!buildJobs.empty() || !targetExists || rebuildRequiredFromLinks(inProject))
+	bool requiredFromLinks = rebuildRequiredFromLinks(inProject);
+	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
+	if (!buildJobs.empty() || !targetExists || requiredFromLinks)
 	{
 		// Scan sources for module dependencies
 
@@ -449,7 +452,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.runAll(buildJobs, settings))
+		{
+			auto& sourceCache = m_state.cache.file().sources();
+			for (auto& failure : commandPool.failures())
+			{
+				sourceCache.markForLater(failure);
+			}
 			return onFailure();
+		}
 
 		Output::lineBreak();
 	}
@@ -507,8 +517,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			out.output = getBuildOutputForFile(*group, isObject);
 
 			ModuleFileType type = inType;
-			if (inType == ModuleFileType::ModuleObject && String::equals(m_rootModule, source))
-				type = ModuleFileType::ModuleObjectRoot;
+			if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
+				type = ModuleFileType::ModuleImplementationUnit;
 
 			if (inModules.find(source) != inModules.end())
 			{
@@ -521,10 +531,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
 			}
 
-#if defined(CHALET_WIN32)
-			if (m_state.environment->isMsvc())
-				out.outputReplace = String::getPathFilename(source);
-#endif
+			out.reference = source;
 
 			ret.emplace_back(std::move(out));
 		}
@@ -563,10 +570,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 				out.output = source;
 				out.command = inToolchain.compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
 
-#if defined(CHALET_WIN32)
-				if (m_state.environment->isMsvc())
-					out.outputReplace = String::getPathFilename(out.output);
-#endif
+				out.reference = String::getPathFilename(out.output);
 
 				outList.emplace_back(std::move(out));
 			}
