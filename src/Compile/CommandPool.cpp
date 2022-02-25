@@ -163,7 +163,7 @@ bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
 
 	return result;
 #else
-	UNUSED(inCommand);
+	UNUSED(inIndex, inCommand);
 	return false;
 #endif
 }
