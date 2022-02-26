@@ -340,6 +340,11 @@ void CommandLineInputs::setRoute(const Route inValue) noexcept
 	m_route = inValue;
 }
 
+bool CommandLineInputs::isRunRoute() const noexcept
+{
+	return m_route == Route::BuildRun || m_route == Route::Run;
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::buildConfiguration() const noexcept
 {
@@ -369,12 +374,20 @@ void CommandLineInputs::setRunTarget(std::string&& inValue) const noexcept
 }
 
 /*****************************************************************************/
-const StringList& CommandLineInputs::runOptions() const noexcept
+const std::optional<StringList>& CommandLineInputs::runArguments() const noexcept
 {
-	return m_runOptions;
+	return m_runArguments;
 }
 
-void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
+void CommandLineInputs::setRunArguments(StringList&& inValue) const noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_runArguments = inValue;
+}
+
+void CommandLineInputs::setRunArguments(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
@@ -383,7 +396,7 @@ void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 		inValue = inValue.substr(1, inValue.size() - 2);
 
 	// TODO: skip '\ '
-	m_runOptions = String::split(inValue);
+	m_runArguments = String::split(inValue);
 }
 
 /*****************************************************************************/

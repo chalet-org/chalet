@@ -149,7 +149,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 				if (arg.id == ArgumentIdentifier::RunTargetArguments)
 				{
 					auto runArgs = String::join(arg.value.asStringList());
-					m_inputs.setRunOptions(std::move(runArgs));
+					m_inputs.setRunArguments(std::move(runArgs));
 				}
 				else if (arg.id == ArgumentIdentifier::SettingsKeysRemainingArgs)
 				{

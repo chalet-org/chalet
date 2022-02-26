@@ -20,8 +20,13 @@ struct ProcessBuildTarget final : public IBuildTarget
 	const std::string& path() const noexcept;
 	void setPath(std::string&& inValue) noexcept;
 
+	const StringList& arguments() const noexcept;
+	void addArguments(StringList&& inList);
+	void addArgument(std::string&& inValue);
+
 private:
 	std::string m_path;
+	StringList m_arguments;
 };
 }
 

@@ -39,10 +39,6 @@ struct IBuildTarget
 	const std::string& description() const noexcept;
 	void setDescription(std::string&& inValue) noexcept;
 
-	const StringList& defaultRunArguments() const noexcept;
-	void addDefaultRunArguments(StringList&& inList);
-	void addDefaultRunArgument(std::string&& inValue);
-
 	const StringList& copyFilesOnRun() const noexcept;
 	void addCopyFilesOnRun(StringList&& inList);
 	void addCopyFileOnRun(std::string&& inValue);
@@ -57,7 +53,6 @@ protected:
 	const BuildState& m_state;
 
 private:
-	StringList m_defaultRunArguments;
 	StringList m_copyFilesOnRun;
 
 	std::string m_name;

@@ -44,6 +44,7 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 /*****************************************************************************/
 ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inState) :
 	m_chaletJson(inCentralState.chaletJson()),
+	m_centralState(inCentralState),
 	m_state(inState),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
@@ -76,10 +77,16 @@ bool ChaletJsonParser::serialize()
 		return false;
 	}
 
-	if (!validRunTargetRequestedFromInput())
+	if (m_state.inputs.isRunRoute())
 	{
-		Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
-		return false;
+		if (!validRunTargetRequestedFromInput())
+		{
+			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
+			return false;
+		}
+
+		// do after run target is validated
+		m_centralState.getRunTargetArguments();
 	}
 
 	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
@@ -122,43 +129,45 @@ bool ChaletJsonParser::validBuildRequested() const
 /*****************************************************************************/
 bool ChaletJsonParser::validRunTargetRequestedFromInput()
 {
-	const auto& inputRunTarget = m_state.inputs.runTarget();
-	bool setRunTarget = inputRunTarget.empty();
-	for (auto& target : m_state.targets)
+	auto runTarget = m_state.inputs.runTarget();
+	for (int i = 0; i < 2; ++i)
 	{
-		auto& name = target->name();
-		if (!setRunTarget && name != inputRunTarget)
-			continue;
-
-		if (target->isSources())
+		bool setRunTarget = runTarget.empty();
+		for (auto& target : m_state.targets)
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable())
+			auto& name = target->name();
+			if (!setRunTarget && name != runTarget)
+				continue;
+
+			if (target->isSources())
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.isExecutable())
+				{
+					if (setRunTarget)
+						m_state.inputs.setRunTarget(std::string(target->name()));
+					return true;
+				}
+			}
+			else if (target->isCMake())
+			{
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				if (!project.runExecutable().empty())
+				{
+					if (setRunTarget)
+						m_state.inputs.setRunTarget(std::string(target->name()));
+					return true;
+				}
+			}
+			else if (target->isScript())
 			{
 				if (setRunTarget)
 					m_state.inputs.setRunTarget(std::string(target->name()));
-
 				return true;
 			}
 		}
-		else if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (!project.runExecutable().empty())
-			{
-				if (setRunTarget)
-					m_state.inputs.setRunTarget(std::string(target->name()));
 
-				return true;
-			}
-		}
-		else if (target->isScript())
-		{
-			if (setRunTarget)
-				m_state.inputs.setRunTarget(std::string(target->name()));
-
-			return true;
-		}
+		runTarget = std::string();
 	}
 
 	return false;
@@ -579,7 +588,7 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addDefaultRunArguments(std::move(val));
+				outTarget.addArguments(std::move(val));
 		}
 	}
 
@@ -609,7 +618,13 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
-				outTarget.addDefaultRunArguments(std::move(val));
+			{
+				if (outTarget.name() == m_state.inputs.runTarget())
+				{
+					if (!m_state.inputs.runArguments().has_value())
+						m_state.inputs.setRunArguments(std::move(val));
+				}
+			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 				outTarget.addCopyFilesOnRun(std::move(val));
 		}

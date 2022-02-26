@@ -49,7 +49,6 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 bool IBuildTarget::initialize()
 {
 	replaceVariablesInPathList(m_copyFilesOnRun);
-	replaceVariablesInPathList(m_defaultRunArguments);
 
 	return true;
 }
@@ -120,22 +119,6 @@ const std::string& IBuildTarget::description() const noexcept
 void IBuildTarget::setDescription(std::string&& inValue) noexcept
 {
 	m_description = std::move(inValue);
-}
-
-/*****************************************************************************/
-const StringList& IBuildTarget::defaultRunArguments() const noexcept
-{
-	return m_defaultRunArguments;
-}
-
-void IBuildTarget::addDefaultRunArguments(StringList&& inList)
-{
-	List::forEach(inList, this, &IBuildTarget::addDefaultRunArgument);
-}
-
-void IBuildTarget::addDefaultRunArgument(std::string&& inValue)
-{
-	m_defaultRunArguments.emplace_back(std::move(inValue));
 }
 
 /*****************************************************************************/

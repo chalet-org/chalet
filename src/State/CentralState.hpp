@@ -42,6 +42,8 @@ struct CentralState
 	const std::string& anyConfiguration() const noexcept;
 
 	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
+	void setRunArgumentMap(Dictionary<std::string>&& inMap);
+	void getRunTargetArguments();
 
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
@@ -75,6 +77,8 @@ private:
 
 	IntermediateSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
+
+	Dictionary<std::string> m_runArgumentMap;
 
 	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;

@@ -117,16 +117,8 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const char* inKey,
 {
 	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
 	{
-		if (!inValueB.empty())
-		{
-			outNode[inKey] = inValueB;
-			setDirty(true);
-		}
-		else
-		{
-			outNode[inKey] = std::string();
-			setDirty(true);
-		}
+		outNode[inKey] = inValueB;
+		setDirty(true);
 	}
 
 	auto value = outNode.at(inKey).get<std::string>();

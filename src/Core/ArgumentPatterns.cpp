@@ -20,6 +20,7 @@ namespace chalet
 
 namespace Arg
 {
+CH_STR(RunTarget) = "[<run-target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
@@ -73,7 +74,6 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		"-e", "--env-file",
 		"-a", "--arch",
 		"-c", "--configuration",
-		"-n", "--run-target",
 		//
 		"--template",
 	}),
@@ -328,14 +328,16 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		return remaining;
 	};
 
-	bool isRun = m_route == Route::Run || m_route == Route::BuildRun;
-	for (auto& arg : inArguments)
+	if (m_route != Route::Run && m_route != Route::BuildRun)
 	{
-		bool containsArgument = m_argumentMap.find(arg) != m_argumentMap.end();
-		if (arg.front() == '-' && !containsArgument && !isRun)
+		for (auto& arg : inArguments)
 		{
-			CHALET_EXCEPT_ERROR("An invalid argument was found: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", arg);
-			return false;
+			bool containsArgument = m_argumentMap.find(arg) != m_argumentMap.end();
+			if (arg.front() == '-' && !containsArgument)
+			{
+				CHALET_EXCEPT_ERROR("An invalid argument was found: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", arg);
+				return false;
+			}
 		}
 	}
 
@@ -351,9 +353,10 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		{
 			switch (arg.value.kind())
 			{
-				case Variant::Kind::Boolean:
+				case Variant::Kind::Boolean: {
 					arg.value = m_parser.get<bool>(key);
 					break;
+				}
 
 				case Variant::Kind::OptionalBoolean: {
 					std::string tmpValue = m_parser.get<std::string>(key);
@@ -380,10 +383,11 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					break;
 				}
 
-				case Variant::Kind::String:
+				case Variant::Kind::String: {
 					arg.value = m_parser.get<std::string>(key);
 					lastValue = arg.value.asString();
 					break;
+				}
 
 				case Variant::Kind::StringList: {
 					CHALET_TRY
@@ -397,9 +401,10 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 					return true;
 				}
 
-				case Variant::Kind::Remainder:
+				case Variant::Kind::Remainder: {
 					arg.value = gatherRemaining(lastValue);
 					return true;
+				}
 
 				case Variant::Kind::Empty:
 				default:
@@ -559,8 +564,8 @@ void ArgumentPatterns::populateMainArguments()
 	auto help = fmt::format(R"(
    init [{path}]
    configure
-   buildrun {args}
-   run {args}
+   buildrun {runTarget} {runArgs}
+   run {runTarget} {runArgs}
    build
    rebuild
    clean
@@ -569,13 +574,15 @@ void ArgumentPatterns::populateMainArguments()
    getkeys {keyQuery}
    set {key} {value}
    unset {key}
-   query {queryType} {args})",
-		fmt::arg("args", Arg::RemainingArguments),
+   query {queryType} {queryArgs})",
+		fmt::arg("runTarget", Arg::RunTarget),
+		fmt::arg("runArgs", Arg::RemainingArguments),
 		fmt::arg("key", Arg::SettingsKey),
 		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
 		fmt::arg("value", Arg::SettingsValue),
 		fmt::arg("path", Arg::InitPath),
-		fmt::arg("queryType", Arg::QueryType));
+		fmt::arg("queryType", Arg::QueryType),
+		fmt::arg("queryArgs", Arg::RemainingArguments));
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));
@@ -725,7 +732,7 @@ void ArgumentPatterns::addBuildConfigurationArg()
 /*****************************************************************************/
 void ArgumentPatterns::addRunTargetArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::RunTargetName, "-n", "--run-target")
+	addStringArgument(ArgumentIdentifier::RunTargetName, Arg::RunTarget, std::string())
 		.help("An executable or script target to run");
 }
 
@@ -810,7 +817,6 @@ void ArgumentPatterns::addOptionalArguments()
 	addBenchmarkArg();
 	addLaunchProfilerArg();
 	addKeepGoingArg();
-	addRunTargetArg();
 	addGenerateCompileCommandsArg();
 #if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
@@ -823,6 +829,7 @@ void ArgumentPatterns::populateBuildRunArguments()
 {
 	addOptionalArguments();
 
+	addRunTargetArg();
 	addRunArgumentsArg();
 }
 
@@ -831,6 +838,7 @@ void ArgumentPatterns::populateRunArguments()
 {
 	addOptionalArguments();
 
+	addRunTargetArg();
 	addRunArgumentsArg();
 }
 

@@ -27,6 +27,8 @@ bool ProcessBuildTarget::initialize()
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_path, targetName);
 
+	replaceVariablesInPathList(m_arguments);
+
 	return true;
 }
 
@@ -57,6 +59,22 @@ const std::string& ProcessBuildTarget::path() const noexcept
 void ProcessBuildTarget::setPath(std::string&& inValue) noexcept
 {
 	m_path = std::move(inValue);
+}
+
+/*****************************************************************************/
+const StringList& ProcessBuildTarget::arguments() const noexcept
+{
+	return m_arguments;
+}
+
+void ProcessBuildTarget::addArguments(StringList&& inList)
+{
+	List::forEach(inList, this, &ProcessBuildTarget::addArgument);
+}
+
+void ProcessBuildTarget::addArgument(std::string&& inValue)
+{
+	m_arguments.emplace_back(std::move(inValue));
 }
 
 }

@@ -141,35 +141,41 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	}
 #endif
 
-	Json& buildSettings = m_jsonFile.json[Keys::Options];
+	Json& buildOptions = m_jsonFile.json[Keys::Options];
 
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildSettings, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildSettings, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
+	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
 		m_inputs.detectToolchainPreference();
 	});
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
 
-	if (!buildSettings.contains(Keys::OptionsSigningIdentity) || !buildSettings[Keys::OptionsSigningIdentity].is_string())
+	if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
 	{
 		// Note: don't check if string is empty - empty is valid
-		buildSettings[Keys::OptionsSigningIdentity] = inState.signingIdentity;
+		buildOptions[Keys::OptionsSigningIdentity] = inState.signingIdentity;
+	}
+
+	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
+
+	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
+	{
+		buildOptions[Keys::OptionsRunArguments] = Json::object();
 	}
 
 	//
@@ -400,15 +406,15 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 		return false;
 	}
 
-	Json& buildSettings = inNode.at(Keys::Options);
-	if (!buildSettings.is_object())
+	Json& buildOptions = inNode.at(Keys::Options);
+	if (!buildOptions.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
 		return false;
 	}
 
 	StringList removeKeys;
-	for (const auto& [key, value] : buildSettings.items())
+	for (const auto& [key, value] : buildOptions.items())
 	{
 		if (value.is_string())
 		{
@@ -528,11 +534,24 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			else
 				removeKeys.push_back(key);
 		}
+		else if (value.is_object())
+		{
+			if (m_inputs.isRunRoute() && String::equals(Keys::OptionsRunArguments, key))
+			{
+				Dictionary<std::string> map;
+				for (const auto& [k, v] : buildOptions.items())
+				{
+					if (v.is_string())
+						map.emplace(k, v.get<std::string>());
+				}
+				m_centralState.setRunArgumentMap(std::move(map));
+			}
+		}
 	}
 
 	for (auto& key : removeKeys)
 	{
-		buildSettings.erase(key);
+		buildOptions.erase(key);
 	}
 
 	if (!removeKeys.empty())

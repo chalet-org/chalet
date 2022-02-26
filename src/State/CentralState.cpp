@@ -194,6 +194,25 @@ bool CentralState::runDependencyManager()
 }
 
 /*****************************************************************************/
+void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
+{
+	m_runArgumentMap = std::move(inMap);
+}
+
+void CentralState::getRunTargetArguments()
+{
+	const auto& runTarget = m_inputs.runTarget();
+	if (!runTarget.empty())
+	{
+		if (m_runArgumentMap.find(runTarget) != m_runArgumentMap.end())
+		{
+			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(runTarget)));
+		}
+	}
+	m_runArgumentMap.clear();
+}
+
+/*****************************************************************************/
 bool CentralState::validateDistribution()
 {
 	auto& distributionDirectory = m_inputs.distributionDirectory();

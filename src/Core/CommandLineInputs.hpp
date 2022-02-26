@@ -60,6 +60,7 @@ struct CommandLineInputs
 
 	Route route() const noexcept;
 	void setRoute(const Route inValue) noexcept;
+	bool isRunRoute() const noexcept;
 
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
@@ -67,8 +68,9 @@ struct CommandLineInputs
 	const std::string& runTarget() const noexcept;
 	void setRunTarget(std::string&& inValue) const noexcept;
 
-	const StringList& runOptions() const noexcept;
-	void setRunOptions(std::string&& inValue) noexcept;
+	const std::optional<StringList>& runArguments() const noexcept;
+	void setRunArguments(StringList&& inValue) const noexcept;
+	void setRunArguments(std::string&& inValue) noexcept;
 
 	const std::string& appPath() const noexcept;
 	void setAppPath(const std::string& inValue) noexcept;
@@ -167,7 +169,7 @@ private:
 
 	mutable ToolchainPreference m_toolchainPreference;
 
-	StringList m_runOptions;
+	mutable std::optional<StringList> m_runArguments;
 	StringList m_commandList;
 	StringList m_queryData;
 	mutable StringList m_universalArches;

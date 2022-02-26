@@ -306,13 +306,36 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
+	auto& runTarget = inInputs.runTarget();
 	if (optionsJson.contains(Keys::OptionsRunTarget))
 	{
-		auto& runTarget = optionsJson.at(Keys::OptionsRunTarget);
-		if (runTarget.is_string() && runTarget.get<std::string>() != inInputs.runTarget())
+		auto& runTargetNode = optionsJson.at(Keys::OptionsRunTarget);
+		if (runTargetNode.is_string() && runTargetNode.get<std::string>() != runTarget)
 		{
-			optionsJson[Keys::OptionsRunTarget] = inInputs.runTarget();
+			optionsJson[Keys::OptionsRunTarget] = runTarget;
 			settingsJson.setDirty(true);
+		}
+	}
+	if (optionsJson.contains(Keys::OptionsRunArguments) && !runTarget.empty())
+	{
+		auto& allRunArguments = optionsJson.at(Keys::OptionsRunArguments);
+		if (allRunArguments.is_object())
+		{
+			if (!allRunArguments.contains(runTarget) || !allRunArguments[runTarget].is_string())
+			{
+				allRunArguments[runTarget] = std::string();
+			}
+
+			if (inInputs.runArguments().has_value())
+			{
+				auto inputsRunArguments = String::join(*inInputs.runArguments());
+				auto& runArguments = allRunArguments.at(runTarget);
+				if (runArguments.get<std::string>() != inputsRunArguments)
+				{
+					allRunArguments[runTarget] = inputsRunArguments;
+					settingsJson.setDirty(true);
+				}
+			}
 		}
 	}
 

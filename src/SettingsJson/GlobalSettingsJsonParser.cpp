@@ -54,38 +54,38 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 
 	initializeTheme();
 
-	Json& buildSettings = m_jsonFile.json.at(Keys::Options);
+	Json& buildOptions = m_jsonFile.json.at(Keys::Options);
 
 	auto assignSettingsBool = [&](const char* inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
-		m_jsonFile.assignNodeIfEmpty<bool>(buildSettings, inKey, [&inDefault]() {
+		m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, [&inDefault]() {
 			return inDefault;
 		});
 		auto value = onGetValue();
 		if (value.has_value())
 		{
-			buildSettings[inKey] = *value;
+			buildOptions[inKey] = *value;
 		}
 	};
 
 	auto assignSettingsUint = [&](const char* inKey, const uint inDefault, const std::function<std::optional<uint>()>& onGetValue) {
-		m_jsonFile.assignNodeIfEmpty<uint>(buildSettings, inKey, [&inDefault]() {
+		m_jsonFile.assignNodeIfEmpty<uint>(buildOptions, inKey, [&inDefault]() {
 			return inDefault;
 		});
 		auto value = onGetValue();
 		if (value.has_value())
 		{
-			buildSettings[inKey] = *value;
+			buildOptions[inKey] = *value;
 		}
 	};
 
 	auto assignSettingsString = [&](const char* inKey, const std::function<std::string()>& onAssign) {
-		m_jsonFile.assignNodeIfEmpty<std::string>(buildSettings, inKey, []() {
+		m_jsonFile.assignNodeIfEmpty<std::string>(buildOptions, inKey, []() {
 			return std::string();
 		});
-		std::string value = buildSettings.at(inKey).get<std::string>();
+		std::string value = buildOptions.at(inKey).get<std::string>();
 		if (value.empty())
 		{
-			buildSettings[inKey] = onAssign();
+			buildOptions[inKey] = onAssign();
 		}
 	};
 
@@ -176,6 +176,11 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 		return outState.runTarget;
 	});
 
+	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
+	{
+		buildOptions[Keys::OptionsRunArguments] = Json::object();
+	}
+
 	return true;
 }
 
@@ -246,14 +251,14 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 	if (!inNode.contains(Keys::Options))
 		return true;
 
-	const Json& buildSettings = inNode.at(Keys::Options);
-	if (!buildSettings.is_object())
+	const Json& buildOptions = inNode.at(Keys::Options);
+	if (!buildOptions.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
 		return false;
 	}
 
-	for (const auto& [key, value] : buildSettings.items())
+	for (const auto& [key, value] : buildOptions.items())
 	{
 		if (value.is_string())
 		{

@@ -277,7 +277,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	m_state.makeLibraryPathVariables();
 
-	if ((inRoute == Route::BuildRun || runRoute))
+	if (m_state.inputs.isRunRoute())
 	{
 		if (runTarget == nullptr)
 		{
@@ -661,7 +661,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 
 	StringList cmd;
 	cmd.push_back(inTarget.path());
-	for (auto& arg : inTarget.defaultRunArguments())
+	for (auto& arg : inTarget.arguments())
 	{
 		cmd.push_back(arg);
 	}
@@ -787,8 +787,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		return false;
 	}
 
-	const auto& runOptions = m_state.inputs.runOptions();
-	const auto& defaultRunArguments = inTarget.defaultRunArguments();
+	const auto& runArguments = m_state.inputs.runArguments();
 
 	if (!inTarget.description().empty())
 		Output::msgTargetDescription(inTarget.description(), Output::theme().success);
@@ -821,12 +820,13 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	if (copied > 0)
 		Output::lineBreak();
 
-	const auto& args = !runOptions.empty() ? runOptions : defaultRunArguments;
-
 	StringList cmd = { file };
-	for (auto& arg : args)
+	if (runArguments.has_value())
 	{
-		cmd.push_back(arg);
+		for (auto& arg : *runArguments)
+		{
+			cmd.push_back(arg);
+		}
 	}
 
 	if (inTarget.isSources() && m_state.configuration.enableProfiling())

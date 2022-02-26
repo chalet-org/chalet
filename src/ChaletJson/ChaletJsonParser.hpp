@@ -60,6 +60,7 @@ private:
 	bool valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	JsonFile& m_chaletJson;
+	CentralState& m_centralState;
 	BuildState& m_state;
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
