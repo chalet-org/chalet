@@ -433,11 +433,11 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCo
 	bool result = true;
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto runDependencies = getResolvedRunDependenciesList(inTarget);
+	auto copyFilesOnRun = getResolvedRunDependenciesList(inTarget);
 
 	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
 
-	for (auto& dep : runDependencies)
+	for (auto& dep : copyFilesOnRun)
 	{
 		auto depFile = String::getPathFilename(dep);
 		if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
@@ -458,8 +458,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTa
 {
 	StringList ret;
 
-	std::string resolved;
-	for (auto& dep : inTarget.runDependencies())
+	for (auto& dep : inTarget.copyFilesOnRun())
 	{
 		if (Commands::pathExists(dep))
 		{
@@ -467,6 +466,7 @@ StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTa
 			continue;
 		}
 
+		std::string resolved;
 		if (inTarget.isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(inTarget);
@@ -480,13 +480,24 @@ StringList BuildManager::getResolvedRunDependenciesList(const IBuildTarget& inTa
 			}
 		}
 
+		bool found = false;
 		for (auto& path : m_state.workspace.searchPaths())
 		{
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Commands::pathExists(resolved))
 			{
 				ret.emplace_back(std::move(resolved));
+				found = true;
 				break;
+			}
+		}
+
+		if (!found)
+		{
+			resolved = Commands::which(dep);
+			if (!resolved.empty())
+			{
+				ret.emplace_back(std::move(resolved));
 			}
 		}
 	}
@@ -794,7 +805,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	uint copied = 0;
 	for (auto& target : m_state.targets)
 	{
-		if (!target->runDependencies().empty())
+		if (!target->copyFilesOnRun().empty())
 		{
 			if (!copyRunDependencies(*target, copied))
 			{

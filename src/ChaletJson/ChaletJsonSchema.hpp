@@ -73,7 +73,7 @@ class ChaletJsonSchema
 		TargetCondition,
 		TargetRunTarget,
 		TargetDefaultRunArguments,
-		TargetRunDependencies,
+		TargetCopyFilesOnRun,
 		//
 		TargetAbstract,
 		TargetSourceExecutable,

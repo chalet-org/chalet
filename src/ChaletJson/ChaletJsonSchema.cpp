@@ -614,10 +614,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		}
 	})json"_ojson;
 
-	defs[Defs::TargetRunDependencies] = R"json({
+	defs[Defs::TargetCopyFilesOnRun] = R"json({
 		"type": "array",
 		"uniqueItems": true,
-		"description": "If the project is the run target, a list of dynamic libraries that should be copied before running.",
+		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libaries that need to be resolved from the same directory as the run target.",
 		"minItems": 1,
 		"items": {
 			"type": "string",
@@ -1592,8 +1592,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		//
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		defs[Defs::TargetSourceExecutable][SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
-		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runDependencies"] = getDefinition(Defs::TargetRunDependencies);
-		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunDependencies);
+		defs[Defs::TargetSourceExecutable][SKeys::Properties]["copyFilesOnRun"] = getDefinition(Defs::TargetCopyFilesOnRun);
+		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^copyFilesOnRun{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCopyFilesOnRun);
 	}
 
 	{
@@ -1778,7 +1778,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
 		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";
-		case Defs::TargetRunDependencies: return "target-runDependencies";
+		case Defs::TargetCopyFilesOnRun: return "target-copyFilesOnRun";
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";

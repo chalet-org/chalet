@@ -48,7 +48,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 /*****************************************************************************/
 bool IBuildTarget::initialize()
 {
-	replaceVariablesInPathList(m_runDependencies);
+	replaceVariablesInPathList(m_copyFilesOnRun);
 	replaceVariablesInPathList(m_defaultRunArguments);
 
 	return true;
@@ -139,22 +139,22 @@ void IBuildTarget::addDefaultRunArgument(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& IBuildTarget::runDependencies() const noexcept
+const StringList& IBuildTarget::copyFilesOnRun() const noexcept
 {
-	return m_runDependencies;
+	return m_copyFilesOnRun;
 }
 
-void IBuildTarget::addRunDependencies(StringList&& inList)
+void IBuildTarget::addCopyFilesOnRun(StringList&& inList)
 {
-	List::forEach(inList, this, &IBuildTarget::addRunDependency);
+	List::forEach(inList, this, &IBuildTarget::addCopyFileOnRun);
 }
 
-void IBuildTarget::addRunDependency(std::string&& inValue)
+void IBuildTarget::addCopyFileOnRun(std::string&& inValue)
 {
 	// if (inValue.back() != '/')
 	// 	inValue += '/'; // no!
 
-	List::addIfDoesNotExist(m_runDependencies, std::move(inValue));
+	List::addIfDoesNotExist(m_copyFilesOnRun, std::move(inValue));
 }
 
 /*****************************************************************************/

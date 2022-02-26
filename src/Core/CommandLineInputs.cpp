@@ -382,8 +382,6 @@ void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 	if (inValue.front() == '\'' && inValue.back() == '\'')
 		inValue = inValue.substr(1, inValue.size() - 2);
 
-	LOG("CommandLineInputs::setRunOptions:", inValue);
-
 	// TODO: skip '\ '
 	m_runOptions = String::split(inValue);
 }

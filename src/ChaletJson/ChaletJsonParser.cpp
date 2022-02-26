@@ -610,8 +610,8 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 				outTarget.addDefaultRunArguments(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runDependencies", status))
-				outTarget.addRunDependencies(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
+				outTarget.addCopyFilesOnRun(std::move(val));
 		}
 	}
 
