@@ -60,14 +60,14 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc bundle
-      - name: "Run: Tests"
-        run: build/x86_64-linux-gnu_Release/chalet run tests_chalet
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./dist/chalet-x86_64-linux-gnu.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Run: Tests"
+        run: build/x86_64-linux-gnu_Release/chalet run tests_chalet
   MacOS:
     needs: Release
     runs-on: macos-latest
@@ -96,16 +96,32 @@ jobs:
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Color Test"
         run: build/Debug/chalet-debug colortest
-      - name: "Build: Release"
-        run: build/Debug/chalet-debug -c Release --arch universal bundle
-      - name: "Run: Tests"
-        run: build/universal-apple-darwin_Release/chalet run tests_chalet
-      - name: "Upload assets"
+      - name: "Build: Release (x86_64)"
+        run: build/Debug/chalet-debug -c Release -a x86_64 bundle
+      - name: "Upload assets (x86_64)"
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./dist/chalet-x86_64-apple-darwin.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build: Release (arm64)"
+        run: build/Debug/chalet-debug -c Release -a arm64 bundle
+      - name: "Upload assets (arm64)"
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: ./dist/chalet-arm64-apple-darwin.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build: Release (universal)"
+        run: build/Debug/chalet-debug -c Release -a universal bundle
+      - name: "Upload assets (universal)"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./dist/chalet-universal-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Run: Tests"
+        run: build/universal-apple-darwin_Release/chalet run tests_chalet
   Windows-MSVC:
     needs: Release
     runs-on: windows-latest
@@ -128,11 +144,9 @@ jobs:
         run: ./build-vs2022.bat Debug
       - name: "Color Test"
         run: build/msvc_Debug/chalet-debug colortest
-      - name: "Build: Release"
+      - name: "Build: Release (x64)"
         run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 bundle
-      - name: "Run: Tests"
-        run: build/msvc_Debug/chalet-debug run tests_chalet
-      - name: "Upload assets"
+      - name: "Upload assets (x64)"
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
@@ -140,6 +154,8 @@ jobs:
             ./dist/chalet-x86_64-pc-windows-msvc.zip
             ./dist/chalet-x86_64-pc-windows-msvc-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Run: Tests"
+        run: build/msvc_Debug/chalet-debug run tests_chalet
   # Windows-MSYS2:
   #   needs: Release
   #   runs-on: windows-latest
