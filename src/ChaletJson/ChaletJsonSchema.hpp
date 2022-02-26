@@ -72,7 +72,7 @@ class ChaletJsonSchema
 		TargetKind,
 		TargetCondition,
 		TargetRunTarget,
-		TargetRunTargetArguments,
+		TargetDefaultRunArguments,
 		TargetRunDependencies,
 		//
 		TargetAbstract,

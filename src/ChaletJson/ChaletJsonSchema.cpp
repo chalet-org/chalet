@@ -604,7 +604,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "C++"
 	})json"_ojson;
 
-	defs[Defs::TargetRunTargetArguments] = R"json({
+	defs[Defs::TargetDefaultRunArguments] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minItems": 1,
@@ -1591,7 +1591,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 		//
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
-		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		defs[Defs::TargetSourceExecutable][SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
 		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runDependencies"] = getDefinition(Defs::TargetRunDependencies);
 		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunDependencies);
 	}
@@ -1607,7 +1607,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetBuildScript[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetBuildScript[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
 		targetBuildScript[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		// targetBuildScript[SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		// targetBuildScript[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
 		targetBuildScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
 		targetBuildScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::TargetScript] = std::move(targetBuildScript);
@@ -1664,7 +1664,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetCMake[SKeys::Properties]["location"] = getDefinition(Defs::TargetCMakeLocation);
 		targetCMake[SKeys::Properties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
 		targetCMake[SKeys::Properties]["rebuild"] = getDefinition(Defs::TargetCMakeRebuild);
-		targetCMake[SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
+		targetCMake[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
 		targetCMake[SKeys::Properties]["runExecutable"] = getDefinition(Defs::TargetCMakeRunExecutable);
 		targetCMake[SKeys::Properties]["toolset"] = getDefinition(Defs::TargetCMakeToolset);
 		targetCMake[SKeys::PatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeBuildFile);
@@ -1777,7 +1777,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
-		case Defs::TargetRunTargetArguments: return "target-runArguments";
+		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";
 		case Defs::TargetRunDependencies: return "target-runDependencies";
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";

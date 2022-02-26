@@ -39,9 +39,9 @@ struct IBuildTarget
 	const std::string& description() const noexcept;
 	void setDescription(std::string&& inValue) noexcept;
 
-	const StringList& runArguments() const noexcept;
-	void addRunArguments(StringList&& inList);
-	void addRunArgument(std::string&& inValue);
+	const StringList& defaultRunArguments() const noexcept;
+	void addDefaultRunArguments(StringList&& inList);
+	void addDefaultRunArgument(std::string&& inValue);
 
 	const StringList& runDependencies() const noexcept;
 	void addRunDependencies(StringList&& inList);
@@ -57,7 +57,7 @@ protected:
 	const BuildState& m_state;
 
 private:
-	StringList m_runArguments;
+	StringList m_defaultRunArguments;
 	StringList m_runDependencies;
 
 	std::string m_name;

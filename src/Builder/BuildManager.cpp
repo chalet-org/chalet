@@ -650,7 +650,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 
 	StringList cmd;
 	cmd.push_back(inTarget.path());
-	for (auto& arg : inTarget.runArguments())
+	for (auto& arg : inTarget.defaultRunArguments())
 	{
 		cmd.push_back(arg);
 	}
@@ -777,7 +777,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 
 	const auto& runOptions = m_state.inputs.runOptions();
-	const auto& runArguments = inTarget.runArguments();
+	const auto& defaultRunArguments = inTarget.defaultRunArguments();
 
 	if (!inTarget.description().empty())
 		Output::msgTargetDescription(inTarget.description(), Output::theme().success);
@@ -810,7 +810,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	if (copied > 0)
 		Output::lineBreak();
 
-	const auto& args = !runOptions.empty() ? runOptions : runArguments;
+	const auto& args = !runOptions.empty() ? runOptions : defaultRunArguments;
 
 	StringList cmd = { file };
 	for (auto& arg : args)

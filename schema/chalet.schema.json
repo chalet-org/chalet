@@ -710,7 +710,7 @@
 			"minLength": 1,
 			"pattern": "^(!?(debug|windows|macos|linux)\\b){1,2}$"
 		},
-		"target-runArguments": {
+		"target-defaultRunArguments": {
 			"type": "array",
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
 			"minItems": 1,
@@ -800,8 +800,8 @@
 				"settings:Cxx": {
 					"$ref": "#/definitions/target-source-cxx"
 				},
-				"runArguments": {
-					"$ref": "#/definitions/target-runArguments"
+				"defaultRunArguments": {
+					"$ref": "#/definitions/target-defaultRunArguments"
 				},
 				"runDependencies": {
 					"$ref": "#/definitions/target-runDependencies"
@@ -2180,8 +2180,8 @@
 				"rebuild": {
 					"$ref": "#/definitions/target-cmake-rebuild"
 				},
-				"runArguments": {
-					"$ref": "#/definitions/target-runArguments"
+				"defaultRunArguments": {
+					"$ref": "#/definitions/target-defaultRunArguments"
 				},
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"

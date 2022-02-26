@@ -49,7 +49,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 bool IBuildTarget::initialize()
 {
 	replaceVariablesInPathList(m_runDependencies);
-	replaceVariablesInPathList(m_runArguments);
+	replaceVariablesInPathList(m_defaultRunArguments);
 
 	return true;
 }
@@ -123,19 +123,19 @@ void IBuildTarget::setDescription(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const StringList& IBuildTarget::runArguments() const noexcept
+const StringList& IBuildTarget::defaultRunArguments() const noexcept
 {
-	return m_runArguments;
+	return m_defaultRunArguments;
 }
 
-void IBuildTarget::addRunArguments(StringList&& inList)
+void IBuildTarget::addDefaultRunArguments(StringList&& inList)
 {
-	List::forEach(inList, this, &IBuildTarget::addRunArgument);
+	List::forEach(inList, this, &IBuildTarget::addDefaultRunArgument);
 }
 
-void IBuildTarget::addRunArgument(std::string&& inValue)
+void IBuildTarget::addDefaultRunArgument(std::string&& inValue)
 {
-	m_runArguments.emplace_back(std::move(inValue));
+	m_defaultRunArguments.emplace_back(std::move(inValue));
 }
 
 /*****************************************************************************/

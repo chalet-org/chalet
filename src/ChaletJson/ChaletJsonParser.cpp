@@ -579,7 +579,7 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addRunArguments(std::move(val));
+				outTarget.addDefaultRunArguments(std::move(val));
 		}
 	}
 
@@ -608,8 +608,8 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 		if (value.is_array())
 		{
 			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "runArguments", status))
-				outTarget.addRunArguments(std::move(val));
+			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
+				outTarget.addDefaultRunArguments(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runDependencies", status))
 				outTarget.addRunDependencies(std::move(val));
 		}

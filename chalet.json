@@ -80,7 +80,7 @@
 				"src/*/**.{cpp,rc}",
 				"test/**.cpp"
 			],
-			"runArguments": [
+			"defaultRunArguments": [
 				"-w",
 				"NoTests",
 				"-s"
