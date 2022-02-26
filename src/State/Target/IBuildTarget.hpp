@@ -47,9 +47,6 @@ struct IBuildTarget
 	void addRunDependencies(StringList&& inList);
 	void addRunDependency(std::string&& inValue);
 
-	bool runTarget() const noexcept;
-	void setRunTarget(const bool inValue) noexcept;
-
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
 
@@ -67,7 +64,6 @@ private:
 	std::string m_description;
 
 	BuildTargetType m_type = BuildTargetType::Unknown;
-	bool m_runTarget = false;
 	bool m_includeInBuild = true;
 };
 }

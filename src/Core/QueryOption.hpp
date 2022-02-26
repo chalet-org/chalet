@@ -19,6 +19,7 @@ enum class QueryOption : ushort
 	UserToolchains,
 	ToolchainPresets,
 	Architectures,
+	AllRunTargets,
 	//
 	Toolchain,
 	Configuration,

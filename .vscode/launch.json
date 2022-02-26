@@ -16,12 +16,14 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../chalet-example-sfml",
+			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"configure"
+				"-c",
+				"Release",
+				"buildrun"
 			],
 		},
 		{

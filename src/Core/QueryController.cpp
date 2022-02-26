@@ -78,6 +78,10 @@ bool QueryController::printListOfRequestedType()
 			output = getCurrentRunTarget();
 			break;
 
+		case QueryOption::AllRunTargets:
+			output = getAllRunTargets();
+			break;
+
 		case QueryOption::AllToolchains: {
 			StringList presets = m_centralState.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
@@ -465,12 +469,7 @@ StringList QueryController::getAllRunTargets() const
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("script", kindValue))
-				{
-					if (!target.contains(Keys::RunTarget))
-						isExecutable = false;
-				}
-				else if (String::equals("cmakeProject", kindValue))
+				if (String::equals("cmakeProject", kindValue))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -489,6 +488,30 @@ StringList QueryController::getAllRunTargets() const
 StringList QueryController::getCurrentRunTarget() const
 {
 	StringList ret;
+
+	const auto& settingsFile = getSettingsJson();
+	if (settingsFile.is_object())
+	{
+		if (settingsFile.contains(Keys::Options))
+		{
+			const auto& settings = settingsFile.at(Keys::Options);
+			if (settings.contains(Keys::OptionsRunTarget))
+			{
+				const auto& runTarget = settings.at(Keys::OptionsRunTarget);
+				if (runTarget.is_string())
+				{
+					auto value = runTarget.get<std::string>();
+					if (!value.empty())
+					{
+						ret.emplace_back(std::move(value));
+					}
+				}
+			}
+		}
+	}
+
+	if (!ret.empty())
+		return ret;
 
 	const auto& chaletJson = m_centralState.chaletJson().json;
 
@@ -512,12 +535,7 @@ StringList QueryController::getCurrentRunTarget() const
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("script", kindValue))
-				{
-					if (!target.contains(Keys::RunTarget))
-						isExecutable = false;
-				}
-				else if (String::equals("cmakeProject", kindValue))
+				if (String::equals("cmakeProject", kindValue))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -525,20 +543,6 @@ StringList QueryController::getCurrentRunTarget() const
 
 				if (isExecutable)
 					executableProjects.push_back(key);
-
-				if (!target.contains(Keys::RunTarget))
-					continue;
-
-				const auto& runTarget = target.at(Keys::RunTarget);
-				if (!runTarget.is_boolean())
-					continue;
-
-				bool isRunTarget = runTarget.get<bool>();
-				if (isRunTarget)
-				{
-					ret.emplace_back(key);
-					return ret;
-				}
 			}
 		}
 	}

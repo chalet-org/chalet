@@ -116,6 +116,7 @@ private:
 	RouteMap m_routeMap;
 
 	std::string m_routeString;
+	std::ptrdiff_t m_ignoreIndex = 0;
 
 	Route m_route;
 };

@@ -50,7 +50,7 @@ private:
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;
-	bool validRunTargetRequestedFromInput() const;
+	bool validRunTargetRequestedFromInput();
 	bool conditionIsValid(const std::string& inContent) const;
 
 	template <typename T>

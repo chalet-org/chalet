@@ -60,8 +60,7 @@
 					"src"
 				]
 			},
-			"files": "src/**.{cpp,rc}",
-			"runTarget": true
+			"files": "src/**.{cpp,rc}"
 		},
 		"tests_chalet": {
 			"kind": "executable",

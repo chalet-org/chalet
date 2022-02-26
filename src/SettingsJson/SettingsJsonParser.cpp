@@ -164,6 +164,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
 	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
+	m_jsonFile.assignStringIfEmptyWithFallback(buildSettings, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
 
 	if (!buildSettings.contains(Keys::OptionsSigningIdentity) || !buildSettings[Keys::OptionsSigningIdentity].is_string())
 	{
@@ -425,6 +426,11 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			{
 				if (m_inputs.architectureRaw().empty())
 					m_inputs.setArchitectureRaw(value.get<std::string>());
+			}
+			else if (String::equals(Keys::OptionsRunTarget, key))
+			{
+				if (m_inputs.runTarget().empty())
+					m_inputs.setRunTarget(value.get<std::string>());
 			}
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 			{

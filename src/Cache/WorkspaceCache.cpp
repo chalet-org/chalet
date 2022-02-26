@@ -306,6 +306,16 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
+	if (optionsJson.contains(Keys::OptionsRunTarget))
+	{
+		auto& runTarget = optionsJson.at(Keys::OptionsRunTarget);
+		if (runTarget.is_string() && runTarget.get<std::string>() != inInputs.runTarget())
+		{
+			optionsJson[Keys::OptionsRunTarget] = inInputs.runTarget();
+			settingsJson.setDirty(true);
+		}
+	}
+
 	if (toolchain.contains(Keys::ToolchainVersion))
 	{
 		const auto& versionString = inToolchain.version();

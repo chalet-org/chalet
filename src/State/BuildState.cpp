@@ -100,6 +100,10 @@ bool BuildState::initialize()
 	if (!parseChaletJson())
 		return false;
 
+	// Update settings after toolchain & chalet.json have been parsed
+	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
+		return false;
+
 	if (inputs.route() != Route::Configure)
 	{
 		if (!initializeBuild())
@@ -271,9 +275,6 @@ bool BuildState::initializeToolchain()
 
 	if (!toolchain.initialize(*m_impl->environment))
 		return onError();
-
-	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
-		return false;
 
 	if (!configuration.validateSanitizers(*this))
 	{

@@ -73,6 +73,7 @@ enum class Defs : ushort
 	OutputDir,
 	ExternalDir,
 	DistributionDir,
+	RunTarget,
 	Theme,
 
 	/* Theme */
@@ -419,6 +420,15 @@ Json SettingsJsonSchema::get()
 		"type": "string"
 	})json"_ojson;
 
+	defs[Defs::RunTarget] = R"json({
+		"description": "An executable or script target to run, if requested.",
+		"type": "string"
+	})json"_ojson;
+
+	//
+	// other
+	//
+
 	defs[Defs::Theme] = R"json({
 		"description": "The color theme preset or colors to give to Chalet",
 		"oneOf": [
@@ -525,6 +535,7 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBuildConfiguration] = defs[Defs::LastBuildConfiguration];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsArchitecture] = defs[Defs::LastArchitecture];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunTarget] = defs[Defs::RunTarget];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
 
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];

@@ -27,6 +27,7 @@ struct IntermediateSettingsState
 	std::string externalDirectory;
 	std::string distributionDirectory;
 	std::string signingIdentity;
+	std::string runTarget;
 
 	uint maxJobs = 0;
 	bool benchmark = true;

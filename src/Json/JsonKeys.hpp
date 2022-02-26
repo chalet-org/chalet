@@ -27,7 +27,6 @@ CH_STR(ExternalDependencies) = "externalDependencies";
 
 //
 CH_STR(Kind) = "kind";
-CH_STR(RunTarget) = "runTarget";
 CH_STR(RunExecutable) = "runExecutable";
 
 //
@@ -50,6 +49,7 @@ CH_STR(OptionsRootDirectory) = "rootDir";
 CH_STR(OptionsOutputDirectory) = "outputDir";
 CH_STR(OptionsExternalDirectory) = "externalDir";
 CH_STR(OptionsDistributionDirectory) = "distributionDir";
+CH_STR(OptionsRunTarget) = "runTarget";
 //
 CH_STR(Toolchains) = "toolchains";
 CH_STR(ToolchainVersion) = "version";

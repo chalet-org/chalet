@@ -47,6 +47,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "configurations", QueryOption::Configurations },
 		{ "list-names", QueryOption::QueryNames },
 		{ "run-target", QueryOption::RunTarget },
+		{ "all-run-targets", QueryOption::AllRunTargets },
 		{ "theme-names", QueryOption::ThemeNames },
 		{ "toolchain", QueryOption::Toolchain },
 		{ "toolchain-presets", QueryOption::ToolchainPresets },
@@ -350,7 +351,7 @@ void CommandLineInputs::setBuildConfiguration(std::string&& inValue) noexcept
 	if (inValue.empty())
 		return;
 
-	m_buildConfiguration = inValue;
+	m_buildConfiguration = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -359,7 +360,7 @@ const std::string& CommandLineInputs::runTarget() const noexcept
 	return m_runTarget;
 }
 
-void CommandLineInputs::setRunTarget(std::string&& inValue) noexcept
+void CommandLineInputs::setRunTarget(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
@@ -380,6 +381,8 @@ void CommandLineInputs::setRunOptions(std::string&& inValue) noexcept
 
 	if (inValue.front() == '\'' && inValue.back() == '\'')
 		inValue = inValue.substr(1, inValue.size() - 2);
+
+	LOG("CommandLineInputs::setRunOptions:", inValue);
 
 	// TODO: skip '\ '
 	m_runOptions = String::split(inValue);

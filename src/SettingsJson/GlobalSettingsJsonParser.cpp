@@ -171,6 +171,11 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 		return outState.signingIdentity;
 	});
 
+	assignSettingsString(Keys::OptionsRunTarget, [&]() {
+		outState.runTarget = std::string();
+		return outState.runTarget;
+	});
+
 	return true;
 }
 
@@ -260,6 +265,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.architecturePreference = value.get<std::string>();
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 				outState.signingIdentity = value.get<std::string>();
+			else if (String::equals(Keys::OptionsRunTarget, key))
+				outState.runTarget = value.get<std::string>();
 			else if (String::equals(Keys::OptionsInputFile, key))
 				outState.inputFile = value.get<std::string>();
 			else if (String::equals(Keys::OptionsEnvFile, key))

@@ -232,6 +232,10 @@
 					"description": "The architecture id to use for building, if not the previous one.",
 					"type": "string"
 				},
+				"runTarget": {
+					"description": "An executable or script target to run, if requested.",
+					"type": "string"
+				},
 				"signingIdentity": {
 					"description": "The signing identity to use when bundling the macos application distribution.",
 					"type": "string"

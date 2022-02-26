@@ -604,12 +604,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "C++"
 	})json"_ojson;
 
-	defs[Defs::TargetRunTarget] = R"json({
-		"type": "boolean",
-		"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable targets are defined as the runTarget, the first executable one will be chosen.",
-		"default": false
-	})json"_ojson;
-
 	defs[Defs::TargetRunTargetArguments] = R"json({
 		"type": "array",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
@@ -1599,9 +1593,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
 		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runDependencies"] = getDefinition(Defs::TargetRunDependencies);
-		defs[Defs::TargetSourceExecutable][SKeys::Properties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
 		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^runDependencies{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunDependencies);
-		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
 	}
 
 	{
@@ -1616,9 +1608,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetBuildScript[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
 		targetBuildScript[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		// targetBuildScript[SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
-		targetBuildScript[SKeys::Properties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
 		targetBuildScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
-		targetBuildScript[SKeys::PatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
 		targetBuildScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::TargetScript] = std::move(targetBuildScript);
 	}
@@ -1676,12 +1666,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetCMake[SKeys::Properties]["rebuild"] = getDefinition(Defs::TargetCMakeRebuild);
 		targetCMake[SKeys::Properties]["runArguments"] = getDefinition(Defs::TargetRunTargetArguments);
 		targetCMake[SKeys::Properties]["runExecutable"] = getDefinition(Defs::TargetCMakeRunExecutable);
-		targetCMake[SKeys::Properties]["runTarget"] = getDefinition(Defs::TargetRunTarget);
 		targetCMake[SKeys::Properties]["toolset"] = getDefinition(Defs::TargetCMakeToolset);
 		targetCMake[SKeys::PatternProperties][fmt::format("^buildFile{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeBuildFile);
 		targetCMake[SKeys::PatternProperties][fmt::format("^defines{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeDefines);
 		targetCMake[SKeys::PatternProperties][fmt::format("^toolset{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeToolset);
-		targetCMake[SKeys::PatternProperties][fmt::format("^runTarget{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetRunTarget);
 		targetCMake[SKeys::PatternProperties][fmt::format("^runExecutable{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeRunExecutable);
 		defs[Defs::TargetCMake] = std::move(targetCMake);
 	}
@@ -1789,7 +1777,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetDescription: return "target-description";
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
-		case Defs::TargetRunTarget: return "target-runTarget";
 		case Defs::TargetRunTargetArguments: return "target-runArguments";
 		case Defs::TargetRunDependencies: return "target-runDependencies";
 		//

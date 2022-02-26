@@ -120,32 +120,43 @@ bool ChaletJsonParser::validBuildRequested() const
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::validRunTargetRequestedFromInput() const
+bool ChaletJsonParser::validRunTargetRequestedFromInput()
 {
 	const auto& inputRunTarget = m_state.inputs.runTarget();
-	if (inputRunTarget.empty())
-		return true;
-
+	bool setRunTarget = inputRunTarget.empty();
 	for (auto& target : m_state.targets)
 	{
 		auto& name = target->name();
-		if (name != inputRunTarget)
+		if (!setRunTarget && name != inputRunTarget)
 			continue;
 
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable())
+			{
+				if (setRunTarget)
+					m_state.inputs.setRunTarget(std::string(target->name()));
+
 				return true;
+			}
 		}
 		else if (target->isCMake())
 		{
 			auto& project = static_cast<const CMakeTarget&>(*target);
 			if (!project.runExecutable().empty())
+			{
+				if (setRunTarget)
+					m_state.inputs.setRunTarget(std::string(target->name()));
+
 				return true;
+			}
 		}
 		else if (target->isScript())
 		{
+			if (setRunTarget)
+				m_state.inputs.setRunTarget(std::string(target->name()));
+
 			return true;
 		}
 	}
@@ -594,13 +605,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
-		if (value.is_boolean())
-		{
-			bool val = false;
-			if (valueMatchesSearchKeyPattern(val, value, key, "runTarget", status))
-				outTarget.setRunTarget(val);
-		}
-		else if (value.is_array())
+		if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "runArguments", status))

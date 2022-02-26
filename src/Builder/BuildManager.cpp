@@ -87,7 +87,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	bool runRoute = inRoute == Route::Run;
-	m_runTargetName = getRunTarget();
+	const auto& runTargetName = m_state.inputs.runTarget();
 
 	if (!runRoute)
 	{
@@ -150,34 +150,14 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	bool error = false;
 	for (auto& target : m_state.targets)
 	{
-		bool isRunTarget = String::equals(m_runTargetName, target->name());
-		bool noExplicitRunTarget = m_runTargetName.empty() && runTarget == nullptr;
+		bool isRunTarget = String::equals(runTargetName, target->name());
+		bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
 
 		if (isRunTarget || noExplicitRunTarget)
 		{
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (project.isExecutable())
-					runTarget = target.get();
-			}
-			else if (target->isCMake())
-			{
-				auto& project = static_cast<const CMakeTarget&>(*target);
-				if (!project.runExecutable().empty())
-					runTarget = target.get();
-			}
-			else if (target->isScript())
-			{
-				auto& script = static_cast<const ScriptBuildTarget&>(*target);
-				if (script.runTarget())
-				{
-					runTarget = target.get();
-
-					// don't run the script in the normal order
-					continue;
-				}
-			}
+			runTarget = target.get();
+			if (target->isScript())
+				continue;
 		}
 
 		if (runRoute)
@@ -322,7 +302,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 		else
 		{
-			Diagnostic::error("Run target not found: '{}'", m_runTargetName);
+			Diagnostic::error("Run target not found: '{}'", runTargetName);
 			return false;
 		}
 	}
@@ -965,41 +945,6 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 	Output::lineBreak();
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string BuildManager::getRunTarget()
-{
-	// Note: validated in ChaletJsonParser::validRunTargetRequestedFromInput()
-	//  before BuildManager is run
-	//
-	const auto& inputRunTarget = m_state.inputs.runTarget();
-	if (!inputRunTarget.empty())
-		return inputRunTarget;
-
-	for (auto& target : m_state.targets)
-	{
-		auto& name = target->name();
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable() && target->runTarget())
-				return name; // just get the top one
-		}
-		else if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (!project.runExecutable().empty() && target->runTarget())
-				return name;
-		}
-		else if (target->isScript())
-		{
-			if (target->runTarget())
-				return name;
-		}
-	}
-
-	return std::string();
 }
 
 }

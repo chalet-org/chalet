@@ -20,7 +20,6 @@ namespace chalet
 
 namespace Arg
 {
-CH_STR(RunTarget) = "[<run-target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
@@ -74,6 +73,7 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		"-e", "--env-file",
 		"-a", "--arch",
 		"-c", "--configuration",
+		"-n", "--run-target",
 		//
 		"--template",
 	}),
@@ -141,6 +141,7 @@ bool ArgumentPatterns::resolveFromArguments(const StringList& inArguments)
 			{
 				m_route = route;
 				m_routeString = arg;
+				m_ignoreIndex = i;
 				makeParser();
 
 				auto& command = m_subCommands.at(m_route);
@@ -305,11 +306,15 @@ bool ArgumentPatterns::showHelp()
 bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 {
 	std::string lastValue;
-	auto gatherRemaining = [&inArguments](const std::string& inLastValue) -> StringList {
+	auto gatherRemaining = [&inArguments, this](const std::string& inLastValue) -> StringList {
 		StringList remaining;
 		bool getNext = false;
 		for (const auto& arg : inArguments)
 		{
+			std::ptrdiff_t i = &arg - &inArguments.front();
+			if (i == m_ignoreIndex)
+				continue;
+
 			if (getNext)
 			{
 				remaining.push_back(arg);
@@ -554,8 +559,8 @@ void ArgumentPatterns::populateMainArguments()
 	auto help = fmt::format(R"(
    init [{path}]
    configure
-   buildrun {runTarget} {runArgs}
-   run {runTarget} {runArgs}
+   buildrun {args}
+   run {args}
    build
    rebuild
    clean
@@ -564,15 +569,13 @@ void ArgumentPatterns::populateMainArguments()
    getkeys {keyQuery}
    set {key} {value}
    unset {key}
-   query {queryType} {queryArgs})",
-		fmt::arg("runTarget", Arg::RunTarget),
-		fmt::arg("runArgs", Arg::RemainingArguments),
+   query {queryType} {args})",
+		fmt::arg("args", Arg::RemainingArguments),
 		fmt::arg("key", Arg::SettingsKey),
 		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
 		fmt::arg("value", Arg::SettingsValue),
 		fmt::arg("path", Arg::InitPath),
-		fmt::arg("queryType", Arg::QueryType),
-		fmt::arg("queryArgs", Arg::RemainingArguments));
+		fmt::arg("queryType", Arg::QueryType));
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));
@@ -722,7 +725,7 @@ void ArgumentPatterns::addBuildConfigurationArg()
 /*****************************************************************************/
 void ArgumentPatterns::addRunTargetArg()
 {
-	addStringArgument(ArgumentIdentifier::RunTargetName, Arg::RunTarget, std::string())
+	addTwoStringArguments(ArgumentIdentifier::RunTargetName, "-n", "--run-target")
 		.help("An executable or script target to run");
 }
 
@@ -807,6 +810,7 @@ void ArgumentPatterns::addOptionalArguments()
 	addBenchmarkArg();
 	addLaunchProfilerArg();
 	addKeepGoingArg();
+	addRunTargetArg();
 	addGenerateCompileCommandsArg();
 #if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
@@ -819,7 +823,6 @@ void ArgumentPatterns::populateBuildRunArguments()
 {
 	addOptionalArguments();
 
-	addRunTargetArg();
 	addRunArgumentsArg();
 }
 
@@ -828,7 +831,6 @@ void ArgumentPatterns::populateRunArguments()
 {
 	addOptionalArguments();
 
-	addRunTargetArg();
 	addRunArgumentsArg();
 }
 

@@ -710,11 +710,6 @@
 			"minLength": 1,
 			"pattern": "^(!?(debug|windows|macos|linux)\\b){1,2}$"
 		},
-		"target-runTarget": {
-			"type": "boolean",
-			"description": "Is this the main project to run during run-related commands (buildrun & run)?\n\nIf multiple targets are defined as true, the first will be chosen to run. If a command-line runTarget is given, it will be prioritized. If no executable targets are defined as the runTarget, the first executable one will be chosen.",
-			"default": false
-		},
 		"target-runArguments": {
 			"type": "array",
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
@@ -810,9 +805,6 @@
 				},
 				"runDependencies": {
 					"$ref": "#/definitions/target-runDependencies"
-				},
-				"runTarget": {
-					"$ref": "#/definitions/target-runTarget"
 				}
 			},
 			"patternProperties": {
@@ -824,9 +816,6 @@
 				},
 				"^runDependencies(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-runDependencies"
-				},
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-runTarget"
 				}
 			}
 		},
@@ -2143,17 +2132,11 @@
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
-				"runTarget": {
-					"$ref": "#/definitions/target-runTarget"
-				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			},
 			"patternProperties": {
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-runTarget"
-				},
 				"^file(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-script-file"
 				}
@@ -2203,9 +2186,6 @@
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
-				"runTarget": {
-					"$ref": "#/definitions/target-runTarget"
-				},
 				"toolset": {
 					"$ref": "#/definitions/target-cmake-toolset"
 				}
@@ -2219,9 +2199,6 @@
 				},
 				"^toolset(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-cmake-toolset"
-				},
-				"^runTarget(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-runTarget"
 				},
 				"^runExecutable(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"

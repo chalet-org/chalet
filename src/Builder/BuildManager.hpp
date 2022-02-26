@@ -57,7 +57,6 @@ private:
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
-	std::string getRunTarget();
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 
@@ -76,8 +75,6 @@ private:
 	Timer m_timer;
 
 	// SourceTarget* m_project = nullptr;
-
-	std::string m_runTargetName;
 
 	bool m_directoriesMade = false;
 };

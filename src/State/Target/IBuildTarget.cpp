@@ -158,17 +158,6 @@ void IBuildTarget::addRunDependency(std::string&& inValue)
 }
 
 /*****************************************************************************/
-bool IBuildTarget::runTarget() const noexcept
-{
-	return m_runTarget;
-}
-
-void IBuildTarget::setRunTarget(const bool inValue) noexcept
-{
-	m_runTarget = inValue;
-}
-
-/*****************************************************************************/
 bool IBuildTarget::includeInBuild() const noexcept
 {
 	return m_includeInBuild;
