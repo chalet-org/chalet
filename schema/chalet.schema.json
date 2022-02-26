@@ -68,22 +68,38 @@
 			"default": false
 		},
 		"configuration-sanitize": {
-			"type": "array",
 			"description": "An array of sanitizers to enable. If combined with staticLinking, the selected sanitizers will be statically linked, if available by the toolchain.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1,
-				"enum": [
-					"address",
-					"hwaddress",
-					"thread",
-					"memory",
-					"leak",
-					"undefined"
-				]
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"enum": [
+						"address",
+						"hwaddress",
+						"thread",
+						"memory",
+						"leak",
+						"undefined"
+					]
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"enum": [
+							"address",
+							"hwaddress",
+							"thread",
+							"memory",
+							"leak",
+							"undefined"
+						]
+					}
+				}
+			]
 		},
 		"dist-kind": {
 			"type": "string",
@@ -234,24 +250,40 @@
 			}
 		},
 		"dist-bundle-exclude": {
-			"type": "array",
 			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string"
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"dist-bundle-include": {
-			"type": "array",
 			"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"description": "A single file or folder to copy.",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"dist-bundle-mainExecutable": {
 			"type": "string",
@@ -676,14 +708,22 @@
 			"default": false
 		},
 		"environment-searchPaths": {
-			"type": "array",
 			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-description": {
 			"type": "string",
@@ -711,23 +751,40 @@
 			"pattern": "^(!?(debug|windows|macos|linux)\\b){1,2}$"
 		},
 		"target-defaultRunArguments": {
-			"type": "array",
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-copyFilesOnRun": {
-			"type": "array",
-			"uniqueItems": true,
 			"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libaries that need to be resolved from the same directory as the run target.",
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-abstract": {
 			"type": "object",
@@ -1288,34 +1345,58 @@
 			"default": "c++17"
 		},
 		"target-source-cxx-defines": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
 			"description": "Macro definitions to be used by the preprocessor",
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-includeDirs": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
 			"description": "A list of directories to include with the project.",
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-libDirs": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
 			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-linkerScript": {
 			"type": "string",
@@ -1334,24 +1415,40 @@
 			}
 		},
 		"target-source-cxx-macosFrameworkPaths": {
-			"type": "array",
 			"description": "A list of paths to search for MacOS Frameworks",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-macosFrameworks": {
-			"type": "array",
 			"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-pch": {
 			"type": "string",

@@ -119,6 +119,8 @@ bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
 				m_centralState.workspace.setWorkspaceName(value.get<std::string>());
 			else if (String::equals("version", key))
 				m_centralState.workspace.setVersion(value.get<std::string>());
+			else if (String::equals("searchPaths", key))
+				m_centralState.workspace.addSearchPath(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{
@@ -214,16 +216,18 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 					{
 						if (String::equals("optimizationLevel", key))
 							config.setOptimizationLevel(value.get<std::string>());
+						else if (String::equals("sanitize", key))
+							config.addSanitizeOption(value.get<std::string>());
 					}
 					else if (value.is_boolean())
 					{
 						if (String::equals("linkTimeOptimization", key))
 							config.setLinkTimeOptimization(value.get<bool>());
-						if (String::equals("stripSymbols", key))
+						else if (String::equals("stripSymbols", key))
 							config.setStripSymbols(value.get<bool>());
-						if (String::equals("debugSymbols", key))
+						else if (String::equals("debugSymbols", key))
 							config.setDebugSymbols(value.get<bool>());
-						if (String::equals("enableProfiling", key))
+						else if (String::equals("enableProfiling", key))
 							config.setEnableProfiling(value.get<bool>());
 					}
 					else if (value.is_array())
@@ -469,6 +473,10 @@ bool CentralChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, c
 				outTarget.setSubdirectory(value.get<std::string>());
 			else if (String::equals("mainExecutable", key))
 				outTarget.setMainExecutable(value.get<std::string>());
+			else if (String::equals("include", key))
+				outTarget.addInclude(value.get<std::string>());
+			else if (String::equals("exclude", key))
+				outTarget.addExclude(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{

@@ -149,6 +149,7 @@ private:
 	DefinitionMap getDefinitions();
 	std::string getDefinitionName(const Defs inDef);
 	Json getDefinition(const Defs inDef);
+	Json makeArrayOrString(const Json inString);
 
 	//
 	const std::string kPatternTargetName;

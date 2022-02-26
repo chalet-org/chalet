@@ -79,24 +79,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::ConfigurationSanitize] = R"json({
-		"type": "array",
+	defs[Defs::ConfigurationSanitize] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "An array of sanitizers to enable. If combined with staticLinking, the selected sanitizers will be statically linked, if available by the toolchain.",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1,
-			"enum": [
-				"address",
-				"hwaddress",
-				"thread",
-				"memory",
-				"leak",
-				"undefined"
-			]
-		}
-	})json"_ojson;
+		"minLength": 1,
+		"enum": [
+			"address",
+			"hwaddress",
+			"thread",
+			"memory",
+			"leak",
+			"undefined"
+		]
+	})json"_ojson);
 
 	//
 	// distribution
@@ -122,27 +117,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "Release"
 	})json"_ojson;
 
-	defs[Defs::DistributionBundleInclude] = R"json({
-		"type": "array",
+	defs[Defs::DistributionBundleInclude] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"description": "A single file or folder to copy.",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::DistributionBundleExclude] = R"json({
-		"type": "array",
+	defs[Defs::DistributionBundleExclude] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string"
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::DistributionBundleIncludeDependentSharedLibraries] = R"json({
 		"type": "boolean",
@@ -249,7 +234,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			},
 			{
 				"type": "array",
-			"description": "The name of the build target.",
+				"description": "The name of the build target.",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
@@ -262,25 +247,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::DistributionBundleBuildTargets][SKeys::Items][SKeys::Pattern] = kPatternTargetName;
 
 	//
-	defs[Defs::DistributionArchiveInclude] = R"json({
+	defs[Defs::DistributionArchiveInclude] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
-		"oneOf": [
-			{
-				"type": "string",
-				"minLength": 1,
-				"default": "*"
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
-		]
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
+	defs[Defs::DistributionArchiveInclude][SKeys::OneOf][0][SKeys::Default] = "*";
 
 	//
 	defs[Defs::DistributionMacosDiskImageIconSize] = R"json({
@@ -459,16 +431,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	// other
 	//
-	defs[Defs::EnvironmentSearchPaths] = R"json({
-		"type": "array",
+	defs[Defs::EnvironmentSearchPaths] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	//
 	// target
@@ -604,26 +571,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "C++"
 	})json"_ojson;
 
-	defs[Defs::TargetDefaultRunArguments] = R"json({
-		"type": "array",
+	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::TargetCopyFilesOnRun] = R"json({
-		"type": "array",
-		"uniqueItems": true,
+	defs[Defs::TargetCopyFilesOnRun] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libaries that need to be resolved from the same directory as the run target.",
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxCStandard] = R"json({
 		"type": "string",
@@ -653,38 +611,23 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "c++17"
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxDefines] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
+	defs[Defs::TargetSourceCxxDefines] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Macro definitions to be used by the preprocessor",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::TargetSourceCxxIncludeDirs] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
+	defs[Defs::TargetSourceCxxIncludeDirs] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of directories to include with the project.",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::TargetSourceCxxLibDirs] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
+	defs[Defs::TargetSourceCxxLibDirs] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxLinkerScript] = R"json({
 		"type": "string",
@@ -716,27 +659,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
 
-	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = R"json({
-		"type": "array",
+	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of paths to search for MacOS Frameworks",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::TargetSourceCxxMacOsFrameworks] = R"json({
-		"type": "array",
+	defs[Defs::TargetSourceCxxMacOsFrameworks] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxPrecompiledHeader] = R"json({
 		"type": "string",
@@ -1865,6 +1798,33 @@ Json ChaletJsonSchema::getDefinition(const Defs inDef)
 	{
 		return m_defs.at(inDef);
 	}
+}
+
+/*****************************************************************************/
+Json ChaletJsonSchema::makeArrayOrString(const Json inString)
+{
+	Json ret = R"json({
+		"description": "",
+		"oneOf": [
+			{},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {}
+			}
+		]
+	})json"_ojson;
+	ret[SKeys::OneOf][0] = inString;
+	ret[SKeys::OneOf][1][SKeys::Items] = inString;
+	if (inString.contains(SKeys::Description))
+	{
+		ret[SKeys::Description] = inString.at(SKeys::Description);
+		ret[SKeys::OneOf][0].erase(SKeys::Description);
+		ret[SKeys::OneOf][1][SKeys::Items].erase(SKeys::Description);
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

@@ -387,7 +387,7 @@ void CommandLineInputs::setRunArguments(StringList&& inValue) const noexcept
 	m_runArguments = inValue;
 }
 
-void CommandLineInputs::setRunArguments(std::string&& inValue) noexcept
+void CommandLineInputs::setRunArguments(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
