@@ -125,7 +125,7 @@ jobs:
         run: |
           makensis -version
       - name: "Build: Debug"
-        run: ./build.bat Debug
+        run: ./build-vs2022.bat Debug
       - name: "Color Test"
         run: build/msvc_Debug/chalet-debug colortest
       - name: "Build: Release"
