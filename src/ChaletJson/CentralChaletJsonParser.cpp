@@ -409,6 +409,8 @@ bool CentralChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTar
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
 				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
 		}
 		else if (value.is_array())
 		{
@@ -698,11 +700,14 @@ bool CentralChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInsta
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_string())
 		{
-			std::string val;
 			if (String::equals("description", key))
 				outTarget.setDescription(value.get<std::string>());
 			else if (String::equals("file", key))
 				outTarget.setFile(value.get<std::string>());
+			else if (String::equals("pluginDirs", key))
+				outTarget.addPluginDir(value.get<std::string>());
+			else if (String::equals("defines", key))
+				outTarget.addDefine(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{

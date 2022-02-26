@@ -306,7 +306,6 @@
 				},
 				{
 					"type": "array",
-					"description": "The name of the build target.",
 					"uniqueItems": true,
 					"minItems": 1,
 					"items": {
@@ -584,24 +583,40 @@
 			"minLength": 1
 		},
 		"dist-windows-nullsoft-installer-pluginDirs": {
-			"type": "array",
 			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"dist-windows-nullsoft-installer-defines": {
-			"type": "array",
 			"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"dist-process": {
 			"type": "object",
@@ -1404,15 +1419,24 @@
 			"minLength": 1
 		},
 		"target-source-cxx-links": {
-			"type": "array",
-			"uniqueItems": true,
-			"minItems": 1,
 			"description": "A list of dynamic links to use with the linker",
-			"items": {
-				"type": "string",
-				"minLength": 1,
-				"pattern": "^[\\w\\-+.]+$"
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"pattern": "^[\\w\\-+.]+$"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"pattern": "^[\\w\\-+.]+$"
+					}
+				}
+			]
 		},
 		"target-source-cxx-macosFrameworkPaths": {
 			"description": "A list of paths to search for MacOS Frameworks",
@@ -1513,15 +1537,24 @@
 			"default": false
 		},
 		"target-source-cxx-staticLinks": {
-			"type": "array",
 			"description": "A list of static links to use with the linker",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1,
-				"pattern": "^[\\w\\-+.]+$"
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"pattern": "^[\\w\\-+.]+$"
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1,
+						"pattern": "^[\\w\\-+.]+$"
+					}
+				}
+			]
 		},
 		"target-source-cxx-warnings": {
 			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
@@ -2313,14 +2346,22 @@
 			"minLength": 1
 		},
 		"target-cmake-defines": {
-			"type": "array",
 			"description": "Macro definitions to be passed into CMake. (-D)",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-cmake-recheck": {
 			"type": "boolean",
@@ -2439,14 +2480,22 @@
 			"minLength": 1
 		},
 		"target-process-arguments": {
-			"type": "array",
 			"description": "A list of arguments to pass along to the process",
-			"uniqueItems": true,
-			"minItems": 1,
-			"items": {
-				"type": "string",
-				"minLength": 1
-			}
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		}
 	},
 	"properties": {
@@ -2483,7 +2532,6 @@
 			],
 			"items": {
 				"type": "string",
-				"description": "A default configuration name",
 				"minLength": 1,
 				"enum": [
 					"Release",

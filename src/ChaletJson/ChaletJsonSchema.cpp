@@ -234,7 +234,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			},
 			{
 				"type": "array",
-				"description": "The name of the build target.",
 				"uniqueItems": true,
 				"minItems": 1,
 				"items": {
@@ -371,27 +370,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::DistributionWindowsNullsoftInstallerPluginDirs] = R"json({
-		"type": "array",
+	defs[Defs::DistributionWindowsNullsoftInstallerPluginDirs] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
-	defs[Defs::DistributionWindowsNullsoftInstallerDefines] = R"json({
-		"type": "array",
+	defs[Defs::DistributionWindowsNullsoftInstallerDefines] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	//
 	// externalDependency
@@ -469,16 +458,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^{}$", kPatternAbstractName);
 
-	/*defs[Defs::TargetSourceFiles] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
+	/*defs[Defs::TargetSourceFiles] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Explicitly define the source files, relative to the working directory.",
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;*/
+		"minLength": 1
+	})json"_ojson);*/
 	defs[Defs::TargetSourceFiles] = R"json({
 		"description": "Define the source files, relative to the working directory.",
 		"oneOf": [
@@ -647,17 +631,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 	}
 
-	defs[Defs::TargetSourceCxxLinks] = R"json({
-		"type": "array",
-		"uniqueItems": true,
-		"minItems": 1,
-		"description": "A list of dynamic links to use with the linker",
-		"items": {
+	{
+		Json links = R"json({
 			"type": "string",
+			"description": "A list of dynamic links to use with the linker",
 			"minLength": 1
-		}
-	})json"_ojson;
-	defs[Defs::TargetSourceCxxLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
+		})json"_ojson;
+		links[SKeys::Pattern] = kPatternTargetSourceLinks;
+		defs[Defs::TargetSourceCxxLinks] = makeArrayOrString(std::move(links));
+	}
 
 	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = makeArrayOrString(R"json({
 		"type": "string",
@@ -745,17 +727,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxStaticLinks] = R"json({
-		"type": "array",
-		"description": "A list of static links to use with the linker",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
+	{
+		Json staticLinks = R"json({
 			"type": "string",
+			"description": "A list of static links to use with the linker",
 			"minLength": 1
-		}
-	})json"_ojson;
-	defs[Defs::TargetSourceCxxStaticLinks][SKeys::Items][SKeys::Pattern] = kPatternTargetSourceLinks;
+		})json"_ojson;
+		staticLinks[SKeys::Pattern] = kPatternTargetSourceLinks;
+		defs[Defs::TargetSourceCxxStaticLinks] = makeArrayOrString(std::move(staticLinks));
+	}
 
 	defs[Defs::TargetSourceCxxTreatWarningsAsErrors] = R"json({
 		"description": "true to treat all warnings as errors. false to disable (default).",
@@ -1180,16 +1160,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::TargetCMakeDefines] = R"json({
-		"type": "array",
+	defs[Defs::TargetCMakeDefines] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "Macro definitions to be passed into CMake. (-D)",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetCMakeRecheck] = R"json({
 		"type": "boolean",
@@ -1249,16 +1224,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::TargetProcessArguments] = R"json({
-		"type": "array",
+	defs[Defs::TargetProcessArguments] = makeArrayOrString(R"json({
+		"type": "string",
 		"description": "A list of arguments to pass along to the process",
-		"uniqueItems": true,
-		"minItems": 1,
-		"items": {
-			"type": "string",
-			"minLength": 1
-		}
-	})json"_ojson;
+		"minLength": 1
+	})json"_ojson);
 
 	auto getDefinitionwithCompilerOptions = [this](const Defs inDef) {
 		Json ret = R"json({
@@ -1875,7 +1845,6 @@ Json ChaletJsonSchema::get()
 		"default": [],
 		"items": {
 			"type": "string",
-			"description": "A default configuration name",
 			"minLength": 1
 		}
 	})json"_ojson;

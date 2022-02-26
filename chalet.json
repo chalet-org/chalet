@@ -38,9 +38,7 @@
 				"vendor/argparse/include",
 				"vendor"
 			],
-			"links.windows": [
-				"imagehlp"
-			]
+			"links.windows": "imagehlp"
 		}
 	},
 	"targets": {
@@ -53,12 +51,8 @@
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
-				"staticLinks": [
-					"json-schema-validator-s"
-				],
-				"includeDirs": [
-					"src"
-				]
+				"staticLinks": "json-schema-validator-s",
+				"includeDirs": "src"
 			},
 			"files": "src/**.{cpp,rc}"
 		},
@@ -67,9 +61,7 @@
 			"condition": "!debug",
 			"settings:Cxx": {
 				"pch": "src/PCH.hpp",
-				"staticLinks": [
-					"json-schema-validator-s"
-				],
+				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
 					"src",
 					"test",
