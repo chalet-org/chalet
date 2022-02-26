@@ -76,6 +76,95 @@
 		}
 	},
 	"properties": {
+		"options": {
+			"type": "object",
+			"description": "A list of settings related to the build.",
+			"properties": {
+				"architecture": {
+					"description": "The architecture id to use for building, if not the previous one.",
+					"type": "string"
+				},
+				"benchmark": {
+					"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
+					"type": "boolean",
+					"default": true
+				},
+				"configuration": {
+					"description": "The build configuration to use for building, if not the previous one.",
+					"type": "string"
+				},
+				"distributionDir": {
+					"description": "The root directory of all distribution bundles.",
+					"type": "string"
+				},
+				"dumpAssembly": {
+					"type": "boolean",
+					"description": "true to use create an asm dump of each file in the build, false otherwise (default).",
+					"default": false
+				},
+				"envFile": {
+					"description": "A file to load environment variables from.",
+					"type": "string",
+					"default": ".env"
+				},
+				"externalDir": {
+					"type": "string",
+					"description": "The directory to install external dependencies into prior to the rest of the build's run.",
+					"default": "chalet_external"
+				},
+				"generateCompileCommands": {
+					"type": "boolean",
+					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
+					"default": false
+				},
+				"inputFile": {
+					"description": "An input build file to use.",
+					"type": "string",
+					"default": "chalet.json"
+				},
+				"keepGoing": {
+					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
+					"type": "boolean",
+					"default": false
+				},
+				"launchProfiler": {
+					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
+					"type": "boolean",
+					"default": true
+				},
+				"maxJobs": {
+					"type": "integer",
+					"description": "The number of jobs to run during compilation (default: the number of cpu cores).",
+					"minimum": 1
+				},
+				"outputDir": {
+					"description": "The output directory of the build.",
+					"type": "string",
+					"default": "build"
+				},
+				"rootDir": {
+					"description": "The root directory to run the build from.",
+					"type": "string"
+				},
+				"runTarget": {
+					"description": "An executable or script target to run, if requested.",
+					"type": "string"
+				},
+				"showCommands": {
+					"description": "true to show the commands run during the build, false to just show the source file (default).",
+					"type": "boolean",
+					"default": false
+				},
+				"signingIdentity": {
+					"description": "The signing identity to use when bundling the macos application distribution.",
+					"type": "string"
+				},
+				"toolchain": {
+					"description": "The toolchain id to use for building, if not the previous one.",
+					"type": "string"
+				}
+			}
+		},
 		"tools": {
 			"type": "object",
 			"description": "A list of additional tools for the platform.",
@@ -177,98 +266,93 @@
 				}
 			}
 		},
+		"toolchains": {
+			"type": "object",
+			"description": "A list of toolchains.",
+			"patternProperties": {
+				"^[\\w\\-+.]{3,}$": {
+					"type": "object",
+					"description": "A list of compilers and tools needing for the build itself.",
+					"properties": {
+						"archiver": {
+							"type": "string",
+							"description": "The executable path to the toolchain's static library archive utility - typically ar with GCC, libtool on MacOS, or lib.exe with Visual Studio.",
+							"default": "/usr/bin/ar"
+						},
+						"buildPathStyle": {
+							"type": "string",
+							"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
+							"enum": [
+								"configuration",
+								"architecture",
+								"target-triple",
+								"toolchain-name"
+							],
+							"default": "target-triple"
+						},
+						"cmake": {
+							"type": "string",
+							"description": "The executable path to CMake.",
+							"default": "/usr/local/bin/cmake"
+						},
+						"compilerC": {
+							"type": "string",
+							"description": "The executable path to the toolchain's C compiler.",
+							"default": "/usr/bin/cc"
+						},
+						"compilerCpp": {
+							"type": "string",
+							"description": "The executable path to the toolchain's C++ compiler.",
+							"default": "/usr/bin/c++"
+						},
+						"compilerWindowsResource": {
+							"type": "string",
+							"description": "The executable path to the resource compiler. (Windows)"
+						},
+						"disassembler": {
+							"type": "string",
+							"description": "The executable path to the toolchain's disassembler (if applicable) - for instance, objdump with GCC, dumpbin with MSVC, and otool with Apple LLVM."
+						},
+						"linker": {
+							"type": "string",
+							"description": "The executable path to the toolchain's linker - typically ld with GCC, lld with LLVM, or link.exe with Visual Studio.",
+							"default": "/usr/bin/ld"
+						},
+						"make": {
+							"type": "string",
+							"description": "The executable path to GNU make, or NMAKE/Qt Jom with Visual Studio.",
+							"default": "/usr/bin/make"
+						},
+						"ninja": {
+							"type": "string",
+							"description": "The executable path to Ninja."
+						},
+						"profiler": {
+							"type": "string",
+							"description": "The executable path to the toochain's command-line profiler (if applicable) - for instance, gprof with GCC.",
+							"default": "/usr/bin/gprof"
+						},
+						"strategy": {
+							"type": "string",
+							"description": "The strategy to use during the build.",
+							"enum": [
+								"makefile",
+								"native-experimental",
+								"ninja"
+							],
+							"default": "makefile"
+						},
+						"version": {
+							"type": "string",
+							"description": "A version string to identify the toolchain. If MSVC, this must be the full version string of the Visual Studio Installation. (vswhere's installationVersion string)"
+						}
+					}
+				}
+			}
+		},
 		"appleSdks": {
 			"type": "object",
 			"description": "A list of Apple platform SDK paths. (MacOS)"
-		},
-		"options": {
-			"type": "object",
-			"description": "A list of settings related to the build.",
-			"properties": {
-				"dumpAssembly": {
-					"type": "boolean",
-					"description": "true to use create an asm dump of each file in the build, false otherwise (default).",
-					"default": false
-				},
-				"generateCompileCommands": {
-					"type": "boolean",
-					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
-					"default": false
-				},
-				"maxJobs": {
-					"type": "integer",
-					"description": "The number of jobs to run during compilation (default: the number of cpu cores).",
-					"minimum": 1
-				},
-				"showCommands": {
-					"description": "true to show the commands run during the build, false to just show the source file (default).",
-					"type": "boolean",
-					"default": false
-				},
-				"benchmark": {
-					"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
-					"type": "boolean",
-					"default": true
-				},
-				"launchProfiler": {
-					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
-					"type": "boolean",
-					"default": true
-				},
-				"keepGoing": {
-					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
-					"type": "boolean",
-					"default": false
-				},
-				"configuration": {
-					"description": "The build configuration to use for building, if not the previous one.",
-					"type": "string"
-				},
-				"toolchain": {
-					"description": "The toolchain id to use for building, if not the previous one.",
-					"type": "string"
-				},
-				"architecture": {
-					"description": "The architecture id to use for building, if not the previous one.",
-					"type": "string"
-				},
-				"runTarget": {
-					"description": "An executable or script target to run, if requested.",
-					"type": "string"
-				},
-				"signingIdentity": {
-					"description": "The signing identity to use when bundling the macos application distribution.",
-					"type": "string"
-				},
-				"inputFile": {
-					"description": "An input build file to use.",
-					"type": "string",
-					"default": "chalet.json"
-				},
-				"envFile": {
-					"description": "A file to load environment variables from.",
-					"type": "string",
-					"default": ".env"
-				},
-				"rootDir": {
-					"description": "The root directory to run the build from.",
-					"type": "string"
-				},
-				"outputDir": {
-					"description": "The output directory of the build.",
-					"type": "string",
-					"default": "build"
-				},
-				"externalDir": {
-					"type": "string",
-					"description": "The directory to install external dependencies into prior to the rest of the build's run.",
-					"default": "chalet_external"
-				},
-				"distributionDir": {
-					"description": "The root directory of all distribution bundles.",
-					"type": "string"
-				}
-			}
 		},
 		"theme": {
 			"description": "The color theme preset or colors to give to Chalet",
@@ -328,90 +412,6 @@
 					}
 				}
 			]
-		},
-		"toolchains": {
-			"type": "object",
-			"description": "A list of toolchains.",
-			"patternProperties": {
-				"^[\\w\\-+.]{3,}$": {
-					"type": "object",
-					"description": "A list of compilers and tools needing for the build itself.",
-					"properties": {
-						"version": {
-							"type": "string",
-							"description": "A version string to identify the toolchain. If MSVC, this must be the full version string of the Visual Studio Installation. (vswhere's installationVersion string)"
-						},
-						"strategy": {
-							"type": "string",
-							"description": "The strategy to use during the build.",
-							"enum": [
-								"makefile",
-								"native-experimental",
-								"ninja"
-							],
-							"default": "makefile"
-						},
-						"buildPathStyle": {
-							"type": "string",
-							"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
-							"enum": [
-								"configuration",
-								"architecture",
-								"target-triple",
-								"toolchain-name"
-							],
-							"default": "target-triple"
-						},
-						"archiver": {
-							"type": "string",
-							"description": "The executable path to the toolchain's static library archive utility - typically ar with GCC, libtool on MacOS, or lib.exe with Visual Studio.",
-							"default": "/usr/bin/ar"
-						},
-						"compilerCpp": {
-							"type": "string",
-							"description": "The executable path to the toolchain's C++ compiler.",
-							"default": "/usr/bin/c++"
-						},
-						"compilerC": {
-							"type": "string",
-							"description": "The executable path to the toolchain's C compiler.",
-							"default": "/usr/bin/cc"
-						},
-						"compilerWindowsResource": {
-							"type": "string",
-							"description": "The executable path to the resource compiler. (Windows)"
-						},
-						"cmake": {
-							"type": "string",
-							"description": "The executable path to CMake.",
-							"default": "/usr/local/bin/cmake"
-						},
-						"linker": {
-							"type": "string",
-							"description": "The executable path to the toolchain's linker - typically ld with GCC, lld with LLVM, or link.exe with Visual Studio.",
-							"default": "/usr/bin/ld"
-						},
-						"profiler": {
-							"type": "string",
-							"description": "The executable path to the toochain's command-line profiler (if applicable) - for instance, gprof with GCC.",
-							"default": "/usr/bin/gprof"
-						},
-						"make": {
-							"type": "string",
-							"description": "The executable path to GNU make, or NMAKE/Qt Jom with Visual Studio.",
-							"default": "/usr/bin/make"
-						},
-						"ninja": {
-							"type": "string",
-							"description": "The executable path to Ninja."
-						},
-						"disassembler": {
-							"type": "string",
-							"description": "The executable path to the toolchain's disassembler (if applicable) - for instance, objdump with GCC, dumpbin with MSVC, and otool with Apple LLVM."
-						}
-					}
-				}
-			}
 		}
 	}
 }

@@ -469,25 +469,50 @@ Json SettingsJsonSchema::get()
 		"description": "A list of compilers and tools needing for the build itself."
 	})json"_ojson;
 	toolchain[SKeys::Properties] = Json::object();
-	toolchain[SKeys::Properties][Keys::ToolchainVersion] = defs[Defs::Version];
-	toolchain[SKeys::Properties][Keys::ToolchainStrategy] = defs[Defs::ToolchainStrategy];
-	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::BuildPathStyle];
 	toolchain[SKeys::Properties][Keys::ToolchainArchiver] = defs[Defs::Archiver];
-	toolchain[SKeys::Properties][Keys::ToolchainCompilerCpp] = defs[Defs::CompilerCpp];
-	toolchain[SKeys::Properties][Keys::ToolchainCompilerC] = defs[Defs::CompilerC];
-	toolchain[SKeys::Properties][Keys::ToolchainCompilerWindowsResource] = defs[Defs::CompilerWindowsResource];
+	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::BuildPathStyle];
 	toolchain[SKeys::Properties][Keys::ToolchainCMake] = defs[Defs::CMake];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerC] = defs[Defs::CompilerC];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerCpp] = defs[Defs::CompilerCpp];
+	toolchain[SKeys::Properties][Keys::ToolchainCompilerWindowsResource] = defs[Defs::CompilerWindowsResource];
+	toolchain[SKeys::Properties][Keys::ToolchainDisassembler] = defs[Defs::Disassembler];
 	toolchain[SKeys::Properties][Keys::ToolchainLinker] = defs[Defs::Linker];
-	toolchain[SKeys::Properties][Keys::ToolchainProfiler] = defs[Defs::Profiler];
 	toolchain[SKeys::Properties][Keys::ToolchainMake] = defs[Defs::Make];
 	toolchain[SKeys::Properties][Keys::ToolchainNinja] = defs[Defs::Ninja];
-	toolchain[SKeys::Properties][Keys::ToolchainDisassembler] = defs[Defs::Disassembler];
+	toolchain[SKeys::Properties][Keys::ToolchainProfiler] = defs[Defs::Profiler];
+	toolchain[SKeys::Properties][Keys::ToolchainStrategy] = defs[Defs::ToolchainStrategy];
+	toolchain[SKeys::Properties][Keys::ToolchainVersion] = defs[Defs::Version];
 
 	//
 	ret[SKeys::Definitions] = Json::object();
 	ret[SKeys::Definitions]["theme-color"] = defs[Defs::ThemeColor];
 
+	//
 	ret[SKeys::Properties] = Json::object();
+
+	ret[SKeys::Properties][Keys::Options] = R"json({
+		"type": "object",
+		"description": "A list of settings related to the build."
+	})json"_ojson;
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties] = Json::object();
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsArchitecture] = defs[Defs::LastArchitecture];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBenchmark] = defs[Defs::Benchmark];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBuildConfiguration] = defs[Defs::LastBuildConfiguration];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDistributionDirectory] = defs[Defs::DistributionDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDumpAssembly] = defs[Defs::DumpAssembly];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsEnvFile] = defs[Defs::EnvFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsExternalDirectory] = defs[Defs::ExternalDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsGenerateCompileCommands] = defs[Defs::GenerateCompileCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRootDirectory] = defs[Defs::RootDir];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunTarget] = defs[Defs::RunTarget];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
 
 	ret[SKeys::Properties][Keys::Tools] = R"json({
 		"type": "object",
@@ -515,43 +540,18 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcrun] = defs[Defs::XcRun];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsZip] = defs[Defs::Zip];
 
-	ret[SKeys::Properties][Keys::AppleSdks] = R"json({
-		"type": "object",
-		"description": "A list of Apple platform SDK paths. (MacOS)"
-	})json"_ojson;
-
-	ret[SKeys::Properties][Keys::Options] = R"json({
-		"type": "object",
-		"description": "A list of settings related to the build."
-	})json"_ojson;
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties] = Json::object();
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDumpAssembly] = defs[Defs::DumpAssembly];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsGenerateCompileCommands] = defs[Defs::GenerateCompileCommands];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBenchmark] = defs[Defs::Benchmark];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsBuildConfiguration] = defs[Defs::LastBuildConfiguration];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsArchitecture] = defs[Defs::LastArchitecture];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunTarget] = defs[Defs::RunTarget];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
-
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsEnvFile] = defs[Defs::EnvFile];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRootDirectory] = defs[Defs::RootDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsExternalDirectory] = defs[Defs::ExternalDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsDistributionDirectory] = defs[Defs::DistributionDir];
-
-	ret[SKeys::Properties][Keys::Theme] = defs[Defs::Theme];
-
 	ret[SKeys::Properties][Keys::Toolchains] = R"json({
 		"type": "object",
 		"description": "A list of toolchains."
 	})json"_ojson;
 	ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][R"(^[\w\-+.]{3,}$)"] = toolchain;
+
+	ret[SKeys::Properties][Keys::AppleSdks] = R"json({
+		"type": "object",
+		"description": "A list of Apple platform SDK paths. (MacOS)"
+	})json"_ojson;
+
+	ret[SKeys::Properties][Keys::Theme] = defs[Defs::Theme];
 
 	return ret;
 }
