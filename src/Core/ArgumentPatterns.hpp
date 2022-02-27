@@ -48,6 +48,7 @@ private:
 	void makeParser();
 	bool doParse(const StringList& inArguments);
 	bool showHelp();
+	bool showVersion();
 	bool populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
 
@@ -61,6 +62,10 @@ private:
 	argparse::Argument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
 
 	void populateMainArguments();
+
+	void addHelpArg();
+	void addVersionArg();
+
 	void addInputFileArg();
 	void addSettingsFileArg();
 	void addFileArg();

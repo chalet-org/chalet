@@ -12,6 +12,8 @@ enum class ArgumentIdentifier : ushort
 {
 	None,
 	//
+	Help,
+	//
 	InputFile,
 	SettingsFile,
 	File,
