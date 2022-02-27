@@ -73,59 +73,70 @@ bool ChaletJsonParser::valueMatchesToolchainSearchPattern(T& outVariable, const 
 {
 	chalet_assert(m_state.environment != nullptr, "");
 
-	if (String::equals(inSearch, inKey))
+	if (!String::equals(inSearch, inKey))
+		return false;
+
+	using Type = std::decay_t<T>;
+
+	const auto& triple = m_state.info.targetArchitectureTriple();
+	const auto& toolchainName = m_state.inputs.toolchainPreferenceName();
+
+	inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
+
+	bool res = true;
+	if constexpr (std::is_same<Type, StringList>())
 	{
-		using Type = std::decay_t<T>;
-
-		const auto& triple = m_state.info.targetArchitectureTriple();
-		const auto& toolchainName = m_state.inputs.toolchainPreferenceName();
-
-		inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
-
-		bool res = true;
 		for (const auto& [key, value] : inNode.items())
 		{
-			if constexpr (std::is_same<Type, StringList>())
+			if (value.is_array())
 			{
-				if (value.is_array())
+				if (String::equals("*", key) || String::contains(key, triple) || String::contains(key, toolchainName))
 				{
-					if (String::equals("*", key) || String::contains(key, triple) || String::contains(key, toolchainName))
+					for (auto& item : value)
 					{
-						for (auto& item : value)
+						if (item.is_string())
 						{
-							if (!item.is_string())
-								return false;
-
 							List::addIfDoesNotExist(outVariable, item.template get<std::string>());
 						}
 					}
 				}
 			}
-			else if constexpr (std::is_same<Type, std::string>())
+		}
+	}
+	else if constexpr (std::is_same<Type, std::string>())
+	{
+		std::string all;
+		for (const auto& [key, value] : inNode.items())
+		{
+			if (value.is_string())
 			{
-				if (value.is_string())
+				if (String::equals("*", key))
 				{
-					if (String::equals("*", key) || String::contains(key, triple) || String::contains(key, toolchainName))
-					{
-						outVariable = value.template get<Type>();
-					}
+					all = value.template get<Type>();
+				}
+				else if (String::contains(key, triple) || String::contains(key, toolchainName))
+				{
+					outVariable = value.template get<Type>();
 				}
 			}
-			else
-			{
-				res = false;
-			}
 		}
-
-		if constexpr (std::is_same<Type, StringList>() || std::is_same<Type, std::string>())
+		if (!all.empty() && outVariable.empty())
 		{
-			res = !outVariable.empty();
-			inStatus = JsonNodeReadStatus::ValidKeyReadValue;
+			outVariable = std::move(all);
 		}
-
-		return res;
+	}
+	else
+	{
+		res = false;
 	}
 
-	return false;
+	if constexpr (std::is_same<Type, StringList>() || std::is_same<Type, std::string>())
+	{
+		res = !outVariable.empty();
+		if (res)
+			inStatus = JsonNodeReadStatus::ValidKeyReadValue;
+	}
+
+	return res;
 }
 }

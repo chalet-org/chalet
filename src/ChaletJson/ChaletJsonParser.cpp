@@ -770,16 +770,16 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 					outTarget.setInputCharset(std::move(val));
 				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "executionCharset", status))
 					outTarget.setExecutionCharset(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "defines", status))
-					outTarget.addDefine(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "links", status))
-					outTarget.addLink(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "staticLinks", status))
-					outTarget.addStaticLink(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "libDirs", status))
-					outTarget.addLibDir(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "includeDirs", status))
-					outTarget.addIncludeDir(std::move(val));
+				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "defines", status))
+				// 	outTarget.addDefine(std::move(val));
+				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "links", status))
+				// 	outTarget.addLink(std::move(val));
+				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "staticLinks", status))
+				// 	outTarget.addStaticLink(std::move(val));
+				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "libDirs", status))
+				// 	outTarget.addLibDir(std::move(val));
+				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "includeDirs", status))
+				// 	outTarget.addIncludeDir(std::move(val));
 			}
 			if (isUnread(status))
 			{
