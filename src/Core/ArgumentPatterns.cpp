@@ -492,10 +492,7 @@ std::string ArgumentPatterns::getHelp()
 		const auto& defaultToolchain = m_inputs.defaultToolchainPreset();
 
 		help += "\nToolchain Presets:\n";
-		auto toolchains = m_inputs.getToolchainPresets();
-		std::sort(toolchains.begin(), toolchains.end(), [&defaultToolchain](auto& inStr, auto&) {
-			return String::equals(defaultToolchain, inStr);
-		});
+		const auto toolchains = m_inputs.getToolchainPresets();
 		for (auto& toolchain : toolchains)
 		{
 			const bool isDefault = String::equals(defaultToolchain, toolchain);

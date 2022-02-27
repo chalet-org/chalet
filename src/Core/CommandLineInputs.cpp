@@ -851,11 +851,17 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 
 		ret.emplace_back(name);
 	}
-#elif defined(CHALET_MACOS)
-	ret.emplace_back(kToolchainPresetAppleLLVM);
-#endif
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
+#elif defined(CHALET_MACOS)
+	ret.emplace_back(kToolchainPresetAppleLLVM);
+	ret.emplace_back(kToolchainPresetLLVM);
+	ret.emplace_back(kToolchainPresetGCC);
+#else
+	ret.emplace_back(kToolchainPresetGCC);
+	ret.emplace_back(kToolchainPresetLLVM);
+#endif
+
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
 	auto intelClangPresets = getIntelClangVSPresets();
@@ -868,6 +874,7 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 	ret.emplace_back(kToolchainPresetICX);
 	#endif
 #endif
+
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	auto intelClassicPresets = getIntelClassicVSPresets();
