@@ -477,14 +477,40 @@ std::string ArgumentPatterns::getHelp()
 	if (String::contains("--toolchain", help))
 	{
 		auto getPresetMessage = [](const std::string& preset) -> std::string {
-			if (String::equals("apple-llvm", preset))
-				return fmt::format("Apple{} LLVM (Requires Xcode or \"Command Line Tools for Xcode\")", Unicode::registered());
-			else if (String::equals("llvm", preset))
+			if (String::equals("llvm", preset))
 				return std::string("The LLVM Project");
+#if defined(CHALET_WIN32)
+			else if (String::equals("gcc", preset))
+				return std::string("MinGW: Minimalist GNU Compiler Collection for Windows");
+#else
 			else if (String::equals("gcc", preset))
 				return std::string("GNU Compiler Collection");
+#endif
+#if defined(CHALET_MACOS)
+			else if (String::equals("apple-llvm", preset))
+				return fmt::format("Apple{} LLVM (Requires Xcode or \"Command Line Tools for Xcode\")", Unicode::registered());
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 			else if (String::equals("intel-classic", preset))
 				return fmt::format("Intel{} C++ Compiler Classic (for x86_64 processors)", Unicode::registered());
+	#endif
+#elif defined(CHALET_WIN32)
+			else if (String::equals("vs-stable", preset))
+				return fmt::format("Microsoft{} Visual Studio (latest installed stable release)", Unicode::registered());
+			else if (String::equals("vs-preview", preset))
+				return fmt::format("Microsoft{} Visual Studio (latest installed preview release)", Unicode::registered());
+			else if (String::equals("vs-2022", preset))
+				return fmt::format("Microsoft{} Visual Studio 2022", Unicode::registered());
+			else if (String::equals("vs-2019", preset))
+				return fmt::format("Microsoft{} Visual Studio 2019", Unicode::registered());
+			else if (String::equals("vs-2017", preset))
+				return fmt::format("Microsoft{} Visual Studio 2017", Unicode::registered());
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+			else if (String::equals("intel-llvm-vs-2022", preset))
+				return fmt::format("Intel{} oneAPI DPC++/C++ Compiler with Visual Studio 2022 environment", Unicode::registered());
+			else if (String::equals("intel-llvm-vs-2019", preset))
+				return fmt::format("Intel{} oneAPI DPC++/C++ Compiler with Visual Studio 2019 environment", Unicode::registered());
+	#endif
+#endif
 
 			return std::string();
 		};
