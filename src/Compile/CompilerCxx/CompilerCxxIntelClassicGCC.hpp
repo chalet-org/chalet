@@ -21,6 +21,7 @@ struct CompilerCxxIntelClassicGCC : public CompilerCxxGCC
 protected:
 	virtual StringList getWarningExclusions() const final;
 
+	virtual void addCharsets(StringList& outArgList) const final;
 	virtual void addFastMathOption(StringList& outArgList) const final;
 
 private:

@@ -74,6 +74,12 @@ StringList CompilerCxxIntelClassicGCC::getWarningExclusions() const
 }
 
 /*****************************************************************************/
+void CompilerCxxIntelClassicGCC::addCharsets(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void CompilerCxxIntelClassicGCC::addFastMathOption(StringList& outArgList) const
 {
 	if (m_project.fastMath())

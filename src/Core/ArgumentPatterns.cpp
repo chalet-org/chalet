@@ -478,13 +478,13 @@ std::string ArgumentPatterns::getHelp()
 	{
 		auto getPresetMessage = [](const std::string& preset) -> std::string {
 			if (String::equals("apple-llvm", preset))
-				return std::string("Apple LLVM (Requires Xcode or \"Command Line Tools for Xcode\")");
+				return std::string("Apple{} LLVM (Requires Xcode or \"Command Line Tools for Xcode\")", Unicode::registered());
 			else if (String::equals("llvm", preset))
 				return std::string("The LLVM Project");
 			else if (String::equals("gcc", preset))
 				return std::string("GNU Compiler Collection");
 			else if (String::equals("intel-classic", preset))
-				return fmt::format("Intel{} C++ Compiler Classic", Unicode::registered());
+				return fmt::format("Intel{} C++ Compiler Classic (for x86_64 processors)", Unicode::registered());
 
 			return std::string();
 		};
