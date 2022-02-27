@@ -15,13 +15,15 @@
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
+// TODO: Remove argparse library dependency (most of the work is done here anyway)
+
 namespace chalet
 {
 #define CH_STR(x) static constexpr const char x[]
 
 namespace Arg
 {
-CH_STR(RunTarget) = "[<run-target>]";
+CH_STR(RunTarget) = "[<target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
@@ -236,6 +238,7 @@ void ArgumentPatterns::makeParser()
 	if (m_route != Route::Unknown && !m_routeString.empty())
 	{
 		m_parser.add_argument(m_routeString)
+			.help("This subcommand.")
 			.default_value(true)
 			.required();
 
@@ -637,28 +640,72 @@ argparse::Argument& ArgumentPatterns::addRemainingArguments(const ArgumentIdenti
 /*****************************************************************************/
 void ArgumentPatterns::populateMainArguments()
 {
-	auto help = fmt::format(R"(
-init [{path}]
-configure
-buildrun {runTarget} {runArgs}
-run {runTarget} {runArgs}
-build
-rebuild
-clean
-bundle
-get {key}
-getkeys {keyQuery}
-set {key} {value}
-unset {key}
-query {queryType} {queryArgs})",
-		fmt::arg("runTarget", Arg::RunTarget),
-		fmt::arg("runArgs", Arg::RemainingArguments),
-		fmt::arg("key", Arg::SettingsKey),
-		fmt::arg("keyQuery", Arg::SettingsKeyQuery),
-		fmt::arg("value", Arg::SettingsValue),
-		fmt::arg("path", Arg::InitPath),
-		fmt::arg("queryType", Arg::QueryType),
-		fmt::arg("queryArgs", Arg::RemainingArguments));
+	StringList subcommands;
+	StringList descriptions;
+
+	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
+	descriptions.push_back("Initialize a project in either the current directory or a subdirectory.\n");
+
+	subcommands.push_back("configure");
+	descriptions.push_back("Create a project configuration and fetch external dependencies.");
+
+	subcommands.push_back(fmt::format("buildrun {} {}", Arg::RunTarget, Arg::RemainingArguments));
+	descriptions.push_back("Build the project and run a valid executable build target.");
+
+	subcommands.push_back(fmt::format("run {} {}", Arg::RunTarget, Arg::RemainingArguments));
+	descriptions.push_back("Run a valid executable build target.");
+
+	subcommands.push_back("build");
+	descriptions.push_back("Build the project and create a configuration if it doesn't exist.");
+
+	subcommands.push_back("rebuild");
+	descriptions.push_back("Rebuild the project and create a configuration if it doesn't exist.");
+
+	subcommands.push_back("clean");
+	descriptions.push_back("Unceremoniously clean the build folder.");
+
+	subcommands.push_back("bundle");
+	descriptions.push_back("Bundle the project for distribution.\n");
+
+	subcommands.push_back(fmt::format("get {}", Arg::SettingsKey));
+	descriptions.push_back("If the given property is valid, display its JSON node.");
+
+	subcommands.push_back(fmt::format("getkeys {}", Arg::SettingsKeyQuery));
+	descriptions.push_back("If the given property is an object, display the names of its properties.");
+
+	subcommands.push_back(fmt::format("set {} {}", Arg::SettingsKey, Arg::SettingsValue));
+	descriptions.push_back("Set the given property to the given value.");
+
+	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
+	descriptions.push_back("Remove the key/value pair given a valid property key.\n");
+
+	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
+	descriptions.push_back("Query Chalet for any project-specific or global information. Intended for code editor integrations.");
+
+	subcommands.push_back("colortest");
+	descriptions.push_back("Display all color themes and terminal capabilities.");
+
+	std::string help("\n");
+	if (subcommands.size() == descriptions.size())
+	{
+		for (std::size_t i = 0; i < subcommands.size(); ++i)
+		{
+			std::string line = subcommands.at(i);
+			while (line.size() < 28)
+				line += ' ';
+			line += '\t';
+			line += descriptions.at(i);
+
+			help += line;
+			if (i < (subcommands.size() - 1))
+				help += '\n';
+		}
+	}
+	else
+	{
+		chalet_assert(false, "vector size mismatch between subcommands and descriptions");
+		help += "Error!";
+	}
 
 	m_parser.add_argument("<subcommand>")
 		.help(std::move(help));
@@ -669,7 +716,7 @@ void ArgumentPatterns::addHelpArg()
 {
 	m_parser.add_argument("-h", "--help")
 		.default_value(false)
-		.help("Shows help message for the subcommand (if applicable) and exits.")
+		.help("Shows help message (if applicable, for the subcommand) and exits.")
 		.implicit_value(true)
 		.nargs(0);
 }
