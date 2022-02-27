@@ -130,7 +130,7 @@ bool ChaletJsonParser::validBuildRequested() const
 bool ChaletJsonParser::validRunTargetRequestedFromInput()
 {
 	auto runTarget = m_state.inputs.runTarget();
-	for (int i = 0; i < 2; ++i)
+	// for (int i = 0; i < 2; ++i)
 	{
 		bool setRunTarget = runTarget.empty();
 		for (auto& target : m_state.targets)
@@ -167,7 +167,7 @@ bool ChaletJsonParser::validRunTargetRequestedFromInput()
 			}
 		}
 
-		runTarget = std::string();
+		// runTarget = std::string();
 	}
 
 	return false;
