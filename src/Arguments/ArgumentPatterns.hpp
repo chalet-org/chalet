@@ -6,8 +6,8 @@
 #ifndef CHALET_ARG_PARSE_PARSER_HPP
 #define CHALET_ARG_PARSE_PARSER_HPP
 
-#include "Core/ArgumentIdentifier.hpp"
-#include "Libraries/ArgParse.hpp"
+#include "Arguments/ArgumentIdentifier.hpp"
+#include "Arguments/MappedArgument.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Variant.hpp"
 
@@ -15,26 +15,18 @@ namespace chalet
 {
 struct CommandLineInputs;
 
-struct MappedArgument
-{
-	ArgumentIdentifier id;
-	Variant value;
-
-	MappedArgument(ArgumentIdentifier inId, Variant inValue);
-};
-
 class ArgumentPatterns
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
 	using RouteMap = OrderedDictionary<Route>;
-	using ArgumentMap = OrderedDictionary<MappedArgument>;
+	using ArgumentList = std::map<ArgumentIdentifier, MappedArgument>;
 
 public:
 	ArgumentPatterns(const CommandLineInputs& inInputs);
 
 	bool resolveFromArguments(const StringList& inArguments);
-	const ArgumentMap& arguments() const noexcept;
+	const ArgumentList& arguments() const noexcept;
 
 	Route route() const noexcept;
 
@@ -52,14 +44,14 @@ private:
 	bool populateArgumentMap(const StringList& inArguments);
 	std::string getHelp();
 
-	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
-	argparse::Argument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue);
-	argparse::Argument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
-	argparse::Argument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
-	argparse::Argument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
-	argparse::Argument& addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument);
-	argparse::Argument& addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue);
-	argparse::Argument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
+	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
+	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue);
+	MappedArgument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
+	MappedArgument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
+	MappedArgument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
+	MappedArgument& addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument);
+	MappedArgument& addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue);
+	MappedArgument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
 
 	void populateMainArguments();
 
@@ -113,11 +105,10 @@ private:
 
 	const CommandLineInputs& m_inputs;
 
-	argparse::ArgumentParser m_parser;
 	ParserList m_subCommands;
 
 	StringList m_optionPairsCache;
-	ArgumentMap m_argumentMap;
+	ArgumentList m_argumentList;
 	RouteMap m_routeMap;
 
 	std::string m_routeString;

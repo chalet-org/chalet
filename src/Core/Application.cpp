@@ -7,7 +7,7 @@
 
 #include "Router/Router.hpp"
 
-#include "Core/ArgumentParser.hpp"
+#include "Arguments/ArgumentParser.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -28,15 +28,17 @@ int Application::run(const int argc, const char* const argv[])
 		ArgumentParser argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
 			return onExit(Status::EarlyFailure);
+
+		return onExit(Status::Success);
 	}
 
-	if (m_inputs.route() == Route::Help)
-		return onExit(Status::Success);
+	// if (m_inputs.route() == Route::Help)
+	// 	return onExit(Status::Success);
 
-	if (!handleRoute())
-		return onExit(Status::Failure);
+	// if (!handleRoute())
+	// 	return onExit(Status::Failure);
 
-	return onExit(Status::Success);
+	// return onExit(Status::Success);
 }
 
 /*****************************************************************************/

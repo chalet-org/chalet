@@ -3,10 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Core/ArgumentParser.hpp"
+#include "Arguments/ArgumentParser.hpp"
 
-#include "Core/ArgumentPatterns.hpp"
-// #include "Core/ArgumentMap.hpp"
+#include "Arguments/ArgumentPatterns.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 #include "Router/Route.hpp"
@@ -55,17 +54,18 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 	std::string distributionDirectory;
 	std::string envFile;
 
-	for (auto& [key, arg] : patterns.arguments())
+	for (auto& [id, mapped] : patterns.arguments())
 	{
-		auto kind = arg.value.kind();
+		LOG(mapped.value(), "-----", mapped.key());
+		auto kind = mapped.value().kind();
 		switch (kind)
 		{
 			case Variant::Kind::String: {
-				auto value = arg.value.asString();
+				auto value = mapped.value().asString();
 				if (value.empty())
 					continue;
 
-				switch (arg.id)
+				switch (id)
 				{
 					case ArgumentIdentifier::RunTargetName:
 						m_inputs.setRunTarget(std::move(value));
@@ -146,30 +146,30 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::StringList: {
-				if (arg.id == ArgumentIdentifier::RunTargetArguments)
+				if (id == ArgumentIdentifier::RunTargetArguments)
 				{
-					auto runArgs = String::join(arg.value.asStringList());
+					auto runArgs = String::join(mapped.value().asStringList());
 					m_inputs.setRunArguments(std::move(runArgs));
 				}
-				else if (arg.id == ArgumentIdentifier::SettingsKeysRemainingArgs)
+				else if (id == ArgumentIdentifier::SettingsKeysRemainingArgs)
 				{
 					// ignore
 				}
-				else if (arg.id == ArgumentIdentifier::QueryDataRemainingArgs)
+				else if (id == ArgumentIdentifier::QueryDataRemainingArgs)
 				{
-					m_inputs.setQueryData(arg.value.asStringList());
+					m_inputs.setQueryData(mapped.value().asStringList());
 				}
 				break;
 			}
 
 			case Variant::Kind::OptionalInteger: {
-				auto rawValue = arg.value.asOptionalInt();
+				auto rawValue = mapped.value().asOptionalInt();
 				if (!rawValue.has_value())
 					break;
 
 				int value = *rawValue;
 
-				if (arg.id == ArgumentIdentifier::MaxJobs)
+				if (id == ArgumentIdentifier::MaxJobs)
 				{
 					m_inputs.setMaxJobs(static_cast<uint>(value));
 				}
@@ -177,13 +177,13 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::OptionalBoolean: {
-				auto rawValue = arg.value.asOptionalBool();
+				auto rawValue = mapped.value().asOptionalBool();
 				if (!rawValue.has_value())
 					break;
 
 				bool value = *rawValue;
 
-				switch (arg.id)
+				switch (id)
 				{
 					case ArgumentIdentifier::DumpAssembly:
 						m_inputs.setDumpAssembly(value);
@@ -216,8 +216,8 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 			}
 
 			case Variant::Kind::Boolean: {
-				bool value = arg.value.asBool();
-				switch (arg.id)
+				bool value = mapped.value().asBool();
+				switch (id)
 				{
 					case ArgumentIdentifier::SaveSchema:
 						m_inputs.setSaveSchemaToFile(value);

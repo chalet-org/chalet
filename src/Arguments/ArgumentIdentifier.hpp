@@ -12,7 +12,9 @@ enum class ArgumentIdentifier : ushort
 {
 	None,
 	//
+	SubCommand,
 	Help,
+	Version,
 	//
 	InputFile,
 	SettingsFile,
