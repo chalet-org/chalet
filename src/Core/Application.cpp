@@ -7,7 +7,7 @@
 
 #include "Router/Router.hpp"
 
-#include "Core/ArgumentParser.hpp"
+#include "Arguments/ArgumentParser.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"

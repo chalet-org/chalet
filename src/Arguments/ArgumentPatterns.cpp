@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Core/ArgumentPatterns.hpp"
+#include "Arguments/ArgumentPatterns.hpp"
 
 #include <thread>
 
@@ -35,13 +35,6 @@ CH_STR(QueryType) = "<type>";
 }
 
 #undef CH_STR
-
-/*****************************************************************************/
-MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
-	id(inId),
-	value(std::move(inValue))
-{
-}
 
 /*****************************************************************************/
 ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :

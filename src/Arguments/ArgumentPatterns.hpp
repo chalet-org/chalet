@@ -6,7 +6,8 @@
 #ifndef CHALET_ARG_PARSE_PARSER_HPP
 #define CHALET_ARG_PARSE_PARSER_HPP
 
-#include "Core/ArgumentIdentifier.hpp"
+#include "Arguments/ArgumentIdentifier.hpp"
+#include "Arguments/MappedArgument.hpp"
 #include "Libraries/ArgParse.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Variant.hpp"
@@ -14,14 +15,6 @@
 namespace chalet
 {
 struct CommandLineInputs;
-
-struct MappedArgument
-{
-	ArgumentIdentifier id;
-	Variant value;
-
-	MappedArgument(ArgumentIdentifier inId, Variant inValue);
-};
 
 class ArgumentPatterns
 {

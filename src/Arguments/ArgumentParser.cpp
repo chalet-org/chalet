@@ -3,10 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Core/ArgumentParser.hpp"
+#include "Arguments/ArgumentParser.hpp"
 
-#include "Core/ArgumentPatterns.hpp"
-// #include "Core/ArgumentMap.hpp"
+#include "Arguments/ArgumentPatterns.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 #include "Router/Route.hpp"
