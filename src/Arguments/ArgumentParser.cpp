@@ -6,6 +6,7 @@
 #include "Arguments/ArgumentParser.hpp"
 
 #include "Arguments/ArgumentPatterns.hpp"
+#include "Arguments/CLIParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 
 #include "Router/Route.hpp"
@@ -21,10 +22,20 @@ ArgumentParser::ArgumentParser(CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-bool ArgumentParser::run(const int argc, const char* const argv[])
+bool ArgumentParser::run(const int argc, const char* argv[])
 {
 	if (argc < 1)
 		return false;
+
+	auto tmpArguments = CLIParser::parse(argc, argv, 2);
+	for (auto&& [key, value] : tmpArguments)
+	{
+		if (value.empty())
+			LOG(key);
+		else
+			LOG(key, "=", value);
+	}
+	LOG("");
 
 	StringList arguments = parseRawArguments(argc, argv);
 	m_inputs.setAppPath(arguments.front());
@@ -56,7 +67,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 
 	for (auto& [id, mapped] : patterns.arguments())
 	{
-		LOG(mapped.value(), "-----", mapped.key());
+		// LOG(mapped.value(), "-----", mapped.key());
 		auto kind = mapped.value().kind();
 		switch (kind)
 		{
@@ -288,7 +299,7 @@ bool ArgumentParser::run(const int argc, const char* const argv[])
 }
 
 /*****************************************************************************/
-StringList ArgumentParser::parseRawArguments(const int argc, const char* const argv[])
+StringList ArgumentParser::parseRawArguments(const int argc, const char* argv[])
 {
 	StringList ret;
 

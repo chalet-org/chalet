@@ -5,7 +5,7 @@
 
 #include "Core/Application.hpp"
 
-int main(const int argc, const char* const argv[])
+int main(const int argc, const char* argv[])
 {
 	chalet::Application app;
 	return app.run(argc, argv);

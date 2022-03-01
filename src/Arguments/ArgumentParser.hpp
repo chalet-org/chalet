@@ -15,10 +15,10 @@ class ArgumentParser
 public:
 	explicit ArgumentParser(CommandLineInputs& inInputs);
 
-	bool run(const int argc, const char* const argv[]);
+	bool run(const int argc, const char* argv[]);
 
 private:
-	StringList parseRawArguments(const int argc, const char* const argv[]);
+	StringList parseRawArguments(const int argc, const char* argv[]);
 
 	CommandLineInputs& m_inputs;
 };

@@ -365,8 +365,6 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 		if (String::equals(m_routeString, arg))
 			continue;
 
-		LOG(arg);
-
 		for (auto& [_, mapped] : m_argumentList)
 		{
 			if (mapped.is(m_routeString))

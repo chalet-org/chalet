@@ -20,7 +20,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-int Application::run(const int argc, const char* const argv[])
+int Application::run(const int argc, const char* argv[])
 {
 	initialize();
 

@@ -110,7 +110,7 @@ std::string StarterFileTemplates::getMainCxx(const CxxSpecialization inSpecializ
 		{
 			ret = R"cpp(import <iostream>;
 
-int main(const int argc, const char* const argv[])
+int main(const int argc, const char* argv[])
 {
 	std::cout << "Hello world!\n\n";
 	std::cout << "Args:\n";
@@ -127,7 +127,7 @@ int main(const int argc, const char* const argv[])
 		{
 			ret = R"cpp(#include <iostream>
 
-int main(const int argc, const char* const argv[])
+int main(const int argc, const char* argv[])
 {
 	std::cout << "Hello world!\n\n";
 	std::cout << "Args:\n";
@@ -146,7 +146,7 @@ int main(const int argc, const char* const argv[])
 
 		ret = R"c(#include <stdio.h>
 
-int main(const int argc, const char* const argv[])
+int main(const int argc, const char* argv[])
 {
 	printf("Hello, World!\n\n");
 	printf("Args:\n");
@@ -163,7 +163,7 @@ int main(const int argc, const char* const argv[])
 	{
 		ret = R"objc(#import <Foundation/Foundation.h>
 
-int main(int argc, const char * argv[])
+int main(int argc, const char* argv[])
 {
 	@autoreleasepool {
 		NSLog(@"Hello, World!\n");
@@ -182,7 +182,7 @@ int main(int argc, const char * argv[])
 	{
 		ret = R"objc(#import <Foundation/Foundation.h>
 
-int main(int argc, const char * argv[])
+int main(int argc, const char* argv[])
 {
 	@autoreleasepool {
 		NSLog(@"Hello, World!\n");

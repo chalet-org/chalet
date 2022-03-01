@@ -22,7 +22,7 @@ class Application
 public:
 	Application() = default;
 
-	int run(const int argc = 0, const char* const argv[] = nullptr);
+	int run(const int argc = 0, const char* argv[] = nullptr);
 
 private:
 	void initialize();
