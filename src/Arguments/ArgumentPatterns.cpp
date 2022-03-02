@@ -97,6 +97,10 @@ StringList ArgumentPatterns::getTruthyArguments() const
 		"--generate-compile-commands",
 		"--save-schema",
 		"--quieter",
+		"-l",
+		"--local",
+		"-g",
+		"--global",
 	};
 }
 
@@ -280,7 +284,10 @@ bool ArgumentPatterns::populateArgumentMap()
 
 	if (!invalid.empty())
 	{
-		Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", invalid.front());
+		if (!m_routeString.empty())
+			Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet {} --help'.", invalid.front(), m_routeString);
+		else
+			Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet --help'.", invalid.front());
 		return false;
 	}
 
