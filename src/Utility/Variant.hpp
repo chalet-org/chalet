@@ -7,7 +7,6 @@
 #define CHALET_ARGUMENT_HPP
 
 #include <any>
-#include <optional>
 
 #if defined(CHALET_MSVC)
 	#pragma warning(push)

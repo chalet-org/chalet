@@ -6,8 +6,6 @@
 #ifndef CHALET_COMMAND_LINE_INPUTS_HPP
 #define CHALET_COMMAND_LINE_INPUTS_HPP
 
-#include <optional>
-
 #include "Compile/ToolchainPreference.hpp"
 #include "Core/QueryOption.hpp"
 #include "Core/VisualStudioVersion.hpp"

@@ -32,6 +32,7 @@
 	// // Additional C/C++ libs
 	#include <cassert>
 	#include <sstream>
+	#include <optional>
 
 	// Defines
 	#include "Utility/DefinesCompiler.hpp"
