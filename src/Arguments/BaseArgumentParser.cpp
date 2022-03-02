@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Arguments/CLIParser.hpp"
+#include "Arguments/BaseArgumentParser.hpp"
 
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -11,7 +11,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool CLIParser::parse(const int argc, const char* argv[], const int inPositionalArgs)
+bool BaseArgumentParser::parse(const int argc, const char* argv[], const int inPositionalArgs)
 {
 	m_rawArguments.clear();
 
@@ -42,7 +42,7 @@ bool CLIParser::parse(const int argc, const char* argv[], const int inPositional
 			}
 			else
 			{
-				auto option = i + 1 < argc ? CLIParser::getOptionValue(argv + i, argv + i + 1, arg) : std::nullopt;
+				auto option = i + 1 < argc ? BaseArgumentParser::getOptionValue(argv + i, argv + i + 1, arg) : std::nullopt;
 				if (option.has_value())
 				{
 					if ((*option)[0] != '-')
@@ -96,18 +96,18 @@ bool CLIParser::parse(const int argc, const char* argv[], const int inPositional
 }
 
 /*****************************************************************************/
-bool CLIParser::containsOption(const std::string& inOption)
+bool BaseArgumentParser::containsOption(const std::string& inOption)
 {
 	return m_rawArguments.find(inOption) != m_rawArguments.end();
 }
 
-bool CLIParser::containsOption(const std::string& inShort, const std::string& inLong)
+bool BaseArgumentParser::containsOption(const std::string& inShort, const std::string& inLong)
 {
 	return containsOption(inShort) || containsOption(inLong);
 }
 
 /*****************************************************************************/
-std::optional<std::string> CLIParser::getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption)
+std::optional<std::string> BaseArgumentParser::getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption)
 {
 	auto itr = std::find(inBegin, inEnd, inOption);
 	if (itr != inEnd)
@@ -140,7 +140,7 @@ std::optional<std::string> CLIParser::getOptionValue(const char** inBegin, const
 }
 
 /*****************************************************************************/
-bool CLIParser::optionExists(const char** inBegin, const char** inEnd, const std::string& inOption)
+bool BaseArgumentParser::optionExists(const char** inBegin, const char** inEnd, const std::string& inOption)
 {
 	return std::find(inBegin, inEnd, inOption) != inEnd;
 }

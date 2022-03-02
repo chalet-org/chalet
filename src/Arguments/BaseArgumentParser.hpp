@@ -3,19 +3,19 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CLI_PARSER_HPP
-#define CHALET_CLI_PARSER_HPP
+#ifndef CHALET_BASE_ARGUMENT_PARSER_HPP
+#define CHALET_BASE_ARGUMENT_PARSER_HPP
 
 namespace chalet
 {
-class CLIParser
+class BaseArgumentParser
 {
 	using RawArgumentList = std::unordered_map<std::string, std::string>;
 
 public:
-	CLIParser() = default;
-	CHALET_DISALLOW_COPY_MOVE(CLIParser);
-	virtual ~CLIParser() = default;
+	BaseArgumentParser() = default;
+	CHALET_DISALLOW_COPY_MOVE(BaseArgumentParser);
+	virtual ~BaseArgumentParser() = default;
 
 protected:
 	bool parse(const int argc, const char* argv[], const int inPositionalArgs = 0);
@@ -33,4 +33,4 @@ private:
 };
 }
 
-#endif // CHALET_CLI_PARSER_HPP
+#endif // CHALET_BASE_ARGUMENT_PARSER_HPP

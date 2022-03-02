@@ -7,7 +7,7 @@
 
 #include "Router/Router.hpp"
 
-#include "Arguments/ArgumentParser.hpp"
+#include "Arguments/ArgumentReader.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -25,7 +25,7 @@ int Application::run(const int argc, const char* argv[])
 	initialize();
 
 	{
-		ArgumentParser argParser{ m_inputs };
+		ArgumentReader argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
 			return onExit(Status::EarlyFailure);
 	}
