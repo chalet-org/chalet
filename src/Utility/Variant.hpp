@@ -29,8 +29,7 @@ struct Variant
 		OptionalInteger,
 		String,
 		Enum,
-		StringList,
-		Remainder
+		StringList
 	};
 
 	Variant() = delete;
@@ -41,6 +40,7 @@ struct Variant
 	Variant(T&& inValue);
 
 	Kind kind() const noexcept;
+	operator bool() const;
 
 	bool asBool() const;
 	std::optional<bool> asOptionalBool() const;

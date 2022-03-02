@@ -5,16 +5,19 @@
 
 #include "Arguments/CLIParser.hpp"
 
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-CLIParser::RawArgumentList CLIParser::parse(const int argc, const char* argv[], const int inPositionalArgs)
+bool CLIParser::parse(const int argc, const char* argv[], const int inPositionalArgs)
 {
-	std::vector<std::pair<std::string, std::string>> ret;
+	m_rawArguments.clear();
 
-	ret.emplace_back("@0", std::string(argv[0]));
+	m_rawArguments.emplace("@0", std::string(argv[0]));
+
+	auto truthyArguments = getTruthyArguments();
 
 	int j = 0;
 	for (int i = 1; i < argc; ++i)
@@ -22,14 +25,19 @@ CLIParser::RawArgumentList CLIParser::parse(const int argc, const char* argv[], 
 		auto arg = std::string(argv[i]);
 		if (arg[0] == '-')
 		{
-			if (String::contains('=', arg))
+			if (List::contains(truthyArguments, arg))
+			{
+				m_rawArguments.emplace(std::move(arg), "1");
+				continue;
+			}
+			else if (String::contains('=', arg))
 			{
 				String::replaceAll(arg, "=true", "=1");
 				String::replaceAll(arg, "=false", "=0");
 
 				auto eq = arg.find('=');
 
-				ret.emplace_back(arg.substr(0, eq), arg.substr(eq + 1));
+				m_rawArguments.emplace(arg.substr(0, eq), arg.substr(eq + 1));
 				continue;
 			}
 			else
@@ -39,20 +47,24 @@ CLIParser::RawArgumentList CLIParser::parse(const int argc, const char* argv[], 
 				{
 					if ((*option)[0] != '-')
 					{
-						ret.emplace_back(std::move(arg), *option);
+						m_rawArguments.emplace(std::move(arg), *option);
 						++i;
+						continue;
 					}
 					else
 					{
-						ret.emplace_back(std::move(arg), "1");
+						m_rawArguments.emplace(std::move(arg), "1");
 					}
-					continue;
+				}
+				else
+				{
+					m_rawArguments.emplace(std::move(arg), std::string());
 				}
 			}
 		}
 		else if (inPositionalArgs > 0)
 		{
-			ret.emplace_back(fmt::format("@{}", j + 1), arg);
+			m_rawArguments.emplace(fmt::format("@{}", j + 1), arg);
 			++j;
 
 			if (j < inPositionalArgs)
@@ -76,11 +88,22 @@ CLIParser::RawArgumentList CLIParser::parse(const int argc, const char* argv[], 
 			}
 
 			if (!rest.empty())
-				ret.emplace_back("...", std::move(rest));
+				m_rawArguments.emplace("...", std::move(rest));
 		}
 	}
 
-	return ret;
+	return true;
+}
+
+/*****************************************************************************/
+bool CLIParser::containsOption(const std::string& inOption)
+{
+	return m_rawArguments.find(inOption) != m_rawArguments.end();
+}
+
+bool CLIParser::containsOption(const std::string& inShort, const std::string& inLong)
+{
+	return containsOption(inShort) || containsOption(inLong);
 }
 
 /*****************************************************************************/

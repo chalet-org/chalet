@@ -10,15 +10,28 @@
 namespace chalet
 {
 /*****************************************************************************/
-MappedArgument::MappedArgument(Variant inValue) :
+MappedArgument::MappedArgument(ArgumentIdentifier inId, Variant inValue) :
+	m_id(inId),
 	m_value(std::move(inValue))
 {
 }
 
 /*****************************************************************************/
-std::string MappedArgument::key() const
+ArgumentIdentifier MappedArgument::id() const noexcept
 {
-	return String::join(m_options);
+	return m_id;
+}
+
+/*****************************************************************************/
+const std::string& MappedArgument::key() const noexcept
+{
+	return m_key;
+}
+
+/*****************************************************************************/
+const std::string& MappedArgument::keyLong() const noexcept
+{
+	return m_keyLong;
 }
 
 const Variant& MappedArgument::value() const noexcept
@@ -27,25 +40,18 @@ const Variant& MappedArgument::value() const noexcept
 }
 
 /*****************************************************************************/
-bool MappedArgument::is(const std::string& inOption) const
-{
-	return String::equals(m_options, inOption);
-}
-
-/*****************************************************************************/
 MappedArgument& MappedArgument::addArgument(std::string_view inOption)
 {
-	m_options.clear();
-	m_options.emplace_back(inOption);
+	m_key = inOption;
+	m_keyLong.clear();
 
 	return *this;
 }
 
 MappedArgument& MappedArgument::addArgument(std::string_view inShort, std::string_view inLong)
 {
-	m_options.clear();
-	m_options.emplace_back(inShort);
-	m_options.emplace_back(inLong);
+	m_key = inShort;
+	m_keyLong = inLong;
 
 	return *this;
 }

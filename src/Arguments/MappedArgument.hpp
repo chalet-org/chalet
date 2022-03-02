@@ -14,12 +14,14 @@ namespace chalet
 struct MappedArgument
 {
 
-	MappedArgument(Variant inValue);
+	MappedArgument(ArgumentIdentifier inId, Variant inValue);
 
-	std::string key() const;
+	ArgumentIdentifier id() const noexcept;
+
+	const std::string& key() const noexcept;
+	const std::string& keyLong() const noexcept;
 	const Variant& value() const noexcept;
 
-	bool is(const std::string& inOption) const;
 	MappedArgument& addArgument(std::string_view inOption);
 	MappedArgument& addArgument(std::string_view inShort, std::string_view inLong);
 
@@ -33,9 +35,11 @@ struct MappedArgument
 	MappedArgument& setValue(T&& inValue);
 
 private:
+	ArgumentIdentifier m_id = ArgumentIdentifier::None;
 	Variant m_value;
 
-	StringList m_options;
+	std::string m_key;
+	std::string m_keyLong;
 
 	std::string m_help;
 

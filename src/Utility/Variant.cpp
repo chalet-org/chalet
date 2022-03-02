@@ -14,7 +14,7 @@ Variant::Variant(StringList&& inValue)
 {
 	m_value = std::move(inValue);
 
-	if (m_kind != Kind::StringList && m_kind != Kind::Remainder)
+	if (m_kind != Kind::StringList)
 		m_kind = Kind::StringList;
 }
 
@@ -25,7 +25,6 @@ Variant::Variant(const Kind inKind) :
 	switch (m_kind)
 	{
 		case Variant::Kind::StringList:
-		case Variant::Kind::Remainder:
 			m_value = StringList();
 			break;
 
@@ -61,6 +60,12 @@ Variant::Variant(const Kind inKind) :
 Variant::Kind Variant::kind() const noexcept
 {
 	return m_kind;
+}
+
+/*****************************************************************************/
+Variant::operator bool() const
+{
+	return m_value.has_value();
 }
 
 /*****************************************************************************/
@@ -121,7 +126,7 @@ std::string Variant::asString() const
 /*****************************************************************************/
 StringList Variant::asStringList() const
 {
-	if (m_kind == Kind::StringList || m_kind == Kind::Remainder)
+	if (m_kind == Kind::StringList)
 	{
 		return std::any_cast<StringList>(m_value);
 	}
@@ -135,7 +140,6 @@ std::ostream& operator<<(std::ostream& os, const Variant& dt)
 	switch (dt.m_kind)
 	{
 		case Variant::Kind::StringList:
-		case Variant::Kind::Remainder:
 			os << String::join(dt.asStringList());
 			break;
 

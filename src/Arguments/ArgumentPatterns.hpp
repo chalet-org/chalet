@@ -7,6 +7,7 @@
 #define CHALET_ARG_PARSE_PARSER_HPP
 
 #include "Arguments/ArgumentIdentifier.hpp"
+#include "Arguments/CLIParser.hpp"
 #include "Arguments/MappedArgument.hpp"
 #include "Router/Route.hpp"
 #include "Utility/Variant.hpp"
@@ -15,37 +16,39 @@ namespace chalet
 {
 struct CommandLineInputs;
 
-class ArgumentPatterns
+class ArgumentPatterns final : public CLIParser
 {
 	using ParserAction = std::function<void(ArgumentPatterns&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
 	using RouteMap = OrderedDictionary<Route>;
-	using ArgumentList = std::map<ArgumentIdentifier, MappedArgument>;
+	using ArgumentList = std::vector<MappedArgument>;
 
 public:
 	ArgumentPatterns(const CommandLineInputs& inInputs);
 
-	bool resolveFromArguments(const StringList& inArguments);
+	bool resolveFromArguments(const int argc, const char* argv[]);
 	const ArgumentList& arguments() const noexcept;
 
 	Route route() const noexcept;
 
 	StringList getRouteList();
 
+	std::string getProgramPath() const;
+
 private:
-	ushort parseOption(const std::string& inString);
+	virtual StringList getTruthyArguments() const final;
 
 	Route getRouteFromString(const std::string& inValue);
 
 	void makeParser();
-	bool doParse(const StringList& inArguments);
+	bool doParse();
 	bool showHelp();
 	bool showVersion();
-	bool populateArgumentMap(const StringList& inArguments);
+	bool populateArgumentMap();
 	std::string getHelp();
 
 	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
-	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue);
+	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
 	MappedArgument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
@@ -107,14 +110,14 @@ private:
 
 	ParserList m_subCommands;
 
-	StringList m_optionPairsCache;
 	ArgumentList m_argumentList;
 	RouteMap m_routeMap;
 
 	std::string m_routeString;
-	std::ptrdiff_t m_ignoreIndex = 0;
 
 	Route m_route;
+
+	bool m_hasRemaining = false;
 };
 }
 

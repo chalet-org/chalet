@@ -15,8 +15,6 @@
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
-// TODO: Remove argparse library dependency (most of the work is done here anyway)
-
 namespace chalet
 {
 #define CH_STR(x) static constexpr const char x[]
@@ -32,6 +30,14 @@ CH_STR(SettingsKeyQuery) = "<query>";
 CH_STR(SettingsValue) = "<value>";
 CH_STR(QueryType) = "<type>";
 // CH_STR(QueryData) = "<data>";
+}
+
+namespace Positional
+{
+CH_STR(ProgramArgument) = "@0";
+CH_STR(Argument1) = "@1";
+CH_STR(Argument2) = "@2";
+CH_STR(RemainingArguments) = "...";
 }
 
 #undef CH_STR
@@ -54,24 +60,6 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ Route::SettingsUnset, &ArgumentPatterns::populateSettingsUnsetArguments },
 		{ Route::Query, &ArgumentPatterns::populateQueryArguments },
 		{ Route::ColorTest, &ArgumentPatterns::populateColorTestArguments },
-	}),
-	// clang-format off
-	m_optionPairsCache({
-		"-i", "--input-file",
-		"-s", "--settings-file",
-		"-f", "--file",
-		"-r", "--root-dir",
-		"-o", "--output-dir",
-		"-x", "--external-dir",
-		"-d", "--distribution-dir",
-		// "-p", "--project-gen",
-		"-t", "--toolchain",
-		"-j", "--max-jobs",
-		"-e", "--env-file",
-		"-a", "--arch",
-		"-c", "--configuration",
-		//
-		"--template",
 	}),
 	// clang-format on
 	m_routeMap({
@@ -98,92 +86,62 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
-bool ArgumentPatterns::resolveFromArguments(const StringList& inArguments)
+StringList ArgumentPatterns::getTruthyArguments() const
 {
-	m_argumentList.clear();
-
-	bool parseArgs = false;
-
-	if (inArguments.size() > 1) // expects "program [subcommand]"
-	{
-		bool isOption = false;
-		for (auto& arg : inArguments)
-		{
-			std::ptrdiff_t i = &arg - &inArguments.front();
-			if (i == 0)
-				continue;
-
-			if (isOption)
-			{
-				isOption = false;
-				if (!String::startsWith('-', arg))
-					continue;
-			}
-
-			ushort res = parseOption(arg);
-			if (res == 2)
-			{
-				isOption = true;
-				continue;
-			}
-			else if (res == 1)
-			{
-				continue;
-			}
-
-			Route route = getRouteFromString(arg);
-
-			if (m_subCommands.find(route) != m_subCommands.end())
-			{
-				m_route = route;
-				m_routeString = arg;
-				m_ignoreIndex = i;
-				makeParser();
-
-				auto& command = m_subCommands.at(m_route);
-				command(*this);
-
-				parseArgs = true;
-				break; // we have to pass inArguments to doParse, so break out of this loop
-			}
-		}
-	}
-
-	if (parseArgs)
-	{
-		return doParse(inArguments);
-	}
-	else
-	{
-		m_route = Route::Unknown;
-		m_routeString.clear();
-		makeParser();
-
-		populateMainArguments();
-
-		return doParse(inArguments);
-	}
+	return {
+		"--show-commands",
+		"--dump-assembly",
+		"--benchmark",
+		"--launch-profiler",
+		"--keep-going",
+		"--generate-compile-commands",
+		"--save-schema",
+		"--quieter",
+	};
 }
 
 /*****************************************************************************/
-ushort ArgumentPatterns::parseOption(const std::string& inString)
+bool ArgumentPatterns::resolveFromArguments(const int argc, const char* argv[])
 {
-	chalet_assert(!m_optionPairsCache.empty(), "!m_optionPairsCache.empty()");
-
-	ushort res = 0;
-
-	if (String::equals(m_optionPairsCache, inString))
+	int maxPositionalArguments = 2;
+	if (!parse(argc, argv, maxPositionalArguments))
 	{
-		// anything that takes 2 args
-		res = 2;
-	}
-	else if (String::startsWith('-', inString))
-	{
-		// one arg (ie. --save-schema)
-		res = 1;
+		Diagnostic::fatalError("Bad argument parse");
+		return false;
 	}
 
-	return res;
+	/*for (auto&& [key, value] : m_rawArguments)
+	{
+		if (value.empty())
+			LOG(key);
+		else
+			LOG(key, "=", value);
+	}
+	LOG("");*/
+
+	m_argumentList.clear();
+
+	if (m_rawArguments.find(Positional::Argument1) != m_rawArguments.end())
+	{
+		m_routeString = m_rawArguments.at(Positional::Argument1);
+		m_route = getRouteFromString(m_routeString);
+		if (m_subCommands.find(m_route) != m_subCommands.end())
+		{
+			makeParser();
+
+			auto& command = m_subCommands.at(m_route);
+			command(*this);
+			return doParse();
+		}
+	}
+
+	m_route = Route::Unknown;
+	m_routeString.clear();
+	makeParser();
+
+	populateMainArguments();
+
+	return doParse();
 }
 
 /*****************************************************************************/
@@ -219,6 +177,16 @@ StringList ArgumentPatterns::getRouteList()
 }
 
 /*****************************************************************************/
+std::string ArgumentPatterns::getProgramPath() const
+{
+	chalet_assert(!m_rawArguments.empty(), "!m_rawArguments.empty()");
+	if (m_rawArguments.find(Positional::ProgramArgument) != m_rawArguments.end())
+		return m_rawArguments.at(Positional::ProgramArgument);
+
+	return std::string();
+}
+
+/*****************************************************************************/
 void ArgumentPatterns::makeParser()
 {
 	const std::string program = "chalet";
@@ -228,66 +196,40 @@ void ArgumentPatterns::makeParser()
 
 	if (m_route != Route::Unknown && !m_routeString.empty())
 	{
-		auto [itr, _] = m_argumentList.emplace(ArgumentIdentifier::RouteString, true);
-		itr->second.addArgument(m_routeString)
+		m_argumentList.emplace_back(ArgumentIdentifier::RouteString, true)
+			.addArgument(Positional::Argument1, m_routeString)
 			.setHelp("This subcommand.")
 			.setRequired();
 	}
 }
 
 /*****************************************************************************/
-bool ArgumentPatterns::doParse(const StringList& inArguments)
+bool ArgumentPatterns::doParse()
 {
-	CHALET_TRY
+	if (containsOption("-h", "--help") || m_rawArguments.size() == 1)
 	{
-		bool containsHelp = List::contains(inArguments, std::string("-h")) || List::contains(inArguments, std::string("--help"));
-		bool containsVersion = List::contains(inArguments, std::string("-v")) || List::contains(inArguments, std::string("--version"));
-		if (inArguments.size() <= 1 || containsHelp)
-		{
-			return showHelp();
-		}
-		else if (containsVersion)
-		{
-			return showVersion();
-		}
-
-		// 		CHALET_TRY
-		// 		{
-		// 			m_parser.parse_args(inArguments);
-		// 		}
-		// 		CHALET_CATCH(const std::runtime_error& err)
-		// 		{
-		// #if defined(CHALET_EXCEPTIONS)
-		// 			CHALET_THROW(err);
-		// #endif
-		// 		}
-
+		return showHelp();
+	}
+	else if (containsOption("-v", "--version"))
+	{
+		return showVersion();
+	}
+	else
+	{
 		if (m_routeString.empty())
 		{
-			CHALET_EXCEPT_ERROR("Invalid subcommand requested. See 'chalet --help'.");
+			if (containsOption(Positional::Argument1))
+				Diagnostic::fatalError("Invalid subcommand requested: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
+			else
+				Diagnostic::fatalError("Invalid argument(s) found. See 'chalet --help'.");
 			return false;
 		}
-	}
-	CHALET_CATCH(const std::runtime_error& err)
-	{
-		std::string error(err.what());
-		if (String::startsWith("Unknown argument", error))
-			error += '.';
 
-		CHALET_EXCEPT_ERROR("{} See 'chalet --help' or 'chalet <subcommand> --help'.", error);
-		return false;
-	}
-	CHALET_CATCH(const std::exception& err)
-	{
-		std::string error(err.what());
-		if (String::startsWith("Unknown argument", error))
-			error += '.';
+		if (!populateArgumentMap())
+			return false;
 
-		CHALET_EXCEPT_ERROR("{} See 'chalet --help' or 'chalet <subcommand> --help'.", err.what());
-		return false;
+		return true;
 	}
-
-	return populateArgumentMap(inArguments);
 }
 
 /*****************************************************************************/
@@ -315,144 +257,111 @@ bool ArgumentPatterns::showVersion()
 }
 
 /*****************************************************************************/
-bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
+bool ArgumentPatterns::populateArgumentMap()
 {
-	std::string lastValue;
-	auto gatherRemaining = [&inArguments, this](const std::string& inLastValue) -> StringList {
-		StringList remaining;
-		bool getNext = false;
-		for (const auto& arg : inArguments)
-		{
-			std::ptrdiff_t i = &arg - &inArguments.front();
-			if (i == m_ignoreIndex)
-				continue;
-
-			if (getNext)
-			{
-				remaining.push_back(arg);
-				continue;
-			}
-
-			if (arg == inLastValue)
-				getNext = true;
-		}
-
-		return remaining;
-	};
-
-	if (m_route != Route::Run && m_route != Route::BuildRun)
+	StringList invalid;
+	for (auto& [key, _] : m_rawArguments)
 	{
-		for (auto& arg : inArguments)
-		{
-			if (arg.front() == '-')
-			{
-				bool containsArg = false;
-				for (auto& [_, mapped] : m_argumentList)
-					containsArg |= mapped.is(arg);
-
-				if (!containsArg)
-				{
-					CHALET_EXCEPT_ERROR("An invalid argument was found: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", arg);
-					return false;
-				}
-			}
-		}
-	}
-
-	for (std::size_t i = 1; i < inArguments.size(); ++i)
-	{
-		const auto& arg = inArguments.at(i);
-		if (String::equals(m_routeString, arg))
+		if (String::equals(Positional::RemainingArguments, key) || String::startsWith('@', key))
 			continue;
 
-		for (auto& [_, mapped] : m_argumentList)
+		bool valid = false;
+		for (auto& mapped : m_argumentList)
 		{
-			if (mapped.is(m_routeString))
-				continue;
-
-			if (mapped.is(arg))
+			if (String::equals(key, mapped.key()) || String::equals(key, mapped.keyLong()))
 			{
+				valid = true;
+				break;
 			}
 		}
+		if (!valid)
+			invalid.push_back(key);
 	}
 
-	UNUSED(gatherRemaining);
-
-	for (auto& [_, mapped] : m_argumentList)
+	if (!invalid.empty())
 	{
-		if (mapped.is(m_routeString))
+		Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet --help' or 'chalet <subcommand> --help'.", invalid.front());
+		return false;
+	}
+
+	m_hasRemaining = containsOption(Positional::RemainingArguments);
+	bool allowsRemaining = false;
+
+	// TODO: Check invalid
+	for (auto& mapped : m_argumentList)
+	{
+		if (mapped.id() == ArgumentIdentifier::RouteString)
 			continue;
 
-		// if (String::startsWith('-', key) && !List::contains(inArguments, key) && arg.value.kind() != Variant::Kind::Boolean)
-		// 	continue;
+		allowsRemaining |= String::equals(Positional::RemainingArguments, mapped.key());
 
-		CHALET_TRY
+		std::string value;
+		if (containsOption(mapped.key()))
 		{
-			switch (mapped.value().kind())
-			{
-				case Variant::Kind::Boolean: {
-					// arg.value = m_parser.get<bool>(key);
-					break;
-				}
-
-				case Variant::Kind::OptionalBoolean: {
-					// std::string tmpValue = m_parser.get<std::string>(key);
-					// if (!tmpValue.empty())
-					// {
-					// 	int rawValue = atoi(tmpValue.c_str());
-					// 	arg.value = std::optional<bool>(rawValue == 1);
-					// }
-					break;
-				}
-
-				case Variant::Kind::Integer: {
-					// std::string tmpValue = m_parser.get<std::string>(key);
-					// arg.value = atoi(tmpValue.c_str());
-					break;
-				}
-
-				case Variant::Kind::OptionalInteger: {
-					// std::string tmpValue = m_parser.get<std::string>(key);
-					// if (!tmpValue.empty())
-					// {
-					// 	arg.value = std::optional<int>(atoi(tmpValue.c_str()));
-					// }
-					break;
-				}
-
-				case Variant::Kind::String: {
-					// arg.value = m_parser.get<std::string>(key);
-					// lastValue = arg.value.asString();
-					break;
-				}
-
-				case Variant::Kind::StringList: {
-					// CHALET_TRY
-					// {
-					// 	arg.value = m_parser.get<StringList>(key);
-					// }
-					// CHALET_CATCH(const std::exception& err)
-					// {
-					// 	CHALET_EXCEPT_ERROR(err.what());
-					// }
-					return true;
-				}
-
-				case Variant::Kind::Remainder: {
-					// arg.value = gatherRemaining(lastValue);
-					return true;
-				}
-
-				case Variant::Kind::Empty:
-				default:
-					break;
-			}
+			value = m_rawArguments.at(mapped.key());
 		}
-		CHALET_CATCH(const std::exception& err)
+		else if (containsOption(mapped.keyLong()))
 		{
-			CHALET_EXCEPT_ERROR("Error parsing argument: {}. See 'chalet --help' or 'chalet <subcommand> --help'.", err.what());
+			value = m_rawArguments.at(mapped.keyLong());
+		}
+		else if (mapped.required())
+		{
+			if (m_routeString.empty())
+				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet --help'.", mapped.keyLong());
+			else
+				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet {} --help'.", mapped.keyLong(), m_routeString);
 			return false;
 		}
+
+		if (value.empty())
+			continue;
+
+		switch (mapped.value().kind())
+		{
+			case Variant::Kind::Boolean:
+				mapped.setValue(String::equals("true", value));
+				break;
+
+			case Variant::Kind::OptionalBoolean: {
+				if (!value.empty())
+				{
+					int rawValue = atoi(value.c_str());
+					mapped.setValue(std::optional<bool>(rawValue == 1));
+				}
+				break;
+			}
+
+			case Variant::Kind::Integer:
+				mapped.setValue<int>(atoi(value.c_str()));
+				break;
+
+			case Variant::Kind::OptionalInteger: {
+				if (!value.empty())
+				{
+					mapped.setValue(std::optional<int>(atoi(value.c_str())));
+				}
+				break;
+			}
+
+			case Variant::Kind::String:
+				mapped.setValue(value);
+				break;
+
+			case Variant::Kind::Empty:
+			case Variant::Kind::StringList:
+			default:
+				break;
+		}
+	}
+
+	if (m_hasRemaining && !allowsRemaining)
+	{
+		auto& remaining = m_rawArguments.at(Positional::RemainingArguments);
+		if (m_routeString.empty())
+			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet --help'.", remaining);
+		else
+			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet {} --help'.", remaining, m_routeString);
+		return false;
 	}
 
 	return true;
@@ -461,34 +370,74 @@ bool ArgumentPatterns::populateArgumentMap(const StringList& inArguments)
 /*****************************************************************************/
 std::string ArgumentPatterns::getHelp()
 {
+	constexpr std::size_t kColumnSize = 28;
+
 	std::string title = "Chalet - A cross-platform JSON-based project & build tool";
 
 	std::string help;
-	String::replaceAll(help, " [options] <subcommand>", " <subcommand> [options]");
-	String::replaceAll(help, "Usage: ", "Usage:\n   ");
-	String::replaceAll(help, "Positional arguments:", "Commands:");
-	String::replaceAll(help, "Optional arguments:", "Options:");
-	String::replaceAll(help, "\n<subcommand>", "");
-	// String::replaceAll(help, "-h --help", "   -h --help");
-	// String::replaceAll(help, "-v --version", "   -v --version");
-	String::replaceAll(help, "[default: \"\"]", "");
-	String::replaceAll(help, "[default: 0]", "");
-	String::replaceAll(help, "[default: true]", "");
-	String::replaceAll(help, "[default: false]", "");
-	String::replaceAll(help, "[default: <not representable>]", "");
-
-	help = fmt::format("{}\n\n{}", title, help);
-	if (m_route != Route::Unknown)
+	help += title + '\n';
+	help += '\n';
+	help += "Usage:\n";
+	std::string command("chalet");
+	for (auto& mapped : m_argumentList)
 	{
-		RegexPatterns::matchAndReplace(help, "(\\[options\\]) (\\w+)", "$& [opts]");
-		String::replaceAll(help, " [options]", "");
-		String::replaceAll(help, "[opts]", "[options]");
+		const auto id = mapped.id();
+		if (id == ArgumentIdentifier::SubCommand)
+		{
+			command += ' ';
+			command += mapped.key();
+			command += " [options]";
+		}
+		else if (id == ArgumentIdentifier::RouteString)
+		{
+			command += ' ';
+			command += mapped.keyLong();
+			command += " [options]";
+		}
+		else if (!String::startsWith('-', mapped.key()))
+		{
+			command += ' ';
+			command += mapped.keyLong();
+		}
+	}
+	help += fmt::format("   {}\n", command);
+	help += '\n';
+	help += "Commands:\n";
+
+	for (auto& mapped : m_argumentList)
+	{
+		const auto id = mapped.id();
+		if (id == ArgumentIdentifier::SubCommand)
+		{
+			help += fmt::format("{}\n", mapped.help());
+		}
+		else if (!String::startsWith('-', mapped.key()))
+		{
+			std::string line = mapped.keyLong();
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += mapped.help();
+
+			help += fmt::format("{}\n", line);
+		}
 	}
 
-	if (m_route == Route::SettingsGetKeys)
+	help += '\n';
+	help += "Options:\n";
+
+	for (auto& mapped : m_argumentList)
 	{
-		String::replaceAll(help, fmt::format("{} {}", Arg::SettingsKeyQuery, Arg::RemainingArguments), Arg::SettingsKeyQuery);
-		String::replaceAll(help, fmt::format("\n{}     	RMV", Arg::RemainingArguments), "");
+		if (String::startsWith('-', mapped.key()))
+		{
+			std::string line = mapped.key() + ' ' + mapped.keyLong();
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += mapped.help();
+
+			help += fmt::format("{}\n", line);
+		}
 	}
 
 	if (String::contains("--toolchain", help))
@@ -540,7 +489,7 @@ std::string ArgumentPatterns::getHelp()
 		{
 			const bool isDefault = String::equals(defaultToolchain, toolchain);
 			std::string line = toolchain;
-			while (line.size() < 28)
+			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
 			line += getPresetMessage(toolchain);
@@ -558,16 +507,14 @@ std::string ArgumentPatterns::getHelp()
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument)
 {
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::String);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::String)
 		.addArgument(inArgument);
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue)
 {
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::String);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::String)
 		.addArgument(inArgument)
 		.setValue(std::move(inDefaultValue));
 }
@@ -575,8 +522,7 @@ MappedArgument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inI
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::String);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::String)
 		.addArgument(inShort, inLong)
 		.setValue(std::move(inDefaultValue));
 }
@@ -585,8 +531,7 @@ MappedArgument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdentifier
 MappedArgument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong)
 {
 	// .nargs(2);
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::OptionalInteger);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalInteger)
 		.addArgument(inShort, inLong);
 }
 
@@ -596,8 +541,7 @@ MappedArgument& ArgumentPatterns::addBoolArgument(const ArgumentIdentifier inId,
 	// .nargs(1)
 	// .default_value(inDefaultValue)
 	// .implicit_value(true);
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::Boolean);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
 		.addArgument(inArgument)
 		.setValue(inDefaultValue);
 }
@@ -607,8 +551,7 @@ MappedArgument& ArgumentPatterns::addOptionalBoolArgument(const ArgumentIdentifi
 {
 	// .nargs(1)
 	// .default_value(std::string()); ???????
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::OptionalBoolean);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalBoolean)
 		.addArgument(inArgument);
 }
 
@@ -618,8 +561,7 @@ MappedArgument& ArgumentPatterns::addTwoBoolArguments(const ArgumentIdentifier i
 	// .nargs(1)
 	// .default_value(inDefaultValue)
 	// .implicit_value(true);
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::Boolean);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
 		.addArgument(inShort, inLong)
 		.setValue(inDefaultValue);
 }
@@ -628,8 +570,7 @@ MappedArgument& ArgumentPatterns::addTwoBoolArguments(const ArgumentIdentifier i
 MappedArgument& ArgumentPatterns::addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument)
 {
 	// .remaining();
-	auto [itr, _] = m_argumentList.emplace(inId, Variant::Kind::Remainder);
-	return itr->second
+	return m_argumentList.emplace_back(inId, Variant::Kind::String)
 		.addArgument(inArgument);
 }
 
@@ -681,7 +622,7 @@ void ArgumentPatterns::populateMainArguments()
 	subcommands.push_back("colortest");
 	descriptions.push_back("Display all color themes and terminal capabilities.");
 
-	std::string help("\n");
+	std::string help;
 	if (subcommands.size() == descriptions.size())
 	{
 		for (std::size_t i = 0; i < subcommands.size(); ++i)
@@ -713,7 +654,7 @@ void ArgumentPatterns::addHelpArg()
 	// .default_value(false)
 	// .implicit_value(true)
 	// .nargs(0);
-	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-h", "--help", false)
+	addTwoBoolArguments(ArgumentIdentifier::Help, "-h", "--help", false)
 		.setHelp("Shows help message (if applicable, for the subcommand) and exits.");
 }
 
@@ -723,7 +664,7 @@ void ArgumentPatterns::addVersionArg()
 	// .default_value(false)
 	// .implicit_value(true)
 	// .nargs(0);
-	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-v", "--version", false)
+	addTwoBoolArguments(ArgumentIdentifier::Version, "-v", "--version", false)
 		.setHelp("Prints version information and exits.");
 }
 
@@ -845,7 +786,7 @@ void ArgumentPatterns::addArchArg()
 /*****************************************************************************/
 void ArgumentPatterns::addSaveSchemaArg()
 {
-	addBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema", false)
+	addOptionalBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema")
 		.setHelp("Save build & settings schemas to file.");
 }
 
@@ -857,7 +798,7 @@ void ArgumentPatterns::addQuietArgs()
 	// --quieter = just build output
 	// --quietest = no output
 
-	addBoolArgument(ArgumentIdentifier::Quieter, "--quieter", false)
+	addOptionalBoolArgument(ArgumentIdentifier::Quieter, "--quieter")
 		.setHelp("Show only the build output.");
 }
 
@@ -871,14 +812,14 @@ void ArgumentPatterns::addBuildConfigurationArg()
 /*****************************************************************************/
 void ArgumentPatterns::addRunTargetArg()
 {
-	addStringArgument(ArgumentIdentifier::RunTargetName, Arg::RunTarget, std::string())
+	addTwoStringArguments(ArgumentIdentifier::RunTargetName, Positional::Argument2, Arg::RunTarget)
 		.setHelp("An executable or script target to run.");
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::addRunArgumentsArg()
 {
-	addRemainingArguments(ArgumentIdentifier::RunTargetArguments, Arg::RemainingArguments)
+	addTwoStringArguments(ArgumentIdentifier::RunTargetArguments, Positional::RemainingArguments, Arg::RemainingArguments)
 		.setHelp("The arguments to pass to the run target.");
 }
 
@@ -1018,9 +959,8 @@ void ArgumentPatterns::populateInitArguments()
 	addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template")
 		.setHelp(fmt::format("The project template to use during initialization. (ex: {})", String::join(templates, ", ")));
 
-	addStringArgument(ArgumentIdentifier::InitPath, Arg::InitPath, ".")
-		.setHelp("The path of the project to initialize.")
-		.required();
+	addTwoStringArguments(ArgumentIdentifier::InitPath, Positional::Argument2, Arg::InitPath, ".")
+		.setHelp("The path of the project to initialize. [default: \".\"]");
 }
 
 /*****************************************************************************/
@@ -1029,8 +969,9 @@ void ArgumentPatterns::populateSettingsGetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey, std::string())
-		.setHelp("The config key to get.");
+	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
+		.setHelp("The config key to get.")
+		.setRequired();
 }
 
 /*****************************************************************************/
@@ -1039,11 +980,12 @@ void ArgumentPatterns::populateSettingsGetKeysArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKeyQuery, std::string())
-		.setHelp("The config key to query for.");
+	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKeyQuery)
+		.setHelp("The config key to query for.")
+		.setRequired();
 
-	addRemainingArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Arg::RemainingArguments)
-		.setHelp("RMV");
+	addTwoStringArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
+		.setHelp("Additional query arguments, if applicable.");
 }
 
 /*****************************************************************************/
@@ -1052,12 +994,13 @@ void ArgumentPatterns::populateSettingsSetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey)
+	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
 		.setHelp("The config key to change.")
-		.required();
+		.setRequired();
 
-	addStringArgument(ArgumentIdentifier::SettingsValue, Arg::SettingsValue, std::string())
-		.setHelp("The config value to change to.");
+	addTwoStringArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue)
+		.setHelp("The config value to change to.")
+		.setRequired();
 }
 
 /*****************************************************************************/
@@ -1066,20 +1009,20 @@ void ArgumentPatterns::populateSettingsUnsetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addStringArgument(ArgumentIdentifier::SettingsKey, Arg::SettingsKey)
+	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
 		.setHelp("The config key to remove.")
-		.required();
+		.setRequired();
 }
 
 /*****************************************************************************/
 void ArgumentPatterns::populateQueryArguments()
 {
 	auto listNames = m_inputs.getCliQueryOptions();
-	addStringArgument(ArgumentIdentifier::QueryType, Arg::QueryType)
+	addTwoStringArguments(ArgumentIdentifier::QueryType, Positional::Argument2, Arg::QueryType)
 		.setHelp(fmt::format("The data type to query. ({})", String::join(listNames, ", ")))
-		.required();
+		.setRequired();
 
-	addRemainingArguments(ArgumentIdentifier::QueryDataRemainingArgs, Arg::RemainingArguments)
+	addTwoStringArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
 		.setHelp("Data to provide to the query. (architecture: <toolchain-name>)");
 }
 

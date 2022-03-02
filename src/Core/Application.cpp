@@ -28,17 +28,15 @@ int Application::run(const int argc, const char* argv[])
 		ArgumentParser argParser{ m_inputs };
 		if (!argParser.run(argc, argv))
 			return onExit(Status::EarlyFailure);
-
-		return onExit(Status::Success);
 	}
 
-	// if (m_inputs.route() == Route::Help)
-	// 	return onExit(Status::Success);
+	if (m_inputs.route() == Route::Help)
+		return onExit(Status::Success);
 
-	// if (!handleRoute())
-	// 	return onExit(Status::Failure);
+	if (!handleRoute())
+		return onExit(Status::Failure);
 
-	// return onExit(Status::Success);
+	return onExit(Status::Success);
 }
 
 /*****************************************************************************/

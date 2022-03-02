@@ -27,30 +27,19 @@ bool ArgumentParser::run(const int argc, const char* argv[])
 	if (argc < 1)
 		return false;
 
-	auto tmpArguments = CLIParser::parse(argc, argv, 2);
-	for (auto&& [key, value] : tmpArguments)
-	{
-		if (value.empty())
-			LOG(key);
-		else
-			LOG(key, "=", value);
-	}
-	LOG("");
-
-	StringList arguments = parseRawArguments(argc, argv);
-	m_inputs.setAppPath(arguments.front());
-
 	ArgumentPatterns patterns(m_inputs);
-	bool result = patterns.resolveFromArguments(arguments);
+	bool result = patterns.resolveFromArguments(argc, argv);
 	if (!result)
 		return false;
+
+	m_inputs.setAppPath(patterns.getProgramPath());
 
 	Route route = patterns.route();
 	m_inputs.setRoute(route);
 	if (route == Route::Help)
 		return true;
 
-	if (patterns.arguments().size() == 0)
+	if (patterns.arguments().empty())
 		return false;
 
 	std::string buildConfiguration;
@@ -65,9 +54,10 @@ bool ArgumentParser::run(const int argc, const char* argv[])
 	std::string distributionDirectory;
 	std::string envFile;
 
-	for (auto& [id, mapped] : patterns.arguments())
+	for (auto& mapped : patterns.arguments())
 	{
-		// LOG(mapped.value(), "-----", mapped.key());
+		const auto id = mapped.id();
+		// LOG(mapped.value(), "-----", mapped.key(), mapped.keyLong());
 		auto kind = mapped.value().kind();
 		switch (kind)
 		{
@@ -150,13 +140,24 @@ bool ArgumentParser::run(const int argc, const char* argv[])
 						m_inputs.setQueryOption(std::move(value));
 						break;
 
+					case ArgumentIdentifier::RunTargetArguments:
+						m_inputs.setRunArguments(std::move(value));
+						break;
+
+					case ArgumentIdentifier::SettingsKeysRemainingArgs:
+						break;
+
+					case ArgumentIdentifier::QueryDataRemainingArgs:
+						m_inputs.setQueryData(String::split(value, ' '));
+						break;
+
 					default: break;
 				}
 
 				break;
 			}
 
-			case Variant::Kind::StringList: {
+				/*case Variant::Kind::StringList: {
 				if (id == ArgumentIdentifier::RunTargetArguments)
 				{
 					auto runArgs = String::join(mapped.value().asStringList());
@@ -171,7 +172,7 @@ bool ArgumentParser::run(const int argc, const char* argv[])
 					m_inputs.setQueryData(mapped.value().asStringList());
 				}
 				break;
-			}
+			}*/
 
 			case Variant::Kind::OptionalInteger: {
 				auto rawValue = mapped.value().asOptionalInt();
@@ -296,71 +297,5 @@ bool ArgumentParser::run(const int argc, const char* argv[])
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-StringList ArgumentParser::parseRawArguments(const int argc, const char* argv[])
-{
-	StringList ret;
-
-	StringList implicitTrueArgs{
-		"--dump-assembly",
-		"--generate-compile-commands",
-		"--show-commands",
-		"--launch-profiler",
-		"--keep-going",
-		"--benchmark"
-	};
-
-	for (int i = 0; i < argc; ++i)
-	{
-		std::string arg(argv[i] ? argv[i] : "");
-		if (i == 0)
-		{
-			ret.emplace_back(std::move(arg));
-			continue;
-		}
-
-		if (String::startsWith('"', arg))
-		{
-			arg = arg.substr(1);
-
-			if (arg.back() == '"')
-				arg.pop_back();
-		}
-
-		if (String::startsWith('\'', arg))
-		{
-			arg = arg.substr(1);
-
-			if (arg.back() == '\'')
-				arg.pop_back();
-		}
-
-		if (String::startsWith('-', arg) && String::contains('=', arg))
-		{
-			String::replaceAll(arg, "=true", "=1");
-			String::replaceAll(arg, "=false", "=0");
-
-			auto list = String::split(arg, '=');
-			for (auto& it : list)
-			{
-				ret.emplace_back(std::move(it));
-			}
-		}
-		else
-		{
-			ret.emplace_back(std::move(arg));
-
-			if (String::equals(implicitTrueArgs, ret.back()))
-			{
-				// This is a hack so that one can write --dump-assembly without an =# or 2nd arg
-				// argparse has issues figuring out what you want otherwise
-				ret.emplace_back("1");
-			}
-		}
-	}
-
-	return ret;
 }
 }

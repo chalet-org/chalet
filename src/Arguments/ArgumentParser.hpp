@@ -18,8 +18,6 @@ public:
 	bool run(const int argc, const char* argv[]);
 
 private:
-	StringList parseRawArguments(const int argc, const char* argv[]);
-
 	CommandLineInputs& m_inputs;
 };
 }

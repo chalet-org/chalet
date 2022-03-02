@@ -8,13 +8,28 @@
 
 namespace chalet
 {
-namespace CLIParser
+class CLIParser
 {
-using RawArgumentList = std::vector<std::pair<std::string, std::string>>;
+	using RawArgumentList = std::unordered_map<std::string, std::string>;
 
-RawArgumentList parse(const int argc, const char* argv[], const int inPositionalArgs = 0);
-std::optional<std::string> getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption);
-bool optionExists(const char** inBegin, const char** inEnd, const std::string& inOption);
+public:
+	CLIParser() = default;
+	CHALET_DISALLOW_COPY_MOVE(CLIParser);
+	virtual ~CLIParser() = default;
+
+protected:
+	bool parse(const int argc, const char* argv[], const int inPositionalArgs = 0);
+
+	virtual StringList getTruthyArguments() const = 0;
+
+	bool containsOption(const std::string& inOption);
+	bool containsOption(const std::string& inShort, const std::string& inLong);
+
+	RawArgumentList m_rawArguments;
+
+private:
+	std::optional<std::string> getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption);
+	bool optionExists(const char** inBegin, const char** inEnd, const std::string& inOption);
 };
 }
 
