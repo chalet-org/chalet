@@ -103,8 +103,8 @@ StringList ArgumentPatterns::getTruthyArguments() const
 /*****************************************************************************/
 bool ArgumentPatterns::resolveFromArguments(const int argc, const char* argv[])
 {
-	int maxPositionalArguments = 2;
-	if (!parse(argc, argv, maxPositionalArguments))
+	int maxPositionalArgs = 2;
+	if (!parse(argc, argv, maxPositionalArgs))
 	{
 		Diagnostic::fatalError("Bad argument parse");
 		return false;
@@ -287,9 +287,14 @@ bool ArgumentPatterns::populateArgumentMap()
 	m_hasRemaining = containsOption(Positional::RemainingArguments);
 	bool allowsRemaining = false;
 
+	int maxPositionalArgs = 0;
+
 	// TODO: Check invalid
 	for (auto& mapped : m_argumentList)
 	{
+		if (String::startsWith('@', mapped.key()))
+			++maxPositionalArgs;
+
 		if (mapped.id() == ArgumentIdentifier::RouteString)
 			continue;
 
@@ -306,10 +311,10 @@ bool ArgumentPatterns::populateArgumentMap()
 		}
 		else if (mapped.required())
 		{
-			if (m_routeString.empty())
-				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet --help'.", mapped.keyLong());
-			else
+			if (!m_routeString.empty())
 				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet {} --help'.", mapped.keyLong(), m_routeString);
+			else
+				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet --help'.", mapped.keyLong());
 			return false;
 		}
 
@@ -354,13 +359,32 @@ bool ArgumentPatterns::populateArgumentMap()
 		}
 	}
 
+	int positionalArgs = 0;
+	for (auto& [key, _] : m_rawArguments)
+	{
+		if (String::equals(Positional::ProgramArgument, key))
+			continue;
+
+		if (String::startsWith('@', key))
+			++positionalArgs;
+	}
+
+	if (positionalArgs > maxPositionalArgs)
+	{
+		if (!m_routeString.empty())
+			Diagnostic::fatalError("Maximum number of positional arguments exceeded. See 'chalet {} --help'.", m_routeString);
+		else
+			Diagnostic::fatalError("Maximum number of positional arguments exceeded. See 'chalet --help'.");
+		return false;
+	}
+
 	if (m_hasRemaining && !allowsRemaining)
 	{
 		auto& remaining = m_rawArguments.at(Positional::RemainingArguments);
-		if (m_routeString.empty())
-			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet --help'.", remaining);
-		else
+		if (!m_routeString.empty())
 			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet {} --help'.", remaining, m_routeString);
+		else
+			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet --help'.", remaining);
 		return false;
 	}
 
