@@ -582,7 +582,26 @@ const std::string& CommandLineInputs::architectureRaw() const noexcept
 }
 void CommandLineInputs::setArchitectureRaw(std::string&& inValue) const noexcept
 {
-	m_architectureRaw = std::move(inValue);
+	// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
+	// Either parsed later (if MSVC) or passed directly to GNU compiler
+	if (std::all_of(inValue.begin(), inValue.end(), [](char c) {
+			return ::isalpha(c)
+				|| ::isdigit(c)
+				|| c == '-'
+				|| c == ','
+				|| c == '.'
+#if defined(CHALET_WIN32)
+				|| c == '='
+#endif
+				|| c == '_';
+		}))
+	{
+		m_architectureRaw = std::move(inValue);
+	}
+	else
+	{
+		m_architectureRaw = std::string{ "auto" };
+	}
 
 	if (String::contains(',', m_architectureRaw))
 	{

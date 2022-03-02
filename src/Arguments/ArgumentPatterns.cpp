@@ -49,10 +49,10 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ Route::BuildRun, &ArgumentPatterns::populateBuildRunArguments },
 		{ Route::Run, &ArgumentPatterns::populateRunArguments },
 		{ Route::Build, &ArgumentPatterns::populateBuildArguments },
-		{ Route::Rebuild, &ArgumentPatterns::populateRebuildArguments },
-		{ Route::Clean, &ArgumentPatterns::populateCleanArguments },
-		{ Route::Bundle, &ArgumentPatterns::populateBundleArguments },
-		{ Route::Configure, &ArgumentPatterns::populateConfigureArguments },
+		{ Route::Rebuild, &ArgumentPatterns::populateBuildArguments },
+		{ Route::Clean, &ArgumentPatterns::populateBuildArguments },
+		{ Route::Bundle, &ArgumentPatterns::populateBuildArguments },
+		{ Route::Configure, &ArgumentPatterns::populateBuildArguments },
 		{ Route::Init, &ArgumentPatterns::populateInitArguments },
 		{ Route::SettingsGet, &ArgumentPatterns::populateSettingsGetArguments },
 		{ Route::SettingsGetKeys, &ArgumentPatterns::populateSettingsGetKeysArguments },
@@ -61,7 +61,6 @@ ArgumentPatterns::ArgumentPatterns(const CommandLineInputs& inInputs) :
 		{ Route::Query, &ArgumentPatterns::populateQueryArguments },
 		{ Route::ColorTest, &ArgumentPatterns::populateColorTestArguments },
 	}),
-	// clang-format on
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
 		{ "run", Route::Run },
@@ -261,6 +260,15 @@ bool ArgumentPatterns::showVersion()
 }
 
 /*****************************************************************************/
+std::string ArgumentPatterns::getSeeHelpMessage()
+{
+	if (!m_routeString.empty())
+		return fmt::format("See 'chalet {} --help'.", m_routeString);
+	else
+		return std::string("See 'chalet --help'.");
+}
+
+/*****************************************************************************/
 bool ArgumentPatterns::populateArgumentMap()
 {
 	StringList invalid;
@@ -284,10 +292,8 @@ bool ArgumentPatterns::populateArgumentMap()
 
 	if (!invalid.empty())
 	{
-		if (!m_routeString.empty())
-			Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet {} --help'.", invalid.front(), m_routeString);
-		else
-			Diagnostic::fatalError("Unknown argument: '{}'. See 'chalet --help'.", invalid.front());
+		auto seeHelp = getSeeHelpMessage();
+		Diagnostic::fatalError("Unknown argument: '{}'. {}", invalid.front(), seeHelp);
 		return false;
 	}
 
@@ -318,10 +324,8 @@ bool ArgumentPatterns::populateArgumentMap()
 		}
 		else if (mapped.required())
 		{
-			if (!m_routeString.empty())
-				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet {} --help'.", mapped.keyLong(), m_routeString);
-			else
-				Diagnostic::fatalError("Missing required argument: '{}'. See 'chalet --help'.", mapped.keyLong());
+			auto seeHelp = getSeeHelpMessage();
+			Diagnostic::fatalError("Missing required argument: '{}'. {}", mapped.keyLong(), seeHelp);
 			return false;
 		}
 
@@ -378,20 +382,16 @@ bool ArgumentPatterns::populateArgumentMap()
 
 	if (positionalArgs > maxPositionalArgs)
 	{
-		if (!m_routeString.empty())
-			Diagnostic::fatalError("Maximum number of positional arguments exceeded. See 'chalet {} --help'.", m_routeString);
-		else
-			Diagnostic::fatalError("Maximum number of positional arguments exceeded. See 'chalet --help'.");
+		auto seeHelp = getSeeHelpMessage();
+		Diagnostic::fatalError("Maximum number of positional arguments exceeded. {}", seeHelp);
 		return false;
 	}
 
 	if (m_hasRemaining && !allowsRemaining)
 	{
+		auto seeHelp = getSeeHelpMessage();
 		auto& remaining = m_rawArguments.at(Positional::RemainingArguments);
-		if (!m_routeString.empty())
-			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet {} --help'.", remaining, m_routeString);
-		else
-			Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. See 'chalet --help'.", remaining);
+		Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. {}", remaining, seeHelp);
 		return false;
 	}
 
@@ -536,21 +536,6 @@ std::string ArgumentPatterns::getHelp()
 
 /*****************************************************************************/
 /*****************************************************************************/
-MappedArgument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument)
-{
-	return m_argumentList.emplace_back(inId, Variant::Kind::String)
-		.addArgument(inArgument);
-}
-
-/*****************************************************************************/
-MappedArgument& ArgumentPatterns::addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue)
-{
-	return m_argumentList.emplace_back(inId, Variant::Kind::String)
-		.addArgument(inArgument)
-		.setValue(std::move(inDefaultValue));
-}
-
-/*****************************************************************************/
 MappedArgument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
 	return m_argumentList.emplace_back(inId, Variant::Kind::String)
@@ -561,7 +546,6 @@ MappedArgument& ArgumentPatterns::addTwoStringArguments(const ArgumentIdentifier
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong)
 {
-	// .nargs(2);
 	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalInteger)
 		.addArgument(inShort, inLong);
 }
@@ -569,9 +553,6 @@ MappedArgument& ArgumentPatterns::addTwoIntArguments(const ArgumentIdentifier in
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue)
 {
-	// .nargs(1)
-	// .default_value(inDefaultValue)
-	// .implicit_value(true);
 	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
 		.addArgument(inArgument)
 		.setValue(inDefaultValue);
@@ -580,8 +561,6 @@ MappedArgument& ArgumentPatterns::addBoolArgument(const ArgumentIdentifier inId,
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument)
 {
-	// .nargs(1)
-	// .default_value(std::string()); ???????
 	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalBoolean)
 		.addArgument(inArgument);
 }
@@ -589,20 +568,9 @@ MappedArgument& ArgumentPatterns::addOptionalBoolArgument(const ArgumentIdentifi
 /*****************************************************************************/
 MappedArgument& ArgumentPatterns::addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue)
 {
-	// .nargs(1)
-	// .default_value(inDefaultValue)
-	// .implicit_value(true);
 	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
 		.addArgument(inShort, inLong)
 		.setValue(inDefaultValue);
-}
-
-/*****************************************************************************/
-MappedArgument& ArgumentPatterns::addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument)
-{
-	// .remaining();
-	return m_argumentList.emplace_back(inId, Variant::Kind::String)
-		.addArgument(inArgument);
 }
 
 /*****************************************************************************/
@@ -682,9 +650,6 @@ void ArgumentPatterns::populateMainArguments()
 /*****************************************************************************/
 void ArgumentPatterns::addHelpArg()
 {
-	// .default_value(false)
-	// .implicit_value(true)
-	// .nargs(0);
 	addTwoBoolArguments(ArgumentIdentifier::Help, "-h", "--help", false)
 		.setHelp("Shows help message (if applicable, for the subcommand) and exits.");
 }
@@ -692,9 +657,6 @@ void ArgumentPatterns::addHelpArg()
 /*****************************************************************************/
 void ArgumentPatterns::addVersionArg()
 {
-	// .default_value(false)
-	// .implicit_value(true)
-	// .nargs(0);
 	addTwoBoolArguments(ArgumentIdentifier::Version, "-v", "--version", false)
 		.setHelp("Prints version information and exits.");
 }
@@ -792,26 +754,6 @@ void ArgumentPatterns::addArchArg()
 {
 	addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch", "auto")
 		.setHelp("The architecture to target for the build.");
-	/*
-		.action([](const std::string& value) -> std::string {
-			// https://gcc.gnu.org/onlinedocs/gcc/x86-Options.html
-			// Either parsed later (if MSVC) or passed directly to GNU compiler
-			if (std::all_of(value.begin(), value.end(), [](char c) {
-					return ::isalpha(c)
-						|| ::isdigit(c)
-						|| c == '-'
-						|| c == ','
-						|| c == '.'
-#if defined(CHALET_WIN32)
-						|| c == '='
-#endif
-						|| c == '_';
-				}))
-			{
-				return value;
-			}
-			return std::string{ "auto" };
-		});*/
 }
 
 /*****************************************************************************/
@@ -909,7 +851,25 @@ void ArgumentPatterns::addKeepGoingArg()
 }
 
 /*****************************************************************************/
-void ArgumentPatterns::addOptionalArguments()
+void ArgumentPatterns::populateBuildRunArguments()
+{
+	populateBuildArguments();
+
+	addRunTargetArg();
+	addRunArgumentsArg();
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::populateRunArguments()
+{
+	populateBuildArguments();
+
+	addRunTargetArg();
+	addRunArgumentsArg();
+}
+
+/*****************************************************************************/
+void ArgumentPatterns::populateBuildArguments()
 {
 	addInputFileArg();
 	addSettingsFileArg();
@@ -933,54 +893,6 @@ void ArgumentPatterns::addOptionalArguments()
 	addSaveSchemaArg();
 #endif
 	addQuietArgs();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateBuildRunArguments()
-{
-	addOptionalArguments();
-
-	addRunTargetArg();
-	addRunArgumentsArg();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateRunArguments()
-{
-	addOptionalArguments();
-
-	addRunTargetArg();
-	addRunArgumentsArg();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateBuildArguments()
-{
-	addOptionalArguments();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateRebuildArguments()
-{
-	addOptionalArguments();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateCleanArguments()
-{
-	addOptionalArguments();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateBundleArguments()
-{
-	addOptionalArguments();
-}
-
-/*****************************************************************************/
-void ArgumentPatterns::populateConfigureArguments()
-{
-	addOptionalArguments();
 }
 
 /*****************************************************************************/
@@ -1064,7 +976,7 @@ void ArgumentPatterns::populateColorTestArguments()
 #if defined(CHALET_DEBUG)
 void ArgumentPatterns::populateDebugArguments()
 {
-	addOptionalArguments();
+	populateBuildArguments();
 }
 #endif
 }

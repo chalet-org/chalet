@@ -46,15 +46,13 @@ private:
 	bool showVersion();
 	bool populateArgumentMap();
 	std::string getHelp();
+	std::string getSeeHelpMessage();
 
-	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument);
-	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArgument, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
 	MappedArgument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
 	MappedArgument& addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument);
 	MappedArgument& addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue);
-	MappedArgument& addRemainingArguments(const ArgumentIdentifier inId, const char* inArgument);
 
 	void populateMainArguments();
 
@@ -85,15 +83,11 @@ private:
 	void addBenchmarkArg();
 	void addLaunchProfilerArg();
 	void addKeepGoingArg();
-	void addOptionalArguments();
 
 	void populateBuildRunArguments();
 	void populateRunArguments();
 	void populateBuildArguments();
-	void populateRebuildArguments();
-	void populateCleanArguments();
-	void populateBundleArguments();
-	void populateConfigureArguments();
+
 	void populateInitArguments();
 	void populateSettingsGetArguments();
 	void populateSettingsGetKeysArguments();
