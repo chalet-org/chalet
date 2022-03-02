@@ -3,7 +3,6 @@
 OUTDIR="vendor"
 
 vendors=(
-	'argparse'
 	'catch2'
 	'ctre'
 	'fmt'
@@ -13,7 +12,6 @@ vendors=(
 )
 
 repositories=(
-	'chalet-org/argparse'
 	'catchorg/Catch2'
 	'hanickadot/compile-time-regular-expressions'
 	'fmtlib/fmt'
@@ -22,7 +20,6 @@ repositories=(
 	'nlohmann/json'
 )
 tags=(
-	'master'
 	'v2.x'
 	'82ce68b9e2b705a83d107d842f51fde42a03133b'
 	'8.0.0'
@@ -32,7 +29,6 @@ tags=(
 )
 
 commits=(
-	0
 	0
 	1
 	0

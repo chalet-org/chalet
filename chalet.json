@@ -35,7 +35,6 @@
 				"vendor/nlohmann/single_include",
 				"vendor/json-schema-validator/src",
 				"vendor/fmt/include",
-				"vendor/argparse/include",
 				"vendor"
 			],
 			"links.windows": "imagehlp"

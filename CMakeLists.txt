@@ -56,7 +56,6 @@ target_include_directories(${TARGET_NAME}
 		vendor/nlohmann/single_include/
 		vendor/json-schema-validator/src/
 		vendor/fmt/include/
-		vendor/argparse/include/
 		vendor/
 )
 

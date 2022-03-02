@@ -970,8 +970,7 @@ void ArgumentPatterns::populateSettingsGetArguments()
 	addSettingsTypeArg();
 
 	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
-		.setHelp("The config key to get.")
-		.setRequired();
+		.setHelp("The config key to get.");
 }
 
 /*****************************************************************************/
@@ -981,8 +980,7 @@ void ArgumentPatterns::populateSettingsGetKeysArguments()
 	addSettingsTypeArg();
 
 	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKeyQuery)
-		.setHelp("The config key to query for.")
-		.setRequired();
+		.setHelp("The config key to query for.");
 
 	addTwoStringArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
 		.setHelp("Additional query arguments, if applicable.");
