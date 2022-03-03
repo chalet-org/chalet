@@ -31,13 +31,13 @@ else()
 endif()
 
 file(GLOB_RECURSE JSONSV_SOURCES
-	vendor/json-schema-validator/src/*.cpp
+	external/json-schema-validator/src/*.cpp
 )
 
 add_library(json-schema-validator STATIC ${JSONSV_SOURCES})
 target_include_directories(json-schema-validator PRIVATE
-	vendor/nlohmann/single_include/
-	vendor/json-schema-validator/src/
+	external/nlohmann/single_include/
+	external/json-schema-validator/src/
 )
 
 file(GLOB_RECURSE TARGET_SOURCES
@@ -53,10 +53,10 @@ target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 target_include_directories(${TARGET_NAME}
 	PRIVATE
 		src/
-		vendor/nlohmann/single_include/
-		vendor/json-schema-validator/src/
-		vendor/fmt/include/
-		vendor/
+		external/nlohmann/single_include/
+		external/json-schema-validator/src/
+		external/fmt/include/
+		external/
 )
 
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)

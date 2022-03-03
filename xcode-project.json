@@ -15,7 +15,7 @@
 			"buildRules": [
 				{
 					"filePattern": "*.cpp",
-					"outputFilesCompilerFlags": "-std=c++17 -Ivendor -Wall -Wextra -Werror -Wpedantic -Wunused -Wcast-align -Wdouble-promotion -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wnon-virtual-dtor -Wredundant-decls -Wodr"
+					"outputFilesCompilerFlags": "-std=c++17 -Iexternal -Wall -Wextra -Werror -Wpedantic -Wunused -Wcast-align -Wdouble-promotion -Wformat=2 -Wmissing-declarations -Wmissing-include-dirs -Wnon-virtual-dtor -Wredundant-decls -Wodr"
 				}
 			]
 		}
@@ -28,7 +28,7 @@
 			],
 			"sources": [
 				{
-					"path": "vendor/json-schema-validator"
+					"path": "external/json-schema-validator"
 				}
 			]
 		},
@@ -58,7 +58,7 @@
 					"path": "src"
 				},
 				{
-					"path": "test"
+					"path": "tests"
 				}
 			],
 			"dependencies": [

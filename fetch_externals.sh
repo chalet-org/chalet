@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-OUTDIR="vendor"
+OUTDIR="external"
 
-vendors=(
+libraries=(
 	'catch2'
 	'ctre'
 	'fmt'
@@ -46,11 +46,11 @@ fetching_symbol='➥'
 
 # use --single-branch if pulling specific commit
 for idx in 0 1 2 3 4 5 6 7 8 9 10; do
-	vendor=${vendors[$idx]}
+	library=${libraries[$idx]}
 	repo=${repositories[$idx]}
 	tag=${tags[$idx]}
 	single_commit=${commits[$idx]}
-	path="$OUTDIR/$vendor"
+	path="$OUTDIR/$library"
 
 	if [[ ! -d "$path" ]]; then
 		printf "$color$fetching_symbol  Fetching: $repo ($tag)$color_reset\n"

@@ -32,10 +32,10 @@
 				"JSON_NOEXCEPTION"
 			],
 			"includeDirs": [
-				"vendor/nlohmann/single_include",
-				"vendor/json-schema-validator/src",
-				"vendor/fmt/include",
-				"vendor"
+				"external/nlohmann/single_include",
+				"external/json-schema-validator/src",
+				"external/fmt/include",
+				"external"
 			],
 			"links.windows": "imagehlp"
 		}
@@ -43,7 +43,7 @@
 	"targets": {
 		"json-schema-validator-s": {
 			"kind": "staticLibrary",
-			"files": "vendor/json-schema-validator/src/*.cpp"
+			"files": "external/json-schema-validator/src/*.cpp"
 		},
 		"chalet": {
 			"kind": "executable",
@@ -63,13 +63,13 @@
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
 					"src",
-					"test",
-					"vendor/catch2/single_include"
+					"tests",
+					"external/catch2/single_include"
 				]
 			},
 			"files": [
 				"src/*/**.{cpp,rc}",
-				"test/**.cpp"
+				"tests/**.cpp"
 			],
 			"defaultRunArguments": [
 				"-w",

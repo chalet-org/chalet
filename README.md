@@ -9,7 +9,7 @@
 
 
 **Visual Studio**
-1. Run `./fetch_vendors.sh` from Git Bash. This will get Chalet dependencies
+1. Run `./fetch_externals.sh` from Git Bash. This will get Chalet dependencies
 2. Make sure CMake is accessible from Path (add to System Environment Variables)
 3. Start "x64 Native Tools Command Prompt for VS 20XX"
 4. Run `.\build_all.bat` from the project root

@@ -2,8 +2,8 @@
 	"C_Cpp.preferredPathSeparator": "Forward Slash",
 	"C_Cpp.codeAnalysis.runAutomatically": false,
 	"C_Cpp.codeAnalysis.exclude": {
-		"${workspaceFolder}/vendor/**/*": true,
-		"${workspaceFolder}/test/**/*": true
+		"${workspaceFolder}/external/**/*": true,
+		"${workspaceFolder}/tests/**/*": true
 	},
 	"debug.toolBarLocation": "docked",
 	"editor.formatOnSave": true,
@@ -13,7 +13,7 @@
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
 	"search.exclude": {
-		"vendor": true,
+		"external": true,
 		"dist": true,
 		"build": true,
 		"platform/windows/installer/plugins": true
