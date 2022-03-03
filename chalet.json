@@ -55,7 +55,7 @@
 			},
 			"files": "src/**.{cpp,rc}"
 		},
-		"tests_chalet": {
+		"tests": {
 			"kind": "executable",
 			"condition": "!debug",
 			"settings:Cxx": {

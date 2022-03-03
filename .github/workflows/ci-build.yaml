@@ -67,7 +67,7 @@ jobs:
           files: ./dist/chalet-x86_64-linux-gnu.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
-        run: build/x86_64-linux-gnu_Release/chalet run tests_chalet
+        run: build/x86_64-linux-gnu_Release/chalet run tests
   MacOS:
     needs: Release
     runs-on: macos-latest
@@ -121,7 +121,7 @@ jobs:
           files: ./dist/chalet-universal-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
-        run: build/universal-apple-darwin_Release/chalet run tests_chalet
+        run: build/universal-apple-darwin_Release/chalet run tests
   Windows-MSVC:
     needs: Release
     runs-on: windows-latest
@@ -155,7 +155,7 @@ jobs:
             ./dist/chalet-x86_64-pc-windows-msvc-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
-        run: build/msvc_Debug/chalet-debug run tests_chalet
+        run: build/msvc_Debug/chalet-debug run tests
   # Windows-MSYS2:
   #   needs: Release
   #   runs-on: windows-latest
@@ -187,7 +187,7 @@ jobs:
   #     - name: "Build: Release"
   #       run: build/Debug/chalet-debug -t gcc bundle
   #     - name: "Run: Tests"
-  #       run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests_chalet
+  #       run: build/x86_64-w64-mingw32_Release/chalet -c Release run tests
   #     - name: "Make NSIS Installer"
   #       uses: joncloud/makensis-action@v3.5
   #       with:

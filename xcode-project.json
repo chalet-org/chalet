@@ -48,7 +48,7 @@
 				}
 			]
 		},
-		"tests_chalet": {
+		"tests": {
 			"type": "application",
 			"templates": [
 				"AllTargets"
