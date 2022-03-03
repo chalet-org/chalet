@@ -7,7 +7,7 @@
 
 #include "Router/Router.hpp"
 
-#include "Arguments/ArgumentReader.hpp"
+#include "Arguments/CommandLine.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
@@ -22,15 +22,16 @@ namespace chalet
 /*****************************************************************************/
 int Application::run(const int argc, const char* argv[])
 {
-	initialize();
+	initializeTerminal();
 
+	m_inputs = CommandLine::read(argc, argv);
+	if (m_inputs == nullptr)
 	{
-		ArgumentReader argParser{ m_inputs };
-		if (!argParser.run(argc, argv))
-			return onExit(Status::EarlyFailure);
+		m_inputs = std::make_unique<CommandLineInputs>();
+		return onExit(Status::EarlyFailure);
 	}
 
-	if (m_inputs.route() == Route::Help)
+	if (m_inputs->route() == Route::Help)
 		return onExit(Status::Success);
 
 	if (!handleRoute())
@@ -44,7 +45,7 @@ bool Application::handleRoute()
 {
 	CHALET_TRY
 	{
-		Router routes(m_inputs);
+		Router routes(*m_inputs);
 		return routes.run();
 	}
 	CHALET_CATCH(const std::exception& err)
@@ -55,7 +56,7 @@ bool Application::handleRoute()
 }
 
 /*****************************************************************************/
-void Application::initialize()
+void Application::initializeTerminal()
 {
 	// Output::resetStdout();
 	// Output::resetStderr();
@@ -79,11 +80,13 @@ void Application::initialize()
 /*****************************************************************************/
 int Application::onExit(const Status inStatus)
 {
-	if (inStatus == Status::EarlyFailure)
+	chalet_assert(m_inputs != nullptr, "m_inputs must be allocated.");
+	if (inStatus == Status::EarlyFailure && m_inputs != nullptr)
 	{
-		ThemeSettingsJsonParser themeParser(m_inputs);
+		ThemeSettingsJsonParser themeParser(*m_inputs);
 		UNUSED(themeParser.serialize());
 	}
+	m_inputs.reset();
 
 	Diagnostic::printErrors();
 

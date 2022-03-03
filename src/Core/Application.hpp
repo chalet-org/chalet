@@ -25,7 +25,7 @@ public:
 	int run(const int argc = 0, const char* argv[] = nullptr);
 
 private:
-	void initialize();
+	void initializeTerminal();
 	bool handleRoute();
 
 	int onExit(const Status inStatus);
@@ -33,7 +33,7 @@ private:
 
 	void testSignalHandling();
 
-	CommandLineInputs m_inputs;
+	Unique<CommandLineInputs> m_inputs;
 };
 }
 
