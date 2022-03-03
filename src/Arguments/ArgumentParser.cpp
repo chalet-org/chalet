@@ -352,7 +352,7 @@ bool ArgumentParser::populateArgumentMap()
 		switch (mapped.value().kind())
 		{
 			case Variant::Kind::Boolean:
-				mapped.setValue(String::equals("true", value));
+				mapped.setValue(String::equals("1", value));
 				break;
 
 			case Variant::Kind::OptionalBoolean: {
