@@ -245,7 +245,7 @@ bool ArgumentParser::doParse()
 			return false;
 		}
 
-		if (!populateArgumentMap())
+		if (!assignArgumentListFromArgumentsAndValidate())
 			return false;
 
 		return true;
@@ -286,7 +286,7 @@ std::string ArgumentParser::getSeeHelpMessage()
 }
 
 /*****************************************************************************/
-bool ArgumentParser::populateArgumentMap()
+bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 {
 	StringList invalid;
 	for (auto& [key, _] : m_rawArguments)
