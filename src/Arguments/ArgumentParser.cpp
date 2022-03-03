@@ -617,7 +617,7 @@ void ArgumentParser::populateMainArguments()
 	descriptions.push_back("Remove the key/value pair given a valid property key.\n");
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
-	descriptions.push_back("Query Chalet for any project-specific or global information. Intended for code editor integrations.");
+	descriptions.push_back("Query Chalet for project-specific information. Intended for IDE integrations.");
 
 	subcommands.push_back("colortest");
 	descriptions.push_back("Display all color themes and terminal capabilities.");
