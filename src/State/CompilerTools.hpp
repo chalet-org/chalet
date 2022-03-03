@@ -18,6 +18,9 @@ struct SourceCache;
 
 struct CompilerTools
 {
+	static StringList getToolchainStrategies();
+	static StringList getToolchainBuildPathStyles();
+
 	bool initialize(ICompileEnvironment& inEnvironment);
 	bool validate();
 

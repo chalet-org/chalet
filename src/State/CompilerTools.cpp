@@ -43,6 +43,27 @@ Dictionary<StrategyType> getStrategyTypes()
 }
 
 /*****************************************************************************/
+StringList CompilerTools::getToolchainStrategies()
+{
+	return {
+		"makefile",
+		"ninja",
+		"native-experimental",
+	};
+}
+
+/*****************************************************************************/
+StringList CompilerTools::getToolchainBuildPathStyles()
+{
+	return {
+		"target-triple",
+		"toolchain-name",
+		"configuration",
+		"architecture",
+	};
+}
+
+/*****************************************************************************/
 bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
 {
 	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {

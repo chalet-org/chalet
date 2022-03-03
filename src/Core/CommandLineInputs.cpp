@@ -52,6 +52,8 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "toolchain", QueryOption::Toolchain },
 		{ "toolchain-presets", QueryOption::ToolchainPresets },
 		{ "user-toolchains", QueryOption::UserToolchains },
+		{ "toolchain-strategy", QueryOption::ToolchainStrategy },
+		{ "toolchain-build-path-style", QueryOption::ToolchainBuildPathStyle },
 		{ "state-chalet-json", QueryOption::ChaletJsonState },
 		{ "state-settings-json", QueryOption::SettingsJsonState },
 		{ "schema-chalet-json", QueryOption::ChaletSchema },

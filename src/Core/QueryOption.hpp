@@ -25,6 +25,8 @@ enum class QueryOption : ushort
 	Configuration,
 	Architecture,
 	RunTarget,
+	ToolchainStrategy,
+	ToolchainBuildPathStyle,
 	//
 	ThemeNames,
 	//

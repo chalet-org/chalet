@@ -11,6 +11,7 @@
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 #include "State/CentralState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -88,6 +89,14 @@ bool QueryController::printListOfRequestedType()
 			output = List::combine(std::move(userToolchains), std::move(presets));
 			break;
 		}
+
+		case QueryOption::ToolchainStrategy:
+			output = getToolchainStrategies();
+			break;
+
+		case QueryOption::ToolchainBuildPathStyle:
+			output = getToolchainBuildPathStyles();
+			break;
 
 		case QueryOption::ChaletJsonState:
 			output = getChaletJsonState();
@@ -205,6 +214,18 @@ StringList QueryController::getUserToolchainList() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getToolchainStrategies() const
+{
+	return CompilerTools::getToolchainStrategies();
+}
+
+/*****************************************************************************/
+StringList QueryController::getToolchainBuildPathStyles() const
+{
+	return CompilerTools::getToolchainBuildPathStyles();
 }
 
 /*****************************************************************************/

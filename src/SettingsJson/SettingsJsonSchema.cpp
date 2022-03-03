@@ -5,6 +5,7 @@
 
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
+#include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/String.hpp"
 #include "Utility/SuppressIntellisense.hpp"
@@ -227,25 +228,18 @@ Json SettingsJsonSchema::get()
 	defs[Defs::ToolchainStrategy] = R"json({
 		"type": "string",
 		"description": "The strategy to use during the build.",
-		"enum": [
-			"makefile",
-			"native-experimental",
-			"ninja"
-		],
+		"enum": [],
 		"default": "makefile"
 	})json"_ojson;
+	defs[Defs::ToolchainStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategies();
 
 	defs[Defs::BuildPathStyle] = R"json({
 		"type": "string",
 		"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
-		"enum": [
-			"configuration",
-			"architecture",
-			"target-triple",
-			"toolchain-name"
-		],
+		"enum": [],
 		"default": "target-triple"
 	})json"_ojson;
+	defs[Defs::BuildPathStyle][SKeys::Enum] = CompilerTools::getToolchainBuildPathStyles();
 
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
 	defs[Defs::Archiver] = R"json({
