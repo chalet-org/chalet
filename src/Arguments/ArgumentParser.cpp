@@ -62,6 +62,22 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ Route::Query, &ArgumentParser::populateQueryArguments },
 		{ Route::ColorTest, &ArgumentParser::populateColorTestArguments },
 	}),
+	m_routeDescriptions({
+		{ Route::BuildRun, "Build the project and run a valid executable build target." },
+		{ Route::Run, "Run a valid executable build target." },
+		{ Route::Build, "Build the project and create a configuration if it doesn't exist." },
+		{ Route::Rebuild, "Rebuild the project and create a configuration if it doesn't exist." },
+		{ Route::Clean, "Unceremoniously clean the build folder." },
+		{ Route::Bundle, "Bundle the project for distribution." },
+		{ Route::Configure, "Create a project configuration and fetch external dependencies." },
+		{ Route::Init, "Initialize a project in either the current directory or a subdirectory." },
+		{ Route::SettingsGet, "If the given property is valid, display its JSON node." },
+		{ Route::SettingsGetKeys, "If the given property is an object, display the names of its properties." },
+		{ Route::SettingsSet, "Set the given property to the given value." },
+		{ Route::SettingsUnset, "Remove the key/value pair given a valid property key." },
+		{ Route::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
+		{ Route::ColorTest, "Display all color themes and terminal capabilities." },
+	}),
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
 		{ "run", Route::Run },
@@ -434,6 +450,12 @@ std::string ArgumentParser::getHelp()
 	}
 	help += fmt::format("   {}\n", command);
 	help += '\n';
+	if (m_route != Route::Unknown)
+	{
+		help += "Description:\n";
+		help += fmt::format("   {}\n", m_routeDescriptions.at(m_route));
+		help += '\n';
+	}
 	help += "Commands:\n";
 
 	for (auto& mapped : m_argumentList)
@@ -581,46 +603,46 @@ void ArgumentParser::populateMainArguments()
 	StringList descriptions;
 
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
-	descriptions.push_back("Initialize a project in either the current directory or a subdirectory.\n");
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Init)));
 
 	subcommands.push_back("configure");
-	descriptions.push_back("Create a project configuration and fetch external dependencies.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Configure));
 
 	subcommands.push_back(fmt::format("buildrun {} {}", Arg::RunTarget, Arg::RemainingArguments));
-	descriptions.push_back("Build the project and run a valid executable build target.");
+	descriptions.push_back(m_routeDescriptions.at(Route::BuildRun));
 
 	subcommands.push_back(fmt::format("run {} {}", Arg::RunTarget, Arg::RemainingArguments));
-	descriptions.push_back("Run a valid executable build target.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Run));
 
 	subcommands.push_back("build");
-	descriptions.push_back("Build the project and create a configuration if it doesn't exist.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Build));
 
 	subcommands.push_back("rebuild");
-	descriptions.push_back("Rebuild the project and create a configuration if it doesn't exist.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Rebuild));
 
 	subcommands.push_back("clean");
-	descriptions.push_back("Unceremoniously clean the build folder.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Clean));
 
 	subcommands.push_back("bundle");
-	descriptions.push_back("Bundle the project for distribution.\n");
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Bundle)));
 
 	subcommands.push_back(fmt::format("get {}", Arg::SettingsKey));
-	descriptions.push_back("If the given property is valid, display its JSON node.");
+	descriptions.push_back(m_routeDescriptions.at(Route::SettingsGet));
 
 	subcommands.push_back(fmt::format("getkeys {}", Arg::SettingsKeyQuery));
-	descriptions.push_back("If the given property is an object, display the names of its properties.");
+	descriptions.push_back(m_routeDescriptions.at(Route::SettingsGetKeys));
 
 	subcommands.push_back(fmt::format("set {} {}", Arg::SettingsKey, Arg::SettingsValue));
-	descriptions.push_back("Set the given property to the given value.");
+	descriptions.push_back(m_routeDescriptions.at(Route::SettingsSet));
 
 	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
-	descriptions.push_back("Remove the key/value pair given a valid property key.\n");
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::SettingsUnset)));
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
-	descriptions.push_back("Query Chalet for project-specific information. Intended for IDE integrations.");
+	descriptions.push_back(m_routeDescriptions.at(Route::Query));
 
 	subcommands.push_back("colortest");
-	descriptions.push_back("Display all color themes and terminal capabilities.");
+	descriptions.push_back(m_routeDescriptions.at(Route::ColorTest));
 
 	std::string help;
 	if (subcommands.size() == descriptions.size())

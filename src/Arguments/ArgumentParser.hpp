@@ -20,6 +20,7 @@ class ArgumentParser final : public BaseArgumentParser
 {
 	using ParserAction = std::function<void(ArgumentParser&)>;
 	using ParserList = std::unordered_map<Route, ParserAction>;
+	using RouteDescriptionList = std::unordered_map<Route, std::string>;
 	using RouteMap = OrderedDictionary<Route>;
 	using ArgumentList = std::vector<MappedArgument>;
 
@@ -103,6 +104,7 @@ private:
 	const CommandLineInputs& m_inputs;
 
 	ParserList m_subCommands;
+	RouteDescriptionList m_routeDescriptions;
 
 	ArgumentList m_argumentList;
 	RouteMap m_routeMap;
