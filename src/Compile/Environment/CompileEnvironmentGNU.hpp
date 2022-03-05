@@ -18,6 +18,7 @@ protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;
+	virtual bool supportsFlagFile() override;
 
 	virtual bool readArchitectureTripleFromCompiler() override;
 	virtual bool validateArchitectureFromInput() override;

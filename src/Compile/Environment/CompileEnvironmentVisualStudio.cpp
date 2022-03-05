@@ -278,6 +278,12 @@ bool CompileEnvironmentVisualStudio::verifyToolchain()
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentVisualStudio::supportsFlagFile()
+{
+	return false;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 {
 	return false;

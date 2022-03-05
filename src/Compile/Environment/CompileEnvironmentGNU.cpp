@@ -152,6 +152,12 @@ bool CompileEnvironmentGNU::verifyToolchain()
 }
 
 /*****************************************************************************/
+bool CompileEnvironmentGNU::supportsFlagFile()
+{
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompilerExec)
 {
 	const std::string macroResult = getCompilerMacros(inCompilerExec);

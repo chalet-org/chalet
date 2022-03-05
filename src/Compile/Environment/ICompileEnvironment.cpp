@@ -237,8 +237,10 @@ bool ICompileEnvironment::getCompilerInfoFromExecutable(CompilerInfo& outInfo)
 /*****************************************************************************/
 bool ICompileEnvironment::makeSupportedCompilerFlags(const std::string& inExecutable)
 {
-	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable), CacheType::Local);
+	if (!supportsFlagFile())
+		return true;
 
+	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable), CacheType::Local);
 	if (!Commands::pathExists(flagsFile))
 	{
 		if (populateSupportedFlags(inExecutable))

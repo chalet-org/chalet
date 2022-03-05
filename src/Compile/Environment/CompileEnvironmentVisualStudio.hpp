@@ -31,6 +31,7 @@ protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
 	virtual bool verifyToolchain() final;
+	virtual bool supportsFlagFile() final;
 
 	virtual bool compilerVersionIsToolchainVersion() const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
