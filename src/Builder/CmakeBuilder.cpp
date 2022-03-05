@@ -5,6 +5,8 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
@@ -61,12 +63,12 @@ bool CmakeBuilder::run()
 	static const char* kNinjaStatus = "NINJA_STATUS";
 	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
 
-	auto onRunFailure = [this, &oldNinjaStatus, &isNinja]() -> bool {
+	auto onRunFailure = [this, &oldNinjaStatus, &isNinja](const bool inRemoveDir = true) -> bool {
 #if defined(CHALET_WIN32)
 		Output::previousLine();
 #endif
 
-		if (!m_target.recheck())
+		if (inRemoveDir && !m_target.recheck())
 			Commands::removeRecursively(m_outputLocation);
 
 		Output::lineBreak();
@@ -77,8 +79,11 @@ bool CmakeBuilder::run()
 		return false;
 	};
 
+	auto& sourceCache = m_state.cache.file().sources();
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
+
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckCmake = m_target.recheck();
+	bool recheckCmake = m_target.recheck() || lastBuildFailed;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
@@ -138,8 +143,10 @@ bool CmakeBuilder::run()
 		command = getBuildCommand(m_outputLocation);
 
 		// this will control ninja output, and other build outputs should be unaffected
-		if (!Commands::subprocessNinjaBuild(command))
-			return onRunFailure();
+		bool result = Commands::subprocessNinjaBuild(command);
+		sourceCache.addExternalRebuild(m_target.location(), result ? "0" : "1");
+		if (!result)
+			return onRunFailure(false);
 
 		if (isNinja)
 		{

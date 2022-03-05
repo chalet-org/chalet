@@ -6,6 +6,7 @@
 #include "Cache/SourceCache.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 
 namespace chalet
@@ -39,6 +40,12 @@ void SourceCache::addVersion(const std::string& inExecutable, const std::string&
 void SourceCache::addArch(const std::string& inExecutable, const std::string& inValue)
 {
 	addDataCache(inExecutable, CacheKeys::DataArch, inValue);
+}
+
+/*****************************************************************************/
+void SourceCache::addExternalRebuild(const std::string& inPath, const std::string& inValue)
+{
+	addDataCache(inPath, CacheKeys::DataExternalRebuild, inValue);
 }
 
 /*****************************************************************************/
@@ -225,6 +232,14 @@ bool SourceCache::archRequriesUpdate(const std::string& inFile, std::string& out
 {
 	outExistingValue = dataCache(inFile, CacheKeys::DataArch);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
+	return result;
+}
+
+/*****************************************************************************/
+bool SourceCache::externalRequiresRebuild(const std::string& inPath)
+{
+	auto value = dataCache(inPath, CacheKeys::DataExternalRebuild);
+	bool result = value.empty() || String::equals('1', value);
 	return result;
 }
 

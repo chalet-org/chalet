@@ -116,6 +116,7 @@ namespace CacheKeys
 {
 CH_STR(DataVersion) = "v";
 CH_STR(DataArch) = "a";
+CH_STR(DataExternalRebuild) = "e";
 CH_STR(Hashes) = "h";
 CH_STR(HashBuild) = "b";
 CH_STR(HashTheme) = "t";
