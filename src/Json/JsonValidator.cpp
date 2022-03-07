@@ -154,7 +154,6 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::type_instance_not_found_in_required_enum: {
-			// TODO: Logic to try to whitelist keys from throwing errors
 			return fmt::format("An invalid value was found in '{}'. Expected string enum", parentKey);
 		}
 

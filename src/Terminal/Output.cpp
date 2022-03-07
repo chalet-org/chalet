@@ -37,42 +37,6 @@ std::string getFormattedBuildTarget(const std::string& inName)
 }
 
 /*****************************************************************************/
-// TODO: move this
-std::string getCleanGitPath(const std::string inPath)
-{
-	std::string ret = inPath;
-
-	// Common git patterns
-	String::replaceAll(ret, "https://", "");
-	String::replaceAll(ret, "git@", "");
-	String::replaceAll(ret, "git+ssh://", "");
-	String::replaceAll(ret, "ssh://", "");
-	String::replaceAll(ret, "git://", "");
-	// String::replaceAll(ret, "rsync://", "");
-	// String::replaceAll(ret, "file://", "");
-
-	// strip the domain
-	char searchChar = '/';
-	if (String::contains(':', ret))
-		searchChar = ':';
-
-	std::size_t beg = ret.find_first_of(searchChar);
-	if (beg != std::string::npos)
-	{
-		ret = ret.substr(beg + 1);
-	}
-
-	// strip .git
-	std::size_t end = ret.find_last_of('.');
-	if (end != std::string::npos)
-	{
-		ret = ret.substr(0, end);
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 constexpr char getEscapeChar()
 {
 	return '\x1b';
@@ -485,27 +449,10 @@ void Output::printSeparator(const char inChar)
 }
 
 /*****************************************************************************/
-void Output::msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
+void Output::msgFetchingDependency(const std::string& inPath)
 {
-	std::string path = getCleanGitPath(inGitUrl);
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
-
-	if (!inBranchOrTag.empty() && !String::equals("HEAD", inBranchOrTag))
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Fetching: {} ({})", path, inBranchOrTag));
-	else
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Fetching: {}", path));
-}
-
-/*****************************************************************************/
-void Output::msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag)
-{
-	std::string path = getCleanGitPath(inGitUrl);
-	auto symbol = Unicode::heavyCurvedDownRightArrow();
-
-	if (!inBranchOrTag.empty())
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Updating: {} ({})", path, inBranchOrTag));
-	else
-		displayStyledSymbol(state.theme.note, symbol, fmt::format("Updating: {}", path));
+	displayStyledSymbol(state.theme.note, symbol, fmt::format("Fetching: {}", inPath));
 }
 
 /*****************************************************************************/

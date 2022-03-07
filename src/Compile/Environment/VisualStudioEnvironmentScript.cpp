@@ -29,15 +29,16 @@ bool VisualStudioEnvironmentScript::visualStudioExists()
 #if defined(CHALET_WIN32)
 	if (state.exists == -1)
 	{
-		// TODO:
-		//   Note that if you install vswhere using Chocolatey (instead of the VS/MSBuild installer),
-		//   it will be located at %ProgramData%\chocolatey\lib\vswhere\tools\vswhere.exe
-		//   https://stackoverflow.com/questions/54305638/how-to-find-vswhere-exe-path
-
 		std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
 		state.vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
 
 		bool vswhereFound = Commands::pathExists(state.vswhere);
+		if (!vswhereFound)
+		{
+			std::string progData = Environment::getAsString("ProgramData");
+			state.vswhere = fmt::format("{}\\chocolatey\\lib\\vswhere\\tools\\vswhere.exe", progData);
+			vswhereFound = Commands::pathExists(state.vswhere);
+		}
 		if (!vswhereFound)
 		{
 			std::string progFiles64 = Environment::getAsString("ProgramFiles");

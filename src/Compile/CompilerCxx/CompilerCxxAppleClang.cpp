@@ -137,8 +137,6 @@ void CompilerCxxAppleClang::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
-	// TODO: others?
-
 	// Note: memory,leaks not supported in AppleClang
 
 	StringList sanitizers;

@@ -400,8 +400,6 @@ void AncillaryTools::setVsperfcmd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-// TODO: remove "--deep" and figure out the proper Apple-approved way of doing things
-//
 bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
 {
 #if defined(CHALET_MACOS)

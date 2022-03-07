@@ -480,7 +480,6 @@ void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 {
-	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
@@ -557,7 +556,6 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 	// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=msvc-160
 	// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 
-	// TODO: Reverse years so c11 / c++14 is checked explicitly & newest year isn't
 	if (specialization == CxxSpecialization::C)
 	{
 		List::addIfDoesNotExist(outArgList, "/TC"); // Treat code as C

@@ -239,7 +239,11 @@ void GitRunner::displayFetchingMessageStart(const GitDependency& inDependency)
 	const auto& checkoutTo = getCheckoutTo(inDependency);
 	const auto& repository = inDependency.repository();
 
-	Output::msgFetchingDependency(repository, checkoutTo);
+	auto path = getCleanGitPath(repository);
+	if (!checkoutTo.empty() && !String::equals("HEAD", checkoutTo))
+		path += fmt::format(" ({})", checkoutTo);
+
+	Output::msgFetchingDependency(path);
 }
 
 /*****************************************************************************/
@@ -369,6 +373,41 @@ bool GitRunner::updateGitRepositoryShallow(const std::string& inRepoPath) const
 bool GitRunner::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
 	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
+}
+
+/*****************************************************************************/
+std::string GitRunner::getCleanGitPath(const std::string& inPath) const
+{
+	std::string ret = inPath;
+
+	// Common git patterns
+	String::replaceAll(ret, "https://", "");
+	String::replaceAll(ret, "git@", "");
+	String::replaceAll(ret, "git+ssh://", "");
+	String::replaceAll(ret, "ssh://", "");
+	String::replaceAll(ret, "git://", "");
+	// String::replaceAll(ret, "rsync://", "");
+	// String::replaceAll(ret, "file://", "");
+
+	// strip the domain
+	char searchChar = '/';
+	if (String::contains(':', ret))
+		searchChar = ':';
+
+	std::size_t beg = ret.find_first_of(searchChar);
+	if (beg != std::string::npos)
+	{
+		ret = ret.substr(beg + 1);
+	}
+
+	// strip .git
+	std::size_t end = ret.find_last_of('.');
+	if (end != std::string::npos)
+	{
+		ret = ret.substr(0, end);
+	}
+
+	return ret;
 }
 
 }

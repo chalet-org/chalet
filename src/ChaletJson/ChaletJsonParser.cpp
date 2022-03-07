@@ -89,8 +89,6 @@ bool ChaletJsonParser::serialize()
 		m_centralState.getRunTargetArguments();
 	}
 
-	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
-
 	// Diagnostic::printDone(timer.asString());
 
 	return true;

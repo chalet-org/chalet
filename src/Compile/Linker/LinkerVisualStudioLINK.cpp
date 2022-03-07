@@ -340,7 +340,7 @@ void LinkerVisualStudioLINK::addCompatibleWithDataExecutionPrevention(StringList
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 {
-	// TODO: /MACHINE - target platform arch
+	// TODO: EBC?, ARM64X
 	const auto arch = m_state.info.targetArchitecture();
 	switch (arch)
 	{
@@ -357,8 +357,10 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 			break;
 
 		case Arch::Cpu::ARM64:
+			List::addIfDoesNotExist(outArgList, "/machine:ARM64");
+			break;
+
 		default:
-			// ??
 			break;
 	}
 }

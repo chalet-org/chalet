@@ -156,9 +156,12 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::validateSanitizers(const BuildState& inState)
+bool BuildConfiguration::validate(const BuildState& inState)
 {
 	bool result = true;
+
+	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
+	//   Maybe just a warning?
 
 	if (sanitizeAddress() && sanitizeHardwareAddress())
 	{
@@ -179,9 +182,6 @@ bool BuildConfiguration::validateSanitizers(const BuildState& inState)
 		Diagnostic::error("Sanitizer 'thread' cannot be combined with 'address', 'hwaddress' or 'leak'");
 		result = false;
 	}
-
-	// TODO: Validate sanitizers against toolchains here
-	// MSVC only has Address sanitizer for instance
 
 	if (enableSanitizers())
 	{

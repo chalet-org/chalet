@@ -25,7 +25,6 @@ bool CompilerCxxIntelClang::initialize()
 	if (!CompilerCxxClang::initialize())
 		return false;
 
-	// TODO: needed?
 	/*const auto& cxxExt = m_state.paths.cxxExtension();
 	if (m_project.usesPch())
 	{

@@ -42,6 +42,8 @@ private:
 	bool updateGitRepositoryShallow(const std::string& inRepoPath) const;
 	bool resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const;
 
+	std::string getCleanGitPath(const std::string& inPath) const;
+
 	CentralState& m_centralState;
 	ExternalDependencyCache& m_dependencyCache;
 

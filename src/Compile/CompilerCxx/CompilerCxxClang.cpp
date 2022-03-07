@@ -52,8 +52,6 @@ void CompilerCxxClang::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
-	// TODO: others?
-
 	StringList sanitizers;
 	if (inState.configuration.sanitizeAddress())
 	{

@@ -93,8 +93,6 @@ bool SettingsJsonParser::validatePaths()
 /*****************************************************************************/
 bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inState)
 {
-	// TODO: Copy from global cache. If one doesn't exist, do this
-
 	// Create the json cache
 	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
 

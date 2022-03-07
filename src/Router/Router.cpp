@@ -156,8 +156,6 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 /*****************************************************************************/
 bool Router::routeConfigure(BuildState& inState)
 {
-	// TODO: pass route to installDependencies & recheck them
-
 	bool addLineBreak = false;
 	if (inState.environment != nullptr)
 	{

@@ -56,8 +56,7 @@ void printInfo(const std::string& inText);
 void printFlair(const std::string& inText);
 void printSeparator(const char inChar = '-');
 
-void msgFetchingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
-void msgUpdatingDependency(const std::string& inGitUrl, const std::string& inBranchOrTag);
+void msgFetchingDependency(const std::string& inPath);
 void msgRemovedUnusedDependency(const std::string& inDependencyName);
 
 void msgConfigureCompleted(const std::string& inWorkspaceName);

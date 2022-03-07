@@ -255,7 +255,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
+			inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -276,7 +276,7 @@ bool BuildState::initializeToolchain()
 	if (!toolchain.initialize(*m_impl->environment))
 		return onError();
 
-	if (!configuration.validateSanitizers(*this))
+	if (!configuration.validate(*this))
 	{
 		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
 		return false;
@@ -751,37 +751,58 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 
-		if (String::contains({ "\\mingw64\\", "\\mingw32\\", "\\clang64\\", "\\clang32\\" }, outPathVariable))
+		if (targetArch == Arch::Cpu::X64)
 		{
-			// TODO: clangarm64
-
-			if (targetArch == Arch::Cpu::X64)
+			auto start = lower.find("\\mingw32\\");
+			if (start != std::string::npos)
 			{
-				auto start = lower.find("\\mingw32\\");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
-				}
-
-				start = lower.find("\\clang32\\");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
-				}
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
 			}
-			else if (targetArch == Arch::Cpu::X86)
-			{
-				auto start = lower.find("\\mingw64\\");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
-				}
 
-				start = lower.find("\\clang64\\");
-				if (start != std::string::npos)
-				{
-					String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
-				}
+			start = lower.find("\\clang32\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
+			}
+
+			start = lower.find("\\clangarm64\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang64\\");
+			}
+		}
+		else if (targetArch == Arch::Cpu::X86)
+		{
+			auto start = lower.find("\\mingw64\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
+			}
+
+			start = lower.find("\\clang64\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
+			}
+
+			start = lower.find("\\clangarm64\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang32\\");
+			}
+		}
+		else if (targetArch == Arch::Cpu::ARM64)
+		{
+			auto start = lower.find("\\clang32\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
+			}
+
+			start = lower.find("\\clang64\\");
+			if (start != std::string::npos)
+			{
+				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
 			}
 		}
 	}

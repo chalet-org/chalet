@@ -241,7 +241,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	{
 		if (!runRoute)
 		{
-			Output::msgBuildFail(); // TODO: Script failed
+			Output::msgBuildFail();
 			Output::lineBreak();
 		}
 		return false;
@@ -911,9 +911,6 @@ bool BuildManager::cmdClean()
 
 	if (Output::showCommands())
 		Output::lineBreak();
-
-	// TODO: Flag to clean externalDependencies
-	// TODO: Also clean cache files specific to build configuration
 
 	return true;
 }

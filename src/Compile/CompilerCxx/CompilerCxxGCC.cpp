@@ -392,7 +392,6 @@ void CompilerCxxGCC::addDefines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addPchInclude(StringList& outArgList) const
 {
-	// TODO: Potential for more than one pch?
 	if (m_project.usesPch())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
@@ -468,7 +467,7 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const CxxSpecia
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
-	// TODO: Make this "dumber" so it only the allowed strings used by each compiler
+	// TODO: Make this "dumber" so only the allowed strings are used by each compiler
 
 	bool isGcc = m_state.environment->isGcc();
 
@@ -540,8 +539,6 @@ void CompilerCxxGCC::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
-	// TODO: hwaddress
-
 	StringList sanitizers;
 	if (inState.configuration.sanitizeAddress())
 	{

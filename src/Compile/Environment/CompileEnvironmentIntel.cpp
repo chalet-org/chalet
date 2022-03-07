@@ -96,19 +96,19 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 {
 	std::vector<CompilerPathStructure> ret = CompileEnvironmentGNU::getValidCompilerPaths();
 
+	// TODO: Linux
+
 	if (m_type == ToolchainType::IntelLLVM)
 	{
 #if defined(CHALET_WIN32)
 		ret.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
 		ret.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
 #else
-		// TODO: Linux
 #endif
 	}
 	else
 	{
 		ret.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
-		// TODO: Linux
 	}
 
 	return ret;

@@ -47,7 +47,8 @@ StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, co
 /*****************************************************************************/
 void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 {
-	// TODO: /MACHINE - target platform arch
+	// TODO: EBC?, ARM64EC
+
 	const auto arch = m_state.info.targetArchitecture();
 	switch (arch)
 	{
@@ -64,8 +65,10 @@ void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 			break;
 
 		case Arch::Cpu::ARM64:
+			outArgList.emplace_back("/machine:ARM64");
+			break;
+
 		default:
-			// ??
 			break;
 	}
 }
