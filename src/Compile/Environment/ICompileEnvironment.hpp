@@ -61,6 +61,7 @@ protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const = 0;
 	virtual bool verifyToolchain() = 0;
+	virtual bool supportsFlagFile() = 0;
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 

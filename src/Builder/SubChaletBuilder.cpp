@@ -7,6 +7,8 @@
 
 #include "Core/CommandLineInputs.hpp"
 
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -61,8 +63,11 @@ bool SubChaletBuilder::run()
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
+	auto& sourceCache = m_state.cache.file().sources();
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
+
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckChalet = m_target.recheck();
+	bool recheckChalet = m_target.recheck() || lastBuildFailed;
 
 	bool result = true;
 
@@ -74,6 +79,7 @@ bool SubChaletBuilder::run()
 
 		StringList cmd = getBuildCommand(location);
 		result = Commands::subprocess(cmd);
+		sourceCache.addExternalRebuild(m_target.location(), result ? "0" : "1");
 
 		// Commands::changeWorkingDirectory(oldWorkingDirectory);
 		Environment::setPath(oldPath);
