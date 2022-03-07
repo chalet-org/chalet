@@ -92,6 +92,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"undefined"
 		]
 	})json"_ojson);
+	defs[Defs::ConfigurationSanitize][SKeys::OneOf][2] = R"json({
+		"type": "boolean",
+		"const": false
+	})json"_ojson;
+	defs[Defs::ConfigurationSanitize][SKeys::Default] = false;
 
 	//
 	// distribution
