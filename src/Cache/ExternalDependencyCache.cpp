@@ -18,10 +18,10 @@ bool ExternalDependencyCache::loadFromPath(const std::string& inPath)
 
 	JsonFile jsonFile(m_filename);
 	if (!jsonFile.load(false))
-		jsonFile.resetAndSave();
+		jsonFile.json = Json::object();
 
 	if (!jsonFile.json.is_object())
-		jsonFile.resetAndSave();
+		jsonFile.json = Json::object();
 
 	for (const auto& [key, value] : jsonFile.json.items())
 	{
@@ -59,7 +59,7 @@ bool ExternalDependencyCache::save() const
 			jsonFile.json[key] = value;
 		}
 		jsonFile.setDirty(true);
-		jsonFile.save();
+		jsonFile.save(0);
 	}
 
 	return true;
