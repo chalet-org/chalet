@@ -13,6 +13,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -40,10 +41,24 @@ bool SubChaletBuilder::run()
 	Output::msgBuild(name);
 	Output::lineBreak();
 
-	const auto oldPath = Environment::getPath();
-
-	auto location = Commands::getAbsolutePath(m_target.location());
+	const auto& rawLocation = m_target.location();
+	auto location = Commands::getAbsolutePath(rawLocation);
 	Path::sanitize(location);
+
+	bool dependencyUpdated = false;
+	for (const auto& dependency : m_state.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<GitDependency&>(*dependency);
+			if (String::startsWith(gitDependency.destination(), rawLocation))
+			{
+				dependencyUpdated = gitDependency.needsUpdate();
+			}
+		}
+	}
+
+	const auto oldPath = Environment::getPath();
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
@@ -67,7 +82,7 @@ bool SubChaletBuilder::run()
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckChalet = m_target.recheck() || lastBuildFailed;
+	bool recheckChalet = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
 	bool result = true;
 

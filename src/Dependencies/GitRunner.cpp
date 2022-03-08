@@ -38,12 +38,13 @@ bool GitRunner::run()
 	{
 		if (dependency->isGit())
 		{
-			auto& gitDependency = static_cast<const GitDependency&>(*dependency);
+			auto& gitDependency = static_cast<GitDependency&>(*dependency);
 
 			bool destinationExists = Commands::pathExists(gitDependency.destination());
 			if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
 				continue;
 
+			gitDependency.setNeedsUpdate(true);
 			destinationExists = Commands::pathExists(gitDependency.destination());
 			if (fetchDependency(gitDependency, destinationExists))
 			{

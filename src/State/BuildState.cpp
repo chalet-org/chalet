@@ -19,6 +19,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Dependency/IBuildDependency.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -70,7 +71,8 @@ BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState)
 	paths(m_impl->paths),
 	configuration(m_impl->configuration),
 	targets(m_impl->targets),
-	inputs(m_impl->inputs)
+	inputs(m_impl->inputs),
+	externalDependencies(m_impl->centralState.externalDependencies)
 {
 }
 
@@ -255,7 +257,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())

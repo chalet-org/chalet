@@ -33,6 +33,9 @@ struct GitDependency final : public IBuildDependency
 	bool submodules() const noexcept;
 	void setSubmodules(const bool inValue) noexcept;
 
+	bool needsUpdate() const noexcept;
+	void setNeedsUpdate(const bool inValue) noexcept;
+
 private:
 	bool parseDestination();
 
@@ -43,6 +46,7 @@ private:
 	std::string m_destination;
 
 	bool m_submodules = false;
+	bool m_needsUpdate = false;
 };
 }
 

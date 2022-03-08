@@ -21,6 +21,7 @@ struct WorkspaceCache;
 struct WorkspaceEnvironment;
 struct ICompileEnvironment;
 struct IBuildTarget;
+struct IBuildDependency;
 struct ICompileEnvironment;
 
 class BuildState
@@ -52,6 +53,7 @@ public:
 	BuildConfiguration& configuration;
 	std::vector<Unique<IBuildTarget>>& targets;
 	const CommandLineInputs& inputs;
+	const std::vector<Unique<IBuildDependency>>& externalDependencies;
 	ICompileEnvironment* environment = nullptr;
 
 private:

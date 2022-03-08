@@ -16,6 +16,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -46,8 +47,22 @@ bool CmakeBuilder::run()
 	Output::msgBuild(name);
 	Output::lineBreak();
 
-	auto location = Commands::getAbsolutePath(m_target.location());
+	const auto& rawLocation = m_target.location();
+	auto location = Commands::getAbsolutePath(rawLocation);
 	Path::sanitize(location);
+
+	bool dependencyUpdated = false;
+	for (const auto& dependency : m_state.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<GitDependency&>(*dependency);
+			if (String::startsWith(gitDependency.destination(), rawLocation))
+			{
+				dependencyUpdated = gitDependency.needsUpdate();
+			}
+		}
+	}
 
 	if (!m_target.buildFile().empty())
 	{
@@ -83,7 +98,7 @@ bool CmakeBuilder::run()
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckCmake = m_target.recheck() || lastBuildFailed;
+	bool recheckCmake = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
