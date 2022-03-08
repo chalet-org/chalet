@@ -11,7 +11,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool JsonComments::parse(Json& outJson, const std::string& inFilename)
+bool JsonComments::parse(Json& outJson, const std::string& inFilename, const bool inError)
 {
 	if (!Commands::pathExists(inFilename))
 	{
@@ -33,9 +33,12 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename)
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::error("{}", err.what());
-		Diagnostic::error("There was a problem parsing the json file: {}", inFilename);
-		outJson = Json();
+		if (inError)
+		{
+			Diagnostic::error("{}", err.what());
+			Diagnostic::error("There was a problem parsing the json file: {}", inFilename);
+			outJson = Json();
+		}
 		return false;
 	}
 }

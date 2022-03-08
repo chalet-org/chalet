@@ -16,14 +16,12 @@ struct GitRunner
 {
 	explicit GitRunner(CentralState& inCentralState);
 
-	bool run(const GitDependency& inDependency, const bool inDoNotUpdate);
-
-	bool fetched() const noexcept;
+	bool run();
 
 private:
-	bool gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDoNotUpdate);
+	bool gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists);
 
-	bool fetchDependency(const GitDependency& inDependency);
+	bool fetchDependency(const GitDependency& inDependency, const bool inDestinationExists);
 	StringList getCloneCommand(const GitDependency& inDependency);
 
 	bool needsUpdate(const GitDependency& inDependency);
@@ -51,12 +49,6 @@ private:
 	const std::string m_commandPrompt;
 #endif
 	const std::string m_git;
-
-	std::string m_lastCachedCommit;
-	std::string m_lastCachedBranch;
-
-	bool m_destinationExists = false;
-	bool m_fetched = false;
 };
 }
 

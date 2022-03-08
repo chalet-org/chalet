@@ -228,7 +228,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 	chalet_assert(m_initializedTime != 0, "");
 
 	m_dataFile = std::make_unique<JsonFile>(m_filename);
-	if (!m_dataFile->load())
+	if (!m_dataFile->load(false))
 	{
 		Diagnostic::clearErrors();
 		m_dataFile->json = Json::object();

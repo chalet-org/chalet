@@ -33,15 +33,11 @@ bool DependencyManager::run()
 
 	// Output::lineBreak();
 
-	m_fetched = false;
-
-	for (auto& dependency : m_centralState.externalDependencies)
+	if (!m_centralState.tools.git().empty())
 	{
-		if (dependency->isGit())
-		{
-			if (!runGitDependency(static_cast<const GitDependency&>(*dependency)))
-				return false;
-		}
+		GitRunner git(m_centralState);
+		if (!git.run())
+			return false;
 	}
 
 	StringList eraseList = getUnusedDependencies();
@@ -51,32 +47,7 @@ bool DependencyManager::run()
 	if (!removeExternalDependencyDirectoryIfEmpty())
 		return false;
 
-	// if (!m_fetched)
-	// 	Output::previousLine();
-
 	m_centralState.cache.file().saveExternalDependencies();
-
-	return true;
-}
-
-/*****************************************************************************/
-bool DependencyManager::runGitDependency(const GitDependency& inDependency)
-{
-	m_destinationCache.push_back(inDependency.destination());
-
-	if (m_centralState.tools.git().empty())
-		return true;
-
-	bool doNotUpdate = m_centralState.inputs().route() != Route::Configure;
-
-	GitRunner git(m_centralState);
-	if (!git.run(inDependency, doNotUpdate))
-	{
-		Diagnostic::error("Error fetching git dependency: {}", inDependency.name());
-		return false;
-	}
-
-	m_fetched |= git.fetched();
 
 	return true;
 }
@@ -84,9 +55,19 @@ bool DependencyManager::runGitDependency(const GitDependency& inDependency)
 /*****************************************************************************/
 StringList DependencyManager::getUnusedDependencies() const
 {
+	StringList destinationCache;
+	for (auto& dependency : m_centralState.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<const GitDependency&>(*dependency);
+			destinationCache.push_back(gitDependency.destination());
+		}
+	}
+
 	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
-	return dependencyCache.getKeys([this](const std::string key) {
-		return !List::contains(m_destinationCache, key);
+	return dependencyCache.getKeys([&destinationCache](const std::string key) {
+		return !List::contains(destinationCache, key);
 	});
 }
 
@@ -106,7 +87,6 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 				String::replaceAll(name, fmt::format("{}/", externalDir), "");
 
 				Output::msgRemovedUnusedDependency(name);
-				m_fetched |= true;
 			}
 		}
 

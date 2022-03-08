@@ -17,12 +17,14 @@ struct JsonFile
 
 	static bool saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent = 1);
 
-	bool load();
-	bool load(std::string inFilename);
+	bool load(const bool inError = true);
+	bool load(std::string inFilename, const bool inError = true);
 	bool save(const int inIndent = 1);
 
 	bool dirty() const noexcept;
 	void setDirty(const bool inValue) noexcept;
+
+	void resetAndSave();
 
 	void dumpToTerminal();
 

@@ -42,18 +42,18 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 }
 
 /*****************************************************************************/
-bool JsonFile::load()
+bool JsonFile::load(const bool inError)
 {
 	chalet_assert(!m_filename.empty(), "JsonFile::load(): No file to load");
-	return JsonComments::parse(json, m_filename);
+	return JsonComments::parse(json, m_filename, inError);
 }
 
 /*****************************************************************************/
-bool JsonFile::load(std::string inFilename)
+bool JsonFile::load(std::string inFilename, const bool inError)
 {
 	m_filename = std::move(inFilename);
 
-	return load();
+	return load(inError);
 }
 
 /*****************************************************************************/
@@ -76,6 +76,14 @@ bool JsonFile::dirty() const noexcept
 void JsonFile::setDirty(const bool inValue) noexcept
 {
 	m_dirty = inValue;
+}
+
+/*****************************************************************************/
+void JsonFile::resetAndSave()
+{
+	json = Json::object();
+	setDirty(true);
+	save();
 }
 
 /*****************************************************************************/

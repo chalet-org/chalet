@@ -19,17 +19,11 @@ public:
 	bool run();
 
 private:
-	bool runGitDependency(const GitDependency& inDependency);
-
 	StringList getUnusedDependencies() const;
 	bool removeUnusedDependencies(const StringList& inList);
 	bool removeExternalDependencyDirectoryIfEmpty() const;
 
 	CentralState& m_centralState;
-
-	StringList m_destinationCache;
-
-	bool m_fetched = false;
 };
 }
 

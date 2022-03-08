@@ -9,6 +9,7 @@
 
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Libraries/Json.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "Terminal/Commands.hpp"
@@ -31,66 +32,67 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 }
 
 /*****************************************************************************/
-bool GitRunner::run(const GitDependency& inDependency, const bool inDoNotUpdate)
+bool GitRunner::run()
 {
-	if (!gitRepositoryShouldUpdate(inDependency, inDoNotUpdate))
-		return true;
+	for (auto& dependency : m_centralState.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<const GitDependency&>(*dependency);
 
-	if (fetchDependency(inDependency))
-		return updateDependencyCache(inDependency);
+			bool destinationExists = Commands::pathExists(gitDependency.destination());
+			if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
+				continue;
 
-	const auto& destination = inDependency.destination();
+			destinationExists = Commands::pathExists(gitDependency.destination());
+			if (fetchDependency(gitDependency, destinationExists))
+			{
+				if (!updateDependencyCache(gitDependency))
+				{
+					Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
+					return false;
+				}
 
-	if (Commands::pathExists(destination))
-		Commands::removeRecursively(destination);
+				continue;
+			}
+			else
+			{
+				const auto& destination = gitDependency.destination();
 
-	return false;
+				if (Commands::pathExists(destination))
+					Commands::removeRecursively(destination);
+			}
+
+			Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
-bool GitRunner::fetched() const noexcept
-{
-	return m_fetched;
-}
-
-/*****************************************************************************/
-bool GitRunner::gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDoNotUpdate)
+bool GitRunner::gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists)
 {
 	const auto& destination = inDependency.destination();
-	m_destinationExists = Commands::pathExists(destination);
-	// During the build, just continue if the path already exists
-
 	if (!m_dependencyCache.contains(destination))
 	{
-		if (m_destinationExists)
+		if (inDestinationExists)
 			return Commands::removeRecursively(destination);
 
 		return true;
 	}
 
-	const auto& cachedValue = m_dependencyCache.get(destination);
-	auto split = String::split(cachedValue, ' ');
-	if (split.size() != 5 || split[0].empty())
-	{
-		if (m_destinationExists)
-			return Commands::removeRecursively(destination);
-
+	if (!inDestinationExists)
 		return true;
-	}
-
-	if (!m_destinationExists)
-		return true;
-
-	if (inDoNotUpdate)
-		return false;
 
 	return needsUpdate(inDependency);
 }
 
 /*****************************************************************************/
-bool GitRunner::fetchDependency(const GitDependency& inDependency)
+bool GitRunner::fetchDependency(const GitDependency& inDependency, const bool inDestinationExists)
 {
-	if (m_destinationExists && m_dependencyCache.contains(inDependency.destination()))
+	if (inDestinationExists && m_dependencyCache.contains(inDependency.destination()))
 		return true;
 
 	displayFetchingMessageStart(inDependency);
@@ -107,8 +109,6 @@ bool GitRunner::fetchDependency(const GitDependency& inDependency)
 		if (!resetGitRepositoryToCommit(destination, commit))
 			return false;
 	}
-
-	m_fetched = true;
 
 	return true;
 }
@@ -180,48 +180,41 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 	if (!m_dependencyCache.contains(destination))
 		return true;
 
-	const auto& cachedValue = m_dependencyCache.get(destination);
-	auto split = String::split(cachedValue, ' ');
-	if (split.size() != 5)
-		return true;
+	Json json = m_dependencyCache.get(destination);
 
-	m_lastCachedCommit = split[0];
-	m_lastCachedBranch = split[1];
-	const auto& cachedCommit = split[2] == "." ? std::string() : split[2];
-	const auto& cachedBranch = split[3] == "." ? std::string() : split[3];
-	const auto& cachedTag = split[4] == "." ? std::string() : split[4];
+	const auto lastCachedCommit = json["lc"].get<std::string>();
+	const auto lastCachedBranch = json["lb"].get<std::string>();
+	const auto& cachedCommit = json["c"].get<std::string>();
+	const auto& cachedBranch = json["b"].get<std::string>();
+	const auto& cachedTag = json["t"].get<std::string>();
 
-	bool commitNeedsUpdate = !commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, m_lastCachedCommit));
+	bool commitNeedsUpdate = !commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit));
 	bool branchNeedsUpdate = cachedBranch != branch;
 	bool tagNeedsUpdate = cachedTag != tag;
 
 	// LOG(commitNeedsUpdate, branchNeedsUpdate, tagNeedsUpdate, destination);
 
 	bool update = commitNeedsUpdate || branchNeedsUpdate || tagNeedsUpdate;
-	if (!update && !m_lastCachedBranch.empty())
+	bool isConfigure = m_centralState.inputs().route() == Route::Configure;
+	if (!update && !lastCachedBranch.empty() && isConfigure)
 	{
 		Timer timer;
 		displayCheckingForUpdates(destination);
 
-		const auto& refToCheck = !tag.empty() ? tag : m_lastCachedBranch;
+		const auto& refToCheck = !tag.empty() ? tag : lastCachedBranch;
 		auto latestRemote = getLatestGitRepositoryHashWithoutClone(repository, refToCheck);
-		if (commit.empty() && !String::equals(m_lastCachedCommit, latestRemote))
+		if (commit.empty() && !String::equals(lastCachedCommit, latestRemote))
 		{
-			m_lastCachedCommit = latestRemote;
 			update = true;
 		}
 
 		Diagnostic::printDone(timer.asString());
-
-		m_fetched = true;
 	}
 
 	if (update)
 	{
 		if (!Commands::removeRecursively(destination))
 			return false;
-
-		m_destinationExists = false;
 	}
 
 	return update;
@@ -254,30 +247,20 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 	const auto& branch = inDependency.branch();
 	const auto& tag = inDependency.tag();
 
-	m_lastCachedCommit = getCurrentGitRepositoryHash(destination);
-
-	if (m_lastCachedBranch.empty())
-	{
-		m_lastCachedBranch = getCurrentGitRepositoryBranch(destination);
-	}
-
-	auto lastBranch = m_lastCachedBranch.empty() ? "." : m_lastCachedBranch;
-	auto valueCommit = commit.empty() ? "." : commit;
-	auto valueBranch = branch.empty() ? "." : branch;
-	auto valueTag = tag.empty() ? "." : tag;
-
-	auto value = fmt::format("{} {} {} {} {}", m_lastCachedCommit, lastBranch, valueCommit, valueBranch, valueTag);
+	Json json;
+	json["lc"] = getCurrentGitRepositoryHash(destination);
+	json["lb"] = getCurrentGitRepositoryBranch(destination);
+	json["c"] = commit;
+	json["b"] = branch;
+	json["t"] = tag;
 
 	if (m_dependencyCache.contains(destination))
 	{
-		if (m_dependencyCache.get(destination) != value)
-		{
-			m_dependencyCache.set(destination, std::move(value));
-		}
+		m_dependencyCache.set(destination, std::move(json));
 	}
 	else
 	{
-		m_dependencyCache.emplace(destination, std::move(value));
+		m_dependencyCache.emplace(destination, std::move(json));
 	}
 
 	// Note: Some (bad) repos have source files in the root. using that as an include path

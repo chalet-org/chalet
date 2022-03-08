@@ -186,7 +186,7 @@ bool CentralState::runDependencyManager()
 	DependencyManager depMgr(*this);
 	if (!depMgr.run())
 	{
-		Diagnostic::error("There was an error creating the dependencies.");
+		Diagnostic::error("There was a problem fetching one or more dependencies.");
 		return false;
 	}
 

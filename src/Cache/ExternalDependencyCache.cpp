@@ -7,6 +7,7 @@
 
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
@@ -15,14 +16,16 @@ bool ExternalDependencyCache::loadFromPath(const std::string& inPath)
 {
 	m_filename = fmt::format("{}/.chalet_git", inPath);
 
-	std::ifstream input(m_filename);
-	for (std::string line; std::getline(input, line);)
+	JsonFile jsonFile(m_filename);
+	if (!jsonFile.load(false))
+		jsonFile.resetAndSave();
+
+	if (!jsonFile.json.is_object())
+		jsonFile.resetAndSave();
+
+	for (const auto& [key, value] : jsonFile.json.items())
 	{
-		auto split = String::split(line, '|');
-		if (split.size() == 2 && !split.front().empty() && !split.back().empty())
-		{
-			m_cache.emplace(std::move(split.back()), std::move(split.front()));
-		}
+		m_cache.emplace(key, value);
 	}
 
 	return true;
@@ -42,40 +45,48 @@ bool ExternalDependencyCache::save() const
 	if (!m_dirty || m_filename.empty())
 		return false;
 
-	std::ofstream(m_filename) << this->asString()
-							  << std::endl;
-
 	if (m_cache.empty())
 	{
 		if (Commands::pathExists(m_filename))
 			Commands::remove(m_filename);
+	}
+	else
+	{
+		JsonFile jsonFile(m_filename);
+		jsonFile.json = Json::object();
+		for (auto& [key, value] : m_cache)
+		{
+			jsonFile.json[key] = value;
+		}
+		jsonFile.setDirty(true);
+		jsonFile.save();
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-const std::string& ExternalDependencyCache::get(const std::string& inKey)
+const Json& ExternalDependencyCache::get(const std::string& inKey)
 {
 	return m_cache.at(inKey);
 }
 
 /*****************************************************************************/
-void ExternalDependencyCache::set(const std::string& inKey, std::string&& inValue)
+void ExternalDependencyCache::set(const std::string& inKey, Json&& inValue)
 {
 	m_cache[inKey] = std::move(inValue);
 	m_dirty = true;
 }
 
 /*****************************************************************************/
-void ExternalDependencyCache::emplace(const std::string& inKey, const std::string& inValue)
+void ExternalDependencyCache::emplace(const std::string& inKey, const Json& inValue)
 {
 	m_cache.emplace(inKey, inValue);
 	m_dirty = true;
 }
 
 /*****************************************************************************/
-void ExternalDependencyCache::emplace(const std::string& inKey, std::string&& inValue)
+void ExternalDependencyCache::emplace(const std::string& inKey, Json&& inValue)
 {
 	m_cache.emplace(inKey, std::move(inValue));
 	m_dirty = true;
@@ -98,18 +109,6 @@ StringList ExternalDependencyCache::getKeys(const std::function<bool(const std::
 		if (onWhere(key))
 			ret.push_back(key);
 	});
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string ExternalDependencyCache::asString() const
-{
-	std::string ret;
-	for (auto& [key, value] : m_cache)
-	{
-		ret += fmt::format("{}|{}\n", value, key);
-	}
 
 	return ret;
 }
