@@ -14,7 +14,7 @@ namespace chalet
 /*****************************************************************************/
 bool ExternalDependencyCache::loadFromPath(const std::string& inPath)
 {
-	m_filename = fmt::format("{}/.chalet_git", inPath);
+	m_filename = fmt::format("{}/.chaletext", inPath);
 
 	JsonFile jsonFile(m_filename);
 	if (!jsonFile.load(false))
