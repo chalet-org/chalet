@@ -1357,32 +1357,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto externalDependency = R"json({
 			"type": "object",
-			"oneOf": [
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository",
-						"tag"
-					]
-				},
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository"
-					]
-				}
-			]
+			"required": [
+				"repository"
+			],
+			"properties": {}
 		})json"_ojson;
-		externalDependency[SKeys::OneOf][0][SKeys::Properties] = Json::object();
-		externalDependency[SKeys::OneOf][0][SKeys::Properties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
-		externalDependency[SKeys::OneOf][0][SKeys::Properties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
-		externalDependency[SKeys::OneOf][0][SKeys::Properties]["tag"] = getDefinition(Defs::ExternalDependencyGitTag);
-
-		externalDependency[SKeys::OneOf][1][SKeys::Properties] = Json::object();
-		externalDependency[SKeys::OneOf][1][SKeys::Properties]["branch"] = getDefinition(Defs::ExternalDependencyGitBranch);
-		externalDependency[SKeys::OneOf][1][SKeys::Properties]["commit"] = getDefinition(Defs::ExternalDependencyGitCommit);
-		externalDependency[SKeys::OneOf][1][SKeys::Properties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
-		externalDependency[SKeys::OneOf][1][SKeys::Properties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
+		externalDependency[SKeys::Properties] = Json::object();
+		externalDependency[SKeys::Properties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
+		externalDependency[SKeys::Properties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
+		externalDependency[SKeys::Properties]["branch"] = getDefinition(Defs::ExternalDependencyGitBranch);
+		externalDependency[SKeys::Properties]["commit"] = getDefinition(Defs::ExternalDependencyGitCommit);
+		externalDependency[SKeys::Properties]["tag"] = getDefinition(Defs::ExternalDependencyGitTag);
 		defs[Defs::ExternalDependency] = std::move(externalDependency);
 	}
 
