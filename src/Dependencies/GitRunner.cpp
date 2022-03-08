@@ -181,12 +181,14 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 		return true;
 
 	Json json = m_dependencyCache.get(destination);
+	if (!json.is_object())
+		json = Json::object();
 
-	const auto lastCachedCommit = json["lc"].get<std::string>();
-	const auto lastCachedBranch = json["lb"].get<std::string>();
-	const auto& cachedCommit = json["c"].get<std::string>();
-	const auto& cachedBranch = json["b"].get<std::string>();
-	const auto& cachedTag = json["t"].get<std::string>();
+	const auto lastCachedCommit = json["lc"].is_string() ? json["lc"].get<std::string>() : std::string();
+	const auto lastCachedBranch = json["lb"].is_string() ? json["lb"].get<std::string>() : std::string();
+	const auto cachedCommit = json["c"].is_string() ? json["c"].get<std::string>() : std::string();
+	const auto cachedBranch = json["b"].is_string() ? json["b"].get<std::string>() : std::string();
+	const auto cachedTag = json["t"].is_string() ? json["t"].get<std::string>() : std::string();
 
 	bool commitNeedsUpdate = !commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit));
 	bool branchNeedsUpdate = cachedBranch != branch;
