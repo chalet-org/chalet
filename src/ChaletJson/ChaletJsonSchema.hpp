@@ -105,7 +105,7 @@ class ChaletJsonSchema
 		TargetSourceCxxExceptions,
 		TargetSourceCxxInputCharSet,
 		TargetSourceCxxExecutionCharSet,
-		TargetSourceCxxStaticLinking,
+		TargetSourceCxxStaticRuntimeLibrary,
 		TargetSourceCxxStaticLinks,
 		TargetSourceCxxWarnings,
 		TargetSourceCxxTreatWarningsAsErrors,

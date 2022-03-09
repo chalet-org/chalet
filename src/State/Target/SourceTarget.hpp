@@ -95,9 +95,9 @@ struct SourceTarget final : public IBuildTarget
 	void addFileExcludes(StringList&& inList);
 	void addFileExclude(std::string&& inValue);
 
-	const std::string& pch() const noexcept;
-	void setPch(std::string&& inValue) noexcept;
-	bool usesPch() const noexcept;
+	const std::string& precompiledHeader() const noexcept;
+	void setPrecompiledHeader(std::string&& inValue) noexcept;
+	bool usesPrecompiledHeader() const noexcept;
 
 	const std::string& linkerScript() const noexcept;
 	void setLinkerScript(std::string&& inValue) noexcept;
@@ -151,8 +151,8 @@ struct SourceTarget final : public IBuildTarget
 	bool objectiveCxx() const noexcept;
 	void setObjectiveCxx(const bool inValue) noexcept;
 
-	bool rtti() const noexcept;
-	void setRtti(const bool inValue) noexcept;
+	bool runtimeTypeInformation() const noexcept;
+	void setRuntimeTypeInformation(const bool inValue) noexcept;
 
 	bool exceptions() const noexcept;
 	void setExceptions(const bool inValue) noexcept;
@@ -160,8 +160,8 @@ struct SourceTarget final : public IBuildTarget
 	bool fastMath() const noexcept;
 	void setFastMath(const bool inValue) noexcept;
 
-	bool staticLinking() const noexcept;
-	void setStaticLinking(const bool inValue) noexcept;
+	bool staticRuntimeLibrary() const noexcept;
+	void setStaticRuntimeLibrary(const bool inValue) noexcept;
 
 	bool unixSharedLibraryNamingConvention() const noexcept;
 	void setMinGWUnixSharedLibraryNamingConvention(const bool inValue) noexcept;
@@ -196,7 +196,7 @@ private:
 	std::string m_outputFileNoPrefix;
 	std::string m_cStandard;
 	std::string m_cppStandard;
-	std::string m_pch;
+	std::string m_precompiledHeader;
 	std::string m_compileOptionsRaw;
 	std::string m_linkerOptionsRaw;
 	std::string m_linkerScript;
@@ -217,10 +217,10 @@ private:
 	bool m_cppCoroutines = false;
 	bool m_cppConcepts = false;
 	bool m_objectiveCxx = false;
-	bool m_rtti = true;
+	bool m_runtimeTypeInformation = true;
 	bool m_exceptions = true;
 	bool m_fastMath = false;
-	bool m_staticLinking = false;
+	bool m_staticRuntimeLibrary = false;
 	bool m_treatWarningsAsErrors = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;

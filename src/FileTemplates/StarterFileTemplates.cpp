@@ -62,7 +62,7 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	ret[Keys::Targets][project][Keys::SettingsCxx]["warnings"] = "pedantic";
 	if (!inProps.precompiledHeader.empty())
 	{
-		ret[Keys::Targets][project][Keys::SettingsCxx]["pch"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
+		ret[Keys::Targets][project][Keys::SettingsCxx]["precompiledHeader"] = fmt::format("{}/{}", inProps.location, inProps.precompiledHeader);
 	}
 	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"] = Json::array();
 	ret[Keys::Targets][project][Keys::SettingsCxx]["includeDirs"][0] = inProps.location;

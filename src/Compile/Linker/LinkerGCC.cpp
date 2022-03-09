@@ -259,7 +259,7 @@ void LinkerGCC::addThreadModelLinks(StringList& outArgList) const
 		&& !m_state.environment->isMingwClang()
 		&& m_project.threads())
 	{
-		if (m_state.environment->isMingw() && m_project.staticLinking())
+		if (m_state.environment->isMingw() && m_project.staticRuntimeLibrary())
 		{
 			outArgList.emplace_back("-Wl,-Bstatic,--whole-archive");
 			outArgList.emplace_back("-lwinpthread");
@@ -304,7 +304,7 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	// List::addIfDoesNotExist(outArgList, "-libstdc++");
 
-	if (m_project.staticLinking())
+	if (m_project.staticRuntimeLibrary())
 	{
 		auto addFlag = [&](std::string flag) {
 			// if (isFlagSupported(flag))

@@ -666,8 +666,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setWindowsSubSystem(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsEntryPoint", status))
 				outTarget.setWindowsEntryPoint(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "pch", status))
-				outTarget.setPch(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "precompiledHeader", status))
+				outTarget.setPrecompiledHeader(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppStandard", status))
 				outTarget.setCppStandard(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cStandard", status))
@@ -711,8 +711,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setThreads(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "treatWarningsAsErrors", status))
 				outTarget.setTreatWarningsAsErrors(val);
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rtti", status))
-				outTarget.setRtti(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runtimeTypeInformation", status))
+				outTarget.setRuntimeTypeInformation(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppFilesystem", status))
 				outTarget.setCppFilesystem(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppModules", status))
@@ -723,8 +723,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setCppConcepts(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "exceptions", status))
 				outTarget.setExceptions(val);
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticLinking", status))
-				outTarget.setStaticLinking(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticRuntimeLibrary", status))
+				outTarget.setStaticRuntimeLibrary(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "fastMath", status))
 				outTarget.setFastMath(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "mingwUnixSharedLibraryNamingConvention", status))

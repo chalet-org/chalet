@@ -76,9 +76,9 @@ void CompilerWinResourceGNUWindRes::addIncludes(StringList& outArgList) const
 		outArgList.emplace_back(getPathCommand(prefix, outDir));
 	}
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
-		auto outDir = String::getPathFolder(m_project.pch());
+		auto outDir = String::getPathFolder(m_project.precompiledHeader());
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, outDir));
 	}
 }

@@ -49,10 +49,10 @@ bool CompilerCxxVisualStudioCL::initialize()
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
 	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPch() && !cxxExt.empty())
+	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
 	{
 		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.pch();
+		const auto& pch = m_project.precompiledHeader();
 		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
 
 		m_pchMinusLocation = String::getPathFilename(pch);
@@ -451,9 +451,9 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
-		auto outDir = String::getPathFolder(m_project.pch());
+		auto outDir = String::getPathFolder(m_project.precompiledHeader());
 		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 }
@@ -480,7 +480,7 @@ void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 {
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
 
@@ -640,7 +640,7 @@ void CompilerCxxVisualStudioCL::addCharsets(StringList& outArgList) const
 void CompilerCxxVisualStudioCL::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
 	// must also disable rtti for no exceptions
-	if (!m_project.rtti() || !m_project.exceptions())
+	if (!m_project.runtimeTypeInformation() || !m_project.exceptions())
 	{
 		List::addIfDoesNotExist(outArgList, "/GR-");
 	}
@@ -685,7 +685,7 @@ void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgLi
 	// /MT - statically links with LIBCMT.lib
 	// /MTd - statically links with LIBCMTD.lib (debug version)
 
-	if (m_project.staticLinking())
+	if (m_project.staticRuntimeLibrary())
 	{
 		// Note: This will generate a larger binary!
 		//

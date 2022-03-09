@@ -57,7 +57,7 @@ bool SourceTarget::initialize()
 	});
 
 	const auto& targetName = this->name();
-	m_state.replaceVariablesInPath(m_pch, targetName);
+	m_state.replaceVariablesInPath(m_precompiledHeader, targetName);
 
 	if (!m_compileOptionsRaw.empty())
 	{
@@ -131,9 +131,9 @@ bool SourceTarget::validate()
 		result = false;
 	}
 
-	if (!m_pch.empty())
+	if (!m_precompiledHeader.empty())
 	{
-		const auto& pch = !m_state.paths.rootDirectory().empty() ? fmt::format("{}/{}", m_state.paths.rootDirectory(), m_pch) : m_pch;
+		const auto& pch = !m_state.paths.rootDirectory().empty() ? fmt::format("{}/{}", m_state.paths.rootDirectory(), m_precompiledHeader) : m_precompiledHeader;
 		if (!Commands::pathExists(pch))
 		{
 			Diagnostic::error("Precompiled header '{}' was not found.", pch);
@@ -518,19 +518,19 @@ void SourceTarget::addFileExclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& SourceTarget::pch() const noexcept
+const std::string& SourceTarget::precompiledHeader() const noexcept
 {
-	return m_pch;
+	return m_precompiledHeader;
 }
 
-void SourceTarget::setPch(std::string&& inValue) noexcept
+void SourceTarget::setPrecompiledHeader(std::string&& inValue) noexcept
 {
-	m_pch = std::move(inValue);
+	m_precompiledHeader = std::move(inValue);
 }
 
-bool SourceTarget::usesPch() const noexcept
+bool SourceTarget::usesPrecompiledHeader() const noexcept
 {
-	return !m_pch.empty();
+	return !m_precompiledHeader.empty();
 }
 
 /*****************************************************************************/
@@ -726,14 +726,14 @@ void SourceTarget::setObjectiveCxx(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-bool SourceTarget::rtti() const noexcept
+bool SourceTarget::runtimeTypeInformation() const noexcept
 {
-	return m_rtti;
+	return m_runtimeTypeInformation;
 }
 
-void SourceTarget::setRtti(const bool inValue) noexcept
+void SourceTarget::setRuntimeTypeInformation(const bool inValue) noexcept
 {
-	m_rtti = inValue;
+	m_runtimeTypeInformation = inValue;
 }
 
 /*****************************************************************************/
@@ -757,14 +757,14 @@ void SourceTarget::setFastMath(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-bool SourceTarget::staticLinking() const noexcept
+bool SourceTarget::staticRuntimeLibrary() const noexcept
 {
-	return m_staticLinking;
+	return m_staticRuntimeLibrary;
 }
 
-void SourceTarget::setStaticLinking(const bool inValue) noexcept
+void SourceTarget::setStaticRuntimeLibrary(const bool inValue) noexcept
 {
-	m_staticLinking = inValue;
+	m_staticRuntimeLibrary = inValue;
 }
 
 /*****************************************************************************/

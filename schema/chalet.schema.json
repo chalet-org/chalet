@@ -68,7 +68,7 @@
 			"default": false
 		},
 		"configuration-sanitize": {
-			"description": "An array of sanitizers to enable. If combined with staticLinking, the selected sanitizers will be statically linked, if available by the toolchain.",
+			"description": "An array of sanitizers to enable. If combined with staticRuntimeLibrary, the selected sanitizers will be statically linked, if available by the toolchain.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1219,14 +1219,14 @@
 				"mingwUnixSharedLibraryNamingConvention": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
-				"pch": {
-					"$ref": "#/definitions/target-source-cxx-pch"
+				"precompiledHeader": {
+					"$ref": "#/definitions/target-source-cxx-precompiledHeader"
 				},
-				"rtti": {
-					"$ref": "#/definitions/target-source-cxx-rtti"
+				"runtimeTypeInformation": {
+					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
 				},
-				"staticLinking": {
-					"$ref": "#/definitions/target-source-cxx-staticLinking"
+				"staticRuntimeLibrary": {
+					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
 				},
 				"staticLinks": {
 					"oneOf": [
@@ -1319,11 +1319,11 @@
 				"^staticLinks(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
-				"^rtti(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-rtti"
+				"^runtimeTypeInformation(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
 				},
-				"^staticLinking(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-staticLinking"
+				"^staticRuntimeLibrary(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
 				},
 				"^threads(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-threads"
@@ -1474,7 +1474,7 @@
 				}
 			]
 		},
-		"target-source-cxx-pch": {
+		"target-source-cxx-precompiledHeader": {
 			"type": "string",
 			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
 			"minLength": 1
@@ -1504,7 +1504,7 @@
 			"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
 			"default": false
 		},
-		"target-source-cxx-rtti": {
+		"target-source-cxx-runtimeTypeInformation": {
 			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
 			"default": true
@@ -1531,7 +1531,7 @@
 			"minLength": 1,
 			"default": "UTF-8"
 		},
-		"target-source-cxx-staticLinking": {
+		"target-source-cxx-staticRuntimeLibrary": {
 			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
 			"type": "boolean",
 			"default": false

@@ -26,10 +26,10 @@ bool CompilerCxxIntelClang::initialize()
 		return false;
 
 	/*const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.pch();
+		const auto& pch = m_project.precompiledHeader();
 		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
 
 		if (!Commands::pathExists(m_pchSource))

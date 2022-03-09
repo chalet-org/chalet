@@ -223,7 +223,7 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 
 	command.emplace_back(std::string());
 
-	if (inProject.usesPch())
+	if (inProject.usesPrecompiledHeader())
 	{
 		command.back() = fmt::format("pch_{}", hash);
 

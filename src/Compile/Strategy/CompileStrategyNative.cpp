@@ -165,10 +165,10 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 	chalet_assert(m_project != nullptr, "");
 
 	CommandPool::CmdList ret;
-	if (m_project->usesPch())
+	if (m_project->usesPrecompiledHeader())
 	{
 		auto& sourceCache = m_state.cache.file().sources();
-		std::string source = m_project->pch();
+		std::string source = m_project->precompiledHeader();
 		const auto& depDir = m_state.paths.depDir();
 		const auto& objDir = m_state.paths.objDir();
 

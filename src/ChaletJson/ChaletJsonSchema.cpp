@@ -81,7 +81,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::ConfigurationSanitize] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "An array of sanitizers to enable. If combined with staticLinking, the selected sanitizers will be statically linked, if available by the toolchain.",
+		"description": "An array of sanitizers to enable. If combined with staticRuntimeLibrary, the selected sanitizers will be statically linked, if available by the toolchain.",
 		"minLength": 1,
 		"enum": [
 			"address",
@@ -726,8 +726,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxStaticLinking] = R"json({
-		"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
+	defs[Defs::TargetSourceCxxStaticRuntimeLibrary] = R"json({
+		"description": "true to statically link against compiler runtime libraries (libc++, ms-crt, etc.). false to dynamically link them (default).",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
@@ -1396,9 +1396,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::Properties]["macosFrameworkPaths"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworkPaths);
 		sourceTargetCxx[SKeys::Properties]["macosFrameworks"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworks);
 		sourceTargetCxx[SKeys::Properties]["mingwUnixSharedLibraryNamingConvention"] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
-		sourceTargetCxx[SKeys::Properties]["pch"] = getDefinition(Defs::TargetSourceCxxPrecompiledHeader);
-		sourceTargetCxx[SKeys::Properties]["rtti"] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[SKeys::Properties]["staticLinking"] = getDefinition(Defs::TargetSourceCxxStaticLinking);
+		sourceTargetCxx[SKeys::Properties]["precompiledHeader"] = getDefinition(Defs::TargetSourceCxxPrecompiledHeader);
+		sourceTargetCxx[SKeys::Properties]["runtimeTypeInformation"] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
+		sourceTargetCxx[SKeys::Properties]["staticRuntimeLibrary"] = getDefinition(Defs::TargetSourceCxxStaticRuntimeLibrary);
 		sourceTargetCxx[SKeys::Properties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxStaticLinks);
 		sourceTargetCxx[SKeys::Properties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[SKeys::Properties]["treatWarningsAsErrors"] = getDefinition(Defs::TargetSourceCxxTreatWarningsAsErrors);
@@ -1426,8 +1426,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^links{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxLinks);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^mingwUnixSharedLibraryNamingConvention{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticLinks{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinks);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^rtti{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticLinking{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinking);
+		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^runtimeTypeInformation{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
+		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticRuntimeLibrary{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticRuntimeLibrary);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^threads{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^treatWarningsAsErrors{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
 
@@ -1691,7 +1691,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxLinks: return "target-source-cxx-links";
 		case Defs::TargetSourceCxxMacOsFrameworkPaths: return "target-source-cxx-macosFrameworkPaths";
 		case Defs::TargetSourceCxxMacOsFrameworks: return "target-source-cxx-macosFrameworks";
-		case Defs::TargetSourceCxxPrecompiledHeader: return "target-source-cxx-pch";
+		case Defs::TargetSourceCxxPrecompiledHeader: return "target-source-cxx-precompiledHeader";
 		case Defs::TargetSourceCxxInputCharSet: return "target-source-cxx-inputCharset";
 		case Defs::TargetSourceCxxExecutionCharSet: return "target-source-cxx-executionCharset";
 		case Defs::TargetSourceCxxThreads: return "target-source-cxx-threads";
@@ -1699,10 +1699,10 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxCppModules: return "target-source-cxx-cppModules";
 		case Defs::TargetSourceCxxCppCoroutines: return "target-source-cxx-cppCoroutines";
 		case Defs::TargetSourceCxxCppConcepts: return "target-source-cxx-cppConcepts";
-		case Defs::TargetSourceCxxRunTimeTypeInfo: return "target-source-cxx-rtti";
+		case Defs::TargetSourceCxxRunTimeTypeInfo: return "target-source-cxx-runtimeTypeInformation";
 		case Defs::TargetSourceCxxFastMath: return "target-source-cxx-fastMath";
 		case Defs::TargetSourceCxxExceptions: return "target-source-cxx-exceptions";
-		case Defs::TargetSourceCxxStaticLinking: return "target-source-cxx-staticLinking";
+		case Defs::TargetSourceCxxStaticRuntimeLibrary: return "target-source-cxx-staticRuntimeLibrary";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
 		case Defs::TargetSourceCxxTreatWarningsAsErrors: return "target-source-cxx-treatWarningsAsErrors";

@@ -22,8 +22,8 @@
 		"language": "C++",
 		"settings:Cxx": {
 			"cppStandard": "c++17",
-			"rtti": false,
-			"staticLinking.windows": true,
+			"runtimeTypeInformation": false,
+			"staticRuntimeLibrary.windows": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
@@ -48,7 +48,7 @@
 		"chalet": {
 			"kind": "executable",
 			"settings:Cxx": {
-				"pch": "src/PCH.hpp",
+				"precompiledHeader": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": "src"
@@ -59,7 +59,7 @@
 			"kind": "executable",
 			"condition": "!debug",
 			"settings:Cxx": {
-				"pch": "src/PCH.hpp",
+				"precompiledHeader": "src/PCH.hpp",
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
 					"src",

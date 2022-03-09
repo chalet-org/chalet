@@ -187,7 +187,7 @@ void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList) const
 //
 void CompilerCxxAppleClang::addPchInclude(StringList& outArgList) const
 {
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)

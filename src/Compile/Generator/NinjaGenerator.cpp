@@ -171,7 +171,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	std::string rules;
 
-	if (m_project->usesPch())
+	if (m_project->usesPrecompiledHeader())
 	{
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 		rules += getPchBuildRule(pchTarget);
@@ -189,8 +189,8 @@ std::string NinjaGenerator::getPchRule()
 
 	const auto& objDir = m_state.paths.objDir();
 
-	const auto& pch = m_project->pch();
-	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, fmt::format("{}/{}", objDir, pch)))
+	const auto& pch = m_project->precompiledHeader();
+	if (m_project->usesPrecompiledHeader() && !List::contains(m_precompiledHeaders, fmt::format("{}/{}", objDir, pch)))
 	{
 		const auto deps = getRuleDeps();
 		const auto& depDir = m_state.paths.depDir();
@@ -375,10 +375,10 @@ std::string NinjaGenerator::getPchBuildRule(const std::string& pchTarget)
 	std::string ret;
 
 	const auto& objDir = m_state.paths.objDir();
-	const auto& pch = m_project->pch();
+	const auto& pch = m_project->precompiledHeader();
 	auto pchCache = fmt::format("{}/{}", objDir, pch);
 
-	if (m_project->usesPch() && !List::contains(m_precompiledHeaders, pchCache))
+	if (m_project->usesPrecompiledHeader() && !List::contains(m_precompiledHeaders, pchCache))
 	{
 		m_precompiledHeaders.push_back(std::move(pchCache));
 
@@ -444,7 +444,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	std::string ret;
 
 	StringList pches;
-	if (m_project->usesPch())
+	if (m_project->usesPrecompiledHeader())
 	{
 		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 #if defined(CHALET_MACOS)

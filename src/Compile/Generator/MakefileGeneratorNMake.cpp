@@ -178,7 +178,7 @@ std::string MakefileGeneratorNMake::getPchBuildRecipe(const StringList& inPches)
 
 	std::string ret;
 
-	const bool usesPch = m_project->usesPch();
+	const bool usesPch = m_project->usesPrecompiledHeader();
 	if (usesPch)
 	{
 		const std::string targets = String::join(inPches);
@@ -285,7 +285,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 
 	std::string ret;
 
-	const bool usePch = m_project->usesPch();
+	const bool usePch = m_project->usesPrecompiledHeader();
 
 	const auto& objDir = m_state.paths.objDir();
 	auto pchCache = fmt::format("{}/{}", objDir, source);

@@ -91,16 +91,16 @@ void LinkerLLVMClang::addSanitizerOptions(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addStaticCompilerLibraries(StringList& outArgList) const
 {
-	if (m_state.configuration.enableSanitizers())
+	if (m_project.staticRuntimeLibrary())
 	{
-		if (m_project.staticLinking())
+		// TODO: Investigate for other -static candidates on clang/mac
+
+		if (m_state.configuration.sanitizeAddress())
 		{
 			std::string flag{ "-static-libsan" };
 			// if (isFlagSupported(flag))
 			List::addIfDoesNotExist(outArgList, std::move(flag));
 		}
-
-		// TODO: Investigate for other -static candidates on clang/mac
 	}
 }
 

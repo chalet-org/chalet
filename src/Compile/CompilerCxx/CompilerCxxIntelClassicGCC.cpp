@@ -27,10 +27,10 @@ bool CompilerCxxIntelClassicGCC::initialize()
 		return false;
 
 	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPch() && !cxxExt.empty())
+	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
 	{
 		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.pch();
+		const auto& pch = m_project.precompiledHeader();
 		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
 
 		if (!Commands::pathExists(m_pchSource))
@@ -48,7 +48,7 @@ bool CompilerCxxIntelClassicGCC::initialize()
 StringList CompilerCxxIntelClassicGCC::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
 {
 	StringList ret;
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		ret = CompilerCxxGCC::getPrecompiledHeaderCommand(inputFile, outputFile, generateDependency, dependency, arch);
 		ret.pop_back();

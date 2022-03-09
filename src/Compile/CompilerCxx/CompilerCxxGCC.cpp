@@ -34,7 +34,7 @@ bool CompilerCxxGCC::initialize()
 	if (!configureWarnings())
 		return false;
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		auto makeIntermediateHeader = [this](const std::string outPath, const std::string& pch) -> bool {
 			if (!Commands::pathExists(outPath))
@@ -58,7 +58,7 @@ bool CompilerCxxGCC::initialize()
 		};
 
 		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.pch();
+		const auto& pch = m_project.precompiledHeader();
 		std::string pchIntermediate = fmt::format("{}/{}", objDir, pch);
 
 #if defined(CHALET_MACOS)
@@ -316,9 +316,9 @@ void CompilerCxxGCC::addIncludes(StringList& outArgList) const
 		outArgList.emplace_back(getPathCommand(prefix, outDir));
 	}
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
-		auto outDir = String::getPathFolder(m_project.pch());
+		auto outDir = String::getPathFolder(m_project.precompiledHeader());
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, outDir));
 	}
 }
@@ -359,7 +359,7 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, std::move(out));
 	}
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		std::string warning = "invalid-pch";
 
@@ -392,7 +392,7 @@ void CompilerCxxGCC::addDefines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addPchInclude(StringList& outArgList) const
 {
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
@@ -627,7 +627,7 @@ void CompilerCxxGCC::addPositionIndependentCodeOption(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxGCC::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
-	if (!m_project.rtti())
+	if (!m_project.runtimeTypeInformation())
 	{
 		std::string option{ "-fno-rtti" };
 		// if (isFlagSupported(option))

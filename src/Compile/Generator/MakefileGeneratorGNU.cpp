@@ -116,7 +116,7 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 	}*/
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
-	const auto& pch = m_project->pch();
+	const auto& pch = m_project->precompiledHeader();
 
 	std::string recipes = getPchRecipe(pch, pchTarget);
 
@@ -194,7 +194,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 	std::string ret;
 
-	const bool usePch = m_project->usesPch();
+	const bool usePch = m_project->usesPrecompiledHeader();
 
 	const auto& objDir = m_state.paths.objDir();
 	auto pchCache = fmt::format("{}/{}", objDir, source);
@@ -339,7 +339,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 		std::string pch = pchTarget;
 
 #if defined(CHALET_MACOS)
-		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && m_project->usesPch())
+		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS && m_project->usesPrecompiledHeader())
 		{
 			auto baseFolder = String::getPathFolder(pchTarget);
 			auto filename = String::getPathFilename(pchTarget);

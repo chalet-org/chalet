@@ -58,9 +58,9 @@ void CompilerWinResourceVisualStudioRC::addIncludes(StringList& outArgList) cons
 		outArgList.emplace_back(getPathCommand(option, outDir));
 	}
 
-	if (m_project.usesPch())
+	if (m_project.usesPrecompiledHeader())
 	{
-		auto outDir = String::getPathFolder(m_project.pch());
+		auto outDir = String::getPathFolder(m_project.precompiledHeader());
 		List::addIfDoesNotExist(outArgList, getPathCommand(option, outDir));
 	}
 }

@@ -307,7 +307,7 @@ std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject) const
 {
 	std::string ret;
-	if (inProject.usesPch())
+	if (inProject.usesPrecompiledHeader())
 	{
 		std::string ext;
 		if (m_state.environment->isClangOrMsvc() || m_state.environment->isIntelClassic())
@@ -328,9 +328,9 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 std::string BuildPaths::getPrecompiledHeaderInclude(const SourceTarget& inProject) const
 {
 	std::string ret;
-	if (inProject.usesPch())
+	if (inProject.usesPrecompiledHeader())
 	{
-		const auto& pch = inProject.pch();
+		const auto& pch = inProject.precompiledHeader();
 		ret = fmt::format("{}/{}", objDir(), pch);
 	}
 
@@ -533,7 +533,7 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 #if defined(CHALET_WIN32)
 	if (m_state.environment->isMsvc())
 	{
-		if (inProject.usesPch())
+		if (inProject.usesPrecompiledHeader())
 		{
 			auto pchTarget = getPrecompiledHeaderTarget(inProject);
 			String::replaceAll(pchTarget, ".pch", ".obj");
@@ -568,8 +568,8 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	// StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
 
 	const auto& files = inProject.files();
-	auto& pch = inProject.pch();
-	bool usesPch = inProject.usesPch();
+	auto& pch = inProject.precompiledHeader();
+	bool usesPch = inProject.usesPrecompiledHeader();
 	StringList fileList;
 
 	for (auto& file : files)
@@ -618,11 +618,11 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 	{
 		StringList ret;
 
-		if (inProject.usesPch())
+		if (inProject.usesPrecompiledHeader())
 		{
-			if (Commands::pathExists(inProject.pch()))
+			if (Commands::pathExists(inProject.precompiledHeader()))
 			{
-				std::string outPath = String::getPathFolder(inProject.pch());
+				std::string outPath = String::getPathFolder(inProject.precompiledHeader());
 				Path::sanitize(outPath, true);
 
 #if defined(CHALET_MACOS)
@@ -670,7 +670,7 @@ BuildPaths::SourceGroup BuildPaths::getFiles(const SourceTarget& inProject) cons
 {
 	SourceGroup ret;
 	ret.list = getFileList(inProject);
-	ret.pch = inProject.pch();
+	ret.pch = inProject.precompiledHeader();
 
 	return ret;
 }
