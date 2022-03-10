@@ -15,13 +15,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[])
+Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], bool& outResult)
 {
 	Unique<CommandLineInputs> inputs = std::make_unique<CommandLineInputs>();
 
 	ArgumentParser patterns(*inputs);
-	bool result = patterns.resolveFromArguments(argc, argv);
-	if (!result)
+	outResult = patterns.resolveFromArguments(argc, argv);
+	if (!outResult)
 		return inputs;
 
 	inputs->setAppPath(patterns.getProgramPath());
