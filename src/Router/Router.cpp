@@ -82,9 +82,9 @@ bool Router::run()
 		default: break;
 	}
 
-	if (route == Route::Export && m_inputs.generator() == IdeType::Unknown)
+	if (route == Route::Export && m_inputs.exportKind() == ExportKind::None)
 	{
-		Diagnostic::error("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.generatorRaw());
+		Diagnostic::error("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
 		return false;
 	}
 
@@ -134,9 +134,9 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 		case Route::Export: {
 			chalet_assert(buildState != nullptr, "");
 
-			LOG(fmt::format("generator: '{}'", m_inputs.generatorRaw()));
+			LOG(fmt::format("kind: '{}'", m_inputs.exportKindRaw()));
 
-			if (m_inputs.generator() == IdeType::XCode)
+			if (m_inputs.exportKind() == ExportKind::XCode)
 			{
 				result = routeXcodeGenTest(*buildState);
 			}

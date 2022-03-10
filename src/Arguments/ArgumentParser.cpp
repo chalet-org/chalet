@@ -25,6 +25,7 @@ CH_STR(RunTarget) = "[<target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
+CH_STR(ExportKind) = "<kind>";
 CH_STR(SettingsKey) = "<key>";
 CH_STR(SettingsKeyQuery) = "<query>";
 CH_STR(SettingsValue) = "<value>";
@@ -55,6 +56,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ Route::Bundle, &ArgumentParser::populateBuildArguments },
 		{ Route::Configure, &ArgumentParser::populateBuildArguments },
 		{ Route::Init, &ArgumentParser::populateInitArguments },
+		{ Route::Export, &ArgumentParser::populateExportArguments },
 		{ Route::SettingsGet, &ArgumentParser::populateSettingsGetArguments },
 		{ Route::SettingsGetKeys, &ArgumentParser::populateSettingsGetKeysArguments },
 		{ Route::SettingsSet, &ArgumentParser::populateSettingsSetArguments },
@@ -70,6 +72,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ Route::Clean, "Unceremoniously clean the build folder." },
 		{ Route::Bundle, "Bundle the project for distribution." },
 		{ Route::Configure, "Create a project configuration and fetch external dependencies." },
+		{ Route::Export, "Export the project to another project format." },
 		{ Route::Init, "Initialize a project in either the current directory or a subdirectory." },
 		{ Route::SettingsGet, "If the given property is valid, display its JSON node." },
 		{ Route::SettingsGetKeys, "If the given property is an object, display the names of its properties." },
@@ -86,6 +89,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ "clean", Route::Clean },
 		{ "bundle", Route::Bundle },
 		{ "configure", Route::Configure },
+		{ "export", Route::Export },
 		{ "init", Route::Init },
 		{ "get", Route::SettingsGet },
 		{ "getkeys", Route::SettingsGetKeys },
@@ -603,7 +607,10 @@ void ArgumentParser::populateMainArguments()
 	StringList descriptions;
 
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
-	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Init)));
+	descriptions.push_back(m_routeDescriptions.at(Route::Init));
+
+	subcommands.push_back(fmt::format("export [{}]", Arg::ExportKind));
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Export)));
 
 	subcommands.push_back("configure");
 	descriptions.push_back(m_routeDescriptions.at(Route::Configure));
@@ -927,6 +934,15 @@ void ArgumentParser::populateInitArguments()
 
 	addTwoStringArguments(ArgumentIdentifier::InitPath, Positional::Argument2, Arg::InitPath, ".")
 		.setHelp("The path of the project to initialize. [default: \".\"]");
+}
+
+/*****************************************************************************/
+void ArgumentParser::populateExportArguments()
+{
+	const auto kinds = m_inputs.getExportKindPresets();
+	addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind)
+		.setHelp(fmt::format("The project kind to export to. (ex: {})", String::join(kinds, ", ")))
+		.setRequired();
 }
 
 /*****************************************************************************/

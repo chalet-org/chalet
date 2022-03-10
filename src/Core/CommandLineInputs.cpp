@@ -18,21 +18,17 @@ namespace chalet
 {
 namespace
 {
-/*****************************************************************************/
-Dictionary<IdeType> getIdeTypes()
-{
-	return {
-		{ "vs2019", IdeType::VisualStudio2019 },
-		{ "vscode", IdeType::VisualStudioCode },
-		{ "xcode", IdeType::XCode },
-		// { "codeblocks", IdeType::CodeBlocks },
-	};
-}
-
 Dictionary<InitTemplateType> getInitTemplates()
 {
 	return {
 		{ "cmake", InitTemplateType::CMake },
+	};
+}
+
+Dictionary<ExportKind> getExportKinds()
+{
+	return {
+		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }
 
@@ -416,24 +412,24 @@ void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-IdeType CommandLineInputs::generator() const noexcept
+ExportKind CommandLineInputs::exportKind() const noexcept
 {
-	return m_generator;
+	return m_exportKind;
 }
 
-const std::string& CommandLineInputs::generatorRaw() const noexcept
+const std::string& CommandLineInputs::exportKindRaw() const noexcept
 {
-	return m_generatorRaw;
+	return m_exportKindRaw;
 }
 
-void CommandLineInputs::setGenerator(std::string&& inValue) noexcept
+void CommandLineInputs::setExportKind(std::string&& inValue) noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_generatorRaw = std::move(inValue);
+	m_exportKindRaw = std::move(inValue);
 
-	m_generator = getIdeTypeFromString(m_generatorRaw);
+	m_exportKind = getExportKindFromString(m_exportKindRaw);
 }
 
 /*****************************************************************************/
@@ -858,7 +854,7 @@ void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-StringList CommandLineInputs::getToolchainPresets() const noexcept
+StringList CommandLineInputs::getToolchainPresets() const
 {
 	StringList ret;
 
@@ -913,7 +909,21 @@ StringList CommandLineInputs::getToolchainPresets() const noexcept
 }
 
 /*****************************************************************************/
-StringList CommandLineInputs::getProjectInitializationPresets() const noexcept
+StringList CommandLineInputs::getExportKindPresets() const
+{
+	StringList ret;
+
+	auto exportTemplates = getExportKinds();
+	for (auto& [name, _] : exportTemplates)
+	{
+		ret.emplace_back(name);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandLineInputs::getProjectInitializationPresets() const
 {
 	StringList ret;
 
@@ -927,7 +937,7 @@ StringList CommandLineInputs::getProjectInitializationPresets() const noexcept
 }
 
 /*****************************************************************************/
-StringList CommandLineInputs::getCliQueryOptions() const noexcept
+StringList CommandLineInputs::getCliQueryOptions() const
 {
 	StringList ret;
 
@@ -1136,20 +1146,15 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 }
 
 /*****************************************************************************/
-IdeType CommandLineInputs::getIdeTypeFromString(const std::string& inValue) const
+ExportKind CommandLineInputs::getExportKindFromString(const std::string& inValue) const
 {
-	auto ideTypes = getIdeTypes();
-
-	if (ideTypes.find(inValue) != ideTypes.end())
+	auto exportKinds = getExportKinds();
+	if (exportKinds.find(inValue) != exportKinds.end())
 	{
-		return ideTypes.at(inValue);
-	}
-	else if (!inValue.empty())
-	{
-		return IdeType::Unknown;
+		return exportKinds.at(inValue);
 	}
 
-	return IdeType::None;
+	return ExportKind::None;
 }
 
 /*****************************************************************************/

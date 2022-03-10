@@ -90,6 +90,7 @@ private:
 	void populateBuildArguments();
 
 	void populateInitArguments();
+	void populateExportArguments();
 	void populateSettingsGetArguments();
 	void populateSettingsGetKeysArguments();
 	void populateSettingsSetArguments();

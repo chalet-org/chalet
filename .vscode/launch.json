@@ -31,7 +31,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				// "--generator=vscode",
-				"init"
+				"export"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/../new-project",

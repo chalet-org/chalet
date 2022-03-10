@@ -9,7 +9,7 @@
 #include "Compile/ToolchainPreference.hpp"
 #include "Core/QueryOption.hpp"
 #include "Core/VisualStudioVersion.hpp"
-#include "Generator/IdeType.hpp"
+#include "Export/ExportKind.hpp"
 #include "Init/InitTemplateType.hpp"
 #include "Router/Route.hpp"
 #include "Settings/SettingsType.hpp"
@@ -73,9 +73,9 @@ struct CommandLineInputs
 	const std::string& appPath() const noexcept;
 	void setAppPath(const std::string& inValue) noexcept;
 
-	IdeType generator() const noexcept;
-	const std::string& generatorRaw() const noexcept;
-	void setGenerator(std::string&& inValue) noexcept;
+	ExportKind exportKind() const noexcept;
+	const std::string& exportKindRaw() const noexcept;
+	void setExportKind(std::string&& inValue) noexcept;
 
 	const ToolchainPreference& toolchainPreference() const noexcept;
 	void setToolchainPreference(std::string&& inValue) const noexcept;
@@ -154,13 +154,14 @@ struct CommandLineInputs
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
-	StringList getToolchainPresets() const noexcept;
-	StringList getProjectInitializationPresets() const noexcept;
-	StringList getCliQueryOptions() const noexcept;
+	StringList getToolchainPresets() const;
+	StringList getExportKindPresets() const;
+	StringList getProjectInitializationPresets() const;
+	StringList getCliQueryOptions() const;
 
 private:
 	ToolchainPreference getToolchainPreferenceFromString(const std::string& inValue) const;
-	IdeType getIdeTypeFromString(const std::string& inValue) const;
+	ExportKind getExportKindFromString(const std::string& inValue) const;
 	QueryOption getQueryOptionFromString(const std::string& inValue) const;
 	VisualStudioVersion getVisualStudioVersionFromPresetString(const std::string& inValue) const;
 	InitTemplateType getInitTemplateFromString(const std::string& inValue) const;
@@ -209,7 +210,7 @@ private:
 	std::string m_buildFromCommandLine;
 	mutable std::string m_runTarget;
 	std::string m_appPath;
-	std::string m_generatorRaw;
+	std::string m_exportKindRaw;
 	std::string m_settingsKey;
 	std::string m_settingsValue;
 
@@ -232,7 +233,7 @@ private:
 	std::optional<bool> m_generateCompileCommands;
 
 	Route m_route = Route::Unknown;
-	IdeType m_generator = IdeType::None;
+	ExportKind m_exportKind = ExportKind::None;
 	SettingsType m_settingsType = SettingsType::Local;
 	QueryOption m_queryOption = QueryOption::None;
 	InitTemplateType m_initTemplate = InitTemplateType::None;

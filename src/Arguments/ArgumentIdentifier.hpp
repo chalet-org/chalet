@@ -46,6 +46,9 @@ enum class ArgumentIdentifier : ushort
 	InitPath,
 	InitTemplate,
 	//
+	// Export
+	ExportKind,
+	//
 	// Other
 	RouteString,
 	SettingsKey,

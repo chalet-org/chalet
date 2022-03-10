@@ -13,7 +13,6 @@ namespace chalet
 {
 struct MappedArgument
 {
-
 	MappedArgument(ArgumentIdentifier inId, Variant inValue);
 
 	ArgumentIdentifier id() const noexcept;
