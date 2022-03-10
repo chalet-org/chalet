@@ -12,7 +12,7 @@ struct CommandLineInputs;
 
 namespace CommandLine
 {
-Unique<CommandLineInputs> read(const int argc, const char* argv[]);
+Unique<CommandLineInputs> read(const int argc, const char* argv[], bool& outResult);
 }
 }
 

@@ -24,10 +24,12 @@ int Application::run(const int argc, const char* argv[])
 {
 	initializeTerminal();
 
-	m_inputs = CommandLine::read(argc, argv);
-	if (m_inputs == nullptr)
+	bool commandLineRead = false;
+	m_inputs = CommandLine::read(argc, argv, commandLineRead);
+	if (!commandLineRead)
 	{
-		m_inputs = std::make_unique<CommandLineInputs>();
+		if (m_inputs == nullptr)
+			m_inputs = std::make_unique<CommandLineInputs>();
 		return onExit(Status::EarlyFailure);
 	}
 
