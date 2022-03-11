@@ -35,7 +35,7 @@ private:
 	bool routeColorTest();
 
 	bool parseTheme();
-	bool routeXcodeGenTest(BuildState& inState);
+	bool routeExport(BuildState& inState);
 
 #if defined(CHALET_DEBUG)
 	bool routeDebug();

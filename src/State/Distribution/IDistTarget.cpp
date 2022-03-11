@@ -47,7 +47,7 @@ IDistTarget::IDistTarget(const CentralState& inCentralState, const DistTargetTyp
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented DistTargetType requested for makeBundle: ", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented DistTargetType requested: ", static_cast<int>(inType));
 	return nullptr;
 }
 

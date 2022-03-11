@@ -124,31 +124,31 @@ const std::string& BuildPaths::outputDirectory() const noexcept
 
 const std::string& BuildPaths::buildOutputDir() const noexcept
 {
-	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_buildOutputDir;
 }
 
 const std::string& BuildPaths::objDir() const noexcept
 {
-	chalet_assert(!m_objDir.empty(), "BuildPaths::objDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_objDir.empty(), "BuildPaths::objDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_objDir;
 }
 
 const std::string& BuildPaths::depDir() const noexcept
 {
-	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_depDir;
 }
 
 const std::string& BuildPaths::asmDir() const noexcept
 {
-	chalet_assert(!m_asmDir.empty(), "BuildPaths::asmDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_asmDir.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_asmDir;
 }
 
 const std::string& BuildPaths::intermediateDir() const noexcept
 {
-	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::initialize().");
+	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_intermediateDir;
 }
 

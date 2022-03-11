@@ -97,9 +97,9 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						toolchainPreference = std::move(value);
 						break;
 
-						// case ProjectGen:
-						// 	inputs->setGenerator(std::move(value));
-						// 	break;
+					case ArgumentIdentifier::ExportKind:
+						inputs->setExportKind(std::move(value));
+						break;
 
 					case ArgumentIdentifier::EnvFile:
 						envFile = std::move(value);

@@ -257,7 +257,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
+			inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -312,32 +312,35 @@ bool BuildState::initializeBuild()
 				project.addIncludeDir(std::move(intermediateDir));
 			}
 
-			const bool isMsvc = environment->isMsvc();
-			if (!isMsvc)
+			if (inputs.route() != Route::Export)
 			{
-				auto& compilerInfo = toolchain.compilerCxx(project.language());
-				std::string libDir = compilerInfo.libDir;
-				project.addLibDir(std::move(libDir));
+				const bool isMsvc = environment->isMsvc();
+				if (!isMsvc)
+				{
+					auto& compilerInfo = toolchain.compilerCxx(project.language());
+					std::string libDir = compilerInfo.libDir;
+					project.addLibDir(std::move(libDir));
 
-				std::string includeDir = compilerInfo.includeDir;
-				project.addIncludeDir(std::move(includeDir));
-			}
+					std::string includeDir = compilerInfo.includeDir;
+					project.addIncludeDir(std::move(includeDir));
+				}
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-			{
-				std::string localLib{ "/usr/local/lib" };
-				if (Commands::pathExists(localLib))
-					project.addLibDir(std::move(localLib));
+				{
+					std::string localLib{ "/usr/local/lib" };
+					if (Commands::pathExists(localLib))
+						project.addLibDir(std::move(localLib));
 
-				std::string localInclude{ "/usr/local/include" };
-				if (Commands::pathExists(localInclude))
-					project.addIncludeDir(std::move(localInclude));
-			}
+					std::string localInclude{ "/usr/local/include" };
+					if (Commands::pathExists(localInclude))
+						project.addIncludeDir(std::move(localInclude));
+				}
 #endif
 #if defined(CHALET_MACOS)
-			project.addMacosFrameworkPath("/Library/Frameworks");
-			project.addMacosFrameworkPath("/System/Library/Frameworks");
+				project.addMacosFrameworkPath("/Library/Frameworks");
+				project.addMacosFrameworkPath("/System/Library/Frameworks");
 #endif
+			}
 
 			if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
 				return false;

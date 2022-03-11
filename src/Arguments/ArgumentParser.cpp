@@ -939,6 +939,9 @@ void ArgumentParser::populateInitArguments()
 /*****************************************************************************/
 void ArgumentParser::populateExportArguments()
 {
+	addToolchainArg();
+	addArchArg();
+
 	const auto kinds = m_inputs.getExportKindPresets();
 	addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind)
 		.setHelp(fmt::format("The project kind to export to. (ex: {})", String::join(kinds, ", ")))

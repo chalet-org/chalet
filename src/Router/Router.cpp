@@ -11,6 +11,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/QueryController.hpp"
+#include "Export/IProjectExporter.hpp"
 #include "Process/ProcessController.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
@@ -82,18 +83,18 @@ bool Router::run()
 		default: break;
 	}
 
-	if (route == Route::Export && m_inputs.exportKind() == ExportKind::None)
-	{
-		Diagnostic::error("The requested IDE project generator '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
-		return false;
-	}
-
 	return runRoutesThatRequireState(route);
 }
 
 /*****************************************************************************/
 bool Router::runRoutesThatRequireState(const Route inRoute)
 {
+	if (inRoute == Route::Export && m_inputs.exportKind() == ExportKind::None)
+	{
+		Diagnostic::fatalError("The requested project kind '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
+		return false;
+	}
+
 	auto centralState = std::make_unique<CentralState>(m_inputs);
 	Unique<BuildState> buildState;
 
@@ -133,13 +134,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 
 		case Route::Export: {
 			chalet_assert(buildState != nullptr, "");
-
-			LOG(fmt::format("kind: '{}'", m_inputs.exportKindRaw()));
-
-			if (m_inputs.exportKind() == ExportKind::XCode)
-			{
-				result = routeXcodeGenTest(*buildState);
-			}
+			result = routeExport(*buildState);
 			break;
 		}
 
@@ -273,21 +268,19 @@ bool Router::parseTheme()
 }
 
 /*****************************************************************************/
-bool Router::routeXcodeGenTest(BuildState& inState)
+bool Router::routeExport(BuildState& inState)
 {
 	UNUSED(inState);
-#if defined(CHALET_MACOS)
-	// Generate an XcodeGen spec in json based on the build state
-	// Run xcodebuild from the command line if possible
-	// This would be a lightweight BuildManager
+	LOG(fmt::format("kind: '{}'", m_inputs.exportKindRaw()));
 
-	// rm -rf build/Chalet.xcodeproj && xcodegen -s xcode-project.json -p build --use-cache
+	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), inState);
+	if (!projectExporter->validate())
+		return false;
+
+	if (!projectExporter->generate())
+		return false;
 
 	return true;
-#else
-	Diagnostic::error("Xcode project generation (-g xcode) is only available on MacOS");
-	return false;
-#endif
 }
 
 /*****************************************************************************/
