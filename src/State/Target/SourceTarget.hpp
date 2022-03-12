@@ -7,6 +7,7 @@
 #define CHALET_SOURCE_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
+#include "Compile/CxxSpecialization.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/SourceKind.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -39,6 +40,7 @@ struct SourceTarget final : public IBuildTarget
 	bool resolveLinksFromProject(const std::vector<BuildTarget>& inTargets, const std::string& inInputFile);
 
 	const StringList& projectStaticLinks() const noexcept;
+	const StringList& projectSharedLinks() const noexcept;
 
 	const StringList& staticLinks() const noexcept;
 	void addStaticLinks(StringList&& inList);
@@ -80,6 +82,7 @@ struct SourceTarget final : public IBuildTarget
 
 	CodeLanguage language() const noexcept;
 	void setLanguage(const std::string& inValue) noexcept;
+	CxxSpecialization cxxSpecialization() const noexcept;
 
 	const std::string& cStandard() const noexcept;
 	void setCStandard(std::string&& inValue) noexcept;
@@ -90,6 +93,7 @@ struct SourceTarget final : public IBuildTarget
 	const StringList& files() const noexcept;
 	void addFiles(StringList&& inList);
 	void addFile(std::string&& inValue);
+	StringList getHeaderFiles() const;
 
 	const StringList& fileExcludes() const noexcept;
 	void addFileExcludes(StringList&& inList);
@@ -180,6 +184,7 @@ private:
 	StringList m_defines;
 	StringList m_links;
 	StringList m_projectStaticLinks;
+	StringList m_projectSharedLinks;
 	StringList m_staticLinks;
 	StringList m_libDirs;
 	StringList m_includeDirs;
@@ -189,6 +194,7 @@ private:
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
 	StringList m_files;
+	StringList m_headers;
 	StringList m_fileExcludes;
 
 	std::string m_warningsPresetString;
@@ -207,6 +213,7 @@ private:
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
+	CxxSpecialization m_cxxSpecialization = CxxSpecialization::C;
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;

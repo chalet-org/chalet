@@ -30,6 +30,12 @@ bool LinkerVisualStudioLINK::initialize()
 }
 
 /*****************************************************************************/
+void LinkerVisualStudioLINK::getCommandOptions(StringList& outArgList)
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	UNUSED(outputFile, sourceObjs);

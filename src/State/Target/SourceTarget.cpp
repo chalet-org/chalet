@@ -49,6 +49,7 @@ bool SourceTarget::initialize()
 		Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
 	});
 
+	m_headers = m_files;
 	processEachPathList(std::move(m_files), [this](std::string&& inValue) {
 		Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 	});
@@ -257,6 +258,16 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 					List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
 				}
 			}
+			else if (project.kind() == SourceKind::SharedLibrary)
+			{
+				for (auto& link : m_links)
+				{
+					if (!String::equals(projectName, link))
+						continue;
+
+					List::addIfDoesNotExist(m_projectSharedLinks, std::string(link));
+				}
+			}
 		}
 	}
 
@@ -267,6 +278,11 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 const StringList& SourceTarget::projectStaticLinks() const noexcept
 {
 	return m_projectStaticLinks;
+}
+
+const StringList& SourceTarget::projectSharedLinks() const noexcept
+{
+	return m_projectSharedLinks;
 }
 
 /*****************************************************************************/
@@ -463,19 +479,23 @@ void SourceTarget::setLanguage(const std::string& inValue) noexcept
 	if (String::equals("C++", inValue))
 	{
 		m_language = CodeLanguage::CPlusPlus;
+		m_cxxSpecialization = CxxSpecialization::CPlusPlus;
 	}
 	else if (String::equals("C", inValue))
 	{
 		m_language = CodeLanguage::C;
+		m_cxxSpecialization = CxxSpecialization::C;
 	}
 	else if (String::equals("Objective-C++", inValue))
 	{
 		m_language = CodeLanguage::CPlusPlus;
+		m_cxxSpecialization = CxxSpecialization::ObjectiveCPlusPlus;
 		setObjectiveCxx(true);
 	}
 	else if (String::equals("Objective-C", inValue))
 	{
 		m_language = CodeLanguage::C;
+		m_cxxSpecialization = CxxSpecialization::ObjectiveC;
 		setObjectiveCxx(true);
 	}
 	else
@@ -483,6 +503,12 @@ void SourceTarget::setLanguage(const std::string& inValue) noexcept
 		chalet_assert(false, "Invalid language for SourceTarget::setLanguage");
 		m_language = CodeLanguage::None;
 	}
+}
+
+/*****************************************************************************/
+CxxSpecialization SourceTarget::cxxSpecialization() const noexcept
+{
+	return m_cxxSpecialization;
 }
 
 /*****************************************************************************/
@@ -499,6 +525,21 @@ void SourceTarget::addFiles(StringList&& inList)
 void SourceTarget::addFile(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_files, std::move(inValue));
+}
+
+/*****************************************************************************/
+StringList SourceTarget::getHeaderFiles() const
+{
+	// Used as a last resort (right now, in project export)
+
+	StringList headers = m_headers;
+	processEachPathList(std::move(headers), [&headers](std::string&& inValue) {
+		auto header = String::getPathFolderBaseName(inValue);
+		header += ".{h,hh,hpp,hxx,H,inl,i,ii,ixx,ipp,txx,tpp,tpl,h\\+\\+}";
+		Commands::addPathToListWithGlob(std::move(header), headers, GlobMatch::Files);
+	});
+
+	return headers;
 }
 
 /*****************************************************************************/
@@ -530,7 +571,7 @@ void SourceTarget::setPrecompiledHeader(std::string&& inValue) noexcept
 
 bool SourceTarget::usesPrecompiledHeader() const noexcept
 {
-	return !m_precompiledHeader.empty();
+	return !m_precompiledHeader.empty() && (m_cxxSpecialization == CxxSpecialization::CPlusPlus || m_cxxSpecialization == CxxSpecialization::C);
 }
 
 /*****************************************************************************/

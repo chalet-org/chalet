@@ -283,10 +283,10 @@
 							"type": "string",
 							"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
 							"enum": [
-								"configuration",
-								"architecture",
 								"target-triple",
-								"toolchain-name"
+								"toolchain-name",
+								"configuration",
+								"architecture"
 							],
 							"default": "target-triple"
 						},
@@ -337,8 +337,8 @@
 							"description": "The strategy to use during the build.",
 							"enum": [
 								"makefile",
-								"native-experimental",
-								"ninja"
+								"ninja",
+								"native-experimental"
 							],
 							"default": "makefile"
 						},

@@ -40,10 +40,10 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 			return false;
 	}
 
-	m_archiver = IArchiver::make(type, inState.toolchain.archiver(), inState, m_project);
+	archiver = IArchiver::make(type, inState.toolchain.archiver(), inState, m_project);
 
-	m_linker = ILinker::make(type, inState.toolchain.linker(), inState, m_project);
-	if (!m_linker->initialize())
+	linker = ILinker::make(type, inState.toolchain.linker(), inState, m_project);
+	if (!linker->initialize())
 		return false;
 
 	return true;
@@ -52,12 +52,12 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 /*****************************************************************************/
 StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
-	chalet_assert(m_archiver != nullptr, "");
-	chalet_assert(m_linker != nullptr, "");
+	chalet_assert(archiver != nullptr, "");
+	chalet_assert(linker != nullptr, "");
 
 	if (m_project.kind() == SourceKind::StaticLibrary)
-		return m_archiver->getCommand(outputFile, sourceObjs, outputFileBase);
+		return archiver->getCommand(outputFile, sourceObjs, outputFileBase);
 	else
-		return m_linker->getCommand(outputFile, sourceObjs, outputFileBase);
+		return linker->getCommand(outputFile, sourceObjs, outputFileBase);
 }
 }

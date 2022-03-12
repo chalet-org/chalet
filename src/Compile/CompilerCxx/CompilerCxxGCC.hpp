@@ -18,6 +18,7 @@ struct CompilerCxxGCC : public ICompilerCxx
 
 	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
 	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
+	virtual void getCommandOptions(StringList& outArgList, const CxxSpecialization specialization) override;
 
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);

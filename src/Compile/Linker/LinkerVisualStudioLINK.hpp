@@ -16,6 +16,8 @@ struct LinkerVisualStudioLINK : public ILinker
 
 	virtual bool initialize() override;
 
+	virtual void getCommandOptions(StringList& outArgList) override;
+
 	static std::string getMsvcCompatibleSubSystem(const SourceTarget& inProject);
 	static std::string getMsvcCompatibleEntryPoint(const SourceTarget& inProject);
 

@@ -34,6 +34,25 @@ bool LinkerGCC::initialize()
 }
 
 /*****************************************************************************/
+void LinkerGCC::getCommandOptions(StringList& outArgList)
+{
+	addStripSymbols(outArgList);
+	addLinkerOptions(outArgList);
+	addMacosSysRootOption(outArgList);
+	addProfileInformation(outArgList);
+	addLinkTimeOptimizations(outArgList);
+	addThreadModelLinks(outArgList);
+	addArchitecture(outArgList, std::string());
+	addLinkerScripts(outArgList);
+	addLibStdCppLinkerOption(outArgList);
+	addSanitizerOptions(outArgList);
+	addStaticCompilerLibraries(outArgList);
+	addSubSystem(outArgList);
+	addEntryPoint(outArgList);
+	addMacosFrameworkOptions(outArgList);
+}
+
+/*****************************************************************************/
 bool LinkerGCC::isLinkSupported(const std::string& inLink) const
 {
 	if (!m_supportedLinks.empty() && m_state.environment->isGcc())
@@ -123,7 +142,6 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
-
 	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addSanitizerOptions(ret);

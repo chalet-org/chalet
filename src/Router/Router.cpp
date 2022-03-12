@@ -101,7 +101,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	if (!centralState->initialize())
 		return false;
 
-	if (inRoute != Route::Bundle)
+	if (inRoute != Route::Bundle && inRoute != Route::Export)
 	{
 		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
@@ -133,8 +133,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 		}
 
 		case Route::Export: {
-			chalet_assert(buildState != nullptr, "");
-			result = routeExport(*buildState);
+			result = routeExport(*centralState);
 			break;
 		}
 
@@ -268,15 +267,9 @@ bool Router::parseTheme()
 }
 
 /*****************************************************************************/
-bool Router::routeExport(BuildState& inState)
+bool Router::routeExport(CentralState& inCentralState)
 {
-	UNUSED(inState);
-	LOG(fmt::format("kind: '{}'", m_inputs.exportKindRaw()));
-
-	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), inState);
-	if (!projectExporter->validate())
-		return false;
-
+	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), inCentralState);
 	if (!projectExporter->generate())
 		return false;
 

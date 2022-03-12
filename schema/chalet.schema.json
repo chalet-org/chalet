@@ -98,8 +98,13 @@
 							"undefined"
 						]
 					}
+				},
+				{
+					"type": "boolean",
+					"const": false
 				}
-			]
+			],
+			"default": false
 		},
 		"dist-kind": {
 			"type": "string",
@@ -654,46 +659,26 @@
 		},
 		"external-dependency": {
 			"type": "object",
-			"oneOf": [
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository",
-						"tag"
-					],
-					"properties": {
-						"repository": {
-							"$ref": "#/definitions/external-git-repository"
-						},
-						"submodules": {
-							"$ref": "#/definitions/external-git-submodules"
-						},
-						"tag": {
-							"$ref": "#/definitions/external-git-tag"
-						}
-					}
+			"required": [
+				"repository"
+			],
+			"properties": {
+				"repository": {
+					"$ref": "#/definitions/external-git-repository"
 				},
-				{
-					"additionalProperties": false,
-					"required": [
-						"repository"
-					],
-					"properties": {
-						"branch": {
-							"$ref": "#/definitions/external-git-branch"
-						},
-						"commit": {
-							"$ref": "#/definitions/external-git-commit"
-						},
-						"repository": {
-							"$ref": "#/definitions/external-git-repository"
-						},
-						"submodules": {
-							"$ref": "#/definitions/external-git-submodules"
-						}
-					}
+				"submodules": {
+					"$ref": "#/definitions/external-git-submodules"
+				},
+				"branch": {
+					"$ref": "#/definitions/external-git-branch"
+				},
+				"commit": {
+					"$ref": "#/definitions/external-git-commit"
+				},
+				"tag": {
+					"$ref": "#/definitions/external-git-tag"
 				}
-			]
+			}
 		},
 		"external-git-repository": {
 			"type": "string",
@@ -826,7 +811,7 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
@@ -880,7 +865,7 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
@@ -931,7 +916,7 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
@@ -1532,7 +1517,7 @@
 			"default": "UTF-8"
 		},
 		"target-source-cxx-staticRuntimeLibrary": {
-			"description": "true to statically link against compiler libraries (libc++, etc.). false to dynamically link them.",
+			"description": "true to statically link against compiler runtime libraries (libc++, ms-crt, etc.). false to dynamically link them (default).",
 			"type": "boolean",
 			"default": false
 		},

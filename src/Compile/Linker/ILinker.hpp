@@ -19,6 +19,7 @@ struct ILinker : public IToolchainExecutableBase
 	virtual bool initialize() = 0;
 
 	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
+	virtual void getCommandOptions(StringList& outArgList) = 0;
 
 protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;

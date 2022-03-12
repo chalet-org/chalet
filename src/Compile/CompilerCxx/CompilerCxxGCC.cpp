@@ -289,7 +289,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addDefines(ret);
 
 	// Before other includes
-	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
+	if (m_project.usesPrecompiledHeader())
 		addPchInclude(ret);
 
 	addIncludes(ret);
@@ -301,6 +301,39 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	ret.push_back(inputFile);
 
 	return ret;
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const CxxSpecialization specialization)
+{
+	addOptimizations(outArgList);
+	addLanguageStandard(outArgList, specialization);
+	addCppCoroutines(outArgList);
+	addCppConcepts(outArgList);
+	addWarnings(outArgList);
+	addObjectiveCxxCompileOption(outArgList, specialization);
+
+	addCharsets(outArgList);
+	addLibStdCppCompileOption(outArgList, specialization);
+	addPositionIndependentCodeOption(outArgList);
+	addCompileOptions(outArgList);
+	addObjectiveCxxRuntimeOption(outArgList, specialization);
+	addDiagnosticColorOption(outArgList);
+	addFastMathOption(outArgList);
+	addNoRunTimeTypeInformationOption(outArgList);
+	addNoExceptionsOption(outArgList);
+	addThreadModelCompileOption(outArgList);
+	addArchitecture(outArgList, std::string());
+
+	addDebuggingInformationOption(outArgList);
+	addProfileInformation(outArgList);
+	addSanitizerOptions(outArgList);
+
+	addDefines(outArgList);
+
+	// Before other includes
+	// if (m_project.usesPrecompiledHeader())
+	// 	addPchInclude(outArgList);
 }
 
 /*****************************************************************************/

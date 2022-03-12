@@ -27,12 +27,11 @@ struct CompileToolchainController
 
 	Unique<ICompilerCxx> compilerCxx;
 	Unique<ICompilerWinResource> compilerWindowsResource;
+	Unique<IArchiver> archiver;
+	Unique<ILinker> linker;
 
 private:
 	const SourceTarget& m_project;
-
-	Unique<IArchiver> m_archiver;
-	Unique<ILinker> m_linker;
 };
 
 using CompileToolchain = Unique<CompileToolchainController>;

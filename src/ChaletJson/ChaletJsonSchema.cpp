@@ -1453,7 +1453,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		abstractSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
-		abstractSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceFiles);
+		abstractSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceFiles);
 		abstractSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::TargetAbstract] = std::move(abstractSource);
 	}
@@ -1478,7 +1478,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		targetSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
-		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceFiles);
+		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceFiles);
 		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
 		defs[Defs::TargetSourceLibrary] = std::move(targetSource);
 

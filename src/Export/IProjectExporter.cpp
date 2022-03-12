@@ -5,26 +5,35 @@
 
 #include "Export/IProjectExporter.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
+#include "Terminal/Output.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-IProjectExporter::IProjectExporter(const BuildState& inState, const ExportKind inKind) :
-	m_state(inState),
+IProjectExporter::IProjectExporter(CentralState& inCentralState, const ExportKind inKind) :
+	m_centralState(inCentralState),
 	m_kind(inKind)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] ProjectExporter IProjectExporter::make(const ExportKind inKind, const BuildState& inState)
+IProjectExporter::~IProjectExporter() = default;
+
+/*****************************************************************************/
+[[nodiscard]] ProjectExporter IProjectExporter::make(const ExportKind inKind, CentralState& inCentralState)
 {
 	switch (inKind)
 	{
 		case ExportKind::CodeBlocks:
-			return std::make_unique<CodeBlocksProjectExporter>(inState);
+			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
 		default:
 			break;
 	}
@@ -39,4 +48,78 @@ ExportKind IProjectExporter::kind() const noexcept
 	return m_kind;
 }
 
+/*****************************************************************************/
+bool IProjectExporter::generate()
+{
+	Timer timer;
+
+	Output::setShowCommandOverride(false);
+
+	auto projectType = getProjectTypeName();
+	Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
+
+	m_cwd = m_centralState.inputs().workingDirectory();
+
+	auto makeState = [this](const std::string& configName) {
+		// auto configName = fmt::format("{}_{}", arch, inConfig);
+		if (m_states.find(configName) == m_states.end())
+		{
+			CommandLineInputs inputs = m_centralState.inputs();
+			inputs.setBuildConfiguration(std::string(configName));
+			// inputs.setTargetArchitecture(arch);
+			auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
+
+			m_states.emplace(configName, std::move(state));
+		}
+	};
+
+	for (const auto& [name, config] : m_centralState.buildConfigurations())
+	{
+		// skip configurations with sanitizers for now
+		if (config.enableSanitizers())
+			continue;
+
+		if (m_debugConfiguration.empty() && config.debugSymbols())
+			m_debugConfiguration = name;
+
+		makeState(name);
+	}
+
+	bool quiet = Output::quietNonBuild();
+	Output::setQuietNonBuild(true);
+
+	// BuildState* stateArchA = nullptr;
+	for (auto& [config, state] : m_states)
+	{
+		if (!state->initialize())
+			return false;
+
+		if (!validate(*state))
+			return false;
+	}
+
+	if (!m_states.empty())
+	{
+		auto& state = *m_states.begin()->second;
+		for (auto& target : state.targets)
+		{
+			if (target->isSources())
+			{
+				const auto& project = static_cast<const SourceTarget&>(*target);
+				m_headerFiles.emplace(project.name(), project.getHeaderFiles());
+			}
+		}
+	}
+
+	Output::setQuietNonBuild(quiet);
+
+	if (!generateProjectFiles())
+		return false;
+
+	Diagnostic::printDone(timer.asString());
+
+	Output::setShowCommandOverride(true);
+
+	return true;
+}
 }

@@ -436,6 +436,12 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 }
 
 /*****************************************************************************/
+void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const CxxSpecialization specialization)
+{
+	UNUSED(outArgList, specialization);
+}
+
+/*****************************************************************************/
 void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 {
 	// List::addIfDoesNotExist(outArgList, "/X"); // ignore "Path"

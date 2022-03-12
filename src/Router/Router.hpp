@@ -35,7 +35,7 @@ private:
 	bool routeColorTest();
 
 	bool parseTheme();
-	bool routeExport(BuildState& inState);
+	bool routeExport(CentralState& inCentralState);
 
 #if defined(CHALET_DEBUG)
 	bool routeDebug();

@@ -10,6 +10,7 @@
 
 namespace chalet
 {
+struct CentralState;
 class BuildState;
 
 struct IProjectExporter;
@@ -17,19 +18,28 @@ using ProjectExporter = Unique<IProjectExporter>;
 
 struct IProjectExporter
 {
-	explicit IProjectExporter(const BuildState& inState, const ExportKind inKind);
-	CHALET_DEFAULT_COPY_MOVE(IProjectExporter);
-	virtual ~IProjectExporter() = default;
+	explicit IProjectExporter(CentralState& inCentralState, const ExportKind inKind);
+	CHALET_DISALLOW_COPY_MOVE(IProjectExporter);
+	virtual ~IProjectExporter();
 
-	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, const BuildState& inState);
+	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, CentralState& inCentralState);
 
-	virtual bool validate() = 0;
-	virtual bool generate() = 0;
+	bool generate();
 
 	ExportKind kind() const noexcept;
 
 protected:
-	const BuildState& m_state;
+	virtual std::string getProjectTypeName() const = 0;
+	virtual bool validate(const BuildState& inState) = 0;
+	virtual bool generateProjectFiles() = 0;
+
+	CentralState& m_centralState;
+
+	std::string m_cwd;
+	std::string m_debugConfiguration;
+
+	Dictionary<StringList> m_headerFiles;
+	HeapDictionary<BuildState> m_states;
 
 private:
 	ExportKind m_kind;

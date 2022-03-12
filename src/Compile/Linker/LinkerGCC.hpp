@@ -15,6 +15,7 @@ struct LinkerGCC : public ILinker
 	explicit LinkerGCC(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual bool initialize() override;
+	virtual void getCommandOptions(StringList& outArgList) override;
 
 protected:
 	virtual bool isLinkSupported(const std::string& inLink) const;

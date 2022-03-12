@@ -210,6 +210,14 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						inputs->setGenerateCompileCommands(value);
 						break;
 
+					case ArgumentIdentifier::SaveSchema:
+						inputs->setSaveSchemaToFile(value);
+						break;
+
+					case ArgumentIdentifier::Quieter:
+						Output::setQuietNonBuild(value);
+						break;
+
 					default: break;
 				}
 
@@ -220,14 +228,6 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 				bool value = mapped.value().asBool();
 				switch (id)
 				{
-					case ArgumentIdentifier::SaveSchema:
-						inputs->setSaveSchemaToFile(value);
-						break;
-
-					case ArgumentIdentifier::Quieter:
-						Output::setQuietNonBuild(value);
-						break;
-
 					case ArgumentIdentifier::LocalSettings: {
 						if (value)
 							inputs->setSettingsType(SettingsType::Local);
