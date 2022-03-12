@@ -37,7 +37,7 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 {
 	if (!inState.environment->isGcc())
 	{
-		Diagnostic::fatalError("CodeBlocks project exporter requires a GCC toolchain (set with --toolchain/-t).");
+		Diagnostic::error("CodeBlocks project exporter requires a GCC toolchain (set with --toolchain/-t).");
 		return false;
 	}
 
@@ -125,6 +125,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 
 	std::string buildConfigurations;
 
+	std::string compiler;
 	const SourceTarget* thisTarget = nullptr;
 	for (auto& [config, state] : m_states)
 	{
@@ -148,6 +149,14 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 					continue;
 				}
 
+				if (compiler.empty())
+				{
+					if (state->environment->isClang())
+						compiler = "clang";
+					else
+						compiler = "gcc";
+				}
+
 				buildConfigurations += getProjectBuildConfiguration(*state, sourceTarget, *toolchain);
 			}
 		}
@@ -162,7 +171,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 	<Project>
 		<Option title="{name}" />
 		<Option pch_mode="1" />
-		<Option compiler="gcc" />
+		<Option compiler="{compiler}" />
 		<Build>
 			<!--<Script file="" />-->{buildConfigurations}
 		</Build>{units}
@@ -176,6 +185,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 </CodeBlocks_project_file>
 )xml",
 		fmt::arg("name", inName),
+		FMT_ARG(compiler),
 		FMT_ARG(buildConfigurations),
 		FMT_ARG(units));
 
@@ -230,7 +240,7 @@ std::string CodeBlocksProjectExporter::getProjectBuildConfiguration(const BuildS
 				<Option working_dir="{cwd}" />
 				<Option object_output="{cwd}/{objDir}" />
 				<Option type="{outputType}" />
-				<Option compiler="gcc" />
+				<!--<Option compiler="gcc" />-->
 				<Option use_console_runner="1" />
 				<!--<Option external_deps="" />--><!-- projectStaticLinks - resolved -->
 				<!--<Option additional_output="" />-->{sharedProperties}
