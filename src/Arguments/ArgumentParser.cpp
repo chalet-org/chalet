@@ -607,10 +607,7 @@ void ArgumentParser::populateMainArguments()
 	StringList descriptions;
 
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
-	descriptions.push_back(m_routeDescriptions.at(Route::Init));
-
-	subcommands.push_back(fmt::format("export [{}]", Arg::ExportKind));
-	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Export)));
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Init)));
 
 	subcommands.push_back("configure");
 	descriptions.push_back(m_routeDescriptions.at(Route::Configure));
@@ -644,6 +641,9 @@ void ArgumentParser::populateMainArguments()
 
 	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
 	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::SettingsUnset)));
+
+	subcommands.push_back(fmt::format("export [{}]", Arg::ExportKind));
+	descriptions.push_back(m_routeDescriptions.at(Route::Export));
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(Route::Query));
