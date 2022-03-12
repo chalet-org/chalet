@@ -58,11 +58,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 	const BuildState* state = nullptr;
 	if (!m_states.empty())
 	{
-		for (auto& [config, storedState] : m_states)
-		{
-			state = storedState.get();
-			break;
-		}
+		state = m_states.begin()->second.get();
 	}
 
 	bool hasProjects = false;
