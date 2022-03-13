@@ -642,7 +642,7 @@ void ArgumentParser::populateMainArguments()
 	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
 	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::SettingsUnset)));
 
-	subcommands.push_back(fmt::format("export [{}]", Arg::ExportKind));
+	subcommands.push_back(fmt::format("export {}", Arg::ExportKind));
 	descriptions.push_back(m_routeDescriptions.at(Route::Export));
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
