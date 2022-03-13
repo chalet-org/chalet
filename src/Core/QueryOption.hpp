@@ -28,6 +28,7 @@ enum class QueryOption : ushort
 	ToolchainStrategy,
 	ToolchainBuildPathStyle,
 	//
+	ExportKinds,
 	ThemeNames,
 	//
 	ChaletJsonState,

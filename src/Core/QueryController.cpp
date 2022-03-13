@@ -55,6 +55,10 @@ bool QueryController::printListOfRequestedType()
 			output = getArchitectures();
 			break;
 
+		case QueryOption::ExportKinds:
+			output = m_centralState.inputs().getExportKindPresets();
+			break;
+
 		case QueryOption::QueryNames:
 			output = m_centralState.inputs().getCliQueryOptions();
 			break;

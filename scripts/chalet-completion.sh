@@ -19,6 +19,9 @@ _chalet_completions()
 	-a|--arch|options.architecture)
 		COMPREPLY=($(compgen -W "$(chalet query architectures)" -- $cur))
 		;;
+	export)
+		COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
+		;;
 	query)
 		COMPREPLY=($(compgen -W "$(chalet query list-names)" -- $cur))
 		;;

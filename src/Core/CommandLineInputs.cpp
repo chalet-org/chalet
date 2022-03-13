@@ -42,6 +42,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "configuration", QueryOption::Configuration },
 		{ "configurations", QueryOption::Configurations },
 		{ "list-names", QueryOption::QueryNames },
+		{ "export-kinds", QueryOption::ExportKinds },
 		{ "run-target", QueryOption::RunTarget },
 		{ "all-run-targets", QueryOption::AllRunTargets },
 		{ "theme-names", QueryOption::ThemeNames },
