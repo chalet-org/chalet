@@ -49,7 +49,7 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Color Test"
-        run: build/Debug/chalet-debug colortest
+        run: build/Debug/chalet-debug termtest
       - name: "Build: Release (arm)"
         run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc bundle
       - name: "Upload assets (arm)"
@@ -95,7 +95,7 @@ jobs:
           build/Debug/chalet-debug configure
           build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Color Test"
-        run: build/Debug/chalet-debug colortest
+        run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -a x86_64 bundle
       - name: "Upload assets (x86_64)"
@@ -143,7 +143,7 @@ jobs:
       - name: "Build: Debug"
         run: ./build-vs2022.bat Debug
       - name: "Color Test"
-        run: build/msvc_Debug/chalet-debug colortest
+        run: build/msvc_Debug/chalet-debug termtest
       - name: "Build: Release (x64)"
         run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 bundle
       - name: "Upload assets (x64)"
@@ -183,7 +183,7 @@ jobs:
   #     - name: "Build: Debug"
   #       run: bash ./build.sh Debug
   #     - name: "Color Test"
-  #       run: build/Debug/chalet-debug colortest
+  #       run: build/Debug/chalet-debug termtest
   #     - name: "Build: Release"
   #       run: build/Debug/chalet-debug -t gcc bundle
   #     - name: "Run: Tests"

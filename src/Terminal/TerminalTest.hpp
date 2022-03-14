@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COLOR_TEST_HPP
-#define CHALET_COLOR_TEST_HPP
+#ifndef CHALET_TERMINAL_TEST_HPP
+#define CHALET_TERMINAL_TEST_HPP
 
 namespace chalet
 {
-struct ColorTest
+struct TerminalTest
 {
-	ColorTest();
+	TerminalTest();
 
 	bool run();
 
@@ -33,4 +33,4 @@ private:
 };
 }
 
-#endif // CHALET_COLOR_TEST_HPP
+#endif // CHALET_TERMINAL_TEST_HPP

@@ -32,7 +32,7 @@ private:
 	bool routeInit();
 	bool routeSettings(const Route inRoute);
 	bool routeQuery();
-	bool routeColorTest();
+	bool routeTerminalTest();
 
 	bool parseTheme();
 	bool routeExport(CentralState& inCentralState);

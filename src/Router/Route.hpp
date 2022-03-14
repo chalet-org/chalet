@@ -26,7 +26,7 @@ enum class Route : ushort
 	SettingsSet,
 	SettingsUnset,
 	Query,
-	ColorTest,
+	TerminalTest,
 #if defined(CHALET_DEBUG)
 	Debug,
 #endif

@@ -21,11 +21,11 @@
 #include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/ColorTest.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/TerminalTest.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -63,8 +63,8 @@ bool Router::run()
 		case Route::Query:
 			return routeQuery();
 
-		case Route::ColorTest:
-			return routeColorTest();
+		case Route::TerminalTest:
+			return routeTerminalTest();
 
 		case Route::Init:
 			return routeInit();
@@ -250,10 +250,10 @@ bool Router::routeQuery()
 }
 
 /*****************************************************************************/
-bool Router::routeColorTest()
+bool Router::routeTerminalTest()
 {
-	ColorTest colorTest;
-	return colorTest.run();
+	TerminalTest termTest;
+	return termTest.run();
 }
 
 /*****************************************************************************/

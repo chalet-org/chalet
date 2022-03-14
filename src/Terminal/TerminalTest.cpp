@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/ColorTest.hpp"
+#include "Terminal/TerminalTest.hpp"
 
 #include "Terminal/Color.hpp"
 #include "Terminal/Diagnostic.hpp"
@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ColorTest::ColorTest() :
+TerminalTest::TerminalTest() :
 #if defined(CHALET_WIN32)
 	kEsc('\x1b'),
 #else
@@ -27,7 +27,7 @@ ColorTest::ColorTest() :
 }
 
 /*****************************************************************************/
-bool ColorTest::run()
+bool TerminalTest::run()
 {
 	m_gray = Output::getAnsiStyle(Color::BrightBlack);
 	m_reset = Output::getAnsiStyle(Color::Reset);
@@ -49,7 +49,7 @@ bool ColorTest::run()
 }
 
 /*****************************************************************************/
-void ColorTest::printTerminalCapabilities()
+void TerminalTest::printTerminalCapabilities()
 {
 	printBanner("Terminal Capabilities");
 	std::cout.write(m_separator.data(), m_separator.size());
@@ -121,7 +121,7 @@ void ColorTest::printTerminalCapabilities()
 }
 
 /*****************************************************************************/
-void ColorTest::printUnicodeCharacters()
+void TerminalTest::printUnicodeCharacters()
 {
 	StringList characters;
 	characters.emplace_back(Unicode::triangle());
@@ -147,7 +147,7 @@ void ColorTest::printUnicodeCharacters()
 }
 
 /*****************************************************************************/
-void ColorTest::printChaletColorThemes()
+void TerminalTest::printChaletColorThemes()
 {
 	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
@@ -188,7 +188,7 @@ void ColorTest::printChaletColorThemes()
 }
 
 /*****************************************************************************/
-void ColorTest::printBanner(const std::string& inText)
+void TerminalTest::printBanner(const std::string& inText)
 {
 	auto middle = static_cast<std::size_t>(static_cast<double>(kWidth) * 0.5);
 	auto textMiddle = static_cast<std::size_t>(static_cast<double>(inText.size()) * 0.5);

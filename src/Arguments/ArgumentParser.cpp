@@ -62,7 +62,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ Route::SettingsSet, &ArgumentParser::populateSettingsSetArguments },
 		{ Route::SettingsUnset, &ArgumentParser::populateSettingsUnsetArguments },
 		{ Route::Query, &ArgumentParser::populateQueryArguments },
-		{ Route::ColorTest, &ArgumentParser::populateColorTestArguments },
+		{ Route::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
 	}),
 	m_routeDescriptions({
 		{ Route::BuildRun, "Build the project and run a valid executable build target." },
@@ -79,7 +79,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ Route::SettingsSet, "Set the given property to the given value." },
 		{ Route::SettingsUnset, "Remove the key/value pair given a valid property key." },
 		{ Route::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
-		{ Route::ColorTest, "Display all color themes and terminal capabilities." },
+		{ Route::TerminalTest, "Display all color themes and terminal capabilities." },
 	}),
 	m_routeMap({
 		{ "buildrun", Route::BuildRun },
@@ -96,7 +96,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ "set", Route::SettingsSet },
 		{ "unset", Route::SettingsUnset },
 		{ "query", Route::Query },
-		{ "colortest", Route::ColorTest },
+		{ "termtest", Route::TerminalTest },
 	})
 {
 #if defined(CHALET_DEBUG)
@@ -648,8 +648,8 @@ void ArgumentParser::populateMainArguments()
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(Route::Query));
 
-	subcommands.push_back("colortest");
-	descriptions.push_back(m_routeDescriptions.at(Route::ColorTest));
+	subcommands.push_back("termtest");
+	descriptions.push_back(m_routeDescriptions.at(Route::TerminalTest));
 
 	std::string help;
 	if (subcommands.size() == descriptions.size())
@@ -1010,7 +1010,7 @@ void ArgumentParser::populateQueryArguments()
 }
 
 /*****************************************************************************/
-void ArgumentParser::populateColorTestArguments()
+void ArgumentParser::populateTerminalTestArguments()
 {
 }
 

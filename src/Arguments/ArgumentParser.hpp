@@ -96,7 +96,7 @@ private:
 	void populateSettingsSetArguments();
 	void populateSettingsUnsetArguments();
 	void populateQueryArguments();
-	void populateColorTestArguments();
+	void populateTerminalTestArguments();
 
 #if defined(CHALET_DEBUG)
 	void populateDebugArguments();
