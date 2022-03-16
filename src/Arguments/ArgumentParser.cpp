@@ -271,7 +271,7 @@ bool ArgumentParser::showHelp()
 /*****************************************************************************/
 bool ArgumentParser::showVersion()
 {
-	std::string version = "Chalet version 0.3.3";
+	std::string version = "Chalet version 0.3.4";
 	std::cout.write(version.data(), version.size());
 	std::cout.put(std::cout.widen('\n'));
 	std::cout.flush();
