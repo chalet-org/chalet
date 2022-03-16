@@ -13,6 +13,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -79,10 +80,14 @@ bool SubChaletBuilder::run()
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
+	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
+
+	if (strategyChanged)
+		Commands::removeRecursively(m_outputLocation);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckChalet = m_target.recheck() || lastBuildFailed || dependencyUpdated;
+	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	bool result = true;
 
@@ -94,7 +99,7 @@ bool SubChaletBuilder::run()
 
 		StringList cmd = getBuildCommand(location);
 		result = Commands::subprocess(cmd);
-		sourceCache.addExternalRebuild(m_target.location(), result ? "0" : "1");
+		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 
 		// Commands::changeWorkingDirectory(oldWorkingDirectory);
 		Environment::setPath(oldPath);

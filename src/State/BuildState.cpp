@@ -253,11 +253,11 @@ bool BuildState::initializeToolchain()
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setSourceCache(m_uniqueId, true);
+	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native);
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -368,7 +368,7 @@ bool BuildState::initializeBuild()
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState();
-	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy() == StrategyType::Native);
+	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy());
 
 	Diagnostic::printDone(timer.asString());
 
@@ -856,7 +856,7 @@ std::string BuildState::getUniqueIdForState() const
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
-	const auto& strategy = toolchain.strategyString();
+	// const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');
 
@@ -872,7 +872,7 @@ std::string BuildState::getUniqueIdForState() const
 		dumpAssembly = info.dumpAssembly() ? 1 : 0;
 	}*/
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, strategy, buildConfig, showCmds, dumpAssembly, extensions);
+	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly, extensions);
 
 	return Hash::string(ret);
 }

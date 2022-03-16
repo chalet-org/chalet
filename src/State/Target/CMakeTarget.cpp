@@ -38,6 +38,10 @@ bool CMakeTarget::initialize()
 
 	m_state.replaceVariablesInPath(m_runExecutable, targetName);
 
+	m_targetFolder = m_location;
+	if (String::equals('.', m_targetFolder))
+		m_targetFolder = targetName;
+
 	return true;
 }
 
@@ -124,6 +128,11 @@ void CMakeTarget::setToolset(std::string&& inValue) noexcept
 const std::string& CMakeTarget::location() const noexcept
 {
 	return m_location;
+}
+
+const std::string& CMakeTarget::targetFolder() const noexcept
+{
+	return m_targetFolder;
 }
 
 void CMakeTarget::setLocation(std::string&& inValue) noexcept

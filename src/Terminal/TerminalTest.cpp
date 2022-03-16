@@ -9,7 +9,6 @@
 #include "Terminal/Diagnostic.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
-#include "Utility/EnumIterator.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

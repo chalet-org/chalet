@@ -6,6 +6,7 @@
 #include "Cache/SourceCache.hpp"
 
 #include "Terminal/Commands.hpp"
+#include "Utility/EnumIterator.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -20,14 +21,22 @@ SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 }
 
 /*****************************************************************************/
-bool SourceCache::native() const noexcept
+StrategyType SourceCache::lastBuildStrategy() const noexcept
 {
-	return m_native;
+	return m_lastBuildStrategy;
 }
 
-void SourceCache::setNative(const bool inValue) noexcept
+void SourceCache::setLastBuildStrategy(const StrategyType inValue) noexcept
 {
-	m_native = inValue;
+	m_lastBuildStrategy = inValue;
+}
+
+void SourceCache::setLastBuildStrategy(const int inValue) noexcept
+{
+	if (inValue < static_cast<int>(StrategyType::None) || inValue > static_cast<int>(StrategyType::Native))
+		return;
+
+	m_lastBuildStrategy = static_cast<StrategyType>(inValue);
 }
 
 /*****************************************************************************/
@@ -85,8 +94,7 @@ Json SourceCache::asJson() const
 	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
 	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
-	if (m_native)
-		ret[CacheKeys::BuildNative] = true;
+	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<int>(m_lastBuildStrategy);
 
 	if (!m_dataCache.empty())
 	{

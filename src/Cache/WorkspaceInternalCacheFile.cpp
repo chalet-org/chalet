@@ -45,11 +45,11 @@ ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const bool inNative)
+bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const StrategyType inStrategy)
 {
 	setBuildHash(inId);
 
-	if (inNative)
+	if (inStrategy == StrategyType::Native)
 		List::addIfDoesNotExist(m_doNotRemoves, inId);
 
 	auto itr = m_sourceCaches.find(inId);
@@ -88,8 +88,8 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 
 					if (m_sources != nullptr)
 					{
-						if (bool val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildNative))
-							m_sources->setNative(val);
+						if (int val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildLastBuildStrategy))
+							m_sources->setLastBuildStrategy(val);
 
 						if (value.contains(CacheKeys::DataCache))
 						{
@@ -147,7 +147,9 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const b
 		}
 	}
 
-	m_sources->setNative(inNative);
+	if (m_sources->lastBuildStrategy() == StrategyType::None)
+		m_sources->setLastBuildStrategy(inStrategy);
+
 	m_sources->updateInitializedTime();
 
 	return true;
@@ -168,7 +170,15 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 				bool removeId = false;
 				{
 					auto& build = builds.at(inId);
-					removeId = !build.is_object() || !build.contains(CacheKeys::BuildNative);
+					int lastStrategy = 0;
+					if (build.contains(CacheKeys::BuildLastBuildStrategy))
+					{
+						auto& strat = build.at(CacheKeys::BuildLastBuildStrategy);
+						if (strat.is_number())
+							lastStrategy = strat.get<int>();
+					}
+
+					removeId = !build.is_object() || lastStrategy == static_cast<int>(StrategyType::Native);
 				}
 				if (removeId)
 				{
@@ -183,7 +193,7 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
-		if (!itr->second->native())
+		if (itr->second->lastBuildStrategy() != StrategyType::Native)
 		{
 			if (m_sources == itr->second.get())
 				m_sources = nullptr;
@@ -373,6 +383,25 @@ bool WorkspaceInternalCacheFile::buildHashChanged() const noexcept
 bool WorkspaceInternalCacheFile::buildFileChanged() const noexcept
 {
 	return m_buildFileChanged;
+}
+
+bool WorkspaceInternalCacheFile::buildStrategyChanged(const StrategyType inStrategy)
+{
+	if (m_buildStrategyChanged.has_value())
+		return *m_buildStrategyChanged;
+
+	bool result = sources().lastBuildStrategy() != inStrategy;
+	sources().setLastBuildStrategy(inStrategy);
+	m_buildStrategyChanged = result;
+	return result;
+}
+
+bool WorkspaceInternalCacheFile::buildStrategyChanged()
+{
+	if (m_buildStrategyChanged.has_value())
+		return *m_buildStrategyChanged;
+
+	return false;
 }
 
 /*****************************************************************************/

@@ -18,6 +18,7 @@ struct SubChaletTarget final : public IBuildTarget
 	virtual bool validate() final;
 
 	const std::string& location() const noexcept;
+	const std::string& targetFolder() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;
 
 	const std::string& buildFile() const noexcept;
@@ -31,6 +32,7 @@ struct SubChaletTarget final : public IBuildTarget
 
 private:
 	std::string m_location;
+	std::string m_targetFolder;
 	std::string m_buildFile;
 
 	bool m_recheck = true;

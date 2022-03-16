@@ -536,12 +536,12 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 		if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			List::addIfDoesNotExist(externalLocations, subChaletTarget.location());
+			List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
 		}
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			List::addIfDoesNotExist(externalLocations, cmakeTarget.location());
+			List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
 		}
 	}
 
@@ -604,7 +604,7 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.location());
+	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
 	Path::sanitize(outputLocation);
 
 	if (inTarget.rebuild() && Commands::pathExists(outputLocation))

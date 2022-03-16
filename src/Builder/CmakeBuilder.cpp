@@ -70,7 +70,8 @@ bool CmakeBuilder::run()
 	}
 
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.location());
+
+	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
 	Path::sanitize(m_outputLocation);
 
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
@@ -95,10 +96,14 @@ bool CmakeBuilder::run()
 	};
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.location());
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
+	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
+
+	if (strategyChanged)
+		Commands::removeRecursively(m_outputLocation);
 
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
-	bool recheckCmake = m_target.recheck() || lastBuildFailed || dependencyUpdated;
+	bool recheckCmake = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
@@ -159,7 +164,7 @@ bool CmakeBuilder::run()
 
 		// this will control ninja output, and other build outputs should be unaffected
 		bool result = Commands::subprocessNinjaBuild(command);
-		sourceCache.addExternalRebuild(m_target.location(), result ? "0" : "1");
+		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 		if (!result)
 			return onRunFailure(false);
 

@@ -7,6 +7,7 @@
 #define CHALET_SOURCE_CACHE_HPP
 
 #include "Cache/LastWrite.hpp"
+#include "Compile/Strategy/StrategyType.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
@@ -17,8 +18,9 @@ struct SourceCache
 {
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
-	bool native() const noexcept;
-	void setNative(const bool inValue) noexcept;
+	StrategyType lastBuildStrategy() const noexcept;
+	void setLastBuildStrategy(const StrategyType inValue) noexcept;
+	void setLastBuildStrategy(const int inValue) noexcept;
 
 	void addVersion(const std::string& inExecutable, const std::string& inValue);
 	void addArch(const std::string& inExecutable, const std::string& inValue);
@@ -58,7 +60,7 @@ private:
 	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildTime = 0;
 
-	bool m_native = false;
+	StrategyType m_lastBuildStrategy = StrategyType::None;
 	mutable bool m_dirty = false;
 };
 }

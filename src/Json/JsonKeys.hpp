@@ -126,7 +126,7 @@ CH_STR(HashExtra) = "e";
 CH_STR(LastChaletJsonWriteTime) = "c";
 CH_STR(Builds) = "d";
 CH_STR(BuildLastBuilt) = "l";
-CH_STR(BuildNative) = "n";
+CH_STR(BuildLastBuildStrategy) = "s";
 CH_STR(BuildFiles) = "f";
 CH_STR(DataCache) = "x";
 }

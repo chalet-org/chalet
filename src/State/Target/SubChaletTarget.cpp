@@ -7,6 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -25,6 +26,10 @@ bool SubChaletTarget::initialize()
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.replaceVariablesInPath(m_location, targetName);
+
+	m_targetFolder = m_location;
+	if (String::equals('.', m_targetFolder))
+		m_targetFolder = targetName;
 
 	return true;
 }
@@ -54,6 +59,11 @@ bool SubChaletTarget::validate()
 const std::string& SubChaletTarget::location() const noexcept
 {
 	return m_location;
+}
+
+const std::string& SubChaletTarget::targetFolder() const noexcept
+{
+	return m_targetFolder;
 }
 
 void SubChaletTarget::setLocation(std::string&& inValue) noexcept

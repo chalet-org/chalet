@@ -7,6 +7,7 @@
 #define CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
 
 #include "Cache/ExternalDependencyCache.hpp"
+#include "Compile/Strategy/StrategyType.hpp"
 
 namespace chalet
 {
@@ -26,12 +27,15 @@ struct WorkspaceInternalCacheFile
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
-	bool setSourceCache(const std::string& inId, const bool inNative = false);
+	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
 	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
+
+	bool buildStrategyChanged(const StrategyType inStrategy);
+	bool buildStrategyChanged();
 
 	bool themeChanged() const noexcept;
 	void checkIfThemeChanged();
@@ -71,6 +75,8 @@ private:
 
 	ExternalDependencyCache m_externalDependencies;
 	HeapDictionary<SourceCache> m_sourceCaches;
+
+	std::optional<bool> m_buildStrategyChanged;
 
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;

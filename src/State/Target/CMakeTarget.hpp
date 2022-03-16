@@ -22,6 +22,7 @@ struct CMakeTarget final : public IBuildTarget
 	void addDefine(std::string&& inValue);
 
 	const std::string& location() const noexcept;
+	const std::string& targetFolder() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;
 
 	const std::string& buildFile() const noexcept;
@@ -42,6 +43,7 @@ struct CMakeTarget final : public IBuildTarget
 private:
 	StringList m_defines;
 	std::string m_location;
+	std::string m_targetFolder;
 	std::string m_buildFile;
 	std::string m_toolset;
 	std::string m_runExecutable;
