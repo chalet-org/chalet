@@ -571,7 +571,11 @@ void SourceTarget::setPrecompiledHeader(std::string&& inValue) noexcept
 
 bool SourceTarget::usesPrecompiledHeader() const noexcept
 {
-	return !m_precompiledHeader.empty() && (m_cxxSpecialization == CxxSpecialization::CPlusPlus || m_cxxSpecialization == CxxSpecialization::C);
+	bool validSpecialization = m_cxxSpecialization == CxxSpecialization::CPlusPlus
+		|| m_cxxSpecialization == CxxSpecialization::ObjectiveCPlusPlus
+		|| m_cxxSpecialization == CxxSpecialization::C;
+
+	return !m_precompiledHeader.empty() && validSpecialization;
 }
 
 /*****************************************************************************/
