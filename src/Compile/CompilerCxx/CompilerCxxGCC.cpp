@@ -289,7 +289,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addDefines(ret);
 
 	// Before other includes
-	if (m_project.usesPrecompiledHeader())
+	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
 		addPchInclude(ret);
 
 	addIncludes(ret);
@@ -332,7 +332,7 @@ void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const CxxSpeciali
 	addDefines(outArgList);
 
 	// Before other includes
-	// if (m_project.usesPrecompiledHeader())
+	// if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
 	// 	addPchInclude(outArgList);
 }
 
