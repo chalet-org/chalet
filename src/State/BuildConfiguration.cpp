@@ -22,7 +22,7 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 		"Debug",
 		"MinSizeRel",
 		"RelWithDebInfo",
-		"RelStable",
+		"RelHighOpt",
 		"Profile",
 
 		// Sanitizers
@@ -45,7 +45,7 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	auto makeDebug = [](BuildConfiguration& config) {
 		config.setOptimizationLevel("0");
 		config.setDebugSymbols(true);
-		config.setLinkTimeOptimization(false);
+		config.setInterproceduralOptimization(false);
 		config.setEnableProfiling(false);
 	};
 
@@ -53,7 +53,7 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	{
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(false);
-		outConfig.setLinkTimeOptimization(true);
+		outConfig.setInterproceduralOptimization(false);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Debug", inName))
@@ -65,28 +65,28 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	{
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(true);
-		outConfig.setLinkTimeOptimization(false);
+		outConfig.setInterproceduralOptimization(false);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("MinSizeRel", inName))
 	{
 		outConfig.setOptimizationLevel("size");
 		outConfig.setDebugSymbols(false);
-		outConfig.setLinkTimeOptimization(false);
+		outConfig.setInterproceduralOptimization(false);
 		outConfig.setEnableProfiling(false);
 	}
-	else if (String::equals("RelStable", inName))
+	else if (String::equals("RelHighOpt", inName))
 	{
-		outConfig.setOptimizationLevel("2");
+		outConfig.setOptimizationLevel("3");
 		outConfig.setDebugSymbols(false);
-		outConfig.setLinkTimeOptimization(false);
+		outConfig.setInterproceduralOptimization(true);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Profile", inName))
 	{
 		outConfig.setOptimizationLevel("0");
 		outConfig.setDebugSymbols(true);
-		outConfig.setLinkTimeOptimization(false);
+		outConfig.setInterproceduralOptimization(false);
 		outConfig.setEnableProfiling(true);
 	}
 	else if (String::equals("DebugSanitize", inName))
@@ -256,14 +256,14 @@ void BuildConfiguration::setOptimizationLevel(const std::string& inValue) noexce
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::linkTimeOptimization() const noexcept
+bool BuildConfiguration::interproceduralOptimization() const noexcept
 {
-	return m_linkTimeOptimization;
+	return m_interproceduralOptimization;
 }
 
-void BuildConfiguration::setLinkTimeOptimization(const bool inValue) noexcept
+void BuildConfiguration::setInterproceduralOptimization(const bool inValue) noexcept
 {
-	m_linkTimeOptimization = inValue;
+	m_interproceduralOptimization = inValue;
 }
 
 /*****************************************************************************/

@@ -48,13 +48,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::ConfigurationEnableProfiling] = R"json({
 		"type": "boolean",
-		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option.\nIn MSVC, this doesn't do anything yet.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
+		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option\nIn MSVC, this adds equivalent options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::ConfigurationLinkTimeOptimizations] = R"json({
+	defs[Defs::ConfigurationInterproceduralOptimization] = R"json({
 		"type": "boolean",
-		"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.",
+		"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the '-flto' & '-fno-fat-lto-objects' options to the compiler, and '-flto' to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing /GL to cl.exe and /LTCG to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
 		"default": false
 	})json"_ojson;
 
@@ -1257,7 +1257,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		configuration[SKeys::Properties]["debugSymbols"] = getDefinition(Defs::ConfigurationDebugSymbols);
 		configuration[SKeys::Properties]["enableProfiling"] = getDefinition(Defs::ConfigurationEnableProfiling);
-		configuration[SKeys::Properties]["linkTimeOptimization"] = getDefinition(Defs::ConfigurationLinkTimeOptimizations);
+		configuration[SKeys::Properties]["interproceduralOptimization"] = getDefinition(Defs::ConfigurationInterproceduralOptimization);
 		configuration[SKeys::Properties]["optimizationLevel"] = getDefinition(Defs::ConfigurationOptimizationLevel);
 		configuration[SKeys::Properties]["sanitize"] = getDefinition(Defs::ConfigurationSanitize);
 		defs[Defs::Configuration] = std::move(configuration);
@@ -1612,7 +1612,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::Configuration: return "configuration";
 		case Defs::ConfigurationDebugSymbols: return "configuration-debugSymbols";
 		case Defs::ConfigurationEnableProfiling: return "configuration-enableProfiling";
-		case Defs::ConfigurationLinkTimeOptimizations: return "configuration-linkTimeOptimizations";
+		case Defs::ConfigurationInterproceduralOptimization: return "configuration-interproceduralOptimization";
 		case Defs::ConfigurationOptimizationLevel: return "configuration-optimizationLevel";
 		case Defs::ConfigurationSanitize: return "configuration-sanitize";
 		//

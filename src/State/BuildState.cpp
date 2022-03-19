@@ -257,7 +257,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
+			inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -401,6 +401,13 @@ bool BuildState::validateState()
 
 	if (!toolchain.validate())
 		return false;
+
+	const bool lto = configuration.interproceduralOptimization();
+	if (lto && info.dumpAssembly() && !environment->isClang())
+	{
+		Diagnostic::error("Enabling 'dumpAssembly' with the configuration '{}' is not possible because it uses interprocedural optimizations.", configuration.name());
+		return false;
+	}
 
 	for (auto& target : targets)
 	{

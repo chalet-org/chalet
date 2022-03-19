@@ -23,6 +23,7 @@ protected:
 
 	virtual void addCharsets(StringList& outArgList) const final;
 	virtual void addFastMathOption(StringList& outArgList) const final;
+	virtual void addLinkTimeOptimizations(StringList& outArgList) const final;
 
 private:
 	StringList m_warningExclusions;

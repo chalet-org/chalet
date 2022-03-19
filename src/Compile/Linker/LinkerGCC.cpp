@@ -263,7 +263,7 @@ void LinkerGCC::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addLinkTimeOptimizations(StringList& outArgList) const
 {
-	if (m_state.configuration.linkTimeOptimization())
+	if (m_state.configuration.interproceduralOptimization())
 	{
 		std::string lto{ "-flto" };
 		// if (isFlagSupported(lto))

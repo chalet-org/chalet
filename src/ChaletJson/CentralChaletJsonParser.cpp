@@ -221,8 +221,8 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 					}
 					else if (value.is_boolean())
 					{
-						if (String::equals("linkTimeOptimization", key))
-							config.setLinkTimeOptimization(value.get<bool>());
+						if (String::equals("interproceduralOptimization", key))
+							config.setInterproceduralOptimization(value.get<bool>());
 						else if (String::equals("debugSymbols", key))
 							config.setDebugSymbols(value.get<bool>());
 						else if (String::equals("enableProfiling", key))

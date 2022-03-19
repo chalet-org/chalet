@@ -420,7 +420,7 @@ std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 	}
 	else
 	{
-		// RelStable > Release in CMake
+		// RelHighOpt > Release in CMake
 		ret = "Release";
 	}
 

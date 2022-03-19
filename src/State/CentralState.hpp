@@ -61,7 +61,7 @@ private:
 	bool parseLocalSettingsJson();
 	bool parseChaletJson();
 
-	// bool validateConfigurations();
+	bool validateConfigurations();
 	bool validateExternalDependencies();
 	bool validateBuildFile();
 

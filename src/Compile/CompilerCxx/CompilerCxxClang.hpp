@@ -30,6 +30,7 @@ protected:
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
+	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
 	virtual void addCppCoroutines(StringList& outArgList) const override;
 	virtual void addCppConcepts(StringList& outArgList) const override;
 };

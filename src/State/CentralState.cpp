@@ -142,8 +142,8 @@ bool CentralState::initializeForList()
 /*****************************************************************************/
 bool CentralState::validate()
 {
-	// if (!validateConfigurations())
-	// 	return false;
+	if (!validateConfigurations())
+		return false;
 
 	if (!validateExternalDependencies())
 		return false;
@@ -271,24 +271,25 @@ bool CentralState::validateDistribution()
 }
 
 /*****************************************************************************/
-/*bool CentralState::validateConfigurations()
+bool CentralState::validateConfigurations()
 {
 	// Unrestricted for now
 
-	// for (auto& [name, config] : m_buildConfigurations)
-	// {
-	// 	const bool enableProfiling = config.enableProfiling();
-	// 	const bool debugSymbols = config.debugSymbols();
-	// 	const bool lto = config.linkTimeOptimization();
+	for (auto& [name, config] : m_buildConfigurations)
+	{
+		const bool enableProfiling = config.enableProfiling();
+		const bool debugSymbols = config.debugSymbols();
+		const bool lto = config.interproceduralOptimization();
 
-	// 	if (lto && (enableProfiling || debugSymbols))
-	// 	{
-	// 		Diagnostic::error("Error in custom configuration '{}': Enabling 'linkTimeOptimization' with 'debugSymbols' or 'enableProfiling' would cause unintended consequences. Link-time optimizations are typically used with release builds.", m_inputs.workingDirectory());
-	// 		return false;
-	// 	}
-	// }
+		if (lto && (enableProfiling || debugSymbols))
+		{
+			Diagnostic::error("Error in custom configuration '{}': Enabling 'interproceduralOptimization' with 'debugSymbols' or 'enableProfiling' would cause unintended consequences. Interprocedural optimizations should only be enabled with with release builds.", m_inputs.workingDirectory());
+			return false;
+		}
+	}
+
 	return true;
-}*/
+}
 
 /*****************************************************************************/
 bool CentralState::validateExternalDependencies()

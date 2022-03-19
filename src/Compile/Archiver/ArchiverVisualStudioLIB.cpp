@@ -5,6 +5,7 @@
 
 #include "Compile/Archiver/ArchiverVisualStudioLIB.hpp"
 
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -77,11 +78,10 @@ void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 void ArchiverVisualStudioLIB::addLinkTimeCodeGeneration(StringList& outArgList) const
 {
 	// Requires /GL
-	/*if (m_state.configuration.linkTimeOptimization())
+	if (m_state.configuration.interproceduralOptimization())
 	{
-		ret.emplace_back("/LTCG");
-	}*/
-	UNUSED(outArgList);
+		outArgList.emplace_back("/LTCG");
+	}
 }
 
 /*****************************************************************************/

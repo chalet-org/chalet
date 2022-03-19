@@ -19,8 +19,8 @@
 				"enableProfiling": {
 					"$ref": "#/definitions/configuration-enableProfiling"
 				},
-				"linkTimeOptimization": {
-					"$ref": "#/definitions/configuration-linkTimeOptimizations"
+				"interproceduralOptimization": {
+					"$ref": "#/definitions/configuration-interproceduralOptimization"
 				},
 				"optimizationLevel": {
 					"$ref": "#/definitions/configuration-optimizationLevel"
@@ -37,12 +37,12 @@
 		},
 		"configuration-enableProfiling": {
 			"type": "boolean",
-			"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option.\nIn MSVC, this doesn't do anything yet.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
+			"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option\nIn MSVC, this adds equivalent options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 			"default": false
 		},
-		"configuration-linkTimeOptimizations": {
+		"configuration-interproceduralOptimization": {
 			"type": "boolean",
-			"description": "true to use link-time optimization, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-flto' option to the linker.",
+			"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the '-flto' & '-fno-fat-lto-objects' options to the compiler, and '-flto' to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing /GL to cl.exe and /LTCG to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
 			"default": false
 		},
 		"configuration-optimizationLevel": {
@@ -2496,7 +2496,7 @@
 				"Debug",
 				"MinSizeRel",
 				"RelWithDebInfo",
-				"RelStable",
+				"RelHighOpt",
 				"Profile",
 				"DebugSanitize",
 				"DebugSanitizeAddress",
@@ -2515,7 +2515,7 @@
 					"Debug",
 					"MinSizeRel",
 					"RelWithDebInfo",
-					"RelStable",
+					"RelHighOpt",
 					"Profile",
 					"DebugSanitize",
 					"DebugSanitizeAddress",

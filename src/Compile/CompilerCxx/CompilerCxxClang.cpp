@@ -157,6 +157,12 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 }
 
 /*****************************************************************************/
+void CompilerCxxClang::addLinkTimeOptimizations(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
 {
 	if (m_project.cppCoroutines() && m_versionMajorMinor >= 500)

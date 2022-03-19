@@ -18,7 +18,7 @@ class ChaletJsonSchema
 		Configuration,
 		ConfigurationDebugSymbols,
 		ConfigurationEnableProfiling,
-		ConfigurationLinkTimeOptimizations,
+		ConfigurationInterproceduralOptimization,
 		ConfigurationOptimizationLevel,
 		ConfigurationSanitize,
 		//

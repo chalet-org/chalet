@@ -247,32 +247,29 @@ void LinkerVisualStudioLINK::addEntryPoint(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) const
 {
-	// if (m_state.configuration.linkTimeOptimization())
+	const auto arch = m_state.info.targetArchitecture();
+	bool isArm = arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64;
+
+	// Note: These are also tied to /incremental (implied with /debug)
+	if (m_state.configuration.debugSymbols())
 	{
-		const auto arch = m_state.info.targetArchitecture();
-		bool isArm = arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64;
-
-		// Note: These are also tied to /incremental (implied with /debug)
-		if (m_state.configuration.debugSymbols())
-		{
-			if (m_state.configuration.enableProfiling())
-				List::addIfDoesNotExist(outArgList, "/opt:REF");
-			else
-				List::addIfDoesNotExist(outArgList, "/opt:NOREF");
-
-			List::addIfDoesNotExist(outArgList, "/opt:NOICF");
-
-			if (isArm)
-				List::addIfDoesNotExist(outArgList, "/opt:NOLBR");
-		}
-		else
-		{
+		if (m_state.configuration.enableProfiling())
 			List::addIfDoesNotExist(outArgList, "/opt:REF");
-			List::addIfDoesNotExist(outArgList, "/opt:ICF");
+		else
+			List::addIfDoesNotExist(outArgList, "/opt:NOREF");
 
-			if (isArm)
-				List::addIfDoesNotExist(outArgList, "/opt:LBR"); // relates to arm binaries
-		}
+		List::addIfDoesNotExist(outArgList, "/opt:NOICF");
+
+		if (isArm)
+			List::addIfDoesNotExist(outArgList, "/opt:NOLBR");
+	}
+	else
+	{
+		List::addIfDoesNotExist(outArgList, "/opt:REF");
+		List::addIfDoesNotExist(outArgList, "/opt:ICF");
+
+		if (isArm)
+			List::addIfDoesNotExist(outArgList, "/opt:LBR"); // relates to arm binaries
 	}
 }
 
@@ -376,13 +373,14 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
 {
-	/*if (m_state.configuration.linkTimeOptimization() && !m_state.info.dumpAssembly())
+	if (m_state.configuration.interproceduralOptimization())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		outArgList.emplace_back("/ltcg:INCREMENTAL");
 		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
-	}*/
-	UNUSED(outArgList, outputFileBase);
+
+		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase));
+	}
 }
 
 /*****************************************************************************/
@@ -401,12 +399,6 @@ void LinkerVisualStudioLINK::addWarningsTreatedAsErrors(StringList& outArgList) 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList) const
 {
-
-	// if (m_state.configuration.linkTimeOptimization())
-	{
-		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase));
-	}
-
 	// TODO
 	// outArgList.emplace_back("/VERSION:0.0");
 

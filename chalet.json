@@ -7,7 +7,7 @@
 		"Debug",
 		"RelWithDebInfo",
 		"MinSizeRel",
-		"RelStable",
+		"RelHighOpt",
 		"Profile"
 		"DebugSanitize",
 		"DebugSanitizeAddress",

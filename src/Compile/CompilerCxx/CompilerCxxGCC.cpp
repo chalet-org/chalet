@@ -218,6 +218,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret, arch);
+	addLinkTimeOptimizations(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformation(ret);
@@ -281,6 +282,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret, std::string());
+	addLinkTimeOptimizations(ret);
 
 	addDebuggingInformationOption(ret);
 	addProfileInformation(ret);
@@ -324,6 +326,7 @@ void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const CxxSpeciali
 	addNoExceptionsOption(outArgList);
 	addThreadModelCompileOption(outArgList);
 	addArchitecture(outArgList, std::string());
+	addLinkTimeOptimizations(outArgList);
 
 	addDebuggingInformationOption(outArgList);
 	addProfileInformation(outArgList);
@@ -707,6 +710,21 @@ void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 bool CompilerCxxGCC::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 	return CompilerCxxGCC::addArchitectureToCommand(outArgList, inArch, m_state);
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addLinkTimeOptimizations(StringList& outArgList) const
+{
+	if (m_state.configuration.interproceduralOptimization())
+	{
+		std::string noFatLto{ "-fno-fat-lto-objects" };
+		// if (isFlagSupported(noFatLto))
+		List::addIfDoesNotExist(outArgList, std::string(noFatLto));
+
+		std::string lto{ "-flto" };
+		// if (isFlagSupported(lto))
+		List::addIfDoesNotExist(outArgList, std::string(lto));
+	}
 }
 
 /*****************************************************************************/

@@ -88,4 +88,10 @@ void CompilerCxxIntelClassicGCC::addFastMathOption(StringList& outArgList) const
 	}
 }
 
+/*****************************************************************************/
+void CompilerCxxIntelClassicGCC::addLinkTimeOptimizations(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
 }

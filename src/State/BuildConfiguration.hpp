@@ -26,8 +26,8 @@ struct BuildConfiguration
 	OptimizationLevel optimizationLevel() const noexcept;
 	void setOptimizationLevel(const std::string& inValue) noexcept;
 
-	bool linkTimeOptimization() const noexcept;
-	void setLinkTimeOptimization(const bool inValue) noexcept;
+	bool interproceduralOptimization() const noexcept;
+	void setInterproceduralOptimization(const bool inValue) noexcept;
 
 	bool debugSymbols() const noexcept;
 	void setDebugSymbols(const bool inValue) noexcept;
@@ -58,7 +58,7 @@ private:
 
 	OptimizationLevel m_optimizationLevel = OptimizationLevel::None;
 
-	bool m_linkTimeOptimization = false;
+	bool m_interproceduralOptimization = false;
 	bool m_debugSymbols = false;
 	bool m_enableProfiling = false;
 };
