@@ -225,7 +225,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 void LinkerGCC::addStripSymbols(StringList& outArgList) const
 {
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	if (m_state.configuration.stripSymbols())
+	if (!m_state.configuration.debugSymbols())
 	{
 		std::string strip{ "-s" };
 		// if (isFlagSupported(strip))
@@ -251,7 +251,8 @@ void LinkerGCC::addProfileInformation(StringList& outArgList) const
 {
 	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
 	{
-		outArgList.emplace_back("-Wl,--allow-multiple-definition");
+		// Note: This was added at some point, but don't remember why...
+		// outArgList.emplace_back("-Wl,--allow-multiple-definition");
 
 		std::string profileInfo{ "-pg" };
 		// if (isFlagSupported(profileInfo))

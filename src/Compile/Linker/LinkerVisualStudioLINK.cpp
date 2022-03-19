@@ -302,9 +302,10 @@ void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::s
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.debugSymbols() || m_state.configuration.enableProfiling())
+	const bool enableProfiling = m_state.configuration.enableProfiling();
+	if (m_state.configuration.debugSymbols() || enableProfiling)
 	{
-		if (m_state.configuration.enableProfiling())
+		if (enableProfiling)
 		{
 			outArgList.emplace_back("/debug:FULL");
 			outArgList.emplace_back("/debugtype:cv,fixup");
@@ -314,6 +315,7 @@ void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string&
 			outArgList.emplace_back("/debug");
 		}
 		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
+		outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase)));
 	}
 }
 

@@ -73,12 +73,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::ConfigurationStripSymbols] = R"json({
-		"type": "boolean",
-		"description": "true to strip symbols from the build, false otherwise.\nIn GNU-based compilers, this is equivalent to passing the '-s' option at link time. In MSVC, this is not applicable (symbols are stored in .pdb files).",
-		"default": false
-	})json"_ojson;
-
 	defs[Defs::ConfigurationSanitize] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "An array of sanitizers to enable. If combined with staticRuntimeLibrary, the selected sanitizers will be statically linked, if available by the toolchain.",
@@ -1265,7 +1259,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		configuration[SKeys::Properties]["enableProfiling"] = getDefinition(Defs::ConfigurationEnableProfiling);
 		configuration[SKeys::Properties]["linkTimeOptimization"] = getDefinition(Defs::ConfigurationLinkTimeOptimizations);
 		configuration[SKeys::Properties]["optimizationLevel"] = getDefinition(Defs::ConfigurationOptimizationLevel);
-		configuration[SKeys::Properties]["stripSymbols"] = getDefinition(Defs::ConfigurationStripSymbols);
 		configuration[SKeys::Properties]["sanitize"] = getDefinition(Defs::ConfigurationSanitize);
 		defs[Defs::Configuration] = std::move(configuration);
 	}
@@ -1621,7 +1614,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationEnableProfiling: return "configuration-enableProfiling";
 		case Defs::ConfigurationLinkTimeOptimizations: return "configuration-linkTimeOptimizations";
 		case Defs::ConfigurationOptimizationLevel: return "configuration-optimizationLevel";
-		case Defs::ConfigurationStripSymbols: return "configuration-stripSymbols";
 		case Defs::ConfigurationSanitize: return "configuration-sanitize";
 		//
 		case Defs::DistributionKind: return "dist-kind";

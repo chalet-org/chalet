@@ -20,7 +20,6 @@ class ChaletJsonSchema
 		ConfigurationEnableProfiling,
 		ConfigurationLinkTimeOptimizations,
 		ConfigurationOptimizationLevel,
-		ConfigurationStripSymbols,
 		ConfigurationSanitize,
 		//
 		DistributionKind,

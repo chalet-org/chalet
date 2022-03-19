@@ -46,7 +46,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		config.setOptimizationLevel("0");
 		config.setDebugSymbols(true);
 		config.setLinkTimeOptimization(false);
-		config.setStripSymbols(false);
 		config.setEnableProfiling(false);
 	};
 
@@ -55,7 +54,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(true);
-		outConfig.setStripSymbols(true);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Debug", inName))
@@ -68,7 +66,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(true);
 		outConfig.setLinkTimeOptimization(false);
-		outConfig.setStripSymbols(false);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("MinSizeRel", inName))
@@ -76,7 +73,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("size");
 		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(false);
-		outConfig.setStripSymbols(true);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("RelStable", inName))
@@ -84,7 +80,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("2");
 		outConfig.setDebugSymbols(false);
 		outConfig.setLinkTimeOptimization(false);
-		outConfig.setStripSymbols(true);
 		outConfig.setEnableProfiling(false);
 	}
 	else if (String::equals("Profile", inName))
@@ -92,7 +87,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		outConfig.setOptimizationLevel("0");
 		outConfig.setDebugSymbols(true);
 		outConfig.setLinkTimeOptimization(false);
-		outConfig.setStripSymbols(false);
 		outConfig.setEnableProfiling(true);
 	}
 	else if (String::equals("DebugSanitize", inName))
@@ -270,16 +264,6 @@ bool BuildConfiguration::linkTimeOptimization() const noexcept
 void BuildConfiguration::setLinkTimeOptimization(const bool inValue) noexcept
 {
 	m_linkTimeOptimization = inValue;
-}
-
-/*****************************************************************************/
-bool BuildConfiguration::stripSymbols() const noexcept
-{
-	return m_stripSymbols;
-}
-void BuildConfiguration::setStripSymbols(const bool inValue) noexcept
-{
-	m_stripSymbols = inValue;
 }
 
 /*****************************************************************************/

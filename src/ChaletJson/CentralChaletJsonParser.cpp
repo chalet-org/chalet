@@ -223,8 +223,6 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 					{
 						if (String::equals("linkTimeOptimization", key))
 							config.setLinkTimeOptimization(value.get<bool>());
-						else if (String::equals("stripSymbols", key))
-							config.setStripSymbols(value.get<bool>());
 						else if (String::equals("debugSymbols", key))
 							config.setDebugSymbols(value.get<bool>());
 						else if (String::equals("enableProfiling", key))

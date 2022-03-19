@@ -29,9 +29,6 @@ struct BuildConfiguration
 	bool linkTimeOptimization() const noexcept;
 	void setLinkTimeOptimization(const bool inValue) noexcept;
 
-	bool stripSymbols() const noexcept;
-	void setStripSymbols(const bool inValue) noexcept;
-
 	bool debugSymbols() const noexcept;
 	void setDebugSymbols(const bool inValue) noexcept;
 
@@ -62,7 +59,6 @@ private:
 	OptimizationLevel m_optimizationLevel = OptimizationLevel::None;
 
 	bool m_linkTimeOptimization = false;
-	bool m_stripSymbols = false;
 	bool m_debugSymbols = false;
 	bool m_enableProfiling = false;
 };
