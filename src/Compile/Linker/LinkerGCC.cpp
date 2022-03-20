@@ -249,6 +249,7 @@ void LinkerGCC::addLinkerOptions(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addProfileInformation(StringList& outArgList) const
 {
+	// TODO: isExecutable or !isSharedLibrary
 	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
 	{
 		// Note: This was added at some point, but don't remember why...
