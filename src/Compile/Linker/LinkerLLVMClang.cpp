@@ -65,6 +65,7 @@ void LinkerLLVMClang::addLinkerScripts(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addProfileInformation(StringList& outArgList) const
 {
+	// TODO: isExecutable or !isSharedLibrary
 	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
 	{
 		std::string profileInfo{ "-pg" };
