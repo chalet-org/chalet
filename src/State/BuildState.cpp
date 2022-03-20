@@ -151,6 +151,11 @@ bool BuildState::initializeBuildConfiguration()
 	}
 
 	const auto& buildConfigurations = m_impl->centralState.buildConfigurations();
+	if (buildConfigurations.empty())
+	{
+		Diagnostic::error("{}: There are no build configurations defined for the workspace, and the defaults have been disabled.", inputs.inputFile());
+		return false;
+	}
 
 	if (buildConfigurations.find(buildConfiguration) == buildConfigurations.end())
 	{
@@ -257,7 +262,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
