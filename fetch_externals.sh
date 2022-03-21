@@ -21,7 +21,7 @@ repositories=(
 )
 tags=(
 	'v2.x'
-	'82ce68b9e2b705a83d107d842f51fde42a03133b'
+	'v3.6'
 	'8.0.0'
 	'v1.5.6'
 	'master'
@@ -30,7 +30,7 @@ tags=(
 
 commits=(
 	0
-	1
+	0
 	0
 	0
 	0

@@ -8,9 +8,12 @@
 
 #include <regex>
 
-#if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
+// #if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
+#if !defined(CHALET_MSVC)
 	#ifndef CHALET_REGEX_CTRE
 		#define CHALET_REGEX_CTRE
+		#define CTRE_CXX_STANDARD 17
+		#define CTRE_STRING_IS_UTF8 0
 	#endif
 #endif
 
@@ -22,8 +25,6 @@
 	#pragma GCC diagnostic ignored "-Wtype-limits"
 	#pragma GCC diagnostic ignored "-Wshadow"
 #endif
-
-#define CTRE_STRING_IS_UTF8 0
 
 #ifdef CHALET_REGEX_CTRE
 
