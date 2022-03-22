@@ -34,7 +34,7 @@ void setShowBenchmarks(const bool inValue);
 
 bool getUserInput(
 	const std::string& inUserQuery, std::string& outResult, std::string inNote = std::string(),
-	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; });
+	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; }, const bool inFailOnFalse = true);
 bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote = std::string());
 
 std::string getAnsiStyle(const Color inColor);

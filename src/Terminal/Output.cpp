@@ -116,7 +116,7 @@ void Output::setShowBenchmarks(const bool inValue)
 }
 
 /*****************************************************************************/
-bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate)
+bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate, const bool inFailOnFalse)
 {
 	const auto color = Output::getAnsiStyle(state.theme.flair);
 	const auto noteColor = Output::getAnsiStyle(state.theme.build);
@@ -153,31 +153,53 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		input = outResult;
 
 	bool result = onValidate(input);
+	if (!result && inFailOnFalse)
+	{
+		const auto error = Output::getAnsiStyle(state.theme.error);
+		auto invalid = fmt::format("{cleanLine}{lineUp}{output}{input}{color} -- {error}invalid entry{reset}",
+			FMT_ARG(cleanLine),
+			FMT_ARG(lineUp),
+			FMT_ARG(output),
+			FMT_ARG(input),
+			FMT_ARG(color),
+			FMT_ARG(error),
+			FMT_ARG(reset));
 
-	outResult = input;
+		std::cout.write(invalid.data(), invalid.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
 
-	auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
-		FMT_ARG(cleanLine),
-		FMT_ARG(lineUp),
-		FMT_ARG(output),
-		FMT_ARG(outResult),
-		FMT_ARG(reset));
+		return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
+	}
+	else
+	{
+		outResult = input;
 
-	// toOutput.append(80 - toOutput.size(), ' ');
-	std::cout.write(toOutput.data(), toOutput.size());
-	std::cout.put(std::cout.widen('\n'));
-	std::cout.flush();
+		auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
+			FMT_ARG(cleanLine),
+			FMT_ARG(lineUp),
+			FMT_ARG(output),
+			FMT_ARG(outResult),
+			FMT_ARG(reset));
 
-	return result;
+		// toOutput.append(80 - toOutput.size(), ' ');
+		std::cout.write(toOutput.data(), toOutput.size());
+		std::cout.put(std::cout.widen('\n'));
+		std::cout.flush();
+
+		return result;
+	}
 }
 
 /*****************************************************************************/
 bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote)
 {
 	std::string result{ inDefaultYes ? "yes" : "no" };
-	return getUserInput(inUserQuery, result, std::move(inNote), [](std::string& input) {
-		return !String::equals({ "no", "n" }, String::toLowerCase(input));
-	});
+	return getUserInput(
+		inUserQuery, result, std::move(inNote), [](std::string& input) {
+			return !String::equals({ "no", "n" }, String::toLowerCase(input));
+		},
+		false);
 }
 
 /*****************************************************************************/
