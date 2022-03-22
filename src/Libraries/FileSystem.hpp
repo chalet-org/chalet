@@ -9,27 +9,19 @@
 #if defined(_MSC_VER) && _MSC_VER >= 1920
 #elif defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
 	#if __has_include(<filesystem>)
-		// Note: std::filesystem is broken in GCC 8.x (possibly just in MinGW?)
-		//  Use fallback in this instance just in case
 		#if __clang_major__ >= 11 || __GNUC__ >= 9
 		#else
-			#define CHALET_FILE_SYSTEM_FALLBACK
-			// #include <experimental/filesystem>
-			// namespace fs = std::experimental::filesystem::v1;
+			#define CHALET_NO_FILE_SYSTEM
 		#endif
 	#else
-		#define CHALET_FILE_SYSTEM_FALLBACK
+		#define CHALET_NO_FILE_SYSTEM
 	#endif
 #else
-	#define CHALET_FILE_SYSTEM_FALLBACK
+	#define CHALET_NO_FILE_SYSTEM
 #endif
-#ifdef CHALET_FILE_SYSTEM_FALLBACK
-	#include <ghc/filesystem.hpp>
-namespace chalet
-{
-namespace fs = ghc::filesystem;
-}
-	#undef CHALET_FILE_SYSTEM_FALLBACK
+
+#ifdef CHALET_NO_FILE_SYSTEM
+	#error "Chalet requires a compiler with C++17 and std::filesystem"
 #else
 	#include <filesystem>
 namespace chalet

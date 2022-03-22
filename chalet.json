@@ -208,14 +208,8 @@
 			"repository": "git@github.com:catchorg/Catch2.git",
 			"branch": "v2.x"
 		},
-		"ctre": {
-			"repository": "git@github.com:hanickadot/compile-time-regular-expressions.git"
-		},
 		"fmt": {
 			"repository": "git@github.com:fmtlib/fmt.git"
-		},
-		"ghc_fs": {
-			"repository": "git@github.com:gulrak/filesystem.git"
 		},
 		"nlohmann_json": {
 			"repository": "git@github.com:nlohmann/json.git"

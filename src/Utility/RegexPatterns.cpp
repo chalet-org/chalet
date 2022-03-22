@@ -5,7 +5,7 @@
 
 #include "Utility/RegexPatterns.hpp"
 
-#include "Libraries/Regex.hpp"
+#include <regex>
 
 namespace chalet
 {
@@ -15,13 +15,8 @@ bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
 	if (inValue.empty())
 		return false;
 
-#ifdef CHALET_REGEX_CTRE
-	static constexpr auto regex = ctll::fixed_string{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
-	if (auto m = ctre::match<regex>(inValue))
-#else
 	static std::regex regex{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
 	if (std::regex_match(inValue, regex))
-#endif
 	{
 		return true;
 	}
@@ -35,13 +30,8 @@ bool RegexPatterns::matchesGnuCStandard(const std::string& inValue)
 	if (inValue.empty())
 		return false;
 
-#ifdef CHALET_REGEX_CTRE
-	static constexpr auto regex = ctll::fixed_string{ "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$" };
-	if (auto m = ctre::match<regex>(inValue))
-#else
 	static std::regex regex{ "^((c|gnu)\\d[\\dx]|(iso9899:(1990|199409|1999|199x|20\\d{2})))$" };
 	if (std::regex_match(inValue, regex))
-#endif
 	{
 		return true;
 	}
@@ -55,13 +45,8 @@ bool RegexPatterns::matchesCxxStandardShort(const std::string& inValue)
 	if (inValue.empty())
 		return false;
 
-#ifdef CHALET_REGEX_CTRE
-	static constexpr auto regex = ctll::fixed_string{ "^\\d[\\dxyzab]$" };
-	if (auto m = ctre::match<regex>(inValue))
-#else
 	static std::regex regex{ "^\\d[\\dxyzab]$" };
 	if (std::regex_match(inValue, regex))
-#endif
 	{
 		return true;
 	}
@@ -75,16 +60,11 @@ bool RegexPatterns::matchesFullVersionString(const std::string& inValue)
 	if (inValue.empty())
 		return false;
 
-		// This pattern doesn't match the number of digits because it's not worth creating a bug over
-		//
+	// This pattern doesn't match the number of digits because it's not worth creating a bug over
+	//
 
-#ifdef CHALET_REGEX_CTRE
-	static constexpr auto regex = ctll::fixed_string{ "^(\\d+\\.\\d+\\.\\d+\\.\\d+)$" };
-	if (auto m = ctre::match<regex>(inValue))
-#else
 	static std::regex regex{ "^(\\d+\\.\\d+\\.\\d+\\.\\d+)$" };
 	if (std::regex_match(inValue, regex))
-#endif
 	{
 		return true;
 	}
