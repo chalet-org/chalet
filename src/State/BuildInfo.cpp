@@ -48,7 +48,7 @@ bool BuildInfo::initialize()
 		auto& sys = triple.back();
 		sys = String::toLowerCase(sys);
 
-		for (auto& target : StringList{ "macos", "ios", "watchos", "tvos" })
+		for (auto& target : StringList{ "darwin", "macosx", "ios", "watchos", "tvos" })
 		{
 			if (String::startsWith(target, sys))
 			{
