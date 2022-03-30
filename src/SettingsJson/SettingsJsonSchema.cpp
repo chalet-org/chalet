@@ -75,6 +75,7 @@ enum class Defs : ushort
 	ExternalDir,
 	DistributionDir,
 	RunTarget,
+	RunArguments,
 	Theme,
 
 	/* Theme */
@@ -337,69 +338,69 @@ Json SettingsJsonSchema::get()
 	})json"_ojson;
 
 	defs[Defs::ShowCommands] = R"json({
-		"description": "true to show the commands run during the build, false to just show the source file (default).",
 		"type": "boolean",
+		"description": "true to show the commands run during the build, false to just show the source file (default).",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::Benchmark] = R"json({
-		"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 		"type": "boolean",
+		"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::KeepGoing] = R"json({
-		"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
 		"type": "boolean",
+		"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::LaunchProfiler] = R"json({
-		"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 		"type": "boolean",
+		"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::LastBuildConfiguration] = R"json({
-		"description": "The build configuration to use for building, if not the previous one.",
-		"type": "string"
+		"type": "string",
+		"description": "The build configuration to use for building, if not the previous one."
 	})json"_ojson;
 
 	defs[Defs::LastToolchain] = R"json({
-		"description": "The toolchain id to use for building, if not the previous one.",
-		"type": "string"
+		"type": "string",
+		"description": "The toolchain id to use for building, if not the previous one."
 	})json"_ojson;
 
 	defs[Defs::LastArchitecture] = R"json({
-		"description": "The architecture id to use for building, if not the previous one.",
-		"type": "string"
+		"type": "string",
+		"description": "The architecture id to use for building, if not the previous one."
 	})json"_ojson;
 
 	defs[Defs::SigningIdentity] = R"json({
-		"description": "The signing identity to use when bundling the macos application distribution.",
-		"type": "string"
+		"type": "string",
+		"description": "The signing identity to use when bundling the macos application distribution."
 	})json"_ojson;
 
 	defs[Defs::InputFile] = R"json({
-		"description": "An input build file to use.",
 		"type": "string",
+		"description": "An input build file to use.",
 		"default": "chalet.json"
 	})json"_ojson;
 
 	defs[Defs::EnvFile] = R"json({
-		"description": "A file to load environment variables from.",
 		"type": "string",
+		"description": "A file to load environment variables from.",
 		"default": ".env"
 	})json"_ojson;
 
 	defs[Defs::RootDir] = R"json({
-		"description": "The root directory to run the build from.",
-		"type": "string"
+		"type": "string",
+		"description": "The root directory to run the build from."
 	})json"_ojson;
 
 	defs[Defs::OutputDir] = R"json({
-		"description": "The output directory of the build.",
 		"type": "string",
+		"description": "The output directory of the build.",
 		"default": "build"
 	})json"_ojson;
 
@@ -410,13 +411,18 @@ Json SettingsJsonSchema::get()
 	})json"_ojson;
 
 	defs[Defs::DistributionDir] = R"json({
-		"description": "The root directory of all distribution bundles.",
-		"type": "string"
+		"type": "string",
+		"description": "The root directory of all distribution bundles."
 	})json"_ojson;
 
 	defs[Defs::RunTarget] = R"json({
-		"description": "An executable or script target to run, if requested.",
-		"type": "string"
+		"type": "string",
+		"description": "An executable or script target to run, if requested."
+	})json"_ojson;
+
+	defs[Defs::RunArguments] = R"json({
+		"type": "object",
+		"description": "An object of key/values where the key is the run target name, and the value is the run arguments that were used last."
 	})json"_ojson;
 
 	//
@@ -504,6 +510,7 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRootDirectory] = defs[Defs::RootDir];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunTarget] = defs[Defs::RunTarget];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunArguments] = defs[Defs::RunArguments];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];

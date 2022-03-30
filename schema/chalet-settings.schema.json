@@ -81,21 +81,21 @@
 			"description": "A list of settings related to the build.",
 			"properties": {
 				"architecture": {
-					"description": "The architecture id to use for building, if not the previous one.",
-					"type": "string"
+					"type": "string",
+					"description": "The architecture id to use for building, if not the previous one."
 				},
 				"benchmark": {
-					"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 					"type": "boolean",
+					"description": "true to show all build times (total build time, build targets, other steps) (default), false to hide them.",
 					"default": true
 				},
 				"configuration": {
-					"description": "The build configuration to use for building, if not the previous one.",
-					"type": "string"
+					"type": "string",
+					"description": "The build configuration to use for building, if not the previous one."
 				},
 				"distributionDir": {
-					"description": "The root directory of all distribution bundles.",
-					"type": "string"
+					"type": "string",
+					"description": "The root directory of all distribution bundles."
 				},
 				"dumpAssembly": {
 					"type": "boolean",
@@ -103,8 +103,8 @@
 					"default": false
 				},
 				"envFile": {
-					"description": "A file to load environment variables from.",
 					"type": "string",
+					"description": "A file to load environment variables from.",
 					"default": ".env"
 				},
 				"externalDir": {
@@ -118,18 +118,18 @@
 					"default": false
 				},
 				"inputFile": {
-					"description": "An input build file to use.",
 					"type": "string",
+					"description": "An input build file to use.",
 					"default": "chalet.json"
 				},
 				"keepGoing": {
-					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
 					"type": "boolean",
+					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
 					"default": false
 				},
 				"launchProfiler": {
-					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 					"type": "boolean",
+					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
 					"default": true
 				},
 				"maxJobs": {
@@ -138,30 +138,34 @@
 					"minimum": 1
 				},
 				"outputDir": {
-					"description": "The output directory of the build.",
 					"type": "string",
+					"description": "The output directory of the build.",
 					"default": "build"
 				},
 				"rootDir": {
-					"description": "The root directory to run the build from.",
-					"type": "string"
+					"type": "string",
+					"description": "The root directory to run the build from."
 				},
 				"runTarget": {
-					"description": "An executable or script target to run, if requested.",
-					"type": "string"
+					"type": "string",
+					"description": "An executable or script target to run, if requested."
+				},
+				"runArguments": {
+					"type": "object",
+					"description": "An object of key/values where the key is the run target name, and the value is the run arguments that were used last."
 				},
 				"showCommands": {
-					"description": "true to show the commands run during the build, false to just show the source file (default).",
 					"type": "boolean",
+					"description": "true to show the commands run during the build, false to just show the source file (default).",
 					"default": false
 				},
 				"signingIdentity": {
-					"description": "The signing identity to use when bundling the macos application distribution.",
-					"type": "string"
+					"type": "string",
+					"description": "The signing identity to use when bundling the macos application distribution."
 				},
 				"toolchain": {
-					"description": "The toolchain id to use for building, if not the previous one.",
-					"type": "string"
+					"type": "string",
+					"description": "The toolchain id to use for building, if not the previous one."
 				}
 			}
 		},
