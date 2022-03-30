@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(chalet-debug VERSION 0.3.4)
+project(chalet-debug VERSION 0.3.5)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message(FATAL_ERROR "Build must be Debug")
