@@ -54,12 +54,12 @@ bool IBuildTarget::initialize()
 }
 
 /*****************************************************************************/
-void IBuildTarget::replaceVariablesInPathList(StringList& outList) const
+void IBuildTarget::replaceVariablesInPathList(StringList& outList, const bool isDefines) const
 {
 	const auto& targetName = this->name();
 	for (auto& dir : outList)
 	{
-		m_state.replaceVariablesInPath(dir, targetName);
+		m_state.replaceVariablesInPath(dir, targetName, isDefines);
 	}
 }
 

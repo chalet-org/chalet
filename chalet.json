@@ -27,6 +27,9 @@
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
+			"defines": [
+				"CHALET_VERSION=${version}"
+			],
 			"defines.debug": [
 				"_DEBUG",
 				"JSON_NOEXCEPTION"

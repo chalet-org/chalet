@@ -25,7 +25,7 @@
 		#define CHALET_WIN32
 	#endif
 #else
-static_assert(false, "Unknown platform");
+	#error "Unknown platform";
 #endif
 
 #endif // CHALET_DEFINES_PLATFORM_HPP

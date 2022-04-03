@@ -40,7 +40,7 @@ public:
 
 	void makeLibraryPathVariables();
 
-	void replaceVariablesInPath(std::string& outPath, const std::string& inName) const;
+	void replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool isDefine = false) const;
 	const std::string& uniqueId() const noexcept;
 
 	AncillaryTools& tools;

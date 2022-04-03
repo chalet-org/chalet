@@ -829,15 +829,20 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
+void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool isDefine) const
 {
 	if (outPath.empty())
+		return;
+
+	if (!String::contains("${", outPath))
 		return;
 
 	const auto& externalDir = inputs.externalDirectory();
 	const auto& cwd = inputs.workingDirectory();
 	const auto& homeDirectory = inputs.homeDirectory();
 	const auto& buildDir = paths.buildOutputDir();
+	const auto& versionString = workspace.versionString();
+	const auto& version = workspace.version();
 
 	if (!cwd.empty())
 		String::replaceAll(outPath, "${cwd}", cwd);
@@ -857,6 +862,47 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const std::string&
 
 	if (!inName.empty())
 		String::replaceAll(outPath, "${name}", inName);
+
+	if (!versionString.empty())
+	{
+		if (String::contains("${version", outPath))
+		{
+			if (isDefine)
+				String::replaceAll(outPath, "${version}", fmt::format("\"{}\"", versionString));
+			else
+				String::replaceAll(outPath, "${version}", versionString);
+
+			String::replaceAll(outPath, "${versionMajor}", std::to_string(version.major()));
+
+			if (version.hasMinor())
+				String::replaceAll(outPath, "${versionMinor}", std::to_string(version.minor()));
+
+			if (version.hasPatch())
+				String::replaceAll(outPath, "${versionPatch}", std::to_string(version.patch()));
+
+			if (version.hasTweak())
+				String::replaceAll(outPath, "${versionTweak}", std::to_string(version.tweak()));
+		}
+
+		if (String::contains("${workspaceVersion", outPath))
+		{
+			if (isDefine)
+				String::replaceAll(outPath, "${workspaceVersion}", fmt::format("\"{}\"", versionString));
+			else
+				String::replaceAll(outPath, "${workspaceVersion}", versionString);
+
+			String::replaceAll(outPath, "${workspaceVersionMajor}", std::to_string(version.major()));
+
+			if (version.hasMinor())
+				String::replaceAll(outPath, "${workspaceVersionMinor}", std::to_string(version.minor()));
+
+			if (version.hasPatch())
+				String::replaceAll(outPath, "${workspaceVersionPatch}", std::to_string(version.patch()));
+
+			if (version.hasTweak())
+				String::replaceAll(outPath, "${workspaceVersionTweak}", std::to_string(version.tweak()));
+		}
+	}
 
 	Environment::replaceCommonVariables(outPath, homeDirectory);
 }

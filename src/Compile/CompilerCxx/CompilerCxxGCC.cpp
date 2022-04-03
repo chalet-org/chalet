@@ -418,10 +418,23 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addDefines(StringList& outArgList) const
 {
+
+	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
 	const std::string prefix{ "-D" };
 	for (auto& define : m_project.defines())
 	{
-		outArgList.emplace_back(prefix + define);
+		auto pos = define.find("=\"");
+		if (!isNative && pos != std::string::npos)
+		{
+			std::string def = define;
+			def.insert(pos + 1, 1, '\'');
+			def += '\'';
+			outArgList.emplace_back(prefix + def);
+		}
+		else
+		{
+			outArgList.emplace_back(prefix + define);
+		}
 	}
 }
 

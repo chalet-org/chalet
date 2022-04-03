@@ -6,6 +6,8 @@
 #ifndef CHALET_WORKSPACE_ENVIRONMENT_HPP
 #define CHALET_WORKSPACE_ENVIRONMENT_HPP
 
+#include "Utility/Version.hpp"
+
 namespace chalet
 {
 class BuildState;
@@ -19,8 +21,9 @@ struct WorkspaceEnvironment
 	const std::string& workspaceName() const noexcept;
 	void setWorkspaceName(std::string&& inValue) noexcept;
 
-	const std::string& version() const noexcept;
+	const std::string& versionString() const noexcept;
 	void setVersion(std::string&& inValue) noexcept;
+	const Version& version() const noexcept;
 
 	const StringList& searchPaths() const noexcept;
 	void addSearchPaths(StringList&& inList);
@@ -32,7 +35,9 @@ private:
 	StringList m_searchPaths;
 
 	std::string m_workspaceName;
-	std::string m_version;
+	std::string m_versionString;
+
+	Version m_version;
 };
 }
 

@@ -2733,7 +2733,7 @@
 			"type": "string",
 			"description": "Version of the workspace project.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-+.]+$"
+			"pattern": "^((\\d+\\.){1,3})?\\d+$"
 		},
 		"workspace": {
 			"type": "string",

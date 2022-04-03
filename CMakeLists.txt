@@ -35,6 +35,11 @@ file(GLOB_RECURSE JSONSV_SOURCES
 )
 
 add_library(json-schema-validator STATIC ${JSONSV_SOURCES})
+target_compile_definitions(json-schema-validator
+	PRIVATE
+		JSON_NOEXCEPTION
+		JSONSV_NOEXCEPTION
+)
 target_include_directories(json-schema-validator PRIVATE
 	external/nlohmann/single_include/
 	external/json-schema-validator/src/
@@ -45,8 +50,14 @@ file(GLOB_RECURSE TARGET_SOURCES
 	src/*.rc
 )
 
+message("CMAKE_PROJECT_VERSION = ${CMAKE_PROJECT_VERSION}")
 add_executable(${TARGET_NAME} ${TARGET_SOURCES})
-add_definitions(-DJSON_NOEXCEPTION -DJSONSV_NOEXCEPTION)
+target_compile_definitions(${TARGET_NAME}
+	PRIVATE
+		CHALET_VERSION="${CMAKE_PROJECT_VERSION}"
+		JSON_NOEXCEPTION
+		JSONSV_NOEXCEPTION
+)
 
 target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 
@@ -89,11 +100,11 @@ else()
 endif()
 
 if(MSVC)
-	target_compile_options(${TARGET_NAME}
+	target_compile_definitions(${TARGET_NAME}
 		PRIVATE
-			-D_CRT_SECURE_NO_WARNINGS
-			-D_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
-			-DNOMINMAX
+			_CRT_SECURE_NO_WARNINGS
+			_SILENCE_CXX17_RESULT_OF_DEPRECATION_WARNING
+			NOMINMAX
 	)
 
 	target_compile_options(${TARGET_NAME}

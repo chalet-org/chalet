@@ -28,7 +28,8 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternConditionConfigurationsPlatforms(R"regex((\.!?(debug|windows|macos|linux)\b){1,2})regex"),
 	kPatternDistributionCondition(R"regex((!?(ci|windows|macos|linux)\b))regex"),
 	kPatternTargetCondition(R"regex((!?(debug|windows|macos|linux)\b){1,2})regex"),
-	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex")
+	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.!?(debug|windows|macos|linux)\b){0,2}$)regex"),
+	kPatternVersion(R"regex(^((\d+\.){1,3})?\d+$)regex")
 {
 }
 
@@ -1942,9 +1943,9 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["version"] = R"json({
 		"type": "string",
 		"description": "Version of the workspace project.",
-		"minLength": 1,
-		"pattern": "^[\\w\\-+.]+$"
+		"minLength": 1
 	})json"_ojson;
+	ret[SKeys::Properties]["version"][SKeys::Pattern] = kPatternVersion;
 
 	ret[SKeys::Properties]["workspace"] = R"json({
 		"type": "string",

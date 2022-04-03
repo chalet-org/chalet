@@ -35,6 +35,7 @@
 	#include <optional>
 
 	// Defines
+	#include "Utility/DefinesVersion.hpp"
 	#include "Utility/DefinesCompiler.hpp"
 	#include "Utility/DefinesPlatform.hpp"
 	//

@@ -163,6 +163,7 @@ private:
 	const std::string kPatternDistributionCondition;
 	const std::string kPatternTargetCondition;
 	const std::string kPatternCompilers;
+	const std::string kPatternVersion;
 
 	DefinitionMap m_defs;
 	DefinitionMap m_nonIndexedDefs;

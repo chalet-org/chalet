@@ -38,6 +38,15 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 		Environment::setPath(pathVar);
 	}
 
+	if (!m_versionString.empty())
+	{
+		if (!m_version.setFromString(m_versionString))
+		{
+			Diagnostic::error("The supplied workspace version was invalid.");
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -53,14 +62,19 @@ void WorkspaceEnvironment::setWorkspaceName(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceEnvironment::version() const noexcept
+const std::string& WorkspaceEnvironment::versionString() const noexcept
 {
-	return m_version;
+	return m_versionString;
 }
 
 void WorkspaceEnvironment::setVersion(std::string&& inValue) noexcept
 {
-	m_version = std::move(inValue);
+	m_versionString = std::move(inValue);
+}
+
+const Version& WorkspaceEnvironment::version() const noexcept
+{
+	return m_version;
 }
 
 /*****************************************************************************/

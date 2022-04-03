@@ -17,7 +17,8 @@
             ],
             "defines": [
                 "__linux__",
-                "_DEBUG"
+                "_DEBUG",
+                "CHALET_VERSION=\"0.0.0\""
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -45,7 +46,8 @@
             ],
             "defines": [
                 "__APPLE__",
-                "_DEBUG"
+                "_DEBUG",
+                "CHALET_VERSION=\"0.0.0\""
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -69,7 +71,8 @@
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "CHALET_VERSION=\"0.0.0\""
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -94,7 +97,8 @@
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "CHALET_VERSION=\"0.0.0\""
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",

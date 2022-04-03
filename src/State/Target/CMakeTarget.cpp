@@ -31,10 +31,7 @@ bool CMakeTarget::initialize()
 	m_state.replaceVariablesInPath(m_buildFile, targetName);
 	m_state.replaceVariablesInPath(m_location, targetName);
 
-	for (auto& define : m_defines)
-	{
-		m_state.replaceVariablesInPath(define, targetName);
-	}
+	replaceVariablesInPathList(m_defines);
 
 	m_state.replaceVariablesInPath(m_runExecutable, targetName);
 

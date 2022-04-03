@@ -57,6 +57,8 @@ bool SourceTarget::initialize()
 		Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
 	});
 
+	replaceVariablesInPathList(m_defines, true);
+
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_precompiledHeader, targetName);
 
