@@ -45,6 +45,7 @@ private:
 	bool doParse();
 	bool showHelp();
 	bool showVersion();
+	bool isSubcommand() const;
 	bool assignArgumentListFromArgumentsAndValidate();
 	std::string getHelp();
 	std::string getSeeHelpMessage();
