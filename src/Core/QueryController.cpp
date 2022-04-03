@@ -122,7 +122,7 @@ bool QueryController::printListOfRequestedType()
 			break;
 	}
 
-	auto result = String::join(output);
+	auto result = String::join(output, '\t');
 	std::cout.write(result.data(), result.size());
 	std::cout.put(std::cout.widen('\n'));
 	std::cout.flush();

@@ -213,17 +213,18 @@ std::string ArgumentParser::getProgramPath() const
 /*****************************************************************************/
 void ArgumentParser::makeParser()
 {
-	const std::string program = "chalet";
-
 	addHelpArg();
-	addVersionArg();
 
-	if (m_route != Route::Unknown && !m_routeString.empty())
+	if (isSubcommand())
 	{
 		m_argumentList.emplace_back(ArgumentIdentifier::RouteString, true)
 			.addArgument(Positional::Argument1, m_routeString)
 			.setHelp("This subcommand.")
 			.setRequired();
+	}
+	else
+	{
+		addVersionArg();
 	}
 }
 
@@ -236,7 +237,10 @@ bool ArgumentParser::doParse()
 	}
 	else if (containsOption("-v", "--version"))
 	{
-		return showVersion();
+		if (isSubcommand())
+			return showHelp();
+		else
+			return showVersion();
 	}
 	else
 	{
@@ -278,6 +282,12 @@ bool ArgumentParser::showVersion()
 
 	m_route = Route::Help;
 	return true;
+}
+
+/*****************************************************************************/
+bool ArgumentParser::isSubcommand() const
+{
+	return m_route != Route::Unknown && !m_routeString.empty();
 }
 
 /*****************************************************************************/
