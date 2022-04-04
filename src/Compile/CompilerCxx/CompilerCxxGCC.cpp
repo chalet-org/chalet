@@ -426,7 +426,7 @@ void CompilerCxxGCC::addDefines(StringList& outArgList) const
 		auto pos = define.find("=\"");
 		if (!isNative && pos != std::string::npos && define.back() == '\"')
 		{
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_WIN32)
 			std::string key = define.substr(0, pos);
 			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
 			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
