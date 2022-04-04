@@ -2,11 +2,11 @@
 <assembly manifestVersion="1.0" xmlns="urn:schemas-microsoft-com:asm.v1">
 	<assemblyIdentity
 		name="Chalet"
-		processorArchitecture="ia64"
+		processorArchitecture="amd64"
 		version="1.0.0.0"
 		type="win32" />
-	<description>A Modern C/C++ Build System for GCC/Clang</description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
+	<description>A JSON-based project &amp; build tool</description>
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
 		<security>
 			<requestedPrivileges>
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />

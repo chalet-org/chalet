@@ -386,7 +386,7 @@ const std::string& CentralState::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-void CentralState::replaceVariablesInPath(std::string& outPath, const std::string& inName, const bool isDefine) const
+void CentralState::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
 {
 	if (outPath.empty())
 		return;
@@ -416,40 +416,46 @@ void CentralState::replaceVariablesInPath(std::string& outPath, const std::strin
 	{
 		if (String::contains("${version", outPath))
 		{
-			if (isDefine)
-				String::replaceAll(outPath, "${version}", fmt::format("\"{}\"", versionString));
-			else
-				String::replaceAll(outPath, "${version}", versionString);
+			String::replaceAll(outPath, "${version}", versionString);
 
 			String::replaceAll(outPath, "${versionMajor}", std::to_string(version.major()));
 
 			if (version.hasMinor())
 				String::replaceAll(outPath, "${versionMinor}", std::to_string(version.minor()));
+			else
+				String::replaceAll(outPath, "${versionMinor}", "");
 
 			if (version.hasPatch())
 				String::replaceAll(outPath, "${versionPatch}", std::to_string(version.patch()));
+			else
+				String::replaceAll(outPath, "${versionPatch}", "");
 
 			if (version.hasTweak())
 				String::replaceAll(outPath, "${versionTweak}", std::to_string(version.tweak()));
+			else
+				String::replaceAll(outPath, "${versionTweak}", "");
 		}
 
 		if (String::contains("${workspaceVersion", outPath))
 		{
-			if (isDefine)
-				String::replaceAll(outPath, "${workspaceVersion}", fmt::format("\"{}\"", versionString));
-			else
-				String::replaceAll(outPath, "${workspaceVersion}", versionString);
+			String::replaceAll(outPath, "${workspaceVersion}", versionString);
 
 			String::replaceAll(outPath, "${workspaceVersionMajor}", std::to_string(version.major()));
 
 			if (version.hasMinor())
 				String::replaceAll(outPath, "${workspaceVersionMinor}", std::to_string(version.minor()));
+			else
+				String::replaceAll(outPath, "${workspaceVersionMinor}", "");
 
 			if (version.hasPatch())
 				String::replaceAll(outPath, "${workspaceVersionPatch}", std::to_string(version.patch()));
+			else
+				String::replaceAll(outPath, "${workspaceVersionPatch}", "");
 
 			if (version.hasTweak())
 				String::replaceAll(outPath, "${workspaceVersionTweak}", std::to_string(version.tweak()));
+			else
+				String::replaceAll(outPath, "${workspaceVersionTweak}", "");
 		}
 	}
 

@@ -86,10 +86,28 @@ void CompilerWinResourceGNUWindRes::addIncludes(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerWinResourceGNUWindRes::addDefines(StringList& outArgList) const
 {
+	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
 	const std::string prefix{ "-D" };
 	for (auto& define : m_project.defines())
 	{
-		outArgList.emplace_back(prefix + define);
+		auto pos = define.find("=\"");
+		if (!isNative && pos != std::string::npos && define.back() == '\"')
+		{
+#if defined(CHALET_WIN32)
+			std::string key = define.substr(0, pos);
+			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
+			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
+#else
+			std::string def = define;
+			def.insert(pos + 1, 1, '\'');
+			def += '\'';
+#endif
+			outArgList.emplace_back(prefix + def);
+		}
+		else
+		{
+			outArgList.emplace_back(prefix + define);
+		}
 	}
 }
 

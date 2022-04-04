@@ -6,7 +6,10 @@
 #ifndef CHALET_DEFINES_VERSION_HPP
 #define CHALET_DEFINES_VERSION_HPP
 
-#if !defined(CHALET_VERSION)
+#if !defined(CHALET_VERSION)          \
+	|| !defined(CHALET_VERSION_MAJOR) \
+	|| !defined(CHALET_VERSION_MINOR) \
+	|| !defined(CHALET_VERSION_PATCH)
 	#error "CHALET_VERSION was not defined";
 #endif
 

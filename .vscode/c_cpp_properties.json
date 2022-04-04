@@ -18,7 +18,10 @@
             "defines": [
                 "__linux__",
                 "_DEBUG",
-                "CHALET_VERSION=\"0.0.0\""
+                "CHALET_VERSION=\"0.0.0\"",
+                "CHALET_VERSION_MAJOR=0",
+                "CHALET_VERSION_MINOR=0",
+                "CHALET_VERSION_PATCH=0"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -47,7 +50,10 @@
             "defines": [
                 "__APPLE__",
                 "_DEBUG",
-                "CHALET_VERSION=\"0.0.0\""
+                "CHALET_VERSION=\"0.0.0\"",
+                "CHALET_VERSION_MAJOR=0",
+                "CHALET_VERSION_MINOR=0",
+                "CHALET_VERSION_PATCH=0"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -72,7 +78,10 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "CHALET_VERSION=\"0.0.0\""
+                "CHALET_VERSION=\"0.0.0\"",
+                "CHALET_VERSION_MAJOR=0",
+                "CHALET_VERSION_MINOR=0",
+                "CHALET_VERSION_PATCH=0"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -98,7 +107,10 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "CHALET_VERSION=\"0.0.0\""
+                "CHALET_VERSION=\"0.0.0\"",
+                "CHALET_VERSION_MAJOR=0",
+                "CHALET_VERSION_MINOR=0",
+                "CHALET_VERSION_PATCH=0"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",

@@ -11,5 +11,6 @@
 #endif
 
 #include "Icon.h"
+#include "VersionInfo.h"
 
 #endif // CHALET_RESOURCE_H

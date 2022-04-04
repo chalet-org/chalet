@@ -28,7 +28,10 @@
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
 			"defines": [
-				"CHALET_VERSION=${version}"
+				"CHALET_VERSION=\"${version}\"",
+				"CHALET_VERSION_MAJOR=${versionMajor}",
+				"CHALET_VERSION_MINOR=${versionMinor}",
+				"CHALET_VERSION_PATCH=${versionPatch}"
 			],
 			"defines.debug": [
 				"_DEBUG",
@@ -180,6 +183,9 @@
 		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
 			"file": "platform/windows/installer/install_script.nsi",
+			"defines": [
+				"CHALET_VERSION=${version}"
+			],
 			"pluginDirs": [
 				"platform/windows/installer/plugins"
 			]
