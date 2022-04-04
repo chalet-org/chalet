@@ -435,28 +435,6 @@ void CentralState::replaceVariablesInPath(std::string& outPath, const std::strin
 			else
 				String::replaceAll(outPath, "${versionTweak}", "");
 		}
-
-		if (String::contains("${workspaceVersion", outPath))
-		{
-			String::replaceAll(outPath, "${workspaceVersion}", versionString);
-
-			String::replaceAll(outPath, "${workspaceVersionMajor}", std::to_string(version.major()));
-
-			if (version.hasMinor())
-				String::replaceAll(outPath, "${workspaceVersionMinor}", std::to_string(version.minor()));
-			else
-				String::replaceAll(outPath, "${workspaceVersionMinor}", "");
-
-			if (version.hasPatch())
-				String::replaceAll(outPath, "${workspaceVersionPatch}", std::to_string(version.patch()));
-			else
-				String::replaceAll(outPath, "${workspaceVersionPatch}", "");
-
-			if (version.hasTweak())
-				String::replaceAll(outPath, "${workspaceVersionTweak}", std::to_string(version.tweak()));
-			else
-				String::replaceAll(outPath, "${workspaceVersionTweak}", "");
-		}
 	}
 
 	Environment::replaceCommonVariables(outPath, homeDirectory);
