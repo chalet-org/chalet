@@ -93,15 +93,9 @@ void CompilerWinResourceGNUWindRes::addDefines(StringList& outArgList) const
 		auto pos = define.find("=\"");
 		if (!isNative && pos != std::string::npos && define.back() == '\"')
 		{
-#if defined(CHALET_WIN32)
 			std::string key = define.substr(0, pos);
 			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
 			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-#else
-			std::string def = define;
-			def.insert(pos + 1, 1, '\'');
-			def += '\'';
-#endif
 			outArgList.emplace_back(prefix + def);
 		}
 		else
