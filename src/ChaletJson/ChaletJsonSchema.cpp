@@ -429,9 +429,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	// target
 	//
-	defs[Defs::TargetDescription] = R"json({
+	defs[Defs::TargetOutputDescription] = R"json({
 		"type": "string",
-		"description": "A description of the target to display during the build.",
+		"description": "A description of the target to display in the build output.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1277,7 +1277,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		distributionTarget[SKeys::Properties]["buildTargets"] = getDefinition(Defs::DistributionBundleBuildTargets);
 		distributionTarget[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
 		distributionTarget[SKeys::Properties]["configuration"] = getDefinition(Defs::DistributionConfiguration);
-		distributionTarget[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionTarget[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distributionTarget[SKeys::Properties]["exclude"] = getDefinition(Defs::DistributionBundleExclude);
 		distributionTarget[SKeys::Properties]["include"] = getDefinition(Defs::DistributionBundleInclude);
 		distributionTarget[SKeys::Properties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionBundleIncludeDependentSharedLibraries);
@@ -1301,7 +1301,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		distributionArchive[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionArchive[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionArchive[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distributionArchive[SKeys::Properties]["include"] = getDefinition(Defs::DistributionArchiveInclude);
 		distributionArchive[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionArchive[SKeys::PatternProperties][fmt::format("^include{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::DistributionArchiveInclude);
@@ -1320,7 +1320,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		distributionMacosDiskImage[SKeys::Properties]["background"] = defs[Defs::DistributionMacosDiskImageBackground];
-		distributionMacosDiskImage[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionMacosDiskImage[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distributionMacosDiskImage[SKeys::Properties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageIconSize);
 		distributionMacosDiskImage[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionMacosDiskImage[SKeys::Properties]["pathbarVisible"] = getDefinition(Defs::DistributionMacosDiskImagePathbarVisible);
@@ -1340,7 +1340,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"file"
 			]
 		})json"_ojson;
-		distributionWinNullsoft[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionWinNullsoft[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distributionWinNullsoft[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionWinNullsoft[SKeys::Properties]["file"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerScript);
 		distributionWinNullsoft[SKeys::Properties]["pluginDirs"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerPluginDirs);
@@ -1448,7 +1448,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		abstractSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		abstractSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceFiles);
-		abstractSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		abstractSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetOutputDescription);
 		defs[Defs::TargetAbstract] = std::move(abstractSource);
 	}
 	{
@@ -1460,7 +1460,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		targetSource[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetSource[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		targetSource[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetSource[SKeys::Properties]["extends"] = getDefinition(Defs::TargetSourceExtends);
 		targetSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
 		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
@@ -1473,7 +1473,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceFiles);
-		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetDescription);
+		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetOutputDescription);
 		defs[Defs::TargetSourceLibrary] = std::move(targetSource);
 
 		//
@@ -1492,7 +1492,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		targetBuildScript[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetBuildScript[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		targetBuildScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetBuildScript[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		// targetBuildScript[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
 		targetBuildScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
@@ -1506,7 +1506,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		distributionScript[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionScript[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distributionScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distributionScript[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
 		distributionScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::TargetScriptFile);
@@ -1526,7 +1526,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		distProcess[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
 		distProcess[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distProcess[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		distProcess[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		distProcess[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distProcess[SKeys::Properties]["path"] = getDefinition(Defs::TargetProcessPath);
 		distProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternDistributionPlatforms)] = getDefinition(Defs::TargetProcessArguments);
@@ -1546,7 +1546,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetCMake[SKeys::Properties]["buildFile"] = getDefinition(Defs::TargetCMakeBuildFile);
 		targetCMake[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetCMake[SKeys::Properties]["defines"] = getDefinition(Defs::TargetCMakeDefines);
-		targetCMake[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		targetCMake[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetCMake[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetCMake[SKeys::Properties]["location"] = getDefinition(Defs::TargetCMakeLocation);
 		targetCMake[SKeys::Properties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
@@ -1573,7 +1573,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		targetChalet[SKeys::Properties]["buildFile"] = getDefinition(Defs::TargetChaletBuildFile);
 		targetChalet[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetChalet[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		targetChalet[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetChalet[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetChalet[SKeys::Properties]["location"] = getDefinition(Defs::TargetChaletLocation);
 		targetChalet[SKeys::Properties]["recheck"] = getDefinition(Defs::TargetChaletRecheck);
@@ -1594,7 +1594,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		targetProcess[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
 		targetProcess[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetProcess[SKeys::Properties]["description"] = getDefinition(Defs::TargetDescription);
+		targetProcess[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetProcess[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetProcess[SKeys::Properties]["path"] = getDefinition(Defs::TargetProcessPath);
 		targetProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConditionConfigurationsPlatforms)] = getDefinition(Defs::TargetProcessArguments);
@@ -1660,7 +1660,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::EnvironmentSearchPaths: return "environment-searchPaths";
 		//
-		case Defs::TargetDescription: return "target-description";
+		case Defs::TargetOutputDescription: return "target-outputDescription";
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
 		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";

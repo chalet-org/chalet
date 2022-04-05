@@ -102,13 +102,13 @@ void IDistTarget::setName(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& IDistTarget::description() const noexcept
+const std::string& IDistTarget::outputDescription() const noexcept
 {
-	return m_description;
+	return m_outputDescription;
 }
-void IDistTarget::setDescription(std::string&& inValue) noexcept
+void IDistTarget::setOutputDescription(std::string&& inValue) noexcept
 {
-	m_description = std::move(inValue);
+	m_outputDescription = std::move(inValue);
 }
 
 /*****************************************************************************/

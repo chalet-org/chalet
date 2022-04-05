@@ -67,7 +67,7 @@ class ChaletJsonSchema
 		//
 		EnvironmentSearchPaths,
 		//
-		TargetDescription,
+		TargetOutputDescription,
 		TargetKind,
 		TargetCondition,
 		TargetRunTarget,

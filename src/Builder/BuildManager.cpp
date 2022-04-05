@@ -628,8 +628,8 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 
-	if (!inTarget.description().empty())
-		Output::msgTargetDescription(inTarget.description(), color);
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), color);
 	else
 		Output::msgTargetOfType("Script", inTarget.name(), color);
 
@@ -652,8 +652,8 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 	if (path.empty())
 		return false;
 
-	if (!inTarget.description().empty())
-		Output::msgTargetDescription(inTarget.description(), Output::theme().header);
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
 	else
 		Output::msgTargetOfType("Process", inTarget.name(), Output::theme().header);
 
@@ -679,8 +679,8 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	if (!inProject.description().empty())
-		Output::msgTargetDescription(inProject.description(), Output::theme().header);
+	if (!inProject.outputDescription().empty())
+		Output::msgTargetDescription(inProject.outputDescription(), Output::theme().header);
 	else
 		Output::msgBuild(outputFile);
 
@@ -715,8 +715,8 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	if (!inProject.description().empty())
-		Output::msgTargetDescription(inProject.description(), Output::theme().header);
+	if (!inProject.outputDescription().empty())
+		Output::msgTargetDescription(inProject.outputDescription(), Output::theme().header);
 	else
 		Output::msgRebuild(outputFile);
 
@@ -797,8 +797,8 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	const auto& runArguments = m_state.inputs.runArguments();
 
-	if (!inTarget.description().empty())
-		Output::msgTargetDescription(inTarget.description(), Output::theme().success);
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().success);
 	else
 		Output::msgRun(outputFile);
 

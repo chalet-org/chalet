@@ -100,9 +100,9 @@ bool AppBundler::run(const DistTarget& inTarget)
 	{
 		auto& bundle = static_cast<BundleTarget&>(*inTarget);
 
-		if (!bundle.description().empty())
+		if (!bundle.outputDescription().empty())
 		{
-			Output::msgTargetDescription(bundle.description(), Output::theme().header);
+			Output::msgTargetDescription(bundle.outputDescription(), Output::theme().header);
 		}
 		else
 		{
@@ -638,8 +638,8 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, const BuildState
 /*****************************************************************************/
 void AppBundler::displayHeader(const std::string& inLabel, const IDistTarget& inTarget, const std::string& inName) const
 {
-	if (!inTarget.description().empty())
-		Output::msgTargetDescription(inTarget.description(), Output::theme().header);
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
 	else
 		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), Output::theme().header);
 

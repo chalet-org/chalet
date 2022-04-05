@@ -402,8 +402,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		else if (value.is_string())
 		{
 			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			if (valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFile(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
@@ -465,8 +465,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 				outTarget.setFile(std::move(val));
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 		}
 	}
 
@@ -494,8 +494,8 @@ bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Js
 				outTarget.setLocation(std::move(val));
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildFile", status))
 				outTarget.setBuildFile(std::move(val));
 		}
@@ -530,8 +530,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setLocation(value.get<std::string>());
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && String::equals("buildFile", key))
 				outTarget.setBuildFile(value.get<std::string>());
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "toolset", status))
@@ -581,8 +581,8 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 				outTarget.setPath(std::move(val));
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
 		}

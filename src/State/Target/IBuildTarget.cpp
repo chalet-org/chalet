@@ -112,13 +112,13 @@ void IBuildTarget::setName(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& IBuildTarget::description() const noexcept
+const std::string& IBuildTarget::outputDescription() const noexcept
 {
-	return m_description;
+	return m_outputDescription;
 }
-void IBuildTarget::setDescription(std::string&& inValue) noexcept
+void IBuildTarget::setOutputDescription(std::string&& inValue) noexcept
 {
-	m_description = std::move(inValue);
+	m_outputDescription = std::move(inValue);
 }
 
 /*****************************************************************************/

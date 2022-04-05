@@ -379,8 +379,8 @@ bool CentralChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarge
 				outTarget.setFile(std::move(val));
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 		}
 	}
 
@@ -405,8 +405,8 @@ bool CentralChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTar
 				outTarget.setPath(std::move(val));
 				valid = true;
 			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
 		}
@@ -433,8 +433,8 @@ bool CentralChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outT
 		if (value.is_string())
 		{
 			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "description", status))
-				outTarget.setDescription(std::move(val));
+			if (valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
 				outTarget.addInclude(std::move(val));
 		}
@@ -467,8 +467,8 @@ bool CentralChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, c
 			}
 			else if (String::equals("buildTargets", key))
 				outTarget.addBuildTarget(value.get<std::string>());
-			else if (String::equals("description", key))
-				outTarget.setDescription(value.get<std::string>());
+			else if (String::equals("outputDescription", key))
+				outTarget.setOutputDescription(value.get<std::string>());
 			else if (String::equals("subdirectory", key))
 				outTarget.setSubdirectory(value.get<std::string>());
 			else if (String::equals("mainExecutable", key))
@@ -610,8 +610,8 @@ bool CentralChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarge
 	{
 		if (value.is_string())
 		{
-			if (String::equals("description", key))
-				outTarget.setDescription(value.get<std::string>());
+			if (String::equals("outputDescription", key))
+				outTarget.setOutputDescription(value.get<std::string>());
 			else if (String::equals("background", key))
 				outTarget.setBackground1x(value.get<std::string>());
 		}
@@ -698,8 +698,8 @@ bool CentralChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInsta
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_string())
 		{
-			if (String::equals("description", key))
-				outTarget.setDescription(value.get<std::string>());
+			if (String::equals("outputDescription", key))
+				outTarget.setOutputDescription(value.get<std::string>());
 			else if (String::equals("file", key))
 				outTarget.setFile(value.get<std::string>());
 			else if (String::equals("pluginDirs", key))

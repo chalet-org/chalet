@@ -36,8 +36,8 @@ struct IBuildTarget
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
-	const std::string& description() const noexcept;
-	void setDescription(std::string&& inValue) noexcept;
+	const std::string& outputDescription() const noexcept;
+	void setOutputDescription(std::string&& inValue) noexcept;
 
 	const StringList& copyFilesOnRun() const noexcept;
 	void addCopyFilesOnRun(StringList&& inList);
@@ -56,7 +56,7 @@ private:
 	StringList m_copyFilesOnRun;
 
 	std::string m_name;
-	std::string m_description;
+	std::string m_outputDescription;
 
 	BuildTargetType m_type = BuildTargetType::Unknown;
 	bool m_includeInBuild = true;

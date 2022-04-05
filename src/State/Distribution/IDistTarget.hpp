@@ -36,8 +36,8 @@ struct IDistTarget
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
-	const std::string& description() const noexcept;
-	void setDescription(std::string&& inValue) noexcept;
+	const std::string& outputDescription() const noexcept;
+	void setOutputDescription(std::string&& inValue) noexcept;
 
 	bool includeInDistribution() const noexcept;
 	void setIncludeInDistribution(const bool inValue);
@@ -49,7 +49,7 @@ protected:
 
 private:
 	std::string m_name;
-	std::string m_description;
+	std::string m_outputDescription;
 
 	DistTargetType m_type;
 
