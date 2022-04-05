@@ -763,9 +763,11 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		auto& project = static_cast<const CMakeTarget&>(inTarget);
 		outputFile = project.runExecutable();
 
+		auto outputLocation = fmt::format("{}/{}", buildOutputDir, project.targetFolder());
+
 		if (!Commands::pathExists(outputFile))
 		{
-			outputFile = fmt::format("{}/{}", buildOutputDir, outputFile);
+			outputFile = fmt::format("{}/{}", outputLocation, outputFile);
 		}
 #if defined(CHALET_WIN32)
 		if (!Commands::pathExists(outputFile))
@@ -779,6 +781,12 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 				outputFile = outputFile.substr(0, outputFile.size() - 4);
 		}
 #endif
+	}
+
+	if (Commands::pathIsDirectory(outputFile))
+	{
+		Diagnostic::error("Requested run target '{}' resolves to a directory: {}", inTarget.name(), outputFile);
+		return false;
 	}
 
 	if (outputFile.empty() || !Commands::pathExists(outputFile))
