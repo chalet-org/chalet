@@ -7,6 +7,7 @@
 
 #include <thread>
 
+#include "Utility/DefinesVersion.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Terminal/Output.hpp"
