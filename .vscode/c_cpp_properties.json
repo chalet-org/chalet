@@ -12,16 +12,14 @@
                 "${workspaceFolder}/external/catch2/single_include",
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
+                "${workspaceFolder}/build/Debug",
+                "${workspaceFolder}/build/intermediate",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
             "defines": [
                 "__linux__",
-                "_DEBUG",
-                "CHALET_VERSION=\"0.0.0\"",
-                "CHALET_VERSION_MAJOR=0",
-                "CHALET_VERSION_MINOR=0",
-                "CHALET_VERSION_PATCH=0"
+                "_DEBUG"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -45,15 +43,13 @@
                 "${workspaceFolder}/external/catch2/single_include",
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
+                "${workspaceFolder}/build/Debug",
+                "${workspaceFolder}/build/intermediate",
                 "/usr/local/include/"
             ],
             "defines": [
                 "__APPLE__",
-                "_DEBUG",
-                "CHALET_VERSION=\"0.0.0\"",
-                "CHALET_VERSION_MAJOR=0",
-                "CHALET_VERSION_MINOR=0",
-                "CHALET_VERSION_PATCH=0"
+                "_DEBUG"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -71,17 +67,15 @@
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/catch2/single_include",
                 "${workspaceFolder}/external",
-                "${workspaceFolder}/tests"
+                "${workspaceFolder}/tests",
+                "${workspaceFolder}/build/Debug",
+                "${workspaceFolder}/build/intermediate"
             ],
             "defines": [
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "CHALET_VERSION=\"0.0.0\"",
-                "CHALET_VERSION_MAJOR=0",
-                "CHALET_VERSION_MINOR=0",
-                "CHALET_VERSION_PATCH=0"
+                "_UNICODE"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",
@@ -100,17 +94,15 @@
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/catch2/single_include",
                 "${workspaceFolder}/external",
-                "${workspaceFolder}/tests"
+                "${workspaceFolder}/tests",
+                "${workspaceFolder}/build/Debug",
+                "${workspaceFolder}/build/intermediate"
             ],
             "defines": [
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "CHALET_VERSION=\"0.0.0\"",
-                "CHALET_VERSION_MAJOR=0",
-                "CHALET_VERSION_MINOR=0",
-                "CHALET_VERSION_PATCH=0"
+                "_UNICODE"
             ],
             "cStandard": "c11",
             "cppStandard": "c++17",

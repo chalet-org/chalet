@@ -27,12 +27,6 @@
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
-			"defines": [
-				"CHALET_VERSION=\"${version}\"",
-				"CHALET_VERSION_MAJOR=${versionMajor}",
-				"CHALET_VERSION_MINOR=${versionMinor}",
-				"CHALET_VERSION_PATCH=${versionPatch}"
-			],
 			"defines.debug": [
 				"_DEBUG",
 				"JSON_NOEXCEPTION"

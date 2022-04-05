@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(chalet-debug VERSION 0.3.5)
+project(chalet-debug
+	VERSION 0.3.5
+	DESCRIPTION "A JSON-based project & build tool"
+	HOMEPAGE_URL "https://www.chalet-work.space"
+	LANGUAGES CXX
+)
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 	message(FATAL_ERROR "Build must be Debug")
@@ -13,6 +18,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(TARGET_NAME chalet-debug)
+
+configure_file(src/ChaletConfig.hpp.in ${PROJECT_BINARY_DIR}/ChaletConfig.hpp)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 	set(CLANG ON)
@@ -50,14 +57,9 @@ file(GLOB_RECURSE TARGET_SOURCES
 	src/*.rc
 )
 
-message("CMAKE_PROJECT_VERSION = ${CMAKE_PROJECT_VERSION}")
 add_executable(${TARGET_NAME} ${TARGET_SOURCES})
 target_compile_definitions(${TARGET_NAME}
 	PRIVATE
-		CHALET_VERSION="${CMAKE_PROJECT_VERSION}"
-		CHALET_VERSION_MAJOR=${CMAKE_PROJECT_VERSION_MAJOR}
-		CHALET_VERSION_MINOR=${CMAKE_PROJECT_VERSION_MINOR}
-		CHALET_VERSION_PATCH=${CMAKE_PROJECT_VERSION_PATCH}
 		JSON_NOEXCEPTION
 		JSONSV_NOEXCEPTION
 )

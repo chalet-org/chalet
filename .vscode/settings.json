@@ -21,5 +21,11 @@
 	"chalet.statusBarButtons": false,
 	"cmake.revealLog": "never",
 	"cmake.statusbar.visibility": "hidden",
-	"cmake.configureOnOpen": false
+	"cmake.configureOnOpen": false,
+	"files.associations": {
+		"*.hpp.in": "cppin"
+	},
+	"[cppin]": {
+		"editor.formatOnSave": false
+	}
 }
