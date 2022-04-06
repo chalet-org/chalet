@@ -99,6 +99,10 @@ struct SourceTarget final : public IBuildTarget
 	void addFileExcludes(StringList&& inList);
 	void addFileExclude(std::string&& inValue);
 
+	const StringList& configureFiles() const noexcept;
+	void addConfigureFiles(StringList&& inList);
+	void addConfigureFile(std::string&& inValue);
+
 	const std::string& precompiledHeader() const noexcept;
 	void setPrecompiledHeader(std::string&& inValue) noexcept;
 	bool usesPrecompiledHeader() const noexcept;
@@ -196,6 +200,7 @@ private:
 	StringList m_files;
 	StringList m_headers;
 	StringList m_fileExcludes;
+	StringList m_configureFiles;
 
 	std::string m_warningsPresetString;
 	std::string m_outputFile;

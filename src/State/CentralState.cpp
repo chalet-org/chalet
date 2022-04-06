@@ -13,6 +13,7 @@
 
 #include "Core/DotEnvFileParser.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -395,8 +396,8 @@ void CentralState::replaceVariablesInPath(std::string& outPath, const std::strin
 	const auto& externalDir = m_inputs.externalDirectory();
 	const auto& cwd = m_inputs.workingDirectory();
 	const auto& homeDirectory = m_inputs.homeDirectory();
-	const auto& versionString = workspace.versionString();
-	const auto& version = workspace.version();
+	const auto& versionString = workspace.metadata().versionString();
+	const auto& version = workspace.metadata().version();
 
 	if (!cwd.empty())
 		String::replaceAll(outPath, "${cwd}", cwd);

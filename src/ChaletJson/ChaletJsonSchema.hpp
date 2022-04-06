@@ -15,6 +15,14 @@ class ChaletJsonSchema
 	enum class Defs : ushort
 	{
 		//
+		WorkspaceName,
+		WorkspaceVersion,
+		WorkspaceDescription,
+		WorkspaceHomepage,
+		WorkspaceAuthor,
+		WorkspaceLicense,
+		WorkspaceReadme,
+		//
 		Configuration,
 		ConfigurationDebugSymbols,
 		ConfigurationEnableProfiling,
@@ -80,6 +88,7 @@ class ChaletJsonSchema
 		TargetSourceExtends,
 		TargetSourceFiles,
 		TargetSourceLanguage,
+		TargetSourceConfigureFiles,
 		//
 		TargetSourceCxx,
 		TargetSourceCxxCStandard,

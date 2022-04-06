@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/TargetMetadata.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -83,6 +84,9 @@ bool CentralChaletJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) 
 	if (!parseRoot(inNode))
 		return false;
 
+	if (!parseMetadata(inNode))
+		return false;
+
 	if (!parseDefaultConfigurations(inNode))
 		return false;
 
@@ -115,11 +119,7 @@ bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_string())
 		{
-			if (String::equals("workspace", key))
-				m_centralState.workspace.setWorkspaceName(value.get<std::string>());
-			else if (String::equals("version", key))
-				m_centralState.workspace.setVersion(value.get<std::string>());
-			else if (String::equals("searchPaths", key))
+			if (String::equals("searchPaths", key))
 				m_centralState.workspace.addSearchPath(value.get<std::string>());
 		}
 		else if (value.is_array())
@@ -129,6 +129,36 @@ bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
 				m_centralState.workspace.addSearchPaths(std::move(val));
 		}
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
+{
+	auto metadata = std::make_shared<TargetMetadata>();
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals("workspace", key))
+				metadata->setName(value.get<std::string>());
+			else if (String::equals("version", key))
+				metadata->setVersion(value.get<std::string>());
+			else if (String::equals("description", key))
+				metadata->setDescription(value.get<std::string>());
+			else if (String::equals("homepage", key))
+				metadata->setHomepage(value.get<std::string>());
+			else if (String::equals("author", key))
+				metadata->setAuthor(value.get<std::string>());
+			else if (String::equals("license", key))
+				metadata->setLicense(value.get<std::string>());
+			else if (String::equals("readme", key))
+				metadata->setReadme(value.get<std::string>());
+		}
+	}
+
+	m_centralState.workspace.setMetadata(std::move(metadata));
 
 	return true;
 }

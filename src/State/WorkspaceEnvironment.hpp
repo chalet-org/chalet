@@ -10,20 +10,17 @@
 
 namespace chalet
 {
+struct TargetMetadata;
 class BuildState;
 
 struct WorkspaceEnvironment
 {
-	WorkspaceEnvironment() = default;
+	WorkspaceEnvironment();
 
 	bool initialize(const BuildState& inPaths);
 
-	const std::string& workspaceName() const noexcept;
-	void setWorkspaceName(std::string&& inValue) noexcept;
-
-	const std::string& versionString() const noexcept;
-	void setVersion(std::string&& inValue) noexcept;
-	const Version& version() const noexcept;
+	const TargetMetadata& metadata() const noexcept;
+	void setMetadata(Shared<TargetMetadata>&& inValue);
 
 	const StringList& searchPaths() const noexcept;
 	void addSearchPaths(StringList&& inList);
@@ -34,10 +31,7 @@ struct WorkspaceEnvironment
 private:
 	StringList m_searchPaths;
 
-	std::string m_workspaceName;
-	std::string m_versionString;
-
-	Version m_version;
+	Shared<TargetMetadata> m_metadata;
 };
 }
 

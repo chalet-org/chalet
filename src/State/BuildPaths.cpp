@@ -122,34 +122,34 @@ const std::string& BuildPaths::outputDirectory() const noexcept
 	return m_state.inputs.outputDirectory();
 }
 
-const std::string& BuildPaths::buildOutputDir() const noexcept
+const std::string& BuildPaths::buildOutputDir() const
 {
 	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_buildOutputDir;
 }
 
-const std::string& BuildPaths::objDir() const noexcept
+const std::string& BuildPaths::objDir() const
 {
 	chalet_assert(!m_objDir.empty(), "BuildPaths::objDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_objDir;
 }
 
-const std::string& BuildPaths::depDir() const noexcept
+const std::string& BuildPaths::depDir() const
 {
 	chalet_assert(!m_depDir.empty(), "BuildPaths::depDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_depDir;
 }
 
-const std::string& BuildPaths::asmDir() const noexcept
+const std::string& BuildPaths::asmDir() const
 {
 	chalet_assert(!m_asmDir.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
 	return m_asmDir;
 }
 
-const std::string& BuildPaths::intermediateDir() const noexcept
+std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 {
 	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
-	return m_intermediateDir;
+	return fmt::format("{}/{}", m_intermediateDir, inProject.name());
 }
 
 /*****************************************************************************/
@@ -251,12 +251,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	ret->directories.push_back(m_buildOutputDir);
 	ret->directories.push_back(objDir());
 
-	if (m_state.toolchain.canCompilerWindowsResources())
-	{
-		// so far, intermediateDir is just used with resource files
-		if (!inProject.isStaticLibrary())
-			ret->directories.push_back(m_intermediateDir);
-	}
+	ret->directories.push_back(intermediateDir(inProject));
 
 	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
@@ -347,7 +342,7 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 			auto outputFile = inProject.outputFileNoPrefix();
 
 			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-			return fmt::format("{}/{}.manifest", intermediateDir(), outputFile);
+			return fmt::format("{}/{}.manifest", intermediateDir(inProject), outputFile);
 
 			// return fmt::format("{}/default.manifest", intermediateDir());
 		}
@@ -372,7 +367,7 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 		else*/
 		{
 			const auto& name = inProject.name();
-			return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
+			return fmt::format("{}/manifest.rc", intermediateDir(inProject), name);
 		}
 	}
 
@@ -386,7 +381,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 	{
 		const auto& name = inProject.name();
 
-		return fmt::format("{}/{}_win32_icon.rc", intermediateDir(), name);
+		return fmt::format("{}/icon.rc", intermediateDir(inProject), name);
 	}
 
 	return std::string();
@@ -651,10 +646,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 			List::addIfDoesNotExist(ret, std::move(outPath));
 		}
 
-		if (m_state.toolchain.canCompilerWindowsResources())
-		{
-			List::addIfDoesNotExist(ret, intermediateDir());
-		}
+		List::addIfDoesNotExist(ret, intermediateDir(inProject));
 
 		return ret;
 	}

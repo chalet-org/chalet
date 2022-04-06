@@ -3,11 +3,48 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"version",
 		"workspace",
+		"version",
 		"targets"
 	],
 	"definitions": {
+		"workspace": {
+			"type": "string",
+			"description": "A name to describe the entire workspace.",
+			"minLength": 1,
+			"pattern": "^[\\w\\-+ ]+$"
+		},
+		"workspace-version": {
+			"type": "string",
+			"description": "A version to give to the entire workspace.",
+			"minLength": 1,
+			"pattern": "^((\\d+\\.){1,3})?\\d+$"
+		},
+		"workspace-description": {
+			"type": "string",
+			"description": "A description for the workspace.",
+			"minLength": 1
+		},
+		"workspace-homepage": {
+			"type": "string",
+			"description": "A homepage URL for the workspace.",
+			"minLength": 1
+		},
+		"workspace-author": {
+			"type": "string",
+			"description": "An individual or business entity involved in creating or maintaining the workspace.",
+			"minLength": 1
+		},
+		"workspace-license": {
+			"type": "string",
+			"description": "A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
+			"minLength": 1
+		},
+		"workspace-readme": {
+			"type": "string",
+			"description": "A path to the readme file of the workspace.",
+			"minLength": 1
+		},
 		"configuration": {
 			"type": "object",
 			"description": "Properties to describe a single build configuration type.",
@@ -830,6 +867,9 @@
 				"files": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"configureFiles": {
+					"$ref": "#/definitions/target-source-configureFiles"
+				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
@@ -860,6 +900,9 @@
 				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"^configureFiles(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-configureFiles"
+				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
@@ -887,6 +930,9 @@
 				"files": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"configureFiles": {
+					"$ref": "#/definitions/target-source-configureFiles"
+				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
@@ -910,6 +956,9 @@
 			"patternProperties": {
 				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
+				},
+				"^configureFiles(\\.!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -1031,6 +1080,24 @@
 				"Objective-C++"
 			],
 			"default": "C++"
+		},
+		"target-source-configureFiles": {
+			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}. They will be replaced with the variables' value, or an empty string if not recognized.\nCMAKE PROJECT_ variables are supported.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx": {
 			"type": "object",
@@ -2476,6 +2543,27 @@
 		}
 	},
 	"properties": {
+		"workspace": {
+			"$ref": "#/definitions/workspace"
+		},
+		"version": {
+			"$ref": "#/definitions/workspace-version"
+		},
+		"description": {
+			"$ref": "#/definitions/workspace-description"
+		},
+		"homepage": {
+			"$ref": "#/definitions/workspace-homepage"
+		},
+		"author": {
+			"$ref": "#/definitions/workspace-author"
+		},
+		"license": {
+			"$ref": "#/definitions/workspace-license"
+		},
+		"readme": {
+			"$ref": "#/definitions/workspace-readme"
+		},
 		"abstracts": {
 			"type": "object",
 			"additionalProperties": false,
@@ -2728,18 +2816,6 @@
 					}
 				}
 			}
-		},
-		"version": {
-			"type": "string",
-			"description": "Version of the workspace project.",
-			"minLength": 1,
-			"pattern": "^((\\d+\\.){1,3})?\\d+$"
-		},
-		"workspace": {
-			"type": "string",
-			"description": "The name of the workspace.",
-			"minLength": 1,
-			"pattern": "^[\\w\\-+ ]+$"
 		}
 	},
 	"patternProperties": {

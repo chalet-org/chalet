@@ -22,11 +22,11 @@ struct BuildPaths
 
 	const std::string& rootDirectory() const noexcept;
 	const std::string& outputDirectory() const noexcept;
-	const std::string& buildOutputDir() const noexcept;
-	const std::string& objDir() const noexcept;
-	const std::string& depDir() const noexcept;
-	const std::string& asmDir() const noexcept;
-	const std::string& intermediateDir() const noexcept;
+	const std::string& buildOutputDir() const;
+	const std::string& objDir() const;
+	const std::string& depDir() const;
+	const std::string& asmDir() const;
+	std::string intermediateDir(const SourceTarget& inProject) const;
 	StringList buildDirectories() const;
 
 	const StringList& allFileExtensions() const noexcept;

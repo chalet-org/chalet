@@ -21,6 +21,7 @@
 #include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -159,7 +160,7 @@ bool Router::routeConfigure(BuildState& inState)
 	if (addLineBreak)
 		Output::lineBreak();
 
-	Output::msgConfigureCompleted(inState.workspace.workspaceName());
+	Output::msgConfigureCompleted(inState.workspace.metadata().name());
 	Output::lineBreak();
 
 	return true;

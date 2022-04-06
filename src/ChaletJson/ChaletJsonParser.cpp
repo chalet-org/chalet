@@ -406,6 +406,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFile(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
+				outTarget.addConfigureFile(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
@@ -416,6 +418,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFiles(std::move(val));
+			else if (valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
+				outTarget.addConfigureFiles(std::move(val));
 		}
 	}
 

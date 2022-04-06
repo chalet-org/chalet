@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -459,7 +460,7 @@ std::string CodeBlocksProjectExporter::getWorkspaceContent(const BuildState& inS
 		}
 	}
 
-	const auto& workspaceName = inState.workspace.workspaceName();
+	const auto& workspaceName = inState.workspace.metadata().name();
 	ret = fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
 	<Workspace title="{workspaceName}">{projects}

@@ -8,6 +8,7 @@
 #include "Libraries/FileSystem.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -17,6 +18,12 @@
 
 namespace chalet
 {
+/*****************************************************************************/
+WorkspaceEnvironment::WorkspaceEnvironment() :
+	m_metadata(std::make_shared<TargetMetadata>())
+{
+}
+
 /*****************************************************************************/
 bool WorkspaceEnvironment::initialize(const BuildState& inState)
 {
@@ -38,43 +45,20 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 		Environment::setPath(pathVar);
 	}
 
-	if (!m_versionString.empty())
-	{
-		if (!m_version.setFromString(m_versionString))
-		{
-			Diagnostic::error("The supplied workspace version was invalid.");
-			return false;
-		}
-	}
+	if (!m_metadata->initialize())
+		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-const std::string& WorkspaceEnvironment::workspaceName() const noexcept
+const TargetMetadata& WorkspaceEnvironment::metadata() const noexcept
 {
-	return m_workspaceName;
+	return *m_metadata;
 }
-
-void WorkspaceEnvironment::setWorkspaceName(std::string&& inValue) noexcept
+void WorkspaceEnvironment::setMetadata(Shared<TargetMetadata>&& inValue)
 {
-	m_workspaceName = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& WorkspaceEnvironment::versionString() const noexcept
-{
-	return m_versionString;
-}
-
-void WorkspaceEnvironment::setVersion(std::string&& inValue) noexcept
-{
-	m_versionString = std::move(inValue);
-}
-
-const Version& WorkspaceEnvironment::version() const noexcept
-{
-	return m_version;
+	m_metadata = std::move(inValue);
 }
 
 /*****************************************************************************/

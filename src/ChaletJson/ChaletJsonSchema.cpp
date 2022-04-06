@@ -39,6 +39,53 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	DefinitionMap defs;
 
 	//
+	// workspace metadata / root
+	//
+	defs[Defs::WorkspaceName] = R"json({
+		"type": "string",
+		"description": "A name to describe the entire workspace.",
+		"minLength": 1,
+		"pattern": "^[\\w\\-+ ]+$"
+	})json"_ojson;
+
+	defs[Defs::WorkspaceVersion] = R"json({
+		"type": "string",
+		"description": "A version to give to the entire workspace.",
+		"minLength": 1
+	})json"_ojson;
+	defs[Defs::WorkspaceVersion][SKeys::Pattern] = kPatternVersion;
+
+	defs[Defs::WorkspaceDescription] = R"json({
+		"type": "string",
+		"description": "A description for the workspace.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::WorkspaceHomepage] = R"json({
+		"type": "string",
+		"description": "A homepage URL for the workspace.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::WorkspaceAuthor] = R"json({
+		"type": "string",
+		"description": "An individual or business entity involved in creating or maintaining the workspace.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::WorkspaceLicense] = R"json({
+		"type": "string",
+		"description": "A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::WorkspaceReadme] = R"json({
+		"type": "string",
+		"description": "A path to the readme file of the workspace.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
 	// configurations
 	//
 	defs[Defs::ConfigurationDebugSymbols] = R"json({
@@ -554,6 +601,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		],
 		"default": "C++"
 	})json"_ojson;
+
+	defs[Defs::TargetSourceConfigureFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}. They will be replaced with the variables' value, or an empty string if not recognized.\nCMAKE PROJECT_ variables are supported.",
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
@@ -1463,6 +1516,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
 		targetSource[SKeys::Properties]["extends"] = getDefinition(Defs::TargetSourceExtends);
 		targetSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
+		targetSource[SKeys::Properties]["configureFiles"] = getDefinition(Defs::TargetSourceConfigureFiles);
 		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
 		targetSource[SKeys::Properties]["settings"] = R"json({
@@ -1473,6 +1527,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceFiles);
+		targetSource[SKeys::PatternProperties][fmt::format("^configureFiles{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetSourceConfigureFiles);
 		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternConditionPlatforms)] = getDefinition(Defs::TargetOutputDescription);
 		defs[Defs::TargetSourceLibrary] = std::move(targetSource);
 
@@ -1610,6 +1665,14 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 {
 	switch (inDef)
 	{
+		case Defs::WorkspaceName: return "workspace";
+		case Defs::WorkspaceVersion: return "workspace-version";
+		case Defs::WorkspaceDescription: return "workspace-description";
+		case Defs::WorkspaceHomepage: return "workspace-homepage";
+		case Defs::WorkspaceAuthor: return "workspace-author";
+		case Defs::WorkspaceLicense: return "workspace-license";
+		case Defs::WorkspaceReadme: return "workspace-readme";
+		//
 		case Defs::Configuration: return "configuration";
 		case Defs::ConfigurationDebugSymbols: return "configuration-debugSymbols";
 		case Defs::ConfigurationEnableProfiling: return "configuration-enableProfiling";
@@ -1669,6 +1732,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";
 		case Defs::TargetSourceLanguage: return "target-source-language";
+		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
 		//
 		case Defs::TargetAbstract: return "target-abstract";
 		case Defs::TargetSourceExecutable: return "target-source-executable";
@@ -1788,8 +1852,8 @@ Json ChaletJsonSchema::get()
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
-		"version",
 		"workspace",
+		"version",
 		"targets"
 	};
 
@@ -1809,6 +1873,14 @@ Json ChaletJsonSchema::get()
 	//
 	ret[SKeys::Properties] = Json::object();
 	ret[SKeys::PatternProperties] = Json::object();
+
+	ret[SKeys::Properties]["workspace"] = getDefinition(Defs::WorkspaceName);
+	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+	ret[SKeys::Properties]["description"] = getDefinition(Defs::WorkspaceDescription);
+	ret[SKeys::Properties]["homepage"] = getDefinition(Defs::WorkspaceHomepage);
+	ret[SKeys::Properties]["author"] = getDefinition(Defs::WorkspaceAuthor);
+	ret[SKeys::Properties]["license"] = getDefinition(Defs::WorkspaceLicense);
+	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
 
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";
@@ -1939,20 +2011,6 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetScript);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetProcess);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-
-	ret[SKeys::Properties]["version"] = R"json({
-		"type": "string",
-		"description": "Version of the workspace project.",
-		"minLength": 1
-	})json"_ojson;
-	ret[SKeys::Properties]["version"][SKeys::Pattern] = kPatternVersion;
-
-	ret[SKeys::Properties]["workspace"] = R"json({
-		"type": "string",
-		"description": "The name of the workspace.",
-		"minLength": 1,
-		"pattern": "^[\\w\\-+ ]+$"
-	})json"_ojson;
 
 	return ret;
 }

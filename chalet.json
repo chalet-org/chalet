@@ -1,6 +1,11 @@
 {
-	"version": "0.3.5",
 	"workspace": "Chalet",
+	"version": "0.3.5",
+	"description": "cool app",
+	"homepage": "https://www.chalet-work.space",
+	"author": "Cosmic Road Interactive, LLC.",
+	"license": "BSD-3-Clause",
+	"readme": "README.md",
 	// "searchPaths": [],
 	/*"defaultConfigurations": [
 		"Release",
@@ -53,7 +58,8 @@
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": "src"
 			},
-			"files": "src/**.{cpp,rc}"
+			"files": "src/**.{cpp,rc}",
+			"configureFiles": "src/ChaletConfig.hpp.in"
 		},
 		"tests": {
 			"kind": "executable",

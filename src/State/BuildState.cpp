@@ -22,6 +22,7 @@
 #include "State/Dependency/IBuildDependency.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -311,11 +312,8 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			project.parseOutputFilename();
 
-			if (toolchain.canCompilerWindowsResources())
-			{
-				std::string intermediateDir = paths.intermediateDir();
-				project.addIncludeDir(std::move(intermediateDir));
-			}
+			std::string intermediateDir = paths.intermediateDir(project);
+			project.addIncludeDir(std::move(intermediateDir));
 
 			if (inputs.route() != Route::Export)
 			{
@@ -841,8 +839,8 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const std::string&
 	const auto& cwd = inputs.workingDirectory();
 	const auto& homeDirectory = inputs.homeDirectory();
 	const auto& buildDir = paths.buildOutputDir();
-	const auto& versionString = workspace.versionString();
-	const auto& version = workspace.version();
+	const auto& versionString = workspace.metadata().versionString();
+	const auto& version = workspace.metadata().version();
 
 	if (!cwd.empty())
 		String::replaceAll(outPath, "${cwd}", cwd);

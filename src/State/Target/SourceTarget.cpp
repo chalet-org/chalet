@@ -57,7 +57,9 @@ bool SourceTarget::initialize()
 		Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
 	});
 
-	replaceVariablesInPathList(m_defines);
+	replaceVariablesInPathList(m_defines); // TODO: remove?
+
+	replaceVariablesInPathList(m_configureFiles);
 
 	const auto& targetName = this->name();
 	m_state.replaceVariablesInPath(m_precompiledHeader, targetName);
@@ -141,6 +143,24 @@ bool SourceTarget::validate()
 		{
 			Diagnostic::error("Precompiled header '{}' was not found.", pch);
 			result = false;
+		}
+	}
+
+	if (m_configureFiles.size() > 1)
+	{
+		StringList tmpList;
+		for (const auto& configureFile : m_configureFiles)
+		{
+			auto file = String::getPathFilename(configureFile);
+			if (!List::contains(tmpList, file))
+			{
+				tmpList.push_back(std::move(file));
+			}
+			else
+			{
+				Diagnostic::error("Configure files in the same source target must have unique names. Found more than one: {}", file);
+				result = false;
+			}
 		}
 	}
 
@@ -558,6 +578,22 @@ void SourceTarget::addFileExcludes(StringList&& inList)
 void SourceTarget::addFileExclude(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_fileExcludes, std::move(inValue));
+}
+
+/*****************************************************************************/
+const StringList& SourceTarget::configureFiles() const noexcept
+{
+	return m_configureFiles;
+}
+
+void SourceTarget::addConfigureFiles(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addConfigureFile);
+}
+
+void SourceTarget::addConfigureFile(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_configureFiles, std::move(inValue));
 }
 
 /*****************************************************************************/

@@ -40,6 +40,7 @@ private:
 	bool serializeRequiredFromJsonRoot(const Json& inNode) const;
 
 	bool parseRoot(const Json& inNode) const;
+	bool parseMetadata(const Json& inNode) const;
 
 	bool parseDefaultConfigurations(const Json& inNode) const;
 	bool parseConfigurations(const Json& inNode) const;
