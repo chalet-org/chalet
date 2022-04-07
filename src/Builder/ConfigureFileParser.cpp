@@ -83,8 +83,12 @@ bool ConfigureFileParser::run()
 		auto outPath = fmt::format("{}/{}", outFolder, outFile);
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
-		if (configFileChanged || metadataChanged || !Commands::pathExists(outPath))
+		bool pathExists = Commands::pathExists(outPath);
+		if (configFileChanged || metadataChanged || !pathExists)
 		{
+			if (pathExists)
+				Commands::remove(outPath);
+
 			if (!Commands::copyRename(configureFile, outPath, true))
 			{
 				Diagnostic::error("There was a problem copying the file: {}", configureFile);
