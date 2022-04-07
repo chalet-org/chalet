@@ -17,6 +17,7 @@
 
 namespace chalet
 {
+struct TargetMetadata;
 class BuildState;
 
 struct SourceTarget final : public IBuildTarget
@@ -29,6 +30,10 @@ struct SourceTarget final : public IBuildTarget
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;
 	bool isStaticLibrary() const noexcept;
+
+	bool hasMetadata() const noexcept;
+	const TargetMetadata& metadata() const noexcept;
+	void setMetadata(Shared<TargetMetadata>&& inValue);
 
 	const StringList& defines() const noexcept;
 	void addDefines(StringList&& inList);
@@ -184,6 +189,8 @@ private:
 	StringList getWarningPreset();
 	ProjectWarningPresets parseWarnings(const std::string& inValue);
 	StringList parseCommandLineOptions(std::string inString) const;
+
+	Shared<TargetMetadata> m_metadata;
 
 	StringList m_defines;
 	StringList m_links;

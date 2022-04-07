@@ -90,6 +90,15 @@ class ChaletJsonSchema
 		TargetSourceLanguage,
 		TargetSourceConfigureFiles,
 		//
+		TargetSourceMetadata,
+		TargetSourceMetadataName,
+		TargetSourceMetadataVersion,
+		TargetSourceMetadataDescription,
+		TargetSourceMetadataHomepage,
+		TargetSourceMetadataAuthor,
+		TargetSourceMetadataLicense,
+		TargetSourceMetadataReadme,
+		//
 		TargetSourceCxx,
 		TargetSourceCxxCStandard,
 		TargetSourceCxxCppStandard,

@@ -22,6 +22,7 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
@@ -448,6 +449,16 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		}
 	}
 
+	{
+		const auto metadata{ "metadata" };
+		if (inNode.contains(metadata))
+		{
+			const Json& node = inNode.at(metadata);
+			if (!parseSourceTargetMetadata(outTarget, node))
+				return false;
+		}
+	}
+
 	return true;
 }
 
@@ -800,6 +811,42 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 					outTarget.addIncludeDirs(std::move(val));
 			}
 		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const
+{
+	auto metadata = std::make_shared<TargetMetadata>();
+	bool hasMetadata = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			hasMetadata = true;
+
+			if (String::equals("name", key))
+				metadata->setName(value.get<std::string>());
+			else if (String::equals("version", key))
+				metadata->setVersion(value.get<std::string>());
+			else if (String::equals("description", key))
+				metadata->setDescription(value.get<std::string>());
+			else if (String::equals("homepage", key))
+				metadata->setHomepage(value.get<std::string>());
+			else if (String::equals("author", key))
+				metadata->setAuthor(value.get<std::string>());
+			else if (String::equals("license", key))
+				metadata->setLicense(value.get<std::string>());
+			else if (String::equals("readme", key))
+				metadata->setReadme(value.get<std::string>());
+		}
+	}
+
+	if (hasMetadata)
+	{
+		outTarget.setMetadata(std::move(metadata));
 	}
 
 	return true;

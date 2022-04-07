@@ -8,6 +8,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -111,6 +112,12 @@ bool SourceTarget::initialize()
 				itr = m_files.erase(itr);
 			}
 		}
+	}
+
+	if (m_metadata != nullptr)
+	{
+		if (!m_metadata->initialize())
+			return false;
 	}
 
 	return true;
@@ -217,6 +224,21 @@ bool SourceTarget::isSharedLibrary() const noexcept
 bool SourceTarget::isStaticLibrary() const noexcept
 {
 	return m_kind == SourceKind::StaticLibrary;
+}
+
+/*****************************************************************************/
+bool SourceTarget::hasMetadata() const noexcept
+{
+	return m_metadata != nullptr;
+}
+const TargetMetadata& SourceTarget::metadata() const noexcept
+{
+	chalet_assert(m_metadata != nullptr, "metadata() accessed w/o data");
+	return *m_metadata;
+}
+void SourceTarget::setMetadata(Shared<TargetMetadata>&& inValue)
+{
+	m_metadata = std::move(inValue);
 }
 
 /*****************************************************************************/

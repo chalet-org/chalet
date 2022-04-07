@@ -608,6 +608,53 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	//
+	// workspace metadata / root
+	//
+	defs[Defs::TargetSourceMetadataName] = R"json({
+		"type": "string",
+		"description": "A name to describe the build target.",
+		"minLength": 1,
+		"pattern": "^[\\w\\-+ ]+$"
+	})json"_ojson;
+
+	defs[Defs::TargetSourceMetadataVersion] = R"json({
+		"type": "string",
+		"description": "A version to give to the build target.",
+		"minLength": 1
+	})json"_ojson;
+	defs[Defs::TargetSourceMetadataVersion][SKeys::Pattern] = kPatternVersion;
+
+	defs[Defs::TargetSourceMetadataDescription] = R"json({
+		"type": "string",
+		"description": "A description for the build target.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetSourceMetadataHomepage] = R"json({
+		"type": "string",
+		"description": "A homepage URL for the build target.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetSourceMetadataAuthor] = R"json({
+		"type": "string",
+		"description": "An individual or business entity involved in creating or maintaining the build target.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetSourceMetadataLicense] = R"json({
+		"type": "string",
+		"description": "A license identifier or text file path that describes how people are permitted or restricted to use this build target.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetSourceMetadataReadme] = R"json({
+		"type": "string",
+		"description": "A path to the readme file of the build target.",
+		"minLength": 1
+	})json"_ojson;
+
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
@@ -1487,6 +1534,22 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	{
+		auto sourceMetadata = R"json({
+			"type": "object",
+			"additionalProperties": false
+		})json"_ojson;
+		sourceMetadata[SKeys::Properties]["author"] = getDefinition(Defs::TargetSourceMetadataAuthor);
+		sourceMetadata[SKeys::Properties]["description"] = getDefinition(Defs::TargetSourceMetadataDescription);
+		sourceMetadata[SKeys::Properties]["homepage"] = getDefinition(Defs::TargetSourceMetadataHomepage);
+		sourceMetadata[SKeys::Properties]["license"] = getDefinition(Defs::TargetSourceMetadataLicense);
+		sourceMetadata[SKeys::Properties]["name"] = getDefinition(Defs::TargetSourceMetadataName);
+		sourceMetadata[SKeys::Properties]["readme"] = getDefinition(Defs::TargetSourceMetadataReadme);
+		sourceMetadata[SKeys::Properties]["version"] = getDefinition(Defs::TargetSourceMetadataVersion);
+
+		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
+	}
+
+	{
 		auto abstractSource = R"json({
 			"type": "object",
 			"additionalProperties": false
@@ -1519,6 +1582,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		targetSource[SKeys::Properties]["configureFiles"] = getDefinition(Defs::TargetSourceConfigureFiles);
 		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		targetSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
+		targetSource[SKeys::Properties]["metadata"] = getDefinition(Defs::TargetSourceMetadata);
 		targetSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
 			"description": "Settings for each language",
@@ -1738,6 +1802,15 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceExecutable: return "target-source-executable";
 		case Defs::TargetSourceLibrary: return "target-source-library";
 		//
+		case Defs::TargetSourceMetadata: return "target-source-metadata";
+		case Defs::TargetSourceMetadataName: return "target-source-metadata-name";
+		case Defs::TargetSourceMetadataVersion: return "target-source-metadata-version";
+		case Defs::TargetSourceMetadataDescription: return "target-source-metadata-description";
+		case Defs::TargetSourceMetadataHomepage: return "target-source-metadata-homepage";
+		case Defs::TargetSourceMetadataAuthor: return "target-source-metadata-author";
+		case Defs::TargetSourceMetadataLicense: return "target-source-metadata-license";
+		case Defs::TargetSourceMetadataReadme: return "target-source-metadata-readme";
+		//
 		case Defs::TargetSourceCxx: return "target-source-cxx";
 		case Defs::TargetSourceCxxCStandard: return "target-source-cxx-cStandard";
 		case Defs::TargetSourceCxxCppStandard: return "target-source-cxx-cppStandard";
@@ -1874,13 +1947,13 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties] = Json::object();
 	ret[SKeys::PatternProperties] = Json::object();
 
-	ret[SKeys::Properties]["workspace"] = getDefinition(Defs::WorkspaceName);
-	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+	ret[SKeys::Properties]["author"] = getDefinition(Defs::WorkspaceAuthor);
 	ret[SKeys::Properties]["description"] = getDefinition(Defs::WorkspaceDescription);
 	ret[SKeys::Properties]["homepage"] = getDefinition(Defs::WorkspaceHomepage);
-	ret[SKeys::Properties]["author"] = getDefinition(Defs::WorkspaceAuthor);
 	ret[SKeys::Properties]["license"] = getDefinition(Defs::WorkspaceLicense);
 	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
+	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+	ret[SKeys::Properties]["workspace"] = getDefinition(Defs::WorkspaceName);
 
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";

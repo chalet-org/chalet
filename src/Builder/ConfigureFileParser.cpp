@@ -139,30 +139,66 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 	// LOG(inKey);
 	UNUSED(isTarget);
 
+	bool targetMetaData = isTarget && m_project.hasMetadata();
+	const auto& workspaceMeta = m_state.workspace.metadata();
 	if (String::equals("NAME", inKey))
-		return m_project.name();
-
-	const auto& metadata = m_state.workspace.metadata();
+	{
+		if (targetMetaData && !m_project.metadata().name().empty())
+			return m_project.metadata().name();
+		else
+			return workspaceMeta.name();
+	}
 
 	if (String::equals("DESCRIPTION", inKey))
-		return metadata.description();
+	{
+		if (targetMetaData && !m_project.metadata().description().empty())
+			return m_project.metadata().description();
+		else
+			return workspaceMeta.description();
+	}
 
 	if (String::equals("HOMEPAGE_URL", inKey))
-		return metadata.homepage();
+	{
+		if (targetMetaData && !m_project.metadata().homepage().empty())
+			return m_project.metadata().homepage();
+		else
+			return workspaceMeta.homepage();
+	}
 
 	if (String::equals("AUTHOR", inKey))
-		return metadata.author();
+	{
+		if (targetMetaData && !m_project.metadata().author().empty())
+			return m_project.metadata().author();
+		else
+			return workspaceMeta.author();
+	}
 
 	if (String::equals("LICENSE", inKey))
-		return metadata.license();
+	{
+		if (targetMetaData && !m_project.metadata().license().empty())
+			return m_project.metadata().license();
+		else
+			return workspaceMeta.license();
+	}
 
 	if (String::equals("README", inKey))
-		return metadata.readme();
+	{
+		if (targetMetaData && !m_project.metadata().readme().empty())
+			return m_project.metadata().readme();
+		else
+			return workspaceMeta.readme();
+	}
 
+	bool versionAvailable = targetMetaData && !m_project.metadata().versionString().empty();
 	if (String::equals("VERSION", inKey))
-		return metadata.versionString();
+	{
+		if (versionAvailable)
+			return m_project.metadata().versionString();
+		else
+			return workspaceMeta.versionString();
+	}
 
-	const auto& version = metadata.version();
+	const auto& version = versionAvailable ? m_project.metadata().version() : workspaceMeta.version();
 
 	if (String::equals("VERSION_MAJOR", inKey) && version.hasMajor())
 		return std::to_string(version.major());

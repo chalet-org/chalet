@@ -47,6 +47,7 @@ private:
 	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const;
+	bool parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;

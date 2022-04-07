@@ -386,7 +386,20 @@ void BuildState::initializeCache()
 	m_impl->centralState.cache.saveSettings(SettingsType::Local);
 	m_impl->centralState.cache.saveSettings(SettingsType::Global);
 
-	std::string metadataHash = workspace.metadata().getHash();
+	std::string metadataTemp = workspace.metadata().getHash();
+	for (auto& target : targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			if (project.hasMetadata())
+			{
+				metadataTemp += project.metadata().getHash();
+			}
+		}
+	}
+
+	auto metadataHash = Hash::string(metadataTemp);
 	m_impl->centralState.cache.file().checkForMetadataChange(metadataHash);
 }
 
