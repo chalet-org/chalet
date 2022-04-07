@@ -35,7 +35,10 @@ struct WorkspaceInternalCacheFile
 	bool buildFileChanged() const noexcept;
 
 	bool buildStrategyChanged(const StrategyType inStrategy);
-	bool buildStrategyChanged();
+	bool buildStrategyChanged() const;
+
+	void checkForMetadataChange(const std::string& inHash);
+	bool metadataChanged() const;
 
 	bool themeChanged() const noexcept;
 	void checkIfThemeChanged();
@@ -65,6 +68,7 @@ private:
 	std::string m_filename;
 	std::string m_buildHash;
 	std::string m_hashTheme;
+	std::string m_hashMetadata;
 	std::string m_hashVersion;
 	std::string m_hashVersionDebug;
 
@@ -77,6 +81,7 @@ private:
 	HeapDictionary<SourceCache> m_sourceCaches;
 
 	std::optional<bool> m_buildStrategyChanged;
+	std::optional<bool> m_metadataChanged;
 
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;

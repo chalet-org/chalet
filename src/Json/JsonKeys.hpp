@@ -122,6 +122,7 @@ CH_STR(HashBuild) = "b";
 CH_STR(HashTheme) = "t";
 CH_STR(HashVersionDebug) = "vd";
 CH_STR(HashVersionRelease) = "vr";
+CH_STR(HashMetadata) = "wm";
 CH_STR(HashExtra) = "e";
 CH_STR(LastChaletJsonWriteTime) = "c";
 CH_STR(Builds) = "d";

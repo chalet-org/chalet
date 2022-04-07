@@ -262,6 +262,9 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashVersionRelease))
 				m_hashVersion = std::move(val);
 
+			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashMetadata))
+				m_hashMetadata = std::move(val);
+
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashVersionDebug))
 				m_hashVersionDebug = std::move(val);
 
@@ -327,6 +330,9 @@ bool WorkspaceInternalCacheFile::save()
 
 		if (!m_hashVersion.empty())
 			rootNode[CacheKeys::Hashes][CacheKeys::HashVersionRelease] = m_hashVersion;
+
+		if (!m_hashMetadata.empty())
+			rootNode[CacheKeys::Hashes][CacheKeys::HashMetadata] = m_hashMetadata;
 
 		rootNode[CacheKeys::Hashes][CacheKeys::HashExtra] = Json::array();
 		for (auto& hash : m_extraHashes)
@@ -396,10 +402,28 @@ bool WorkspaceInternalCacheFile::buildStrategyChanged(const StrategyType inStrat
 	return result;
 }
 
-bool WorkspaceInternalCacheFile::buildStrategyChanged()
+bool WorkspaceInternalCacheFile::buildStrategyChanged() const
 {
 	if (m_buildStrategyChanged.has_value())
 		return *m_buildStrategyChanged;
+
+	return false;
+}
+
+/*****************************************************************************/
+void WorkspaceInternalCacheFile::checkForMetadataChange(const std::string& inHash)
+{
+	if (!m_metadataChanged.has_value())
+	{
+		m_metadataChanged = !String::equals(inHash, m_hashMetadata);
+		m_hashMetadata = inHash;
+	}
+}
+
+bool WorkspaceInternalCacheFile::metadataChanged() const
+{
+	if (m_metadataChanged.has_value())
+		return *m_metadataChanged;
 
 	return false;
 }

@@ -57,6 +57,8 @@ bool ConfigureFileParser::run()
 
 	auto& sources = m_state.cache.file().sources();
 
+	bool metadataChanged = m_state.cache.file().metadataChanged();
+
 	std::string suffix(".in");
 	auto outFolder = m_state.paths.intermediateDir(m_project);
 	for (const auto& configureFile : m_project.configureFiles())
@@ -81,7 +83,7 @@ bool ConfigureFileParser::run()
 		auto outPath = fmt::format("{}/{}", outFolder, outFile);
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
-		if (configFileChanged || !Commands::pathExists(outPath))
+		if (configFileChanged || metadataChanged || !Commands::pathExists(outPath))
 		{
 			if (!Commands::copyRename(configureFile, outPath, true))
 			{

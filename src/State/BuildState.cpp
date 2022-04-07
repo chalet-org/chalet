@@ -385,6 +385,9 @@ void BuildState::initializeCache()
 {
 	m_impl->centralState.cache.saveSettings(SettingsType::Local);
 	m_impl->centralState.cache.saveSettings(SettingsType::Global);
+
+	std::string metadataHash = workspace.metadata().getHash();
+	m_impl->centralState.cache.file().checkForMetadataChange(metadataHash);
 }
 
 /*****************************************************************************/
