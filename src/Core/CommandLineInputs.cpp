@@ -1138,10 +1138,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.type = ToolchainType::Unknown;
 	}
 
-	if (Environment::isContinuousIntegrationServer())
+	/*if (Environment::isContinuousIntegrationServer())
 	{
 		ret.strategy = StrategyType::Native;
-	}
+	}*/
 
 	return ret;
 }

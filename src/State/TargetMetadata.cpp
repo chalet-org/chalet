@@ -5,6 +5,8 @@
 
 #include "State/TargetMetadata.hpp"
 
+#include "Utility/Hash.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -94,6 +96,12 @@ const std::string& TargetMetadata::readme() const noexcept
 void TargetMetadata::setReadme(std::string&& inValue) noexcept
 {
 	m_readme = std::move(inValue);
+}
+
+/*****************************************************************************/
+std::string TargetMetadata::getHash() const
+{
+	return Hash::string(fmt::format("{}{}{}{}{}{}{}", m_versionString, m_name, m_description, m_homepage, m_author, m_license, m_readme));
 }
 
 }

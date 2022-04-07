@@ -57,7 +57,7 @@ bool SourceTarget::initialize()
 		Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
 	});
 
-	replaceVariablesInPathList(m_defines); // TODO: remove?
+	// replaceVariablesInPathList(m_defines); // TODO: remove?
 
 	replaceVariablesInPathList(m_configureFiles);
 

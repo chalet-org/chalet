@@ -59,6 +59,7 @@ private:
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
+	bool runConfigureFileParser(const SourceTarget& inProject);
 
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
 

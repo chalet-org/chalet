@@ -13,7 +13,7 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/intermediate/**",
+                "${workspaceFolder}/build/intermediate/chalet",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
@@ -44,7 +44,7 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/intermediate/**",
+                "${workspaceFolder}/build/intermediate/chalet",
                 "/usr/local/include/"
             ],
             "defines": [
@@ -69,7 +69,7 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/intermediate/**",
+                "${workspaceFolder}/build/intermediate/chalet"
             ],
             "defines": [
                 "_WIN32",
@@ -96,7 +96,7 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/intermediate/**",
+                "${workspaceFolder}/build/intermediate/chalet"
             ],
             "defines": [
                 "_WIN32",

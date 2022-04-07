@@ -7,6 +7,7 @@
 
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/CmakeBuilder.hpp"
+#include "Builder/ConfigureFileParser.hpp"
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
@@ -424,6 +425,12 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 			return false;
 	}
 
+	if (!inProject.configureFiles().empty())
+	{
+		if (!runConfigureFileParser(inProject))
+			return false;
+	}
+
 	return true;
 }
 
@@ -510,6 +517,13 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 {
 	ProfilerRunner profiler(m_state, inProject);
 	return profiler.run(inCommand, inExecutable);
+}
+
+/*****************************************************************************/
+bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
+{
+	ConfigureFileParser confFileParser(m_state, inProject);
+	return confFileParser.run();
 }
 
 /*****************************************************************************/
