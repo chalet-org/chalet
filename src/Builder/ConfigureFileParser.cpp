@@ -53,6 +53,9 @@ bool ConfigureFileParser::run()
 			std::string suffix = sm.suffix();
 			fileContents = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 		}
+
+		if (fileContents.back() != '\n')
+			fileContents += '\n';
 	};
 
 	auto& sources = m_state.cache.file().sources();
