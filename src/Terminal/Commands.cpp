@@ -1029,9 +1029,9 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	{
 		std::string noWork = fmt::format("ninja: no work to do.{}", cap.endlineReplace);
 		if (String::endsWith(noWork, cap.data))
-			Output::previousLine();
+			Output::previousLine(true);
 		else
-			Output::lineBreak();
+			Output::lineBreak(true);
 	}
 
 	return result == EXIT_SUCCESS;

@@ -45,9 +45,9 @@ std::string getAnsiStyleForceFormatting(const Color inColor, const Formatting in
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
 void resetStdout();
 void resetStderr();
-void lineBreak();
+void lineBreak(const bool inForce = false);
 void lineBreakStderr();
-void previousLine();
+void previousLine(const bool inForce = false);
 void print(const Color inColor, const std::string& inText);
 void print(const Color inColor, const StringList& inList);
 void printCommand(const std::string& inText);

@@ -312,9 +312,9 @@ void Output::resetStderr()
 }
 
 /*****************************************************************************/
-void Output::lineBreak()
+void Output::lineBreak(const bool inForce)
 {
-	if (!state.quietNonBuild)
+	if (!state.quietNonBuild || inForce)
 	{
 		auto reset = getAnsiStyle(Color::Reset);
 		std::cout.write(reset.data(), reset.size());
@@ -336,11 +336,15 @@ void Output::lineBreakStderr()
 }
 
 /*****************************************************************************/
-void Output::previousLine()
+void Output::previousLine(const bool inForce)
 {
-	if (!state.quietNonBuild)
+	if (!state.quietNonBuild || inForce)
 	{
-		auto prevLine = fmt::format("{}[F", getEscapeChar());
+		std::string eraser(80, ' ');
+		auto prevLine = fmt::format("{}[F{}", getEscapeChar(), eraser);
+		std::cout.write(prevLine.data(), prevLine.size());
+		std::cout.put(std::cout.widen('\n'));
+		prevLine = fmt::format("{}[F", getEscapeChar());
 		std::cout.write(prevLine.data(), prevLine.size());
 		std::cout.flush();
 	}
