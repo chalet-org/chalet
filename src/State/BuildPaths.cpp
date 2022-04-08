@@ -73,7 +73,7 @@ bool BuildPaths::initialize()
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 
-	m_intermediateDir = fmt::format("{}/intermediate", outputDirectory);
+	m_intermediateDir = fmt::format("{}/int", outputDirectory);
 
 	{
 		auto search = m_intermediateDir.find_first_not_of("./"); // if it's relative
@@ -149,7 +149,7 @@ const std::string& BuildPaths::asmDir() const
 std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 {
 	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
-	return fmt::format("{}/{}", m_intermediateDir, inProject.name());
+	return fmt::format("{}.{}", m_intermediateDir, inProject.buildSuffix());
 }
 
 /*****************************************************************************/
@@ -185,18 +185,9 @@ const std::string& BuildPaths::cxxExtension() const
 /*****************************************************************************/
 void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject)
 {
-	if (inProject.isSharedLibrary())
-	{
-		m_objDir = fmt::format("{}/obj.shared", m_buildOutputDir);
-		// m_depDir = fmt::format("{}/dep.shared", m_buildOutputDir);
-		m_asmDir = fmt::format("{}/asm.shared", m_buildOutputDir);
-	}
-	else
-	{
-		m_objDir = fmt::format("{}/obj", m_buildOutputDir);
-		// m_depDir = fmt::format("{}/dep", m_buildOutputDir);
-		m_asmDir = fmt::format("{}/asm", m_buildOutputDir);
-	}
+	m_objDir = fmt::format("{}/obj.{}", m_buildOutputDir, inProject.buildSuffix());
+	// m_depDir = fmt::format("{}/dep.{}", m_buildOutputDir, inProject.buildSuffix());
+	m_asmDir = fmt::format("{}/asm.{}", m_buildOutputDir, inProject.buildSuffix());
 
 	m_depDir = m_objDir;
 }

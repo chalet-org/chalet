@@ -177,9 +177,6 @@
 				"configuration": {
 					"$ref": "#/definitions/dist-configuration"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"exclude": {
 					"$ref": "#/definitions/dist-bundle-exclude"
 				},
@@ -269,6 +266,9 @@
 				},
 				"mainExecutable": {
 					"$ref": "#/definitions/dist-bundle-mainExecutable"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"subdirectory": {
 					"$ref": "#/definitions/dist-bundle-subdirectory"
@@ -364,14 +364,14 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
 				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				}
 			},
 			"patternProperties": {
@@ -391,14 +391,14 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"include": {
 					"$ref": "#/definitions/dist-archive-include"
 				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				}
 			},
 			"patternProperties": {
@@ -464,14 +464,14 @@
 						}
 					]
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"iconSize": {
 					"$ref": "#/definitions/dist-macos-disk-image-iconSize"
 				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"pathbarVisible": {
 					"$ref": "#/definitions/dist-macos-disk-image-pathbarVisible"
@@ -594,14 +594,14 @@
 				"file"
 			],
 			"properties": {
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
 				},
 				"file": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-file"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"pluginDirs": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
@@ -667,11 +667,11 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/dist-kind"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"path": {
 					"$ref": "#/definitions/target-process-path"
@@ -819,11 +819,11 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
-				"language": {
-					"$ref": "#/definitions/target-source-language"
-				},
 				"files": {
 					"$ref": "#/definitions/target-source-files"
+				},
+				"language": {
+					"$ref": "#/definitions/target-source-language"
 				},
 				"settings:Cxx": {
 					"$ref": "#/definitions/target-source-cxx"
@@ -858,17 +858,14 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
+				"configureFiles": {
+					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"extends": {
 					"$ref": "#/definitions/target-source-extends"
 				},
 				"files": {
 					"$ref": "#/definitions/target-source-files"
-				},
-				"configureFiles": {
-					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
@@ -878,6 +875,9 @@
 				},
 				"metadata": {
 					"$ref": "#/definitions/target-source-metadata"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"settings": {
 					"type": "object",
@@ -924,17 +924,14 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
+				"configureFiles": {
+					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"extends": {
 					"$ref": "#/definitions/target-source-extends"
 				},
 				"files": {
 					"$ref": "#/definitions/target-source-files"
-				},
-				"configureFiles": {
-					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
@@ -944,6 +941,9 @@
 				},
 				"metadata": {
 					"$ref": "#/definitions/target-source-metadata"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"settings": {
 					"type": "object",
@@ -1088,7 +1088,7 @@
 			"default": "C++"
 		},
 		"target-source-configureFiles": {
-			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}. They will be replaced with the variables' value, or an empty string if not recognized.\nCMAKE PROJECT_ variables are supported.",
+			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR} refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1108,6 +1108,7 @@
 		"target-source-metadata": {
 			"type": "object",
 			"additionalProperties": false,
+			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
 			"properties": {
 				"author": {
 					"$ref": "#/definitions/target-source-metadata-author"
@@ -1171,6 +1172,7 @@
 		},
 		"target-source-cxx": {
 			"type": "object",
+			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
 			"additionalProperties": false,
 			"properties": {
 				"cStandard": {
@@ -1332,6 +1334,9 @@
 				},
 				"mingwUnixSharedLibraryNamingConvention": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
+				},
+				"buildSuffix": {
+					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
 				"precompiledHeader": {
 					"$ref": "#/definitions/target-source-cxx-precompiledHeader"
@@ -1644,6 +1649,12 @@
 			"description": "The execution character set to be given to the compiler. Default: UTF-8",
 			"minLength": 1,
 			"default": "UTF-8"
+		},
+		"target-source-cxx-buildSuffix": {
+			"type": "string",
+			"description": "Describes a suffix used to differentiate targets within build folders. If the same suffix is used between multiple targets, they can share objects and a precompiled header. By default, the suffix is the name of the target, so setting this to the name of another target will share its objects.\nAffected paths:\n`${buildOutputDir}/obj.${suffix}`\n`${buildOutputDir}/asm.${suffix}`\n`${buildDir}/int.${suffix}`",
+			"minLength": 1,
+			"pattern": "^[\\w\\-+.]{3,}$"
 		},
 		"target-source-cxx-staticRuntimeLibrary": {
 			"description": "true to statically link against compiler runtime libraries (libc++, ms-crt, etc.). false to dynamically link them (default).",
@@ -2370,14 +2381,14 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				}
 			},
 			"patternProperties": {
@@ -2406,11 +2417,11 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
+				"defaultRunArguments": {
+					"$ref": "#/definitions/target-defaultRunArguments"
+				},
 				"defines": {
 					"$ref": "#/definitions/target-cmake-defines"
-				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
 				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
@@ -2418,14 +2429,14 @@
 				"location": {
 					"$ref": "#/definitions/target-cmake-location"
 				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
 				"recheck": {
 					"$ref": "#/definitions/target-cmake-recheck"
 				},
 				"rebuild": {
 					"$ref": "#/definitions/target-cmake-rebuild"
-				},
-				"defaultRunArguments": {
-					"$ref": "#/definitions/target-defaultRunArguments"
 				},
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
@@ -2512,14 +2523,14 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
 				},
 				"location": {
 					"$ref": "#/definitions/target-chalet-location"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"recheck": {
 					"$ref": "#/definitions/target-chalet-recheck"
@@ -2569,11 +2580,11 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
 				"kind": {
 					"$ref": "#/definitions/target-kind"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
 				},
 				"path": {
 					"$ref": "#/definitions/target-process-path"

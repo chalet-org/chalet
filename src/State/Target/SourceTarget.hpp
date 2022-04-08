@@ -130,6 +130,9 @@ struct SourceTarget final : public IBuildTarget
 	const std::string& windowsApplicationIcon() const noexcept;
 	void setWindowsApplicationIcon(std::string&& inValue) noexcept;
 
+	const std::string& buildSuffix() const noexcept;
+	void setBuildSuffix(std::string&& inValue) noexcept;
+
 	//
 	SourceKind kind() const noexcept;
 	void setKind(const SourceKind inValue) noexcept;
@@ -222,6 +225,7 @@ private:
 	std::string m_executionCharset;
 	std::string m_windowsApplicationManifest;
 	std::string m_windowsApplicationIcon;
+	std::string m_buildSuffix;
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

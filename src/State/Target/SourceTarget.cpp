@@ -127,7 +127,6 @@ bool SourceTarget::validate()
 {
 	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
 
-	const auto& targetName = this->name();
 	bool result = true;
 
 	if (m_kind == SourceKind::None)
@@ -138,6 +137,7 @@ bool SourceTarget::validate()
 
 	if (m_files.empty())
 	{
+		const auto& targetName = this->name();
 		Diagnostic::error("No 'files' were specified, but are required.", targetName);
 		result = false;
 	}
@@ -709,6 +709,17 @@ const std::string& SourceTarget::windowsApplicationIcon() const noexcept
 void SourceTarget::setWindowsApplicationIcon(std::string&& inValue) noexcept
 {
 	m_windowsApplicationIcon = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SourceTarget::buildSuffix() const noexcept
+{
+	return !m_buildSuffix.empty() ? m_buildSuffix : this->name();
+}
+
+void SourceTarget::setBuildSuffix(std::string&& inValue) noexcept
+{
+	m_buildSuffix = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -126,11 +126,6 @@ std::string ConfigureFileParser::getReplaceValue(std::string inKey) const
 		inKey = inKey.substr(14);
 		return getReplaceValueFromSubString(inKey);
 	}
-	else if (String::startsWith("TARGET_", inKey))
-	{
-		inKey = inKey.substr(7);
-		return getReplaceValueFromSubString(inKey, true);
-	}
 	else if (String::startsWith("PROJECT_", inKey)) // CMake compatibility
 	{
 		inKey = inKey.substr(8);
@@ -146,66 +141,31 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 	// LOG(inKey);
 	UNUSED(isTarget);
 
-	bool targetMetaData = isTarget && m_project.hasMetadata();
-	const auto& workspaceMeta = m_state.workspace.metadata();
+	const bool targetHasMetadata = isTarget && m_project.hasMetadata();
+	const auto& metadata = targetHasMetadata ? m_project.metadata() : m_state.workspace.metadata();
+
 	if (String::equals("NAME", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().name().empty())
-			return m_project.metadata().name();
-		else
-			return workspaceMeta.name();
-	}
+		return metadata.name();
 
 	if (String::equals("DESCRIPTION", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().description().empty())
-			return m_project.metadata().description();
-		else
-			return workspaceMeta.description();
-	}
+		return metadata.description();
 
 	if (String::equals("HOMEPAGE_URL", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().homepage().empty())
-			return m_project.metadata().homepage();
-		else
-			return workspaceMeta.homepage();
-	}
+		return metadata.homepage();
 
 	if (String::equals("AUTHOR", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().author().empty())
-			return m_project.metadata().author();
-		else
-			return workspaceMeta.author();
-	}
+		return metadata.author();
 
 	if (String::equals("LICENSE", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().license().empty())
-			return m_project.metadata().license();
-		else
-			return workspaceMeta.license();
-	}
+		return metadata.license();
 
 	if (String::equals("README", inKey))
-	{
-		if (targetMetaData && !m_project.metadata().readme().empty())
-			return m_project.metadata().readme();
-		else
-			return workspaceMeta.readme();
-	}
+		return metadata.readme();
 
-	bool versionAvailable = targetMetaData && !m_project.metadata().versionString().empty();
 	if (String::equals("VERSION", inKey))
-	{
-		if (versionAvailable)
-			return m_project.metadata().versionString();
-		else
-			return workspaceMeta.versionString();
-	}
+		return metadata.versionString();
 
-	const auto& version = versionAvailable ? m_project.metadata().version() : workspaceMeta.version();
+	const auto& version = metadata.version();
 
 	if (String::equals("VERSION_MAJOR", inKey) && version.hasMajor())
 		return std::to_string(version.major());

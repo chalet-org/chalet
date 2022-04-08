@@ -65,6 +65,7 @@
 			"kind": "executable",
 			"condition": "!debug",
 			"settings:Cxx": {
+				"buildSuffix": "chalet",
 				"precompiledHeader": "src/PCH.hpp",
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [

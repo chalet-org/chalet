@@ -122,6 +122,7 @@ class ChaletJsonSchema
 		TargetSourceCxxExceptions,
 		TargetSourceCxxInputCharSet,
 		TargetSourceCxxExecutionCharSet,
+		TargetSourceCxxBuildSuffix,
 		TargetSourceCxxStaticRuntimeLibrary,
 		TargetSourceCxxStaticLinks,
 		TargetSourceCxxWarnings,

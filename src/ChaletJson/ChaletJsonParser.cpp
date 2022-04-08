@@ -695,6 +695,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setInputCharset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "executionCharset", status))
 				outTarget.setExecutionCharset(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildSuffix", status))
+				outTarget.setBuildSuffix(std::move(val));
 			//
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
 				outTarget.addCompileOptions(std::move(val));
@@ -819,7 +821,12 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 /*****************************************************************************/
 bool ChaletJsonParser::parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const
 {
-	auto metadata = std::make_shared<TargetMetadata>();
+	Shared<TargetMetadata> metadata;
+	if (outTarget.hasMetadata())
+		metadata = std::make_shared<TargetMetadata>(outTarget.metadata());
+	else
+		metadata = std::make_shared<TargetMetadata>();
+
 	bool hasMetadata = false;
 	for (const auto& [key, value] : inNode.items())
 	{
