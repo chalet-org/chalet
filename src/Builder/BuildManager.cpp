@@ -567,26 +567,31 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 		}
 	}
 
-	CHALET_TRY
+	buildOutputDir += '/';
+
+	fs::recursive_directory_iterator it(dirToClean);
+	fs::recursive_directory_iterator itEnd;
+
+	while (it != itEnd)
 	{
-		buildOutputDir += '/';
-		for (const auto& entry : fs::recursive_directory_iterator(dirToClean))
+		std::error_code ec;
+		const auto& path = it->path();
+		auto shortPath = path.string();
+		Path::sanitize(shortPath);
+		String::replaceAll(shortPath, buildOutputDir, "");
+
+		if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
 		{
-			auto path = entry.path().string();
-			Path::sanitize(path);
-			String::replaceAll(path, buildOutputDir, "");
+			auto pth = path;
+			++it;
 
-			if (entry.is_regular_file())
-			{
-				if (String::startsWith(externalLocations, path))
-					continue;
-
-				fs::remove(entry.path());
-			}
+			fs::remove(pth, ec);
+		}
+		else
+		{
+			++it;
 		}
 	}
-	CHALET_CATCH(...)
-	{}
 
 	for (auto& dir : buildDirs)
 	{
@@ -713,12 +718,12 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 	if (inProject.cppModules())
 	{
 		if (!m_strategy->buildProjectModules(inProject))
-			return false;
+			return onFinishBuild(inProject, false);
 	}
 	else
 	{
 		if (!m_strategy->buildProject(inProject))
-			return false;
+			return onFinishBuild(inProject, false);
 	}
 
 	if (m_state.info.dumpAssembly())
@@ -728,10 +733,42 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 		StringList fileCache;
 		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
-			return false;
+			return onFinishBuild(inProject, false);
 	}
 
-	return true;
+	return onFinishBuild(inProject, true);
+}
+
+/*****************************************************************************/
+bool BuildManager::onFinishBuild(const SourceTarget& inProject, const bool inReturn) const
+{
+	const auto& intermediateDir = m_state.paths.intermediateDir(inProject);
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	if (Commands::pathIsEmpty(intermediateDir))
+		Commands::remove(intermediateDir);
+
+	fs::recursive_directory_iterator it(buildOutputDir);
+	fs::recursive_directory_iterator itEnd;
+
+	while (it != itEnd)
+	{
+		std::error_code ec;
+		const auto& path = it->path();
+
+		if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+		{
+			auto pth = path;
+			++it;
+
+			fs::remove(pth, ec);
+		}
+		else
+		{
+			++it;
+		}
+	}
+
+	return inReturn;
 }
 
 /*****************************************************************************/
