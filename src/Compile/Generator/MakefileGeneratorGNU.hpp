@@ -41,8 +41,6 @@ private:
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
 
 	// StringList m_fileExtensions;
-
-	Dictionary<StringList> m_locationCache;
 };
 }
 

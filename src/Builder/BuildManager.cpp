@@ -237,6 +237,15 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 	}
 
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			if (!onFinishBuild(static_cast<const SourceTarget&>(*target)))
+				return false;
+		}
+	}
+
 	if (error)
 	{
 		if (!runRoute)
@@ -718,12 +727,12 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 	if (inProject.cppModules())
 	{
 		if (!m_strategy->buildProjectModules(inProject))
-			return onFinishBuild(inProject, false);
+			return false;
 	}
 	else
 	{
 		if (!m_strategy->buildProject(inProject))
-			return onFinishBuild(inProject, false);
+			return false;
 	}
 
 	if (m_state.info.dumpAssembly())
@@ -733,14 +742,14 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 		StringList fileCache;
 		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
-			return onFinishBuild(inProject, false);
+			return false;
 	}
 
-	return onFinishBuild(inProject, true);
+	return true;
 }
 
 /*****************************************************************************/
-bool BuildManager::onFinishBuild(const SourceTarget& inProject, const bool inReturn) const
+bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 {
 	auto intermediateDir = m_state.paths.intermediateDir(inProject);
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
@@ -769,7 +778,7 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject, const bool inRet
 		}
 	}
 
-	return inReturn;
+	return true;
 }
 
 /*****************************************************************************/
