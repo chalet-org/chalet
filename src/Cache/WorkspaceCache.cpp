@@ -240,7 +240,7 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 	const auto& outputDirectory = inInputs.outputDirectory();
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
-		if (Commands::pathIsEmpty(inPath, {}, true))
+		if (Commands::pathIsEmpty(inPath))
 			Commands::removeRecursively(inPath);
 	};
 

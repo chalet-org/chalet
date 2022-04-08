@@ -742,8 +742,9 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::onFinishBuild(const SourceTarget& inProject, const bool inReturn) const
 {
-	const auto& intermediateDir = m_state.paths.intermediateDir(inProject);
+	auto intermediateDir = m_state.paths.intermediateDir(inProject);
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+
 	if (Commands::pathIsEmpty(intermediateDir))
 		Commands::remove(intermediateDir);
 

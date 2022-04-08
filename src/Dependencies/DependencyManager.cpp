@@ -100,7 +100,7 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 {
 	const auto& externalDir = m_centralState.inputs().externalDirectory();
-	if (Commands::pathIsEmpty(externalDir, {}, true))
+	if (Commands::pathIsEmpty(externalDir))
 	{
 		if (!Commands::remove(externalDir))
 		{

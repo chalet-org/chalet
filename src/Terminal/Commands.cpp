@@ -586,28 +586,24 @@ bool Commands::pathExists(const std::string& inFile)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsEmpty(const fs::path& inPath, const std::vector<fs::path>& inExceptions, const bool inCheckExists)
+bool Commands::pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions)
 {
 	CHALET_TRY
 	{
-		if (inCheckExists && !fs::exists(inPath))
+		fs::path path(inPath);
+		if (!fs::exists(path))
 			return false;
-
-		if (!fs::is_directory(inPath))
-		{
-			CHALET_THROW(std::runtime_error("Not a directory"));
-		}
 
 		bool result = true;
 
 		auto dirEnd = fs::directory_iterator();
-		for (auto it = fs::directory_iterator(inPath); it != dirEnd; ++it)
+		for (auto it = fs::directory_iterator(path); it != dirEnd; ++it)
 		{
 			auto item = *it;
 			if (item.is_directory() || item.is_regular_file())
 			{
-				const auto& path = item.path();
-				const auto stem = path.stem().string();
+				const auto& itemPath = item.path();
+				const auto stem = itemPath.stem().string();
 
 				bool foundException = false;
 				for (auto& excep : inExceptions)
