@@ -27,7 +27,7 @@ struct BuildPaths
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
 	std::string intermediateDir(const SourceTarget& inProject) const;
-	StringList buildDirectories() const;
+	StringList getBuildDirectories(const SourceTarget& inProject) const;
 
 	const StringList& allFileExtensions() const noexcept;
 	StringList objectiveCxxExtensions() const noexcept;

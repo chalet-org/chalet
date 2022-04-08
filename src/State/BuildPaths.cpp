@@ -153,14 +153,12 @@ std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::buildDirectories() const
+StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 {
 	const auto& buildDir = buildOutputDir();
 	return {
-		fmt::format("{}/obj", buildDir),
-		fmt::format("{}/asm", buildDir),
-		fmt::format("{}/obj.shared", buildDir),
-		fmt::format("{}/asm.shared", buildDir),
+		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
+		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
 	};
 }
 
@@ -186,7 +184,6 @@ const std::string& BuildPaths::cxxExtension() const
 void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject)
 {
 	m_objDir = fmt::format("{}/obj.{}", m_buildOutputDir, inProject.buildSuffix());
-	// m_depDir = fmt::format("{}/dep.{}", m_buildOutputDir, inProject.buildSuffix());
 	m_asmDir = fmt::format("{}/asm.{}", m_buildOutputDir, inProject.buildSuffix());
 
 	m_depDir = m_objDir;

@@ -544,9 +544,18 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 	if (!Commands::pathExists(dirToClean))
 		return false;
 
+	StringList buildDirs;
 	StringList externalLocations;
 	for (const auto& target : m_state.targets)
 	{
+		if (target->isSources())
+		{
+			auto dirs = m_state.paths.getBuildDirectories(static_cast<const SourceTarget&>(*target));
+			for (auto&& dir : dirs)
+			{
+				List::addIfDoesNotExist(buildDirs, std::move(dir));
+			}
+		}
 		if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
@@ -580,7 +589,6 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 	CHALET_CATCH(...)
 	{}
 
-	auto buildDirs = m_state.paths.buildDirectories();
 	for (auto& dir : buildDirs)
 	{
 		if (Commands::pathExists(dir))
