@@ -90,7 +90,6 @@ private:
 	mutable std::string m_cxxExtension;
 
 	bool m_initialized = false;
-	bool m_useCache = true;
 };
 }
 

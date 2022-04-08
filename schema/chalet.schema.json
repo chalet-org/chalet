@@ -819,11 +819,17 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"configureFiles": {
+					"$ref": "#/definitions/target-source-configureFiles"
+				},
 				"files": {
 					"$ref": "#/definitions/target-source-files"
 				},
 				"language": {
 					"$ref": "#/definitions/target-source-language"
+				},
+				"metadata": {
+					"$ref": "#/definitions/target-source-metadata"
 				},
 				"settings:Cxx": {
 					"$ref": "#/definitions/target-source-cxx"

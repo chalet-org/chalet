@@ -1564,8 +1564,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
+		abstractSource[SKeys::Properties]["configureFiles"] = getDefinition(Defs::TargetSourceConfigureFiles);
 		abstractSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
 		abstractSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
+		abstractSource[SKeys::Properties]["metadata"] = getDefinition(Defs::TargetSourceMetadata);
 		abstractSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
 		abstractSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
