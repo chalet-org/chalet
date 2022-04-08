@@ -67,8 +67,7 @@ private:
 
 	BuildRouteList m_buildRoutes;
 
-	StringList m_fileListCache;
-	StringList m_fileListCacheShared;
+	Dictionary<StringList> m_fileCache;
 
 	CompileStrategy m_strategy;
 	Unique<AssemblyDumper> m_asmDumper;

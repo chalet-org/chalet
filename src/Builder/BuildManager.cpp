@@ -135,8 +135,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	}
 
 	m_strategy->doPreBuild();
-	m_fileListCacheShared.clear();
-	m_fileListCache.clear();
+	m_fileCache.clear();
 
 	if (inRoute == Route::Rebuild || m_directoriesMade)
 	{
@@ -401,7 +400,7 @@ std::string BuildManager::getBuildStrategyName() const
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
 	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
-	auto& fileCache = inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache;
+	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache, m_state.info.dumpAssembly());
 
 	if (!Commands::makeDirectories(outputs->directories, m_directoriesMade))

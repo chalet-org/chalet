@@ -383,15 +383,13 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	SourceFileGroupList ret;
 
 	const bool isModule = inProject.cppModules();
-	const bool sharesSourceFiles = inProject.sharesSourceFiles();
 
 	for (auto& file : inFiles.list)
 	{
 		if (file.empty())
 			continue;
 
-		if (sharesSourceFiles)
-			outFileCache.push_back(file);
+		outFileCache.push_back(file);
 
 		SourceType type = getSourceType(file);
 

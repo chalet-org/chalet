@@ -119,27 +119,6 @@ bool SourceTarget::initialize()
 			return false;
 	}
 
-	{
-		const auto& thisName = this->name();
-		for (auto& target : m_state.targets)
-		{
-			if (String::equals(thisName, target->name()))
-				continue;
-
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				const auto& projBuildSuffix = project.buildSuffix();
-				if (String::equals(thisName, projBuildSuffix)
-					|| (!m_buildSuffix.empty() && (String::equals(m_buildSuffix, project.name()) || String::equals(m_buildSuffix, projBuildSuffix))))
-				{
-					m_sharesSourceFiles = true;
-					break;
-				}
-			}
-		}
-	}
-
 	return true;
 }
 
@@ -741,11 +720,6 @@ const std::string& SourceTarget::buildSuffix() const noexcept
 void SourceTarget::setBuildSuffix(std::string&& inValue) noexcept
 {
 	m_buildSuffix = std::move(inValue);
-}
-
-bool SourceTarget::sharesSourceFiles() const noexcept
-{
-	return m_sharesSourceFiles;
 }
 
 /*****************************************************************************/

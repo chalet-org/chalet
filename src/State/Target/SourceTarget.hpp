@@ -132,7 +132,6 @@ struct SourceTarget final : public IBuildTarget
 
 	const std::string& buildSuffix() const noexcept;
 	void setBuildSuffix(std::string&& inValue) noexcept;
-	bool sharesSourceFiles() const noexcept;
 
 	//
 	SourceKind kind() const noexcept;
@@ -252,7 +251,6 @@ private:
 	bool m_mingwUnixSharedLibraryNamingConvention = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
-	bool m_sharesSourceFiles = false;
 };
 }
 
