@@ -909,9 +909,6 @@
 				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^configureFiles(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-configureFiles"
-				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
@@ -968,9 +965,6 @@
 			"patternProperties": {
 				"^files(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-files"
-				},
-				"^configureFiles(\\.!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-configureFiles"
 				},
 				"^language(\\.!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -1094,7 +1088,7 @@
 			"default": "C++"
 		},
 		"target-source-configureFiles": {
-			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR} refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
+			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
 			"oneOf": [
 				{
 					"type": "string",
