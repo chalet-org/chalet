@@ -14,8 +14,8 @@ namespace Keys
 {
 //
 // chalet.json
-CH_STR(Workspace) = "workspace";
-CH_STR(Version) = "version";
+CH_STR(WorkspaceName) = "name";
+CH_STR(WorkspaceVersion) = "version";
 CH_STR(Abstracts) = "abstracts";
 CH_STR(AbstractsAll) = "abstracts:*";
 CH_STR(Targets) = "targets";

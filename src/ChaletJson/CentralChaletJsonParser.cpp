@@ -141,7 +141,7 @@ bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
 	{
 		if (value.is_string())
 		{
-			if (String::equals("workspace", key))
+			if (String::equals("name", key))
 				metadata->setName(value.get<std::string>());
 			else if (String::equals("version", key))
 				metadata->setVersion(value.get<std::string>());

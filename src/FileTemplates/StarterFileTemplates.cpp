@@ -43,8 +43,8 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	}
 
 	Json ret;
-	ret[Keys::Workspace] = inProps.workspaceName;
-	ret[Keys::Version] = inProps.version;
+	ret[Keys::WorkspaceName] = inProps.workspaceName;
+	ret[Keys::WorkspaceVersion] = inProps.version;
 
 	if (inProps.defaultConfigs)
 	{
@@ -307,8 +307,8 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const ChaletJsonProps& inPr
 	const auto& project = inProps.projectName;
 
 	Json ret;
-	ret[Keys::Workspace] = inProps.workspaceName;
-	ret[Keys::Version] = inProps.version;
+	ret[Keys::WorkspaceName] = inProps.workspaceName;
+	ret[Keys::WorkspaceVersion] = inProps.version;
 
 	ret[Keys::DefaultConfigurations] = Json::array();
 	ret[Keys::DefaultConfigurations] = {

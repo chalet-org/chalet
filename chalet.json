@@ -1,5 +1,5 @@
 {
-	"workspace": "Chalet",
+	"name": "Chalet",
 	"version": "0.3.6",
 	"description": "A JSON-based project & build tool",
 	"homepage": "https://www.chalet-work.space",

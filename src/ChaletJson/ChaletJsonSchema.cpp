@@ -1740,7 +1740,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 {
 	switch (inDef)
 	{
-		case Defs::WorkspaceName: return "workspace";
+		case Defs::WorkspaceName: return "workspace-name";
 		case Defs::WorkspaceVersion: return "workspace-version";
 		case Defs::WorkspaceDescription: return "workspace-description";
 		case Defs::WorkspaceHomepage: return "workspace-homepage";
@@ -1937,7 +1937,7 @@ Json ChaletJsonSchema::get()
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
-		"workspace",
+		"name",
 		"version",
 		"targets"
 	};
@@ -1963,9 +1963,9 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["description"] = getDefinition(Defs::WorkspaceDescription);
 	ret[SKeys::Properties]["homepage"] = getDefinition(Defs::WorkspaceHomepage);
 	ret[SKeys::Properties]["license"] = getDefinition(Defs::WorkspaceLicense);
+	ret[SKeys::Properties]["name"] = getDefinition(Defs::WorkspaceName);
 	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
 	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
-	ret[SKeys::Properties]["workspace"] = getDefinition(Defs::WorkspaceName);
 
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";

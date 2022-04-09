@@ -3,12 +3,12 @@
 	"type": "object",
 	"additionalProperties": false,
 	"required": [
-		"workspace",
+		"name",
 		"version",
 		"targets"
 	],
 	"definitions": {
-		"workspace": {
+		"workspace-name": {
 			"type": "string",
 			"description": "A name to describe the entire workspace.",
 			"minLength": 1,
@@ -2636,14 +2636,14 @@
 		"license": {
 			"$ref": "#/definitions/workspace-license"
 		},
+		"name": {
+			"$ref": "#/definitions/workspace-name"
+		},
 		"readme": {
 			"$ref": "#/definitions/workspace-readme"
 		},
 		"version": {
 			"$ref": "#/definitions/workspace-version"
-		},
-		"workspace": {
-			"$ref": "#/definitions/workspace"
 		},
 		"abstracts": {
 			"type": "object",
