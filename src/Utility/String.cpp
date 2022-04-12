@@ -175,8 +175,8 @@ void String::replaceAll(std::string& outString, const char inFrom, const char in
 std::string String::toLowerCase(const std::string& inString)
 {
 	std::string ret = inString;
-	std::transform(ret.begin(), ret.end(), ret.begin(), [](std::string::value_type c) {
-		return static_cast<std::string::value_type>(::tolower(c));
+	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
+		return static_cast<uchar>(::tolower(static_cast<uchar>(c)));
 	});
 	return ret;
 }
@@ -185,8 +185,8 @@ std::string String::toLowerCase(const std::string& inString)
 std::string String::toUpperCase(const std::string& inString)
 {
 	std::string ret = inString;
-	std::transform(ret.begin(), ret.end(), ret.begin(), [](std::string::value_type c) {
-		return static_cast<std::string::value_type>(::toupper(c));
+	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
+		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
 	});
 	return ret;
 }

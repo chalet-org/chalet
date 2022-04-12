@@ -264,7 +264,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
+			inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -888,7 +888,9 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 			if (String::startsWith("meta:workspace", match))
 			{
 				match = match.substr(14);
-				match[0] = std::tolower(match[0]);
+				{
+					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+				}
 
 				const auto& metadata = workspace.metadata();
 				return metadata.getMetadataFromString(match);

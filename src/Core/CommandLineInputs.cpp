@@ -772,7 +772,7 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 #if defined(CHALET_WIN32)
 	if (::isalpha(cwd.front()) > 0)
 	{
-		cwd[0] = static_cast<char>(::tolower(cwd.front()));
+		cwd[0] = static_cast<char>(::tolower(static_cast<uchar>(cwd.front())));
 	}
 
 	String::replaceAll(outValue, cwd, "");
