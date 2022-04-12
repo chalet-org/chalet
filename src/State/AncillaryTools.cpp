@@ -9,6 +9,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -38,6 +39,22 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 
 #if defined(CHALET_MACOS)
 	Environment::replaceCommonVariables(m_signingIdentity, inHomeDirectory);
+
+	if (String::contains("${", m_signingIdentity))
+	{
+		RegexPatterns::matchPathVariables(m_signingIdentity, [&](std::string match) {
+			if (String::equals("home", match))
+				return inHomeDirectory;
+
+			if (String::startsWith("env:", match))
+			{
+				match = match.substr(4);
+				return Environment::getAsString(match.c_str());
+			}
+
+			return std::string();
+		});
+	}
 #else
 	UNUSED(inHomeDirectory);
 #endif

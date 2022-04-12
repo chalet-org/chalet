@@ -186,7 +186,7 @@
 			"kind": "windowsNullsoftInstaller",
 			"file": "platform/windows/installer/install_script.nsi",
 			"defines": [
-				"CHALET_VERSION=${version}"
+				"CHALET_VERSION=${meta:version}"
 			],
 			"pluginDirs": [
 				"platform/windows/installer/plugins"

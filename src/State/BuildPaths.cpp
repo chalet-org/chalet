@@ -80,6 +80,8 @@ bool BuildPaths::initialize()
 		m_intermediateDir = m_intermediateDir.substr(search);
 	}
 
+	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());
+
 	m_initialized = true;
 
 	return true;
@@ -124,8 +126,14 @@ const std::string& BuildPaths::outputDirectory() const noexcept
 
 const std::string& BuildPaths::buildOutputDir() const
 {
-	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
+	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
 	return m_buildOutputDir;
+}
+
+const std::string& BuildPaths::externalBuildDir() const
+{
+	chalet_assert(!m_externalBuildDir.empty(), "BuildPaths::externalBuildDir() called before BuildPaths::initialize().");
+	return m_externalBuildDir;
 }
 
 const std::string& BuildPaths::objDir() const

@@ -15,6 +15,7 @@ bool matchesGnuCStandard(const std::string& inValue);
 bool matchesCxxStandardShort(const std::string& inValue);
 bool matchesFullVersionString(const std::string& inValue);
 bool matchAndReplace(std::string& outText, const std::string& inValue, const std::string& inReplaceValue);
+bool matchPathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch);
 }
 }
 

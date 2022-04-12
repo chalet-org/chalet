@@ -488,27 +488,9 @@ void Environment::replaceCommonVariables(std::string& outString, const std::stri
 		if (String::startsWith("~/", outString))
 		{
 			outString = fmt::format("{}{}", inHomeDirectory, outString.substr(1));
-		}
-		else
-		{
-			String::replaceAll(outString, "${home}", inHomeDirectory);
+			Path::sanitize(outString);
 		}
 	}
-
-	if (String::contains("${env:", outString))
-	{
-		auto begin = outString.find("${env:");
-		auto end = outString.find("}", begin);
-		if (end != std::string::npos)
-		{
-			auto replace = outString.substr(begin, (end + 1) - begin);
-			auto key = outString.substr(begin + 6, end - (begin + 6));
-			auto replaceTo = Environment::getAsString(key.c_str());
-			String::replaceAll(outString, replace, replaceTo);
-		}
-	}
-
-	Path::sanitize(outString);
 }
 
 /*****************************************************************************/

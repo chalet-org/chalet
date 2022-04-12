@@ -37,6 +37,7 @@ struct TargetMetadata
 	void setReadme(std::string&& inValue) noexcept;
 
 	std::string getHash() const;
+	std::string getMetadataFromString(const std::string& inString) const;
 
 private:
 	std::string m_name;

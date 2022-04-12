@@ -40,17 +40,17 @@ bool ConfigureFileParser::run()
 		std::smatch sm;
 		while (std::regex_search(fileContents, sm, reA))
 		{
-			const auto& replaceValue = getReplaceValue(sm[1].str());
-			std::string prefix = sm.prefix();
-			std::string suffix = sm.suffix();
+			auto prefix = sm.prefix().str();
+			auto replaceValue = getReplaceValue(sm[1].str());
+			auto suffix = sm.suffix().str();
 			fileContents = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 		}
 
 		while (std::regex_search(fileContents, sm, reB))
 		{
-			const auto& replaceValue = getReplaceValue(sm[1].str());
-			std::string prefix = sm.prefix();
-			std::string suffix = sm.suffix();
+			auto prefix = sm.prefix().str();
+			auto replaceValue = getReplaceValue(sm[1].str());
+			auto suffix = sm.suffix().str();
 			fileContents = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 		}
 

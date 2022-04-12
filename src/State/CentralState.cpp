@@ -19,6 +19,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
@@ -392,53 +393,46 @@ void CentralState::replaceVariablesInPath(std::string& outPath, const std::strin
 	if (outPath.empty())
 		return;
 
-	const auto& distributionDir = m_inputs.distributionDirectory();
-	const auto& externalDir = m_inputs.externalDirectory();
-	const auto& cwd = m_inputs.workingDirectory();
 	const auto& homeDirectory = m_inputs.homeDirectory();
-	const auto& versionString = workspace.metadata().versionString();
-	const auto& version = workspace.metadata().version();
-
-	if (!cwd.empty())
-		String::replaceAll(outPath, "${cwd}", cwd);
-
-	String::replaceAll(outPath, "${configuration}", anyConfiguration());
-
-	if (!distributionDir.empty())
-		String::replaceAll(outPath, "${distributionDir}", distributionDir);
-
-	if (!externalDir.empty())
-		String::replaceAll(outPath, "${externalDir}", externalDir);
-
-	if (!inName.empty())
-		String::replaceAll(outPath, "${name}", inName);
-
-	if (!versionString.empty())
-	{
-		if (String::contains("${version", outPath))
-		{
-			String::replaceAll(outPath, "${version}", versionString);
-
-			String::replaceAll(outPath, "${versionMajor}", std::to_string(version.major()));
-
-			if (version.hasMinor())
-				String::replaceAll(outPath, "${versionMinor}", std::to_string(version.minor()));
-			else
-				String::replaceAll(outPath, "${versionMinor}", "");
-
-			if (version.hasPatch())
-				String::replaceAll(outPath, "${versionPatch}", std::to_string(version.patch()));
-			else
-				String::replaceAll(outPath, "${versionPatch}", "");
-
-			if (version.hasTweak())
-				String::replaceAll(outPath, "${versionTweak}", std::to_string(version.tweak()));
-			else
-				String::replaceAll(outPath, "${versionTweak}", "");
-		}
-	}
-
 	Environment::replaceCommonVariables(outPath, homeDirectory);
+
+	if (String::contains("${", outPath))
+	{
+		RegexPatterns::matchPathVariables(outPath, [&](std::string match) {
+			if (String::equals("cwd", match))
+				return m_inputs.workingDirectory();
+
+			if (String::equals("configuration", match))
+				return anyConfiguration();
+
+			if (String::equals("distributionDir", match))
+				return m_inputs.distributionDirectory();
+
+			if (String::equals("externalDir", match))
+				return m_inputs.externalDirectory();
+
+			if (String::equals("home", match))
+				return homeDirectory;
+
+			if (String::equals("name", match))
+				return inName;
+
+			if (String::startsWith("meta:", match))
+			{
+				const auto& metadata = workspace.metadata();
+				match = match.substr(5);
+				return metadata.getMetadataFromString(match);
+			}
+
+			if (String::startsWith("env:", match))
+			{
+				match = match.substr(4);
+				return Environment::getAsString(match.c_str());
+			}
+
+			return std::string();
+		});
+	}
 }
 
 /*****************************************************************************/

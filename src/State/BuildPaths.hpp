@@ -23,6 +23,7 @@ struct BuildPaths
 	const std::string& rootDirectory() const noexcept;
 	const std::string& outputDirectory() const noexcept;
 	const std::string& buildOutputDir() const;
+	const std::string& externalBuildDir() const;
 	const std::string& objDir() const;
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
@@ -82,6 +83,7 @@ private:
 	StringList m_allFileExtensions;
 
 	std::string m_buildOutputDir;
+	std::string m_externalBuildDir;
 	std::string m_objDir;
 	std::string m_depDir;
 	std::string m_asmDir;
