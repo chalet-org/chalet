@@ -249,7 +249,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// Timer timer;
 
-	const auto cwd = m_centralState.inputs().workingDirectory() + '/';
+	auto cwd = m_centralState.inputs().workingDirectory() + '/';
+#if defined(CHALET_WIN32)
+	cwd[0] = static_cast<char>(::toupper(static_cast<uchar>(cwd[0])));
+#endif
 
 	auto copyIncludedPath = [&cwd](const std::string& inDep, const std::string& inOutPath) -> bool {
 		if (Commands::pathExists(inDep))
@@ -337,8 +340,16 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	}
 
 	m_dependencyMap->populateToList(dependenciesToCopy, excludes);
+	for (auto& dep : dependenciesToCopy)
+	{
+		String::replaceAll(dep, cwd, "");
+	}
 
-	List::sort(dependenciesToCopy);
+	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end(), [&inState](const auto& inA, const auto& inB) {
+		UNUSED(inB);
+		return String::startsWith(inState.paths.buildOutputDir(), inA);
+	});
+
 	for (auto& dep : dependenciesToCopy)
 	{
 #if defined(CHALET_MACOS)

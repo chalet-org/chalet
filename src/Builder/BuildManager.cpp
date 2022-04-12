@@ -450,17 +450,12 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCo
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	auto copyFilesOnRun = getResolvedRunDependenciesList(inTarget);
 
-	auto outputFolder = Commands::getAbsolutePath(buildOutputDir);
-
 	for (auto& dep : copyFilesOnRun)
 	{
 		auto depFile = String::getPathFilename(dep);
-		if (!Commands::pathExists(fmt::format("{}/{}", outputFolder, depFile)))
+		if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
 		{
-			if (outCopied == 0)
-				Output::lineBreak();
-
-			result &= Commands::copy(dep, outputFolder);
+			result &= Commands::copy(dep, buildOutputDir);
 			++outCopied;
 		}
 	}
@@ -868,11 +863,6 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	const auto& runArguments = m_state.inputs.runArguments();
 
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().success);
-	else
-		Output::msgRun(outputFile);
-
 	auto file = Commands::getAbsolutePath(outputFile);
 	if (!Commands::pathExists(file))
 	{
@@ -898,6 +888,13 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	if (copied > 0)
 		Output::lineBreak();
+
+	//
+
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().success);
+	else
+		Output::msgRun(outputFile);
 
 	StringList cmd = { file };
 	if (runArguments.has_value())
