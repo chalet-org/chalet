@@ -86,7 +86,7 @@ void IDistTarget::replaceVariablesInPathList(StringList& outList)
 {
 	for (auto& dir : outList)
 	{
-		m_centralState.replaceVariablesInPath(dir, this);
+		m_centralState.replaceVariablesInString(dir, this);
 	}
 }
 

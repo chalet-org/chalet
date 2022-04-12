@@ -41,7 +41,7 @@ struct CentralState
 	const std::string& releaseConfiguration() const noexcept;
 	const std::string& anyConfiguration() const noexcept;
 
-	void replaceVariablesInPath(std::string& outPath, const IDistTarget* inTarget) const;
+	void replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true) const;
 	void setRunArgumentMap(Dictionary<std::string>&& inMap);
 	void getRunTargetArguments();
 

@@ -24,7 +24,7 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	m_state.replaceVariablesInPath(m_file, this);
+	m_state.replaceVariablesInString(m_file, this);
 
 	return true;
 }

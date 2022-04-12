@@ -61,17 +61,17 @@ bool SourceTarget::initialize()
 	replaceVariablesInPathList(m_defines);
 	replaceVariablesInPathList(m_configureFiles);
 
-	m_state.replaceVariablesInPath(m_precompiledHeader, this);
+	m_state.replaceVariablesInString(m_precompiledHeader, this);
 
 	if (!m_compileOptionsRaw.empty())
 	{
-		m_state.replaceVariablesInPath(m_compileOptionsRaw, this);
+		m_state.replaceVariablesInString(m_compileOptionsRaw, this);
 		m_compileOptions = parseCommandLineOptions(m_compileOptionsRaw);
 	}
 
 	if (!m_linkerOptionsRaw.empty())
 	{
-		m_state.replaceVariablesInPath(m_linkerOptionsRaw, this);
+		m_state.replaceVariablesInString(m_linkerOptionsRaw, this);
 		m_linkerOptions = parseCommandLineOptions(m_linkerOptionsRaw);
 	}
 

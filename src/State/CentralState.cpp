@@ -388,17 +388,20 @@ const std::string& CentralState::anyConfiguration() const noexcept
 }
 
 /*****************************************************************************/
-void CentralState::replaceVariablesInPath(std::string& outPath, const IDistTarget* inTarget) const
+void CentralState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome) const
 {
-	if (outPath.empty())
+	if (outString.empty())
 		return;
 
-	const auto& homeDirectory = m_inputs.homeDirectory();
-	Environment::replaceCommonVariables(outPath, homeDirectory);
-
-	if (String::contains("${", outPath))
+	if (inCheckHome)
 	{
-		RegexPatterns::matchPathVariables(outPath, [&](std::string match) {
+		const auto& homeDirectory = m_inputs.homeDirectory();
+		Environment::replaceCommonVariables(outString, homeDirectory);
+	}
+
+	if (String::contains("${", outString))
+	{
+		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
 			if (String::equals("cwd", match))
 				return m_inputs.workingDirectory();
 
@@ -412,7 +415,7 @@ void CentralState::replaceVariablesInPath(std::string& outPath, const IDistTarge
 				return m_inputs.externalDirectory();
 
 			if (String::equals("home", match))
-				return homeDirectory;
+				return m_inputs.homeDirectory();
 
 			if (inTarget != nullptr)
 			{

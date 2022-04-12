@@ -27,12 +27,12 @@ bool CMakeTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	m_state.replaceVariablesInPath(m_buildFile, this);
-	m_state.replaceVariablesInPath(m_location, this);
+	m_state.replaceVariablesInString(m_buildFile, this);
+	m_state.replaceVariablesInString(m_location, this);
 
 	replaceVariablesInPathList(m_defines);
 
-	m_state.replaceVariablesInPath(m_runExecutable, this);
+	m_state.replaceVariablesInString(m_runExecutable, this);
 
 	m_targetFolder = m_location;
 	if (String::equals('.', m_targetFolder))

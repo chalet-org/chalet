@@ -40,7 +40,7 @@ public:
 
 	void makeLibraryPathVariables();
 
-	void replaceVariablesInPath(std::string& outPath, const IBuildTarget* inTarget) const;
+	void replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	const std::string& uniqueId() const noexcept;
 
 	AncillaryTools& tools;

@@ -23,8 +23,8 @@ bool SubChaletTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	m_state.replaceVariablesInPath(m_buildFile, this);
-	m_state.replaceVariablesInPath(m_location, this);
+	m_state.replaceVariablesInString(m_buildFile, this);
+	m_state.replaceVariablesInString(m_location, this);
 
 	m_targetFolder = m_location;
 	if (String::equals('.', m_targetFolder))

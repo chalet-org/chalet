@@ -100,7 +100,7 @@ void RegexPatterns::matchConfigureFileVariables(std::string& outText, const std:
 /*****************************************************************************/
 void RegexPatterns::matchPathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
-	static std::regex re(R"regex(\$\{(\w+)\})regex");
+	static std::regex re(R"regex(\$\{([\w:]+)\})regex");
 
 	std::smatch sm;
 	while (std::regex_search(outText, sm, re))

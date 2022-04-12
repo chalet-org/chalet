@@ -22,8 +22,8 @@ MacosDiskImageTarget::MacosDiskImageTarget(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool MacosDiskImageTarget::initialize()
 {
-	m_centralState.replaceVariablesInPath(m_background1x, this);
-	m_centralState.replaceVariablesInPath(m_background2x, this);
+	m_centralState.replaceVariablesInString(m_background1x, this);
+	m_centralState.replaceVariablesInString(m_background2x, this);
 
 	return true;
 }

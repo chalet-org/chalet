@@ -24,7 +24,7 @@ bool ProcessBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	m_state.replaceVariablesInPath(m_path, this);
+	m_state.replaceVariablesInString(m_path, this);
 
 	replaceVariablesInPathList(m_arguments);
 

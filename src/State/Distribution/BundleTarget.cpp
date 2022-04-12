@@ -58,11 +58,11 @@ bool BundleTarget::initialize()
 {
 	for (auto& dir : m_rawIncludes)
 	{
-		m_centralState.replaceVariablesInPath(dir, this);
+		m_centralState.replaceVariablesInString(dir, this);
 	}
 	for (auto& dir : m_excludes)
 	{
-		m_centralState.replaceVariablesInPath(dir, this);
+		m_centralState.replaceVariablesInString(dir, this);
 	}
 
 	return true;

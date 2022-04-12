@@ -58,7 +58,7 @@ void IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 {
 	for (auto& dir : outList)
 	{
-		m_state.replaceVariablesInPath(dir, this);
+		m_state.replaceVariablesInString(dir, this);
 	}
 }
 

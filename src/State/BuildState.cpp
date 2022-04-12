@@ -844,17 +844,20 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInPath(std::string& outPath, const IBuildTarget* inTarget) const
+void BuildState::replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
 {
-	if (outPath.empty())
+	if (outString.empty())
 		return;
 
-	const auto& homeDirectory = inputs.homeDirectory();
-	Environment::replaceCommonVariables(outPath, homeDirectory);
-
-	if (String::contains("${", outPath))
+	if (inCheckHome)
 	{
-		RegexPatterns::matchPathVariables(outPath, [&](std::string match) {
+		const auto& homeDirectory = inputs.homeDirectory();
+		Environment::replaceCommonVariables(outString, homeDirectory);
+	}
+
+	if (String::contains("${", outString))
+	{
+		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
 
@@ -874,7 +877,7 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const IBuildTarget
 				return paths.externalBuildDir();
 
 			if (String::equals("home", match))
-				return homeDirectory;
+				return inputs.homeDirectory();
 
 			if (inTarget != nullptr)
 			{
@@ -882,10 +885,28 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const IBuildTarget
 					return inTarget->name();
 			}
 
-			if (String::startsWith("meta:", match))
+			if (String::startsWith("meta:workspace", match))
 			{
+				match = match.substr(14);
+				match[0] = std::tolower(match[0]);
+
 				const auto& metadata = workspace.metadata();
+				return metadata.getMetadataFromString(match);
+			}
+			else if (String::startsWith("meta:", match))
+			{
 				match = match.substr(5);
+				if (inTarget != nullptr && inTarget->isSources())
+				{
+					const auto& project = static_cast<const SourceTarget&>(*inTarget);
+					if (project.hasMetadata())
+					{
+						const auto& metadata = project.metadata();
+						return metadata.getMetadataFromString(match);
+					}
+				}
+
+				const auto& metadata = workspace.metadata();
 				return metadata.getMetadataFromString(match);
 			}
 
@@ -894,6 +915,9 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const IBuildTarget
 				match = match.substr(4);
 				return Environment::getAsString(match.c_str());
 			}
+
+			if (onFail != nullptr)
+				return onFail(std::move(match));
 
 			return std::string();
 		});

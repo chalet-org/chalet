@@ -37,7 +37,7 @@ bool ConfigureFileParser::run()
 			return this->getReplaceValue(std::move(match));
 		};
 		RegexPatterns::matchConfigureFileVariables(fileContents, onReplace);
-		RegexPatterns::matchConfigureFileVariables(fileContents, onReplace);
+		m_state.replaceVariablesInString(fileContents, &m_project, false, onReplace);
 
 		if (fileContents.back() != '\n')
 			fileContents += '\n';
