@@ -867,9 +867,6 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 			if (String::equals("buildDir", match))
 				return paths.buildOutputDir();
 
-			if (String::equals("distributionDir", match))
-				return inputs.distributionDirectory();
-
 			if (String::equals("externalDir", match))
 				return inputs.externalDirectory();
 
@@ -888,9 +885,7 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 			if (String::startsWith("meta:workspace", match))
 			{
 				match = match.substr(14);
-				{
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
-				}
+				match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
 
 				const auto& metadata = workspace.metadata();
 				return metadata.getMetadataFromString(match);
