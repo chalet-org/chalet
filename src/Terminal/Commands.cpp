@@ -649,19 +649,6 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	if (String::contains("${", inPattern))
 		return false;
 
-	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
-		bool isDirectory = fs::is_directory(inmatch);
-		bool isRegularFile = fs::is_regular_file(inmatch);
-
-		if (inSettings == GlobMatch::Files && isDirectory)
-			return false;
-
-		if (inSettings == GlobMatch::Folders && isRegularFile)
-			return false;
-
-		return isRegularFile || isDirectory;
-	};
-
 	auto pattern = inPattern;
 	String::replaceAll(pattern, '(', "\\(");
 	String::replaceAll(pattern, ')', "\\)");
@@ -712,6 +699,19 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 
 	if (!Commands::pathIsDirectory(basePath))
 		return false;
+
+	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
+		bool isDirectory = fs::is_directory(inmatch);
+		bool isRegularFile = fs::is_regular_file(inmatch);
+
+		if (inSettings == GlobMatch::Files && isDirectory)
+			return false;
+
+		if (inSettings == GlobMatch::Folders && isRegularFile)
+			return false;
+
+		return isRegularFile || isDirectory;
+	};
 
 	std::regex re(pattern);
 	for (auto& it : fs::recursive_directory_iterator(basePath))

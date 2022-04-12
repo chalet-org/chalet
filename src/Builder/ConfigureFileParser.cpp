@@ -5,8 +5,6 @@
 
 #include "Builder/ConfigureFileParser.hpp"
 
-#include <regex>
-
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "State/BuildPaths.hpp"
@@ -15,6 +13,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 // #include "Utility/Timer.hpp"
 
@@ -33,26 +32,12 @@ bool ConfigureFileParser::run()
 	// Timer timer;
 	bool result = true;
 
-	static std::regex reA(R"regex(@(\w+)@)regex");
-	static std::regex reB(R"regex(\$\{(\w+)\})regex");
-
 	auto onReplaceContents = [&](std::string& fileContents) {
-		std::smatch sm;
-		while (std::regex_search(fileContents, sm, reA))
-		{
-			auto prefix = sm.prefix().str();
-			auto replaceValue = getReplaceValue(sm[1].str());
-			auto suffix = sm.suffix().str();
-			fileContents = fmt::format("{}{}{}", prefix, replaceValue, suffix);
-		}
-
-		while (std::regex_search(fileContents, sm, reB))
-		{
-			auto prefix = sm.prefix().str();
-			auto replaceValue = getReplaceValue(sm[1].str());
-			auto suffix = sm.suffix().str();
-			fileContents = fmt::format("{}{}{}", prefix, replaceValue, suffix);
-		}
+		auto onReplace = [this](auto match) {
+			return this->getReplaceValue(std::move(match));
+		};
+		RegexPatterns::matchConfigureFileVariables(fileContents, onReplace);
+		RegexPatterns::matchConfigureFileVariables(fileContents, onReplace);
 
 		if (fileContents.back() != '\n')
 			fileContents += '\n';
