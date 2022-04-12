@@ -21,9 +21,7 @@ WindowsNullsoftInstallerTarget::WindowsNullsoftInstallerTarget(const CentralStat
 /*****************************************************************************/
 bool WindowsNullsoftInstallerTarget::initialize()
 {
-	const auto& targetName = this->name();
-
-	m_centralState.replaceVariablesInPath(m_file, targetName);
+	m_centralState.replaceVariablesInPath(m_file, this);
 
 	replaceVariablesInPathList(m_defines);
 	replaceVariablesInPathList(m_pluginDirs);

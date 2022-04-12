@@ -22,10 +22,8 @@ MacosDiskImageTarget::MacosDiskImageTarget(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool MacosDiskImageTarget::initialize()
 {
-	const auto& targetName = this->name();
-
-	m_centralState.replaceVariablesInPath(m_background1x, targetName);
-	m_centralState.replaceVariablesInPath(m_background2x, targetName);
+	m_centralState.replaceVariablesInPath(m_background1x, this);
+	m_centralState.replaceVariablesInPath(m_background2x, this);
 
 	return true;
 }

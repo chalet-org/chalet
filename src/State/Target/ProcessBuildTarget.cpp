@@ -24,8 +24,7 @@ bool ProcessBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	const auto& targetName = this->name();
-	m_state.replaceVariablesInPath(m_path, targetName);
+	m_state.replaceVariablesInPath(m_path, this);
 
 	replaceVariablesInPathList(m_arguments);
 

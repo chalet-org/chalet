@@ -844,7 +844,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInPath(std::string& outPath, const std::string& inName) const
+void BuildState::replaceVariablesInPath(std::string& outPath, const IBuildTarget* inTarget) const
 {
 	if (outPath.empty())
 		return;
@@ -876,8 +876,11 @@ void BuildState::replaceVariablesInPath(std::string& outPath, const std::string&
 			if (String::equals("home", match))
 				return homeDirectory;
 
-			if (String::equals("name", match))
-				return inName;
+			if (inTarget != nullptr)
+			{
+				if (String::equals("name", match))
+					return inTarget->name();
+			}
 
 			if (String::startsWith("meta:", match))
 			{

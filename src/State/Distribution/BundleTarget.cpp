@@ -56,14 +56,13 @@ BundleTarget::BundleTarget(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool BundleTarget::initialize()
 {
-	const auto& targetName = this->name();
 	for (auto& dir : m_rawIncludes)
 	{
-		m_centralState.replaceVariablesInPath(dir, targetName);
+		m_centralState.replaceVariablesInPath(dir, this);
 	}
 	for (auto& dir : m_excludes)
 	{
-		m_centralState.replaceVariablesInPath(dir, targetName);
+		m_centralState.replaceVariablesInPath(dir, this);
 	}
 
 	return true;

@@ -21,9 +21,7 @@ ScriptDistTarget::ScriptDistTarget(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
-	const auto& targetName = this->name();
-
-	m_centralState.replaceVariablesInPath(m_file, targetName);
+	m_centralState.replaceVariablesInPath(m_file, this);
 
 	return true;
 }

@@ -84,10 +84,9 @@ bool IDistTarget::isWindowsNullsoftInstaller() const noexcept
 /*****************************************************************************/
 void IDistTarget::replaceVariablesInPathList(StringList& outList)
 {
-	const auto& targetName = this->name();
 	for (auto& dir : outList)
 	{
-		m_centralState.replaceVariablesInPath(dir, targetName);
+		m_centralState.replaceVariablesInPath(dir, this);
 	}
 }
 

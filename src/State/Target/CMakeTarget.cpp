@@ -27,17 +27,16 @@ bool CMakeTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	const auto& targetName = this->name();
-	m_state.replaceVariablesInPath(m_buildFile, targetName);
-	m_state.replaceVariablesInPath(m_location, targetName);
+	m_state.replaceVariablesInPath(m_buildFile, this);
+	m_state.replaceVariablesInPath(m_location, this);
 
 	replaceVariablesInPathList(m_defines);
 
-	m_state.replaceVariablesInPath(m_runExecutable, targetName);
+	m_state.replaceVariablesInPath(m_runExecutable, this);
 
 	m_targetFolder = m_location;
 	if (String::equals('.', m_targetFolder))
-		m_targetFolder = targetName;
+		m_targetFolder = this->name();
 
 	return true;
 }

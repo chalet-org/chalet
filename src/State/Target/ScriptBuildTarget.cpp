@@ -24,8 +24,7 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	const auto& targetName = this->name();
-	m_state.replaceVariablesInPath(m_file, targetName);
+	m_state.replaceVariablesInPath(m_file, this);
 
 	return true;
 }

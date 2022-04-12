@@ -21,9 +21,7 @@ ProcessDistTarget::ProcessDistTarget(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
-	const auto& targetName = this->name();
-
-	m_centralState.replaceVariablesInPath(m_path, targetName);
+	m_centralState.replaceVariablesInPath(m_path, this);
 
 	replaceVariablesInPathList(m_arguments);
 

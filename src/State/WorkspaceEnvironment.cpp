@@ -34,7 +34,7 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 		if (String::contains(path + Environment::getPathSeparator(), originalPathVar))
 			continue;
 
-		inState.replaceVariablesInPath(path, std::string());
+		inState.replaceVariablesInPath(path, nullptr);
 		addedPath += path;
 		addedPath += Environment::getPathSeparator();
 	}
