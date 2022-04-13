@@ -864,7 +864,7 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 			if (String::equals("arch", match))
 				return info.targetArchitectureString();
 
-			if (String::equals("arch-triple", match))
+			if (String::equals("archTriple", match))
 				return info.targetArchitectureTriple();
 
 			if (String::equals("configuration", match))
