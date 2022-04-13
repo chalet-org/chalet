@@ -37,7 +37,7 @@ fi
 
 PLATFORM_LINUX_PATH="$cwd/platform/linux/deb"
 
-if [[ -d "$PLATFORM_LINUX_PATH" ]]; then
+if [[ -d "platform/linux/deb" ]]; then
 else
 	echo 'Please run this script from the root of the chalet repository'
 	exit 1
