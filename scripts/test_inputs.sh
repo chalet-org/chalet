@@ -1,0 +1,13 @@
+
+CHALET_VERSION=$1
+CHALET_ARCHITECTURE=${2//_/-}
+CHALET_AUTHOR=$3
+CHALET_DESCRIPTION=$4
+
+echo "Version: $CHALET_VERSION"
+echo "Architecture: $CHALET_ARCHITECTURE"
+echo "Author: $CHALET_AUTHOR"
+echo "Description: $CHALET_DESCRIPTION"
+echo "Done."
+
+exit 0

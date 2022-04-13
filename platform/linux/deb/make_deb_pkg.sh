@@ -8,7 +8,7 @@ fi
 
 if [[ $PLATFORM == '' ]]; then
 	echo 'Error: This script must only be run on linux.'
-	exit 1
+	# exit 1
 fi
 
 WHICH_DPKG_DEB=$(which dpkg-deb)
@@ -16,7 +16,7 @@ RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
 	echo 'Error: This script requires dpkg-deb.'
-	exit 1
+	# exit 1
 fi
 
 WHICH_DH_LINK=$(which dh_link)
@@ -24,14 +24,16 @@ RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
 	echo 'Error: This script requires dh_link (part of debhelper).'
-	exit 1
+	# exit 1
 fi
 
 CHALET_VERSION=$1
-CHALET_ARCHITECTURE=$2
+CHALET_ARCHITECTURE=${2//_/-}
+CHALET_AUTHOR=$3
+CHALET_DESCRIPTION=$4
 
-if [[ $CHALET_VERSION == '' || $CHALET_ARCHITECTURE == '' ]]; then
-	echo 'Error: This script expects 2 arguments for version & architecture.'
+if [[ $CHALET_VERSION == '' || $CHALET_ARCHITECTURE == '' || $CHALET_AUTHOR == '' || $CHALET_DESCRIPTION == '' ]]; then
+	echo 'Error: This script expects 4 arguments - version, architecture, author, description'
 	exit 1
 fi
 
@@ -80,8 +82,8 @@ Essential: no
 Priority: optional
 Depends: ninja-build,cmake,base-devel
 Source: chalet
-Maintainer: Cosmic Road Interactive, LLC.
-Description: A JSON-based project & build tool
+Maintainer: $CHALET_AUTHOR
+Description: $CHALET_DESCRIPTION
 END
 
 cat << END > "$PKG_DEBIAN/links"
@@ -93,7 +95,7 @@ cp "$PLATFORM_LINUX_PATH/postinst" "$PKG_DEBIAN"
 
 cd "$DIST_FOLDER"
 
-dpkg-deb --build "$OUT_DEP_DIR/"
+# dpkg-deb --build "$OUT_DEP_DIR/"
 
 cd "$cwd"
 

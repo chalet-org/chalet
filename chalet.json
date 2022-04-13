@@ -182,6 +182,18 @@
 			"kind": "archive",
 			"include": "*"
 		},
+		"meta-test": {
+			"kind": "process",
+			"condition": "linux",
+			"path": "bash",
+			"arguments": [
+				"platform/linux/make_deb_pkg.sh",
+				"${meta:version}",
+				"${arch}",
+				"${meta:author}",
+				"${meta:description}"
+			]
+		},
 		"chalet-windows-installer": {
 			"kind": "windowsNullsoftInstaller",
 			"file": "platform/windows/installer/install_script.nsi",
