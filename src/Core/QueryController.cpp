@@ -32,95 +32,7 @@ bool QueryController::printListOfRequestedType()
 	if (query == QueryOption::None)
 		return false;
 
-	StringList output;
-	switch (query)
-	{
-		case QueryOption::Commands:
-			output = m_centralState.inputs().commandList();
-			break;
-
-		case QueryOption::Configurations:
-			output = getBuildConfigurationList();
-			break;
-
-		case QueryOption::ToolchainPresets:
-			output = m_centralState.inputs().getToolchainPresets();
-			break;
-
-		case QueryOption::UserToolchains:
-			output = getUserToolchainList();
-			break;
-
-		case QueryOption::Architectures:
-			output = getArchitectures();
-			break;
-
-		case QueryOption::ExportKinds:
-			output = m_centralState.inputs().getExportKindPresets();
-			break;
-
-		case QueryOption::QueryNames:
-			output = m_centralState.inputs().getCliQueryOptions();
-			break;
-
-		case QueryOption::ThemeNames:
-			output = ColorTheme::presets();
-			break;
-
-		case QueryOption::Architecture:
-			output = getCurrentArchitecture();
-			break;
-
-		case QueryOption::Configuration:
-			output = getCurrentBuildConfiguration();
-			break;
-
-		case QueryOption::Toolchain:
-			output = getCurrentToolchain();
-			break;
-
-		case QueryOption::RunTarget:
-			output = getCurrentRunTarget();
-			break;
-
-		case QueryOption::AllRunTargets:
-			output = getAllRunTargets();
-			break;
-
-		case QueryOption::AllToolchains: {
-			StringList presets = m_centralState.inputs().getToolchainPresets();
-			StringList userToolchains = getUserToolchainList();
-			output = List::combine(std::move(userToolchains), std::move(presets));
-			break;
-		}
-
-		case QueryOption::ToolchainStrategy:
-			output = getToolchainStrategies();
-			break;
-
-		case QueryOption::ToolchainBuildPathStyle:
-			output = getToolchainBuildPathStyles();
-			break;
-
-		case QueryOption::ChaletJsonState:
-			output = getChaletJsonState();
-			break;
-
-		case QueryOption::SettingsJsonState:
-			output = getSettingsJsonState();
-			break;
-
-		case QueryOption::ChaletSchema:
-			output = getChaletSchema();
-			break;
-
-		case QueryOption::SettingsSchema:
-			output = getSettingsSchema();
-			break;
-
-		default:
-			break;
-	}
+	StringList output = getRequestedType(query);
 
 	auto result = String::join(output, '\t');
 	std::cout.write(result.data(), result.size());
@@ -128,6 +40,104 @@ bool QueryController::printListOfRequestedType()
 	std::cout.flush();
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList QueryController::getRequestedType(const QueryOption inOption) const
+{
+	StringList ret;
+
+	switch (inOption)
+	{
+		case QueryOption::Commands:
+			ret = m_centralState.inputs().commandList();
+			break;
+
+		case QueryOption::Configurations:
+			ret = getBuildConfigurationList();
+			break;
+
+		case QueryOption::ToolchainPresets:
+			ret = m_centralState.inputs().getToolchainPresets();
+			break;
+
+		case QueryOption::UserToolchains:
+			ret = getUserToolchainList();
+			break;
+
+		case QueryOption::Architectures:
+			ret = getArchitectures();
+			break;
+
+		case QueryOption::ExportKinds:
+			ret = m_centralState.inputs().getExportKindPresets();
+			break;
+
+		case QueryOption::QueryNames:
+			ret = m_centralState.inputs().getCliQueryOptions();
+			break;
+
+		case QueryOption::ThemeNames:
+			ret = ColorTheme::presets();
+			break;
+
+		case QueryOption::Architecture:
+			ret = getCurrentArchitecture();
+			break;
+
+		case QueryOption::Configuration:
+			ret = getCurrentBuildConfiguration();
+			break;
+
+		case QueryOption::Toolchain:
+			ret = getCurrentToolchain();
+			break;
+
+		case QueryOption::RunTarget:
+			ret = getCurrentRunTarget();
+			break;
+
+		case QueryOption::AllRunTargets:
+			ret = getAllRunTargets();
+			break;
+
+		case QueryOption::AllToolchains: {
+			StringList presets = m_centralState.inputs().getToolchainPresets();
+			StringList userToolchains = getUserToolchainList();
+			ret = List::combine(std::move(userToolchains), std::move(presets));
+			break;
+		}
+
+		case QueryOption::ToolchainStrategy:
+			ret = getToolchainStrategies();
+			break;
+
+		case QueryOption::ToolchainBuildPathStyle:
+			ret = getToolchainBuildPathStyles();
+			break;
+
+		case QueryOption::ChaletJsonState:
+			ret = getChaletJsonState();
+			break;
+
+		case QueryOption::SettingsJsonState:
+			ret = getSettingsJsonState();
+			break;
+
+		case QueryOption::ChaletSchema:
+			ret = getChaletSchema();
+			break;
+
+		case QueryOption::SettingsSchema:
+			ret = getSettingsSchema();
+			break;
+
+		case QueryOption::None:
+		default:
+			break;
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

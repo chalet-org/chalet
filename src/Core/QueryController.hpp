@@ -6,6 +6,7 @@
 #ifndef CHALET_QUERY_CONTROLLER_HPP
 #define CHALET_QUERY_CONTROLLER_HPP
 
+#include "Core/QueryOption.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
@@ -17,6 +18,7 @@ struct QueryController
 	QueryController(const CentralState& inCentralState);
 
 	bool printListOfRequestedType();
+	StringList getRequestedType(const QueryOption inOption) const;
 
 private:
 	const Json& getSettingsJson() const;

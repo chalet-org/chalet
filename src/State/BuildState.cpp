@@ -264,7 +264,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -860,6 +860,12 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
+
+			if (String::equals("arch", match))
+				return info.targetArchitectureString();
+
+			if (String::equals("arch-triple", match))
+				return info.targetArchitectureTriple();
 
 			if (String::equals("configuration", match))
 				return configuration.name();

@@ -11,7 +11,9 @@
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 #include "SettingsJson/SettingsJsonParser.hpp"
 
+#include "Core/Arch.hpp"
 #include "Core/DotEnvFileParser.hpp"
+#include "Core/QueryController.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
@@ -406,7 +408,26 @@ void CentralState::replaceVariablesInString(std::string& outString, const IDistT
 				return m_inputs.workingDirectory();
 
 			if (String::equals("configuration", match))
-				return anyConfiguration();
+			{
+				QueryController queryCtrlr(*this);
+				auto config = queryCtrlr.getRequestedType(QueryOption::Configuration).front();
+				if (config.empty())
+					config = anyConfiguration();
+
+				return config;
+			}
+
+			if (String::equals("arch", match))
+			{
+				QueryController queryCtrlr(*this);
+				auto archFromSettings = queryCtrlr.getRequestedType(QueryOption::Architecture).front();
+				if (String::equals("auto", archFromSettings))
+					archFromSettings = m_inputs.hostArchitecture();
+
+				Arch arch;
+				arch.set(archFromSettings);
+				return arch.str;
+			}
 
 			if (String::equals("distributionDir", match))
 				return m_inputs.distributionDirectory();
