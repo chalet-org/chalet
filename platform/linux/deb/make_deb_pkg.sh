@@ -56,7 +56,7 @@ if [[ -d "$PKG_ROOT" ]]; then
 	rm -rf "$PKG_ROOT"
 fi
 
-PKG_DEBIAN="$PKG_ROOT/DEBIAN"
+PKG_DEBIAN="$PKG_ROOT/debian"
 PKG_BIN="$PKG_ROOT/usr/bin"
 PKG_OPT="$PKG_ROOT/opt/chalet"
 PKG_COMPLETIONS="$PKG_ROOT/usr/share/bash-completion/completions"
@@ -73,7 +73,7 @@ cp "$DIST_FOLDER/LICENSE.txt" "$PKG_OPT"
 cp "$DIST_FOLDER/README.md" "$PKG_OPT"
 
 cat << END > "$PKG_DEBIAN/control"
-Package chalet
+Package: chalet
 Version: $CHALET_VERSION
 Architecture any-$CHALET_ARCHITECTURE
 Essential: no
