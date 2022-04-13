@@ -974,7 +974,7 @@
 		"target-source-extends": {
 			"type": "string",
 			"description": "A project template to extend. Defaults to '*' implicitly.",
-			"pattern": "^[A-Za-z\\-_]+$",
+			"pattern": "^(\\*|[A-Za-z\\-_]+)$",
 			"minLength": 1,
 			"default": "*"
 		},

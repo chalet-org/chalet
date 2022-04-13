@@ -503,7 +503,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1,
 		"default": "*"
 	})json"_ojson;
-	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^{}$", kPatternAbstractName);
+	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^(\\*|{})$", kPatternAbstractName);
 
 	/*defs[Defs::TargetSourceFiles] = makeArrayOrString(R"json({
 		"type": "string",
