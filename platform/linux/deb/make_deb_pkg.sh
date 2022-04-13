@@ -56,7 +56,7 @@ if [[ -d "$PKG_ROOT" ]]; then
 	rm -rf "$PKG_ROOT"
 fi
 
-PKG_DEBIAN="$PKG_ROOT/debian"
+PKG_DEBIAN="$PKG_ROOT/DEBIAN"
 PKG_BIN="$PKG_ROOT/usr/bin"
 PKG_OPT="$PKG_ROOT/opt/chalet"
 PKG_COMPLETIONS="$PKG_ROOT/usr/share/bash-completion/completions"
@@ -79,15 +79,17 @@ Architecture: any-$CHALET_ARCHITECTURE
 Essential: no
 Priority: optional
 Depends: ninja-build,cmake,base-devel
+Source: chalet
 Maintainer: Cosmic Road Interactive, LLC.
 Description: A JSON-based project & build tool
 END
 
+cat << END > "$PKG_DEBIAN/links"
+opt/chalet/chalet usr/bin/chalet
+END
+
 cp "$PLATFORM_LINUX_PATH/preinst" "$PKG_DEBIAN"
 cp "$PLATFORM_LINUX_PATH/postinst" "$PKG_DEBIAN"
-
-cd "$PKG_ROOT"
-dh_link opt/chalet/chalet usr/bin/chalet
 
 cd "$DIST_FOLDER"
 
