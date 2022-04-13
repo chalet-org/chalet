@@ -12,7 +12,6 @@ if [[ $PLATFORM == '' ]]; then
 fi
 
 WHICH_DPKG_DEB=$(which dpkg-deb)
-$WHICH_DPKG_DEB >/dev/null
 RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
@@ -21,7 +20,6 @@ if [[ $RESULT != 0 ]]; then
 fi
 
 WHICH_DH_LINK=$(which dh_link)
-$WHICH_DH_LINK >/dev/null
 RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
