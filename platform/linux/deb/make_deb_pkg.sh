@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cwd=${PWD##*/}
+cwd=$PWD
 
 if [[ $OSTYPE == 'linux-gnu'* ]]; then
 	PLATFORM=linux
