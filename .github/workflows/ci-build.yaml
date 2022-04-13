@@ -56,7 +56,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./dist/chalet-arm-linux-gnueabihf.zip
+          files: |
+            ./dist/chalet-arm-linux-gnueabihf.zip
+            ./dist/chalet-arm-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc bundle
@@ -64,7 +66,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: ./dist/chalet-x86_64-linux-gnu.zip
+          files: |
+            ./dist/chalet-x86_64-linux-gnu.zip
+            ./dist/chalet-x86_64-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet run tests

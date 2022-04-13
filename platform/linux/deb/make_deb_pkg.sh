@@ -8,7 +8,7 @@ fi
 
 if [[ $PLATFORM == '' ]]; then
 	echo 'Error: This script must only be run on linux.'
-	# exit 1
+	exit 1
 fi
 
 WHICH_DPKG_DEB=$(which dpkg-deb)
@@ -16,7 +16,7 @@ RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
 	echo 'Error: This script requires dpkg-deb.'
-	# exit 1
+	exit 1
 fi
 
 WHICH_DH_LINK=$(which dh_link)
@@ -24,10 +24,11 @@ RESULT=$?
 
 if [[ $RESULT != 0 ]]; then
 	echo 'Error: This script requires dh_link (part of debhelper).'
-	# exit 1
+	exit 1
 fi
 
 CHALET_VERSION=$1
+CHALET_ARCH_RAW=$2
 CHALET_ARCHITECTURE=${2//_/-}
 CHALET_AUTHOR=$3
 CHALET_DESCRIPTION=$4
@@ -95,7 +96,9 @@ cp "$PLATFORM_LINUX_PATH/postinst" "$PKG_DEBIAN"
 
 cd "$DIST_FOLDER"
 
-# dpkg-deb --build "$OUT_DEP_DIR/"
+dpkg-deb --build "$OUT_DEP_DIR/"
+
+zip chalet-$CHALET_ARCH_RAW-linux-debian.zip $OUT_DEP_DIR.deb
 
 cd "$cwd"
 
