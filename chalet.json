@@ -184,7 +184,7 @@
 		"debian-pkg": {
 			"kind": "script",
 			"condition": "linux",
-			"file": "platform/linux/make_deb_pkg.sh",
+			"file": "platform/linux/deb/make_deb_pkg.sh",
 			"arguments": [
 				"${meta:version}",
 				"${arch}",
