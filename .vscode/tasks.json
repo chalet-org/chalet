@@ -175,7 +175,7 @@
 		},
 		{
 			"label": "Bundle",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema bundle",
+			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release bundle",
 			"type": "shell",
 			"group": {
 				"kind": "build",
