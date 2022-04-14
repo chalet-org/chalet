@@ -177,24 +177,8 @@ void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 		}
 	}
 
-	// TODO: Dynamic way of determining this list
-	//   would they differ between console app & windows app?
-	//   or target architecture?
-	for (const char* link : {
-			 "DbgHelp",
-			 "kernel32",
-			 "user32",
-			 "gdi32",
-			 "winspool",
-			 "comdlg32",
-			 "advapi32",
-			 "shell32",
-			 "ole32",
-			 "oleaut32",
-			 "uuid",
-			 //  "odbc32",
-			 //  "odbccp32",
-		 })
+	auto win32Links = getWin32Links();
+	for (const auto& link : win32Links)
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
 	}

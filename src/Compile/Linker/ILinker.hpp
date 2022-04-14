@@ -43,6 +43,8 @@ protected:
 
 	virtual void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const final;
 
+	StringList getWin32Links() const;
+
 	uint m_versionMajorMinor = 0;
 	uint m_versionPatch = 0;
 };

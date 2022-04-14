@@ -29,19 +29,8 @@ void LinkerLLVMClang::addLinks(StringList& outArgList) const
 	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang())
 	{
 		const std::string prefix{ "-l" };
-		for (const char* link : {
-				 "DbgHelp",
-				 "kernel32",
-				 "user32",
-				 "gdi32",
-				 "winspool",
-				 "shell32",
-				 "ole32",
-				 "oleaut32",
-				 "uuid",
-				 "comdlg32",
-				 "advapi32",
-			 })
+		auto win32Links = getWin32Links();
+		for (const auto& link : win32Links)
 		{
 			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));
 		}

@@ -517,8 +517,15 @@ void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 {
 	std::string opt;
+	std::string inlineOpt;
 
 	OptimizationLevel level = m_state.configuration.optimizationLevel();
+
+	// inline optimization flags
+	//   /Ob0 - Debug
+	//   /Ob1 - MinSizeRel, RelWithDebInfo
+	//   /Ob2 - Release
+	//   /Ob3 - If available, RelHighOpt, or with "fast"
 
 	if (m_state.configuration.debugSymbols()
 		&& level != OptimizationLevel::Debug
@@ -527,6 +534,7 @@ void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 	{
 		// force -O0 (anything else would be in error)
 		opt = "/Od";
+		inlineOpt = "/Ob0";
 	}
 	else
 	{
@@ -534,27 +542,45 @@ void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 		{
 			case OptimizationLevel::L1:
 				opt = "/O1";
+				if (m_state.configuration.debugSymbols())
+					inlineOpt = "/Ob1";
+				else
+					inlineOpt = "/Ob2";
 				break;
 
 			case OptimizationLevel::L2:
 				opt = "/O2";
+				if (m_state.configuration.debugSymbols())
+					inlineOpt = "/Ob1";
+				else
+					inlineOpt = "/Ob2";
 				break;
 
 			case OptimizationLevel::L3:
 				opt = "/O2";
+				if (m_versionMajorMinor >= 1920) // VS 2019+
+					inlineOpt = "/Ob3";
+				else
+					inlineOpt = "/Ob2";
 				break;
 
 			case OptimizationLevel::Size:
 				opt = "/Os";
+				inlineOpt = "/Ob1";
 				break;
 
 			case OptimizationLevel::Fast:
 				opt = "/Ot";
+				if (m_versionMajorMinor >= 1920) // VS 2019+
+					inlineOpt = "/Ob3";
+				else
+					inlineOpt = "/Ob2";
 				break;
 
 			case OptimizationLevel::Debug:
 			case OptimizationLevel::None:
 				opt = "/Od";
+				inlineOpt = "/Ob0";
 				break;
 
 			case OptimizationLevel::CompilerDefault:
@@ -566,6 +592,7 @@ void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 	if (!opt.empty())
 	{
 		List::addIfDoesNotExist(outArgList, std::move(opt));
+		List::addIfDoesNotExist(outArgList, std::move(inlineOpt));
 	}
 }
 

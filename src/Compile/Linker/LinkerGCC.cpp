@@ -206,6 +206,15 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				outArgList.emplace_back(prefix + link);
 		}
 	}
+
+	if (m_state.environment->isMingwGcc())
+	{
+		auto win32Links = getWin32Links();
+		for (const auto& link : win32Links)
+		{
+			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));
+		}
+	}
 }
 
 /*****************************************************************************/
@@ -331,8 +340,6 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, std::move(flag));
 		};
 
-		addFlag("-static-libgcc");
-
 		if (m_state.configuration.sanitizeAddress())
 			addFlag("-static-libasan");
 
@@ -351,6 +358,8 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 
 		if (m_project.language() == CodeLanguage::CPlusPlus)
 			addFlag("-static-libstdc++");
+		else
+			addFlag("-static-libgcc");
 	}
 }
 

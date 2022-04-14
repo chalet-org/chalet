@@ -173,4 +173,33 @@ void ILinker::addSourceObjects(StringList& outArgList, const StringList& sourceO
 	}
 }
 
+/*****************************************************************************/
+StringList ILinker::getWin32Links() const
+{
+	// TODO: Dynamic way of determining this list
+	//   would they differ between console app & windows app?
+	//   or target architecture?
+
+	StringList ret;
+
+	ret.emplace_back("DbgHelp");
+	ret.emplace_back("kernel32");
+	ret.emplace_back("user32");
+	ret.emplace_back("gdi32");
+	ret.emplace_back("winspool");
+	ret.emplace_back("shell32");
+	ret.emplace_back("ole32");
+	ret.emplace_back("oleaut32");
+	ret.emplace_back("uuid");
+	ret.emplace_back("comdlg32");
+	ret.emplace_back("advapi32");
+
+	// imm32
+	// setupapi
+	// version
+	// winmm
+
+	return ret;
+}
+
 }
