@@ -179,7 +179,7 @@ bool Router::routeBundle(BuildState& inState)
 
 	AppBundler bundler(inState);
 
-	if (inState.doBuild(Route::Build, false))
+	if (!inState.doBuild(Route::Build, false))
 		return false;
 
 	for (auto& target : inState.distribution)
