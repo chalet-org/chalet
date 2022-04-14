@@ -175,11 +175,8 @@ private:
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
 	const std::string kPatternConditionConfigurations;
-	const std::string kPatternDistributionPlatforms;
-	const std::string kPatternConditionPlatforms;
-	const std::string kPatternConditionConfigurationsPlatforms;
-	const std::string kPatternDistributionCondition;
-	const std::string kPatternTargetCondition;
+	const std::string kPatternPlatforms;
+	const std::string kPatternConfigurationsPlatforms;
 	const std::string kPatternCompilers;
 	const std::string kPatternVersion;
 
