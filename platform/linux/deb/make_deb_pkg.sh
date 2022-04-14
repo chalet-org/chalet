@@ -40,8 +40,7 @@ fi
 
 PLATFORM_LINUX_PATH="$cwd/platform/linux/deb"
 
-if [[ -d "platform/linux/deb" ]]; then
-else
+if [[ ! -d "platform/linux/deb" ]]; then
 	echo 'Please run this script from the root of the chalet repository'
 	exit 1
 fi
@@ -50,8 +49,7 @@ DIST_FOLDER="$cwd/dist"
 OUT_DEP_DIR="chalet_${CHALET_VERSION}_${CHALET_ARCHITECTURE}"
 PKG_ROOT="$DIST_FOLDER/$OUT_DEP_DIR"
 
-if [[ -d "$DIST_FOLDER" ]]; then
-else
+if [[ ! -d "$DIST_FOLDER" ]]; then
 	chalet-debug bundle
 fi
 
