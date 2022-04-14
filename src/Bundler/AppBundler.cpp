@@ -153,30 +153,6 @@ void AppBundler::reportErrors() const
 }
 
 /*****************************************************************************/
-/*BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) const
-{
-	BuildState* ret = nullptr;
-	for (auto& [config, state] : m_states)
-	{
-		auto configName = fmt::format("{}_{}", m_detectedArch, inBuildConfiguration);
-		if (String::equals(configName, config))
-		{
-			ret = state.get();
-			break;
-		}
-	}
-
-	chalet_assert(ret != nullptr, "State not initialized");
-	if (ret == nullptr)
-	{
-		Diagnostic::error("Arch and/or build configuration '{}' not detected.", inBuildConfiguration);
-		return nullptr;
-	}
-
-	return ret;
-}*/
-
-/*****************************************************************************/
 bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 {
 	auto& bundle = inBundler.bundle();

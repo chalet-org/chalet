@@ -178,7 +178,6 @@ bool Router::routeBundle(BuildState& inState)
 	}
 
 	AppBundler bundler(inState);
-
 	if (!inState.doBuild(Route::Build, false))
 		return false;
 

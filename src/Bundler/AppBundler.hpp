@@ -26,8 +26,6 @@ struct AppBundler
 	CHALET_DISALLOW_COPY_MOVE(AppBundler);
 	~AppBundler();
 
-	// bool runBuilds();
-
 	bool run(const DistTarget& inTarget);
 
 	bool gatherDependencies(const BundleTarget& inTarget);
