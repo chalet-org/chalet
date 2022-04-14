@@ -98,6 +98,7 @@ namespace SKeys
 {
 CH_STR(Definitions) = "definitions";
 CH_STR(Items) = "items";
+CH_STR(UniqueItems) = "uniqueItems";
 CH_STR(Properties) = "properties";
 CH_STR(AdditionalProperties) = "additionalProperties";
 CH_STR(Pattern) = "pattern";

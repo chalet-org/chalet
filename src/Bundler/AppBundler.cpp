@@ -379,9 +379,10 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 
 	displayHeader("Script", inTarget);
 
+	const auto& arguments = inTarget.arguments();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
-	if (!scriptRunner.run(file, showExitCode))
+	if (!scriptRunner.run(file, arguments, showExitCode))
 	{
 		Output::lineBreak();
 		Output::msgBuildFail();

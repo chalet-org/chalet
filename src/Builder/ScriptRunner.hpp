@@ -17,8 +17,7 @@ class ScriptRunner
 public:
 	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools);
 
-	bool run(const StringList& inScripts, const bool inShowExitCode);
-	bool run(const std::string& inScript, const bool inShowExitCode);
+	bool run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode);
 
 private:
 	const CommandLineInputs& m_inputs;

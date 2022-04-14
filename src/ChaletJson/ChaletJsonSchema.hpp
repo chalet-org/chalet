@@ -135,6 +135,7 @@ class ChaletJsonSchema
 		//
 		TargetScript,
 		TargetScriptFile,
+		TargetScriptArguments,
 		//
 		TargetCMake,
 		TargetCMakeLocation,
@@ -166,7 +167,7 @@ private:
 	DefinitionMap getDefinitions();
 	std::string getDefinitionName(const Defs inDef);
 	Json getDefinition(const Defs inDef);
-	Json makeArrayOrString(const Json inString);
+	Json makeArrayOrString(const Json inString, const bool inUniqueItems = true);
 
 	//
 	const std::string kPatternTargetName;

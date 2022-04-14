@@ -20,8 +20,13 @@ struct ScriptDistTarget final : public IDistTarget
 	const std::string& file() const noexcept;
 	void setFile(std::string&& inValue) noexcept;
 
+	const StringList& arguments() const noexcept;
+	void addArguments(StringList&& inList);
+	void addArgument(std::string&& inValue);
+
 private:
 	std::string m_file;
+	StringList m_arguments;
 };
 }
 

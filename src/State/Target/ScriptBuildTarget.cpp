@@ -26,6 +26,8 @@ bool ScriptBuildTarget::initialize()
 
 	m_state.replaceVariablesInString(m_file, this);
 
+	replaceVariablesInPathList(m_arguments);
+
 	return true;
 }
 
@@ -50,6 +52,22 @@ const std::string& ScriptBuildTarget::file() const noexcept
 void ScriptBuildTarget::setFile(std::string&& inValue) noexcept
 {
 	m_file = std::move(inValue);
+}
+
+/*****************************************************************************/
+const StringList& ScriptBuildTarget::arguments() const noexcept
+{
+	return m_arguments;
+}
+
+void ScriptBuildTarget::addArguments(StringList&& inList)
+{
+	List::forEach(inList, this, &ScriptBuildTarget::addArgument);
+}
+
+void ScriptBuildTarget::addArgument(std::string&& inValue)
+{
+	m_arguments.emplace_back(std::move(inValue));
 }
 
 }

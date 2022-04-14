@@ -181,12 +181,11 @@
 			"kind": "archive",
 			"include": "*"
 		},
-		"meta-test": {
-			"kind": "process",
+		"debian-pkg": {
+			"kind": "script",
 			"condition": "linux",
-			"path": "bash",
+			"file": "platform/linux/make_deb_pkg.sh",
 			"arguments": [
-				"platform/linux/make_deb_pkg.sh",
 				"${meta:version}",
 				"${arch}",
 				"${meta:author}",

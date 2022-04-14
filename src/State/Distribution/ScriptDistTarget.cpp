@@ -23,6 +23,8 @@ bool ScriptDistTarget::initialize()
 {
 	m_state.replaceVariablesInString(m_file, this);
 
+	replaceVariablesInPathList(m_arguments);
+
 	return true;
 }
 
@@ -49,6 +51,22 @@ const std::string& ScriptDistTarget::file() const noexcept
 void ScriptDistTarget::setFile(std::string&& inValue) noexcept
 {
 	m_file = std::move(inValue);
+}
+
+/*****************************************************************************/
+const StringList& ScriptDistTarget::arguments() const noexcept
+{
+	return m_arguments;
+}
+
+void ScriptDistTarget::addArguments(StringList&& inList)
+{
+	List::forEach(inList, this, &ScriptDistTarget::addArgument);
+}
+
+void ScriptDistTarget::addArgument(std::string&& inValue)
+{
+	m_arguments.emplace_back(std::move(inValue));
 }
 
 }

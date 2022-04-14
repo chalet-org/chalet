@@ -649,7 +649,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minLength": 1
-	})json"_ojson);
+	})json"_ojson,
+		false);
 
 	defs[Defs::TargetCopyFilesOnRun] = makeArrayOrString(R"json({
 		"type": "string",
@@ -1243,6 +1244,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::TargetScriptArguments] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of arguments to pass along to the script.",
+		"minLength": 1
+	})json"_ojson,
+		false);
+
 	//
 
 	defs[Defs::TargetCMakeLocation] = R"json({
@@ -1323,9 +1331,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetProcessArguments] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of arguments to pass along to the process",
+		"description": "A list of arguments to pass along to the process.",
 		"minLength": 1
-	})json"_ojson);
+	})json"_ojson,
+		false);
 
 	auto getDefinitionwithCompilerOptions = [this](const Defs inDef) {
 		Json ret = R"json({
@@ -1610,11 +1619,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"kind"
 			]
 		})json"_ojson;
+		targetBuildScript[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetScriptArguments);
 		targetBuildScript[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
 		targetBuildScript[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 		// targetBuildScript[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
 		targetBuildScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
 		targetBuildScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
+		targetBuildScript[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptArguments);
 		targetBuildScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::TargetScript] = std::move(targetBuildScript);
 	}
@@ -1624,10 +1635,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
+		distributionScript[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetScriptArguments);
 		distributionScript[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
 		distributionScript[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 		distributionScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
 		distributionScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
+		distributionScript[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptArguments);
 		distributionScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternPlatforms)] = getDefinition(Defs::TargetScriptFile);
 		defs[Defs::DistributionScript] = std::move(distributionScript);
 	}
@@ -1845,6 +1858,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::TargetScript: return "target-script";
 		case Defs::TargetScriptFile: return "target-script-file";
+		case Defs::TargetScriptArguments: return "target-script-arguments";
 		//
 		case Defs::TargetCMake: return "target-cmake";
 		case Defs::TargetCMakeLocation: return "target-cmake-location";
@@ -1891,7 +1905,7 @@ Json ChaletJsonSchema::getDefinition(const Defs inDef)
 }
 
 /*****************************************************************************/
-Json ChaletJsonSchema::makeArrayOrString(const Json inString)
+Json ChaletJsonSchema::makeArrayOrString(const Json inString, const bool inUniqueItems)
 {
 	Json ret = R"json({
 		"description": "",
@@ -1906,6 +1920,7 @@ Json ChaletJsonSchema::makeArrayOrString(const Json inString)
 		]
 	})json"_ojson;
 	ret[SKeys::OneOf][0] = inString;
+	ret[SKeys::OneOf][1][SKeys::UniqueItems] = inUniqueItems;
 	ret[SKeys::OneOf][1][SKeys::Items] = inString;
 	if (inString.contains(SKeys::Description))
 	{

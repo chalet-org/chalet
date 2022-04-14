@@ -17,6 +17,20 @@
 
 namespace chalet
 {
+namespace
+{
+enum class ScriptType
+{
+	None,
+	UnixShell,
+	Python,
+	Ruby,
+	Perl,
+	Lua,
+	Powershell,
+	WindowsCommand,
+};
+}
 /*****************************************************************************/
 ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools) :
 	m_inputs(inInputs),
@@ -26,27 +40,7 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 }
 
 /*****************************************************************************/
-bool ScriptRunner::run(const StringList& inScripts, const bool inShowExitCode)
-{
-	for (auto& scriptPath : inScripts)
-	{
-		std::ptrdiff_t i = &scriptPath - &inScripts.front();
-		if (i == 0)
-		{
-			auto reset = Output::getAnsiStyle(Color::Reset);
-			std::cout.write(reset.data(), reset.size());
-			std::cout.flush();
-		}
-
-		if (!run(scriptPath, inShowExitCode))
-			return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
+bool ScriptRunner::run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
 {
 #if defined(CHALET_WIN32)
 	std::string parsedScriptPath = inScript;
@@ -72,105 +66,116 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 	std::string shebang;
 	bool shellFound = false;
-	if (m_tools.bashAvailable())
+
+	std::string shell;
+	shebang = Commands::readShebangFromFile(outScriptPath);
+	if (!shebang.empty())
 	{
-		std::string shell;
-		shebang = Commands::readShebangFromFile(outScriptPath);
-		if (!shebang.empty())
+		if (String::startsWith("/usr/bin/env ", shebang))
 		{
-			if (String::startsWith("/usr/bin/env ", shebang))
+			auto space = shebang.find(' ');
+			auto search = shebang.substr(space + 1);
+			if (!search.empty())
 			{
-				auto space = shebang.find(' ');
-				auto search = shebang.substr(space + 1);
-				if (!search.empty())
-				{
-					shell = Commands::which(shebang.substr(space + 1));
-					shellFound = !shell.empty();
-				}
+				shell = Commands::which(shebang.substr(space + 1));
+				shellFound = !shell.empty();
 			}
-			else
+		}
+		else
+		{
+			shell = shebang;
+			shellFound = Commands::pathExists(shell);
+
+			if (!shellFound)
 			{
-				shell = shebang;
-				shellFound = Commands::pathExists(shell);
+				shell = Commands::which(String::getPathFilename(shebang));
+				shellFound = !shell.empty();
 
 				if (!shellFound)
 				{
-					shell = Commands::which(String::getPathFilename(shebang));
+					shell = Environment::getShell();
 					shellFound = !shell.empty();
-
-					if (!shellFound)
-					{
-						shell = Environment::getShell();
-						shellFound = !shell.empty();
-					}
 				}
 			}
 		}
-		if (!shellFound)
-		{
-			if (String::endsWith({ ".sh", ".bash" }, outScriptPath))
-			{
-				shell = Environment::getShell();
-				shellFound = !shell.empty();
+	}
 
-				if (!shellFound && !m_tools.bash().empty())
-				{
-					shell = m_tools.bash();
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".py", outScriptPath))
+	ScriptType scriptType = ScriptType::None;
+
+	if (!shellFound)
+	{
+		if (String::endsWith({ ".sh", ".bash" }, outScriptPath))
+		{
+			scriptType = ScriptType::UnixShell;
+
+			shell = Environment::getShell();
+			shellFound = !shell.empty();
+
+			if (!shellFound && !m_tools.bash().empty())
 			{
-				auto python = Commands::which("python3");
+				shell = m_tools.bash();
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".py", outScriptPath))
+		{
+			scriptType = ScriptType::Python;
+
+			auto python = Commands::which("python3");
+			if (!python.empty())
+			{
+				shell = std::move(python);
+				shellFound = true;
+			}
+			else
+			{
+				python = Commands::which("python");
 				if (!python.empty())
 				{
 					shell = std::move(python);
 					shellFound = true;
 				}
-				else
-				{
-					python = Commands::which("python");
-					if (!python.empty())
-					{
-						shell = std::move(python);
-						shellFound = true;
-					}
-				}
-			}
-			else if (String::endsWith(".rb", outScriptPath))
-			{
-				auto ruby = Commands::which("ruby");
-				if (!ruby.empty())
-				{
-					shell = std::move(ruby);
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".pl", outScriptPath))
-			{
-				auto perl = Commands::which("perl");
-				if (!perl.empty())
-				{
-					shell = std::move(perl);
-					shellFound = true;
-				}
-			}
-			else if (String::endsWith(".lua", outScriptPath))
-			{
-				auto lua = Commands::which("lua");
-				if (!lua.empty())
-				{
-					shell = std::move(lua);
-					shellFound = true;
-				}
 			}
 		}
-
-		if (shellFound)
+		else if (String::endsWith(".rb", outScriptPath))
 		{
-			// LOG(shell);
-			command.emplace_back(std::move(shell));
+			scriptType = ScriptType::Ruby;
+
+			auto ruby = Commands::which("ruby");
+			if (!ruby.empty())
+			{
+				shell = std::move(ruby);
+				shellFound = true;
+			}
 		}
+		else if (String::endsWith(".pl", outScriptPath))
+		{
+			scriptType = ScriptType::Perl;
+
+			auto perl = Commands::which("perl");
+			if (!perl.empty())
+			{
+				shell = std::move(perl);
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".lua", outScriptPath))
+		{
+			scriptType = ScriptType::Lua;
+
+			auto lua = Commands::which("lua");
+			if (!lua.empty())
+			{
+				shell = std::move(lua);
+				shellFound = true;
+			}
+		}
+	}
+
+	if (shellFound)
+	{
+		// LOG(shell);
+		command.emplace_back(std::move(shell));
 	}
 
 	if (!shellFound)
@@ -187,11 +192,15 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 
 			if (isBatchScript && !cmd.empty())
 			{
+				scriptType = ScriptType::WindowsCommand;
+
 				command.push_back(cmd);
 				command.emplace_back("/c");
 			}
 			else if (!powershell.empty())
 			{
+				scriptType = ScriptType::Powershell;
+
 				command.push_back(powershell);
 			}
 			else if (isBatchScript)
@@ -213,6 +222,8 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 			auto& powershell = m_tools.powershell();
 			if (!powershell.empty())
 			{
+				scriptType = ScriptType::Powershell;
+
 				command.push_back(powershell);
 			}
 			else
@@ -236,6 +247,13 @@ bool ScriptRunner::run(const std::string& inScript, const bool inShowExitCode)
 	}
 
 	command.emplace_back(std::move(outScriptPath));
+
+	UNUSED(scriptType); // "maybe I'll need this"
+
+	for (const auto& arg : inArguments)
+	{
+		command.emplace_back(arg);
+	}
 
 	bool result = Commands::subprocess(command);
 	auto exitCode = ProcessController::getLastExitCode();

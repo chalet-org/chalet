@@ -352,6 +352,9 @@
 			"type": "object",
 			"additionalProperties": false,
 			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
@@ -366,6 +369,9 @@
 				}
 			},
 			"patternProperties": {
+				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
 				"^file(\\.?!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-script-file"
 				}
@@ -779,7 +785,7 @@
 				},
 				{
 					"type": "array",
-					"uniqueItems": true,
+					"uniqueItems": false,
 					"minItems": 1,
 					"items": {
 						"type": "string",
@@ -2369,6 +2375,9 @@
 				"kind"
 			],
 			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
@@ -2383,6 +2392,9 @@
 				}
 			},
 			"patternProperties": {
+				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
 				"^file(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-script-file"
 				}
@@ -2392,6 +2404,24 @@
 			"description": "The relative path to a script file to run.",
 			"type": "string",
 			"minLength": 1
+		},
+		"target-script-arguments": {
+			"description": "A list of arguments to pass along to the script.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": false,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-cmake": {
 			"type": "object",
@@ -2596,7 +2626,7 @@
 			"minLength": 1
 		},
 		"target-process-arguments": {
-			"description": "A list of arguments to pass along to the process",
+			"description": "A list of arguments to pass along to the process.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2604,7 +2634,7 @@
 				},
 				{
 					"type": "array",
-					"uniqueItems": true,
+					"uniqueItems": false,
 					"minItems": 1,
 					"items": {
 						"type": "string",

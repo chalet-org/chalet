@@ -522,6 +522,14 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
 				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
 		}
 	}
 
@@ -1028,6 +1036,14 @@ bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, cons
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
 				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
 		}
 	}
 
