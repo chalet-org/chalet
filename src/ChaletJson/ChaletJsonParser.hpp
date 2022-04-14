@@ -18,14 +18,23 @@
 
 namespace chalet
 {
+struct CentralState;
+class BuildState;
+
 struct BundleTarget;
 struct CMakeTarget;
 struct SourceTarget;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct SubChaletTarget;
-struct CentralState;
-class BuildState;
+
+struct IDistTarget;
+struct BundleTarget;
+struct ScriptDistTarget;
+struct ProcessDistTarget;
+struct BundleArchiveTarget;
+struct MacosDiskImageTarget;
+struct WindowsNullsoftInstallerTarget;
 
 struct ChaletJsonParser
 {
@@ -38,6 +47,8 @@ struct ChaletJsonParser
 private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
+	bool parseRoot(const Json& inNode) const;
+
 	bool parseTarget(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
@@ -48,6 +59,16 @@ private:
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const;
+
+	bool parseDistribution(const Json& inNode) const;
+	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const;
+	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
+	bool parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const;
+
+	bool parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;

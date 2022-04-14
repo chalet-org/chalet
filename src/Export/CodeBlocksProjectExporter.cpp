@@ -511,11 +511,7 @@ std::string CodeBlocksProjectExporter::getWorkspaceLayoutContent(const BuildStat
 {
 	std::string ret;
 
-	std::string configuration = m_debugConfiguration;
-	if (configuration.empty())
-	{
-		configuration = m_centralState.anyConfiguration();
-	}
+	const auto& configuration = m_debugConfiguration;
 
 	std::string activeProject;
 	for (auto& target : inState.targets)

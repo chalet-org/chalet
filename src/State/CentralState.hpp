@@ -37,18 +37,13 @@ struct CentralState
 	const std::string& filename() const noexcept;
 
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
-	const StringList& requiredBuildConfigurations() const noexcept;
-	const std::string& releaseConfiguration() const noexcept;
-	const std::string& anyConfiguration() const noexcept;
 
-	void replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true) const;
 	void setRunArgumentMap(Dictionary<std::string>&& inMap);
 	void getRunTargetArguments();
 
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
-	DistributionTargetList distribution;
 	BuildDependencyList externalDependencies;
 
 private:
@@ -66,12 +61,9 @@ private:
 	bool validateBuildFile();
 
 	bool runDependencyManager();
-	bool validateDistribution();
 
 	bool makeDefaultBuildConfigurations();
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
-	void setReleaseConfiguration(const std::string& inName);
-	void addRequiredBuildConfiguration(std::string inValue);
 
 	CommandLineInputs& m_inputs;
 
@@ -80,11 +72,9 @@ private:
 
 	Dictionary<std::string> m_runArgumentMap;
 
-	StringList m_allowedBuildConfigurations;
 	StringList m_requiredBuildConfigurations;
 
 	std::string m_filename;
-	std::string m_releaseConfiguration;
 
 	JsonFile m_chaletJson;
 };

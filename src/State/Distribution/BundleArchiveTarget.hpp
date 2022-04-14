@@ -12,7 +12,7 @@ namespace chalet
 {
 struct BundleArchiveTarget final : public IDistTarget
 {
-	explicit BundleArchiveTarget(const CentralState& inCentralState);
+	explicit BundleArchiveTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;

@@ -157,13 +157,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		]
 	})json"_ojson;
 
-	defs[Defs::DistributionConfiguration] = R"json({
-		"type": "string",
-		"description": "The name of the build configuration to use.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
-		"minLength": 1,
-		"default": "Release"
-	})json"_ojson;
-
 	defs[Defs::DistributionBundleInclude] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
@@ -1383,7 +1376,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		distributionTarget[SKeys::Properties] = Json::object();
 		distributionTarget[SKeys::Properties]["buildTargets"] = getDefinition(Defs::DistributionBundleBuildTargets);
 		distributionTarget[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionTarget[SKeys::Properties]["configuration"] = getDefinition(Defs::DistributionConfiguration);
 		distributionTarget[SKeys::Properties]["exclude"] = getDefinition(Defs::DistributionBundleExclude);
 		distributionTarget[SKeys::Properties]["include"] = getDefinition(Defs::DistributionBundleInclude);
 		distributionTarget[SKeys::Properties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionBundleIncludeDependentSharedLibraries);
@@ -1756,7 +1748,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationSanitize: return "configuration-sanitize";
 		//
 		case Defs::DistributionKind: return "dist-kind";
-		case Defs::DistributionConfiguration: return "dist-configuration";
 		case Defs::DistributionCondition: return "dist-condition";
 		//
 		case Defs::DistributionBundle: return "dist-bundle";

@@ -102,7 +102,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	if (!centralState->initialize())
 		return false;
 
-	if (inRoute != Route::Bundle && inRoute != Route::Export)
+	if (inRoute != Route::Export)
 	{
 		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
@@ -113,7 +113,8 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	switch (inRoute)
 	{
 		case Route::Bundle: {
-			result = routeBundle(*centralState);
+			chalet_assert(buildState != nullptr, "");
+			result = routeBundle(*buildState);
 			break;
 		}
 
@@ -167,27 +168,21 @@ bool Router::routeConfigure(BuildState& inState)
 }
 
 /*****************************************************************************/
-bool Router::routeBundle(CentralState& inCentralState)
+bool Router::routeBundle(BuildState& inState)
 {
 	const auto& inputFile = m_inputs.inputFile();
-	if (inCentralState.distribution.empty())
+	if (inState.distribution.empty())
 	{
 		Diagnostic::error("{}: There are no distribution targets: missing 'distribution'", inputFile);
 		return false;
 	}
 
-	/*if (inCentralState.requiredBuildConfigurations().empty())
-	{
-		Diagnostic::error("{}: 'bundle' ran without any valid distribution bundles: missing 'configuration'", inputFile);
-		return false;
-	}*/
+	AppBundler bundler(inState);
 
-	AppBundler bundler(inCentralState);
-
-	if (!bundler.runBuilds())
+	if (inState.doBuild(Route::Build, false))
 		return false;
 
-	for (auto& target : inCentralState.distribution)
+	for (auto& target : inState.distribution)
 	{
 		if (!bundler.run(target))
 			return false;

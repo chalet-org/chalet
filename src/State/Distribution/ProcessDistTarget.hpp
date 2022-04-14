@@ -12,7 +12,7 @@ namespace chalet
 {
 struct ProcessDistTarget final : public IDistTarget
 {
-	explicit ProcessDistTarget(const CentralState& inCentralState);
+	explicit ProcessDistTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;

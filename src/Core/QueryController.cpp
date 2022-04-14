@@ -407,11 +407,6 @@ StringList QueryController::getCurrentBuildConfiguration() const
 		}
 	}
 
-	/*if (ret.empty())
-	{
-		ret.emplace_back(m_centralState.releaseConfiguration());
-	}*/
-
 	return ret;
 }
 

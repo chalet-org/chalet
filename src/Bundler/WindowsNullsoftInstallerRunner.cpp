@@ -6,7 +6,7 @@
 #include "Bundler/WindowsNullsoftInstallerRunner.hpp"
 
 #include "State/AncillaryTools.hpp"
-#include "State/CentralState.hpp"
+#include "State/BuildState.hpp"
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -18,8 +18,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-WindowsNullsoftInstallerRunner::WindowsNullsoftInstallerRunner(const CentralState& inCentralState) :
-	m_centralState(inCentralState)
+WindowsNullsoftInstallerRunner::WindowsNullsoftInstallerRunner(const BuildState& inState) :
+	m_state(inState)
 {
 }
 
@@ -29,7 +29,7 @@ bool WindowsNullsoftInstallerRunner::compile(const WindowsNullsoftInstallerTarge
 	const auto& file = inTarget.file();
 	chalet_assert(!file.empty(), "WindowsNullsoftInstallerRunner: validate target first");
 
-	StringList cmd{ m_centralState.tools.makeNsis() };
+	StringList cmd{ m_state.tools.makeNsis() };
 	cmd.emplace_back("-WX");
 	cmd.emplace_back("-V3");
 	cmd.emplace_back("-NOCD");

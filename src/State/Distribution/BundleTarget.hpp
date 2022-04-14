@@ -15,7 +15,7 @@ class BuildState;
 
 struct BundleTarget final : public IDistTarget
 {
-	explicit BundleTarget(const CentralState& inCentralState);
+	explicit BundleTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
@@ -27,9 +27,6 @@ struct BundleTarget final : public IDistTarget
 
 	const std::string& subdirectory() const noexcept;
 	void setSubdirectory(std::string&& inValue);
-
-	const std::string& configuration() const noexcept;
-	void setConfiguration(std::string&& inValue);
 
 	const std::string& mainExecutable() const noexcept;
 	void setMainExecutable(std::string&& inValue);

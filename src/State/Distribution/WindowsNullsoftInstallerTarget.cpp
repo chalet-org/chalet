@@ -5,7 +5,7 @@
 
 #include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
-#include "State/CentralState.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -13,15 +13,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-WindowsNullsoftInstallerTarget::WindowsNullsoftInstallerTarget(const CentralState& inCentralState) :
-	IDistTarget(inCentralState, DistTargetType::WindowsNullsoftInstaller)
+WindowsNullsoftInstallerTarget::WindowsNullsoftInstallerTarget(const BuildState& inState) :
+	IDistTarget(inState, DistTargetType::WindowsNullsoftInstaller)
 {
 }
 
 /*****************************************************************************/
 bool WindowsNullsoftInstallerTarget::initialize()
 {
-	m_centralState.replaceVariablesInString(m_file, this);
+	m_state.replaceVariablesInString(m_file, this);
 
 	replaceVariablesInPathList(m_defines);
 	replaceVariablesInPathList(m_pluginDirs);

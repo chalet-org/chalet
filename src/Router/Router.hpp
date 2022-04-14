@@ -28,7 +28,7 @@ private:
 	bool runRoutesThatRequireState(const Route inRoute);
 
 	bool routeConfigure(BuildState& inState);
-	bool routeBundle(CentralState& inCentralState);
+	bool routeBundle(BuildState& inState);
 	bool routeInit();
 	bool routeSettings(const Route inRoute);
 	bool routeQuery();

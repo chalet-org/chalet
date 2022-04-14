@@ -5,7 +5,8 @@
 
 #include "Bundler/ZipArchiver.hpp"
 
-#include "State/CentralState.hpp"
+#include "State/AncillaryTools.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -13,8 +14,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-ZipArchiver::ZipArchiver(const CentralState& inCentralState) :
-	m_centralState(inCentralState)
+ZipArchiver::ZipArchiver(const BuildState& inState) :
+	m_state(inState)
 {
 }
 
@@ -28,14 +29,14 @@ bool ZipArchiver::archive(const std::string& inFilename, const StringList& inFil
 		filename = inFilename;
 
 #if defined(CHALET_WIN32)
-	const auto& powershell = m_centralState.tools.powershell();
+	const auto& powershell = m_state.tools.powershell();
 	if (powershell.empty() || !Commands::pathExists(powershell))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'powershell' was not found.", filename);
 		return false;
 	}
 #else
-	const auto& zip = m_centralState.tools.zip();
+	const auto& zip = m_state.tools.zip();
 	if (zip.empty() || !Commands::pathExists(zip))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'zip' was not found.", filename);

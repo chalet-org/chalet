@@ -148,12 +148,6 @@
 				"windowsNullsoftInstaller"
 			]
 		},
-		"dist-configuration": {
-			"type": "string",
-			"description": "The name of the build configuration to use.\nIf this property is omitted, the 'Release' configuration will be used. In the case where custom configurations are defined, the first configuration without 'debugSymbols' and 'enableProfiling' is used.",
-			"minLength": 1,
-			"default": "Release"
-		},
 		"dist-condition": {
 			"type": "string",
 			"description": "A rule describing when to include this target in the distribution.",
@@ -173,9 +167,6 @@
 				},
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
-				},
-				"configuration": {
-					"$ref": "#/definitions/dist-configuration"
 				},
 				"exclude": {
 					"$ref": "#/definitions/dist-bundle-exclude"

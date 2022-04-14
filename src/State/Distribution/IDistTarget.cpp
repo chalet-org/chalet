@@ -5,7 +5,7 @@
 
 #include "State/Distribution/IDistTarget.hpp"
 
-#include "State/CentralState.hpp"
+#include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
@@ -16,32 +16,32 @@
 namespace chalet
 {
 /*****************************************************************************/
-IDistTarget::IDistTarget(const CentralState& inCentralState, const DistTargetType inType) :
-	m_centralState(inCentralState),
+IDistTarget::IDistTarget(const BuildState& inState, const DistTargetType inType) :
+	m_state(inState),
 	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType, const CentralState& inCentralState)
+[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType, const BuildState& inState)
 {
 	switch (inType)
 	{
 		case DistTargetType::DistributionBundle:
-			return std::make_unique<BundleTarget>(inCentralState);
+			return std::make_unique<BundleTarget>(inState);
 		case DistTargetType::Script:
-			return std::make_unique<ScriptDistTarget>(inCentralState);
+			return std::make_unique<ScriptDistTarget>(inState);
 		case DistTargetType::Process:
-			return std::make_unique<ProcessDistTarget>(inCentralState);
+			return std::make_unique<ProcessDistTarget>(inState);
 		case DistTargetType::BundleArchive:
-			return std::make_unique<BundleArchiveTarget>(inCentralState);
+			return std::make_unique<BundleArchiveTarget>(inState);
 #if defined(CHALET_MACOS)
 		case DistTargetType::MacosDiskImage:
-			return std::make_unique<MacosDiskImageTarget>(inCentralState);
+			return std::make_unique<MacosDiskImageTarget>(inState);
 #endif
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 		case DistTargetType::WindowsNullsoftInstaller:
-			return std::make_unique<WindowsNullsoftInstallerTarget>(inCentralState);
+			return std::make_unique<WindowsNullsoftInstallerTarget>(inState);
 #endif
 		default:
 			break;
@@ -86,7 +86,7 @@ void IDistTarget::replaceVariablesInPathList(StringList& outList)
 {
 	for (auto& dir : outList)
 	{
-		m_centralState.replaceVariablesInString(dir, this);
+		m_state.replaceVariablesInString(dir, this);
 	}
 }
 

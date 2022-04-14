@@ -7,7 +7,6 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildState.hpp"
-#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -48,22 +47,16 @@ MacOSBundleType getBundleTypeFromString(const std::string& inValue)
 #endif
 
 /*****************************************************************************/
-BundleTarget::BundleTarget(const CentralState& inCentralState) :
-	IDistTarget(inCentralState, DistTargetType::DistributionBundle)
+BundleTarget::BundleTarget(const BuildState& inState) :
+	IDistTarget(inState, DistTargetType::DistributionBundle)
 {
 }
 
 /*****************************************************************************/
 bool BundleTarget::initialize()
 {
-	for (auto& dir : m_rawIncludes)
-	{
-		m_centralState.replaceVariablesInString(dir, this);
-	}
-	for (auto& dir : m_excludes)
-	{
-		m_centralState.replaceVariablesInString(dir, this);
-	}
+	replaceVariablesInPathList(m_rawIncludes);
+	replaceVariablesInPathList(m_excludes);
 
 	return true;
 }
@@ -250,17 +243,6 @@ void BundleTarget::setSubdirectory(std::string&& inValue)
 {
 	m_subdirectory = std::move(inValue);
 	Path::sanitize(m_subdirectory);
-}
-
-/*****************************************************************************/
-const std::string& BundleTarget::configuration() const noexcept
-{
-	return m_configuration;
-}
-
-void BundleTarget::setConfiguration(std::string&& inValue)
-{
-	m_configuration = std::move(inValue);
 }
 
 /*****************************************************************************/

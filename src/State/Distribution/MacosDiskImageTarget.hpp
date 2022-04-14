@@ -14,7 +14,7 @@ namespace chalet
 {
 struct MacosDiskImageTarget final : public IDistTarget
 {
-	explicit MacosDiskImageTarget(const CentralState& inCentralState);
+	explicit MacosDiskImageTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;

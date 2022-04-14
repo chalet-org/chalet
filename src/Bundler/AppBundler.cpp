@@ -35,55 +35,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-AppBundler::AppBundler(CentralState& inCentralState) :
-	m_centralState(inCentralState)
+AppBundler::AppBundler(BuildState& inState) :
+	m_state(inState)
 {
 }
 
 /*****************************************************************************/
 AppBundler::~AppBundler() = default;
-
-/*****************************************************************************/
-bool AppBundler::runBuilds()
-{
-	// Build all required configurations
-	m_detectedArch = m_centralState.inputs().targetArchitecture().empty() ? "auto" : m_centralState.inputs().targetArchitecture();
-
-	auto makeState = [&](std::string arch, const std::string& inConfig) {
-		auto configName = fmt::format("{}_{}", arch, inConfig);
-		if (m_states.find(configName) == m_states.end())
-		{
-			CommandLineInputs inputs = m_centralState.inputs();
-			inputs.setBuildConfiguration(std::string(inConfig));
-			inputs.setTargetArchitecture(arch);
-			auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
-
-			m_states.emplace(configName, std::move(state));
-		}
-	};
-
-	StringList arches;
-	for (auto& target : m_centralState.distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-			makeState(m_detectedArch, bundle.configuration());
-		}
-	}
-
-	// BuildState* stateArchA = nullptr;
-	for (auto& [config, state] : m_states)
-	{
-		if (!state->initialize())
-			return false;
-
-		if (!state->doBuild(Route::Build, false))
-			return false;
-	}
-
-	return true;
-}
 
 /*****************************************************************************/
 bool AppBundler::run(const DistTarget& inTarget)
@@ -120,30 +78,21 @@ bool AppBundler::run(const DistTarget& inTarget)
 
 		Output::lineBreak();
 
-		chalet_assert(!bundle.configuration().empty(), "State not initialized");
-
-		BuildState* buildState = nullptr;
-		{
-			buildState = getBuildState(bundle.configuration());
-			if (buildState == nullptr)
-				return false;
-		}
-
-		m_dependencyMap = std::make_unique<BinaryDependencyMap>(*buildState);
-		auto bundler = IAppBundler::make(*buildState, bundle, *m_dependencyMap, m_centralState.inputs().inputFile());
+		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
+		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap, m_state.inputs.inputFile());
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
 			return false;
 		}
 
-		if (!bundle.resolveIncludesFromState(*buildState))
+		if (!bundle.resolveIncludesFromState(m_state))
 			return false;
 
-		if (!gatherDependencies(bundle, *buildState))
+		if (!gatherDependencies(bundle))
 			return false;
 
-		if (!runBundleTarget(*bundler, *buildState))
+		if (!runBundleTarget(*bundler))
 			return false;
 	}
 	else
@@ -171,14 +120,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		else if (inTarget->isWindowsNullsoftInstaller())
 		{
 #if defined(CHALET_LINUX)
-			BuildState* state = getBuildState(m_centralState.anyConfiguration());
-			if (state == nullptr)
-			{
-				Diagnostic::error("No associated build found for target: {}", inTarget->name());
-				return false;
-			}
-
-			if (!state->environment->isMingw())
+			if (!m_state.environment->isMingw())
 				return true;
 #endif
 
@@ -211,7 +153,7 @@ void AppBundler::reportErrors() const
 }
 
 /*****************************************************************************/
-BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) const
+/*BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) const
 {
 	BuildState* ret = nullptr;
 	for (auto& [config, state] : m_states)
@@ -232,10 +174,10 @@ BuildState* AppBundler::getBuildState(const std::string& inBuildConfiguration) c
 	}
 
 	return ret;
-}
+}*/
 
 /*****************************************************************************/
-bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
+bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 {
 	auto& bundle = inBundler.bundle();
 	const auto& buildTargets = inBundler.bundle().buildTargets();
@@ -249,7 +191,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 
 	// Timer timer;
 
-	auto cwd = m_centralState.inputs().workingDirectory() + '/';
+	auto cwd = m_state.inputs.workingDirectory() + '/';
 #if defined(CHALET_WIN32)
 	cwd[0] = static_cast<char>(::toupper(static_cast<uchar>(cwd[0])));
 #endif
@@ -303,7 +245,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 	StringList dependenciesToCopy;
 	StringList excludes;
 
-	for (auto& target : inState.targets)
+	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
 		{
@@ -312,7 +254,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			auto outputFilePath = inState.paths.getTargetFilename(project);
+			auto outputFilePath = m_state.paths.getTargetFilename(project);
 			if (project.isStaticLibrary())
 			{
 				List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
@@ -345,9 +287,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 		String::replaceAll(dep, cwd, "");
 	}
 
-	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end(), [&inState](const auto& inA, const auto& inB) {
+	std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end(), [this](const auto& inA, const auto& inB) {
 		UNUSED(inB);
-		return String::startsWith(inState.paths.buildOutputDir(), inA);
+		return String::startsWith(m_state.paths.buildOutputDir(), inA);
 	});
 
 	for (auto& dep : dependenciesToCopy)
@@ -397,7 +339,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler, BuildState& inState)
 }
 
 /*****************************************************************************/
-bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& inState)
+bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 {
 	if (!inTarget.includeDependentSharedLibraries())
 		return true;
@@ -406,7 +348,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 
 	m_dependencyMap->addExcludesFromList(inTarget.includes());
 	m_dependencyMap->clearSearchDirs();
-	for (auto& target : inState.targets)
+	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
 		{
@@ -425,7 +367,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 	}
 #endif
 
-	for (auto& target : inState.targets)
+	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
 		{
@@ -434,7 +376,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget, BuildState& in
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			auto outputFilePath = inState.paths.getTargetFilename(project);
+			auto outputFilePath = m_state.paths.getTargetFilename(project);
 			if (project.isStaticLibrary())
 				continue;
 
@@ -461,7 +403,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 
 	displayHeader("Script", inTarget);
 
-	ScriptRunner scriptRunner(m_centralState.inputs(), m_centralState.tools);
+	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
 	if (!scriptRunner.run(file, showExitCode))
 	{
@@ -508,7 +450,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
 	bool result = Commands::subprocessWithInput(inCmd);
 
-	m_centralState.inputs().clearWorkingDirectory(outputFile);
+	m_state.inputs.clearWorkingDirectory(outputFile);
 
 	int lastExitCode = ProcessController::getLastExitCode();
 	if (lastExitCode != 0)
@@ -527,18 +469,14 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 	}
 	else if (lastExitCode < 0)
 	{
-		auto state = getBuildState(m_centralState.anyConfiguration());
-		if (state != nullptr)
-		{
-			BinaryDependencyMap tmpMap(*state);
-			StringList dependencies;
-			StringList dependenciesNotFound;
+		BinaryDependencyMap tmpMap(m_state);
+		StringList dependencies;
+		StringList dependenciesNotFound;
 
-			if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
-			{
-				const auto& unknownDep = dependenciesNotFound.front();
-				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
-			}
+		if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
+		{
+			const auto& unknownDep = dependenciesNotFound.front();
+			Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
 		}
 	}
 
@@ -554,14 +492,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 
 	auto baseName = inTarget.name();
 
-	BuildState* state = getBuildState(m_centralState.anyConfiguration());
-	if (state == nullptr)
-	{
-		Diagnostic::error("No associated build found for target: {}", inTarget.name());
-		return false;
-	}
-
-	if (!isTargetNameValid(inTarget, *state, baseName))
+	if (!isTargetNameValid(inTarget, baseName))
 		return false;
 
 	auto filename = fmt::format("{}.zip", baseName);
@@ -571,18 +502,18 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	StringList resolvedIncludes;
 	for (auto& include : inTarget.includes())
 	{
-		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
+		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
 	}
 
 	Timer timer;
 
 	Diagnostic::stepInfoEllipsis("Compressing files");
 
-	ZipArchiver zipArchiver(m_centralState);
-	if (!zipArchiver.archive(baseName, resolvedIncludes, m_centralState.inputs().distributionDirectory(), m_archives))
+	ZipArchiver zipArchiver(m_state);
+	if (!zipArchiver.archive(baseName, resolvedIncludes, m_state.inputs.distributionDirectory(), m_archives))
 		return false;
 
-	m_archives.emplace_back(fmt::format("{}/{}", m_centralState.inputs().distributionDirectory(), filename));
+	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));
 
 	Diagnostic::printDone(timer.asString());
 
@@ -594,7 +525,7 @@ bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 {
 	displayHeader("Disk Image", inTarget);
 
-	MacosDiskImageCreator diskImageCreator(m_centralState);
+	MacosDiskImageCreator diskImageCreator(m_state);
 	if (!diskImageCreator.make(inTarget))
 		return false;
 
@@ -608,7 +539,7 @@ bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstalle
 
 	Diagnostic::info("Creating the Windows installer executable");
 
-	WindowsNullsoftInstallerRunner nsis(m_centralState);
+	WindowsNullsoftInstallerRunner nsis(m_state);
 	if (!nsis.compile(inTarget))
 		return false;
 
@@ -628,13 +559,13 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget) const
 }
 
 /*****************************************************************************/
-bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, const BuildState& inState, std::string& outName) const
+bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const
 {
-	auto buildFolder = String::getPathFolder(inState.paths.buildOutputDir());
-	String::replaceAll(outName, "${targetTriple}", inState.info.targetArchitectureTriple());
-	String::replaceAll(outName, "${toolchainName}", m_centralState.inputs().toolchainPreferenceName());
-	String::replaceAll(outName, "${configuration}", inState.info.buildConfiguration());
-	String::replaceAll(outName, "${architecture}", inState.info.targetArchitectureString());
+	auto buildFolder = String::getPathFolder(m_state.paths.buildOutputDir());
+	String::replaceAll(outName, "${targetTriple}", m_state.info.targetArchitectureTriple());
+	String::replaceAll(outName, "${toolchainName}", m_state.inputs.toolchainPreferenceName());
+	String::replaceAll(outName, "${configuration}", m_state.info.buildConfiguration());
+	String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
 	String::replaceAll(outName, "${buildDir}", buildFolder);
 
 	if (String::contains({ "$", "{", "}" }, outName))

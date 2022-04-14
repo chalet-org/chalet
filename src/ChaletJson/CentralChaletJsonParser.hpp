@@ -19,13 +19,6 @@ namespace chalet
 struct CentralState;
 struct JsonFile;
 struct GitDependency;
-struct IDistTarget;
-struct BundleTarget;
-struct ScriptDistTarget;
-struct ProcessDistTarget;
-struct BundleArchiveTarget;
-struct MacosDiskImageTarget;
-struct WindowsNullsoftInstallerTarget;
 
 struct CentralChaletJsonParser
 {
@@ -45,23 +38,8 @@ private:
 	bool parseDefaultConfigurations(const Json& inNode) const;
 	bool parseConfigurations(const Json& inNode) const;
 
-	bool parseDistribution(const Json& inNode) const;
-	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const;
-	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
-	bool parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const;
-
 	bool parseExternalDependencies(const Json& inNode) const;
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;
-	bool parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
-
-	//
-	template <typename T>
-	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
-
-	bool conditionIsValid(const std::string& inContent) const;
 
 	CentralState& m_centralState;
 	JsonFile& m_chaletJson;
@@ -70,7 +48,5 @@ private:
 	std::string m_platform;
 };
 }
-
-#include "ChaletJson/CentralChaletJsonParser.inl"
 
 #endif // CHALET_CENTRAL_CHALET_JSON_PARSER_HPP

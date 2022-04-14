@@ -5,7 +5,7 @@
 
 #include "State/Distribution/ScriptDistTarget.hpp"
 
-#include "State/CentralState.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -13,15 +13,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-ScriptDistTarget::ScriptDistTarget(const CentralState& inCentralState) :
-	IDistTarget(inCentralState, DistTargetType::Script)
+ScriptDistTarget::ScriptDistTarget(const BuildState& inState) :
+	IDistTarget(inState, DistTargetType::Script)
 {
 }
 
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
-	m_centralState.replaceVariablesInString(m_file, this);
+	m_state.replaceVariablesInString(m_file, this);
 
 	return true;
 }

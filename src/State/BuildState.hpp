@@ -23,6 +23,7 @@ struct ICompileEnvironment;
 struct IBuildTarget;
 struct IBuildDependency;
 struct ICompileEnvironment;
+struct IDistTarget;
 
 class BuildState
 {
@@ -41,6 +42,7 @@ public:
 	void makeLibraryPathVariables();
 
 	void replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
+	void replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	const std::string& uniqueId() const noexcept;
 
 	AncillaryTools& tools;
@@ -52,6 +54,7 @@ public:
 	BuildPaths& paths;
 	BuildConfiguration& configuration;
 	std::vector<Unique<IBuildTarget>>& targets;
+	std::vector<Unique<IDistTarget>>& distribution;
 	const CommandLineInputs& inputs;
 	const std::vector<Unique<IBuildDependency>>& externalDependencies;
 	ICompileEnvironment* environment = nullptr;
@@ -66,6 +69,7 @@ private:
 	void initializeCache();
 
 	bool validateState();
+	bool validateDistribution();
 
 	bool makePathVariable();
 	void makeCompilerDiagnosticsVariables();

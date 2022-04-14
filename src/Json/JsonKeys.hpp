@@ -24,6 +24,7 @@ CH_STR(Distribution) = "distribution";
 CH_STR(Configurations) = "configurations";
 CH_STR(DefaultConfigurations) = "defaultConfigurations";
 CH_STR(ExternalDependencies) = "externalDependencies";
+CH_STR(SearchPaths) = "searchPaths";
 
 //
 CH_STR(Kind) = "kind";

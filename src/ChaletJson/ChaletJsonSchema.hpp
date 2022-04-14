@@ -31,7 +31,6 @@ class ChaletJsonSchema
 		ConfigurationSanitize,
 		//
 		DistributionKind,
-		DistributionConfiguration,
 		DistributionCondition,
 		//
 		DistributionBundle,

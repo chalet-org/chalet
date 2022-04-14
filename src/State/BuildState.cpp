@@ -20,6 +20,8 @@
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -47,6 +49,7 @@ struct BuildState::Impl
 	BuildPaths paths;
 	BuildConfiguration configuration;
 	std::vector<BuildTarget> targets;
+	std::vector<DistTarget> distribution;
 
 	Unique<ICompileEnvironment> environment;
 
@@ -73,6 +76,7 @@ BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState)
 	paths(m_impl->paths),
 	configuration(m_impl->configuration),
 	targets(m_impl->targets),
+	distribution(m_impl->distribution),
 	inputs(m_impl->inputs),
 	externalDependencies(m_impl->centralState.externalDependencies)
 {
@@ -113,6 +117,9 @@ bool BuildState::initialize()
 		if (!initializeBuild())
 			return false;
 
+		if (!validateDistribution())
+			return false;
+
 		if (!validateState())
 			return false;
 
@@ -149,7 +156,8 @@ bool BuildState::initializeBuildConfiguration()
 	auto buildConfiguration = inputs.buildConfiguration();
 	if (buildConfiguration.empty())
 	{
-		buildConfiguration = m_impl->centralState.anyConfiguration();
+		Diagnostic::error("{}: No build configuration was set.", inputs.inputFile());
+		return false;
 	}
 
 	const auto& buildConfigurations = m_impl->centralState.buildConfigurations();
@@ -607,6 +615,66 @@ bool BuildState::validateState()
 }
 
 /*****************************************************************************/
+bool BuildState::validateDistribution()
+{
+	for (auto& target : distribution)
+	{
+		if (!target->validate())
+		{
+			Diagnostic::error("Error validating the '{}' distribution target.", target->name());
+			return false;
+		}
+	}
+
+	auto& distributionDirectory = inputs.distributionDirectory();
+
+	Dictionary<std::string> locations;
+	bool result = true;
+	for (auto& target : distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			auto& bundle = static_cast<BundleTarget&>(*target);
+
+			/*if (bundle.buildTargets().empty())
+			{
+				Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, bundle.name());
+				return false;
+			}*/
+
+			if (!distributionDirectory.empty())
+			{
+				auto& subdirectory = bundle.subdirectory();
+				bundle.setSubdirectory(fmt::format("{}/{}", distributionDirectory, subdirectory));
+			}
+
+			for (auto& targetName : bundle.buildTargets())
+			{
+				auto res = locations.find(targetName);
+				if (res != locations.end())
+				{
+					if (res->second == bundle.subdirectory())
+					{
+						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", targetName, bundle.subdirectory(), bundle.name());
+						result = false;
+					}
+					else
+					{
+						locations.emplace(targetName, bundle.subdirectory());
+					}
+				}
+				else
+				{
+					locations.emplace(targetName, bundle.subdirectory());
+				}
+			}
+		}
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool BuildState::makePathVariable()
 {
 	auto originalPath = Environment::getPath();
@@ -908,6 +976,84 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 						return metadata.getMetadataFromString(match);
 					}
 				}
+
+				const auto& metadata = workspace.metadata();
+				return metadata.getMetadataFromString(match);
+			}
+
+			if (String::startsWith("env:", match))
+			{
+				match = match.substr(4);
+				return Environment::getAsString(match.c_str());
+			}
+
+			if (onFail != nullptr)
+				return onFail(std::move(match));
+
+			return std::string();
+		});
+	}
+}
+
+/*****************************************************************************/
+void BuildState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+{
+	if (outString.empty())
+		return;
+
+	if (inCheckHome)
+	{
+		const auto& homeDirectory = inputs.homeDirectory();
+		Environment::replaceCommonVariables(outString, homeDirectory);
+	}
+
+	if (String::contains("${", outString))
+	{
+		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
+			if (String::equals("cwd", match))
+				return inputs.workingDirectory();
+
+			if (String::equals("arch", match))
+				return info.targetArchitectureString();
+
+			if (String::equals("archTriple", match))
+				return info.targetArchitectureTriple();
+
+			if (String::equals("configuration", match))
+				return configuration.name();
+
+			if (String::equals("buildDir", match))
+				return paths.buildOutputDir();
+
+			if (String::equals("distributionDir", match))
+				return inputs.distributionDirectory();
+
+			if (String::equals("externalDir", match))
+				return inputs.externalDirectory();
+
+			if (String::equals("externalBuildDir", match))
+				return paths.externalBuildDir();
+
+			if (String::equals("home", match))
+				return inputs.homeDirectory();
+
+			if (inTarget != nullptr)
+			{
+				if (String::equals("name", match))
+					return inTarget->name();
+			}
+
+			if (String::startsWith("meta:workspace", match))
+			{
+				match = match.substr(14);
+				match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+
+				const auto& metadata = workspace.metadata();
+				return metadata.getMetadataFromString(match);
+			}
+			else if (String::startsWith("meta:", match))
+			{
+				match = match.substr(5);
 
 				const auto& metadata = workspace.metadata();
 				return metadata.getMetadataFromString(match);

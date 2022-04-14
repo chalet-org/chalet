@@ -12,7 +12,7 @@ namespace chalet
 {
 struct ScriptDistTarget final : public IDistTarget
 {
-	explicit ScriptDistTarget(const CentralState& inCentralState);
+	explicit ScriptDistTarget(const BuildState& inState);
 
 	virtual bool initialize() final;
 	virtual bool validate() final;

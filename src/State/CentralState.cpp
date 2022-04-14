@@ -84,9 +84,6 @@ bool CentralState::initialize()
 		if (!parseChaletJson())
 			return false;
 
-		if (!validateDistribution())
-			return false;
-
 		if (!createCache())
 			return false;
 
@@ -217,64 +214,6 @@ void CentralState::getRunTargetArguments()
 }
 
 /*****************************************************************************/
-bool CentralState::validateDistribution()
-{
-	auto& distributionDirectory = m_inputs.distributionDirectory();
-
-	Dictionary<std::string> locations;
-	bool result = true;
-	for (auto& target : distribution)
-	{
-		if (target->isDistributionBundle())
-		{
-			auto& bundle = static_cast<BundleTarget&>(*target);
-
-			/*if (bundle.buildTargets().empty())
-			{
-				Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, bundle.name());
-				return false;
-			}*/
-
-			if (bundle.configuration().empty() && !m_releaseConfiguration.empty())
-			{
-				auto config = m_releaseConfiguration;
-				bundle.setConfiguration(std::move(config));
-			}
-			List::addIfDoesNotExist(m_requiredBuildConfigurations, bundle.configuration());
-
-			if (!distributionDirectory.empty())
-			{
-				auto& subdirectory = bundle.subdirectory();
-				bundle.setSubdirectory(fmt::format("{}/{}", distributionDirectory, subdirectory));
-			}
-
-			for (auto& targetName : bundle.buildTargets())
-			{
-				auto res = locations.find(targetName);
-				if (res != locations.end())
-				{
-					if (res->second == bundle.subdirectory())
-					{
-						Diagnostic::error("Project '{}' has duplicate bundle destination of '{}' defined in bundle: {}", targetName, bundle.subdirectory(), bundle.name());
-						result = false;
-					}
-					else
-					{
-						locations.emplace(targetName, bundle.subdirectory());
-					}
-				}
-				else
-				{
-					locations.emplace(targetName, bundle.subdirectory());
-				}
-			}
-		}
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
 bool CentralState::validateConfigurations()
 {
 	// Unrestricted for now
@@ -322,15 +261,6 @@ bool CentralState::validateBuildFile()
 	if (!validate())
 		return false;
 
-	for (auto& target : distribution)
-	{
-		if (!target->validate())
-		{
-			Diagnostic::error("Error validating the '{}' distribution target.", target->name());
-			return false;
-		}
-	}
-
 	return true;
 }
 
@@ -362,113 +292,6 @@ const std::string& CentralState::filename() const noexcept
 const BuildConfigurationMap& CentralState::buildConfigurations() const noexcept
 {
 	return m_buildConfigurations;
-}
-
-/*****************************************************************************/
-const StringList& CentralState::requiredBuildConfigurations() const noexcept
-{
-	return m_requiredBuildConfigurations;
-}
-
-/*****************************************************************************/
-const std::string& CentralState::releaseConfiguration() const noexcept
-{
-	return m_releaseConfiguration;
-}
-
-/*****************************************************************************/
-const std::string& CentralState::anyConfiguration() const noexcept
-{
-	if (!m_requiredBuildConfigurations.empty() && !m_requiredBuildConfigurations.front().empty())
-	{
-		return m_requiredBuildConfigurations.front();
-	}
-	else
-	{
-		return m_releaseConfiguration;
-	}
-}
-
-/*****************************************************************************/
-void CentralState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome) const
-{
-	if (outString.empty())
-		return;
-
-	if (inCheckHome)
-	{
-		const auto& homeDirectory = m_inputs.homeDirectory();
-		Environment::replaceCommonVariables(outString, homeDirectory);
-	}
-
-	if (String::contains("${", outString))
-	{
-		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
-			if (String::equals("cwd", match))
-				return m_inputs.workingDirectory();
-
-			if (String::equals("configuration", match))
-			{
-				QueryController queryCtrlr(*this);
-				auto config = queryCtrlr.getRequestedType(QueryOption::Configuration).front();
-				if (config.empty())
-					config = anyConfiguration();
-
-				return config;
-			}
-
-			if (String::equals("arch", match))
-			{
-				QueryController queryCtrlr(*this);
-				auto archFromSettings = queryCtrlr.getRequestedType(QueryOption::Architecture).front();
-				if (String::equals("auto", archFromSettings))
-					archFromSettings = m_inputs.hostArchitecture();
-
-				Arch arch;
-				arch.set(archFromSettings);
-				return arch.str;
-			}
-
-			if (String::equals("distributionDir", match))
-				return m_inputs.distributionDirectory();
-
-			if (String::equals("externalDir", match))
-				return m_inputs.externalDirectory();
-
-			if (String::equals("home", match))
-				return m_inputs.homeDirectory();
-
-			if (inTarget != nullptr)
-			{
-				if (String::equals("name", match))
-					return inTarget->name();
-			}
-
-			if (String::startsWith("meta:workspace", match))
-			{
-				match = match.substr(14);
-				match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
-
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
-			else if (String::startsWith("meta:", match))
-			{
-				match = match.substr(5);
-
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
-
-			if (String::startsWith("env:", match))
-			{
-				match = match.substr(4);
-				return Environment::getAsString(match.c_str());
-			}
-
-			return std::string();
-		});
-	}
 }
 
 /*****************************************************************************/
@@ -507,11 +330,8 @@ bool CentralState::makeDefaultBuildConfigurations()
 {
 	m_buildConfigurations.clear();
 
-	m_allowedBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
-
-	m_releaseConfiguration = "Release";
-
-	for (auto& name : m_allowedBuildConfigurations)
+	auto buildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
+	for (auto& name : buildConfigurations)
 	{
 		BuildConfiguration config;
 		if (!BuildConfiguration::makeDefaultConfiguration(config, name))
@@ -539,15 +359,4 @@ void CentralState::addBuildConfiguration(const std::string& inName, BuildConfigu
 	}
 }
 
-/*****************************************************************************/
-void CentralState::setReleaseConfiguration(const std::string& inName)
-{
-	m_releaseConfiguration = inName;
-}
-
-/*****************************************************************************/
-void CentralState::addRequiredBuildConfiguration(std::string inValue)
-{
-	List::addIfDoesNotExist(m_allowedBuildConfigurations, std::move(inValue));
-}
 }

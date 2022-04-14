@@ -9,11 +9,11 @@
 namespace chalet
 {
 struct MacosDiskImageTarget;
-struct CentralState;
+class BuildState;
 
 struct MacosDiskImageCreator
 {
-	explicit MacosDiskImageCreator(const CentralState& inCentralState);
+	explicit MacosDiskImageCreator(const BuildState& inState);
 
 	bool make(const MacosDiskImageTarget& inDiskImage);
 
@@ -21,7 +21,7 @@ private:
 	bool signDmgImage(const std::string& inPath) const;
 	std::string getDmgApplescript(const MacosDiskImageTarget& inDiskImage) const;
 
-	const CentralState& m_centralState;
+	const BuildState& m_state;
 
 	std::string m_diskName;
 

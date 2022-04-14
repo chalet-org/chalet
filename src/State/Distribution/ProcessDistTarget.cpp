@@ -5,7 +5,7 @@
 
 #include "State/Distribution/ProcessDistTarget.hpp"
 
-#include "State/CentralState.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -13,15 +13,15 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProcessDistTarget::ProcessDistTarget(const CentralState& inCentralState) :
-	IDistTarget(inCentralState, DistTargetType::Process)
+ProcessDistTarget::ProcessDistTarget(const BuildState& inState) :
+	IDistTarget(inState, DistTargetType::Process)
 {
 }
 
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
-	m_centralState.replaceVariablesInString(m_path, this);
+	m_state.replaceVariablesInString(m_path, this);
 
 	replaceVariablesInPathList(m_arguments);
 
