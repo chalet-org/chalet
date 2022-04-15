@@ -17,7 +17,7 @@ repositories=(
 )
 tags=(
 	'v2.x'
-	'8.0.0'
+	'8.1.1'
 	'master'
 	'v3.10.2'
 )

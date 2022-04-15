@@ -384,7 +384,7 @@ bool ICompileEnvironment::compilerVersionIsToolchainVersion() const
 std::string ICompileEnvironment::getVarsPath(const std::string& inUniqueId) const
 {
 	const auto id = identifier();
-	const auto& hostArch = m_state.info.hostArchitecture();
+	const auto hostArch = static_cast<std::underlying_type_t<Arch::Cpu>>(m_state.info.hostArchitecture());
 	const auto& archString = m_state.info.targetArchitectureTriple();
 	// auto archString = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 	const auto& uniqueId = String::equals('0', inUniqueId) ? m_state.inputs.toolchainPreferenceName() : inUniqueId;

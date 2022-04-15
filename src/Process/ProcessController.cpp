@@ -9,7 +9,6 @@
 #include <atomic>
 #include <mutex>
 
-#include "Libraries/Format.hpp"
 #include "Process/Process.hpp"
 #include "Process/ProcessPipe.hpp"
 #include "Terminal/Commands.hpp"

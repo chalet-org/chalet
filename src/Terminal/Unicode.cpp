@@ -17,7 +17,7 @@ const char* Unicode::triangle()
 		return "»";
 	else
 #endif
-		return u8"\u25BC"; // triangle
+		return reinterpret_cast<const char*>(u8"\u25BC"); // triangle
 }
 
 /*****************************************************************************/
@@ -27,7 +27,7 @@ const char* Unicode::diamond()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "•";
 #endif
-	return u8"\u25C6";
+	return reinterpret_cast<const char*>(u8"\u25C6");
 }
 
 /*****************************************************************************/
@@ -37,10 +37,10 @@ const char* Unicode::checkmark()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "√";
 	else if (Environment::isMicrosoftTerminalOrWindowsBash())
-		return u8"\u2713";
+		return reinterpret_cast<const char*>(u8"\u2713");
 	else
 #endif
-		return u8"\u2714";
+		return reinterpret_cast<const char*>(u8"\u2714");
 }
 
 /*****************************************************************************/
@@ -51,7 +51,7 @@ const char* Unicode::heavyBallotX()
 		return "X";
 	else
 #endif
-		return u8"\u2718";
+		return reinterpret_cast<const char*>(u8"\u2718");
 }
 
 /*****************************************************************************/
@@ -62,8 +62,8 @@ const char* Unicode::warning()
 		return "»";
 	else
 #endif
-		// return u8"\u26A0";
-		return u8"\u25B3";
+		// return reinterpret_cast<const char*>(u8"\u26A0");
+		return reinterpret_cast<const char*>(u8"\u25B3");
 }
 
 /*****************************************************************************/
@@ -73,10 +73,10 @@ const char* Unicode::circledX()
 	if (Environment::isCommandPromptOrPowerShell())
 		return "X";
 	else if (Environment::isMicrosoftTerminalOrWindowsBash())
-		return u8"\u2BBE";
+		return reinterpret_cast<const char*>(u8"\u2BBE");
 	else
 #endif
-		return u8"\u2A02";
+		return reinterpret_cast<const char*>(u8"\u2A02");
 }
 
 /*****************************************************************************/
@@ -87,7 +87,7 @@ const char* Unicode::heavyCurvedDownRightArrow()
 		return "¬";
 	else
 #endif
-		return u8"\u27A5";
+		return reinterpret_cast<const char*>(u8"\u27A5");
 }
 
 /*****************************************************************************/
@@ -98,7 +98,7 @@ const char* Unicode::registered()
 		return " (R)";
 	else
 #endif
-		return u8"\u00AE";
+		return reinterpret_cast<const char*>(u8"\u00AE");
 }
 
 }
