@@ -33,15 +33,15 @@ jobs:
       run:
         shell: bash
     env:
-      CC: gcc-10
-      CXX: g++-10
+      CC: gcc-11
+      CXX: g++-11
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
-      - name: "Get GCC 10"
+      - name: "Get GCC 11"
         run: |
           sudo apt update
-          sudo apt install gcc-10 g++-10 zip ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
+          sudo apt install gcc-11 g++-11 zip ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
         env:
