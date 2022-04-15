@@ -61,12 +61,12 @@ bool String::contains(const StringList& inFind, const std::string& inString)
 }
 
 /*****************************************************************************/
-bool String::startsWith(const std::string_view inStart, const std::string& inString)
+bool String::startsWith(const std::string_view inFind, const std::string& inString)
 {
-	if (inString.size() < inStart.size())
+	if (inString.size() < inFind.size())
 		return false;
 
-	return std::equal(inStart.begin(), inStart.end(), inString.begin());
+	return std::equal(inFind.begin(), inFind.end(), inString.begin());
 }
 
 /*****************************************************************************/

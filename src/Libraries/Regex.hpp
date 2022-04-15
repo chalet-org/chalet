@@ -14,11 +14,12 @@
 	#define CHALET_REGEX_CTRE
 	#if defined(CHALET_CLANG)
 		#define CTRE_CXX_STANDARD 17
+		#define CHALET_REGEX_CTRE_17
 	#else
 		#define CTRE_CXX_STANDARD 20
+		#define CHALET_REGEX_CTRE_20
 	#endif
 	// #define CTRE_STRING_IS_UTF8 0
-	#define CHALET_REGEX_CTRE_STD CTRE_CXX_STANDARD
 #endif
 // #endif
 
