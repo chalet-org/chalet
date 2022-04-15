@@ -48,8 +48,8 @@ target_compile_definitions(json-schema-validator
 		JSONSV_NOEXCEPTION
 )
 target_include_directories(json-schema-validator PRIVATE
-	external/nlohmann/single_include/
 	external/json-schema-validator/src/
+	external/nlohmann/single_include/
 )
 
 file(GLOB_RECURSE TARGET_SOURCES
@@ -69,9 +69,10 @@ target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 target_include_directories(${TARGET_NAME}
 	PRIVATE
 		src/
-		external/nlohmann/single_include/
-		external/json-schema-validator/src/
+		external/ctre/single-header/
 		external/fmt/include/
+		external/json-schema-validator/src/
+		external/nlohmann/single_include/
 		external/
 )
 

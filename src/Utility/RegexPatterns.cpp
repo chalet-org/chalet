@@ -5,7 +5,7 @@
 
 #include "Utility/RegexPatterns.hpp"
 
-#include <regex>
+#include "Libraries/Regex.hpp"
 
 namespace chalet
 {
@@ -15,8 +15,17 @@ bool RegexPatterns::matchesGnuCppStandard(const std::string& inValue)
 	if (inValue.empty())
 		return false;
 
+#ifdef CHALET_REGEX_CTRE
+	#if CHALET_REGEX_CTRE_STD == 20
+	if (auto m = ctre::match<"^(c|gnu)\\+\\+\\d[\\dxyzab]$">(inValue))
+	#else
+	static constexpr auto regex = ctll::fixed_string{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
+	if (auto m = ctre::match<regex>(inValue))
+	#endif
+#else
 	static std::regex regex{ "^(c|gnu)\\+\\+\\d[\\dxyzab]$" };
 	if (std::regex_match(inValue, regex))
+#endif
 	{
 		return true;
 	}

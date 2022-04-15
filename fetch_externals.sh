@@ -4,6 +4,7 @@ OUTDIR="external"
 
 libraries=(
 	'catch2'
+	'ctre'
 	'fmt'
 	'json-schema-validator'
 	'nlohmann'
@@ -11,18 +12,21 @@ libraries=(
 
 repositories=(
 	'catchorg/Catch2'
+	'hanickadot/compile-time-regular-expressions'
 	'fmtlib/fmt'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
 )
 tags=(
 	'v2.x'
+	'v3.6'
 	'8.1.1'
 	'master'
 	'v3.10.2'
 )
 
 commits=(
+	0
 	0
 	0
 	0
