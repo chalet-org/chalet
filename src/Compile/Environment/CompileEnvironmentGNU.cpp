@@ -220,11 +220,11 @@ void CompileEnvironmentGNU::parseThreadModelFromVersionOutput(const std::string&
 /*****************************************************************************/
 bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 {
-	const auto& archTriple = m_state.info.targetArchitectureTriple();
+	const auto& targetTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
 	bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-	if (emptyInputArch || !String::contains('-', archTriple))
+	if (emptyInputArch || !String::contains('-', targetTriple))
 	{
 		auto& sourceCache = m_state.cache.file().sources();
 		std::string cachedArch;

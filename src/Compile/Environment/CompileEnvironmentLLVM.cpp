@@ -76,10 +76,10 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		const auto& archTriple = m_state.info.targetArchitectureTriple();
+		const auto& targetTriple = m_state.info.targetArchitectureTriple();
 
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-		if (emptyInputArch || !String::contains('-', archTriple))
+		if (emptyInputArch || !String::contains('-', targetTriple))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
@@ -88,7 +88,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			if (!valid)
 				return false;
 
-			cachedArch = fmt::format("{}{}", archTriple, cachedArch.substr(firstDash));
+			cachedArch = fmt::format("{}{}", targetTriple, cachedArch.substr(firstDash));
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = cachedArch.find("apple-darwin");
@@ -100,7 +100,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		}
 		else
 		{
-			cachedArch = archTriple;
+			cachedArch = targetTriple;
 		}
 	}
 

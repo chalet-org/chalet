@@ -929,10 +929,10 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
 
-			if (String::equals("arch", match))
+			if (String::equals("architecture", match))
 				return info.targetArchitectureString();
 
-			if (String::equals("archTriple", match))
+			if (String::equals("targetTriple", match))
 				return info.targetArchitectureTriple();
 
 			if (String::equals("configuration", match))
@@ -1013,10 +1013,10 @@ void BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
 
-			if (String::equals("arch", match))
+			if (String::equals("architecture", match))
 				return info.targetArchitectureString();
 
-			if (String::equals("archTriple", match))
+			if (String::equals("targetTriple", match))
 				return info.targetArchitectureTriple();
 
 			if (String::equals("configuration", match))
