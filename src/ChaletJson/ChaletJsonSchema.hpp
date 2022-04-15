@@ -116,7 +116,7 @@ class ChaletJsonSchema
 		TargetSourceCxxCppModules,
 		TargetSourceCxxCppCoroutines,
 		TargetSourceCxxCppConcepts,
-		TargetSourceCxxRunTimeTypeInfo,
+		TargetSourceCxxRuntimeTypeInfo,
 		TargetSourceCxxFastMath,
 		TargetSourceCxxExceptions,
 		TargetSourceCxxInputCharSet,
@@ -169,13 +169,17 @@ private:
 	Json getDefinition(const Defs inDef);
 	Json makeArrayOrString(const Json inString, const bool inUniqueItems = true);
 
+	void addProperty(Json& outJson, const char* inKey, const Defs inDef, const bool inIndexed = true);
+	void addPropertyAndPattern(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
+	void addaddPropertyAndPatternWithCompilerOptions(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
+
 	//
 	const std::string kPatternTargetName;
 	const std::string kPatternAbstractName;
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
-	const std::string kPatternConditionConfigurations;
+	const std::string kPatternConfigurations;
 	const std::string kPatternPlatforms;
 	const std::string kPatternConfigurationsPlatforms;
 	const std::string kPatternCompilers;

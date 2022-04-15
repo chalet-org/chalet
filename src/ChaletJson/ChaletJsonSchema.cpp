@@ -22,7 +22,7 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternTargetSourceLinks(R"(^[\w\-+.]+$)"),
 	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
 	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
-	kPatternConditionConfigurations(R"regex((\.?!?(debug)\b\.?)?)regex"),
+	kPatternConfigurations(R"regex(\.!?(debug)\b)regex"),
 	kPatternPlatforms(R"regex((\.?!?(windows|macos|linux)\b){1,2})regex"),
 	kPatternConfigurationsPlatforms(R"regex((\.?!?(debug|windows|macos|linux)\b){1,2})regex"),
 	kPatternCompilers(R"regex(^(\*|[\w\-+.]{3,})(\.?!?(debug|windows|macos|linux)\b){0,2}$)regex"),
@@ -794,7 +794,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxRunTimeTypeInfo] = R"json({
+	defs[Defs::TargetSourceCxxRuntimeTypeInfo] = R"json({
 		"type": "boolean",
 		"description": "true to include run-time type information (default), false to exclude.",
 		"default": true
@@ -1336,23 +1336,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
-	auto getDefinitionwithCompilerOptions = [this](const Defs inDef) {
-		Json ret = R"json({
-			"oneOf": [
-				{},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"description": "Options specific to each compiler"
-				}
-			]
-		})json"_ojson;
-		ret[SKeys::OneOf][0] = getDefinition(inDef);
-		ret[SKeys::OneOf][1][SKeys::PatternProperties][kPatternCompilers] = ret[SKeys::OneOf][0];
-
-		return ret;
-	};
-
 	//
 	// Complex Definitions
 	//
@@ -1362,16 +1345,16 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "Properties to describe a single build configuration type.",
 			"additionalProperties": false
 		})json"_ojson;
-		configuration[SKeys::Properties]["debugSymbols"] = getDefinition(Defs::ConfigurationDebugSymbols);
-		configuration[SKeys::Properties]["enableProfiling"] = getDefinition(Defs::ConfigurationEnableProfiling);
-		configuration[SKeys::Properties]["interproceduralOptimization"] = getDefinition(Defs::ConfigurationInterproceduralOptimization);
-		configuration[SKeys::Properties]["optimizationLevel"] = getDefinition(Defs::ConfigurationOptimizationLevel);
-		configuration[SKeys::Properties]["sanitize"] = getDefinition(Defs::ConfigurationSanitize);
+		addProperty(configuration, "debugSymbols", Defs::ConfigurationDebugSymbols);
+		addProperty(configuration, "enableProfiling", Defs::ConfigurationEnableProfiling);
+		addProperty(configuration, "interproceduralOptimization", Defs::ConfigurationInterproceduralOptimization);
+		addProperty(configuration, "optimizationLevel", Defs::ConfigurationOptimizationLevel);
+		addProperty(configuration, "sanitize", Defs::ConfigurationSanitize);
 		defs[Defs::Configuration] = std::move(configuration);
 	}
 
 	{
-		auto distributionTarget = R"json({
+		auto distTarget = R"json({
 			"type": "object",
 			"description": "Properties to describe an individual bundle.",
 			"additionalProperties": false,
@@ -1379,25 +1362,23 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"kind"
 			]
 		})json"_ojson;
-		distributionTarget[SKeys::Properties] = Json::object();
-		distributionTarget[SKeys::Properties]["buildTargets"] = getDefinition(Defs::DistributionBundleBuildTargets);
-		distributionTarget[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionTarget[SKeys::Properties]["exclude"] = getDefinition(Defs::DistributionBundleExclude);
-		distributionTarget[SKeys::Properties]["include"] = getDefinition(Defs::DistributionBundleInclude);
-		distributionTarget[SKeys::Properties]["includeDependentSharedLibraries"] = getDefinition(Defs::DistributionBundleIncludeDependentSharedLibraries);
-		distributionTarget[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionTarget[SKeys::Properties]["linuxDesktopEntry"] = m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry];
-		distributionTarget[SKeys::Properties]["macosBundle"] = m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle];
-		distributionTarget[SKeys::Properties]["mainExecutable"] = getDefinition(Defs::DistributionBundleMainExecutable);
-		distributionTarget[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distributionTarget[SKeys::Properties]["subdirectory"] = getDefinition(Defs::DistributionBundleOutputDirectory);
-		distributionTarget[SKeys::PatternProperties][fmt::format("^include{}$", kPatternPlatforms)] = getDefinition(Defs::DistributionBundleInclude);
-		distributionTarget[SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternPlatforms)] = getDefinition(Defs::DistributionBundleExclude);
-		defs[Defs::DistributionBundle] = std::move(distributionTarget);
+		distTarget[SKeys::Properties] = Json::object();
+		addProperty(distTarget, "buildTargets", Defs::DistributionBundleBuildTargets);
+		addProperty(distTarget, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distTarget, "exclude", Defs::DistributionBundleExclude, kPatternPlatforms);
+		addPropertyAndPattern(distTarget, "include", Defs::DistributionBundleInclude, kPatternPlatforms);
+		addProperty(distTarget, "includeDependentSharedLibraries", Defs::DistributionBundleIncludeDependentSharedLibraries);
+		addProperty(distTarget, "kind", Defs::DistributionKind);
+		addProperty(distTarget, "linuxDesktopEntry", Defs::DistributionBundleLinuxDesktopEntry, false);
+		addProperty(distTarget, "macosBundle", Defs::DistributionBundleMacOSBundle, false);
+		addProperty(distTarget, "mainExecutable", Defs::DistributionBundleMainExecutable);
+		addProperty(distTarget, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(distTarget, "subdirectory", Defs::DistributionBundleOutputDirectory);
+		defs[Defs::DistributionBundle] = std::move(distTarget);
 	}
 
 	{
-		auto distributionArchive = R"json({
+		auto distArchive = R"json({
 			"type": "object",
 			"description": "Properties to describe an individual distribution archive.",
 			"additionalProperties": false,
@@ -1405,16 +1386,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"kind"
 			]
 		})json"_ojson;
-		distributionArchive[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionArchive[SKeys::Properties]["include"] = getDefinition(Defs::DistributionArchiveInclude);
-		distributionArchive[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionArchive[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distributionArchive[SKeys::PatternProperties][fmt::format("^include{}$", kPatternPlatforms)] = getDefinition(Defs::DistributionArchiveInclude);
-		defs[Defs::DistributionArchive] = std::move(distributionArchive);
+		addProperty(distArchive, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distArchive, "include", Defs::DistributionArchiveInclude, kPatternPlatforms);
+		addProperty(distArchive, "kind", Defs::DistributionKind);
+		addProperty(distArchive, "outputDescription", Defs::TargetOutputDescription);
+		defs[Defs::DistributionArchive] = std::move(distArchive);
 	}
 
 	{
-		auto distributionMacosDiskImage = R"json({
+		auto distMacosDiskImage = R"json({
 			"type": "object",
 			"description": "Properties to describe a macos disk image (dmg). Implies 'condition: macos'",
 			"additionalProperties": false,
@@ -1424,19 +1404,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"positions"
 			]
 		})json"_ojson;
-		distributionMacosDiskImage[SKeys::Properties]["background"] = defs[Defs::DistributionMacosDiskImageBackground];
-		distributionMacosDiskImage[SKeys::Properties]["iconSize"] = getDefinition(Defs::DistributionMacosDiskImageIconSize);
-		distributionMacosDiskImage[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionMacosDiskImage[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distributionMacosDiskImage[SKeys::Properties]["pathbarVisible"] = getDefinition(Defs::DistributionMacosDiskImagePathbarVisible);
-		distributionMacosDiskImage[SKeys::Properties]["positions"] = m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions];
-		distributionMacosDiskImage[SKeys::Properties]["size"] = m_nonIndexedDefs[Defs::DistributionMacosDiskImageSize];
-		distributionMacosDiskImage[SKeys::Properties]["textSize"] = getDefinition(Defs::DistributionMacosDiskImageTextSize);
-		defs[Defs::DistributionMacosDiskImage] = std::move(distributionMacosDiskImage);
+		distMacosDiskImage[SKeys::Properties]["background"] = defs[Defs::DistributionMacosDiskImageBackground];
+		addProperty(distMacosDiskImage, "iconSize", Defs::DistributionMacosDiskImageIconSize);
+		addProperty(distMacosDiskImage, "kind", Defs::DistributionKind);
+		addProperty(distMacosDiskImage, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(distMacosDiskImage, "pathbarVisible", Defs::DistributionMacosDiskImagePathbarVisible);
+		addProperty(distMacosDiskImage, "positions", Defs::DistributionMacosDiskImagePositions, false);
+		addProperty(distMacosDiskImage, "size", Defs::DistributionMacosDiskImageSize, false);
+		addProperty(distMacosDiskImage, "textSize", Defs::DistributionMacosDiskImageTextSize);
+		defs[Defs::DistributionMacosDiskImage] = std::move(distMacosDiskImage);
 	}
 
 	{
-		auto distributionWinNullsoft = R"json({
+		auto distWinNullsoft = R"json({
 			"type": "object",
 			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
 			"additionalProperties": false,
@@ -1445,12 +1425,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"file"
 			]
 		})json"_ojson;
-		distributionWinNullsoft[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionWinNullsoft[SKeys::Properties]["file"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerScript);
-		distributionWinNullsoft[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distributionWinNullsoft[SKeys::Properties]["pluginDirs"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerPluginDirs);
-		distributionWinNullsoft[SKeys::Properties]["defines"] = getDefinition(Defs::DistributionWindowsNullsoftInstallerDefines);
-		defs[Defs::DistributionWindowsNullsoftInstaller] = std::move(distributionWinNullsoft);
+		addProperty(distWinNullsoft, "defines", Defs::DistributionWindowsNullsoftInstallerDefines);
+		addProperty(distWinNullsoft, "file", Defs::DistributionWindowsNullsoftInstallerScript);
+		addProperty(distWinNullsoft, "kind", Defs::DistributionKind);
+		addProperty(distWinNullsoft, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(distWinNullsoft, "pluginDirs", Defs::DistributionWindowsNullsoftInstallerPluginDirs);
+		defs[Defs::DistributionWindowsNullsoftInstaller] = std::move(distWinNullsoft);
 	}
 
 	{
@@ -1462,11 +1442,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"properties": {}
 		})json"_ojson;
 		externalDependency[SKeys::Properties] = Json::object();
-		externalDependency[SKeys::Properties]["repository"] = getDefinition(Defs::ExternalDependencyGitRepository);
-		externalDependency[SKeys::Properties]["submodules"] = getDefinition(Defs::ExternalDependencyGitSubmodules);
-		externalDependency[SKeys::Properties]["branch"] = getDefinition(Defs::ExternalDependencyGitBranch);
-		externalDependency[SKeys::Properties]["commit"] = getDefinition(Defs::ExternalDependencyGitCommit);
-		externalDependency[SKeys::Properties]["tag"] = getDefinition(Defs::ExternalDependencyGitTag);
+		addProperty(externalDependency, "branch", Defs::ExternalDependencyGitBranch);
+		addProperty(externalDependency, "commit", Defs::ExternalDependencyGitCommit);
+		addProperty(externalDependency, "repository", Defs::ExternalDependencyGitRepository);
+		addProperty(externalDependency, "submodules", Defs::ExternalDependencyGitSubmodules);
+		addProperty(externalDependency, "tag", Defs::ExternalDependencyGitTag);
 		defs[Defs::ExternalDependency] = std::move(externalDependency);
 	}
 
@@ -1476,66 +1456,39 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
 			"additionalProperties": false
 		})json"_ojson;
-		sourceTargetCxx[SKeys::Properties]["cStandard"] = getDefinition(Defs::TargetSourceCxxCStandard);
-		sourceTargetCxx[SKeys::Properties]["compileOptions"] = m_nonIndexedDefs[Defs::TargetSourceCxxCompileOptions];
-		sourceTargetCxx[SKeys::Properties]["cppConcepts"] = getDefinition(Defs::TargetSourceCxxCppConcepts);
-		sourceTargetCxx[SKeys::Properties]["cppCoroutines"] = getDefinition(Defs::TargetSourceCxxCppCoroutines);
-		sourceTargetCxx[SKeys::Properties]["cppFilesystem"] = getDefinition(Defs::TargetSourceCxxCppFilesystem);
-		sourceTargetCxx[SKeys::Properties]["cppModules"] = getDefinition(Defs::TargetSourceCxxCppModules);
-		sourceTargetCxx[SKeys::Properties]["cppStandard"] = getDefinition(Defs::TargetSourceCxxCppStandard);
-		sourceTargetCxx[SKeys::Properties]["defines"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxDefines);
-		sourceTargetCxx[SKeys::Properties]["exceptions"] = getDefinition(Defs::TargetSourceCxxExceptions);
-		sourceTargetCxx[SKeys::Properties]["executionCharset"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxExecutionCharSet);
-		sourceTargetCxx[SKeys::Properties]["fastMath"] = getDefinition(Defs::TargetSourceCxxFastMath);
-		sourceTargetCxx[SKeys::Properties]["includeDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxIncludeDirs);
-		sourceTargetCxx[SKeys::Properties]["inputCharset"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxInputCharSet);
-		sourceTargetCxx[SKeys::Properties]["libDirs"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxLibDirs);
-		sourceTargetCxx[SKeys::Properties]["linkerScript"] = getDefinition(Defs::TargetSourceCxxLinkerScript);
-		sourceTargetCxx[SKeys::Properties]["linkerOptions"] = m_nonIndexedDefs[Defs::TargetSourceCxxLinkerOptions];
-		sourceTargetCxx[SKeys::Properties]["links"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxLinks);
-		sourceTargetCxx[SKeys::Properties]["macosFrameworkPaths"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworkPaths);
-		sourceTargetCxx[SKeys::Properties]["macosFrameworks"] = getDefinition(Defs::TargetSourceCxxMacOsFrameworks);
-		sourceTargetCxx[SKeys::Properties]["mingwUnixSharedLibraryNamingConvention"] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
-		sourceTargetCxx[SKeys::Properties]["buildSuffix"] = getDefinition(Defs::TargetSourceCxxBuildSuffix);
-		sourceTargetCxx[SKeys::Properties]["precompiledHeader"] = getDefinition(Defs::TargetSourceCxxPrecompiledHeader);
-		sourceTargetCxx[SKeys::Properties]["runtimeTypeInformation"] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[SKeys::Properties]["staticRuntimeLibrary"] = getDefinition(Defs::TargetSourceCxxStaticRuntimeLibrary);
-		sourceTargetCxx[SKeys::Properties]["staticLinks"] = getDefinitionwithCompilerOptions(Defs::TargetSourceCxxStaticLinks);
-		sourceTargetCxx[SKeys::Properties]["threads"] = getDefinition(Defs::TargetSourceCxxThreads);
-		sourceTargetCxx[SKeys::Properties]["treatWarningsAsErrors"] = getDefinition(Defs::TargetSourceCxxTreatWarningsAsErrors);
-		sourceTargetCxx[SKeys::Properties]["warnings"] = getDefinition(Defs::TargetSourceCxxWarnings);
-		// sourceTargetCxx[SKeys::Properties]["windowsOutputDef"] = getDefinition(Defs::TargetSourceCxxWindowsOutputDef);
-		sourceTargetCxx[SKeys::Properties]["windowsApplicationIcon"] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
-		sourceTargetCxx[SKeys::Properties]["windowsApplicationManifest"] = getDefinition(Defs::TargetSourceCxxWindowsAppManifest);
-		sourceTargetCxx[SKeys::Properties]["windowsSubSystem"] = getDefinition(Defs::TargetSourceCxxWindowsSubSystem);
-		sourceTargetCxx[SKeys::Properties]["windowsEntryPoint"] = getDefinition(Defs::TargetSourceCxxWindowsEntryPoint);
-
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCStandard);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppCoroutines{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCppCoroutines);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppConcepts{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCppConcepts);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppFilesystem{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCppFilesystem);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppModules{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCppModules);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^cppStandard{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxCppStandard);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^defines{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxDefines);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^exceptions{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExceptions);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^executionCharset{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxExecutionCharSet);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^fastMath{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxFastMath);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^includeDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxIncludeDirs);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^inputCharset{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxInputCharSet);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^libDirs{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxLibDirs);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^linkerScript{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceCxxLinkerScript);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^links{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxLinks);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^mingwUnixSharedLibraryNamingConvention{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticLinks{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticLinks);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^runtimeTypeInformation{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxRunTimeTypeInfo);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^staticRuntimeLibrary{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxStaticRuntimeLibrary);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^threads{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^treatWarningsAsErrors{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetSourceCxxThreads);
-
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsApplicationIcon{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppIcon);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsApplicationManifest{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsAppManifest);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsSubSystem{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsSubSystem);
-		sourceTargetCxx[SKeys::PatternProperties][fmt::format("^windowsEntryPoint{}$", kPatternConditionConfigurations)] = getDefinition(Defs::TargetSourceCxxWindowsEntryPoint);
+		addProperty(sourceTargetCxx, "buildSuffix", Defs::TargetSourceCxxBuildSuffix);
+		addProperty(sourceTargetCxx, "compileOptions", Defs::TargetSourceCxxCompileOptions, false);
+		addPropertyAndPattern(sourceTargetCxx, "cppConcepts", Defs::TargetSourceCxxCppConcepts, kPatternPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "cppCoroutines", Defs::TargetSourceCxxCppCoroutines, kPatternPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "cppFilesystem", Defs::TargetSourceCxxCppFilesystem, kPatternPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "cppModules", Defs::TargetSourceCxxCppModules, kPatternPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "cppStandard", Defs::TargetSourceCxxCppStandard, kPatternPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "cStandard", Defs::TargetSourceCxxCStandard, kPatternPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "defines", Defs::TargetSourceCxxDefines, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "exceptions", Defs::TargetSourceCxxExceptions, kPatternConfigurationsPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "executionCharset", Defs::TargetSourceCxxExecutionCharSet, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "fastMath", Defs::TargetSourceCxxFastMath, kPatternConfigurationsPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "includeDirs", Defs::TargetSourceCxxIncludeDirs, kPatternConfigurationsPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "inputCharset", Defs::TargetSourceCxxInputCharSet, kPatternConfigurationsPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "libDirs", Defs::TargetSourceCxxLibDirs, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "linkerScript", Defs::TargetSourceCxxLinkerScript, kPatternPlatforms);
+		addProperty(sourceTargetCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, false);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "links", Defs::TargetSourceCxxLinks, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "macosFrameworkPaths", Defs::TargetSourceCxxMacOsFrameworkPaths, kPatternConfigurations);
+		addPropertyAndPattern(sourceTargetCxx, "macosFrameworks", Defs::TargetSourceCxxMacOsFrameworks, kPatternConfigurations);
+		addPropertyAndPattern(sourceTargetCxx, "mingwUnixSharedLibraryNamingConvention", Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention, kPatternConfigurations);
+		addProperty(sourceTargetCxx, "precompiledHeader", Defs::TargetSourceCxxPrecompiledHeader);
+		addPropertyAndPattern(sourceTargetCxx, "runtimeTypeInformation", Defs::TargetSourceCxxRuntimeTypeInfo, kPatternConfigurationsPlatforms);
+		addaddPropertyAndPatternWithCompilerOptions(sourceTargetCxx, "staticLinks", Defs::TargetSourceCxxStaticLinks, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "staticRuntimeLibrary", Defs::TargetSourceCxxStaticRuntimeLibrary, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "threads", Defs::TargetSourceCxxThreads, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(sourceTargetCxx, "treatWarningsAsErrors", Defs::TargetSourceCxxTreatWarningsAsErrors, kPatternConfigurationsPlatforms);
+		addProperty(sourceTargetCxx, "warnings", Defs::TargetSourceCxxWarnings);
+		// addProperty(sourceTargetCxx, "windowsOutputDef", Defs::TargetSourceCxxWindowsOutputDef);
+		addPropertyAndPattern(sourceTargetCxx, "windowsApplicationIcon", Defs::TargetSourceCxxWindowsAppIcon, kPatternConfigurations);
+		addPropertyAndPattern(sourceTargetCxx, "windowsApplicationManifest", Defs::TargetSourceCxxWindowsAppManifest, kPatternConfigurations);
+		addPropertyAndPattern(sourceTargetCxx, "windowsEntryPoint", Defs::TargetSourceCxxWindowsEntryPoint, kPatternConfigurations);
+		addPropertyAndPattern(sourceTargetCxx, "windowsSubSystem", Defs::TargetSourceCxxWindowsSubSystem, kPatternConfigurations);
 
 		defs[Defs::TargetSourceCxx] = std::move(sourceTargetCxx);
 	}
@@ -1546,13 +1499,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false,
 			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)"
 		})json"_ojson;
-		sourceMetadata[SKeys::Properties]["author"] = getDefinition(Defs::TargetSourceMetadataAuthor);
-		sourceMetadata[SKeys::Properties]["description"] = getDefinition(Defs::TargetSourceMetadataDescription);
-		sourceMetadata[SKeys::Properties]["homepage"] = getDefinition(Defs::TargetSourceMetadataHomepage);
-		sourceMetadata[SKeys::Properties]["license"] = getDefinition(Defs::TargetSourceMetadataLicense);
-		sourceMetadata[SKeys::Properties]["name"] = getDefinition(Defs::TargetSourceMetadataName);
-		sourceMetadata[SKeys::Properties]["readme"] = getDefinition(Defs::TargetSourceMetadataReadme);
-		sourceMetadata[SKeys::Properties]["version"] = getDefinition(Defs::TargetSourceMetadataVersion);
+		addProperty(sourceMetadata, "author", Defs::TargetSourceMetadataAuthor);
+		addProperty(sourceMetadata, "description", Defs::TargetSourceMetadataDescription);
+		addProperty(sourceMetadata, "homepage", Defs::TargetSourceMetadataHomepage);
+		addProperty(sourceMetadata, "license", Defs::TargetSourceMetadataLicense);
+		addProperty(sourceMetadata, "name", Defs::TargetSourceMetadataName);
+		addProperty(sourceMetadata, "readme", Defs::TargetSourceMetadataReadme);
+		addProperty(sourceMetadata, "version", Defs::TargetSourceMetadataVersion);
 
 		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
 	}
@@ -1562,19 +1515,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		abstractSource[SKeys::Properties]["configureFiles"] = getDefinition(Defs::TargetSourceConfigureFiles);
-		abstractSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
-		abstractSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
-		abstractSource[SKeys::Properties]["metadata"] = getDefinition(Defs::TargetSourceMetadata);
-		abstractSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
+		addProperty(abstractSource, "configureFiles", Defs::TargetSourceConfigureFiles);
+		addPropertyAndPattern(abstractSource, "files", Defs::TargetSourceFiles, kPatternPlatforms);
+		addPropertyAndPattern(abstractSource, "language", Defs::TargetSourceLanguage, kPatternPlatforms);
+		addProperty(abstractSource, "metadata", Defs::TargetSourceMetadata);
+
 		abstractSource[SKeys::Properties]["settings"] = R"json({
 			"type": "object",
 			"description": "Settings for each language",
 			"additionalProperties": false
 		})json"_ojson;
 		abstractSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
-		abstractSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceFiles);
-		abstractSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternPlatforms)] = getDefinition(Defs::TargetOutputDescription);
+		abstractSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
+
 		defs[Defs::TargetAbstract] = std::move(abstractSource);
 	}
 	{
@@ -1585,64 +1538,55 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"kind"
 			]
 		})json"_ojson;
-		targetSource[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetSource[SKeys::Properties]["configureFiles"] = getDefinition(Defs::TargetSourceConfigureFiles);
-		targetSource[SKeys::Properties]["extends"] = getDefinition(Defs::TargetSourceExtends);
-		targetSource[SKeys::Properties]["files"] = getDefinition(Defs::TargetSourceFiles);
-		targetSource[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		targetSource[SKeys::Properties]["language"] = getDefinition(Defs::TargetSourceLanguage);
-		targetSource[SKeys::Properties]["metadata"] = getDefinition(Defs::TargetSourceMetadata);
-		targetSource[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		targetSource[SKeys::Properties]["settings"] = R"json({
-			"type": "object",
-			"description": "Settings for each language",
-			"additionalProperties": false
-		})json"_ojson;
-		targetSource[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::TargetSourceCxx);
-		targetSource[SKeys::Properties]["settings:Cxx"] = getDefinition(Defs::TargetSourceCxx);
-		targetSource[SKeys::PatternProperties][fmt::format("^files{}$", kPatternPlatforms)] = getDefinition(Defs::TargetSourceFiles);
-		targetSource[SKeys::PatternProperties][fmt::format("^language{}$", kPatternPlatforms)] = getDefinition(Defs::TargetOutputDescription);
+		addProperty(targetSource, "condition", Defs::TargetCondition);
+		addProperty(targetSource, "configureFiles", Defs::TargetSourceConfigureFiles);
+		addProperty(targetSource, "extends", Defs::TargetSourceExtends);
+		addPropertyAndPattern(targetSource, "files", Defs::TargetSourceFiles, kPatternPlatforms);
+		addProperty(targetSource, "kind", Defs::TargetKind);
+		addPropertyAndPattern(targetSource, "language", Defs::TargetSourceLanguage, kPatternPlatforms);
+		addProperty(targetSource, "metadata", Defs::TargetSourceMetadata);
+		addProperty(targetSource, "outputDescription", Defs::TargetOutputDescription);
+
+		const auto& abstractProperties = defs[Defs::TargetAbstract][SKeys::Properties];
+		targetSource[SKeys::Properties]["settings"] = abstractProperties["settings"];
+		targetSource[SKeys::Properties]["settings:Cxx"] = abstractProperties["settings:Cxx"];
+
 		defs[Defs::TargetSourceLibrary] = std::move(targetSource);
 
 		//
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
-		defs[Defs::TargetSourceExecutable][SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
-		defs[Defs::TargetSourceExecutable][SKeys::Properties]["copyFilesOnRun"] = getDefinition(Defs::TargetCopyFilesOnRun);
-		defs[Defs::TargetSourceExecutable][SKeys::PatternProperties][fmt::format("^copyFilesOnRun{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetCopyFilesOnRun);
+		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
+		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetCopyFilesOnRun, kPatternConfigurationsPlatforms);
 	}
 
 	{
-		auto targetBuildScript = R"json({
+		auto targetScript = R"json({
 			"type": "object",
 			"additionalProperties": false,
 			"required": [
 				"kind"
 			]
 		})json"_ojson;
-		targetBuildScript[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetScriptArguments);
-		targetBuildScript[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetBuildScript[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		// targetBuildScript[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
-		targetBuildScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
-		targetBuildScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		targetBuildScript[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptArguments);
-		targetBuildScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptFile);
-		defs[Defs::TargetScript] = std::move(targetBuildScript);
+		addPropertyAndPattern(targetScript, "arguments", Defs::TargetScriptArguments, kPatternConfigurationsPlatforms);
+		addProperty(targetScript, "condition", Defs::TargetCondition);
+		addProperty(targetScript, "kind", Defs::TargetKind);
+		// addProperty(targetScript, "defaultRunArguments", Defs::TargetDefaultRunArguments);
+		addPropertyAndPattern(targetScript, "file", Defs::TargetScriptFile, kPatternConfigurationsPlatforms);
+		addProperty(targetScript, "outputDescription", Defs::TargetOutputDescription);
+		defs[Defs::TargetScript] = std::move(targetScript);
 	}
 
 	{
-		auto distributionScript = R"json({
+		auto distScript = R"json({
 			"type": "object",
 			"additionalProperties": false
 		})json"_ojson;
-		distributionScript[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetScriptArguments);
-		distributionScript[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distributionScript[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distributionScript[SKeys::Properties]["file"] = getDefinition(Defs::TargetScriptFile);
-		distributionScript[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distributionScript[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetScriptArguments);
-		distributionScript[SKeys::PatternProperties][fmt::format("^file{}$", kPatternPlatforms)] = getDefinition(Defs::TargetScriptFile);
-		defs[Defs::DistributionScript] = std::move(distributionScript);
+		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConfigurationsPlatforms);
+		addProperty(distScript, "condition", Defs::DistributionCondition);
+		addProperty(distScript, "kind", Defs::DistributionKind);
+		addPropertyAndPattern(distScript, "file", Defs::TargetScriptFile, kPatternConfigurationsPlatforms);
+		addProperty(distScript, "outputDescription", Defs::TargetOutputDescription);
+		defs[Defs::DistributionScript] = std::move(distScript);
 	}
 
 	{
@@ -1656,13 +1600,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"path"
 			]
 		})json"_ojson;
-		distProcess[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
-		distProcess[SKeys::Properties]["condition"] = getDefinition(Defs::DistributionCondition);
-		distProcess[SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
-		distProcess[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		distProcess[SKeys::Properties]["path"] = getDefinition(Defs::TargetProcessPath);
-		distProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProcessArguments);
-		distProcess[SKeys::PatternProperties][fmt::format("^path{}$", kPatternPlatforms)] = getDefinition(Defs::TargetProcessPath);
+		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConfigurationsPlatforms);
+		addProperty(distProcess, "condition", Defs::DistributionCondition);
+		addProperty(distProcess, "kind", Defs::DistributionKind);
+		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConfigurationsPlatforms);
 		defs[Defs::DistributionProcess] = std::move(distProcess);
 	}
 	{
@@ -1675,21 +1617,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"location"
 			]
 		})json"_ojson;
-		targetCMake[SKeys::Properties]["buildFile"] = getDefinition(Defs::TargetCMakeBuildFile);
-		targetCMake[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetCMake[SKeys::Properties]["defaultRunArguments"] = getDefinition(Defs::TargetDefaultRunArguments);
-		targetCMake[SKeys::Properties]["defines"] = getDefinition(Defs::TargetCMakeDefines);
-		targetCMake[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		targetCMake[SKeys::Properties]["location"] = getDefinition(Defs::TargetCMakeLocation);
-		targetCMake[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		targetCMake[SKeys::Properties]["recheck"] = getDefinition(Defs::TargetCMakeRecheck);
-		targetCMake[SKeys::Properties]["rebuild"] = getDefinition(Defs::TargetCMakeRebuild);
-		targetCMake[SKeys::Properties]["runExecutable"] = getDefinition(Defs::TargetCMakeRunExecutable);
-		targetCMake[SKeys::Properties]["toolset"] = getDefinition(Defs::TargetCMakeToolset);
-		targetCMake[SKeys::PatternProperties][fmt::format("^buildFile{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeBuildFile);
-		targetCMake[SKeys::PatternProperties][fmt::format("^defines{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeDefines);
-		targetCMake[SKeys::PatternProperties][fmt::format("^toolset{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeToolset);
-		targetCMake[SKeys::PatternProperties][fmt::format("^runExecutable{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetCMakeRunExecutable);
+		addPropertyAndPattern(targetCMake, "buildFile", Defs::TargetCMakeBuildFile, kPatternConfigurationsPlatforms);
+		addProperty(targetCMake, "condition", Defs::TargetCondition);
+		addProperty(targetCMake, "defaultRunArguments", Defs::TargetDefaultRunArguments);
+		addPropertyAndPattern(targetCMake, "defines", Defs::TargetCMakeDefines, kPatternConfigurationsPlatforms);
+		addProperty(targetCMake, "kind", Defs::TargetKind);
+		addProperty(targetCMake, "location", Defs::TargetCMakeLocation);
+		addProperty(targetCMake, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(targetCMake, "recheck", Defs::TargetCMakeRecheck);
+		addProperty(targetCMake, "rebuild", Defs::TargetCMakeRebuild);
+		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConfigurationsPlatforms);
+		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConfigurationsPlatforms);
 		defs[Defs::TargetCMake] = std::move(targetCMake);
 	}
 
@@ -1703,14 +1641,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"location"
 			]
 		})json"_ojson;
-		targetChalet[SKeys::Properties]["buildFile"] = getDefinition(Defs::TargetChaletBuildFile);
-		targetChalet[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetChalet[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		targetChalet[SKeys::Properties]["location"] = getDefinition(Defs::TargetChaletLocation);
-		targetChalet[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		targetChalet[SKeys::Properties]["recheck"] = getDefinition(Defs::TargetChaletRecheck);
-		targetChalet[SKeys::Properties]["rebuild"] = getDefinition(Defs::TargetChaletRebuild);
-		targetChalet[SKeys::PatternProperties][fmt::format("^buildFile{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetChaletBuildFile);
+		addPropertyAndPattern(targetChalet, "buildFile", Defs::TargetChaletBuildFile, kPatternConfigurationsPlatforms);
+		addProperty(targetChalet, "condition", Defs::TargetCondition);
+		addProperty(targetChalet, "kind", Defs::TargetKind);
+		addProperty(targetChalet, "location", Defs::TargetChaletLocation);
+		addProperty(targetChalet, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(targetChalet, "recheck", Defs::TargetChaletRecheck);
+		addProperty(targetChalet, "rebuild", Defs::TargetChaletRebuild);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
 
@@ -1724,13 +1661,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"path"
 			]
 		})json"_ojson;
-		targetProcess[SKeys::Properties]["arguments"] = getDefinition(Defs::TargetProcessArguments);
-		targetProcess[SKeys::Properties]["condition"] = getDefinition(Defs::TargetCondition);
-		targetProcess[SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
-		targetProcess[SKeys::Properties]["outputDescription"] = getDefinition(Defs::TargetOutputDescription);
-		targetProcess[SKeys::Properties]["path"] = getDefinition(Defs::TargetProcessPath);
-		targetProcess[SKeys::PatternProperties][fmt::format("^arguments{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetProcessArguments);
-		targetProcess[SKeys::PatternProperties][fmt::format("^path{}$", kPatternConfigurationsPlatforms)] = getDefinition(Defs::TargetProcessPath);
+		addPropertyAndPattern(targetProcess, "arguments", Defs::TargetProcessArguments, kPatternConfigurationsPlatforms);
+		addProperty(targetProcess, "condition", Defs::TargetCondition);
+		addProperty(targetProcess, "kind", Defs::TargetKind);
+		addProperty(targetProcess, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(targetProcess, "path", Defs::TargetProcessPath, kPatternConfigurationsPlatforms);
 		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
 
@@ -1841,7 +1776,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxCppModules: return "target-source-cxx-cppModules";
 		case Defs::TargetSourceCxxCppCoroutines: return "target-source-cxx-cppCoroutines";
 		case Defs::TargetSourceCxxCppConcepts: return "target-source-cxx-cppConcepts";
-		case Defs::TargetSourceCxxRunTimeTypeInfo: return "target-source-cxx-runtimeTypeInformation";
+		case Defs::TargetSourceCxxRuntimeTypeInfo: return "target-source-cxx-runtimeTypeInformation";
 		case Defs::TargetSourceCxxFastMath: return "target-source-cxx-fastMath";
 		case Defs::TargetSourceCxxExceptions: return "target-source-cxx-exceptions";
 		case Defs::TargetSourceCxxBuildSuffix: return "target-source-cxx-buildSuffix";
@@ -1930,6 +1865,40 @@ Json ChaletJsonSchema::makeArrayOrString(const Json inString, const bool inUniqu
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+void ChaletJsonSchema::addProperty(Json& outJson, const char* inKey, const Defs inDef, const bool inIndexed)
+{
+	if (inIndexed)
+		outJson[SKeys::Properties][inKey] = getDefinition(inDef);
+	else
+		outJson[SKeys::Properties][inKey] = m_nonIndexedDefs[inDef];
+}
+
+/*****************************************************************************/
+void ChaletJsonSchema::addPropertyAndPattern(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern)
+{
+	outJson[SKeys::Properties][inKey] = getDefinition(inDef);
+	outJson[SKeys::PatternProperties][fmt::format("^{}{}$", inKey, inPattern)] = outJson[SKeys::Properties][inKey];
+}
+
+/*****************************************************************************/
+void ChaletJsonSchema::addaddPropertyAndPatternWithCompilerOptions(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern)
+{
+	outJson[SKeys::Properties][inKey] = R"json({
+			"oneOf": [
+				{},
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"description": "Options specific to each compiler"
+				}
+			]
+		})json"_ojson;
+	outJson[SKeys::Properties][inKey][SKeys::OneOf][0] = getDefinition(inDef);
+	outJson[SKeys::Properties][inKey][SKeys::OneOf][1][SKeys::PatternProperties][kPatternCompilers] = outJson[SKeys::Properties][inKey][SKeys::OneOf][0];
+	outJson[SKeys::PatternProperties][fmt::format("^{}{}$", inKey, inPattern)] = outJson[SKeys::Properties][inKey][SKeys::OneOf][0];
 }
 
 /*****************************************************************************/

@@ -266,11 +266,11 @@
 				}
 			},
 			"patternProperties": {
-				"^include(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/dist-bundle-include"
-				},
 				"^exclude(\\.?!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/dist-bundle-exclude"
+				},
+				"^include(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/dist-bundle-include"
 				}
 			}
 		},
@@ -372,7 +372,7 @@
 				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-script-arguments"
 				},
-				"^file(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^file(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
@@ -591,20 +591,20 @@
 				"file"
 			],
 			"properties": {
-				"kind": {
-					"$ref": "#/definitions/dist-kind"
+				"defines": {
+					"$ref": "#/definitions/dist-windows-nullsoft-installer-defines"
 				},
 				"file": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-file"
+				},
+				"kind": {
+					"$ref": "#/definitions/dist-kind"
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
 				"pluginDirs": {
 					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
-				},
-				"defines": {
-					"$ref": "#/definitions/dist-windows-nullsoft-installer-defines"
 				}
 			}
 		},
@@ -675,10 +675,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
-				"^path(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^path(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
@@ -689,17 +689,17 @@
 				"repository"
 			],
 			"properties": {
-				"repository": {
-					"$ref": "#/definitions/external-git-repository"
-				},
-				"submodules": {
-					"$ref": "#/definitions/external-git-submodules"
-				},
 				"branch": {
 					"$ref": "#/definitions/external-git-branch"
 				},
 				"commit": {
 					"$ref": "#/definitions/external-git-commit"
+				},
+				"repository": {
+					"$ref": "#/definitions/external-git-repository"
+				},
+				"submodules": {
+					"$ref": "#/definitions/external-git-submodules"
 				},
 				"tag": {
 					"$ref": "#/definitions/external-git-tag"
@@ -828,9 +828,6 @@
 				"metadata": {
 					"$ref": "#/definitions/target-source-metadata"
 				},
-				"settings:Cxx": {
-					"$ref": "#/definitions/target-source-cxx"
-				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for each language",
@@ -840,6 +837,9 @@
 							"$ref": "#/definitions/target-source-cxx"
 						}
 					}
+				},
+				"settings:Cxx": {
+					"$ref": "#/definitions/target-source-cxx"
 				}
 			},
 			"patternProperties": {
@@ -847,7 +847,7 @@
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-outputDescription"
+					"$ref": "#/definitions/target-source-language"
 				}
 			}
 		},
@@ -907,7 +907,7 @@
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-outputDescription"
+					"$ref": "#/definitions/target-source-language"
 				},
 				"^copyFilesOnRun(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
@@ -964,7 +964,7 @@
 					"$ref": "#/definitions/target-source-files"
 				},
 				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-outputDescription"
+					"$ref": "#/definitions/target-source-language"
 				}
 			}
 		},
@@ -1172,8 +1172,8 @@
 			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
 			"additionalProperties": false,
 			"properties": {
-				"cStandard": {
-					"$ref": "#/definitions/target-source-cxx-cStandard"
+				"buildSuffix": {
+					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
 				"compileOptions": {
 					"type": "object",
@@ -1200,6 +1200,9 @@
 				},
 				"cppStandard": {
 					"$ref": "#/definitions/target-source-cxx-cppStandard"
+				},
+				"cStandard": {
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"defines": {
 					"oneOf": [
@@ -1332,17 +1335,11 @@
 				"mingwUnixSharedLibraryNamingConvention": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
-				"buildSuffix": {
-					"$ref": "#/definitions/target-source-cxx-buildSuffix"
-				},
 				"precompiledHeader": {
 					"$ref": "#/definitions/target-source-cxx-precompiledHeader"
 				},
 				"runtimeTypeInformation": {
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
-				},
-				"staticRuntimeLibrary": {
-					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
 				},
 				"staticLinks": {
 					"oneOf": [
@@ -1361,6 +1358,9 @@
 						}
 					]
 				},
+				"staticRuntimeLibrary": {
+					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
+				},
 				"threads": {
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
@@ -1376,22 +1376,19 @@
 				"windowsApplicationManifest": {
 					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
-				"windowsSubSystem": {
-					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
-				},
 				"windowsEntryPoint": {
 					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
+				},
+				"windowsSubSystem": {
+					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				}
 			},
 			"patternProperties": {
-				"^cStandard(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-cStandard"
+				"^cppConcepts(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
 				"^cppCoroutines(\\.?!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
-				},
-				"^cppConcepts(\\.?!?(windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
 				"^cppFilesystem(\\.?!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppFilesystem"
@@ -1401,6 +1398,9 @@
 				},
 				"^cppStandard(\\.?!?(windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-cppStandard"
+				},
+				"^cStandard(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"^defines(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
@@ -1414,13 +1414,13 @@
 				"^fastMath(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
-				"^includeDirs(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^includeDirs(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
 				"^inputCharset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-inputCharset"
 				},
-				"^libDirs(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^libDirs(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
 				"^linkerScript(\\.?!?(windows|macos|linux)\\b){1,2}$": {
@@ -1429,14 +1429,20 @@
 				"^links(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-links"
 				},
-				"^mingwUnixSharedLibraryNamingConvention(\\.?!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
+				"^macosFrameworkPaths\\.!?(debug)\\b$": {
+					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
 				},
-				"^staticLinks(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-staticLinks"
+				"^macosFrameworks\\.!?(debug)\\b$": {
+					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
+				},
+				"^mingwUnixSharedLibraryNamingConvention\\.!?(debug)\\b$": {
+					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
 				"^runtimeTypeInformation(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
+				},
+				"^staticLinks(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
 				"^staticRuntimeLibrary(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
@@ -1445,19 +1451,19 @@
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
 				"^treatWarningsAsErrors(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-source-cxx-threads"
+					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
 				},
-				"^windowsApplicationIcon(\\.?!?(debug)\\b\\.?)?$": {
+				"^windowsApplicationIcon\\.!?(debug)\\b$": {
 					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
-				"^windowsApplicationManifest(\\.?!?(debug)\\b\\.?)?$": {
+				"^windowsApplicationManifest\\.!?(debug)\\b$": {
 					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
-				"^windowsSubSystem(\\.?!?(debug)\\b\\.?)?$": {
-					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
-				},
-				"^windowsEntryPoint(\\.?!?(debug)\\b\\.?)?$": {
+				"^windowsEntryPoint\\.!?(debug)\\b$": {
 					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
+				},
+				"^windowsSubSystem\\.!?(debug)\\b$": {
+					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				}
 			}
 		},
@@ -2473,11 +2479,11 @@
 				"^defines(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-cmake-defines"
 				},
-				"^toolset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
-					"$ref": "#/definitions/target-cmake-toolset"
-				},
 				"^runExecutable(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
+				},
+				"^toolset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			}
 		},
