@@ -612,7 +612,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			std::string langStandard = String::toLowerCase(m_project.cStandard());
 			String::replaceAll(langStandard, "gnu", "");
 			String::replaceAll(langStandard, "c", "");
-			if (String::equals({ "2x", "18", "17", "iso9899:2018", "iso9899:2017" }, langStandard))
+			if (String::equals(StringList{ "2x", "18", "17", "iso9899:2018", "iso9899:2017" }, langStandard))
 			{
 				List::addIfDoesNotExist(outArgList, "/std:c17");
 			}
@@ -634,7 +634,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 			String::replaceAll(langStandard, "gnu++", "");
 			String::replaceAll(langStandard, "c++", "");
 
-			if (String::equals({ "20", "2a" }, langStandard))
+			if (String::equals(StringList{ "20", "2a" }, langStandard))
 			{
 				if (m_versionMajorMinor >= 1929)
 				{
@@ -642,7 +642,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 					set = true;
 				}
 			}
-			else if (String::equals({ "17", "1z" }, langStandard))
+			else if (String::equals(StringList{ "17", "1z" }, langStandard))
 			{
 				if (m_versionMajorMinor >= 1911)
 				{
@@ -650,7 +650,7 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 					set = true;
 				}
 			}
-			else if (String::equals({ "14", "1y", "11", "0x", "03", "98" }, langStandard))
+			else if (String::equals(StringList{ "14", "1y", "11", "0x", "03", "98" }, langStandard))
 			{
 				// Note: There was never "/std:c++11", "/std:c++03" or "/std:c++98"
 				List::addIfDoesNotExist(outArgList, "/std:c++14");

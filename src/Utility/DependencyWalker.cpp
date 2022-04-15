@@ -98,7 +98,7 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 	if (Commands::pathExists(inFile))
 	{
 		auto lower = String::toLowerCase(inFile);
-		return String::endsWith({ ".dll", ".exe" }, lower);
+		return String::endsWith(StringList{ ".dll", ".exe" }, lower);
 	}
 
 	return false;

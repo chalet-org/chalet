@@ -230,7 +230,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 	bool set = false;
 	auto& settings = getSettings();
 
-	if (String::startsWith({ "{", "[" }, m_value))
+	if (String::startsWith(StringList{ "{", "[" }, m_value))
 	{
 		CHALET_TRY
 		{
@@ -513,7 +513,7 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 	{
 		value = Json::object();
 	}
-	else if (String::equals({ "true", "false", "0", "1" }, m_value))
+	else if (String::equals(StringList{ "true", "false", "0", "1" }, m_value))
 	{
 		value = false;
 	}

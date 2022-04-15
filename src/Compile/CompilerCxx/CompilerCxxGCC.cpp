@@ -805,7 +805,7 @@ bool CompilerCxxGCC::addArchitectureToCommand(StringList& outArgList, const std:
 	auto targetArch = inState.info.targetArchitecture();
 	auto requestedArch = inState.info.targetArchitectureString();
 
-	if (inState.environment->isMingw() || String::equals({ "arm", "arm64" }, requestedArch))
+	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64" }, requestedArch))
 	{
 		// don't do anything yet
 		return false;
@@ -822,12 +822,12 @@ bool CompilerCxxGCC::addArchitectureToCommand(StringList& outArgList, const std:
 	std::string arch;
 	std::string tune;
 	std::string flags;
-	if (String::equals({ "intel", "generic" }, requestedArch))
+	if (String::equals(StringList{ "intel", "generic" }, requestedArch))
 	{
 		tune = requestedArch;
 		flags = "-m64";
 	}
-	else if (String::equals({ "x86_64", "x64" }, requestedArch))
+	else if (String::equals(StringList{ "x86_64", "x64" }, requestedArch))
 	{
 		arch = "x86-64";
 		tune = "generic";

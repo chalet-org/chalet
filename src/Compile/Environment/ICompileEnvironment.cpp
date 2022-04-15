@@ -409,7 +409,7 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 	#if defined(CHALET_WIN32)
 	if (String::endsWith("/icl.exe", inExecutable))
 	#else
-	if (String::endsWith({ "/icpc", "/icc" }, inExecutable))
+	if (String::endsWith(StringList{ "/icpc", "/icc" }, inExecutable))
 	#endif
 		return ToolchainType::IntelClassic;
 #endif
@@ -421,24 +421,24 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 	#else
 		String::endsWith("/icx", executable)
 	#endif
-		|| String::contains({ "onepi", "intel" }, executable))
+		|| String::contains(StringList{ "onepi", "intel" }, executable))
 		return ToolchainType::IntelLLVM;
 #endif
 
 	if (String::contains("clang", executable))
 	{
 #if defined(CHALET_MACOS)
-		if (String::contains({ "contents/developer", "code" }, executable))
+		if (String::contains(StringList{ "contents/developer", "code" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
 
 		return ToolchainType::LLVM;
 	}
 
-	if (String::contains({ "gcc", "g++" }, executable))
+	if (String::contains(StringList{ "gcc", "g++" }, executable))
 	{
 #if defined(CHALET_MACOS)
-		if (String::contains({ "contents/developer", "xcode" }, executable))
+		if (String::contains(StringList{ "contents/developer", "xcode" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif
 

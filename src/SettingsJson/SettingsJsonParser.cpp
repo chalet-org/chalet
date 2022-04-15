@@ -443,13 +443,13 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			else if (String::equals(Keys::OptionsInputFile, key))
 			{
 				auto val = value.get<std::string>();
-				if (m_inputs.inputFile().empty() || !String::equals({ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
+				if (m_inputs.inputFile().empty() || !String::equals(StringList{ m_inputs.inputFile(), m_inputs.defaultInputFile() }, val))
 					m_inputs.setInputFile(std::move(val));
 			}
 			else if (String::equals(Keys::OptionsEnvFile, key))
 			{
 				auto val = value.get<std::string>();
-				if (m_inputs.envFile().empty() || !String::equals({ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
+				if (m_inputs.envFile().empty() || !String::equals(StringList{ m_inputs.envFile(), m_inputs.defaultEnvFile() }, val))
 					m_inputs.setEnvFile(std::move(val));
 			}
 			else if (String::equals(Keys::OptionsRootDirectory, key))
@@ -461,19 +461,19 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			else if (String::equals(Keys::OptionsOutputDirectory, key))
 			{
 				auto val = value.get<std::string>();
-				if (m_inputs.outputDirectory().empty() || !String::equals({ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
+				if (m_inputs.outputDirectory().empty() || !String::equals(StringList{ m_inputs.outputDirectory(), m_inputs.defaultOutputDirectory() }, val))
 					m_inputs.setOutputDirectory(std::move(val));
 			}
 			else if (String::equals(Keys::OptionsExternalDirectory, key))
 			{
 				auto val = value.get<std::string>();
-				if (m_inputs.externalDirectory().empty() || !String::equals({ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
+				if (m_inputs.externalDirectory().empty() || !String::equals(StringList{ m_inputs.externalDirectory(), m_inputs.defaultExternalDirectory() }, val))
 					m_inputs.setExternalDirectory(std::move(val));
 			}
 			else if (String::equals(Keys::OptionsDistributionDirectory, key))
 			{
 				auto val = value.get<std::string>();
-				if (m_inputs.distributionDirectory().empty() || !String::equals({ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
+				if (m_inputs.distributionDirectory().empty() || !String::equals(StringList{ m_inputs.distributionDirectory(), m_inputs.defaultDistributionDirectory() }, val))
 					m_inputs.setDistributionDirectory(std::move(val));
 			}
 			else

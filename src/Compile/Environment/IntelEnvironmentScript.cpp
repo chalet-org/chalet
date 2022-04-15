@@ -72,7 +72,7 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 		}
 
 		Environment::createDeltaEnvFile(m_envVarsFileBefore, m_envVarsFileAfter, m_envVarsFileDelta, [this](std::string& line) {
-			if (String::startsWith({ "PATH=", "Path=" }, line))
+			if (String::startsWith(StringList{ "PATH=", "Path=" }, line))
 			{
 				String::replaceAll(line, m_pathVariable, "");
 			}

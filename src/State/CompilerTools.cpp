@@ -561,7 +561,7 @@ void CompilerTools::setCompilerWindowsResource(std::string&& inValue) noexcept
 
 	auto lower = String::toLowerCase(m_compilerWindowsResource);
 #if defined(CHALET_WIN32)
-	m_isCompilerWindowsResourceLLVMRC = String::endsWith({ "llvm-rc.exe", "llvm-rc" }, lower);
+	m_isCompilerWindowsResourceLLVMRC = String::endsWith(StringList{ "llvm-rc.exe", "llvm-rc" }, lower);
 #else
 	m_isCompilerWindowsResourceLLVMRC = String::endsWith("llvm-rc", lower);
 #endif

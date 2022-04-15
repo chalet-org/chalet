@@ -75,7 +75,7 @@ bool BundleTarget::validate()
 #if defined(CHALET_MACOS)
 	if (!m_macosBundleIcon.empty())
 	{
-		if (!String::endsWith({ ".png", ".icns" }, m_macosBundleIcon))
+		if (!String::endsWith(StringList{ ".png", ".icns" }, m_macosBundleIcon))
 		{
 			Diagnostic::error("bundle.macosBundleIcon must end with '.png' or '.icns', but was '{}'.", m_macosBundleIcon);
 			result = false;
@@ -89,7 +89,7 @@ bool BundleTarget::validate()
 
 	if (!m_macosBundleInfoPropertyList.empty())
 	{
-		if (!String::endsWith({ ".plist", ".json" }, m_macosBundleInfoPropertyList))
+		if (!String::endsWith(StringList{ ".plist", ".json" }, m_macosBundleInfoPropertyList))
 		{
 			Diagnostic::error("bundle.macosBundleInfoPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleInfoPropertyList);
 			result = false;
@@ -110,7 +110,7 @@ bool BundleTarget::validate()
 #elif defined(CHALET_LINUX)
 	if (!m_linuxDesktopEntryIcon.empty())
 	{
-		if (!String::endsWith({ ".png", ".svg" }, m_linuxDesktopEntryIcon))
+		if (!String::endsWith(StringList{ ".png", ".svg" }, m_linuxDesktopEntryIcon))
 		{
 			Diagnostic::error("bundle.linuxDesktopEntryIcon must end with '.png' or '.svg', but was '{}'.", m_linuxDesktopEntryIcon);
 			result = false;

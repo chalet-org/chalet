@@ -526,7 +526,7 @@ bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstalle
 /*****************************************************************************/
 bool AppBundler::isTargetNameValid(const IDistTarget& inTarget) const
 {
-	if (String::contains({ "$", "{", "}" }, inTarget.name()))
+	if (String::contains(StringList{ "$", "{", "}" }, inTarget.name()))
 	{
 		Diagnostic::error("Variable(s) not allowed in target '{}' of its type.", inTarget.name());
 		return false;
@@ -545,7 +545,7 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& out
 	String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
 	String::replaceAll(outName, "${buildDir}", buildFolder);
 
-	if (String::contains({ "$", "{", "}" }, outName))
+	if (String::contains(StringList{ "$", "{", "}" }, outName))
 	{
 		Diagnostic::error("Invalid variable(s) found in target '{}'", inTarget.name());
 		return false;

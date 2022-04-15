@@ -1,11 +1,17 @@
-## chalet-debug
+## Chalet
+
+A compiler with C++20 is required to build Chalet from source. The following versions are known to work:
+
+MSVC 19.30.30706
+Apple Clang 13.1.6
+GCC 11.2.0
 
 ---
 ### Windows
 
 **Install**: 
-* [CMake](https://github.com/Kitware/CMake/releases/download/v3.19.2/cmake-3.19.2-win64-x64.msi)
-* [Git for Windows](https://github.com/git-for-windows/git/releases/download/v2.30.0.windows.1/Git-2.30.0-64-bit.exe)
+* [CMake](https://cmake.org/download)
+* [Git for Windows](https://gitforwindows.org)
 
 
 **Visual Studio**
@@ -20,7 +26,7 @@
 2. Install the current stable GCC toolchain via:
 
 ```bash
-pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja
 ```
 
 3. Install `cmake` via pacman, otherwise install it from the link above and make sure it's accessible from Path (add to System Environment Variables)

@@ -33,7 +33,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 {
 	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
 	// LOG("ICompilerCxx:", static_cast<int>(inType), executable);
-	const bool clang = String::equals({ "clang", "clang++" }, executable);
+	const bool clang = String::equals(StringList{ "clang", "clang++" }, executable);
 
 #if defined(CHALET_WIN32)
 	if (String::equals("cl", executable))
@@ -44,7 +44,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 #elif defined(CHALET_MACOS)
 	if (clang && inType == ToolchainType::AppleLLVM)
 		return std::make_unique<CompilerCxxAppleClang>(inState, inProject);
-	else if (inType == ToolchainType::IntelClassic && String::equals({ "icc", "icpc" }, executable))
+	else if (inType == ToolchainType::IntelClassic && String::equals(StringList{ "icc", "icpc" }, executable))
 		return std::make_unique<CompilerCxxIntelClassicGCC>(inState, inProject);
 	else
 #endif

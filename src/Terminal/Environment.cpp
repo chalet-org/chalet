@@ -324,7 +324,7 @@ void setTerminalType()
 		state.terminalType = ShellType::Zsh;
 		return printTermType();
 	}
-	else if (String::endsWith({ "/pwsh", "powershell" }, parentPath))
+	else if (String::endsWith(StringList{ "/pwsh", "powershell" }, parentPath))
 	{
 		state.terminalType = ShellType::PowershellOpenSourceNonWindows;
 		return printTermType();

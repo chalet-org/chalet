@@ -104,7 +104,7 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 
 	if (!shellFound)
 	{
-		if (String::endsWith({ ".sh", ".bash" }, outScriptPath))
+		if (String::endsWith(StringList{ ".sh", ".bash" }, outScriptPath))
 		{
 			scriptType = ScriptType::UnixShell;
 
@@ -182,7 +182,7 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 	{
 		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
 #if defined(CHALET_WIN32)
-		const bool isBatchScript = String::endsWith({ ".bat", ".cmd" }, outScriptPath);
+		const bool isBatchScript = String::endsWith(StringList{ ".bat", ".cmd" }, outScriptPath);
 		if (isBatchScript || isPowershellScript)
 		{
 			Path::sanitizeForWindows(outScriptPath);

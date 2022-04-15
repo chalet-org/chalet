@@ -377,7 +377,7 @@ std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext)
 
 	std::string ret;
 
-	const bool objectiveC = String::equals({ "m", "M" }, ext); // mm & M imply C++
+	const bool objectiveC = String::equals(StringList{ "m", "M" }, ext); // mm & M imply C++
 
 	const auto quietFlag = getQuietFlag();
 	const auto& depDir = m_state.paths.depDir();

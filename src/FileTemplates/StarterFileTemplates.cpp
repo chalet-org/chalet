@@ -362,7 +362,7 @@ target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch}))cmake",
 	std::string extraProperties;
 	if (inProps.specialization == CxxSpecialization::C)
 	{
-		if (String::equals({ "17", "23" }, inProps.langStandard))
+		if (String::equals(StringList{ "17", "23" }, inProps.langStandard))
 			minimumCMakeVersion = "3.21";
 
 		standard = fmt::format("CMAKE_C_STANDARD {}", inProps.langStandard);

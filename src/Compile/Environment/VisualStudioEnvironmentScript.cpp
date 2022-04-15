@@ -194,7 +194,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 				if (String::contains(m_pathInject, line))
 					String::replaceAll(line, m_pathInject + Environment::getPathSeparator(), "");
 			}
-			else if (String::startsWith({ "PATH=", "Path=" }, line))
+			else if (String::startsWith(StringList{ "PATH=", "Path=" }, line))
 			{
 				String::replaceAll(line, m_pathVariable, "");
 			}

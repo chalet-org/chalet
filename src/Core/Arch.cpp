@@ -40,7 +40,7 @@ std::string Arch::getHostCpuArchitecture()
 /*****************************************************************************/
 std::string Arch::toGnuArch(const std::string& inValue)
 {
-	if (String::equals({ "x64", "amd64" }, inValue))
+	if (String::equals(StringList{ "x64", "amd64" }, inValue))
 		return "x86_64";
 	else if (String::equals("x86", inValue))
 		return "i686";

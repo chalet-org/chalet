@@ -39,7 +39,7 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 /*****************************************************************************/
 ToolchainType CompileEnvironmentLLVM::getToolchainTypeFromMacros(const std::string& inMacros) const
 {
-	const bool clang = String::contains({ "__clang__", "__clang_major__", "__clang_version__" }, inMacros);
+	const bool clang = String::contains(StringList{ "__clang__", "__clang_major__", "__clang_version__" }, inMacros);
 
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
 	auto gnuType = CompileEnvironmentGNU::getToolchainTypeFromMacros(inMacros);
@@ -110,7 +110,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	m_state.info.setTargetArchitecture(cachedArch);
 	sourceCache.addArch(compiler, cachedArch);
 
-	m_isWindowsTarget = String::contains({ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
+	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }

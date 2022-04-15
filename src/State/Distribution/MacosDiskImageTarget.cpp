@@ -35,7 +35,7 @@ bool MacosDiskImageTarget::validate()
 
 	if (!m_background1x.empty())
 	{
-		if (!String::endsWith({ ".png", ".tiff" }, m_background1x))
+		if (!String::endsWith(StringList{ ".png", ".tiff" }, m_background1x))
 		{
 			Diagnostic::error("macosDiskImage.background1x must end with '.png' or '.tiff', but was '{}'.", m_background1x);
 			result = false;
