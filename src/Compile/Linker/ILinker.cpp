@@ -182,7 +182,7 @@ StringList ILinker::getWin32Links() const
 
 	StringList ret;
 
-	ret.emplace_back("DbgHelp");
+	ret.emplace_back("dbghelp");
 	ret.emplace_back("kernel32");
 	ret.emplace_back("user32");
 	ret.emplace_back("gdi32");
