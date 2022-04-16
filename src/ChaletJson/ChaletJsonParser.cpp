@@ -1447,6 +1447,11 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const
 					return ConditionResult::Fail;
 			}
 		}
+		else
+		{
+			Diagnostic::error("Invalid condition '{}' found in: {}", value, inString);
+			return ConditionResult::Invalid;
+		}
 	}
 	else if (String::equals("platform", key))
 	{
