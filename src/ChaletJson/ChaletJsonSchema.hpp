@@ -179,12 +179,8 @@ private:
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
-	// const std::string kPatternConfigurations;
-	// const std::string kPatternPlatforms;
-	// const std::string kPatternConfigurationsPlatforms;
-	// const std::string kPatternCompilers;
 	const std::string kPatternVersion;
-	const std::string kPatternAdvanced;
+	const std::string kPatternConditions;
 
 	DefinitionMap m_defs;
 	DefinitionMap m_nonIndexedDefs;
