@@ -77,7 +77,6 @@ CH_STR(ToolsHdiutil) = "hdiutil";
 CH_STR(ToolsInstallNameTool) = "install_name_tool";
 CH_STR(ToolsInstruments) = "instruments";
 CH_STR(ToolsLdd) = "ldd";
-CH_STR(ToolsMakeNsis) = "makensis";
 CH_STR(ToolsOsascript) = "osascript";
 CH_STR(ToolsOtool) = "otool";
 CH_STR(ToolsPlutil) = "plutil";

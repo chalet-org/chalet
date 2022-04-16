@@ -37,7 +37,6 @@
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
-#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 
 namespace chalet
 {
@@ -933,14 +932,6 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 				continue;
 #endif
 			}
-			else if (String::equals("windowsNullsoftInstaller", val))
-			{
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-				type = DistTargetType::WindowsNullsoftInstaller;
-#else
-				continue;
-#endif
-			}
 			else if (String::equals("bundle", val))
 			{}
 			else
@@ -988,11 +979,6 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 		else if (target->isMacosDiskImage())
 		{
 			if (!parseMacosDiskImage(static_cast<MacosDiskImageTarget&>(*target), targetJson))
-				return false;
-		}
-		else if (target->isWindowsNullsoftInstaller())
-		{
-			if (!parseWindowsNullsoftInstaller(static_cast<WindowsNullsoftInstallerTarget&>(*target), targetJson))
 				return false;
 		}
 
@@ -1333,38 +1319,6 @@ bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, cons
 					}
 				}
 			}
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool ChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const
-{
-	for (const auto& [key, value] : inNode.items())
-	{
-		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
-		if (value.is_string())
-		{
-			if (String::equals("outputDescription", key))
-				outTarget.setOutputDescription(value.get<std::string>());
-			else if (String::equals("file", key))
-				outTarget.setFile(value.get<std::string>());
-			else if (String::equals("pluginDirs", key))
-				outTarget.addPluginDir(value.get<std::string>());
-			else if (String::equals("defines", key))
-				outTarget.addDefine(value.get<std::string>());
-		}
-		else if (value.is_array())
-		{
-			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "pluginDirs", status))
-				outTarget.addPluginDirs(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
-				outTarget.addDefines(std::move(val));
-			else if (isInvalid(status))
-				return false;
 		}
 	}
 

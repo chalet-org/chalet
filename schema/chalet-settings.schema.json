@@ -213,11 +213,6 @@
 					"description": "The executable path to ldd.",
 					"default": "/usr/bin/ldd"
 				},
-				"makensis": {
-					"type": "string",
-					"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
-					"default": "C:/Program Files (x86)/NSIS/makensis.exe"
-				},
 				"osascript": {
 					"type": "string",
 					"description": "The executable path to Apple's osascript command-line utility. (MacOS)",

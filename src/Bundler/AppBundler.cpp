@@ -9,7 +9,6 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
-#include "Bundler/WindowsNullsoftInstallerRunner.hpp"
 #include "Bundler/ZipArchiver.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -23,7 +22,6 @@
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
-#include "State/Distribution/WindowsNullsoftInstallerTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -115,16 +113,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 		else if (inTarget->isMacosDiskImage())
 		{
 			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
-				return false;
-		}
-		else if (inTarget->isWindowsNullsoftInstaller())
-		{
-#if defined(CHALET_LINUX)
-			if (!m_state.environment->isMingw())
-				return true;
-#endif
-
-			if (!runWindowsNullsoftInstallerTarget(static_cast<const WindowsNullsoftInstallerTarget&>(*inTarget)))
 				return false;
 		}
 	}
@@ -504,20 +492,6 @@ bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
 
 	MacosDiskImageCreator diskImageCreator(m_state);
 	if (!diskImageCreator.make(inTarget))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundler::runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget)
-{
-	displayHeader("Nullsoft Installer", inTarget);
-
-	Diagnostic::info("Creating the Windows installer executable");
-
-	WindowsNullsoftInstallerRunner nsis(m_state);
-	if (!nsis.compile(inTarget))
 		return false;
 
 	return true;

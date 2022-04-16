@@ -27,7 +27,6 @@ enum class Defs : ushort
 	InstallNameTool,
 	Instruments,
 	Ldd,
-	MakeNsis,
 	OsaScript,
 	Otool,
 	PlUtil,
@@ -143,12 +142,6 @@ Json SettingsJsonSchema::get()
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
-	})json"_ojson;
-
-	defs[Defs::MakeNsis] = R"json({
-		"type": "string",
-		"description": "The executable path to the Nullsoft Scriptable Install System (NSIS) compiler. (Windows)",
-		"default": "C:/Program Files (x86)/NSIS/makensis.exe"
 	})json"_ojson;
 
 	defs[Defs::OsaScript] = R"json({
@@ -528,7 +521,6 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstallNameTool] = defs[Defs::InstallNameTool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstruments] = defs[Defs::Instruments];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsLdd] = defs[Defs::Ldd];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsMakeNsis] = defs[Defs::MakeNsis];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOsascript] = defs[Defs::OsaScript];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOtool] = defs[Defs::Otool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPlutil] = defs[Defs::PlUtil];

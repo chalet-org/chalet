@@ -15,7 +15,6 @@ enum class DistTargetType
 	Process,
 	BundleArchive,
 	MacosDiskImage,
-	WindowsNullsoftInstaller,
 };
 }
 

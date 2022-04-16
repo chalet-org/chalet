@@ -16,7 +16,6 @@ struct ScriptDistTarget;
 struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
-struct WindowsNullsoftInstallerTarget;
 class BinaryDependencyMap;
 struct IAppBundler;
 
@@ -38,7 +37,6 @@ private:
 	bool runProcessTarget(const ProcessDistTarget& inTarget);
 	bool runArchiveTarget(const BundleArchiveTarget& inTarget);
 	bool runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget);
-	bool runWindowsNullsoftInstallerTarget(const WindowsNullsoftInstallerTarget& inTarget);
 
 	bool runProcess(const StringList& inCmd, std::string outputFile);
 

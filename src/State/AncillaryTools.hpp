@@ -52,9 +52,6 @@ struct AncillaryTools
 	const std::string& ldd() const noexcept;
 	void setLdd(std::string&& inValue) noexcept;
 
-	const std::string& makeNsis() const noexcept;
-	void setMakeNsis(std::string&& inValue) noexcept;
-
 	const std::string osascript() const noexcept;
 	void setOsascript(std::string&& inValue) noexcept;
 
@@ -125,7 +122,6 @@ private:
 	std::string m_ldd;
 	std::string m_lipo;
 	std::string m_lua;
-	std::string m_makeNsis;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_perl;

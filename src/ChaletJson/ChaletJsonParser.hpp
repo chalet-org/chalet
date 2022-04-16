@@ -34,7 +34,6 @@ struct ScriptDistTarget;
 struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
-struct WindowsNullsoftInstallerTarget;
 
 struct ChaletJsonParser
 {
@@ -77,7 +76,6 @@ private:
 	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const;
 	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
-	bool parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const;
 
 	std::optional<bool> parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	std::optional<bool> parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;

@@ -232,9 +232,6 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	whichAdd(tools, Keys::ToolsInstruments, HostPlatform::MacOS);
 #endif
 	whichAdd(tools, Keys::ToolsLdd);
-#if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-	whichAdd(tools, Keys::ToolsMakeNsis);
-#endif
 
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsOsascript, HostPlatform::MacOS);
@@ -595,8 +592,6 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setInstruments(value.get<std::string>());
 			else if (String::equals(Keys::ToolsLdd, key))
 				m_centralState.tools.setLdd(value.get<std::string>());
-			else if (String::equals(Keys::ToolsMakeNsis, key))
-				m_centralState.tools.setMakeNsis(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOsascript, key))
 				m_centralState.tools.setOsascript(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOtool, key))

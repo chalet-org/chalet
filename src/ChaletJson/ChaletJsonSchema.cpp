@@ -146,8 +146,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"script",
 			"process",
 			"archive",
-			"macosDiskImage",
-			"windowsNullsoftInstaller"
+			"macosDiskImage"
 		]
 	})json"_ojson;
 
@@ -396,25 +395,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			}
 		}
 	})json"_ojson;
-
-	//
-	defs[Defs::DistributionWindowsNullsoftInstallerScript] = R"json({
-		"type": "string",
-		"description": "Relative path to an NSIS installer script (.nsi) to compile.",
-		"minLength": 1
-	})json"_ojson;
-
-	defs[Defs::DistributionWindowsNullsoftInstallerPluginDirs] = makeArrayOrString(R"json({
-		"type": "string",
-		"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
-		"minLength": 1
-	})json"_ojson);
-
-	defs[Defs::DistributionWindowsNullsoftInstallerDefines] = makeArrayOrString(R"json({
-		"type": "string",
-		"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
-		"minLength": 1
-	})json"_ojson);
 
 	//
 	// externalDependency
@@ -1393,24 +1373,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	{
-		auto distWinNullsoft = R"json({
-			"type": "object",
-			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
-			"additionalProperties": false,
-			"required": [
-				"kind",
-				"file"
-			]
-		})json"_ojson;
-		addProperty(distWinNullsoft, "defines", Defs::DistributionWindowsNullsoftInstallerDefines);
-		addProperty(distWinNullsoft, "file", Defs::DistributionWindowsNullsoftInstallerScript);
-		addProperty(distWinNullsoft, "kind", Defs::DistributionKind);
-		addProperty(distWinNullsoft, "outputDescription", Defs::TargetOutputDescription);
-		addProperty(distWinNullsoft, "pluginDirs", Defs::DistributionWindowsNullsoftInstallerPluginDirs);
-		defs[Defs::DistributionWindowsNullsoftInstaller] = std::move(distWinNullsoft);
-	}
-
-	{
 		auto externalDependency = R"json({
 			"type": "object",
 			"required": [
@@ -1695,11 +1657,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionMacosDiskImageSize: return "dist-macos-disk-image-size";
 		case Defs::DistributionMacosDiskImagePositions: return "dist-macos-disk-image-positions";
 		//
-		case Defs::DistributionWindowsNullsoftInstaller: return "dist-windows-nullsoft-installer";
-		case Defs::DistributionWindowsNullsoftInstallerScript: return "dist-windows-nullsoft-installer-file";
-		case Defs::DistributionWindowsNullsoftInstallerPluginDirs: return "dist-windows-nullsoft-installer-pluginDirs";
-		case Defs::DistributionWindowsNullsoftInstallerDefines: return "dist-windows-nullsoft-installer-defines";
-		//
 		case Defs::DistributionProcess: return "dist-process";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
@@ -1959,15 +1916,11 @@ Json ChaletJsonSchema::get()
 					"if": { "properties": { "kind": { "const": "macosDiskImage" }}},
 					"then": {},
 					"else": {
-						"if": { "properties": { "kind": { "const": "windowsNullsoftInstaller" }}},
+						"if": { "properties": { "kind": { "const": "process" }}},
 						"then": {},
 						"else": {
-							"if": { "properties": { "kind": { "const": "process" }}},
-							"then": {},
-							"else": {
-								"type": "object",
-								"additionalProperties": false
-							}
+							"type": "object",
+							"additionalProperties": false
 						}
 					}
 				}
@@ -1979,8 +1932,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionScript);
 	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionArchive);
 	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionMacosDiskImage);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionWindowsNullsoftInstaller);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
+	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
 
 	ret[SKeys::Properties]["externalDependencies"] = R"json({
 		"type": "object",

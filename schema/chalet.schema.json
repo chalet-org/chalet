@@ -144,8 +144,7 @@
 				"script",
 				"process",
 				"archive",
-				"macosDiskImage",
-				"windowsNullsoftInstaller"
+				"macosDiskImage"
 			]
 		},
 		"dist-condition": {
@@ -578,73 +577,6 @@
 							"description": "The path to a background image in PNG format created for 2x pixel density.",
 							"minLength": 1
 						}
-					}
-				}
-			]
-		},
-		"dist-windows-nullsoft-installer": {
-			"type": "object",
-			"description": "Properties to describe an NSIS installer. Implies 'condition: windows'",
-			"additionalProperties": false,
-			"required": [
-				"kind",
-				"file"
-			],
-			"properties": {
-				"defines": {
-					"$ref": "#/definitions/dist-windows-nullsoft-installer-defines"
-				},
-				"file": {
-					"$ref": "#/definitions/dist-windows-nullsoft-installer-file"
-				},
-				"kind": {
-					"$ref": "#/definitions/dist-kind"
-				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
-				"pluginDirs": {
-					"$ref": "#/definitions/dist-windows-nullsoft-installer-pluginDirs"
-				}
-			}
-		},
-		"dist-windows-nullsoft-installer-file": {
-			"type": "string",
-			"description": "Relative path to an NSIS installer script (.nsi) to compile.",
-			"minLength": 1
-		},
-		"dist-windows-nullsoft-installer-pluginDirs": {
-			"description": "Relative paths to additional NSIS plugin folders. Can accept a root path that contains standard NSIS plugin path structures like 'Plugins/x86-unicode' and 'x86-unicode'",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				}
-			]
-		},
-		"dist-windows-nullsoft-installer-defines": {
-			"description": "A list of defines to pass to MakeNSIS during the build of the installer.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
 					}
 				}
 			]
@@ -2377,28 +2309,16 @@
 									"if": {
 										"properties": {
 											"kind": {
-												"const": "windowsNullsoftInstaller"
+												"const": "process"
 											}
 										}
 									},
 									"then": {
-										"$ref": "#/definitions/dist-windows-nullsoft-installer"
+										"$ref": "#/definitions/dist-process"
 									},
 									"else": {
-										"if": {
-											"properties": {
-												"kind": {
-													"const": "process"
-												}
-											}
-										},
-										"then": {
-											"$ref": "#/definitions/dist-process"
-										},
-										"else": {
-											"type": "object",
-											"additionalProperties": false
-										}
+										"type": "object",
+										"additionalProperties": false
 									}
 								}
 							}

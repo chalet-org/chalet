@@ -1,6 +1,6 @@
 {
 	"name": "Chalet",
-	"version": "0.3.6",
+	"version": "0.3.8",
 	"description": "A JSON-based project & build tool",
 	"homepage": "https://www.chalet-work.space",
 	"author": "Cosmic Road Interactive, LLC.",
@@ -192,16 +192,6 @@
 				"${meta:description}"
 			]
 		},
-		/*"chalet-windows-installer": {
-			"kind": "windowsNullsoftInstaller",
-			"file": "platform/windows/installer/install_script.nsi",
-			"defines": [
-				"CHALET_VERSION=${meta:version}"
-			],
-			"pluginDirs": [
-				"platform/windows/installer/plugins"
-			]
-		},*/
 		"chalet-windows-installer": {
 			"kind": "process",
 			"condition": "[:windows|toolchain:w64-mingw32]",
@@ -210,6 +200,7 @@
 				"-WX",
 				"-V3",
 				"-NOCD",
+				"-DCHALET_VERSION=${meta:version}",
 				"-X!addplugindir \"platform\\windows\\installer\\plugins\\Plugins\"",
 				"platform/windows/installer/install_script.nsi"
 			]

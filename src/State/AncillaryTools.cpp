@@ -266,16 +266,6 @@ void AncillaryTools::setLdd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::makeNsis() const noexcept
-{
-	return m_makeNsis;
-}
-void AncillaryTools::setMakeNsis(std::string&& inValue) noexcept
-{
-	m_makeNsis = std::move(inValue);
-}
-
-/*****************************************************************************/
 const std::string AncillaryTools::osascript() const noexcept
 {
 	return m_osascript;

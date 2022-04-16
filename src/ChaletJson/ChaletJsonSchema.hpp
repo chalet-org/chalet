@@ -56,11 +56,6 @@ class ChaletJsonSchema
 		DistributionMacosDiskImageSize,
 		DistributionMacosDiskImagePositions,
 		//
-		DistributionWindowsNullsoftInstaller,
-		DistributionWindowsNullsoftInstallerScript,
-		DistributionWindowsNullsoftInstallerPluginDirs,
-		DistributionWindowsNullsoftInstallerDefines,
-		//
 		DistributionProcess,
 		//
 		ExternalDependency,
