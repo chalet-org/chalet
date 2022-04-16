@@ -17,13 +17,13 @@ namespace chalet
 {
 /*****************************************************************************/
 ChaletJsonSchema::ChaletJsonSchema() :
-	kPatternTargetName(R"(^[\w\-+.]{3,}$)"),
-	kPatternAbstractName(R"([A-Za-z\-_]+)"),
-	kPatternTargetSourceLinks(R"(^[\w\-+.]+$)"),
-	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
-	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
+	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
+	kPatternAbstractName(R"regex([A-Za-z\-_]+)regex"),
+	kPatternTargetSourceLinks(R"regex(^[\w\-+.]+$)regex"),
+	kPatternDistributionName(R"regex(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
+	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
 	kPatternVersion(R"regex(^((\d+\.){1,3})?\d+$)regex"),
-	kPatternConditions(R"regex(\[(\w*:[\w,{}+\-!]+)(\+(\w*:[\w,{}+\-!]+))*\])regex") // https://regexr.com/6jni8
+	kPatternConditions(R"regex(\[(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\}))(\+(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\})))*\])regex") // regexr.com/6jni8
 {
 }
 
