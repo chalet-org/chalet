@@ -23,7 +23,7 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternDistributionName(R"(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)"),
 	kPatternDistributionNameSimple(R"(^[\w\-+. ()]{2,}$)"),
 	kPatternVersion(R"regex(^((\d+\.){1,3})?\d+$)regex"),
-	kPatternConditions(R"regex(\[([\w:,{}+\-!]+)\])regex")
+	kPatternConditions(R"regex(\[(\w*:[\w,{}+\-!]+)(\+(\w*:[\w,{}+\-!]+))*\])regex") // https://regexr.com/6jni8
 {
 }
 

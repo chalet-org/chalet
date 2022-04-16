@@ -152,7 +152,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the distribution.",
 			"minLength": 1,
-			"pattern": "^\\[([\\w:,{}+\\-!]+)\\]$"
+			"pattern": "^\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$"
 		},
 		"dist-bundle": {
 			"type": "object",
@@ -266,10 +266,10 @@
 				}
 			},
 			"patternProperties": {
-				"^exclude\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^exclude\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/dist-bundle-exclude"
 				},
-				"^include\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^include\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/dist-bundle-include"
 				}
 			}
@@ -369,10 +369,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^arguments\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
 				},
-				"^file\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^file\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
@@ -399,7 +399,7 @@
 				}
 			},
 			"patternProperties": {
-				"^include\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^include\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/dist-archive-include"
 				}
 			}
@@ -675,10 +675,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^arguments\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
-				"^path\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^path\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
@@ -774,7 +774,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the build.",
 			"minLength": 1,
-			"pattern": "^\\[([\\w:,{}+\\-!]+)\\]$"
+			"pattern": "^\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$"
 		},
 		"target-defaultRunArguments": {
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
@@ -843,10 +843,10 @@
 				}
 			},
 			"patternProperties": {
-				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^files\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^language\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				}
 			}
@@ -903,13 +903,13 @@
 				}
 			},
 			"patternProperties": {
-				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^files\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^language\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				},
-				"^copyFilesOnRun\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^copyFilesOnRun\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
 				}
 			}
@@ -960,10 +960,10 @@
 				}
 			},
 			"patternProperties": {
-				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^files\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^language\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				}
 			}
@@ -1034,7 +1034,7 @@
 						}
 					},
 					"patternProperties": {
-						"^exclude\\[([\\w:,{}+\\-!]+)\\]$": {
+						"^exclude\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 							"oneOf": [
 								{
 									"type": "string",
@@ -1051,7 +1051,7 @@
 								}
 							]
 						},
-						"^include\\[([\\w:,{}+\\-!]+)\\]$": {
+						"^include\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 							"oneOf": [
 								{
 									"type": "string",
@@ -1264,94 +1264,94 @@
 				}
 			},
 			"patternProperties": {
-				"^compileOptions\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^compileOptions\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
-				"^cppConcepts\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cppConcepts\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
-				"^cppCoroutines\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cppCoroutines\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
-				"^cppFilesystem\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cppFilesystem\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppFilesystem"
 				},
-				"^cppModules\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cppModules\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
-				"^cppStandard\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cppStandard\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
-				"^cStandard\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^cStandard\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
-				"^defines\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^defines\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
 				},
-				"^exceptions\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^exceptions\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
-				"^executionCharset\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^executionCharset\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-executionCharset"
 				},
-				"^fastMath\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^fastMath\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
-				"^includeDirs\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^includeDirs\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
-				"^inputCharset\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^inputCharset\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-inputCharset"
 				},
-				"^libDirs\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^libDirs\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
-				"^linkerScript\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^linkerScript\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
-				"^linkerOptions\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^linkerOptions\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-linkerOptions"
 				},
-				"^links\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^links\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-links"
 				},
-				"^macosFrameworkPaths\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^macosFrameworkPaths\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
 				},
-				"^macosFrameworks\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^macosFrameworks\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
 				},
-				"^mingwUnixSharedLibraryNamingConvention\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^mingwUnixSharedLibraryNamingConvention\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
-				"^runtimeTypeInformation\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^runtimeTypeInformation\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
 				},
-				"^staticLinks\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^staticLinks\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
-				"^staticRuntimeLibrary\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^staticRuntimeLibrary\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
 				},
-				"^threads\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^threads\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
-				"^treatWarningsAsErrors\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^treatWarningsAsErrors\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
 				},
-				"^warnings\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^warnings\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-warnings"
 				},
-				"^windowsApplicationIcon\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^windowsApplicationIcon\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
-				"^windowsApplicationManifest\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^windowsApplicationManifest\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
-				"^windowsEntryPoint\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^windowsEntryPoint\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
 				},
-				"^windowsSubSystem\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^windowsSubSystem\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				}
 			}
@@ -1986,10 +1986,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^arguments\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
 				},
-				"^file\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^file\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
@@ -2061,16 +2061,16 @@
 				}
 			},
 			"patternProperties": {
-				"^buildFile\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^buildFile\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-cmake-buildFile"
 				},
-				"^defines\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^defines\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-cmake-defines"
 				},
-				"^runExecutable\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^runExecutable\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
-				"^toolset\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^toolset\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			}
@@ -2155,7 +2155,7 @@
 				}
 			},
 			"patternProperties": {
-				"^buildFile\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^buildFile\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-chalet-buildFile"
 				}
 			}
@@ -2206,10 +2206,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^arguments\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
-				"^path\\[([\\w:,{}+\\-!]+)\\]$": {
+				"^path\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
@@ -2519,7 +2519,7 @@
 			"$ref": "#/definitions/target-abstract",
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
-		"^searchPaths\\[([\\w:,{}+\\-!]+)\\]$": {
+		"^searchPaths\\[(\\w*:[\\w,{}+\\-!]+)(\\+(\\w*:[\\w,{}+\\-!]+))*\\]$": {
 			"$ref": "#/definitions/environment-searchPaths"
 		}
 	}
