@@ -44,7 +44,7 @@ struct BuildState::Impl
 	CentralState& centralState;
 
 	BuildInfo info;
-	WorkspaceEnvironment workspace;
+	// WorkspaceEnvironment workspace;
 	CompilerTools toolchain;
 	BuildPaths paths;
 	BuildConfiguration configuration;
@@ -59,7 +59,7 @@ struct BuildState::Impl
 		inputs(std::move(inInputs)),
 		centralState(inCentralState),
 		info(inputs),
-		workspace(centralState.workspace), // copy
+		// workspace(centralState.workspace), // copy
 		paths(inState)
 	{
 	}
@@ -71,7 +71,7 @@ BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState)
 	tools(m_impl->centralState.tools),
 	cache(m_impl->centralState.cache),
 	info(m_impl->info),
-	workspace(m_impl->workspace),
+	workspace(m_impl->centralState.workspace),
 	toolchain(m_impl->toolchain),
 	paths(m_impl->paths),
 	configuration(m_impl->configuration),
@@ -272,7 +272,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
+			inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
