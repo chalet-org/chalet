@@ -205,12 +205,16 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
 				m_centralState.workspace.addSearchPath(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
 				m_centralState.workspace.addSearchPaths(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -483,6 +487,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.addFiles(std::move(val));
 			else if (valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
 				outTarget.addConfigureFiles(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -551,6 +557,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -630,6 +638,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefines(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_boolean())
 		{
