@@ -8,63 +8,63 @@
 namespace chalet
 {
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::info(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::info(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	bool lineBreak = true;
 	Diagnostic::showInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::infoEllipsis(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::infoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	bool lineBreak = false;
 	Diagnostic::showInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::stepInfo(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::stepInfo(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	bool lineBreak = true;
 	Diagnostic::showStepInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::stepInfoEllipsis(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::stepInfoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	bool lineBreak = false;
 	Diagnostic::showStepInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::warn(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::warn(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	auto type = Type::Warning;
 	Diagnostic::addError(type, fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::error(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::error(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	auto type = Type::Error;
 	Diagnostic::addError(type, fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::errorAbort(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::errorAbort(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	Diagnostic::showErrorAndAbort(fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename S, typename... Args>
-void Diagnostic::fatalError(const S& inFmt, Args&&... args)
+template <typename... Args>
+void Diagnostic::fatalError(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	Diagnostic::showFatalError(fmt::format(inFmt, (std::forward<Args>(args))...));
 }

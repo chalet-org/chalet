@@ -131,7 +131,7 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		CHALET_EXCEPT_ERROR("Subprocess error: {}", err.what());
+		Diagnostic::fatalError("Subprocess error: {}", err.what());
 		return -1;
 	}
 }

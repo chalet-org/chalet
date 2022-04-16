@@ -22,29 +22,31 @@ struct Diagnostic
 
 	static void printDone(const std::string& inTime = std::string());
 
-	template <typename S, typename... Args>
-	static void info(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void info(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void infoEllipsis(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void infoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void stepInfo(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void stepInfo(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void stepInfoEllipsis(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void stepInfoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void warn(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void warn(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void error(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void error(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void errorAbort(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void errorAbort(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename S, typename... Args>
-	static void fatalError(const S& inFmt, Args&&... args);
+	template <typename... Args>
+	static void fatalError(fmt::format_string<Args...> inFmt, Args&&... args);
+
+	static void fatalErrorFromException(const char* inError);
 
 	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
 	static bool assertionFailure() noexcept;

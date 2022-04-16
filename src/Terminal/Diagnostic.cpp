@@ -207,6 +207,12 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 }
 
 /*****************************************************************************/
+void Diagnostic::fatalErrorFromException(const char* inError)
+{
+	Diagnostic::showFatalError(std::string(inError));
+}
+
+/*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
 	if (state.spinnerThread != nullptr)

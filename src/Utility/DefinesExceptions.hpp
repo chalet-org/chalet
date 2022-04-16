@@ -14,13 +14,13 @@
 	#define CHALET_THROW(exception) throw exception
 	#define CHALET_TRY try
 	#define CHALET_CATCH(exception) catch (exception)
-	#define CHALET_EXCEPT_ERROR(...) Diagnostic::fatalError(__VA_ARGS__);
+	#define CHALET_EXCEPT_ERROR(what) Diagnostic::fatalErrorFromException(what);
 #else
 	#include <cstdlib>
 	#define CHALET_THROW(exception) std::abort()
 	#define CHALET_TRY if (true)
 	#define CHALET_CATCH(exception) if (false)
-	#define CHALET_EXCEPT_ERROR(...)
+	#define CHALET_EXCEPT_ERROR(what)
 #endif
 
 #endif // CHALET_DEFINES_EXCEPTIONS_HPP
