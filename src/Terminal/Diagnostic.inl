@@ -8,64 +8,64 @@
 namespace chalet
 {
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::info(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::info(const S& inFmt, Args&&... args)
 {
 	bool lineBreak = true;
-	Diagnostic::showInfo(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)), lineBreak);
+	Diagnostic::showInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::infoEllipsis(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::infoEllipsis(const S& inFmt, Args&&... args)
 {
 	bool lineBreak = false;
-	Diagnostic::showInfo(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)), lineBreak);
+	Diagnostic::showInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::stepInfo(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::stepInfo(const S& inFmt, Args&&... args)
 {
 	bool lineBreak = true;
-	Diagnostic::showStepInfo(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)), lineBreak);
+	Diagnostic::showStepInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::stepInfoEllipsis(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::stepInfoEllipsis(const S& inFmt, Args&&... args)
 {
 	bool lineBreak = false;
-	Diagnostic::showStepInfo(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)), lineBreak);
+	Diagnostic::showStepInfo(fmt::format(inFmt, (std::forward<Args>(args))...), lineBreak);
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::warn(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::warn(const S& inFmt, Args&&... args)
 {
 	auto type = Type::Warning;
-	Diagnostic::addError(type, fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)));
+	Diagnostic::addError(type, fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::error(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::error(const S& inFmt, Args&&... args)
 {
 	auto type = Type::Error;
-	Diagnostic::addError(type, fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)));
+	Diagnostic::addError(type, fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::errorAbort(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::errorAbort(const S& inFmt, Args&&... args)
 {
-	Diagnostic::showErrorAndAbort(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)));
+	Diagnostic::showErrorAndAbort(fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 
 /*****************************************************************************/
-template <typename... Args>
-void Diagnostic::fatalError(std::string_view inFmt, Args&&... args)
+template <typename S, typename... Args>
+void Diagnostic::fatalError(const S& inFmt, Args&&... args)
 {
-	Diagnostic::showFatalError(fmt::vformat(inFmt, fmt::make_args_checked<Args...>(inFmt, (std::forward<Args>(args))...)));
+	Diagnostic::showFatalError(fmt::format(inFmt, (std::forward<Args>(args))...));
 }
 }

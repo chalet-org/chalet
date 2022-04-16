@@ -150,7 +150,6 @@ void RegexPatterns::matchConfigureFileVariables(std::string& outText, const std:
 /*****************************************************************************/
 void RegexPatterns::matchPathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
-	// LOG(outText);
 #if defined(CHALET_REGEX_CTRE)
 	#if defined(CHALET_REGEX_CTRE_20)
 	while (auto m = ctre::match<".*(\\$\\{([\\w:]+)\\}).*">(outText))
@@ -162,7 +161,6 @@ void RegexPatterns::matchPathVariables(std::string& outText, const std::function
 		auto whole = m.get<1>().to_string();
 		auto replaceValue = onMatch(m.get<2>().to_string());
 		String::replaceAll(outText, whole, replaceValue);
-		// LOG("  ", whole, replaceValue, outText);
 	}
 #else
 	static std::regex re("\\$\\{([\\w:]+)\\}");
