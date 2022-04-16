@@ -37,7 +37,6 @@
 				"JSON_NOEXCEPTION"
 			],
 			"includeDirs": [
-				"external/ctre/single-header",
 				"external/fmt/include",
 				"external/json-schema-validator/src",
 				"external/nlohmann/single_include",
@@ -229,9 +228,6 @@
 		"catch2": {
 			"repository": "git@github.com:catchorg/Catch2.git",
 			"branch": "v2.x"
-		},
-		"ctre": {
-			"repository": "git@github.com:hanickadot/compile-time-regular-expressions.git"
 		},
 		"fmt": {
 			"repository": "git@github.com:fmtlib/fmt.git"

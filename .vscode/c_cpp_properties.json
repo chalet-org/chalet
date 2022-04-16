@@ -7,7 +7,6 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/external/catch2/single_include",
-                "${workspaceFolder}/external/ctre/single-header",
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/json-schema-validator/src",
                 "${workspaceFolder}/external/nlohmann/single_include",
@@ -40,7 +39,6 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/external/catch2/single_include",
-                "${workspaceFolder}/external/ctre/single-header",
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/json-schema-validator/src",
                 "${workspaceFolder}/external/nlohmann/single_include",
@@ -67,7 +65,6 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/external/catch2/single_include",
-                "${workspaceFolder}/external/ctre/single-header",
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/json-schema-validator/src",
                 "${workspaceFolder}/external/nlohmann/single_include",
@@ -96,7 +93,6 @@
             "includePath": [
                 "${workspaceFolder}/src",
                 "${workspaceFolder}/external/catch2/single_include",
-                "${workspaceFolder}/external/ctre/single-header",
                 "${workspaceFolder}/external/fmt/include",
                 "${workspaceFolder}/external/json-schema-validator/src",
                 "${workspaceFolder}/external/nlohmann/single_include",

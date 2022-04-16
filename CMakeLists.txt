@@ -69,7 +69,6 @@ target_precompile_headers(${TARGET_NAME} PRIVATE src/PCH.hpp)
 target_include_directories(${TARGET_NAME}
 	PRIVATE
 		src/
-		external/ctre/single-header/
 		external/fmt/include/
 		external/json-schema-validator/src/
 		external/nlohmann/single_include/
