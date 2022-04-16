@@ -27,7 +27,14 @@ bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& 
 
 				return res == ConditionResult::Pass;
 			}))
+		{
+			if (m_lastOp == ConditionOp::InvalidOr)
+			{
+				inStatus = JsonNodeReadStatus::Invalid;
+				Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inKey);
+			}
 			return false;
+		}
 	}
 
 	/*if (String::startsWith(fmt::format("{}.", inSearch), inKey))

@@ -45,6 +45,12 @@ struct ChaletJsonParser
 	bool serialize();
 
 private:
+	enum class ConditionOp
+	{
+		And,
+		Or,
+		InvalidOr,
+	};
 	enum class ConditionResult
 	{
 		Fail,
@@ -61,7 +67,6 @@ private:
 	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;
 	bool parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const;
 	bool parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const;
-	bool parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const;
@@ -74,12 +79,13 @@ private:
 	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
 	bool parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTarget& outTarget, const Json& inNode) const;
 
-	bool parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
+	std::optional<bool> parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
+	std::optional<bool> parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
 
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;
 	bool validRunTargetRequestedFromInput();
-	bool conditionIsValid(const std::string& inContent) const;
+	std::optional<bool> conditionIsValid(const std::string& inContent) const;
 	ConditionResult checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 
@@ -98,6 +104,8 @@ private:
 	// StringList m_notToolchains;
 	std::string m_platform;
 	// std::string m_toolchain;
+
+	mutable ConditionOp m_lastOp = ConditionOp::And;
 };
 }
 

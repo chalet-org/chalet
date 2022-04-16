@@ -363,11 +363,18 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 		}
 		target->setName(name);
 
+		auto conditionResult = parseTargetCondition(*target, targetJson);
+		if (!conditionResult.has_value())
+			return false;
+
+		if (!(*conditionResult))
+			continue; // true to skip project
+
 		if (target->isScript())
 		{
 			// A script could be only for a specific platform
 			if (!parseScriptTarget(static_cast<ScriptBuildTarget&>(*target), targetJson))
-				continue;
+				return false;
 		}
 		else if (target->isSubChalet())
 		{
@@ -414,7 +421,11 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 /*****************************************************************************/
 bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
+	auto conditionResult = parseTargetCondition(outTarget, inNode);
+	if (!conditionResult.has_value())
+		return false;
+
+	if (!(*conditionResult))
 		return true; // true to skip project
 
 	for (const auto& [key, value] : inNode.items())
@@ -517,9 +528,6 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 /*****************************************************************************/
 bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -556,9 +564,6 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 /*****************************************************************************/
 bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -596,9 +601,6 @@ bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Js
 /*****************************************************************************/
 bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -651,9 +653,6 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 /*****************************************************************************/
 bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -684,19 +683,6 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 	}
 
 	return valid;
-}
-
-/*****************************************************************************/
-bool ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
-{
-	const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
-	if (!buildConfiguration.empty())
-	{
-		if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
-			outTarget.setIncludeInBuild(conditionIsValid(val));
-	}
-
-	return outTarget.includeInBuild();
 }
 
 /*****************************************************************************/
@@ -972,15 +958,22 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 		DistTarget target = IDistTarget::make(type, m_state);
 		target->setName(name);
 
+		auto conditionResult = parseTargetCondition(*target, targetJson);
+		if (!conditionResult.has_value())
+			return false;
+
+		if (!(*conditionResult))
+			continue; // skip target
+
 		if (target->isScript())
 		{
 			if (!parseDistributionScript(static_cast<ScriptDistTarget&>(*target), targetJson))
-				continue;
+				return false;
 		}
 		else if (target->isProcess())
 		{
 			if (!parseDistributionProcess(static_cast<ProcessDistTarget&>(*target), targetJson))
-				continue;
+				return false;
 		}
 		else if (target->isArchive())
 		{
@@ -1015,9 +1008,6 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 /*****************************************************************************/
 bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -1053,9 +1043,6 @@ bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, cons
 /*****************************************************************************/
 bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -1091,9 +1078,6 @@ bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, co
 /*****************************************************************************/
 bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -1123,9 +1107,6 @@ bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, 
 /*****************************************************************************/
 bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const
 {
-	if (!parseTargetCondition(outTarget, inNode))
-		return true;
-
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -1391,24 +1372,51 @@ bool ChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTar
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
+std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
 {
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
 	{
-		outTarget.setIncludeInDistribution(conditionIsValid(val));
+		auto res = conditionIsValid(val);
+		if (res.has_value())
+			outTarget.setIncludeInBuild(*res);
+		else
+			return std::nullopt;
+	}
+
+	return outTarget.includeInBuild();
+}
+
+/*****************************************************************************/
+std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
+{
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
+	{
+		auto res = conditionIsValid(val);
+		if (res.has_value())
+			outTarget.setIncludeInDistribution(*res);
+		else
+			return std::nullopt;
 	}
 
 	return outTarget.includeInDistribution();
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::conditionIsValid(const std::string& inContent) const
+std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	if (!matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
 			auto res = checkConditionVariable(inContent, key, value, negate);
 			return res == ConditionResult::Pass;
 		}))
+	{
+		if (m_lastOp == ConditionOp::InvalidOr)
+		{
+			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
+			return std::nullopt;
+		}
+
 		return false;
+	}
 
 	return true;
 }
@@ -1561,12 +1569,30 @@ bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const 
 	if (squareBracketEnd == std::string::npos)
 		return true;
 
-	bool result = true;
-
 	// LOG("evaluating:", inText);
 
+	char op;
 	auto raw = inText.substr(squareBracketBegin + 1, (squareBracketEnd - squareBracketBegin) - 1);
-	auto split = String::split(raw, '+');
+	if (raw.find('|') != std::string::npos)
+	{
+		m_lastOp = ConditionOp::Or;
+		op = '|';
+	}
+	else
+	{
+		m_lastOp = ConditionOp::And;
+		op = '+';
+	}
+
+	bool isOr = m_lastOp == ConditionOp::Or;
+	if (isOr && raw.find('+') != std::string::npos)
+	{
+		m_lastOp = ConditionOp::InvalidOr;
+		return false;
+	}
+
+	bool result = !isOr;
+	auto split = String::split(raw, op);
 	for (auto& prop : split)
 	{
 		auto propSplit = String::split(prop, ':');
@@ -1609,7 +1635,10 @@ bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const 
 						break;
 					}
 				}
-				result &= valid;
+				if (isOr)
+					result |= valid;
+				else
+					result &= valid;
 			}
 			else
 			{
@@ -1622,7 +1651,10 @@ bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const 
 
 				if (inner.find_first_of("!{},") == std::string::npos)
 				{
-					result &= onMatch(key, inner, negate);
+					if (isOr)
+						result |= onMatch(key, inner, negate);
+					else
+						result &= onMatch(key, inner, negate);
 				}
 				else
 				{
@@ -1640,7 +1672,10 @@ bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const 
 				negate = true;
 			}
 
-			result &= onMatch(key, std::string{}, negate);
+			if (isOr)
+				result |= onMatch(key, std::string{}, negate);
+			else
+				result &= onMatch(key, std::string{}, negate);
 		}
 	}
 
