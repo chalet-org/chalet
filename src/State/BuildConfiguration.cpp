@@ -38,6 +38,12 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 }
 
 /*****************************************************************************/
+std::string BuildConfiguration::getDefaultReleaseConfigurationName()
+{
+	return std::string("Release");
+}
+
+/*****************************************************************************/
 bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName)
 {
 	outConfig = BuildConfiguration();

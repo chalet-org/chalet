@@ -48,6 +48,7 @@ struct CentralState
 
 private:
 	friend struct CentralChaletJsonParser;
+	friend struct GlobalSettingsJsonParser;
 
 	bool createCache();
 
@@ -64,6 +65,7 @@ private:
 
 	bool makeDefaultBuildConfigurations();
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
+	void detectBuildConfiguration();
 
 	CommandLineInputs& m_inputs;
 

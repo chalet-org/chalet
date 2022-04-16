@@ -121,6 +121,7 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 	}
 
 	assignSettingsString(Keys::OptionsBuildConfiguration, [&]() {
+		m_centralState.detectBuildConfiguration();
 		outState.buildConfiguration = m_centralState.inputs().buildConfiguration();
 		return outState.buildConfiguration;
 	});

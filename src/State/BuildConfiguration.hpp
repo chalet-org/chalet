@@ -16,6 +16,7 @@ class BuildState;
 struct BuildConfiguration
 {
 	static StringList getDefaultBuildConfigurationNames();
+	static std::string getDefaultReleaseConfigurationName();
 	static bool makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName);
 
 	bool validate(const BuildState& inState);

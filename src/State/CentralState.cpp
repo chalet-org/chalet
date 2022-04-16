@@ -359,4 +359,13 @@ void CentralState::addBuildConfiguration(const std::string& inName, BuildConfigu
 	}
 }
 
+/*****************************************************************************/
+void CentralState::detectBuildConfiguration()
+{
+	if (!m_inputs.buildConfiguration().empty())
+		return;
+
+	m_inputs.setBuildConfiguration(BuildConfiguration::getDefaultReleaseConfigurationName());
+}
+
 }
