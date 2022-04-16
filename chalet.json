@@ -28,7 +28,7 @@
 		"settings:Cxx": {
 			"cppStandard": "c++20",
 			"runtimeTypeInformation": false,
-			"staticRuntimeLibrary[:debug]": true,
+			"staticRuntimeLibrary[:windows]": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
