@@ -1500,8 +1500,16 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const
 	else if (String::equals("env", key))
 	{
 		auto res = Environment::get(value.c_str());
-		if (res == nullptr)
-			return ConditionResult::Fail;
+		if (negate)
+		{
+			if (res != nullptr)
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (res == nullptr)
+				return ConditionResult::Fail;
+		}
 	}
 	else
 	{
