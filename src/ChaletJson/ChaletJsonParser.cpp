@@ -48,6 +48,11 @@ constexpr bool isUnread(JsonNodeReadStatus& inStatus)
 {
 	return inStatus == JsonNodeReadStatus::Unread;
 }
+/*****************************************************************************/
+constexpr bool isInvalid(JsonNodeReadStatus& inStatus)
+{
+	return inStatus == JsonNodeReadStatus::Invalid;
+}
 }
 
 /*****************************************************************************/
@@ -55,6 +60,7 @@ ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inS
 	m_chaletJson(inCentralState.chaletJson()),
 	m_centralState(inCentralState),
 	m_state(inState),
+	kValidPlatforms(Platform::validPlatforms()),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
@@ -428,6 +434,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 							outTarget.addFile(std::move(val));
 						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
 							outTarget.addFileExclude(std::move(val));
+						else if (isInvalid(s))
+							return false;
 					}
 					else if (v.is_array())
 					{
@@ -436,6 +444,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 							outTarget.addFiles(std::move(val));
 						else if (isUnread(s) && valueMatchesSearchKeyPattern(val, v, k, "exclude", s))
 							outTarget.addFileExcludes(std::move(val));
+						else if (isInvalid(s))
+							return false;
 					}
 				}
 			}
@@ -453,6 +463,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
@@ -524,6 +536,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
@@ -561,6 +575,8 @@ bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Js
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildFile", status))
 				outTarget.setBuildFile(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_boolean())
 		{
@@ -569,6 +585,8 @@ bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Js
 				outTarget.setRecheck(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
 				outTarget.setRebuild(val);
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -603,6 +621,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setRunExecutable(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
@@ -617,6 +637,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setRecheck(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
 				outTarget.setRebuild(val);
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -648,12 +670,16 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -692,6 +718,8 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 				outTarget.addCopyFilesOnRun(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_string())
 		{
@@ -706,6 +734,8 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 				outTarget.addCopyFileOnRun(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -766,6 +796,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
 				outTarget.addMacosFramework(std::move(val));
 #endif
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_boolean())
 		{
@@ -796,6 +828,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setMinGWUnixSharedLibraryNamingConvention(val);
 			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsOutputDef", status))
 			// 	outTarget.setWindowsOutputDef(val);
+			else if (isInvalid(status))
+				return false;
 
 			//
 		}
@@ -820,46 +854,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
 				outTarget.addMacosFrameworks(std::move(val));
 #endif
-		}
-		else if (value.is_object())
-		{
-			{
-				std::string val;
-				if (valueMatchesToolchainSearchPattern(val, value, key, "compileOptions", status))
-					outTarget.addCompileOptions(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "linkerOptions", status))
-					outTarget.addLinkerOptions(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "inputCharset", status))
-					outTarget.setInputCharset(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "executionCharset", status))
-					outTarget.setExecutionCharset(std::move(val));
-				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "defines", status))
-				// 	outTarget.addDefine(std::move(val));
-				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "links", status))
-				// 	outTarget.addLink(std::move(val));
-				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "staticLinks", status))
-				// 	outTarget.addStaticLink(std::move(val));
-				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "libDirs", status))
-				// 	outTarget.addLibDir(std::move(val));
-				// else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "includeDirs", status))
-				// 	outTarget.addIncludeDir(std::move(val));
-			}
-			if (isUnread(status))
-			{
-				StringList val;
-				if (valueMatchesToolchainSearchPattern(val, value, key, "warnings", status))
-					outTarget.addWarnings(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "defines", status))
-					outTarget.addDefines(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "links", status))
-					outTarget.addLinks(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "staticLinks", status))
-					outTarget.addStaticLinks(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "libDirs", status))
-					outTarget.addLibDirs(std::move(val));
-				else if (isUnread(status) && valueMatchesToolchainSearchPattern(val, value, key, "includeDirs", status))
-					outTarget.addIncludeDirs(std::move(val));
-			}
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -1038,12 +1034,16 @@ bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, cons
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -1072,12 +1072,16 @@ bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, co
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -1100,12 +1104,16 @@ bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, 
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
 				outTarget.addInclude(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "include", status))
 				outTarget.addIncludes(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -1141,10 +1149,12 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "buildTargets", status))
 				outTarget.addBuildTargets(std::move(val));
-			if (valueMatchesSearchKeyPattern(val, value, key, "include", status))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
 				outTarget.addIncludes(std::move(val));
-			if (valueMatchesSearchKeyPattern(val, value, key, "exclude", status))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "exclude", status))
 				outTarget.addExcludes(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 		else if (value.is_boolean())
 		{
@@ -1372,6 +1382,8 @@ bool ChaletJsonParser::parseWindowsNullsoftInstaller(WindowsNullsoftInstallerTar
 				outTarget.addPluginDirs(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefines(std::move(val));
+			else if (isInvalid(status))
+				return false;
 		}
 	}
 
@@ -1392,38 +1404,241 @@ bool ChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& 
 /*****************************************************************************/
 bool ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
-	auto split = String::split(inContent, '.');
-	if (List::contains(split, fmt::format(".!{}", m_platform)))
+	if (!matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
+			auto res = checkConditionVariable(inContent, key, value, negate);
+			return res == ConditionResult::Pass;
+		}))
 		return false;
-
-	for (auto& notPlatform : m_notPlatforms)
-	{
-		if (List::contains(split, notPlatform))
-			return false;
-	}
-
-	/*if (List::contains(split, fmt::format(".!{}", m_toolchain)))
-		return false;
-
-	for (auto& notToolchain : m_notToolchains)
-	{
-		if (List::contains(split, notToolchain))
-			return false;
-	}*/
-
-	// future
-	// if (List::contains(split, fmt::format("!{}", m_state.environment->identifier())))
-	// 	return false;
-
-	const auto incDebug = m_state.configuration.debugSymbols() ? "!" : "";
-	if (List::contains(split, fmt::format("{}debug", incDebug)))
-		return false;
-
-	// const auto incCi = Environment::isContinuousIntegrationServer() ? "" : "!";
-	// if (!List::contains(split, fmt::format("{}ci", incCi)))
-	// 	return false;
 
 	return true;
 }
 
+/*****************************************************************************/
+ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+{
+	// LOG("  ", key, value, negate);
+
+	if (key.empty())
+	{
+		// :value or :{value} syntax
+		if (String::equals("debug", value))
+		{
+			if (negate)
+			{
+				if (m_state.configuration.debugSymbols())
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!m_state.configuration.debugSymbols())
+					return ConditionResult::Fail;
+			}
+		}
+		else if (String::equals(kValidPlatforms, value))
+		{
+			if (negate)
+			{
+				if (String::equals(value, m_platform))
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (List::contains(m_notPlatforms, value))
+					return ConditionResult::Fail;
+			}
+		}
+	}
+	else if (String::equals("platform", key))
+	{
+		if (!String::equals(kValidPlatforms, value))
+		{
+			Diagnostic::error("Invalid platform '{}' found in: {}", value, inString);
+			return ConditionResult::Invalid;
+		}
+
+		if (negate)
+		{
+			if (String::equals(value, m_platform))
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (List::contains(m_notPlatforms, value))
+				return ConditionResult::Fail;
+		}
+	}
+	else if (String::equals("toolchain", key))
+	{
+		const auto& triple = m_state.info.targetArchitectureTriple();
+		const auto& toolchainName = m_state.inputs.toolchainPreferenceName();
+
+		if (negate)
+		{
+			if (String::contains(value, triple) || String::contains(value, toolchainName))
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (!String::contains(value, triple) && !String::contains(value, toolchainName))
+				return ConditionResult::Fail;
+		}
+	}
+	else if (String::equals("configuration", key))
+	{
+		if (String::equals("debugSymbols", value))
+		{
+			if (negate)
+			{
+				if (m_state.configuration.debugSymbols())
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!m_state.configuration.debugSymbols())
+					return ConditionResult::Fail;
+			}
+		}
+		else if (String::equals("enableProfiling", value))
+		{
+			if (negate)
+			{
+				if (m_state.configuration.enableProfiling())
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!m_state.configuration.enableProfiling())
+					return ConditionResult::Fail;
+			}
+		}
+		else if (String::equals("interproceduralOptimization", value))
+		{
+			if (negate)
+			{
+				if (m_state.configuration.interproceduralOptimization())
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!m_state.configuration.interproceduralOptimization())
+					return ConditionResult::Fail;
+			}
+		}
+		else
+		{
+			Diagnostic::error("Invalid condition '{}:{}' found in: {}", key, value, inString);
+			return ConditionResult::Invalid;
+		}
+	}
+	else if (String::equals("env", key))
+	{
+		auto res = Environment::get(value.c_str());
+		if (res == nullptr)
+			return ConditionResult::Fail;
+	}
+	else
+	{
+		Diagnostic::error("Invalid condition property '{}' found in: {}", key, inString);
+		return ConditionResult::Invalid;
+	}
+
+	return ConditionResult::Pass;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const
+{
+	auto squareBracketBegin = inText.find('[');
+	if (squareBracketBegin == std::string::npos)
+		return true;
+
+	auto squareBracketEnd = inText.find(']', squareBracketBegin);
+	if (squareBracketEnd == std::string::npos)
+		return true;
+
+	bool result = true;
+
+	// LOG("evaluating:", inText);
+
+	auto raw = inText.substr(squareBracketBegin + 1, (squareBracketEnd - squareBracketBegin) - 1);
+	auto split = String::split(raw, '+');
+	for (auto& prop : split)
+	{
+		auto propSplit = String::split(prop, ':');
+		auto& key = propSplit.front();
+		if (key.find_first_of("!{},") != std::string::npos)
+		{
+			result = false;
+			break;
+		}
+
+		if (propSplit.size() > 1)
+		{
+			auto& inner = propSplit.at(1);
+			if (inner.front() == '{' && inner.back() == '}')
+			{
+				inner = inner.substr(1);
+				inner.pop_back();
+			}
+
+			if (String::contains(',', inner))
+			{
+				bool valid = false;
+				auto innerSplit = String::split(inner, ',');
+				for (auto& v : innerSplit)
+				{
+					bool negate = false;
+					if (v.front() == '!')
+					{
+						v = v.substr(1);
+						negate = true;
+					}
+
+					if (v.find_first_of("!{},") == std::string::npos)
+					{
+						valid |= onMatch(key, v, negate);
+					}
+					else
+					{
+						valid = false;
+						break;
+					}
+				}
+				result &= valid;
+			}
+			else
+			{
+				bool negate = false;
+				if (inner.front() == '!')
+				{
+					inner = inner.substr(1);
+					negate = true;
+				}
+
+				if (inner.find_first_of("!{},") == std::string::npos)
+				{
+					result &= onMatch(key, inner, negate);
+				}
+				else
+				{
+					result = false;
+					break;
+				}
+			}
+		}
+		else
+		{
+			bool negate = false;
+			if (key.front() == '!')
+			{
+				key = key.substr(1);
+				negate = true;
+			}
+
+			result &= onMatch(key, std::string{}, negate);
+		}
+	}
+
+	return result;
+}
 }

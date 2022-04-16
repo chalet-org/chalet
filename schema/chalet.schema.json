@@ -152,7 +152,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the distribution.",
 			"minLength": 1,
-			"pattern": "^(\\.?!?(debug|windows|macos|linux)\\b){1,2}$"
+			"pattern": "^\\[([\\w:,{}+\\-!]+)\\]$"
 		},
 		"dist-bundle": {
 			"type": "object",
@@ -266,10 +266,10 @@
 				}
 			},
 			"patternProperties": {
-				"^exclude(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^exclude\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/dist-bundle-exclude"
 				},
-				"^include(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^include\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/dist-bundle-include"
 				}
 			}
@@ -369,10 +369,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
 				},
-				"^file(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^file\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
@@ -399,7 +399,7 @@
 				}
 			},
 			"patternProperties": {
-				"^include(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^include\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/dist-archive-include"
 				}
 			}
@@ -675,10 +675,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
-				"^path(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^path\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
@@ -774,7 +774,7 @@
 			"type": "string",
 			"description": "A rule describing when to include this target in the build.",
 			"minLength": 1,
-			"pattern": "^(\\.?!?(debug|windows|macos|linux)\\b){1,2}$"
+			"pattern": "^\\[([\\w:,{}+\\-!]+)\\]$"
 		},
 		"target-defaultRunArguments": {
 			"description": "If the project is the run target, a string of arguments to pass to the run command.",
@@ -843,10 +843,10 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				}
 			}
@@ -903,13 +903,13 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				},
-				"^copyFilesOnRun(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^copyFilesOnRun\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
 				}
 			}
@@ -960,10 +960,10 @@
 				}
 			},
 			"patternProperties": {
-				"^files(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^files\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
-				"^language(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^language\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				}
 			}
@@ -1034,7 +1034,7 @@
 						}
 					},
 					"patternProperties": {
-						"^exclude(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+						"^exclude\\[([\\w:,{}+\\-!]+)\\]$": {
 							"oneOf": [
 								{
 									"type": "string",
@@ -1051,7 +1051,7 @@
 								}
 							]
 						},
-						"^include(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+						"^include\\[([\\w:,{}+\\-!]+)\\]$": {
 							"oneOf": [
 								{
 									"type": "string",
@@ -1175,17 +1175,6 @@
 				"buildSuffix": {
 					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
-				"compileOptions": {
-					"type": "object",
-					"additionalProperties": false,
-					"description": "Addtional options (per compiler type) to add during the compilation step.",
-					"patternProperties": {
-						"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-							"type": "string",
-							"minLength": 1
-						}
-					}
-				},
 				"cppConcepts": {
 					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
@@ -1205,126 +1194,31 @@
 					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
 				"defines": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-defines"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-defines"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-defines"
 				},
 				"exceptions": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
 				"executionCharset": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-executionCharset"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-executionCharset"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-executionCharset"
 				},
 				"fastMath": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
 				"includeDirs": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-includeDirs"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-includeDirs"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
 				"inputCharset": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-inputCharset"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-inputCharset"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-inputCharset"
 				},
 				"libDirs": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-libDirs"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-libDirs"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
 				"linkerScript": {
 					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
-				"linkerOptions": {
-					"type": "object",
-					"additionalProperties": false,
-					"description": "Addtional options (per compiler type) to add during the linking step.",
-					"patternProperties": {
-						"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-							"type": "string",
-							"minLength": 1
-						}
-					}
-				},
 				"links": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-links"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-links"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-links"
 				},
 				"macosFrameworkPaths": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
@@ -1342,21 +1236,7 @@
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
 				},
 				"staticLinks": {
-					"oneOf": [
-						{
-							"$ref": "#/definitions/target-source-cxx-staticLinks"
-						},
-						{
-							"type": "object",
-							"additionalProperties": false,
-							"description": "Options specific to each compiler",
-							"patternProperties": {
-								"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-									"$ref": "#/definitions/target-source-cxx-staticLinks"
-								}
-							}
-						}
-					]
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
 				"staticRuntimeLibrary": {
 					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
@@ -1384,85 +1264,94 @@
 				}
 			},
 			"patternProperties": {
-				"^cppConcepts(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^compileOptions\\[([\\w:,{}+\\-!]+)\\]$": {
+					"$ref": "#/definitions/target-source-cxx-compileOptions"
+				},
+				"^cppConcepts\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
-				"^cppCoroutines(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^cppCoroutines\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppCoroutines"
 				},
-				"^cppFilesystem(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^cppFilesystem\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppFilesystem"
 				},
-				"^cppModules(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^cppModules\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppModules"
 				},
-				"^cppStandard(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^cppStandard\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cppStandard"
 				},
-				"^cStandard(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^cStandard\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-cStandard"
 				},
-				"^defines(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^defines\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
 				},
-				"^exceptions(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^exceptions\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
-				"^executionCharset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^executionCharset\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-executionCharset"
 				},
-				"^fastMath(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^fastMath\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-fastMath"
 				},
-				"^includeDirs(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^includeDirs\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-includeDirs"
 				},
-				"^inputCharset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^inputCharset\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-inputCharset"
 				},
-				"^libDirs(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^libDirs\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
-				"^linkerScript(\\.?!?(windows|macos|linux)\\b){1,2}$": {
+				"^linkerScript\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
-				"^links(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^linkerOptions\\[([\\w:,{}+\\-!]+)\\]$": {
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
+				},
+				"^links\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-links"
 				},
-				"^macosFrameworkPaths\\.!?(debug)\\b$": {
+				"^macosFrameworkPaths\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworkPaths"
 				},
-				"^macosFrameworks\\.!?(debug)\\b$": {
+				"^macosFrameworks\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-macosFrameworks"
 				},
-				"^mingwUnixSharedLibraryNamingConvention\\.!?(debug)\\b$": {
+				"^mingwUnixSharedLibraryNamingConvention\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
-				"^runtimeTypeInformation(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^runtimeTypeInformation\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
 				},
-				"^staticLinks(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^staticLinks\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-staticLinks"
 				},
-				"^staticRuntimeLibrary(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^staticRuntimeLibrary\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-staticRuntimeLibrary"
 				},
-				"^threads(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^threads\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-threads"
 				},
-				"^treatWarningsAsErrors(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^treatWarningsAsErrors\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
 				},
-				"^windowsApplicationIcon\\.!?(debug)\\b$": {
+				"^warnings\\[([\\w:,{}+\\-!]+)\\]$": {
+					"$ref": "#/definitions/target-source-cxx-warnings"
+				},
+				"^windowsApplicationIcon\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsAppIcon"
 				},
-				"^windowsApplicationManifest\\.!?(debug)\\b$": {
+				"^windowsApplicationManifest\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsApplicationManifest"
 				},
-				"^windowsEntryPoint\\.!?(debug)\\b$": {
+				"^windowsEntryPoint\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsEntryPoint"
 				},
-				"^windowsSubSystem\\.!?(debug)\\b$": {
+				"^windowsSubSystem\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				}
 			}
@@ -1480,6 +1369,11 @@
 			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
 			"minLength": 1,
 			"default": "c++17"
+		},
+		"target-source-cxx-compileOptions": {
+			"type": "string",
+			"description": "Addtional options (per compiler type) to add during the compilation step.",
+			"minLength": 1
 		},
 		"target-source-cxx-defines": {
 			"description": "Macro definitions to be used by the preprocessor",
@@ -1538,6 +1432,11 @@
 		"target-source-cxx-linkerScript": {
 			"type": "string",
 			"description": "An LD linker script path (.ld file) to pass to the linker command",
+			"minLength": 1
+		},
+		"target-source-cxx-linkerOptions": {
+			"type": "string",
+			"description": "Addtional options (per compiler type) to add during the linking step.",
 			"minLength": 1
 		},
 		"target-source-cxx-links": {
@@ -1698,317 +1597,6 @@
 						"strictPedantic",
 						"veryStrict"
 					]
-				},
-				{
-					"type": "object",
-					"additionalProperties": false,
-					"description": "Warnings specific to each compiler.",
-					"patternProperties": {
-						"^(\\*|[\\w\\-+.]{3,})(\\.?!?(debug|windows|macos|linux)\\b){0,2}$": {
-							"type": "array",
-							"uniqueItems": true,
-							"minItems": 1,
-							"items": {
-								"type": "string",
-								"minLength": 1,
-								"examples": [
-									"abi",
-									"absolute-value",
-									"address",
-									"aggregate-return",
-									"all",
-									"alloc-size-larger-than=VAL",
-									"alloc-zero",
-									"alloca",
-									"alloca-larger-than=VAL",
-									"arith-conversion",
-									"array-bounds",
-									"array-bounds=1",
-									"array-bounds=2",
-									"array-parameter",
-									"array-parameter=1",
-									"array-parameter=2",
-									"attribute-alias",
-									"attribute-alias=0",
-									"attribute-alias=1",
-									"attribute-alias=2",
-									"bad-function-cast",
-									"bool-compare",
-									"bool-operation",
-									"c90-c99-compat",
-									"c99-c11-compat",
-									"c11-c2x-compat",
-									"c++-compat",
-									"c++11-compat",
-									"c++14-compat",
-									"c++17-compat",
-									"c++20-compat",
-									"cast-align",
-									"cast-align=strict",
-									"cast-function-type",
-									"cast-qual",
-									"catch-value",
-									"char-subscripts",
-									"clobbered",
-									"comment",
-									"comments",
-									"conversion",
-									"dangling-else",
-									"date-time",
-									"declaration-after-statement",
-									"deprecated-copy",
-									"disabled-optimization",
-									"double-promotion",
-									"duplicate-decl-specifier",
-									"duplicated-branches",
-									"duplicated-cond",
-									"empty-body",
-									"enum-compare",
-									"enum-conversion",
-									"effc++",
-									"extra",
-									"error",
-									"expansion-to-defined",
-									"fatal-errors",
-									"float-conversion",
-									"float-equal",
-									"format",
-									"format=0",
-									"format=1",
-									"format=2",
-									"format-nonliteral",
-									"format-overflow",
-									"format-overflow=1",
-									"format-overflow=2",
-									"format-security",
-									"format-signedness",
-									"format-truncation",
-									"format-truncation=1",
-									"format-truncation=2",
-									"format-y2k",
-									"frame-address",
-									"frame-larger-than=VAL",
-									"ignored-qualifiers",
-									"implicit-fallthrough",
-									"implicit-fallthrough=0",
-									"implicit-fallthrough=1",
-									"implicit-fallthrough=2",
-									"implicit-fallthrough=3",
-									"implicit-fallthrough=4",
-									"implicit-fallthrough=5",
-									"implicit",
-									"implicit-int",
-									"implicit-function-declaration",
-									"init-self",
-									"inline",
-									"int-in-bool-context",
-									"invalid-memory-model",
-									"invalid-pch",
-									"jump-misses-init",
-									"larger-than=VAL",
-									"logical-not-parentheses",
-									"logical-op",
-									"long-long",
-									"main",
-									"maybe-uninitialized",
-									"memset-elt-size",
-									"memset-transposed-args",
-									"misleading-indentation",
-									"missing-attributes",
-									"missing-braces",
-									"missing-declarations",
-									"missing-field-initializers",
-									"missing-include-dirs",
-									"missing-parameter-type",
-									"missing-prototypes",
-									"multistatement-macros",
-									"narrowing",
-									"nested-externs",
-									"no-address-of-packed-member",
-									"no-aggressive-loop-optimizations",
-									"no-alloc-size-larger-than",
-									"no-alloca-larger-than",
-									"no-attribute-alias",
-									"no-attribute-warning",
-									"no-attributes",
-									"no-builtin-declaration-mismatch",
-									"no-builtin-macro-redefined",
-									"no-coverate-mismatch",
-									"no-cpp",
-									"no-deprecated",
-									"no-deprecated-declarations",
-									"no-designated-init",
-									"no-discarded-qualifier",
-									"no-discarded-array-qualifiers",
-									"no-div-by-zero",
-									"no-endif-labels",
-									"no-incompatible-pointer-types",
-									"no-int-conversion",
-									"no-format-contains-nul",
-									"no-format-extra-args",
-									"no-format-zero-length",
-									"no-frame-larger-than",
-									"no-free-nonheap-object",
-									"no-if-not-aligned",
-									"no-ignored-attributes",
-									"no-implicit-int",
-									"no-implicit-function-declaration",
-									"no-int-to-pointer-cast",
-									"no-invalid-memory-model",
-									"no-larger-than",
-									"no-long-long",
-									"no-lto-type-mismatch",
-									"no-missing-profile",
-									"no-missing-field-initializers",
-									"no-multichar",
-									"no-odr",
-									"no-overflow",
-									"no-overlength-strings",
-									"no-override-init-side-effects",
-									"no-pedantic-ms-format",
-									"no-pointer-compare",
-									"no-pointer-to-int-cast",
-									"no-pragmas",
-									"no-prio-ctor-dtor",
-									"no-return-local-addr",
-									"no-scalar-storage-order",
-									"no-shadow-ivar",
-									"no-shift-count-negative",
-									"no-shift-count-overflow",
-									"no-shift-overflow",
-									"no-sizeof-array-argument",
-									"no-stack-usage",
-									"no-stringop-overflow",
-									"no-stringop-overread",
-									"no-stringop-truncation",
-									"no-switch-bool",
-									"no-switch-outside-range",
-									"no-switch-unreachable",
-									"no-trigraphs",
-									"no-unused-function",
-									"no-unused-result",
-									"no-unused-variable",
-									"no-varargs",
-									"no-variadic-macros",
-									"no-vla",
-									"no-vla-larger-than",
-									"noexcept",
-									"non-virtual-dtor",
-									"nonnull",
-									"nonnull-compare",
-									"nopacked-bitfield-compat",
-									"normalized=none",
-									"normalized=id",
-									"normalized=nfc",
-									"normalized=nfkc",
-									"null-dereference",
-									"odr",
-									"old-style-cast",
-									"old-style-declaration",
-									"old-style-definition",
-									"openmp-simd",
-									"overlength-strings",
-									"overloaded-virtual",
-									"override-init",
-									"packed",
-									"packed-not-aligned",
-									"padded",
-									"parentheses",
-									"pedantic",
-									"pedantic-errors",
-									"pessimizing-move",
-									"pointer-arith",
-									"pointer-sign",
-									"range-loop-construct",
-									"redundant-decls",
-									"redundant-move",
-									"reorder",
-									"restrict",
-									"return-type",
-									"scrict-null-sentinel",
-									"sequence-point",
-									"shadow",
-									"shadow=global",
-									"shadow=local",
-									"shadow=compatible-local",
-									"shift-negative-value",
-									"shift-overflow=1",
-									"shift-overflow=2",
-									"sign-compare",
-									"sign-conversion",
-									"sign-promo",
-									"sizeof-array-div",
-									"sizeof-pointer-div",
-									"sizeof-pointer-memaccess",
-									"stack-protector",
-									"stack-usage=VAL",
-									"strict-aliasing",
-									"strict-aliasing=1",
-									"strict-aliasing=2",
-									"strict-aliasing=3",
-									"strict-overflow",
-									"strict-overflow=1",
-									"strict-overflow=2",
-									"strict-overflow=3",
-									"strict-overflow=4",
-									"strict-overflow=5",
-									"strict-prototypes",
-									"string-compare",
-									"stringop-overflow",
-									"stringop-overflow=1",
-									"stringop-overflow=2",
-									"stringop-overflow=3",
-									"stringop-overflow=4",
-									"suggest-attribute=pure",
-									"suggest-attribute=const",
-									"suggest-attribute=noreturn",
-									"suggest-attribute=format",
-									"suggest-attribute=cold",
-									"suggest-attribute=malloc",
-									"switch",
-									"switch-default",
-									"switch-enum",
-									"switch-unreachable",
-									"sync-nand",
-									"system-headers",
-									"tautological-compare",
-									"traditional",
-									"traditional-conversion",
-									"trampolines",
-									"trigraphs",
-									"type-limits",
-									"undef",
-									"uninitialized",
-									"unknown-pragmas",
-									"unreachable-code",
-									"unsafe-loop-optimizations",
-									"unsuffixed-float-constants",
-									"unused",
-									"unused-but-set-parameter",
-									"unused-but-set-variable",
-									"unused-const-variable",
-									"unused-const-variable=1",
-									"unused-const-variable=2",
-									"unused-function",
-									"unused-label",
-									"unused-local-typedefs",
-									"unused-macros",
-									"unused-parameter",
-									"unused-value",
-									"unused-variable",
-									"variadic-macros",
-									"vector-operation-performance",
-									"vla",
-									"vla-larger-than=VAL",
-									"vla-parameter",
-									"volatile-register-var",
-									"write-strings",
-									"zero-as-null-pointer-constant",
-									"zero-length-bounds"
-								]
-							}
-						}
-					}
 				},
 				{
 					"type": "array",
@@ -2398,10 +1986,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
 				},
-				"^file(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^file\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
@@ -2473,16 +2061,16 @@
 				}
 			},
 			"patternProperties": {
-				"^buildFile(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^buildFile\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-cmake-buildFile"
 				},
-				"^defines(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^defines\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-cmake-defines"
 				},
-				"^runExecutable(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^runExecutable\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
-				"^toolset(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^toolset\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-cmake-toolset"
 				}
 			}
@@ -2567,7 +2155,7 @@
 				}
 			},
 			"patternProperties": {
-				"^buildFile(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^buildFile\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-chalet-buildFile"
 				}
 			}
@@ -2618,10 +2206,10 @@
 				}
 			},
 			"patternProperties": {
-				"^arguments(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^arguments\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
-				"^path(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+				"^path\\[([\\w:,{}+\\-!]+)\\]$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
@@ -2931,7 +2519,7 @@
 			"$ref": "#/definitions/target-abstract",
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
-		"^searchPaths(\\.?!?(debug|windows|macos|linux)\\b){1,2}$": {
+		"^searchPaths\\[([\\w:,{}+\\-!]+)\\]$": {
 			"$ref": "#/definitions/environment-searchPaths"
 		}
 	}

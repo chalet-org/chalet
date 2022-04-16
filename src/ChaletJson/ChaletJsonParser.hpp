@@ -45,6 +45,12 @@ struct ChaletJsonParser
 	bool serialize();
 
 private:
+	enum class ConditionResult
+	{
+		Fail,
+		Pass,
+		Invalid,
+	};
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode) const;
@@ -74,18 +80,19 @@ private:
 	bool validRunTargetRequested() const;
 	bool validRunTargetRequestedFromInput();
 	bool conditionIsValid(const std::string& inContent) const;
+	ConditionResult checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
+	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 
 	template <typename T>
 	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
-
-	template <typename T>
-	bool valueMatchesToolchainSearchPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	JsonFile& m_chaletJson;
 	CentralState& m_centralState;
 	BuildState& m_state;
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
+
+	const StringList kValidPlatforms;
 
 	StringList m_notPlatforms;
 	// StringList m_notToolchains;

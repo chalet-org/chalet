@@ -120,7 +120,7 @@ bool RegexPatterns::matchAndReplace(std::string& outText, const std::string& inV
 }
 
 /*****************************************************************************/
-void RegexPatterns::matchConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
+void RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
 #if defined(CHALET_REGEX_CTRE)
 	#if defined(CHALET_REGEX_CTRE_20)
@@ -148,7 +148,7 @@ void RegexPatterns::matchConfigureFileVariables(std::string& outText, const std:
 }
 
 /*****************************************************************************/
-void RegexPatterns::matchPathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
+void RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
 #if defined(CHALET_REGEX_CTRE)
 	#if defined(CHALET_REGEX_CTRE_20)

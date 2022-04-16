@@ -10,7 +10,7 @@
 
 // #if !defined(CHALET_MSVC) && !(defined(CHALET_CLANG) && defined(CHALET_LINUX))
 // #if !defined(CHALET_MSVC)
-#ifndef CHALET_REGEX_CTRE
+#if !defined(CHALET_REGEX_CTRE) && !defined(CHALET_REGEX_NO_CTRE)
 	#define CHALET_REGEX_CTRE
 	#if defined(CHALET_CLANG)
 		#define CTRE_CXX_STANDARD 17

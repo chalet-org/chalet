@@ -8,6 +8,16 @@
 namespace chalet
 {
 /*****************************************************************************/
+StringList Platform::validPlatforms() noexcept
+{
+	return {
+		"windows",
+		"macos",
+		"linux",
+	};
+}
+
+/*****************************************************************************/
 std::string Platform::platform() noexcept
 {
 #if defined(CHALET_WIN32)

@@ -28,11 +28,11 @@
 		"settings:Cxx": {
 			"cppStandard": "c++20",
 			"runtimeTypeInformation": false,
-			"staticRuntimeLibrary.windows": true,
+			"staticRuntimeLibrary[:debug]": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
-			"defines.debug": [
+			"defines[:debug]": [
 				"_DEBUG",
 				"JSON_NOEXCEPTION"
 			],
@@ -43,7 +43,7 @@
 				"external/nlohmann/single_include",
 				"external"
 			],
-			"links.windows": "imagehlp"
+			"links[:windows]": "imagehlp"
 		}
 	},
 	"targets": {
@@ -64,7 +64,7 @@
 		},
 		"tests": {
 			"kind": "executable",
-			"condition": "!debug",
+			"condition": "[:!debug]",
 			"settings:Cxx": {
 				"buildSuffix": "chalet",
 				"precompiledHeader": "src/PCH.hpp",
@@ -88,13 +88,13 @@
 		},
 		"script-shell": {
 			"kind": "script",
-			"file.!windows": "scripts/script_shell.sh",
-			"file.windows": "scripts/script_batch.bat"
+			"file[:!windows]": "scripts/script_shell.sh",
+			"file[:windows]": "scripts/script_batch.bat"
 		}
 		/*"script-shell-env": {
 			"kind": "script",
-			"file.!windows": "scripts/script_shell_env",
-			"file.windows": "scripts/script_batch.bat"
+			"file[:!windows]": "scripts/script_shell_env",
+			"file[:windows]": "scripts/script_batch.bat"
 		},
 		"script-shell-bad": {
 			"kind": "script",
@@ -102,7 +102,7 @@
 		},
 		"script-batch": {
 			"kind": "script",
-			"file.windows": "scripts/script_batch.bat"
+			"file[:windows]": "scripts/script_batch.bat"
 		},
 		"script-powershell": {
 			"kind": "script",
@@ -175,8 +175,8 @@
 		},
 		"post-bundle": {
 			"kind": "script",
-			"file.!windows": "scripts/script_shell.sh",
-			"file.windows": "scripts/script_batch.bat"
+			"file[:!windows]": "scripts/script_shell.sh",
+			"file[:windows]": "scripts/script_batch.bat"
 		},
 		"chalet-${targetTriple}": {
 			"kind": "archive",
@@ -184,7 +184,7 @@
 		},
 		"debian-pkg": {
 			"kind": "script",
-			"condition": "linux",
+			"condition": "[:linux]",
 			"file": "platform/linux/deb/make_deb_pkg.sh",
 			"arguments": [
 				"${meta:version}",
@@ -205,7 +205,7 @@
 		},
 		/*"chalet-windows-installer": {
 			"kind": "process",
-			"condition": "windows.mingw",
+			"condition": "[:windows.mingw]",
 			"path": "makensis",
 			"arguments": [
 				"-WX",
@@ -217,7 +217,7 @@
 		},*/
 		"chalet-${targetTriple}-installer": {
 			"kind": "archive",
-			"condition": "windows",
+			"condition": "[:windows]",
 			"include": [
 				"chalet-windows-installer.exe",
 				"LICENSE.txt",

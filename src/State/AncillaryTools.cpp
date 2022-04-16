@@ -42,7 +42,7 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 
 	if (String::contains("${", m_signingIdentity))
 	{
-		RegexPatterns::matchPathVariables(m_signingIdentity, [&](std::string match) {
+		RegexPatterns::matchAndReplacePathVariables(m_signingIdentity, [&](std::string match) {
 			if (String::equals("home", match))
 				return inHomeDirectory;
 

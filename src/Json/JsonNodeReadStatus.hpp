@@ -11,6 +11,7 @@ namespace chalet
 enum class JsonNodeReadStatus
 {
 	Unread,
+	Invalid,
 	ValidKeyUnreadValue,
 	ValidKeyReadValue,
 };

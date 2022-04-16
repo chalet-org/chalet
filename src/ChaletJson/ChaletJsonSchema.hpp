@@ -171,7 +171,7 @@ private:
 
 	void addProperty(Json& outJson, const char* inKey, const Defs inDef, const bool inIndexed = true);
 	void addPropertyAndPattern(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
-	void addaddPropertyAndPatternWithCompilerOptions(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
+	void addPatternProperty(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
 
 	//
 	const std::string kPatternTargetName;
@@ -179,11 +179,12 @@ private:
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
-	const std::string kPatternConfigurations;
-	const std::string kPatternPlatforms;
-	const std::string kPatternConfigurationsPlatforms;
-	const std::string kPatternCompilers;
+	// const std::string kPatternConfigurations;
+	// const std::string kPatternPlatforms;
+	// const std::string kPatternConfigurationsPlatforms;
+	// const std::string kPatternCompilers;
 	const std::string kPatternVersion;
+	const std::string kPatternAdvanced;
 
 	DefinitionMap m_defs;
 	DefinitionMap m_nonIndexedDefs;

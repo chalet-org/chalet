@@ -10,6 +10,7 @@ namespace chalet
 {
 namespace Platform
 {
+StringList validPlatforms() noexcept;
 std::string platform() noexcept;
 StringList notPlatforms() noexcept;
 }

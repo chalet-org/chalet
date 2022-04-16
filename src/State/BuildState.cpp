@@ -925,7 +925,7 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
+		RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
 
@@ -1009,7 +1009,7 @@ void BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		RegexPatterns::matchPathVariables(outString, [&](std::string match) {
+		RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
 			if (String::equals("cwd", match))
 				return inputs.workingDirectory();
 
