@@ -76,7 +76,7 @@ cp "$DIST_FOLDER/README.md" "$PKG_OPT"
 cat << END > "$PKG_DEBIAN/control"
 Package: chalet
 Version: $CHALET_VERSION
-Architecture: any-$CHALET_ARCHITECTURE
+Architecture: any
 Essential: no
 Priority: optional
 Depends: ninja-build,cmake,base-devel
