@@ -1460,6 +1460,20 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const
 				return ConditionResult::Fail;
 		}
 	}
+	else if (String::equals("architecture", key))
+	{
+		const auto& arch = m_state.info.targetArchitectureString();
+		if (negate)
+		{
+			if (String::equals(value, arch))
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (!String::equals(value, arch))
+				return ConditionResult::Fail;
+		}
+	}
 	else if (String::equals("configuration", key))
 	{
 		if (String::equals("debugSymbols", value))
