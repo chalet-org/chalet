@@ -765,14 +765,16 @@ bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList,
 	if (String::contains('*', inValue))
 	{
 		if (!Commands::forEachGlobMatch(inValue, inSettings, [&](std::string inPath) {
-				List::addIfDoesNotExist(outList, std::move(inPath));
+				outList.emplace_back(std::move(inPath));
 			}))
 			return false;
 	}
 	else
 	{
-		List::addIfDoesNotExist(outList, std::move(inValue));
+		outList.emplace_back(std::move(inValue));
 	}
+
+	List::removeDuplicates(outList);
 
 	return true;
 }

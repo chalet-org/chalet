@@ -6,6 +6,18 @@
 	"author": "Cosmic Road Interactive, LLC.",
 	"license": "BSD-3-Clause",
 	"readme": "README.md",
+	/*"externalDependencies": {
+		"catch2": {
+			"repository": "git@github.com:catchorg/Catch2.git",
+			"branch": "v2.x"
+		},
+		"fmt": {
+			"repository": "git@github.com:fmtlib/fmt.git"
+		},
+		"nlohmann_json": {
+			"repository": "git@github.com:nlohmann/json.git"
+		}
+	},*/
 	// "searchPaths": [],
 	/*"defaultConfigurations": [
 		"Release",
@@ -28,16 +40,14 @@
 		"settings:Cxx": {
 			"cppStandard": "c++20",
 			"runtimeTypeInformation": false,
-			"staticRuntimeLibrary[:windows]": true,
+			"staticRuntimeLibrary[toolchain:msvc]": true,
 			"cppFilesystem": true,
 			"warnings": "strict",
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [
-				"_DEBUG",
-				"JSON_NOEXCEPTION"
+				"_DEBUG"
 			],
 			"includeDirs": [
-				"external/fmt/include",
 				"external/json-schema-validator/src",
 				"external/nlohmann/single_include",
 				"external"
@@ -56,7 +66,10 @@
 				"precompiledHeader": "src/PCH.hpp",
 				"windowsApplicationManifest": "platform/windows/app.manifest",
 				"staticLinks": "json-schema-validator-s",
-				"includeDirs": "src"
+				"includeDirs": [
+					"external/fmt/include",
+					"src"
+				]
 			},
 			"files": "src/**.{cpp,rc}",
 			"configureFiles": "src/ChaletConfig.hpp.in"
@@ -69,6 +82,7 @@
 				"precompiledHeader": "src/PCH.hpp",
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
+					"external/fmt/include",
 					"src",
 					"tests",
 					"external/catch2/single_include"
@@ -214,17 +228,5 @@
 				"README.md"
 			]
 		}
-	} /*,
-	"externalDependencies": {
-		"catch2": {
-			"repository": "git@github.com:catchorg/Catch2.git",
-			"branch": "v2.x"
-		},
-		"fmt": {
-			"repository": "git@github.com:fmtlib/fmt.git"
-		},
-		"nlohmann_json": {
-			"repository": "git@github.com:nlohmann/json.git"
-		}
-	}*/
+	}
 }

@@ -360,15 +360,21 @@ bool BuildState::initializeBuild()
 	}
 
 	{
-		workspace.initialize(*this);
+		if (!workspace.initialize(*this))
+			return false;
 
 		for (auto& target : targets)
 		{
-			target->initialize();
+			// measure(fmt::format("initializing: {}", target->name()), [&target]() {
+			if (!target->initialize())
+				return false;
+			// });
 
 			if (target->isSources())
 			{
+				// measure(fmt::format("populating files: {}", target->name()), [this, &target]() {
 				paths.populateFileList(static_cast<SourceTarget&>(*target));
+				// });
 			}
 		}
 

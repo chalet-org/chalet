@@ -17,10 +17,10 @@ template <typename Container>
 void sort(Container& inList);
 
 template <typename VectorType>
-void addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
+bool addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 
-void addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
-void addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
+bool addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
+bool addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
 
 template <typename VectorType>
 void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
@@ -29,6 +29,8 @@ void removeIfExists(std::vector<std::string>& outList, const char* inValue);
 
 template <typename VectorType>
 bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
+
+void removeDuplicates(std::vector<std::string>& outList);
 
 template <typename... Args>
 StringList combine(Args&&... args);

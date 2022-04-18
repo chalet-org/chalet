@@ -67,7 +67,7 @@ private:
 	SourceType getSourceType(const std::string& inSource) const;
 	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
-	SourceGroup getFiles(const SourceTarget& inProject) const;
+	std::unique_ptr<SourceGroup> getFiles(const SourceTarget& inProject) const;
 	SourceGroup getDirectories(const SourceTarget& inProject) const;
 	StringList getFileList(const SourceTarget& inProject) const;
 	StringList getDirectoryList(const SourceTarget& inProject) const;

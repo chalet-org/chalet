@@ -93,17 +93,25 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 	if (m_fileList.find(inProject.name()) != m_fileList.end())
 		return;
 
-	SourceGroup files = getFiles(inProject);
+	auto files = getFiles(inProject);
 
-	for (auto& file : files.list)
+	bool extChanged = false;
+	for (auto& file : files->list)
 	{
 		auto ext = String::getPathSuffix(file);
-		List::addIfDoesNotExist(m_allFileExtensions, std::move(ext));
+		if (ext.empty())
+			continue;
+
+		if (List::addIfDoesNotExist(m_allFileExtensions, std::move(ext)))
+		{
+			extChanged = true;
+		}
 	}
 
-	List::sort(m_allFileExtensions);
+	if (extChanged)
+		List::sort(m_allFileExtensions);
 
-	m_fileList.emplace(inProject.name(), std::make_unique<SourceGroup>(std::move(files)));
+	m_fileList.emplace(inProject.name(), std::move(files));
 }
 
 /*****************************************************************************/
@@ -653,11 +661,11 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
-BuildPaths::SourceGroup BuildPaths::getFiles(const SourceTarget& inProject) const
+std::unique_ptr<BuildPaths::SourceGroup> BuildPaths::getFiles(const SourceTarget& inProject) const
 {
-	SourceGroup ret;
-	ret.list = getFileList(inProject);
-	ret.pch = inProject.precompiledHeader();
+	auto ret = std::make_unique<SourceGroup>();
+	ret->list = getFileList(inProject);
+	ret->pch = inProject.precompiledHeader();
 
 	return ret;
 }

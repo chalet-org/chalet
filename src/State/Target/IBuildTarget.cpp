@@ -63,12 +63,11 @@ void IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 }
 
 /*****************************************************************************/
-void IBuildTarget::processEachPathList(StringList&& outList, std::function<void(std::string&& inValue)> onProcess) const
+void IBuildTarget::processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const
 {
-	replaceVariablesInPathList(outList);
+	replaceVariablesInPathList(inList);
 
-	StringList tmpList = std::move(outList);
-	for (auto&& val : tmpList)
+	for (auto&& val : inList)
 	{
 		onProcess(std::move(val));
 	}

@@ -26,10 +26,15 @@ void List::sort(Container& inList)
 
 /*****************************************************************************/
 template <typename VectorType>
-void List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue)
+bool List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue)
 {
 	if (std::find(outList.begin(), outList.end(), inValue) == outList.end())
+	{
 		outList.emplace_back(std::forward<VectorType>(inValue));
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
