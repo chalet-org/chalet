@@ -70,7 +70,7 @@ jobs:
         with:
           files: |
             ./dist/chalet-x86_64-linux-gnu.zip
-            ./dist/chalet-x86_64-linux-debian.zip
+            ./dist/chalet-amd64-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet run tests

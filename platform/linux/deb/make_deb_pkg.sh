@@ -29,7 +29,7 @@ fi
 
 CHALET_VERSION=$1
 CHALET_ARCH_RAW=$2
-CHALET_ARCHITECTURE=${2//_/-}
+CHALET_ARCHITECTURE=${2//x86_64/amd64}
 CHALET_AUTHOR=$3
 CHALET_DESCRIPTION=$4
 
@@ -76,10 +76,10 @@ cp "$DIST_FOLDER/README.md" "$PKG_OPT"
 cat << END > "$PKG_DEBIAN/control"
 Package: chalet
 Version: $CHALET_VERSION
-Architecture: any-$CHALET_ARCHITECTURE
+Architecture: $CHALET_ARCHITECTURE
 Essential: no
 Priority: optional
-Depends: ninja-build,cmake,base-devel
+Depends: ninja-build,cmake
 Source: chalet
 Maintainer: $CHALET_AUTHOR
 Description: $CHALET_DESCRIPTION
