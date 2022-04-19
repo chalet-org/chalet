@@ -152,6 +152,9 @@ StringList FileArchiver::getZipFormatCommand(const std::string& inBaseName, cons
 	cmd.emplace_back("$ProgressPreference = \"SilentlyContinue\";");
 	cmd.emplace_back(fmt::format("{};", String::join(pwshCmd)));
 	cmd.emplace_back("$ProgressPreference = \"Continue\";");
+
+	UNUSED(inFiles);
+
 #else
 	const auto& zip = m_state.tools.zip();
 	cmd.emplace_back(zip);
