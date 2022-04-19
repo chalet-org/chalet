@@ -768,13 +768,13 @@ bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList,
 				outList.emplace_back(std::move(inPath));
 			}))
 			return false;
+
+		List::removeDuplicates(outList);
 	}
 	else
 	{
-		outList.emplace_back(std::move(inValue));
+		List::addIfDoesNotExist(outList, std::move(inValue));
 	}
-
-	List::removeDuplicates(outList);
 
 	return true;
 }

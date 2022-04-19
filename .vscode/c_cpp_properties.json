@@ -19,8 +19,7 @@
             ],
             "defines": [
                 "__linux__",
-                "_DEBUG",
-                "CHALET_REGEX_NO_CTRE"
+                "_DEBUG"
             ],
             "cStandard": "c11",
             "cppStandard": "c++20",
@@ -50,8 +49,7 @@
             ],
             "defines": [
                 "__APPLE__",
-                "_DEBUG",
-                "CHALET_REGEX_NO_CTRE"
+                "_DEBUG"
             ],
             "cStandard": "c11",
             "cppStandard": "c++20",
@@ -77,8 +75,7 @@
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "CHALET_REGEX_NO_CTRE"
+                "_UNICODE"
             ],
             "cStandard": "c11",
             "cppStandard": "c++20",
@@ -105,8 +102,7 @@
                 "_WIN32",
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "CHALET_REGEX_NO_CTRE"
+                "_UNICODE"
             ],
             "cStandard": "c11",
             "cppStandard": "c++20",
