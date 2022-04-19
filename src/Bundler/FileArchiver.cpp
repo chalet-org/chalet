@@ -190,13 +190,12 @@ StringList FileArchiver::getTarFormatCommand(const std::string& inBaseName, cons
 	cmd.emplace_back("-f");
 	cmd.emplace_back(m_outputFilename);
 	cmd.emplace_back(fmt::format("--directory={}", inBaseName));
-#if defined(CHALET_WIN32)
-	cmd.emplace_back("*");
-#else
-	cmd.emplace_back(".");
-#endif
 
-	UNUSED(inFiles);
+	for (auto& file : inFiles)
+	{
+		auto outFile = file.substr(m_outputDirectory.size() + 1);
+		cmd.emplace_back(std::move(outFile));
+	}
 
 	return cmd;
 }
