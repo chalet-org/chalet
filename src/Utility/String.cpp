@@ -13,7 +13,7 @@ namespace chalet
 /*****************************************************************************/
 bool String::equals(const std::string_view inCompare, const std::string& inString)
 {
-	return ::strcmp(inString.c_str(), inCompare.data()) == 0;
+	return inString == inCompare;
 }
 
 /*****************************************************************************/
@@ -36,8 +36,7 @@ bool String::equals(const StringList& inFind, const std::string& inString)
 /*****************************************************************************/
 bool String::contains(const std::string_view inFind, const std::string& inString)
 {
-	auto result = inString.find(inFind);
-	return result != std::string::npos;
+	return inString.find(inFind) != std::string::npos;
 }
 
 /*****************************************************************************/
