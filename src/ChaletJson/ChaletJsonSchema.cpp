@@ -279,6 +279,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::DistributionBundleBuildTargets][SKeys::Items][SKeys::Pattern] = kPatternTargetName;
 
 	//
+	defs[Defs::DistributionArchiveFormat] = R"json({
+		"type": "string",
+		"description": "The archive format to use.",
+		"minLength": 1,
+		"enum": [
+			"zip",
+			"tar"
+		],
+		"default": "zip"
+	})json"_ojson;
+
 	defs[Defs::DistributionArchiveInclude] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
@@ -1344,6 +1355,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		addProperty(distArchive, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distArchive, "format", Defs::DistributionArchiveFormat, kPatternConditions);
 		addPropertyAndPattern(distArchive, "include", Defs::DistributionArchiveInclude, kPatternConditions);
 		addProperty(distArchive, "kind", Defs::DistributionKind);
 		addProperty(distArchive, "outputDescription", Defs::TargetOutputDescription);
@@ -1648,6 +1660,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::DistributionArchive: return "dist-archive";
 		case Defs::DistributionArchiveInclude: return "dist-archive-include";
+		case Defs::DistributionArchiveFormat: return "dist-archive-format";
 		//
 		case Defs::DistributionMacosDiskImage: return "dist-macos-disk-image";
 		case Defs::DistributionMacosDiskImagePathbarVisible: return "dist-macos-disk-image-pathbarVisible";

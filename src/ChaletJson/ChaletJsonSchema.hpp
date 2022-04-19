@@ -46,6 +46,7 @@ class ChaletJsonSchema
 		DistributionScript,
 		//
 		DistributionArchive,
+		DistributionArchiveFormat,
 		DistributionArchiveInclude,
 		//
 		DistributionMacosDiskImage,

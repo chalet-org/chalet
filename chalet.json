@@ -193,6 +193,7 @@
 		},
 		"chalet-${targetTriple}": {
 			"kind": "archive",
+			"format": "zip",
 			"include": "*"
 		},
 		"debian-pkg": {
@@ -222,6 +223,7 @@
 		"chalet-${targetTriple}-installer": {
 			"kind": "archive",
 			"condition": "[:windows]",
+			"format": "zip",
 			"include": [
 				"chalet-windows-installer.exe",
 				"LICENSE.txt",

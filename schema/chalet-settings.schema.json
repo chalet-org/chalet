@@ -243,6 +243,11 @@
 					"description": "The executable path to Apple's sips command-line utility. (MacOS)",
 					"default": "/usr/bin/sips"
 				},
+				"tar": {
+					"type": "string",
+					"description": "The executable path to tar.",
+					"default": "/usr/bin/tar"
+				},
 				"tiffutil": {
 					"type": "string",
 					"description": "The executable path to Apple's tiffutil command-line utility. (MacOS)",

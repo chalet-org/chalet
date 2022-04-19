@@ -7,9 +7,9 @@
 
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/ScriptRunner.hpp"
+#include "Bundler/FileArchiver.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
-#include "Bundler/ZipArchiver.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
@@ -456,11 +456,10 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 		return false;
 
 	auto baseName = inTarget.name();
-
 	if (!isTargetNameValid(inTarget, baseName))
 		return false;
 
-	auto filename = fmt::format("{}.zip", baseName);
+	auto filename = inTarget.getOutputFilename(baseName);
 
 	displayHeader("Compressing", inTarget, filename);
 
@@ -474,8 +473,8 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 
 	Diagnostic::stepInfoEllipsis("Compressing files");
 
-	ZipArchiver zipArchiver(m_state);
-	if (!zipArchiver.archive(baseName, resolvedIncludes, m_state.inputs.distributionDirectory(), m_archives))
+	FileArchiver archiver(m_state);
+	if (!archiver.archive(inTarget, baseName, resolvedIncludes, m_archives))
 		return false;
 
 	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));

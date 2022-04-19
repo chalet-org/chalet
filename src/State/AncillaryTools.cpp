@@ -327,6 +327,16 @@ void AncillaryTools::setSips(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::tar() const noexcept
+{
+	return m_tar;
+}
+void AncillaryTools::setTar(std::string&& inValue) noexcept
+{
+	m_tar = std::move(inValue);
+}
+
+/*****************************************************************************/
 const std::string& AncillaryTools::tiffutil() const noexcept
 {
 	return m_tiffutil;

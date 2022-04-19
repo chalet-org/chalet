@@ -255,10 +255,13 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsSample, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsSips, HostPlatform::MacOS);
+	whichAdd(tools, Keys::ToolsTar);
 	whichAdd(tools, Keys::ToolsTiffutil, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsXcodebuild, HostPlatform::MacOS);
 	// whichAdd(tools, Keys::ToolsXcodegen, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsXcrun, HostPlatform::MacOS);
+#elif defined(CHALET_LINUX)
+	whichAdd(tools, Keys::ToolsTar);
 #endif
 
 #if !defined(CHALET_WIN32)
@@ -605,6 +608,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setSample(value.get<std::string>());
 			else if (String::equals(Keys::ToolsSips, key))
 				m_centralState.tools.setSips(value.get<std::string>());
+			else if (String::equals(Keys::ToolsTar, key))
+				m_centralState.tools.setTar(value.get<std::string>());
 			else if (String::equals(Keys::ToolsTiffutil, key))
 				m_centralState.tools.setTiffutil(value.get<std::string>());
 			else if (String::equals(Keys::ToolsXcodebuild, key))

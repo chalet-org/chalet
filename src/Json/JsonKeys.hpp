@@ -83,6 +83,7 @@ CH_STR(ToolsPlutil) = "plutil";
 CH_STR(ToolsPowershell) = "powershell";
 CH_STR(ToolsSample) = "sample";
 CH_STR(ToolsSips) = "sips";
+CH_STR(ToolsTar) = "tar";
 CH_STR(ToolsTiffutil) = "tiffutil";
 CH_STR(ToolsXcodebuild) = "xcodebuild";
 // CH_STR(ToolsXcodegen) = "xcodegen";

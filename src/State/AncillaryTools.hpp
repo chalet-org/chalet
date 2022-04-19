@@ -70,6 +70,9 @@ struct AncillaryTools
 	const std::string& sips() const noexcept;
 	void setSips(std::string&& inValue) noexcept;
 
+	const std::string& tar() const noexcept;
+	void setTar(std::string&& inValue) noexcept;
+
 	const std::string& tiffutil() const noexcept;
 	void setTiffutil(std::string&& inValue) noexcept;
 
@@ -132,6 +135,7 @@ private:
 	std::string m_ruby;
 	std::string m_sample;
 	std::string m_sips;
+	std::string m_tar;
 	std::string m_tiffutil;
 	std::string m_xcodebuild;
 	std::string m_xcodegen;

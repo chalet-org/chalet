@@ -387,6 +387,9 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
+				"format": {
+					"$ref": "#/definitions/dist-archive-format"
+				},
 				"include": {
 					"$ref": "#/definitions/dist-archive-include"
 				},
@@ -398,10 +401,23 @@
 				}
 			},
 			"patternProperties": {
+				"^format\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/dist-archive-format"
+				},
 				"^include\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/dist-archive-include"
 				}
 			}
+		},
+		"dist-archive-format": {
+			"type": "string",
+			"description": "The archive format to use.",
+			"minLength": 1,
+			"enum": [
+				"zip",
+				"tar"
+			],
+			"default": "zip"
 		},
 		"dist-archive-include": {
 			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",

@@ -1084,6 +1084,8 @@ bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, 
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
 				outTarget.addInclude(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "format", status))
+				outTarget.setFormat(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}

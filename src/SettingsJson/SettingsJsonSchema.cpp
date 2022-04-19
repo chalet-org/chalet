@@ -33,6 +33,7 @@ enum class Defs : ushort
 	Powershell,
 	Sample,
 	Sips,
+	Tar,
 	TiffUtil,
 	XcodeBuild,
 	// XcodeGen,
@@ -178,6 +179,12 @@ Json SettingsJsonSchema::get()
 		"type": "string",
 		"description": "The executable path to Apple's sips command-line utility. (MacOS)",
 		"default": "/usr/bin/sips"
+	})json"_ojson;
+
+	defs[Defs::Tar] = R"json({
+		"type": "string",
+		"description": "The executable path to tar.",
+		"default": "/usr/bin/tar"
 	})json"_ojson;
 
 	defs[Defs::TiffUtil] = R"json({
@@ -527,6 +534,7 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPowershell] = defs[Defs::Powershell];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsSample] = defs[Defs::Sample];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsSips] = defs[Defs::Sips];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTar] = defs[Defs::Tar];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTiffutil] = defs[Defs::TiffUtil];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodebuild] = defs[Defs::XcodeBuild];
 	// ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodeGen] = defs[Defs::XcodeGen];
