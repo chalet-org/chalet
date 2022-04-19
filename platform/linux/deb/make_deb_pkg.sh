@@ -78,7 +78,6 @@ Source: chalet
 Priority: optional
 Maintainer: $CHALET_AUTHOR
 Homepage: https://github.com/chalet-org/chalet
-
 Package: chalet
 Version: $CHALET_VERSION
 Architecture: $CHALET_ARCHITECTURE
