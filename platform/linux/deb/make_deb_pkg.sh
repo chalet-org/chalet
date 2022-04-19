@@ -74,18 +74,20 @@ cp "$DIST_FOLDER/LICENSE.txt" "$PKG_OPT"
 cp "$DIST_FOLDER/README.md" "$PKG_OPT"
 
 cat << END > "$PKG_DEBIAN/control"
+Source: chalet
+Priority: optional
+Maintainer: $CHALET_AUTHOR
+Homepage: https://github.com/chalet-org/chalet
+
 Package: chalet
 Version: $CHALET_VERSION
 Architecture: $CHALET_ARCHITECTURE
-Essential: no
-Priority: optional
 Depends: ninja-build,cmake
-Source: chalet
-Maintainer: $CHALET_AUTHOR
 Description: $CHALET_DESCRIPTION
+Essential: no
 END
 
-cat << END > "$PKG_DEBIAN/links"
+cat << END > "$PKG_DEBIAN/chalet.links"
 opt/chalet/chalet usr/bin/chalet
 END
 
