@@ -115,10 +115,10 @@ bool AppBundlerLinux::bundleForPlatform()
 		return false;
 
 	// TODO: Flag for this?
-	if (!Environment::isContinuousIntegrationServer())
+	/*if (!Environment::isContinuousIntegrationServer())
 	{
 		Commands::copy(desktopEntryFile, m_applicationsPath);
-	}
+	}*/
 
 	// Output::lineBreak();
 

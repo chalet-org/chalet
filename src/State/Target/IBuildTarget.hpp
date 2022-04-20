@@ -46,6 +46,8 @@ struct IBuildTarget
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
 
+	StringList getResolvedRunDependenciesList() const;
+
 protected:
 	void replaceVariablesInPathList(StringList& outList) const;
 	void processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const;

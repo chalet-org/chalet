@@ -7,8 +7,11 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -184,6 +187,39 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 		|| List::contains(m_excludes, outDep)
 		|| List::contains(m_excludes, filename))
 		return false;
+
+#if defined(CHALET_WIN32)
+	if (String::startsWith("api-ms-win-", filename))
+	{
+		auto ucrtDir = Environment::getAsString("UniversalCRTSdkDir");
+		auto arch = Environment::getAsString("VSCMD_ARG_TGT_ARCH");
+		if (!ucrtDir.empty() && !arch.empty())
+		{
+			auto ucrtVersion = Environment::getAsString("UCRTVersion");
+
+			if (ucrtDir.back() == '\\')
+				ucrtDir.pop_back();
+
+			auto res = fmt::format("{}/Redist/{}/ucrt/DLLs/{}/{}", ucrtDir, ucrtVersion, arch, filename);
+			Path::sanitize(res);
+			if (!ucrtVersion.empty() && Commands::pathExists(res))
+			{
+				outDep = std::move(res);
+				return true;
+			}
+			else
+			{
+				res = fmt::format("{}/Redist/ucrt/DLLs/{}/{}", ucrtDir, arch, filename);
+				Path::sanitize(res);
+				if (Commands::pathExists(res))
+				{
+					outDep = std::move(res);
+					return true;
+				}
+			}
+		}
+	}
+#endif
 
 	if (Commands::pathExists(outDep))
 		return true;

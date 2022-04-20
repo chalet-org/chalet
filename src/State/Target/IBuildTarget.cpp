@@ -6,11 +6,14 @@
 #include "State/Target/IBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -148,4 +151,57 @@ void IBuildTarget::setIncludeInBuild(const bool inValue)
 {
 	m_includeInBuild &= inValue;
 }
+
+/*****************************************************************************/
+StringList IBuildTarget::getResolvedRunDependenciesList() const
+{
+	StringList ret;
+
+	for (auto& dep : m_copyFilesOnRun)
+	{
+		if (Commands::pathExists(dep))
+		{
+			ret.push_back(dep);
+			continue;
+		}
+
+		std::string resolved;
+		if (isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*this);
+			const auto& compilerPathBin = m_state.toolchain.compilerCxx(project.language()).binDir;
+
+			resolved = fmt::format("{}/{}", compilerPathBin, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.emplace_back(std::move(resolved));
+				continue;
+			}
+		}
+
+		bool found = false;
+		for (auto& path : m_state.workspace.searchPaths())
+		{
+			resolved = fmt::format("{}/{}", path, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.emplace_back(std::move(resolved));
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			resolved = Commands::which(dep);
+			if (!resolved.empty())
+			{
+				ret.emplace_back(std::move(resolved));
+			}
+		}
+	}
+
+	return ret;
+}
+
 }

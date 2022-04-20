@@ -825,9 +825,8 @@ void CompilerCxxVisualStudioCL::addFullPathSourceCode(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addStandardsConformance(StringList& outArgList) const
 {
-	if (!m_state.configuration.debugSymbols())
+	if (m_versionMajorMinor >= 1910) // VS 2017+
 	{
-		// this flag is definitely VS 2017+
 		List::addIfDoesNotExist(outArgList, "/permissive-"); // standards conformance
 	}
 }

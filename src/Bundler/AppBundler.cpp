@@ -218,6 +218,14 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
+			if (!target->copyFilesOnRun().empty())
+			{
+				StringList runDeps = target->getResolvedRunDependenciesList();
+				for (auto& dep : runDeps)
+				{
+					List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));
+				}
+			}
 			auto outputFilePath = m_state.paths.getTargetFilename(project);
 			if (project.isStaticLibrary())
 			{
