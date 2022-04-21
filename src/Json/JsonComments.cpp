@@ -60,17 +60,16 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 		return false;
 	}
 
-	std::string output = fmt::format("{}\n   {}\n\n", inOutputError, error);
+	std::string output = fmt::format("{}\n   {}\n", inOutputError, error);
 
 	auto colorGray = Output::getAnsiStyle(Output::theme().flair);
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
 	auto colorReset = Output::getAnsiStyle(Color::Reset);
 
 	int i = 0;
-	int maxLines = 5;
 	for (std::string line; std::getline(inContents, line); ++i)
 	{
-		if (i >= lineNo - maxLines && i <= lineNo + 1)
+		if (i >= lineNo - 4 && i <= lineNo + 2)
 		{
 			if (i > 0)
 				output += '\n';
