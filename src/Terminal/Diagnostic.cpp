@@ -173,17 +173,7 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 /*****************************************************************************/
 void Diagnostic::showFatalError(std::string&& inMessage)
 {
-	auto theme = Output::theme();
-	if (!theme.isPreset())
-		theme.error = Color::RedBold;
-
-	const auto color = Output::getAnsiStyle(theme.error);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
-	auto output = fmt::format("{}Error: {}{}", color, reset, inMessage);
-
-	std::cout.write(output.data(), output.size());
-	std::cout.put(std::cout.widen('\n'));
-	std::cout.flush();
+	state.errorList.push_back({ Type::CriticalError, std::move(inMessage) });
 }
 
 /*****************************************************************************/
@@ -192,7 +182,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 	if (state.exceptionThrown)
 		return;
 
-	Diagnostic::showMessage(Type::Error, std::move(inMessage));
+	Diagnostic::addError(Type::Error, std::move(inMessage));
 	Diagnostic::printErrors();
 
 	if (Environment::isBashGenericColorTermOrWindowsTerminal())
@@ -266,7 +256,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 
-	out << color << std::move(inTitle) << ':' << reset << std::endl;
+	out << fmt::format("{}{}: {}", color, inTitle, reset);
 }
 
 /*****************************************************************************/
@@ -279,7 +269,7 @@ void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 		destroySpinnerThread();
 	}
 
-	out << fmt::format("   {}", std::move(inMessage)) << std::endl;
+	out << std::move(inMessage) << std::endl;
 }
 
 /*****************************************************************************/
@@ -305,6 +295,7 @@ void Diagnostic::printErrors()
 
 	StringList warnings;
 	StringList errors;
+	StringList criticalErrors;
 	std::reverse(state.errorList.begin(), state.errorList.end());
 
 	for (auto& err : state.errorList)
@@ -314,23 +305,51 @@ void Diagnostic::printErrors()
 
 		if (err.type == Type::Warning)
 			warnings.emplace_back(std::move(err.message));
-		else
+		else if (err.type == Type::Error)
 			errors.emplace_back(std::move(err.message));
+		else
+			criticalErrors.emplace_back(std::move(err.message));
+	}
+
+	auto getOutputString = [](StringList& inList) -> std::string {
+		std::string ret;
+		int i = 0;
+		for (auto itr = inList.begin(); itr != inList.end();)
+		{
+			if (i == 0)
+			{
+				ret += fmt::format("{}", *itr);
+			}
+			else
+			{
+				ret += '\n';
+				ret += fmt::format("   {}", *itr);
+			}
+
+			itr = inList.erase(itr);
+			++i;
+		}
+
+		return ret;
+	};
+
+	if (!criticalErrors.empty())
+	{
+		auto label = criticalErrors.size() == 1 ? "ERROR" : "ERRORS";
+		Diagnostic::showHeader(Type::Error, label);
+		Diagnostic::showMessage(Type::Error, getOutputString(criticalErrors));
+		return;
 	}
 
 	bool hasWarnings = false;
-	if (warnings.size() > 0)
+	if (!warnings.empty())
 	{
 		Type type = Type::Warning;
 		Output::lineBreak();
 
-		auto label = warnings.size() == 1 ? "Warning" : "Warnings";
-		Diagnostic::showHeader(type, fmt::format("{}  {}", Unicode::warning(), label));
-
-		for (auto& message : warnings)
-		{
-			Diagnostic::showMessage(type, std::move(message));
-		}
+		auto label = warnings.size() == 1 ? "WARNING" : "WARNINGS";
+		Diagnostic::showHeader(type, label);
+		Diagnostic::showMessage(type, getOutputString(warnings));
 
 		if (errors.size() == 0)
 			Output::lineBreak();
@@ -344,13 +363,9 @@ void Diagnostic::printErrors()
 		if (!hasWarnings)
 			Output::lineBreakStderr();
 
-		auto label = errors.size() == 1 ? "Error" : "Errors";
-		Diagnostic::showHeader(type, fmt::format("{}  {}", Unicode::circledX(), label));
-
-		for (auto& message : errors)
-		{
-			Diagnostic::showMessage(type, std::move(message));
-		}
+		auto label = errors.size() == 1 ? "ERROR" : "ERRORS";
+		Diagnostic::showHeader(type, label);
+		Diagnostic::showMessage(type, getOutputString(errors));
 
 		Output::lineBreak();
 	}

@@ -145,8 +145,6 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		// auto error = err.what();
-		// printLinesWithError(inFilename, error);
 		auto error = err.what();
 		{
 			auto msg = "There was a problem reading the json";

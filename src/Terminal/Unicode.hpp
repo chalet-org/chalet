@@ -15,7 +15,6 @@ const char* diamond();
 const char* checkmark();
 const char* heavyBallotX();
 const char* warning();
-const char* circledX();
 const char* heavyCurvedDownRightArrow();
 const char* registered();
 }

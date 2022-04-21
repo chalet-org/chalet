@@ -127,8 +127,6 @@ void TerminalTest::printUnicodeCharacters()
 	characters.emplace_back(Unicode::diamond());
 	characters.emplace_back(Unicode::checkmark());
 	characters.emplace_back(Unicode::heavyBallotX());
-	characters.emplace_back(Unicode::warning());
-	characters.emplace_back(Unicode::circledX());
 	characters.emplace_back(Unicode::heavyCurvedDownRightArrow());
 	characters.emplace_back(Unicode::registered());
 

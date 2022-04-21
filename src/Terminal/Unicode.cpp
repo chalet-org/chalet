@@ -67,19 +67,6 @@ const char* Unicode::warning()
 }
 
 /*****************************************************************************/
-const char* Unicode::circledX()
-{
-#if defined(CHALET_WIN32)
-	if (Environment::isCommandPromptOrPowerShell())
-		return "X";
-	else if (Environment::isMicrosoftTerminalOrWindowsBash())
-		return reinterpret_cast<const char*>(u8"\u2BBE");
-	else
-#endif
-		return reinterpret_cast<const char*>(u8"\u2A02");
-}
-
-/*****************************************************************************/
 const char* Unicode::heavyCurvedDownRightArrow()
 {
 #if defined(CHALET_WIN32)

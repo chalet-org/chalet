@@ -244,7 +244,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			subError.data = std::move(std::get<1>(msg));
 			const auto& key = std::get<2>(msg);
 
-			return fmt::format("Additional property '{}' found in '{}' object: {}", key, parentKey, parseRawError(subError));
+			return fmt::format("The '{}' object contains an unknown property '{}': {}", parentKey, key, parseRawError(subError));
 		}
 
 		case JsonSchemaError::array_too_many_items:

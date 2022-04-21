@@ -15,7 +15,8 @@ struct Diagnostic
 	enum class Type : ushort
 	{
 		Warning,
-		Error
+		Error,
+		CriticalError,
 	};
 
 	Diagnostic() = delete;
