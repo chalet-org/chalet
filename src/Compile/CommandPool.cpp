@@ -49,7 +49,7 @@ bool printCommand(std::string inText)
 	String::replaceAll(inText, '#', std::to_string(state->index));
 
 	std::cout.write(inText.data(), inText.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 
 	// if (state->index % state->threads == 1)
 	std::cout.flush();

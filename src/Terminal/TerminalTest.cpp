@@ -83,7 +83,7 @@ void TerminalTest::printTerminalCapabilities()
 		else
 		{
 			std::cout.write(m_reset.data(), m_reset.size());
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 		}
 	}
 

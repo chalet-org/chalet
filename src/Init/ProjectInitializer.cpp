@@ -38,7 +38,7 @@ bool ProjectInitializer::run()
 		{
 			if (!Commands::makeDirectory(path))
 			{
-				Diagnostic::error("Error creating directory '{}'", path);
+				Diagnostic::fatalError("Error creating directory '{}'", path);
 				return false;
 			}
 		}
@@ -52,7 +52,7 @@ bool ProjectInitializer::run()
 
 	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
-		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
+		Diagnostic::fatalError("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
 		return false;
 	}
 
@@ -63,12 +63,12 @@ bool ProjectInitializer::run()
 		for (auto& line : banner)
 		{
 			std::cout.write(line.data(), line.size());
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 			std::cout.flush();
 		}*/
 		auto banner = getBannerV2();
 		std::cout.write(banner.data(), banner.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 
@@ -307,8 +307,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 	}
 	else
 	{
-		Output::lineBreak();
-		Diagnostic::error("There was an error creating the project files.");
+		Diagnostic::fatalError("There was an error creating the project files.");
 	}
 
 	return result;
@@ -707,7 +706,7 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 	std::cout.write(buildColor.data(), buildColor.size());
 	std::cout.write(contents.data(), contents.size());
 	std::cout.write(reset.data(), reset.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 
 	Commands::sleep(m_stepTime);

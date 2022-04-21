@@ -7,11 +7,11 @@
 
 #include <thread>
 
-#include "Utility/DefinesVersion.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Router/Route.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/DefinesVersion.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
@@ -266,7 +266,7 @@ bool ArgumentParser::showHelp()
 {
 	std::string help = getHelp();
 	std::cout.write(help.data(), help.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 
 	m_route = Route::Help;
@@ -278,7 +278,7 @@ bool ArgumentParser::showVersion()
 {
 	std::string version = fmt::format("Chalet version {}", CHALET_VERSION);
 	std::cout.write(version.data(), version.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 
 	m_route = Route::Help;

@@ -59,6 +59,10 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 
 	ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
 	ret[Keys::Targets][project][Keys::SettingsCxx][langStandardKey] = std::move(langStandard);
+	if (inProps.modules)
+	{
+		ret[Keys::Targets][project][Keys::SettingsCxx]["cppModules"] = true;
+	}
 	ret[Keys::Targets][project][Keys::SettingsCxx]["warnings"] = "pedantic";
 	if (!inProps.precompiledHeader.empty())
 	{
@@ -81,14 +85,6 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 	{
 		ret[Keys::Targets][project]["files"] = Json::array();
 		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
-	}
-
-	if (inProps.modules)
-	{
-		if (!ret[Keys::Targets][project][Keys::SettingsCxx].is_object())
-			ret[Keys::Targets][project][Keys::SettingsCxx] = Json::object();
-
-		ret[Keys::Targets][project][Keys::SettingsCxx]["cppModules"] = true;
 	}
 
 	std::string distTarget = "all";

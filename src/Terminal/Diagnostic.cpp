@@ -85,7 +85,7 @@ void Diagnostic::printDone(const std::string& inTime)
 	}
 
 	std::cout.write(output.data(), output.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 }
 
@@ -107,7 +107,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	if (inLineBreak)
 	{
 		std::cout.write(reset.data(), reset.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 	else
@@ -147,7 +147,7 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 	if (inLineBreak)
 	{
 		std::cout.write(reset.data(), reset.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 	else
@@ -207,7 +207,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 {
 	if (state.spinnerThread != nullptr)
 	{
-		std::cerr.put(std::cout.widen('\n'));
+		std::cerr.put('\n');
 		std::cerr.flush();
 		destroySpinnerThread();
 	}
@@ -220,7 +220,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 	std::string output = fmt::format("\n{}Assertion Failed:\n  at {}{} {}{}:{}{}", boldRed, reset, inExpression, blue, inFile, inLineNumber, reset);
 
 	std::cerr.write(output.data(), output.size());
-	std::cerr.put(std::cout.widen('\n'));
+	std::cerr.put('\n');
 	std::cerr.flush();
 
 	if (!inMessage.empty())
@@ -228,7 +228,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 		output = fmt::format("\n{}{}{}", boldBlack, inMessage, reset);
 
 		std::cerr.write(output.data(), output.size());
-		std::cerr.put(std::cout.widen('\n'));
+		std::cerr.put('\n');
 		std::cerr.flush();
 	}
 
@@ -288,7 +288,7 @@ void Diagnostic::printErrors()
 	{
 		if (!Environment::isSubprocess())
 		{
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 			std::cout.flush();
 		}
 	}

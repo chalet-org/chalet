@@ -117,14 +117,14 @@ bool SettingsManager::runSettingsGet(Json& node)
 	{
 		auto value = ptr->get<std::string>();
 		std::cout.write(value.data(), value.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 	else
 	{
 		auto output = ptr->dump(3, ' ');
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 
@@ -200,7 +200,7 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 	{
 		auto output = String::join(keyResultList);
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 
@@ -295,7 +295,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 			output = fmt::format("{}: {}", key, m_value);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 
 		settings.setDirty(true);
@@ -400,7 +400,7 @@ bool SettingsManager::runSettingsUnset(Json& node)
 	auto output = fmt::format("unset: {}", m_key);
 
 	std::cout.write(output.data(), output.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 
 	return true;

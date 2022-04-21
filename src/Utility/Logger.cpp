@@ -53,7 +53,7 @@ Logger::~Logger()
 	{
 		auto str = stream.str();
 		std::cout.write(str.data(), str.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }

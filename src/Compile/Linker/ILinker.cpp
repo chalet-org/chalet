@@ -5,6 +5,7 @@
 
 #include "Compile/Linker/ILinker.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -182,7 +183,12 @@ StringList ILinker::getWin32Links() const
 
 	StringList ret;
 
-	ret.emplace_back("dbghelp");
+	bool oldMinGW = m_state.environment->isMingwGcc() && m_versionMajorMinor < 700;
+	if (!oldMinGW)
+	{
+		ret.emplace_back("dbghelp");
+	}
+
 	ret.emplace_back("kernel32");
 	ret.emplace_back("user32");
 	ret.emplace_back("gdi32");

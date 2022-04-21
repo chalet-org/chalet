@@ -64,7 +64,7 @@ bool CentralState::initialize()
 
 	if (!Commands::pathExists(m_filename))
 	{
-		Diagnostic::error("Build file '{}' was not found.", m_filename);
+		Diagnostic::fatalError("Build file '{}' was not found.", m_filename);
 		return false;
 	}
 

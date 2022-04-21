@@ -423,7 +423,7 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 		// std::string error(err.what());
 
 		// std::cout.write(error.data(), error.size());
-		// std::cout.put(std::cout.widen('\n'));
+		// std::cout.put('\n');
 		// std::cout.flush();
 		return false;
 	}

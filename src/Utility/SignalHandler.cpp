@@ -62,7 +62,7 @@ void SignalHandler::handler(const int inSignal)
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Color::Reset);
 
-	std::cerr.put(std::cout.widen('\n'));
+	std::cerr.put('\n');
 	std::cerr.write(boldRed.data(), boldRed.size());
 	switch (inSignal)
 	{

@@ -335,7 +335,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		{
 			std::cout.write(reset.data(), reset.size());
 			std::cout.write(errorOutput.data(), errorOutput.size());
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 			std::cout.flush();
 		}
 #if defined(CHALET_WIN32)

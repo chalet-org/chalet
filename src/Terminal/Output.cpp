@@ -166,7 +166,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 			FMT_ARG(reset));
 
 		std::cout.write(invalid.data(), invalid.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 
 		return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
@@ -184,7 +184,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 		// toOutput.append(80 - toOutput.size(), ' ');
 		std::cout.write(toOutput.data(), toOutput.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 
 		return result;
@@ -290,7 +290,7 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 		auto message = fmt::format("{}{}  {}", color, inSymbol, inMessage);
 		std::cout.write(message.data(), message.size());
 		std::cout.write(reset.data(), reset.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -318,7 +318,7 @@ void Output::lineBreak(const bool inForce)
 	{
 		auto reset = getAnsiStyle(Color::Reset);
 		std::cout.write(reset.data(), reset.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -343,7 +343,7 @@ void Output::previousLine(const bool inForce)
 		std::string eraser(80, ' ');
 		auto prevLine = fmt::format("{}[F{}", getEscapeChar(), eraser);
 		std::cout.write(prevLine.data(), prevLine.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		prevLine = fmt::format("{}[F", getEscapeChar());
 		std::cout.write(prevLine.data(), prevLine.size());
 		std::cout.flush();
@@ -368,7 +368,7 @@ void Output::print(const Color inColor, const std::string& inText)
 		}
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -384,7 +384,7 @@ void Output::print(const Color inColor, const StringList& inList)
 			auto output = fmt::format("{}{}", reset, String::join(inList));
 
 			std::cout.write(output.data(), output.size());
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 			std::cout.flush();
 		}
 		else
@@ -393,7 +393,7 @@ void Output::print(const Color inColor, const StringList& inList)
 			auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
 
 			std::cout.write(output.data(), output.size());
-			std::cout.put(std::cout.widen('\n'));
+			std::cout.put('\n');
 			std::cout.flush();
 		}
 	}
@@ -409,7 +409,7 @@ void Output::printCommand(const std::string& inText)
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -424,7 +424,7 @@ void Output::printCommand(const StringList& inList)
 		auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -439,7 +439,7 @@ void Output::printInfo(const std::string& inText)
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -454,7 +454,7 @@ void Output::printFlair(const std::string& inText)
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -469,7 +469,7 @@ void Output::printSeparator(const char inChar)
 		auto output = fmt::format("{}{}{}", color, std::string(80, inChar), reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -524,7 +524,7 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 		auto output = fmt::format("{}FAILED: {}{}", colorError, reset, inMessage);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put(std::cout.widen('\n'));
+		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -542,7 +542,7 @@ void Output::msgBuildFail()
 	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset);
 
 	std::cout.write(output.data(), output.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 }
 

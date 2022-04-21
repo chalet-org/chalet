@@ -91,7 +91,7 @@ void JsonFile::dumpToTerminal()
 {
 	auto output = json.dump(1, '\t');
 	std::cout.write(output.data(), output.size());
-	std::cout.put(std::cout.widen('\n'));
+	std::cout.put('\n');
 	std::cout.flush();
 }
 
