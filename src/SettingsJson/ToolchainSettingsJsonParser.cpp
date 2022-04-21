@@ -405,6 +405,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	whichAdd(toolchain, Keys::ToolchainNinja);
 
+	const auto& strategyFromInput = m_state.inputs.strategyPreference();
+	if (!strategyFromInput.empty() && !m_state.toolchain.strategyIsValid(strategyFromInput))
+	{
+		Diagnostic::error("Invalid toolchain strategy type: {}", strategyFromInput);
+		return false;
+	}
+
 	if (toolchain[Keys::ToolchainStrategy].get<std::string>().empty())
 	{
 		auto make = toolchain.at(Keys::ToolchainMake).get<std::string>();
@@ -412,7 +419,12 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		bool notNative = preference.strategy != StrategyType::Native;
 
 		// Note: this is only for validation. it gets changed later
-		if (!ninja.empty() && (preference.strategy == StrategyType::Ninja || (notNative && make.empty())))
+		if (!strategyFromInput.empty())
+		{
+			toolchain[Keys::ToolchainStrategy] = strategyFromInput;
+		}
+
+		else if (!ninja.empty() && (preference.strategy == StrategyType::Ninja || (notNative && make.empty())))
 		{
 			toolchain[Keys::ToolchainStrategy] = "ninja";
 		}
@@ -424,6 +436,12 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			toolchain[Keys::ToolchainStrategy] = "native-experimental";
 		}
+
+		m_jsonFile.setDirty(true);
+	}
+	else if (!strategyFromInput.empty())
+	{
+		toolchain[Keys::ToolchainStrategy] = strategyFromInput;
 
 		m_jsonFile.setDirty(true);
 	}

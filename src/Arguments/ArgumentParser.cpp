@@ -569,6 +569,42 @@ std::string ArgumentParser::getHelp()
 		}
 	}
 
+	if (String::contains("--build-strategy", help))
+	{
+		auto getStrategyMessage = [](const std::string& preset) -> std::string {
+			if (String::equals("ninja", preset))
+				return std::string("Build with Ninja (recommended)");
+			else if (String::equals("makefile", preset))
+#if defined(CHALET_WIN32)
+				return std::string("Build with GNU Make (MinGW), NMake or Qt Jom (MSVC)");
+#else
+				return std::string("Buidl with GNU Make");
+#endif
+			else if (String::equals("native-experimental", preset))
+				return std::string("Build with Chalet (experimental!)");
+
+			return std::string();
+		};
+
+		help += "\nBuild Strategies:\n";
+		StringList strategies{
+			"ninja",
+			"makefile",
+			"native-experimental",
+		};
+
+		for (auto& strat : strategies)
+		{
+			std::string line = strat;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getStrategyMessage(strat);
+
+			help += fmt::format("{}\n", line);
+		}
+	}
+
 	return help;
 }
 
@@ -798,6 +834,13 @@ void ArgumentParser::addArchArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addStrategyArg()
+{
+	addTwoStringArguments(ArgumentIdentifier::BuildStrategy, "-b", "--build-strategy")
+		.setHelp("The build strategy to use for the selected toolchain.");
+}
+
+/*****************************************************************************/
 void ArgumentParser::addSaveSchemaArg()
 {
 	addOptionalBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema")
@@ -921,6 +964,7 @@ void ArgumentParser::populateBuildArguments()
 	addBuildConfigurationArg();
 	addToolchainArg();
 	addArchArg();
+	addStrategyArg();
 	addEnvFileArg();
 	addProjectGenArg();
 	addMaxJobsArg();

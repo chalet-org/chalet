@@ -469,6 +469,20 @@ void CommandLineInputs::setToolchainPreferenceName(std::string&& inValue) const 
 }
 
 /*****************************************************************************/
+const std::string& CommandLineInputs::strategyPreference() const noexcept
+{
+	return m_strategyPreference;
+}
+
+void CommandLineInputs::setStrategyPreference(std::string&& inValue)
+{
+	if (inValue.empty())
+		return;
+
+	m_strategyPreference = std::move(inValue);
+}
+
+/*****************************************************************************/
 VisualStudioVersion CommandLineInputs::visualStudioVersion() const noexcept
 {
 	return m_visualStudioVersion;

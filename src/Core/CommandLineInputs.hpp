@@ -83,6 +83,9 @@ struct CommandLineInputs
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
 
+	const std::string& strategyPreference() const noexcept;
+	void setStrategyPreference(std::string&& inValue);
+
 	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
 
@@ -213,6 +216,7 @@ private:
 	std::string m_exportKindRaw;
 	std::string m_settingsKey;
 	std::string m_settingsValue;
+	std::string m_strategyPreference;
 
 	mutable std::string m_toolchainPreferenceName;
 	mutable std::string m_workingDirectory;

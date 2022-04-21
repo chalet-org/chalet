@@ -32,6 +32,7 @@ struct CompilerTools
 	const std::string& strategyString() const noexcept;
 	void setStrategy(const StrategyType inValue) noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
+	bool strategyIsValid(const std::string& inValue) const;
 
 	BuildPathStyle buildPathStyle() const noexcept;
 	const std::string& buildPathStyleString() const noexcept;

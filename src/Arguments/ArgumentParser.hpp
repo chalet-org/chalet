@@ -71,6 +71,7 @@ private:
 	void addProjectGenArg();
 	void addToolchainArg();
 	void addArchArg();
+	void addStrategyArg();
 	void addMaxJobsArg();
 	void addEnvFileArg();
 	void addBuildConfigurationArg();

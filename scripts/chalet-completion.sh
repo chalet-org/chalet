@@ -28,7 +28,7 @@ _chalet_completions()
 	theme)
 		COMPREPLY=($(compgen -W "$(chalet query theme-names)" -- $cur))
 		;;
-	toolchains.*.strategy)
+	-b|--build-strategy|toolchains.*.strategy)
 		COMPREPLY=($(compgen -W "$(chalet query toolchain-strategy)" -- $cur))
 		;;
 	toolchains.*.buildPathStyle)

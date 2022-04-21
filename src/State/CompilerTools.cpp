@@ -281,6 +281,12 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 		m_strategy = StrategyType::None;
 }
 
+bool CompilerTools::strategyIsValid(const std::string& inValue) const
+{
+	auto strategyTypes = getStrategyTypes();
+	return strategyTypes.find(inValue) != strategyTypes.end();
+}
+
 /*****************************************************************************/
 BuildPathStyle CompilerTools::buildPathStyle() const noexcept
 {
