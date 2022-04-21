@@ -66,27 +66,38 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
 	auto colorReset = Output::getAnsiStyle(Color::Reset);
 
-	std::string empty;
-	std::string pointer = fmt::format("{} <--- {}", colorGray, colorReset);
-
-	bool unexpected = String::contains("unexpected '", error);
-	int offset = unexpected ? 2 : 1;
-
 	int i = 0;
 	int maxLines = 5;
 	for (std::string line; std::getline(inContents, line); ++i)
 	{
 		if (i >= lineNo - maxLines && i <= lineNo + 1)
 		{
-			bool current = i == lineNo - offset;
+			if (i > 0)
+				output += '\n';
+
+			bool current = i == lineNo - 1;
 			auto& color = current ? colorError : colorGray;
-			auto& note = current ? pointer : empty;
-			output += fmt::format("{}{} | {}{}{}\n", color, i + 1, colorReset, line, note);
+			std::string outLine;
+			if (current)
+			{
+				std::size_t columnIndex = static_cast<std::size_t>(columnNo - 1);
+				for (std::size_t j = 0; j < line.size(); ++j)
+				{
+					if (j == columnIndex)
+						outLine += fmt::format("{}{}{}", colorError, line[j], colorReset);
+					else
+						outLine += line[j];
+				}
+			}
+			else
+			{
+				outLine = std::move(line);
+			}
+			output += fmt::format("{}{} | {}{}", color, i + 1, colorReset, outLine);
 		}
 	}
 
-	UNUSED(columnNo);
-	Diagnostic::fatalError("{}", output);
+	Diagnostic::error("{}", output);
 	return true;
 }
 }
