@@ -1,20 +1,22 @@
 ## Chalet
 
-A compiler with C++20 is required to build Chalet from source. The following versions are known to work:
+A compiler with C++20 is required to build Chalet from source. Chalet is developed on various compiler versions, but the following versions are known to work:
 
-MSVC 19.30.30706
-Apple Clang 13.1.6
-GCC 11.2.0
+MSVC `>= 19.30`  
+Apple Clang `>= 13.x`  
+GCC / MinGW `>= 11.x`
 
 ---
 ### Windows
 
 **Install**: 
-* [CMake](https://cmake.org/download)
+
+* [CMake](https://cmake.org/download) `>= 3.16`
 * [Git for Windows](https://gitforwindows.org)
 
 
 **Visual Studio**
+
 1. Run `./fetch_externals.sh` from Git Bash. This will get Chalet dependencies
 2. Make sure CMake is accessible from Path (add to System Environment Variables)
 3. Start "x64 Native Tools Command Prompt for VS 20XX"
@@ -35,14 +37,20 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-nin
 ---
 ### MacOS
 
+**Install**: 
+
+* [CMake](https://cmake.org/download) `>= 3.16`
+
 1. Install Xcode or Command Line Tools
-2. Install CMake (via Homebrew is easiest)
+2. Install CMake if it's not already
 3. Run `bash ./build_all.sh` from the project root
 
 ---
 ### Linux
 
-A compiler that supports C++17 is required.
+**Install**: 
+
+A GCC version that supports C++20 is required. (`>= 13`)
 
 1. Install `git` and `cmake` from your package manager
 2. Run `bash ./build_all.sh` from the project root
