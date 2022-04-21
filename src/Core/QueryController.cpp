@@ -30,7 +30,10 @@ bool QueryController::printListOfRequestedType()
 {
 	QueryOption query = m_centralState.inputs().queryOption();
 	if (query == QueryOption::None)
+	{
+		Diagnostic::fatalError("Unrecogized query.");
 		return false;
+	}
 
 	StringList output = getRequestedType(query);
 
