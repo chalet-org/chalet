@@ -578,7 +578,7 @@ std::string ArgumentParser::getHelp()
 #if defined(CHALET_WIN32)
 				return std::string("Build with GNU Make (MinGW), NMake or Qt Jom (MSVC)");
 #else
-				return std::string("Buidl with GNU Make");
+				return std::string("Build with GNU Make");
 #endif
 			else if (String::equals("native-experimental", preset))
 				return std::string("Build with Chalet (experimental!)");
