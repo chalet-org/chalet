@@ -269,7 +269,7 @@ void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 		destroySpinnerThread();
 	}
 
-	out << std::move(inMessage) << std::endl;
+	out << inMessage << std::endl;
 }
 
 /*****************************************************************************/

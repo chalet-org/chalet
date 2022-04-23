@@ -367,7 +367,7 @@ bool Commands::remove(const std::string& inPath)
 			return true;
 
 		if (Output::showCommands())
-			Output::printCommand(fmt::format("remove file: {}", inPath));
+			Output::printCommand(fmt::format("remove path: {}", inPath));
 
 		bool result = fs::remove(inPath);
 		return result;
@@ -973,7 +973,7 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 #if defined(CHALET_WIN32)
 		String::replaceAll(inData, "\r\n", "\n");
 #endif
-		outputStream << std::move(inData);
+		outputStream << inData;
 	};
 	if (options.stderrOption == PipeOption::Pipe)
 	{
@@ -991,14 +991,18 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	struct
+	std::string capData;
+	static struct
 	{
-		std::string data;
 		std::string eol = String::eol();
 		std::string endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
 	} cap;
 
-	ProcessOptions::PipeFunc onStdOut = [&cap](std::string inData) -> void {
+	ProcessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::StdErr;
+	options.onStdOut = [&capData](std::string inData) -> void {
 		String::replaceAll(inData, cap.eol, cap.endlineReplace);
 		std::cout.write(inData.data(), inData.size());
 		std::cout.flush();
@@ -1006,31 +1010,25 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 		auto lineBreak = inData.find('\n');
 		if (lineBreak == std::string::npos)
 		{
-			cap.data += std::move(inData);
+			capData += std::move(inData);
 		}
 		else
 		{
-			cap.data += inData.substr(0, lineBreak + 1);
+			capData += inData.substr(0, lineBreak + 1);
 			auto tmp = inData.substr(lineBreak + 1);
 			if (!tmp.empty())
 			{
-				cap.data = std::move(tmp);
+				capData = std::move(tmp);
 			}
 		}
 	};
 
-	ProcessOptions options;
-	options.cwd = std::move(inCwd);
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::StdErr;
-	options.onStdOut = std::move(onStdOut);
-
 	int result = ProcessController::run(inCmd, options);
 
-	if (cap.data.size() > 0)
+	if (capData.size() > 0)
 	{
 		std::string noWork = fmt::format("ninja: no work to do.{}", cap.endlineReplace);
-		if (String::endsWith(noWork, cap.data))
+		if (String::endsWith(noWork, capData))
 			Output::previousLine(true);
 		else
 			Output::lineBreak(true);

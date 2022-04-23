@@ -253,9 +253,6 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	// 	Output::print(Output::theme().build, inCmd);
 
 	std::string errorOutput;
-	ProcessOptions::PipeFunc onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
-	};
 	// static ProcessOptions::PipeFunc onStdErr = [](std::string inData) {
 	// 	std::cerr.write(inData.data(), inData.size());
 	// 	std::cerr.flush();
@@ -265,7 +262,9 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;
-	options.onStdErr = std::move(onStdErr);
+	options.onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
 
 #if defined(CHALET_WIN32)
 	// options.stdoutOption = PipeOption::Pipe;

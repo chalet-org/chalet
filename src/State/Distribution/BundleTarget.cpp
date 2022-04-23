@@ -332,12 +332,6 @@ void BundleTarget::addInclude(std::string&& inValue)
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 
-/*****************************************************************************/
-void BundleTarget::sortIncludes()
-{
-	List::sort(m_includes);
-}
-
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
 MacOSBundleType BundleTarget::macosBundleType() const noexcept

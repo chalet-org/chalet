@@ -13,9 +13,6 @@ namespace List
 template <typename VectorType, class T>
 void forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(VectorType&&));
 
-template <typename Container>
-void sort(Container& inList);
-
 template <typename VectorType>
 bool addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue);
 

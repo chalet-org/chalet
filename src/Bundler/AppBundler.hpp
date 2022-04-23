@@ -29,7 +29,7 @@ struct AppBundler
 
 	bool gatherDependencies(const BundleTarget& inTarget);
 
-	void reportErrors() const;
+	void reportErrors();
 
 private:
 	bool runBundleTarget(IAppBundler& inBundler);
