@@ -760,8 +760,10 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setCppStandard(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cStandard", status))
 				outTarget.setCStandard(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "warnings", status))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "warningsPreset", status))
 				outTarget.setWarningPreset(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "warnings", status))
+				outTarget.addWarning(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerScript", status))
 				outTarget.setLinkerScript(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "inputCharset", status))

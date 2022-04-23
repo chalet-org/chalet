@@ -82,7 +82,7 @@ bool SettingsJsonParser::validatePaths()
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::error("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename());
+		Diagnostic::fatalError("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename());
 		return false;
 	}
 #endif

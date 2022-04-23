@@ -42,7 +42,7 @@
 			"runtimeTypeInformation": false,
 			"staticRuntimeLibrary[toolchain:msvc]": true,
 			"cppFilesystem": true,
-			"warnings": "strict",
+			"warningsPreset": "strict",
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [
 				"_DEBUG"

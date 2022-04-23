@@ -93,7 +93,7 @@ bool CompilerCxxGCC::configureWarnings()
 
 	bool result = true;
 	auto warningsPreset = m_project.warningsPreset();
-	if (warningsPreset == ProjectWarningPresets::None || warningsPreset == ProjectWarningPresets::Custom)
+	if (warningsPreset == ProjectWarningPresets::None)
 		return result;
 
 	m_warnings.emplace_back("all");
@@ -107,7 +107,7 @@ bool CompilerCxxGCC::configureWarnings()
 		return result;
 
 	m_warnings.emplace_back("pedantic");
-	// m_warnings.emplace_back("pedantic-errors"); // Not on OSX?
+	// m_warnings.emplace_back("pedantic-errors");
 
 	if (warningsPreset == ProjectWarningPresets::Pedantic)
 		return result;

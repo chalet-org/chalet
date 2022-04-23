@@ -817,34 +817,33 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": false
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxWarnings] = R"json({
+	defs[Defs::TargetSourceCxxWarningsPreset] = R"json({
+		"type": "string",
 		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
-		"oneOf": [
-			{
-				"type": "string",
-				"minLength": 1,
-				"enum": [
-					"none",
-					"minimal",
-					"pedantic",
-					"strict",
-					"strictPedantic",
-					"veryStrict"
-				]
-			},
-			{
-				"type": "array",
-				"uniqueItems": true,
-				"minItems": 1,
-				"items": {
-					"type": "string",
-					"minLength": 1
-				}
-			}
-		]
+		"minLength": 1,
+		"enum": [
+			"none",
+			"minimal",
+			"pedantic",
+			"strict",
+			"strictPedantic",
+			"veryStrict"
+		],
+		"default": "none"
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxWarnings][SKeys::OneOf][1][SKeys::Items][SKeys::Examples] = {
+	defs[Defs::TargetSourceCxxWarnings] = R"json({
+		"type": "array",
+		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+		"uniqueItems": true,
+		"minItems": 1,
+		"items": {
+			"type": "string",
+			"minLength": 1
+		}
+	})json"_ojson;
+
+	defs[Defs::TargetSourceCxxWarnings][SKeys::Items][SKeys::Examples] = {
 		"abi",
 		"absolute-value",
 		"address",
@@ -1434,6 +1433,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "staticRuntimeLibrary", Defs::TargetSourceCxxStaticRuntimeLibrary, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "threads", Defs::TargetSourceCxxThreads, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "treatWarningsAsErrors", Defs::TargetSourceCxxTreatWarningsAsErrors, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "warningsPreset", Defs::TargetSourceCxxWarningsPreset, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "warnings", Defs::TargetSourceCxxWarnings, kPatternConditions);
 		// addProperty(sourceTargetCxx, "windowsOutputDef", Defs::TargetSourceCxxWindowsOutputDef);
 		addPropertyAndPattern(sourceTargetCxx, "windowsApplicationIcon", Defs::TargetSourceCxxWindowsAppIcon, kPatternConditions);
@@ -1732,6 +1732,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxStaticRuntimeLibrary: return "target-source-cxx-staticRuntimeLibrary";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
+		case Defs::TargetSourceCxxWarningsPreset: return "target-source-cxx-warningsPreset";
 		case Defs::TargetSourceCxxTreatWarningsAsErrors: return "target-source-cxx-treatWarningsAsErrors";
 		case Defs::TargetSourceCxxWindowsAppManifest: return "target-source-cxx-windowsApplicationManifest";
 		case Defs::TargetSourceCxxWindowsAppIcon: return "target-source-cxx-windowsAppIcon";

@@ -11,7 +11,6 @@ namespace chalet
 enum class ProjectWarningPresets : ushort
 {
 	None,
-	Custom,
 	Minimal,
 	Extra,
 	Pedantic,

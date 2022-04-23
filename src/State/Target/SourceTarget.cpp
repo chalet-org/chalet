@@ -32,9 +32,6 @@ bool SourceTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	if (!m_warnings.empty())
-		m_warningsPreset = ProjectWarningPresets::Custom;
-
 	if (List::contains<std::string>(m_warnings, "error"))
 		m_treatWarningsAsErrors = true;
 

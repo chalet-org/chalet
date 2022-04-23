@@ -94,10 +94,11 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 			m_warningFlag = "W4";
 			break;
 
-		case ProjectWarningPresets::Custom: {
-			// TODO: Refactor this so the strict warnings are stored somewhere GNU can use
-			auto& warnings = m_project.warnings();
+		case ProjectWarningPresets::None:
+			break;
 
+		default: {
+			auto& warnings = m_project.warnings();
 			StringList veryStrict{
 				"noexcept",
 				"undef",
@@ -167,10 +168,6 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 
 			break;
 		}
-
-		case ProjectWarningPresets::None:
-		default:
-			break;
 	}
 	return true;
 }
