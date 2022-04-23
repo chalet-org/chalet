@@ -109,7 +109,7 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 	}
 
 	if (extChanged)
-		List::sort(m_allFileExtensions);
+		std::sort(m_allFileExtensions.rbegin(), m_allFileExtensions.rend());
 
 	m_fileList.emplace(inProject.name(), std::move(files));
 }

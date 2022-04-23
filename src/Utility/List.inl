@@ -18,13 +18,6 @@ void List::forEach(std::vector<VectorType>& inList, T* inst, void (T::*func)(Vec
 }
 
 /*****************************************************************************/
-template <typename Container>
-void List::sort(Container& inList)
-{
-	std::sort(inList.begin(), inList.end());
-}
-
-/*****************************************************************************/
 template <typename VectorType>
 bool List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inValue)
 {

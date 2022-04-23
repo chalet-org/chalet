@@ -218,6 +218,8 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 				}
 			}
 		}
+
+		return false; // don't attempt to copy these from anywhere else
 	}
 #endif
 

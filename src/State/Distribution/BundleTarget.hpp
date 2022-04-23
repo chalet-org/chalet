@@ -46,7 +46,6 @@ struct BundleTarget final : public IDistTarget
 	const StringList& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
-	void sortIncludes();
 
 #if defined(CHALET_MACOS)
 	MacOSBundleType macosBundleType() const noexcept;

@@ -64,15 +64,14 @@ bool printCommand(std::string inText)
 bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string sourceFile)
 {
 	std::string output;
-	auto onOutput = [&sourceFile, &output](std::string inData) {
-		output += std::move(inData);
-	};
 
 	ProcessOptions options;
 	options.stdoutOption = PipeOption::Pipe;
 	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = onOutput;
-	options.onStdErr = onOutput;
+	options.onStdOut = [&sourceFile, &output](std::string inData) {
+		output += std::move(inData);
+	};
+	options.onStdErr = options.onStdOut;
 
 	bool result = true;
 	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
@@ -116,20 +115,18 @@ bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
 {
 #if defined(CHALET_WIN32)
 	ProcessOptions options;
-	auto onStdOut = [](std::string inData) {
+
+	std::string errorOutput;
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdOut = [](std::string inData) {
 		String::replaceAll(inData, '\n', "\r\n");
 		std::lock_guard<std::mutex> lock(state->mutex);
 		std::cout.write(inData.data(), inData.size());
 	};
-
-	std::string errorOutput;
-	auto onStdErr = [&errorOutput](std::string inData) {
+	options.onStdErr = [&errorOutput](std::string inData) {
 		errorOutput += std::move(inData);
 	};
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = onStdOut;
-	options.onStdErr = onStdErr;
 
 	bool result = true;
 	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
@@ -178,13 +175,12 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 	// };
 
 	std::string errorOutput;
-	auto onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
-	};
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;
 	// options.onStdOut = onStdOut;
-	options.onStdErr = onStdErr;
+	options.onStdErr = [&errorOutput](std::string inData) {
+		errorOutput += std::move(inData);
+	};
 
 	bool result = true;
 	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)

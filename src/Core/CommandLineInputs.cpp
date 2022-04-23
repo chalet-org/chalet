@@ -970,6 +970,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 {
 	ToolchainPreference ret;
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
+	ret.strategy = StrategyType::Ninja;
 
 	m_isToolchainPreset = false;
 
@@ -996,7 +997,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::VisualStudio;
-		ret.strategy = StrategyType::Ninja;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.cpp = "cl";
 		ret.cc = "cl";
@@ -1023,7 +1023,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #else
 		ret.type = ToolchainType::LLVM;
 #endif
-		ret.strategy = StrategyType::Ninja;
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.rc = "llvm-rc";
@@ -1060,7 +1059,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.type = ToolchainType::GNU;
 #endif
 
-		ret.strategy = StrategyType::Ninja;
 		if (hasGccPrefixAndSuffix)
 		{
 			ret.cpp = inValue;
@@ -1102,7 +1100,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 
 		ret.type = ToolchainType::IntelLLVM;
-		ret.strategy = StrategyType::Ninja;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.rc = "rc";
 		ret.cpp = "clang++";
@@ -1126,7 +1123,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 	#endif
 
-		ret.strategy = StrategyType::Ninja;
 		ret.type = ToolchainType::IntelClassic;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.rc = "rc";
@@ -1151,11 +1147,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	{
 		ret.type = ToolchainType::Unknown;
 	}
-
-	/*if (Environment::isContinuousIntegrationServer())
-	{
-		ret.strategy = StrategyType::Native;
-	}*/
 
 	return ret;
 }
