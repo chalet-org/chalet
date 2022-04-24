@@ -829,7 +829,7 @@ void ArgumentParser::addEnvFileArg()
 /*****************************************************************************/
 void ArgumentParser::addArchArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch", "auto")
+	addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch")
 		.setHelp("The architecture to target for the build.");
 }
 
