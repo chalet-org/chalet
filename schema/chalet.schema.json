@@ -1177,6 +1177,9 @@
 				"mingwUnixSharedLibraryNamingConvention": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
 				},
+				"positionIndependentCode": {
+					"$ref": "#/definitions/target-source-cxx-positionIndependentCode"
+				},
 				"precompiledHeader": {
 					"$ref": "#/definitions/target-source-cxx-precompiledHeader"
 				},
@@ -1274,6 +1277,9 @@
 				},
 				"^mingwUnixSharedLibraryNamingConvention\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-mingwUnixSharedLibraryNamingConvention"
+				},
+				"^positionIndependentCode\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-positionIndependentCode"
 				},
 				"^runtimeTypeInformation\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-runtimeTypeInformation"
@@ -1482,6 +1488,24 @@
 		"target-source-cxx-runtimeTypeInformation": {
 			"type": "boolean",
 			"description": "true to include run-time type information (default), false to exclude.",
+			"default": true
+		},
+		"target-source-cxx-positionIndependentCode": {
+			"description": "true to use position independent code (default). In MSVC and Apple Clang, this does nothing. in GCC, `-fPIC` will be added to shared libraries and static libraries that link to shared libraries (within the workspace). `-fPIE` will be added to executables and static libraries that link to executables (within the workspace). Executables will be linked with `-pie`. This behavior can be set manually with `shared` or `executable` instead. false to disable.",
+			"oneOf": [
+				{
+					"type": "boolean",
+					"default": true
+				},
+				{
+					"type": "string",
+					"minLength": 1,
+					"enum": [
+						"shared",
+						"executable"
+					]
+				}
+			],
 			"default": true
 		},
 		"target-source-cxx-fastMath": {

@@ -776,6 +776,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxPositionIndependent] = R"json({
+		"description": "true to use position independent code (default). In MSVC and Apple Clang, this does nothing. in GCC, `-fPIC` will be added to shared libraries and static libraries that link to shared libraries (within the workspace). `-fPIE` will be added to executables and static libraries that link to executables (within the workspace). Executables will be linked with `-pie`. This behavior can be set manually with `shared` or `executable` instead. false to disable.",
+		"oneOf": [
+			{
+				"type": "boolean",
+				"default": true
+			},
+			{
+				"type": "string",
+				"minLength": 1,
+				"enum": [
+					"shared",
+					"executable"
+				]
+			}
+		],
+		"default": true
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxFastMath] = R"json({
 		"type": "boolean",
 		"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to '-ffast-math'). false to disable (default).",
@@ -1427,6 +1446,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworkPaths", Defs::TargetSourceCxxMacOsFrameworkPaths, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworks", Defs::TargetSourceCxxMacOsFrameworks, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "mingwUnixSharedLibraryNamingConvention", Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "positionIndependentCode", Defs::TargetSourceCxxPositionIndependent, kPatternConditions);
 		addProperty(sourceTargetCxx, "precompiledHeader", Defs::TargetSourceCxxPrecompiledHeader);
 		addPropertyAndPattern(sourceTargetCxx, "runtimeTypeInformation", Defs::TargetSourceCxxRuntimeTypeInfo, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "staticLinks", Defs::TargetSourceCxxStaticLinks, kPatternConditions);
@@ -1726,6 +1746,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxCppCoroutines: return "target-source-cxx-cppCoroutines";
 		case Defs::TargetSourceCxxCppConcepts: return "target-source-cxx-cppConcepts";
 		case Defs::TargetSourceCxxRuntimeTypeInfo: return "target-source-cxx-runtimeTypeInformation";
+		case Defs::TargetSourceCxxPositionIndependent: return "target-source-cxx-positionIndependentCode";
 		case Defs::TargetSourceCxxFastMath: return "target-source-cxx-fastMath";
 		case Defs::TargetSourceCxxExceptions: return "target-source-cxx-exceptions";
 		case Defs::TargetSourceCxxBuildSuffix: return "target-source-cxx-buildSuffix";

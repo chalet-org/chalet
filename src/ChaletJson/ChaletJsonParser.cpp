@@ -772,6 +772,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setExecutionCharset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildSuffix", status))
 				outTarget.setBuildSuffix(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "positionIndependentCode", status))
+				outTarget.setPicType(std::move(val));
 			//
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
 				outTarget.addCompileOptions(std::move(val));
@@ -807,6 +809,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setTreatWarningsAsErrors(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runtimeTypeInformation", status))
 				outTarget.setRuntimeTypeInformation(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "positionIndependentCode", status))
+				outTarget.setPicType(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppFilesystem", status))
 				outTarget.setCppFilesystem(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "cppModules", status))

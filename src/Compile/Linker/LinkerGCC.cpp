@@ -36,6 +36,7 @@ bool LinkerGCC::initialize()
 /*****************************************************************************/
 void LinkerGCC::getCommandOptions(StringList& outArgList)
 {
+	addPositionIndependentCodeOption(outArgList);
 	addStripSymbols(outArgList);
 	addLinkerOptions(outArgList);
 	addMacosSysRootOption(outArgList);
@@ -88,11 +89,8 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 
 		ret.emplace_back("-Wl,--dll");
 	}
-	else
-	{
-		addPositionIndependentCodeOption(ret);
-	}
 
+	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
@@ -135,6 +133,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 
 	ret.emplace_back(getQuotedExecutablePath(executable));
 
+	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
 	addMacosSysRootOption(ret);
@@ -213,14 +212,6 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 		for (const auto& link : win32Links)
 		{
 			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));
-		}
-	}
-
-	if (!m_state.environment->isAppleClang() && !m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
-	{
-		if (m_project.isExecutable() && m_project.platformIndependentExecutable())
-		{
-			List::addIfDoesNotExist(outArgList, "-pie");
 		}
 	}
 }
@@ -541,15 +532,17 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 	{
 		if (m_project.platformIndependentCode())
 		{
-			std::string fpic{ "-fPIC" };
-			// if (isFlagSupported(fpic))
-			List::addIfDoesNotExist(outArgList, std::move(fpic));
+			std::string option{ "-fPIC" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
 		}
-		else if (m_project.platformIndependentCode())
+		else if (m_project.platformIndependentExecutable())
 		{
-			std::string fpic{ "-fPIE" };
-			// if (isFlagSupported(fpic))
-			List::addIfDoesNotExist(outArgList, std::move(fpic));
+			std::string option{ "-fPIE" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
+
+			List::addIfDoesNotExist(outArgList, "-pie");
 		}
 	}
 }

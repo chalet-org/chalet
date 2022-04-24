@@ -113,6 +113,7 @@ class ChaletJsonSchema
 		TargetSourceCxxCppCoroutines,
 		TargetSourceCxxCppConcepts,
 		TargetSourceCxxRuntimeTypeInfo,
+		TargetSourceCxxPositionIndependent,
 		TargetSourceCxxFastMath,
 		TargetSourceCxxExceptions,
 		TargetSourceCxxInputCharSet,
