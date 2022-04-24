@@ -526,6 +526,7 @@ bool LinkerGCC::addMacosSysRootOption(StringList& outArgList) const
 #endif
 }
 
+/*****************************************************************************/
 void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
@@ -541,8 +542,6 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 			std::string option{ "-fPIE" };
 			// if (isFlagSupported(option))
 			List::addIfDoesNotExist(outArgList, std::move(option));
-
-			List::addIfDoesNotExist(outArgList, "-pie");
 		}
 	}
 }

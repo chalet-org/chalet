@@ -151,6 +151,26 @@ void LinkerLLVMClang::addCppFilesystem(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void LinkerLLVMClang::addPositionIndependentCodeOption(StringList& outArgList) const
+{
+	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	{
+		if (m_project.platformIndependentCode())
+		{
+			std::string option{ "-fPIC" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
+		}
+		else if (m_project.platformIndependentExecutable())
+		{
+			std::string option{ "-fPIE" };
+			// if (isFlagSupported(option))
+			List::addIfDoesNotExist(outArgList, std::move(option));
+		}
+	}
+}
+
+/*****************************************************************************/
 void LinkerLLVMClang::startStaticLinkGroup(StringList& outArgList) const
 {
 	UNUSED(outArgList);

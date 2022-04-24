@@ -28,6 +28,7 @@ protected:
 
 	// Linking (Misc)
 	virtual void addCppFilesystem(StringList& outArgList) const override;
+	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;
 	virtual void endStaticLinkGroup(StringList& outArgList) const override;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const override;

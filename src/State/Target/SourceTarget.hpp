@@ -239,7 +239,7 @@ private:
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
-	PositionIndependentCodeType m_picType = PositionIndependentCodeType::Auto;
+	PositionIndependentCodeType m_picType = PositionIndependentCodeType::None;
 
 	bool m_threads = true;
 	bool m_cppFilesystem = false;
