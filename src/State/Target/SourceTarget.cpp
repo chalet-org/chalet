@@ -109,6 +109,42 @@ bool SourceTarget::initialize()
 		}
 	}
 
+	if (m_picType == PositionIndependentCodeType::Auto)
+	{
+		if (m_kind == SourceKind::Executable)
+		{
+			m_picType = PositionIndependentCodeType::Executable;
+		}
+		else if (m_kind == SourceKind::SharedLibrary)
+		{
+			m_picType = PositionIndependentCodeType::Shared;
+		}
+		else if (m_kind == SourceKind::StaticLibrary)
+		{
+			const auto& targetName = this->name();
+			for (const auto& target : m_state.targets)
+			{
+				if (String::equals(targetName, target->name()))
+					continue;
+
+				if (target->isSources())
+				{
+					const auto& sources = static_cast<const SourceTarget&>(*target);
+					const auto& links = sources.projectStaticLinks();
+					if (List::contains(links, targetName))
+					{
+						if (sources.isExecutable())
+							m_picType = PositionIndependentCodeType::Executable;
+						else if (sources.isSharedLibrary())
+							m_picType = PositionIndependentCodeType::Shared;
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
 	if (m_metadata != nullptr)
 	{
 		if (!m_metadata->initialize())
@@ -122,6 +158,7 @@ bool SourceTarget::initialize()
 bool SourceTarget::validate()
 {
 	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
+	chalet_assert(m_picType != PositionIndependentCodeType::Auto, "SourceTarget picType was not initialized");
 
 	bool result = true;
 
@@ -802,6 +839,34 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 }
 
 /*****************************************************************************/
+bool SourceTarget::platformIndependentCode() const noexcept
+{
+	return m_picType == PositionIndependentCodeType::Shared;
+}
+
+bool SourceTarget::platformIndependentExecutable() const noexcept
+{
+	return m_picType == PositionIndependentCodeType::Executable;
+}
+
+void SourceTarget::setPicType(const bool inValue) noexcept
+{
+	m_picType = inValue ? PositionIndependentCodeType::Auto : PositionIndependentCodeType::None;
+}
+
+void SourceTarget::setPicType(const std::string& inValue)
+{
+	if (String::equals("shared", inValue))
+	{
+		m_picType = PositionIndependentCodeType::Shared;
+	}
+	else if (String::equals("shared", inValue))
+	{
+		m_picType = PositionIndependentCodeType::Executable;
+	}
+}
+
+/*****************************************************************************/
 bool SourceTarget::cppFilesystem() const noexcept
 {
 	return m_cppFilesystem;
@@ -870,6 +935,7 @@ bool SourceTarget::exceptions() const noexcept
 {
 	return m_exceptions;
 }
+
 void SourceTarget::setExceptions(const bool inValue) noexcept
 {
 	m_exceptions = inValue;
@@ -880,6 +946,7 @@ bool SourceTarget::fastMath() const noexcept
 {
 	return m_fastMath;
 }
+
 void SourceTarget::setFastMath(const bool inValue) noexcept
 {
 	m_fastMath = inValue;

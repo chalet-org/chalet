@@ -36,7 +36,6 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	ret.emplace_back(getQuotedExecutablePath(executable));
 
 	ret.emplace_back("-dynamiclib");
-	// ret.emplace_back("-fPIC");
 	// ret.emplace_back("-flat_namespace");
 
 	UNUSED(outputFileBase);

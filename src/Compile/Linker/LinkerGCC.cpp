@@ -215,6 +215,14 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));
 		}
 	}
+
+	if (!m_state.environment->isAppleClang() && !m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	{
+		if (m_project.isExecutable() && m_project.platformIndependentExecutable())
+		{
+			List::addIfDoesNotExist(outArgList, "-pie");
+		}
+	}
 }
 
 /*****************************************************************************/
@@ -531,9 +539,18 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
 	{
-		std::string fpic{ "-fPIC" };
-		// if (isFlagSupported(fpic))
-		List::addIfDoesNotExist(outArgList, std::move(fpic));
+		if (m_project.platformIndependentCode())
+		{
+			std::string fpic{ "-fPIC" };
+			// if (isFlagSupported(fpic))
+			List::addIfDoesNotExist(outArgList, std::move(fpic));
+		}
+		else if (m_project.platformIndependentCode())
+		{
+			std::string fpic{ "-fPIE" };
+			// if (isFlagSupported(fpic))
+			List::addIfDoesNotExist(outArgList, std::move(fpic));
+		}
 	}
 }
 

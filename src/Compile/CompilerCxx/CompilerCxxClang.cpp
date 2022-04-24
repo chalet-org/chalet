@@ -112,6 +112,7 @@ void CompilerCxxClang::addLibStdCppCompileOption(StringList& outArgList, const C
 /*****************************************************************************/
 void CompilerCxxClang::addPositionIndependentCodeOption(StringList& outArgList) const
 {
+	// TODO: this ifdef might not be necessary
 #if defined(CHALET_LINUX)
 	CompilerCxxGCC::addPositionIndependentCodeOption(outArgList);
 #else

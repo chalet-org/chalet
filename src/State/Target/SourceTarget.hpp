@@ -8,6 +8,7 @@
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CxxSpecialization.hpp"
+#include "Compile/PositionIndependentCodeType.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/SourceKind.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -146,6 +147,11 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept;
 	void setWindowsEntryPoint(const std::string& inValue);
 
+	bool platformIndependentCode() const noexcept;
+	bool platformIndependentExecutable() const noexcept;
+	void setPicType(const bool inValue) noexcept;
+	void setPicType(const std::string& inValue);
+
 	bool threads() const noexcept;
 	void setThreads(const bool inValue) noexcept;
 
@@ -233,6 +239,7 @@ private:
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
+	PositionIndependentCodeType m_picType = PositionIndependentCodeType::Auto;
 
 	bool m_threads = true;
 	bool m_cppFilesystem = false;
