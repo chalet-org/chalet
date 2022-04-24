@@ -170,7 +170,7 @@ bool ArgumentParser::resolveFromArguments(const int argc, const char* argv[])
 }
 
 /*****************************************************************************/
-Route ArgumentParser::getRouteFromString(const std::string& inValue)
+Route ArgumentParser::getRouteFromString(const std::string& inValue) const
 {
 	if (m_routeMap.find(inValue) != m_routeMap.end())
 		return m_routeMap.at(inValue);
@@ -190,7 +190,7 @@ Route ArgumentParser::route() const noexcept
 }
 
 /*****************************************************************************/
-StringList ArgumentParser::getRouteList()
+StringList ArgumentParser::getRouteList() const
 {
 	StringList ret;
 	for (auto& [cmd, _] : m_routeMap)

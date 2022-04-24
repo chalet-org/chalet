@@ -32,14 +32,14 @@ public:
 
 	Route route() const noexcept;
 
-	StringList getRouteList();
+	StringList getRouteList() const;
 
 	std::string getProgramPath() const;
 
 private:
 	virtual StringList getTruthyArguments() const final;
 
-	Route getRouteFromString(const std::string& inValue);
+	Route getRouteFromString(const std::string& inValue) const;
 
 	void makeParser();
 	bool doParse();
