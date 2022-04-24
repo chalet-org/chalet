@@ -977,6 +977,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	bool hasGccPrefix = String::startsWith("gcc-", inValue);
 	bool hasGccSuffix = String::endsWith("-gcc", inValue);
 	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
+	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !String::equals("auto", m_targetArchitecture);
 
 #if defined(CHALET_WIN32)
 	m_visualStudioVersion = VisualStudioVersion::None;
@@ -1037,10 +1038,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccSuffix || hasGccPrefixAndSuffix)
+	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccSuffix || isGccWithArch || hasGccPrefixAndSuffix)
 	{
 		m_isToolchainPreset = true;
-		m_toolchainPreferenceName = inValue;
 
 		std::string suffix;
 		if (hasGccPrefix)
@@ -1049,6 +1049,17 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		std::string prefix;
 		if (hasGccSuffix)
 			prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
+
+		if (isGccWithArch)
+		{
+			// assume (arch)-gcc
+			m_toolchainPreferenceName = m_targetArchitecture + "-gcc";
+			prefix = m_targetArchitecture + '-';
+		}
+		else
+		{
+			m_toolchainPreferenceName = inValue;
+		}
 
 #if defined(CHALET_WIN32)
 		ret.type = ToolchainType::MingwGNU;
