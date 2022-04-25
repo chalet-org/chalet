@@ -331,6 +331,8 @@ void Diagnostic::printErrors()
 	bool hasWarnings = false;
 	if (!warnings.empty())
 	{
+		Output::setQuietNonBuild(false);
+
 		Type type = Type::Warning;
 		Output::lineBreak();
 
@@ -338,13 +340,13 @@ void Diagnostic::printErrors()
 		Diagnostic::showHeader(type, label);
 		Diagnostic::showMessage(type, getOutputString(warnings));
 
-		if (errors.size() == 0)
+		if (errors.empty())
 			Output::lineBreak();
 
 		hasWarnings = true;
 	}
 
-	if (errors.size() > 0)
+	if (!errors.empty())
 	{
 		Output::setQuietNonBuild(false);
 
