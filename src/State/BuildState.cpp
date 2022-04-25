@@ -272,7 +272,7 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
+			  inputs.targetArchitecture() :
 			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
@@ -566,7 +566,7 @@ bool BuildState::validateState()
 		}
 	}
 
-	if (configuration.enableProfiling())
+	if (configuration.enableProfiling() && inputs.route() != Route::Export)
 	{
 #if defined(CHALET_MACOS)
 		bool profilerAvailable = true;
