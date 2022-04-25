@@ -325,6 +325,9 @@ void Diagnostic::printErrors()
 		return ret;
 	};
 
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+	std::cout.write(reset.data(), reset.size());
+
 	bool hasWarnings = false;
 	if (!warnings.empty())
 	{
@@ -343,9 +346,13 @@ void Diagnostic::printErrors()
 
 	if (errors.size() > 0)
 	{
+		Output::setQuietNonBuild(false);
+
 		Type type = Type::Error;
 		if (!hasWarnings && state.padded)
+		{
 			Output::lineBreakStderr();
+		}
 
 		auto label = errors.size() == 1 ? "ERROR" : "ERRORS";
 		Diagnostic::showHeader(type, label);
