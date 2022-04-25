@@ -16,7 +16,6 @@ struct Diagnostic
 	{
 		Warning,
 		Error,
-		CriticalError,
 	};
 
 	Diagnostic() = delete;
@@ -44,9 +43,6 @@ struct Diagnostic
 	template <typename... Args>
 	static void errorAbort(fmt::format_string<Args...> inFmt, Args&&... args);
 
-	template <typename... Args>
-	static void fatalError(fmt::format_string<Args...> inFmt, Args&&... args);
-
 	static void fatalErrorFromException(const char* inError);
 
 	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
@@ -55,11 +51,11 @@ struct Diagnostic
 	static void printErrors();
 	static void clearErrors();
 	static void throwCriticalError();
+	static void usePaddedErrors();
 
 private:
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showStepInfo(std::string&& inMessage, const bool inLineBreak);
-	static void showFatalError(std::string&& inMessage);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);
 	static void showMessage(const Type inType, std::string&& inMessage);

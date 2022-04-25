@@ -44,6 +44,8 @@ bool CentralState::initialize()
 	Route route = m_inputs.route();
 	chalet_assert(route != Route::Query, "");
 
+	Diagnostic::usePaddedErrors();
+
 	if (!parseEnvFile())
 		return false;
 
@@ -64,7 +66,7 @@ bool CentralState::initialize()
 
 	if (!Commands::pathExists(m_filename))
 	{
-		Diagnostic::fatalError("Build file '{}' was not found.", m_filename);
+		Diagnostic::error("Build file '{}' was not found.", m_filename);
 		return false;
 	}
 

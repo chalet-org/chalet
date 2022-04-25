@@ -52,7 +52,7 @@ bool Application::handleRoute()
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
-		Diagnostic::fatalError("Uncaught exception: {}", err.what());
+		Diagnostic::error("Uncaught exception: {}", err.what());
 		return false;
 	}
 }

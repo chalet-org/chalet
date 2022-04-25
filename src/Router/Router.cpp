@@ -54,7 +54,7 @@ bool Router::run()
 	if (route == Route::Unknown
 		|| static_cast<std::underlying_type_t<Route>>(route) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
 	{
-		Diagnostic::fatalError("Command not recognized.");
+		Diagnostic::error("Command not recognized.");
 		return false;
 	}
 
@@ -92,7 +92,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 {
 	if (inRoute == Route::Export && m_inputs.exportKind() == ExportKind::None)
 	{
-		Diagnostic::fatalError("The requested project kind '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
+		Diagnostic::error("The requested project kind '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
 		return false;
 	}
 

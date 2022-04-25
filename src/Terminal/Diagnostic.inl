@@ -61,11 +61,4 @@ void Diagnostic::errorAbort(fmt::format_string<Args...> inFmt, Args&&... args)
 {
 	Diagnostic::showErrorAndAbort(fmt::format(inFmt, (std::forward<Args>(args))...));
 }
-
-/*****************************************************************************/
-template <typename... Args>
-void Diagnostic::fatalError(fmt::format_string<Args...> inFmt, Args&&... args)
-{
-	Diagnostic::showFatalError(fmt::format(inFmt, (std::forward<Args>(args))...));
-}
 }

@@ -38,7 +38,7 @@ bool ProjectInitializer::run()
 		{
 			if (!Commands::makeDirectory(path))
 			{
-				Diagnostic::fatalError("Error creating directory '{}'", path);
+				Diagnostic::error("Error creating directory '{}'", path);
 				return false;
 			}
 		}
@@ -52,7 +52,7 @@ bool ProjectInitializer::run()
 
 	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
-		Diagnostic::fatalError("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
+		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
 		return false;
 	}
 
@@ -307,7 +307,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 	}
 	else
 	{
-		Diagnostic::fatalError("There was an error creating the project files.");
+		Diagnostic::error("There was an error creating the project files.");
 	}
 
 	return result;

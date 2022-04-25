@@ -131,7 +131,7 @@ bool ArgumentParser::resolveFromArguments(const int argc, const char* argv[])
 	int maxPositionalArgs = 2;
 	if (!parse(argc, argv, maxPositionalArgs))
 	{
-		Diagnostic::fatalError("Bad argument parse");
+		Diagnostic::error("Bad argument parse");
 		return false;
 	}
 
@@ -248,9 +248,9 @@ bool ArgumentParser::doParse()
 		if (m_routeString.empty())
 		{
 			if (containsOption(Positional::Argument1))
-				Diagnostic::fatalError("Invalid subcommand requested: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
+				Diagnostic::error("Invalid subcommand requested: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
 			else
-				Diagnostic::fatalError("Invalid argument(s) found. See 'chalet --help'.");
+				Diagnostic::error("Invalid argument(s) found. See 'chalet --help'.");
 			return false;
 		}
 
@@ -325,7 +325,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 	if (!invalid.empty())
 	{
 		auto seeHelp = getSeeHelpMessage();
-		Diagnostic::fatalError("Unknown argument: '{}'. {}", invalid.front(), seeHelp);
+		Diagnostic::error("Unknown argument: '{}'. {}", invalid.front(), seeHelp);
 		return false;
 	}
 
@@ -357,7 +357,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 		else if (mapped.required())
 		{
 			auto seeHelp = getSeeHelpMessage();
-			Diagnostic::fatalError("Missing required argument: '{}'. {}", mapped.keyLong(), seeHelp);
+			Diagnostic::error("Missing required argument: '{}'. {}", mapped.keyLong(), seeHelp);
 			return false;
 		}
 
@@ -415,7 +415,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 	if (positionalArgs > maxPositionalArgs)
 	{
 		auto seeHelp = getSeeHelpMessage();
-		Diagnostic::fatalError("Maximum number of positional arguments exceeded. {}", seeHelp);
+		Diagnostic::error("Maximum number of positional arguments exceeded. {}", seeHelp);
 		return false;
 	}
 
@@ -423,7 +423,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 	{
 		auto seeHelp = getSeeHelpMessage();
 		auto& remaining = m_rawArguments.at(Positional::RemainingArguments);
-		Diagnostic::fatalError("Maximum number of positional arguments exceeded, starting with: '{}'. {}", remaining, seeHelp);
+		Diagnostic::error("Maximum number of positional arguments exceeded, starting with: '{}'. {}", remaining, seeHelp);
 		return false;
 	}
 

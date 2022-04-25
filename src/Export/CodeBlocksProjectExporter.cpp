@@ -73,7 +73,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				auto contents = getProjectContent(target->name());
 				if (!Commands::createFileWithContents(relativeFile, contents))
 				{
-					Diagnostic::fatalError("There was a problem creating the CodeBlocks project file for the target: {}", target->name());
+					Diagnostic::error("There was a problem creating the CodeBlocks project file for the target: {}", target->name());
 					return false;
 				}
 
@@ -88,7 +88,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				auto contents = getWorkspaceContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
-					Diagnostic::fatalError("There was a problem creating the CodeBlocks workspace file.");
+					Diagnostic::error("There was a problem creating the CodeBlocks workspace file.");
 					return false;
 				}
 			}
@@ -97,7 +97,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				auto contents = getWorkspaceLayoutContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
-					Diagnostic::fatalError("There was a problem creating the CodeBlocks workspace layout file.");
+					Diagnostic::error("There was a problem creating the CodeBlocks workspace layout file.");
 					return false;
 				}
 			}
@@ -108,7 +108,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 
 	if (state == nullptr)
 	{
-		Diagnostic::fatalError("There are no valid projects to export to the CodeBlocks format.");
+		Diagnostic::error("There are no valid projects to export to the CodeBlocks format.");
 		return false;
 	}
 

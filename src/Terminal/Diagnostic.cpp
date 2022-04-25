@@ -41,6 +41,7 @@ static struct
 	std::vector<Error> errorList;
 	Unique<Spinner> spinnerThread;
 
+	bool padded = false;
 	bool exceptionThrown = false;
 	bool assertionFailure = false;
 } state;
@@ -171,12 +172,6 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 }
 
 /*****************************************************************************/
-void Diagnostic::showFatalError(std::string&& inMessage)
-{
-	state.errorList.push_back({ Type::CriticalError, std::move(inMessage) });
-}
-
-/*****************************************************************************/
 void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 {
 	if (state.exceptionThrown)
@@ -199,7 +194,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::fatalErrorFromException(const char* inError)
 {
-	Diagnostic::showFatalError(std::string(inError));
+	Diagnostic::addError(Type::Error, std::string(inError));
 }
 
 /*****************************************************************************/
@@ -295,7 +290,6 @@ void Diagnostic::printErrors()
 
 	StringList warnings;
 	StringList errors;
-	StringList criticalErrors;
 	std::reverse(state.errorList.begin(), state.errorList.end());
 
 	for (auto& err : state.errorList)
@@ -305,10 +299,8 @@ void Diagnostic::printErrors()
 
 		if (err.type == Type::Warning)
 			warnings.emplace_back(std::move(err.message));
-		else if (err.type == Type::Error)
-			errors.emplace_back(std::move(err.message));
 		else
-			criticalErrors.emplace_back(std::move(err.message));
+			errors.emplace_back(std::move(err.message));
 	}
 
 	auto getOutputString = [](StringList& inList) -> std::string {
@@ -333,14 +325,6 @@ void Diagnostic::printErrors()
 		return ret;
 	};
 
-	if (!criticalErrors.empty())
-	{
-		auto label = criticalErrors.size() == 1 ? "ERROR" : "ERRORS";
-		Diagnostic::showHeader(Type::Error, label);
-		Diagnostic::showMessage(Type::Error, getOutputString(criticalErrors));
-		return;
-	}
-
 	bool hasWarnings = false;
 	if (!warnings.empty())
 	{
@@ -360,14 +344,15 @@ void Diagnostic::printErrors()
 	if (errors.size() > 0)
 	{
 		Type type = Type::Error;
-		if (!hasWarnings)
+		if (!hasWarnings && state.padded)
 			Output::lineBreakStderr();
 
 		auto label = errors.size() == 1 ? "ERROR" : "ERRORS";
 		Diagnostic::showHeader(type, label);
 		Diagnostic::showMessage(type, getOutputString(errors));
 
-		Output::lineBreak();
+		if (state.padded)
+			Output::lineBreak();
 	}
 }
 
@@ -382,6 +367,12 @@ void Diagnostic::throwCriticalError()
 {
 	destroySpinnerThread();
 	CHALET_THROW(kCriticalError);
+}
+
+/*****************************************************************************/
+void Diagnostic::usePaddedErrors()
+{
+	state.padded = true;
 }
 
 }
