@@ -67,10 +67,12 @@ struct SourceTarget final : public IBuildTarget
 	ProjectWarningPresets warningsPreset() const noexcept;
 
 	const StringList& compileOptions() const noexcept;
-	void addCompileOptions(std::string&& inValue);
+	void addCompileOptions(StringList&& inList);
+	void addCompileOption(std::string&& inValue);
 
 	const StringList& linkerOptions() const noexcept;
-	void addLinkerOptions(std::string&& inValue);
+	void addLinkerOptions(StringList&& inList);
+	void addLinkerOption(std::string&& inValue);
 
 	const StringList& macosFrameworkPaths() const noexcept;
 	void addMacosFrameworkPaths(StringList&& inList);
@@ -197,7 +199,6 @@ private:
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
 	ProjectWarningPresets parseWarnings(const std::string& inValue);
-	StringList parseCommandLineOptions(std::string inString) const;
 
 	Shared<TargetMetadata> m_metadata;
 
@@ -224,8 +225,6 @@ private:
 	std::string m_cStandard;
 	std::string m_cppStandard;
 	std::string m_precompiledHeader;
-	std::string m_compileOptionsRaw;
-	std::string m_linkerOptionsRaw;
 	std::string m_linkerScript;
 	std::string m_inputCharset;
 	std::string m_executionCharset;

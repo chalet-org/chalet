@@ -1123,6 +1123,9 @@
 				"buildSuffix": {
 					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
+				"compileOptions": {
+					"$ref": "#/definitions/target-source-cxx-compileOptions"
+				},
 				"cppConcepts": {
 					"$ref": "#/definitions/target-source-cxx-cppConcepts"
 				},
@@ -1164,6 +1167,9 @@
 				},
 				"linkerScript": {
 					"$ref": "#/definitions/target-source-cxx-linkerScript"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
 				},
 				"links": {
 					"$ref": "#/definitions/target-source-cxx-links"
@@ -1331,9 +1337,22 @@
 			"default": "c++17"
 		},
 		"target-source-cxx-compileOptions": {
-			"type": "string",
 			"description": "Addtional options (per compiler type) to add during the compilation step.",
-			"minLength": 1
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-defines": {
 			"description": "Macro definitions to be used by the preprocessor",
@@ -1395,9 +1414,22 @@
 			"minLength": 1
 		},
 		"target-source-cxx-linkerOptions": {
-			"type": "string",
 			"description": "Addtional options (per compiler type) to add during the linking step.",
-			"minLength": 1
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-links": {
 			"description": "A list of dynamic links to use with the linker",

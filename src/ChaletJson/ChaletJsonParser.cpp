@@ -776,9 +776,9 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setPicType(std::move(val));
 			//
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
-				outTarget.addCompileOptions(std::move(val));
+				outTarget.addCompileOption(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
-				outTarget.addLinkerOptions(std::move(val));
+				outTarget.addLinkerOption(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "links", status))
@@ -849,6 +849,10 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.addLibDirs(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outTarget.addIncludeDirs(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "compileOptions", status))
+				outTarget.addCompileOptions(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
+				outTarget.addLinkerOptions(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
 				outTarget.addMacosFrameworkPaths(std::move(val));

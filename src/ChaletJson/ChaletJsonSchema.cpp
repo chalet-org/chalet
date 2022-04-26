@@ -654,11 +654,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "c11"
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxCompileOptions] = R"json({
+	defs[Defs::TargetSourceCxxCompileOptions] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "Addtional options (per compiler type) to add during the compilation step.",
 		"minLength": 1
-	})json"_ojson;
+	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxCppStandard] = R"json({
 		"type": "string",
@@ -692,11 +692,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::TargetSourceCxxLinkerOptions] = R"json({
+	defs[Defs::TargetSourceCxxLinkerOptions] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "Addtional options (per compiler type) to add during the linking step.",
 		"minLength": 1
-	})json"_ojson;
+	})json"_ojson);
 
 	{
 		Json links = R"json({
@@ -1426,7 +1426,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		addProperty(sourceTargetCxx, "buildSuffix", Defs::TargetSourceCxxBuildSuffix);
-		addPatternProperty(sourceTargetCxx, "compileOptions", Defs::TargetSourceCxxCompileOptions, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "compileOptions", Defs::TargetSourceCxxCompileOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppConcepts", Defs::TargetSourceCxxCppConcepts, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppCoroutines", Defs::TargetSourceCxxCppCoroutines, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppFilesystem", Defs::TargetSourceCxxCppFilesystem, kPatternConditions);
@@ -1441,7 +1441,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "inputCharset", Defs::TargetSourceCxxInputCharSet, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "libDirs", Defs::TargetSourceCxxLibDirs, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "linkerScript", Defs::TargetSourceCxxLinkerScript, kPatternConditions);
-		addPatternProperty(sourceTargetCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "links", Defs::TargetSourceCxxLinks, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworkPaths", Defs::TargetSourceCxxMacOsFrameworkPaths, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworks", Defs::TargetSourceCxxMacOsFrameworks, kPatternConditions);
