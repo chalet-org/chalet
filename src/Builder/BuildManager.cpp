@@ -87,7 +87,8 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		return false;
 	}
 
-	bool runRoute = inRoute == Route::Run;
+	const bool runRoute = inRoute == Route::Run;
+	const bool routeWillRun = m_state.inputs.routeWillRun();
 	const auto& runTargetName = m_state.inputs.runTarget();
 
 	if (!runRoute)
@@ -148,20 +149,26 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	const IBuildTarget* runTarget = nullptr;
 
 	bool error = false;
+	bool breakAfterBuild = false;
 	for (auto& target : m_state.targets)
 	{
-		bool isRunTarget = String::equals(runTargetName, target->name());
-		bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
-
-		if (isRunTarget || noExplicitRunTarget)
+		if (routeWillRun)
 		{
-			runTarget = target.get();
-			if (target->isScript())
+			bool isRunTarget = String::equals(runTargetName, target->name());
+			bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
+
+			if (isRunTarget || noExplicitRunTarget)
+			{
+				runTarget = target.get();
+				breakAfterBuild = true;
+
+				if (target->isScript())
+					break;
+			}
+
+			if (runRoute)
 				continue;
 		}
-
-		if (runRoute)
-			continue;
 
 		// At this point, we build
 		if (target->isSubChalet())
@@ -235,6 +242,9 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 			Output::lineBreak();
 		}
+
+		if (breakAfterBuild)
+			break;
 	}
 
 	for (auto& target : m_state.targets)
@@ -286,7 +296,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 
 	m_state.makeLibraryPathVariables();
 
-	if (m_state.inputs.isRunRoute())
+	if (routeWillRun)
 	{
 		if (runTarget == nullptr)
 		{
@@ -295,18 +305,13 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		}
 		else if (runTarget->isSources() || runTarget->isCMake())
 		{
-			// if (runRoute)
 			Output::lineBreak();
-
 			return cmdRun(*runTarget);
 		}
 		else if (runTarget->isScript())
 		{
 			auto& script = static_cast<const ScriptBuildTarget&>(*runTarget);
-
-			// if (runRoute)
 			Output::lineBreak();
-
 			return runScriptTarget(script, true);
 		}
 		else

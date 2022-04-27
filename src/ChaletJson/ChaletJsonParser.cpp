@@ -91,7 +91,7 @@ bool ChaletJsonParser::serialize()
 		return false;
 	}
 
-	if (m_state.inputs.isRunRoute())
+	if (m_state.inputs.routeWillRun())
 	{
 		if (!validRunTargetRequestedFromInput())
 		{
@@ -279,14 +279,13 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 
 		if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
 		{
-			auto abstract = std::make_unique<SourceTarget>(m_state);
+			const auto& [it, _] = m_abstractSourceTarget.emplace(name, std::make_unique<SourceTarget>(m_state));
+			auto& abstract = it->second;
 			if (!parseSourceTarget(*abstract, abstractJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
 				return false;
 			}
-
-			m_abstractSourceTarget.emplace(name, std::move(abstract));
 		}
 		else
 		{
@@ -308,12 +307,6 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 		{
 			Diagnostic::error("{}: target '{}' must be an object.", m_chaletJson.filename(), name);
 			return false;
-		}
-
-		std::string extends{ "*" };
-		if (targetJson.is_object())
-		{
-			m_chaletJson.assignFromKey(extends, targetJson, "extends");
 		}
 
 		BuildTargetType type = BuildTargetType::Project;
@@ -350,18 +343,31 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 		}
 
 		BuildTarget target;
-		if (type == BuildTargetType::Project && m_abstractSourceTarget.find(extends) != m_abstractSourceTarget.end())
+		if (type == BuildTargetType::Project)
 		{
-			target = std::make_unique<SourceTarget>(*m_abstractSourceTarget.at(extends)); // Note: copy ctor
+			std::string extends{ "*" };
+			if (targetJson.is_object())
+			{
+				m_chaletJson.assignFromKey(extends, targetJson, "extends");
+			}
+
+			if (m_abstractSourceTarget.find(extends) != m_abstractSourceTarget.end())
+			{
+				target = std::make_unique<SourceTarget>(static_cast<const SourceTarget&>(*m_abstractSourceTarget.at(extends))); // Note: copy ctor
+			}
+			else
+			{
+				if (!String::equals('*', extends))
+				{
+					Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_chaletJson.filename(), extends, name);
+					return false;
+				}
+
+				target = IBuildTarget::make(type, m_state);
+			}
 		}
 		else
 		{
-			if (type == BuildTargetType::Project && !String::equals('*', extends))
-			{
-				Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_chaletJson.filename(), extends, name);
-				return false;
-			}
-
 			target = IBuildTarget::make(type, m_state);
 		}
 		target->setName(name);
@@ -1352,7 +1358,7 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarg
 {
 	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
 	{
-		auto res = conditionIsValid(val);
+		auto res = conditionIsValid(outTarget, val);
 		if (res.has_value())
 			outTarget.setIncludeInBuild(*res);
 		else
@@ -1378,6 +1384,26 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarge
 }
 
 /*****************************************************************************/
+std::optional<bool> ChaletJsonParser::conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const
+{
+	if (!matchConditionVariables(inContent, [this, &inContent, &outTarget](const std::string& key, const std::string& value, bool negate) {
+			auto res = checkConditionVariable(outTarget, inContent, key, value, negate);
+			return res == ConditionResult::Pass;
+		}))
+	{
+		if (m_lastOp == ConditionOp::InvalidOr)
+		{
+			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
+			return std::nullopt;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
 	if (!matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
@@ -1395,6 +1421,66 @@ std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inCont
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+{
+	if (key.empty())
+	{
+		if (String::equals("runTarget", value))
+		{
+			const bool routeWillRun = m_state.inputs.routeWillRun();
+			const auto& runTarget = m_state.inputs.runTarget();
+
+			if (!routeWillRun || runTarget.empty())
+				return ConditionResult::Fail;
+
+			if (negate)
+			{
+				if (String::equals(runTarget, outTarget.name()))
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!String::equals(runTarget, outTarget.name()))
+					return ConditionResult::Fail;
+			}
+
+			return ConditionResult::Pass;
+		}
+	}
+	else if (String::equals("options", key))
+	{
+		if (String::equals("runTarget", value))
+		{
+			const bool routeWillRun = m_state.inputs.routeWillRun();
+			const auto& runTarget = m_state.inputs.runTarget();
+
+			if (!routeWillRun || runTarget.empty())
+				return ConditionResult::Fail;
+
+			if (negate)
+			{
+				if (String::equals(runTarget, outTarget.name()))
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!String::equals(runTarget, outTarget.name()))
+					return ConditionResult::Fail;
+			}
+
+			return ConditionResult::Pass;
+		}
+		else
+		{
+			Diagnostic::error("Invalid condition '{}:{}' found in: {}", key, value, inString);
+			return ConditionResult::Invalid;
+		}
+	}
+
+	return checkConditionVariable(inString, key, value, negate);
 }
 
 /*****************************************************************************/

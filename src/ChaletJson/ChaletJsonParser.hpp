@@ -83,7 +83,9 @@ private:
 	bool validBuildRequested() const;
 	bool validRunTargetRequested() const;
 	bool validRunTargetRequestedFromInput();
+	std::optional<bool> conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const;
 	std::optional<bool> conditionIsValid(const std::string& inContent) const;
+	ConditionResult checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 	ConditionResult checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 

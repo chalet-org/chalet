@@ -58,7 +58,7 @@ struct CommandLineInputs
 
 	Route route() const noexcept;
 	void setRoute(const Route inValue) noexcept;
-	bool isRunRoute() const noexcept;
+	bool routeWillRun() const noexcept;
 
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;

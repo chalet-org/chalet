@@ -162,7 +162,7 @@ bool SourceTarget::validate()
 	if (m_files.empty())
 	{
 		const auto& targetName = this->name();
-		Diagnostic::error("No 'files' were specified, but are required.", targetName);
+		Diagnostic::error("Either no 'files' were specified, or their resolved path(s) in do not exist. Check to make sure they are correct.", targetName);
 		result = false;
 	}
 

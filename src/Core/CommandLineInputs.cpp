@@ -339,7 +339,7 @@ void CommandLineInputs::setRoute(const Route inValue) noexcept
 	m_route = inValue;
 }
 
-bool CommandLineInputs::isRunRoute() const noexcept
+bool CommandLineInputs::routeWillRun() const noexcept
 {
 	return m_route == Route::BuildRun || m_route == Route::Run;
 }
