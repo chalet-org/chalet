@@ -190,6 +190,10 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		std::string rc;
 		StringList searches;
 		searches.push_back(preference.rc);
+		if (isGNU)
+		{
+			searches.push_back("windres");
+		}
 
 		for (const auto& search : searches)
 		{
