@@ -1,6 +1,15 @@
-## Chalet
 
-A compiler with C++20 is required to build Chalet from source. Chalet is developed on various compiler versions, but the following versions are known to work:
+![Chalet logo](chalet-banner.jpg)
+
+<p align="center">A modern, cross-platform project format and build system for C/C++ focused on readability and interoperability.</p>
+
+[![Github Releases](https://img.shields.io/github/release/chalet-org/chalet.svg?style=flat&color=orange)](https://github.com/chalet-org/chalet/releases)
+[![License](https://img.shields.io/github/license/chalet-org/chalet.svg?style=flat)](https://github.com/chalet-org/chalet/blob/main/LICENSE.txt)
+
+<br />
+<br />
+
+A compiler with C++17 is required to build Chalet from source. Chalet is developed on various compiler versions, but the following versions are currently used during development:
 
 MSVC `>= 19.30`  
 Apple Clang `>= 13.x`  
@@ -50,7 +59,7 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-nin
 
 **Install**: 
 
-A GCC version that supports C++20 is required. (`>= 13`)
+A GCC version that supports C++17 is required. (`>= 7.3`)
 
 1. Install `git` and `cmake` from your package manager
 2. Run `bash ./build_all.sh` from the project root

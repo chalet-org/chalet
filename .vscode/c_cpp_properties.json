@@ -22,7 +22,7 @@
                 "_DEBUG"
             ],
             "cStandard": "c11",
-            "cppStandard": "c++20",
+            "cppStandard": "c++17",
             "forcedInclude": [
                 "${workspaceFolder}/src/PCH.hpp"
             ]
@@ -52,7 +52,7 @@
                 "_DEBUG"
             ],
             "cStandard": "c11",
-            "cppStandard": "c++20",
+            "cppStandard": "c++17",
             "forcedInclude": [
                 "${workspaceFolder}/src/PCH.hpp"
             ]
@@ -78,7 +78,7 @@
                 "_UNICODE"
             ],
             "cStandard": "c11",
-            "cppStandard": "c++20",
+            "cppStandard": "c++17",
             "forcedInclude": [
                 "${workspaceFolder}/src/PCH.hpp"
             ]
@@ -105,7 +105,7 @@
                 "_UNICODE"
             ],
             "cStandard": "c11",
-            "cppStandard": "c++20",
+            "cppStandard": "c++17",
             "forcedInclude": [
                 "${workspaceFolder}/src/PCH.hpp"
             ]
