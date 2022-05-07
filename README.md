@@ -7,10 +7,10 @@
 
 <hr />
 
-[![Github Releases](https://img.shields.io/github/release/chalet-org/chalet.svg?style=for-the-badge&color=orange&labelColor=000000)](https://github.com/chalet-org/chalet/releases)
-[![License](https://img.shields.io/github/license/chalet-org/chalet.svg?style=for-the-badge&labelColor=000000)](https://github.com/chalet-org/chalet/blob/main/LICENSE.txt)
-[![Discussions](https://img.shields.io/badge/-discussion-black?style=for-the-badge)](https://github.com/chalet-org/chalet/discussions)
-[![Examples](https://img.shields.io/badge/-examples-black?style=for-the-badge)](https://github.com/chalet-org/chalet/examples)
+[![Github Releases](https://img.shields.io/github/v/release/chalet-org/chalet?style=for-the-badge&color=orange&labelColor=323232)](https://github.com/chalet-org/chalet/releases)
+[![License](https://img.shields.io/badge/license-bsd3clause-orange.svg?style=for-the-badge&labelColor=323232)](https://github.com/chalet-org/chalet/blob/main/LICENSE.txt)
+[![Discussions](https://img.shields.io/badge/-discussion-black?style=for-the-badge&color=323232)](https://github.com/chalet-org/chalet/discussions)
+[![Examples](https://img.shields.io/badge/-examples-black?style=for-the-badge&color=323232)](https://github.com/chalet-org/chalet/examples)
 
 </div>
 
