@@ -1,19 +1,45 @@
 
-![Chalet logo](chalet-banner.jpg)
+[![Chalet logo](chalet-banner.jpg)](https://www.chalet-work.space)
 
-<p align="center">A modern, cross-platform project format and build system for C/C++ focused on readability and interoperability.</p>
 
-[![Github Releases](https://img.shields.io/github/release/chalet-org/chalet.svg?style=flat&color=orange)](https://github.com/chalet-org/chalet/releases)
-[![License](https://img.shields.io/github/license/chalet-org/chalet.svg?style=flat)](https://github.com/chalet-org/chalet/blob/main/LICENSE.txt)
+<div align="center">
+<p>A modern, cross-platform project format and build system for C/C++ focused on readability and interoperability.</p>
+
+<hr />
+
+[![Github Releases](https://img.shields.io/github/release/chalet-org/chalet.svg?style=for-the-badge&color=orange&labelColor=000000)](https://github.com/chalet-org/chalet/releases)
+[![License](https://img.shields.io/github/license/chalet-org/chalet.svg?style=for-the-badge&labelColor=000000)](https://github.com/chalet-org/chalet/blob/main/LICENSE.txt)
+[![Discussions](https://img.shields.io/badge/-discussion-black?style=for-the-badge)](https://github.com/chalet-org/chalet/discussions)
+[![Examples](https://img.shields.io/badge/-examples-black?style=for-the-badge)](https://github.com/chalet-org/chalet/examples)
+
+</div>
 
 <br />
 <br />
 
-A compiler with C++17 is required to build Chalet from source. Chalet is developed on various compiler versions, but the following versions are currently used during development:
+## Introduction
+
+Visit [https://www.chalet-work.space](https://www.chalet-work.space) to learn more about Chalet.
+
+Visit [https://www.chalet-work.space/docs](https://www.chalet-work.space/docs) for the full documentation.
+
+Explore some of the example repositories at: [https://github.com/orgs/chalet-org/repositories](https://github.com/orgs/chalet-org/repositories)
+
+## Download
+
+Grab the latest version from [https://www.chalet-work.space/download](https://www.chalet-work.space/download) or the [Releases](https://github.com/chalet-org/chalet/releases) section of this repository.
+
+The actual release builds are still being fine-tuned, especially on Linux, so there may still be issues on various Linux distros.
+
+## Build from Source
+
+A C++17 compiler is required to build Chalet from source. Chalet is developed on various compiler versions, but the following versions are currently used during development:
 
 MSVC `>= 19.30`  
 Apple Clang `>= 13.x`  
 GCC / MinGW `>= 11.x`
+
+C++17 is targeted instead of C++20 for now to ensure a wide gamut of supported operating systems.
 
 ---
 ### Windows
