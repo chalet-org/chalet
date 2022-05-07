@@ -97,7 +97,7 @@ cd "$DIST_FOLDER"
 
 dpkg-deb --build "$OUT_DEP_DIR/"
 
-zip chalet-$CHALET_ARCH_RAW-linux-debian.zip $OUT_DEP_DIR.deb
+zip chalet-$CHALET_ARCHITECTURE-linux-debian.zip $OUT_DEP_DIR.deb
 
 cd "$cwd"
 
