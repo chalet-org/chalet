@@ -491,6 +491,9 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	{
 		if (String::equals(m_cExts, ext))
 		{
+			if (m_cxxExtension.empty())
+				m_cxxExtension = ext;
+
 			return SourceType::C;
 		}
 		else if (String::equals(m_resourceExts, ext))
