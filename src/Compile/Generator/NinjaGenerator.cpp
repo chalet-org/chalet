@@ -96,12 +96,12 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 	auto recipes = String::join(m_targetRecipes);
 
 	std::string msvcDepsPrefix;
-#if defined(CHALET_WIN32)
-	if (m_needsMsvcDepsPrefix)
+	// #if defined(CHALET_WIN32)
+	/*if (m_needsMsvcDepsPrefix)
 	{
 		msvcDepsPrefix = "msvc_deps_prefix = Note: including file:";
-	}
-#endif
+	}*/
+	// #endif
 
 	std::string ninjaTemplate = fmt::format(R"ninja(
 builddir = {buildCache}

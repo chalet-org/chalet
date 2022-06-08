@@ -8,18 +8,34 @@
 #include <signal.h>
 
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 
 namespace chalet
 {
 namespace
 {
+static struct
+{
+	std::mutex mutex;
+	Spinner* spinner = nullptr;
+} state;
+
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
+	if (state.spinner)
+	{
+		state.spinner->stop();
+	}
+
+	std::lock_guard<std::mutex> lock(state.mutex);
+
 	UNUSED(inSignal);
 	std::string output{ "\b\b  \b\b" };
+	output += Output::getAnsiStyle(Color::Reset);
 	std::cout.write(output.data(), output.size());
-	std::cout.flush();
+
+	std::exit(1);
 }
 }
 
@@ -39,6 +55,7 @@ void Spinner::start()
 	destroy();
 
 	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
+	state.spinner = this;
 }
 
 /*****************************************************************************/
@@ -58,6 +75,7 @@ bool Spinner::destroy()
 		m_thread->join();
 		m_thread.reset();
 	}
+	state.spinner = nullptr;
 
 	return result;
 }
@@ -86,7 +104,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 void Spinner::doRegularEllipsis()
 {
 	{
-		std::lock_guard<std::mutex> lock(m_mutex);
+		std::lock_guard<std::mutex> lock(state.mutex);
 		std::string output{ " ... " };
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
@@ -117,7 +135,7 @@ void Spinner::doRegularEllipsis()
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(m_mutex);
+			std::lock_guard<std::mutex> lock(state.mutex);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();
 		}

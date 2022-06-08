@@ -294,12 +294,6 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				CxxSpecialization specialization = CxxSpecialization::CPlusPlus;
-				if (group->type == SourceType::ObjectiveC)
-					specialization = CxxSpecialization::ObjectiveC;
-				else if (group->type == SourceType::ObjectiveCPlusPlus)
-					specialization = CxxSpecialization::ObjectiveCPlusPlus;
-
 				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
@@ -311,7 +305,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 
 						CommandPool::Cmd out;
 						out.output = std::move(source);
-						out.command = getCxxCompile(source, target, specialization);
+						out.command = getCxxCompile(source, target, m_project->cxxSpecialization());
 						out.reference = out.output;
 
 						ret.emplace_back(std::move(out));
