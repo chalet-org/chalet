@@ -7,7 +7,7 @@
 #define CHALET_WINDOWS_API_HPP
 
 // Windows
-#if defined(CHALET_WIN32)
+#if defined(_WIN32) && !defined(RC_INVOKED)
 	#ifndef UNICODE
 		#define UNICODE
 	#endif

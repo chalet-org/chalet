@@ -392,6 +392,25 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
+StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
+{
+	StringList ret;
+
+	if (!inProject.configureFiles().empty())
+	{
+		auto outFolder = intermediateDir(inProject);
+		for (const auto& configureFile : inProject.configureFiles())
+		{
+			auto outFile = String::getPathFilename(configureFile);
+			outFile = outFile.substr(0, outFile.size() - 3);
+
+			ret.emplace_back(fmt::format("{}/{}", outFolder, outFile));
+		}
+	}
+	return ret;
+}
+
+/*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
