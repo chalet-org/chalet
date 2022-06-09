@@ -392,6 +392,25 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
+StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
+{
+	StringList ret;
+
+	if (!inProject.configureFiles().empty())
+	{
+		auto outFolder = intermediateDir(inProject);
+		for (const auto& configureFile : inProject.configureFiles())
+		{
+			auto outFile = String::getPathFilename(configureFile);
+			outFile = outFile.substr(0, outFile.size() - 3);
+
+			ret.emplace_back(fmt::format("{}/{}", outFolder, outFile));
+		}
+	}
+	return ret;
+}
+
+/*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
 SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
@@ -491,6 +510,9 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	{
 		if (String::equals(m_cExts, ext))
 		{
+			if (m_cxxExtension.empty())
+				m_cxxExtension = ext;
+
 			return SourceType::C;
 		}
 		else if (String::equals(m_resourceExts, ext))

@@ -1,5 +1,5 @@
 {
-	"Cruise Header File": {
+	"Chalet Header File": {
 		"prefix": "chaleth",
 		"description": "Chalet Class hpp file",
 		"scope": "cpp",
@@ -26,7 +26,7 @@
 			""
 		],
 	},
-	"Cruise Implementation File": {
+	"Chalet Implementation File": {
 		"prefix": "chaletc",
 		"description": "Chalet Class cpp file",
 		"scope": "cpp",

@@ -447,9 +447,12 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 		if (m_state.info.keepGoing())
 			ret.emplace_back("--keep-going");
 
-		ret.emplace_back("--no-builtin-rules");
-		ret.emplace_back("--no-builtin-variables");
-		ret.emplace_back("--no-print-directory");
+		if (!m_state.toolchain.makeIsNMake())
+		{
+			ret.emplace_back("--no-builtin-rules");
+			ret.emplace_back("--no-builtin-variables");
+			ret.emplace_back("--no-print-directory");
+		}
 	}
 	else if (isNinja && Output::showCommands())
 	{

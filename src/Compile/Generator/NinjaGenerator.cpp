@@ -96,12 +96,12 @@ std::string NinjaGenerator::getContents(const std::string& inPath) const
 	auto recipes = String::join(m_targetRecipes);
 
 	std::string msvcDepsPrefix;
-#if defined(CHALET_WIN32)
-	if (m_needsMsvcDepsPrefix)
+	// #if defined(CHALET_WIN32)
+	/*if (m_needsMsvcDepsPrefix)
 	{
 		msvcDepsPrefix = "msvc_deps_prefix = Note: including file:";
-	}
-#endif
+	}*/
+	// #endif
 
 	std::string ninjaTemplate = fmt::format(R"ninja(
 builddir = {buildCache}
@@ -443,10 +443,11 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 {
 	std::string ret;
 
-	StringList pches;
+	std::string pchImplicitDep;
 	if (m_project->usesPrecompiledHeader())
 	{
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
+		StringList pches;
+		auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
@@ -458,14 +459,20 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		else
 #endif
 		{
-			pches.push_back(pchTarget);
+			pches.push_back(std::move(pchTarget));
+		}
+		if (!pches.empty())
+		{
+			auto deps = String::join(std::move(pches));
+			pchImplicitDep = fmt::format(" | {}", deps);
 		}
 	}
 
-	std::string pchImplicitDep;
-	if (!pches.empty())
+	std::string configureFilesDeps;
+	if (!m_project->configureFiles().empty())
 	{
-		pchImplicitDep = fmt::format(" | {}", String::join(std::move(pches)));
+		auto deps = String::join(m_state.paths.getConfigureFiles(*m_project));
+		configureFilesDeps = fmt::format(" | {}", deps);
 	}
 
 	const bool objectiveCxx = m_project->objectiveCxx();
@@ -512,23 +519,13 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		if (rule.empty())
 			continue;
 
-		if (group->type != SourceType::WindowsResource)
-		{
-			ret += fmt::format("build {object}: {rule}_{hash} {source}{pchImplicitDep}\n",
-				fmt::arg("hash", m_hash),
-				FMT_ARG(object),
-				FMT_ARG(rule),
-				FMT_ARG(source),
-				FMT_ARG(pchImplicitDep));
-		}
-		else
-		{
-			ret += fmt::format("build {object}: {rule}_{hash} {source}\n",
-				fmt::arg("hash", m_hash),
-				FMT_ARG(object),
-				FMT_ARG(rule),
-				FMT_ARG(source));
-		}
+		const auto& implicitDeps = group->type != SourceType::WindowsResource ? pchImplicitDep : configureFilesDeps;
+		ret += fmt::format("build {object}: {rule}_{hash} {source}{implicitDeps}\n",
+			fmt::arg("hash", m_hash),
+			FMT_ARG(object),
+			FMT_ARG(rule),
+			FMT_ARG(source),
+			FMT_ARG(implicitDeps));
 	}
 
 	return ret;

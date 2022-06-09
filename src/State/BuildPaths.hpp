@@ -42,6 +42,7 @@ struct BuildPaths
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
+	StringList getConfigureFiles(const SourceTarget& inProject) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
 	void clearOutputCaches();
