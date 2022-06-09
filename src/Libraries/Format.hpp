@@ -12,6 +12,7 @@
 
 #if defined(CHALET_MSVC)
 	#pragma warning(push)
+	#pragma warning(disable : 4189)
 #else
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
