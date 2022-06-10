@@ -100,6 +100,20 @@ void CMakeTarget::addDefine(std::string&& inValue)
 }
 
 /*****************************************************************************/
+const StringList& CMakeTarget::targets() const noexcept
+{
+	return m_targets;
+}
+void CMakeTarget::addTargets(StringList&& inList)
+{
+	List::forEach(inList, this, &CMakeTarget::addTarget);
+}
+void CMakeTarget::addTarget(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_targets, std::move(inValue));
+}
+
+/*****************************************************************************/
 const std::string& CMakeTarget::buildFile() const noexcept
 {
 	return m_buildFile;

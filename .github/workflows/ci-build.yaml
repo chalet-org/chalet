@@ -22,8 +22,8 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: Chalet ${{ github.ref }}
-          draft: false
-          prerelease: true
+          draft: true
+          prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
   Linux-Ubuntu:

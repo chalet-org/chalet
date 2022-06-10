@@ -120,7 +120,6 @@ bool CmakeBuilder::run()
 		command = getGeneratorCommand(location);
 
 #if defined(CHALET_WIN32)
-		if (Environment::isBash())
 		{
 			if (Output::showCommands())
 				Output::printCommand(command);
@@ -143,8 +142,7 @@ bool CmakeBuilder::run()
 			if (ProcessController::run(command, options) != EXIT_SUCCESS)
 				return onRunFailure();
 		}
-		else
-#endif
+#else
 		{
 			if (m_cmakeVersionMajorMinor >= 313)
 			{
@@ -157,6 +155,7 @@ bool CmakeBuilder::run()
 					return onRunFailure();
 			}
 		}
+#endif
 
 		Output::lineBreak();
 
@@ -436,6 +435,16 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
+
+	const auto& targets = m_target.targets();
+	if (!targets.empty())
+	{
+		ret.emplace_back("-t");
+		for (const auto& name : targets)
+		{
+			ret.emplace_back(name);
+		}
+	}
 
 	if (isMake)
 	{

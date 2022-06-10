@@ -658,7 +658,7 @@
 			"type": "string",
 			"description": "The url of the git repository.",
 			"minLength": 1,
-			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|#[\\w\\d\\-._]+?)$"
+			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)?(\\/?|#[\\w\\d\\-._]+?)$"
 		},
 		"external-git-branch": {
 			"type": "string",
@@ -1470,7 +1470,7 @@
 			]
 		},
 		"target-source-cxx-macosFrameworks": {
-			"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+			"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2064,6 +2064,9 @@
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
+				"targets": {
+					"$ref": "#/definitions/target-cmake-targets"
+				},
 				"toolset": {
 					"$ref": "#/definitions/target-cmake-toolset"
 				}
@@ -2077,6 +2080,9 @@
 				},
 				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
+				},
+				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-cmake-targets"
 				},
 				"^toolset\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-toolset"
@@ -2092,6 +2098,24 @@
 			"type": "string",
 			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
 			"minLength": 1
+		},
+		"target-cmake-targets": {
+			"description": "A specific CMake target, or targets to build instead of the default.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-cmake-defines": {
 			"description": "Macro definitions to be passed into CMake. (-D)",

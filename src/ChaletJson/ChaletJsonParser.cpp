@@ -636,6 +636,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setRunExecutable(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))
+				outTarget.addTarget(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -644,6 +646,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefines(std::move(val));
+			else if (valueMatchesSearchKeyPattern(val, value, key, "targetNames", status))
+				outTarget.addTargets(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}

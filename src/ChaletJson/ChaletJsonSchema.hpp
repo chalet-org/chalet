@@ -138,6 +138,7 @@ class ChaletJsonSchema
 		TargetCMake,
 		TargetCMakeLocation,
 		TargetCMakeBuildFile,
+		TargetCMakeTargetNames,
 		TargetCMakeDefines,
 		TargetCMakeRecheck,
 		TargetCMakeRebuild,
