@@ -716,7 +716,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxMacOsFrameworks] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of hte framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+		"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 		"minLength": 1
 	})json"_ojson);
 
@@ -1251,6 +1251,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::TargetCMakeTargetNames] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A specific CMake target, or targets to build instead of the default.",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetCMakeDefines] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "Macro definitions to be passed into CMake. (-D)",
@@ -1598,6 +1604,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "recheck", Defs::TargetCMakeRecheck);
 		addProperty(targetCMake, "rebuild", Defs::TargetCMakeRebuild);
 		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConditions);
+		addPropertyAndPattern(targetCMake, "targets", Defs::TargetCMakeTargetNames, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConditions);
 		defs[Defs::TargetCMake] = std::move(targetCMake);
 	}
@@ -1772,6 +1779,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCMakeDefines: return "target-cmake-defines";
 		case Defs::TargetCMakeRecheck: return "target-cmake-recheck";
 		case Defs::TargetCMakeRebuild: return "target-cmake-rebuild";
+		case Defs::TargetCMakeTargetNames: return "target-cmake-targets";
 		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
 		case Defs::TargetCMakeRunExecutable: return "target-cmake-runExecutable";
 		//

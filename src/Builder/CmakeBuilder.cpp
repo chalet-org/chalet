@@ -436,6 +436,16 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 
 	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
 
+	const auto& targets = m_target.targets();
+	if (!targets.empty())
+	{
+		ret.emplace_back("-t");
+		for (const auto& name : targets)
+		{
+			ret.emplace_back(name);
+		}
+	}
+
 	if (isMake)
 	{
 		ret.emplace_back("--");
