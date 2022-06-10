@@ -120,7 +120,6 @@ bool CmakeBuilder::run()
 		command = getGeneratorCommand(location);
 
 #if defined(CHALET_WIN32)
-		if (Environment::isBash())
 		{
 			if (Output::showCommands())
 				Output::printCommand(command);
@@ -143,8 +142,7 @@ bool CmakeBuilder::run()
 			if (ProcessController::run(command, options) != EXIT_SUCCESS)
 				return onRunFailure();
 		}
-		else
-#endif
+#else
 		{
 			if (m_cmakeVersionMajorMinor >= 313)
 			{
@@ -157,6 +155,7 @@ bool CmakeBuilder::run()
 					return onRunFailure();
 			}
 		}
+#endif
 
 		Output::lineBreak();
 
