@@ -3,7 +3,7 @@
 
 
 <div align="center">
-<p>A modern, cross-platform project format and build system for C/C++ focused on readability and interoperability.</p>
+<p>A cross-platform project format & build tool for C/C++ focused on usability and interoperability.</p>
 
 <hr />
 
