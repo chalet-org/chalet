@@ -658,7 +658,7 @@
 			"type": "string",
 			"description": "The url of the git repository.",
 			"minLength": 1,
-			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)(\\/?|#[\\w\\d\\-._]+?)$"
+			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)?(\\/?|#[\\w\\d\\-._]+?)$"
 		},
 		"external-git-branch": {
 			"type": "string",

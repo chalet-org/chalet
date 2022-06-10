@@ -415,7 +415,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "The url of the git repository.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::ExternalDependencyGitRepository][SKeys::Pattern] = R"regex(^(?:git|ssh|git\+ssh|https?|git@[\w\-.]+):(\/\/)?(.*?)(\.git)(\/?|#[\w\d\-._]+?)$)regex";
+	defs[Defs::ExternalDependencyGitRepository][SKeys::Pattern] = R"regex(^(?:git|ssh|git\+ssh|https?|git@[\w\-.]+):(\/\/)?(.*?)(\.git)?(\/?|#[\w\d\-._]+?)$)regex";
 
 	defs[Defs::ExternalDependencyGitBranch] = R"json({
 		"type": "string",
