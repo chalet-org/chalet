@@ -282,14 +282,14 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		else
 		{
 			// We always want bin/git.exe (is not specific to cmd prompt or msys)
-			if (String::contains("Git/mingw64/bin/git.exe", gitPath))
+			if (String::endsWith("Git/mingw64/bin/git.exe", gitPath))
 			{
-				String::replaceAll(gitPath, "mingw64/", "");
+				String::replaceAll(gitPath, "mingw64/bin/git.exe", "bin/git.exe");
 				tools[Keys::ToolsGit] = gitPath;
 			}
-			else if (String::contains("Git/cmd/git.exe", gitPath))
+			else if (String::endsWith("Git/cmd/git.exe", gitPath))
 			{
-				String::replaceAll(gitPath, "cmd/", "bin");
+				String::replaceAll(gitPath, "cmd/git.exe", "bin/git.exe");
 				tools[Keys::ToolsGit] = gitPath;
 			}
 		}
