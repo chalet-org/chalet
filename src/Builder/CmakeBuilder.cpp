@@ -119,43 +119,11 @@ bool CmakeBuilder::run()
 		StringList command;
 		command = getGeneratorCommand(location);
 
-#if defined(CHALET_WIN32)
 		{
-			if (Output::showCommands())
-				Output::printCommand(command);
-
-			ProcessOptions options;
-			options.stderrOption = PipeOption::Pipe;
-			options.stdoutOption = PipeOption::Pipe;
-			options.onStdOut = [](std::string inData) {
-				String::replaceAll(inData, "\r\n", "\n");
-				std::cout.write(inData.data(), inData.size());
-				std::cout.flush();
-			};
-			options.onStdErr = options.onStdOut;
-
-			if (m_cmakeVersionMajorMinor < 313)
-			{
-				options.cwd = m_outputLocation;
-			}
-
-			if (ProcessController::run(command, options) != EXIT_SUCCESS)
+			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : m_outputLocation;
+			if (!Commands::subprocess(command, cwd))
 				return onRunFailure();
 		}
-#else
-		{
-			if (m_cmakeVersionMajorMinor >= 313)
-			{
-				if (!Commands::subprocess(command))
-					return onRunFailure();
-			}
-			else
-			{
-				if (!Commands::subprocess(command, m_outputLocation))
-					return onRunFailure();
-			}
-		}
-#endif
 
 		Output::lineBreak();
 

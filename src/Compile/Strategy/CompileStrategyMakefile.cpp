@@ -272,7 +272,6 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
-			String::replaceAll(inData, "\r\n", "\n");
 			String::replaceAll(inData, ": warning ", Output::getAnsiStyle(Color::Reset) + ": warning ");
 			String::replaceAll(inData, ": error ", Output::getAnsiStyle(Color::Reset) + ": error ");
 			std::cout.write(inData.data(), inData.size());
@@ -313,9 +312,6 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		else
 #endif
 		{
-#if defined(CHALET_WIN32)
-			String::replaceAll(errorOutput, "\r\n", "\n");
-#endif
 			String::replaceAll(errorOutput, fmt::format("{}: *** Waiting for unfinished jobs....\n", make), "");
 			String::replaceAll(errorOutput, fmt::format("{}: *** No rule", make), "No rule");
 			cutoff = errorOutput.find(fmt::format("{}: *** [", make));
@@ -343,6 +339,9 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 			std::cout.write(reset.data(), reset.size());
 			std::cout.write(errorOutput.data(), errorOutput.size());
 			std::cout.flush();
+
+			if (m_state.toolchain.makeIsNMake())
+				Output::lineBreak();
 		}
 #endif
 	}
