@@ -1001,7 +1001,11 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	ProcessOptions options;
 	options.cwd = std::move(inCwd);
 	options.stdoutOption = PipeOption::Pipe;
+#if defined(CHALET_WIN32)
+	options.stderrOption = PipeOption::StdOut;
+#else
 	options.stderrOption = PipeOption::StdErr;
+#endif
 	options.onStdOut = [&capData](std::string inData) -> void {
 		String::replaceAll(inData, cap.eol, cap.endlineReplace);
 		std::cout.write(inData.data(), inData.size());

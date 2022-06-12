@@ -11,7 +11,7 @@
 #include "Terminal/Output.hpp"
 
 #if defined(CHALET_WIN32)
-	#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+	#if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
 		#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 	#endif
 #endif
@@ -94,7 +94,6 @@ void WindowsTerminal::reset()
 			if (GetConsoleMode(hOut, &dwMode))
 			{
 				dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-				dwMode |= DISABLE_NEWLINE_AUTO_RETURN;
 				SetConsoleMode(hOut, dwMode);
 			}
 		}

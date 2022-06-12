@@ -38,6 +38,16 @@ bool CMakeTarget::initialize()
 	if (String::equals('.', m_targetFolder))
 		m_targetFolder = this->name();
 
+	// Note: this technically gets handled by ninja, but for correctness
+	for (auto& target : m_targets)
+	{
+#if defined(CHALET_WIN32)
+		String::replaceAll(target, '/', '\\');
+#else
+		String::replaceAll(target, '\\', '/');
+#endif
+	}
+
 	return true;
 }
 
@@ -180,6 +190,16 @@ bool CMakeTarget::rebuild() const noexcept
 void CMakeTarget::setRebuild(const bool inValue) noexcept
 {
 	m_rebuild = inValue;
+}
+
+/*****************************************************************************/
+bool CMakeTarget::clean() const noexcept
+{
+	return m_clean;
+}
+void CMakeTarget::setClean(const bool inValue) noexcept
+{
+	m_clean = inValue;
 }
 
 }

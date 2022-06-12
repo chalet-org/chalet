@@ -1275,6 +1275,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetCMakeClean] = R"json({
+		"type": "boolean",
+		"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+		"default": true
+	})json"_ojson;
+
 	defs[Defs::TargetCMakeToolset] = R"json({
 		"type": "string",
 		"description": "A toolset to be passed to CMake with the -T option.",
@@ -1304,6 +1310,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetChaletRebuild] = R"json({
 		"type": "boolean",
 		"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetChaletClean] = R"json({
+		"type": "boolean",
+		"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
 		"default": true
 	})json"_ojson;
 
@@ -1603,6 +1615,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(targetCMake, "recheck", Defs::TargetCMakeRecheck);
 		addProperty(targetCMake, "rebuild", Defs::TargetCMakeRebuild);
+		addProperty(targetCMake, "clean", Defs::TargetCMakeClean);
 		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "targets", Defs::TargetCMakeTargetNames, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConditions);
@@ -1626,6 +1639,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetChalet, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(targetChalet, "recheck", Defs::TargetChaletRecheck);
 		addProperty(targetChalet, "rebuild", Defs::TargetChaletRebuild);
+		addProperty(targetChalet, "clean", Defs::TargetChaletClean);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
 
@@ -1779,6 +1793,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCMakeDefines: return "target-cmake-defines";
 		case Defs::TargetCMakeRecheck: return "target-cmake-recheck";
 		case Defs::TargetCMakeRebuild: return "target-cmake-rebuild";
+		case Defs::TargetCMakeClean: return "target-cmake-clean";
 		case Defs::TargetCMakeTargetNames: return "target-cmake-targets";
 		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
 		case Defs::TargetCMakeRunExecutable: return "target-cmake-runExecutable";
@@ -1788,6 +1803,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletBuildFile: return "target-chalet-buildFile";
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
+		case Defs::TargetChaletClean: return "target-chalet-clean";
 		//
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";

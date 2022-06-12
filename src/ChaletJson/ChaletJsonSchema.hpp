@@ -142,6 +142,7 @@ class ChaletJsonSchema
 		TargetCMakeDefines,
 		TargetCMakeRecheck,
 		TargetCMakeRebuild,
+		TargetCMakeClean,
 		TargetCMakeToolset,
 		TargetCMakeRunExecutable,
 		//
@@ -150,6 +151,7 @@ class ChaletJsonSchema
 		TargetChaletBuildFile,
 		TargetChaletRecheck,
 		TargetChaletRebuild,
+		TargetChaletClean,
 		//
 		TargetProcess,
 		TargetProcessPath,
