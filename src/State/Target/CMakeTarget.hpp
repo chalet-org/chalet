@@ -44,6 +44,9 @@ struct CMakeTarget final : public IBuildTarget
 	bool rebuild() const noexcept;
 	void setRebuild(const bool inValue) noexcept;
 
+	bool clean() const noexcept;
+	void setClean(const bool inValue) noexcept;
+
 private:
 	StringList m_defines;
 	StringList m_targets;
@@ -55,6 +58,7 @@ private:
 
 	bool m_recheck = true;
 	bool m_rebuild = true;
+	bool m_clean = true;
 };
 }
 

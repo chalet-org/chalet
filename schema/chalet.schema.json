@@ -2061,6 +2061,9 @@
 				"rebuild": {
 					"$ref": "#/definitions/target-cmake-rebuild"
 				},
+				"clean": {
+					"$ref": "#/definitions/target-cmake-clean"
+				},
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
@@ -2145,6 +2148,11 @@
 			"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
 		},
+		"target-cmake-clean": {
+			"type": "boolean",
+			"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+			"default": true
+		},
 		"target-cmake-toolset": {
 			"type": "string",
 			"description": "A toolset to be passed to CMake with the -T option.",
@@ -2184,6 +2192,9 @@
 				},
 				"rebuild": {
 					"$ref": "#/definitions/target-chalet-rebuild"
+				},
+				"clean": {
+					"$ref": "#/definitions/target-chalet-clean"
 				}
 			},
 			"patternProperties": {
@@ -2210,6 +2221,11 @@
 		"target-chalet-rebuild": {
 			"type": "boolean",
 			"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"default": true
+		},
+		"target-chalet-clean": {
+			"type": "boolean",
+			"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
 		"target-process": {

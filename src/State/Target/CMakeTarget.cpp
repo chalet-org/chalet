@@ -192,4 +192,14 @@ void CMakeTarget::setRebuild(const bool inValue) noexcept
 	m_rebuild = inValue;
 }
 
+/*****************************************************************************/
+bool CMakeTarget::clean() const noexcept
+{
+	return m_clean;
+}
+void CMakeTarget::setClean(const bool inValue) noexcept
+{
+	m_clean = inValue;
+}
+
 }

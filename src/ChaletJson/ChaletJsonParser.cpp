@@ -603,6 +603,8 @@ bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Js
 				outTarget.setRecheck(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
 				outTarget.setRebuild(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "clean", status))
+				outTarget.setClean(val);
 			else if (isInvalid(status))
 				return false;
 		}
@@ -658,6 +660,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setRecheck(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
 				outTarget.setRebuild(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "clean", status))
+				outTarget.setClean(val);
 			else if (isInvalid(status))
 				return false;
 		}
