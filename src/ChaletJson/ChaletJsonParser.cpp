@@ -646,7 +646,7 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefines(std::move(val));
-			else if (valueMatchesSearchKeyPattern(val, value, key, "targetNames", status))
+			else if (valueMatchesSearchKeyPattern(val, value, key, "targets", status))
 				outTarget.addTargets(std::move(val));
 			else if (isInvalid(status))
 				return false;
