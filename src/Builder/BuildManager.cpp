@@ -482,7 +482,7 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::doLazyClean(const std::function<void()>& onClean)
+bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool inCleanExternals)
 {
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -502,6 +502,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 		return false;
 
 	StringList buildDirs;
+	StringList externalLocations;
 	for (const auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -512,17 +513,21 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 				List::addIfDoesNotExist(buildDirs, std::move(dir));
 			}
 		}
-		if (target->isSubChalet())
+		else if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			if (subChaletTarget.clean())
+			if (subChaletTarget.clean() && inCleanExternals)
 				doSubChaletClean(subChaletTarget);
+			else
+				List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
 		}
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			if (cmakeTarget.clean())
+			if (cmakeTarget.clean() && inCleanExternals)
 				doCMakeClean(cmakeTarget);
+			else
+				List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
 		}
 	}
 
@@ -539,7 +544,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean)
 		Path::sanitize(shortPath);
 		String::replaceAll(shortPath, buildOutputDir, "");
 
-		if (it->is_regular_file())
+		if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
 		{
 			auto pth = path;
 			++it;
@@ -937,7 +942,7 @@ bool BuildManager::cmdClean()
 		Output::lineBreak();
 	};
 
-	if (!doLazyClean(onClean))
+	if (!doLazyClean(onClean, true))
 	{
 		Output::msgNothingToClean();
 		Output::lineBreak();
