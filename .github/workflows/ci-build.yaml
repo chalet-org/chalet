@@ -22,7 +22,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          draft: true
+          draft: false
           prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
