@@ -6,14 +6,16 @@
 #ifndef CHALET_SETTINGS_ACTION_HPP
 #define CHALET_SETTINGS_ACTION_HPP
 
+#include "Router/RouteType.hpp"
+
 namespace chalet
 {
-enum class SettingsAction : ushort
+enum class SettingsAction : std::underlying_type_t<RouteType>
 {
-	Get,
-	Set,
-	Unset,
-	QueryKeys,
+	Get = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsGet),
+	Set = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsSet),
+	Unset = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsUnset),
+	QueryKeys = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsGetKeys),
 };
 }
 

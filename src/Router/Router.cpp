@@ -217,27 +217,8 @@ bool Router::routeSettings()
 {
 	const auto& route = m_inputs.route();
 
-	SettingsAction action = SettingsAction::Get;
-	switch (route.type())
-	{
-		case RouteType::SettingsSet:
-			action = SettingsAction::Set;
-			break;
-		case RouteType::SettingsGet:
-			action = SettingsAction::Get;
-			break;
-		case RouteType::SettingsUnset:
-			action = SettingsAction::Unset;
-			break;
-		case RouteType::SettingsGetKeys:
-			action = SettingsAction::QueryKeys;
-			break;
-		default:
-			return false;
-	}
-
 	SettingsManager settingsMgr(m_inputs);
-	if (!settingsMgr.run(action))
+	if (!settingsMgr.run(static_cast<SettingsAction>(route.type())))
 		return true;
 
 	return true;

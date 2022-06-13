@@ -296,22 +296,6 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 }
 
 /*****************************************************************************/
-void Output::resetStdout()
-{
-	auto reset = getAnsiStyle(Color::Reset);
-	std::cout.write(reset.data(), reset.size());
-	std::cout.flush();
-}
-
-/*****************************************************************************/
-void Output::resetStderr()
-{
-	auto reset = getAnsiStyle(Color::Reset);
-	std::cerr.write(reset.data(), reset.size());
-	std::cerr.flush();
-}
-
-/*****************************************************************************/
 void Output::lineBreak(const bool inForce)
 {
 	if (!state.quietNonBuild || inForce)

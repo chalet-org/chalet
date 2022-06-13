@@ -60,9 +60,6 @@ bool Application::handleRoute()
 /*****************************************************************************/
 void Application::initializeTerminal()
 {
-	// Output::resetStdout();
-	// Output::resetStderr();
-
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
 #endif
@@ -75,7 +72,6 @@ void Application::initializeTerminal()
 		Diagnostic::printErrors();
 		this->cleanup();
 	});
-	testSignalHandling();
 #endif // _DEBUG
 }
 
@@ -107,20 +103,4 @@ void Application::cleanup()
 #endif
 }
 
-/*****************************************************************************/
-void Application::testSignalHandling()
-{
-	// int* test = nullptr;
-	// chalet_assert(test != nullptr, ""); // SIGABRT / abort
-	// int test2 = *test;					// SIGSEGV / segmentation fault
-
-	// int a = 0;
-	// int test2 = 25 / a; // SIGFPE / arithmetic error
-
-	// LOG(test2);
-
-	// ::raise(SIGILL);
-	// ::raise(SIGTERM);
-	// ::raise(SIGABRT); // generic abort
-}
 }

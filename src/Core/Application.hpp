@@ -31,8 +31,6 @@ private:
 	int onExit(const Status inStatus);
 	void cleanup();
 
-	void testSignalHandling();
-
 	Unique<CommandLineInputs> m_inputs;
 };
 }

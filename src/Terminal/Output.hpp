@@ -43,8 +43,6 @@ std::string getAnsiStyleForMakefile(const Color inColor);
 std::string getAnsiStyleForceFormatting(const Color inColor, const Formatting inFormatting);
 
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
-void resetStdout();
-void resetStderr();
 void lineBreak(const bool inForce = false);
 void lineBreakStderr();
 void previousLine(const bool inForce = false);
