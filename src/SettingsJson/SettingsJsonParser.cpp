@@ -276,22 +276,13 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		auto gitPath = gitNode.get<std::string>();
 		if (gitPath.empty())
 		{
-			gitPath = m_centralState.tools.getPathToGit();
+			gitPath = AncillaryTools::getPathToGit();
 			tools[Keys::ToolsGit] = gitPath;
 		}
 		else
 		{
-			// We always want bin/git.exe (is not specific to cmd prompt or msys)
-			if (String::endsWith("Git/mingw64/bin/git.exe", gitPath))
-			{
-				String::replaceAll(gitPath, "mingw64/bin/git.exe", "bin/git.exe");
+			if (!AncillaryTools::gitIsRootPath(gitPath))
 				tools[Keys::ToolsGit] = gitPath;
-			}
-			else if (String::endsWith("Git/cmd/git.exe", gitPath))
-			{
-				String::replaceAll(gitPath, "cmd/git.exe", "bin/git.exe");
-				tools[Keys::ToolsGit] = gitPath;
-			}
 		}
 
 		bool gitExists = Commands::pathExists(gitPath);

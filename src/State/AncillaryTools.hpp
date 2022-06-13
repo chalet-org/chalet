@@ -108,6 +108,7 @@ struct AncillaryTools
 	bool plistConvertToJson(const std::string& inInput, const std::string& inOutput) const;
 
 	static std::string getPathToGit();
+	static bool gitIsRootPath(std::string& outPath);
 
 private:
 	Dictionary<std::string> m_applePlatformSdk;

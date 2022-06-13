@@ -520,9 +520,34 @@ std::string AncillaryTools::getPathToGit()
 			}
 		}
 	}
+	else
+	{
+		AncillaryTools::gitIsRootPath(git);
+	}
 #endif
 
 	return git;
+}
+
+/*****************************************************************************/
+bool AncillaryTools::gitIsRootPath(std::string& outPath)
+{
+#if defined(CHALET_WIN32)
+	// We always want bin/git.exe (is not specific to cmd prompt or msys)
+	if (String::endsWith("Git/mingw64/bin/git.exe", outPath))
+	{
+		String::replaceAll(outPath, "mingw64/bin/git.exe", "bin/git.exe");
+		return false;
+	}
+	else if (String::endsWith("Git/cmd/git.exe", outPath))
+	{
+		String::replaceAll(outPath, "cmd/git.exe", "bin/git.exe");
+		return false;
+	}
+#else
+	UNUSED(outPath);
+#endif
+	return true;
 }
 
 }
