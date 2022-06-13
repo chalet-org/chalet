@@ -9,7 +9,7 @@
 #include "Arguments/ArgumentIdentifier.hpp"
 #include "Arguments/BaseArgumentParser.hpp"
 #include "Arguments/MappedArgument.hpp"
-#include "Router/Route.hpp"
+#include "Router/CommandRoute.hpp"
 #include "Utility/Variant.hpp"
 
 namespace chalet
@@ -19,9 +19,9 @@ struct CommandLineInputs;
 class ArgumentParser final : public BaseArgumentParser
 {
 	using ParserAction = std::function<void(ArgumentParser&)>;
-	using ParserList = std::unordered_map<Route, ParserAction>;
-	using RouteDescriptionList = std::unordered_map<Route, std::string>;
-	using RouteMap = OrderedDictionary<Route>;
+	using ParserList = std::unordered_map<RouteType, ParserAction>;
+	using RouteDescriptionList = std::unordered_map<RouteType, std::string>;
+	using RouteMap = OrderedDictionary<RouteType>;
 	using ArgumentList = std::vector<MappedArgument>;
 
 public:
@@ -30,7 +30,7 @@ public:
 	bool resolveFromArguments(const int argc, const char* argv[]);
 	const ArgumentList& arguments() const noexcept;
 
-	Route route() const noexcept;
+	CommandRoute getRoute() const noexcept;
 
 	StringList getRouteList() const;
 
@@ -39,7 +39,7 @@ public:
 private:
 	virtual StringList getTruthyArguments() const final;
 
-	Route getRouteFromString(const std::string& inValue) const;
+	RouteType getRouteFromString(const std::string& inValue) const;
 
 	void makeParser();
 	bool doParse();
@@ -114,7 +114,7 @@ private:
 
 	std::string m_routeString;
 
-	Route m_route;
+	RouteType m_route;
 
 	bool m_hasRemaining = false;
 };

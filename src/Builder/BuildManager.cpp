@@ -16,7 +16,6 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
-#include "Router/Route.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -46,11 +45,11 @@ namespace chalet
 BuildManager::BuildManager(BuildState& inState) :
 	m_state(inState),
 	m_buildRoutes({
-		{ Route::BuildRun, &BuildManager::cmdBuild },
-		{ Route::Build, &BuildManager::cmdBuild },
-		{ Route::Rebuild, &BuildManager::cmdRebuild },
-		{ Route::Run, &BuildManager::cmdRun },
-		{ Route::Bundle, &BuildManager::cmdBuild },
+		{ RouteType::BuildRun, &BuildManager::cmdBuild },
+		{ RouteType::Build, &BuildManager::cmdBuild },
+		{ RouteType::Rebuild, &BuildManager::cmdRebuild },
+		{ RouteType::Run, &BuildManager::cmdRun },
+		{ RouteType::Bundle, &BuildManager::cmdBuild },
 	})
 {
 }
@@ -59,11 +58,11 @@ BuildManager::BuildManager(BuildState& inState) :
 BuildManager::~BuildManager() = default;
 
 /*****************************************************************************/
-bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
+bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 {
 	m_timer.restart();
 
-	if (inRoute == Route::Clean)
+	if (inRoute.isClean())
 	{
 		Output::lineBreak();
 
@@ -74,21 +73,21 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 		return true;
 	}
-	else if (inRoute == Route::Rebuild)
+	else if (inRoute.isRebuild())
 	{
 		// Don't produce any output from this
 		doLazyClean();
 	}
 
-	if (m_buildRoutes.find(inRoute) == m_buildRoutes.end())
+	if (m_buildRoutes.find(inRoute.type()) == m_buildRoutes.end())
 	{
 		Output::lineBreak();
 		Diagnostic::error("Build command not recognized.");
 		return false;
 	}
 
-	const bool runRoute = inRoute == Route::Run;
-	const bool routeWillRun = m_state.inputs.routeWillRun();
+	const bool runRoute = inRoute.isRun();
+	const bool routeWillRun = inRoute.willRun();
 	const auto& runTargetName = m_state.inputs.runTarget();
 
 	if (!runRoute)
@@ -119,7 +118,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 				if (!addProjectToBuild(static_cast<const SourceTarget&>(*target)))
 					return false;
 			}
-			else if (inRoute == Route::Rebuild)
+			else if (inRoute.isRebuild())
 			{
 				if (target->isCMake())
 				{
@@ -138,7 +137,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 	m_strategy->doPreBuild();
 	m_fileCache.clear();
 
-	if (inRoute == Route::Rebuild || m_directoriesMade)
+	if (inRoute.isRebuild() || m_directoriesMade)
 	{
 		if (Output::showCommands())
 			Output::lineBreak();
@@ -227,7 +226,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 		{
 			Timer buildTimer;
 
-			if (!m_buildRoutes[inRoute](*this, static_cast<const SourceTarget&>(*target)))
+			if (!m_buildRoutes[inRoute.type()](*this, static_cast<const SourceTarget&>(*target)))
 			{
 				error = true;
 				break;
@@ -290,7 +289,7 @@ bool BuildManager::run(const Route inRoute, const bool inShowSuccess)
 			Output::printInfo(fmt::format("   Total: {}", m_timer.asString()));
 		}
 
-		if (inRoute != Route::BuildRun)
+		if (!inRoute.isBuildRun())
 			Output::lineBreak();
 	}
 

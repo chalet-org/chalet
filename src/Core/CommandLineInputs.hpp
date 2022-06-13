@@ -11,7 +11,7 @@
 #include "Core/VisualStudioVersion.hpp"
 #include "Export/ExportKind.hpp"
 #include "Init/InitTemplateType.hpp"
-#include "Router/Route.hpp"
+#include "Router/CommandRoute.hpp"
 #include "Settings/SettingsType.hpp"
 #include "Utility/DefinesExperimental.hpp"
 
@@ -56,9 +56,8 @@ struct CommandLineInputs
 	const std::string& distributionDirectory() const noexcept;
 	void setDistributionDirectory(std::string&& inValue) noexcept;
 
-	Route route() const noexcept;
-	void setRoute(const Route inValue) noexcept;
-	bool routeWillRun() const noexcept;
+	const CommandRoute& route() const noexcept;
+	void setRoute(const CommandRoute& inValue) noexcept;
 
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
@@ -236,7 +235,8 @@ private:
 	std::optional<bool> m_keepGoing;
 	std::optional<bool> m_generateCompileCommands;
 
-	Route m_route = Route::Unknown;
+	CommandRoute m_route;
+
 	ExportKind m_exportKind = ExportKind::None;
 	SettingsType m_settingsType = SettingsType::Local;
 	QueryOption m_queryOption = QueryOption::None;

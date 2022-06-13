@@ -8,7 +8,7 @@
 #include <thread>
 
 #include "Core/CommandLineInputs.hpp"
-#include "Router/Route.hpp"
+#include "Router/RouteType.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/DefinesVersion.hpp"
@@ -49,60 +49,60 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 	BaseArgumentParser(),
 	m_inputs(inInputs),
 	m_subCommands({
-		{ Route::BuildRun, &ArgumentParser::populateBuildRunArguments },
-		{ Route::Run, &ArgumentParser::populateRunArguments },
-		{ Route::Build, &ArgumentParser::populateBuildArguments },
-		{ Route::Rebuild, &ArgumentParser::populateBuildArguments },
-		{ Route::Clean, &ArgumentParser::populateBuildArguments },
-		{ Route::Bundle, &ArgumentParser::populateBuildArguments },
-		{ Route::Configure, &ArgumentParser::populateBuildArguments },
-		{ Route::Init, &ArgumentParser::populateInitArguments },
-		{ Route::Export, &ArgumentParser::populateExportArguments },
-		{ Route::SettingsGet, &ArgumentParser::populateSettingsGetArguments },
-		{ Route::SettingsGetKeys, &ArgumentParser::populateSettingsGetKeysArguments },
-		{ Route::SettingsSet, &ArgumentParser::populateSettingsSetArguments },
-		{ Route::SettingsUnset, &ArgumentParser::populateSettingsUnsetArguments },
-		{ Route::Query, &ArgumentParser::populateQueryArguments },
-		{ Route::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
+		{ RouteType::BuildRun, &ArgumentParser::populateBuildRunArguments },
+		{ RouteType::Run, &ArgumentParser::populateRunArguments },
+		{ RouteType::Build, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Rebuild, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Clean, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Bundle, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Configure, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Init, &ArgumentParser::populateInitArguments },
+		{ RouteType::Export, &ArgumentParser::populateExportArguments },
+		{ RouteType::SettingsGet, &ArgumentParser::populateSettingsGetArguments },
+		{ RouteType::SettingsGetKeys, &ArgumentParser::populateSettingsGetKeysArguments },
+		{ RouteType::SettingsSet, &ArgumentParser::populateSettingsSetArguments },
+		{ RouteType::SettingsUnset, &ArgumentParser::populateSettingsUnsetArguments },
+		{ RouteType::Query, &ArgumentParser::populateQueryArguments },
+		{ RouteType::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
 	}),
 	m_routeDescriptions({
-		{ Route::BuildRun, "Build the project and run a valid executable build target." },
-		{ Route::Run, "Run a valid executable build target." },
-		{ Route::Build, "Build the project and create a configuration if it doesn't exist." },
-		{ Route::Rebuild, "Rebuild the project and create a configuration if it doesn't exist." },
-		{ Route::Clean, "Unceremoniously clean the build folder." },
-		{ Route::Bundle, "Bundle the project for distribution." },
-		{ Route::Configure, "Create a project configuration and fetch external dependencies." },
-		{ Route::Export, "Export the project to another project format." },
-		{ Route::Init, "Initialize a project in either the current directory or a subdirectory." },
-		{ Route::SettingsGet, "If the given property is valid, display its JSON node." },
-		{ Route::SettingsGetKeys, "If the given property is an object, display the names of its properties." },
-		{ Route::SettingsSet, "Set the given property to the given value." },
-		{ Route::SettingsUnset, "Remove the key/value pair given a valid property key." },
-		{ Route::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
-		{ Route::TerminalTest, "Display all color themes and terminal capabilities." },
+		{ RouteType::BuildRun, "Build the project and run a valid executable build target." },
+		{ RouteType::Run, "Run a valid executable build target." },
+		{ RouteType::Build, "Build the project and create a configuration if it doesn't exist." },
+		{ RouteType::Rebuild, "Rebuild the project and create a configuration if it doesn't exist." },
+		{ RouteType::Clean, "Unceremoniously clean the build folder." },
+		{ RouteType::Bundle, "Bundle the project for distribution." },
+		{ RouteType::Configure, "Create a project configuration and fetch external dependencies." },
+		{ RouteType::Export, "Export the project to another project format." },
+		{ RouteType::Init, "Initialize a project in either the current directory or a subdirectory." },
+		{ RouteType::SettingsGet, "If the given property is valid, display its JSON node." },
+		{ RouteType::SettingsGetKeys, "If the given property is an object, display the names of its properties." },
+		{ RouteType::SettingsSet, "Set the given property to the given value." },
+		{ RouteType::SettingsUnset, "Remove the key/value pair given a valid property key." },
+		{ RouteType::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
+		{ RouteType::TerminalTest, "Display all color themes and terminal capabilities." },
 	}),
 	m_routeMap({
-		{ "buildrun", Route::BuildRun },
-		{ "run", Route::Run },
-		{ "build", Route::Build },
-		{ "rebuild", Route::Rebuild },
-		{ "clean", Route::Clean },
-		{ "bundle", Route::Bundle },
-		{ "configure", Route::Configure },
-		{ "export", Route::Export },
-		{ "init", Route::Init },
-		{ "get", Route::SettingsGet },
-		{ "getkeys", Route::SettingsGetKeys },
-		{ "set", Route::SettingsSet },
-		{ "unset", Route::SettingsUnset },
-		{ "query", Route::Query },
-		{ "termtest", Route::TerminalTest },
+		{ "buildrun", RouteType::BuildRun },
+		{ "run", RouteType::Run },
+		{ "build", RouteType::Build },
+		{ "rebuild", RouteType::Rebuild },
+		{ "clean", RouteType::Clean },
+		{ "bundle", RouteType::Bundle },
+		{ "configure", RouteType::Configure },
+		{ "export", RouteType::Export },
+		{ "init", RouteType::Init },
+		{ "get", RouteType::SettingsGet },
+		{ "getkeys", RouteType::SettingsGetKeys },
+		{ "set", RouteType::SettingsSet },
+		{ "unset", RouteType::SettingsUnset },
+		{ "query", RouteType::Query },
+		{ "termtest", RouteType::TerminalTest },
 	})
 {
 #if defined(CHALET_DEBUG)
-	m_subCommands.emplace(Route::Debug, &ArgumentParser::populateDebugArguments);
-	m_routeMap.emplace("debug", Route::Debug);
+	m_subCommands.emplace(RouteType::Debug, &ArgumentParser::populateDebugArguments);
+	m_routeMap.emplace("debug", RouteType::Debug);
 #endif
 }
 
@@ -160,7 +160,7 @@ bool ArgumentParser::resolveFromArguments(const int argc, const char* argv[])
 		}
 	}
 
-	m_route = Route::Unknown;
+	m_route = RouteType::Unknown;
 	m_routeString.clear();
 	makeParser();
 
@@ -170,12 +170,12 @@ bool ArgumentParser::resolveFromArguments(const int argc, const char* argv[])
 }
 
 /*****************************************************************************/
-Route ArgumentParser::getRouteFromString(const std::string& inValue) const
+RouteType ArgumentParser::getRouteFromString(const std::string& inValue) const
 {
 	if (m_routeMap.find(inValue) != m_routeMap.end())
 		return m_routeMap.at(inValue);
 
-	return Route::Unknown;
+	return RouteType::Unknown;
 }
 
 /*****************************************************************************/
@@ -184,9 +184,10 @@ const ArgumentParser::ArgumentList& ArgumentParser::arguments() const noexcept
 	return m_argumentList;
 }
 
-Route ArgumentParser::route() const noexcept
+CommandRoute ArgumentParser::getRoute() const noexcept
 {
-	return m_route;
+	CommandRoute ret(m_route);
+	return ret;
 }
 
 /*****************************************************************************/
@@ -269,7 +270,7 @@ bool ArgumentParser::showHelp()
 	std::cout.put('\n');
 	std::cout.flush();
 
-	m_route = Route::Help;
+	m_route = RouteType::Help;
 	return true;
 }
 
@@ -281,14 +282,14 @@ bool ArgumentParser::showVersion()
 	std::cout.put('\n');
 	std::cout.flush();
 
-	m_route = Route::Help;
+	m_route = RouteType::Help;
 	return true;
 }
 
 /*****************************************************************************/
 bool ArgumentParser::isSubcommand() const
 {
-	return m_route != Route::Unknown && !m_routeString.empty();
+	return m_route != RouteType::Unknown && !m_routeString.empty();
 }
 
 /*****************************************************************************/
@@ -465,7 +466,7 @@ std::string ArgumentParser::getHelp()
 	}
 	help += fmt::format("   {}\n", command);
 	help += '\n';
-	if (m_route != Route::Unknown)
+	if (m_route != RouteType::Unknown)
 	{
 		help += "Description:\n";
 		help += fmt::format("   {}\n", m_routeDescriptions.at(m_route));
@@ -654,49 +655,49 @@ void ArgumentParser::populateMainArguments()
 	StringList descriptions;
 
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
-	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Init)));
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::Init)));
 
 	subcommands.push_back("configure");
-	descriptions.push_back(m_routeDescriptions.at(Route::Configure));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Configure));
 
 	subcommands.push_back(fmt::format("buildrun {} {}", Arg::RunTarget, Arg::RemainingArguments));
-	descriptions.push_back(m_routeDescriptions.at(Route::BuildRun));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::BuildRun));
 
 	subcommands.push_back(fmt::format("run {} {}", Arg::RunTarget, Arg::RemainingArguments));
-	descriptions.push_back(m_routeDescriptions.at(Route::Run));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Run));
 
 	subcommands.push_back("build");
-	descriptions.push_back(m_routeDescriptions.at(Route::Build));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Build));
 
 	subcommands.push_back("rebuild");
-	descriptions.push_back(m_routeDescriptions.at(Route::Rebuild));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Rebuild));
 
 	subcommands.push_back("clean");
-	descriptions.push_back(m_routeDescriptions.at(Route::Clean));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Clean));
 
 	subcommands.push_back("bundle");
-	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::Bundle)));
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::Bundle)));
 
 	subcommands.push_back(fmt::format("get {}", Arg::SettingsKey));
-	descriptions.push_back(m_routeDescriptions.at(Route::SettingsGet));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::SettingsGet));
 
 	subcommands.push_back(fmt::format("getkeys {}", Arg::SettingsKeyQuery));
-	descriptions.push_back(m_routeDescriptions.at(Route::SettingsGetKeys));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::SettingsGetKeys));
 
 	subcommands.push_back(fmt::format("set {} {}", Arg::SettingsKey, Arg::SettingsValue));
-	descriptions.push_back(m_routeDescriptions.at(Route::SettingsSet));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::SettingsSet));
 
 	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
-	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(Route::SettingsUnset)));
+	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::SettingsUnset)));
 
 	subcommands.push_back(fmt::format("export {}", Arg::ExportKind));
-	descriptions.push_back(m_routeDescriptions.at(Route::Export));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Export));
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
-	descriptions.push_back(m_routeDescriptions.at(Route::Query));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Query));
 
 	subcommands.push_back("termtest");
-	descriptions.push_back(m_routeDescriptions.at(Route::TerminalTest));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::TerminalTest));
 
 	std::string help;
 	if (subcommands.size() == descriptions.size())

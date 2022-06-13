@@ -91,7 +91,7 @@ bool ChaletJsonParser::serialize()
 		return false;
 	}
 
-	if (m_state.inputs.routeWillRun())
+	if (m_state.inputs.route().willRun())
 	{
 		if (!validRunTargetRequestedFromInput())
 		{
@@ -114,7 +114,7 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseRoot(inJson))
 		return false;
 
-	if (m_centralState.inputs().route() != Route::Configure)
+	if (!m_centralState.inputs().route().isConfigure())
 	{
 		if (!parseDistribution(inJson))
 			return false;
@@ -1438,7 +1438,7 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(IBuil
 	{
 		if (String::equals("runTarget", value))
 		{
-			const bool routeWillRun = m_state.inputs.routeWillRun();
+			const bool routeWillRun = m_state.inputs.route().willRun();
 			const auto& runTarget = m_state.inputs.runTarget();
 
 			if (!routeWillRun || runTarget.empty())
@@ -1462,7 +1462,7 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(IBuil
 	{
 		if (String::equals("runTarget", value))
 		{
-			const bool routeWillRun = m_state.inputs.routeWillRun();
+			const bool routeWillRun = m_state.inputs.route().willRun();
 			const auto& runTarget = m_state.inputs.runTarget();
 
 			if (!routeWillRun || runTarget.empty())

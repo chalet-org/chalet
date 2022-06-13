@@ -3,12 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ROUTE_HPP
-#define CHALET_ROUTE_HPP
+#ifndef CHALET_ROUTE_TYPE_HPP
+#define CHALET_ROUTE_TYPE_HPP
 
 namespace chalet
 {
-enum class Route : ushort
+enum class RouteType : ushort
 {
 	Unknown,
 	Help,
@@ -35,4 +35,4 @@ enum class Route : ushort
 };
 }
 
-#endif // CHALET_ROUTE_HPP
+#endif // CHALET_ROUTE_TYPE_HPP

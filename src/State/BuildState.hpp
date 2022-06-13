@@ -6,7 +6,7 @@
 #ifndef CHALET_BUILD_STATE_HPP
 #define CHALET_BUILD_STATE_HPP
 
-#include "Router/Route.hpp"
+#include "Router/CommandRoute.hpp"
 
 namespace chalet
 {
@@ -36,8 +36,7 @@ public:
 	~BuildState();
 
 	bool initialize();
-	bool doBuild(const bool inShowSuccess = true);
-	bool doBuild(const Route inRoute, const bool inShowSuccess = true);
+	bool doBuild(const CommandRoute& inRoute, const bool inShowSuccess = true);
 
 	void makeLibraryPathVariables();
 

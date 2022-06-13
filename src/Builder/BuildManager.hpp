@@ -7,7 +7,7 @@
 #define CHALET_MAKEFILE_RUNNER_HPP
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Router/Route.hpp"
+#include "Router/CommandRoute.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -24,14 +24,14 @@ struct ScriptBuildTarget;
 class BuildManager
 {
 	using BuildAction = std::function<bool(BuildManager&, const SourceTarget& inTarget)>;
-	using BuildRouteList = std::unordered_map<Route, BuildAction>;
+	using BuildRouteList = std::unordered_map<RouteType, BuildAction>;
 
 public:
 	explicit BuildManager(BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(BuildManager);
 	~BuildManager();
 
-	bool run(const Route inRoute, const bool inShowSuccess = true);
+	bool run(const CommandRoute& inRoute, const bool inShowSuccess = true);
 
 private:
 	void printBuildInformation();

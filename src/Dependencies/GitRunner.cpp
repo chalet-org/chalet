@@ -198,7 +198,7 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 	// LOG(commitNeedsUpdate, branchNeedsUpdate, tagNeedsUpdate, destination);
 
 	bool update = commitNeedsUpdate || branchNeedsUpdate || tagNeedsUpdate;
-	bool isConfigure = m_centralState.inputs().route() == Route::Configure;
+	bool isConfigure = m_centralState.inputs().route().isConfigure();
 	if (!update && !lastCachedBranch.empty() && isConfigure)
 	{
 		Timer timer;

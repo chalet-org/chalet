@@ -41,8 +41,8 @@ bool CentralState::initialize()
 	WindowsTerminal::initializeCreateProcess();
 #endif
 
-	Route route = m_inputs.route();
-	chalet_assert(route != Route::Query, "");
+	const auto& route = m_inputs.route();
+	chalet_assert(!route.isQuery(), "");
 
 	Diagnostic::usePaddedErrors();
 
@@ -78,7 +78,7 @@ bool CentralState::initialize()
 
 	Output::setShowCommandOverride(false);
 
-	if (route != Route::Configure)
+	if (!route.isConfigure())
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
@@ -120,9 +120,9 @@ bool CentralState::initialize()
 /*****************************************************************************/
 bool CentralState::initializeForList()
 {
-	Route route = m_inputs.route();
-	chalet_assert(route == Route::Query, "");
-	if (route != Route::Query)
+	const auto& route = m_inputs.route();
+	chalet_assert(route.isQuery(), "");
+	if (!route.isQuery())
 		return false;
 
 	UNUSED(cache.initializeSettings(m_inputs));

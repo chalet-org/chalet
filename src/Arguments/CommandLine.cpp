@@ -8,7 +8,6 @@
 #include "Arguments/ArgumentParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 
-#include "Router/Route.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -26,9 +25,9 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 
 	inputs->setAppPath(patterns.getProgramPath());
 
-	Route route = patterns.route();
+	CommandRoute route = patterns.getRoute();
 	inputs->setRoute(route);
-	if (route == Route::Help)
+	if (route.isHelp())
 		return inputs;
 
 	std::string buildConfiguration;
@@ -283,7 +282,7 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 		inputs->setToolchainPreference(std::move(toolchainPreference));
 	}
 
-	if (route == Route::Query)
+	if (route.isQuery())
 	{
 		// Output::setQuietNonBuild(true);
 		inputs->setCommandList(patterns.getRouteList());

@@ -3,10 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_CONDUCTOR_HPP
-#define CHALET_COMMAND_CONDUCTOR_HPP
-
-#include "Router/Route.hpp"
+#ifndef CHALET_ROUTER_HPP
+#define CHALET_ROUTER_HPP
 
 namespace chalet
 {
@@ -16,21 +14,18 @@ struct CentralState;
 
 class Router
 {
-	using RouteAction = std::function<bool(Router&)>;
-	using RouteList = std::unordered_map<Route, RouteAction>;
-
 public:
 	explicit Router(CommandLineInputs& inInputs);
 
 	bool run();
 
 private:
-	bool runRoutesThatRequireState(const Route inRoute);
+	bool runRoutesThatRequireState();
 
 	bool routeConfigure(BuildState& inState);
 	bool routeBundle(BuildState& inState);
 	bool routeInit();
-	bool routeSettings(const Route inRoute);
+	bool routeSettings();
 	bool routeQuery();
 	bool routeTerminalTest();
 
@@ -45,4 +40,4 @@ private:
 };
 }
 
-#endif // CHALET_COMMAND_CONDUCTOR_HPP
+#endif // CHALET_ROUTER_HPP

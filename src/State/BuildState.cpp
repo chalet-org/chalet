@@ -112,7 +112,7 @@ bool BuildState::initialize()
 	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
 		return false;
 
-	if (inputs.route() != Route::Configure)
+	if (!inputs.route().isConfigure())
 	{
 		if (!initializeBuild())
 			return false;
@@ -133,18 +133,13 @@ bool BuildState::initialize()
 }
 
 /*****************************************************************************/
-bool BuildState::doBuild(const bool inShowSuccess)
-{
-	BuildManager mgr(*this);
-	return mgr.run(inputs.route(), inShowSuccess);
-}
-
-bool BuildState::doBuild(const Route inRoute, const bool inShowSuccess)
+bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
 {
 	BuildManager mgr(*this);
 	return mgr.run(inRoute, inShowSuccess);
 }
 
+/*****************************************************************************/
 const std::string& BuildState::uniqueId() const noexcept
 {
 	return m_uniqueId;
@@ -272,8 +267,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -324,7 +319,7 @@ bool BuildState::initializeBuild()
 			std::string intermediateDir = paths.intermediateDir(project);
 			project.addIncludeDir(std::move(intermediateDir));
 
-			if (inputs.route() != Route::Export)
+			if (!inputs.route().isExport())
 			{
 				const bool isMsvc = environment->isMsvc();
 				if (!isMsvc)
@@ -566,7 +561,7 @@ bool BuildState::validateState()
 		}
 	}
 
-	if (configuration.enableProfiling() && inputs.route() != Route::Export)
+	if (configuration.enableProfiling() && !inputs.route().isExport())
 	{
 #if defined(CHALET_MACOS)
 		bool profilerAvailable = true;
@@ -611,7 +606,7 @@ bool BuildState::validateState()
 	}
 
 	// Right now, only used w/ Bundle
-	if (inputs.route() == Route::Bundle)
+	if (inputs.route().isBundle())
 	{
 		if (!tools.isSigningIdentityValid())
 			return false;

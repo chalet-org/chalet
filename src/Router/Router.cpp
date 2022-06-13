@@ -38,6 +38,11 @@
 
 namespace chalet
 {
+namespace
+{
+using RouteAction = std::function<bool(Router&)>;
+using RouteList = std::unordered_map<RouteType, RouteAction>;
+}
 /*****************************************************************************/
 Router::Router(CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
@@ -50,47 +55,47 @@ bool Router::run()
 	if (!parseTheme())
 		return false;
 
-	Route route = m_inputs.route();
-	if (route == Route::Unknown
-		|| static_cast<std::underlying_type_t<Route>>(route) >= static_cast<std::underlying_type_t<Route>>(Route::Count))
+	const auto& route = m_inputs.route();
+	if (route.isUnknown())
 	{
 		Diagnostic::error("Command not recognized.");
 		return false;
 	}
 
 	// Routes that don't require state
-	switch (route)
+	switch (route.type())
 	{
-		case Route::Query:
+		case RouteType::Query:
 			return routeQuery();
 
-		case Route::TerminalTest:
+		case RouteType::TerminalTest:
 			return routeTerminalTest();
 
-		case Route::Init:
+		case RouteType::Init:
 			return routeInit();
 
-		case Route::SettingsGet:
-		case Route::SettingsSet:
-		case Route::SettingsUnset:
-		case Route::SettingsGetKeys:
-			return routeSettings(route);
+		case RouteType::SettingsGet:
+		case RouteType::SettingsSet:
+		case RouteType::SettingsUnset:
+		case RouteType::SettingsGetKeys:
+			return routeSettings();
 
 #if defined(CHALET_DEBUG)
-		case Route::Debug:
+		case RouteType::Debug:
 			return routeDebug();
 #endif
 
 		default: break;
 	}
 
-	return runRoutesThatRequireState(route);
+	return runRoutesThatRequireState();
 }
 
 /*****************************************************************************/
-bool Router::runRoutesThatRequireState(const Route inRoute)
+bool Router::runRoutesThatRequireState()
 {
-	if (inRoute == Route::Export && m_inputs.exportKind() == ExportKind::None)
+	const auto& route = m_inputs.route();
+	if (route.isExport() && m_inputs.exportKind() == ExportKind::None)
 	{
 		Diagnostic::error("The requested project kind '{}' was not recognized, or is not yet supported.", m_inputs.exportKindRaw());
 		return false;
@@ -102,7 +107,7 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	if (!centralState->initialize())
 		return false;
 
-	if (inRoute != Route::Export)
+	if (!route.isExport())
 	{
 		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
@@ -110,31 +115,31 @@ bool Router::runRoutesThatRequireState(const Route inRoute)
 	}
 
 	bool result = false;
-	switch (inRoute)
+	switch (route.type())
 	{
-		case Route::Bundle: {
+		case RouteType::Bundle: {
 			chalet_assert(buildState != nullptr, "");
 			result = routeBundle(*buildState);
 			break;
 		}
 
-		case Route::Configure: {
+		case RouteType::Configure: {
 			chalet_assert(buildState != nullptr, "");
 			result = routeConfigure(*buildState);
 			break;
 		}
 
-		case Route::BuildRun:
-		case Route::Build:
-		case Route::Rebuild:
-		case Route::Run:
-		case Route::Clean: {
+		case RouteType::BuildRun:
+		case RouteType::Build:
+		case RouteType::Rebuild:
+		case RouteType::Run:
+		case RouteType::Clean: {
 			chalet_assert(buildState != nullptr, "");
-			result = buildState->doBuild();
+			result = buildState->doBuild(m_inputs.route());
 			break;
 		}
 
-		case Route::Export: {
+		case RouteType::Export: {
 			result = routeExport(*centralState);
 			break;
 		}
@@ -178,8 +183,11 @@ bool Router::routeBundle(BuildState& inState)
 	}
 
 	AppBundler bundler(inState);
-	if (!inState.doBuild(Route::Build, false))
-		return false;
+	{
+		CommandRoute route(RouteType::Build);
+		if (!inState.doBuild(route, false))
+			return false;
+	}
 
 	for (auto& target : inState.distribution)
 	{
@@ -205,21 +213,23 @@ bool Router::routeInit()
 }
 
 /*****************************************************************************/
-bool Router::routeSettings(const Route inRoute)
+bool Router::routeSettings()
 {
+	const auto& route = m_inputs.route();
+
 	SettingsAction action = SettingsAction::Get;
-	switch (inRoute)
+	switch (route.type())
 	{
-		case Route::SettingsSet:
+		case RouteType::SettingsSet:
 			action = SettingsAction::Set;
 			break;
-		case Route::SettingsGet:
+		case RouteType::SettingsGet:
 			action = SettingsAction::Get;
 			break;
-		case Route::SettingsUnset:
+		case RouteType::SettingsUnset:
 			action = SettingsAction::Unset;
 			break;
-		case Route::SettingsGetKeys:
+		case RouteType::SettingsGetKeys:
 			action = SettingsAction::QueryKeys;
 			break;
 		default:
