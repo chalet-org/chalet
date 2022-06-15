@@ -22,6 +22,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
+          commitish: ${{ secrets.CURRENT_RELEASE_BRANCH }}
           draft: false
           prerelease: false
     outputs:
@@ -38,6 +39,8 @@ jobs:
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get GCC 11"
         run: |
           sudo apt update
@@ -90,6 +93,8 @@ jobs:
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       - name: "Checkout"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
         env:
@@ -139,6 +144,8 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
       - name: "Checkout"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
         env:
