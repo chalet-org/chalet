@@ -29,14 +29,10 @@ static struct
 void printError(const std::string& inType, const std::string& inDescription)
 {
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	auto output = fmt::format("{}{}\n", boldRed, inType);
+	const auto reset = Output::getAnsiStyle(Color::Reset);
+	auto output = fmt::format("{}Signal: {}{} [{}]\n", reset, inDescription, boldRed, inType);
 
-	if (!inDescription.empty())
-	{
-		output += inDescription + ":\n";
-
-		std::cerr.write(output.data(), output.size());
-	}
+	std::cerr.write(output.data(), output.size());
 }
 
 }
