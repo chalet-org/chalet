@@ -42,7 +42,7 @@ IDistTarget::IDistTarget(const BuildState& inState, const DistTargetType inType)
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented DistTargetType requested: ", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented DistTargetType requested: {}", static_cast<int>(inType));
 	return nullptr;
 }
 

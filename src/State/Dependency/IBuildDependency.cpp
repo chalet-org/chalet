@@ -30,7 +30,7 @@ IBuildDependency::IBuildDependency(const CentralState& inCentralState, const Bui
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: ", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<int>(inType));
 	return nullptr;
 }
 
