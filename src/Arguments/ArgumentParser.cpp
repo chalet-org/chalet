@@ -512,7 +512,7 @@ std::string ArgumentParser::getHelp()
 
 	if (String::contains("--toolchain", help))
 	{
-		auto getPresetMessage = [](const std::string& preset) -> std::string {
+		auto getToolchainPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("llvm", preset))
 				return std::string("The LLVM Project");
 #if defined(CHALET_WIN32)
@@ -562,7 +562,7 @@ std::string ArgumentParser::getHelp()
 			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
-			line += getPresetMessage(toolchain);
+			line += getToolchainPresetDescription(toolchain);
 			if (isDefault)
 				line += " [default]";
 
@@ -572,7 +572,7 @@ std::string ArgumentParser::getHelp()
 
 	if (String::contains("--build-strategy", help))
 	{
-		auto getStrategyMessage = [](const std::string& preset) -> std::string {
+		auto getStrategyPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("ninja", preset))
 				return std::string("Build with Ninja (recommended)");
 			else if (String::equals("makefile", preset))
@@ -600,7 +600,43 @@ std::string ArgumentParser::getHelp()
 			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
-			line += getStrategyMessage(strat);
+			line += getStrategyPresetDescription(strat);
+
+			help += fmt::format("{}\n", line);
+		}
+	}
+
+	if (m_route == RouteType::Export)
+	{
+		auto getExportPresetDescription = [](const std::string& preset) -> std::string {
+			if (String::equals("vscode", preset))
+				return std::string("Visual Studio Code (launch.json, tasks.json, c_cpp_properties.json)");
+			else if (String::equals("vs-json", preset))
+				return std::string("Visual Studio's JSON format (launch.vs.json)");
+			else if (String::equals("codeblocks", preset))
+#if defined(CHALET_WIN32)
+				return std::string("Code::Blocks IDE (experimental, MinGW-only)");
+#else
+				return std::string("Code::Blocks IDE (experimental, GCC-only)");
+#endif
+
+			return std::string();
+		};
+
+		help += "\nExport Presets:\n";
+		StringList exportPresets{
+			"vscode",
+			"vs-json",
+			"codeblocks",
+		};
+
+		for (auto& preset : exportPresets)
+		{
+			std::string line = preset;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getExportPresetDescription(preset);
 
 			help += fmt::format("{}\n", line);
 		}

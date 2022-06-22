@@ -7,11 +7,13 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
+#include "Export/VSCodeProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Timer.hpp"
 
@@ -34,6 +36,8 @@ IProjectExporter::~IProjectExporter() = default;
 	{
 		case ExportKind::CodeBlocks:
 			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
+		case ExportKind::VisualStudioCode:
+			return std::make_unique<VSCodeProjectExporter>(inCentralState);
 		default:
 			break;
 	}
@@ -46,6 +50,31 @@ IProjectExporter::~IProjectExporter() = default;
 ExportKind IProjectExporter::kind() const noexcept
 {
 	return m_kind;
+}
+
+/*****************************************************************************/
+bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) const
+{
+	std::string exportDirectory{ "chalet_export" };
+	if (!inSubDirectory.empty())
+		exportDirectory += fmt::format("/{}", inSubDirectory);
+
+	if (!Commands::pathExists(exportDirectory))
+	{
+		if (!Commands::makeDirectory(exportDirectory))
+		{
+			Diagnostic::error("There was a creating the '{}' directory.", exportDirectory);
+			return false;
+		}
+	}
+
+	if (!Commands::changeWorkingDirectory(fmt::format("{}/{}", m_cwd, exportDirectory)))
+	{
+		Diagnostic::error("There was a problem changing to the '{}' directory.", exportDirectory);
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

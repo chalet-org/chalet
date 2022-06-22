@@ -34,7 +34,7 @@
 				"export"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [

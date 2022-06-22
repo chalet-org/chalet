@@ -33,6 +33,8 @@ protected:
 	virtual bool validate(const BuildState& inState) = 0;
 	virtual bool generateProjectFiles() = 0;
 
+	bool useExportDirectory(const std::string& inSubDirectory = std::string()) const;
+
 	CentralState& m_centralState;
 
 	std::string m_cwd;

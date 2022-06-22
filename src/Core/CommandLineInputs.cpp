@@ -25,9 +25,11 @@ Dictionary<InitTemplateType> getInitTemplates()
 	};
 }
 
-Dictionary<ExportKind> getExportKinds()
+OrderedDictionary<ExportKind> getExportKinds()
 {
 	return {
+		{ "vscode", ExportKind::VisualStudioCode },
+		{ "vs-json", ExportKind::VisualStudioLaunchJSON },
 		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

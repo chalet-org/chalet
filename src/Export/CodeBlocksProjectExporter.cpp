@@ -48,13 +48,8 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool CodeBlocksProjectExporter::generateProjectFiles()
 {
-	auto exportDirectory = "chalet_export";
-	if (!Commands::pathExists(exportDirectory))
-	{
-		Commands::makeDirectory(exportDirectory);
-	}
-
-	Commands::changeWorkingDirectory(fmt::format("{}/{}", m_cwd, exportDirectory));
+	if (!useExportDirectory("codeblocks"))
+		return false;
 
 	const BuildState* state = nullptr;
 	if (!m_states.empty())
@@ -108,7 +103,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 
 	if (state == nullptr)
 	{
-		Diagnostic::error("There are no valid projects to export to the CodeBlocks format.");
+		Diagnostic::error("There are no valid projects to export.");
 		return false;
 	}
 

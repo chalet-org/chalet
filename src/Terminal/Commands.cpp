@@ -166,7 +166,7 @@ bool Commands::changeWorkingDirectory(const std::string& inPath)
 	{
 		std::error_code errorCode;
 		fs::current_path(inPath, errorCode);
-		return errorCode.operator bool();
+		return !errorCode.operator bool();
 	}
 	CHALET_CATCH(const fs::filesystem_error& err)
 	{
