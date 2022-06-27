@@ -52,7 +52,8 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		}
 	}
 
-	const BuildState* state = getDebugBuildState();
+	const BuildState* state = getAnyBuildStateButPreferDebug();
+	chalet_assert(state != nullptr, "");
 	if (state != nullptr)
 	{
 		const auto& outState = *state;
@@ -83,14 +84,6 @@ bool VSCodeProjectExporter::generateProjectFiles()
 				}
 			}
 		}
-	}
-
-	Commands::changeWorkingDirectory(m_cwd);
-
-	if (state == nullptr)
-	{
-		Diagnostic::error("There are no valid projects to export.");
-		return false;
 	}
 
 	return true;

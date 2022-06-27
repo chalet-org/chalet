@@ -11,7 +11,6 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "Terminal/Commands.hpp"
 
 namespace chalet
 {
@@ -41,7 +40,8 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	if (!useExportDirectory("vs-json"))
 		return false;
 
-	const BuildState* state = getDebugBuildState();
+	const BuildState* state = getAnyBuildStateButPreferDebug();
+	chalet_assert(state != nullptr, "");
 	if (state != nullptr)
 	{
 		const auto& outState = *state;
@@ -65,14 +65,6 @@ bool VSJsonProjectExporter::generateProjectFiles()
 				}
 			}
 		}
-	}
-
-	Commands::changeWorkingDirectory(m_cwd);
-
-	if (state == nullptr)
-	{
-		Diagnostic::error("There are no valid projects to export.");
-		return false;
 	}
 
 	return true;

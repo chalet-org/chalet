@@ -82,16 +82,21 @@ bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) con
 }
 
 /*****************************************************************************/
-const BuildState* IProjectExporter::getDebugBuildState() const
+const BuildState* IProjectExporter::getAnyBuildStateButPreferDebug() const
 {
 	const BuildState* ret = nullptr;
 	if (!m_states.empty())
 	{
-		if (m_debugConfiguration.empty())
-			ret = m_states.begin()->second.get();
-		else
+		if (!m_debugConfiguration.empty())
+		{
 			ret = m_states.at(m_debugConfiguration).get();
+		}
+		else
+		{
+			ret = m_states.begin()->second.get();
+		}
 	}
+
 	return ret;
 }
 
@@ -164,34 +169,40 @@ bool IProjectExporter::generate()
 	bool quiet = Output::quietNonBuild();
 	Output::setQuietNonBuild(true);
 
-	// BuildState* stateArchA = nullptr;
 	for (auto& [config, state] : m_states)
 	{
 		if (!state->initialize())
 			return false;
-
-		if (!validate(*state))
-			return false;
 	}
 
-	if (!m_states.empty())
+	auto state = getAnyBuildStateButPreferDebug();
+	if (state == nullptr)
 	{
-		auto& state = *m_states.begin()->second;
-		for (auto& target : state.targets)
+		Diagnostic::error("There are no valid projects to export.");
+		return false;
+	}
+
+	for (auto& target : state->targets)
+	{
+		if (target->isSources())
 		{
-			if (target->isSources())
-			{
-				const auto& project = static_cast<const SourceTarget&>(*target);
-				m_headerFiles.emplace(project.name(), project.getHeaderFiles());
-			}
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			m_headerFiles.emplace(project.name(), project.getHeaderFiles());
 		}
 	}
 
 	Output::setQuietNonBuild(quiet);
 
-	if (!generateProjectFiles())
+	if (!validate(*state))
 		return false;
 
+	if (!generateProjectFiles())
+	{
+		Commands::changeWorkingDirectory(m_cwd);
+		return false;
+	}
+
+	Commands::changeWorkingDirectory(m_cwd);
 	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);

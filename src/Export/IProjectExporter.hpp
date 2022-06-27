@@ -35,7 +35,7 @@ protected:
 	virtual bool generateProjectFiles() = 0;
 
 	bool useExportDirectory(const std::string& inSubDirectory = std::string()) const;
-	const BuildState* getDebugBuildState() const;
+	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
 	CentralState& m_centralState;

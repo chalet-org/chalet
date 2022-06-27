@@ -51,15 +51,11 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 	if (!useExportDirectory("codeblocks"))
 		return false;
 
-	const BuildState* state = nullptr;
-	if (!m_states.empty())
-	{
-		state = m_states.begin()->second.get();
-	}
-
-	bool hasProjects = false;
+	auto state = getAnyBuildStateButPreferDebug();
+	chalet_assert(state != nullptr, "");
 	if (state != nullptr)
 	{
+		bool hasSourceTargets = false;
 		for (auto& target : state->targets)
 		{
 			if (target->isSources())
@@ -72,11 +68,11 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 					return false;
 				}
 
-				hasProjects = true;
+				hasSourceTargets = true;
 			}
 		}
 
-		if (hasProjects)
+		if (hasSourceTargets)
 		{
 			{
 				auto workspaceFile = "project.workspace";
@@ -97,14 +93,6 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				}
 			}
 		}
-	}
-
-	Commands::changeWorkingDirectory(m_cwd);
-
-	if (state == nullptr)
-	{
-		Diagnostic::error("There are no valid projects to export.");
-		return false;
 	}
 
 	return true;
@@ -184,6 +172,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 	return ret;
 }
 
+/*****************************************************************************/
 std::string CodeBlocksProjectExporter::getProjectBuildConfiguration(const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
 	std::string ret;
