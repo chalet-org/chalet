@@ -64,7 +64,7 @@ private:
 	bool m_enableProfiling = false;
 };
 
-using BuildConfigurationMap = Dictionary<BuildConfiguration>;
+using BuildConfigurationMap = OrderedDictionary<BuildConfiguration>;
 }
 
 #endif // CHALET_BUILD_CONFIGURATION_HPP

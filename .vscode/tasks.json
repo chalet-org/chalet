@@ -21,10 +21,7 @@
 			"label": "Configure",
 			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema configure",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			],
@@ -33,10 +30,7 @@
 			"label": "Build & Run: Release",
 			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			],
@@ -45,10 +39,7 @@
 			"label": "Build: Release",
 			"command": "${CHALET_DEBUG} --save-schema -c Release build",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -57,10 +48,7 @@
 			"label": "Run: Release",
 			"command": "${CHALET_DEBUG} --save-schema -c Release run chalet",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -69,10 +57,7 @@
 			"label": "Rebuild: Release",
 			"command": "${CHALET_DEBUG} --save-schema -c Release rebuild",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -81,10 +66,7 @@
 			"label": "Clean: Release",
 			"command": "${CHALET_DEBUG} --save-schema -c Release clean",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -93,10 +75,7 @@
 			"label": "Build & Run: Debug",
 			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -105,10 +84,7 @@
 			"label": "Build: Debug",
 			"command": "bash ./build.sh Debug",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -117,10 +93,7 @@
 			"label": "Rebuild: Debug",
 			"command": "rm -rf build/Debug && bash ./build.sh Debug",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -129,10 +102,7 @@
 			"label": "Build & Run: Profile",
 			"command": "${CHALET_DEBUG} --save-schema -c Profile buildrun chalet 'build MinSizeRel'",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -141,10 +111,7 @@
 			"label": "Build & Run: Tests",
 			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun tests",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -153,10 +120,7 @@
 			"label": "Run: Tests",
 			"command": "${CHALET_DEBUG} --save-schema -c Release run tests",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -165,10 +129,7 @@
 			"label": "Debug (Chalet Command)",
 			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -177,10 +138,7 @@
 			"label": "Bundle",
 			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release bundle",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]
@@ -189,10 +147,7 @@
 			"label": "Clean",
 			"command": "rm -rf build dist",
 			"type": "shell",
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			},
+			"group": "build",
 			"problemMatcher": [
 				"$gcc"
 			]

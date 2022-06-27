@@ -16,12 +16,13 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"build"
+				"export",
+				"vscode"
 			],
 		},
 		{
@@ -30,8 +31,8 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				// "--generator=vscode",
-				"export"
+				"export",
+				"vscode"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",

@@ -5,8 +5,15 @@
 
 #include "Export/VSCodeProjectExporter.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "Export/VSCode/CCppPropertiesGen.hpp"
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
+#include "Export/VSCode/VSCodeTasksGen.hpp"
+#include "State/BuildConfiguration.hpp"
+#include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 
 namespace chalet
@@ -50,7 +57,10 @@ bool VSCodeProjectExporter::generateProjectFiles()
 	const BuildState* state = nullptr;
 	if (!m_states.empty())
 	{
-		state = m_states.begin()->second.get();
+		if (m_debugConfiguration.empty())
+			state = m_states.begin()->second.get();
+		else
+			state = m_states.at(m_debugConfiguration).get();
 	}
 
 	if (state != nullptr)
@@ -63,11 +73,47 @@ bool VSCodeProjectExporter::generateProjectFiles()
 			return false;
 		}
 
-		VSCodeLaunchGen launchJson(outState, m_cwd);
-		if (!launchJson.saveToFile(fmt::format("{}/launch.json", vscodeDir)))
+		if (state->configuration.debugSymbols())
 		{
-			Diagnostic::error("There was a problem saving the launch.json file.");
-			return false;
+			const IBuildTarget* runnableTarget = nullptr;
+			for (auto& target : state->targets)
+			{
+				if (target->isSources())
+				{
+					const auto& project = static_cast<const SourceTarget&>(*target);
+					if (project.isExecutable())
+					{
+						runnableTarget = target.get();
+						break;
+					}
+				}
+				else if (target->isCMake())
+				{
+					const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
+					if (!cmakeProject.runExecutable().empty())
+					{
+						runnableTarget = target.get();
+						break;
+					}
+				}
+			}
+
+			if (runnableTarget != nullptr)
+			{
+				VSCodeLaunchGen launchJson(outState, m_cwd, *runnableTarget);
+				if (!launchJson.saveToFile(fmt::format("{}/launch.json", vscodeDir)))
+				{
+					Diagnostic::error("There was a problem saving the launch.json file.");
+					return false;
+				}
+
+				VSCodeTasksGen tasksJson(outState, m_cwd);
+				if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", vscodeDir)))
+				{
+					Diagnostic::error("There was a problem saving the tasks.json file.");
+					return false;
+				}
+			}
 		}
 	}
 
