@@ -38,15 +38,88 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	auto& configurations = jRoot.at("configurations");
 
 	Json config;
-	config["inheritEnvironments"] = {
-		"msvc_x64_x64"
-	};
-	config["name"] = "ChaletExport";
-	config["includePath"] = {
-		"${env.INCLUDE}",
-		"${workspaceRoot}\\**",
-	};
+	config["name"] = "Debug";
 	config["intelliSenseMode"] = "windows-msvc-x64";
+
+	std::string cStandard;
+	std::string cppStandard;
+	StringList defines{
+		"_WIN32"
+	};
+	StringList includePath{
+		"${env.INCLUDE}",
+	};
+	StringList forcedInclude;
+
+	bool hasProjects = false;
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+
+			if (cStandard.empty())
+				cStandard = project.cStandard();
+
+			if (cppStandard.empty())
+				cppStandard = project.cppStandard();
+
+			if (project.usesPrecompiledHeader())
+			{
+				auto path = project.precompiledHeader();
+				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)))
+				{
+					path = fmt::format("${{workspaceRoot}}/{}", path);
+				}
+				List::addIfDoesNotExist(forcedInclude, path);
+			}
+
+			for (auto path : project.includeDirs())
+			{
+				if (path.back() == '/')
+					path.pop_back();
+
+				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)) || String::equals(path, m_state.paths.intermediateDir(project)))
+				{
+					path = fmt::format("${{workspaceRoot}}/{}", path);
+				}
+
+				List::addIfDoesNotExist(includePath, path);
+			}
+
+			for (const auto& define : project.defines())
+			{
+				List::addIfDoesNotExist(defines, define);
+			}
+
+			if (String::equals(String::toLowerCase(project.executionCharset()), "utf-8"))
+			{
+				List::addIfDoesNotExist(defines, std::string("UNICODE"));
+				List::addIfDoesNotExist(defines, std::string("_UNICODE"));
+			}
+
+			hasProjects = true;
+		}
+	}
+
+	if (!hasProjects)
+		return false;
+
+	config["compilers"] = Json::object();
+
+	auto& compilers = config.at("compilers");
+
+	compilers["c"] = Json::object();
+	compilers["c"]["path"] = m_state.toolchain.compilerC().path;
+	compilers["c"]["standard"] = std::move(cStandard);
+
+	compilers["cpp"] = Json::object();
+	compilers["cpp"]["path"] = m_state.toolchain.compilerCpp().path;
+	compilers["cpp"]["standard"] = std::move(cppStandard);
+
+	config["defines"] = std::move(defines);
+	config["forcedInclude"] = std::move(forcedInclude);
+	config["includePath"] = std::move(includePath);
 	config["environments"] = Json::array();
 
 	configurations.push_back(std::move(config));
