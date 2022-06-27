@@ -15,6 +15,7 @@ struct BuildInfo;
 struct SourceTarget;
 struct WorkspaceEnvironment;
 class BuildState;
+struct IBuildTarget;
 
 struct BuildPaths
 {
@@ -37,6 +38,7 @@ struct BuildPaths
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
+	std::string getExecutableTargetPath(const IBuildTarget& inTarget) const;
 	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject) const;
 	std::string getPrecompiledHeaderInclude(const SourceTarget& inProject) const;
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;

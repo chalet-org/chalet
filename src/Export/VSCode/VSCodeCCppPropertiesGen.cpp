@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Export/VSCode/CCppPropertiesGen.hpp"
+#include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
@@ -19,14 +19,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-CCppPropertiesGen::CCppPropertiesGen(const BuildState& inState, const std::string& inCwd) :
+VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState, const std::string& inCwd) :
 	m_state(inState),
 	m_cwd(inCwd)
 {
 }
 
 /*****************************************************************************/
-bool CCppPropertiesGen::saveToFile(const std::string& inFilename) const
+bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 {
 	Json jRoot;
 	jRoot = Json::object();
@@ -135,7 +135,7 @@ bool CCppPropertiesGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-std::string CCppPropertiesGen::getName() const
+std::string VSCodeCCppPropertiesGen::getName() const
 {
 	std::string ret;
 
@@ -155,7 +155,7 @@ std::string CCppPropertiesGen::getName() const
 }
 
 /*****************************************************************************/
-std::string CCppPropertiesGen::getIntellisenseMode() const
+std::string VSCodeCCppPropertiesGen::getIntellisenseMode() const
 {
 	std::string platform;
 #if defined(CHALET_WIN32)
@@ -180,7 +180,7 @@ std::string CCppPropertiesGen::getIntellisenseMode() const
 }
 
 /*****************************************************************************/
-std::string CCppPropertiesGen::getCompilerPath() const
+std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 {
 	std::string ret;
 
@@ -199,7 +199,7 @@ std::string CCppPropertiesGen::getCompilerPath() const
 }
 
 /*****************************************************************************/
-StringList CCppPropertiesGen::getDefaultDefines() const
+StringList VSCodeCCppPropertiesGen::getDefaultDefines() const
 {
 	StringList ret;
 

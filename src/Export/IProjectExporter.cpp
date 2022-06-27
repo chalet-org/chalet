@@ -8,9 +8,11 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
+#include "Export/VSJsonProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -38,6 +40,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
 		case ExportKind::VisualStudioCode:
 			return std::make_unique<VSCodeProjectExporter>(inCentralState);
+		case ExportKind::VisualStudioJSON:
+			return std::make_unique<VSJsonProjectExporter>(inCentralState);
 		default:
 			break;
 	}
@@ -75,6 +79,49 @@ bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) con
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+const BuildState* IProjectExporter::getDebugBuildState() const
+{
+	const BuildState* ret = nullptr;
+	if (!m_states.empty())
+	{
+		if (m_debugConfiguration.empty())
+			ret = m_states.begin()->second.get();
+		else
+			ret = m_states.at(m_debugConfiguration).get();
+	}
+	return ret;
+}
+
+/*****************************************************************************/
+const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inState) const
+{
+	const IBuildTarget* ret = nullptr;
+	for (auto& target : inState.targets)
+	{
+		if (target->isSources())
+		{
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.isExecutable())
+			{
+				ret = target.get();
+				break;
+			}
+		}
+		else if (target->isCMake())
+		{
+			const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
+			if (!cmakeProject.runExecutable().empty())
+			{
+				ret = target.get();
+				break;
+			}
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
