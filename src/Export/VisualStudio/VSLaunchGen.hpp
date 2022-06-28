@@ -15,18 +15,19 @@ struct IBuildTarget;
 
 struct VSLaunchGen
 {
-	explicit VSLaunchGen(const BuildState& inState, const std::string& inCwd, const IBuildTarget& inTarget);
+	explicit VSLaunchGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration);
 
-	bool saveToFile(const std::string& inFilename) const;
+	bool saveToFile(const std::string& inFilename);
 
 private:
-	Json getConfiguration() const;
-	Json getEnvironment() const;
-	std::string getInheritEnvironment() const;
+	Json getConfiguration(const IBuildTarget& inTarget) const;
+	Json getEnvironment(const IBuildTarget& inTarget) const;
 
 	const BuildState& m_state;
 	const std::string& m_cwd;
-	const IBuildTarget& m_target;
+	const std::string& m_debugConfiguration;
+
+	std::vector<const IBuildTarget*> m_executableTargets;
 };
 }
 

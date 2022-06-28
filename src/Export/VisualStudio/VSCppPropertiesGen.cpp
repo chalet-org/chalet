@@ -21,11 +21,12 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCppPropertiesGen::VSCppPropertiesGen(const BuildState& inState, const std::string& inCwd) :
+VSCppPropertiesGen::VSCppPropertiesGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration) :
 	m_state(inState),
-	m_cwd(inCwd)
+	m_cwd(inCwd),
+	m_debugConfiguration(inDebugConfiguration)
 {
-	UNUSED(m_state, m_cwd);
+	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/
@@ -38,7 +39,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	auto& configurations = jRoot.at("configurations");
 
 	Json config;
-	config["name"] = "Debug";
+	config["name"] = m_debugConfiguration;
 	config["intelliSenseMode"] = "windows-msvc-x64";
 
 	std::string cStandard;

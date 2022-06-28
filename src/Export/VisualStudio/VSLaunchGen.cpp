@@ -11,23 +11,25 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-VSLaunchGen::VSLaunchGen(const BuildState& inState, const std::string& inCwd, const IBuildTarget& inTarget) :
+VSLaunchGen::VSLaunchGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration) :
 	m_state(inState),
 	m_cwd(inCwd),
-	m_target(inTarget)
+	m_debugConfiguration(inDebugConfiguration)
 {
 	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/
-bool VSLaunchGen::saveToFile(const std::string& inFilename) const
+bool VSLaunchGen::saveToFile(const std::string& inFilename)
 {
 	Json jRoot;
 	jRoot = Json::object();
@@ -36,48 +38,71 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename) const
 	jRoot["configurations"] = Json::array();
 	auto& configurations = jRoot.at("configurations");
 
-	configurations.push_back(getConfiguration());
+	m_executableTargets.clear();
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.isExecutable())
+			{
+				m_executableTargets.emplace_back(target.get());
+				break;
+			}
+		}
+		else if (target->isCMake())
+		{
+			const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
+			if (!cmakeProject.runExecutable().empty())
+			{
+				m_executableTargets.emplace_back(target.get());
+				break;
+			}
+		}
+	}
+
+	for (auto target : m_executableTargets)
+	{
+		configurations.push_back(getConfiguration(*target));
+	}
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
 
 /*****************************************************************************/
-Json VSLaunchGen::getConfiguration() const
+Json VSLaunchGen::getConfiguration(const IBuildTarget& inTarget) const
 {
 	Json ret = Json::object();
-	ret["type"] = "default";
 
-	auto filename = String::getPathFilename(m_state.paths.getExecutableTargetPath(m_target));
-	ret["projectTarget"] = filename;
-	ret["name"] = filename;
-
-	ret["currentDir"] = "${projectDir}";
-	ret["env"] = getEnvironment();
-	ret["inheritEnvironments"] = {
-		getInheritEnvironment(),
-	};
-
+	auto program = m_state.paths.getExecutableTargetPath(inTarget);
+	ret["name"] = String::getPathFilename(program);
+	ret["project"] = program;
 	if (m_state.inputs.runArguments().has_value())
 		ret["args"] = *m_state.inputs.runArguments();
 	else
 		ret["args"] = Json::array();
 
+	ret["cwd"] = "${workspaceRoot}";
+	ret["debugType"] = "native";
+	ret["stopOnEntry"] = true;
+
+	ret["env"] = getEnvironment(inTarget);
+	ret["inheritEnvironments"] = {
+		m_debugConfiguration,
+	};
+
 	return ret;
 }
 
 /*****************************************************************************/
-Json VSLaunchGen::getEnvironment() const
+Json VSLaunchGen::getEnvironment(const IBuildTarget& inTarget) const
 {
 	Json ret = Json::object();
 	ret["Path"] = "${env.Path}";
 
-	return ret;
-}
+	UNUSED(inTarget);
 
-/*****************************************************************************/
-std::string VSLaunchGen::getInheritEnvironment() const
-{
-	return std::string("msvc_x64_x64");
+	return ret;
 }
 
 }
