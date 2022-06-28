@@ -20,10 +20,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSLaunchGen::VSLaunchGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration) :
+VSLaunchGen::VSLaunchGen(const BuildState& inState, const std::string& inCwd) :
 	m_state(inState),
-	m_cwd(inCwd),
-	m_debugConfiguration(inDebugConfiguration)
+	m_cwd(inCwd)
 {
 	UNUSED(m_cwd);
 }
@@ -47,7 +46,6 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 			if (project.isExecutable())
 			{
 				m_executableTargets.emplace_back(target.get());
-				break;
 			}
 		}
 		else if (target->isCMake())
@@ -56,14 +54,13 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 			if (!cmakeProject.runExecutable().empty())
 			{
 				m_executableTargets.emplace_back(target.get());
-				break;
 			}
 		}
 	}
 
 	for (auto target : m_executableTargets)
 	{
-		configurations.push_back(getConfiguration(*target));
+		configurations.emplace_back(getConfiguration(*target));
 	}
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
@@ -77,6 +74,9 @@ Json VSLaunchGen::getConfiguration(const IBuildTarget& inTarget) const
 	auto program = m_state.paths.getExecutableTargetPath(inTarget);
 	ret["name"] = String::getPathFilename(program);
 	ret["project"] = program;
+	/*ret["args"] = {
+		"${env.PROG_ARGS}",
+	};*/
 	if (m_state.inputs.runArguments().has_value())
 		ret["args"] = *m_state.inputs.runArguments();
 	else
@@ -88,7 +88,7 @@ Json VSLaunchGen::getConfiguration(const IBuildTarget& inTarget) const
 
 	ret["env"] = getEnvironment(inTarget);
 	ret["inheritEnvironments"] = {
-		m_debugConfiguration,
+		"${cpp.activeConfiguration}",
 	};
 
 	return ret;

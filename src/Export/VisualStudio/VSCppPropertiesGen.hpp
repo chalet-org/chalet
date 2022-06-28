@@ -12,14 +12,13 @@ class BuildState;
 
 struct VSCppPropertiesGen
 {
-	explicit VSCppPropertiesGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration);
+	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd);
 
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
-	const BuildState& m_state;
+	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
-	const std::string& m_debugConfiguration;
 };
 }
 

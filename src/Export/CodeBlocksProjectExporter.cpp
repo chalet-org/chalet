@@ -107,7 +107,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 
 	std::string compiler;
 	const SourceTarget* thisTarget = nullptr;
-	for (auto& [config, state] : m_states)
+	for (auto& state : m_states)
 	{
 		for (auto& target : state->targets)
 		{

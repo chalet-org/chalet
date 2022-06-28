@@ -20,10 +20,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSTasksGen::VSTasksGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration) :
+VSTasksGen::VSTasksGen(const BuildState& inState, const std::string& inCwd) :
 	m_state(inState),
-	m_cwd(inCwd),
-	m_debugConfiguration(inDebugConfiguration)
+	m_cwd(inCwd)
 {
 	UNUSED(m_state, m_cwd);
 }
@@ -45,12 +44,13 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 		task["type"] = "launch";
 		task["contextType"] = inContextType;
 		task["inheritEnvironments"] = {
-			m_debugConfiguration,
+			"${cpp.activeConfiguration}",
 		};
+		task["workingDirectory"] = "${workspaceRoot}";
 		task["command"] = "chalet";
 		task["args"] = {
 			"-c",
-			m_debugConfiguration,
+			"${cpp.activeConfiguration}",
 			inChaletCmd,
 		};
 

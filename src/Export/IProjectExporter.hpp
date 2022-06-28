@@ -44,7 +44,7 @@ protected:
 	std::string m_debugConfiguration;
 
 	Dictionary<StringList> m_headerFiles;
-	HeapDictionary<BuildState> m_states;
+	std::vector<Unique<BuildState>> m_states;
 
 private:
 	ExportKind m_kind;

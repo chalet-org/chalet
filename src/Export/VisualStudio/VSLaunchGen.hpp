@@ -15,7 +15,7 @@ struct IBuildTarget;
 
 struct VSLaunchGen
 {
-	explicit VSLaunchGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration);
+	explicit VSLaunchGen(const BuildState& inState, const std::string& inCwd);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -25,7 +25,6 @@ private:
 
 	const BuildState& m_state;
 	const std::string& m_cwd;
-	const std::string& m_debugConfiguration;
 
 	std::vector<const IBuildTarget*> m_executableTargets;
 };

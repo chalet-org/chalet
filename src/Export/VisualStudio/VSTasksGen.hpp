@@ -15,14 +15,13 @@ struct IBuildTarget;
 
 struct VSTasksGen
 {
-	explicit VSTasksGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration);
+	explicit VSTasksGen(const BuildState& inState, const std::string& inCwd);
 
 	bool saveToFile(const std::string& inFilename);
 
 private:
 	const BuildState& m_state;
 	const std::string& m_cwd;
-	const std::string& m_debugConfiguration;
 };
 }
 

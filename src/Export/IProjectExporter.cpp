@@ -17,6 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -89,11 +90,18 @@ const BuildState* IProjectExporter::getAnyBuildStateButPreferDebug() const
 	{
 		if (!m_debugConfiguration.empty())
 		{
-			ret = m_states.at(m_debugConfiguration).get();
+			for (const auto& state : m_states)
+			{
+				if (String::equals(m_debugConfiguration, state->configuration.name()))
+				{
+					ret = state.get();
+					break;
+				}
+			}
 		}
 		else
 		{
-			ret = m_states.begin()->second.get();
+			ret = m_states.front().get();
 		}
 	}
 
@@ -141,17 +149,17 @@ bool IProjectExporter::generate()
 
 	m_cwd = m_centralState.inputs().workingDirectory();
 
+	m_states.clear();
+
 	auto makeState = [this](const std::string& configName) {
 		// auto configName = fmt::format("{}_{}", arch, inConfig);
-		if (m_states.find(configName) == m_states.end())
-		{
-			CommandLineInputs inputs = m_centralState.inputs();
-			inputs.setBuildConfiguration(std::string(configName));
-			// inputs.setTargetArchitecture(arch);
-			auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
 
-			m_states.emplace(configName, std::move(state));
-		}
+		CommandLineInputs inputs = m_centralState.inputs();
+		inputs.setBuildConfiguration(std::string(configName));
+		// inputs.setTargetArchitecture(arch);
+		auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
+
+		m_states.emplace_back(std::move(state));
 	};
 
 	for (const auto& [name, config] : m_centralState.buildConfigurations())
@@ -169,7 +177,7 @@ bool IProjectExporter::generate()
 	bool quiet = Output::quietNonBuild();
 	Output::setQuietNonBuild(true);
 
-	for (auto& [config, state] : m_states)
+	for (auto& state : m_states)
 	{
 		if (!state->initialize())
 			return false;

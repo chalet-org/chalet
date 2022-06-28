@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -21,10 +22,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCppPropertiesGen::VSCppPropertiesGen(const BuildState& inState, const std::string& inCwd, const std::string& inDebugConfiguration) :
-	m_state(inState),
-	m_cwd(inCwd),
-	m_debugConfiguration(inDebugConfiguration)
+VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd) :
+	m_states(inStates),
+	m_cwd(inCwd)
 {
 	UNUSED(m_cwd);
 }
@@ -38,92 +38,103 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	auto& configurations = jRoot.at("configurations");
 
-	Json config;
-	config["name"] = m_debugConfiguration;
-	config["intelliSenseMode"] = "windows-msvc-x64";
-
-	std::string cStandard;
-	std::string cppStandard;
-	StringList defines{
-		"_WIN32"
-	};
-	StringList includePath{
-		"${env.INCLUDE}",
-	};
-	StringList forcedInclude;
-
-	bool hasProjects = false;
-	for (auto& target : m_state.targets)
+	for (auto& state : m_states)
 	{
-		if (target->isSources())
+		const auto& configName = state->configuration.name();
+		Json config;
+		config["name"] = configName;
+		config["intelliSenseMode"] = "windows-msvc-x64";
+
+		std::string cStandard;
+		std::string cppStandard;
+		StringList defines{
+			"_WIN32"
+		};
+		StringList includePath{
+			"${env.INCLUDE}",
+		};
+		StringList forcedInclude;
+
+		bool hasProjects = false;
+
+		for (auto& target : state->targets)
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-
-			if (cStandard.empty())
-				cStandard = project.cStandard();
-
-			if (cppStandard.empty())
-				cppStandard = project.cppStandard();
-
-			if (project.usesPrecompiledHeader())
+			if (target->isSources())
 			{
-				auto path = project.precompiledHeader();
-				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)))
-				{
-					path = fmt::format("${{workspaceRoot}}/{}", path);
-				}
-				List::addIfDoesNotExist(forcedInclude, path);
-			}
+				auto& project = static_cast<const SourceTarget&>(*target);
 
-			for (auto path : project.includeDirs())
-			{
-				if (path.back() == '/')
-					path.pop_back();
+				if (cStandard.empty())
+					cStandard = project.cStandard();
 
-				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)) || String::equals(path, m_state.paths.intermediateDir(project)))
+				if (cppStandard.empty())
+					cppStandard = project.cppStandard();
+
+				if (project.usesPrecompiledHeader())
 				{
-					path = fmt::format("${{workspaceRoot}}/{}", path);
+					auto path = project.precompiledHeader();
+					if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)))
+					{
+						path = fmt::format("${{workspaceRoot}}/{}", path);
+					}
+					List::addIfDoesNotExist(forcedInclude, path);
 				}
 
-				List::addIfDoesNotExist(includePath, path);
-			}
+				for (auto path : project.includeDirs())
+				{
+					if (path.back() == '/')
+						path.pop_back();
 
-			for (const auto& define : project.defines())
-			{
-				List::addIfDoesNotExist(defines, define);
-			}
+					if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)) || String::equals(path, state->paths.intermediateDir(project)))
+					{
+						path = fmt::format("${{workspaceRoot}}/{}", path);
+					}
 
-			if (String::equals(String::toLowerCase(project.executionCharset()), "utf-8"))
-			{
-				List::addIfDoesNotExist(defines, std::string("UNICODE"));
-				List::addIfDoesNotExist(defines, std::string("_UNICODE"));
-			}
+					List::addIfDoesNotExist(includePath, path);
+				}
 
-			hasProjects = true;
+				for (const auto& define : project.defines())
+				{
+					List::addIfDoesNotExist(defines, define);
+				}
+
+				if (String::equals(String::toLowerCase(project.executionCharset()), "utf-8"))
+				{
+					List::addIfDoesNotExist(defines, std::string("UNICODE"));
+					List::addIfDoesNotExist(defines, std::string("_UNICODE"));
+				}
+
+				hasProjects = true;
+			}
 		}
+
+		if (!hasProjects)
+			return false;
+
+		config["compilers"] = Json::object();
+
+		auto& compilers = config.at("compilers");
+
+		if (!cStandard.empty())
+		{
+			compilers["c"] = Json::object();
+			compilers["c"]["path"] = state->toolchain.compilerC().path;
+			compilers["c"]["standard"] = std::move(cStandard);
+		}
+
+		if (!cppStandard.empty())
+		{
+			compilers["cpp"] = Json::object();
+			compilers["cpp"]["path"] = state->toolchain.compilerCpp().path;
+			compilers["cpp"]["standard"] = std::move(cppStandard);
+		}
+
+		config["defines"] = std::move(defines);
+		config["forcedInclude"] = std::move(forcedInclude);
+		config["includePath"] = std::move(includePath);
+		config["environments"] = Json::array();
+
+		configurations.emplace_back(std::move(config));
 	}
-
-	if (!hasProjects)
-		return false;
-
-	config["compilers"] = Json::object();
-
-	auto& compilers = config.at("compilers");
-
-	compilers["c"] = Json::object();
-	compilers["c"]["path"] = m_state.toolchain.compilerC().path;
-	compilers["c"]["standard"] = std::move(cStandard);
-
-	compilers["cpp"] = Json::object();
-	compilers["cpp"]["path"] = m_state.toolchain.compilerCpp().path;
-	compilers["cpp"]["standard"] = std::move(cppStandard);
-
-	config["defines"] = std::move(defines);
-	config["forcedInclude"] = std::move(forcedInclude);
-	config["includePath"] = std::move(includePath);
-	config["environments"] = Json::array();
-
-	configurations.push_back(std::move(config));
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
