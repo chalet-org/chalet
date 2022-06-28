@@ -305,6 +305,8 @@ void ColorTheme::makePreset(const std::string& inValue)
 		... avoid them in theme presets
 	*/
 
+	reset = Color::Reset;
+
 	// default
 	std::size_t i = 0;
 	if (String::equals(state.presetNames.at(i), inValue))
@@ -322,6 +324,8 @@ void ColorTheme::makePreset(const std::string& inValue)
 	// none
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
+		reset = Color::None;
+		//
 		info = Color::None;
 		error = Color::None;
 		warning = Color::None;

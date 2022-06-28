@@ -995,7 +995,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 	static struct
 	{
 		std::string eol = String::eol();
-		std::string endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Color::Reset));
+		std::string endlineReplace = fmt::format("{}\n", Output::getAnsiStyle(Output::theme().reset));
 	} cap;
 
 	ProcessOptions options;

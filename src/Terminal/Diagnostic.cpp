@@ -65,7 +65,7 @@ void Diagnostic::printDone(const std::string& inTime)
 		return;
 
 	const auto color = Output::getAnsiStyle(Output::theme().flair);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	destroySpinnerThread();
 
@@ -99,7 +99,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	const auto& theme = Output::theme();
 	const auto color = Output::getAnsiStyle(theme.flair);
 	const auto infoColor = Output::getAnsiStyle(theme.info);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(theme.reset);
 	const auto symbol = '>';
 
 	auto output = fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
@@ -137,10 +137,9 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 	if (Output::quietNonBuild())
 		return;
 
-	const auto& theme = Output::theme();
-	const auto color = Output::getAnsiStyle(theme.flair);
-	const auto infoColor = Output::getAnsiStyle(theme.build);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto color = Output::getAnsiStyle(Output::theme().flair);
+	const auto infoColor = Output::getAnsiStyle(Output::theme().build);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto output = fmt::format("{}   {}{}", color, infoColor, inMessage);
 	std::cout.write(output.data(), output.size());
@@ -210,7 +209,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
 	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
 	const auto blue = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::string output = fmt::format("\n{}Assertion Failed:\n  at {}{} {}{}:{}{}", boldRed, reset, inExpression, blue, inFile, inLineNumber, reset);
 
@@ -249,7 +248,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 	}
 
 	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	out << fmt::format("{}{}: {}", color, inTitle, reset);
 }
@@ -325,7 +324,7 @@ void Diagnostic::printErrors()
 		return ret;
 	};
 
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 	std::cout.write(reset.data(), reset.size());
 
 	bool hasWarnings = false;

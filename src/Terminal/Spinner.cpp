@@ -32,7 +32,7 @@ void signalHandler(int inSignal)
 
 	UNUSED(inSignal);
 	std::string output{ "\b\b  \b\b" };
-	output += Output::getAnsiStyle(Color::Reset);
+	output += Output::getAnsiStyle(Output::theme().reset);
 	std::cout.write(output.data(), output.size());
 
 	std::exit(1);

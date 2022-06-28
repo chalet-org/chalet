@@ -381,7 +381,7 @@ std::string ProjectInitializer::getBannerV1() const
 {
 	auto& theme = Output::theme();
 	auto color = Output::getAnsiStyle(theme.header);
-	auto reset = Output::getAnsiStyle(Color::Reset);
+	auto reset = Output::getAnsiStyle(theme.reset);
 	return fmt::format(R"art(
 .    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,
     .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .
@@ -399,7 +399,7 @@ std::string ProjectInitializer::getBannerV2() const
 	auto c1 = Output::getAnsiStyle(theme.header);
 	auto c2 = Output::getAnsiStyle(theme.flair);
 	auto c3 = Output::getAnsiStyle(theme.info);
-	auto reset = Output::getAnsiStyle(Color::Reset);
+	auto reset = Output::getAnsiStyle(theme.reset);
 	return fmt::format(R"art(
                                       {c1}./\.{reset}
                                    {c1}./J/''\L\.{reset}
@@ -701,7 +701,7 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 
 	std::string contents = inGetContents();
 	auto buildColor = Output::getAnsiStyle(Output::theme().build);
-	auto reset = Output::getAnsiStyle(Color::Reset);
+	auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::cout.write(buildColor.data(), buildColor.size());
 	std::cout.write(contents.data(), contents.size());

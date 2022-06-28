@@ -29,7 +29,7 @@ static struct
 void printError(const std::string& inType, const std::string& inDescription)
 {
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 	auto output = fmt::format("{}Signal: {}{} [{}]\n", reset, inDescription, boldRed, inType);
 
 	std::cerr.write(output.data(), output.size());
@@ -56,7 +56,7 @@ void SignalHandler::handler(const int inSignal)
 	bool assertionFailure = Diagnostic::assertionFailure();
 
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::cerr.put('\n');
 	std::cerr.write(boldRed.data(), boldRed.size());

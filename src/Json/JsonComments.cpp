@@ -64,7 +64,7 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 
 	auto colorGray = Output::getAnsiStyle(Output::theme().flair);
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
-	auto colorReset = Output::getAnsiStyle(Color::Reset);
+	auto colorReset = Output::getAnsiStyle(Output::theme().reset);
 
 	int i = 0;
 	for (std::string line; std::getline(inContents, line); ++i)

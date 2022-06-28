@@ -444,6 +444,19 @@ bool Environment::isContinuousIntegrationServer()
 }
 
 /*****************************************************************************/
+bool Environment::isVisualStudioOutput()
+{
+	if (state.terminalType == ShellType::Unset)
+		setTerminalType();
+
+#if defined(CHALET_WIN32)
+	return state.terminalType == ShellType::CommandPromptVisualStudio;
+#else
+	return false;
+#endif
+}
+
+/*****************************************************************************/
 const char* Environment::get(const char* inName)
 {
 	const char* result = std::getenv(inName);
