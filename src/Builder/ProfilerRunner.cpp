@@ -256,12 +256,21 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	{
 		auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
 
-		auto devEnvDir = Environment::getAsString("DevEnvDir");
-		auto visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
-		if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
+		std::string devEnvDir;
+		auto visualStudio = Commands::which("devenv");
+		if (visualStudio.empty())
 		{
-			Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
-			return false;
+			devEnvDir = Environment::getAsString("DevEnvDir");
+			visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
+			if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
+			{
+				Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+				return false;
+			}
+		}
+		else
+		{
+			devEnvDir = String::getPathFolder(visualStudio);
 		}
 
 		Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
