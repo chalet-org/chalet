@@ -50,16 +50,20 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 		task["command"] = "chalet";
 		task["args"] = {
 			"-c",
-			"${cpp.activeConfiguration}",
+			"${chalet.configuration}",
 			inChaletCmd,
 		};
 
 		return task;
 	};
 
+	tasks.emplace_back(makeTask("Chalet: Build / Run", "custom", "buildrun"));
+	tasks.emplace_back(makeTask("Chalet: Run", "custom", "run"));
 	tasks.emplace_back(makeTask("Build", "build", "build"));
 	tasks.emplace_back(makeTask("Rebuild", "rebuild", "rebuild"));
 	tasks.emplace_back(makeTask("Clean", "clean", "clean"));
+	tasks.emplace_back(makeTask("Chalet: Bundle", "custom", "bundle"));
+	tasks.emplace_back(makeTask("Chalet: Configure", "custom", "configure"));
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }

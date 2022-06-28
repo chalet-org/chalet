@@ -6,6 +6,8 @@
 #ifndef CHALET_VS_CPP_PROPERTIES_GEN_HPP
 #define CHALET_VS_CPP_PROPERTIES_GEN_HPP
 
+#include "Json/JsonFile.hpp"
+
 namespace chalet
 {
 class BuildState;
@@ -17,6 +19,8 @@ struct VSCppPropertiesGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
+	Json getEnvironments(const BuildState& inState) const;
+
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
 };

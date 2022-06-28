@@ -8,6 +8,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -15,7 +16,6 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Json/JsonFile.hpp"
 
 // Reference: https://docs.microsoft.com/en-us/cpp/build/cppproperties-schema-reference?view=msvc-170
 
@@ -41,8 +41,10 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	for (auto& state : m_states)
 	{
 		const auto& configName = state->configuration.name();
+		const auto& architecture = state->info.targetArchitectureString();
+
 		Json config;
-		config["name"] = configName;
+		config["name"] = fmt::format("{} / {}", architecture, configName);
 		config["intelliSenseMode"] = "windows-msvc-x64";
 
 		std::string cStandard;
@@ -131,12 +133,32 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["defines"] = std::move(defines);
 		config["forcedInclude"] = std::move(forcedInclude);
 		config["includePath"] = std::move(includePath);
-		config["environments"] = Json::array();
+		config["environments"] = getEnvironments(*state);
 
 		configurations.emplace_back(std::move(config));
 	}
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
+}
+
+/*****************************************************************************/
+Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
+{
+	Json ret = Json::array();
+
+	auto makeEnvironment = [this, &inState](const char* inName, const std::string& inValue) {
+		Json env = Json::object();
+		env["namespace"] = "chalet";
+		env[inName] = inValue;
+
+		return env;
+	};
+
+	ret.emplace_back(makeEnvironment("buildDir", inState.paths.buildOutputDir()));
+	ret.emplace_back(makeEnvironment("configuration", inState.configuration.name()));
+	ret.emplace_back(makeEnvironment("architecture", inState.info.targetArchitectureString()));
+
+	return ret;
 }
 
 }
