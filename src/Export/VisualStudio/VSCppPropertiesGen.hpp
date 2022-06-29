@@ -6,6 +6,7 @@
 #ifndef CHALET_VS_CPP_PROPERTIES_GEN_HPP
 #define CHALET_VS_CPP_PROPERTIES_GEN_HPP
 
+#include "Core/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -19,7 +20,8 @@ struct VSCppPropertiesGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
-	Json getInheritEnvironments(const BuildState& inState) const;
+	std::string getVSArchitecture(Arch::Cpu inCpu) const;
+	std::string getIntellisenseMode(const BuildState& inState) const;
 	Json getEnvironments(const BuildState& inState) const;
 
 	const std::vector<Unique<BuildState>>& m_states;

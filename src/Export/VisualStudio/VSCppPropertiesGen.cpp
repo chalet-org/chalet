@@ -41,11 +41,11 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	for (auto& state : m_states)
 	{
 		const auto& configName = state->configuration.name();
-		const auto& architecture = state->info.targetArchitectureString();
+		auto architecture = getVSArchitecture(state->info.targetArchitecture());
 
 		Json config;
 		config["name"] = fmt::format("{} / {}", architecture, configName);
-		config["intelliSenseMode"] = "windows-msvc-x64";
+		config["intelliSenseMode"] = getIntellisenseMode(*state);
 
 		std::string cStandard;
 		std::string cppStandard;
@@ -133,7 +133,6 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["defines"] = std::move(defines);
 		config["forcedInclude"] = std::move(forcedInclude);
 		config["includePath"] = std::move(includePath);
-		config["inheritEnvironments"] = getInheritEnvironments(*state);
 		config["environments"] = getEnvironments(*state);
 
 		configurations.emplace_back(std::move(config));
@@ -143,15 +142,66 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-Json VSCppPropertiesGen::getInheritEnvironments(const BuildState& inState) const
+std::string VSCppPropertiesGen::getVSArchitecture(Arch::Cpu inCpu) const
 {
-	UNUSED(inState);
+	switch (inCpu)
+	{
+		case Arch::Cpu::X86:
+			return std::string("x86");
+		case Arch::Cpu::ARM:
+			return std::string("arm");
+		case Arch::Cpu::ARM64:
+			return std::string("arm64");
+		case Arch::Cpu::X64:
+		default:
+			return std::string("x64");
+	}
+}
 
-	Json ret = {
-		"msvc_x64",
-	};
+/*****************************************************************************/
+std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) const
+{
+	/*
+		windows-msvc-x86
+		windows-msvc-x64
+		windows-msvc-arm
+		windows-msvc-arm64
+		android-clang-x86
+		android-clang-x64
+		android-clang-arm
+		android-clang-arm64
+		ios-clang-x86
+		ios-clang-x64
+		ios-clang-arm
+		ios-clang-arm64
+		windows-clang-x86
+		windows-clang-x64
+		windows-clang-arm
+		windows-clang-arm64
+		linux-gcc-x86
+		linux-gcc-x64
+		linux-gcc-arm
+	*/
 
-	return ret;
+	std::string platform{ "windows" };
+	if (inState.environment->isGcc())
+	{
+		platform = "linux";
+	}
+
+	std::string toolchain{ "msvc" };
+	if (inState.environment->isWindowsClang())
+	{
+		toolchain = "clang";
+	}
+	else if (inState.environment->isGcc())
+	{
+		toolchain = "gcc";
+	}
+
+	auto arch = getVSArchitecture(inState.info.targetArchitecture());
+
+	return fmt::format("{}-{}-{}", platform, toolchain, arch);
 }
 
 /*****************************************************************************/
@@ -169,7 +219,7 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 
 	ret.emplace_back(makeEnvironment("buildDir", inState.paths.buildOutputDir()));
 	ret.emplace_back(makeEnvironment("configuration", inState.configuration.name()));
-	ret.emplace_back(makeEnvironment("architecture", inState.info.targetArchitectureString()));
+	ret.emplace_back(makeEnvironment("architecture", getVSArchitecture(inState.info.targetArchitecture())));
 
 	return ret;
 }
