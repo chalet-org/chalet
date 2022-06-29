@@ -32,7 +32,7 @@ void printError(const std::string& inType, const std::string& inDescription)
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 	auto output = fmt::format("{}Signal: {}{} [{}]\n", reset, inDescription, boldRed, inType);
 
-	std::cerr.write(output.data(), output.size());
+	Output::getErrStream().write(output.data(), output.size());
 }
 
 }
@@ -58,8 +58,9 @@ void SignalHandler::handler(const int inSignal)
 	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	std::cerr.put('\n');
-	std::cerr.write(boldRed.data(), boldRed.size());
+	auto& errStream = Output::getErrStream();
+	errStream.put('\n');
+	errStream.write(boldRed.data(), boldRed.size());
 	switch (inSignal)
 	{
 		case SIGABRT: {
@@ -94,7 +95,7 @@ void SignalHandler::handler(const int inSignal)
 
 		default: {
 			auto output = fmt::format("Unknown Signal {}:\n", inSignal);
-			std::cerr.write(output.data(), output.size());
+			errStream.write(output.data(), output.size());
 			break;
 		}
 	}
@@ -105,9 +106,9 @@ void SignalHandler::handler(const int inSignal)
 	std::cout.write(reset.data(), reset.size());
 	std::cout.flush();
 
-	std::cerr.write(reset.data(), reset.size());
-	std::cerr.write("\n", 1);
-	std::cerr.flush();
+	errStream.write(reset.data(), reset.size());
+	errStream.write("\n", 1);
+	errStream.flush();
 
 	::exit(1);
 }

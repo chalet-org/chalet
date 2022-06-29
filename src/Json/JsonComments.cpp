@@ -60,7 +60,7 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 		return false;
 	}
 
-	std::string output = fmt::format("{}\n   {}\n", inOutputError, error);
+	std::string output = fmt::format("{}\n", error);
 
 	auto colorGray = Output::getAnsiStyle(Output::theme().flair);
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
@@ -97,6 +97,7 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 	}
 
 	Diagnostic::error("{}", output);
+	Diagnostic::error("{}", inOutputError);
 	return true;
 }
 }

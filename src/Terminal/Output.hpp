@@ -32,6 +32,8 @@ void setShowCommandOverride(const bool inValue);
 bool showBenchmarks();
 void setShowBenchmarks(const bool inValue);
 
+std::ostream& getErrStream();
+
 bool getUserInput(
 	const std::string& inUserQuery, std::string& outResult, std::string inNote = std::string(),
 	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; }, const bool inFailOnFalse = true);

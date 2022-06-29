@@ -182,7 +182,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 	if (Environment::isBashGenericColorTermOrWindowsTerminal())
 	{
 		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
-		std::cerr.write(boldBlack.data(), boldBlack.size());
+		Output::getErrStream().write(boldBlack.data(), boldBlack.size());
 	}
 
 	state.exceptionThrown = true;
@@ -199,10 +199,11 @@ void Diagnostic::fatalErrorFromException(const char* inError)
 /*****************************************************************************/
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
+	auto& errStream = Output::getErrStream();
 	if (state.spinnerThread != nullptr)
 	{
-		std::cerr.put('\n');
-		std::cerr.flush();
+		errStream.put('\n');
+		errStream.flush();
 		destroySpinnerThread();
 	}
 
@@ -213,17 +214,17 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 
 	std::string output = fmt::format("\n{}Assertion Failed:\n  at {}{} {}{}:{}{}", boldRed, reset, inExpression, blue, inFile, inLineNumber, reset);
 
-	std::cerr.write(output.data(), output.size());
-	std::cerr.put('\n');
-	std::cerr.flush();
+	errStream.write(output.data(), output.size());
+	errStream.put('\n');
+	errStream.flush();
 
 	if (!inMessage.empty())
 	{
 		output = fmt::format("\n{}{}{}", boldBlack, inMessage, reset);
 
-		std::cerr.write(output.data(), output.size());
-		std::cerr.put('\n');
-		std::cerr.flush();
+		errStream.write(output.data(), output.size());
+		errStream.put('\n');
+		errStream.flush();
 	}
 
 	state.assertionFailure = true;
@@ -240,7 +241,7 @@ bool Diagnostic::assertionFailure() noexcept
 /*****************************************************************************/
 void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
+	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
 	if (state.spinnerThread != nullptr)
 	{
 		out << std::endl;
@@ -256,7 +257,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 /*****************************************************************************/
 void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
-	auto& out = inType == Type::Error ? std::cerr : std::cout;
+	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
 	if (state.spinnerThread != nullptr)
 	{
 		out << std::endl;
@@ -302,28 +303,6 @@ void Diagnostic::printErrors()
 			errors.emplace_back(std::move(err.message));
 	}
 
-	auto getOutputString = [](StringList& inList) -> std::string {
-		std::string ret;
-		int i = 0;
-		for (auto itr = inList.begin(); itr != inList.end();)
-		{
-			if (i == 0)
-			{
-				ret += fmt::format("{}", *itr);
-			}
-			else
-			{
-				ret += '\n';
-				ret += fmt::format("   {}", *itr);
-			}
-
-			itr = inList.erase(itr);
-			++i;
-		}
-
-		return ret;
-	};
-
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 	std::cout.write(reset.data(), reset.size());
 
@@ -335,9 +314,15 @@ void Diagnostic::printErrors()
 		Type type = Type::Warning;
 		Output::lineBreak();
 
-		auto label = warnings.size() == 1 ? "WARNING" : "WARNINGS";
-		Diagnostic::showHeader(type, label);
-		Diagnostic::showMessage(type, getOutputString(warnings));
+		{
+			auto label = "WARNING";
+			for (auto& warn : warnings)
+			{
+				Diagnostic::showHeader(type, label);
+				Diagnostic::showMessage(type, std::move(warn));
+			}
+			warnings.clear();
+		}
 
 		if (errors.empty())
 			Output::lineBreak();
@@ -355,9 +340,15 @@ void Diagnostic::printErrors()
 			Output::lineBreakStderr();
 		}
 
-		auto label = errors.size() == 1 ? "ERROR" : "ERRORS";
-		Diagnostic::showHeader(type, label);
-		Diagnostic::showMessage(type, getOutputString(errors));
+		{
+			auto label = "ERROR";
+			for (auto& err : errors)
+			{
+				Diagnostic::showHeader(type, label);
+				Diagnostic::showMessage(type, std::move(err));
+			}
+			errors.clear();
+		}
 
 		if (state.padded)
 			Output::lineBreak();

@@ -133,12 +133,25 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["defines"] = std::move(defines);
 		config["forcedInclude"] = std::move(forcedInclude);
 		config["includePath"] = std::move(includePath);
+		config["inheritEnvironments"] = getInheritEnvironments(*state);
 		config["environments"] = getEnvironments(*state);
 
 		configurations.emplace_back(std::move(config));
 	}
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
+}
+
+/*****************************************************************************/
+Json VSCppPropertiesGen::getInheritEnvironments(const BuildState& inState) const
+{
+	UNUSED(inState);
+
+	Json ret = {
+		"msvc_x64",
+	};
+
+	return ret;
 }
 
 /*****************************************************************************/

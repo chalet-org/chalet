@@ -115,6 +115,16 @@ void Output::setShowBenchmarks(const bool inValue)
 	state.showBenchamrks = inValue;
 }
 
+std::ostream& Output::getErrStream()
+{
+#if defined(CHALET_WIN32)
+	if (Environment::isVisualStudioOutput())
+		return std::cout;
+#endif
+
+	return std::cerr;
+}
+
 /*****************************************************************************/
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate, const bool inFailOnFalse)
 {
@@ -322,10 +332,11 @@ void Output::lineBreakStderr()
 {
 	if (!state.quietNonBuild)
 	{
+		auto& errStream = getErrStream();
 		auto reset = getAnsiStyle(state.theme.reset);
-		std::cerr.write(reset.data(), reset.size());
-		std::cerr.write("\n", 1);
-		std::cerr.flush();
+		errStream.write(reset.data(), reset.size());
+		errStream.write("\n", 1);
+		errStream.flush();
 	}
 }
 

@@ -19,6 +19,7 @@ struct VSCppPropertiesGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
+	Json getInheritEnvironments(const BuildState& inState) const;
 	Json getEnvironments(const BuildState& inState) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
