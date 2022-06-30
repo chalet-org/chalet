@@ -37,7 +37,7 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 
 	auto& tasks = jRoot.at("tasks");
 
-	auto makeTask = [this](const char* inLabel, const char* inContextType, const char* inChaletCmd) {
+	auto makeTask = [](const char* inLabel, const char* inContextType, const char* inChaletCmd) {
 		Json task = Json::object();
 		task["taskLabel"] = inLabel;
 		task["appliesTo"] = "*";

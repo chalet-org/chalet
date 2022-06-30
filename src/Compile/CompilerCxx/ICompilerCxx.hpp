@@ -26,13 +26,14 @@ struct ICompilerCxx : public IToolchainExecutableBase
 
 	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType);
 
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const;
+
 protected:
 	virtual void addIncludes(StringList& outArgList) const;
 	virtual void addWarnings(StringList& outArgList) const;
 	virtual void addDefines(StringList& outArgList) const;
 	virtual void addPchInclude(StringList& outArgList) const;
 	virtual void addOptimizations(StringList& outArgList) const;
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const;
 	virtual void addProfileInformation(StringList& outArgList) const;
 	virtual void addSanitizerOptions(StringList& outArgList) const;

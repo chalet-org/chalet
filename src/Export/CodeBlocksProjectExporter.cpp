@@ -125,7 +125,7 @@ std::string CodeBlocksProjectExporter::getProjectContent(const std::string& inNa
 				auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
 				if (!toolchain->initialize(*state))
 				{
-					Diagnostic::error("Error preparing the build for project: {}", sourceTarget.name());
+					Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());
 					continue;
 				}
 

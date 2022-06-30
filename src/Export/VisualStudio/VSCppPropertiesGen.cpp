@@ -5,6 +5,7 @@
 
 #include "Export/VisualStudio/VSCppPropertiesGen.hpp"
 
+#include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -49,8 +50,6 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["name"] = fmt::format("{} / {}", architecture, configName);
 		config["intelliSenseMode"] = getIntellisenseMode(*state);
 
-		std::string cStandard;
-		std::string cppStandard;
 		StringList defines{
 			"_WIN32"
 		};
@@ -60,18 +59,13 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		StringList forcedInclude;
 
 		bool hasProjects = false;
+		const SourceTarget* signifcantTarget = getSignificantTarget(*state);
 
 		for (auto& target : state->targets)
 		{
 			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
-
-				if (cStandard.empty())
-					cStandard = project.cStandard();
-
-				if (cppStandard.empty())
-					cppStandard = project.cppStandard();
 
 				if (project.usesPrecompiledHeader())
 				{
@@ -114,26 +108,39 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		if (!hasProjects)
 			return false;
 
-		config["compilers"] = Json::object();
-
-		auto& compilers = config.at("compilers");
-
-		if (!cStandard.empty())
+		if (signifcantTarget != nullptr)
 		{
-			compilers["c"] = Json::object();
-			compilers["c"]["path"] = state->toolchain.compilerC().path;
-			compilers["c"]["standard"] = std::move(cStandard);
+			const auto& sourceTarget = *signifcantTarget;
+			auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
+			if (!toolchain->initialize(*state))
+			{
+				Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());
+				continue;
+			}
+
+			config["compilers"] = Json::object();
+
+			auto& compilers = config.at("compilers");
+
+			if (!sourceTarget.cStandard().empty())
+			{
+				compilers["c"] = Json::object();
+				compilers["c"]["path"] = state->toolchain.compilerC().path;
+			}
+
+			if (!sourceTarget.cppStandard().empty())
+			{
+				compilers["cpp"] = Json::object();
+				compilers["cpp"]["path"] = state->toolchain.compilerCpp().path;
+			}
+
+			auto specialization = sourceTarget.cxxSpecialization();
+
+			StringList args;
+			toolchain->compilerCxx->getCommandOptions(args, specialization);
+			config["compilerSwitches"] = String::join(args);
 		}
 
-		if (!cppStandard.empty())
-		{
-			compilers["cpp"] = Json::object();
-			compilers["cpp"]["path"] = state->toolchain.compilerCpp().path;
-			compilers["cpp"]["standard"] = std::move(cppStandard);
-		}
-
-		auto& standard = !cppStandard.empty() ? cppStandard : cStandard;
-		config["compilerSwitches"] = !standard.empty() ? fmt::format("/std:{}", standard) : std::string();
 		config["defines"] = std::move(defines);
 		config["forcedInclude"] = std::move(forcedInclude);
 		config["includePath"] = std::move(includePath);
@@ -213,7 +220,7 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 {
 	Json ret = Json::array();
 
-	auto makeEnvironment = [this, &inState](const char* inName, const std::string& inValue) {
+	auto makeEnvironment = [](const char* inName, const std::string& inValue) {
 		Json env = Json::object();
 		env["namespace"] = "chalet";
 		env[inName] = inValue;
@@ -233,6 +240,44 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
 	ret.emplace_back(makeEnvironment("configuration", configName));
 	ret.emplace_back(makeEnvironment("architecture", getVSArchitecture(inState.info.targetArchitecture())));
+
+	return ret;
+}
+
+/*****************************************************************************/
+// Get the first executable or the last non-executable source target
+//
+const SourceTarget* VSCppPropertiesGen::getSignificantTarget(const BuildState& inState) const
+{
+	const SourceTarget* ret = nullptr;
+
+	{
+		std::vector<const SourceTarget*> allTargets;
+		std::vector<const SourceTarget*> executableTargets;
+
+		for (auto& target : inState.targets)
+		{
+			if (target->isSources())
+			{
+				allTargets.emplace_back(static_cast<const SourceTarget*>(target.get()));
+
+				const auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.isExecutable())
+				{
+					executableTargets.emplace_back(static_cast<const SourceTarget*>(target.get()));
+				}
+			}
+		}
+
+		if (executableTargets.empty() && !allTargets.empty())
+		{
+			return *allTargets.rbegin();
+		}
+		else
+		{
+			ret = *executableTargets.begin();
+		}
+	}
 
 	return ret;
 }

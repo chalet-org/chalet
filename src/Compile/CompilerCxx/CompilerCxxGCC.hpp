@@ -23,6 +23,8 @@ struct CompilerCxxGCC : public ICompilerCxx
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+
 protected:
 	bool configureWarnings();
 
@@ -35,7 +37,6 @@ protected:
 	virtual void addDefines(StringList& outArgList) const override;
 	virtual void addPchInclude(StringList& outArgList) const override;
 	virtual void addOptimizations(StringList& outArgList) const override;
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;

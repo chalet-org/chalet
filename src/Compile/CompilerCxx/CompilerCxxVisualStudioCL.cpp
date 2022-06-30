@@ -435,7 +435,48 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const CxxSpecialization specialization)
 {
-	UNUSED(outArgList, specialization);
+	outArgList.emplace_back("/c");
+	addCharsets(outArgList);
+	// outArgList.emplace_back("/MP");
+
+	addLanguageStandard(outArgList, specialization);
+	addCppCoroutines(outArgList);
+
+	addCompileOptions(outArgList);
+
+	{
+		addSeparateProgramDatabase(outArgList);
+		addForceSeparateProgramDatabaseWrites(outArgList);
+		addNativeJustMyCodeDebugging(outArgList);
+		addWarnings(outArgList);
+		addDiagnostics(outArgList);
+		addAdditionalSecurityChecks(outArgList);
+		addOptimizations(outArgList);
+		addGenerateIntrinsicFunctions(outArgList);
+		addWholeProgramOptimization(outArgList);
+
+		// addDefines(outArgList);
+
+		// /Gm-  // deprecated
+		addNoExceptionsOption(outArgList);
+		addRuntimeErrorChecks(outArgList);
+		addThreadModelCompileOption(outArgList);
+		addBufferSecurityCheck(outArgList);
+		addFastMathOption(outArgList);
+		addFunctionLevelLinking(outArgList);
+		addStandardsConformance(outArgList);
+		addStandardBehaviors(outArgList);
+		addProgramDatabaseOutput(outArgList);
+		addExternalWarnings(outArgList);
+		addCallingConvention(outArgList);
+		// addFullPathSourceCode(outArgList);
+	}
+
+	// addInlineFunctionExpansion(outArgList);
+	// addUnsortedOptions(outArgList);
+
+	addSanitizerOptions(outArgList);
+	addNoRunTimeTypeInformationOption(outArgList);
 }
 
 /*****************************************************************************/

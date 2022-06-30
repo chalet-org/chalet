@@ -12,6 +12,7 @@
 namespace chalet
 {
 class BuildState;
+struct SourceTarget;
 
 struct VSCppPropertiesGen
 {
@@ -23,6 +24,7 @@ private:
 	std::string getVSArchitecture(Arch::Cpu inCpu) const;
 	std::string getIntellisenseMode(const BuildState& inState) const;
 	Json getEnvironments(const BuildState& inState) const;
+	const SourceTarget* getSignificantTarget(const BuildState& inState) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
