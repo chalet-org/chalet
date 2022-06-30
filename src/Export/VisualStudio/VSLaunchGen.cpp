@@ -82,7 +82,7 @@ Json VSLaunchGen::getConfiguration(const IBuildTarget& inTarget) const
 	else
 		ret["args"] = Json::array();
 
-	ret["cwd"] = "${workspaceRoot}";
+	ret["currentDir"] = "${workspaceRoot}";
 	ret["debugType"] = "native";
 	ret["stopOnEntry"] = true;
 
@@ -98,7 +98,7 @@ Json VSLaunchGen::getConfiguration(const IBuildTarget& inTarget) const
 Json VSLaunchGen::getEnvironment(const IBuildTarget& inTarget) const
 {
 	Json ret = Json::object();
-	ret["Path"] = "${env.Path}";
+	ret["Path"] = "${chalet.runEnvironment};${env.Path}";
 
 	UNUSED(inTarget);
 

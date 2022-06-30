@@ -56,7 +56,8 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	if (state != nullptr)
 	{
 		const auto& outState = *state;
-		VSCppPropertiesGen cppProperties(m_states, m_cwd);
+
+		VSCppPropertiesGen cppProperties(m_states, m_cwd, m_pathVariables);
 		if (!cppProperties.saveToFile("CppProperties.json"))
 		{
 			Diagnostic::error("There was a problem saving the CppProperties.json file.");

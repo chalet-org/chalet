@@ -45,6 +45,7 @@ protected:
 
 	Dictionary<StringList> m_headerFiles;
 	std::vector<Unique<BuildState>> m_states;
+	Dictionary<std::string> m_pathVariables;
 
 private:
 	ExportKind m_kind;

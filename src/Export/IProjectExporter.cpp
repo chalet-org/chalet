@@ -17,6 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -150,6 +151,7 @@ bool IProjectExporter::generate()
 	m_cwd = m_centralState.inputs().workingDirectory();
 
 	m_states.clear();
+	m_pathVariables.clear();
 
 	auto makeState = [this](const std::string& configName) {
 		// auto configName = fmt::format("{}_{}", arch, inConfig);
@@ -181,6 +183,25 @@ bool IProjectExporter::generate()
 	{
 		if (!state->initialize())
 			return false;
+
+		StringList paths;
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<SourceTarget&>(*target);
+				for (auto& p : project.libDirs())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
+				for (auto& p : project.macosFrameworkPaths())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
+			}
+		}
+		std::reverse(paths.begin(), paths.end());
+		m_pathVariables.emplace(state->configuration.name(), state->workspace.makePathVariable(std::string(), paths));
 	}
 
 	auto state = getAnyBuildStateButPreferDebug();

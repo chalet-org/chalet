@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -22,9 +23,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd) :
+VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const Dictionary<std::string>& inPathVariables) :
 	m_states(inStates),
-	m_cwd(inCwd)
+	m_cwd(inCwd),
+	m_pathVariables(inPathVariables)
 {
 	UNUSED(m_cwd);
 }
@@ -130,6 +132,8 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			compilers["cpp"]["standard"] = std::move(cppStandard);
 		}
 
+		auto& standard = !cppStandard.empty() ? cppStandard : cStandard;
+		config["compilerSwitches"] = !standard.empty() ? fmt::format("/std:{}", standard) : std::string();
 		config["defines"] = std::move(defines);
 		config["forcedInclude"] = std::move(forcedInclude);
 		config["includePath"] = std::move(includePath);
@@ -217,8 +221,17 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 		return env;
 	};
 
+	// workspace.makePathVariable(path, inAdditionalPaths);
+
+	const auto& configName = inState.configuration.name();
+
+	chalet_assert(m_pathVariables.find(configName) != m_pathVariables.end(), "");
+	const auto& runEnvironment = m_pathVariables.at(configName);
+
+	ret.emplace_back(makeEnvironment("runEnvironment", runEnvironment));
 	ret.emplace_back(makeEnvironment("buildDir", inState.paths.buildOutputDir()));
-	ret.emplace_back(makeEnvironment("configuration", inState.configuration.name()));
+	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
+	ret.emplace_back(makeEnvironment("configuration", configName));
 	ret.emplace_back(makeEnvironment("architecture", getVSArchitecture(inState.info.targetArchitecture())));
 
 	return ret;

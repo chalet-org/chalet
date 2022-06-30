@@ -15,7 +15,7 @@ class BuildState;
 
 struct VSCppPropertiesGen
 {
-	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd);
+	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const Dictionary<std::string>& inPathVariables);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -26,6 +26,7 @@ private:
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
+	const Dictionary<std::string>& m_pathVariables;
 };
 }
 
