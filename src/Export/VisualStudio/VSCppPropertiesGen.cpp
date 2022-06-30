@@ -110,13 +110,20 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 		if (signifcantTarget != nullptr)
 		{
+			auto subfolder = Commands::getWorkingDirectory();
+			if (!Commands::changeWorkingDirectory(m_cwd))
+				return false;
+
 			const auto& sourceTarget = *signifcantTarget;
 			auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
 			if (!toolchain->initialize(*state))
 			{
 				Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());
-				continue;
+				return false;
 			}
+
+			if (!Commands::changeWorkingDirectory(subfolder))
+				return false;
 
 			config["compilers"] = Json::object();
 
