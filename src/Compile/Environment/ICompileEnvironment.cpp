@@ -37,6 +37,18 @@ ToolchainType ICompileEnvironment::type() const noexcept
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::isWindowsTarget() const noexcept
+{
+	return m_isWindowsTarget;
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isEmbeddedTarget() const noexcept
+{
+	return m_isEmbeddedTarget;
+}
+
+/*****************************************************************************/
 bool ICompileEnvironment::isWindowsClang() const noexcept
 {
 #if defined(CHALET_WIN32)
@@ -77,12 +89,6 @@ bool ICompileEnvironment::isGcc() const noexcept
 bool ICompileEnvironment::isIntelClassic() const noexcept
 {
 	return m_type == ToolchainType::IntelClassic;
-}
-
-/*****************************************************************************/
-bool ICompileEnvironment::isWindowsTarget() const noexcept
-{
-	return m_isWindowsTarget;
 }
 
 /*****************************************************************************/

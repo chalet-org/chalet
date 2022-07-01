@@ -270,6 +270,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 	}
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
+	m_isEmbeddedTarget = String::contains(StringList{ "-none-" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }

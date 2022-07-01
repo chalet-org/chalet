@@ -25,6 +25,8 @@ struct ICompileEnvironment
 	ToolchainType type() const noexcept;
 
 	bool isWindowsTarget() const noexcept;
+	bool isEmbeddedTarget() const noexcept;
+
 	bool isWindowsClang() const noexcept;
 	bool isClang() const noexcept;
 	bool isAppleClang() const noexcept;
@@ -88,6 +90,7 @@ protected:
 
 	bool m_ouptuttedDescription = false;
 	bool m_isWindowsTarget = false;
+	bool m_isEmbeddedTarget = false;
 
 private:
 	std::string m_identifier;

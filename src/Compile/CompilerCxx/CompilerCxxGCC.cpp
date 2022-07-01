@@ -718,9 +718,10 @@ void CompilerCxxGCC::addFastMathOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isWindowsClang()
+	if (m_project.threads()
+		&& !m_state.environment->isWindowsClang()
 		&& !m_state.environment->isMingwClang()
-		&& m_project.threads())
+		&& !m_state.environment->isEmbeddedTarget())
 	{
 		std::string option{ "-pthread" };
 		// if (isFlagSupported(option))
