@@ -272,8 +272,8 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	{
 		options.stdoutOption = PipeOption::Pipe;
 		options.onStdOut = [](std::string inData) {
-			String::replaceAll(inData, ": warning ", Output::getAnsiStyle(Color::Reset) + ": warning ");
-			String::replaceAll(inData, ": error ", Output::getAnsiStyle(Color::Reset) + ": error ");
+			String::replaceAll(inData, ": warning ", Output::getAnsiStyle(Output::theme().reset) + ": warning ");
+			String::replaceAll(inData, ": error ", Output::getAnsiStyle(Output::theme().reset) + ": error ");
 			std::cout.write(inData.data(), inData.size());
 			std::cout.flush();
 		};
@@ -323,7 +323,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		}
 
 		// Note: std::cerr outputs after std::cout on windows (which we don't want)
-		auto reset = Output::getAnsiStyle(Color::Reset);
+		auto reset = Output::getAnsiStyle(Output::theme().reset);
 #if defined(CHALET_WIN32)
 		if (result == EXIT_SUCCESS)
 #endif

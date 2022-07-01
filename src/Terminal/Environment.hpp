@@ -16,6 +16,7 @@ bool isBashGenericColorTermOrWindowsTerminal();
 bool isMicrosoftTerminalOrWindowsBash();
 bool isCommandPromptOrPowerShell();
 bool isContinuousIntegrationServer();
+bool isVisualStudioOutput();
 
 const char* get(const char* inName);
 std::string getAsString(const char* inName, std::string inFallback = std::string());

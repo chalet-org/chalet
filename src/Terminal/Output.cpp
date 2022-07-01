@@ -115,13 +115,23 @@ void Output::setShowBenchmarks(const bool inValue)
 	state.showBenchamrks = inValue;
 }
 
+std::ostream& Output::getErrStream()
+{
+#if defined(CHALET_WIN32)
+	if (Environment::isVisualStudioOutput())
+		return std::cout;
+#endif
+
+	return std::cerr;
+}
+
 /*****************************************************************************/
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate, const bool inFailOnFalse)
 {
 	const auto color = Output::getAnsiStyle(state.theme.flair);
 	const auto noteColor = Output::getAnsiStyle(state.theme.build);
 	const auto answerColor = Output::getAnsiStyle(state.theme.note);
-	const auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto reset = Output::getAnsiStyle(state.theme.reset);
 	const char symbol = '>';
 
 	const auto lineUp = fmt::format("{}[F", getEscapeChar());
@@ -205,6 +215,11 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 /*****************************************************************************/
 std::string Output::getAnsiStyle(const Color inColor)
 {
+#if defined(CHALET_WIN32)
+	if (Environment::isVisualStudioOutput())
+		return std::string();
+#endif
+
 	if (inColor == Color::None)
 		return std::string();
 
@@ -235,6 +250,11 @@ std::string Output::getAnsiStyle(const Color inColor)
 /*****************************************************************************/
 std::string Output::getAnsiStyleRaw(const Color inColor)
 {
+#if defined(CHALET_WIN32)
+	if (Environment::isVisualStudioOutput())
+		return std::string();
+#endif
+
 	if (inColor == Color::None)
 		return std::string();
 
@@ -286,7 +306,7 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(inColor);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto message = fmt::format("{}{}  {}", color, inSymbol, inMessage);
 		std::cout.write(message.data(), message.size());
 		std::cout.write(reset.data(), reset.size());
@@ -300,7 +320,7 @@ void Output::lineBreak(const bool inForce)
 {
 	if (!state.quietNonBuild || inForce)
 	{
-		auto reset = getAnsiStyle(Color::Reset);
+		auto reset = getAnsiStyle(state.theme.reset);
 		std::cout.write(reset.data(), reset.size());
 		std::cout.put('\n');
 		std::cout.flush();
@@ -312,25 +332,31 @@ void Output::lineBreakStderr()
 {
 	if (!state.quietNonBuild)
 	{
-		auto reset = getAnsiStyle(Color::Reset);
-		std::cerr.write(reset.data(), reset.size());
-		std::cerr.write("\n", 1);
-		std::cerr.flush();
+		auto& errStream = getErrStream();
+		auto reset = getAnsiStyle(state.theme.reset);
+		errStream.write(reset.data(), reset.size());
+		errStream.write("\n", 1);
+		errStream.flush();
 	}
 }
 
 /*****************************************************************************/
 void Output::previousLine(const bool inForce)
 {
-	if (!state.quietNonBuild || inForce)
+	if ((!state.quietNonBuild || inForce))
 	{
-		std::string eraser(80, ' ');
-		auto prevLine = fmt::format("{}[F{}", getEscapeChar(), eraser);
-		std::cout.write(prevLine.data(), prevLine.size());
-		std::cout.put('\n');
-		prevLine = fmt::format("{}[F", getEscapeChar());
-		std::cout.write(prevLine.data(), prevLine.size());
-		std::cout.flush();
+#if defined(CHALET_WIN32)
+		if (!Environment::isVisualStudioOutput())
+#endif
+		{
+			std::string eraser(80, ' ');
+			auto prevLine = fmt::format("{}[F{}", getEscapeChar(), eraser);
+			std::cout.write(prevLine.data(), prevLine.size());
+			std::cout.put('\n');
+			prevLine = fmt::format("{}[F", getEscapeChar());
+			std::cout.write(prevLine.data(), prevLine.size());
+			std::cout.flush();
+		}
 	}
 }
 
@@ -339,7 +365,7 @@ void Output::print(const Color inColor, const std::string& inText)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		std::string output;
 		if (inColor == Color::Reset)
 		{
@@ -362,7 +388,7 @@ void Output::print(const Color inColor, const StringList& inList)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		if (inColor == Color::Reset)
 		{
 			auto output = fmt::format("{}{}", reset, String::join(inList));
@@ -389,7 +415,7 @@ void Output::printCommand(const std::string& inText)
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -404,7 +430,7 @@ void Output::printCommand(const StringList& inList)
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
 
 		std::cout.write(output.data(), output.size());
@@ -419,7 +445,7 @@ void Output::printInfo(const std::string& inText)
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(state.theme.info);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -434,7 +460,7 @@ void Output::printFlair(const std::string& inText)
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -449,7 +475,7 @@ void Output::printSeparator(const char inChar)
 	if (!state.quietNonBuild)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}", color, std::string(80, inChar), reset);
 
 		std::cout.write(output.data(), output.size());
@@ -504,7 +530,7 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 	if (!state.quietNonBuild)
 	{
 		const auto colorError = getAnsiStyle(state.theme.error);
-		const auto reset = getAnsiStyle(Color::Reset);
+		const auto reset = getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}FAILED: {}{}", colorError, reset, inMessage);
 
 		std::cout.write(output.data(), output.size());
@@ -521,7 +547,7 @@ void Output::msgBuildFail()
 	auto symbol = Unicode::heavyBallotX();
 
 	const auto color = getAnsiStyle(state.theme.error);
-	const auto reset = getAnsiStyle(Color::Reset);
+	const auto reset = getAnsiStyle(state.theme.reset);
 
 	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset);
 
@@ -640,7 +666,7 @@ void Output::msgModulesCompiling()
 /*****************************************************************************/
 void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 {
-	const auto reset = getAnsiStyle(Color::Reset);
+	const auto reset = getAnsiStyle(state.theme.reset);
 	const auto flair = getAnsiStyle(state.theme.flair);
 	const auto build = getAnsiStyle(state.theme.build);
 

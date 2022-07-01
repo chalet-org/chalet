@@ -12,6 +12,7 @@ namespace chalet
 {
 struct CentralState;
 class BuildState;
+struct IBuildTarget;
 
 struct IProjectExporter;
 using ProjectExporter = Unique<IProjectExporter>;
@@ -34,6 +35,8 @@ protected:
 	virtual bool generateProjectFiles() = 0;
 
 	bool useExportDirectory(const std::string& inSubDirectory = std::string()) const;
+	const BuildState* getAnyBuildStateButPreferDebug() const;
+	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
 	CentralState& m_centralState;
 
@@ -41,7 +44,8 @@ protected:
 	std::string m_debugConfiguration;
 
 	Dictionary<StringList> m_headerFiles;
-	HeapDictionary<BuildState> m_states;
+	std::vector<Unique<BuildState>> m_states;
+	Dictionary<std::string> m_pathVariables;
 
 private:
 	ExportKind m_kind;

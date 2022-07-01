@@ -8,13 +8,17 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
+#include "Export/VSJsonProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -38,6 +42,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
 		case ExportKind::VisualStudioCode:
 			return std::make_unique<VSCodeProjectExporter>(inCentralState);
+		case ExportKind::VisualStudioJSON:
+			return std::make_unique<VSJsonProjectExporter>(inCentralState);
 		default:
 			break;
 	}
@@ -78,6 +84,61 @@ bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) con
 }
 
 /*****************************************************************************/
+const BuildState* IProjectExporter::getAnyBuildStateButPreferDebug() const
+{
+	const BuildState* ret = nullptr;
+	if (!m_states.empty())
+	{
+		if (!m_debugConfiguration.empty())
+		{
+			for (const auto& state : m_states)
+			{
+				if (String::equals(m_debugConfiguration, state->configuration.name()))
+				{
+					ret = state.get();
+					break;
+				}
+			}
+		}
+		else
+		{
+			ret = m_states.front().get();
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inState) const
+{
+	const IBuildTarget* ret = nullptr;
+	for (auto& target : inState.targets)
+	{
+		if (target->isSources())
+		{
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.isExecutable())
+			{
+				ret = target.get();
+				break;
+			}
+		}
+		else if (target->isCMake())
+		{
+			const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
+			if (!cmakeProject.runExecutable().empty())
+			{
+				ret = target.get();
+				break;
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool IProjectExporter::generate()
 {
 	Timer timer;
@@ -89,17 +150,18 @@ bool IProjectExporter::generate()
 
 	m_cwd = m_centralState.inputs().workingDirectory();
 
+	m_states.clear();
+	m_pathVariables.clear();
+
 	auto makeState = [this](const std::string& configName) {
 		// auto configName = fmt::format("{}_{}", arch, inConfig);
-		if (m_states.find(configName) == m_states.end())
-		{
-			CommandLineInputs inputs = m_centralState.inputs();
-			inputs.setBuildConfiguration(std::string(configName));
-			// inputs.setTargetArchitecture(arch);
-			auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
 
-			m_states.emplace(configName, std::move(state));
-		}
+		CommandLineInputs inputs = m_centralState.inputs();
+		inputs.setBuildConfiguration(std::string(configName));
+		// inputs.setTargetArchitecture(arch);
+		auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
+
+		m_states.emplace_back(std::move(state));
 	};
 
 	for (const auto& [name, config] : m_centralState.buildConfigurations())
@@ -117,34 +179,59 @@ bool IProjectExporter::generate()
 	bool quiet = Output::quietNonBuild();
 	Output::setQuietNonBuild(true);
 
-	// BuildState* stateArchA = nullptr;
-	for (auto& [config, state] : m_states)
+	for (auto& state : m_states)
 	{
 		if (!state->initialize())
 			return false;
 
-		if (!validate(*state))
-			return false;
-	}
-
-	if (!m_states.empty())
-	{
-		auto& state = *m_states.begin()->second;
-		for (auto& target : state.targets)
+		StringList paths;
+		for (auto& target : state->targets)
 		{
 			if (target->isSources())
 			{
-				const auto& project = static_cast<const SourceTarget&>(*target);
-				m_headerFiles.emplace(project.name(), project.getHeaderFiles());
+				auto& project = static_cast<SourceTarget&>(*target);
+				for (auto& p : project.libDirs())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
+				for (auto& p : project.macosFrameworkPaths())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
 			}
+		}
+		std::reverse(paths.begin(), paths.end());
+		m_pathVariables.emplace(state->configuration.name(), state->workspace.makePathVariable(std::string(), paths));
+	}
+
+	auto state = getAnyBuildStateButPreferDebug();
+	if (state == nullptr)
+	{
+		Diagnostic::error("There are no valid projects to export.");
+		return false;
+	}
+
+	for (auto& target : state->targets)
+	{
+		if (target->isSources())
+		{
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			m_headerFiles.emplace(project.name(), project.getHeaderFiles());
 		}
 	}
 
 	Output::setQuietNonBuild(quiet);
 
-	if (!generateProjectFiles())
+	if (!validate(*state))
 		return false;
 
+	if (!generateProjectFiles())
+	{
+		Commands::changeWorkingDirectory(m_cwd);
+		return false;
+	}
+
+	Commands::changeWorkingDirectory(m_cwd);
 	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);

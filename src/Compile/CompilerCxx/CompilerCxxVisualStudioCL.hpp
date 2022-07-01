@@ -22,6 +22,8 @@ struct CompilerCxxVisualStudioCL : public ICompilerCxx
 
 	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType) override;
 
+	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+
 protected:
 	bool createPrecompiledHeaderSource();
 	bool configureWarnings();
@@ -31,7 +33,6 @@ protected:
 	virtual void addDefines(StringList& outArgList) const override;
 	virtual void addPchInclude(StringList& outArgList) const override;
 	virtual void addOptimizations(StringList& outArgList) const override;
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addCharsets(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;

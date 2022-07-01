@@ -136,15 +136,10 @@ void VSCodeLaunchGen::setPreLaunchTask(Json& outJson) const
 /*****************************************************************************/
 void VSCodeLaunchGen::setProgramPath(Json& outJson) const
 {
-	if (m_target.isSources())
+	auto program = m_state.paths.getExecutableTargetPath(m_target);
+	if (!program.empty())
 	{
-		auto program = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(m_target));
 		outJson["program"] = fmt::format("${{workspaceFolder}}/{}", program);
-	}
-	else if (m_target.isCMake())
-	{
-		const auto& cmakeProject = static_cast<const CMakeTarget&>(m_target);
-		outJson["program"] = fmt::format("${{workspaceFolder}}/{}", cmakeProject.runExecutable());
 	}
 
 	if (m_state.inputs.runArguments().has_value())

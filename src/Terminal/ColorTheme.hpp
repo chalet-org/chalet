@@ -12,6 +12,7 @@ namespace chalet
 {
 struct ColorTheme
 {
+	Color reset = Color::None;
 	Color info = Color::None;
 	Color error = Color::None;
 	Color warning = Color::None;

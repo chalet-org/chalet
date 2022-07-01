@@ -13,7 +13,7 @@ enum class ExportKind : ushort
 	None,
 	// VisualStudio2019,
 	VisualStudioCode,
-	VisualStudioLaunchJSON,
+	VisualStudioJSON,
 	// XCode,
 	CodeBlocks,
 };

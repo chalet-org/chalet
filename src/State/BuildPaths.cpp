@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -300,6 +301,22 @@ std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 	}
 
 	return fmt::format("{}/{}", buildOutputDir(), base);
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getExecutableTargetPath(const IBuildTarget& inTarget) const
+{
+	if (inTarget.isSources())
+	{
+		return getTargetFilename(static_cast<const SourceTarget&>(inTarget));
+	}
+	else if (inTarget.isCMake())
+	{
+		const auto& cmakeProject = static_cast<const CMakeTarget&>(inTarget);
+		return cmakeProject.runExecutable();
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

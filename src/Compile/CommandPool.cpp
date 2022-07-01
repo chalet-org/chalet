@@ -96,7 +96,7 @@ bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string s
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(inCommand);
 
 			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
@@ -148,7 +148,7 @@ bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(inCommand);
 
 			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
@@ -201,7 +201,7 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Color::Reset);
+			auto reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(inCommand);
 
 			auto failure = fmt::format("{}FAILED: {}{}\n", error, reset, cmdString);
@@ -319,7 +319,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 		totalCompiles = static_cast<uint>(inJob.list.size());
 	}
 
-	m_reset = Output::getAnsiStyle(Color::Reset);
+	m_reset = Output::getAnsiStyle(Output::theme().reset);
 	auto color = Output::getAnsiStyle(cmdColor);
 
 	bool haltOnError = !keepGoing;
