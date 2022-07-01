@@ -7,6 +7,7 @@
 
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -160,6 +161,8 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
+// TODO: move
+//
 std::string VSCppPropertiesGen::getVSArchitecture(Arch::Cpu inCpu) const
 {
 	switch (inCpu)
@@ -244,9 +247,12 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 
 	ret.emplace_back(makeEnvironment("runEnvironment", runEnvironment));
 	ret.emplace_back(makeEnvironment("buildDir", inState.paths.buildOutputDir()));
+	ret.emplace_back(makeEnvironment("externalDir", inState.inputs.externalDirectory()));
 	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
 	ret.emplace_back(makeEnvironment("configuration", configName));
-	ret.emplace_back(makeEnvironment("architecture", getVSArchitecture(inState.info.targetArchitecture())));
+	ret.emplace_back(makeEnvironment("vsArch", getVSArchitecture(inState.info.targetArchitecture())));
+	ret.emplace_back(makeEnvironment("arch", inState.info.targetArchitectureString()));
+	ret.emplace_back(makeEnvironment("archTriple", inState.info.targetArchitectureTriple()));
 
 	return ret;
 }

@@ -73,7 +73,7 @@ bool VSJsonProjectExporter::generateProjectFiles()
 
 		if (state->configuration.debugSymbols())
 		{
-			VSLaunchGen launchJson(outState, m_cwd);
+			VSLaunchGen launchJson(m_states, m_cwd);
 			if (!launchJson.saveToFile("launch.vs.json"))
 			{
 				Diagnostic::error("There was a problem saving the launch.vs.json file.");
