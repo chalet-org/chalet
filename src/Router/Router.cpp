@@ -327,6 +327,7 @@ bool Router::routeDebug()
 	});
 
 	LOG(xml.dump(2));
+	LOG("----");
 	LOG("xml took:", timer.asString());
 	LOG("----");
 
