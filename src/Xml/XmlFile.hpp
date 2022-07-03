@@ -19,9 +19,6 @@ struct XmlFile
 
 	bool save(const int inIndent = 1);
 
-	bool dirty() const noexcept;
-	void setDirty(const bool inValue) noexcept;
-
 	void resetAndSave();
 	void dumpToTerminal();
 
@@ -33,8 +30,6 @@ struct XmlFile
 
 private:
 	std::string m_filename;
-
-	bool m_dirty = false;
 };
 }
 

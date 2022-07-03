@@ -33,10 +33,10 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 			return false;
 	}
 
-	if (inIndent <= 0 || inIndent > 4)
-		std::ofstream(outFilename) << inJson.dump() << std::endl;
+	if ((inIndent < -1 || inIndent > 4) || inIndent == 1)
+		std::ofstream(outFilename) << inJson.dump(1, '\t') << std::endl;
 	else
-		std::ofstream(outFilename) << inJson.dump(inIndent, '\t') << std::endl;
+		std::ofstream(outFilename) << inJson.dump(inIndent) << std::endl;
 
 	return true;
 }

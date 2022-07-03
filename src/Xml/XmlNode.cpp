@@ -5,11 +5,13 @@
 
 #include "Xml/XmlNode.hpp"
 
+// https://en.wikipedia.org/wiki/XML
+
 namespace chalet
 {
 /*****************************************************************************/
-XmlNode::XmlNode(std::string inName) :
-	m_name(std::move(inName))
+XmlNode::XmlNode(std::string_view inName) :
+	m_name(getValidKey(inName))
 {
 }
 
@@ -34,6 +36,9 @@ std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const cha
 	}
 
 	ret += indent;
+	if (m_commented)
+		ret += "<!--";
+
 	if (hasChildNodes())
 	{
 		std::string childNodes;
@@ -67,6 +72,9 @@ std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const cha
 		ret += fmt::format("<{}{} />", m_name, attributes);
 	}
 
+	if (m_commented)
+		ret += "-->";
+
 	if (inIndentSize >= 0)
 		ret += '\n';
 
@@ -79,9 +87,9 @@ const std::string& XmlNode::name() const noexcept
 	return m_name;
 }
 
-void XmlNode::setName(std::string inName)
+void XmlNode::setName(std::string_view inName)
 {
-	m_name = std::move(inName);
+	m_name = getValidKey(inName);
 }
 
 /*****************************************************************************/
@@ -91,11 +99,11 @@ bool XmlNode::hasAttributes() const
 }
 
 /*****************************************************************************/
-bool XmlNode::addAttribute(const std::string& inKey, std::string inValue)
+bool XmlNode::addAttribute(std::string_view inKey, std::string_view inValue)
 {
 	makeAttributes();
 
-	m_attributes->emplace_back(std::pair<std::string, std::string>{ inKey, std::move(inValue) });
+	m_attributes->emplace_back(std::pair<std::string, std::string>{ getValidKey(inKey), getValidAttributeValue(inValue) });
 	return true;
 }
 
@@ -128,16 +136,16 @@ bool XmlNode::hasChildNodes() const
 }
 
 /*****************************************************************************/
-bool XmlNode::setChildNode(std::string inValue)
+bool XmlNode::setChildNode(std::string_view inValue)
 {
 	makeChildNodes();
 
-	(*m_childNodes) = std::move(inValue);
+	(*m_childNodes) = getValidValue(inValue);
 	return true;
 }
 
 /*****************************************************************************/
-bool XmlNode::addChildNode(std::string inName, std::string inValue)
+bool XmlNode::addChildNode(std::string_view inName, std::string_view inValue)
 {
 	makeChildNodes();
 
@@ -153,7 +161,7 @@ bool XmlNode::addChildNode(std::string inName, std::string inValue)
 }
 
 /*****************************************************************************/
-bool XmlNode::addChildNode(std::string inName, std::function<void(XmlNode&)> onMakeNode)
+bool XmlNode::addChildNode(std::string_view inName, std::function<void(XmlNode&)> onMakeNode)
 {
 	makeChildNodes();
 
@@ -179,6 +187,116 @@ bool XmlNode::clearChildNodes()
 	}
 
 	return false;
+}
+
+/*****************************************************************************/
+bool XmlNode::commented() const noexcept
+{
+	return m_commented;
+}
+
+void XmlNode::setCommented(const bool inValue) noexcept
+{
+	m_commented = inValue;
+}
+
+/*****************************************************************************/
+std::string XmlNode::getValidKey(const std::string_view& inKey) const
+{
+	std::string ret;
+
+	for (std::size_t i = 0; i < inKey.size(); ++i)
+	{
+		char c = inKey[i];
+		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+			continue;
+
+		switch (c)
+		{
+			case '<':
+			case '>':
+			case '&':
+			case '\'':
+			case '"':
+				continue;
+			default:
+				break;
+		}
+
+		ret += c;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string XmlNode::getValidAttributeValue(const std::string_view& inValue) const
+{
+	std::string ret;
+
+	for (std::size_t i = 0; i < inValue.size(); ++i)
+	{
+		char c = inValue[i];
+		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+			continue;
+
+		switch (c)
+		{
+			case '<':
+				ret += "&lt;";
+				continue;
+			case '>':
+				ret += "&gt;";
+				continue;
+			case '&':
+				ret += "&amp;";
+				continue;
+			// case '\'':
+			// 	ret += "&apos;";
+			// 	continue;
+			case '"':
+				ret += "&quot;";
+				continue;
+			default:
+				break;
+		}
+
+		ret += c;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string XmlNode::getValidValue(const std::string_view& inValue) const
+{
+	std::string ret;
+
+	for (std::size_t i = 0; i < inValue.size(); ++i)
+	{
+		char c = inValue[i];
+		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+			continue;
+
+		switch (c)
+		{
+			case '<':
+				ret += "&lt;";
+				continue;
+			case '>':
+				ret += "&gt;";
+				continue;
+			case '&':
+				ret += "&amp;";
+				continue;
+			default:
+				break;
+		}
+
+		ret += c;
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

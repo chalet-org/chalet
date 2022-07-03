@@ -29,10 +29,10 @@ bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const
 			return false;
 	}
 
-	if (inIndent <= 0 || inIndent > 4)
-		std::ofstream(outFilename) << inXml.dump() << std::endl;
+	if ((inIndent < -1 || inIndent > 4) || inIndent == 1)
+		std::ofstream(outFilename) << inXml.dump(1, '\t') << std::endl;
 	else
-		std::ofstream(outFilename) << inXml.dump(inIndent, '\t') << std::endl;
+		std::ofstream(outFilename) << inXml.dump(inIndent) << std::endl;
 
 	return true;
 }
@@ -40,7 +40,7 @@ bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const
 /*****************************************************************************/
 bool XmlFile::save(const int inIndent)
 {
-	if (!m_filename.empty() && m_dirty)
+	if (!m_filename.empty())
 	{
 		return XmlFile::saveToFile(xml, m_filename, inIndent);
 	}
@@ -50,21 +50,9 @@ bool XmlFile::save(const int inIndent)
 }
 
 /*****************************************************************************/
-bool XmlFile::dirty() const noexcept
-{
-	return m_dirty;
-}
-
-void XmlFile::setDirty(const bool inValue) noexcept
-{
-	m_dirty = inValue;
-}
-
-/*****************************************************************************/
 void XmlFile::resetAndSave()
 {
 	xml = Xml();
-	setDirty(true);
 	save();
 }
 

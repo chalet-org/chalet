@@ -31,6 +31,7 @@
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Xml/Xml.hpp"
+#include "Xml/XmlFile.hpp"
 
 #include "Libraries/Json.hpp"
 
@@ -288,11 +289,15 @@ bool Router::routeDebug()
 
 	// LOG("glob took:", timer.asString());
 
-	Xml xml("Project");
-	auto& root = xml.root();
-	root.addAttribute("DefaultTargets", "Build");
-	root.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	root.addChildNode("ItemGroup", [](XmlNode& node) {
+	XmlFile xmlFile("test.xml");
+
+	auto& xml = xmlFile.xml;
+
+	auto& xmlRoot = xml.root();
+	xmlRoot.setName("Project");
+	xmlRoot.addAttribute("DefaultTargets", "Build");
+	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	xmlRoot.addChildNode("ItemGroup", [](XmlNode& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
 		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
 			node2.addAttribute("Include", "Debug|Win32");
@@ -313,24 +318,25 @@ bool Router::routeDebug()
 			node2.addAttribute("Include", "Release|x64");
 			node2.addChildNode("Configuration", "Release");
 			node2.addChildNode("Platform", "x64");
+			node2.setCommented(true);
+		});
+		node.addChildNode("Test&Stuff'\"<>", [](XmlNode& node2) {
+			node2.addAttribute("Test&Stuff'\"<>", "Test&Stuff'\"<>");
+			node2.setChildNode("Test&Stuff'\"<>");
 		});
 	});
 
-	LOG(xml.dump());
-	LOG("----");
-	LOG(xml.dump(0));
-	LOG("----");
-	LOG(xml.dump(1));
-	LOG("----");
 	LOG(xml.dump(2));
-	LOG("----");
-	LOG(xml.dump(3));
-	LOG("----");
-	LOG(xml.dump(4));
-	LOG("----");
-	LOG(xml.dump(1, '\t'));
-	LOG("----");
 	LOG("xml took:", timer.asString());
+	LOG("----");
+
+	xmlFile.save(2);
+
+	auto xmllint = Commands::which("xmllint");
+	if (!xmllint.empty())
+	{
+		Commands::subprocess({ xmllint, xmlFile.filename() });
+	}
 
 	return true;
 }
