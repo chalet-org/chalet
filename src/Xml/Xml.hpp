@@ -12,9 +12,10 @@ namespace chalet
 {
 struct Xml
 {
+	Xml() = default;
 	explicit Xml(std::string inRootName);
 
-	std::string toString() const;
+	std::string dump(const int inIndent = -1, const char inIndentChar = ' ') const;
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inVersion);
@@ -28,7 +29,7 @@ private:
 	std::string m_version;
 	std::string m_encoding;
 
-	Unique<XmlNode> m_root;
+	XmlNode m_root;
 };
 }
 
