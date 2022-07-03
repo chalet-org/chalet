@@ -16,9 +16,12 @@ Xml::Xml(std::string inRootName) :
 }
 
 /*****************************************************************************/
-Xml::operator std::string() const
+std::string Xml::toString() const
 {
-	return std::string();
+	std::string ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\"?>\n", m_version, m_encoding);
+	ret += m_root->toString();
+
+	return ret;
 }
 
 /*****************************************************************************/

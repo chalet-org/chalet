@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Xml/XmlNode.hpp"
+#include "Xml/XmlNode2.hpp"
 
 namespace chalet
 {
@@ -14,27 +14,60 @@ XmlNode::XmlNode(std::string inName) :
 }
 
 /*****************************************************************************/
+std::string XmlNode::toString(uint inIndent) const
+{
+	std::string ret;
+	std::string indent(inIndent, '\t');
+	std::string attributes;
+
+	if (m_attributes != nullptr)
+	{
+	}
+
+	ret += indent;
+	if (hasChildNodes())
+	{
+		std::string childNodes;
+		if (std::holds_alternative<std::string>(*m_childNodes))
+		{
+			childNodes = std::get<std::string>(*m_childNodes);
+		}
+		else
+		{
+			auto& nodeList = std::get<XMLNodeChildNodeList>(*m_childNodes);
+			childNodes += '\n';
+			uint nextIndent = ++inIndent;
+			for (auto& node : nodeList)
+			{
+				childNodes += node->toString(nextIndent);
+			}
+			childNodes += indent;
+		}
+		ret += fmt::format("<{name}{attributes}>{childNodes}</{name}>",
+			fmt::arg("name", m_name),
+			FMT_ARG(attributes),
+			FMT_ARG(childNodes));
+	}
+	else
+	{
+		ret += fmt::format("<{}{} />", m_name, attributes);
+	}
+
+	ret += '\n';
+
+	return ret;
+}
+
+/*****************************************************************************/
 const std::string& XmlNode::name() const noexcept
 {
 	return m_name;
 }
 
 /*****************************************************************************/
-bool XmlNode::hasAttribute(const std::string& inKey) const
+bool XmlNode::hasAttributes() const
 {
-	if (m_attributes == nullptr)
-		return false;
-
-	if (m_attributes->find(inKey) == m_attributes->end())
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-const std::string& XmlNode::getAttribute(const std::string& inKey) const
-{
-	return m_attributes->at(inKey);
+	return m_attributes != nullptr
 }
 
 /*****************************************************************************/
@@ -42,29 +75,7 @@ bool XmlNode::addAttribute(const std::string& inKey, std::string inValue)
 {
 	makeAttributes();
 
-	if (hasAttribute(inKey))
-		return false;
-
-	m_attributes->emplace(inKey, std::move(inValue));
-	return true;
-}
-
-/*****************************************************************************/
-bool XmlNode::setAttribute(const std::string& inKey, std::string inValue)
-{
-	makeAttributes();
-
-	(*m_attributes)[inKey] = std::move(inValue);
-	return true;
-}
-
-/*****************************************************************************/
-bool XmlNode::removeAttribute(const std::string& inKey)
-{
-	if (!hasAttribute(inKey))
-		return false;
-
-	m_attributes->erase(inKey);
+	m_attributes->emplace_back(std::make_pair<std::string, std::string>(inKey, std::move(inValue)));
 	return true;
 }
 
@@ -106,7 +117,7 @@ bool XmlNode::setChildNode(std::string inValue)
 }
 
 /*****************************************************************************/
-bool XmlNode::addChildNode(Unique<XmlNode> inNode)
+bool XmlNode::addChildNode(std::string inName, std::function<void(XmlNode&)> onMakeNode)
 {
 	makeChildNodes();
 
@@ -114,30 +125,13 @@ bool XmlNode::addChildNode(Unique<XmlNode> inNode)
 		(*m_childNodes) = XMLNodeChildNodeList{};
 
 	auto& nodeList = std::get<XMLNodeChildNodeList>(*m_childNodes);
-	nodeList.emplace_back(std::move(inNode));
+
+	auto node = std::make_unique<XmlNode>(std::move(inName));
+	if (onMakeNode != nullptr)
+		onMakeNode(*node);
+
+	nodeList.emplace_back(std::move(node));
 	return true;
-}
-
-/*****************************************************************************/
-bool XmlNode::removeLastChild()
-{
-	if (!hasChildNodes())
-		return false;
-
-	if (std::holds_alternative<std::string>(*m_childNodes))
-	{
-		clearChildNodes();
-		return true;
-	}
-	else
-	{
-		auto& nodeList = std::get<XMLNodeChildNodeList>(*m_childNodes);
-		nodeList.pop_back();
-		if (nodeList.empty())
-			clearChildNodes();
-
-		return true;
-	}
 }
 
 /*****************************************************************************/
@@ -157,7 +151,7 @@ void XmlNode::makeAttributes()
 {
 	if (m_attributes == nullptr)
 	{
-		m_attributes = std::make_unique<XMLNodeAttributes>();
+		m_attributes = std::make_unique<XMLNodeAttributesList>();
 	}
 }
 
