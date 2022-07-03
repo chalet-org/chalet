@@ -269,7 +269,7 @@ bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
 
-	// Timer timer;
+	Timer timer;
 
 	// std::string paths;
 	// Commands::forEachGlobMatch("src/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
@@ -290,13 +290,47 @@ bool Router::routeDebug()
 
 	Xml xml("Project");
 	auto& root = xml.root();
-	root.setAttribute("DefaultTargets", "Build");
-	root.setAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	root.addChildNode("ItemGroup", [](XmlNode& inNode) {
-		inNode.setAttribute("Label", "ProjectConfigurations");
+	root.addAttribute("DefaultTargets", "Build");
+	root.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	root.addChildNode("ItemGroup", [](XmlNode& node) {
+		node.addAttribute("Label", "ProjectConfigurations");
+		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+			node2.addAttribute("Include", "Debug|Win32");
+			node2.addChildNode("Configuration", "Debug");
+			node2.addChildNode("Platform", "Win32");
+		});
+		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+			node2.addAttribute("Include", "Release|Win32");
+			node2.addChildNode("Configuration", "Release");
+			node2.addChildNode("Platform", "Win32");
+		});
+		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+			node2.addAttribute("Include", "Debug|Win32");
+			node2.addChildNode("Configuration", "Debug");
+			node2.addChildNode("Platform", "Win32");
+		});
+		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+			node2.addAttribute("Include", "Release|x64");
+			node2.addChildNode("Configuration", "Release");
+			node2.addChildNode("Platform", "x64");
+		});
 	});
 
-	LOG(xml.toString());
+	LOG(xml.dump());
+	LOG("----");
+	LOG(xml.dump(0));
+	LOG("----");
+	LOG(xml.dump(1));
+	LOG("----");
+	LOG(xml.dump(2));
+	LOG("----");
+	LOG(xml.dump(3));
+	LOG("----");
+	LOG(xml.dump(4));
+	LOG("----");
+	LOG(xml.dump(1, '\t'));
+	LOG("----");
+	LOG("xml took:", timer.asString());
 
 	return true;
 }

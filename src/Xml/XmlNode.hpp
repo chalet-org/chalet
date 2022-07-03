@@ -14,16 +14,18 @@ class XmlNode;
 
 class XmlNode
 {
-	using XMLNodeAttributesList = std::vector<std::pair<std::string, std::string>>;
-	using XMLNodeChildNodeList = std::vector<Unique<XmlNode>>;
-	using XMLNodeChildNodes = std::variant<std::string, XMLNodeChildNodeList>;
+	using XmlNodeAttributesList = std::vector<std::pair<std::string, std::string>>;
+	using XmlNodeChildNodeList = std::vector<Unique<XmlNode>>;
+	using XmlNodeChildNodes = std::variant<std::string, XmlNodeChildNodeList>;
 
 public:
+	XmlNode() = default;
 	explicit XmlNode(std::string inName);
 
-	std::string toString(uint inIndent = 0) const;
+	std::string dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const;
 
 	const std::string& name() const noexcept;
+	void setName(std::string inName);
 
 	bool hasAttributes() const;
 	bool addAttribute(const std::string& inKey, std::string inValue);
@@ -31,6 +33,7 @@ public:
 
 	bool hasChildNodes() const;
 	bool setChildNode(std::string inValue);
+	bool addChildNode(std::string inName, std::string inValue);
 	bool addChildNode(std::string inName, std::function<void(XmlNode&)> onMakeNode);
 	bool clearChildNodes();
 
@@ -39,8 +42,8 @@ private:
 	void makeChildNodes();
 
 	std::string m_name;
-	Unique<XMLNodeAttributesList> m_attributes;
-	Unique<XMLNodeChildNodes> m_childNodes;
+	Unique<XmlNodeAttributesList> m_attributes;
+	Unique<XmlNodeChildNodes> m_childNodes;
 };
 }
 
