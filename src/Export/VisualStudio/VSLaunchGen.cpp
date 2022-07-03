@@ -116,23 +116,4 @@ Json VSLaunchGen::getEnvironment(const IBuildTarget& inTarget) const
 	return ret;
 }
 
-/*****************************************************************************/
-// TODO: move
-//
-std::string VSLaunchGen::getVSArchitecture(Arch::Cpu inCpu) const
-{
-	switch (inCpu)
-	{
-		case Arch::Cpu::X86:
-			return std::string("x86");
-		case Arch::Cpu::ARM:
-			return std::string("arm");
-		case Arch::Cpu::ARM64:
-			return std::string("arm64");
-		case Arch::Cpu::X64:
-		default:
-			return std::string("x64");
-	}
-}
-
 }

@@ -23,7 +23,6 @@ struct VSLaunchGen
 private:
 	Json getConfiguration(const BuildState& inState, const IBuildTarget& inTarget) const;
 	Json getEnvironment(const IBuildTarget& inTarget) const;
-	std::string getVSArchitecture(Arch::Cpu inCpu) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;

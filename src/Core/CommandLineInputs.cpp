@@ -28,8 +28,9 @@ Dictionary<InitTemplateType> getInitTemplates()
 OrderedDictionary<ExportKind> getExportKinds()
 {
 	return {
-		{ "vscode", ExportKind::VisualStudioCode },
+		{ "vscode", ExportKind::VisualStudioCodeJSON },
 		{ "vs-json", ExportKind::VisualStudioJSON },
+		{ "vs-solution", ExportKind::VisualStudioSolution },
 		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

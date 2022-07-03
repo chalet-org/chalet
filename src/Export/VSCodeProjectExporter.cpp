@@ -18,7 +18,7 @@ namespace chalet
 {
 /*****************************************************************************/
 VSCodeProjectExporter::VSCodeProjectExporter(CentralState& inCentralState) :
-	IProjectExporter(inCentralState, ExportKind::VisualStudioCode)
+	IProjectExporter(inCentralState, ExportKind::VisualStudioCodeJSON)
 {
 }
 

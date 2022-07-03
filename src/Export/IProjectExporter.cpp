@@ -9,6 +9,7 @@
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
+#include "Export/VSSolutionProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -40,8 +41,10 @@ IProjectExporter::~IProjectExporter() = default;
 	{
 		case ExportKind::CodeBlocks:
 			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
-		case ExportKind::VisualStudioCode:
+		case ExportKind::VisualStudioCodeJSON:
 			return std::make_unique<VSCodeProjectExporter>(inCentralState);
+		case ExportKind::VisualStudioSolution:
+			return std::make_unique<VSSolutionProjectExporter>(inCentralState);
 		case ExportKind::VisualStudioJSON:
 			return std::make_unique<VSJsonProjectExporter>(inCentralState);
 		default:

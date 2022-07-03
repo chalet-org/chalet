@@ -11,7 +11,6 @@
 namespace chalet
 {
 class BuildState;
-struct IBuildTarget;
 
 struct VSTasksGen
 {
