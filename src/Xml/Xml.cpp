@@ -9,8 +9,6 @@ namespace chalet
 {
 /*****************************************************************************/
 Xml::Xml(std::string inRootName) :
-	m_version("1.0"),
-	m_encoding("utf-8"),
 	m_root(std::move(inRootName))
 {
 }

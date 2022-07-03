@@ -26,8 +26,8 @@ struct Xml
 	XmlNode& root();
 
 private:
-	std::string m_version;
-	std::string m_encoding;
+	std::string m_version{ "1.0" };
+	std::string m_encoding{ "utf-8" };
 
 	XmlNode m_root;
 };
