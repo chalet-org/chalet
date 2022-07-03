@@ -30,6 +30,7 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Xml/Xml.hpp"
 
 #include "Libraries/Json.hpp"
 
@@ -268,24 +269,34 @@ bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
 
-	Timer timer;
+	// Timer timer;
 
-	std::string paths;
-	Commands::forEachGlobMatch("src/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
-		paths += path + '\n';
+	// std::string paths;
+	// Commands::forEachGlobMatch("src/*.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
+	// 	paths += path + '\n';
+	// });
+
+	// paths += '\n';
+	// LOG(paths);
+	// paths.clear();
+	// Commands::forEachGlobMatch("src/**.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
+	// 	paths += path + '\n';
+	// });
+
+	// paths += '\n';
+	// LOG(paths);
+
+	// LOG("glob took:", timer.asString());
+
+	Xml xml("Project");
+	auto& root = xml.root();
+	root.setAttribute("DefaultTargets", "Build");
+	root.setAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	root.addChildNode("ItemGroup", [](XmlNode& inNode) {
+		inNode.setAttribute("Label", "ProjectConfigurations");
 	});
 
-	paths += '\n';
-	LOG(paths);
-	paths.clear();
-	Commands::forEachGlobMatch("src/**.{cpp,rc}", GlobMatch::Files, [&paths](std::string path) {
-		paths += path + '\n';
-	});
-
-	paths += '\n';
-	LOG(paths);
-
-	LOG("glob took:", timer.asString());
+	LOG(xml.toString());
 
 	return true;
 }

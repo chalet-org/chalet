@@ -10,38 +10,36 @@
 
 namespace chalet
 {
+class XmlNode;
+
 class XmlNode
 {
-	using XMLNodeAttributes = std::map<std::string, std::string>;
+	using XMLNodeAttributesList = std::vector<std::pair<std::string, std::string>>;
 	using XMLNodeChildNodeList = std::vector<Unique<XmlNode>>;
 	using XMLNodeChildNodes = std::variant<std::string, XMLNodeChildNodeList>;
 
 public:
 	explicit XmlNode(std::string inName);
 
+	std::string toString(uint inIndent = 0) const;
+
 	const std::string& name() const noexcept;
 
-	bool hasAttribute(const std::string& inKey) const;
-	const std::string& getAttribute(const std::string& inKey) const;
+	bool hasAttributes() const;
 	bool addAttribute(const std::string& inKey, std::string inValue);
-	bool setAttribute(const std::string& inKey, std::string inValue);
-	bool removeAttribute(const std::string& inKey);
 	bool clearAttributes();
 
 	bool hasChildNodes() const;
 	bool setChildNode(std::string inValue);
-	bool addChildNode(Unique<XmlNode> inNode);
-	bool removeLastChild();
+	bool addChildNode(std::string inName, std::function<void(XmlNode&)> onMakeNode);
 	bool clearChildNodes();
 
 private:
-	friend struct Xml;
-
 	void makeAttributes();
 	void makeChildNodes();
 
 	std::string m_name;
-	Unique<XMLNodeAttributes> m_attributes;
+	Unique<XMLNodeAttributesList> m_attributes;
 	Unique<XMLNodeChildNodes> m_childNodes;
 };
 }

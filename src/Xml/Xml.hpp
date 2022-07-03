@@ -14,7 +14,7 @@ struct Xml
 {
 	explicit Xml(std::string inRootName);
 
-	operator std::string() const;
+	std::string toString() const;
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inVersion);
