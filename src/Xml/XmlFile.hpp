@@ -15,9 +15,9 @@ struct XmlFile
 	XmlFile() = default;
 	explicit XmlFile(std::string inFilename);
 
-	static bool saveToFile(const Xml& inXml, const std::string& outFilename, const int inIndent = 1);
+	static bool saveToFile(const Xml& inXml, const std::string& outFilename, const int inIndent = 2);
 
-	bool save(const int inIndent = 1);
+	bool save(const int inIndent = 2);
 
 	void resetAndSave();
 	void dumpToTerminal();

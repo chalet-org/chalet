@@ -8,6 +8,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudio/VSSolutionGen.hpp"
+#include "Export/VisualStudio/VSVCXProjGen.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -62,8 +63,21 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		VSSolutionGen slnGen(m_states, m_cwd);
 		if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
 		{
-			Diagnostic::error("There was a problem saving the CppProperties.json file.");
+			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
 			return false;
+		}
+
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
+			{
+				VSVCXProjGen vcxprojGen(m_states, m_cwd);
+				if (!vcxprojGen.saveToFile(target->name()))
+				{
+					Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
+					return false;
+				}
+			}
 		}
 	}
 
