@@ -21,7 +21,6 @@ struct VSCppPropertiesGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
-	std::string getVSArchitecture(Arch::Cpu inCpu) const;
 	std::string getIntellisenseMode(const BuildState& inState) const;
 	Json getEnvironments(const BuildState& inState) const;
 	const SourceTarget* getSignificantTarget(const BuildState& inState) const;

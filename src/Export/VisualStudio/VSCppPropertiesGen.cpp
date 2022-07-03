@@ -45,7 +45,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	for (auto& state : m_states)
 	{
 		const auto& configName = state->configuration.name();
-		auto architecture = getVSArchitecture(state->info.targetArchitecture());
+		auto architecture = Arch::toVSArch(state->info.targetArchitecture());
 
 		Json config;
 		config["name"] = fmt::format("{} / {}", architecture, configName);
@@ -161,25 +161,6 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-// TODO: move
-//
-std::string VSCppPropertiesGen::getVSArchitecture(Arch::Cpu inCpu) const
-{
-	switch (inCpu)
-	{
-		case Arch::Cpu::X86:
-			return std::string("x86");
-		case Arch::Cpu::ARM:
-			return std::string("arm");
-		case Arch::Cpu::ARM64:
-			return std::string("arm64");
-		case Arch::Cpu::X64:
-		default:
-			return std::string("x64");
-	}
-}
-
-/*****************************************************************************/
 std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) const
 {
 	/*
@@ -220,7 +201,7 @@ std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) c
 		toolchain = "gcc";
 	}
 
-	auto arch = getVSArchitecture(inState.info.targetArchitecture());
+	auto arch = Arch::toVSArch(inState.info.targetArchitecture());
 
 	return fmt::format("{}-{}-{}", platform, toolchain, arch);
 }
@@ -250,7 +231,7 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 	ret.emplace_back(makeEnvironment("externalDir", inState.inputs.externalDirectory()));
 	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
 	ret.emplace_back(makeEnvironment("configuration", configName));
-	ret.emplace_back(makeEnvironment("vsArch", getVSArchitecture(inState.info.targetArchitecture())));
+	ret.emplace_back(makeEnvironment("vsArch", Arch::toVSArch(inState.info.targetArchitecture())));
 	ret.emplace_back(makeEnvironment("arch", inState.info.targetArchitectureString()));
 	ret.emplace_back(makeEnvironment("archTriple", inState.info.targetArchitectureTriple()));
 

@@ -24,8 +24,11 @@ struct Arch
 
 	static std::string getHostCpuArchitecture();
 	static std::string toGnuArch(const std::string& inValue);
+	static std::string toVSArch(Arch::Cpu inCpu);
 
 	void set(const std::string& inValue);
+
+	std::string toVSArch() const;
 };
 }
 

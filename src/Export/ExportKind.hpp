@@ -11,9 +11,9 @@ namespace chalet
 enum class ExportKind : ushort
 {
 	None,
-	// VisualStudio2019,
-	VisualStudioCode,
+	VisualStudioCodeJSON,
 	VisualStudioJSON,
+	VisualStudioSolution,
 	// XCode,
 	CodeBlocks,
 };

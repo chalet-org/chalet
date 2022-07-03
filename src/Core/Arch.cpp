@@ -51,6 +51,23 @@ std::string Arch::toGnuArch(const std::string& inValue)
 }
 
 /*****************************************************************************/
+std::string Arch::toVSArch(Arch::Cpu inCpu)
+{
+	switch (inCpu)
+	{
+		case Arch::Cpu::X86:
+			return "x86";
+		case Arch::Cpu::ARM:
+			return "arm";
+		case Arch::Cpu::ARM64:
+			return "arm64";
+		case Arch::Cpu::X64:
+		default:
+			return "x64";
+	}
+}
+
+/*****************************************************************************/
 // The goal with this class is to take some kind of architecture input and
 // get a valid GNU-style architecture (hopefully a triple) out of it
 //
@@ -114,4 +131,9 @@ void Arch::set(const std::string& inValue)
 	}
 }
 
+/*****************************************************************************/
+std::string Arch::toVSArch() const
+{
+	return toVSArch(val);
+}
 }
