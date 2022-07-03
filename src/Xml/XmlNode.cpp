@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Xml/XmlNode2.hpp"
+#include "Xml/XmlNode.hpp"
 
 namespace chalet
 {
