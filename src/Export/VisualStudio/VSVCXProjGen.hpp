@@ -14,7 +14,7 @@ class BuildState;
 
 struct VSVCXProjGen
 {
-	explicit VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd);
+	explicit VSVCXProjGen(const BuildState& inState, const std::string& inCwd);
 
 	bool saveToFile(const std::string& inTargetName);
 
@@ -22,7 +22,11 @@ private:
 	bool saveFiltersFile(const std::string& inFilename);
 	bool saveUserFile(const std::string& inFilename);
 
-	const std::vector<Unique<BuildState>>& m_states;
+	StringList getSourceExtensions() const;
+	StringList getHeaderExtensions() const;
+	StringList getResourceExtensions() const;
+
+	const BuildState& m_state;
 	const std::string& m_cwd;
 };
 }
