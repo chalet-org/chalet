@@ -24,6 +24,7 @@ struct BuildPaths
 	const std::string& rootDirectory() const noexcept;
 	const std::string& outputDirectory() const noexcept;
 	const std::string& buildOutputDir() const;
+	const std::string& currentBuildDir() const;
 	const std::string& externalBuildDir() const;
 	const std::string& objDir() const;
 	const std::string& depDir() const;
@@ -48,7 +49,7 @@ struct BuildPaths
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
 	void clearOutputCaches();
-	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
+	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache);
 
 private:
 	friend class BuildState;
@@ -64,7 +65,7 @@ private:
 		StringList list;
 	};
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly);
+	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache);
 	std::string getObjectFile(const std::string& inSource) const;
 	std::string getAssemblyFile(const std::string& inSource) const;
 	SourceType getSourceType(const std::string& inSource) const;
@@ -86,6 +87,7 @@ private:
 	StringList m_allFileExtensions;
 
 	std::string m_buildOutputDir;
+	std::string m_currentBuildDir;
 	std::string m_externalBuildDir;
 	std::string m_objDir;
 	std::string m_depDir;

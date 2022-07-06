@@ -10,22 +10,25 @@
 
 namespace chalet
 {
+class BuildState;
 struct SourceTarget;
 struct SourceOutputs;
 
 struct CompileCommandsGenerator
 {
-	CompileCommandsGenerator();
+	explicit CompileCommandsGenerator(const BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(CompileCommandsGenerator);
 	~CompileCommandsGenerator();
 
 	bool addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs);
 
-	bool save(const std::string& inOutputFolder) const;
+	bool save() const;
 
 private:
 	void addCompileCommand(const std::string& inFile, StringList&& inCommand);
 	void addCompileCommand(const std::string& inFile, std::string&& inCommand);
+
+	const BuildState& m_state;
 
 	struct CompileCommand;
 	std::vector<Unique<CompileCommand>> m_compileCommands;

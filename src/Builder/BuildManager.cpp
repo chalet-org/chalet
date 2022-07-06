@@ -414,7 +414,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
 	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
-	auto outputs = m_state.paths.getOutputs(inProject, fileCache, m_state.info.dumpAssembly());
+	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
 	if (!Commands::makeDirectories(outputs->directories, m_directoriesMade))
 	{
@@ -485,6 +485,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 {
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 
+	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	const auto& externalBuildDir = m_state.paths.externalBuildDir();
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 
@@ -561,6 +562,9 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		if (Commands::pathExists(dir))
 			Commands::removeRecursively(dir);
 	}
+
+	if (Commands::pathExists(currentBuildDir))
+		Commands::removeRecursively(currentBuildDir);
 
 	if (Commands::pathIsEmpty(externalBuildDir))
 		Commands::remove(externalBuildDir);
@@ -698,7 +702,7 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 		chalet_assert(m_asmDumper != nullptr, "");
 
 		StringList fileCache;
-		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
+		auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
 			return false;
 	}
@@ -767,7 +771,7 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 		chalet_assert(m_asmDumper != nullptr, "");
 
 		StringList fileCache;
-		auto outputs = m_state.paths.getOutputs(inProject, fileCache, true);
+		auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 		bool forced = true;
 		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs), forced))
 			return false;
