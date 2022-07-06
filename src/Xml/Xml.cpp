@@ -50,7 +50,7 @@ void Xml::setEncoding(const std::string& inVersion)
 }
 
 /*****************************************************************************/
-XmlNode& Xml::root()
+XmlElement& Xml::root()
 {
 	return m_root;
 }

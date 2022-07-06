@@ -3,24 +3,24 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_NODE_HPP
-#define CHALET_XML_NODE_HPP
+#ifndef CHALET_XML_ELEMENT_HPP
+#define CHALET_XML_ELEMENT_HPP
 
 #include <variant>
 
 namespace chalet
 {
-class XmlNode;
+class XmlElement;
 
-class XmlNode
+class XmlElement
 {
-	using XmlNodeAttributesList = std::vector<std::pair<std::string, std::string>>;
-	using XmlNodeChildNodeList = std::vector<Unique<XmlNode>>;
-	using XmlNodeChildNodes = std::variant<std::string, XmlNodeChildNodeList>;
+	using XmlTagAttributeList = std::vector<std::pair<std::string, std::string>>;
+	using XmlElementList = std::vector<Unique<XmlElement>>;
+	using XmlElementChild = std::variant<std::string, XmlElementList>;
 
 public:
-	XmlNode() = default;
-	explicit XmlNode(std::string_view inName);
+	XmlElement() = default;
+	explicit XmlElement(std::string_view inName);
 
 	std::string dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const;
 
@@ -31,11 +31,11 @@ public:
 	bool addAttribute(std::string_view inKey, std::string_view inValue);
 	bool clearAttributes();
 
-	bool hasChildNodes() const;
-	bool setChildNode(std::string_view inValue);
-	bool addChildNode(std::string_view inName, std::string_view inValue);
-	bool addChildNode(std::string_view inName, std::function<void(XmlNode&)> onMakeNode);
-	bool clearChildNodes();
+	bool hasChild() const;
+	bool setText(std::string_view inValue);
+	bool addElementWithText(std::string_view inName, std::string_view inValue);
+	bool addElement(std::string_view inName, std::function<void(XmlElement&)> onMakeNode = nullptr);
+	bool clearChildElements();
 
 	bool commented() const noexcept;
 	void setCommented(const bool inValue) noexcept;
@@ -45,15 +45,15 @@ private:
 	std::string getValidAttributeValue(const std::string_view& inValue) const;
 	std::string getValidValue(const std::string_view& inValue) const;
 
-	void makeAttributes();
-	void makeChildNodes();
+	void allocateAttributes();
+	void allocateChild();
 
 	std::string m_name;
-	Unique<XmlNodeAttributesList> m_attributes;
-	Unique<XmlNodeChildNodes> m_childNodes;
+	Unique<XmlTagAttributeList> m_attributes;
+	Unique<XmlElementChild> m_child;
 
 	bool m_commented = false;
 };
 }
 
-#endif // CHALET_XML_NODE_HPP
+#endif // CHALET_XML_ELEMENT_HPP

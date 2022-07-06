@@ -297,32 +297,32 @@ bool Router::routeDebug()
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("DefaultTargets", "Build");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addChildNode("ItemGroup", [](XmlNode& node) {
+	xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
-		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+		node.addElement("ProjectConfiguration", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Debug|Win32");
-			node2.addChildNode("Configuration", "Debug");
-			node2.addChildNode("Platform", "Win32");
+			node2.addElementWithText("Configuration", "Debug");
+			node2.addElementWithText("Platform", "Win32");
 		});
-		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+		node.addElement("ProjectConfiguration", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Release|Win32");
-			node2.addChildNode("Configuration", "Release");
-			node2.addChildNode("Platform", "Win32");
+			node2.addElementWithText("Configuration", "Release");
+			node2.addElementWithText("Platform", "Win32");
 		});
-		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+		node.addElement("ProjectConfiguration", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Debug|Win32");
-			node2.addChildNode("Configuration", "Debug");
-			node2.addChildNode("Platform", "Win32");
+			node2.addElementWithText("Configuration", "Debug");
+			node2.addElementWithText("Platform", "Win32");
 		});
-		node.addChildNode("ProjectConfiguration", [](XmlNode& node2) {
+		node.addElement("ProjectConfiguration", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Release|x64");
-			node2.addChildNode("Configuration", "Release");
-			node2.addChildNode("Platform", "x64");
+			node2.addElementWithText("Configuration", "Release");
+			node2.addElementWithText("Platform", "x64");
 			node2.setCommented(true);
 		});
-		node.addChildNode("Test&Stuff'\"<>", [](XmlNode& node2) {
+		node.addElement("Test&Stuff'\"<>", [](XmlElement& node2) {
 			node2.addAttribute("Test&Stuff'\"<>", "Test&Stuff'\"<>");
-			node2.setChildNode("Test&Stuff'\"<>");
+			node2.setText("Test&Stuff'\"<>");
 		});
 	});
 

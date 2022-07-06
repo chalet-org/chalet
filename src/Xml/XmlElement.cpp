@@ -3,20 +3,20 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Xml/XmlNode.hpp"
+#include "Xml/XmlElement.hpp"
 
 // https://en.wikipedia.org/wiki/XML
 
 namespace chalet
 {
 /*****************************************************************************/
-XmlNode::XmlNode(std::string_view inName) :
+XmlElement::XmlElement(std::string_view inName) :
 	m_name(getValidKey(inName))
 {
 }
 
 /*****************************************************************************/
-std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const
+std::string XmlElement::dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const
 {
 	std::string ret;
 
@@ -39,12 +39,12 @@ std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const cha
 	if (m_commented)
 		ret += "<!--";
 
-	if (hasChildNodes())
+	if (hasChild())
 	{
 		std::string childNodes;
-		if (std::holds_alternative<std::string>(*m_childNodes))
+		if (std::holds_alternative<std::string>(*m_child))
 		{
-			childNodes = std::get<std::string>(*m_childNodes);
+			childNodes = std::get<std::string>(*m_child);
 		}
 		else
 		{
@@ -55,7 +55,7 @@ std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const cha
 				nextIndent = inIndent + static_cast<uint>(inIndentSize);
 			}
 
-			auto& nodeList = std::get<XmlNodeChildNodeList>(*m_childNodes);
+			auto& nodeList = std::get<XmlElementList>(*m_child);
 			for (auto& node : nodeList)
 			{
 				childNodes += node->dump(nextIndent, inIndentSize, inIndentChar);
@@ -82,33 +82,33 @@ std::string XmlNode::dump(const uint inIndent, const int inIndentSize, const cha
 }
 
 /*****************************************************************************/
-const std::string& XmlNode::name() const noexcept
+const std::string& XmlElement::name() const noexcept
 {
 	return m_name;
 }
 
-void XmlNode::setName(std::string_view inName)
+void XmlElement::setName(std::string_view inName)
 {
 	m_name = getValidKey(inName);
 }
 
 /*****************************************************************************/
-bool XmlNode::hasAttributes() const
+bool XmlElement::hasAttributes() const
 {
 	return m_attributes != nullptr;
 }
 
 /*****************************************************************************/
-bool XmlNode::addAttribute(std::string_view inKey, std::string_view inValue)
+bool XmlElement::addAttribute(std::string_view inKey, std::string_view inValue)
 {
-	makeAttributes();
+	allocateAttributes();
 
 	m_attributes->emplace_back(std::pair<std::string, std::string>{ getValidKey(inKey), getValidAttributeValue(inValue) });
 	return true;
 }
 
 /*****************************************************************************/
-bool XmlNode::clearAttributes()
+bool XmlElement::clearAttributes()
 {
 	if (m_attributes != nullptr)
 	{
@@ -120,14 +120,14 @@ bool XmlNode::clearAttributes()
 }
 
 /*****************************************************************************/
-bool XmlNode::hasChildNodes() const
+bool XmlElement::hasChild() const
 {
-	if (m_childNodes == nullptr)
+	if (m_child == nullptr)
 		return false;
 
-	if (std::holds_alternative<XmlNodeChildNodeList>(*m_childNodes))
+	if (std::holds_alternative<XmlElementList>(*m_child))
 	{
-		auto& nodeList = std::get<XmlNodeChildNodeList>(*m_childNodes);
+		auto& nodeList = std::get<XmlElementList>(*m_child);
 		if (nodeList.empty())
 			return false;
 	}
@@ -136,40 +136,40 @@ bool XmlNode::hasChildNodes() const
 }
 
 /*****************************************************************************/
-bool XmlNode::setChildNode(std::string_view inValue)
+bool XmlElement::setText(std::string_view inValue)
 {
-	makeChildNodes();
+	allocateChild();
 
-	(*m_childNodes) = getValidValue(inValue);
+	(*m_child) = getValidValue(inValue);
 	return true;
 }
 
 /*****************************************************************************/
-bool XmlNode::addChildNode(std::string_view inName, std::string_view inValue)
+bool XmlElement::addElementWithText(std::string_view inName, std::string_view inValue)
 {
-	makeChildNodes();
+	allocateChild();
 
-	if (!std::holds_alternative<XmlNodeChildNodeList>(*m_childNodes))
-		(*m_childNodes) = XmlNodeChildNodeList{};
+	if (!std::holds_alternative<XmlElementList>(*m_child))
+		(*m_child) = XmlElementList{};
 
-	auto& nodeList = std::get<XmlNodeChildNodeList>(*m_childNodes);
-	auto node = std::make_unique<XmlNode>(std::move(inName));
-	node->setChildNode(std::move(inValue));
+	auto& nodeList = std::get<XmlElementList>(*m_child);
+	auto node = std::make_unique<XmlElement>(std::move(inName));
+	node->setText(std::move(inValue));
 
 	nodeList.emplace_back(std::move(node));
 	return true;
 }
 
 /*****************************************************************************/
-bool XmlNode::addChildNode(std::string_view inName, std::function<void(XmlNode&)> onMakeNode)
+bool XmlElement::addElement(std::string_view inName, std::function<void(XmlElement&)> onMakeNode)
 {
-	makeChildNodes();
+	allocateChild();
 
-	if (!std::holds_alternative<XmlNodeChildNodeList>(*m_childNodes))
-		(*m_childNodes) = XmlNodeChildNodeList{};
+	if (!std::holds_alternative<XmlElementList>(*m_child))
+		(*m_child) = XmlElementList{};
 
-	auto& nodeList = std::get<XmlNodeChildNodeList>(*m_childNodes);
-	auto node = std::make_unique<XmlNode>(std::move(inName));
+	auto& nodeList = std::get<XmlElementList>(*m_child);
+	auto node = std::make_unique<XmlElement>(std::move(inName));
 	if (onMakeNode != nullptr)
 		onMakeNode(*node);
 
@@ -178,11 +178,11 @@ bool XmlNode::addChildNode(std::string_view inName, std::function<void(XmlNode&)
 }
 
 /*****************************************************************************/
-bool XmlNode::clearChildNodes()
+bool XmlElement::clearChildElements()
 {
-	if (m_childNodes != nullptr)
+	if (m_child != nullptr)
 	{
-		m_childNodes.reset();
+		m_child.reset();
 		return true;
 	}
 
@@ -190,18 +190,18 @@ bool XmlNode::clearChildNodes()
 }
 
 /*****************************************************************************/
-bool XmlNode::commented() const noexcept
+bool XmlElement::commented() const noexcept
 {
 	return m_commented;
 }
 
-void XmlNode::setCommented(const bool inValue) noexcept
+void XmlElement::setCommented(const bool inValue) noexcept
 {
 	m_commented = inValue;
 }
 
 /*****************************************************************************/
-std::string XmlNode::getValidKey(const std::string_view& inKey) const
+std::string XmlElement::getValidKey(const std::string_view& inKey) const
 {
 	std::string ret;
 
@@ -230,7 +230,7 @@ std::string XmlNode::getValidKey(const std::string_view& inKey) const
 }
 
 /*****************************************************************************/
-std::string XmlNode::getValidAttributeValue(const std::string_view& inValue) const
+std::string XmlElement::getValidAttributeValue(const std::string_view& inValue) const
 {
 	std::string ret;
 
@@ -268,7 +268,7 @@ std::string XmlNode::getValidAttributeValue(const std::string_view& inValue) con
 }
 
 /*****************************************************************************/
-std::string XmlNode::getValidValue(const std::string_view& inValue) const
+std::string XmlElement::getValidValue(const std::string_view& inValue) const
 {
 	std::string ret;
 
@@ -300,20 +300,20 @@ std::string XmlNode::getValidValue(const std::string_view& inValue) const
 }
 
 /*****************************************************************************/
-void XmlNode::makeAttributes()
+void XmlElement::allocateAttributes()
 {
 	if (m_attributes == nullptr)
 	{
-		m_attributes = std::make_unique<XmlNodeAttributesList>();
+		m_attributes = std::make_unique<XmlTagAttributeList>();
 	}
 }
 
 /*****************************************************************************/
-void XmlNode::makeChildNodes()
+void XmlElement::allocateChild()
 {
-	if (m_childNodes == nullptr)
+	if (m_child == nullptr)
 	{
-		m_childNodes = std::make_unique<XmlNodeChildNodes>();
+		m_child = std::make_unique<XmlElementChild>();
 	}
 }
 

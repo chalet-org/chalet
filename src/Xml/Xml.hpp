@@ -6,7 +6,7 @@
 #ifndef CHALET_XML_HPP
 #define CHALET_XML_HPP
 
-#include "Xml/XmlNode.hpp"
+#include "Xml/XmlElement.hpp"
 
 namespace chalet
 {
@@ -23,13 +23,13 @@ struct Xml
 	const std::string& encoding() const noexcept;
 	void setEncoding(const std::string& inVersion);
 
-	XmlNode& root();
+	XmlElement& root();
 
 private:
 	std::string m_version{ "1.0" };
 	std::string m_encoding{ "utf-8" };
 
-	XmlNode m_root;
+	XmlElement m_root;
 };
 }
 
