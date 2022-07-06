@@ -81,6 +81,7 @@ bool BuildPaths::initialize()
 		m_intermediateDir = m_intermediateDir.substr(search);
 	}
 
+	m_currentBuildDir = fmt::format("{}/current", outputDirectory);
 	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());
 
 	m_initialized = true;
@@ -137,6 +138,12 @@ const std::string& BuildPaths::buildOutputDir() const
 {
 	chalet_assert(!m_buildOutputDir.empty(), "BuildPaths::buildOutputDir() called before BuildPaths::initialize().");
 	return m_buildOutputDir;
+}
+
+const std::string& BuildPaths::currentBuildDir() const
+{
+	chalet_assert(!m_currentBuildDir.empty(), "BuildPaths::currentBuildDir() called before BuildPaths::initialize().");
+	return m_currentBuildDir;
 }
 
 const std::string& BuildPaths::externalBuildDir() const
@@ -207,7 +214,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 }
 
 /*****************************************************************************/
-Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
+Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, StringList& outFileCache)
 {
 	auto ret = std::make_unique<SourceOutputs>();
 
@@ -227,16 +234,19 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
 
 	const bool isNotMsvc = !m_state.environment->isMsvc();
+	const bool dumpAssembly = m_state.info.dumpAssembly();
+	const bool generateCompileCommands = m_state.info.generateCompileCommands();
+
 	ret->objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(outFileCache, files.list);
-	ret->groups = getSourceFileGroupList(std::move(files), inProject, outFileCache, inDumpAssembly);
+	ret->groups = getSourceFileGroupList(std::move(files), inProject, outFileCache);
 
 	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
 	// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
 	StringList depSubDirs;
 
 	StringList asmSubDirs;
-	if (inDumpAssembly)
+	if (dumpAssembly)
 	{
 		asmSubDirs = getOutputDirectoryList(directories, asmDir());
 
@@ -266,10 +276,15 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 		ret->directories.insert(ret->directories.end(), depSubDirs.begin(), depSubDirs.end());
 	}
 
-	if (inDumpAssembly)
+	if (dumpAssembly)
 	{
 		ret->directories.push_back(asmDir());
 		ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
+	}
+
+	if (generateCompileCommands)
+	{
+		ret->directories.push_back(currentBuildDir());
 	}
 
 	ret->target = getTargetFilename(inProject);
@@ -430,7 +445,7 @@ StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache, const bool inDumpAssembly)
+SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache)
 {
 	SourceFileGroupList ret;
 
@@ -466,7 +481,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	}
 
 	// don't do this for the pch
-	if (inDumpAssembly)
+	if (m_state.info.dumpAssembly())
 	{
 		for (auto& group : ret)
 		{

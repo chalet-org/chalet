@@ -5,6 +5,8 @@
 
 #include "Compile/CompileCommandsGenerator.hpp"
 
+#include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -20,7 +22,10 @@ struct CompileCommandsGenerator::CompileCommand
 };
 
 /*****************************************************************************/
-CompileCommandsGenerator::CompileCommandsGenerator() = default;
+CompileCommandsGenerator::CompileCommandsGenerator(const BuildState& inState) :
+	m_state(inState)
+{
+}
 
 /*****************************************************************************/
 CompileCommandsGenerator::~CompileCommandsGenerator() = default;
@@ -89,9 +94,11 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, std:
 }
 
 /*****************************************************************************/
-bool CompileCommandsGenerator::save(const std::string& inOutputFolder) const
+bool CompileCommandsGenerator::save() const
 {
-	auto outputFile = fmt::format("{}/compile_commands.json", inOutputFolder);
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	const auto& currentBuildDir = m_state.paths.currentBuildDir();
+	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
 	auto cwd = Commands::getWorkingDirectory();
 	Path::sanitize(cwd);
 
@@ -111,6 +118,13 @@ bool CompileCommandsGenerator::save(const std::string& inOutputFolder) const
 	if (!JsonFile::saveToFile(outJson, outputFile))
 	{
 		Diagnostic::error("compile_commands.json could not be saved.");
+		return false;
+	}
+
+	if (!Commands::copySilent(outputFile, currentBuildDir))
+	{
+		Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
+		return false;
 	}
 
 	return true;
