@@ -50,21 +50,21 @@ bool VSVCXProjGen::saveFiltersFile(const std::string& inFilename)
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addChildNode("ItemGroup", [this](XmlNode& node) {
-		node.addChildNode("Filter", [this](XmlNode& node2) {
+	xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
+		node.addElement("Filter", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Source Files");
-			node2.addChildNode("UniqueIdentifier", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}");
-			node2.addChildNode("Extensions", "cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx");
+			node2.addElementWithText("UniqueIdentifier", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}");
+			node2.addElementWithText("Extensions", "cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx");
 		});
-		node.addChildNode("Filter", [this](XmlNode& node2) {
+		node.addElement("Filter", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Header Files");
-			node2.addChildNode("UniqueIdentifier", "{93995380-89BD-4b04-88EB-625FBE52EBFB}");
-			node2.addChildNode("Extensions", "h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd");
+			node2.addElementWithText("UniqueIdentifier", "{93995380-89BD-4b04-88EB-625FBE52EBFB}");
+			node2.addElementWithText("Extensions", "h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd");
 		});
-		node.addChildNode("Filter", [this](XmlNode& node2) {
+		node.addElement("Filter", [](XmlElement& node2) {
 			node2.addAttribute("Include", "Resource Files");
-			node2.addChildNode("UniqueIdentifier", "{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}");
-			node2.addChildNode("Extensions", "rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms");
+			node2.addElementWithText("UniqueIdentifier", "{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}");
+			node2.addElementWithText("Extensions", "rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms");
 		});
 	});
 
@@ -83,9 +83,7 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "Current");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addChildNode("PropertyGroup", [](XmlNode& node) {
-		UNUSED(node);
-	});
+	xmlRoot.addElement("PropertyGroup");
 
 	xmlFile.save();
 
