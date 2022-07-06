@@ -22,6 +22,7 @@ namespace chalet
 /*****************************************************************************/
 ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inState) :
 	m_state(inState),
+	m_compileCommandsGenerator(inState),
 	m_type(inType)
 {
 	m_generator = IStrategyGenerator::make(inType, inState);
@@ -55,11 +56,7 @@ StrategyType ICompileStrategy::type() const noexcept
 /*****************************************************************************/
 bool ICompileStrategy::saveCompileCommands() const
 {
-	const auto& buildDir = m_state.paths.buildOutputDir();
-	if (!m_compileCommandsGenerator.save(buildDir))
-		return false;
-
-	return true;
+	return m_compileCommandsGenerator.save();
 }
 
 /*****************************************************************************/
