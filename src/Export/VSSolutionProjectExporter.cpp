@@ -71,7 +71,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		{
 			if (target->isSources())
 			{
-				VSVCXProjGen vcxprojGen(m_states, m_cwd);
+				VSVCXProjGen vcxprojGen(*state, m_cwd);
 				if (!vcxprojGen.saveToFile(target->name()))
 				{
 					Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
