@@ -10,9 +10,26 @@ namespace chalet
 {
 struct Uuid
 {
+	/**
+		@brief Get the nil UUID string (all zeroes)
+		@return Uuid
+	 */
 	static Uuid getNil();
+
 	// static Uuid v1Experimental();
+
+	/**
+		@brief Create a version 4 UUID (random), using operating system apis
+		@return Uuid
+	 */
 	static Uuid v4();
+
+	/**
+		@brief Create a version 5 UUID (namespace w/ SHA-1)
+		@param inStr
+		@param inNameSpace
+		@return Uuid
+	 */
 	static Uuid v5(std::string_view inStr, std::string_view inNameSpace);
 
 	bool operator==(const Uuid& rhs) const;
