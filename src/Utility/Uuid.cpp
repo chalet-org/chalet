@@ -7,7 +7,7 @@
 
 #include <sstream>
 
-#include "Libraries/Uuid.hpp"
+#include "Libraries/LibUuid.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -17,6 +17,15 @@ Uuid Uuid::getNil()
 {
 	return Uuid();
 }
+
+/*****************************************************************************/
+// Note: uuid_time_generator is considered experimental as of writing this
+//
+/*Uuid Uuid::v1Experimental()
+{
+	auto id = uuids::uuid_time_generator{}();
+	return Uuid(uuids::to_string(id));
+}*/
 
 /*****************************************************************************/
 Uuid Uuid::v4()
