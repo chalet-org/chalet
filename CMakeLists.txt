@@ -103,7 +103,7 @@ if(WIN32)
 elseif (CLANG)
 	target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS})
 else()
-	target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS} stdc++fs)
+	target_link_libraries(${TARGET_NAME} Threads::Threads ${STATIC_LINKS} stdc++fs uuid)
 endif()
 
 if(MSVC)
