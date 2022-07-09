@@ -72,6 +72,9 @@
 					"external/stduuid/gsl",
 					"src"
 				],
+				"links[:linux]": [
+					"uuid"
+				],
 				"macosFrameworks": [
 					"CoreFoundation"
 				]
@@ -93,6 +96,9 @@
 					"src",
 					"tests",
 					"external/catch2/single_include"
+				],
+				"links[:linux]": [
+					"uuid"
 				],
 				"macosFrameworks": [
 					"CoreFoundation"
