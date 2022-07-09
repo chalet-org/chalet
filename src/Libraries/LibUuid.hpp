@@ -10,6 +10,10 @@
 	#define UUID_SYSTEM_GENERATOR
 #endif
 
+// #ifndef UUID_TIME_GENERATOR
+// 	#define UUID_TIME_GENERATOR
+// #endif
+
 #include <uuid.h>
 
 #endif // CHALET_LIB_UUID_HPP

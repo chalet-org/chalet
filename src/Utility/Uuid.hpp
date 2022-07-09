@@ -11,6 +11,7 @@ namespace chalet
 struct Uuid
 {
 	static Uuid getNil();
+	// static Uuid v1Experimental();
 	static Uuid v4();
 	static Uuid v5(std::string_view inStr, std::string_view inNameSpace);
 
