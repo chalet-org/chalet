@@ -26,9 +26,9 @@ Uuid Uuid::v4()
 }
 
 /*****************************************************************************/
-Uuid Uuid::v5(std::string_view inStr, std::string_view inSeed)
+Uuid Uuid::v5(std::string_view inStr, std::string_view inNameSpace)
 {
-	uuids::uuid_name_generator gen(uuids::uuid::from_string(inSeed).value());
+	uuids::uuid_name_generator gen(uuids::uuid::from_string(inNameSpace).value());
 	auto id = gen(inStr);
 
 	return Uuid(uuids::to_string(id));
@@ -69,7 +69,7 @@ std::string Uuid::toUpperCase() const
 {
 	std::string ret(m_str);
 	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
-		return std::toupper(c);
+		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
 	});
 	return ret;
 }

@@ -359,14 +359,14 @@ bool Router::routeDebug()
 	LOG("----");
 	for (uint i = 0; i < 4; ++i)
 	{
-		guid = Uuid::v5("test", seedA);
+		guid = Uuid::v5("WindowsProject3", seedA);
 		LOG(guid.toUpperCase());
 	}
 
 	LOG("----");
 	for (uint i = 0; i < 4; ++i)
 	{
-		guid = Uuid::v5("test", seedB);
+		guid = Uuid::v5("WindowsProject3", seedB);
 		LOG(guid.toUpperCase());
 	}
 

@@ -12,7 +12,7 @@ struct Uuid
 {
 	static Uuid getNil();
 	static Uuid v4();
-	static Uuid v5(std::string_view inStr, std::string_view inSeed);
+	static Uuid v5(std::string_view inStr, std::string_view inNameSpace);
 
 	bool operator==(const Uuid& rhs) const;
 	bool operator!=(const Uuid& rhs) const;
