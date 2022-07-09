@@ -7,6 +7,7 @@ libraries=(
 	'fmt'
 	'json-schema-validator'
 	'nlohmann'
+	'stduuid'
 )
 
 repositories=(
@@ -14,15 +15,18 @@ repositories=(
 	'fmtlib/fmt'
 	'chalet-org/json-schema-validator'
 	'nlohmann/json'
+	'mariusbancila/stduuid'
 )
 tags=(
 	'v2.x'
 	'8.1.1'
 	'master'
 	'v3.10.2'
+	'v1.2.2'
 )
 
 commits=(
+	0
 	0
 	0
 	0

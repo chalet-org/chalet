@@ -68,7 +68,12 @@
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
 					"external/fmt/include",
+					"external/stduuid/include",
+					"external/stduuid/gsl",
 					"src"
+				],
+				"macosFrameworks": [
+					"CoreFoundation"
 				]
 			},
 			"files": "src/**.{cpp,rc}",
@@ -83,9 +88,14 @@
 				"staticLinks": "json-schema-validator-s",
 				"includeDirs": [
 					"external/fmt/include",
+					"external/stduuid/include",
+					"external/stduuid/gsl",
 					"src",
 					"tests",
 					"external/catch2/single_include"
+				],
+				"macosFrameworks": [
+					"CoreFoundation"
 				]
 			},
 			"files": [

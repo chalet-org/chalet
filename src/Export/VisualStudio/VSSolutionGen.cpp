@@ -24,6 +24,10 @@ struct VisualStudioConfig
 	std::string arch;
 	std::string arch2;
 };
+
+// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
+//
+constexpr const char visualCppProjectTypeGUID[] = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 }
 /*****************************************************************************/
 VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd) :
@@ -54,8 +58,8 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		});
 	}
 
+	const auto projectTypeGUID = visualCppProjectTypeGUID;
 	std::string solutionGUID{ "7838F8F8-6365-4CC0-AF17-1F1C13E21FA2" };
-	std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" };
 	std::string projectGUID{ "24303D41-C0B0-4E37-9656-1AD5883A7B9B" };
 
 	std::string minimumVisualStudioVersion{ "10.0.40219.1" };
