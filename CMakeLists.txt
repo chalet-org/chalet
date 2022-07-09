@@ -72,6 +72,8 @@ target_include_directories(${TARGET_NAME}
 		external/fmt/include/
 		external/json-schema-validator/src/
 		external/nlohmann/single_include/
+		external/stduuid/include/
+		external/stduuid/gsl/
 		external/
 )
 
@@ -121,5 +123,10 @@ else()
 		PRIVATE
 			-Wall -Werror -Wextra -Wpedantic -Wshadow -Wunreachable-code -Wunused -Wignored-qualifiers -Wcast-align -Wdouble-promotion -Wformat-nonliteral -Wformat=2 -Winvalid-pch -Wmissing-declarations -Wmissing-include-dirs -Wredundant-decls -Wodr -fno-rtti -fdiagnostics-color=always
 		)
+endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "AppleClang")
+	target_link_libraries(${TARGET_NAME} "-framework CoreFoundation")
+	set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS "-Wl,-F/Library/Frameworks")
 endif()
 

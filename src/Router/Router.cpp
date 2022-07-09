@@ -30,6 +30,7 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Utility/Uuid.hpp"
 #include "Xml/Xml.hpp"
 #include "Xml/XmlFile.hpp"
 
@@ -339,6 +340,39 @@ bool Router::routeDebug()
 		Commands::subprocess({ xmllint, xmlFile.filename() });
 	}
 
+	LOG("----");
+	timer.restart();
+
+	auto guid = Uuid::getNil();
+	LOG(guid.str());
+
+	LOG("----");
+	auto seedA = Uuid::v4().toUpperCase();
+	std::string seedB("8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942");
+
+	for (uint i = 0; i < 8; ++i)
+	{
+		guid = Uuid::v4();
+		LOG(guid.toUpperCase());
+	}
+
+	LOG("----");
+	for (uint i = 0; i < 4; ++i)
+	{
+		guid = Uuid::v5("test", seedA);
+		LOG(guid.toUpperCase());
+	}
+
+	LOG("----");
+	for (uint i = 0; i < 4; ++i)
+	{
+		guid = Uuid::v5("test", seedB);
+		LOG(guid.toUpperCase());
+	}
+
+	LOG("----");
+	LOG("uuid took:", timer.asString());
+	LOG("----");
 	return true;
 }
 #endif
