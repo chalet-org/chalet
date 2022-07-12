@@ -14,6 +14,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
@@ -32,6 +33,7 @@ std::string VSSolutionProjectExporter::getProjectTypeName() const
 /*****************************************************************************/
 bool VSSolutionProjectExporter::validate(const BuildState& inState)
 {
+	/*
 	auto typeName = getProjectTypeName();
 	if (!inState.environment->isMsvc())
 	{
@@ -42,6 +44,8 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 #endif
 		return false;
 	}
+	*/
+	UNUSED(inState);
 
 	return true;
 }
@@ -58,9 +62,14 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	{
 		UNUSED(state);
 
+		// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
+		//
+		const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
+		auto targetGuids = getTargetGuids(projectTypeGUID);
+
 		const auto& workspaceName = state->workspace.metadata().name();
 
-		VSSolutionGen slnGen(m_states, m_cwd);
+		VSSolutionGen slnGen(m_states, m_cwd, projectTypeGUID, targetGuids);
 		if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
 		{
 			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
@@ -82,5 +91,28 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+OrderedDictionary<std::string> VSSolutionProjectExporter::getTargetGuids(const std::string& inProjectTypeGUID) const
+{
+	OrderedDictionary<std::string> ret;
+
+	for (auto& state : m_states)
+	{
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
+			{
+				const auto& name = target->name();
+				if (ret.find(name) == ret.end())
+				{
+					ret.emplace(name, Uuid::v5(name, inProjectTypeGUID).toUpperCase());
+				}
+			}
+		}
+	}
+
+	return ret;
 }
 }

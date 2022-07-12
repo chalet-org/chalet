@@ -14,13 +14,15 @@ class BuildState;
 
 struct VSSolutionGen
 {
-	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd);
+	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids);
 
 	bool saveToFile(const std::string& inFilename);
 
 private:
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
+	const std::string& m_projectTypeGuid;
+	const OrderedDictionary<std::string>& m_targetGuids;
 };
 }
 

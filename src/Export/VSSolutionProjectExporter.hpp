@@ -22,7 +22,7 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	//
+	OrderedDictionary<std::string> getTargetGuids(const std::string& inProjectTypeGUID) const;
 };
 }
 
