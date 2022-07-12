@@ -9,10 +9,14 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
@@ -24,15 +28,14 @@ struct VisualStudioConfig
 	std::string arch;
 	std::string arch2;
 };
-
-// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
-//
-constexpr const char visualCppProjectTypeGUID[] = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 }
+
 /*****************************************************************************/
-VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd) :
+VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids) :
 	m_states(inStates),
-	m_cwd(inCwd)
+	m_cwd(inCwd),
+	m_projectTypeGuid(inProjectTypeGuid),
+	m_targetGuids(inTargetGuids)
 {
 	UNUSED(m_cwd);
 }
@@ -58,15 +61,13 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		});
 	}
 
-	const auto projectTypeGUID = visualCppProjectTypeGUID;
-	std::string solutionGUID{ "7838F8F8-6365-4CC0-AF17-1F1C13E21FA2" };
-	std::string projectGUID{ "24303D41-C0B0-4E37-9656-1AD5883A7B9B" };
-
 	std::string minimumVisualStudioVersion{ "10.0.40219.1" };
 
 	const auto& firstState = *m_states.front();
 	const auto& workspaceName = firstState.workspace.metadata().name();
 	auto& visualStudioVersion = firstState.environment->detectedVersion();
+
+	auto solutionGUID = Uuid::v5(workspaceName, m_projectTypeGuid).toUpperCase();
 
 	std::string visualStudioVersionMajor = visualStudioVersion;
 	{
@@ -78,23 +79,43 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 	}
 
 	std::string vsConfigString;
+	std::string vsProjectsString;
+
 	if (!vsConfigs.empty())
 	{
 		std::string configs;
 		std::string projectConfigs;
+
 		for (auto& [name, arch, arch2] : vsConfigs)
 		{
-			configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
-			projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{name}|{arch}.ActiveCfg = {name}|{arch2}",
+			UNUSED(arch, arch2);
+			// configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
+			std::string arch3{ "Any CPU" };
+			configs += fmt::format("\n\t\t{name}|{arch3} = {name}|{arch3}", FMT_ARG(name), FMT_ARG(arch3));
+		}
+
+		for (auto& [name, projectGUID] : m_targetGuids)
+		{
+			vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"{name}/{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
+				fmt::arg("projectTypeGUID", m_projectTypeGuid),
 				FMT_ARG(projectGUID),
-				FMT_ARG(name),
-				FMT_ARG(arch),
-				FMT_ARG(arch2));
-			projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{name}|{arch}.Build.0 = {name}|{arch2}",
-				FMT_ARG(projectGUID),
-				FMT_ARG(name),
-				FMT_ARG(arch),
-				FMT_ARG(arch2));
+				FMT_ARG(name));
+
+			vsProjectsString += "EndProject\n";
+
+			for (auto& [conf, arch, arch2] : vsConfigs)
+			{
+				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.ActiveCfg = {conf}|{arch2}",
+					FMT_ARG(projectGUID),
+					FMT_ARG(conf),
+					FMT_ARG(arch),
+					FMT_ARG(arch2));
+				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch2}",
+					FMT_ARG(projectGUID),
+					FMT_ARG(conf),
+					FMT_ARG(arch),
+					FMT_ARG(arch2));
+			}
 		}
 
 		vsConfigString += fmt::format("\n\tGlobalSection(SolutionConfigurationPlatforms) = preSolution{configs}\n\tEndGlobalSection", FMT_ARG(configs));
@@ -106,9 +127,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version {visualStudioVersionMajor}
 VisualStudioVersion = {visualStudioVersion}
 MinimumVisualStudioVersion = {minimumVisualStudioVersion}
-Project("{{{projectTypeGUID}}}") = "{workspaceName}", "{workspaceName}/{workspaceName}.vcxproj", "{{{projectGUID}}}"
-EndProject
-Global{vsConfigString}
+{vsProjectsString}Global{vsConfigString}
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
@@ -119,11 +138,9 @@ EndGlobal)sln",
 		FMT_ARG(visualStudioVersionMajor),
 		FMT_ARG(visualStudioVersion),
 		FMT_ARG(minimumVisualStudioVersion),
-		FMT_ARG(projectGUID),
-		FMT_ARG(projectTypeGUID),
+		FMT_ARG(vsProjectsString),
 		FMT_ARG(solutionGUID),
-		FMT_ARG(vsConfigString),
-		FMT_ARG(workspaceName));
+		FMT_ARG(vsConfigString));
 
 	UNUSED(inFilename);
 
