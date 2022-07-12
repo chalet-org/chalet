@@ -32,7 +32,6 @@ std::string VSSolutionProjectExporter::getProjectTypeName() const
 /*****************************************************************************/
 bool VSSolutionProjectExporter::validate(const BuildState& inState)
 {
-	/*
 	auto typeName = getProjectTypeName();
 	if (!inState.environment->isMsvc())
 	{
@@ -43,7 +42,6 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 #endif
 		return false;
 	}
-	*/
 	UNUSED(inState);
 
 	return true;
