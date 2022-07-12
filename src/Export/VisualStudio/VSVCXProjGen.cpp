@@ -15,16 +15,19 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-VSVCXProjGen::VSVCXProjGen(const BuildState& inState, const std::string& inCwd) :
+VSVCXProjGen::VSVCXProjGen(const BuildState& inState, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids) :
 	m_state(inState),
-	m_cwd(inCwd)
+	m_cwd(inCwd),
+	m_projectTypeGuid(inProjectTypeGuid),
+	m_targetGuids(inTargetGuids)
 {
-	UNUSED(m_cwd);
+	UNUSED(m_cwd, m_targetGuids);
 }
 
 /*****************************************************************************/
@@ -51,19 +54,25 @@ bool VSVCXProjGen::saveFiltersFile(const std::string& inFilename)
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
 		node.addElement("Filter", [this](XmlElement& node2) {
+			auto extensions = String::join(getSourceExtensions(), ';');
+			auto guid = Uuid::v5(extensions, m_projectTypeGuid).toUpperCase();
 			node2.addAttribute("Include", "Source Files");
-			node2.addElementWithText("UniqueIdentifier", "{4FC737F1-C7A5-4376-A066-2A32D752A2FF}");
-			node2.addElementWithText("Extensions", String::join(getSourceExtensions(), ';'));
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+			node2.addElementWithText("Extensions", extensions);
 		});
 		node.addElement("Filter", [this](XmlElement& node2) {
+			auto extensions = String::join(getHeaderExtensions(), ';');
+			auto guid = Uuid::v5(extensions, m_projectTypeGuid).toUpperCase();
 			node2.addAttribute("Include", "Header Files");
-			node2.addElementWithText("UniqueIdentifier", "{93995380-89BD-4b04-88EB-625FBE52EBFB}");
-			node2.addElementWithText("Extensions", String::join(getHeaderExtensions(), ';'));
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+			node2.addElementWithText("Extensions", extensions);
 		});
 		node.addElement("Filter", [this](XmlElement& node2) {
+			auto extensions = String::join(getResourceExtensions(), ';');
+			auto guid = Uuid::v5(extensions, m_projectTypeGuid).toUpperCase();
 			node2.addAttribute("Include", "Resource Files");
-			node2.addElementWithText("UniqueIdentifier", "{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}");
-			node2.addElementWithText("Extensions", String::join(getResourceExtensions(), ';'));
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+			node2.addElementWithText("Extensions", extensions);
 		});
 	});
 
