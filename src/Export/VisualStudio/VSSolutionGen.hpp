@@ -6,6 +6,7 @@
 #ifndef CHALET_VS_SOLUTION_GEN_HPP
 #define CHALET_VS_SOLUTION_GEN_HPP
 
+#include "Utility/Uuid.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -14,7 +15,7 @@ class BuildState;
 
 struct VSSolutionGen
 {
-	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids);
+	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -22,7 +23,7 @@ private:
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
 	const std::string& m_projectTypeGuid;
-	const OrderedDictionary<std::string>& m_targetGuids;
+	const OrderedDictionary<Uuid>& m_targetGuids;
 };
 }
 

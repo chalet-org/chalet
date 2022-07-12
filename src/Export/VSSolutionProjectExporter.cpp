@@ -14,7 +14,6 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
@@ -94,9 +93,9 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 }
 
 /*****************************************************************************/
-OrderedDictionary<std::string> VSSolutionProjectExporter::getTargetGuids(const std::string& inProjectTypeGUID) const
+OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::string& inProjectTypeGUID) const
 {
-	OrderedDictionary<std::string> ret;
+	OrderedDictionary<Uuid> ret;
 
 	for (auto& state : m_states)
 	{
@@ -107,7 +106,7 @@ OrderedDictionary<std::string> VSSolutionProjectExporter::getTargetGuids(const s
 				const auto& name = target->name();
 				if (ret.find(name) == ret.end())
 				{
-					ret.emplace(name, Uuid::v5(name, inProjectTypeGUID).toUpperCase());
+					ret.emplace(name, Uuid::v5(name, inProjectTypeGUID));
 				}
 			}
 		}

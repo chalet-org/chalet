@@ -16,7 +16,6 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
@@ -31,7 +30,7 @@ struct VisualStudioConfig
 }
 
 /*****************************************************************************/
-VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids) :
+VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
 	m_states(inStates),
 	m_cwd(inCwd),
 	m_projectTypeGuid(inProjectTypeGuid),
@@ -94,8 +93,9 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 			configs += fmt::format("\n\t\t{name}|{arch3} = {name}|{arch3}", FMT_ARG(name), FMT_ARG(arch3));
 		}
 
-		for (auto& [name, projectGUID] : m_targetGuids)
+		for (auto& [name, guid] : m_targetGuids)
 		{
+			auto projectGUID = guid.toUpperCase();
 			vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"{name}/{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
 				fmt::arg("projectTypeGUID", m_projectTypeGuid),
 				FMT_ARG(projectGUID),
