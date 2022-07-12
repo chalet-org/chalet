@@ -7,6 +7,7 @@
 #define CHALET_VS_SOLUTION_PROJECT_EXPORTER_HPP
 
 #include "Export/IProjectExporter.hpp"
+#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
@@ -22,7 +23,7 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	OrderedDictionary<std::string> getTargetGuids(const std::string& inProjectTypeGUID) const;
+	OrderedDictionary<Uuid> getTargetGuids(const std::string& inProjectTypeGUID) const;
 };
 }
 
