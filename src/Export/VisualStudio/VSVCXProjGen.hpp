@@ -14,7 +14,7 @@ class BuildState;
 
 struct VSVCXProjGen
 {
-	explicit VSVCXProjGen(const BuildState& inState, const std::string& inCwd);
+	explicit VSVCXProjGen(const BuildState& inState, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<std::string>& inTargetGuids);
 
 	bool saveToFile(const std::string& inTargetName);
 
@@ -28,6 +28,8 @@ private:
 
 	const BuildState& m_state;
 	const std::string& m_cwd;
+	const std::string& m_projectTypeGuid;
+	const OrderedDictionary<std::string>& m_targetGuids;
 };
 }
 
