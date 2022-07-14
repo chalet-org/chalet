@@ -85,7 +85,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 		{
 			const auto& name = state->configuration.name();
 			auto arch = Arch::toVSArch2(state->info.targetArchitecture());
-			node.addElement("ProjectConfiguration", [this, &name, &arch](XmlElement& node2) {
+			node.addElement("ProjectConfiguration", [&name, &arch](XmlElement& node2) {
 				node2.addAttribute("Include", fmt::format("{}|{}", name, arch));
 				node2.addElementWithText("Configuration", name);
 				node2.addElementWithText("Platform", arch);
