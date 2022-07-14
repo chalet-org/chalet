@@ -12,6 +12,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 
@@ -77,8 +78,8 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		{
 			if (target->isSources())
 			{
-				VSVCXProjGen vcxprojGen(*state, m_cwd, projectTypeGUID, targetGuids);
-				if (!vcxprojGen.saveToFile(target->name()))
+				VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+				if (!vcxprojGen.saveProjectFiles(*state, static_cast<const SourceTarget&>(*target)))
 				{
 					Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
 					return false;

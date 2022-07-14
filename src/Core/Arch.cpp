@@ -68,6 +68,23 @@ std::string Arch::toVSArch(Arch::Cpu inCpu)
 }
 
 /*****************************************************************************/
+std::string Arch::toVSArch2(Arch::Cpu inCpu)
+{
+	switch (inCpu)
+	{
+		case Arch::Cpu::X86:
+			return "Win32";
+		case Arch::Cpu::ARM:
+			return "ARM";
+		case Arch::Cpu::ARM64:
+			return "ARM64";
+		case Arch::Cpu::X64:
+		default:
+			return "x64";
+	}
+}
+
+/*****************************************************************************/
 // The goal with this class is to take some kind of architecture input and
 // get a valid GNU-style architecture (hopefully a triple) out of it
 //
@@ -135,5 +152,11 @@ void Arch::set(const std::string& inValue)
 std::string Arch::toVSArch() const
 {
 	return toVSArch(val);
+}
+
+/*****************************************************************************/
+std::string Arch::toVSArch2() const
+{
+	return toVSArch2(val);
 }
 }

@@ -444,6 +444,109 @@ ProjectWarningPresets SourceTarget::warningsPreset() const noexcept
 }
 
 /*****************************************************************************/
+MSVCWarningLevel SourceTarget::getMSVCWarningLevel() const
+{
+	switch (m_warningsPreset)
+	{
+		case ProjectWarningPresets::Minimal:
+			return MSVCWarningLevel::Level1;
+
+		case ProjectWarningPresets::Extra:
+			return MSVCWarningLevel::Level2;
+
+		case ProjectWarningPresets::Pedantic:
+			return MSVCWarningLevel::Level3;
+
+		case ProjectWarningPresets::Strict:
+		case ProjectWarningPresets::StrictPedantic:
+			return MSVCWarningLevel::Level4;
+
+		case ProjectWarningPresets::VeryStrict:
+			// return MSVCWarningLevel::LevelAll; // Note: Lots of messy compiler level warnings that break your build!
+			return MSVCWarningLevel::Level4;
+
+		case ProjectWarningPresets::None:
+			break;
+
+		default: {
+			StringList veryStrict{
+				"noexcept",
+				"undef",
+				"conversion",
+				"cast-qual",
+				"float-equal",
+				"inline",
+				"old-style-cast",
+				"strict-null-sentinel",
+				"overloaded-virtual",
+				"sign-conversion",
+				"sign-promo",
+			};
+			MSVCWarningLevel ret = MSVCWarningLevel::None;
+
+			bool strictSet = false;
+			for (auto& w : m_warnings)
+			{
+				if (!String::equals(veryStrict, w))
+					continue;
+
+				// ret = MSVCWarningLevel::LevelAll;
+				ret = MSVCWarningLevel::Level4;
+				strictSet = true;
+				break;
+			}
+
+			if (!strictSet)
+			{
+				StringList strictPedantic{
+					"unused",
+					"cast-align",
+					"double-promotion",
+					"format=2",
+					"missing-declarations",
+					"missing-include-dirs",
+					"non-virtual-dtor",
+					"redundant-decls",
+					"unreachable-code",
+					"shadow",
+				};
+				for (auto& w : m_warnings)
+				{
+					if (!String::equals(strictPedantic, w))
+						continue;
+
+					ret = MSVCWarningLevel::Level4;
+					strictSet = true;
+					break;
+				}
+			}
+
+			if (!strictSet)
+			{
+				if (List::contains<std::string>(m_warnings, "pedantic"))
+				{
+					ret = MSVCWarningLevel::Level3;
+				}
+				else if (List::contains<std::string>(m_warnings, "extra"))
+				{
+					ret = MSVCWarningLevel::Level2;
+				}
+				else if (List::contains<std::string>(m_warnings, "all"))
+				{
+					ret = MSVCWarningLevel::Level1;
+				}
+			}
+
+			break;
+
+			return ret;
+		}
+	}
+
+	return MSVCWarningLevel::None;
+}
+
+/*****************************************************************************/
 const StringList& SourceTarget::compileOptions() const noexcept
 {
 	return m_compileOptions;
