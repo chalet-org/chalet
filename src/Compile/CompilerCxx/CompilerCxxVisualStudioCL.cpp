@@ -70,104 +70,32 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::configureWarnings()
 {
-	switch (m_project.warningsPreset())
+	auto level = m_project.getMSVCWarningLevel();
+	switch (level)
 	{
-		case ProjectWarningPresets::Minimal:
+		case MSVCWarningLevel::Level1:
 			m_warningFlag = "W1";
 			break;
 
-		case ProjectWarningPresets::Extra:
+		case MSVCWarningLevel::Level2:
 			m_warningFlag = "W2";
 			break;
 
-		case ProjectWarningPresets::Pedantic:
+		case MSVCWarningLevel::Level3:
 			m_warningFlag = "W3";
 			break;
 
-		case ProjectWarningPresets::Strict:
-		case ProjectWarningPresets::StrictPedantic:
+		case MSVCWarningLevel::Level4:
 			m_warningFlag = "W4";
 			break;
 
-		case ProjectWarningPresets::VeryStrict:
-			// m_warningFlag = "Wall"; // Note: Lots of messy compiler level warnings that break your build!
-			m_warningFlag = "W4";
+		case MSVCWarningLevel::LevelAll:
+			m_warningFlag = "Wall";
 			break;
 
-		case ProjectWarningPresets::None:
+		default:
+			m_warningFlag.clear();
 			break;
-
-		default: {
-			auto& warnings = m_project.warnings();
-			StringList veryStrict{
-				"noexcept",
-				"undef",
-				"conversion",
-				"cast-qual",
-				"float-equal",
-				"inline",
-				"old-style-cast",
-				"strict-null-sentinel",
-				"overloaded-virtual",
-				"sign-conversion",
-				"sign-promo",
-			};
-
-			bool strictSet = false;
-			for (auto& w : warnings)
-			{
-				if (!String::equals(veryStrict, w))
-					continue;
-
-				// m_warningFlag = "Wall";
-				m_warningFlag = "W4";
-				strictSet = true;
-				break;
-			}
-
-			if (!strictSet)
-			{
-				StringList strictPedantic{
-					"unused",
-					"cast-align",
-					"double-promotion",
-					"format=2",
-					"missing-declarations",
-					"missing-include-dirs",
-					"non-virtual-dtor",
-					"redundant-decls",
-					"unreachable-code",
-					"shadow",
-				};
-				for (auto& w : warnings)
-				{
-					if (!String::equals(strictPedantic, w))
-						continue;
-
-					m_warningFlag = "W4";
-					strictSet = true;
-					break;
-				}
-			}
-
-			if (!strictSet)
-			{
-				if (List::contains<std::string>(warnings, "pedantic"))
-				{
-					m_warningFlag = "W3";
-				}
-				else if (List::contains<std::string>(warnings, "extra"))
-				{
-					m_warningFlag = "W2";
-				}
-				else if (List::contains<std::string>(warnings, "all"))
-				{
-					m_warningFlag = "W1";
-				}
-			}
-
-			break;
-		}
 	}
 	return true;
 }

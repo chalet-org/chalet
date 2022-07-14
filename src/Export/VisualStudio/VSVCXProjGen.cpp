@@ -10,6 +10,9 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
+#include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
@@ -20,8 +23,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSVCXProjGen::VSVCXProjGen(const BuildState& inState, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
-	m_state(inState),
+VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
+	m_states(inStates),
 	m_cwd(inCwd),
 	m_projectTypeGuid(inProjectTypeGuid),
 	m_targetGuids(inTargetGuids)
@@ -30,28 +33,31 @@ VSVCXProjGen::VSVCXProjGen(const BuildState& inState, const std::string& inCwd, 
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveToFile(const std::string& inTargetName)
+bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarget& inProject)
 {
-	if (m_targetGuids.find(inTargetName) == m_targetGuids.end())
+	const auto& name = inProject.name();
+	if (m_targetGuids.find(name) == m_targetGuids.end())
 		return false;
 
-	m_currentTarget = inTargetName;
-	m_currentGuid = m_targetGuids.at(inTargetName).str();
+	m_currentTarget = name;
+	m_currentGuid = m_targetGuids.at(name).str();
 
-	if (!saveProjectFile(fmt::format("{name}/{name}.vcxproj", fmt::arg("name", inTargetName))))
+	auto projectFile = fmt::format("{name}/{name}.vcxproj", FMT_ARG(name));
+
+	if (!saveProjectFile(inState, inProject, projectFile))
 		return false;
 
-	if (!saveFiltersFile(fmt::format("{name}/{name}.vcxproj.filters", fmt::arg("name", inTargetName))))
+	if (!saveFiltersFile(inState, fmt::format("{}.filters", projectFile)))
 		return false;
 
-	if (!saveUserFile(fmt::format("{name}/{name}.vcxproj.user", fmt::arg("name", inTargetName))))
+	if (!saveUserFile(fmt::format("{}.user", projectFile)))
 		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveProjectFile(const std::string& inFilename)
+bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget& inProject, const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
@@ -61,17 +67,34 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inFilename)
 	xmlRoot.addAttribute("DefaultTargets", "Build");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
-	xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
+	const SourceTarget* project = nullptr;
+	for (auto& state : m_states)
+	{
+		for (auto& target : state->targets)
+		{
+			if (target->isSources() && String::equals(target->name(), inProject.name()))
+			{
+				project = static_cast<const SourceTarget*>(target.get());
+			}
+		}
+	}
+
+	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
-		node.addElement("ProjectConfiguration", [](XmlElement& node2) {
-			node2.addAttribute("Include", "Debug|Win32");
-			node2.addElementWithText("Configuration", "Debug");
-			node2.addElementWithText("Platform", "Win32");
-		});
+		for (auto& state : m_states)
+		{
+			const auto& name = state->configuration.name();
+			auto arch = Arch::toVSArch2(state->info.targetArchitecture());
+			node.addElement("ProjectConfiguration", [this, &name, &arch](XmlElement& node2) {
+				node2.addAttribute("Include", fmt::format("{}|{}", name, arch));
+				node2.addElementWithText("Configuration", name);
+				node2.addElementWithText("Platform", arch);
+			});
+		}
 	});
 
-	xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
-		std::string visualStudioVersion = m_state.environment->detectedVersion();
+	xmlRoot.addElement("PropertyGroup", [this, &inState](XmlElement& node) {
+		std::string visualStudioVersion = inState.environment->detectedVersion();
 		{
 			auto decimal = visualStudioVersion.find('.');
 			if (decimal != std::string::npos)
@@ -97,15 +120,29 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inFilename)
 	xmlRoot.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
 	});
-	xmlRoot.addElement("PropertyGroup", [](XmlElement& node) {
-		node.addAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
-		node.addAttribute("Label", "Configuration");
-		node.addElementWithText("ConfigurationType", "Application");
-		node.addElementWithText("UseDebugLibraries", "false");
-		node.addElementWithText("PlatformToolset", "v143");
-		node.addElementWithText("WholeProgramOptimization", "true");
-		node.addElementWithText("CharacterSet", "Unicode");
-	});
+
+	for (auto& state : m_states)
+	{
+		const auto& config = state->configuration;
+		const auto& name = config.name();
+		xmlRoot.addElement("PropertyGroup", [this, &name, &config, project](XmlElement& node) {
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+			node.addAttribute("Label", "Configuration");
+			node.addElementWithText("ConfigurationType", "Application");
+			node.addElementWithText("UseDebugLibraries", getBooleanValue(config.debugSymbols()));
+			node.addElementWithText("PlatformToolset", "v143");
+
+			if (config.interproceduralOptimization())
+			{
+				node.addElementWithText("WholeProgramOptimization", getBooleanValue(true));
+			}
+
+			if (String::equals({ "UTF-8", "utf-8" }, project->executionCharset()))
+			{
+				node.addElementWithText("CharacterSet", "Unicode");
+			}
+		});
+	}
 
 	xmlRoot.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props");
@@ -121,38 +158,124 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inFilename)
 		node.setText(std::string());
 	});
 
-	// TODO: For each build configuration
-	xmlRoot.addElement("ImportGroup", [](XmlElement& node) {
-		node.addAttribute("Label", "PropertySheets");
-		node.addAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
-		node.addElement("Import", [](XmlElement& node2) {
-			node2.addAttribute("Project", "$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props");
-			node2.addAttribute("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')");
-			node2.addAttribute("Label", "LocalAppDataPlatform");
+	for (auto& state : m_states)
+	{
+		const auto& name = state->configuration.name();
+		xmlRoot.addElement("ImportGroup", [&name](XmlElement& node) {
+			node.addAttribute("Label", "PropertySheets");
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+			node.addElement("Import", [](XmlElement& node2) {
+				node2.addAttribute("Project", "$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props");
+				node2.addAttribute("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')");
+				node2.addAttribute("Label", "LocalAppDataPlatform");
+			});
 		});
-	});
+	}
 
 	xmlRoot.addElement("PropertyGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "UserMacros");
 	});
 
-	// TODO: For each build configuration
-	xmlRoot.addElement("PropertyGroup", [](XmlElement& node) {
-		node.addAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
-		node.addElementWithText("LinkIncremental", "false");
-	});
-	xmlRoot.addElement("ItemDefinitionGroup", [](XmlElement& node) {
-		node.addAttribute("Condition", "'$(Configuration)|$(Platform)'=='Release|x64'");
-		node.addElement("ClCompile");
-		node.addElement("Link");
-	});
+	for (auto& state : m_states)
+	{
+		const auto& config = state->configuration;
+		const auto& name = config.name();
+		xmlRoot.addElement("PropertyGroup", [this, &name, &config](XmlElement& node) {
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
 
-	xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
-		node.addElement("ClCompile", [](XmlElement& node2) {
-			//
-			node2.addAttribute("Include", "main.cpp");
+			if (config.debugSymbols() && !config.enableSanitizers() && !config.enableProfiling())
+			{
+				node.addElementWithText("LinkIncremental", getBooleanValue(true));
+			}
 		});
-	});
+	}
+
+	for (auto& state : m_states)
+	{
+		const auto& config = state->configuration;
+		const auto& name = config.name();
+		uint versionMajorMinor = state->toolchain.compilerCxx(inProject.language()).versionMajorMinor;
+
+		if (project != nullptr)
+		{
+			xmlRoot.addElement("ItemDefinitionGroup", [this, project, &config, &name, &versionMajorMinor](XmlElement& node) {
+				node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+				node.addElement("ClCompile", [this, project, &config, &versionMajorMinor](XmlElement& node2) {
+					bool debugSymbols = config.debugSymbols();
+					auto warningLevel = getWarningLevel(project->getMSVCWarningLevel());
+					if (!warningLevel.empty())
+					{
+						node2.addElementWithText("WarningLevel", warningLevel);
+					}
+					if (!debugSymbols)
+					{
+						node2.addElementWithText("FunctionLevelLinking", "true");
+						node2.addElementWithText("IntrinsicFunctions", "true");
+					}
+					node2.addElementWithText("SDLCheck", "true");
+					{
+						auto defines = String::join(project->defines(), ';');
+						if (!defines.empty())
+							defines += ';';
+
+						node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", defines));
+					}
+					if (versionMajorMinor >= 1910) // VS 2017+
+					{
+						node2.addElementWithText("ConformanceMode", "true");
+					}
+				});
+
+				node.addElement("Link", [this, project, &config](XmlElement& node2) {
+					node2.addElementWithText("SubSystem", getMsvcCompatibleSubSystem(*project));
+					if (!config.debugSymbols())
+					{
+						node2.addElementWithText("EnableCOMDATFolding", "true");
+						node2.addElementWithText("OptimizeReferences", "true");
+					}
+					node2.addElementWithText("GenerateDebugInformation", "true");
+				});
+			});
+		}
+	}
+
+	auto headerFiles = inProject.getHeaderFiles();
+	if (!headerFiles.empty())
+	{
+		xmlRoot.addElement("ItemGroup", [this, &headerFiles](XmlElement& node) {
+			node.addElement("ClInclude", [this, &headerFiles](XmlElement& node2) {
+				for (auto& file : headerFiles)
+				{
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+				}
+			});
+		});
+	}
+	const auto& files = inProject.files();
+	if (!files.empty())
+	{
+		xmlRoot.addElement("ItemGroup", [this, &files](XmlElement& node) {
+			node.addElement("ClCompile", [this, &files](XmlElement& node2) {
+				for (auto& file : files)
+				{
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+				}
+			});
+		});
+	}
+	// Resource files
+	/*xmlRoot.addElement("ItemGroup", [&inProject](XmlElement& node) {
+		node.addElement("ResourceCompile", [&inProject](XmlElement& node2) {
+			node2.addAttribute("Include", file);
+		});
+	});*/
+	// Ico files
+	/*xmlRoot.addElement("ItemGroup", [&inProject](XmlElement& node) {
+		node.addElement("Image", [&inProject](XmlElement& node2) {
+			node2.addAttribute("Include", file);
+		});
+	});*/
+
 	xmlRoot.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 	});
@@ -164,7 +287,7 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveFiltersFile(const std::string& inFilename)
+bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
@@ -173,9 +296,9 @@ bool VSVCXProjGen::saveFiltersFile(const std::string& inFilename)
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
-		node.addElement("Filter", [this](XmlElement& node2) {
-			auto extensions = String::join(getSourceExtensions(), ';');
+	xmlRoot.addElement("ItemGroup", [this, &inState](XmlElement& node) {
+		node.addElement("Filter", [this, &inState](XmlElement& node2) {
+			auto extensions = String::join(getSourceExtensions(inState), ';');
 			auto guid = Uuid::v5(extensions, m_projectTypeGuid).toUpperCase();
 			node2.addAttribute("Include", "Source Files");
 			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
@@ -216,7 +339,76 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-StringList VSVCXProjGen::getSourceExtensions() const
+std::string VSVCXProjGen::getWarningLevel(const MSVCWarningLevel inLevel) const
+{
+	std::string ret;
+
+	switch (inLevel)
+	{
+		case MSVCWarningLevel::Level1:
+			ret = "Level1";
+			break;
+
+		case MSVCWarningLevel::Level2:
+			ret = "Level2";
+			break;
+
+		case MSVCWarningLevel::Level3:
+			ret = "Level3";
+			break;
+
+		case MSVCWarningLevel::Level4:
+			ret = "Level4";
+			break;
+
+		case MSVCWarningLevel::LevelAll:
+			ret = "LevelAll";
+			break;
+
+		default:
+			break;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::getMsvcCompatibleSubSystem(const SourceTarget& inProject) const
+{
+	const WindowsSubSystem subSystem = inProject.windowsSubSystem();
+	switch (subSystem)
+	{
+		case WindowsSubSystem::Windows:
+			return "Windows";
+		case WindowsSubSystem::Native:
+			return "Native";
+		case WindowsSubSystem::Posix:
+			return "POSIX";
+		case WindowsSubSystem::EfiApplication:
+			return "EFI Application";
+		case WindowsSubSystem::EfiBootServiceDriver:
+			return "EFI Boot Service Driver";
+		case WindowsSubSystem::EfiRom:
+			return "EFI ROM";
+		case WindowsSubSystem::EfiRuntimeDriver:
+			return "EFI Runtime";
+
+		case WindowsSubSystem::BootApplication:
+		default:
+			break;
+	}
+
+	return "Console";
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::getBooleanValue(const bool inValue) const
+{
+	return std::string(inValue ? "true" : "false");
+}
+
+/*****************************************************************************/
+StringList VSVCXProjGen::getSourceExtensions(const BuildState& inState) const
 {
 	StringList ret{
 		"asmx",
@@ -235,8 +427,8 @@ StringList VSVCXProjGen::getSourceExtensions() const
 		"cpp",
 	};
 
-	const auto& fileExtensions = m_state.paths.allFileExtensions();
-	const auto& resourceExtensions = m_state.paths.resourceExtensions();
+	const auto& fileExtensions = inState.paths.allFileExtensions();
+	const auto& resourceExtensions = inState.paths.resourceExtensions();
 
 	for (auto& ext : fileExtensions)
 	{
@@ -296,4 +488,5 @@ StringList VSVCXProjGen::getResourceExtensions() const
 		"mfcribbon-ms",
 	};
 }
+
 }

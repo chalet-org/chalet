@@ -49,9 +49,7 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 	for (auto& state : m_states)
 	{
 		std::string arch = Arch::toVSArch(state->info.targetArchitecture());
-		std::string arch2 = arch;
-		if (String::equals("x86", arch2))
-			arch2 = "Win32";
+		std::string arch2 = Arch::toVSArch2(state->info.targetArchitecture());
 
 		vsConfigs.emplace_back(VisualStudioConfig{
 			state->configuration.name(),
@@ -66,7 +64,7 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 	const auto& workspaceName = firstState.workspace.metadata().name();
 	auto& visualStudioVersion = firstState.environment->detectedVersion();
 
-	auto solutionGUID = Uuid::v5(workspaceName, m_projectTypeGuid).toUpperCase();
+	auto solutionGUID = Uuid::v5(fmt::format("{}_SOLUTION", workspaceName), m_projectTypeGuid).toUpperCase();
 
 	std::string visualStudioVersionMajor = visualStudioVersion;
 	{
@@ -87,10 +85,8 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 		for (auto& [name, arch, arch2] : vsConfigs)
 		{
-			UNUSED(arch, arch2);
-			// configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
-			std::string arch3{ "Any CPU" };
-			configs += fmt::format("\n\t\t{name}|{arch3} = {name}|{arch3}", FMT_ARG(name), FMT_ARG(arch3));
+			UNUSED(arch2);
+			configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
 		}
 
 		for (auto& [name, guid] : m_targetGuids)
