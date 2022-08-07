@@ -9,7 +9,6 @@
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CxxSpecialization.hpp"
 #include "Compile/PositionIndependentCodeType.hpp"
-#include "State/MSVCWarningLevel.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/SourceKind.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -66,7 +65,6 @@ struct SourceTarget final : public IBuildTarget
 	void addWarning(std::string&& inValue);
 	void setWarningPreset(std::string&& inValue);
 	ProjectWarningPresets warningsPreset() const noexcept;
-	MSVCWarningLevel getMSVCWarningLevel() const;
 
 	const StringList& compileOptions() const noexcept;
 	void addCompileOptions(StringList&& inList);

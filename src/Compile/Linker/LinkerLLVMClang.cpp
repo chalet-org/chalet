@@ -5,6 +5,7 @@
 
 #include "Compile/Linker/LinkerLLVMClang.hpp"
 
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
@@ -103,7 +104,8 @@ void LinkerLLVMClang::addSubSystem(StringList& outArgList) const
 		if (kind == SourceKind::Executable)
 		{
 			// bit of a hack for now
-			const auto subSystem = LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(m_project);
+			CommandAdapterMSVC msvcAdapter(m_state, m_project);
+			const auto subSystem = msvcAdapter.getSubSystem();
 			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/subsystem:{}", subSystem));
 		}
 	}
@@ -114,10 +116,11 @@ void LinkerLLVMClang::addEntryPoint(StringList& outArgList) const
 {
 	if (m_state.environment->isWindowsClang())
 	{
-		const auto entryPoint = LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(m_project);
+		// bit of a hack for now
+		CommandAdapterMSVC msvcAdapter(m_state, m_project);
+		const auto entryPoint = msvcAdapter.getEntryPoint();
 		if (!entryPoint.empty())
 		{
-			// bit of a hack for now
 			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/entry:{}", entryPoint));
 		}
 	}

@@ -6,6 +6,7 @@
 #ifndef CHALET_LINKER_VISUAL_STUDIO_LINK_HPP
 #define CHALET_LINKER_VISUAL_STUDIO_LINK_HPP
 
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/Linker/ILinker.hpp"
 
 namespace chalet
@@ -17,9 +18,6 @@ struct LinkerVisualStudioLINK : public ILinker
 	virtual bool initialize() override;
 
 	virtual void getCommandOptions(StringList& outArgList) override;
-
-	static std::string getMsvcCompatibleSubSystem(const SourceTarget& inProject);
-	static std::string getMsvcCompatibleEntryPoint(const SourceTarget& inProject);
 
 protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
@@ -46,6 +44,8 @@ protected:
 
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;
+
+	CommandAdapterMSVC m_msvcAdapter;
 };
 }
 

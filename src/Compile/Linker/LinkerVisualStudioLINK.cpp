@@ -19,7 +19,8 @@ namespace chalet
 {
 /*****************************************************************************/
 LinkerVisualStudioLINK::LinkerVisualStudioLINK(const BuildState& inState, const SourceTarget& inProject) :
-	ILinker(inState, inProject)
+	ILinker(inState, inProject),
+	m_msvcAdapter(inState, inProject)
 {
 }
 
@@ -213,7 +214,7 @@ void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 
 	if (kind == SourceKind::Executable)
 	{
-		const auto subSystem = LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(m_project);
+		const auto subSystem = m_msvcAdapter.getSubSystem();
 		List::addIfDoesNotExist(outArgList, fmt::format("/subsystem:{}", subSystem));
 	}
 }
@@ -221,7 +222,7 @@ void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addEntryPoint(StringList& outArgList) const
 {
-	const auto entryPoint = LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(m_project);
+	const auto entryPoint = m_msvcAdapter.getEntryPoint();
 	if (!entryPoint.empty())
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("/entry:{}", entryPoint));
@@ -388,66 +389,5 @@ void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList) const
 	// outArgList.emplace_back("/VERSION:0.0");
 
 	UNUSED(outArgList);
-}
-
-/*****************************************************************************/
-std::string LinkerVisualStudioLINK::getMsvcCompatibleSubSystem(const SourceTarget& inProject)
-{
-	const WindowsSubSystem subSystem = inProject.windowsSubSystem();
-	switch (subSystem)
-	{
-		case WindowsSubSystem::Windows:
-			return "windows";
-		case WindowsSubSystem::BootApplication:
-			return "BOOT_APPLICATION";
-		case WindowsSubSystem::Native:
-			return "native";
-		case WindowsSubSystem::Posix:
-			return "posix";
-		case WindowsSubSystem::EfiApplication:
-			return "EFI_APPLICATION";
-		case WindowsSubSystem::EfiBootServiceDriver:
-			return "EFI_BOOT_SERVICE_DRIVER";
-		case WindowsSubSystem::EfiRom:
-			return "EFI_ROM";
-		case WindowsSubSystem::EfiRuntimeDriver:
-			return "EFI_RUNTIME_DRIVER";
-
-		default: break;
-	}
-
-	return "console";
-}
-
-/*****************************************************************************/
-std::string LinkerVisualStudioLINK::getMsvcCompatibleEntryPoint(const SourceTarget& inProject)
-{
-	const SourceKind kind = inProject.kind();
-	const WindowsEntryPoint entryPoint = inProject.windowsEntryPoint();
-
-	if (kind == SourceKind::Executable)
-	{
-		switch (entryPoint)
-		{
-			case WindowsEntryPoint::MainUnicode:
-				return "wmainCRTStartup";
-			case WindowsEntryPoint::WinMain:
-				return "WinMainCRTStartup";
-			case WindowsEntryPoint::WinMainUnicode:
-				return "wWinMainCRTStartup";
-			default: break;
-		}
-
-		return "mainCRTStartup";
-	}
-	else if (kind == SourceKind::SharedLibrary)
-	{
-		if (entryPoint == WindowsEntryPoint::DllMain)
-		{
-			return "_DllMainCRTStartup";
-		}
-	}
-
-	return std::string();
 }
 }

@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
 #define CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
 
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 
 namespace chalet
@@ -65,6 +66,8 @@ protected:
 
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;
+
+	CommandAdapterMSVC m_msvcAdapter;
 
 	std::string m_pchSource;
 	std::string m_pchMinusLocation;
