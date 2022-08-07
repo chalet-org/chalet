@@ -5,6 +5,7 @@
 
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
 
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -37,10 +38,40 @@ std::string ProjectAdapterVCXProj::getBoolean(const bool inValue) const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getConfigurationType() const
+{
+	if (m_project.isExecutable())
+		return "Executable";
+
+	if (m_project.isSharedLibrary())
+		return "DynamicLibrary";
+
+	if (m_project.isStaticLibrary())
+		return "StaticLibrary";
+
+	return "Utility";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getUseDebugLibraries() const
+{
+	return getBoolean(m_state.configuration.debugSymbols());
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPlatformToolset() const
 {
-	// TODO: Need a nice way to get this
-	return "v143";
+	return m_msvcAdapter.getPlatformToolset();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getWholeProgramOptimization() const
+{
+	// LTCG - true/false
+	// Profile Guided Optimization, Instrument - PGInstrument
+	// Profile Guided Optimization, Optimize - PGOptimize
+	// Profile Guided Optimization, Update - PGUpdate
+	return getBoolean(m_msvcAdapter.supportsWholeProgramOptimization());
 }
 
 /*****************************************************************************/
@@ -108,6 +139,124 @@ std::string ProjectAdapterVCXProj::getLanguageStandardC() const
 		return standard;
 
 	return fmt::format("std{}", standard);
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getTreatWarningsAsError() const
+{
+	return getBoolean(m_project.treatWarningsAsErrors());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getDiagnosticsFormat() const
+{
+	// Column is default. might be better here
+	return "Caret";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getDebugInformationFormat() const
+{
+	if (m_msvcAdapter.supportsEditAndContinue())
+		return "EditAndContinue"; // ZI
+
+	return "ProgramDatabase"; // Zi
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getSupportJustMyCode() const
+{
+	return getBoolean(m_msvcAdapter.supportsJustMyCodeDebugging());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEnableAddressSanitizer() const
+{
+	return getBoolean(m_msvcAdapter.supportsAddressSanitizer());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getOptimization() const
+{
+	// Disabled - /O0
+	// MinSpace - /O1
+	// MaxSpeed - /O2
+	// Full     - /Ox
+	char opt = m_msvcAdapter.getOptimizationLevel();
+	switch (opt)
+	{
+		case '0':
+			return "Disabled";
+		case '1':
+			return "MinSpace";
+		case '2':
+			return "MaxSpeed";
+		case 'x':
+			return "Full";
+		default:
+			break;
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getInlineFunctionExpansion() const
+{
+	// Disabled - /Ob0
+	// OnlyExplicitInline - /Ob1
+	// AnySuitable - /Ob2
+	char opt = m_msvcAdapter.getInlineFuncExpansion();
+	switch (opt)
+	{
+		case '0':
+			return "Disabled";
+		case '1':
+			return "OnlyExplicitInline";
+		case '2':
+			return "AnySuitable";
+		case '3':
+			// TODO: don't think this is available yet, research
+		default:
+			break;
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getIntrinsicFunctions() const
+{
+	// true - /Oi
+	return getBoolean(m_msvcAdapter.supportsGenerateIntrinsicFunctions());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getFavorSizeOrSpeed() const
+{
+	// Size    - /Os
+	// Speed   - /Ot
+	// Neither - ?
+	char opt = m_msvcAdapter.getOptimizationLevel();
+	switch (opt)
+	{
+		case 's':
+			return "Size";
+		case 't':
+			return "Speed";
+		default:
+			// TODO: Does "Neither" actually do anything?
+			break;
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getWholeProgramOptimizationCompileFlag() const
+{
+	// true/false - /GL
+	return getBoolean(m_msvcAdapter.supportsWholeProgramOptimization());
 }
 
 /*****************************************************************************/

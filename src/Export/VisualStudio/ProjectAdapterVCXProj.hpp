@@ -13,22 +13,37 @@ namespace chalet
 class BuildState;
 struct SourceTarget;
 
-class ProjectAdapterVCXProj
+struct ProjectAdapterVCXProj
 {
-public:
 	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
 
 	bool supportsConformanceMode() const;
 
 	std::string getBoolean(const bool inValue) const;
 
+	// General
+	std::string getConfigurationType() const;
+	std::string getUseDebugLibraries() const;
 	std::string getPlatformToolset() const;
+	std::string getWholeProgramOptimization() const;
 	std::string getCharacterSet() const;
 
 	std::string getWarningLevel() const;
 	std::string getPreprocessorDefinitions() const;
 	std::string getLanguageStandardCpp() const;
 	std::string getLanguageStandardC() const;
+	std::string getTreatWarningsAsError() const;
+	std::string getDiagnosticsFormat() const;
+	std::string getDebugInformationFormat() const;
+	std::string getSupportJustMyCode() const;
+	std::string getEnableAddressSanitizer() const;
+
+	std::string getOptimization() const;
+	std::string getInlineFunctionExpansion() const;
+	std::string getIntrinsicFunctions() const;
+	std::string getFavorSizeOrSpeed() const;
+	std::string getWholeProgramOptimizationCompileFlag() const;
+
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 

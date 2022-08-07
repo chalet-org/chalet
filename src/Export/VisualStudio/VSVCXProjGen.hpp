@@ -15,6 +15,7 @@ namespace chalet
 struct CentralState;
 class BuildState;
 struct SourceTarget;
+struct ProjectAdapterVCXProj;
 
 struct VSVCXProjGen
 {

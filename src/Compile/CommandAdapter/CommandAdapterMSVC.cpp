@@ -5,6 +5,9 @@
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -128,6 +131,54 @@ MSVCWarningLevel CommandAdapterMSVC::getWarningLevel() const
 }
 
 /*****************************************************************************/
+std::string CommandAdapterMSVC::getPlatformToolset() const
+{
+	const auto majorVersion = m_state.toolchain.versionMajorMinor();
+	if (majorVersion >= 1700)
+		return "v143"; // VS 2022
+
+	if (majorVersion >= 1600)
+		return "v142"; // VS 2019
+
+	return "v141"; // VS 2017
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsEditAndContinue() const
+{
+	const auto arch = m_state.info.targetArchitecture();
+
+	return m_state.configuration.debugSymbols()
+		&& !m_state.configuration.enableSanitizers()
+		&& !m_state.configuration.enableProfiling()
+		&& (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86);
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsJustMyCodeDebugging() const
+{
+	return m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsAddressSanitizer() const
+{
+	return m_versionMajorMinor >= 1928 && m_state.configuration.sanitizeAddress();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsGenerateIntrinsicFunctions() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsWholeProgramOptimization() const
+{
+	return m_state.configuration.interproceduralOptimization();
+}
+
+/*****************************************************************************/
 std::string CommandAdapterMSVC::getLanguageStandardCpp() const
 {
 	// 2015 Update 3 or later (/std flag doesn't exist prior
@@ -182,6 +233,112 @@ std::string CommandAdapterMSVC::getLanguageStandardC() const
 		}
 	}
 	return std::string();
+}
+
+/*****************************************************************************/
+char CommandAdapterMSVC::getOptimizationLevel() const
+{
+	OptimizationLevel level = m_state.configuration.optimizationLevel();
+
+	if (m_state.configuration.debugSymbols()
+		&& level != OptimizationLevel::Debug
+		&& level != OptimizationLevel::None
+		&& level != OptimizationLevel::CompilerDefault)
+	{
+		// force /Od (anything else would be in error)
+		return 'd';
+	}
+	else
+	{
+		switch (level)
+		{
+			case OptimizationLevel::L1:
+				return '1';
+
+			case OptimizationLevel::L2:
+			case OptimizationLevel::L3:
+				return '2';
+
+			case OptimizationLevel::Size:
+				return 's';
+
+			case OptimizationLevel::Fast:
+				return 't';
+
+			case OptimizationLevel::Debug:
+			case OptimizationLevel::None:
+				return 'd';
+
+			case OptimizationLevel::CompilerDefault:
+			default:
+				break;
+		}
+	}
+
+	return 0;
+}
+
+/*****************************************************************************/
+char CommandAdapterMSVC::getInlineFuncExpansion() const
+{
+	OptimizationLevel level = m_state.configuration.optimizationLevel();
+
+	// inline optimization flags
+	//   /Ob0 - Debug
+	//   /Ob1 - MinSizeRel, RelWithDebInfo
+	//   /Ob2 - Release
+	//   /Ob3 - If available, RelHighOpt, or with "fast"
+
+	if (m_state.configuration.debugSymbols()
+		&& level != OptimizationLevel::Debug
+		&& level != OptimizationLevel::None
+		&& level != OptimizationLevel::CompilerDefault)
+	{
+		// force /Ob0 (anything else would be in error)
+		return '0';
+	}
+	else
+	{
+		switch (level)
+		{
+			case OptimizationLevel::L1:
+				if (m_state.configuration.debugSymbols())
+					return '1';
+				else
+					return '2';
+
+			case OptimizationLevel::L2:
+				if (m_state.configuration.debugSymbols())
+					return '1';
+				else
+					return '2';
+
+			case OptimizationLevel::L3:
+				if (m_versionMajorMinor >= 1920) // VS 2019+
+					return '3';
+				else
+					return '2';
+
+			case OptimizationLevel::Size:
+				return '1';
+
+			case OptimizationLevel::Fast:
+				if (m_versionMajorMinor >= 1920) // VS 2019+
+					return '3';
+				else
+					return '2';
+
+			case OptimizationLevel::Debug:
+			case OptimizationLevel::None:
+				return '0';
+
+			case OptimizationLevel::CompilerDefault:
+			default:
+				break;
+		}
+	}
+
+	return 0;
 }
 
 /*****************************************************************************/

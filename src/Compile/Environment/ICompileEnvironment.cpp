@@ -128,6 +128,20 @@ const std::string& ICompileEnvironment::detectedVersion() const
 }
 
 /*****************************************************************************/
+std::string ICompileEnvironment::getMajorVersion() const
+{
+	std::string ret = m_detectedVersion;
+
+	auto firstDecimal = ret.find('.');
+	if (firstDecimal != std::string::npos)
+	{
+		ret = ret.substr(0, firstDecimal);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool ICompileEnvironment::isCompilerFlagSupported(const std::string& inFlag) const
 {
 	return m_supportedFlags.find(inFlag) != m_supportedFlags.end();

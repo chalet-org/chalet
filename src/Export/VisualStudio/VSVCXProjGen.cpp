@@ -120,16 +120,23 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 		xmlRoot.addElement("PropertyGroup", [&config, &vcxprojAdapter](XmlElement& node) {
 			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
 			node.addAttribute("Label", "Configuration");
-			node.addElementWithText("ConfigurationType", "Application");
-			node.addElementWithText("UseDebugLibraries", vcxprojAdapter.getBoolean(config.debugSymbols()));
-			node.addElementWithText("PlatformToolset", vcxprojAdapter.getPlatformToolset());
 
-			if (config.interproceduralOptimization())
-			{
-				node.addElementWithText("WholeProgramOptimization", vcxprojAdapter.getBoolean(true));
-			}
+			// General Tab
+			node.addElementWithTextIfNotEmpty("ConfigurationType", vcxprojAdapter.getConfigurationType());
+			node.addElementWithTextIfNotEmpty("UseDebugLibraries", vcxprojAdapter.getUseDebugLibraries());
+			node.addElementWithTextIfNotEmpty("PlatformToolset", vcxprojAdapter.getPlatformToolset());
 
+			// Advanced Tab
+			node.addElementWithTextIfNotEmpty("WholeProgramOptimization", vcxprojAdapter.getWholeProgramOptimization());
 			node.addElementWithTextIfNotEmpty("CharacterSet", vcxprojAdapter.getCharacterSet());
+			// VCToolsVersion - ex, 14.30.30705, 14.32.31326 (get from directory? env?)
+			// PreferredToolArchitecture - x86/x64/arm64 (get from toolchain)
+			// EnableUnitySupport - true/false // Unity build
+			// CLRSupport - NetCore // ..others
+			// UseOfMfc - Dynamic
+
+			// C/C++ Settings
+			node.addElementWithTextIfNotEmpty("EnableASAN", vcxprojAdapter.getEnableAddressSanitizer());
 		});
 	}
 
@@ -179,6 +186,14 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 			{
 				node.addElementWithText("LinkIncremental", vcxprojAdapter.getBoolean(true));
 			}
+
+			// Advanced Tab
+			// CopyLocalDeploymentContent - true/false
+			// CopyLocalProjectReference - true/false
+			// CopyLocalDebugSymbols - true/false
+			// CopyCppRuntimeToOutputDir - true/false
+			// EnableManagedIncrementalBuild - true/false
+			// ManagedAssembly - true/false
 		});
 	}
 
@@ -212,6 +227,20 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				}
 				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardCpp());
+
+				// C/C++ Settings
+				node2.addElementWithTextIfNotEmpty("TreatWarningsAsError", vcxprojAdapter.getTreatWarningsAsError());
+				node2.addElementWithTextIfNotEmpty("DiagnosticsFormat", vcxprojAdapter.getDiagnosticsFormat());
+				node2.addElementWithTextIfNotEmpty("DebugInformationFormat", vcxprojAdapter.getDebugInformationFormat());
+				node2.addElementWithTextIfNotEmpty("SupportJustMyCode", vcxprojAdapter.getSupportJustMyCode());
+				// MultiProcessorCompilation - true/false - /MP (Not used currentlY)
+				node2.addElementWithTextIfNotEmpty("Optimization", vcxprojAdapter.getOptimization());
+				node2.addElementWithTextIfNotEmpty("InlineFunctionExpansion", vcxprojAdapter.getInlineFunctionExpansion());
+				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
+				node2.addElementWithTextIfNotEmpty("FavorSizeOrSpeed", vcxprojAdapter.getFavorSizeOrSpeed());
+				// OmitFramePointers - true (Oy) / false (Oy-)
+				node2.addElementWithTextIfNotEmpty("WholeProgramOptimization", vcxprojAdapter.getWholeProgramOptimizationCompileFlag());
+				// EnableFiberSafeOptimizations - true/false (/GT)
 			});
 
 			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {

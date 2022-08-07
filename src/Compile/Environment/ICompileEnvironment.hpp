@@ -39,6 +39,7 @@ struct ICompileEnvironment
 	bool isClangOrMsvc() const noexcept;
 
 	const std::string& detectedVersion() const;
+	std::string getMajorVersion() const;
 	bool isCompilerFlagSupported(const std::string& inFlag) const;
 
 	bool ouptuttedDescription() const noexcept;

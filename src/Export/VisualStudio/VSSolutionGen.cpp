@@ -66,14 +66,7 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 	auto solutionGUID = Uuid::v5(fmt::format("{}_SOLUTION", workspaceName), m_projectTypeGuid).toUpperCase();
 
-	std::string visualStudioVersionMajor = visualStudioVersion;
-	{
-		auto firstDecimal = visualStudioVersionMajor.find('.');
-		if (firstDecimal != std::string::npos)
-		{
-			visualStudioVersionMajor = visualStudioVersionMajor.substr(0, firstDecimal);
-		}
-	}
+	const auto visualStudioVersionMajor = firstState.environment->getMajorVersion();
 
 	std::string vsConfigString;
 	std::string vsProjectsString;
