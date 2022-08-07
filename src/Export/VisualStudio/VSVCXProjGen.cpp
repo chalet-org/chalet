@@ -68,18 +68,6 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 	xmlRoot.addAttribute("DefaultTargets", "Build");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
-	const SourceTarget* project = nullptr;
-	for (auto& state : m_states)
-	{
-		for (auto& target : state->targets)
-		{
-			if (target->isSources() && String::equals(target->name(), inProject.name()))
-			{
-				project = static_cast<const SourceTarget*>(target.get());
-			}
-		}
-	}
-
 	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
 		for (auto& state : m_states)
@@ -124,6 +112,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 	for (auto& state : m_states)
 	{
+		const auto project = getProjectFromStateContext(*state, inProject.name());
 		const auto& config = state->configuration;
 		const auto& name = config.name();
 		xmlRoot.addElement("PropertyGroup", [this, &name, &config, project](XmlElement& node) {
@@ -193,57 +182,56 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 	for (auto& state : m_states)
 	{
+		const auto project = getProjectFromStateContext(*state, inProject.name());
 		const auto& config = state->configuration;
 
-		if (project != nullptr)
-		{
-			ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
+		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
 
-			xmlRoot.addElement("ItemDefinitionGroup", [project, &config, &vcxprojAdapter](XmlElement& node) {
-				const auto& name = config.name();
-				node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
-				node.addElement("ClCompile", [project, &config, &vcxprojAdapter](XmlElement& node2) {
-					bool debugSymbols = config.debugSymbols();
-					auto warningLevel = vcxprojAdapter.getWarningLevel();
-					if (!warningLevel.empty())
-					{
-						node2.addElementWithText("WarningLevel", warningLevel);
-					}
-					if (!debugSymbols)
-					{
-						node2.addElementWithText("FunctionLevelLinking", "true");
-						node2.addElementWithText("IntrinsicFunctions", "true");
-					}
-					node2.addElementWithText("SDLCheck", "true");
-					{
-						auto defines = String::join(project->defines(), ';');
-						if (!defines.empty())
-							defines += ';';
+		xmlRoot.addElement("ItemDefinitionGroup", [project, &config, &vcxprojAdapter](XmlElement& node) {
+			const auto& name = config.name();
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+			node.addElement("ClCompile", [project, &config, &vcxprojAdapter](XmlElement& node2) {
+				bool debugSymbols = config.debugSymbols();
+				auto warningLevel = vcxprojAdapter.getWarningLevel();
+				if (!warningLevel.empty())
+				{
+					node2.addElementWithText("WarningLevel", warningLevel);
+				}
+				if (!debugSymbols)
+				{
+					node2.addElementWithText("FunctionLevelLinking", "true");
+					node2.addElementWithText("IntrinsicFunctions", "true");
+				}
+				node2.addElementWithText("SDLCheck", "true");
+				{
+					auto defines = String::join(project->defines(), ';');
+					if (!defines.empty())
+						defines += ';';
 
-						node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", defines));
-					}
-					if (vcxprojAdapter.isAtLeastVS2017())
-					{
-						node2.addElementWithText("ConformanceMode", "true");
-					}
-				});
-
-				node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
-					node2.addElementWithText("SubSystem", vcxprojAdapter.getSubSystem());
-					if (!config.debugSymbols())
-					{
-						node2.addElementWithText("EnableCOMDATFolding", "true");
-						node2.addElementWithText("OptimizeReferences", "true");
-					}
-					node2.addElementWithText("GenerateDebugInformation", "true");
-				});
+					node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", defines));
+				}
+				if (vcxprojAdapter.isAtLeastVS2017())
+				{
+					node2.addElementWithText("ConformanceMode", "true");
+				}
 			});
-		}
+
+			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
+				node2.addElementWithText("SubSystem", vcxprojAdapter.getSubSystem());
+				if (!config.debugSymbols())
+				{
+					node2.addElementWithText("EnableCOMDATFolding", "true");
+					node2.addElementWithText("OptimizeReferences", "true");
+				}
+				node2.addElementWithText("GenerateDebugInformation", "true");
+			});
+		});
 	}
 
 	auto headerFiles = inProject.getHeaderFiles();
-	if (!inProject.precompiledHeader().empty())
-		headerFiles.push_back(inProject.precompiledHeader());
+	const auto& pch = inProject.precompiledHeader();
+	if (!pch.empty())
+		headerFiles.push_back(pch);
 
 	if (!headerFiles.empty())
 	{
@@ -268,15 +256,16 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 			});
 		});
 	}
+
 	// Resource files
-	/*xmlRoot.addElement("ItemGroup", [&inProject](XmlElement& node) {
-		node.addElement("ResourceCompile", [&inProject](XmlElement& node2) {
+	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
+		node.addElement("ResourceCompile", [](XmlElement& node2) {
 			node2.addAttribute("Include", file);
 		});
 	});*/
 	// Ico files
-	/*xmlRoot.addElement("ItemGroup", [&inProject](XmlElement& node) {
-		node.addElement("Image", [&inProject](XmlElement& node2) {
+	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
+		node.addElement("Image", [](XmlElement& node2) {
 			node2.addAttribute("Include", file);
 		});
 	});*/
@@ -343,6 +332,22 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 	xmlRoot.addElement("PropertyGroup");
 
 	return xmlFile.save();
+}
+
+/*****************************************************************************/
+const SourceTarget* VSVCXProjGen::getProjectFromStateContext(const BuildState& inState, const std::string& inName) const
+{
+	const SourceTarget* ret = nullptr;
+	for (auto& target : inState.targets)
+	{
+		if (target->isSources() && String::equals(target->name(), inName))
+		{
+			ret = static_cast<const SourceTarget*>(target.get());
+		}
+	}
+
+	chalet_assert(ret != nullptr, "project name not found");
+	return ret;
 }
 
 /*****************************************************************************/
