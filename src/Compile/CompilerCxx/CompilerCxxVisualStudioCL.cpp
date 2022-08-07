@@ -22,7 +22,8 @@ namespace chalet
 {
 /*****************************************************************************/
 CompilerCxxVisualStudioCL::CompilerCxxVisualStudioCL(const BuildState& inState, const SourceTarget& inProject) :
-	ICompilerCxx(inState, inProject)
+	ICompilerCxx(inState, inProject),
+	m_msvcAdapter(inState, inProject)
 {
 }
 
@@ -70,7 +71,7 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::configureWarnings()
 {
-	auto level = m_project.getMSVCWarningLevel();
+	auto level = m_msvcAdapter.getWarningLevel();
 	switch (level)
 	{
 		case MSVCWarningLevel::Level1:

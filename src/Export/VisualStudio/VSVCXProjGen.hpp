@@ -24,16 +24,10 @@ struct VSVCXProjGen
 
 private:
 	bool saveProjectFile(const BuildState& inState, const SourceTarget& inProject, const std::string& inFilename);
-	bool saveFiltersFile(const BuildState& inState, const std::string& inFilename);
+	bool saveFiltersFile(const BuildState& inState, const SourceTarget& inProject, const std::string& inFilename);
 	bool saveUserFile(const std::string& inFilename);
 
-	std::string getWarningLevel(const MSVCWarningLevel inLevel) const;
-	std::string getMsvcCompatibleSubSystem(const SourceTarget& inProject) const;
 	std::string getBooleanValue(const bool inValue) const;
-
-	StringList getSourceExtensions(const BuildState& inState) const;
-	StringList getHeaderExtensions() const;
-	StringList getResourceExtensions() const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
