@@ -18,7 +18,12 @@ class ProjectAdapterVCXProj
 public:
 	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
 
-	bool isAtLeastVS2017() const;
+	bool supportsConformanceMode() const;
+
+	std::string getBoolean(const bool inValue) const;
+
+	std::string getPlatformToolset() const;
+	std::string getCharacterSet() const;
 
 	std::string getWarningLevel() const;
 	std::string getSubSystem() const;

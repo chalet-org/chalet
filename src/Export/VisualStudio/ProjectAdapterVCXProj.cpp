@@ -25,9 +25,35 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 }
 
 /*****************************************************************************/
-bool ProjectAdapterVCXProj::isAtLeastVS2017() const
+bool ProjectAdapterVCXProj::supportsConformanceMode() const
 {
 	return m_versionMajorMinor >= 1910;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getBoolean(const bool inValue) const
+{
+	return std::string(inValue ? "true" : "false");
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getPlatformToolset() const
+{
+	// TODO: Need a nice way to get this
+	return "v143";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getCharacterSet() const
+{
+	const auto& executionCharset = m_project.executionCharset();
+	if (String::equals({ "UTF-8", "utf-8" }, executionCharset))
+	{
+		return "Unicode";
+	}
+
+	// TODO: More conversions
+	return std::string();
 }
 
 /*****************************************************************************/
