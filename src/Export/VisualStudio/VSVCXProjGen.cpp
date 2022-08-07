@@ -114,22 +114,25 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 	{
 		const auto project = getProjectFromStateContext(*state, inProject.name());
 		const auto& config = state->configuration;
-		const auto& name = config.name();
-		xmlRoot.addElement("PropertyGroup", [this, &name, &config, project](XmlElement& node) {
-			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+
+		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
+
+		xmlRoot.addElement("PropertyGroup", [&config, &vcxprojAdapter](XmlElement& node) {
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
 			node.addAttribute("Label", "Configuration");
 			node.addElementWithText("ConfigurationType", "Application");
-			node.addElementWithText("UseDebugLibraries", getBooleanValue(config.debugSymbols()));
-			node.addElementWithText("PlatformToolset", "v143");
+			node.addElementWithText("UseDebugLibraries", vcxprojAdapter.getBoolean(config.debugSymbols()));
+			node.addElementWithText("PlatformToolset", vcxprojAdapter.getPlatformToolset());
 
 			if (config.interproceduralOptimization())
 			{
-				node.addElementWithText("WholeProgramOptimization", getBooleanValue(true));
+				node.addElementWithText("WholeProgramOptimization", vcxprojAdapter.getBoolean(true));
 			}
 
-			if (String::equals({ "UTF-8", "utf-8" }, project->executionCharset()))
+			auto charset = vcxprojAdapter.getCharacterSet();
+			if (!charset.empty())
 			{
-				node.addElementWithText("CharacterSet", "Unicode");
+				node.addElementWithText("CharacterSet", charset);
 			}
 		});
 	}
@@ -168,14 +171,17 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 	for (auto& state : m_states)
 	{
+		const auto project = getProjectFromStateContext(*state, inProject.name());
 		const auto& config = state->configuration;
-		const auto& name = config.name();
-		xmlRoot.addElement("PropertyGroup", [this, &name, &config](XmlElement& node) {
-			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
+
+		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
+
+		xmlRoot.addElement("PropertyGroup", [&vcxprojAdapter, &config](XmlElement& node) {
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
 
 			if (config.debugSymbols() && !config.enableSanitizers() && !config.enableProfiling())
 			{
-				node.addElementWithText("LinkIncremental", getBooleanValue(true));
+				node.addElementWithText("LinkIncremental", vcxprojAdapter.getBoolean(true));
 			}
 		});
 	}
@@ -192,6 +198,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
 			node.addElement("ClCompile", [project, &config, &vcxprojAdapter](XmlElement& node2) {
 				bool debugSymbols = config.debugSymbols();
+				auto trueStr = vcxprojAdapter.getBoolean(true);
 				auto warningLevel = vcxprojAdapter.getWarningLevel();
 				if (!warningLevel.empty())
 				{
@@ -199,10 +206,10 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				}
 				if (!debugSymbols)
 				{
-					node2.addElementWithText("FunctionLevelLinking", "true");
-					node2.addElementWithText("IntrinsicFunctions", "true");
+					node2.addElementWithText("FunctionLevelLinking", trueStr);
+					node2.addElementWithText("IntrinsicFunctions", trueStr);
 				}
-				node2.addElementWithText("SDLCheck", "true");
+				node2.addElementWithText("SDLCheck", trueStr);
 				{
 					auto defines = String::join(project->defines(), ';');
 					if (!defines.empty())
@@ -210,20 +217,21 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 					node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", defines));
 				}
-				if (vcxprojAdapter.isAtLeastVS2017())
+				if (vcxprojAdapter.supportsConformanceMode())
 				{
-					node2.addElementWithText("ConformanceMode", "true");
+					node2.addElementWithText("ConformanceMode", trueStr);
 				}
 			});
 
 			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
+				auto trueStr = vcxprojAdapter.getBoolean(true);
 				node2.addElementWithText("SubSystem", vcxprojAdapter.getSubSystem());
 				if (!config.debugSymbols())
 				{
-					node2.addElementWithText("EnableCOMDATFolding", "true");
-					node2.addElementWithText("OptimizeReferences", "true");
+					node2.addElementWithText("EnableCOMDATFolding", trueStr);
+					node2.addElementWithText("OptimizeReferences", trueStr);
 				}
-				node2.addElementWithText("GenerateDebugInformation", "true");
+				node2.addElementWithText("GenerateDebugInformation", trueStr);
 			});
 		});
 	}
@@ -348,12 +356,6 @@ const SourceTarget* VSVCXProjGen::getProjectFromStateContext(const BuildState& i
 
 	chalet_assert(ret != nullptr, "project name not found");
 	return ret;
-}
-
-/*****************************************************************************/
-std::string VSVCXProjGen::getBooleanValue(const bool inValue) const
-{
-	return std::string(inValue ? "true" : "false");
 }
 
 }
