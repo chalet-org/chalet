@@ -20,6 +20,8 @@ public:
 
 	MSVCWarningLevel getWarningLevel() const;
 
+	std::string getLanguageStandardCpp() const;
+	std::string getLanguageStandardC() const;
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 

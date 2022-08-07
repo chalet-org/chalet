@@ -34,6 +34,7 @@ public:
 	bool hasChild() const;
 	bool setText(std::string_view inValue);
 	bool addElementWithText(std::string_view inName, std::string_view inValue);
+	bool addElementWithTextIfNotEmpty(std::string_view inName, std::string inValue);
 	bool addElement(std::string_view inName, std::function<void(XmlElement&)> onMakeNode = nullptr);
 	bool clearChildElements();
 

@@ -26,6 +26,9 @@ public:
 	std::string getCharacterSet() const;
 
 	std::string getWarningLevel() const;
+	std::string getPreprocessorDefinitions() const;
+	std::string getLanguageStandardCpp() const;
+	std::string getLanguageStandardC() const;
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 

@@ -569,66 +569,22 @@ void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, cons
 	// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=msvc-160
 	// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 
+	std::string standard;
+
 	if (specialization == CxxSpecialization::C)
 	{
 		List::addIfDoesNotExist(outArgList, "/TC"); // Treat code as C
-
-		// C standards conformance was added in 2019 16.8
-		if (m_versionMajorMinor >= 1928)
-		{
-			std::string langStandard = String::toLowerCase(m_project.cStandard());
-			String::replaceAll(langStandard, "gnu", "");
-			String::replaceAll(langStandard, "c", "");
-			if (String::equals(StringList{ "2x", "18", "17", "iso9899:2018", "iso9899:2017" }, langStandard))
-			{
-				List::addIfDoesNotExist(outArgList, "/std:c17");
-			}
-			else
-			{
-				List::addIfDoesNotExist(outArgList, "/std:c11");
-			}
-		}
+		standard = m_msvcAdapter.getLanguageStandardC();
 	}
 	else if (specialization == CxxSpecialization::CPlusPlus)
 	{
 		List::addIfDoesNotExist(outArgList, "/TP"); // Treat code as C++
+		standard = m_msvcAdapter.getLanguageStandardCpp();
+	}
 
-		// 2015 Update 3 or later (/std flag doesn't exist prior
-		if (m_versionMajorMinor > 1900 || (m_versionMajorMinor == 1900 && m_versionPatch >= 24210))
-		{
-			bool set = false;
-			std::string langStandard = String::toLowerCase(m_project.cppStandard());
-			String::replaceAll(langStandard, "gnu++", "");
-			String::replaceAll(langStandard, "c++", "");
-
-			if (String::equals(StringList{ "20", "2a" }, langStandard))
-			{
-				if (m_versionMajorMinor >= 1929)
-				{
-					List::addIfDoesNotExist(outArgList, "/std:c++20");
-					set = true;
-				}
-			}
-			else if (String::equals(StringList{ "17", "1z" }, langStandard))
-			{
-				if (m_versionMajorMinor >= 1911)
-				{
-					List::addIfDoesNotExist(outArgList, "/std:c++17");
-					set = true;
-				}
-			}
-			else if (String::equals(StringList{ "14", "1y", "11", "0x", "03", "98" }, langStandard))
-			{
-				// Note: There was never "/std:c++11", "/std:c++03" or "/std:c++98"
-				List::addIfDoesNotExist(outArgList, "/std:c++14");
-				set = true;
-			}
-
-			if (!set)
-			{
-				List::addIfDoesNotExist(outArgList, "/std:c++latest");
-			}
-		}
+	if (!standard.empty())
+	{
+		List::addIfDoesNotExist(outArgList, fmt::format("/std:{}", standard));
 	}
 }
 
