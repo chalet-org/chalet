@@ -240,6 +240,9 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 	}
 
 	auto headerFiles = inProject.getHeaderFiles();
+	if (!inProject.precompiledHeader().empty())
+		headerFiles.push_back(inProject.precompiledHeader());
+
 	if (!headerFiles.empty())
 	{
 		xmlRoot.addElement("ItemGroup", [this, &headerFiles](XmlElement& node) {
