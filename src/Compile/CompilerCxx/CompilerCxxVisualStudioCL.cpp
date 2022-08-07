@@ -162,7 +162,6 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 		// addFullPathSourceCode(ret);
 	}
 
-	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
 	addSanitizerOptions(ret);
@@ -237,7 +236,6 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 		// addFullPathSourceCode(ret);
 	}
 
-	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
 	addSanitizerOptions(ret);
@@ -345,7 +343,6 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 		// addFullPathSourceCode(ret);
 	}
 
-	// addInlineFunctionExpansion(ret);
 	// addUnsortedOptions(ret);
 
 	addSanitizerOptions(ret);
@@ -401,7 +398,6 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 		// addFullPathSourceCode(outArgList);
 	}
 
-	// addInlineFunctionExpansion(outArgList);
 	// addUnsortedOptions(outArgList);
 
 	addSanitizerOptions(outArgList);
@@ -483,84 +479,13 @@ void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 {
-	std::string opt;
-	std::string inlineOpt;
+	char opt = m_msvcAdapter.getOptimizationLevel();
+	if (opt > 0)
+		List::addIfDoesNotExist(outArgList, fmt::format("/O{}", opt));
 
-	OptimizationLevel level = m_state.configuration.optimizationLevel();
-
-	// inline optimization flags
-	//   /Ob0 - Debug
-	//   /Ob1 - MinSizeRel, RelWithDebInfo
-	//   /Ob2 - Release
-	//   /Ob3 - If available, RelHighOpt, or with "fast"
-
-	if (m_state.configuration.debugSymbols()
-		&& level != OptimizationLevel::Debug
-		&& level != OptimizationLevel::None
-		&& level != OptimizationLevel::CompilerDefault)
-	{
-		// force -O0 (anything else would be in error)
-		opt = "/Od";
-		inlineOpt = "/Ob0";
-	}
-	else
-	{
-		switch (level)
-		{
-			case OptimizationLevel::L1:
-				opt = "/O1";
-				if (m_state.configuration.debugSymbols())
-					inlineOpt = "/Ob1";
-				else
-					inlineOpt = "/Ob2";
-				break;
-
-			case OptimizationLevel::L2:
-				opt = "/O2";
-				if (m_state.configuration.debugSymbols())
-					inlineOpt = "/Ob1";
-				else
-					inlineOpt = "/Ob2";
-				break;
-
-			case OptimizationLevel::L3:
-				opt = "/O2";
-				if (m_versionMajorMinor >= 1920) // VS 2019+
-					inlineOpt = "/Ob3";
-				else
-					inlineOpt = "/Ob2";
-				break;
-
-			case OptimizationLevel::Size:
-				opt = "/Os";
-				inlineOpt = "/Ob1";
-				break;
-
-			case OptimizationLevel::Fast:
-				opt = "/Ot";
-				if (m_versionMajorMinor >= 1920) // VS 2019+
-					inlineOpt = "/Ob3";
-				else
-					inlineOpt = "/Ob2";
-				break;
-
-			case OptimizationLevel::Debug:
-			case OptimizationLevel::None:
-				opt = "/Od";
-				inlineOpt = "/Ob0";
-				break;
-
-			case OptimizationLevel::CompilerDefault:
-			default:
-				break;
-		}
-	}
-
-	if (!opt.empty())
-	{
-		List::addIfDoesNotExist(outArgList, std::move(opt));
-		List::addIfDoesNotExist(outArgList, std::move(inlineOpt));
-	}
+	char inlineOpt = m_msvcAdapter.getInlineFuncExpansion();
+	if (inlineOpt > 0)
+		List::addIfDoesNotExist(outArgList, fmt::format("/Ob{}", inlineOpt));
 }
 
 /*****************************************************************************/
@@ -675,7 +600,7 @@ void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgLi
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addSanitizerOptions(StringList& outArgList) const
 {
-	if (m_versionMajorMinor >= 1928 && m_state.configuration.sanitizeAddress())
+	if (m_msvcAdapter.supportsAddressSanitizer())
 	{
 		List::addIfDoesNotExist(outArgList, "/fsanitize=address");
 	}
@@ -695,7 +620,7 @@ void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgLi
 
 	// Required by LINK's Link-time code generation (/LTCG)
 	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
-	if (m_state.configuration.interproceduralOptimization())
+	if (m_msvcAdapter.supportsWholeProgramOptimization())
 	{
 		outArgList.emplace_back("/GL");
 	}
@@ -704,7 +629,7 @@ void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgLi
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addNativeJustMyCodeDebugging(StringList& outArgList) const
 {
-	if (m_state.configuration.debugSymbols())
+	if (m_msvcAdapter.supportsJustMyCodeDebugging())
 	{
 		List::addIfDoesNotExist(outArgList, "/JMC");
 	}
@@ -762,11 +687,7 @@ void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgLis
 		/Zi - separate pdb
 	*/
 
-	const auto arch = m_state.info.targetArchitecture();
-	if (m_state.configuration.debugSymbols()
-		&& !m_state.configuration.enableSanitizers()
-		&& !m_state.configuration.enableProfiling()
-		&& (arch == Arch::Cpu::X64 || arch == Arch::Cpu::X86))
+	if (m_msvcAdapter.supportsEditAndContinue())
 	{
 		List::addIfDoesNotExist(outArgList, "/ZI");
 	}
@@ -824,16 +745,6 @@ void CompilerCxxVisualStudioCL::addRuntimeErrorChecks(StringList& outArgList) co
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addInlineFunctionExpansion(StringList& outArgList) const
-{
-	if (m_state.configuration.debugSymbols())
-	{
-		// disable inline expansion
-		List::addIfDoesNotExist(outArgList, "/Ob0");
-	}
-}
-
-/*****************************************************************************/
 void CompilerCxxVisualStudioCL::addFunctionLevelLinking(StringList& outArgList) const
 {
 	if (!m_state.configuration.debugSymbols())
@@ -846,7 +757,7 @@ void CompilerCxxVisualStudioCL::addFunctionLevelLinking(StringList& outArgList) 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addGenerateIntrinsicFunctions(StringList& outArgList) const
 {
-	if (!m_state.configuration.debugSymbols())
+	if (m_msvcAdapter.supportsGenerateIntrinsicFunctions())
 	{
 		// generate intrinsic functions
 		List::addIfDoesNotExist(outArgList, "/Oi");

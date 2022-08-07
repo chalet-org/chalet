@@ -58,7 +58,6 @@ protected:
 	virtual void addProgramDatabaseOutput(StringList& outArgList) const;
 	virtual void addExternalWarnings(StringList& outArgList) const;
 	virtual void addRuntimeErrorChecks(StringList& outArgList) const;
-	virtual void addInlineFunctionExpansion(StringList& outArgList) const;
 	virtual void addFunctionLevelLinking(StringList& outArgList) const;
 	virtual void addGenerateIntrinsicFunctions(StringList& outArgList) const;
 

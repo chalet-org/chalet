@@ -13,15 +13,25 @@ namespace chalet
 class BuildState;
 struct SourceTarget;
 
-class CommandAdapterMSVC
+struct CommandAdapterMSVC
 {
-public:
 	CommandAdapterMSVC(const BuildState& inState, const SourceTarget& inProject);
 
 	MSVCWarningLevel getWarningLevel() const;
 
+	bool supportsEditAndContinue() const;
+	bool supportsJustMyCodeDebugging() const;
+	bool supportsAddressSanitizer() const;
+	bool supportsGenerateIntrinsicFunctions() const;
+	bool supportsWholeProgramOptimization() const;
+
+	std::string getPlatformToolset() const;
+
 	std::string getLanguageStandardCpp() const;
 	std::string getLanguageStandardC() const;
+	char getOptimizationLevel() const;
+	char getInlineFuncExpansion() const;
+
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 
