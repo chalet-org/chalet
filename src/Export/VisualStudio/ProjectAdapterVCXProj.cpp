@@ -80,6 +80,37 @@ std::string ProjectAdapterVCXProj::getWarningLevel() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getPreprocessorDefinitions() const
+{
+	auto defines = String::join(m_project.defines(), ';');
+	if (!defines.empty())
+		defines += ';';
+
+	return defines;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLanguageStandardCpp() const
+{
+	auto standard = m_msvcAdapter.getLanguageStandardCpp();
+	if (standard.empty())
+		return standard;
+
+	String::replaceAll(standard, '+', 'p');
+	return fmt::format("std{}", standard);
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLanguageStandardC() const
+{
+	auto standard = m_msvcAdapter.getLanguageStandardCpp();
+	if (standard.empty())
+		return standard;
+
+	return fmt::format("std{}", standard);
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getSubSystem() const
 {
 	const WindowsSubSystem subSystem = m_project.windowsSubSystem();

@@ -161,6 +161,15 @@ bool XmlElement::addElementWithText(std::string_view inName, std::string_view in
 }
 
 /*****************************************************************************/
+bool XmlElement::addElementWithTextIfNotEmpty(std::string_view inName, std::string inValue)
+{
+	if (!inValue.empty())
+		return false;
+
+	return addElementWithText(inName, inValue);
+}
+
+/*****************************************************************************/
 bool XmlElement::addElement(std::string_view inName, std::function<void(XmlElement&)> onMakeNode)
 {
 	allocateChild();

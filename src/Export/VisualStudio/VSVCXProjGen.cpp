@@ -129,11 +129,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				node.addElementWithText("WholeProgramOptimization", vcxprojAdapter.getBoolean(true));
 			}
 
-			auto charset = vcxprojAdapter.getCharacterSet();
-			if (!charset.empty())
-			{
-				node.addElementWithText("CharacterSet", charset);
-			}
+			node.addElementWithTextIfNotEmpty("CharacterSet", vcxprojAdapter.getCharacterSet());
 		});
 	}
 
@@ -193,39 +189,34 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
 
-		xmlRoot.addElement("ItemDefinitionGroup", [project, &config, &vcxprojAdapter](XmlElement& node) {
+		xmlRoot.addElement("ItemDefinitionGroup", [&config, &vcxprojAdapter](XmlElement& node) {
 			const auto& name = config.name();
 			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
-			node.addElement("ClCompile", [project, &config, &vcxprojAdapter](XmlElement& node2) {
+			node.addElement("ClCompile", [&config, &vcxprojAdapter](XmlElement& node2) {
 				bool debugSymbols = config.debugSymbols();
 				auto trueStr = vcxprojAdapter.getBoolean(true);
-				auto warningLevel = vcxprojAdapter.getWarningLevel();
-				if (!warningLevel.empty())
-				{
-					node2.addElementWithText("WarningLevel", warningLevel);
-				}
+
+				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
 				if (!debugSymbols)
 				{
 					node2.addElementWithText("FunctionLevelLinking", trueStr);
 					node2.addElementWithText("IntrinsicFunctions", trueStr);
 				}
-				node2.addElementWithText("SDLCheck", trueStr);
-				{
-					auto defines = String::join(project->defines(), ';');
-					if (!defines.empty())
-						defines += ';';
 
-					node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", defines));
-				}
+				node2.addElementWithText("SDLCheck", trueStr);
+				node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", vcxprojAdapter.getPreprocessorDefinitions()));
+
 				if (vcxprojAdapter.supportsConformanceMode())
 				{
 					node2.addElementWithText("ConformanceMode", trueStr);
 				}
+				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
+				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardCpp());
 			});
 
 			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
 				auto trueStr = vcxprojAdapter.getBoolean(true);
-				node2.addElementWithText("SubSystem", vcxprojAdapter.getSubSystem());
+				node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
 				if (!config.debugSymbols())
 				{
 					node2.addElementWithText("EnableCOMDATFolding", trueStr);
