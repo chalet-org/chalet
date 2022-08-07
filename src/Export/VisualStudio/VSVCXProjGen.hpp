@@ -27,6 +27,7 @@ private:
 	bool saveFiltersFile(const BuildState& inState, const SourceTarget& inProject, const std::string& inFilename);
 	bool saveUserFile(const std::string& inFilename);
 
+	const SourceTarget* getProjectFromStateContext(const BuildState& inState, const std::string& inName) const;
 	std::string getBooleanValue(const bool inValue) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
