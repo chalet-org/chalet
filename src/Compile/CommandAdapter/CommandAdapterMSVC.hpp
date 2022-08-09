@@ -51,7 +51,7 @@ struct CommandAdapterMSVC
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 
-	StringList getAdditionalOptions() const;
+	StringList getAdditionalOptions(const bool inCharsetFlags = false) const;
 
 private:
 	const BuildState& m_state;
