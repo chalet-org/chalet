@@ -146,10 +146,14 @@ std::string ProjectAdapterVCXProj::getWarningLevel() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPreprocessorDefinitions() const
 {
-	auto list = m_project.defines();
-
+	StringList list;
 	if (!m_msvcAdapter.supportsExceptions())
 		list.emplace_back("_HAS_EXCEPTIONS=0");
+
+	for (auto& define : m_project.defines())
+	{
+		list.emplace_back(define);
+	}
 
 	auto ret = String::join(list, ';');
 	if (!ret.empty())
@@ -407,7 +411,8 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 {
-	auto ret = String::join(m_msvcAdapter.getAdditionalOptions(), ' ');
+	StringList options = List::combine(m_project.compileOptions(), m_msvcAdapter.getAdditionalOptions(true));
+	auto ret = String::join(options, ' ');
 	if (!ret.empty())
 		ret += ' ';
 

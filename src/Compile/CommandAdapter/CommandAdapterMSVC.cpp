@@ -511,10 +511,18 @@ std::string CommandAdapterMSVC::getEntryPoint() const
 }
 
 /*****************************************************************************/
-StringList CommandAdapterMSVC::getAdditionalOptions() const
+StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) const
 {
-	return {
-		"/FS", // Force Separate Program Database Writes
-	};
+	StringList ret;
+
+	if (inCharsetFlags)
+	{
+		ret.emplace_back(fmt::format("/source-charset:{}", m_project.inputCharset()));
+		ret.emplace_back(fmt::format("/execution-charset:{}", m_project.executionCharset()));
+		ret.emplace_back("/validate-charset");
+	}
+	ret.emplace_back("/FS"); // Force Separate Program Database Writes
+
+	return ret;
 }
 }
