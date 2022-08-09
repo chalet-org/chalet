@@ -138,7 +138,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	{
 		addSeparateProgramDatabase(ret);
-		addForceSeparateProgramDatabaseWrites(ret);
+		addAdditionalOptions(ret);
 		addNativeJustMyCodeDebugging(ret);
 		addWarnings(ret);
 		addDiagnostics(ret);
@@ -212,7 +212,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	{
 		addSeparateProgramDatabase(ret);
-		addForceSeparateProgramDatabaseWrites(ret);
+		addAdditionalOptions(ret);
 		addNativeJustMyCodeDebugging(ret);
 		addWarnings(ret);
 		addDiagnostics(ret);
@@ -319,7 +319,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 
 	{
 		addSeparateProgramDatabase(ret);
-		addForceSeparateProgramDatabaseWrites(ret);
+		addAdditionalOptions(ret);
 		addNativeJustMyCodeDebugging(ret);
 		addWarnings(ret);
 		addDiagnostics(ret);
@@ -372,7 +372,7 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 
 	{
 		addSeparateProgramDatabase(outArgList);
-		addForceSeparateProgramDatabaseWrites(outArgList);
+		addAdditionalOptions(outArgList);
 		addNativeJustMyCodeDebugging(outArgList);
 		addWarnings(outArgList);
 		addDiagnostics(outArgList);
@@ -534,10 +534,8 @@ void CompilerCxxVisualStudioCL::addCharsets(StringList& outArgList) const
 void CompilerCxxVisualStudioCL::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
 	// must also disable rtti for no exceptions
-	if (!m_project.runtimeTypeInformation() || !m_project.exceptions())
-	{
+	if (m_msvcAdapter.disableRunTimeTypeInformation())
 		List::addIfDoesNotExist(outArgList, "/GR-");
-	}
 }
 
 /*****************************************************************************/
@@ -547,27 +545,19 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 	// s - standard C++ stack unwinding
 	// c - functions declared as extern "C" never throw
 
-	if (!m_project.exceptions())
-	{
-		List::addIfDoesNotExist(outArgList, "/D_HAS_EXCEPTIONS=0");
-	}
-	else
-	{
+	if (m_msvcAdapter.supportsExceptions())
 		List::addIfDoesNotExist(outArgList, "/EHsc");
-	}
+	else
+		List::addIfDoesNotExist(outArgList, "/D_HAS_EXCEPTIONS=0");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addFastMathOption(StringList& outArgList) const
 {
-	if (m_project.fastMath())
-	{
+	if (m_msvcAdapter.supportsFastMath())
 		List::addIfDoesNotExist(outArgList, "/fp:fast");
-	}
 	else
-	{
 		List::addIfDoesNotExist(outArgList, "/fp:precise");
-	}
 }
 
 /*****************************************************************************/
@@ -579,31 +569,34 @@ void CompilerCxxVisualStudioCL::addThreadModelCompileOption(StringList& outArgLi
 	// /MT - statically links with LIBCMT.lib
 	// /MTd - statically links with LIBCMTD.lib (debug version)
 
-	if (m_project.staticRuntimeLibrary())
+	std::string flag;
+	auto type = m_msvcAdapter.getRuntimeLibraryType();
+	switch (type)
 	{
-		// Note: This will generate a larger binary!
-		//
-		if (m_state.configuration.debugSymbols())
-			List::addIfDoesNotExist(outArgList, "/MTd");
-		else
-			List::addIfDoesNotExist(outArgList, "/MT");
+		case WindowsRuntimeLibraryType::MultiThreadedDebug:
+			flag = "/MTd";
+			break;
+		case WindowsRuntimeLibraryType::MultiThreadedDebugDLL:
+			flag = "/MDd";
+			break;
+		case WindowsRuntimeLibraryType::MultiThreadedDLL:
+			flag = "/MD";
+			break;
+		case WindowsRuntimeLibraryType::MultiThreaded:
+		default:
+			flag = "/MT";
+			break;
 	}
-	else
-	{
-		if (m_state.configuration.debugSymbols())
-			List::addIfDoesNotExist(outArgList, "/MDd");
-		else
-			List::addIfDoesNotExist(outArgList, "/MD");
-	}
+
+	chalet_assert(!flag.empty(), "");
+	List::addIfDoesNotExist(outArgList, std::move(flag));
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addSanitizerOptions(StringList& outArgList) const
 {
 	if (m_msvcAdapter.supportsAddressSanitizer())
-	{
 		List::addIfDoesNotExist(outArgList, "/fsanitize=address");
-	}
 }
 
 /*****************************************************************************/
@@ -621,45 +614,71 @@ void CompilerCxxVisualStudioCL::addWholeProgramOptimization(StringList& outArgLi
 	// Required by LINK's Link-time code generation (/LTCG)
 	// Basically ends up being quicker compiler times for a slower link time, remedied further by incremental linking
 	if (m_msvcAdapter.supportsWholeProgramOptimization())
-	{
-		outArgList.emplace_back("/GL");
-	}
+		List::addIfDoesNotExist(outArgList, "/GL");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addNativeJustMyCodeDebugging(StringList& outArgList) const
 {
 	if (m_msvcAdapter.supportsJustMyCodeDebugging())
-	{
 		List::addIfDoesNotExist(outArgList, "/JMC");
-	}
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addBufferSecurityCheck(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/GS");
+	if (m_msvcAdapter.supportsBufferSecurityCheck())
+		List::addIfDoesNotExist(outArgList, "/GS");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addStandardBehaviors(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/Zc:wchar_t"); // wchar_t is native type
-	List::addIfDoesNotExist(outArgList, "/Zc:inline");
-	List::addIfDoesNotExist(outArgList, "/Zc:forScope");
+	if (m_msvcAdapter.supportsTreatWChartAsBuiltInType())
+		List::addIfDoesNotExist(outArgList, "/Zc:wchar_t"); // wchar_t is native type
+
+	if (m_msvcAdapter.supportsForceConformanceInForLoopScope())
+		List::addIfDoesNotExist(outArgList, "/Zc:forScope");
+
+	if (m_msvcAdapter.supportsRemoveUnreferencedCodeData())
+		List::addIfDoesNotExist(outArgList, "/Zc:inline");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addAdditionalSecurityChecks(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/sdl");
+	if (m_msvcAdapter.supportsSDLCheck())
+		List::addIfDoesNotExist(outArgList, "/sdl");
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addCallingConvention(StringList& outArgList) const
 {
-	// default calling convention
-	List::addIfDoesNotExist(outArgList, "/Gd");
+	// __cdecl - /Gd
+	// __fastcall - /Gr
+	// __stdcall - /Gz
+	// __vectorcall - /Gv
+
+	auto type = m_msvcAdapter.getCallingConvention();
+	std::string flag;
+	switch (type)
+	{
+		case WindowsCallingConvention::Cdecl:
+			flag = "/Gd";
+			break;
+		case WindowsCallingConvention::FastCall:
+			flag = "/Gr";
+			break;
+		case WindowsCallingConvention::StdCall:
+			flag = "/Gz";
+			break;
+		case WindowsCallingConvention::VectorCall:
+		default:
+			flag = "/Gv";
+			break;
+	}
+
+	List::addIfDoesNotExist(outArgList, std::move(flag));
 }
 
 /*****************************************************************************/
@@ -673,10 +692,8 @@ void CompilerCxxVisualStudioCL::addFullPathSourceCode(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addStandardsConformance(StringList& outArgList) const
 {
-	if (m_versionMajorMinor >= 1910) // VS 2017+
-	{
+	if (m_msvcAdapter.supportsConformanceMode())
 		List::addIfDoesNotExist(outArgList, "/permissive-"); // standards conformance
-	}
 }
 
 /*****************************************************************************/
@@ -688,33 +705,26 @@ void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgLis
 	*/
 
 	if (m_msvcAdapter.supportsEditAndContinue())
-	{
 		List::addIfDoesNotExist(outArgList, "/ZI");
-	}
 	else
-	{
 		List::addIfDoesNotExist(outArgList, "/Zi");
-	}
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addForceSeparateProgramDatabaseWrites(StringList& outArgList) const
+void CompilerCxxVisualStudioCL::addAdditionalOptions(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/FS");
+	auto options = m_msvcAdapter.getAdditionalOptions();
+	for (auto&& option : options)
+	{
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addProgramDatabaseOutput(StringList& outArgList) const
 {
 	auto buildDir = m_state.paths.buildOutputDir() + '/';
-	if (m_state.configuration.debugSymbols())
-	{
-		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
-	}
-	else
-	{
-		outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
-	}
+	outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
 }
 
 /*****************************************************************************/
@@ -737,31 +747,23 @@ void CompilerCxxVisualStudioCL::addExternalWarnings(StringList& outArgList) cons
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addRuntimeErrorChecks(StringList& outArgList) const
 {
-	if (m_state.configuration.debugSymbols())
-	{
-		// Enables stack frame run-time error checking, uninitialized variables
+	// Enables stack frame run-time error checking, uninitialized variables
+	if (m_msvcAdapter.supportsRunTimeErrorChecks())
 		List::addIfDoesNotExist(outArgList, "/RTC1");
-	}
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addFunctionLevelLinking(StringList& outArgList) const
 {
-	if (!m_state.configuration.debugSymbols())
-	{
-		// function level linking
+	if (m_msvcAdapter.supportsFunctionLevelLinking())
 		List::addIfDoesNotExist(outArgList, "/Gy");
-	}
 }
 
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addGenerateIntrinsicFunctions(StringList& outArgList) const
 {
 	if (m_msvcAdapter.supportsGenerateIntrinsicFunctions())
-	{
-		// generate intrinsic functions
 		List::addIfDoesNotExist(outArgList, "/Oi");
-	}
 }
 
 /*****************************************************************************/

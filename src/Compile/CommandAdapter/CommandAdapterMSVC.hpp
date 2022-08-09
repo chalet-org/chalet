@@ -7,6 +7,8 @@
 #define CHALET_COMMAND_ADAPTER_MSVC_HPP
 
 #include "State/MSVCWarningLevel.hpp"
+#include "State/WindowsCallingConvention.hpp"
+#include "State/WindowsRuntimeLibraryType.hpp"
 
 namespace chalet
 {
@@ -18,12 +20,26 @@ struct CommandAdapterMSVC
 	CommandAdapterMSVC(const BuildState& inState, const SourceTarget& inProject);
 
 	MSVCWarningLevel getWarningLevel() const;
+	WindowsRuntimeLibraryType getRuntimeLibraryType() const;
+	WindowsCallingConvention getCallingConvention() const;
 
+	bool supportsFastMath() const;
+	bool supportsFunctionLevelLinking() const;
+	bool supportsGenerateIntrinsicFunctions() const;
+	bool supportsSDLCheck() const;
+	bool supportsConformanceMode() const;
 	bool supportsEditAndContinue() const;
 	bool supportsJustMyCodeDebugging() const;
 	bool supportsAddressSanitizer() const;
-	bool supportsGenerateIntrinsicFunctions() const;
 	bool supportsWholeProgramOptimization() const;
+	bool supportsBufferSecurityCheck() const;
+	bool supportsRunTimeErrorChecks() const;
+	bool supportsExceptions() const;
+	bool supportsRunTimeTypeInformation() const;
+	bool disableRunTimeTypeInformation() const;
+	bool supportsTreatWChartAsBuiltInType() const;
+	bool supportsForceConformanceInForLoopScope() const;
+	bool supportsRemoveUnreferencedCodeData() const;
 
 	std::string getPlatformToolset() const;
 
@@ -34,6 +50,8 @@ struct CommandAdapterMSVC
 
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
+
+	StringList getAdditionalOptions() const;
 
 private:
 	const BuildState& m_state;

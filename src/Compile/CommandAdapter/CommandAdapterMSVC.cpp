@@ -131,6 +131,33 @@ MSVCWarningLevel CommandAdapterMSVC::getWarningLevel() const
 }
 
 /*****************************************************************************/
+WindowsRuntimeLibraryType CommandAdapterMSVC::getRuntimeLibraryType() const
+{
+	if (m_project.staticRuntimeLibrary())
+	{
+		// Note: This will generate a larger binary!
+		//
+		if (m_state.configuration.debugSymbols())
+			return WindowsRuntimeLibraryType::MultiThreadedDebug;
+		else
+			return WindowsRuntimeLibraryType::MultiThreaded;
+	}
+	else
+	{
+		if (m_state.configuration.debugSymbols())
+			return WindowsRuntimeLibraryType::MultiThreadedDebugDLL;
+		else
+			return WindowsRuntimeLibraryType::MultiThreadedDebug;
+	}
+}
+
+/*****************************************************************************/
+WindowsCallingConvention CommandAdapterMSVC::getCallingConvention() const
+{
+	return WindowsCallingConvention::Cdecl;
+}
+
+/*****************************************************************************/
 std::string CommandAdapterMSVC::getPlatformToolset() const
 {
 	const auto majorVersion = m_state.toolchain.versionMajorMinor();
@@ -141,6 +168,36 @@ std::string CommandAdapterMSVC::getPlatformToolset() const
 		return "v142"; // VS 2019
 
 	return "v141"; // VS 2017
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsFastMath() const
+{
+	return m_project.fastMath();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsFunctionLevelLinking() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsGenerateIntrinsicFunctions() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsSDLCheck() const
+{
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsConformanceMode() const
+{
+	return m_versionMajorMinor >= 1910; // VS 2017+
 }
 
 /*****************************************************************************/
@@ -167,15 +224,56 @@ bool CommandAdapterMSVC::supportsAddressSanitizer() const
 }
 
 /*****************************************************************************/
-bool CommandAdapterMSVC::supportsGenerateIntrinsicFunctions() const
-{
-	return !m_state.configuration.debugSymbols();
-}
-
-/*****************************************************************************/
 bool CommandAdapterMSVC::supportsWholeProgramOptimization() const
 {
 	return m_state.configuration.interproceduralOptimization();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsBufferSecurityCheck() const
+{
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsRunTimeErrorChecks() const
+{
+	return m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsExceptions() const
+{
+	return m_project.exceptions();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsRunTimeTypeInformation() const
+{
+	return !disableRunTimeTypeInformation();
+}
+
+bool CommandAdapterMSVC::disableRunTimeTypeInformation() const
+{
+	return !m_project.runtimeTypeInformation() || !supportsExceptions();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsTreatWChartAsBuiltInType() const
+{
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsForceConformanceInForLoopScope() const
+{
+	return true;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsRemoveUnreferencedCodeData() const
+{
+	return true;
 }
 
 /*****************************************************************************/
@@ -344,30 +442,40 @@ char CommandAdapterMSVC::getInlineFuncExpansion() const
 /*****************************************************************************/
 std::string CommandAdapterMSVC::getSubSystem() const
 {
-	const WindowsSubSystem subSystem = m_project.windowsSubSystem();
-	switch (subSystem)
-	{
-		case WindowsSubSystem::Windows:
-			return "windows";
-		case WindowsSubSystem::Native:
-			return "native";
-		case WindowsSubSystem::Posix:
-			return "posix";
-		case WindowsSubSystem::EfiApplication:
-			return "EFI_APPLICATION";
-		case WindowsSubSystem::EfiBootServiceDriver:
-			return "EFI_BOOT_SERVICE_DRIVER";
-		case WindowsSubSystem::EfiRom:
-			return "EFI_ROM";
-		case WindowsSubSystem::EfiRuntimeDriver:
-			return "EFI_RUNTIME_DRIVER";
-		case WindowsSubSystem::BootApplication:
-			return "BOOT_APPLICATION";
+	const SourceKind kind = m_project.kind();
 
-		default: break;
+	// TODO: Support for /driver:WDM (NativeWDM or something)
+	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
+
+	if (kind == SourceKind::Executable)
+	{
+		const WindowsSubSystem subSystem = m_project.windowsSubSystem();
+		switch (subSystem)
+		{
+			case WindowsSubSystem::Windows:
+				return "windows";
+			case WindowsSubSystem::Native:
+				return "native";
+			case WindowsSubSystem::Posix:
+				return "posix";
+			case WindowsSubSystem::EfiApplication:
+				return "EFI_APPLICATION";
+			case WindowsSubSystem::EfiBootServiceDriver:
+				return "EFI_BOOT_SERVICE_DRIVER";
+			case WindowsSubSystem::EfiRom:
+				return "EFI_ROM";
+			case WindowsSubSystem::EfiRuntimeDriver:
+				return "EFI_RUNTIME_DRIVER";
+			case WindowsSubSystem::BootApplication:
+				return "BOOT_APPLICATION";
+
+			default: break;
+		}
+
+		return "console";
 	}
 
-	return "console";
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -400,5 +508,13 @@ std::string CommandAdapterMSVC::getEntryPoint() const
 	}
 
 	return std::string();
+}
+
+/*****************************************************************************/
+StringList CommandAdapterMSVC::getAdditionalOptions() const
+{
+	return {
+		"/FS", // Force Separate Program Database Writes
+	};
 }
 }
