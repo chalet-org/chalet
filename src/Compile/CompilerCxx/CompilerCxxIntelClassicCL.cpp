@@ -42,7 +42,7 @@ void CompilerCxxIntelClassicCL::addDiagnostics(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxIntelClassicCL::addForceSeparateProgramDatabaseWrites(StringList& outArgList) const
+void CompilerCxxIntelClassicCL::addAdditionalOptions(StringList& outArgList) const
 {
 	UNUSED(outArgList);
 }

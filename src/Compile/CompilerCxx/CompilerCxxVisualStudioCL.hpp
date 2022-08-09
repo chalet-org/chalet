@@ -54,7 +54,7 @@ protected:
 	virtual void addFullPathSourceCode(StringList& outArgList) const;
 	virtual void addStandardsConformance(StringList& outArgList) const;
 	virtual void addSeparateProgramDatabase(StringList& outArgList) const;
-	virtual void addForceSeparateProgramDatabaseWrites(StringList& outArgList) const;
+	virtual void addAdditionalOptions(StringList& outArgList) const;
 	virtual void addProgramDatabaseOutput(StringList& outArgList) const;
 	virtual void addExternalWarnings(StringList& outArgList) const;
 	virtual void addRuntimeErrorChecks(StringList& outArgList) const;

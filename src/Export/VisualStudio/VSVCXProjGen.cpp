@@ -205,26 +205,16 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
 
 		xmlRoot.addElement("ItemDefinitionGroup", [&config, &vcxprojAdapter](XmlElement& node) {
-			const auto& name = config.name();
-			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", name));
-			node.addElement("ClCompile", [&config, &vcxprojAdapter](XmlElement& node2) {
-				bool debugSymbols = config.debugSymbols();
-				auto trueStr = vcxprojAdapter.getBoolean(true);
-
+			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
+			node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
-				if (!debugSymbols)
-				{
-					node2.addElementWithText("FunctionLevelLinking", trueStr);
-					node2.addElementWithText("IntrinsicFunctions", trueStr);
-				}
+				node2.addElementWithTextIfNotEmpty("FunctionLevelLinking", vcxprojAdapter.getFunctionLevelLinking());
+				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
 
-				node2.addElementWithText("SDLCheck", trueStr);
+				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
 				node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", vcxprojAdapter.getPreprocessorDefinitions()));
 
-				if (vcxprojAdapter.supportsConformanceMode())
-				{
-					node2.addElementWithText("ConformanceMode", trueStr);
-				}
+				node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardCpp());
 
@@ -236,11 +226,22 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				// MultiProcessorCompilation - true/false - /MP (Not used currentlY)
 				node2.addElementWithTextIfNotEmpty("Optimization", vcxprojAdapter.getOptimization());
 				node2.addElementWithTextIfNotEmpty("InlineFunctionExpansion", vcxprojAdapter.getInlineFunctionExpansion());
-				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
 				node2.addElementWithTextIfNotEmpty("FavorSizeOrSpeed", vcxprojAdapter.getFavorSizeOrSpeed());
 				// OmitFramePointers - true (Oy) / false (Oy-)
 				node2.addElementWithTextIfNotEmpty("WholeProgramOptimization", vcxprojAdapter.getWholeProgramOptimizationCompileFlag());
 				// EnableFiberSafeOptimizations - true/false (/GT)
+				node2.addElementWithTextIfNotEmpty("BufferSecurityCheck", vcxprojAdapter.getBufferSecurityCheck());
+				node2.addElementWithTextIfNotEmpty("FloatingPointModel", vcxprojAdapter.getFloatingPointModel());
+				node2.addElementWithTextIfNotEmpty("BasicRuntimeChecks", vcxprojAdapter.getBasicRuntimeChecks());
+				node2.addElementWithTextIfNotEmpty("RuntimeLibrary", vcxprojAdapter.getRuntimeLibrary());
+				node2.addElementWithTextIfNotEmpty("ExceptionHandling", vcxprojAdapter.getExceptionHandling());
+				node2.addElementWithTextIfNotEmpty("RuntimeTypeInfo", vcxprojAdapter.getRunTimeTypeInfo());
+				node2.addElementWithTextIfNotEmpty("TreatWChar_tAsBuiltInType", vcxprojAdapter.getTreatWChartAsBuiltInType());
+				node2.addElementWithTextIfNotEmpty("ForceConformanceInForLoopScope", vcxprojAdapter.getForceConformanceInForLoopScope());
+				node2.addElementWithTextIfNotEmpty("RemoveUnreferencedCodeData", vcxprojAdapter.getRemoveUnreferencedCodeData());
+				node2.addElementWithTextIfNotEmpty("CallingConvention", vcxprojAdapter.getCallingConvention());
+
+				node2.addElementWithText("AdditionalOptions", fmt::format("{}%(AdditionalOptions)", vcxprojAdapter.getAdditionalOptions()));
 			});
 
 			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {

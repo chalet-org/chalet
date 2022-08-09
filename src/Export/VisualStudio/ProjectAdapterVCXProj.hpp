@@ -17,9 +17,8 @@ struct ProjectAdapterVCXProj
 {
 	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
 
-	bool supportsConformanceMode() const;
-
 	std::string getBoolean(const bool inValue) const;
+	std::string getBooleanIfTrue(const bool inValue) const;
 
 	// General
 	std::string getConfigurationType() const;
@@ -28,6 +27,10 @@ struct ProjectAdapterVCXProj
 	std::string getWholeProgramOptimization() const;
 	std::string getCharacterSet() const;
 
+	std::string getFunctionLevelLinking() const;
+	std::string getIntrinsicFunctions() const;
+	std::string getSDLCheck() const;
+	std::string getConformanceMode() const;
 	std::string getWarningLevel() const;
 	std::string getPreprocessorDefinitions() const;
 	std::string getLanguageStandardCpp() const;
@@ -37,12 +40,21 @@ struct ProjectAdapterVCXProj
 	std::string getDebugInformationFormat() const;
 	std::string getSupportJustMyCode() const;
 	std::string getEnableAddressSanitizer() const;
-
 	std::string getOptimization() const;
 	std::string getInlineFunctionExpansion() const;
-	std::string getIntrinsicFunctions() const;
 	std::string getFavorSizeOrSpeed() const;
 	std::string getWholeProgramOptimizationCompileFlag() const;
+	std::string getBufferSecurityCheck() const;
+	std::string getFloatingPointModel() const;
+	std::string getBasicRuntimeChecks() const;
+	std::string getRuntimeLibrary() const;
+	std::string getExceptionHandling() const;
+	std::string getRunTimeTypeInfo() const;
+	std::string getTreatWChartAsBuiltInType() const;
+	std::string getForceConformanceInForLoopScope() const;
+	std::string getRemoveUnreferencedCodeData() const;
+	std::string getCallingConvention() const;
+	std::string getAdditionalOptions() const;
 
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;

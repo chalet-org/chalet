@@ -207,14 +207,9 @@ void LinkerVisualStudioLINK::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 {
-	const SourceKind kind = m_project.kind();
-
-	// TODO: Support for /driver:WDM (NativeWDM or something)
-	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
-
-	if (kind == SourceKind::Executable)
+	const auto subSystem = m_msvcAdapter.getSubSystem();
+	if (!subSystem.empty())
 	{
-		const auto subSystem = m_msvcAdapter.getSubSystem();
 		List::addIfDoesNotExist(outArgList, fmt::format("/subsystem:{}", subSystem));
 	}
 }

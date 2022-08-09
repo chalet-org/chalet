@@ -26,15 +26,18 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 }
 
 /*****************************************************************************/
-bool ProjectAdapterVCXProj::supportsConformanceMode() const
-{
-	return m_versionMajorMinor >= 1910;
-}
-
-/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getBoolean(const bool inValue) const
 {
 	return std::string(inValue ? "true" : "false");
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getBooleanIfTrue(const bool inValue) const
+{
+	if (inValue)
+		return "true";
+
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -71,7 +74,7 @@ std::string ProjectAdapterVCXProj::getWholeProgramOptimization() const
 	// Profile Guided Optimization, Instrument - PGInstrument
 	// Profile Guided Optimization, Optimize - PGOptimize
 	// Profile Guided Optimization, Update - PGUpdate
-	return getBoolean(m_msvcAdapter.supportsWholeProgramOptimization());
+	return getBooleanIfTrue(m_msvcAdapter.supportsWholeProgramOptimization());
 }
 
 /*****************************************************************************/
@@ -85,6 +88,36 @@ std::string ProjectAdapterVCXProj::getCharacterSet() const
 
 	// TODO: More conversions
 	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getFunctionLevelLinking() const
+{
+	// true - /Gy
+	// false - /Gy-
+	return getBooleanIfTrue(m_msvcAdapter.supportsFunctionLevelLinking());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getIntrinsicFunctions() const
+{
+	// true - /Oi
+	return getBooleanIfTrue(m_msvcAdapter.supportsGenerateIntrinsicFunctions());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getSDLCheck() const
+{
+	// true - /sdl
+	return getBooleanIfTrue(m_msvcAdapter.supportsSDLCheck());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getConformanceMode() const
+{
+	// true - /permissive-
+	// false - /permissive
+	return getBooleanIfTrue(m_msvcAdapter.supportsConformanceMode());
 }
 
 /*****************************************************************************/
@@ -113,11 +146,16 @@ std::string ProjectAdapterVCXProj::getWarningLevel() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPreprocessorDefinitions() const
 {
-	auto defines = String::join(m_project.defines(), ';');
-	if (!defines.empty())
-		defines += ';';
+	auto list = m_project.defines();
 
-	return defines;
+	if (!m_msvcAdapter.supportsExceptions())
+		list.emplace_back("_HAS_EXCEPTIONS=0");
+
+	auto ret = String::join(list, ';');
+	if (!ret.empty())
+		ret += ';';
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -225,13 +263,6 @@ std::string ProjectAdapterVCXProj::getInlineFunctionExpansion() const
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getIntrinsicFunctions() const
-{
-	// true - /Oi
-	return getBoolean(m_msvcAdapter.supportsGenerateIntrinsicFunctions());
-}
-
-/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getFavorSizeOrSpeed() const
 {
 	// Size    - /Os
@@ -260,32 +291,166 @@ std::string ProjectAdapterVCXProj::getWholeProgramOptimizationCompileFlag() cons
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getSubSystem() const
+std::string ProjectAdapterVCXProj::getBufferSecurityCheck() const
 {
-	const WindowsSubSystem subSystem = m_project.windowsSubSystem();
-	switch (subSystem)
-	{
-		case WindowsSubSystem::Windows:
-			return "Windows";
-		case WindowsSubSystem::Native:
-			return "Native";
-		case WindowsSubSystem::Posix:
-			return "POSIX";
-		case WindowsSubSystem::EfiApplication:
-			return "EFI Application";
-		case WindowsSubSystem::EfiBootServiceDriver:
-			return "EFI Boot Service Driver";
-		case WindowsSubSystem::EfiRom:
-			return "EFI ROM";
-		case WindowsSubSystem::EfiRuntimeDriver:
-			return "EFI Runtime";
+	// true/false - /GS
+	return getBoolean(m_msvcAdapter.supportsBufferSecurityCheck()); // always true for now
+}
 
-		case WindowsSubSystem::BootApplication:
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getFloatingPointModel() const
+{
+	// Fast - /fp:fast
+	// Strict - /fp:strict
+	// Precise - /fp:precise
+
+	if (m_msvcAdapter.supportsFastMath())
+		return "Fast";
+	else
+		return "Precise";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getBasicRuntimeChecks() const
+{
+	// StackFrameRuntimeCheck - /RTCs
+	// UninitializedLocalUsageCheck - /RTCu
+	// EnableFastChecks - (both) /RTC1
+	if (m_msvcAdapter.supportsRunTimeErrorChecks())
+		return "EnableFastChecks";
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getRuntimeLibrary() const
+{
+	auto type = m_msvcAdapter.getRuntimeLibraryType();
+	switch (type)
+	{
+		case WindowsRuntimeLibraryType::MultiThreadedDebug:
+			return "MultiThreadedDebug";
+		case WindowsRuntimeLibraryType::MultiThreadedDebugDLL:
+			return "MultiThreadedDebugDLL";
+		case WindowsRuntimeLibraryType::MultiThreadedDLL:
+			return "MultiThreadedDLL";
+		case WindowsRuntimeLibraryType::MultiThreaded:
 		default:
 			break;
 	}
 
-	return "Console";
+	return "MultiThreaded";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getExceptionHandling() const
+{
+	// Sync - "Yes" /EHsc
+	// ASync - "Yes with SEH Exceptions" /EHa
+	// SyncCThrow - "Yes with Extern C functions" /EHs
+	// false - "No"
+
+	if (m_msvcAdapter.supportsExceptions())
+		return "Sync";
+
+	return "false";
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getRunTimeTypeInfo() const
+{
+	return getBoolean(m_msvcAdapter.supportsRunTimeTypeInformation());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getTreatWChartAsBuiltInType() const
+{
+	return getBoolean(m_msvcAdapter.supportsTreatWChartAsBuiltInType());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getForceConformanceInForLoopScope() const
+{
+	return getBoolean(m_msvcAdapter.supportsForceConformanceInForLoopScope());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getRemoveUnreferencedCodeData() const
+{
+	return getBoolean(m_msvcAdapter.supportsRemoveUnreferencedCodeData());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getCallingConvention() const
+{
+	// __cdecl - /Gd
+	// __fastcall - /Gr
+	// __stdcall - /Gz
+	// __vectorcall - /Gv
+
+	auto type = m_msvcAdapter.getCallingConvention();
+	std::string flag;
+	switch (type)
+	{
+		case WindowsCallingConvention::Cdecl:
+			return "Cdecl";
+		case WindowsCallingConvention::FastCall:
+			return "FastCall";
+		case WindowsCallingConvention::StdCall:
+			return "StdCall";
+		case WindowsCallingConvention::VectorCall:
+		default:
+			return "VectorCall";
+	}
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAdditionalOptions() const
+{
+	auto ret = String::join(m_msvcAdapter.getAdditionalOptions(), ' ');
+	if (!ret.empty())
+		ret += ' ';
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getSubSystem() const
+{
+	auto kind = m_project.kind();
+
+	// TODO: Support for /driver:WDM (NativeWDM or something)
+	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
+
+	if (kind == SourceKind::Executable)
+	{
+		auto subSystem = m_project.windowsSubSystem();
+		switch (subSystem)
+		{
+			case WindowsSubSystem::Windows:
+				return "Windows";
+			case WindowsSubSystem::Native:
+				return "Native";
+			case WindowsSubSystem::Posix:
+				return "POSIX";
+			case WindowsSubSystem::EfiApplication:
+				return "EFI Application";
+			case WindowsSubSystem::EfiBootServiceDriver:
+				return "EFI Boot Service Driver";
+			case WindowsSubSystem::EfiRom:
+				return "EFI ROM";
+			case WindowsSubSystem::EfiRuntimeDriver:
+				return "EFI Runtime";
+
+			case WindowsSubSystem::BootApplication:
+			default:
+				break;
+		}
+
+		return "Console";
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/
