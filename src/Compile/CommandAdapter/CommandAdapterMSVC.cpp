@@ -147,7 +147,7 @@ WindowsRuntimeLibraryType CommandAdapterMSVC::getRuntimeLibraryType() const
 		if (m_state.configuration.debugSymbols())
 			return WindowsRuntimeLibraryType::MultiThreadedDebugDLL;
 		else
-			return WindowsRuntimeLibraryType::MultiThreadedDebug;
+			return WindowsRuntimeLibraryType::MultiThreadedDLL;
 	}
 }
 
