@@ -44,7 +44,7 @@ std::string ProjectAdapterVCXProj::getBooleanIfTrue(const bool inValue) const
 std::string ProjectAdapterVCXProj::getConfigurationType() const
 {
 	if (m_project.isExecutable())
-		return "Executable";
+		return "Application";
 
 	if (m_project.isSharedLibrary())
 		return "DynamicLibrary";
@@ -176,7 +176,7 @@ std::string ProjectAdapterVCXProj::getLanguageStandardCpp() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getLanguageStandardC() const
 {
-	auto standard = m_msvcAdapter.getLanguageStandardCpp();
+	auto standard = m_msvcAdapter.getLanguageStandardC();
 	if (standard.empty())
 		return standard;
 
@@ -186,7 +186,7 @@ std::string ProjectAdapterVCXProj::getLanguageStandardC() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getTreatWarningsAsError() const
 {
-	return getBoolean(m_project.treatWarningsAsErrors());
+	return getBooleanIfTrue(m_project.treatWarningsAsErrors());
 }
 
 /*****************************************************************************/
@@ -214,7 +214,7 @@ std::string ProjectAdapterVCXProj::getSupportJustMyCode() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getEnableAddressSanitizer() const
 {
-	return getBoolean(m_msvcAdapter.supportsAddressSanitizer());
+	return getBooleanIfTrue(m_msvcAdapter.supportsAddressSanitizer());
 }
 
 /*****************************************************************************/
@@ -291,14 +291,14 @@ std::string ProjectAdapterVCXProj::getFavorSizeOrSpeed() const
 std::string ProjectAdapterVCXProj::getWholeProgramOptimizationCompileFlag() const
 {
 	// true/false - /GL
-	return getBoolean(m_msvcAdapter.supportsWholeProgramOptimization());
+	return getBooleanIfTrue(m_msvcAdapter.supportsWholeProgramOptimization());
 }
 
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getBufferSecurityCheck() const
 {
 	// true/false - /GS
-	return getBoolean(m_msvcAdapter.supportsBufferSecurityCheck()); // always true for now
+	return getBooleanIfTrue(m_msvcAdapter.supportsBufferSecurityCheck()); // always true for now
 }
 
 /*****************************************************************************/
