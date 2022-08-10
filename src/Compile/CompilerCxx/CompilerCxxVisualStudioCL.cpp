@@ -71,34 +71,9 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::configureWarnings()
 {
-	auto level = m_msvcAdapter.getWarningLevel();
-	switch (level)
-	{
-		case MSVCWarningLevel::Level1:
-			m_warningFlag = "W1";
-			break;
+	m_warningFlag = getWarningLevel(m_msvcAdapter.getWarningLevel());
 
-		case MSVCWarningLevel::Level2:
-			m_warningFlag = "W2";
-			break;
-
-		case MSVCWarningLevel::Level3:
-			m_warningFlag = "W3";
-			break;
-
-		case MSVCWarningLevel::Level4:
-			m_warningFlag = "W4";
-			break;
-
-		case MSVCWarningLevel::LevelAll:
-			m_warningFlag = "Wall";
-			break;
-
-		default:
-			m_warningFlag.clear();
-			break;
-	}
-	return true;
+	return !m_warningFlag.empty();
 }
 
 /*****************************************************************************/
@@ -730,17 +705,14 @@ void CompilerCxxVisualStudioCL::addProgramDatabaseOutput(StringList& outArgList)
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addExternalWarnings(StringList& outArgList) const
 {
-	if (!m_warningFlag.empty())
+	if (!m_warningFlag.empty() && m_msvcAdapter.supportsExternalWarnings())
 	{
-		if (m_versionMajorMinor >= 1913) // added in 15.6
+		if (m_versionMajorMinor < 1929) // requires experimental
 		{
-			if (m_versionMajorMinor < 1929) // requires experimental
-			{
-				List::addIfDoesNotExist(outArgList, "/experimental:external");
-			}
-
-			List::addIfDoesNotExist(outArgList, fmt::format("/external:{}", m_warningFlag));
+			List::addIfDoesNotExist(outArgList, "/experimental:external");
 		}
+
+		List::addIfDoesNotExist(outArgList, fmt::format("/external:{}", m_warningFlag));
 	}
 }
 
@@ -790,6 +762,33 @@ void CompilerCxxVisualStudioCL::addUnsortedOptions(StringList& outArgList) const
 	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
 
 	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+std::string CompilerCxxVisualStudioCL::getWarningLevel(const MSVCWarningLevel inLevel) const
+{
+	switch (inLevel)
+	{
+		case MSVCWarningLevel::Level1:
+			return "W1";
+
+		case MSVCWarningLevel::Level2:
+			return "W2";
+
+		case MSVCWarningLevel::Level3:
+			return "W3";
+
+		case MSVCWarningLevel::Level4:
+			return "W4";
+
+		case MSVCWarningLevel::LevelAll:
+			return "Wall";
+
+		default:
+			break;
+	}
+
+	return std::string();
 }
 
 }

@@ -66,6 +66,8 @@ protected:
 private:
 	virtual void addUnsortedOptions(StringList& outArgList) const final;
 
+	std::string getWarningLevel(const MSVCWarningLevel inLevel) const;
+
 	CommandAdapterMSVC m_msvcAdapter;
 
 	std::string m_pchSource;

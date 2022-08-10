@@ -15,7 +15,8 @@ namespace chalet
 {
 /*****************************************************************************/
 ArchiverVisualStudioLIB::ArchiverVisualStudioLIB(const BuildState& inState, const SourceTarget& inProject) :
-	IArchiver(inState, inProject)
+	IArchiver(inState, inProject),
+	m_msvcAdapter(inState, inProject)
 {
 }
 
@@ -48,29 +49,10 @@ StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, co
 /*****************************************************************************/
 void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 {
-	// TODO: EBC?, ARM64EC
-
-	const auto arch = m_state.info.targetArchitecture();
-	switch (arch)
+	auto machine = m_msvcAdapter.getMachineArchitecture();
+	if (!machine.empty())
 	{
-		case Arch::Cpu::X64:
-			outArgList.emplace_back("/machine:X64");
-			break;
-
-		case Arch::Cpu::X86:
-			outArgList.emplace_back("/machine:X86");
-			break;
-
-		case Arch::Cpu::ARM:
-			outArgList.emplace_back("/machine:ARM");
-			break;
-
-		case Arch::Cpu::ARM64:
-			outArgList.emplace_back("/machine:ARM64");
-			break;
-
-		default:
-			break;
+		outArgList.emplace_back(fmt::format("/machine:{}", machine));
 	}
 }
 
@@ -78,10 +60,8 @@ void ArchiverVisualStudioLIB::addMachine(StringList& outArgList) const
 void ArchiverVisualStudioLIB::addLinkTimeCodeGeneration(StringList& outArgList) const
 {
 	// Requires /GL
-	if (m_state.configuration.interproceduralOptimization())
-	{
+	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
 		outArgList.emplace_back("/LTCG");
-	}
 }
 
 /*****************************************************************************/

@@ -32,6 +32,7 @@ struct ProjectAdapterVCXProj
 	std::string getSDLCheck() const;
 	std::string getConformanceMode() const;
 	std::string getWarningLevel() const;
+	std::string getExternalWarningLevel() const;
 	std::string getPreprocessorDefinitions() const;
 	std::string getLanguageStandardCpp() const;
 	std::string getLanguageStandardC() const;
@@ -58,6 +59,8 @@ struct ProjectAdapterVCXProj
 
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
+	std::string getLinkTimeCodeGeneration() const;
+	std::string getTargetMachine() const;
 
 	StringList getSourceExtensions() const;
 	StringList getHeaderExtensions() const;

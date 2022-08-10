@@ -154,6 +154,9 @@ WindowsRuntimeLibraryType CommandAdapterMSVC::getRuntimeLibraryType() const
 /*****************************************************************************/
 WindowsCallingConvention CommandAdapterMSVC::getCallingConvention() const
 {
+	// This is the default calling convention for all functions,
+	//   except C++ member functions (which use __thiscall)
+	// NOTE: This really shouldn't change. Others can be explicitly defined
 	return WindowsCallingConvention::Cdecl;
 }
 
@@ -229,6 +232,11 @@ bool CommandAdapterMSVC::supportsWholeProgramOptimization() const
 	return m_state.configuration.interproceduralOptimization();
 }
 
+bool CommandAdapterMSVC::supportsLinkTimeCodeGeneration() const
+{
+	return m_state.configuration.interproceduralOptimization();
+}
+
 /*****************************************************************************/
 bool CommandAdapterMSVC::supportsBufferSecurityCheck() const
 {
@@ -274,6 +282,12 @@ bool CommandAdapterMSVC::supportsForceConformanceInForLoopScope() const
 bool CommandAdapterMSVC::supportsRemoveUnreferencedCodeData() const
 {
 	return true;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsExternalWarnings() const
+{
+	return m_versionMajorMinor >= 1913; // added in 15.6
 }
 
 /*****************************************************************************/
@@ -505,6 +519,34 @@ std::string CommandAdapterMSVC::getEntryPoint() const
 		{
 			return "_DllMainCRTStartup";
 		}
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string CommandAdapterMSVC::getMachineArchitecture() const
+{
+	// TODO: EBC?, ARM64EC
+	//   Visual Studio has a list of these in "Configuration properties > Librarian > General"
+
+	const auto arch = m_state.info.targetArchitecture();
+	switch (arch)
+	{
+		case Arch::Cpu::X64:
+			return "X64";
+
+		case Arch::Cpu::X86:
+			return "X86";
+
+		case Arch::Cpu::ARM:
+			return "ARM";
+
+		case Arch::Cpu::ARM64:
+			return "ARM64";
+
+		default:
+			break;
 	}
 
 	return std::string();
