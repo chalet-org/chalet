@@ -59,7 +59,7 @@ bool ExternalDependencyCache::save() const
 			jsonFile.json[key] = value;
 		}
 		jsonFile.setDirty(true);
-		jsonFile.save(0);
+		jsonFile.save(-1);
 	}
 
 	return true;
