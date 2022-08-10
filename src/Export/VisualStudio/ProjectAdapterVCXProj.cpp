@@ -144,6 +144,30 @@ std::string ProjectAdapterVCXProj::getWarningLevel() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getExternalWarningLevel() const
+{
+	if (m_msvcAdapter.supportsExternalWarnings())
+	{
+		switch (m_msvcAdapter.getWarningLevel())
+		{
+			case MSVCWarningLevel::Level1:
+				return "Level1";
+			case MSVCWarningLevel::Level2:
+				return "Level2";
+			case MSVCWarningLevel::Level3:
+				return "Level3";
+			case MSVCWarningLevel::Level4:
+				return "Level4";
+
+			default:
+				break;
+		}
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPreprocessorDefinitions() const
 {
 	StringList list;
@@ -462,6 +486,24 @@ std::string ProjectAdapterVCXProj::getSubSystem() const
 std::string ProjectAdapterVCXProj::getEntryPoint() const
 {
 	return m_msvcAdapter.getEntryPoint();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLinkTimeCodeGeneration() const
+{
+	return getBooleanIfTrue(m_msvcAdapter.supportsLinkTimeCodeGeneration());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getTargetMachine() const
+{
+	auto machine = m_msvcAdapter.getMachineArchitecture();
+	if (!machine.empty())
+	{
+		return fmt::format("Machine{}", machine);
+	}
+
+	return machine;
 }
 
 /*****************************************************************************/

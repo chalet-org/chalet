@@ -7,6 +7,7 @@
 #define CHALET_ARCHIVER_VISUAL_STUDIO_LIB_HPP
 
 #include "Compile/Archiver/IArchiver.hpp"
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
 namespace chalet
 {
@@ -21,6 +22,8 @@ protected:
 
 	virtual void addLinkTimeCodeGeneration(StringList& outArgList) const;
 	virtual void addWarningsTreatedAsErrors(StringList& outArgList) const;
+
+	CommandAdapterMSVC m_msvcAdapter;
 };
 }
 

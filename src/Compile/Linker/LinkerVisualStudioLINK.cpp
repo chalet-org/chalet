@@ -326,28 +326,10 @@ void LinkerVisualStudioLINK::addCompatibleWithDataExecutionPrevention(StringList
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 {
-	// TODO: EBC?, ARM64X
-	const auto arch = m_state.info.targetArchitecture();
-	switch (arch)
+	auto machine = m_msvcAdapter.getMachineArchitecture();
+	if (!machine.empty())
 	{
-		case Arch::Cpu::X64:
-			List::addIfDoesNotExist(outArgList, "/machine:X64");
-			break;
-
-		case Arch::Cpu::X86:
-			List::addIfDoesNotExist(outArgList, "/machine:X86");
-			break;
-
-		case Arch::Cpu::ARM:
-			List::addIfDoesNotExist(outArgList, "/machine:ARM");
-			break;
-
-		case Arch::Cpu::ARM64:
-			List::addIfDoesNotExist(outArgList, "/machine:ARM64");
-			break;
-
-		default:
-			break;
+		outArgList.emplace_back(fmt::format("/machine:{}", machine));
 	}
 }
 

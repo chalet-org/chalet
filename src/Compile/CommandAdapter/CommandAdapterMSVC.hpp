@@ -32,6 +32,7 @@ struct CommandAdapterMSVC
 	bool supportsJustMyCodeDebugging() const;
 	bool supportsAddressSanitizer() const;
 	bool supportsWholeProgramOptimization() const;
+	bool supportsLinkTimeCodeGeneration() const;
 	bool supportsBufferSecurityCheck() const;
 	bool supportsRunTimeErrorChecks() const;
 	bool supportsExceptions() const;
@@ -40,6 +41,7 @@ struct CommandAdapterMSVC
 	bool supportsTreatWChartAsBuiltInType() const;
 	bool supportsForceConformanceInForLoopScope() const;
 	bool supportsRemoveUnreferencedCodeData() const;
+	bool supportsExternalWarnings() const;
 
 	std::string getPlatformToolset() const;
 
@@ -50,6 +52,7 @@ struct CommandAdapterMSVC
 
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
+	std::string getMachineArchitecture() const;
 
 	StringList getAdditionalOptions(const bool inCharsetFlags = false) const;
 

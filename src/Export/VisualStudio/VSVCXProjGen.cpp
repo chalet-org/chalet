@@ -199,26 +199,25 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 	for (auto& state : m_states)
 	{
-		const auto project = getProjectFromStateContext(*state, inProject.name());
+		const auto& project = *getProjectFromStateContext(*state, inProject.name());
 		const auto& config = state->configuration;
 
-		ProjectAdapterVCXProj vcxprojAdapter(*state, *project);
+		ProjectAdapterVCXProj vcxprojAdapter(*state, project);
 
-		xmlRoot.addElement("ItemDefinitionGroup", [&config, &vcxprojAdapter](XmlElement& node) {
+		xmlRoot.addElement("ItemDefinitionGroup", [&config, &vcxprojAdapter, &project](XmlElement& node) {
 			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
 			node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
-				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
-				node2.addElementWithTextIfNotEmpty("FunctionLevelLinking", vcxprojAdapter.getFunctionLevelLinking());
-				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
-
-				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
-				node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", vcxprojAdapter.getPreprocessorDefinitions()));
-
 				node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardC());
 
 				// C/C++ Settings
+				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
+				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
+				node2.addElementWithTextIfNotEmpty("ExternalWarningLevel", vcxprojAdapter.getExternalWarningLevel());
+				node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", vcxprojAdapter.getPreprocessorDefinitions()));
+				node2.addElementWithTextIfNotEmpty("FunctionLevelLinking", vcxprojAdapter.getFunctionLevelLinking());
+				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
 				node2.addElementWithTextIfNotEmpty("TreatWarningsAsError", vcxprojAdapter.getTreatWarningsAsError());
 				node2.addElementWithTextIfNotEmpty("DiagnosticsFormat", vcxprojAdapter.getDiagnosticsFormat());
 				node2.addElementWithTextIfNotEmpty("DebugInformationFormat", vcxprojAdapter.getDebugInformationFormat());
@@ -244,16 +243,27 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				node2.addElementWithText("AdditionalOptions", fmt::format("{}%(AdditionalOptions)", vcxprojAdapter.getAdditionalOptions()));
 			});
 
-			node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
-				auto trueStr = vcxprojAdapter.getBoolean(true);
-				node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
-				if (!config.debugSymbols())
-				{
-					node2.addElementWithText("EnableCOMDATFolding", trueStr);
-					node2.addElementWithText("OptimizeReferences", trueStr);
-				}
-				node2.addElementWithText("GenerateDebugInformation", trueStr);
-			});
+			if (project.isStaticLibrary())
+			{
+				node.addElement("Lib", [&config, &vcxprojAdapter](XmlElement& node2) {
+					node2.addElementWithTextIfNotEmpty("LinkTimeCodeGeneration", vcxprojAdapter.getLinkTimeCodeGeneration());
+					node2.addElementWithTextIfNotEmpty("TargetMachine", vcxprojAdapter.getTargetMachine());
+					node2.addElementWithTextIfNotEmpty("TreatLibWarningAsErrors", vcxprojAdapter.getTreatWarningsAsError());
+				});
+			}
+			else
+			{
+				node.addElement("Link", [&config, &vcxprojAdapter](XmlElement& node2) {
+					auto trueStr = vcxprojAdapter.getBoolean(true);
+					node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
+					if (!config.debugSymbols())
+					{
+						node2.addElementWithText("EnableCOMDATFolding", trueStr);
+						node2.addElementWithText("OptimizeReferences", trueStr);
+					}
+					node2.addElementWithText("GenerateDebugInformation", trueStr);
+				});
+			}
 		});
 	}
 
@@ -358,7 +368,10 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "Current");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("PropertyGroup");
+	xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
+		node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
+		node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
+	});
 
 	return xmlFile.save();
 }
