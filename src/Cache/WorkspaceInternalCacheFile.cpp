@@ -355,8 +355,7 @@ bool WorkspaceInternalCacheFile::save()
 		m_dataFile->setContents(std::move(rootNode));
 		m_dataFile->setDirty(true);
 
-		m_dataFile->save(0);
-		// m_dataFile->save();
+		m_dataFile->save(-1);
 
 		m_dirty = false;
 
