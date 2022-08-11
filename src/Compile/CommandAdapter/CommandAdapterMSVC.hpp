@@ -54,11 +54,20 @@ struct CommandAdapterMSVC
 	std::string getEntryPoint() const;
 	std::string getMachineArchitecture() const;
 
+	StringList getIncludeDirectories() const;
 	StringList getAdditionalOptions(const bool inCharsetFlags = false) const;
+
+	bool createPrecompiledHeaderSource(const std::string& inOutputPath);
+	std::string getPchObject(const std::string& inOutputFile);
+	const std::string& pchSource() const noexcept;
+	const std::string& pchMinusLocation() const noexcept;
 
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;
+
+	std::string m_pchSource;
+	std::string m_pchMinusLocation;
 
 	uint m_versionMajorMinor = 0;
 	uint m_versionPatch = 0;

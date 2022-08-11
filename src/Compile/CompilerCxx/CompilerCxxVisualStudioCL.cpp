@@ -40,6 +40,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 	{
 		auto toolsDir = Environment::getAsString("VCToolsInstallDir");
 		Path::sanitize(toolsDir);
+
 		m_ifcDirectory = fmt::format("{}/ifc/x64", toolsDir);
 	}
 
@@ -49,23 +50,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
-	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
-	{
-		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.precompiledHeader();
-		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
-
-		m_pchMinusLocation = String::getPathFilename(pch);
-
-		if (!Commands::pathExists(m_pchSource))
-		{
-			if (!Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", m_pchMinusLocation)))
-				return false;
-		}
-	}
-
-	return true;
+	return m_msvcAdapter.createPrecompiledHeaderSource(m_state.paths.objDir());
 }
 
 /*****************************************************************************/
@@ -90,8 +75,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	if (executable.empty())
 		return ret;
 
-	std::string pchObject = outputFile;
-	String::replaceAll(pchObject, ".pch", ".obj");
+	auto pchObject = m_state.paths.getPrecompiledHeaderObject(outputFile);
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 
@@ -144,12 +128,12 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	addIncludes(ret);
 
 	ret.emplace_back(getPathCommand("/Fp", outputFile));
-	ret.emplace_back(getPathCommand("/Yc", m_pchMinusLocation));
+	ret.emplace_back(getPathCommand("/Yc", m_msvcAdapter.pchMinusLocation()));
 	ret.emplace_back(getPathCommand("/Fo", pchObject));
 
 	UNUSED(inputFile);
 
-	ret.push_back(m_pchSource);
+	ret.push_back(m_msvcAdapter.pchSource());
 
 	return ret;
 }
@@ -385,20 +369,10 @@ void CompilerCxxVisualStudioCL::addIncludes(StringList& outArgList) const
 	// List::addIfDoesNotExist(outArgList, "/X"); // ignore "Path"
 
 	const std::string option{ "/I" };
-
-	for (const auto& dir : m_project.includeDirs())
+	auto includes = m_msvcAdapter.getIncludeDirectories();
+	for (const auto& dir : includes)
 	{
-		std::string outDir = dir;
-		if (String::endsWith('/', outDir))
-			outDir.pop_back();
-
-		outArgList.emplace_back(getPathCommand(option, outDir));
-	}
-
-	if (m_project.usesPrecompiledHeader())
-	{
-		auto outDir = String::getPathFolder(m_project.precompiledHeader());
-		outArgList.emplace_back(getPathCommand(option, outDir));
+		outArgList.emplace_back(getPathCommand(option, dir));
 	}
 }
 
@@ -432,6 +406,9 @@ void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 			outArgList.emplace_back(prefix + define);
 		}
 	}
+
+	if (!m_msvcAdapter.supportsExceptions())
+		List::addIfDoesNotExist(outArgList, prefix + "_HAS_EXCEPTIONS=0");
 }
 
 /*****************************************************************************/
@@ -441,13 +418,13 @@ void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
 
-		outArgList.emplace_back(getPathCommand("/Yu", m_pchMinusLocation));
+		outArgList.emplace_back(getPathCommand("/Yu", m_msvcAdapter.pchMinusLocation()));
 
 		// /Fp specifies the location of the PCH object file
 		outArgList.emplace_back(getPathCommand("/Fp", objDirPch));
 
 		// /FI force-includes the PCH source file so one doesn't need to use the #include directive in every file
-		outArgList.emplace_back(getPathCommand("/FI", m_pchMinusLocation));
+		outArgList.emplace_back(getPathCommand("/FI", m_msvcAdapter.pchMinusLocation()));
 	}
 }
 
@@ -522,8 +499,6 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 
 	if (m_msvcAdapter.supportsExceptions())
 		List::addIfDoesNotExist(outArgList, "/EHsc");
-	else
-		List::addIfDoesNotExist(outArgList, "/D_HAS_EXCEPTIONS=0");
 }
 
 /*****************************************************************************/

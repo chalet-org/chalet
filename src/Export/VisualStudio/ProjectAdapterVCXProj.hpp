@@ -55,6 +55,7 @@ struct ProjectAdapterVCXProj
 	std::string getForceConformanceInForLoopScope() const;
 	std::string getRemoveUnreferencedCodeData() const;
 	std::string getCallingConvention() const;
+	std::string getAdditionalIncludeDirectories(const std::string& inCwd) const;
 	std::string getAdditionalOptions() const;
 
 	std::string getSubSystem() const;

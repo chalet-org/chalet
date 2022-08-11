@@ -8,9 +8,11 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -553,6 +555,29 @@ std::string CommandAdapterMSVC::getMachineArchitecture() const
 }
 
 /*****************************************************************************/
+StringList CommandAdapterMSVC::getIncludeDirectories() const
+{
+	StringList ret;
+
+	for (const auto& dir : m_project.includeDirs())
+	{
+		std::string outDir = dir;
+		if (String::endsWith('/', outDir))
+			outDir.pop_back();
+
+		ret.emplace_back(std::move(outDir));
+	}
+
+	if (m_project.usesPrecompiledHeader())
+	{
+		auto outDir = String::getPathFolder(m_project.precompiledHeader());
+		List::addIfDoesNotExist(ret, std::move(outDir));
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) const
 {
 	StringList ret;
@@ -566,5 +591,37 @@ StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) c
 	ret.emplace_back("/FS"); // Force Separate Program Database Writes
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inOutputPath)
+{
+	const auto& cxxExt = m_state.paths.cxxExtension();
+	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
+	{
+		const auto& pch = m_project.precompiledHeader();
+
+		m_pchSource = fmt::format("{}/{}.{}", inOutputPath, pch, cxxExt);
+		m_pchMinusLocation = String::getPathFilename(pch);
+
+		if (!Commands::pathExists(m_pchSource))
+		{
+			if (!Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", m_pchMinusLocation)))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+const std::string& CommandAdapterMSVC::pchSource() const noexcept
+{
+	return m_pchSource;
+}
+
+const std::string& CommandAdapterMSVC::pchMinusLocation() const noexcept
+{
+	return m_pchMinusLocation;
 }
 }
