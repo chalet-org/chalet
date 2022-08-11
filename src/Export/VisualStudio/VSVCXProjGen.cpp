@@ -17,6 +17,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Xml/XmlFile.hpp"
@@ -43,7 +44,7 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
 
-	auto projectFile = fmt::format("{name}/{name}.vcxproj", FMT_ARG(name));
+	auto projectFile = fmt::format("{}.vcxproj", name);
 
 	if (!saveProjectFile(inState, inProject, projectFile))
 		return false;
@@ -99,11 +100,13 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 		}
 
 		node.addAttribute("Label", "Globals");
-		node.addElementWithText("VCProjectVersion", visualStudioVersion);
-		node.addElementWithText("Keyword", "Win32Proj");
 		node.addElementWithText("ProjectGuid", fmt::format("{{{}}}", m_currentGuid));
+		node.addElementWithText("WindowsTargetPlatformVersion", getWindowsTargetPlatformVersion());
+		node.addElementWithText("Keyword", "Win32Proj");
+		node.addElementWithText("VCProjectVersion", visualStudioVersion);
 		node.addElementWithText("RootNamespace", m_currentTarget);
-		node.addElementWithText("WindowsTargetPlatformVersion", "10.0");
+		node.addElementWithText("ProjectName", m_currentTarget);
+		node.addElementWithText("VCProjectUpgraderObjectName", "NoUpgrade");
 	});
 
 	xmlRoot.addElement("Import", [](XmlElement& node) {
@@ -204,18 +207,19 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 
 		ProjectAdapterVCXProj vcxprojAdapter(*state, project);
 
-		xmlRoot.addElement("ItemDefinitionGroup", [&config, &vcxprojAdapter, &project](XmlElement& node) {
+		xmlRoot.addElement("ItemDefinitionGroup", [this, &config, &vcxprojAdapter, &project](XmlElement& node) {
 			node.addAttribute("Condition", fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", config.name()));
-			node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
+			node.addElement("ClCompile", [this, &vcxprojAdapter](XmlElement& node2) {
 				node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardC());
 
 				// C/C++ Settings
+				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories(m_cwd));
 				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
 				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
 				node2.addElementWithTextIfNotEmpty("ExternalWarningLevel", vcxprojAdapter.getExternalWarningLevel());
-				node2.addElementWithText("PreprocessorDefinitions", fmt::format("{}%(PreprocessorDefinitions)", vcxprojAdapter.getPreprocessorDefinitions()));
+				node2.addElementWithText("PreprocessorDefinitions", vcxprojAdapter.getPreprocessorDefinitions());
 				node2.addElementWithTextIfNotEmpty("FunctionLevelLinking", vcxprojAdapter.getFunctionLevelLinking());
 				node2.addElementWithTextIfNotEmpty("IntrinsicFunctions", vcxprojAdapter.getIntrinsicFunctions());
 				node2.addElementWithTextIfNotEmpty("TreatWarningsAsError", vcxprojAdapter.getTreatWarningsAsError());
@@ -240,12 +244,12 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const SourceTarget
 				node2.addElementWithTextIfNotEmpty("RemoveUnreferencedCodeData", vcxprojAdapter.getRemoveUnreferencedCodeData());
 				node2.addElementWithTextIfNotEmpty("CallingConvention", vcxprojAdapter.getCallingConvention());
 
-				node2.addElementWithText("AdditionalOptions", fmt::format("{}%(AdditionalOptions)", vcxprojAdapter.getAdditionalOptions()));
+				node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalOptions());
 			});
 
 			if (project.isStaticLibrary())
 			{
-				node.addElement("Lib", [&config, &vcxprojAdapter](XmlElement& node2) {
+				node.addElement("Lib", [&vcxprojAdapter](XmlElement& node2) {
 					node2.addElementWithTextIfNotEmpty("LinkTimeCodeGeneration", vcxprojAdapter.getLinkTimeCodeGeneration());
 					node2.addElementWithTextIfNotEmpty("TargetMachine", vcxprojAdapter.getTargetMachine());
 					node2.addElementWithTextIfNotEmpty("TreatLibWarningAsErrors", vcxprojAdapter.getTreatWarningsAsError());
@@ -389,6 +393,16 @@ const SourceTarget* VSVCXProjGen::getProjectFromStateContext(const BuildState& i
 	}
 
 	chalet_assert(ret != nullptr, "project name not found");
+	return ret;
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::getWindowsTargetPlatformVersion() const
+{
+	auto ret = Environment::getAsString("UCRTVersion");
+	if (ret.empty())
+		ret = "10.0";
+
 	return ret;
 }
 

@@ -70,8 +70,6 @@ private:
 
 	CommandAdapterMSVC m_msvcAdapter;
 
-	std::string m_pchSource;
-	std::string m_pchMinusLocation;
 	std::string m_ifcDirectory;
 	std::string m_warningFlag;
 };

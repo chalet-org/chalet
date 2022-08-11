@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -171,18 +172,19 @@ std::string ProjectAdapterVCXProj::getExternalWarningLevel() const
 std::string ProjectAdapterVCXProj::getPreprocessorDefinitions() const
 {
 	StringList list;
-	if (!m_msvcAdapter.supportsExceptions())
-		list.emplace_back("_HAS_EXCEPTIONS=0");
-
 	for (auto& define : m_project.defines())
 	{
 		list.emplace_back(define);
 	}
 
+	if (!m_msvcAdapter.supportsExceptions())
+		List::addIfDoesNotExist<std::string>(list, "_HAS_EXCEPTIONS=0");
+
 	auto ret = String::join(list, ';');
 	if (!ret.empty())
 		ret += ';';
 
+	ret += "%(PreprocessorDefinitions)";
 	return ret;
 }
 
@@ -433,6 +435,26 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const std::string& inCwd) const
+{
+	auto list = m_msvcAdapter.getIncludeDirectories();
+	for (auto& dir : list)
+	{
+		auto full = fmt::format("{}/{}", inCwd, dir);
+		if (Commands::pathExists(full))
+		{
+			dir = std::move(full);
+		}
+	}
+	auto ret = String::join(list, ';');
+	if (!ret.empty())
+		ret += ';';
+
+	ret += "%(AdditionalIncludeDirectories)";
+	return ret;
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 {
 	StringList options = List::combine(m_project.compileOptions(), m_msvcAdapter.getAdditionalOptions(true));
@@ -440,6 +462,7 @@ std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 	if (!ret.empty())
 		ret += ' ';
 
+	ret += "%(AdditionalOptions)";
 	return ret;
 }
 

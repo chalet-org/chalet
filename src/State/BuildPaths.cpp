@@ -356,6 +356,18 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 }
 
 /*****************************************************************************/
+std::string BuildPaths::getPrecompiledHeaderObject(const std::string& inTarget) const
+{
+	std::string ret = inTarget;
+	if (m_state.environment->isMsvc())
+	{
+		String::replaceAll(ret, ".pch", ".obj");
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string BuildPaths::getPrecompiledHeaderInclude(const SourceTarget& inProject) const
 {
 	std::string ret;
@@ -587,10 +599,7 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 	{
 		if (inProject.usesPrecompiledHeader())
 		{
-			auto pchTarget = getPrecompiledHeaderTarget(inProject);
-			String::replaceAll(pchTarget, ".pch", ".obj");
-
-			ret.emplace_back(std::move(pchTarget));
+			ret.emplace_back(getPrecompiledHeaderObject(getPrecompiledHeaderTarget(inProject)));
 		}
 	}
 #else

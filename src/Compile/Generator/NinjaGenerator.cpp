@@ -423,9 +423,7 @@ build {pchTarget}: pch_{hash} {pch}
 #if defined(CHALET_WIN32)
 		if (m_state.environment->isMsvc())
 		{
-			std::string pchObj = pchTarget;
-			String::replaceAll(pchObj, ".pch", ".obj");
-
+			auto pchObj = m_state.paths.getPrecompiledHeaderObject(pchTarget);
 			ret += fmt::format(R"ninja(
 build {pchObj}: phony {pchTarget}
 )ninja",

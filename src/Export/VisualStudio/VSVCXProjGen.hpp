@@ -29,6 +29,7 @@ private:
 	bool saveUserFile(const std::string& inFilename);
 
 	const SourceTarget* getProjectFromStateContext(const BuildState& inState, const std::string& inName) const;
+	std::string getWindowsTargetPlatformVersion() const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
