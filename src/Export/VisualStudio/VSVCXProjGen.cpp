@@ -344,7 +344,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &files, &pchSource](XmlElement& node) {
 			if (!pchSource.empty())
 			{
-				node.addElement("ClCompile", [this, &pchSource](XmlElement& node2) {
+				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
 					node2.addAttribute("Include", pchSource);
 					node2.addElementWithText("PrecompiledHeader", "Create");
 					node2.addElementWithText("ForcedIncludeFiles", std::string());
@@ -415,8 +415,8 @@ bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string&
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("ItemGroup", [this, &vcxprojAdapter](XmlElement& node) {
-		node.addElement("ClCompile", [this, &vcxprojAdapter](XmlElement& node2) {
+	xmlRoot.addElement("ItemGroup", [&vcxprojAdapter](XmlElement& node) {
+		node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderSourceFile());
 			node2.addElementWithText("Filter", "Precompile Header Files");
 		});
