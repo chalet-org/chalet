@@ -54,7 +54,12 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 			const auto project = getProjectFromStateContext(*state, name);
 			const auto& config = state->configuration.name();
 
-			m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project));
+			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project));
+			if (!it->second->createPrecompiledHeaderSource())
+			{
+				Diagnostic::error("Error generating the precompiled header.");
+				return false;
+			}
 		}
 	}
 
@@ -286,14 +291,24 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 	{
 		OrderedDictionary<bool> headers;
 		OrderedDictionary<StringList> files;
+		// OrderedDictionary<std::pair<std::string, StringList>> precompiledHeader;
 		StringList allConfigs;
 		for (auto& state : m_states)
 		{
 			const auto& project = *getProjectFromStateContext(*state, inName);
 			const auto& config = state->configuration.name();
+			// const auto& vcxprojAdapter = *m_adapters.at(config);
+
 			allConfigs.emplace_back(config);
 
 			auto headerFiles = project.getHeaderFiles();
+			const auto& pch = project.precompiledHeader();
+			if (!pch.empty())
+			{
+				headerFiles.push_back(pch);
+				// precompiledHeader[vcxprojAdapter.getPrecompiledHeaderOutputFile()] = std::make_pair(vcxprojAdapter.getPrecompiledHeadeSourceFile(), StringList{ config });
+			}
+
 			for (auto& file : headerFiles)
 			{
 				headers[file] = true;
@@ -344,6 +359,10 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 								node3.setText("true");
 							});
 						}
+
+						// <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+						//   $(IntDir)/pch.hxx;%(ForcedIncludeFiles)
+						// </ForcedIncludeFiles>
 					}
 				});
 			}

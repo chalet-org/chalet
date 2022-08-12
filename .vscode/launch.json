@@ -32,10 +32,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				"export",
-				"vscode"
+				"vs-solution"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/../newer-project",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [

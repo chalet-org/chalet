@@ -846,7 +846,7 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 {
 	std::ofstream(inFile) << inContents << std::endl;
 
-	return true;
+	return Commands::pathExists(inFile);
 }
 
 /*****************************************************************************/

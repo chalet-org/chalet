@@ -32,8 +32,10 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 {
 	auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
-	auto intDirectory = fmt::format("{}//{}");
-	return m_msvcAdapter.createPrecompiledHeaderSource(m_state.paths.objDir());
+	const auto& config = m_state.configuration.name();
+	auto intDirectory = fmt::format("{}/{}", arch, config);
+
+	return m_msvcAdapter.createPrecompiledHeaderSource(intDirectory);
 }
 
 /*****************************************************************************/
@@ -456,14 +458,19 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile() const
+const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderFile() const noexcept
 {
-	return m_project.precompiledHeader();
+	return m_msvcAdapter.pchMinusLocation();
 }
 
-std::string ProjectAdapterVCXProj::getPrecompiledHeaderOutputFile() const
+const std::string& ProjectAdapterVCXProj::getPrecompiledHeadeSourceFile() const noexcept
 {
-	return m_state.paths.getPrecompiledHeaderTarget(m_project);
+	return m_msvcAdapter.pchSource();
+}
+
+const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderOutputFile() const noexcept
+{
+	return m_msvcAdapter.pchTarget();
 }
 
 /*****************************************************************************/

@@ -27,7 +27,10 @@ bool CompilerCxxIntelClassicGCC::initialize()
 		return false;
 
 	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
+	if (cxxExt.empty())
+		return false;
+
+	if (m_project.usesPrecompiledHeader())
 	{
 		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();

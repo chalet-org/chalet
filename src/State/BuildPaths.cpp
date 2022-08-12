@@ -201,6 +201,9 @@ const StringList& BuildPaths::resourceExtensions() const noexcept
 }
 const std::string& BuildPaths::cxxExtension() const
 {
+	if (m_cxxExtension.empty())
+		m_cxxExtension = "cxx";
+
 	return m_cxxExtension;
 }
 
