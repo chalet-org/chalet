@@ -63,12 +63,12 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 		}
 	}
 
-	auto projectFile = fmt::format("{}.vcxproj", name);
+	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
 
 	if (!saveProjectFile(inState, name, projectFile))
 		return false;
 
-	if (!saveFiltersFile(inState, inProject, fmt::format("{}.filters", projectFile)))
+	if (!saveFiltersFile(inState, fmt::format("{}.filters", projectFile)))
 		return false;
 
 	if (!saveUserFile(fmt::format("{}.user", projectFile)))
@@ -203,6 +203,8 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 			node.addAttribute("Condition", condition);
 			node.addElementWithTextIfNotEmpty("LinkIncremental", vcxprojAdapter.getLinkIncremental());
+			node.addElementWithText("OutDir", "$(SolutionDir)$(Platform)_$(Configuration)\\");
+			node.addElementWithText("IntDir", "$(Platform)_$(Configuration)\\");
 
 			// Advanced Tab
 			// CopyLocalDeploymentContent - true/false
@@ -233,8 +235,9 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				if (vcxprojAdapter.usesPrecompiledHeader())
 				{
 					node2.addElementWithTextIfNotEmpty("PrecompiledHeader", "Use");
-					node2.addElementWithTextIfNotEmpty("PrecompiledHeaderFile", vcxprojAdapter.getPrecompiledHeaderFile());
+					node2.addElementWithTextIfNotEmpty("PrecompiledHeaderFile", vcxprojAdapter.getPrecompiledHeaderMinusLocation());
 					node2.addElementWithTextIfNotEmpty("PrecompiledHeaderOutputFile", vcxprojAdapter.getPrecompiledHeaderOutputFile());
+					node2.addElementWithTextIfNotEmpty("ForcedIncludeFiles", vcxprojAdapter.getPrecompiledHeaderMinusLocation());
 				}
 
 				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
@@ -291,13 +294,13 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 	{
 		OrderedDictionary<bool> headers;
 		OrderedDictionary<StringList> files;
-		// OrderedDictionary<std::pair<std::string, StringList>> precompiledHeader;
+		std::string pchSource;
 		StringList allConfigs;
 		for (auto& state : m_states)
 		{
 			const auto& project = *getProjectFromStateContext(*state, inName);
 			const auto& config = state->configuration.name();
-			// const auto& vcxprojAdapter = *m_adapters.at(config);
+			const auto& vcxprojAdapter = *m_adapters.at(config);
 
 			allConfigs.emplace_back(config);
 
@@ -306,7 +309,10 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			if (!pch.empty())
 			{
 				headerFiles.push_back(pch);
-				// precompiledHeader[vcxprojAdapter.getPrecompiledHeaderOutputFile()] = std::make_pair(vcxprojAdapter.getPrecompiledHeadeSourceFile(), StringList{ config });
+				if (pchSource.empty())
+				{
+					pchSource = vcxprojAdapter.getPrecompiledHeaderSourceFile();
+				}
 			}
 
 			for (auto& file : headerFiles)
@@ -324,11 +330,6 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			}
 		}
 
-		// auto headerFiles = inProject.getHeaderFiles();
-		// const auto& pch = inProject.precompiledHeader();
-		// if (!pch.empty())
-		// 	headerFiles.push_back(pch);
-
 		xmlRoot.addElement("ItemGroup", [this, &headers](XmlElement& node) {
 			for (auto& it : headers)
 			{
@@ -340,7 +341,17 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			}
 		});
 
-		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &files](XmlElement& node) {
+		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &files, &pchSource](XmlElement& node) {
+			if (!pchSource.empty())
+			{
+				node.addElement("ClCompile", [this, &pchSource](XmlElement& node2) {
+					node2.addAttribute("Include", pchSource);
+					node2.addElementWithText("PrecompiledHeader", "Create");
+					node2.addElementWithText("ForcedIncludeFiles", std::string());
+					node2.addElementWithText("ObjectFileName", "$(IntDir)");
+				});
+			}
+
 			for (auto& it : files)
 			{
 				const auto& file = it.first;
@@ -359,10 +370,6 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 								node3.setText("true");
 							});
 						}
-
-						// <ForcedIncludeFiles Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-						//   $(IntDir)/pch.hxx;%(ForcedIncludeFiles)
-						// </ForcedIncludeFiles>
 					}
 				});
 			}
@@ -375,6 +382,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			node2.addAttribute("Include", file);
 		});
 	});*/
+
 	// Ico files
 	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
 		node.addElement("Image", [](XmlElement& node2) {
@@ -393,19 +401,26 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const SourceTarget& inProject, const std::string& inFilename)
+bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
 	// TODO: Extensions should be cumulative across configurations
 	//   This is kind of hacky otherwise
-	ProjectAdapterVCXProj vcxprojAdapter(inState, inProject);
+	const auto& config = inState.configuration.name();
+	const auto& vcxprojAdapter = *m_adapters.at(config);
 
 	auto& xml = xmlFile.xml;
 	auto& xmlRoot = xml.root();
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	xmlRoot.addElement("ItemGroup", [this, &vcxprojAdapter](XmlElement& node) {
+		node.addElement("ClCompile", [this, &vcxprojAdapter](XmlElement& node2) {
+			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderSourceFile());
+			node2.addElementWithText("Filter", "Precompile Header Files");
+		});
+	});
 	xmlRoot.addElement("ItemGroup", [this, &vcxprojAdapter](XmlElement& node) {
 		node.addElement("Filter", [this, &vcxprojAdapter](XmlElement& node2) {
 			auto extensions = String::join(vcxprojAdapter.getSourceExtensions(), ';');
@@ -427,6 +442,12 @@ bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const SourceTarget
 			node2.addAttribute("Include", "Resource Files");
 			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
 			node2.addElementWithText("Extensions", extensions);
+		});
+		node.addElement("Filter", [this, &vcxprojAdapter](XmlElement& node2) {
+			auto extensions = String::join(vcxprojAdapter.getHeaderExtensions(), ';');
+			auto guid = Uuid::v5(extensions, m_projectTypeGuid).toUpperCase();
+			node2.addAttribute("Include", "Precompile Header Files");
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
 		});
 	});
 
