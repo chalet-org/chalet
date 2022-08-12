@@ -574,15 +574,19 @@ std::string CommandAdapterMSVC::getMachineArchitecture() const
 }
 
 /*****************************************************************************/
-StringList CommandAdapterMSVC::getIncludeDirectories() const
+StringList CommandAdapterMSVC::getIncludeDirectories(const bool inExcludeIntDir) const
 {
 	StringList ret;
 
+	const auto& intermediateDir = m_state.paths.intermediateDir(m_project);
 	for (const auto& dir : m_project.includeDirs())
 	{
 		std::string outDir = dir;
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
+
+		if (inExcludeIntDir && String::equals(intermediateDir, outDir))
+			continue;
 
 		ret.emplace_back(std::move(outDir));
 	}
@@ -613,7 +617,7 @@ StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) c
 }
 
 /*****************************************************************************/
-bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inOutputPath)
+bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath)
 {
 	const auto& cxxExt = m_state.paths.cxxExtension();
 	if (cxxExt.empty())
@@ -623,8 +627,8 @@ bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inOutp
 	{
 		const auto& pch = m_project.precompiledHeader();
 
-		m_pchSource = fmt::format("{}/{}.{}", inOutputPath, pch, cxxExt);
-		m_pchTarget = fmt::format("{}/{}.pch", inOutputPath, pch);
+		m_pchSource = fmt::format("{}{}.{}", inSourcePath, pch, cxxExt);
+		m_pchTarget = fmt::format("{}{}.pch", inPchPath, pch);
 		m_pchMinusLocation = String::getPathFilename(pch);
 
 		if (!Commands::pathExists(m_pchSource))

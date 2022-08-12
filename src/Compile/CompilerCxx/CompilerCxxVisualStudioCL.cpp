@@ -50,7 +50,10 @@ bool CompilerCxxVisualStudioCL::initialize()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
-	return m_msvcAdapter.createPrecompiledHeaderSource(m_state.paths.objDir());
+	std::string path = m_state.paths.objDir();
+	path.push_back('/');
+
+	return m_msvcAdapter.createPrecompiledHeaderSource(path, path);
 }
 
 /*****************************************************************************/

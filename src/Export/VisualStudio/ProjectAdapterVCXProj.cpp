@@ -31,11 +31,18 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 {
-	auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
-	const auto& config = m_state.configuration.name();
-	auto intDirectory = fmt::format("{}/{}", arch, config);
+	auto outputDirectory = m_state.paths.outputDirectory();
+	outputDirectory += '/';
+	auto sourcePath = m_state.paths.intermediateDir(m_project);
+	String::replaceAll(sourcePath, outputDirectory, "");
+	sourcePath += '/';
 
-	return m_msvcAdapter.createPrecompiledHeaderSource(intDirectory);
+	// auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
+	// const auto& config = m_state.configuration.name();
+	// auto sourcePath = fmt::format("{}{}/", arch, config);
+	std::string pchPath{ "$(IntDir)" };
+
+	return m_msvcAdapter.createPrecompiledHeaderSource(sourcePath, pchPath);
 }
 
 /*****************************************************************************/
@@ -111,7 +118,7 @@ std::string ProjectAdapterVCXProj::getCharacterSet() const
 	}
 
 	// TODO: More conversions
-	return std::string();
+	return "MultiByte";
 }
 
 /*****************************************************************************/
@@ -458,25 +465,39 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 }
 
 /*****************************************************************************/
-const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderFile() const noexcept
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile(const std::string& inCwd) const
+{
+	if (m_project.usesPrecompiledHeader())
+		return fmt::format("{}/{}", inCwd, m_project.precompiledHeader());
+
+	return std::string();
+}
+
+const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderMinusLocation() const noexcept
 {
 	return m_msvcAdapter.pchMinusLocation();
 }
 
-const std::string& ProjectAdapterVCXProj::getPrecompiledHeadeSourceFile() const noexcept
+const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderSourceFile() const noexcept
 {
 	return m_msvcAdapter.pchSource();
 }
 
-const std::string& ProjectAdapterVCXProj::getPrecompiledHeaderOutputFile() const noexcept
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderOutputFile() const
 {
-	return m_msvcAdapter.pchTarget();
+	auto file = String::getPathFilename(m_msvcAdapter.pchTarget());
+	return fmt::format("$(IntDir){}", file);
+}
+
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
+{
+	return m_state.paths.getPrecompiledHeaderObject(m_msvcAdapter.pchTarget());
 }
 
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const std::string& inCwd) const
 {
-	auto list = m_msvcAdapter.getIncludeDirectories();
+	auto list = m_msvcAdapter.getIncludeDirectories(true);
 	for (auto& dir : list)
 	{
 		auto full = fmt::format("{}/{}", inCwd, dir);
@@ -485,6 +506,7 @@ std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const std::st
 			dir = std::move(full);
 		}
 	}
+
 	auto ret = String::join(list, ';');
 	if (!ret.empty())
 		ret += ';';
