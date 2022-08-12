@@ -60,8 +60,9 @@ struct ProjectAdapterVCXProj
 	std::string getForceConformanceInForLoopScope() const;
 	std::string getRemoveUnreferencedCodeData() const;
 	std::string getCallingConvention() const;
-	std::string getPrecompiledHeaderFile() const;
-	std::string getPrecompiledHeaderOutputFile() const;
+	const std::string& getPrecompiledHeaderFile() const noexcept;
+	const std::string& getPrecompiledHeadeSourceFile() const noexcept;
+	const std::string& getPrecompiledHeaderOutputFile() const noexcept;
 	std::string getAdditionalIncludeDirectories(const std::string& inCwd) const;
 	std::string getAdditionalOptions() const;
 

@@ -616,15 +616,26 @@ StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) c
 bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inOutputPath)
 {
 	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (m_project.usesPrecompiledHeader() && !cxxExt.empty())
+	if (cxxExt.empty())
+		return false;
+
+	if (m_project.usesPrecompiledHeader())
 	{
 		const auto& pch = m_project.precompiledHeader();
 
 		m_pchSource = fmt::format("{}/{}.{}", inOutputPath, pch, cxxExt);
+		m_pchTarget = fmt::format("{}/{}.pch", inOutputPath, pch);
 		m_pchMinusLocation = String::getPathFilename(pch);
 
 		if (!Commands::pathExists(m_pchSource))
 		{
+			auto folder = String::getPathFolder(m_pchSource);
+			if (!Commands::pathExists(folder))
+			{
+				if (!Commands::makeDirectory(folder))
+					return false;
+			}
+
 			if (!Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", m_pchMinusLocation)))
 				return false;
 		}
@@ -637,6 +648,11 @@ bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inOutp
 const std::string& CommandAdapterMSVC::pchSource() const noexcept
 {
 	return m_pchSource;
+}
+
+const std::string& CommandAdapterMSVC::pchTarget() const noexcept
+{
+	return m_pchTarget;
 }
 
 const std::string& CommandAdapterMSVC::pchMinusLocation() const noexcept

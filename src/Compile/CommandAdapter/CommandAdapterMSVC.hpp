@@ -64,6 +64,7 @@ struct CommandAdapterMSVC
 	bool createPrecompiledHeaderSource(const std::string& inOutputPath);
 	std::string getPchObject(const std::string& inOutputFile);
 	const std::string& pchSource() const noexcept;
+	const std::string& pchTarget() const noexcept;
 	const std::string& pchMinusLocation() const noexcept;
 
 private:
@@ -71,6 +72,7 @@ private:
 	const SourceTarget& m_project;
 
 	std::string m_pchSource;
+	std::string m_pchTarget;
 	std::string m_pchMinusLocation;
 
 	uint m_versionMajorMinor = 0;

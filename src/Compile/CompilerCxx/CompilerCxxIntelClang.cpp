@@ -26,6 +26,9 @@ bool CompilerCxxIntelClang::initialize()
 		return false;
 
 	/*const auto& cxxExt = m_state.paths.cxxExtension();
+	if (cxxExt.empty())
+		return false;
+
 	if (m_project.usesPrecompiledHeader())
 	{
 		const auto& objDir = m_state.paths.objDir();
