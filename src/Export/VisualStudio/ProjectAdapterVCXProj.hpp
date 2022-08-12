@@ -17,6 +17,11 @@ struct ProjectAdapterVCXProj
 {
 	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
 
+	bool createPrecompiledHeaderSource();
+
+	bool usesPrecompiledHeader() const;
+	bool usesLibrarian() const;
+
 	std::string getBoolean(const bool inValue) const;
 	std::string getBooleanIfTrue(const bool inValue) const;
 
@@ -55,13 +60,19 @@ struct ProjectAdapterVCXProj
 	std::string getForceConformanceInForLoopScope() const;
 	std::string getRemoveUnreferencedCodeData() const;
 	std::string getCallingConvention() const;
+	std::string getPrecompiledHeaderFile() const;
+	std::string getPrecompiledHeaderOutputFile() const;
 	std::string getAdditionalIncludeDirectories(const std::string& inCwd) const;
 	std::string getAdditionalOptions() const;
 
+	std::string getGenerateDebugInformation() const;
+	std::string getLinkIncremental() const;
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
 	std::string getLinkTimeCodeGeneration() const;
 	std::string getTargetMachine() const;
+	std::string getEnableCOMDATFolding() const;
+	std::string getOptimizeReferences() const;
 
 	StringList getSourceExtensions() const;
 	StringList getHeaderExtensions() const;
