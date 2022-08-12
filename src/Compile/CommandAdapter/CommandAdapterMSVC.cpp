@@ -293,6 +293,25 @@ bool CommandAdapterMSVC::supportsExternalWarnings() const
 }
 
 /*****************************************************************************/
+bool CommandAdapterMSVC::supportsIncrementalLinking() const
+{
+	const auto& config = m_state.configuration;
+	return config.debugSymbols() && !config.enableSanitizers() && !config.enableProfiling();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsCOMDATFolding() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsOptimizeReferences() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
 std::string CommandAdapterMSVC::getLanguageStandardCpp() const
 {
 	// 2015 Update 3 or later (/std flag doesn't exist prior

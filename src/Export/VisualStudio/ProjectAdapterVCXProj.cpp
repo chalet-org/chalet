@@ -5,7 +5,9 @@
 
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
 
+#include "Core/Arch.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -24,6 +26,25 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 {
 	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
 	m_versionPatch = m_state.toolchain.compilerCxx(m_project.language()).versionPatch;
+}
+
+/*****************************************************************************/
+bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
+{
+	auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
+	auto intDirectory = fmt::format("{}//{}");
+	return m_msvcAdapter.createPrecompiledHeaderSource(m_state.paths.objDir());
+}
+
+/*****************************************************************************/
+bool ProjectAdapterVCXProj::usesPrecompiledHeader() const
+{
+	return m_project.usesPrecompiledHeader();
+}
+
+bool ProjectAdapterVCXProj::usesLibrarian() const
+{
+	return m_project.isStaticLibrary();
 }
 
 /*****************************************************************************/
@@ -435,6 +456,17 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile() const
+{
+	return m_project.precompiledHeader();
+}
+
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderOutputFile() const
+{
+	return m_state.paths.getPrecompiledHeaderTarget(m_project);
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const std::string& inCwd) const
 {
 	auto list = m_msvcAdapter.getIncludeDirectories();
@@ -464,6 +496,30 @@ std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 
 	ret += "%(AdditionalOptions)";
 	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getGenerateDebugInformation() const
+{
+	return getBoolean(true);
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLinkIncremental() const
+{
+	return getBooleanIfTrue(m_msvcAdapter.supportsIncrementalLinking());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEnableCOMDATFolding() const
+{
+	return getBooleanIfTrue(m_msvcAdapter.supportsCOMDATFolding());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getOptimizeReferences() const
+{
+	return getBooleanIfTrue(m_msvcAdapter.supportsOptimizeReferences());
 }
 
 /*****************************************************************************/

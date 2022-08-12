@@ -67,22 +67,26 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 
 		const auto& workspaceName = state->workspace.metadata().name();
 
-		VSSolutionGen slnGen(m_states, m_cwd, projectTypeGUID, targetGuids);
-		if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
 		{
-			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
-			return false;
+			VSSolutionGen slnGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+			if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
+			{
+				Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
+				return false;
+			}
 		}
 
-		for (auto& target : state->targets)
 		{
-			if (target->isSources())
+			for (auto& target : state->targets)
 			{
-				VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
-				if (!vcxprojGen.saveProjectFiles(*state, static_cast<const SourceTarget&>(*target)))
+				if (target->isSources())
 				{
-					Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
-					return false;
+					VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+					if (!vcxprojGen.saveProjectFiles(*state, static_cast<const SourceTarget&>(*target)))
+					{
+						Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
+						return false;
+					}
 				}
 			}
 		}

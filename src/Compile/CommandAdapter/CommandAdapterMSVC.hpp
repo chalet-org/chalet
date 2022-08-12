@@ -43,6 +43,10 @@ struct CommandAdapterMSVC
 	bool supportsRemoveUnreferencedCodeData() const;
 	bool supportsExternalWarnings() const;
 
+	bool supportsIncrementalLinking() const;
+	bool supportsCOMDATFolding() const;
+	bool supportsOptimizeReferences() const;
+
 	std::string getPlatformToolset() const;
 
 	std::string getLanguageStandardCpp() const;

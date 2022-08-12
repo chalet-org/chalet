@@ -256,8 +256,7 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
 {
-	const bool enableProfiling = m_state.configuration.enableProfiling();
-	if (m_state.configuration.debugSymbols() && !m_state.configuration.enableSanitizers() && !enableProfiling)
+	if (m_msvcAdapter.supportsIncrementalLinking())
 	{
 		outArgList.emplace_back("/incremental");
 
@@ -270,7 +269,7 @@ void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::s
 	{
 		outArgList.emplace_back("/incremental:NO");
 
-		if (enableProfiling)
+		if (m_state.configuration.enableProfiling())
 		{
 			outArgList.emplace_back("/fixed:NO");
 		}
