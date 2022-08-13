@@ -60,6 +60,9 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 				Diagnostic::error("Error generating the precompiled header.");
 				return false;
 			}
+
+			StringList fileCache;
+			m_outputs.emplace(config, state->paths.getOutputs(inProject, fileCache));
 		}
 	}
 
@@ -293,9 +296,11 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 
 	{
 		OrderedDictionary<bool> headers;
-		OrderedDictionary<StringList> files;
+		OrderedDictionary<StringList> sources;
+		OrderedDictionary<StringList> resources;
 		std::string pchSource;
 		StringList allConfigs;
+
 		for (auto& state : m_states)
 		{
 			const auto& project = *getProjectFromStateContext(*state, inName);
@@ -320,15 +325,46 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				headers[file] = true;
 			}
 
-			const auto& projectFiles = project.files();
+			SourceOutputs& outputs = *m_outputs.at(config).get();
+
+			for (auto& group : outputs.groups)
+			{
+				const auto& file = group->sourceFile;
+				switch (group->type)
+				{
+					case SourceType::C:
+					case SourceType::CPlusPlus: {
+						if (sources.find(file) == sources.end())
+							sources[file] = StringList{ config };
+						else
+							sources[file].emplace_back(config);
+
+						break;
+					}
+					case SourceType::WindowsResource: {
+						if (resources.find(file) == resources.end())
+							resources[file] = StringList{ config };
+						else
+							resources[file].emplace_back(config);
+
+						break;
+					}
+					default:
+						break;
+				}
+			}
+
+			/*const auto& projectFiles = project.files();
 			for (auto& file : projectFiles)
 			{
 				if (files.find(file) == files.end())
 					files[file] = StringList{ config };
 				else
 					files[file].emplace_back(config);
-			}
+			}*/
 		}
+
+		UNUSED(resources);
 
 		xmlRoot.addElement("ItemGroup", [this, &headers](XmlElement& node) {
 			for (auto& it : headers)
@@ -341,7 +377,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			}
 		});
 
-		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &files, &pchSource](XmlElement& node) {
+		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
 			if (!pchSource.empty())
 			{
 				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
@@ -352,7 +388,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				});
 			}
 
-			for (auto& it : files)
+			for (auto& it : sources)
 			{
 				const auto& file = it.first;
 				const auto& configs = it.second;
