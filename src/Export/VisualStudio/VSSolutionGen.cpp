@@ -133,6 +133,12 @@ EndGlobal)sln",
 
 	UNUSED(inFilename);
 
-	return Commands::createFileWithContents(inFilename, contents);
+	if (!Commands::createFileWithContents(inFilename, contents))
+	{
+		Diagnostic::error("There was a problem creating the VS solution: {}", inFilename);
+		return false;
+	}
+
+	return true;
 }
 }
