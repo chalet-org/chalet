@@ -291,6 +291,11 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					node2.addElementWithText("GenerateDebugInformation", vcxprojAdapter.getGenerateDebugInformation());
 				});
 			}
+
+			node.addElement("ResourceCompile", [this, &vcxprojAdapter](XmlElement& node2) {
+				node2.addElementWithText("PreprocessorDefinitions", vcxprojAdapter.getPreprocessorDefinitions());
+				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories(m_cwd));
+			});
 		});
 	}
 
@@ -410,14 +415,32 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				});
 			}
 		});
-	}
 
-	// Resource files
-	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
-		node.addElement("ResourceCompile", [](XmlElement& node2) {
-			node2.addAttribute("Include", file);
+		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
+			for (auto& it : resources)
+			{
+				const auto& file = it.first;
+				const auto& configs = it.second;
+
+				node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+					node2.addElementWithText("PrecompiledHeader", "NotUsing");
+
+					for (auto& config : allConfigs)
+					{
+						if (!List::contains(configs, config))
+						{
+							auto condition = getCondition(config);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
+					}
+				});
+			}
 		});
-	});*/
+	}
 
 	// Ico files
 	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
