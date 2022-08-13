@@ -7,12 +7,12 @@
 #define CHALET_VS_VCXPROJ_GEN_HPP
 
 #include "State/MSVCWarningLevel.hpp"
+#include "State/SourceOutputs.hpp"
 #include "Utility/Uuid.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
 {
-struct CentralState;
 class BuildState;
 struct SourceTarget;
 struct ProjectAdapterVCXProj;
@@ -40,6 +40,7 @@ private:
 	const OrderedDictionary<Uuid>& m_targetGuids;
 
 	HeapDictionary<ProjectAdapterVCXProj> m_adapters;
+	HeapDictionary<SourceOutputs> m_outputs;
 
 	std::string m_currentTarget;
 	std::string m_currentGuid;
