@@ -844,9 +844,19 @@ void Commands::sleep(const double inSeconds)
 /*****************************************************************************/
 bool Commands::createFileWithContents(const std::string& inFile, const std::string& inContents)
 {
+	auto folder = String::getPathFolder(inFile);
+	if (!folder.empty() && !Commands::pathExists(folder))
+	{
+		if (!Commands::makeDirectory(folder))
+		{
+			Diagnostic::error("File with contents could not be created (Folder doesn't exist): {}", inFile);
+			return false;
+		}
+	}
+
 	std::ofstream(inFile) << inContents << std::endl;
 
-	return Commands::pathExists(inFile);
+	return true;
 }
 
 /*****************************************************************************/
