@@ -23,10 +23,6 @@ struct ICompilerWinResource : public IToolchainExecutableBase
 protected:
 	virtual void addIncludes(StringList& outArgList) const;
 	virtual void addDefines(StringList& outArgList) const;
-
-private:
-	bool createWindowsApplicationManifest();
-	bool createWindowsApplicationIcon();
 };
 }
 

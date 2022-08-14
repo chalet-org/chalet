@@ -18,6 +18,7 @@ struct ProjectAdapterVCXProj
 	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject, const std::string& inCwd);
 
 	bool createPrecompiledHeaderSource();
+	bool createWindowsResources();
 
 	bool usesPrecompiledHeader() const;
 	bool usesLibrarian() const;

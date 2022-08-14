@@ -63,6 +63,11 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 				Diagnostic::error("Error generating the precompiled header.");
 				return false;
 			}
+			if (!it->second->createWindowsResources())
+			{
+				Diagnostic::error("Error generating windows resources.");
+				return false;
+			}
 		}
 	}
 
