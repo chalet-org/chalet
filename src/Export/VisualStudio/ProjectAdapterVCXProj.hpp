@@ -73,6 +73,8 @@ struct ProjectAdapterVCXProj
 	std::string getAdditionalIncludeDirectories(const bool inAddCwd = false) const;
 	std::string getAdditionalOptions() const;
 
+	std::string getEmbedManifest() const;
+
 	std::string getGenerateDebugInformation() const;
 	std::string getLinkIncremental() const;
 	std::string getSubSystem() const;
