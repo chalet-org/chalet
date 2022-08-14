@@ -560,20 +560,15 @@ std::string CommandAdapterMSVC::getMachineArchitecture() const
 }
 
 /*****************************************************************************/
-StringList CommandAdapterMSVC::getIncludeDirectories(const bool inExcludeIntDir) const
+StringList CommandAdapterMSVC::getIncludeDirectories() const
 {
 	StringList ret;
 
-	const auto& intermediateDir = m_state.paths.intermediateDir(m_project);
 	for (const auto& dir : m_project.includeDirs())
 	{
 		std::string outDir = dir;
 		if (String::endsWith('/', outDir))
 			outDir.pop_back();
-
-		if (inExcludeIntDir && String::equals(intermediateDir, outDir))
-			continue;
-
 		ret.emplace_back(std::move(outDir));
 	}
 

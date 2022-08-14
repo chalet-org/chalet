@@ -532,7 +532,7 @@ std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories() const
 {
-	auto list = m_msvcAdapter.getIncludeDirectories(true);
+	auto list = m_msvcAdapter.getIncludeDirectories();
 	for (auto& dir : list)
 	{
 		auto full = fmt::format("{}/{}", m_cwd, dir);
