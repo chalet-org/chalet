@@ -29,6 +29,8 @@ struct ProjectAdapterVCXProj
 	std::string getBuildDir() const;
 	std::string getObjectDir() const;
 	std::string getIntermediateDir() const;
+	std::string getEmbedManifest() const;
+	const std::string& getTargetName() const noexcept;
 
 	// General
 	std::string getConfigurationType() const;
@@ -72,8 +74,6 @@ struct ProjectAdapterVCXProj
 	std::string getPrecompiledHeaderObjectFile() const;
 	std::string getAdditionalIncludeDirectories(const bool inAddCwd = false) const;
 	std::string getAdditionalOptions() const;
-
-	std::string getEmbedManifest() const;
 
 	std::string getGenerateDebugInformation() const;
 	std::string getLinkIncremental() const;

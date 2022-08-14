@@ -214,6 +214,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
 			node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
 			node.addElementWithText("EmbedManifest", vcxprojAdapter.getEmbedManifest());
+			node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 
 			// Advanced Tab
 			// CopyLocalDeploymentContent - true/false

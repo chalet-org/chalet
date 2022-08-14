@@ -107,6 +107,18 @@ std::string ProjectAdapterVCXProj::getIntermediateDir() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEmbedManifest() const
+{
+	return getBoolean(false);
+}
+
+/*****************************************************************************/
+const std::string& ProjectAdapterVCXProj::getTargetName() const noexcept
+{
+	return m_project.name();
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getConfigurationType() const
 {
 	if (m_project.isExecutable())
@@ -565,12 +577,6 @@ std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 
 	ret += "%(AdditionalOptions)";
 	return ret;
-}
-
-/*****************************************************************************/
-std::string ProjectAdapterVCXProj::getEmbedManifest() const
-{
-	return getBoolean(false);
 }
 
 /*****************************************************************************/
