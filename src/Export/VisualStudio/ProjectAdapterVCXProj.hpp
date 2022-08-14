@@ -70,7 +70,7 @@ struct ProjectAdapterVCXProj
 	const std::string& getPrecompiledHeaderSourceFile() const noexcept;
 	std::string getPrecompiledHeaderOutputFile() const;
 	std::string getPrecompiledHeaderObjectFile() const;
-	std::string getAdditionalIncludeDirectories() const;
+	std::string getAdditionalIncludeDirectories(const bool inAddCwd = false) const;
 	std::string getAdditionalOptions() const;
 
 	std::string getGenerateDebugInformation() const;
