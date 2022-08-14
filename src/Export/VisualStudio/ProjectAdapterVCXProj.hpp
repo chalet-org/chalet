@@ -15,7 +15,7 @@ struct SourceTarget;
 
 struct ProjectAdapterVCXProj
 {
-	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
+	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject, const std::string& inCwd);
 
 	bool createPrecompiledHeaderSource();
 
@@ -24,6 +24,10 @@ struct ProjectAdapterVCXProj
 
 	std::string getBoolean(const bool inValue) const;
 	std::string getBooleanIfTrue(const bool inValue) const;
+
+	std::string getBuildDir() const;
+	std::string getObjectDir() const;
+	std::string getIntermediateDir() const;
 
 	// General
 	std::string getConfigurationType() const;
@@ -60,12 +64,12 @@ struct ProjectAdapterVCXProj
 	std::string getForceConformanceInForLoopScope() const;
 	std::string getRemoveUnreferencedCodeData() const;
 	std::string getCallingConvention() const;
-	std::string getPrecompiledHeaderFile(const std::string& inCwd) const;
+	std::string getPrecompiledHeaderFile() const;
 	const std::string& getPrecompiledHeaderMinusLocation() const noexcept;
 	const std::string& getPrecompiledHeaderSourceFile() const noexcept;
 	std::string getPrecompiledHeaderOutputFile() const;
 	std::string getPrecompiledHeaderObjectFile() const;
-	std::string getAdditionalIncludeDirectories(const std::string& inCwd) const;
+	std::string getAdditionalIncludeDirectories() const;
 	std::string getAdditionalOptions() const;
 
 	std::string getGenerateDebugInformation() const;
@@ -84,6 +88,7 @@ struct ProjectAdapterVCXProj
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;
+	const std::string& m_cwd;
 
 	CommandAdapterMSVC m_msvcAdapter;
 

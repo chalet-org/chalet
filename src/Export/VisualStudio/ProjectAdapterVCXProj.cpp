@@ -19,9 +19,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject) :
+ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject, const std::string& inCwd) :
 	m_state(inState),
 	m_project(inProject),
+	m_cwd(inCwd),
 	m_msvcAdapter(inState, inProject)
 {
 	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
@@ -31,11 +32,12 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 {
-	auto outputDirectory = m_state.paths.outputDirectory();
-	outputDirectory += '/';
-	auto sourcePath = m_state.paths.intermediateDir(m_project);
-	String::replaceAll(sourcePath, outputDirectory, "");
-	sourcePath += '/';
+	// auto outputDirectory = m_state.paths.outputDirectory();
+	// outputDirectory += '/';
+	// auto sourcePath = m_state.paths.intermediateDir(m_project);
+	// String::replaceAll(sourcePath, outputDirectory, "");
+	// sourcePath += '/';
+	auto sourcePath = getIntermediateDir();
 
 	// auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
 	// const auto& config = m_state.configuration.name();
@@ -72,6 +74,26 @@ std::string ProjectAdapterVCXProj::getBooleanIfTrue(const bool inValue) const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getBuildDir() const
+{
+	// return "$(SolutionDir)$(Platform)_$(Configuration)\\";
+	return fmt::format("{}/{}/", m_cwd, m_state.paths.buildOutputDir());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getObjectDir() const
+{
+	// return "$(Platform)_$(Configuration)\\";
+	return fmt::format("{}/{}/", m_cwd, m_state.paths.objDir());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getIntermediateDir() const
+{
+	return fmt::format("{}/{}/", m_cwd, m_state.paths.intermediateDir(m_project));
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getConfigurationType() const
 {
 	if (m_project.isExecutable())
@@ -95,7 +117,7 @@ std::string ProjectAdapterVCXProj::getUseDebugLibraries() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPlatformToolset() const
 {
-	return m_msvcAdapter.getPlatformToolset();
+	return fmt::format("v{}", m_msvcAdapter.getPlatformToolset());
 }
 
 /*****************************************************************************/
@@ -465,10 +487,10 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile(const std::string& inCwd) const
+std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile() const
 {
 	if (m_project.usesPrecompiledHeader())
-		return fmt::format("{}/{}", inCwd, m_project.precompiledHeader());
+		return fmt::format("{}/{}", m_cwd, m_project.precompiledHeader());
 
 	return std::string();
 }
@@ -495,12 +517,12 @@ std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const std::string& inCwd) const
+std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories() const
 {
 	auto list = m_msvcAdapter.getIncludeDirectories(true);
 	for (auto& dir : list)
 	{
-		auto full = fmt::format("{}/{}", inCwd, dir);
+		auto full = fmt::format("{}/{}", m_cwd, dir);
 		if (Commands::pathExists(full))
 		{
 			dir = std::move(full);

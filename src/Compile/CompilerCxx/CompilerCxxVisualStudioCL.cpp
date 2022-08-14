@@ -676,8 +676,8 @@ void CompilerCxxVisualStudioCL::addAdditionalOptions(StringList& outArgList) con
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addProgramDatabaseOutput(StringList& outArgList) const
 {
-	auto buildDir = m_state.paths.buildOutputDir() + '/';
-	outArgList.emplace_back(getPathCommand("/Fd", buildDir)); // PDB output
+	auto pdbOutput = fmt::format("{}/vc{}.pdb", m_state.paths.objDir(), m_msvcAdapter.getPlatformToolset());
+	outArgList.emplace_back(getPathCommand("/Fd", pdbOutput)); // PDB output
 }
 
 /*****************************************************************************/

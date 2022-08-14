@@ -167,12 +167,12 @@ std::string CommandAdapterMSVC::getPlatformToolset() const
 {
 	const auto majorVersion = m_state.toolchain.versionMajorMinor();
 	if (majorVersion >= 1700)
-		return "v143"; // VS 2022
+		return "143"; // VS 2022
 
 	if (majorVersion >= 1600)
-		return "v142"; // VS 2019
+		return "142"; // VS 2019
 
-	return "v141"; // VS 2017
+	return "141"; // VS 2017
 }
 
 /*****************************************************************************/
