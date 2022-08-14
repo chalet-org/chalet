@@ -54,15 +54,15 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 			const auto project = getProjectFromStateContext(*state, name);
 			const auto& config = state->configuration.name();
 
-			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project));
+			StringList fileCache;
+			m_outputs.emplace(config, state->paths.getOutputs(inProject, fileCache));
+
+			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project, m_cwd));
 			if (!it->second->createPrecompiledHeaderSource())
 			{
 				Diagnostic::error("Error generating the precompiled header.");
 				return false;
 			}
-
-			StringList fileCache;
-			m_outputs.emplace(config, state->paths.getOutputs(inProject, fileCache));
 		}
 	}
 
@@ -206,8 +206,8 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 			node.addAttribute("Condition", condition);
 			node.addElementWithTextIfNotEmpty("LinkIncremental", vcxprojAdapter.getLinkIncremental());
-			node.addElementWithText("OutDir", "$(SolutionDir)$(Platform)_$(Configuration)\\");
-			node.addElementWithText("IntDir", "$(Platform)_$(Configuration)\\");
+			node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
+			node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
 
 			// Advanced Tab
 			// CopyLocalDeploymentContent - true/false
@@ -225,15 +225,15 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		const auto& vcxprojAdapter = *m_adapters.at(config);
 		auto condition = getCondition(config);
 
-		xmlRoot.addElement("ItemDefinitionGroup", [this, &condition, &vcxprojAdapter](XmlElement& node) {
+		xmlRoot.addElement("ItemDefinitionGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 			node.addAttribute("Condition", condition);
-			node.addElement("ClCompile", [this, &vcxprojAdapter](XmlElement& node2) {
+			node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 				node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 				node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardC());
 
 				// C/C++ Settings
-				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories(m_cwd));
+				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories());
 
 				if (vcxprojAdapter.usesPrecompiledHeader())
 				{
@@ -292,9 +292,9 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				});
 			}
 
-			node.addElement("ResourceCompile", [this, &vcxprojAdapter](XmlElement& node2) {
+			node.addElement("ResourceCompile", [&vcxprojAdapter](XmlElement& node2) {
 				node2.addElementWithText("PreprocessorDefinitions", vcxprojAdapter.getPreprocessorDefinitions());
-				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories(m_cwd));
+				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories());
 			});
 		});
 	}
@@ -474,6 +474,12 @@ bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string&
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	xmlRoot.addElement("ItemGroup", [&vcxprojAdapter](XmlElement& node) {
+		node.addElement("ClInclude", [&vcxprojAdapter](XmlElement& node2) {
+			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderFile());
+			node2.addElementWithText("Filter", "Precompile Header Files");
+		});
+	});
 	xmlRoot.addElement("ItemGroup", [&vcxprojAdapter](XmlElement& node) {
 		node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderSourceFile());
