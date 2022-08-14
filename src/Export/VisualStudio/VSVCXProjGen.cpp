@@ -213,6 +213,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			node.addElementWithTextIfNotEmpty("LinkIncremental", vcxprojAdapter.getLinkIncremental());
 			node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
 			node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
+			node.addElementWithText("EmbedManifest", vcxprojAdapter.getEmbedManifest());
 
 			// Advanced Tab
 			// CopyLocalDeploymentContent - true/false
@@ -308,6 +309,8 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		OrderedDictionary<bool> headers;
 		OrderedDictionary<StringList> sources;
 		OrderedDictionary<StringList> resources;
+		std::pair<std::string, StringList> manifest;
+		std::pair<std::string, StringList> icon;
 		std::string pchSource;
 		StringList allConfigs;
 
@@ -363,6 +366,14 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 						break;
 				}
 			}
+
+			manifest.first = state->paths.getWindowsManifestFilename(project);
+			if (!manifest.first.empty())
+				manifest.second.emplace_back(config);
+
+			icon.first = project.windowsApplicationIcon();
+			if (!icon.first.empty())
+				icon.second.emplace_back(config);
 
 			/*const auto& projectFiles = project.files();
 			for (auto& file : projectFiles)
@@ -445,14 +456,49 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				});
 			}
 		});
-	}
 
-	// Ico files
-	/*xmlRoot.addElement("ItemGroup", [](XmlElement& node) {
-		node.addElement("Image", [](XmlElement& node2) {
-			node2.addAttribute("Include", file);
-		});
-	});*/
+		if (!manifest.first.empty())
+		{
+			xmlRoot.addElement("ItemGroup", [this, &manifest, &allConfigs](XmlElement& node) {
+				node.addElement("Manifest", [this, &manifest, &allConfigs](XmlElement& node2) {
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+
+					for (auto& config : allConfigs)
+					{
+						if (!List::contains(manifest.second, config))
+						{
+							auto condition = getCondition(config);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
+					}
+				});
+			});
+		}
+
+		if (!icon.first.empty())
+		{
+			xmlRoot.addElement("ItemGroup", [this, &icon, &allConfigs](XmlElement& node) {
+				node.addElement("Image", [this, &icon, &allConfigs](XmlElement& node2) {
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+
+					for (auto& config : allConfigs)
+					{
+						if (!List::contains(icon.second, config))
+						{
+							auto condition = getCondition(config);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
+					}
+				});
+			});
+		}
+	}
 
 	xmlRoot.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");

@@ -568,6 +568,12 @@ std::string ProjectAdapterVCXProj::getAdditionalOptions() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEmbedManifest() const
+{
+	return getBoolean(false);
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getGenerateDebugInformation() const
 {
 	return getBoolean(true);
@@ -733,6 +739,8 @@ StringList ProjectAdapterVCXProj::getResourceExtensions() const
 		"png",
 		"wav",
 		"mfcribbon-ms",
+		// Others
+		"manifest",
 	};
 }
 
