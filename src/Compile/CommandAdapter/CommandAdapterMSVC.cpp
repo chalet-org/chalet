@@ -68,64 +68,50 @@ MSVCWarningLevel CommandAdapterMSVC::getWarningLevel() const
 				"sign-conversion",
 				"sign-promo",
 			};
-			MSVCWarningLevel ret = MSVCWarningLevel::None;
 
-			bool strictSet = false;
 			for (auto& w : warnings)
 			{
 				if (!String::equals(veryStrict, w))
 					continue;
 
-				// ret = MSVCWarningLevel::LevelAll;
-				ret = MSVCWarningLevel::Level4;
-				strictSet = true;
-				break;
+				// return MSVCWarningLevel::LevelAll;
+				return MSVCWarningLevel::Level4;
 			}
 
-			if (!strictSet)
+			StringList strictPedantic{
+				"unused",
+				"cast-align",
+				"double-promotion",
+				"format=2",
+				"missing-declarations",
+				"missing-include-dirs",
+				"non-virtual-dtor",
+				"redundant-decls",
+				"unreachable-code",
+				"shadow",
+			};
+			for (auto& w : warnings)
 			{
-				StringList strictPedantic{
-					"unused",
-					"cast-align",
-					"double-promotion",
-					"format=2",
-					"missing-declarations",
-					"missing-include-dirs",
-					"non-virtual-dtor",
-					"redundant-decls",
-					"unreachable-code",
-					"shadow",
-				};
-				for (auto& w : warnings)
-				{
-					if (!String::equals(strictPedantic, w))
-						continue;
+				if (!String::equals(strictPedantic, w))
+					continue;
 
-					ret = MSVCWarningLevel::Level4;
-					strictSet = true;
-					break;
-				}
+				return MSVCWarningLevel::Level4;
 			}
 
-			if (!strictSet)
+			if (List::contains<std::string>(warnings, "pedantic"))
 			{
-				if (List::contains<std::string>(warnings, "pedantic"))
-				{
-					ret = MSVCWarningLevel::Level3;
-				}
-				else if (List::contains<std::string>(warnings, "extra"))
-				{
-					ret = MSVCWarningLevel::Level2;
-				}
-				else if (List::contains<std::string>(warnings, "all"))
-				{
-					ret = MSVCWarningLevel::Level1;
-				}
+				return MSVCWarningLevel::Level3;
+			}
+			else if (List::contains<std::string>(warnings, "extra"))
+			{
+				return MSVCWarningLevel::Level2;
+			}
+			else if (List::contains<std::string>(warnings, "all"))
+			{
+				return MSVCWarningLevel::Level1;
 			}
 
 			break;
-
-			return ret;
 		}
 	}
 
