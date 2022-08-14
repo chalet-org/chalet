@@ -530,7 +530,7 @@ std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories() const
+std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool inAddCwd) const
 {
 	auto list = m_msvcAdapter.getIncludeDirectories();
 	for (auto& dir : list)
@@ -540,6 +540,11 @@ std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories() const
 		{
 			dir = std::move(full);
 		}
+	}
+
+	if (inAddCwd)
+	{
+		list.emplace_back(m_cwd);
 	}
 
 	auto ret = String::join(list, ';');

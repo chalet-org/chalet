@@ -299,7 +299,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 
 			node.addElement("ResourceCompile", [&vcxprojAdapter](XmlElement& node2) {
 				node2.addElementWithText("PreprocessorDefinitions", vcxprojAdapter.getPreprocessorDefinitions());
-				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories());
+				node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories(true));
 			});
 		});
 	}
