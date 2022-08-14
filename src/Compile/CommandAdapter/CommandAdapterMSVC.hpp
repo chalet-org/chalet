@@ -17,7 +17,7 @@ struct SourceTarget;
 
 struct CommandAdapterMSVC
 {
-	CommandAdapterMSVC(const BuildState& inState, const SourceTarget& inProject);
+	explicit CommandAdapterMSVC(const BuildState& inState, const SourceTarget& inProject);
 
 	MSVCWarningLevel getWarningLevel() const;
 	WindowsRuntimeLibraryType getRuntimeLibraryType() const;

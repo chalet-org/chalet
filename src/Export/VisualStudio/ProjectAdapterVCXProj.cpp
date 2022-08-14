@@ -5,7 +5,9 @@
 
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
 
+#include "Compile/CommandAdapter/CommandAdapterWinResource.hpp"
 #include "Core/Arch.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -32,19 +34,30 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 {
-	// auto outputDirectory = m_state.paths.outputDirectory();
-	// outputDirectory += '/';
-	// auto sourcePath = m_state.paths.intermediateDir(m_project);
-	// String::replaceAll(sourcePath, outputDirectory, "");
-	// sourcePath += '/';
 	auto sourcePath = getIntermediateDir();
-
-	// auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
-	// const auto& config = m_state.configuration.name();
-	// auto sourcePath = fmt::format("{}{}/", arch, config);
 	std::string pchPath{ "$(IntDir)" };
 
 	return m_msvcAdapter.createPrecompiledHeaderSource(sourcePath, pchPath);
+}
+
+/*****************************************************************************/
+bool ProjectAdapterVCXProj::createWindowsResources()
+{
+	std::string cwd = m_state.inputs.workingDirectory();
+	if (!m_cwd.empty())
+		Commands::changeWorkingDirectory(m_cwd);
+
+	CommandAdapterWinResource adapter(m_state, m_project);
+	if (!adapter.createWindowsApplicationManifest())
+		return false;
+
+	if (!adapter.createWindowsApplicationIcon())
+		return false;
+
+	if (!cwd.empty())
+		Commands::changeWorkingDirectory(cwd);
+
+	return true;
 }
 
 /*****************************************************************************/
