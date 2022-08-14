@@ -43,7 +43,7 @@ bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createWindowsResources()
 {
-	std::string cwd = m_state.inputs.workingDirectory();
+	auto cwd = Commands::getWorkingDirectory();
 	if (!m_cwd.empty())
 		Commands::changeWorkingDirectory(m_cwd);
 
