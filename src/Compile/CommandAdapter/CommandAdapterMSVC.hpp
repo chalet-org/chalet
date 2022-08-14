@@ -58,7 +58,7 @@ struct CommandAdapterMSVC
 	std::string getEntryPoint() const;
 	std::string getMachineArchitecture() const;
 
-	StringList getIncludeDirectories(const bool inExcludeIntDir = false) const;
+	StringList getIncludeDirectories() const;
 	StringList getAdditionalOptions(const bool inCharsetFlags = false) const;
 
 	bool createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath);
