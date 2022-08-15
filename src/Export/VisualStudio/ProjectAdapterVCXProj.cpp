@@ -568,9 +568,9 @@ std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool in
 }
 
 /*****************************************************************************/
-std::string ProjectAdapterVCXProj::getAdditionalOptions() const
+std::string ProjectAdapterVCXProj::getAdditionalCompilerOptions() const
 {
-	StringList options = List::combine(m_project.compileOptions(), m_msvcAdapter.getAdditionalOptions(true));
+	StringList options = List::combine(m_project.compileOptions(), m_msvcAdapter.getAdditionalCompilerOptions(true));
 	auto ret = String::join(options, ' ');
 	if (!ret.empty())
 		ret += ' ';

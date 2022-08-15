@@ -6,6 +6,7 @@
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Compile/Linker/ILinker.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -298,6 +299,42 @@ bool CommandAdapterMSVC::supportsOptimizeReferences() const
 }
 
 /*****************************************************************************/
+bool CommandAdapterMSVC::supportsProfiling() const
+{
+	return m_state.configuration.enableProfiling();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsDataExecutionPrevention() const
+{
+	return !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::suportsILKGeneration() const
+{
+	return supportsIncrementalLinking() && m_state.toolchain.versionMajorMinor() >= 1600;
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::disableFixedBaseAddress() const
+{
+	return !supportsIncrementalLinking() && m_state.configuration.enableProfiling();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::enableDebugging() const
+{
+	return m_state.configuration.debugSymbols() || m_state.configuration.enableProfiling();
+}
+
+/*****************************************************************************/
+bool CommandAdapterMSVC::supportsRandomizedBaseAddress() const
+{
+	return true;
+}
+
+/*****************************************************************************/
 std::string CommandAdapterMSVC::getLanguageStandardCpp() const
 {
 	// 2015 Update 3 or later (/std flag doesn't exist prior
@@ -582,7 +619,7 @@ StringList CommandAdapterMSVC::getIncludeDirectories() const
 }
 
 /*****************************************************************************/
-StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) const
+StringList CommandAdapterMSVC::getAdditionalCompilerOptions(const bool inCharsetFlags) const
 {
 	StringList ret;
 
@@ -593,6 +630,76 @@ StringList CommandAdapterMSVC::getAdditionalOptions(const bool inCharsetFlags) c
 		ret.emplace_back("/validate-charset");
 	}
 	ret.emplace_back("/FS"); // Force Separate Program Database Writes
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandAdapterMSVC::getLibDirectories() const
+{
+	StringList ret;
+
+	for (const auto& dir : m_project.libDirs())
+	{
+		std::string outDir = dir;
+		if (String::endsWith('/', outDir))
+			outDir.pop_back();
+
+		ret.emplace_back(std::move(outDir));
+	}
+
+	List::addIfDoesNotExist(ret, m_state.paths.buildOutputDir());
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandAdapterMSVC::getLinks() const
+{
+	StringList ret;
+
+	// const bool hasStaticLinks = m_project.staticLinks().size() > 0;
+	// const bool hasDynamicLinks = m_project.links().size() > 0;
+
+	StringList links = m_project.links();
+	for (auto& link : m_project.staticLinks())
+	{
+		links.push_back(link);
+	}
+
+	for (auto& link : links)
+	{
+		bool found = false;
+		for (auto& target : m_state.targets)
+		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.name() == link && project.isSharedLibrary())
+				{
+					auto outputFile = project.outputFile();
+					if (String::endsWith(".dll", outputFile))
+					{
+						String::replaceAll(outputFile, ".dll", ".lib");
+						List::addIfDoesNotExist(ret, std::move(outputFile));
+						found = true;
+						break;
+					}
+				}
+			}
+		}
+
+		if (!found)
+		{
+			List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+		}
+	}
+
+	auto win32Links = ILinker::getWin32Links(m_state, m_project);
+	for (const auto& link : win32Links)
+	{
+		List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+	}
 
 	return ret;
 }

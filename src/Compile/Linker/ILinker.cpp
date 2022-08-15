@@ -59,6 +59,41 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 }
 
 /*****************************************************************************/
+[[nodiscard]] StringList ILinker::getWin32Links(const BuildState& inState, const SourceTarget& inProject)
+{
+	// TODO: Dynamic way of determining this list
+	//   would they differ between console app & windows app?
+	//   or target architecture?
+
+	StringList ret;
+
+	uint versionMajorMinor = inState.toolchain.compilerCxx(inProject.language()).versionMajorMinor;
+	bool oldMinGW = inState.environment->isMingwGcc() && versionMajorMinor < 700;
+	if (!oldMinGW)
+	{
+		ret.emplace_back("dbghelp");
+	}
+
+	ret.emplace_back("kernel32");
+	ret.emplace_back("user32");
+	ret.emplace_back("gdi32");
+	ret.emplace_back("winspool");
+	ret.emplace_back("shell32");
+	ret.emplace_back("ole32");
+	ret.emplace_back("oleaut32");
+	ret.emplace_back("uuid");
+	ret.emplace_back("comdlg32");
+	ret.emplace_back("advapi32");
+
+	// imm32
+	// setupapi
+	// version
+	// winmm
+
+	return ret;
+}
+
+/*****************************************************************************/
 StringList ILinker::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	SourceKind kind = m_project.kind();
@@ -177,35 +212,7 @@ void ILinker::addSourceObjects(StringList& outArgList, const StringList& sourceO
 /*****************************************************************************/
 StringList ILinker::getWin32Links() const
 {
-	// TODO: Dynamic way of determining this list
-	//   would they differ between console app & windows app?
-	//   or target architecture?
-
-	StringList ret;
-
-	bool oldMinGW = m_state.environment->isMingwGcc() && m_versionMajorMinor < 700;
-	if (!oldMinGW)
-	{
-		ret.emplace_back("dbghelp");
-	}
-
-	ret.emplace_back("kernel32");
-	ret.emplace_back("user32");
-	ret.emplace_back("gdi32");
-	ret.emplace_back("winspool");
-	ret.emplace_back("shell32");
-	ret.emplace_back("ole32");
-	ret.emplace_back("oleaut32");
-	ret.emplace_back("uuid");
-	ret.emplace_back("comdlg32");
-	ret.emplace_back("advapi32");
-
-	// imm32
-	// setupapi
-	// version
-	// winmm
-
-	return ret;
+	return ILinker::getWin32Links(m_state, m_project);
 }
 
 }
