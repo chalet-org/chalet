@@ -46,6 +46,12 @@ struct CommandAdapterMSVC
 	bool supportsIncrementalLinking() const;
 	bool supportsCOMDATFolding() const;
 	bool supportsOptimizeReferences() const;
+	bool supportsProfiling() const;
+	bool supportsDataExecutionPrevention() const;
+	bool suportsILKGeneration() const;
+	bool disableFixedBaseAddress() const;
+	bool enableDebugging() const;
+	bool supportsRandomizedBaseAddress() const;
 
 	std::string getPlatformToolset() const;
 
@@ -59,7 +65,10 @@ struct CommandAdapterMSVC
 	std::string getMachineArchitecture() const;
 
 	StringList getIncludeDirectories() const;
-	StringList getAdditionalOptions(const bool inCharsetFlags = false) const;
+	StringList getAdditionalCompilerOptions(const bool inCharsetFlags = false) const;
+
+	StringList getLibDirectories() const;
+	StringList getLinks() const;
 
 	bool createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath);
 	std::string getPchObject(const std::string& inOutputFile);

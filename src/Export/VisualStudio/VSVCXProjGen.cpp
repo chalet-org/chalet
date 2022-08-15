@@ -278,7 +278,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				node2.addElementWithTextIfNotEmpty("RemoveUnreferencedCodeData", vcxprojAdapter.getRemoveUnreferencedCodeData());
 				node2.addElementWithTextIfNotEmpty("CallingConvention", vcxprojAdapter.getCallingConvention());
 
-				node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalOptions());
+				node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalCompilerOptions());
 			});
 
 			if (vcxprojAdapter.usesLibrarian())

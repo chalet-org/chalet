@@ -64,7 +64,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 		addLinkTimeOptimizations(ret);
 		addLinkTimeCodeGeneration(ret, outputFileBase);
 		addUnsortedOptions(ret);
-		addDynamicBase(ret);
+		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
 	}
@@ -109,7 +109,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 		addLinkTimeOptimizations(ret);
 		addLinkTimeCodeGeneration(ret, outputFileBase);
 		addUnsortedOptions(ret);
-		addDynamicBase(ret);
+		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
 	}
@@ -130,58 +130,20 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 void LinkerVisualStudioLINK::addLibDirs(StringList& outArgList) const
 {
 	std::string option{ "/libpath:" };
-	for (const auto& dir : m_project.libDirs())
+	auto libDirs = m_msvcAdapter.getLibDirectories();
+	for (const auto& dir : libDirs)
 	{
 		outArgList.emplace_back(getPathCommand(option, dir));
 	}
-
-	outArgList.emplace_back(getPathCommand(option, m_state.paths.buildOutputDir()));
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinks(StringList& outArgList) const
 {
-	// const bool hasStaticLinks = m_project.staticLinks().size() > 0;
-	// const bool hasDynamicLinks = m_project.links().size() > 0;
-
-	StringList links = m_project.links();
-	for (auto& link : m_project.staticLinks())
-	{
-		links.push_back(link);
-	}
-
+	StringList links = m_msvcAdapter.getLinks();
 	for (auto& link : links)
 	{
-		bool found = false;
-		for (auto& target : m_state.targets)
-		{
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (project.name() == link && project.isSharedLibrary())
-				{
-					auto outputFile = project.outputFile();
-					if (String::endsWith(".dll", outputFile))
-					{
-						String::replaceAll(outputFile, ".dll", ".lib");
-						List::addIfDoesNotExist(outArgList, std::move(outputFile));
-						found = true;
-						break;
-					}
-				}
-			}
-		}
-
-		if (!found)
-		{
-			List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
-		}
-	}
-
-	auto win32Links = getWin32Links();
-	for (const auto& link : win32Links)
-	{
-		List::addIfDoesNotExist(outArgList, fmt::format("{}.lib", link));
+		List::addIfDoesNotExist(outArgList, std::move(link));
 	}
 }
 
@@ -198,10 +160,8 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addProfileInformation(StringList& outArgList) const
 {
-	if (m_state.configuration.enableProfiling())
-	{
+	if (m_msvcAdapter.supportsProfiling())
 		List::addIfDoesNotExist(outArgList, "/profile");
-	}
 }
 
 /*****************************************************************************/
@@ -209,9 +169,7 @@ void LinkerVisualStudioLINK::addSubSystem(StringList& outArgList) const
 {
 	const auto subSystem = m_msvcAdapter.getSubSystem();
 	if (!subSystem.empty())
-	{
 		List::addIfDoesNotExist(outArgList, fmt::format("/subsystem:{}", subSystem));
-	}
 }
 
 /*****************************************************************************/
@@ -219,9 +177,7 @@ void LinkerVisualStudioLINK::addEntryPoint(StringList& outArgList) const
 {
 	const auto entryPoint = m_msvcAdapter.getEntryPoint();
 	if (!entryPoint.empty())
-	{
 		List::addIfDoesNotExist(outArgList, fmt::format("/entry:{}", entryPoint));
-	}
 }
 
 /*****************************************************************************/
@@ -257,32 +213,23 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
 {
 	if (m_msvcAdapter.supportsIncrementalLinking())
-	{
 		outArgList.emplace_back("/incremental");
-
-		if (m_state.toolchain.versionMajorMinor() >= 1600)
-		{
-			outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase)));
-		}
-	}
 	else
-	{
 		outArgList.emplace_back("/incremental:NO");
 
-		if (m_state.configuration.enableProfiling())
-		{
-			outArgList.emplace_back("/fixed:NO");
-		}
-	}
+	if (m_msvcAdapter.suportsILKGeneration())
+		outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase)));
+
+	if (m_msvcAdapter.disableFixedBaseAddress())
+		outArgList.emplace_back("/fixed:NO");
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
 {
-	const bool enableProfiling = m_state.configuration.enableProfiling();
-	if (m_state.configuration.debugSymbols() || enableProfiling)
+	if (m_msvcAdapter.enableDebugging())
 	{
-		if (enableProfiling)
+		if (m_state.configuration.enableProfiling())
 		{
 			outArgList.emplace_back("/debug:FULL");
 			outArgList.emplace_back("/debugtype:cv,fixup");
@@ -308,18 +255,17 @@ void LinkerVisualStudioLINK::addCgThreads(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addDynamicBase(StringList& outArgList) const
+void LinkerVisualStudioLINK::addRandomizedBaseAddress(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/dynamicbase");
+	if (m_msvcAdapter.supportsRandomizedBaseAddress())
+		List::addIfDoesNotExist(outArgList, "/dynamicbase");
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addCompatibleWithDataExecutionPrevention(StringList& outArgList) const
 {
-	if (!m_state.configuration.debugSymbols())
-	{
+	if (m_msvcAdapter.supportsDataExecutionPrevention())
 		List::addIfDoesNotExist(outArgList, "/nxcompat");
-	}
 }
 
 /*****************************************************************************/
@@ -335,7 +281,7 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
 {
-	if (m_state.configuration.interproceduralOptimization())
+	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		outArgList.emplace_back("/ltcg:INCREMENTAL");
@@ -348,6 +294,7 @@ void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, c
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addVerbosity(StringList& outArgList) const
 {
+	// TODO: confirm this actually works as intended
 	outArgList.emplace_back("/verbose:UNUSEDLIBS");
 }
 

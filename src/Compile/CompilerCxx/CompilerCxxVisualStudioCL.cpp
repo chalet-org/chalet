@@ -666,7 +666,7 @@ void CompilerCxxVisualStudioCL::addSeparateProgramDatabase(StringList& outArgLis
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addAdditionalOptions(StringList& outArgList) const
 {
-	auto options = m_msvcAdapter.getAdditionalOptions();
+	auto options = m_msvcAdapter.getAdditionalCompilerOptions();
 	for (auto&& option : options)
 	{
 		List::addIfDoesNotExist(outArgList, std::move(option));
