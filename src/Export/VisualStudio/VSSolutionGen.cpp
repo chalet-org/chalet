@@ -94,16 +94,22 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 			for (auto& [conf, arch, arch2] : vsConfigs)
 			{
+				bool includedInBuild = projectWillBuild(name, conf);
+
 				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.ActiveCfg = {conf}|{arch2}",
 					FMT_ARG(projectGUID),
 					FMT_ARG(conf),
 					FMT_ARG(arch),
 					FMT_ARG(arch2));
-				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch2}",
-					FMT_ARG(projectGUID),
-					FMT_ARG(conf),
-					FMT_ARG(arch),
-					FMT_ARG(arch2));
+
+				if (includedInBuild)
+				{
+					projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch2}",
+						FMT_ARG(projectGUID),
+						FMT_ARG(conf),
+						FMT_ARG(arch),
+						FMT_ARG(arch2));
+				}
 			}
 		}
 
@@ -140,5 +146,23 @@ EndGlobal)sln",
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool VSSolutionGen::projectWillBuild(const std::string& inName, const std::string& inConfigName) const
+{
+	for (auto& state : m_states)
+	{
+		if (String::equals(inConfigName, state->configuration.name()))
+		{
+			for (auto& target : state->targets)
+			{
+				if (target->isSources() && String::equals(inName, target->name()))
+					return true;
+			}
+		}
+	}
+
+	return false;
 }
 }

@@ -20,6 +20,8 @@ struct VSSolutionGen
 	bool saveToFile(const std::string& inFilename);
 
 private:
+	bool projectWillBuild(const std::string& inName, const std::string& inConfigName) const;
+
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_cwd;
 	const std::string& m_projectTypeGuid;
