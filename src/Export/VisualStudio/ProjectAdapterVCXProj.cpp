@@ -665,7 +665,7 @@ std::string ProjectAdapterVCXProj::getTreatLinkerWarningAsErrors() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getLinkIncremental() const
 {
-	return getBooleanIfTrue(m_msvcAdapter.supportsIncrementalLinking());
+	return getBoolean(m_msvcAdapter.supportsIncrementalLinking());
 }
 
 /*****************************************************************************/
