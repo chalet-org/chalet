@@ -25,6 +25,7 @@ struct ProjectAdapterVCXProj
 
 	std::string getBoolean(const bool inValue) const;
 	std::string getBooleanIfTrue(const bool inValue) const;
+	std::string getBooleanIfFalse(const bool inValue) const;
 
 	std::string getBuildDir() const;
 	std::string getObjectDir() const;
