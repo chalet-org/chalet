@@ -94,7 +94,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	}
 
 	addLanguageStandard(ret, specialization);
-	addCppCoroutines(ret);
+	// addCppCoroutines(ret);
 
 	addCompileOptions(ret);
 
@@ -166,7 +166,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	}
 
 	addLanguageStandard(ret, specialization);
-	addCppCoroutines(ret);
+	// addCppCoroutines(ret);
 
 	addCompileOptions(ret);
 
@@ -231,7 +231,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	// ret.emplace_back("/MP");
 
 	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
-	addCppCoroutines(ret);
+	// addCppCoroutines(ret);
 
 	ret.emplace_back("/experimental:module");
 	/*if (!isDependency)
@@ -322,7 +322,7 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 	// outArgList.emplace_back("/MP");
 
 	addLanguageStandard(outArgList, specialization);
-	addCppCoroutines(outArgList);
+	// addCppCoroutines(outArgList);
 
 	addCompileOptions(outArgList);
 
@@ -709,7 +709,8 @@ void CompilerCxxVisualStudioCL::addGenerateIntrinsicFunctions(StringList& outArg
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addCppCoroutines(StringList& outArgList) const
+// Moved to CommandAdapterMSVC::getAdditionalCompilerOptions
+/*void CompilerCxxVisualStudioCL::addCppCoroutines(StringList& outArgList) const
 {
 	if (m_project.cppCoroutines())
 	{
@@ -722,7 +723,7 @@ void CompilerCxxVisualStudioCL::addCppCoroutines(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, "/await");
 		}
 	}
-}
+}*/
 
 /*****************************************************************************/
 std::string CompilerCxxVisualStudioCL::getWarningLevel(const MSVCWarningLevel inLevel) const

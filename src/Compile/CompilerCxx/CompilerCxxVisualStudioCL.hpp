@@ -61,7 +61,7 @@ protected:
 	virtual void addFunctionLevelLinking(StringList& outArgList) const;
 	virtual void addGenerateIntrinsicFunctions(StringList& outArgList) const;
 
-	virtual void addCppCoroutines(StringList& outArgList) const;
+	// virtual void addCppCoroutines(StringList& outArgList) const;
 
 private:
 	std::string getWarningLevel(const MSVCWarningLevel inLevel) const;

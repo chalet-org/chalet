@@ -648,6 +648,14 @@ StringList CommandAdapterMSVC::getAdditionalCompilerOptions(const bool inCharset
 	}
 	List::addIfDoesNotExist(ret, "/FS"); // Force Separate Program Database Writes
 
+	if (m_project.cppCoroutines())
+	{
+		if (m_versionMajorMinor >= 1929)
+			List::addIfDoesNotExist(ret, "/await:strict");
+		else
+			List::addIfDoesNotExist(ret, "/await");
+	}
+
 	// Note: in MSVC, one can combine these (annoyingly)
 	//	Might be desireable to add:
 	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
