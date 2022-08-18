@@ -73,20 +73,24 @@ bool VSVCXProjGen::saveProjectFiles(const BuildState& inState, const SourceTarge
 
 	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
 
-	if (!saveProjectFile(inState, name, projectFile))
+	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
+	if (!saveFiltersFile(inState, filtersFile))
 		return false;
 
-	if (!saveFiltersFile(inState, fmt::format("{}.filters", projectFile)))
+	if (!saveProjectFile(inState, name, projectFile, filtersFile))
 		return false;
 
 	if (!saveUserFile(fmt::format("{}.user", projectFile)))
+		return false;
+
+	if (!filtersFile.save())
 		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string& inName, const std::string& inFilename)
+bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile)
 {
 	XmlFile xmlFile(inFilename);
 
@@ -280,6 +284,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				node2.addElementWithTextIfNotEmpty("ForceConformanceInForLoopScope", vcxprojAdapter.getForceConformanceInForLoopScope());
 				node2.addElementWithTextIfNotEmpty("RemoveUnreferencedCodeData", vcxprojAdapter.getRemoveUnreferencedCodeData());
 				node2.addElementWithTextIfNotEmpty("CallingConvention", vcxprojAdapter.getCallingConvention());
+				node2.addElementWithTextIfNotEmpty("ProgramDataBaseFileName", vcxprojAdapter.getProgramDataBaseFileName());
 
 				node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalCompilerOptions());
 			});
@@ -339,6 +344,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 		OrderedDictionary<StringList> resources;
 		std::pair<std::string, StringList> manifest;
 		std::pair<std::string, StringList> icon;
+		std::string pchFile;
 		std::string pchSource;
 		StringList allConfigs;
 
@@ -355,22 +361,33 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			if (!pch.empty())
 			{
 				headerFiles.push_back(pch);
+				if (pchFile.empty())
+				{
+					pchFile = vcxprojAdapter.getPrecompiledHeaderFile();
+				}
 				if (pchSource.empty())
 				{
 					pchSource = vcxprojAdapter.getPrecompiledHeaderSourceFile();
 				}
 			}
 
-			for (auto& file : headerFiles)
+			for (auto& header : headerFiles)
 			{
-				headers[file] = true;
+				auto file = fmt::format("{}/{}", m_cwd, header);
+				if (Commands::pathExists(file))
+					headers[file] = true;
+				else
+					headers[header] = true;
 			}
 
 			SourceOutputs& outputs = *m_outputs.at(config).get();
 
 			for (auto& group : outputs.groups)
 			{
-				const auto& file = group->sourceFile;
+				auto file = fmt::format("{}/{}", m_cwd, group->sourceFile);
+				if (!Commands::pathExists(file))
+					file = group->sourceFile;
+
 				switch (group->type)
 				{
 					case SourceType::C:
@@ -415,16 +432,50 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 
 		UNUSED(resources);
 
-		xmlRoot.addElement("ItemGroup", [this, &headers](XmlElement& node) {
+		auto& filters = outFiltersFile.xml.root();
+
+		xmlRoot.addElement("ItemGroup", [&headers](XmlElement& node) {
 			for (auto& it : headers)
 			{
 				const auto& file = it.first;
 
-				node.addElement("ClInclude", [this, &file](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+				node.addElement("ClInclude", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
 				});
 			}
 		});
+		filters.addElement("ItemGroup", [&headers, &pchFile](XmlElement& node) {
+			for (auto& it : headers)
+			{
+				const auto& file = it.first;
+
+				if (String::equals(pchFile, file))
+					continue;
+
+				node.addElement("ClInclude", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Header Files");
+				});
+			}
+		});
+		if (!pchFile.empty())
+		{
+			filters.addElement("ItemGroup", [&pchFile](XmlElement& node) {
+				node.addElement("ClInclude", [&pchFile](XmlElement& node2) {
+					node2.addAttribute("Include", pchFile);
+					node2.addElementWithText("Filter", "Precompile Header Files");
+				});
+			});
+		}
+		if (!pchSource.empty())
+		{
+			filters.addElement("ItemGroup", [&pchSource](XmlElement& node) {
+				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
+					node2.addAttribute("Include", pchSource);
+					node2.addElementWithText("Filter", "Precompile Header Files");
+				});
+			});
+		}
 
 		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
 			if (!pchSource.empty())
@@ -443,7 +494,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				const auto& configs = it.second;
 
 				node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+					node2.addAttribute("Include", file);
 
 					for (auto& config : allConfigs)
 					{
@@ -459,6 +510,17 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				});
 			}
 		});
+		filters.addElement("ItemGroup", [&sources](XmlElement& node) {
+			for (auto& it : sources)
+			{
+				const auto& file = it.first;
+
+				node.addElement("ClCompile", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Source Files");
+				});
+			}
+		});
 
 		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
 			for (auto& it : resources)
@@ -467,7 +529,7 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 				const auto& configs = it.second;
 
 				node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, file));
+					node2.addAttribute("Include", file);
 					node2.addElementWithText("PrecompiledHeader", "NotUsing");
 
 					for (auto& config : allConfigs)
@@ -481,6 +543,17 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 							});
 						}
 					}
+				});
+			}
+		});
+		filters.addElement("ItemGroup", [&resources](XmlElement& node) {
+			for (auto& it : resources)
+			{
+				const auto& file = it.first;
+
+				node.addElement("ResourceCompile", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Resource Files");
 				});
 			}
 		});
@@ -504,6 +577,12 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					}
 				});
 			});
+			filters.addElement("ItemGroup", [this, &manifest](XmlElement& node) {
+				node.addElement("Manifest", [this, &manifest](XmlElement& node2) {
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+					node2.addElementWithText("Filter", "Resource Files");
+				});
+			});
 		}
 
 		if (!icon.first.empty())
@@ -525,9 +604,33 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					}
 				});
 			});
+			filters.addElement("ItemGroup", [this, &icon](XmlElement& node) {
+				node.addElement("Image", [this, &icon](XmlElement& node2) {
+					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+					node2.addElementWithText("Filter", "Resource Files");
+				});
+			});
 		}
 	}
 
+	{
+		const auto& project = *getProjectFromStateContext(inState, inName);
+		auto list = List::combine(project.projectStaticLinks(), project.projectSharedLinks());
+		if (!list.empty())
+		{
+			xmlRoot.addElement("ItemGroup", [this, &list](XmlElement& node) {
+				for (auto& target : list)
+				{
+					node.addElement("ProjectReference", [this, &target](XmlElement& node2) {
+						auto uuid = m_targetGuids.at(target).str();
+						node2.addAttribute("Include", fmt::format("{}.vcxproj", target));
+						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
+						node2.addElementWithText("Name", target);
+					});
+				}
+			});
+		}
+	}
 	xmlRoot.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 	});
@@ -539,32 +642,18 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string& inFilename)
+bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, XmlFile& outFile)
 {
-	XmlFile xmlFile(inFilename);
-
 	// TODO: Extensions should be cumulative across configurations
 	//   This is kind of hacky otherwise
 	const auto& config = inState.configuration.name();
 	const auto& vcxprojAdapter = *m_adapters.at(config);
 
-	auto& xml = xmlFile.xml;
+	auto& xml = outFile.xml;
 	auto& xmlRoot = xml.root();
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("ItemGroup", [&vcxprojAdapter](XmlElement& node) {
-		node.addElement("ClInclude", [&vcxprojAdapter](XmlElement& node2) {
-			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderFile());
-			node2.addElementWithText("Filter", "Precompile Header Files");
-		});
-	});
-	xmlRoot.addElement("ItemGroup", [&vcxprojAdapter](XmlElement& node) {
-		node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
-			node2.addAttribute("Include", vcxprojAdapter.getPrecompiledHeaderSourceFile());
-			node2.addElementWithText("Filter", "Precompile Header Files");
-		});
-	});
 	xmlRoot.addElement("ItemGroup", [this, &vcxprojAdapter](XmlElement& node) {
 		node.addElement("Filter", [this, &vcxprojAdapter](XmlElement& node2) {
 			auto extensions = String::join(vcxprojAdapter.getSourceExtensions(), ';');
@@ -595,7 +684,7 @@ bool VSVCXProjGen::saveFiltersFile(const BuildState& inState, const std::string&
 		});
 	});
 
-	return xmlFile.save();
+	return true;
 }
 
 /*****************************************************************************/

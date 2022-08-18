@@ -106,7 +106,8 @@ std::string ProjectAdapterVCXProj::getBuildDir() const
 std::string ProjectAdapterVCXProj::getObjectDir() const
 {
 	// return "$(Platform)_$(Configuration)\\";
-	return fmt::format("{}/{}/", m_cwd, m_state.paths.objDir());
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	return fmt::format("{}/{}/obj.{}/", m_cwd, buildDir, m_project.name());
 }
 
 /*****************************************************************************/
@@ -551,13 +552,20 @@ std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getProgramDataBaseFileName() const
+{
+	return fmt::format("$(IntDir)vc$(PlatformToolsetVersion)-{}.pdb", m_project.name());
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool inAddCwd) const
 {
+	auto buildDir = getBuildDir();
 	auto list = m_msvcAdapter.getIncludeDirectories();
 	for (auto& dir : list)
 	{
 		auto full = fmt::format("{}/{}", m_cwd, dir);
-		if (Commands::pathExists(full))
+		if (Commands::pathExists(full) || String::equals(buildDir, full))
 		{
 			dir = std::move(full);
 		}
@@ -626,11 +634,14 @@ std::string ProjectAdapterVCXProj::getFixedBaseAddress() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
 {
+	auto buildDir = getBuildDir();
+	buildDir.pop_back();
+
 	auto list = m_msvcAdapter.getLibDirectories();
 	for (auto& dir : list)
 	{
 		auto full = fmt::format("{}/{}", m_cwd, dir);
-		if (Commands::pathExists(full))
+		if (Commands::pathExists(full) || String::equals(buildDir, full))
 		{
 			dir = std::move(full);
 		}
@@ -640,7 +651,7 @@ std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
 	if (!ret.empty())
 		ret += ';';
 
-	ret += "%(AdditionalIncludeDirectories)";
+	ret += "%(AdditionalLibraryDirectories)";
 	return ret;
 }
 

@@ -12,7 +12,7 @@ namespace chalet
 {
 struct XmlFile
 {
-	XmlFile() = default;
+	XmlFile() = delete;
 	explicit XmlFile(std::string inFilename);
 
 	static bool saveToFile(const Xml& inXml, const std::string& outFilename, const int inIndent = 2);
