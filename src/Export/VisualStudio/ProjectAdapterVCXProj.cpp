@@ -87,6 +87,15 @@ std::string ProjectAdapterVCXProj::getBooleanIfTrue(const bool inValue) const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getBooleanIfFalse(const bool inValue) const
+{
+	if (!inValue)
+		return "false";
+
+	return std::string();
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getBuildDir() const
 {
 	// return "$(SolutionDir)$(Platform)_$(Configuration)\\";
@@ -609,9 +618,9 @@ std::string ProjectAdapterVCXProj::getIncrementalLinkDatabaseFile() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getFixedBaseAddress() const
 {
-	// true - /FIXED
+	// true - /FIXED (we don't want to explicity set this
 	// false - /FIXED:no
-	return getBoolean(m_msvcAdapter.supportsFixedBaseAddress());
+	return getBooleanIfFalse(m_msvcAdapter.supportsFixedBaseAddress());
 }
 
 /*****************************************************************************/

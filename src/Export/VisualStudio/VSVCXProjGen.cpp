@@ -298,8 +298,6 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					node2.addElementWithText("GenerateDebugInformation", vcxprojAdapter.getGenerateDebugInformation());
 					node2.addElementWithText("AdditionalLibraryDirectories", vcxprojAdapter.getAdditionalLibraryDirectories());
 					node2.addElementWithText("TreatLinkerWarningAsErrors", vcxprojAdapter.getTreatLinkerWarningAsErrors());
-					node2.addElementWithText("OptimizeReferences", vcxprojAdapter.getOptimizeReferences());
-					node2.addElementWithText("EnableCOMDATFolding", vcxprojAdapter.getEnableCOMDATFolding());
 					node2.addElementWithText("RandomizedBaseAddress", vcxprojAdapter.getRandomizedBaseAddress());
 					node2.addElementWithText("DataExecutionPrevention", vcxprojAdapter.getDataExecutionPrevention());
 
@@ -310,6 +308,8 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					node2.addElement("UACExecutionLevel");
 					node2.addElement("UACUIAccess");
 
+					node2.addElementWithTextIfNotEmpty("OptimizeReferences", vcxprojAdapter.getOptimizeReferences());
+					node2.addElementWithTextIfNotEmpty("EnableCOMDATFolding", vcxprojAdapter.getEnableCOMDATFolding());
 					node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
 					node2.addElementWithTextIfNotEmpty("IncrementalLinkDatabaseFile", vcxprojAdapter.getIncrementalLinkDatabaseFile());
 					node2.addElementWithTextIfNotEmpty("FixedBaseAddress", vcxprojAdapter.getFixedBaseAddress());
