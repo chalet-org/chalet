@@ -22,6 +22,7 @@ struct ProjectAdapterVCXProj
 
 	bool usesPrecompiledHeader() const;
 	bool usesLibrarian() const;
+	bool usesModules() const;
 
 	std::string getBoolean(const bool inValue) const;
 	std::string getBooleanIfTrue(const bool inValue) const;
