@@ -35,7 +35,7 @@
 				"vs-solution"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/../newer-project",
+			"cwd": "${workspaceFolder}/../chalet-example-sfml",
 			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [

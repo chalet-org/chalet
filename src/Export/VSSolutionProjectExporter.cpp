@@ -15,6 +15,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "Utility/List.hpp"
 
 namespace chalet
 {
@@ -54,41 +55,51 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	if (!useExportDirectory("vs-solution"))
 		return false;
 
-	const BuildState* state = getAnyBuildStateButPreferDebug();
-	chalet_assert(state != nullptr, "");
-	if (state != nullptr)
+	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
+	//
+	const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
+	auto targetGuids = getTargetGuids(projectTypeGUID);
+
+	const BuildState* firstState = getAnyBuildStateButPreferDebug();
+	chalet_assert(firstState != nullptr, "");
+	if (firstState != nullptr)
 	{
-		UNUSED(state);
+		const auto& workspaceName = firstState->workspace.metadata().name();
 
-		// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
-		//
-		const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
-		auto targetGuids = getTargetGuids(projectTypeGUID);
-
-		const auto& workspaceName = state->workspace.metadata().name();
-
+		VSSolutionGen slnGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+		if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
 		{
-			VSSolutionGen slnGen(m_states, m_cwd, projectTypeGUID, targetGuids);
-			if (!slnGen.saveToFile(fmt::format("{}.sln", workspaceName)))
+			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
+			return false;
+		}
+	}
+	else
+	{
+		Diagnostic::error("Could not export: internal error");
+		return false;
+	}
+
+	StringList allSourceTargets;
+	for (auto& state : m_states)
+	{
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
 			{
-				Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
-				return false;
+				const auto& name = target->name();
+				if (!List::contains(allSourceTargets, name))
+					allSourceTargets.emplace_back(name);
 			}
 		}
+	}
 
+	for (auto& name : allSourceTargets)
+	{
+		VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+		if (!vcxprojGen.saveProjectFiles(name))
 		{
-			for (auto& target : state->targets)
-			{
-				if (target->isSources())
-				{
-					VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
-					if (!vcxprojGen.saveProjectFiles(*state, static_cast<const SourceTarget&>(*target)))
-					{
-						Diagnostic::error("There was a problem saving the {}.vcxproj file.", target->name());
-						return false;
-					}
-				}
-			}
+			Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);
+			return false;
 		}
 	}
 
