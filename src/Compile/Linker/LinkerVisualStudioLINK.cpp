@@ -56,6 +56,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 
 	{
 		addIncremental(ret, outputFileBase);
+		addAdditionalOptions(ret);
 		addLibDirs(ret);
 		addLinks(ret);
 		// addPrecompiledHeaderLink(ret);
@@ -63,7 +64,6 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 		addSubSystem(ret);
 		addLinkTimeOptimizations(ret);
 		addLinkTimeCodeGeneration(ret, outputFileBase);
-		addUnsortedOptions(ret);
 		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
@@ -71,8 +71,6 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 
 	addWarningsTreatedAsErrors(ret);
 	addEntryPoint(ret);
-	// addCgThreads(ret);
-	// addVerbosity(ret);
 
 	ret.emplace_back(getPathCommand("/implib:", fmt::format("{}.lib", outputFileBase)));
 	ret.emplace_back(getPathCommand("/out:", outputFile));
@@ -101,6 +99,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 
 	{
 		addIncremental(ret, outputFileBase);
+		addAdditionalOptions(ret);
 		addLibDirs(ret);
 		addLinks(ret);
 		// addPrecompiledHeaderLink(ret);
@@ -108,7 +107,6 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 		addSubSystem(ret);
 		addLinkTimeOptimizations(ret);
 		addLinkTimeCodeGeneration(ret, outputFileBase);
-		addUnsortedOptions(ret);
 		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
@@ -116,8 +114,6 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 
 	addWarningsTreatedAsErrors(ret);
 	addEntryPoint(ret);
-	// addCgThreads(ret);
-	// addVerbosity(ret);
 
 	ret.emplace_back(getPathCommand("/out:", outputFile));
 
@@ -153,7 +149,7 @@ void LinkerVisualStudioLINK::addLinkerOptions(StringList& outArgList) const
 	for (auto& option : m_project.linkerOptions())
 	{
 		// if (isFlagSupported(option))
-		outArgList.emplace_back(option);
+		List::addIfDoesNotExist(outArgList, option);
 	}
 }
 
@@ -183,45 +179,31 @@ void LinkerVisualStudioLINK::addEntryPoint(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) const
 {
-	const auto arch = m_state.info.targetArchitecture();
-	bool isArm = arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64;
-
 	// Note: These are also tied to /incremental (implied with /debug)
-	if (m_state.configuration.debugSymbols())
-	{
-		if (m_state.configuration.enableProfiling())
-			List::addIfDoesNotExist(outArgList, "/opt:REF");
-		else
-			List::addIfDoesNotExist(outArgList, "/opt:NOREF");
-
-		List::addIfDoesNotExist(outArgList, "/opt:NOICF");
-
-		if (isArm)
-			List::addIfDoesNotExist(outArgList, "/opt:NOLBR");
-	}
-	else
-	{
+	if (m_msvcAdapter.supportsOptimizeReferences())
 		List::addIfDoesNotExist(outArgList, "/opt:REF");
-		List::addIfDoesNotExist(outArgList, "/opt:ICF");
+	else
+		List::addIfDoesNotExist(outArgList, "/opt:NOREF");
 
-		if (isArm)
-			List::addIfDoesNotExist(outArgList, "/opt:LBR"); // relates to arm binaries
-	}
+	if (m_msvcAdapter.supportsCOMDATFolding())
+		List::addIfDoesNotExist(outArgList, "/opt:ICF");
+	else
+		List::addIfDoesNotExist(outArgList, "/opt:NOICF");
 }
 
 /*****************************************************************************/
 void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
 {
 	if (m_msvcAdapter.supportsIncrementalLinking())
-		outArgList.emplace_back("/incremental");
+		List::addIfDoesNotExist(outArgList, "/incremental");
 	else
-		outArgList.emplace_back("/incremental:NO");
+		List::addIfDoesNotExist(outArgList, "/incremental:NO");
 
 	if (m_msvcAdapter.suportsILKGeneration())
 		outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase)));
 
 	if (m_msvcAdapter.disableFixedBaseAddress())
-		outArgList.emplace_back("/fixed:NO");
+		List::addIfDoesNotExist(outArgList, "/fixed:NO");
 }
 
 /*****************************************************************************/
@@ -229,28 +211,13 @@ void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string&
 {
 	if (m_msvcAdapter.enableDebugging())
 	{
-		if (m_state.configuration.enableProfiling())
-		{
-			outArgList.emplace_back("/debug:FULL");
-			outArgList.emplace_back("/debugtype:cv,fixup");
-		}
+		if (m_msvcAdapter.supportsProfiling())
+			List::addIfDoesNotExist(outArgList, "/debug:FULL");
 		else
-		{
-			outArgList.emplace_back("/debug");
-		}
+			List::addIfDoesNotExist(outArgList, "/debug");
+
 		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
 		outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase)));
-	}
-}
-
-/*****************************************************************************/
-void LinkerVisualStudioLINK::addCgThreads(StringList& outArgList) const
-{
-	uint maxJobs = m_state.info.maxJobs();
-	if (maxJobs > 4)
-	{
-		maxJobs = std::min<uint>(maxJobs, 8);
-		outArgList.emplace_back(fmt::format("/cgthreads:{}", maxJobs));
 	}
 }
 
@@ -273,9 +240,7 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 {
 	auto machine = m_msvcAdapter.getMachineArchitecture();
 	if (!machine.empty())
-	{
 		outArgList.emplace_back(fmt::format("/machine:{}", machine));
-	}
 }
 
 /*****************************************************************************/
@@ -292,13 +257,6 @@ void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, c
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addVerbosity(StringList& outArgList) const
-{
-	// TODO: confirm this actually works as intended
-	outArgList.emplace_back("/verbose:UNUSEDLIBS");
-}
-
-/*****************************************************************************/
 void LinkerVisualStudioLINK::addWarningsTreatedAsErrors(StringList& outArgList) const
 {
 	if (m_project.treatWarningsAsErrors())
@@ -306,11 +264,13 @@ void LinkerVisualStudioLINK::addWarningsTreatedAsErrors(StringList& outArgList) 
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addUnsortedOptions(StringList& outArgList) const
+void LinkerVisualStudioLINK::addAdditionalOptions(StringList& outArgList) const
 {
-	// TODO
-	// outArgList.emplace_back("/VERSION:0.0");
-
-	UNUSED(outArgList);
+	auto options = m_msvcAdapter.getAdditionalLinkerOptions();
+	for (auto&& option : options)
+	{
+		List::addIfDoesNotExist(outArgList, std::move(option));
+	}
 }
+
 }

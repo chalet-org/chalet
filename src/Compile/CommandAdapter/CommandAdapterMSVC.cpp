@@ -295,7 +295,19 @@ bool CommandAdapterMSVC::supportsCOMDATFolding() const
 /*****************************************************************************/
 bool CommandAdapterMSVC::supportsOptimizeReferences() const
 {
-	return !m_state.configuration.debugSymbols();
+	return m_state.configuration.enableProfiling() || !m_state.configuration.debugSymbols();
+}
+
+/*****************************************************************************/
+std::optional<bool> CommandAdapterMSVC::supportsLongBranchRedirects() const
+{
+	const auto arch = m_state.info.targetArchitecture();
+	if (arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64)
+	{
+		return !m_state.configuration.debugSymbols();
+	}
+
+	return std::nullopt;
 }
 
 /*****************************************************************************/
@@ -317,9 +329,14 @@ bool CommandAdapterMSVC::suportsILKGeneration() const
 }
 
 /*****************************************************************************/
+bool CommandAdapterMSVC::supportsFixedBaseAddress() const
+{
+	return disableFixedBaseAddress();
+}
+
 bool CommandAdapterMSVC::disableFixedBaseAddress() const
 {
-	return !supportsIncrementalLinking() && m_state.configuration.enableProfiling();
+	return m_project.isSharedLibrary() || (!supportsIncrementalLinking() && m_state.configuration.enableProfiling());
 }
 
 /*****************************************************************************/
@@ -621,15 +638,53 @@ StringList CommandAdapterMSVC::getIncludeDirectories() const
 /*****************************************************************************/
 StringList CommandAdapterMSVC::getAdditionalCompilerOptions(const bool inCharsetFlags) const
 {
-	StringList ret;
+	StringList ret = m_project.compileOptions();
 
 	if (inCharsetFlags)
 	{
-		ret.emplace_back(fmt::format("/source-charset:{}", m_project.inputCharset()));
-		ret.emplace_back(fmt::format("/execution-charset:{}", m_project.executionCharset()));
-		ret.emplace_back("/validate-charset");
+		List::addIfDoesNotExist(ret, fmt::format("/source-charset:{}", m_project.inputCharset()));
+		List::addIfDoesNotExist(ret, fmt::format("/execution-charset:{}", m_project.executionCharset()));
+		List::addIfDoesNotExist(ret, "/validate-charset");
 	}
-	ret.emplace_back("/FS"); // Force Separate Program Database Writes
+	List::addIfDoesNotExist(ret, "/FS"); // Force Separate Program Database Writes
+
+	// Note: in MSVC, one can combine these (annoyingly)
+	//	Might be desireable to add:
+	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandAdapterMSVC::getAdditionalLinkerOptions() const
+{
+	StringList ret = m_project.linkerOptions();
+
+	auto lbr = supportsLongBranchRedirects();
+	if (lbr.has_value())
+	{
+		if (*lbr)
+			List::addIfDoesNotExist(ret, "/opt:LBR");
+		else
+			List::addIfDoesNotExist(ret, "/opt:NOLBR");
+	}
+
+	if (enableDebugging() && supportsProfiling())
+	{
+		List::addIfDoesNotExist(ret, "/debugtype:cv,fixup");
+	}
+
+	// Code Generation Threads
+	/*uint maxJobs = m_state.info.maxJobs();
+	if (maxJobs > 4)
+	{
+		maxJobs = std::min<uint>(maxJobs, 8);
+		List::addIfDoesNotExist(ret, fmt::format("/cgthreads:{}", maxJobs));
+	}*/
+
+	// Verbosity
+	// TODO: confirm this actually works as intended
+	// List::addIfDoesNotExist(ret, "/verbose:UNUSEDLIBS");
 
 	return ret;
 }
@@ -654,7 +709,7 @@ StringList CommandAdapterMSVC::getLibDirectories() const
 }
 
 /*****************************************************************************/
-StringList CommandAdapterMSVC::getLinks() const
+StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 {
 	StringList ret;
 
@@ -695,10 +750,13 @@ StringList CommandAdapterMSVC::getLinks() const
 		}
 	}
 
-	auto win32Links = ILinker::getWin32Links(m_state, m_project);
-	for (const auto& link : win32Links)
+	if (inIncludeCore)
 	{
-		List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+		auto coreLinks = ILinker::getWin32CoreLibraryLinks(m_state, m_project);
+		for (const auto& link : coreLinks)
+		{
+			List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+		}
 	}
 
 	return ret;

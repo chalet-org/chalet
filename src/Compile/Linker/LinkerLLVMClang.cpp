@@ -30,7 +30,7 @@ void LinkerLLVMClang::addLinks(StringList& outArgList) const
 	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang())
 	{
 		const std::string prefix{ "-l" };
-		auto win32Links = getWin32Links();
+		auto win32Links = getWin32CoreLibraryLinks();
 		for (const auto& link : win32Links)
 		{
 			List::addIfDoesNotExist(outArgList, fmt::format("{}{}", prefix, link));

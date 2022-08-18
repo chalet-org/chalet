@@ -15,7 +15,7 @@ struct ILinker : public IToolchainExecutableBase
 	explicit ILinker(const BuildState& inState, const SourceTarget& inProject);
 
 	[[nodiscard]] static Unique<ILinker> make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject);
-	[[nodiscard]] static StringList getWin32Links(const BuildState& inState, const SourceTarget& inProject);
+	[[nodiscard]] static StringList getWin32CoreLibraryLinks(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual bool initialize() = 0;
 
@@ -44,7 +44,7 @@ protected:
 
 	virtual void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const final;
 
-	StringList getWin32Links() const;
+	StringList getWin32CoreLibraryLinks() const;
 
 	uint m_versionMajorMinor = 0;
 	uint m_versionPatch = 0;

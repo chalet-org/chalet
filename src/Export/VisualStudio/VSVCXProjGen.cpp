@@ -223,6 +223,9 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			// CopyCppRuntimeToOutputDir - true/false
 			// EnableManagedIncrementalBuild - true/false
 			// ManagedAssembly - true/false
+
+			// Explicitly add to disable default manifest generation from linker cli
+			node.addElement("GenerateManifest");
 		});
 	}
 
@@ -292,10 +295,34 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 			else
 			{
 				node.addElement("Link", [&vcxprojAdapter](XmlElement& node2) {
-					node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
-					node2.addElementWithText("EnableCOMDATFolding", vcxprojAdapter.getEnableCOMDATFolding());
-					node2.addElementWithText("OptimizeReferences", vcxprojAdapter.getOptimizeReferences());
 					node2.addElementWithText("GenerateDebugInformation", vcxprojAdapter.getGenerateDebugInformation());
+					node2.addElementWithText("AdditionalLibraryDirectories", vcxprojAdapter.getAdditionalLibraryDirectories());
+					node2.addElementWithText("TreatLinkerWarningAsErrors", vcxprojAdapter.getTreatLinkerWarningAsErrors());
+					node2.addElementWithText("OptimizeReferences", vcxprojAdapter.getOptimizeReferences());
+					node2.addElementWithText("EnableCOMDATFolding", vcxprojAdapter.getEnableCOMDATFolding());
+					node2.addElementWithText("RandomizedBaseAddress", vcxprojAdapter.getRandomizedBaseAddress());
+					node2.addElementWithText("DataExecutionPrevention", vcxprojAdapter.getDataExecutionPrevention());
+
+					// Explicitly add these to disable default manifest generation from linker cli
+					node2.addElement("ManifestFile");
+					node2.addElement("AllowIsolation");
+					node2.addElement("EnableUAC");
+					node2.addElement("UACExecutionLevel");
+					node2.addElement("UACUIAccess");
+
+					node2.addElementWithTextIfNotEmpty("SubSystem", vcxprojAdapter.getSubSystem());
+					node2.addElementWithTextIfNotEmpty("IncrementalLinkDatabaseFile", vcxprojAdapter.getIncrementalLinkDatabaseFile());
+					node2.addElementWithTextIfNotEmpty("FixedBaseAddress", vcxprojAdapter.getFixedBaseAddress());
+					node2.addElementWithTextIfNotEmpty("ImportLibrary", vcxprojAdapter.getImportLibrary());
+					node2.addElementWithTextIfNotEmpty("ProgramDatabaseFile", vcxprojAdapter.getProgramDatabaseFile());
+					node2.addElementWithTextIfNotEmpty("StripPrivateSymbols", vcxprojAdapter.getStripPrivateSymbols());
+					node2.addElementWithTextIfNotEmpty("LinkTimeCodeGeneration", vcxprojAdapter.getLinkerLinkTimeCodeGeneration());
+					node2.addElementWithTextIfNotEmpty("LinkTimeCodeGenerationObjectFile", vcxprojAdapter.getLinkTimeCodeGenerationObjectFile());
+					node2.addElementWithTextIfNotEmpty("EntryPointSymbol", vcxprojAdapter.getEntryPointSymbol());
+					node2.addElementWithTextIfNotEmpty("TargetMachine", vcxprojAdapter.getTargetMachine());
+					node2.addElementWithTextIfNotEmpty("Profile", vcxprojAdapter.getProfile());
+					node2.addElementWithTextIfNotEmpty("AdditionalOptions", vcxprojAdapter.getAdditionalLinkerOptions());
+					node2.addElementWithTextIfNotEmpty("AdditionalDependencies", vcxprojAdapter.getAdditionalDependencies());
 				});
 			}
 

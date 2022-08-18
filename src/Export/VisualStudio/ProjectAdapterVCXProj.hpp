@@ -76,6 +76,11 @@ struct ProjectAdapterVCXProj
 	std::string getAdditionalCompilerOptions() const;
 
 	std::string getGenerateDebugInformation() const;
+	std::string getIncrementalLinkDatabaseFile() const;
+	std::string getFixedBaseAddress() const;
+	std::string getAdditionalLibraryDirectories() const;
+	std::string getAdditionalDependencies() const;
+	std::string getTreatLinkerWarningAsErrors() const;
 	std::string getLinkIncremental() const;
 	std::string getSubSystem() const;
 	std::string getEntryPoint() const;
@@ -83,6 +88,16 @@ struct ProjectAdapterVCXProj
 	std::string getTargetMachine() const;
 	std::string getEnableCOMDATFolding() const;
 	std::string getOptimizeReferences() const;
+	std::string getLinkerLinkTimeCodeGeneration() const;
+	std::string getLinkTimeCodeGenerationObjectFile() const;
+	std::string getImportLibrary() const;
+	std::string getProgramDatabaseFile() const;
+	std::string getStripPrivateSymbols() const;
+	std::string getEntryPointSymbol() const;
+	std::string getRandomizedBaseAddress() const;
+	std::string getDataExecutionPrevention() const;
+	std::string getProfile() const;
+	std::string getAdditionalLinkerOptions() const;
 
 	StringList getSourceExtensions() const;
 	StringList getHeaderExtensions() const;
