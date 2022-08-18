@@ -71,6 +71,11 @@ bool ProjectAdapterVCXProj::usesLibrarian() const
 	return m_project.isStaticLibrary();
 }
 
+bool ProjectAdapterVCXProj::usesModules() const
+{
+	return m_project.cppModules();
+}
+
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getBoolean(const bool inValue) const
 {

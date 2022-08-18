@@ -257,6 +257,12 @@ bool VSVCXProjGen::saveProjectFile(const BuildState& inState, const std::string&
 					node2.addElementWithTextIfNotEmpty("ForcedIncludeFiles", vcxprojAdapter.getPrecompiledHeaderMinusLocation());
 				}
 
+				if (vcxprojAdapter.usesModules())
+				{
+					node2.addElementWithTextIfNotEmpty("EnableModules", "true");
+					node2.addElementWithTextIfNotEmpty("CompileAs", "CompileAsCppModule");
+				}
+
 				node2.addElementWithTextIfNotEmpty("SDLCheck", vcxprojAdapter.getSDLCheck());
 				node2.addElementWithTextIfNotEmpty("WarningLevel", vcxprojAdapter.getWarningLevel());
 				node2.addElementWithTextIfNotEmpty("ExternalWarningLevel", vcxprojAdapter.getExternalWarningLevel());
