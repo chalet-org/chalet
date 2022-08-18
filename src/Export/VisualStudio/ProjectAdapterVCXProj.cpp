@@ -582,7 +582,75 @@ std::string ProjectAdapterVCXProj::getAdditionalCompilerOptions() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getGenerateDebugInformation() const
 {
-	return getBoolean(true);
+	if (m_msvcAdapter.enableDebugging())
+	{
+		if (m_msvcAdapter.supportsProfiling())
+			return "DebugFull";
+		else
+			return getBoolean(true);
+	}
+	else
+	{
+		return getBoolean(false);
+	}
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getIncrementalLinkDatabaseFile() const
+{
+	if (m_msvcAdapter.suportsILKGeneration())
+	{
+		return "$(IntDir)$(TargetName).ilk";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getFixedBaseAddress() const
+{
+	// true - /FIXED
+	// false - /FIXED:no
+	return getBoolean(m_msvcAdapter.supportsFixedBaseAddress());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
+{
+	auto list = m_msvcAdapter.getLibDirectories();
+	for (auto& dir : list)
+	{
+		auto full = fmt::format("{}/{}", m_cwd, dir);
+		if (Commands::pathExists(full))
+		{
+			dir = std::move(full);
+		}
+	}
+
+	auto ret = String::join(list, ';');
+	if (!ret.empty())
+		ret += ';';
+
+	ret += "%(AdditionalIncludeDirectories)";
+	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAdditionalDependencies() const
+{
+	auto links = m_msvcAdapter.getLinks(false);
+	auto ret = String::join(links, ';');
+	if (!ret.empty())
+		ret += ';';
+
+	ret += "$(CoreLibraryDependencies);%(AdditionalDependencies)";
+	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getTreatLinkerWarningAsErrors() const
+{
+	return getBoolean(m_project.treatWarningsAsErrors());
 }
 
 /*****************************************************************************/
@@ -601,6 +669,87 @@ std::string ProjectAdapterVCXProj::getEnableCOMDATFolding() const
 std::string ProjectAdapterVCXProj::getOptimizeReferences() const
 {
 	return getBooleanIfTrue(m_msvcAdapter.supportsOptimizeReferences());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLinkerLinkTimeCodeGeneration() const
+{
+	// TODO
+	// UseFastLinkTimeCodeGeneration
+	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
+	{
+		return "UseFastLinkTimeCodeGeneration";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLinkTimeCodeGenerationObjectFile() const
+{
+	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
+	{
+		return "$(IntDir)$(TargetName).iobj";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getImportLibrary() const
+{
+	if (m_project.isSharedLibrary())
+	{
+		return "$(OutDir)$(TargetName).lib";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getProgramDatabaseFile() const
+{
+	if (m_msvcAdapter.enableDebugging())
+	{
+		return "$(OutDir)$(TargetName).pdb";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getStripPrivateSymbols() const
+{
+	if (m_msvcAdapter.enableDebugging())
+	{
+		return "$(OutDir)$(TargetName).stripped.pdb";
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEntryPointSymbol() const
+{
+	return m_msvcAdapter.getEntryPoint();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getRandomizedBaseAddress() const
+{
+	return getBoolean(m_msvcAdapter.supportsRandomizedBaseAddress());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getDataExecutionPrevention() const
+{
+	return getBoolean(m_msvcAdapter.supportsDataExecutionPrevention());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getProfile() const
+{
+	return getBooleanIfTrue(m_msvcAdapter.supportsProfiling());
 }
 
 /*****************************************************************************/
@@ -664,6 +813,18 @@ std::string ProjectAdapterVCXProj::getTargetMachine() const
 	}
 
 	return machine;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAdditionalLinkerOptions() const
+{
+	StringList options = m_msvcAdapter.getAdditionalLinkerOptions();
+	auto ret = String::join(options, ' ');
+	if (!ret.empty())
+		ret += ' ';
+
+	ret += "%(AdditionalOptions)";
+	return ret;
 }
 
 /*****************************************************************************/

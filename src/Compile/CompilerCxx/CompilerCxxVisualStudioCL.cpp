@@ -124,8 +124,6 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 		// addFullPathSourceCode(ret);
 	}
 
-	// addUnsortedOptions(ret);
-
 	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
@@ -197,8 +195,6 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 		addCallingConvention(ret);
 		// addFullPathSourceCode(ret);
 	}
-
-	// addUnsortedOptions(ret);
 
 	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
@@ -305,8 +301,6 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 		// addFullPathSourceCode(ret);
 	}
 
-	// addUnsortedOptions(ret);
-
 	addSanitizerOptions(ret);
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
@@ -359,8 +353,6 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 		addCallingConvention(outArgList);
 		// addFullPathSourceCode(outArgList);
 	}
-
-	// addUnsortedOptions(outArgList);
 
 	addSanitizerOptions(outArgList);
 	addNoRunTimeTypeInformationOption(outArgList);
@@ -730,16 +722,6 @@ void CompilerCxxVisualStudioCL::addCppCoroutines(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, "/await");
 		}
 	}
-}
-
-/*****************************************************************************/
-void CompilerCxxVisualStudioCL::addUnsortedOptions(StringList& outArgList) const
-{
-	// Note: in MSVC, one can combine these (annoyingly)
-	//	Might be desireable to add:
-	//    /Oy (suppresses the creation of frame pointers on the call stack for quicker function calls.)
-
-	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

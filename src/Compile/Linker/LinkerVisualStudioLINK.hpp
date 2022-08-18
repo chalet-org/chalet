@@ -34,17 +34,14 @@ protected:
 	// General
 	virtual void addIncremental(StringList& outArgList, const std::string& outputFileBase) const;
 	virtual void addDebug(StringList& outArgList, const std::string& outputFileBase) const;
-	virtual void addCgThreads(StringList& outArgList) const;
 	virtual void addRandomizedBaseAddress(StringList& outArgList) const;
 	virtual void addCompatibleWithDataExecutionPrevention(StringList& outArgList) const;
 	virtual void addMachine(StringList& outArgList) const;
 	virtual void addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const;
-	virtual void addVerbosity(StringList& outArgList) const;
 	virtual void addWarningsTreatedAsErrors(StringList& outArgList) const;
+	virtual void addAdditionalOptions(StringList& outArgList) const;
 
 private:
-	virtual void addUnsortedOptions(StringList& outArgList) const final;
-
 	CommandAdapterMSVC m_msvcAdapter;
 };
 }

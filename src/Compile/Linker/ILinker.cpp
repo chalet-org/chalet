@@ -59,7 +59,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 }
 
 /*****************************************************************************/
-[[nodiscard]] StringList ILinker::getWin32Links(const BuildState& inState, const SourceTarget& inProject)
+[[nodiscard]] StringList ILinker::getWin32CoreLibraryLinks(const BuildState& inState, const SourceTarget& inProject)
 {
 	// TODO: Dynamic way of determining this list
 	//   would they differ between console app & windows app?
@@ -210,9 +210,9 @@ void ILinker::addSourceObjects(StringList& outArgList, const StringList& sourceO
 }
 
 /*****************************************************************************/
-StringList ILinker::getWin32Links() const
+StringList ILinker::getWin32CoreLibraryLinks() const
 {
-	return ILinker::getWin32Links(m_state, m_project);
+	return ILinker::getWin32CoreLibraryLinks(m_state, m_project);
 }
 
 }

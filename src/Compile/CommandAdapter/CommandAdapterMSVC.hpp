@@ -46,9 +46,11 @@ struct CommandAdapterMSVC
 	bool supportsIncrementalLinking() const;
 	bool supportsCOMDATFolding() const;
 	bool supportsOptimizeReferences() const;
+	std::optional<bool> supportsLongBranchRedirects() const;
 	bool supportsProfiling() const;
 	bool supportsDataExecutionPrevention() const;
 	bool suportsILKGeneration() const;
+	bool supportsFixedBaseAddress() const;
 	bool disableFixedBaseAddress() const;
 	bool enableDebugging() const;
 	bool supportsRandomizedBaseAddress() const;
@@ -66,9 +68,10 @@ struct CommandAdapterMSVC
 
 	StringList getIncludeDirectories() const;
 	StringList getAdditionalCompilerOptions(const bool inCharsetFlags = false) const;
+	StringList getAdditionalLinkerOptions() const;
 
 	StringList getLibDirectories() const;
-	StringList getLinks() const;
+	StringList getLinks(const bool inIncludeCore = true) const;
 
 	bool createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath);
 	std::string getPchObject(const std::string& inOutputFile);
