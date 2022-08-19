@@ -388,6 +388,9 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	bool showExitCode = false;
 	if (!scriptRunner.run(file, arguments, showExitCode))
 	{
+		Diagnostic::printErrors(true);
+		Output::previousLine();
+
 		Output::lineBreak();
 		Output::msgBuildFail();
 		Output::lineBreak();

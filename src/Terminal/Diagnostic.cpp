@@ -248,7 +248,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 		destroySpinnerThread();
 	}
 
-	const auto color = Output::getAnsiStyle(inType == Type::Error ? Output::theme().error : Output::theme().warning);
+	const auto color = Output::getAnsiStyle(inType == Type::Error || inType == Type::ErrorStdOut ? Output::theme().error : Output::theme().warning);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	out << fmt::format("{}{}: {}", color, inTitle, reset);
@@ -274,7 +274,7 @@ void Diagnostic::addError(const Type inType, std::string&& inMessage)
 }
 
 /*****************************************************************************/
-void Diagnostic::printErrors()
+void Diagnostic::printErrors(const bool inForceStdOut)
 {
 	if (state.errorList.empty())
 		return;
@@ -334,7 +334,7 @@ void Diagnostic::printErrors()
 	{
 		Output::setQuietNonBuild(false);
 
-		Type type = Type::Error;
+		Type type = inForceStdOut ? Type::ErrorStdOut : Type::Error;
 		if (!hasWarnings && state.padded)
 		{
 			Output::lineBreakStderr();

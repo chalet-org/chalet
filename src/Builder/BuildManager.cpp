@@ -148,7 +148,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	const IBuildTarget* runTarget = nullptr;
 
 	bool error = false;
-	bool breakAfterBuild = false;
+	// bool breakAfterBuild = false;
 	for (auto& target : m_state.targets)
 	{
 		if (routeWillRun)
@@ -159,7 +159,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			if (isRunTarget || noExplicitRunTarget)
 			{
 				runTarget = target.get();
-				breakAfterBuild = true;
+				// breakAfterBuild = true;
 
 				if (target->isScript())
 					break;
@@ -242,8 +242,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Output::lineBreak();
 		}
 
-		if (breakAfterBuild)
-			break;
+		// if (breakAfterBuild)
+		// 	break;
 	}
 
 	for (auto& target : m_state.targets)
@@ -640,7 +640,11 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	const auto& arguments = inTarget.arguments();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	if (!scriptRunner.run(file, arguments, inRunCommand))
+	{
+		Diagnostic::printErrors(true);
+		Output::previousLine();
 		return false;
+	}
 
 	return true;
 }

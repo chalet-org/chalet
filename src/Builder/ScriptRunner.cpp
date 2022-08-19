@@ -30,7 +30,29 @@ enum class ScriptType
 	Powershell,
 	WindowsCommand,
 };
+
+std::string getScriptTypeString(const ScriptType inType)
+{
+	switch (inType)
+	{
+		case ScriptType::Python:
+			return "python";
+		case ScriptType::Ruby:
+			return "ruby";
+		case ScriptType::Perl:
+			return "perl";
+		case ScriptType::Lua:
+			return "lua";
+		case ScriptType::UnixShell:
+		case ScriptType::Powershell:
+		case ScriptType::WindowsCommand:
+		case ScriptType::None:
+		default:
+			return std::string();
+	}
 }
+}
+
 /*****************************************************************************/
 ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools) :
 	m_inputs(inInputs),
@@ -42,6 +64,36 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 /*****************************************************************************/
 bool ScriptRunner::run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
 {
+	auto command = getCommand(inScript, inArguments);
+	if (command.empty())
+		return false;
+
+	bool result = Commands::subprocess(command);
+	auto exitCode = ProcessController::getLastExitCode();
+
+	std::string script = inScript;
+	m_inputs.clearWorkingDirectory(script);
+
+	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
+
+	if (inShowExitCode || !result)
+	{
+		if (inShowExitCode)
+			Output::printSeparator();
+		else
+			Output::lineBreak();
+
+		Output::print(result ? Output::theme().info : Output::theme().error, message);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+StringList ScriptRunner::getCommand(const std::string& inScript, const StringList& inArguments)
+{
+	StringList ret;
+
 #if defined(CHALET_WIN32)
 	std::string parsedScriptPath = inScript;
 	if (String::endsWith(".exe", parsedScriptPath))
@@ -57,12 +109,10 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 	if (!Commands::pathExists(outScriptPath))
 	{
 		Diagnostic::error("{}: The script '{}' was not found. Aborting.", m_inputFile, inScript);
-		return false;
+		return ret;
 	}
 
 	Commands::setExecutableFlag(outScriptPath);
-
-	StringList command;
 
 	std::string shebang;
 	bool shellFound = false;
@@ -175,7 +225,7 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 	if (shellFound)
 	{
 		// LOG(shell);
-		command.emplace_back(std::move(shell));
+		ret.emplace_back(std::move(shell));
 	}
 
 	if (!shellFound)
@@ -194,24 +244,24 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 			{
 				scriptType = ScriptType::WindowsCommand;
 
-				command.push_back(cmd);
-				command.emplace_back("/c");
+				ret.push_back(cmd);
+				ret.emplace_back("/c");
 			}
 			else if (!powershell.empty())
 			{
 				scriptType = ScriptType::Powershell;
 
-				command.push_back(powershell);
+				ret.push_back(powershell);
 			}
 			else if (isBatchScript)
 			{
 				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_inputFile, inScript);
-				return false;
+				return StringList{};
 			}
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_inputFile, inScript);
-				return false;
+				return StringList{};
 			}
 
 			shellFound = true;
@@ -224,12 +274,12 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 			{
 				scriptType = ScriptType::Powershell;
 
-				command.push_back(powershell);
+				ret.push_back(powershell);
 			}
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_inputFile, inScript);
-				return false;
+				return StringList{};
 			}
 
 			shellFound = true;
@@ -239,40 +289,33 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 
 	if (!shellFound)
 	{
-		if (shebang.empty())
+		auto type = shebang;
+		if (type.empty())
+			type = getScriptTypeString(scriptType);
+
+		if (type.empty())
 			Diagnostic::error("{}: The script '{}' was not recognized.", m_inputFile, inScript);
 		else
-			Diagnostic::error("{}: The script '{}' requires the shell '{}', but it was not found.", m_inputFile, inScript, shebang);
-		return false;
+			Diagnostic::error("{}: The script '{}' requires '{}', but it was not found.", m_inputFile, inScript, type);
+
+		return StringList{};
 	}
 
-	command.emplace_back(std::move(outScriptPath));
-
-	UNUSED(scriptType); // "maybe I'll need this"
+	ret.emplace_back(std::move(outScriptPath));
 
 	for (const auto& arg : inArguments)
 	{
-		command.emplace_back(arg);
+		ret.emplace_back(arg);
 	}
 
-	bool result = Commands::subprocess(command);
-	auto exitCode = ProcessController::getLastExitCode();
-
-	std::string script = inScript;
-	m_inputs.clearWorkingDirectory(script);
-
-	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
-
-	if (inShowExitCode || !result)
+#if defined(CHALET_WIN32)
+	if (scriptType == ScriptType::Python)
 	{
-		if (inShowExitCode)
-			Output::printSeparator();
-		else
-			Output::lineBreak();
-
-		Output::print(result ? Output::theme().info : Output::theme().error, message);
+		Environment::set("PYTHONIOENCODING", "utf-8");
+		Environment::set("PYTHONLEGACYWINDOWSSTDIO", "utf-8");
 	}
+#endif
 
-	return result;
+	return ret;
 }
 }
