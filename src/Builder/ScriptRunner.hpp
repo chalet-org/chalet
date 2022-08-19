@@ -6,19 +6,20 @@
 #ifndef CHALET_SCRIPT_RUNNER_HPP
 #define CHALET_SCRIPT_RUNNER_HPP
 
+#include "State/ScriptType.hpp"
+
 namespace chalet
 {
 struct AncillaryTools;
 struct ColorTheme;
 struct CommandLineInputs;
 
-class ScriptRunner
+struct ScriptRunner
 {
-public:
 	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools);
 
 	bool run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode);
-	StringList getCommand(const std::string& inScript, const StringList& inArguments);
+	std::pair<StringList, ScriptType> getCommand(const std::string& inScript, const StringList& inArguments);
 
 private:
 	const CommandLineInputs& m_inputs;

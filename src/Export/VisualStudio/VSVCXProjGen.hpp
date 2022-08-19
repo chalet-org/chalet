@@ -16,7 +16,9 @@ namespace chalet
 {
 class BuildState;
 struct SourceTarget;
+struct IBuildTarget;
 struct ProjectAdapterVCXProj;
+struct TargetAdapterVCXProj;
 struct XmlFile;
 class XmlElement;
 
@@ -48,15 +50,15 @@ private:
 	void addUserMacros(XmlElement& outNode) const;
 	void addGeneralProperties(XmlElement& outNode, const std::string& inName, const BuildTargetType inType) const;
 	void addCompileProperties(XmlElement& outNode) const;
-	void addScriptProperties(XmlElement& outNode, const std::string& inCommand) const;
+	void addScriptProperties(XmlElement& outNode) const;
 	void addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
-	void addScriptFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
+	void addTargetFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
 	void addProjectReferences(XmlElement& outNode, const std::string& inName) const;
 	void addImportMsCppTargets(XmlElement& outNode) const;
 	void addExtensionTargets(XmlElement& outNode) const;
 
 	const SourceTarget* getProjectFromStateContext(const BuildState& inState, const std::string& inName) const;
-	const SourceTarget* getProjectFromFirstState(const std::string& inName) const;
+	const IBuildTarget* getTargetFromStateContext(const BuildState& inState, const std::string& inName) const;
 	std::string getWindowsTargetPlatformVersion() const;
 	std::string getVisualStudioVersion() const;
 	std::string getCondition(const std::string& inConfig) const;
@@ -67,6 +69,7 @@ private:
 	const OrderedDictionary<Uuid>& m_targetGuids;
 
 	HeapDictionary<ProjectAdapterVCXProj> m_adapters;
+	HeapDictionary<TargetAdapterVCXProj> m_targetAdapters;
 	HeapDictionary<SourceOutputs> m_outputs;
 
 	std::string m_currentTarget;
