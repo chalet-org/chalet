@@ -18,6 +18,7 @@ public:
 	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools);
 
 	bool run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode);
+	StringList getCommand(const std::string& inScript, const StringList& inArguments);
 
 private:
 	const CommandLineInputs& m_inputs;

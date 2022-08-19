@@ -16,6 +16,7 @@ struct Diagnostic
 	{
 		Warning,
 		Error,
+		ErrorStdOut,
 	};
 
 	Diagnostic() = delete;
@@ -48,7 +49,7 @@ struct Diagnostic
 	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
 	static bool assertionFailure() noexcept;
 
-	static void printErrors();
+	static void printErrors(const bool inForceStdOut = false);
 	static void clearErrors();
 	static void throwCriticalError();
 	static void usePaddedErrors();
