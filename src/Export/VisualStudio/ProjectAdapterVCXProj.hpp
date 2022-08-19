@@ -102,10 +102,6 @@ struct ProjectAdapterVCXProj
 	std::string getProfile() const;
 	std::string getAdditionalLinkerOptions() const;
 
-	StringList getSourceExtensions() const;
-	StringList getHeaderExtensions() const;
-	StringList getResourceExtensions() const;
-
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;

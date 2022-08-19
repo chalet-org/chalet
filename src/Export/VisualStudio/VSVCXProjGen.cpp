@@ -5,16 +5,17 @@
 
 #include "Export/VisualStudio/VSVCXProjGen.hpp"
 
-#include "Builder/ScriptRunner.hpp"
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
+#include "Export/VisualStudio/TargetAdapterVCXProj.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -48,29 +49,28 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
 
-	if (m_adapters.empty())
+	m_adapters.clear();
+
+	for (auto& state : m_states)
 	{
-		for (auto& state : m_states)
+		auto project = getProjectFromStateContext(*state, name);
+		if (project != nullptr)
 		{
-			auto project = getProjectFromStateContext(*state, name);
-			if (project != nullptr)
+			const auto& config = state->configuration.name();
+
+			StringList fileCache;
+			m_outputs.emplace(config, state->paths.getOutputs(*project, fileCache));
+
+			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project, m_cwd));
+			if (!it->second->createPrecompiledHeaderSource())
 			{
-				const auto& config = state->configuration.name();
-
-				StringList fileCache;
-				m_outputs.emplace(config, state->paths.getOutputs(*project, fileCache));
-
-				auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project, m_cwd));
-				if (!it->second->createPrecompiledHeaderSource())
-				{
-					Diagnostic::error("Error generating the precompiled header.");
-					return false;
-				}
-				if (!it->second->createWindowsResources())
-				{
-					Diagnostic::error("Error generating windows resources.");
-					return false;
-				}
+				Diagnostic::error("Error generating the precompiled header.");
+				return false;
+			}
+			if (!it->second->createWindowsResources())
+			{
+				Diagnostic::error("Error generating windows resources.");
+				return false;
 			}
 		}
 	}
@@ -104,6 +104,21 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
+
+	m_targetAdapters.clear();
+
+	for (auto& state : m_states)
+	{
+		auto target = getTargetFromStateContext(*state, name);
+		if (target != nullptr)
+		{
+			const auto& config = state->configuration.name();
+			m_targetAdapters.emplace(config, std::make_unique<TargetAdapterVCXProj>(*state, *target, m_cwd));
+		}
+	}
+
+	if (m_targetAdapters.empty())
+		return false;
 
 	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
 
@@ -157,8 +172,6 @@ bool VSVCXProjGen::saveScriptTargetProjectFile(const std::string& inName, const 
 {
 	XmlFile xmlFile(inFilename);
 
-	std::string command{ "echo \"Hello World\"" };
-
 	auto& xml = xmlFile.xml;
 	auto& xmlRoot = xml.root();
 
@@ -171,8 +184,8 @@ bool VSVCXProjGen::saveScriptTargetProjectFile(const std::string& inName, const 
 	addMsCppProps(xmlRoot);
 	addUserMacros(xmlRoot);
 	addGeneralProperties(xmlRoot, inName, BuildTargetType::Script);
-	addScriptProperties(xmlRoot, command);
-	addScriptFiles(xmlRoot, inName, outFiltersFile);
+	addScriptProperties(xmlRoot);
+	addTargetFiles(xmlRoot, inName, outFiltersFile);
 	addProjectReferences(xmlRoot, inName);
 	addImportMsCppTargets(xmlRoot);
 
@@ -218,7 +231,7 @@ bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inTyp
 			});
 		});
 	}
-	else if (inType == BuildTargetType::Script)
+	/*else if (inType == BuildTargetType::Script)
 	{
 		xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
 			node.addElement("Filter", [this](XmlElement& node2) {
@@ -228,7 +241,7 @@ bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inTyp
 				node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
 			});
 		});
-	}
+	}*/
 
 	return true;
 }
@@ -309,6 +322,10 @@ void VSVCXProjGen::addGlobalProperties(XmlElement& outNode, const BuildTargetTyp
 			node.addElementWithText("ProjectName", m_currentTarget);
 			node.addElementWithText("VCProjectUpgraderObjectName", "NoUpgrade");
 		}
+		else if (inType == BuildTargetType::Script)
+		{
+			node.addElementWithText("DisableFastUpToDateCheck", "true");
+		}
 	});
 }
 
@@ -358,11 +375,13 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 			}
 			else
 			{
-				const auto& vcxprojAdapter = *m_adapters.begin()->second;
-				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+				auto& st = *m_states.front();
+				outNode.addElement("PropertyGroup", [&condition, &st](XmlElement& node) {
 					node.addAttribute("Condition", condition);
 					node.addAttribute("Label", "Configuration");
-					node.addElementWithTextIfNotEmpty("PlatformToolset", vcxprojAdapter.getPlatformToolset());
+
+					auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(st));
+					node.addElementWithTextIfNotEmpty("PlatformToolset", toolset);
 				});
 			}
 		}
@@ -614,15 +633,33 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 }
 
 /*****************************************************************************/
-void VSVCXProjGen::addScriptProperties(XmlElement& outNode, const std::string& inCommand) const
+void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 {
-	outNode.addElement("ItemDefinitionGroup", [&inCommand](XmlElement& node) {
-		// node.addAttribute("Condition", condition);
+	for (auto& state : m_states)
+	{
+		const auto& config = state->configuration.name();
+		auto condition = getCondition(config);
 
-		node.addElement("PreBuildEvent", [&inCommand](XmlElement& node2) {
-			node2.addElementWithText("Command", inCommand);
-		});
-	});
+		if (m_targetAdapters.find(config) != m_targetAdapters.end())
+		{
+			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
+			auto command = vcxprojAdapter.getCommand();
+
+			outNode.addElement("ItemDefinitionGroup", [&condition, &command](XmlElement& node) {
+				node.addAttribute("Condition", condition);
+
+				node.addElement("PostBuildEvent", [&command](XmlElement& node2) {
+					node2.addElementWithText("Command", command);
+				});
+			});
+		}
+		else
+		{
+			outNode.addElement("ItemDefinitionGroup", [&condition](XmlElement& node) {
+				node.addAttribute("Condition", condition);
+			});
+		}
+	}
 }
 
 /*****************************************************************************/
@@ -908,31 +945,109 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 }
 
 /*****************************************************************************/
-void VSVCXProjGen::addScriptFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const
+void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const
 {
-	UNUSED(outNode, inName, outFiltersFile);
+	UNUSED(inName);
+
+	OrderedDictionary<StringList> sources;
+	StringList allConfigs;
+
+	for (auto& state : m_states)
+	{
+		const auto& config = state->configuration.name();
+		if (m_targetAdapters.find(config) != m_targetAdapters.end())
+		{
+			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
+
+			allConfigs.emplace_back(config);
+
+			auto targetFiles = vcxprojAdapter.getFiles();
+
+			for (auto& file : targetFiles)
+			{
+				if (sources.find(file) == sources.end())
+					sources[file] = StringList{ config };
+				else
+					sources[file].emplace_back(config);
+			}
+		}
+	}
+
+	// auto& filters = outFiltersFile.xml.root();
+	UNUSED(outFiltersFile);
+	outNode.addElement("ItemGroup", [this, &sources](XmlElement& node) {
+		for (auto& it : sources)
+		{
+			const auto& file = it.first;
+			// const auto& configs = it.second;
+
+			node.addElement("None", [this, &file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+			});
+		}
+	});
+	/*filters.addElement("ItemGroup", [&sources](XmlElement& node) {
+		for (auto& it : sources)
+		{
+			const auto& file = it.first;
+
+			node.addElement("None", [&file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+				node2.addElementWithText("Filter", "Files");
+			});
+		}
+	});*/
 }
 
 /*****************************************************************************/
 void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& inName) const
 {
-	auto project = getProjectFromFirstState(inName);
-	if (project != nullptr)
+	for (auto& state : m_states)
 	{
-		auto list = List::combine(project->projectStaticLinks(), project->projectSharedLinks());
-		if (!list.empty())
+		auto target = getTargetFromStateContext(*state, inName);
+		if (target != nullptr)
 		{
-			outNode.addElement("ItemGroup", [this, &list](XmlElement& node) {
-				for (auto& target : list)
+			StringList list;
+			for (auto& tgt : state->targets)
+			{
+				if (String::equals(inName, tgt->name()))
+					break;
+
+				list.emplace_back(tgt->name());
+			}
+
+			if (target->isSources())
+			{
+				const auto& project = static_cast<const SourceTarget&>(*target);
+				for (auto& link : project.projectStaticLinks())
 				{
-					node.addElement("ProjectReference", [this, &target](XmlElement& node2) {
-						auto uuid = String::toUpperCase(m_targetGuids.at(target).str());
-						node2.addAttribute("Include", fmt::format("{}.vcxproj", target));
-						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
-						node2.addElementWithText("Name", target);
-					});
+					List::addIfDoesNotExist(list, link);
 				}
-			});
+				for (auto& link : project.projectSharedLinks())
+				{
+					List::addIfDoesNotExist(list, link);
+				}
+			}
+
+			if (!list.empty())
+			{
+				const auto& config = state->configuration.name();
+				auto condition = getCondition(config);
+
+				outNode.addElement("ItemGroup", [this, &list, &condition](XmlElement& node) {
+					node.addAttribute("Condition", condition);
+
+					for (auto& tgt : list)
+					{
+						node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
+							auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
+							node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));
+							node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
+							node2.addElementWithText("Name", tgt);
+						});
+					}
+				});
+			}
 		}
 	}
 }
@@ -973,19 +1088,14 @@ const SourceTarget* VSVCXProjGen::getProjectFromStateContext(const BuildState& i
 }
 
 /*****************************************************************************/
-const SourceTarget* VSVCXProjGen::getProjectFromFirstState(const std::string& inName) const
+const IBuildTarget* VSVCXProjGen::getTargetFromStateContext(const BuildState& inState, const std::string& inName) const
 {
-	const SourceTarget* ret = nullptr;
-
-	for (auto& state : m_states)
+	const IBuildTarget* ret = nullptr;
+	for (auto& target : inState.targets)
 	{
-		for (auto& target : state->targets)
+		if (String::equals(target->name(), inName))
 		{
-			if (target->isSources() && String::equals(inName, target->name()))
-			{
-				ret = static_cast<const SourceTarget*>(target.get());
-				break;
-			}
+			ret = target.get();
 		}
 	}
 

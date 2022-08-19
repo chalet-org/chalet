@@ -19,18 +19,7 @@ namespace chalet
 {
 namespace
 {
-enum class ScriptType
-{
-	None,
-	UnixShell,
-	Python,
-	Ruby,
-	Perl,
-	Lua,
-	Powershell,
-	WindowsCommand,
-};
-
+/*****************************************************************************/
 std::string getScriptTypeString(const ScriptType inType)
 {
 	switch (inType)
@@ -51,6 +40,24 @@ std::string getScriptTypeString(const ScriptType inType)
 			return std::string();
 	}
 }
+
+/*****************************************************************************/
+ScriptType getScriptTypeFromString(const std::string& inStr)
+{
+	auto lower = String::toLowerCase(inStr);
+	if (String::equals({ "python", "python3" }, lower))
+		return ScriptType::Python;
+	if (String::equals("lua", lower))
+		return ScriptType::Lua;
+	if (String::equals("ruby", lower))
+		return ScriptType::Ruby;
+	if (String::equals("perl", lower))
+		return ScriptType::Perl;
+	if (String::equals("pwsh", lower))
+		return ScriptType::Powershell;
+
+	return ScriptType::UnixShell;
+}
 }
 
 /*****************************************************************************/
@@ -64,7 +71,7 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 /*****************************************************************************/
 bool ScriptRunner::run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
 {
-	auto command = getCommand(inScript, inArguments);
+	auto [command, _] = getCommand(inScript, inArguments);
 	if (command.empty())
 		return false;
 
@@ -75,7 +82,6 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 	m_inputs.clearWorkingDirectory(script);
 
 	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
-
 	if (inShowExitCode || !result)
 	{
 		if (inShowExitCode)
@@ -90,7 +96,7 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 }
 
 /*****************************************************************************/
-StringList ScriptRunner::getCommand(const std::string& inScript, const StringList& inArguments)
+std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& inScript, const StringList& inArguments)
 {
 	StringList ret;
 
@@ -109,13 +115,14 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 	if (!Commands::pathExists(outScriptPath))
 	{
 		Diagnostic::error("{}: The script '{}' was not found. Aborting.", m_inputFile, inScript);
-		return ret;
+		return std::make_pair(ret, ScriptType::None);
 	}
 
 	Commands::setExecutableFlag(outScriptPath);
 
 	std::string shebang;
 	bool shellFound = false;
+	ScriptType scriptType = ScriptType::None;
 
 	std::string shell;
 	shebang = Commands::readShebangFromFile(outScriptPath);
@@ -127,30 +134,35 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 			auto search = shebang.substr(space + 1);
 			if (!search.empty())
 			{
+				scriptType = getScriptTypeFromString(search);
 				shell = Commands::which(shebang.substr(space + 1));
 				shellFound = !shell.empty();
 			}
 		}
 		else
 		{
-			shell = shebang;
-			shellFound = Commands::pathExists(shell);
-
-			if (!shellFound)
+			auto search = String::getPathFilename(shebang);
+			if (!search.empty())
 			{
-				shell = Commands::which(String::getPathFilename(shebang));
-				shellFound = !shell.empty();
+				scriptType = getScriptTypeFromString(search);
+
+				shell = shebang;
+				shellFound = Commands::pathExists(shell);
 
 				if (!shellFound)
 				{
-					shell = Environment::getShell();
+					shell = Commands::which(search);
 					shellFound = !shell.empty();
+
+					if (!shellFound)
+					{
+						shell = Environment::getShell();
+						shellFound = !shell.empty();
+					}
 				}
 			}
 		}
 	}
-
-	ScriptType scriptType = ScriptType::None;
 
 	if (!shellFound)
 	{
@@ -256,12 +268,12 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 			else if (isBatchScript)
 			{
 				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_inputFile, inScript);
-				return StringList{};
+				return std::make_pair(StringList{}, scriptType);
 			}
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_inputFile, inScript);
-				return StringList{};
+				return std::make_pair(StringList{}, scriptType);
 			}
 
 			shellFound = true;
@@ -279,7 +291,7 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_inputFile, inScript);
-				return StringList{};
+				return std::make_pair(StringList{}, scriptType);
 			}
 
 			shellFound = true;
@@ -298,7 +310,7 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 		else
 			Diagnostic::error("{}: The script '{}' requires '{}', but it was not found.", m_inputFile, inScript, type);
 
-		return StringList{};
+		return std::make_pair(StringList{}, scriptType);
 	}
 
 	ret.emplace_back(std::move(outScriptPath));
@@ -316,6 +328,6 @@ StringList ScriptRunner::getCommand(const std::string& inScript, const StringLis
 	}
 #endif
 
-	return ret;
+	return std::make_pair(ret, scriptType);
 }
 }
