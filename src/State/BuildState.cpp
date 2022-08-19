@@ -745,6 +745,12 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	// Save the current environment to a file
 	// std::system("printenv > all_variables.txt");
 
+#if defined(CHALET_WIN32)
+	// For python script & process targets
+	Environment::set("PYTHONIOENCODING", "utf-8");
+	Environment::set("PYTHONLEGACYWINDOWSSTDIO", "utf-8");
+#endif
+
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 

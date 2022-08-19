@@ -648,7 +648,7 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 			outNode.addElement("ItemDefinitionGroup", [&condition, &command](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 
-				node.addElement("PostBuildEvent", [&command](XmlElement& node2) {
+				node.addElement("PreBuildEvent", [&command](XmlElement& node2) {
 					node2.addElementWithText("Command", command);
 				});
 			});
@@ -1039,6 +1039,9 @@ void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& 
 
 					for (auto& tgt : list)
 					{
+						if (m_targetGuids.find(tgt) == m_targetGuids.end())
+							continue;
+
 						node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
 							auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
 							node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));

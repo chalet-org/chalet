@@ -10,6 +10,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
@@ -66,12 +67,30 @@ std::string TargetAdapterVCXProj::getCommand() const
 			scriptType = type;
 		}
 	}
+	else if (m_target.isProcess())
+	{
+		const auto& process = static_cast<const ProcessBuildTarget&>(m_target);
+		StringList cmd;
+		cmd.emplace_back(fmt::format("\"{}\"", process.path()));
+		for (auto& arg : process.arguments())
+		{
+			cmd.emplace_back(arg);
+		}
+		ret = String::join(cmd);
+
+		if (String::contains("python", process.path()))
+			scriptType = ScriptType::Python;
+	}
 
 	if (!ret.empty())
 	{
 		if (scriptType == ScriptType::Python)
 		{
-			ret = fmt::format("set PYTHONIOENCODING=utf-8\r\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\r\n{}", ret);
+			ret = fmt::format("cd {}\r\nset PYTHONIOENCODING=utf-8\r\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\r\n{}", m_cwd, ret);
+		}
+		else
+		{
+			ret = fmt::format("cd {}\r\n{}", m_cwd, ret);
 		}
 	}
 

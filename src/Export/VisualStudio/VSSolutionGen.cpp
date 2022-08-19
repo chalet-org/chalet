@@ -157,7 +157,7 @@ bool VSSolutionGen::projectWillBuild(const std::string& inName, const std::strin
 		{
 			for (auto& target : state->targets)
 			{
-				bool validType = target->isSources() || target->isScript();
+				bool validType = target->isSources() || target->isScript() || target->isProcess();
 				if (validType && String::equals(inName, target->name()))
 					return true;
 			}

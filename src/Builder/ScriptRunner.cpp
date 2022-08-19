@@ -320,14 +320,6 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 		ret.emplace_back(arg);
 	}
 
-#if defined(CHALET_WIN32)
-	if (scriptType == ScriptType::Python)
-	{
-		Environment::set("PYTHONIOENCODING", "utf-8");
-		Environment::set("PYTHONLEGACYWINDOWSSTDIO", "utf-8");
-	}
-#endif
-
 	return std::make_pair(ret, scriptType);
 }
 }
