@@ -22,6 +22,65 @@
 #include "Utility/String.hpp"
 #include "Xml/XmlFile.hpp"
 
+// Script/Process/Cmake template
+/*
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelHighOpt|x64">
+      <Configuration>RelHighOpt</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{AEE148FC-F7B9-46A1-A800-18553192C39E}</ProjectGuid>
+    <RootNamespace>cmake</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup>
+    <ConfigurationType>Utility</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>echo "Hello World"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+</Project>
+
+// Filters
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup></ItemGroup>
+</Project>
+*/
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -38,7 +97,7 @@ VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, cons
 VSVCXProjGen::~VSVCXProjGen() = default;
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveProjectFiles(const std::string& name)
+bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 {
 	if (m_targetGuids.find(name) == m_targetGuids.end())
 		return false;
@@ -101,16 +160,105 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 
 	auto& xml = xmlFile.xml;
 	auto& xmlRoot = xml.root();
-	xmlRoot.setName("Project");
-	xmlRoot.addAttribute("DefaultTargets", "Build");
-	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
+	addProjectHeader(xmlRoot);
+	addProjectConfiguration(xmlRoot);
+	addGlobalProperties(xmlRoot);
+	addMsCppDefaultProps(xmlRoot);
+	addConfigurationProperties(xmlRoot);
+	addMsCppProps(xmlRoot);
+	addExtensionSettings(xmlRoot);
+	addShared(xmlRoot);
+	addPropertySheets(xmlRoot);
+	addUserMacros(xmlRoot);
+	addGeneralProperties(xmlRoot);
+	addCompileProperties(xmlRoot);
+	addSourceFiles(xmlRoot, inName, outFiltersFile);
+	addProjectReferences(xmlRoot, inName);
+	addImportMsCppTargets(xmlRoot);
+	addExtensionTargets(xmlRoot);
+
+	return xmlFile.save();
+}
+
+/*****************************************************************************/
+bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile)
+{
+	auto& xml = outFile.xml;
+	auto& xmlRoot = xml.root();
+	xmlRoot.setName("Project");
+	xmlRoot.addAttribute("ToolsVersion", "4.0");
+	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
+		node.addElement("Filter", [this](XmlElement& node2) {
+			std::string filterName{ "Source Files" };
+			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
+			node2.addAttribute("Include", filterName);
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+		});
+		node.addElement("Filter", [this](XmlElement& node2) {
+			std::string filterName{ "Header Files" };
+			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
+			node2.addAttribute("Include", filterName);
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+		});
+		node.addElement("Filter", [this](XmlElement& node2) {
+			std::string filterName{ "Resource Files" };
+			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
+			node2.addAttribute("Include", filterName);
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+		});
+		node.addElement("Filter", [this](XmlElement& node2) {
+			std::string filterName{ "Precompile Header Files" };
+			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
+			node2.addAttribute("Include", filterName);
+			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
+		});
+	});
+
+	return true;
+}
+
+/*****************************************************************************/
+bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
+{
+	XmlFile xmlFile(inFilename);
+
+	auto& xml = xmlFile.xml;
+	auto& xmlRoot = xml.root();
+	xmlRoot.setName("Project");
+	xmlRoot.addAttribute("ToolsVersion", "Current");
+	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+	xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
+		node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
+		node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
+	});
+
+	return xmlFile.save();
+}
+
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+// .vcxproj file
+/*****************************************************************************/
+void VSVCXProjGen::addProjectHeader(XmlElement& outNode) const
+{
+	outNode.setName("Project");
+	outNode.addAttribute("DefaultTargets", "Build");
+	outNode.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
+}
+
+/*****************************************************************************/
+void VSVCXProjGen::addProjectConfiguration(XmlElement& outNode) const
+{
+	outNode.addElement("ItemGroup", [this](XmlElement& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
 		for (auto& state : m_states)
 		{
 			const auto& name = state->configuration.name();
 			auto arch = Arch::toVSArch2(state->info.targetArchitecture());
+
 			node.addElement("ProjectConfiguration", [&name, &arch](XmlElement& node2) {
 				node2.addAttribute("Include", fmt::format("{}|{}", name, arch));
 				node2.addElementWithText("Configuration", name);
@@ -118,8 +266,12 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 			});
 		}
 	});
+}
 
-	xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addGlobalProperties(XmlElement& outNode) const
+{
+	outNode.addElement("PropertyGroup", [this](XmlElement& node) {
 		auto visualStudioVersion = getVisualStudioVersion();
 
 		node.addAttribute("Label", "Globals");
@@ -131,11 +283,19 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		node.addElementWithText("ProjectName", m_currentTarget);
 		node.addElementWithText("VCProjectUpgraderObjectName", "NoUpgrade");
 	});
+}
 
-	xmlRoot.addElement("Import", [](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addMsCppDefaultProps(XmlElement& outNode) const
+{
+	outNode.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.Default.props");
 	});
+}
 
+/*****************************************************************************/
+void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode) const
+{
 	for (auto& state : m_states)
 	{
 		const auto& config = state->configuration.name();
@@ -145,7 +305,7 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		{
 			const auto& vcxprojAdapter = *m_adapters.at(config);
 
-			xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 				node.addAttribute("Label", "Configuration");
 
@@ -170,33 +330,49 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		else
 		{
 			const auto& vcxprojAdapter = *m_adapters.begin()->second;
-			xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 				node.addAttribute("Label", "Configuration");
 				node.addElementWithTextIfNotEmpty("PlatformToolset", vcxprojAdapter.getPlatformToolset());
 			});
 		}
 	}
+}
 
-	xmlRoot.addElement("Import", [](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addMsCppProps(XmlElement& outNode) const
+{
+	outNode.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.props");
 	});
+}
 
-	xmlRoot.addElement("ImportGroup", [](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addExtensionSettings(XmlElement& outNode) const
+{
+	outNode.addElement("ImportGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "ExtensionSettings");
 		node.setText(std::string());
 	});
+}
 
-	xmlRoot.addElement("ImportGroup", [](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addShared(XmlElement& outNode) const
+{
+	outNode.addElement("ImportGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "Shared");
 		node.setText(std::string());
 	});
+}
 
+/*****************************************************************************/
+void VSVCXProjGen::addPropertySheets(XmlElement& outNode) const
+{
 	for (auto& state : m_states)
 	{
 		const auto& name = state->configuration.name();
 		auto condition = getCondition(name);
-		xmlRoot.addElement("ImportGroup", [&condition](XmlElement& node) {
+		outNode.addElement("ImportGroup", [&condition](XmlElement& node) {
 			node.addAttribute("Label", "PropertySheets");
 			node.addAttribute("Condition", condition);
 			node.addElement("Import", [](XmlElement& node2) {
@@ -206,11 +382,19 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 			});
 		});
 	}
+}
 
-	xmlRoot.addElement("PropertyGroup", [](XmlElement& node) {
+/*****************************************************************************/
+void VSVCXProjGen::addUserMacros(XmlElement& outNode) const
+{
+	outNode.addElement("PropertyGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "UserMacros");
 	});
+}
 
+/*****************************************************************************/
+void VSVCXProjGen::addGeneralProperties(XmlElement& outNode) const
+{
 	for (auto& state : m_states)
 	{
 		const auto& config = state->configuration.name();
@@ -220,7 +404,7 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		{
 			const auto& vcxprojAdapter = *m_adapters.at(config);
 
-			xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 				node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 				node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
@@ -243,7 +427,7 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		else
 		{
 			const auto& vcxprojAdapter = *m_adapters.begin()->second;
-			xmlRoot.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 				node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 				node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
@@ -251,7 +435,11 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 			});
 		}
 	}
+}
 
+/*****************************************************************************/
+void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
+{
 	for (auto& state : m_states)
 	{
 		const auto& config = state->configuration.name();
@@ -261,7 +449,7 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		{
 			const auto& vcxprojAdapter = *m_adapters.at(config);
 
-			xmlRoot.addElement("ItemDefinitionGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+			outNode.addElement("ItemDefinitionGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 				node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 					node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
@@ -367,100 +555,103 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 		}
 		else
 		{
-			xmlRoot.addElement("ItemDefinitionGroup", [&condition](XmlElement& node) {
+			outNode.addElement("ItemDefinitionGroup", [&condition](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 			});
 		}
 	}
+}
 
+/*****************************************************************************/
+void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const
+{
+	OrderedDictionary<bool> headers;
+	OrderedDictionary<StringList> sources;
+	OrderedDictionary<StringList> resources;
+	std::pair<std::string, StringList> manifest;
+	std::pair<std::string, StringList> icon;
+	std::string pchFile;
+	std::string pchSource;
+	StringList allConfigs;
+
+	for (auto& state : m_states)
 	{
-		OrderedDictionary<bool> headers;
-		OrderedDictionary<StringList> sources;
-		OrderedDictionary<StringList> resources;
-		std::pair<std::string, StringList> manifest;
-		std::pair<std::string, StringList> icon;
-		std::string pchFile;
-		std::string pchSource;
-		StringList allConfigs;
-
-		for (auto& state : m_states)
+		auto projectPtr = getProjectFromStateContext(*state, inName);
+		if (projectPtr != nullptr)
 		{
-			auto projectPtr = getProjectFromStateContext(*state, inName);
-			if (projectPtr != nullptr)
+			const auto& project = *projectPtr;
+			const auto& config = state->configuration.name();
+			if (m_adapters.find(config) != m_adapters.end())
 			{
-				const auto& project = *projectPtr;
-				const auto& config = state->configuration.name();
-				if (m_adapters.find(config) != m_adapters.end())
+				const auto& vcxprojAdapter = *m_adapters.at(config);
+
+				allConfigs.emplace_back(config);
+
+				auto headerFiles = project.getHeaderFiles();
+				const auto& pch = project.precompiledHeader();
+				if (!pch.empty())
 				{
-					const auto& vcxprojAdapter = *m_adapters.at(config);
-
-					allConfigs.emplace_back(config);
-
-					auto headerFiles = project.getHeaderFiles();
-					const auto& pch = project.precompiledHeader();
-					if (!pch.empty())
+					headerFiles.push_back(pch);
+					if (pchFile.empty())
 					{
-						headerFiles.push_back(pch);
-						if (pchFile.empty())
-						{
-							pchFile = vcxprojAdapter.getPrecompiledHeaderFile();
-						}
-						if (pchSource.empty())
-						{
-							pchSource = vcxprojAdapter.getPrecompiledHeaderSourceFile();
-						}
+						pchFile = vcxprojAdapter.getPrecompiledHeaderFile();
 					}
-
-					for (auto& header : headerFiles)
+					if (pchSource.empty())
 					{
-						auto file = fmt::format("{}/{}", m_cwd, header);
-						if (Commands::pathExists(file))
-							headers[file] = true;
-						else
-							headers[header] = true;
+						pchSource = vcxprojAdapter.getPrecompiledHeaderSourceFile();
 					}
+				}
 
-					SourceOutputs& outputs = *m_outputs.at(config).get();
+				for (auto& header : headerFiles)
+				{
+					auto file = fmt::format("{}/{}", m_cwd, header);
+					if (Commands::pathExists(file))
+						headers[file] = true;
+					else
+						headers[header] = true;
+				}
 
-					for (auto& group : outputs.groups)
+				SourceOutputs& outputs = *m_outputs.at(config).get();
+
+				for (auto& group : outputs.groups)
+				{
+					auto file = fmt::format("{}/{}", m_cwd, group->sourceFile);
+					if (!Commands::pathExists(file))
+						file = group->sourceFile;
+
+					switch (group->type)
 					{
-						auto file = fmt::format("{}/{}", m_cwd, group->sourceFile);
-						if (!Commands::pathExists(file))
-							file = group->sourceFile;
+						case SourceType::C:
+						case SourceType::CPlusPlus: {
+							if (sources.find(file) == sources.end())
+								sources[file] = StringList{ config };
+							else
+								sources[file].emplace_back(config);
 
-						switch (group->type)
-						{
-							case SourceType::C:
-							case SourceType::CPlusPlus: {
-								if (sources.find(file) == sources.end())
-									sources[file] = StringList{ config };
-								else
-									sources[file].emplace_back(config);
-
-								break;
-							}
-							case SourceType::WindowsResource: {
-								if (resources.find(file) == resources.end())
-									resources[file] = StringList{ config };
-								else
-									resources[file].emplace_back(config);
-
-								break;
-							}
-							default:
-								break;
+							break;
 						}
+						case SourceType::WindowsResource: {
+							if (resources.find(file) == resources.end())
+								resources[file] = StringList{ config };
+							else
+								resources[file].emplace_back(config);
+
+							break;
+						}
+						default:
+							break;
 					}
+				}
 
-					manifest.first = state->paths.getWindowsManifestFilename(project);
-					if (!manifest.first.empty())
-						manifest.second.emplace_back(config);
+				manifest.first = state->paths.getWindowsManifestFilename(project);
+				if (!manifest.first.empty())
+					manifest.second.emplace_back(config);
 
-					icon.first = project.windowsApplicationIcon();
-					if (!icon.first.empty())
-						icon.second.emplace_back(config);
+				icon.first = project.windowsApplicationIcon();
+				if (!icon.first.empty())
+					icon.second.emplace_back(config);
 
-					/*const auto& projectFiles = project.files();
+				/*const auto& projectFiles = project.files();
 					for (auto& file : projectFiles)
 					{
 						if (files.find(file) == files.end())
@@ -468,280 +659,235 @@ bool VSVCXProjGen::saveProjectFile(const std::string& inName, const std::string&
 						else
 							files[file].emplace_back(config);
 					}*/
-				}
 			}
 		}
+	}
 
-		UNUSED(resources);
+	auto& filters = outFiltersFile.xml.root();
 
-		auto& filters = outFiltersFile.xml.root();
-
-		xmlRoot.addElement("ItemGroup", [&headers](XmlElement& node) {
-			for (auto& it : headers)
-			{
-				const auto& file = it.first;
-
-				node.addElement("ClInclude", [&file](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-				});
-			}
-		});
-		filters.addElement("ItemGroup", [&headers, &pchFile](XmlElement& node) {
-			for (auto& it : headers)
-			{
-				const auto& file = it.first;
-
-				if (String::equals(pchFile, file))
-					continue;
-
-				node.addElement("ClInclude", [&file](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-					node2.addElementWithText("Filter", "Header Files");
-				});
-			}
-		});
-		if (!pchFile.empty())
+	outNode.addElement("ItemGroup", [&headers](XmlElement& node) {
+		for (auto& it : headers)
 		{
-			filters.addElement("ItemGroup", [&pchFile](XmlElement& node) {
-				node.addElement("ClInclude", [&pchFile](XmlElement& node2) {
-					node2.addAttribute("Include", pchFile);
-					node2.addElementWithText("Filter", "Precompile Header Files");
-				});
+			const auto& file = it.first;
+
+			node.addElement("ClInclude", [&file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
 			});
 		}
+	});
+	filters.addElement("ItemGroup", [&headers, &pchFile](XmlElement& node) {
+		for (auto& it : headers)
+		{
+			const auto& file = it.first;
+
+			if (String::equals(pchFile, file))
+				continue;
+
+			node.addElement("ClInclude", [&file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+				node2.addElementWithText("Filter", "Header Files");
+			});
+		}
+	});
+	if (!pchFile.empty())
+	{
+		filters.addElement("ItemGroup", [&pchFile](XmlElement& node) {
+			node.addElement("ClInclude", [&pchFile](XmlElement& node2) {
+				node2.addAttribute("Include", pchFile);
+				node2.addElementWithText("Filter", "Precompile Header Files");
+			});
+		});
+	}
+	if (!pchSource.empty())
+	{
+		filters.addElement("ItemGroup", [&pchSource](XmlElement& node) {
+			node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
+				node2.addAttribute("Include", pchSource);
+				node2.addElementWithText("Filter", "Precompile Header Files");
+			});
+		});
+	}
+
+	outNode.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
 		if (!pchSource.empty())
 		{
-			filters.addElement("ItemGroup", [&pchSource](XmlElement& node) {
-				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
-					node2.addAttribute("Include", pchSource);
-					node2.addElementWithText("Filter", "Precompile Header Files");
-				});
+			node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
+				node2.addAttribute("Include", pchSource);
+				node2.addElementWithText("PrecompiledHeader", "Create");
+				node2.addElementWithText("ForcedIncludeFiles", std::string());
+				node2.addElementWithText("ObjectFileName", "$(IntDir)");
 			});
 		}
 
-		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
-			if (!pchSource.empty())
-			{
-				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
-					node2.addAttribute("Include", pchSource);
-					node2.addElementWithText("PrecompiledHeader", "Create");
-					node2.addElementWithText("ForcedIncludeFiles", std::string());
-					node2.addElementWithText("ObjectFileName", "$(IntDir)");
-				});
-			}
-
-			for (auto& it : sources)
-			{
-				const auto& file = it.first;
-				const auto& configs = it.second;
-
-				node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-
-					for (auto& config : allConfigs)
-					{
-						if (!List::contains(configs, config))
-						{
-							auto condition = getCondition(config);
-							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-								node3.addAttribute("Condition", condition);
-								node3.setText("true");
-							});
-						}
-					}
-				});
-			}
-		});
-		filters.addElement("ItemGroup", [&sources](XmlElement& node) {
-			for (auto& it : sources)
-			{
-				const auto& file = it.first;
-
-				node.addElement("ClCompile", [&file](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-					node2.addElementWithText("Filter", "Source Files");
-				});
-			}
-		});
-
-		xmlRoot.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
-			for (auto& it : resources)
-			{
-				const auto& file = it.first;
-				const auto& configs = it.second;
-
-				node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-					node2.addElementWithText("PrecompiledHeader", "NotUsing");
-
-					for (auto& config : allConfigs)
-					{
-						if (!List::contains(configs, config))
-						{
-							auto condition = getCondition(config);
-							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-								node3.addAttribute("Condition", condition);
-								node3.setText("true");
-							});
-						}
-					}
-				});
-			}
-		});
-		filters.addElement("ItemGroup", [&resources](XmlElement& node) {
-			for (auto& it : resources)
-			{
-				const auto& file = it.first;
-
-				node.addElement("ResourceCompile", [&file](XmlElement& node2) {
-					node2.addAttribute("Include", file);
-					node2.addElementWithText("Filter", "Resource Files");
-				});
-			}
-		});
-
-		if (!manifest.first.empty())
+		for (auto& it : sources)
 		{
-			xmlRoot.addElement("ItemGroup", [this, &manifest, &allConfigs](XmlElement& node) {
-				node.addElement("Manifest", [this, &manifest, &allConfigs](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+			const auto& file = it.first;
+			const auto& configs = it.second;
 
-					for (auto& config : allConfigs)
+			node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+
+				for (auto& config : allConfigs)
+				{
+					if (!List::contains(configs, config))
 					{
-						if (!List::contains(manifest.second, config))
-						{
-							auto condition = getCondition(config);
-							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-								node3.addAttribute("Condition", condition);
-								node3.setText("true");
-							});
-						}
-					}
-				});
-			});
-			filters.addElement("ItemGroup", [this, &manifest](XmlElement& node) {
-				node.addElement("Manifest", [this, &manifest](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
-					node2.addElementWithText("Filter", "Resource Files");
-				});
-			});
-		}
-
-		if (!icon.first.empty())
-		{
-			xmlRoot.addElement("ItemGroup", [this, &icon, &allConfigs](XmlElement& node) {
-				node.addElement("Image", [this, &icon, &allConfigs](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
-
-					for (auto& config : allConfigs)
-					{
-						if (!List::contains(icon.second, config))
-						{
-							auto condition = getCondition(config);
-							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-								node3.addAttribute("Condition", condition);
-								node3.setText("true");
-							});
-						}
-					}
-				});
-			});
-			filters.addElement("ItemGroup", [this, &icon](XmlElement& node) {
-				node.addElement("Image", [this, &icon](XmlElement& node2) {
-					node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
-					node2.addElementWithText("Filter", "Resource Files");
-				});
-			});
-		}
-	}
-
-	{
-		auto project = getProjectFromFirstState(inName);
-		if (project != nullptr)
-		{
-			auto list = List::combine(project->projectStaticLinks(), project->projectSharedLinks());
-			if (!list.empty())
-			{
-				xmlRoot.addElement("ItemGroup", [this, &list](XmlElement& node) {
-					for (auto& target : list)
-					{
-						node.addElement("ProjectReference", [this, &target](XmlElement& node2) {
-							auto uuid = m_targetGuids.at(target).str();
-							node2.addAttribute("Include", fmt::format("{}.vcxproj", target));
-							node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
-							node2.addElementWithText("Name", target);
+						auto condition = getCondition(config);
+						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+							node3.addAttribute("Condition", condition);
+							node3.setText("true");
 						});
 					}
-				});
-			}
+				}
+			});
+		}
+	});
+	filters.addElement("ItemGroup", [&sources](XmlElement& node) {
+		for (auto& it : sources)
+		{
+			const auto& file = it.first;
+
+			node.addElement("ClCompile", [&file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+				node2.addElementWithText("Filter", "Source Files");
+			});
+		}
+	});
+
+	outNode.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
+		for (auto& it : resources)
+		{
+			const auto& file = it.first;
+			const auto& configs = it.second;
+
+			node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+				node2.addElementWithText("PrecompiledHeader", "NotUsing");
+
+				for (auto& config : allConfigs)
+				{
+					if (!List::contains(configs, config))
+					{
+						auto condition = getCondition(config);
+						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+							node3.addAttribute("Condition", condition);
+							node3.setText("true");
+						});
+					}
+				}
+			});
+		}
+	});
+	filters.addElement("ItemGroup", [&resources](XmlElement& node) {
+		for (auto& it : resources)
+		{
+			const auto& file = it.first;
+
+			node.addElement("ResourceCompile", [&file](XmlElement& node2) {
+				node2.addAttribute("Include", file);
+				node2.addElementWithText("Filter", "Resource Files");
+			});
+		}
+	});
+
+	if (!manifest.first.empty())
+	{
+		outNode.addElement("ItemGroup", [this, &manifest, &allConfigs](XmlElement& node) {
+			node.addElement("Manifest", [this, &manifest, &allConfigs](XmlElement& node2) {
+				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+
+				for (auto& config : allConfigs)
+				{
+					if (!List::contains(manifest.second, config))
+					{
+						auto condition = getCondition(config);
+						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+							node3.addAttribute("Condition", condition);
+							node3.setText("true");
+						});
+					}
+				}
+			});
+		});
+		filters.addElement("ItemGroup", [this, &manifest](XmlElement& node) {
+			node.addElement("Manifest", [this, &manifest](XmlElement& node2) {
+				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+				node2.addElementWithText("Filter", "Resource Files");
+			});
+		});
+	}
+
+	if (!icon.first.empty())
+	{
+		outNode.addElement("ItemGroup", [this, &icon, &allConfigs](XmlElement& node) {
+			node.addElement("Image", [this, &icon, &allConfigs](XmlElement& node2) {
+				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+
+				for (auto& config : allConfigs)
+				{
+					if (!List::contains(icon.second, config))
+					{
+						auto condition = getCondition(config);
+						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+							node3.addAttribute("Condition", condition);
+							node3.setText("true");
+						});
+					}
+				}
+			});
+		});
+		filters.addElement("ItemGroup", [this, &icon](XmlElement& node) {
+			node.addElement("Image", [this, &icon](XmlElement& node2) {
+				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+				node2.addElementWithText("Filter", "Resource Files");
+			});
+		});
+	}
+}
+
+/*****************************************************************************/
+void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& inName) const
+{
+	auto project = getProjectFromFirstState(inName);
+	if (project != nullptr)
+	{
+		auto list = List::combine(project->projectStaticLinks(), project->projectSharedLinks());
+		if (!list.empty())
+		{
+			outNode.addElement("ItemGroup", [this, &list](XmlElement& node) {
+				for (auto& target : list)
+				{
+					node.addElement("ProjectReference", [this, &target](XmlElement& node2) {
+						auto uuid = String::toUpperCase(m_targetGuids.at(target).str());
+						node2.addAttribute("Include", fmt::format("{}.vcxproj", target));
+						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
+						node2.addElementWithText("Name", target);
+					});
+				}
+			});
 		}
 	}
-	xmlRoot.addElement("Import", [](XmlElement& node) {
+}
+
+/*****************************************************************************/
+void VSVCXProjGen::addImportMsCppTargets(XmlElement& outNode) const
+{
+	outNode.addElement("Import", [](XmlElement& node) {
 		node.addAttribute("Project", "$(VCTargetsPath)\\Microsoft.Cpp.targets");
 	});
-	xmlRoot.addElement("ImportGroup", [](XmlElement& node) {
+}
+
+/*****************************************************************************/
+void VSVCXProjGen::addExtensionTargets(XmlElement& outNode) const
+{
+	outNode.addElement("ImportGroup", [](XmlElement& node) {
 		node.addAttribute("Label", "ExtensionTargets");
 	});
-
-	return xmlFile.save();
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile)
-{
-	auto& xml = outFile.xml;
-	auto& xmlRoot = xml.root();
-	xmlRoot.setName("Project");
-	xmlRoot.addAttribute("ToolsVersion", "4.0");
-	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("ItemGroup", [this](XmlElement& node) {
-		node.addElement("Filter", [this](XmlElement& node2) {
-			std::string filterName{ "Source Files" };
-			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
-			node2.addAttribute("Include", filterName);
-			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
-		});
-		node.addElement("Filter", [this](XmlElement& node2) {
-			std::string filterName{ "Header Files" };
-			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
-			node2.addAttribute("Include", filterName);
-			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
-		});
-		node.addElement("Filter", [this](XmlElement& node2) {
-			std::string filterName{ "Resource Files" };
-			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
-			node2.addAttribute("Include", filterName);
-			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
-		});
-		node.addElement("Filter", [this](XmlElement& node2) {
-			std::string filterName{ "Precompile Header Files" };
-			auto guid = Uuid::v5(filterName, m_projectTypeGuid).toUpperCase();
-			node2.addAttribute("Include", filterName);
-			node2.addElementWithText("UniqueIdentifier", fmt::format("{{{}}}", guid));
-		});
-	});
-
-	return true;
-}
-
 /*****************************************************************************/
-bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
-{
-	XmlFile xmlFile(inFilename);
-
-	auto& xml = xmlFile.xml;
-	auto& xmlRoot = xml.root();
-	xmlRoot.setName("Project");
-	xmlRoot.addAttribute("ToolsVersion", "Current");
-	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
-	xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
-		node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
-		node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
-	});
-
-	return xmlFile.save();
-}
-
+/*****************************************************************************/
+// Utils
 /*****************************************************************************/
 const SourceTarget* VSVCXProjGen::getProjectFromStateContext(const BuildState& inState, const std::string& inName) const
 {
