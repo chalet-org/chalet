@@ -29,6 +29,19 @@ CommandAdapterMSVC::CommandAdapterMSVC(const BuildState& inState, const SourceTa
 }
 
 /*****************************************************************************/
+std::string CommandAdapterMSVC::getPlatformToolset(const BuildState& inState)
+{
+	const auto majorVersion = inState.toolchain.versionMajorMinor();
+	if (majorVersion >= 1700)
+		return "143"; // VS 2022
+
+	if (majorVersion >= 1600)
+		return "142"; // VS 2019
+
+	return "141"; // VS 2017
+}
+
+/*****************************************************************************/
 MSVCWarningLevel CommandAdapterMSVC::getWarningLevel() const
 {
 	const auto& warnings = m_project.warnings();
@@ -152,14 +165,7 @@ WindowsCallingConvention CommandAdapterMSVC::getCallingConvention() const
 /*****************************************************************************/
 std::string CommandAdapterMSVC::getPlatformToolset() const
 {
-	const auto majorVersion = m_state.toolchain.versionMajorMinor();
-	if (majorVersion >= 1700)
-		return "143"; // VS 2022
-
-	if (majorVersion >= 1600)
-		return "142"; // VS 2019
-
-	return "141"; // VS 2017
+	return getPlatformToolset(m_state);
 }
 
 /*****************************************************************************/

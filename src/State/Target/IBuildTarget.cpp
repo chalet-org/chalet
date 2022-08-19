@@ -30,7 +30,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 {
 	switch (inType)
 	{
-		case BuildTargetType::Project:
+		case BuildTargetType::Source:
 			return std::make_unique<SourceTarget>(inState);
 		case BuildTargetType::Script:
 			return std::make_unique<ScriptBuildTarget>(inState);
@@ -83,7 +83,7 @@ BuildTargetType IBuildTarget::type() const noexcept
 }
 bool IBuildTarget::isSources() const noexcept
 {
-	return m_type == BuildTargetType::Project;
+	return m_type == BuildTargetType::Source;
 }
 bool IBuildTarget::isScript() const noexcept
 {

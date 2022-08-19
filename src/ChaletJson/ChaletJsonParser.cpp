@@ -309,7 +309,7 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 			return false;
 		}
 
-		BuildTargetType type = BuildTargetType::Project;
+		BuildTargetType type = BuildTargetType::Source;
 		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
 		{
 			if (String::equals("cmakeProject", val))
@@ -343,7 +343,7 @@ bool ChaletJsonParser::parseTarget(const Json& inNode)
 		}
 
 		BuildTarget target;
-		if (type == BuildTargetType::Project)
+		if (type == BuildTargetType::Source)
 		{
 			std::string extends{ "*" };
 			if (targetJson.is_object())
