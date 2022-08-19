@@ -108,13 +108,13 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
-	if (!saveFiltersFile(filtersFile, BuildTargetType::Source))
+	if (!saveFiltersFile(filtersFile, BuildTargetType::Script))
 		return false;
 
 	if (!saveScriptTargetProjectFile(name, projectFile, filtersFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile), BuildTargetType::Source))
+	if (!saveUserFile(fmt::format("{}.user", projectFile), BuildTargetType::Script))
 		return false;
 
 	if (!filtersFile.save())
@@ -142,7 +142,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFile(const std::string& inName, const 
 	addShared(xmlRoot);
 	addPropertySheets(xmlRoot);
 	addUserMacros(xmlRoot);
-	addGeneralProperties(xmlRoot);
+	addGeneralProperties(xmlRoot, inName, BuildTargetType::Source);
 	addCompileProperties(xmlRoot);
 	addSourceFiles(xmlRoot, inName, outFiltersFile);
 	addProjectReferences(xmlRoot, inName);
@@ -170,6 +170,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFile(const std::string& inName, const 
 	addConfigurationProperties(xmlRoot, BuildTargetType::Script);
 	addMsCppProps(xmlRoot);
 	addUserMacros(xmlRoot);
+	addGeneralProperties(xmlRoot, inName, BuildTargetType::Script);
 	addScriptProperties(xmlRoot, command);
 	addScriptFiles(xmlRoot, inName, outFiltersFile);
 	addProjectReferences(xmlRoot, inName);
@@ -373,8 +374,9 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 			node.addAttribute("Label", "Configuration");
 
 			// General Tab
+			auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(state));
 			node.addElementWithTextIfNotEmpty("ConfigurationType", "Utility");
-			node.addElementWithTextIfNotEmpty("PlatformToolset", CommandAdapterMSVC::getPlatformToolset(state));
+			node.addElementWithTextIfNotEmpty("PlatformToolset", toolset);
 		});
 	}
 }
@@ -433,47 +435,56 @@ void VSVCXProjGen::addUserMacros(XmlElement& outNode) const
 }
 
 /*****************************************************************************/
-void VSVCXProjGen::addGeneralProperties(XmlElement& outNode) const
+void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& inName, const BuildTargetType inType) const
 {
-	for (auto& state : m_states)
+	if (inType == BuildTargetType::Source)
 	{
-		const auto& config = state->configuration.name();
-		auto condition = getCondition(config);
-
-		if (m_adapters.find(config) != m_adapters.end())
+		for (auto& state : m_states)
 		{
-			const auto& vcxprojAdapter = *m_adapters.at(config);
+			const auto& config = state->configuration.name();
+			auto condition = getCondition(config);
 
-			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-				node.addAttribute("Condition", condition);
-				node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
-				node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
-				node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
-				node.addElementWithText("EmbedManifest", vcxprojAdapter.getEmbedManifest());
-				node.addElementWithTextIfNotEmpty("LinkIncremental", vcxprojAdapter.getLinkIncremental());
+			if (m_adapters.find(config) != m_adapters.end())
+			{
+				const auto& vcxprojAdapter = *m_adapters.at(config);
 
-				// Advanced Tab
-				// CopyLocalDeploymentContent - true/false
-				// CopyLocalProjectReference - true/false
-				// CopyLocalDebugSymbols - true/false
-				// CopyCppRuntimeToOutputDir - true/false
-				// EnableManagedIncrementalBuild - true/false
-				// ManagedAssembly - true/false
+				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+					node.addAttribute("Condition", condition);
+					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
+					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
+					node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
+					node.addElementWithText("EmbedManifest", vcxprojAdapter.getEmbedManifest());
+					node.addElementWithTextIfNotEmpty("LinkIncremental", vcxprojAdapter.getLinkIncremental());
 
-				// Explicitly add to disable default manifest generation from linker cli
-				node.addElement("GenerateManifest");
-			});
+					// Advanced Tab
+					// CopyLocalDeploymentContent - true/false
+					// CopyLocalProjectReference - true/false
+					// CopyLocalDebugSymbols - true/false
+					// CopyCppRuntimeToOutputDir - true/false
+					// EnableManagedIncrementalBuild - true/false
+					// ManagedAssembly - true/false
+
+					// Explicitly add to disable default manifest generation from linker cli
+					node.addElement("GenerateManifest");
+				});
+			}
+			else
+			{
+				const auto& vcxprojAdapter = *m_adapters.begin()->second;
+				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+					node.addAttribute("Condition", condition);
+					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
+					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
+					node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
+				});
+			}
 		}
-		else
-		{
-			const auto& vcxprojAdapter = *m_adapters.begin()->second;
-			outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-				node.addAttribute("Condition", condition);
-				node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
-				node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
-				node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
-			});
-		}
+	}
+	else if (inType == BuildTargetType::Script)
+	{
+		outNode.addElement("PropertyGroup", [&inName](XmlElement& node) {
+			node.addElementWithText("IntDir", fmt::format("logs/{}/", inName));
+		});
 	}
 }
 
