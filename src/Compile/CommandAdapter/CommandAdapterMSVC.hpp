@@ -19,6 +19,8 @@ struct CommandAdapterMSVC
 {
 	explicit CommandAdapterMSVC(const BuildState& inState, const SourceTarget& inProject);
 
+	static std::string getPlatformToolset(const BuildState& inState);
+
 	MSVCWarningLevel getWarningLevel() const;
 	WindowsRuntimeLibraryType getRuntimeLibraryType() const;
 	WindowsCallingConvention getCallingConvention() const;

@@ -80,6 +80,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	}
 
 	StringList allSourceTargets;
+	StringList allScriptTargets;
 	for (auto& state : m_states)
 	{
 		for (auto& target : state->targets)
@@ -89,6 +90,12 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 				const auto& name = target->name();
 				if (!List::contains(allSourceTargets, name))
 					allSourceTargets.emplace_back(name);
+			}
+			else if (target->isScript())
+			{
+				const auto& name = target->name();
+				if (!List::contains(allScriptTargets, name))
+					allScriptTargets.emplace_back(name);
 			}
 		}
 	}
@@ -100,6 +107,18 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		{
 			Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);
 			return false;
+		}
+	}
+	if (!allScriptTargets.empty())
+	{
+		for (auto& name : allScriptTargets)
+		{
+			VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
+			if (!vcxprojGen.saveScriptTargetProjectFiles(name))
+			{
+				Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);
+				return false;
+			}
 		}
 	}
 
@@ -115,12 +134,13 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 	{
 		for (auto& target : state->targets)
 		{
-			if (target->isSources())
+			if (target->isSources() || target->isScript())
 			{
 				const auto& name = target->name();
 				if (ret.find(name) == ret.end())
 				{
-					ret.emplace(name, Uuid::v5(name, inProjectTypeGUID));
+					auto key = fmt::format("{}_{}", static_cast<int>(target->type()), name);
+					ret.emplace(name, Uuid::v5(key, inProjectTypeGUID));
 				}
 			}
 		}

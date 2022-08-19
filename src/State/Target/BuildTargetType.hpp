@@ -11,7 +11,7 @@ namespace chalet
 enum class BuildTargetType
 {
 	Unknown,
-	Project,
+	Source,
 	Script,
 	SubChalet,
 	CMake,

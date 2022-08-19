@@ -8,6 +8,7 @@
 
 #include "State/MSVCWarningLevel.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/BuildTargetType.hpp"
 #include "Utility/Uuid.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -26,17 +27,20 @@ struct VSVCXProjGen
 	~VSVCXProjGen();
 
 	bool saveSourceTargetProjectFiles(const std::string& inProjectName);
+	bool saveScriptTargetProjectFiles(const std::string& inProjectName);
 
 private:
-	bool saveProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
-	bool saveFiltersFile(XmlFile& outFile);
-	bool saveUserFile(const std::string& inFilename);
+	bool saveSourceTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
+	bool saveScriptTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
+
+	bool saveFiltersFile(XmlFile& outFile, const BuildTargetType inType);
+	bool saveUserFile(const std::string& inFilename, const BuildTargetType inType);
 
 	void addProjectHeader(XmlElement& outNode) const;
 	void addProjectConfiguration(XmlElement& outNode) const;
-	void addGlobalProperties(XmlElement& outNode) const;
+	void addGlobalProperties(XmlElement& outNode, const BuildTargetType inType) const;
 	void addMsCppDefaultProps(XmlElement& outNode) const;
-	void addConfigurationProperties(XmlElement& outNode) const;
+	void addConfigurationProperties(XmlElement& outNode, const BuildTargetType inType) const;
 	void addMsCppProps(XmlElement& outNode) const;
 	void addExtensionSettings(XmlElement& outNode) const;
 	void addShared(XmlElement& outNode) const;
@@ -44,7 +48,9 @@ private:
 	void addUserMacros(XmlElement& outNode) const;
 	void addGeneralProperties(XmlElement& outNode) const;
 	void addCompileProperties(XmlElement& outNode) const;
+	void addScriptProperties(XmlElement& outNode, const std::string& inCommand) const;
 	void addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
+	void addScriptFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
 	void addProjectReferences(XmlElement& outNode, const std::string& inName) const;
 	void addImportMsCppTargets(XmlElement& outNode) const;
 	void addExtensionTargets(XmlElement& outNode) const;

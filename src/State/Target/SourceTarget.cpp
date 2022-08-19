@@ -19,7 +19,7 @@ namespace chalet
 {
 /*****************************************************************************/
 SourceTarget::SourceTarget(const BuildState& inState) :
-	IBuildTarget(inState, BuildTargetType::Project),
+	IBuildTarget(inState, BuildTargetType::Source),
 	m_warningsPresetString("none"),
 	m_inputCharset("UTF-8"),
 	m_executionCharset("UTF-8")
