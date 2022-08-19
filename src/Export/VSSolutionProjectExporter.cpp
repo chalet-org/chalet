@@ -96,7 +96,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	for (auto& name : allSourceTargets)
 	{
 		VSVCXProjGen vcxprojGen(m_states, m_cwd, projectTypeGUID, targetGuids);
-		if (!vcxprojGen.saveProjectFiles(name))
+		if (!vcxprojGen.saveSourceTargetProjectFiles(name))
 		{
 			Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);
 			return false;
