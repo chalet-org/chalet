@@ -46,7 +46,7 @@ private:
 	void addShared(XmlElement& outNode) const;
 	void addPropertySheets(XmlElement& outNode) const;
 	void addUserMacros(XmlElement& outNode) const;
-	void addGeneralProperties(XmlElement& outNode) const;
+	void addGeneralProperties(XmlElement& outNode, const std::string& inName, const BuildTargetType inType) const;
 	void addCompileProperties(XmlElement& outNode) const;
 	void addScriptProperties(XmlElement& outNode, const std::string& inCommand) const;
 	void addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
