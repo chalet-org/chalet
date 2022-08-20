@@ -20,11 +20,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSTasksGen::VSTasksGen(const BuildState& inState, const std::string& inCwd) :
-	m_state(inState),
-	m_cwd(inCwd)
+VSTasksGen::VSTasksGen(const BuildState& inState) :
+	m_state(inState)
 {
-	UNUSED(m_state, m_cwd);
+	UNUSED(m_state);
 }
 
 /*****************************************************************************/

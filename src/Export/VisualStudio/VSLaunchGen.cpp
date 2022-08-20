@@ -21,11 +21,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSLaunchGen::VSLaunchGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd) :
-	m_states(inStates),
-	m_cwd(inCwd)
+VSLaunchGen::VSLaunchGen(const std::vector<Unique<BuildState>>& inStates) :
+	m_states(inStates)
 {
-	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/

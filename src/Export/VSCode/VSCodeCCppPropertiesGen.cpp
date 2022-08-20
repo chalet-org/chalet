@@ -19,9 +19,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState, const std::string& inCwd) :
-	m_state(inState),
-	m_cwd(inCwd)
+VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState) :
+	m_state(inState)
 {
 }
 
@@ -68,7 +67,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			if (project.usesPrecompiledHeader())
 			{
 				auto path = project.precompiledHeader();
-				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)))
+				if (Commands::pathExists(path))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -80,7 +79,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)) || String::equals(path, m_state.paths.intermediateDir(project)))
+				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}

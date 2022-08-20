@@ -16,7 +16,7 @@ struct SourceTarget;
 
 struct VSCppPropertiesGen
 {
-	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const Dictionary<std::string>& inPathVariables);
+	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const Dictionary<std::string>& inPathVariables);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -26,7 +26,6 @@ private:
 	const SourceTarget* getSignificantTarget(const BuildState& inState) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
-	const std::string& m_cwd;
 	const Dictionary<std::string>& m_pathVariables;
 };
 }

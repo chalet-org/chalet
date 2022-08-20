@@ -15,7 +15,7 @@ struct SourceTarget;
 
 struct ProjectAdapterVCXProj
 {
-	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject, const std::string& inCwd);
+	ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject);
 
 	bool createPrecompiledHeaderSource();
 	bool createWindowsResources();
@@ -33,6 +33,7 @@ struct ProjectAdapterVCXProj
 	std::string getIntermediateDir() const;
 	std::string getEmbedManifest() const;
 	const std::string& getTargetName() const noexcept;
+	const std::string& workingDirectory() const noexcept;
 
 	// General
 	std::string getConfigurationType() const;
@@ -107,7 +108,6 @@ struct ProjectAdapterVCXProj
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;
-	const std::string& m_cwd;
 
 	CommandAdapterMSVC m_msvcAdapter;
 

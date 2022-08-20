@@ -14,13 +14,12 @@ class BuildState;
 
 struct VSTasksGen
 {
-	explicit VSTasksGen(const BuildState& inState, const std::string& inCwd);
+	explicit VSTasksGen(const BuildState& inState);
 
 	bool saveToFile(const std::string& inFilename);
 
 private:
 	const BuildState& m_state;
-	const std::string& m_cwd;
 };
 }
 

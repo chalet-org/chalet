@@ -28,13 +28,12 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
+VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inExportDir, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
 	m_states(inStates),
-	m_cwd(inCwd),
+	m_exportDir(inExportDir),
 	m_projectTypeGuid(inProjectTypeGuid),
 	m_targetGuids(inTargetGuids)
 {
-	UNUSED(m_cwd, m_targetGuids);
 }
 
 /*****************************************************************************/
@@ -61,7 +60,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 			StringList fileCache;
 			m_outputs.emplace(config, state->paths.getOutputs(*project, fileCache));
 
-			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project, m_cwd));
+			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project));
 			if (!it->second->createPrecompiledHeaderSource())
 			{
 				Diagnostic::error("Error generating the precompiled header.");
@@ -78,7 +77,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	if (m_adapters.empty())
 		return false;
 
-	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
+	auto projectFile = fmt::format("{dir}/{name}.vcxproj", fmt::arg("dir", m_exportDir), FMT_ARG(name));
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
 	if (!saveFiltersFile(filtersFile, BuildTargetType::Source))
@@ -113,7 +112,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 		if (target != nullptr)
 		{
 			const auto& config = state->configuration.name();
-			m_targetAdapters.emplace(config, std::make_unique<TargetAdapterVCXProj>(*state, *target, m_cwd));
+			m_targetAdapters.emplace(config, std::make_unique<TargetAdapterVCXProj>(*state, *target));
 		}
 	}
 
@@ -476,7 +475,7 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 					// Explicitly add to disable default manifest generation from linker cli
 					node.addElement("GenerateManifest");
 					node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
-					node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
+					node.addElementWithText("LocalDebuggerWorkingDirectory", vcxprojAdapter.workingDirectory());
 					node.addElementWithTextIfNotEmpty("LocalDebuggerEnvironment", vcxprojAdapter.getLocalDebuggerEnvironment());
 				});
 			}
@@ -678,6 +677,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 			if (m_adapters.find(config) != m_adapters.end())
 			{
 				const auto& vcxprojAdapter = *m_adapters.at(config);
+				const auto& cwd = vcxprojAdapter.workingDirectory();
 
 				allConfigs.emplace_back(config);
 
@@ -698,7 +698,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 				for (auto& header : headerFiles)
 				{
-					auto file = fmt::format("{}/{}", m_cwd, header);
+					auto file = fmt::format("{}/{}", cwd, header);
 					if (Commands::pathExists(file))
 						headers[file] = true;
 					else
@@ -709,7 +709,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 				for (auto& group : outputs.groups)
 				{
-					auto file = fmt::format("{}/{}", m_cwd, group->sourceFile);
+					auto file = fmt::format("{}/{}", cwd, group->sourceFile);
 					if (!Commands::pathExists(file))
 						file = group->sourceFile;
 
@@ -739,11 +739,23 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 				manifest.first = state->paths.getWindowsManifestFilename(project);
 				if (!manifest.first.empty())
+				{
+					auto file = fmt::format("{}/{}", cwd, manifest.first);
+					if (Commands::pathExists(file))
+						manifest.first = file;
+
 					manifest.second.emplace_back(config);
+				}
 
 				icon.first = project.windowsApplicationIcon();
 				if (!icon.first.empty())
+				{
+					auto file = fmt::format("{}/{}", cwd, icon.first);
+					if (Commands::pathExists(file))
+						icon.first = file;
+
 					icon.second.emplace_back(config);
+				}
 
 				/*const auto& projectFiles = project.files();
 					for (auto& file : projectFiles)
@@ -887,7 +899,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 	{
 		outNode.addElement("ItemGroup", [this, &manifest, &allConfigs](XmlElement& node) {
 			node.addElement("Manifest", [this, &manifest, &allConfigs](XmlElement& node2) {
-				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+				node2.addAttribute("Include", manifest.first);
 
 				for (auto& config : allConfigs)
 				{
@@ -904,7 +916,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 		});
 		filters.addElement("ItemGroup", [this, &manifest](XmlElement& node) {
 			node.addElement("Manifest", [this, &manifest](XmlElement& node2) {
-				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, manifest.first));
+				node2.addAttribute("Include", manifest.first);
 				node2.addElementWithText("Filter", "Resource Files");
 			});
 		});
@@ -914,7 +926,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 	{
 		outNode.addElement("ItemGroup", [this, &icon, &allConfigs](XmlElement& node) {
 			node.addElement("Image", [this, &icon, &allConfigs](XmlElement& node2) {
-				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+				node2.addAttribute("Include", icon.first);
 
 				for (auto& config : allConfigs)
 				{
@@ -931,7 +943,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 		});
 		filters.addElement("ItemGroup", [this, &icon](XmlElement& node) {
 			node.addElement("Image", [this, &icon](XmlElement& node2) {
-				node2.addAttribute("Include", fmt::format("{}/{}", m_cwd, icon.first));
+				node2.addAttribute("Include", icon.first);
 				node2.addElementWithText("Filter", "Resource Files");
 			});
 		});

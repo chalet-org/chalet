@@ -24,7 +24,7 @@ class XmlElement;
 
 struct VSVCXProjGen
 {
-	explicit VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids);
+	explicit VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inExportDir, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids);
 	CHALET_DISALLOW_COPY_MOVE(VSVCXProjGen);
 	~VSVCXProjGen();
 
@@ -64,7 +64,7 @@ private:
 	std::string getCondition(const std::string& inConfig) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
-	const std::string& m_cwd;
+	const std::string& m_exportDir;
 	const std::string& m_projectTypeGuid;
 	const OrderedDictionary<Uuid>& m_targetGuids;
 

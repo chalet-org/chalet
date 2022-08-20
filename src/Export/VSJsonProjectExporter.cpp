@@ -57,15 +57,15 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	{
 		const auto& outState = *state;
 
-		VSCppPropertiesGen cppProperties(m_states, m_cwd, m_pathVariables);
-		if (!cppProperties.saveToFile("CppProperties.json"))
+		VSCppPropertiesGen cppProperties(m_states, m_pathVariables);
+		if (!cppProperties.saveToFile(fmt::format("{}/CppProperties.json", m_fullExportDir)))
 		{
 			Diagnostic::error("There was a problem saving the CppProperties.json file.");
 			return false;
 		}
 
-		VSTasksGen tasksJson(outState, m_cwd);
-		if (!tasksJson.saveToFile("tasks.vs.json"))
+		VSTasksGen tasksJson(outState);
+		if (!tasksJson.saveToFile(fmt::format("{}/tasks.vs.json", m_fullExportDir)))
 		{
 			Diagnostic::error("There was a problem saving the tasks.vs.json file.");
 			return false;
@@ -73,8 +73,8 @@ bool VSJsonProjectExporter::generateProjectFiles()
 
 		if (state->configuration.debugSymbols())
 		{
-			VSLaunchGen launchJson(m_states, m_cwd);
-			if (!launchJson.saveToFile("launch.vs.json"))
+			VSLaunchGen launchJson(m_states);
+			if (!launchJson.saveToFile(fmt::format("{}/launch.vs.json", m_fullExportDir)))
 			{
 				Diagnostic::error("There was a problem saving the launch.vs.json file.");
 				return false;

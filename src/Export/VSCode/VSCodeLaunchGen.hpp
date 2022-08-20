@@ -15,7 +15,7 @@ struct IBuildTarget;
 
 struct VSCodeLaunchGen
 {
-	explicit VSCodeLaunchGen(const BuildState& inState, const std::string& inCwd, const IBuildTarget& inTarget);
+	explicit VSCodeLaunchGen(const BuildState& inState, const IBuildTarget& inTarget);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -34,7 +34,6 @@ private:
 	bool willUseGDB() const;
 
 	const BuildState& m_state;
-	const std::string& m_cwd;
 	const IBuildTarget& m_target;
 };
 }

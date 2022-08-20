@@ -60,7 +60,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		{
 			if (target->isSources())
 			{
-				auto relativeFile = fmt::format("{}.cbp", target->name());
+				auto relativeFile = fmt::format("{}/{}.cbp", m_fullExportDir, target->name());
 				auto contents = getProjectContent(target->name());
 				if (!Commands::createFileWithContents(relativeFile, contents))
 				{
@@ -75,7 +75,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		if (hasSourceTargets)
 		{
 			{
-				auto workspaceFile = "project.workspace";
+				auto workspaceFile = fmt::format("{}/project.workspace", m_fullExportDir);
 				auto contents = getWorkspaceContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
@@ -84,7 +84,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				}
 			}
 			{
-				auto workspaceFile = "project.workspace.layout";
+				auto workspaceFile = fmt::format("{}/project.workspace.layout", m_fullExportDir);
 				auto contents = getWorkspaceLayoutContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
@@ -215,6 +215,8 @@ std::string CodeBlocksProjectExporter::getProjectBuildConfiguration(const BuildS
 	}
 #endif
 
+	const auto& cwd = workingDirectory();
+
 	ret = fmt::format(R"xml(
 			<Target title="{configName}">
 				<Option output="{cwd}/{filename}" />
@@ -237,7 +239,7 @@ std::string CodeBlocksProjectExporter::getProjectBuildConfiguration(const BuildS
 			</Target>)xml",
 		FMT_ARG(configName),
 		FMT_ARG(filename),
-		fmt::arg("cwd", m_cwd),
+		FMT_ARG(cwd),
 		FMT_ARG(objDir),
 		FMT_ARG(outputType),
 		FMT_ARG(sharedProperties),
@@ -290,15 +292,9 @@ std::string CodeBlocksProjectExporter::getProjectCompileIncludes(const SourceTar
 
 	for (auto& dir : inTarget.includeDirs())
 	{
-		std::string resolved;
-		if (!Commands::pathExists(dir))
-			resolved = fmt::format("{}/{}", m_cwd, dir);
-		else
-			resolved = dir;
-
 		ret += fmt::format(R"xml(
-					<Add directory="{resolved}" />)xml",
-			FMT_ARG(resolved));
+					<Add directory="{dir}" />)xml",
+			FMT_ARG(dir));
 	}
 
 	return ret;
@@ -329,21 +325,16 @@ std::string CodeBlocksProjectExporter::getProjectLinkerLibDirs(const BuildState&
 
 	for (auto& dir : inTarget.libDirs())
 	{
-		std::string resolved;
-		if (!Commands::pathExists(dir))
-			resolved = fmt::format("{}/{}", m_cwd, dir);
-		else
-			resolved = dir;
-
 		ret += fmt::format(R"xml(
-					<Add directory="{resolved}" />)xml",
-			FMT_ARG(resolved));
+					<Add directory="{dir}" />)xml",
+			FMT_ARG(dir));
 	}
 
 	const auto& buildDir = inState.paths.buildOutputDir();
+	const auto& cwd = workingDirectory();
 	ret += fmt::format(R"xml(
 					<Add directory="{cwd}/{buildDir}" />)xml",
-		fmt::arg("cwd", m_cwd),
+		FMT_ARG(cwd),
 		FMT_ARG(buildDir));
 
 	return ret;
@@ -379,31 +370,20 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 	/*if (inTarget.usesPrecompiledHeader())
 	{
 		const auto& pch = inTarget.precompiledHeader();
-		std::string resolved;
-		if (!Commands::pathExists(pch))
-			resolved = fmt::format("{}/{}", m_cwd, pch);
-		else
-			resolved = pch;
 
 		ret += fmt::format(R"xml(
-		<Unit filename="{resolved}">
+		<Unit filename="{pch}">
 			<Option compile="1" />
 			<Option weight="0" />
 		</Unit>)xml",
-			FMT_ARG(resolved));
+			FMT_ARG(pch));
 	}*/
 
 	for (auto& file : inTarget.files())
 	{
-		std::string resolved;
-		if (!Commands::pathExists(file))
-			resolved = fmt::format("{}/{}", m_cwd, file);
-		else
-			resolved = file;
-
 		ret += fmt::format(R"xml(
-		<Unit filename="{resolved}" />)xml",
-			FMT_ARG(resolved));
+		<Unit filename="{file}" />)xml",
+			FMT_ARG(file));
 	}
 
 	const auto& name = inTarget.name();
@@ -412,15 +392,9 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 		const auto& headers = m_headerFiles.at(name);
 		for (auto& file : headers)
 		{
-			std::string resolved;
-			if (!Commands::pathExists(file))
-				resolved = fmt::format("{}/{}", m_cwd, file);
-			else
-				resolved = file;
-
 			ret += fmt::format(R"xml(
-		<Unit filename="{resolved}" />)xml",
-				FMT_ARG(resolved));
+		<Unit filename="{file}" />)xml",
+				FMT_ARG(file));
 		}
 	}
 
