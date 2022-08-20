@@ -53,7 +53,7 @@ std::string CmakeBuilder::getOutputLocation() const
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
-	std::string ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
+	auto ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
 	Path::sanitize(ret);
 
 	return ret;
