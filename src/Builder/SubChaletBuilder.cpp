@@ -25,16 +25,75 @@
 namespace chalet
 {
 /*****************************************************************************/
-SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget) :
+SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const bool inQuotedPaths) :
 	m_state(inState),
-	m_target(inTarget)
+	m_target(inTarget),
+	m_quotedPaths(inQuotedPaths)
 {
+}
+
+/*****************************************************************************/
+std::string SubChaletBuilder::getLocation() const
+{
+	const auto& rawLocation = m_target.location();
+	auto ret = Commands::getAbsolutePath(rawLocation);
+	Path::sanitize(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string SubChaletBuilder::getOutputLocation() const
+{
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	auto location = getLocation();
+
+	auto ret = fmt::format("{}/{}", location, buildOutputDir);
+	Path::sanitize(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string SubChaletBuilder::getBuildFile() const
+{
+	std::string ret;
+
+	auto location = getLocation();
+	if (!m_target.buildFile().empty())
+	{
+		ret = fmt::format("{}/{}", location, m_target.buildFile());
+	}
+	else
+	{
+		ret = fmt::format("{}/{}", location, m_state.inputs.defaultInputFile());
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool SubChaletBuilder::dependencyHasUpdate() const
+{
+	bool updated = false;
+	for (const auto& dependency : m_state.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<GitDependency&>(*dependency);
+			if (String::startsWith(gitDependency.destination(), m_target.location()))
+			{
+				updated = gitDependency.needsUpdate();
+			}
+		}
+	}
+
+	return updated;
 }
 
 /*****************************************************************************/
 bool SubChaletBuilder::run()
 {
-	m_buildFile.clear();
 	m_outputLocation.clear();
 
 	const auto& name = m_target.name();
@@ -42,37 +101,9 @@ bool SubChaletBuilder::run()
 	Output::msgBuild(name);
 	Output::lineBreak();
 
-	const auto& rawLocation = m_target.location();
-	auto location = Commands::getAbsolutePath(rawLocation);
-	Path::sanitize(location);
-
-	bool dependencyUpdated = false;
-	for (const auto& dependency : m_state.externalDependencies)
-	{
-		if (dependency->isGit())
-		{
-			auto& gitDependency = static_cast<GitDependency&>(*dependency);
-			if (String::startsWith(gitDependency.destination(), rawLocation))
-			{
-				dependencyUpdated = gitDependency.needsUpdate();
-			}
-		}
-	}
+	m_outputLocation = getOutputLocation();
 
 	const auto oldPath = Environment::getPath();
-
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	m_outputLocation = fmt::format("{}/{}", location, buildOutputDir);
-	Path::sanitize(m_outputLocation);
-
-	if (!m_target.buildFile().empty())
-	{
-		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
-	}
-	else
-	{
-		m_buildFile = fmt::format("{}/{}", location, m_state.inputs.defaultInputFile());
-	}
 
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
@@ -82,6 +113,7 @@ bool SubChaletBuilder::run()
 	auto& sourceCache = m_state.cache.file().sources();
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
+	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
 		Commands::removeRecursively(m_outputLocation);
@@ -97,7 +129,7 @@ bool SubChaletBuilder::run()
 
 		// Commands::changeWorkingDirectory(workingDirectory);
 
-		StringList cmd = getBuildCommand(location);
+		StringList cmd = getBuildCommand();
 		result = Commands::subprocess(cmd);
 		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 
@@ -107,40 +139,57 @@ bool SubChaletBuilder::run()
 
 	if (result)
 	{
-		//
 		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+	}
+	else
+	{
+		Output::lineBreak();
 	}
 
 	return result;
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) const
+StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
 {
-	StringList cmd{ m_state.tools.chalet() };
+	auto location = getLocation();
+	auto buildFile = getBuildFile();
+
+	return getBuildCommand(location, buildFile, hasSettings);
+}
+
+/*****************************************************************************/
+StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings) const
+{
+	StringList cmd{ getQuotedPath(m_state.tools.chalet()) };
 	cmd.emplace_back("build");
 	cmd.emplace_back("--quieter");
 
 	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
-	auto proximateSettings = Commands::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
 
 	cmd.emplace_back("--root-dir");
-	cmd.push_back(inLocation);
+	cmd.push_back(getQuotedPath(inLocation));
 
-	if (!m_buildFile.empty())
+	if (!inBuildFile.empty())
 	{
 		cmd.emplace_back("--input-file");
-		cmd.push_back(m_buildFile);
+		cmd.push_back(getQuotedPath(inBuildFile));
 	}
 
-	cmd.emplace_back("--settings-file");
-	cmd.emplace_back(std::move(proximateSettings));
+	if (!hasSettings)
+	{
+		auto proximateSettings = Commands::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+
+		cmd.emplace_back("--settings-file");
+		cmd.emplace_back(getQuotedPath(proximateSettings));
+	}
 
 	cmd.emplace_back("--external-dir");
-	cmd.push_back(m_state.inputs.externalDirectory());
+	cmd.push_back(getQuotedPath(m_state.inputs.externalDirectory()));
 
 	cmd.emplace_back("--output-dir");
-	cmd.emplace_back(fmt::format("{}/{}", proximateOutput, m_target.name()));
+	cmd.emplace_back(getQuotedPath(outputDirectory));
 
 	cmd.emplace_back("--configuration");
 	cmd.push_back(m_state.info.buildConfiguration());
@@ -148,7 +197,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 	if (!m_state.inputs.toolchainPreferenceName().empty())
 	{
 		cmd.emplace_back("--toolchain");
-		cmd.push_back(m_state.inputs.toolchainPreferenceName());
+		cmd.push_back(getQuotedPath(m_state.inputs.toolchainPreferenceName()));
 	}
 
 	if (!m_state.inputs.envFile().empty())
@@ -157,7 +206,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 		{
 			auto envAbsolute = Commands::getAbsolutePath(m_state.inputs.envFile());
 			cmd.emplace_back("--env-file");
-			cmd.push_back(envAbsolute);
+			cmd.push_back(getQuotedPath(envAbsolute));
 		}
 	}
 
@@ -169,4 +218,14 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation) cons
 
 	return cmd;
 }
+
+/*****************************************************************************/
+std::string SubChaletBuilder::getQuotedPath(const std::string& inPath) const
+{
+	if (m_quotedPaths)
+		return fmt::format("\"{}\"", inPath);
+	else
+		return inPath;
+}
+
 }

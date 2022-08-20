@@ -91,7 +91,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 				if (!List::contains(allSourceTargets, name))
 					allSourceTargets.emplace_back(name);
 			}
-			else if (target->isScript() || target->isProcess() || target->isCMake())
+			else
 			{
 				const auto& name = target->name();
 				if (!List::contains(allScriptTargets, name))
@@ -134,14 +134,11 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 	{
 		for (auto& target : state->targets)
 		{
-			if (target->isSources() || target->isScript() || target->isProcess() || target->isCMake())
+			const auto& name = target->name();
+			if (ret.find(name) == ret.end())
 			{
-				const auto& name = target->name();
-				if (ret.find(name) == ret.end())
-				{
-					auto key = fmt::format("{}_{}", static_cast<int>(target->type()), name);
-					ret.emplace(name, Uuid::v5(key, inProjectTypeGUID));
-				}
+				auto key = fmt::format("{}_{}", static_cast<int>(target->type()), name);
+				ret.emplace(name, Uuid::v5(key, inProjectTypeGUID));
 			}
 		}
 	}

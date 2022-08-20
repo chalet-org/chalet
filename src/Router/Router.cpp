@@ -115,6 +115,9 @@ bool Router::runRoutesThatRequireState()
 		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
 			return false;
+
+		// Local settings needs to be available for sub-chalet targets
+		centralState->cache.saveSettings(SettingsType::Local);
 	}
 
 	bool result = false;

@@ -7,6 +7,7 @@
 
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ScriptRunner.hpp"
+#include "Builder/SubChaletBuilder.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
@@ -14,6 +15,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
@@ -53,6 +55,23 @@ StringList TargetAdapterVCXProj::getFiles() const
 		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
 
 		auto buildFile = builder.getBuildFile(true);
+
+		ret.emplace_back(std::move(buildFile));
+
+		if (!cwd.empty())
+			Commands::changeWorkingDirectory(cwd);
+	}
+	else if (m_target.isSubChalet())
+	{
+		auto cwd = Commands::getWorkingDirectory();
+		if (!m_cwd.empty())
+			Commands::changeWorkingDirectory(m_cwd);
+
+		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
+		bool quotedPaths = true;
+		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
+
+		auto buildFile = builder.getBuildFile();
 
 		ret.emplace_back(std::move(buildFile));
 
@@ -113,6 +132,17 @@ std::string TargetAdapterVCXProj::getCommand() const
 		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
 
 		ret = fmt::format("{}\r\n{}", String::join(genCmd), String::join(buildCmd));
+	}
+	else if (m_target.isSubChalet())
+	{
+		// SubChaletTarget
+		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
+		constexpr bool quotedPaths = true;
+		constexpr bool hasSettings = false;
+		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
+		auto buildCmd = builder.getBuildCommand(hasSettings);
+
+		ret = String::join(buildCmd);
 	}
 
 	if (!ret.empty())

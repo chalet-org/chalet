@@ -19,8 +19,8 @@ public:
 	bool run();
 
 	std::string getBuildFile(const bool inForce = false) const;
-
 	bool dependencyHasUpdate() const;
+
 	StringList getGeneratorCommand();
 	StringList getBuildCommand() const;
 	StringList getBuildCommand(const std::string& inOutputLocation) const;

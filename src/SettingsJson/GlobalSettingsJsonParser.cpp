@@ -147,10 +147,11 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 		return outState.envFile;
 	});
 
-	assignSettingsString(Keys::OptionsRootDirectory, [&]() {
-		outState.rootDirectory = m_centralState.inputs().rootDirectory();
-		return outState.rootDirectory;
-	});
+	buildOptions[Keys::OptionsRootDirectory] = std::string(); // Root directory should never be set globally
+	// assignSettingsString(Keys::OptionsRootDirectory, [&]() {
+	// 	outState.rootDirectory = m_centralState.inputs().rootDirectory();
+	// 	return outState.rootDirectory;
+	// });
 
 	assignSettingsString(Keys::OptionsOutputDirectory, [&]() {
 		outState.outputDirectory = m_centralState.inputs().defaultOutputDirectory();
