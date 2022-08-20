@@ -8,18 +8,23 @@
 
 namespace chalet
 {
+class BuildState;
+
 struct DotEnvFileGenerator
 {
-	explicit DotEnvFileGenerator(const std::string& inFilename);
+	DotEnvFileGenerator() = default;
 
-	const std::string& filename() const noexcept;
+	static DotEnvFileGenerator make(const BuildState& inState);
 
 	void set(const std::string& inKey, const std::string& inValue);
-	bool save();
+	void setRunPaths(const std::string& inValue);
+
+	std::string get(const std::string& inKey) const;
+	std::string getRunPaths() const;
+
+	bool save(const std::string& inFilename);
 
 private:
-	std::string m_filename;
-
 	Dictionary<std::string> m_variables;
 };
 }

@@ -36,7 +36,7 @@ private:
 	bool saveScriptTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
 
 	bool saveFiltersFile(XmlFile& outFile, const BuildTargetType inType);
-	bool saveUserFile(const std::string& inFilename, const BuildTargetType inType);
+	bool saveUserFile(const std::string& inFilename);
 
 	void addProjectHeader(XmlElement& outNode) const;
 	void addProjectConfiguration(XmlElement& outNode) const;

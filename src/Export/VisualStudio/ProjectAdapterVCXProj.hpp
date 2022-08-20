@@ -102,6 +102,8 @@ struct ProjectAdapterVCXProj
 	std::string getProfile() const;
 	std::string getAdditionalLinkerOptions() const;
 
+	std::string getLocalDebuggerEnvironment() const;
+
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;

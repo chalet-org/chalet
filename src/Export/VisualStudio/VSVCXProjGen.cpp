@@ -87,7 +87,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	if (!saveSourceTargetProjectFile(name, projectFile, filtersFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile), BuildTargetType::Source))
+	if (!saveUserFile(fmt::format("{}.user", projectFile)))
 		return false;
 
 	if (!filtersFile.save())
@@ -129,7 +129,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	if (!saveScriptTargetProjectFile(name, projectFile, filtersFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile), BuildTargetType::Script))
+	if (!saveUserFile(fmt::format("{}.user", projectFile)))
 		return false;
 
 	if (!filtersFile.save())
@@ -247,7 +247,7 @@ bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inTyp
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveUserFile(const std::string& inFilename, const BuildTargetType inType)
+bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
@@ -258,17 +258,7 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename, const BuildTarget
 	xmlRoot.addAttribute("ToolsVersion", "Current");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
-	if (inType == BuildTargetType::Source)
-	{
-		xmlRoot.addElement("PropertyGroup", [this](XmlElement& node) {
-			node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
-			node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
-		});
-	}
-	else if (inType == BuildTargetType::Script)
-	{
-		xmlRoot.addElement("PropertyGroup");
-	}
+	xmlRoot.addElement("PropertyGroup");
 
 	return xmlFile.save();
 }
@@ -467,7 +457,7 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 			{
 				const auto& vcxprojAdapter = *m_adapters.at(config);
 
-				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
+				outNode.addElement("PropertyGroup", [this, &condition, &vcxprojAdapter](XmlElement& node) {
 					node.addAttribute("Condition", condition);
 					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
@@ -485,6 +475,9 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 
 					// Explicitly add to disable default manifest generation from linker cli
 					node.addElement("GenerateManifest");
+					node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
+					node.addElementWithText("LocalDebuggerWorkingDirectory", m_cwd);
+					node.addElementWithTextIfNotEmpty("LocalDebuggerEnvironment", vcxprojAdapter.getLocalDebuggerEnvironment());
 				});
 			}
 			else

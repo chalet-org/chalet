@@ -8,6 +8,7 @@
 #include "Compile/CommandAdapter/CommandAdapterWinResource.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Core/DotEnvFileGenerator.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -569,9 +570,9 @@ std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool in
 	auto list = m_msvcAdapter.getIncludeDirectories();
 	for (auto& dir : list)
 	{
-		auto full = fmt::format("{}/{}", m_cwd, dir);
-		if (Commands::pathExists(full) || String::equals(buildDir, full))
+		if (!Commands::pathExists(dir) && (dir.size() > 2 && dir[1] != ':'))
 		{
+			auto full = fmt::format("{}/{}", m_cwd, dir);
 			dir = std::move(full);
 		}
 	}
@@ -645,9 +646,9 @@ std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
 	auto list = m_msvcAdapter.getLibDirectories();
 	for (auto& dir : list)
 	{
-		auto full = fmt::format("{}/{}", m_cwd, dir);
-		if (Commands::pathExists(full) || String::equals(buildDir, full))
+		if (!Commands::pathExists(dir) && (dir.size() > 2 && dir[1] != ':'))
 		{
+			auto full = fmt::format("{}/{}", m_cwd, dir);
 			dir = std::move(full);
 		}
 	}
@@ -849,6 +850,23 @@ std::string ProjectAdapterVCXProj::getAdditionalLinkerOptions() const
 		ret += ' ';
 
 	ret += "%(AdditionalOptions)";
+	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getLocalDebuggerEnvironment() const
+{
+	auto cwd = Commands::getWorkingDirectory();
+	if (!m_cwd.empty())
+		Commands::changeWorkingDirectory(m_cwd);
+
+	auto gen = DotEnvFileGenerator::make(m_state);
+	auto path = gen.getRunPaths();
+	auto ret = fmt::format("Path={};%Path%", path);
+
+	if (!cwd.empty())
+		Commands::changeWorkingDirectory(cwd);
+
 	return ret;
 }
 
