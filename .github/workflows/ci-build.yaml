@@ -169,5 +169,15 @@ jobs:
             ./dist/chalet-x86_64-pc-windows-msvc.zip
             ./dist/chalet-x86_64-pc-windows-msvc-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Build: Release (arm64)"
+        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native-experimental bundle
+      - name: "Upload assets (arm64)"
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            ./dist/chalet-arm64-pc-windows-msvc.zip
+            ./dist/chalet-arm64-pc-windows-msvc-installer.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug run tests
