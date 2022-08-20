@@ -28,13 +28,72 @@
 namespace chalet
 {
 /*****************************************************************************/
-CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget) :
+CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarget, const bool inQuotedPaths) :
 	m_state(inState),
-	m_target(inTarget)
+	m_target(inTarget),
+	m_quotedPaths(inQuotedPaths)
 {
 	m_cmakeVersionMajorMinor = m_state.toolchain.cmakeVersionMajor();
 	m_cmakeVersionMajorMinor *= 100;
 	m_cmakeVersionMajorMinor += m_state.toolchain.cmakeVersionMinor();
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getLocation() const
+{
+	const auto& rawLocation = m_target.location();
+	auto ret = Commands::getAbsolutePath(rawLocation);
+	Path::sanitize(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getOutputLocation() const
+{
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+
+	std::string ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
+	Path::sanitize(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getBuildFile(const bool inForce) const
+{
+	std::string ret;
+	if (!m_target.buildFile().empty())
+	{
+		auto location = getLocation();
+		ret = fmt::format("{}/{}", location, m_target.buildFile());
+	}
+	else if (inForce)
+	{
+		auto location = getLocation();
+		ret = fmt::format("{}/CMakeLists.txt", location);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool CmakeBuilder::dependencyHasUpdate() const
+{
+	bool updated = false;
+	for (const auto& dependency : m_state.externalDependencies)
+	{
+		if (dependency->isGit())
+		{
+			auto& gitDependency = static_cast<GitDependency&>(*dependency);
+			if (String::startsWith(gitDependency.destination(), m_target.location()))
+			{
+				updated = gitDependency.needsUpdate();
+			}
+		}
+	}
+
+	return updated;
 }
 
 /*****************************************************************************/
@@ -47,32 +106,7 @@ bool CmakeBuilder::run()
 	Output::msgBuild(name);
 	Output::lineBreak();
 
-	const auto& rawLocation = m_target.location();
-	auto location = Commands::getAbsolutePath(rawLocation);
-	Path::sanitize(location);
-
-	bool dependencyUpdated = false;
-	for (const auto& dependency : m_state.externalDependencies)
-	{
-		if (dependency->isGit())
-		{
-			auto& gitDependency = static_cast<GitDependency&>(*dependency);
-			if (String::startsWith(gitDependency.destination(), rawLocation))
-			{
-				dependencyUpdated = gitDependency.needsUpdate();
-			}
-		}
-	}
-
-	if (!m_target.buildFile().empty())
-	{
-		m_buildFile = fmt::format("{}/{}", location, m_target.buildFile());
-	}
-
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-
-	m_outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
-	Path::sanitize(m_outputLocation);
+	m_outputLocation = getOutputLocation();
 
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 
@@ -98,6 +132,7 @@ bool CmakeBuilder::run()
 	auto& sourceCache = m_state.cache.file().sources();
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
+	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
 		Commands::removeRecursively(m_outputLocation);
@@ -117,7 +152,7 @@ bool CmakeBuilder::run()
 		}
 
 		StringList command;
-		command = getGeneratorCommand(location);
+		command = getGeneratorCommand();
 
 		{
 			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : m_outputLocation;
@@ -237,14 +272,28 @@ std::string CmakeBuilder::getArchitecture() const
 }
 
 /*****************************************************************************/
-StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) const
+StringList CmakeBuilder::getGeneratorCommand()
+{
+	if (m_outputLocation.empty())
+	{
+		m_outputLocation = getOutputLocation();
+	}
+
+	auto location = getLocation();
+	auto buildFile = getBuildFile();
+
+	return getGeneratorCommand(location, buildFile);
+}
+
+/*****************************************************************************/
+StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, const std::string& inBuildFile) const
 {
 	auto& cmake = m_state.toolchain.cmake();
 
 	auto generator = getGenerator();
 	chalet_assert(!generator.empty(), "CMake Generator is empty");
 
-	StringList ret{ cmake, "-G", std::move(generator) };
+	StringList ret{ getQuotedPath(cmake), "-G", getQuotedPath(generator) };
 
 	std::string arch = getArchitecture();
 	if (!arch.empty())
@@ -253,17 +302,17 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 		ret.emplace_back(std::move(arch));
 	}
 
-	if (!m_buildFile.empty())
+	if (!inBuildFile.empty())
 	{
 		ret.emplace_back("-C");
-		ret.push_back(m_buildFile);
+		ret.emplace_back(getQuotedPath(inBuildFile));
 	}
 
 	const auto& toolset = m_target.toolset();
 	if (!toolset.empty())
 	{
 		ret.emplace_back("-T");
-		ret.push_back(toolset);
+		ret.push_back(getQuotedPath(toolset));
 	}
 
 	addCmakeDefines(ret);
@@ -271,14 +320,14 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation) cons
 	if (m_cmakeVersionMajorMinor >= 313)
 	{
 		ret.emplace_back("-S");
-		ret.push_back(inLocation);
+		ret.push_back(getQuotedPath(inLocation));
 
 		ret.emplace_back("-B");
-		ret.push_back(m_outputLocation);
+		ret.push_back(getQuotedPath(m_outputLocation));
 	}
 	else
 	{
-		ret.push_back(inLocation);
+		ret.push_back(getQuotedPath(inLocation));
 	}
 
 	return ret;
@@ -328,13 +377,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	if (!isDefined["CMAKE_C_COMPILER"])
 	{
 		const auto& compilerC = m_state.toolchain.compilerC().path;
-		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", compilerC));
+		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", getQuotedPath(compilerC)));
 	}
 
 	if (!isDefined["CMAKE_CXX_COMPILER"])
 	{
 		const auto& compilerC = m_state.toolchain.compilerCpp().path;
-		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", compilerC));
+		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", getQuotedPath(compilerC)));
 	}
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])
@@ -395,14 +444,21 @@ std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 }
 
 /*****************************************************************************/
-StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
+StringList CmakeBuilder::getBuildCommand() const
+{
+	auto outputLocation = getOutputLocation();
+	return getBuildCommand(outputLocation);
+}
+
+/*****************************************************************************/
+StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
 
-	StringList ret{ cmake, "--build", inLocation, "-j", std::to_string(maxJobs) };
+	StringList ret{ getQuotedPath(cmake), "--build", getQuotedPath(inOutputLocation), "-j", std::to_string(maxJobs) };
 
 	const auto& targets = m_target.targets();
 	if (!targets.empty())
@@ -445,6 +501,15 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inLocation) const
 	// LOG(String::join(ret));
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getQuotedPath(const std::string& inPath) const
+{
+	if (m_quotedPaths)
+		return fmt::format("\"{}\"", inPath);
+	else
+		return inPath;
 }
 
 }
