@@ -89,8 +89,8 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : m_searchPaths)
 	{
-		if (!Commands::pathExists(p))
-			continue;
+		// if (!Commands::pathExists(p))
+		// 	continue;
 
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
 
@@ -121,8 +121,8 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : m_searchPaths)
 	{
-		if (!Commands::pathExists(p))
-			continue;
+		// if (!Commands::pathExists(p))
+		// 	continue;
 
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
 
@@ -132,8 +132,8 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : inAdditionalPaths)
 	{
-		if (!Commands::pathExists(p))
-			continue;
+		// if (!Commands::pathExists(p))
+		// 	continue;
 
 		auto path = Commands::getCanonicalPath(p); // for any relative paths
 

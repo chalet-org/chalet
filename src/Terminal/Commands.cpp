@@ -222,7 +222,8 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 {
 	CHALET_TRY
 	{
-		auto path = fs::canonical(inPath);
+		// This method doesn't care if the path is real or not, so weakly_canonical is used
+		auto path = fs::weakly_canonical(inPath);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;

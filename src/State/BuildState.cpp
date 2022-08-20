@@ -790,50 +790,13 @@ void BuildState::makeCompilerDiagnosticsVariables()
 /*****************************************************************************/
 void BuildState::makeLibraryPathVariables()
 {
-	DotEnvFileGenerator dotEnvGen(fmt::format("{}/run.env", paths.buildOutputDir()));
+	auto dotEnvGen = DotEnvFileGenerator::make(*this);
 
-	auto addEnvironmentPath = [this, &dotEnvGen](const char* inKey, const StringList& inAdditionalPaths = StringList()) {
-		auto path = Environment::getAsString(inKey);
-		auto outPath = workspace.makePathVariable(path, inAdditionalPaths);
-
-		// if (!String::equals(outPath, path))
-		dotEnvGen.set(inKey, outPath);
-	};
-
-	StringList libDirs;
-	StringList frameworks;
-	for (auto& target : targets)
-	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<SourceTarget&>(*target);
-			for (auto& p : project.libDirs())
-			{
-				List::addIfDoesNotExist(libDirs, p);
-			}
-			for (auto& p : project.macosFrameworkPaths())
-			{
-				List::addIfDoesNotExist(frameworks, p);
-			}
-		}
-	}
-
-	StringList allPaths = List::combine(libDirs, frameworks);
-	addEnvironmentPath("PATH", allPaths);
-
-#if defined(CHALET_LINUX)
-	// Linux uses LD_LIBRARY_PATH to resolve the correct file dependencies at runtime
-	addEnvironmentPath("LD_LIBRARY_PATH", libDirs);
-// addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld
-#elif defined(CHALET_MACOS)
-	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH", libDirs);
-	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH", frameworks);
-#endif
-
-	dotEnvGen.save();
+	auto filename = fmt::format("{}/run.env", paths.buildOutputDir());
+	dotEnvGen.save(filename);
 
 	DotEnvFileParser parser(inputs);
-	parser.readVariablesFromFile(dotEnvGen.filename());
+	parser.readVariablesFromFile(filename);
 }
 
 /*****************************************************************************/
