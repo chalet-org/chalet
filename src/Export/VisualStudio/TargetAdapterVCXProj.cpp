@@ -5,10 +5,12 @@
 
 #include "Export/VisualStudio/TargetAdapterVCXProj.hpp"
 
+#include "Builder/CmakeBuilder.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
@@ -39,6 +41,23 @@ StringList TargetAdapterVCXProj::getFiles() const
 			file = script.file();
 
 		ret.emplace_back(std::move(file));
+	}
+	else if (m_target.isCMake())
+	{
+		auto cwd = Commands::getWorkingDirectory();
+		if (!m_cwd.empty())
+			Commands::changeWorkingDirectory(m_cwd);
+
+		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
+		bool quotedPaths = true;
+		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
+
+		auto buildFile = builder.getBuildFile(true);
+
+		ret.emplace_back(std::move(buildFile));
+
+		if (!cwd.empty())
+			Commands::changeWorkingDirectory(cwd);
 	}
 
 	return ret;
@@ -80,6 +99,20 @@ std::string TargetAdapterVCXProj::getCommand() const
 
 		if (String::contains("python", process.path()))
 			scriptType = ScriptType::Python;
+	}
+	else if (m_target.isCMake())
+	{
+		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
+		bool quotedPaths = true;
+		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
+
+		auto genCmd = builder.getGeneratorCommand();
+		// genCmd.front() = fmt::format("\"{}\"", genCmd.front());
+
+		auto buildCmd = builder.getBuildCommand();
+		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
+
+		ret = fmt::format("{}\r\n{}", String::join(genCmd), String::join(buildCmd));
 	}
 
 	if (!ret.empty())

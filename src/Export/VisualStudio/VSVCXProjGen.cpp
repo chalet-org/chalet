@@ -502,6 +502,7 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 	else if (inType == BuildTargetType::Script)
 	{
 		outNode.addElement("PropertyGroup", [&inName](XmlElement& node) {
+			node.addElementWithText("OutDir", fmt::format("logs/{}/", inName));
 			node.addElementWithText("IntDir", fmt::format("logs/{}/", inName));
 		});
 	}
