@@ -290,11 +290,16 @@ std::string CodeBlocksProjectExporter::getProjectCompileIncludes(const SourceTar
 {
 	std::string ret;
 
+	const auto& cwd = workingDirectory();
 	for (auto& dir : inTarget.includeDirs())
 	{
+		auto resolved = fmt::format("{}/{}", cwd, dir);
+		if (!Commands::pathExists(dir))
+			resolved = dir;
+
 		ret += fmt::format(R"xml(
-					<Add directory="{dir}" />)xml",
-			FMT_ARG(dir));
+					<Add directory="{resolved}" />)xml",
+			FMT_ARG(resolved));
 	}
 
 	return ret;
@@ -323,15 +328,19 @@ std::string CodeBlocksProjectExporter::getProjectLinkerLibDirs(const BuildState&
 {
 	std::string ret;
 
+	const auto& cwd = workingDirectory();
 	for (auto& dir : inTarget.libDirs())
 	{
+		auto resolved = fmt::format("{}/{}", cwd, dir);
+		if (!Commands::pathExists(dir))
+			resolved = dir;
+
 		ret += fmt::format(R"xml(
-					<Add directory="{dir}" />)xml",
-			FMT_ARG(dir));
+					<Add directory="{resolved}" />)xml",
+			FMT_ARG(resolved));
 	}
 
 	const auto& buildDir = inState.paths.buildOutputDir();
-	const auto& cwd = workingDirectory();
 	ret += fmt::format(R"xml(
 					<Add directory="{cwd}/{buildDir}" />)xml",
 		FMT_ARG(cwd),
@@ -367,23 +376,32 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 {
 	std::string ret;
 
+	const auto& cwd = workingDirectory();
+
 	/*if (inTarget.usesPrecompiledHeader())
 	{
 		const auto& pch = inTarget.precompiledHeader();
+		auto resolved = fmt::format("{}/{}", cwd, pch);
+		if (!Commands::pathExists(pch))
+			resolved = pch;
 
 		ret += fmt::format(R"xml(
-		<Unit filename="{pch}">
+		<Unit filename="{resolved}">
 			<Option compile="1" />
 			<Option weight="0" />
 		</Unit>)xml",
-			FMT_ARG(pch));
+			FMT_ARG(resolved));
 	}*/
 
 	for (auto& file : inTarget.files())
 	{
+		auto resolved = fmt::format("{}/{}", cwd, file);
+		if (!Commands::pathExists(file))
+			resolved = file;
+
 		ret += fmt::format(R"xml(
-		<Unit filename="{file}" />)xml",
-			FMT_ARG(file));
+		<Unit filename="{resolved}" />)xml",
+			FMT_ARG(resolved));
 	}
 
 	const auto& name = inTarget.name();
@@ -392,9 +410,13 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 		const auto& headers = m_headerFiles.at(name);
 		for (auto& file : headers)
 		{
+			auto resolved = fmt::format("{}/{}", cwd, file);
+			if (!Commands::pathExists(file))
+				resolved = file;
+
 			ret += fmt::format(R"xml(
-		<Unit filename="{file}" />)xml",
-				FMT_ARG(file));
+		<Unit filename="{resolved}" />)xml",
+				FMT_ARG(resolved));
 		}
 	}
 
