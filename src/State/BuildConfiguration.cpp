@@ -256,7 +256,7 @@ OptimizationLevel BuildConfiguration::optimizationLevel() const noexcept
 	return m_optimizationLevel;
 }
 
-std::string BuildConfiguration::optimizationLeveString() const
+std::string BuildConfiguration::optimizationLevelString() const
 {
 	return getOptimizationLevelString(m_optimizationLevel);
 }

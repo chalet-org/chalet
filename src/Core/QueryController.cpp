@@ -690,7 +690,7 @@ Json QueryController::getBuildConfigurationDetails() const
 				conf["debugSymbols"] = data.debugSymbols();
 				conf["enableProfiling"] = data.enableProfiling();
 				conf["interproceduralOptimization"] = data.interproceduralOptimization();
-				conf["interproceduralOptimization"] = data.optimizationLeveString();
+				conf["optimizationLevel"] = data.optimizationLevelString();
 
 				auto sans = data.getSanitizerList();
 				if (sans.empty())

@@ -25,7 +25,7 @@ struct BuildConfiguration
 	void setName(const std::string& inValue) noexcept;
 
 	OptimizationLevel optimizationLevel() const noexcept;
-	std::string optimizationLeveString() const;
+	std::string optimizationLevelString() const;
 	void setOptimizationLevel(const std::string& inValue);
 
 	bool interproceduralOptimization() const noexcept;
