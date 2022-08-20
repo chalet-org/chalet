@@ -23,6 +23,8 @@ struct QueryController
 private:
 	const Json& getSettingsJson() const;
 
+	Json getBuildConfigurationDetails() const;
+
 	StringList getBuildConfigurationList() const;
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;

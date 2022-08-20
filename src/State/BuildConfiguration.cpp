@@ -256,7 +256,12 @@ OptimizationLevel BuildConfiguration::optimizationLevel() const noexcept
 	return m_optimizationLevel;
 }
 
-void BuildConfiguration::setOptimizationLevel(const std::string& inValue) noexcept
+std::string BuildConfiguration::optimizationLeveString() const
+{
+	return getOptimizationLevelString(m_optimizationLevel);
+}
+
+void BuildConfiguration::setOptimizationLevel(const std::string& inValue)
 {
 	m_optimizationLevel = parseOptimizationLevel(inValue);
 }
@@ -361,6 +366,34 @@ bool BuildConfiguration::sanitizeUndefinedBehavior() const noexcept
 	return (m_sanitizeOptions & SanitizeOptions::UndefinedBehavior) == SanitizeOptions::UndefinedBehavior;
 }
 
+StringList BuildConfiguration::getSanitizerList() const
+{
+	StringList ret;
+
+	if (enableSanitizers())
+	{
+		if (sanitizeAddress())
+			ret.emplace_back("address");
+
+		if (sanitizeHardwareAddress())
+			ret.emplace_back("hwaddress");
+
+		if (sanitizeThread())
+			ret.emplace_back("thread");
+
+		if (sanitizeMemory())
+			ret.emplace_back("memory");
+
+		if (sanitizeLeaks())
+			ret.emplace_back("leak");
+
+		if (sanitizeUndefinedBehavior())
+			ret.emplace_back("undefined");
+	}
+
+	return ret;
+}
+
 /*****************************************************************************/
 bool BuildConfiguration::isReleaseWithDebugInfo() const noexcept
 {
@@ -376,7 +409,7 @@ bool BuildConfiguration::isDebuggable() const noexcept
 }
 
 /*****************************************************************************/
-OptimizationLevel BuildConfiguration::parseOptimizationLevel(const std::string& inValue) noexcept
+OptimizationLevel BuildConfiguration::parseOptimizationLevel(const std::string& inValue) const
 {
 	if (String::equals("debug", inValue))
 		return OptimizationLevel::Debug;
@@ -400,5 +433,31 @@ OptimizationLevel BuildConfiguration::parseOptimizationLevel(const std::string& 
 		return OptimizationLevel::Fast;
 
 	return OptimizationLevel::CompilerDefault;
+}
+
+/*****************************************************************************/
+std::string BuildConfiguration::getOptimizationLevelString(const OptimizationLevel inValue) const
+{
+	switch (inValue)
+	{
+		case OptimizationLevel::Debug:
+			return "debug";
+		case OptimizationLevel::L3:
+			return "3";
+		case OptimizationLevel::L2:
+			return "2";
+		case OptimizationLevel::L1:
+			return "1";
+		case OptimizationLevel::Size:
+			return "size";
+		case OptimizationLevel::Fast:
+			return "fast";
+		case OptimizationLevel::None:
+		case OptimizationLevel::CompilerDefault:
+		default:
+			break;
+	}
+
+	return "0";
 }
 }

@@ -25,7 +25,8 @@ struct BuildConfiguration
 	void setName(const std::string& inValue) noexcept;
 
 	OptimizationLevel optimizationLevel() const noexcept;
-	void setOptimizationLevel(const std::string& inValue) noexcept;
+	std::string optimizationLeveString() const;
+	void setOptimizationLevel(const std::string& inValue);
 
 	bool interproceduralOptimization() const noexcept;
 	void setInterproceduralOptimization(const bool inValue) noexcept;
@@ -45,13 +46,15 @@ struct BuildConfiguration
 	bool sanitizeMemory() const noexcept;
 	bool sanitizeLeaks() const noexcept;
 	bool sanitizeUndefinedBehavior() const noexcept;
+	StringList getSanitizerList() const;
 
 	bool isReleaseWithDebugInfo() const noexcept;
 	bool isMinSizeRelease() const noexcept;
 	bool isDebuggable() const noexcept;
 
 private:
-	OptimizationLevel parseOptimizationLevel(const std::string& inValue) noexcept;
+	OptimizationLevel parseOptimizationLevel(const std::string& inValue) const;
+	std::string getOptimizationLevelString(const OptimizationLevel inValue) const;
 
 	std::string m_name;
 

@@ -595,6 +595,7 @@ StringList QueryController::getChaletJsonState() const
 
 	Json output = Json::object();
 	output["configurations"] = getBuildConfigurationList();
+	output["configurationDetails"] = getBuildConfigurationDetails();
 	output["targets"] = getAllBuildTargets();
 	output["runTargets"] = getAllRunTargets();
 
@@ -636,6 +637,59 @@ StringList QueryController::getSettingsJsonState() const
 	}
 
 	ret.emplace_back(output.dump());
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json QueryController::getBuildConfigurationDetails() const
+{
+	Json ret = Json::object();
+
+	Dictionary<Json> configMap;
+
+	const auto& chaletJson = m_centralState.chaletJson().json;
+	if (chaletJson.contains(Keys::Configurations))
+	{
+		const Json& configurations = chaletJson.at(Keys::Configurations);
+		if (configurations.is_object())
+		{
+			for (const auto& [name, config] : configurations.items())
+			{
+				if (configurations.contains(name))
+					configMap[name] = config;
+			}
+		}
+	}
+
+	auto configNames = getBuildConfigurationList();
+	for (const auto& name : configNames)
+	{
+		if (configMap.find(name) != configMap.end())
+		{
+			ret[name] = std::move(configMap.at(name));
+		}
+		else
+		{
+			BuildConfiguration data;
+			if (BuildConfiguration::makeDefaultConfiguration(data, name))
+			{
+				Json conf = Json::object();
+				conf["debugSymbols"] = data.debugSymbols();
+				conf["enableProfiling"] = data.enableProfiling();
+				conf["interproceduralOptimization"] = data.interproceduralOptimization();
+				conf["interproceduralOptimization"] = data.optimizationLeveString();
+
+				auto sans = data.getSanitizerList();
+				if (sans.empty())
+					conf["sanitize"] = false;
+				else
+					conf["sanitize"] = std::move(sans);
+
+				ret[name] = std::move(conf);
+			}
+		}
+	}
 
 	return ret;
 }
