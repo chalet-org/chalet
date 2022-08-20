@@ -456,7 +456,7 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 			{
 				const auto& vcxprojAdapter = *m_adapters.at(config);
 
-				outNode.addElement("PropertyGroup", [this, &condition, &vcxprojAdapter](XmlElement& node) {
+				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
 					node.addAttribute("Condition", condition);
 					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
@@ -914,8 +914,8 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 				}
 			});
 		});
-		filters.addElement("ItemGroup", [this, &manifest](XmlElement& node) {
-			node.addElement("Manifest", [this, &manifest](XmlElement& node2) {
+		filters.addElement("ItemGroup", [&manifest](XmlElement& node) {
+			node.addElement("Manifest", [&manifest](XmlElement& node2) {
 				node2.addAttribute("Include", manifest.first);
 				node2.addElementWithText("Filter", "Resource Files");
 			});
@@ -941,8 +941,8 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 				}
 			});
 		});
-		filters.addElement("ItemGroup", [this, &icon](XmlElement& node) {
-			node.addElement("Image", [this, &icon](XmlElement& node2) {
+		filters.addElement("ItemGroup", [&icon](XmlElement& node) {
+			node.addElement("Image", [&icon](XmlElement& node2) {
 				node2.addAttribute("Include", icon.first);
 				node2.addElementWithText("Filter", "Resource Files");
 			});
