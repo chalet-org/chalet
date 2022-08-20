@@ -969,13 +969,13 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 
 	// auto& filters = outFiltersFile.xml.root();
 	UNUSED(outFiltersFile);
-	outNode.addElement("ItemGroup", [this, &sources](XmlElement& node) {
+	outNode.addElement("ItemGroup", [&sources](XmlElement& node) {
 		for (auto& it : sources)
 		{
 			const auto& file = it.first;
 			// const auto& configs = it.second;
 
-			node.addElement("None", [this, &file](XmlElement& node2) {
+			node.addElement("None", [&file](XmlElement& node2) {
 				node2.addAttribute("Include", file);
 			});
 		}
