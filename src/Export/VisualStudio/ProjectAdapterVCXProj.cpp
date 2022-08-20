@@ -664,7 +664,7 @@ std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalDependencies() const
 {
-	auto links = m_msvcAdapter.getLinks(false);
+	auto links = m_msvcAdapter.getLinks();
 	auto ret = String::join(links, ';');
 	if (!ret.empty())
 		ret += ';';
