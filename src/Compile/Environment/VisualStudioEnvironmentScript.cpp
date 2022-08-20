@@ -5,6 +5,7 @@
 
 #include "Compile/Environment/VisualStudioEnvironmentScript.hpp"
 
+#include "Core/Arch.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
@@ -333,8 +334,8 @@ bool VisualStudioEnvironmentScript::saveEnvironmentFromScript()
 /*****************************************************************************/
 StringList VisualStudioEnvironmentScript::getAllowedArchitectures()
 {
-	// clang-format off
-	return {
+	StringList ret{
+		// clang-format off
 		"x86",								// any host, x86 target
 		"x86_x64", /*"x86_amd64",*/			// any host, x64 target
 		"x86_arm",							// any host, ARM target
@@ -343,8 +344,23 @@ StringList VisualStudioEnvironmentScript::getAllowedArchitectures()
 		"x64", /*"amd64",*/					// x64 host, x64 target
 		"x64_x86", /*"amd64_x86",*/			// x64 host, x86 target
 		"x64_arm", /*"amd64_arm",*/			// x64 host, ARM target
-		"x64_arm64", /*"amd64_arm64",*/		// x64 host, ARMG64 target
+		"x64_arm64", /*"amd64_arm64",*/		// x64 host, ARM64 target
+		// clang-format on
 	};
-	// clang-format on
+
+	auto arch = Arch::getHostCpuArchitecture();
+	if (String::equals("arm64", arch))
+	{
+		// Note: these are untested
+		//   https://devblogs.microsoft.com/visualstudio/arm64-visual-studio
+		//
+		// clang-format off
+		ret.emplace_back("arm64");			// ARM64 host, ARM64 target
+		ret.emplace_back("arm64_x64");		// ARM64 host, x64 target
+		ret.emplace_back("arm64_x86");		// ARM64 host, x86 target
+		// clang-format on
+	}
+
+	return ret;
 }
 }

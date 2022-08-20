@@ -265,6 +265,15 @@ std::vector<CompilerPathStructure> CompileEnvironmentVisualStudio::getValidCompi
 	ret.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
 	ret.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
 
+	if (String::equals("arm64", m_state.inputs.hostArchitecture()))
+	{
+		// Note: these are untested
+		//   https://devblogs.microsoft.com/visualstudio/arm64-visual-studio
+		ret.push_back({ "/bin/hostarm64/arm64", "/lib/arm64", "/include" });
+		ret.push_back({ "/bin/hostarm64/x64", "/lib/x64", "/include" });
+		ret.push_back({ "/bin/hostarm64/x86", "/lib/x86", "/include" });
+	}
+
 	// ret.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
 #endif
 

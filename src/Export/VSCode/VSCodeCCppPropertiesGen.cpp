@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -175,7 +176,8 @@ std::string VSCodeCCppPropertiesGen::getIntellisenseMode() const
 	else
 		toolchain = "gcc";
 
-	return fmt::format("{}-{}-x64", platform, toolchain);
+	auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
+	return fmt::format("{}-{}-{}", platform, toolchain, arch);
 }
 
 /*****************************************************************************/

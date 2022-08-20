@@ -41,7 +41,11 @@ bool CompilerCxxVisualStudioCL::initialize()
 		auto toolsDir = Environment::getAsString("VCToolsInstallDir");
 		Path::sanitize(toolsDir);
 
-		m_ifcDirectory = fmt::format("{}/ifc/x64", toolsDir);
+		std::string arch{ "x64" };
+		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)
+			arch = "arm64";
+
+		m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
 	}
 
 	return true;

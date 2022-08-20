@@ -1145,7 +1145,8 @@ std::string VSVCXProjGen::getVisualStudioVersion() const
 /*****************************************************************************/
 std::string VSVCXProjGen::getCondition(const std::string& inConfig) const
 {
-	return fmt::format("'$(Configuration)|$(Platform)'=='{}|x64'", inConfig);
+	auto arch = Arch::toVSArch2(m_states.front()->info.hostArchitecture());
+	return fmt::format("'$(Configuration)|$(Platform)'=='{}|{}'", inConfig, arch);
 }
 
 }
