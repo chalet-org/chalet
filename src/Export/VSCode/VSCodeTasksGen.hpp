@@ -14,7 +14,7 @@ class BuildState;
 
 struct VSCodeTasksGen
 {
-	explicit VSCodeTasksGen(const BuildState& inState, const std::string& inCwd);
+	explicit VSCodeTasksGen(const BuildState& inState);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -27,7 +27,6 @@ private:
 	bool willUseMSVC() const;
 
 	const BuildState& m_state;
-	const std::string& m_cwd;
 };
 }
 

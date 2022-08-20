@@ -62,7 +62,13 @@ ExportKind IProjectExporter::kind() const noexcept
 }
 
 /*****************************************************************************/
-bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) const
+const std::string& IProjectExporter::workingDirectory() const noexcept
+{
+	return m_centralState.inputs().workingDirectory();
+}
+
+/*****************************************************************************/
+bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory)
 {
 	std::string exportDirectory{ "chalet_export" };
 	if (!inSubDirectory.empty())
@@ -77,11 +83,7 @@ bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory) con
 		}
 	}
 
-	if (!Commands::changeWorkingDirectory(fmt::format("{}/{}", m_cwd, exportDirectory)))
-	{
-		Diagnostic::error("There was a problem changing to the '{}' directory.", exportDirectory);
-		return false;
-	}
+	m_fullExportDir = fmt::format("{}/{}", workingDirectory(), exportDirectory);
 
 	return true;
 }
@@ -150,8 +152,6 @@ bool IProjectExporter::generate()
 
 	auto projectType = getProjectTypeName();
 	Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
-
-	m_cwd = m_centralState.inputs().workingDirectory();
 
 	m_states.clear();
 	m_pathVariables.clear();
@@ -229,12 +229,8 @@ bool IProjectExporter::generate()
 		return false;
 
 	if (!generateProjectFiles())
-	{
-		Commands::changeWorkingDirectory(m_cwd);
 		return false;
-	}
 
-	Commands::changeWorkingDirectory(m_cwd);
 	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);

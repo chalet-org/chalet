@@ -25,12 +25,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const Dictionary<std::string>& inPathVariables) :
+VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const Dictionary<std::string>& inPathVariables) :
 	m_states(inStates),
-	m_cwd(inCwd),
 	m_pathVariables(inPathVariables)
 {
-	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/
@@ -71,7 +69,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (project.usesPrecompiledHeader())
 				{
 					auto path = project.precompiledHeader();
-					if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)))
+					if (Commands::pathExists(path))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
@@ -83,7 +81,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					if (path.back() == '/')
 						path.pop_back();
 
-					if (Commands::pathExists(fmt::format("{}/{}", m_cwd, path)) || String::equals(path, state->paths.intermediateDir(project)))
+					if (Commands::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
@@ -111,10 +109,6 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 		if (signifcantTarget != nullptr)
 		{
-			auto subfolder = Commands::getWorkingDirectory();
-			if (!Commands::changeWorkingDirectory(m_cwd))
-				return false;
-
 			const auto& sourceTarget = *signifcantTarget;
 			auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
 			if (!toolchain->initialize(*state))
@@ -122,9 +116,6 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());
 				return false;
 			}
-
-			if (!Commands::changeWorkingDirectory(subfolder))
-				return false;
 
 			config["compilers"] = Json::object();
 

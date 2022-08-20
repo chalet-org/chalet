@@ -13,7 +13,7 @@ struct IBuildTarget;
 
 struct TargetAdapterVCXProj
 {
-	explicit TargetAdapterVCXProj(const BuildState& inState, const IBuildTarget& inTarget, const std::string& inCwd);
+	explicit TargetAdapterVCXProj(const BuildState& inState, const IBuildTarget& inTarget);
 
 	StringList getFiles() const;
 	std::string getCommand() const;
@@ -21,7 +21,6 @@ struct TargetAdapterVCXProj
 private:
 	const BuildState& m_state;
 	const IBuildTarget& m_target;
-	const std::string& m_cwd;
 };
 }
 

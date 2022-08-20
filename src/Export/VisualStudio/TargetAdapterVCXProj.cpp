@@ -22,10 +22,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-TargetAdapterVCXProj::TargetAdapterVCXProj(const BuildState& inState, const IBuildTarget& inTarget, const std::string& inCwd) :
+TargetAdapterVCXProj::TargetAdapterVCXProj(const BuildState& inState, const IBuildTarget& inTarget) :
 	m_state(inState),
-	m_target(inTarget),
-	m_cwd(inCwd)
+	m_target(inTarget)
 {
 }
 
@@ -34,11 +33,13 @@ StringList TargetAdapterVCXProj::getFiles() const
 {
 	StringList ret;
 
+	const auto& cwd = m_state.inputs.workingDirectory();
+
 	if (m_target.isScript())
 	{
 		const auto& script = static_cast<const ScriptBuildTarget&>(m_target);
 
-		auto file = fmt::format("{}/{}", m_cwd, script.file());
+		auto file = fmt::format("{}/{}", cwd, script.file());
 		if (!Commands::pathExists(file))
 			file = script.file();
 
@@ -46,10 +47,6 @@ StringList TargetAdapterVCXProj::getFiles() const
 	}
 	else if (m_target.isCMake())
 	{
-		auto cwd = Commands::getWorkingDirectory();
-		if (!m_cwd.empty())
-			Commands::changeWorkingDirectory(m_cwd);
-
 		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
 		bool quotedPaths = true;
 		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
@@ -57,16 +54,9 @@ StringList TargetAdapterVCXProj::getFiles() const
 		auto buildFile = builder.getBuildFile(true);
 
 		ret.emplace_back(std::move(buildFile));
-
-		if (!cwd.empty())
-			Commands::changeWorkingDirectory(cwd);
 	}
 	else if (m_target.isSubChalet())
 	{
-		auto cwd = Commands::getWorkingDirectory();
-		if (!m_cwd.empty())
-			Commands::changeWorkingDirectory(m_cwd);
-
 		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
 		bool quotedPaths = true;
 		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
@@ -74,9 +64,6 @@ StringList TargetAdapterVCXProj::getFiles() const
 		auto buildFile = builder.getBuildFile();
 
 		ret.emplace_back(std::move(buildFile));
-
-		if (!cwd.empty())
-			Commands::changeWorkingDirectory(cwd);
 	}
 
 	return ret;
@@ -86,10 +73,6 @@ StringList TargetAdapterVCXProj::getFiles() const
 std::string TargetAdapterVCXProj::getCommand() const
 {
 	std::string ret;
-
-	auto cwd = Commands::getWorkingDirectory();
-	if (!m_cwd.empty())
-		Commands::changeWorkingDirectory(m_cwd);
 
 	ScriptType scriptType = ScriptType::None;
 	if (m_target.isScript())
@@ -147,18 +130,16 @@ std::string TargetAdapterVCXProj::getCommand() const
 
 	if (!ret.empty())
 	{
+		const auto& cwd = m_state.inputs.workingDirectory();
 		if (scriptType == ScriptType::Python)
 		{
-			ret = fmt::format("cd {}\r\nset PYTHONIOENCODING=utf-8\r\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\r\n{}", m_cwd, ret);
+			ret = fmt::format("cd {}\r\nset PYTHONIOENCODING=utf-8\r\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\r\n{}", cwd, ret);
 		}
 		else
 		{
-			ret = fmt::format("cd {}\r\n{}", m_cwd, ret);
+			ret = fmt::format("cd {}\r\n{}", cwd, ret);
 		}
 	}
-
-	if (!cwd.empty())
-		Commands::changeWorkingDirectory(cwd);
 
 	return ret;
 }

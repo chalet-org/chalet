@@ -127,13 +127,10 @@ bool SubChaletBuilder::run()
 	{
 		// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("new cwd: {}", cwd), false);
 
-		// Commands::changeWorkingDirectory(workingDirectory);
-
 		StringList cmd = getBuildCommand();
 		result = Commands::subprocess(cmd);
 		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 
-		// Commands::changeWorkingDirectory(oldWorkingDirectory);
 		Environment::setPath(oldPath);
 	}
 

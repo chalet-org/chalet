@@ -34,13 +34,16 @@ protected:
 	virtual bool validate(const BuildState& inState) = 0;
 	virtual bool generateProjectFiles() = 0;
 
-	bool useExportDirectory(const std::string& inSubDirectory = std::string()) const;
+	const std::string& workingDirectory() const noexcept;
+
+	bool useExportDirectory(const std::string& inSubDirectory = std::string());
 	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
 	CentralState& m_centralState;
 
-	std::string m_cwd;
+	// std::string m_cwd;
+	std::string m_fullExportDir;
 	std::string m_debugConfiguration;
 
 	Dictionary<StringList> m_headerFiles;

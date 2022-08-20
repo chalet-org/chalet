@@ -12,7 +12,7 @@ class BuildState;
 
 struct VSCodeCCppPropertiesGen
 {
-	explicit VSCodeCCppPropertiesGen(const BuildState& inState, const std::string& inCwd);
+	explicit VSCodeCCppPropertiesGen(const BuildState& inState);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -23,7 +23,6 @@ private:
 	StringList getDefaultDefines() const;
 
 	const BuildState& m_state;
-	const std::string& m_cwd;
 };
 }
 

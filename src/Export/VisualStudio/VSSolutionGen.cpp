@@ -30,13 +30,11 @@ struct VisualStudioConfig
 }
 
 /*****************************************************************************/
-VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
+VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
 	m_states(inStates),
-	m_cwd(inCwd),
 	m_projectTypeGuid(inProjectTypeGuid),
 	m_targetGuids(inTargetGuids)
 {
-	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/

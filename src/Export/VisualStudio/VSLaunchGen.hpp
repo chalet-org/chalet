@@ -16,7 +16,7 @@ struct IBuildTarget;
 
 struct VSLaunchGen
 {
-	explicit VSLaunchGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd);
+	explicit VSLaunchGen(const std::vector<Unique<BuildState>>& inStates);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -25,7 +25,6 @@ private:
 	Json getEnvironment(const IBuildTarget& inTarget) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
-	const std::string& m_cwd;
 
 	std::vector<const IBuildTarget*> m_executableTargets;
 };

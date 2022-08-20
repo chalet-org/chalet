@@ -17,11 +17,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeTasksGen::VSCodeTasksGen(const BuildState& inState, const std::string& inCwd) :
-	m_state(inState),
-	m_cwd(inCwd)
+VSCodeTasksGen::VSCodeTasksGen(const BuildState& inState) :
+	m_state(inState)
 {
-	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/

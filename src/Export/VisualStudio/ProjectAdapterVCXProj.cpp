@@ -22,10 +22,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject, const std::string& inCwd) :
+ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const SourceTarget& inProject) :
 	m_state(inState),
 	m_project(inProject),
-	m_cwd(inCwd),
 	m_msvcAdapter(inState, inProject)
 {
 	m_versionMajorMinor = m_state.toolchain.compilerCxx(m_project.language()).versionMajorMinor;
@@ -44,19 +43,12 @@ bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createWindowsResources()
 {
-	auto cwd = Commands::getWorkingDirectory();
-	if (!m_cwd.empty())
-		Commands::changeWorkingDirectory(m_cwd);
-
 	CommandAdapterWinResource adapter(m_state, m_project);
 	if (!adapter.createWindowsApplicationManifest())
 		return false;
 
 	if (!adapter.createWindowsApplicationIcon())
 		return false;
-
-	if (!cwd.empty())
-		Commands::changeWorkingDirectory(cwd);
 
 	return true;
 }
@@ -104,22 +96,25 @@ std::string ProjectAdapterVCXProj::getBooleanIfFalse(const bool inValue) const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getBuildDir() const
 {
+	const auto& cwd = workingDirectory();
 	// return "$(SolutionDir)$(Platform)_$(Configuration)\\";
-	return fmt::format("{}/{}/", m_cwd, m_state.paths.buildOutputDir());
+	return fmt::format("{}/{}/", cwd, m_state.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getObjectDir() const
 {
+	const auto& cwd = workingDirectory();
 	// return "$(Platform)_$(Configuration)\\";
 	const auto& buildDir = m_state.paths.buildOutputDir();
-	return fmt::format("{}/{}/obj.{}/", m_cwd, buildDir, m_project.name());
+	return fmt::format("{}/{}/obj.{}/", cwd, buildDir, m_project.name());
 }
 
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getIntermediateDir() const
 {
-	return fmt::format("{}/{}/", m_cwd, m_state.paths.intermediateDir(m_project));
+	const auto& cwd = workingDirectory();
+	return fmt::format("{}/{}/", cwd, m_state.paths.intermediateDir(m_project));
 }
 
 /*****************************************************************************/
@@ -132,6 +127,11 @@ std::string ProjectAdapterVCXProj::getEmbedManifest() const
 const std::string& ProjectAdapterVCXProj::getTargetName() const noexcept
 {
 	return m_project.name();
+}
+
+const std::string& ProjectAdapterVCXProj::workingDirectory() const noexcept
+{
+	return m_state.inputs.workingDirectory();
 }
 
 /*****************************************************************************/
@@ -530,8 +530,9 @@ std::string ProjectAdapterVCXProj::getCallingConvention() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getPrecompiledHeaderFile() const
 {
+	const auto& cwd = workingDirectory();
 	if (m_project.usesPrecompiledHeader())
-		return fmt::format("{}/{}", m_cwd, m_project.precompiledHeader());
+		return fmt::format("{}/{}", cwd, m_project.precompiledHeader());
 
 	return std::string();
 }
@@ -566,20 +567,21 @@ std::string ProjectAdapterVCXProj::getProgramDataBaseFileName() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool inAddCwd) const
 {
+	const auto& cwd = workingDirectory();
 	auto buildDir = getBuildDir();
 	auto list = m_msvcAdapter.getIncludeDirectories();
 	for (auto& dir : list)
 	{
-		if (!Commands::pathExists(dir) && (dir.size() > 2 && dir[1] != ':'))
+		if (dir.size() > 2 && dir[1] != ':')
 		{
-			auto full = fmt::format("{}/{}", m_cwd, dir);
+			auto full = fmt::format("{}/{}", cwd, dir);
 			dir = std::move(full);
 		}
 	}
 
 	if (inAddCwd)
 	{
-		list.emplace_back(m_cwd);
+		list.emplace_back(cwd);
 	}
 
 	auto ret = String::join(list, ';');
@@ -640,15 +642,16 @@ std::string ProjectAdapterVCXProj::getFixedBaseAddress() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalLibraryDirectories() const
 {
+	const auto& cwd = workingDirectory();
 	auto buildDir = getBuildDir();
 	buildDir.pop_back();
 
 	auto list = m_msvcAdapter.getLibDirectories();
 	for (auto& dir : list)
 	{
-		if (!Commands::pathExists(dir) && (dir.size() > 2 && dir[1] != ':'))
+		if (dir.size() > 2 && dir[1] != ':')
 		{
-			auto full = fmt::format("{}/{}", m_cwd, dir);
+			auto full = fmt::format("{}/{}", cwd, dir);
 			dir = std::move(full);
 		}
 	}
@@ -856,16 +859,9 @@ std::string ProjectAdapterVCXProj::getAdditionalLinkerOptions() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getLocalDebuggerEnvironment() const
 {
-	auto cwd = Commands::getWorkingDirectory();
-	if (!m_cwd.empty())
-		Commands::changeWorkingDirectory(m_cwd);
-
 	auto gen = DotEnvFileGenerator::make(m_state);
 	auto path = gen.getRunPaths();
 	auto ret = fmt::format("Path={};%Path%", path);
-
-	if (!cwd.empty())
-		Commands::changeWorkingDirectory(cwd);
 
 	return ret;
 }

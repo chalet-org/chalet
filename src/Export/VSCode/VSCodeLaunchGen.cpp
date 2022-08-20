@@ -20,12 +20,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeLaunchGen::VSCodeLaunchGen(const BuildState& inState, const std::string& inCwd, const IBuildTarget& inTarget) :
+VSCodeLaunchGen::VSCodeLaunchGen(const BuildState& inState, const IBuildTarget& inTarget) :
 	m_state(inState),
-	m_cwd(inCwd),
 	m_target(inTarget)
 {
-	UNUSED(m_cwd);
 }
 
 /*****************************************************************************/

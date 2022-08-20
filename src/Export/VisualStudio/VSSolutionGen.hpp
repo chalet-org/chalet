@@ -15,7 +15,7 @@ class BuildState;
 
 struct VSSolutionGen
 {
-	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inCwd, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids);
+	explicit VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -23,7 +23,6 @@ private:
 	bool projectWillBuild(const std::string& inName, const std::string& inConfigName) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
-	const std::string& m_cwd;
 	const std::string& m_projectTypeGuid;
 	const OrderedDictionary<Uuid>& m_targetGuids;
 };
