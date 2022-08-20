@@ -84,12 +84,15 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 	}),
 	m_routeMap({
 		{ "buildrun", RouteType::BuildRun },
+		{ "r", RouteType::BuildRun },
 		{ "run", RouteType::Run },
 		{ "build", RouteType::Build },
+		{ "b", RouteType::Build },
 		{ "rebuild", RouteType::Rebuild },
 		{ "clean", RouteType::Clean },
 		{ "bundle", RouteType::Bundle },
 		{ "configure", RouteType::Configure },
+		{ "c", RouteType::Configure },
 		{ "export", RouteType::Export },
 		{ "init", RouteType::Init },
 		{ "get", RouteType::SettingsGet },
@@ -219,8 +222,16 @@ void ArgumentParser::makeParser()
 
 	if (isSubcommand())
 	{
+		auto routeString = m_routeString;
+		if (String::equals({ "buildrun", "r" }, routeString))
+			routeString = "buildrun,r";
+		else if (String::equals({ "build", "b" }, routeString))
+			routeString = "build,b";
+		else if (String::equals({ "configure", "c" }, routeString))
+			routeString = "configure,c";
+
 		m_argumentList.emplace_back(ArgumentIdentifier::RouteString, true)
-			.addArgument(Positional::Argument1, m_routeString)
+			.addArgument(Positional::Argument1, routeString)
 			.setHelp("This subcommand.")
 			.setRequired();
 	}
@@ -696,16 +707,16 @@ void ArgumentParser::populateMainArguments()
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
 	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::Init)));
 
-	subcommands.push_back("configure");
+	subcommands.push_back("configure,c");
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Configure));
 
-	subcommands.push_back(fmt::format("buildrun {} {}", Arg::RunTarget, Arg::RemainingArguments));
+	subcommands.push_back(fmt::format("buildrun,r {} {}", Arg::RunTarget, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::BuildRun));
 
 	subcommands.push_back(fmt::format("run {} {}", Arg::RunTarget, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Run));
 
-	subcommands.push_back("build");
+	subcommands.push_back("build,b");
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Build));
 
 	subcommands.push_back("rebuild");
