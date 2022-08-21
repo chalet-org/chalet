@@ -33,7 +33,6 @@ private:
 
 	bool parseTheme();
 	bool routeExport(CentralState& inCentralState);
-	bool routeExportForBuild(CentralState& inCentralState, const ExportKind inKind);
 
 #if defined(CHALET_DEBUG)
 	bool routeDebug();

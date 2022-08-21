@@ -39,18 +39,8 @@ bool VSCodeProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSCodeProjectExporter::generateProjectFiles()
 {
-	if (!useExportDirectory("vscode"))
+	if (!useProjectBuildDirectory(".vscode"))
 		return false;
-
-	const std::string vscodeDir = fmt::format("{}/.vscode", m_directory);
-	if (!Commands::pathExists(vscodeDir))
-	{
-		if (!Commands::makeDirectory(vscodeDir))
-		{
-			Diagnostic::error("There was a problem creating the '{}' directory.", vscodeDir);
-			return false;
-		}
-	}
 
 	const BuildState* state = getAnyBuildStateButPreferDebug();
 	chalet_assert(state != nullptr, "");
@@ -58,7 +48,7 @@ bool VSCodeProjectExporter::generateProjectFiles()
 	{
 		const auto& outState = *state;
 		VSCodeCCppPropertiesGen cCppProperties(outState);
-		if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", vscodeDir)))
+		if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
 		{
 			Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");
 			return false;
@@ -70,14 +60,14 @@ bool VSCodeProjectExporter::generateProjectFiles()
 			if (runnableTarget != nullptr)
 			{
 				VSCodeLaunchGen launchJson(outState, *runnableTarget);
-				if (!launchJson.saveToFile(fmt::format("{}/launch.json", vscodeDir)))
+				if (!launchJson.saveToFile(fmt::format("{}/launch.json", m_directory)))
 				{
 					Diagnostic::error("There was a problem saving the launch.json file.");
 					return false;
 				}
 
 				VSCodeTasksGen tasksJson(outState);
-				if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", vscodeDir)))
+				if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
 				{
 					Diagnostic::error("There was a problem saving the tasks.json file.");
 					return false;

@@ -26,6 +26,7 @@ struct ICompileStrategy
 	[[nodiscard]] static CompileStrategy make(const StrategyType inType, BuildState& inState);
 
 	StrategyType type() const noexcept;
+	bool isMSBuild() const noexcept;
 
 	bool saveCompileCommands() const;
 

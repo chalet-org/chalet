@@ -48,7 +48,7 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool CodeBlocksProjectExporter::generateProjectFiles()
 {
-	if (!useExportDirectory("codeblocks"))
+	if (!useProjectBuildDirectory())
 		return false;
 
 	auto state = getAnyBuildStateButPreferDebug();
@@ -60,7 +60,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		{
 			if (target->isSources())
 			{
-				auto relativeFile = fmt::format("{}/{}.cbp", m_directory, target->name());
+				auto relativeFile = fmt::format("{}/cbp/{}.cbp", m_directory, target->name());
 				auto contents = getProjectContent(target->name());
 				if (!Commands::createFileWithContents(relativeFile, contents))
 				{
@@ -263,16 +263,21 @@ std::string CodeBlocksProjectExporter::getProjectCompileOptions(const SourceTarg
 	inToolchain.compilerCxx->getCommandOptions(argList, specialization);
 	if (inTarget.usesPrecompiledHeader())
 	{
+		const auto& cwd = workingDirectory();
 		auto pch = inTarget.precompiledHeader();
-		for (auto& dir : inTarget.includeDirs())
+		auto resolved = fmt::format("{}/{}", cwd, pch);
+		if (!Commands::pathExists(pch))
+			resolved = pch;
+
+		/*for (auto& dir : inTarget.includeDirs())
 		{
 			if (String::startsWith(dir, pch))
 			{
 				String::replaceAll(pch, fmt::format("{}/", dir), "");
 				break;
 			}
-		}
-		argList.emplace_back(fmt::format("-include &quot;{}&quot;", pch));
+		}*/
+		argList.emplace_back(fmt::format("-include &quot;{}&quot;", resolved));
 	}
 
 	for (auto& arg : argList)
@@ -466,12 +471,12 @@ std::string CodeBlocksProjectExporter::getWorkspaceProject(const SourceTarget& i
 		for (auto& link : dependsList)
 		{
 			depends += fmt::format(R"xml(
-			<Depends filename="{link}.cbp" />)xml",
+			<Depends filename="cbp/{link}.cbp" />)xml",
 				FMT_ARG(link));
 		}
 
 		return fmt::format(R"xml(
-		<Project filename="{target}.cbp"{active}>{depends}
+		<Project filename="cbp/{target}.cbp"{active}>{depends}
 		</Project>)xml",
 			FMT_ARG(target),
 			FMT_ARG(active),
@@ -480,7 +485,7 @@ std::string CodeBlocksProjectExporter::getWorkspaceProject(const SourceTarget& i
 	else
 	{
 		return fmt::format(R"xml(
-		<Project filename="{target}.cbp"{active} />)xml",
+		<Project filename="cbp/{target}.cbp"{active} />)xml",
 			FMT_ARG(target),
 			FMT_ARG(active));
 	}
@@ -503,7 +508,7 @@ std::string CodeBlocksProjectExporter::getWorkspaceLayoutContent(const BuildStat
 			{
 				const auto& name = project.name();
 				activeProject = fmt::format(R"xml(
-	<ActiveProject path="{name}.cbp" />)xml",
+	<ActiveProject path="cbp/{name}.cbp" />)xml",
 					FMT_ARG(name));
 				break;
 			}

@@ -52,7 +52,7 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSSolutionProjectExporter::generateProjectFiles()
 {
-	if (!useExportDirectory("vs-solution"))
+	if (!useProjectBuildDirectory())
 		return false;
 
 	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs

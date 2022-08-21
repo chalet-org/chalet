@@ -104,10 +104,8 @@ std::string ProjectAdapterVCXProj::getBuildDir() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getObjectDir() const
 {
-	const auto& cwd = workingDirectory();
-	// return "$(Platform)_$(Configuration)\\";
-	const auto& buildDir = m_state.paths.buildOutputDir();
-	return fmt::format("{}/{}/obj.{}/", cwd, buildDir, m_project.name());
+	auto buildDir = getBuildDir();
+	return fmt::format("{}obj.{}/", buildDir, m_project.name());
 }
 
 /*****************************************************************************/
@@ -562,6 +560,27 @@ std::string ProjectAdapterVCXProj::getPrecompiledHeaderObjectFile() const
 std::string ProjectAdapterVCXProj::getProgramDataBaseFileName() const
 {
 	return fmt::format("$(IntDir)vc$(PlatformToolsetVersion)-{}.pdb", m_project.name());
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAssemblerOutput() const
+{
+	if (m_state.info.dumpAssembly())
+		return "AssemblyCode";
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string ProjectAdapterVCXProj::getAssemblerListingLocation() const
+{
+	if (m_state.info.dumpAssembly())
+	{
+		auto buildDir = getBuildDir();
+		return fmt::format("{}asm.{}/", buildDir, m_project.name());
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

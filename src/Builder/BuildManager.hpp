@@ -54,14 +54,15 @@ private:
 	bool cmdClean();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
-	bool runSubChaletTarget(const SubChaletTarget& inTarget);
-	bool runCMakeTarget(const CMakeTarget& inTarget);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
 	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject);
-
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
+	bool runSubChaletTarget(const SubChaletTarget& inTarget);
+	bool runCMakeTarget(const CMakeTarget& inTarget);
+	bool runMSBuildStrategy();
+	void stopTimerAndShowBenchmark(Timer& outTimer);
 
 	BuildState& m_state;
 

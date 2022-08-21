@@ -77,7 +77,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	if (m_adapters.empty())
 		return false;
 
-	auto projectFile = fmt::format("{dir}/{name}.vcxproj", fmt::arg("dir", m_exportDir), FMT_ARG(name));
+	auto projectFile = makeSubDirectoryAndGetProjectFile(name);
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
 	if (!saveFiltersFile(filtersFile, BuildTargetType::Source))
@@ -119,7 +119,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	if (m_targetAdapters.empty())
 		return false;
 
-	auto projectFile = fmt::format("{name}.vcxproj", FMT_ARG(name));
+	auto projectFile = makeSubDirectoryAndGetProjectFile(name);
 
 	XmlFile filtersFile(fmt::format("{}.filters", projectFile));
 	if (!saveFiltersFile(filtersFile, BuildTargetType::Script))
@@ -135,6 +135,16 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::makeSubDirectoryAndGetProjectFile(const std::string& inName) const
+{
+	auto path = fmt::format("{}/vcxproj", m_exportDir);
+	if (!Commands::pathExists(path))
+		Commands::makeDirectory(path);
+
+	return fmt::format("{}/{}.vcxproj", path, inName);
 }
 
 /*****************************************************************************/
@@ -564,6 +574,8 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 					node2.addElementWithTextIfNotEmpty("RemoveUnreferencedCodeData", vcxprojAdapter.getRemoveUnreferencedCodeData());
 					node2.addElementWithTextIfNotEmpty("CallingConvention", vcxprojAdapter.getCallingConvention());
 					node2.addElementWithTextIfNotEmpty("ProgramDataBaseFileName", vcxprojAdapter.getProgramDataBaseFileName());
+					node2.addElementWithTextIfNotEmpty("AssemblerOutput", vcxprojAdapter.getAssemblerOutput());
+					node2.addElementWithTextIfNotEmpty("AssemblerListingLocation", vcxprojAdapter.getAssemblerListingLocation());
 
 					node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalCompilerOptions());
 				});

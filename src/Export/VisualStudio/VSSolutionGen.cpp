@@ -83,7 +83,7 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		for (auto& [name, guid] : m_targetGuids)
 		{
 			auto projectGUID = guid.toUpperCase();
-			vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
+			vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"vcxproj/{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
 				fmt::arg("projectTypeGUID", m_projectTypeGuid),
 				FMT_ARG(projectGUID),
 				FMT_ARG(name));

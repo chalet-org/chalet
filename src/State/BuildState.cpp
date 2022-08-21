@@ -12,6 +12,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Core/DotEnvFileGenerator.hpp"
 #include "Core/DotEnvFileParser.hpp"
+#include "Export/IProjectExporter.hpp"
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -135,6 +136,15 @@ bool BuildState::initialize()
 /*****************************************************************************/
 bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
 {
+#if defined(CHALET_WIN32)
+	if (toolchain.strategy() == StrategyType::MSBuild)
+	{
+		auto projectExporter = IProjectExporter::make(ExportKind::VisualStudioSolution, inputs);
+		if (!projectExporter->generate(m_impl->centralState, true))
+			return false;
+	}
+#endif
+
 	BuildManager mgr(*this);
 	return mgr.run(inRoute, inShowSuccess);
 }
@@ -267,8 +277,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -434,8 +444,13 @@ bool BuildState::validateState()
 	const bool lto = configuration.interproceduralOptimization();
 	if (lto && info.dumpAssembly() && !environment->isClang())
 	{
-		Diagnostic::error("Enabling 'dumpAssembly' with the configuration '{}' is not possible because it uses interprocedural optimizations.", configuration.name());
-		return false;
+#if defined(CHALET_WIN32)
+		if (toolchain.strategy() != StrategyType::MSBuild)
+#endif
+		{
+			Diagnostic::error("Enabling 'dumpAssembly' with the configuration '{}' is not possible because it uses interprocedural optimizations.", configuration.name());
+			return false;
+		}
 	}
 
 	for (auto& target : targets)
@@ -533,16 +548,19 @@ bool BuildState::validateState()
 
 		toolchain.fetchNinjaVersion(cacheFile.sources());
 	}
-#if defined(CHALET_WIN32)
 	else if (strat == StrategyType::MSBuild)
 	{
+#if defined(CHALET_WIN32)
 		if (!environment->isMsvc())
 		{
 			Diagnostic::error("The 'msbuild' strategy is only allowed with one of the VS toolchain presets.");
 			return false;
 		}
-	}
+#else
+		Diagnostic::error("The 'msbuild' strategy is only available on Windows.");
+		return false;
 #endif
+	}
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;

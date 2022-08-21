@@ -32,6 +32,8 @@ struct VSVCXProjGen
 	bool saveScriptTargetProjectFiles(const std::string& inProjectName);
 
 private:
+	std::string makeSubDirectoryAndGetProjectFile(const std::string& inName) const;
+
 	bool saveSourceTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
 	bool saveScriptTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
 

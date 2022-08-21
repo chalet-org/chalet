@@ -38,11 +38,8 @@ Dictionary<StrategyType> getStrategyTypes()
 		{ "makefile", StrategyType::Makefile },
 		{ "ninja", StrategyType::Ninja },
 		{ "native-experimental", StrategyType::Native },
+		{ "msbuild", StrategyType::MSBuild },
 	};
-
-#if defined(CHALET_WIN32)
-	ret.emplace("msbuild", StrategyType::MSBuild);
-#endif
 
 	return ret;
 }
@@ -55,11 +52,8 @@ StringList CompilerTools::getToolchainStrategies()
 		"makefile",
 		"ninja",
 		"native-experimental",
+		"msbuild",
 	};
-
-#if defined(CHALET_WIN32)
-	ret.emplace_back("msbuild");
-#endif
 
 	return ret;
 }

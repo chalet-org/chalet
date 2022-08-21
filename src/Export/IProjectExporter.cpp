@@ -56,6 +56,12 @@ IProjectExporter::~IProjectExporter() = default;
 }
 
 /*****************************************************************************/
+std::string IProjectExporter::getProjectBuildFolder(const CommandLineInputs& inInputs)
+{
+	return fmt::format("{}/.project", inInputs.outputDirectory());
+}
+
+/*****************************************************************************/
 ExportKind IProjectExporter::kind() const noexcept
 {
 	return m_kind;
@@ -84,16 +90,13 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 }
 
 /*****************************************************************************/
-bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory)
+bool IProjectExporter::useProjectBuildDirectory(const std::string& inSubDirectory)
 {
-	if (!m_directory.empty())
-		return true;
-
-	std::string exportDirectory{ "chalet_export" };
+	auto directory = getProjectBuildFolder(m_inputs);
 	if (!inSubDirectory.empty())
-		exportDirectory += fmt::format("/{}", inSubDirectory);
+		directory += fmt::format("/{}", inSubDirectory);
 
-	return useDirectory(exportDirectory);
+	return useDirectory(directory);
 }
 
 /*****************************************************************************/
@@ -159,16 +162,13 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	Output::setShowCommandOverride(false);
 
 	auto projectType = getProjectTypeName();
-	Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
+	if (inForBuild)
+		Diagnostic::infoEllipsis("Generating '{}' format", projectType);
+	else
+		Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
 
 	if (!generateStatesAndValidate(inCentralState))
 		return false;
-
-	if (inForBuild)
-	{
-		if (!useDirectory(fmt::format("{}/.projects", m_inputs.outputDirectory())))
-			return false;
-	}
 
 	if (!generateProjectFiles())
 		return false;

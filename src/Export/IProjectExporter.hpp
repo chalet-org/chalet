@@ -25,6 +25,7 @@ struct IProjectExporter
 	virtual ~IProjectExporter();
 
 	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, const CommandLineInputs& inInputs);
+	[[nodiscard]] static std::string getProjectBuildFolder(const CommandLineInputs& inInputs);
 
 	bool generate(CentralState& inCentralState, const bool inForBuild = false);
 
@@ -38,7 +39,7 @@ protected:
 	const std::string& workingDirectory() const noexcept;
 
 	bool useDirectory(const std::string& inDirectory);
-	bool useExportDirectory(const std::string& inSubDirectory = std::string());
+	bool useProjectBuildDirectory(const std::string& inSubDirectory = std::string());
 	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 

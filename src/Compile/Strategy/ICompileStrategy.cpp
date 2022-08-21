@@ -58,6 +58,11 @@ StrategyType ICompileStrategy::type() const noexcept
 	return m_type;
 }
 
+bool ICompileStrategy::isMSBuild() const noexcept
+{
+	return m_type == StrategyType::MSBuild;
+}
+
 /*****************************************************************************/
 bool ICompileStrategy::saveCompileCommands() const
 {
@@ -99,11 +104,8 @@ bool ICompileStrategy::doPostBuild() const
 /*****************************************************************************/
 bool ICompileStrategy::addProject(const SourceTarget& inProject)
 {
-	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
-	{
-		if (!addCompileCommands(inProject))
-			return false;
-	}
+	if (!addCompileCommands(inProject))
+		return false;
 
 	auto& outputs = m_outputs.at(inProject.name());
 	outputs.reset();
@@ -139,12 +141,15 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 /*****************************************************************************/
 bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 {
-	const auto& name = inProject.name();
-	if (m_outputs.find(name) != m_outputs.end())
+	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
 	{
-		auto& outputs = m_outputs.at(name);
-		auto& toolchain = m_toolchains.at(name);
-		return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
+		const auto& name = inProject.name();
+		if (m_outputs.find(name) != m_outputs.end())
+		{
+			auto& outputs = m_outputs.at(name);
+			auto& toolchain = m_toolchains.at(name);
+			return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
+		}
 	}
 
 	return true;
