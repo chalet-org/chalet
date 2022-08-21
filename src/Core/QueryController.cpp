@@ -236,7 +236,19 @@ StringList QueryController::getUserToolchainList() const
 /*****************************************************************************/
 StringList QueryController::getToolchainStrategies() const
 {
-	return CompilerTools::getToolchainStrategies();
+	auto list = CompilerTools::getToolchainStrategies();
+	StringList ret;
+
+	for (auto& strat : list)
+	{
+#if !defined(CHALET_WIN32)
+		if (String::equals("msbuild", strat))
+			continue;
+#endif
+		ret.emplace_back(strat);
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
