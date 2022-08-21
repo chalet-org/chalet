@@ -76,6 +76,8 @@ struct ProjectAdapterVCXProj
 	std::string getPrecompiledHeaderOutputFile() const;
 	std::string getPrecompiledHeaderObjectFile() const;
 	std::string getProgramDataBaseFileName() const;
+	std::string getAssemblerOutput() const;
+	std::string getAssemblerListingLocation() const;
 	std::string getAdditionalIncludeDirectories(const bool inAddCwd = false) const;
 	std::string getAdditionalCompilerOptions() const;
 

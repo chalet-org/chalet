@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
+#include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
@@ -39,6 +40,10 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 			return std::make_unique<CompileStrategyNinja>(inState);
 		case StrategyType::Native:
 			return std::make_unique<CompileStrategyNative>(inState);
+#if defined(CHALET_WIN32)
+		case StrategyType::MSBuild:
+			return std::make_unique<CompileStrategyMSBuild>(inState);
+#endif
 		default:
 			break;
 	}
@@ -51,6 +56,11 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 StrategyType ICompileStrategy::type() const noexcept
 {
 	return m_type;
+}
+
+bool ICompileStrategy::isMSBuild() const noexcept
+{
+	return m_type == StrategyType::MSBuild;
 }
 
 /*****************************************************************************/
@@ -80,6 +90,12 @@ bool ICompileStrategy::doPreBuild()
 }
 
 /*****************************************************************************/
+bool ICompileStrategy::doFullBuild()
+{
+	return true;
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::doPostBuild() const
 {
 	return true;
@@ -88,11 +104,8 @@ bool ICompileStrategy::doPostBuild() const
 /*****************************************************************************/
 bool ICompileStrategy::addProject(const SourceTarget& inProject)
 {
-	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
-	{
-		if (!addCompileCommands(inProject))
-			return false;
-	}
+	if (!addCompileCommands(inProject))
+		return false;
 
 	auto& outputs = m_outputs.at(inProject.name());
 	outputs.reset();
@@ -128,12 +141,15 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 /*****************************************************************************/
 bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 {
-	const auto& name = inProject.name();
-	if (m_outputs.find(name) != m_outputs.end())
+	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
 	{
-		auto& outputs = m_outputs.at(name);
-		auto& toolchain = m_toolchains.at(name);
-		return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
+		const auto& name = inProject.name();
+		if (m_outputs.find(name) != m_outputs.end())
+		{
+			auto& outputs = m_outputs.at(name);
+			auto& toolchain = m_toolchains.at(name);
+			return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
+		}
 	}
 
 	return true;

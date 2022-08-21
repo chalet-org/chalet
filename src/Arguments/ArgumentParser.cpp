@@ -594,6 +594,10 @@ std::string ArgumentParser::getHelp()
 #endif
 			else if (String::equals("native-experimental", preset))
 				return std::string("Build with Chalet (experimental!)");
+#if defined(CHALET_WIN32)
+			else if (String::equals("msbuild", preset))
+				return std::string("Build using a Visual Studio solution and MSBuild - requires vs-* toolchain preset");
+#endif
 
 			return std::string();
 		};
@@ -604,6 +608,9 @@ std::string ArgumentParser::getHelp()
 			"makefile",
 			"native-experimental",
 		};
+#if defined(CHALET_WIN32)
+		strategies.emplace_back("msbuild");
+#endif
 
 		for (auto& strat : strategies)
 		{

@@ -19,6 +19,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -261,8 +262,8 @@ bool Router::parseTheme()
 /*****************************************************************************/
 bool Router::routeExport(CentralState& inCentralState)
 {
-	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), inCentralState);
-	if (!projectExporter->generate())
+	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
+	if (!projectExporter->generate(inCentralState))
 		return false;
 
 	return true;

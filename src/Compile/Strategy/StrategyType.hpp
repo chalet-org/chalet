@@ -13,7 +13,8 @@ enum class StrategyType : ushort
 	None,
 	Makefile,
 	Ninja,
-	Native
+	Native,
+	MSBuild,
 };
 }
 

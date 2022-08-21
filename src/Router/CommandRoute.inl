@@ -54,6 +54,11 @@ constexpr bool CommandRoute::isRun() const noexcept
 	return m_route == RouteType::Run;
 }
 
+constexpr bool CommandRoute::isBuild() const noexcept
+{
+	return m_route == RouteType::Build;
+}
+
 /*****************************************************************************/
 constexpr bool CommandRoute::isBuildRun() const noexcept
 {

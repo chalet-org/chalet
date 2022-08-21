@@ -26,6 +26,7 @@ struct ICompileStrategy
 	[[nodiscard]] static CompileStrategy make(const StrategyType inType, BuildState& inState);
 
 	StrategyType type() const noexcept;
+	bool isMSBuild() const noexcept;
 
 	bool saveCompileCommands() const;
 
@@ -36,6 +37,7 @@ struct ICompileStrategy
 	virtual bool addProject(const SourceTarget& inProject);
 
 	virtual bool doPreBuild();
+	virtual bool doFullBuild();
 	virtual bool buildProject(const SourceTarget& inProject) = 0;
 	virtual bool doPostBuild() const;
 

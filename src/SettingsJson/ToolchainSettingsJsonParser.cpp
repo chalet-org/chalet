@@ -423,6 +423,9 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		bool notNative = preference.strategy != StrategyType::Native;
 
 		// Note: this is only for validation. it gets changed later
+		// Note: MSBuild strategy on windows is opt-in, so we don't set it
+		//   at all here unless it comes from user input
+		//
 		if (!strategyFromInput.empty())
 		{
 			toolchain[Keys::ToolchainStrategy] = strategyFromInput;

@@ -31,8 +31,7 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"export",
-				"vs-solution"
+				"build"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/../new-project",

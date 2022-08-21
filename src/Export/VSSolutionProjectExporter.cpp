@@ -20,8 +20,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSSolutionProjectExporter::VSSolutionProjectExporter(CentralState& inCentralState) :
-	IProjectExporter(inCentralState, ExportKind::VisualStudioSolution)
+VSSolutionProjectExporter::VSSolutionProjectExporter(const CommandLineInputs& inInputs) :
+	IProjectExporter(inInputs, ExportKind::VisualStudioSolution)
 {
 }
 
@@ -52,7 +52,7 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSSolutionProjectExporter::generateProjectFiles()
 {
-	if (!useExportDirectory("vs-solution"))
+	if (!useProjectBuildDirectory())
 		return false;
 
 	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
@@ -61,15 +61,12 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	auto targetGuids = getTargetGuids(projectTypeGUID);
 
 	const BuildState* firstState = getAnyBuildStateButPreferDebug();
-	chalet_assert(firstState != nullptr, "");
 	if (firstState != nullptr)
 	{
-		const auto& workspaceName = firstState->workspace.metadata().name();
-
 		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
-		if (!slnGen.saveToFile(fmt::format("{}/{}.sln", m_fullExportDir, workspaceName)))
+		if (!slnGen.saveToFile(fmt::format("{}/project.sln", m_directory)))
 		{
-			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
+			Diagnostic::error("There was a problem saving the workspace.sln file.");
 			return false;
 		}
 	}
@@ -102,7 +99,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 
 	for (auto& name : allSourceTargets)
 	{
-		VSVCXProjGen vcxprojGen(m_states, m_fullExportDir, projectTypeGUID, targetGuids);
+		VSVCXProjGen vcxprojGen(m_states, m_directory, projectTypeGUID, targetGuids);
 		if (!vcxprojGen.saveSourceTargetProjectFiles(name))
 		{
 			Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);
@@ -113,7 +110,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	{
 		for (auto& name : allScriptTargets)
 		{
-			VSVCXProjGen vcxprojGen(m_states, m_fullExportDir, projectTypeGUID, targetGuids);
+			VSVCXProjGen vcxprojGen(m_states, m_directory, projectTypeGUID, targetGuids);
 			if (!vcxprojGen.saveScriptTargetProjectFiles(name))
 			{
 				Diagnostic::error("There was a problem saving the {}.vcxproj file.", name);

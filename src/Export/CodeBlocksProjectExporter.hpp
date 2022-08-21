@@ -15,7 +15,7 @@ struct CompileToolchainController;
 
 struct CodeBlocksProjectExporter final : public IProjectExporter
 {
-	explicit CodeBlocksProjectExporter(CentralState& inCentralState);
+	explicit CodeBlocksProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getProjectTypeName() const final;

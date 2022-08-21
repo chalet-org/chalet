@@ -27,6 +27,7 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -61,6 +62,8 @@ BuildManager::~BuildManager() = default;
 bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 {
 	m_timer.restart();
+
+	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
 
 	if (inRoute.isClean())
 	{
@@ -98,7 +101,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	}
 
 	// Note: We still have to initialize the build when the command is "run"
-	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
 	if (!m_strategy->initialize())
 		return false;
 
@@ -143,11 +145,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Output::lineBreak();
 	}
 
-	bool multiTarget = m_state.targets.size() > 1;
-
 	const IBuildTarget* runTarget = nullptr;
-
 	bool error = false;
+
+	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too
+
+	bool multiTarget = m_state.targets.size() > 1;
 	// bool breakAfterBuild = false;
 	for (auto& target : m_state.targets)
 	{
@@ -165,85 +168,61 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 					break;
 			}
 
-			if (runRoute)
+			if (runRoute || buildAll)
 				continue;
 		}
+		else if (buildAll)
+			break;
 
 		// At this point, we build
+		bool result = false;
 		if (target->isSubChalet())
 		{
-			if (!runSubChaletTarget(static_cast<const SubChaletTarget&>(*target)))
-			{
-				error = true;
-				break;
-			}
+			result = runSubChaletTarget(static_cast<const SubChaletTarget&>(*target));
 		}
 		else if (target->isCMake())
 		{
-			if (!runCMakeTarget(static_cast<const CMakeTarget&>(*target)))
-			{
-				error = true;
-				break;
-			}
+			result = runCMakeTarget(static_cast<const CMakeTarget&>(*target));
 		}
 		else if (target->isScript())
 		{
-			Timer buildTimer;
-
-			if (!runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false))
-			{
-				error = true;
-				break;
-			}
-
-			auto res = buildTimer.stop();
-			if (res > 0 && Output::showBenchmarks())
-			{
-				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-			}
-
-			Output::lineBreak();
+			result = runScriptTarget(static_cast<const ScriptBuildTarget&>(*target), false);
 		}
 		else if (target->isProcess())
 		{
-			Timer buildTimer;
-
-			if (!runProcessTarget(static_cast<const ProcessBuildTarget&>(*target)))
-			{
-				error = true;
-				break;
-			}
-
-			auto res = buildTimer.stop();
-			if (res > 0 && Output::showBenchmarks())
-			{
-				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-			}
-
-			Output::lineBreak();
+			result = runProcessTarget(static_cast<const ProcessBuildTarget&>(*target));
 		}
 		else
 		{
 			Timer buildTimer;
 
-			if (!m_buildRoutes[inRoute.type()](*this, static_cast<const SourceTarget&>(*target)))
-			{
-				error = true;
-				break;
-			}
+			result = m_buildRoutes[inRoute.type()](*this, static_cast<const SourceTarget&>(*target));
 
-			Output::msgTargetUpToDate(multiTarget, target->name());
-			auto res = buildTimer.stop();
-			if (res > 0 && Output::showBenchmarks())
+			if (result)
 			{
-				Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
+				Output::msgTargetUpToDate(multiTarget, target->name());
+				stopTimerAndShowBenchmark(buildTimer);
 			}
-
-			Output::lineBreak();
 		}
+
+		if (!result)
+		{
+			error = true;
+			break;
+		}
+
+		Output::lineBreak();
 
 		// if (breakAfterBuild)
 		// 	break;
+	}
+
+	if (buildAll)
+	{
+#if defined(CHALET_WIN32)
+		error = !runMSBuildStrategy();
+		Output::lineBreak();
+#endif
 	}
 
 	for (auto& target : m_state.targets)
@@ -388,6 +367,12 @@ std::string BuildManager::getBuildStrategyName() const
 		case StrategyType::Ninja:
 			ret = "Ninja";
 			break;
+
+#if defined(CHALET_WIN32)
+		case StrategyType::MSBuild:
+			ret = "MSBuild";
+			break;
+#endif
 
 		case StrategyType::Makefile: {
 			if (m_state.toolchain.makeIsNMake())
@@ -625,6 +610,9 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	if (file.empty())
 		return false;
 
+	Timer buildTimer;
+	bool result = true;
+
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 
 	if (!inTarget.outputDescription().empty())
@@ -643,10 +631,12 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	{
 		Diagnostic::printErrors(true);
 		Output::previousLine();
-		return false;
+		result = false;
 	}
 
-	return true;
+	stopTimerAndShowBenchmark(buildTimer);
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -655,6 +645,8 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 	const auto& path = inTarget.path();
 	if (path.empty())
 		return false;
+
+	Timer buildTimer;
 
 	if (!inTarget.outputDescription().empty())
 		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
@@ -674,6 +666,8 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 
 	if (!result)
 		Output::lineBreak();
+
+	stopTimerAndShowBenchmark(buildTimer);
 
 	return result;
 }
@@ -977,8 +971,6 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
 	}
 
-	Output::lineBreak();
-
 	return true;
 }
 
@@ -991,15 +983,41 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 	if (!cmake.run())
 		return false;
 
-	auto result = buildTimer.stop();
-	if (result > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-	}
+	stopTimerAndShowBenchmark(buildTimer);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::runMSBuildStrategy()
+{
+	// Timer buildTimer;
+
+	const auto& workspace = m_state.workspace.metadata().name();
+
+	if (m_state.inputs.route().isRebuild())
+		Output::msgRebuild(workspace);
+	else
+		Output::msgBuild(workspace);
 
 	Output::lineBreak();
 
+	if (!m_strategy->doFullBuild())
+		return false;
+
+	// stopTimerAndShowBenchmark(buildTimer);
+
 	return true;
+}
+
+/*****************************************************************************/
+void BuildManager::stopTimerAndShowBenchmark(Timer& outTimer)
+{
+	int64_t result = outTimer.stop();
+	if (result > 0 && Output::showBenchmarks())
+	{
+		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
+	}
 }
 
 }

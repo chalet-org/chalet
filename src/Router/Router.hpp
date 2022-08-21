@@ -6,6 +6,8 @@
 #ifndef CHALET_ROUTER_HPP
 #define CHALET_ROUTER_HPP
 
+#include "Export/ExportKind.hpp"
+
 namespace chalet
 {
 struct CommandLineInputs;

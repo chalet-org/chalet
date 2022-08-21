@@ -54,6 +54,9 @@ bool CompilerCxxVisualStudioCL::initialize()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
+	if (m_state.toolchain.strategy() == StrategyType::MSBuild)
+		return true; // created by the project exporter
+
 	std::string path = m_state.paths.objDir();
 	path.push_back('/');
 
