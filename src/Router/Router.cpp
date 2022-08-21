@@ -167,7 +167,7 @@ bool Router::routeConfigure(BuildState& inState)
 	if (!inState.generateProjects())
 		return false;
 
-	bool addLineBreak = false;
+	/*bool addLineBreak = false;
 	if (inState.environment != nullptr)
 	{
 		addLineBreak |= inState.environment->ouptuttedDescription();
@@ -175,7 +175,9 @@ bool Router::routeConfigure(BuildState& inState)
 
 	if (addLineBreak)
 		Output::lineBreak();
+	*/
 
+	Output::lineBreak();
 	Output::msgConfigureCompleted(inState.workspace.metadata().name());
 	Output::lineBreak();
 
