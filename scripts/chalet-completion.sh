@@ -29,10 +29,10 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query theme-names)" -- $cur))
 		;;
 	-b|--build-strategy|toolchains.*.strategy)
-		COMPREPLY=($(compgen -W "$(chalet query toolchain-strategy)" -- $cur))
+		COMPREPLY=($(compgen -W "$(chalet query build-strategies)" -- $cur))
 		;;
 	toolchains.*.buildPathStyle)
-		COMPREPLY=($(compgen -W "$(chalet query toolchain-build-path-style)" -- $cur))
+		COMPREPLY=($(compgen -W "$(chalet query build-path-styles)" -- $cur))
 		;;
 	get|getkeys|set|unset)
 		_CMDS[COMP_CWORD-1]=getkeys

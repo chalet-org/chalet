@@ -42,7 +42,7 @@ enum class Defs : ushort
 
 	/* Toolchains */
 	Version,
-	ToolchainStrategy,
+	ToolchainBuildStrategy,
 	BuildPathStyle,
 	CompilerCpp,
 	CompilerC,
@@ -226,13 +226,13 @@ Json SettingsJsonSchema::get()
 		"description": "A version string to identify the toolchain. If MSVC, this must be the full version string of the Visual Studio Installation. (vswhere's installationVersion string)"
 	})json"_ojson;
 
-	defs[Defs::ToolchainStrategy] = R"json({
+	defs[Defs::ToolchainBuildStrategy] = R"json({
 		"type": "string",
 		"description": "The strategy to use during the build.",
 		"enum": [],
 		"default": "makefile"
 	})json"_ojson;
-	defs[Defs::ToolchainStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategies();
+	defs[Defs::ToolchainBuildStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategies();
 
 	defs[Defs::BuildPathStyle] = R"json({
 		"type": "string",
@@ -480,7 +480,7 @@ Json SettingsJsonSchema::get()
 	toolchain[SKeys::Properties][Keys::ToolchainMake] = defs[Defs::Make];
 	toolchain[SKeys::Properties][Keys::ToolchainNinja] = defs[Defs::Ninja];
 	toolchain[SKeys::Properties][Keys::ToolchainProfiler] = defs[Defs::Profiler];
-	toolchain[SKeys::Properties][Keys::ToolchainStrategy] = defs[Defs::ToolchainStrategy];
+	toolchain[SKeys::Properties][Keys::ToolchainBuildStrategy] = defs[Defs::ToolchainBuildStrategy];
 	toolchain[SKeys::Properties][Keys::ToolchainVersion] = defs[Defs::Version];
 
 	//

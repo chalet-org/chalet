@@ -25,6 +25,7 @@ private:
 
 	Json getBuildConfigurationDetails() const;
 
+	StringList getVersion() const;
 	StringList getBuildConfigurationList() const;
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
@@ -32,7 +33,9 @@ private:
 	StringList getCurrentArchitecture() const;
 	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;
+	StringList getCurrentToolchainStrategy() const;
 	StringList getToolchainStrategies() const;
+	StringList getCurrentToolchainBuildPathStyle() const;
 	StringList getToolchainBuildPathStyles() const;
 	StringList getAllBuildTargets() const;
 	StringList getAllRunTargets() const;

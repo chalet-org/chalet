@@ -38,6 +38,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 Dictionary<QueryOption> getQueryOptions()
 {
 	return {
+		{ "version", QueryOption::Version },
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
 		{ "architectures", QueryOption::Architectures },
@@ -52,8 +53,10 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "toolchain", QueryOption::Toolchain },
 		{ "toolchain-presets", QueryOption::ToolchainPresets },
 		{ "user-toolchains", QueryOption::UserToolchains },
-		{ "toolchain-strategy", QueryOption::ToolchainStrategy },
-		{ "toolchain-build-path-style", QueryOption::ToolchainBuildPathStyle },
+		{ "build-strategy", QueryOption::BuildStrategy },
+		{ "build-strategies", QueryOption::BuildStrategies },
+		{ "build-path-style", QueryOption::BuildPathStyle },
+		{ "build-path-styles", QueryOption::BuildPathStyles },
 		{ "state-chalet-json", QueryOption::ChaletJsonState },
 		{ "state-settings-json", QueryOption::SettingsJsonState },
 		{ "schema-chalet-json", QueryOption::ChaletSchema },

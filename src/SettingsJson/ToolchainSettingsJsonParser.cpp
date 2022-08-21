@@ -141,9 +141,9 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[Keys::ToolchainVersion] = std::string();
 	}
 
-	if (!toolchain.contains(Keys::ToolchainStrategy) || !toolchain[Keys::ToolchainStrategy].is_string() || toolchain[Keys::ToolchainStrategy].get<std::string>().empty())
+	if (!toolchain.contains(Keys::ToolchainBuildStrategy) || !toolchain[Keys::ToolchainBuildStrategy].is_string() || toolchain[Keys::ToolchainBuildStrategy].get<std::string>().empty())
 	{
-		toolchain[Keys::ToolchainStrategy] = std::string();
+		toolchain[Keys::ToolchainBuildStrategy] = std::string();
 	}
 
 	if (!toolchain.contains(Keys::ToolchainBuildPathStyle) || !toolchain[Keys::ToolchainBuildPathStyle].is_string() || toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
@@ -416,7 +416,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		return false;
 	}
 
-	if (toolchain[Keys::ToolchainStrategy].get<std::string>().empty())
+	if (toolchain[Keys::ToolchainBuildStrategy].get<std::string>().empty())
 	{
 		auto make = toolchain.at(Keys::ToolchainMake).get<std::string>();
 		auto ninja = toolchain.at(Keys::ToolchainNinja).get<std::string>();
@@ -428,27 +428,27 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		//
 		if (!strategyFromInput.empty())
 		{
-			toolchain[Keys::ToolchainStrategy] = strategyFromInput;
+			toolchain[Keys::ToolchainBuildStrategy] = strategyFromInput;
 		}
 
 		else if (!ninja.empty() && (preference.strategy == StrategyType::Ninja || (notNative && make.empty())))
 		{
-			toolchain[Keys::ToolchainStrategy] = "ninja";
+			toolchain[Keys::ToolchainBuildStrategy] = "ninja";
 		}
 		else if (!make.empty() && (preference.strategy == StrategyType::Makefile || (notNative && ninja.empty())))
 		{
-			toolchain[Keys::ToolchainStrategy] = "makefile";
+			toolchain[Keys::ToolchainBuildStrategy] = "makefile";
 		}
 		else if (preference.strategy == StrategyType::Native || (make.empty() && ninja.empty()))
 		{
-			toolchain[Keys::ToolchainStrategy] = "native-experimental";
+			toolchain[Keys::ToolchainBuildStrategy] = "native-experimental";
 		}
 
 		m_jsonFile.setDirty(true);
 	}
 	else if (!strategyFromInput.empty())
 	{
-		toolchain[Keys::ToolchainStrategy] = strategyFromInput;
+		toolchain[Keys::ToolchainBuildStrategy] = strategyFromInput;
 
 		m_jsonFile.setDirty(true);
 	}
@@ -492,7 +492,7 @@ bool ToolchainSettingsJsonParser::parseToolchain(Json& inNode)
 	{
 		if (value.is_string())
 		{
-			if (String::equals(Keys::ToolchainStrategy, key))
+			if (String::equals(Keys::ToolchainBuildStrategy, key))
 				m_state.toolchain.setStrategy(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainBuildPathStyle, key))
 				m_state.toolchain.setBuildPathStyle(value.get<std::string>());

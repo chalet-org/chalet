@@ -55,7 +55,7 @@ CH_STR(OptionsRunArguments) = "runArguments";
 //
 CH_STR(Toolchains) = "toolchains";
 CH_STR(ToolchainVersion) = "version";
-CH_STR(ToolchainStrategy) = "strategy";
+CH_STR(ToolchainBuildStrategy) = "strategy";
 CH_STR(ToolchainBuildPathStyle) = "buildPathStyle";
 CH_STR(ToolchainArchiver) = "archiver";
 CH_STR(ToolchainCompilerCpp) = "compilerCpp";

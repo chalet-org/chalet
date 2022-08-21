@@ -12,6 +12,7 @@ enum class QueryOption : ushort
 {
 	None,
 	QueryNames,
+	Version,
 	//
 	Commands,
 	Configurations,
@@ -20,13 +21,15 @@ enum class QueryOption : ushort
 	ToolchainPresets,
 	Architectures,
 	AllRunTargets,
+	BuildStrategies,
+	BuildPathStyles,
 	//
 	Toolchain,
 	Configuration,
 	Architecture,
 	RunTarget,
-	ToolchainStrategy,
-	ToolchainBuildPathStyle,
+	BuildStrategy,
+	BuildPathStyle,
 	//
 	ExportKinds,
 	ThemeNames,

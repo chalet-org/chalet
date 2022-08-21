@@ -13,6 +13,7 @@
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
+#include "Utility/DefinesVersion.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
@@ -54,6 +55,10 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 	{
 		case QueryOption::Commands:
 			ret = m_centralState.inputs().commandList();
+			break;
+
+		case QueryOption::Version:
+			ret = getVersion();
 			break;
 
 		case QueryOption::Configurations:
@@ -111,11 +116,19 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			break;
 		}
 
-		case QueryOption::ToolchainStrategy:
+		case QueryOption::BuildStrategy:
+			ret = getCurrentToolchainStrategy();
+			break;
+
+		case QueryOption::BuildStrategies:
 			ret = getToolchainStrategies();
 			break;
 
-		case QueryOption::ToolchainBuildPathStyle:
+		case QueryOption::BuildPathStyle:
+			ret = getCurrentToolchainBuildPathStyle();
+			break;
+
+		case QueryOption::BuildPathStyles:
 			ret = getToolchainBuildPathStyles();
 			break;
 
@@ -158,6 +171,14 @@ const Json& QueryController::getSettingsJson() const
 	}
 
 	return kEmptyJson;
+}
+
+/*****************************************************************************/
+StringList QueryController::getVersion() const
+{
+	return {
+		std::string(CHALET_VERSION),
+	};
 }
 
 /*****************************************************************************/
@@ -234,18 +255,88 @@ StringList QueryController::getUserToolchainList() const
 }
 
 /*****************************************************************************/
-StringList QueryController::getToolchainStrategies() const
+StringList QueryController::getCurrentToolchainStrategy() const
 {
-	auto list = CompilerTools::getToolchainStrategies();
 	StringList ret;
 
-	for (auto& strat : list)
+	auto maybeToolchain = getCurrentToolchain();
+	if (!maybeToolchain.empty())
 	{
+		const auto& toolchain = maybeToolchain.front();
+		const auto& settingsFile = getSettingsJson();
+		if (settingsFile.is_object())
+		{
+			if (settingsFile.contains(Keys::Toolchains))
+			{
+				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				if (toolchains.contains(toolchain))
+				{
+					const auto& toolchainJson = toolchains.at(toolchain);
+					if (toolchainJson.is_object() && toolchainJson.contains(Keys::ToolchainBuildStrategy))
+					{
+						const auto& strategy = toolchainJson.at(Keys::ToolchainBuildStrategy);
+						if (strategy.is_string())
+						{
+							auto value = strategy.get<std::string>();
+							if (!value.empty())
+							{
+								ret.emplace_back(std::move(value));
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getToolchainStrategies() const
+{
+	auto ret = CompilerTools::getToolchainStrategies();
+
 #if !defined(CHALET_WIN32)
-		if (String::equals("msbuild", strat))
-			continue;
+	List::removeIfExists(ret, "msbuild");
 #endif
-		ret.emplace_back(strat);
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getCurrentToolchainBuildPathStyle() const
+{
+	StringList ret;
+
+	auto maybeToolchain = getCurrentToolchain();
+	if (!maybeToolchain.empty())
+	{
+		const auto& toolchain = maybeToolchain.front();
+		const auto& settingsFile = getSettingsJson();
+		if (settingsFile.is_object())
+		{
+			if (settingsFile.contains(Keys::Toolchains))
+			{
+				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				if (toolchains.contains(toolchain))
+				{
+					const auto& toolchainJson = toolchains.at(toolchain);
+					if (toolchainJson.is_object() && toolchainJson.contains(Keys::ToolchainBuildPathStyle))
+					{
+						const auto& style = toolchainJson.at(Keys::ToolchainBuildPathStyle);
+						if (style.is_string())
+						{
+							auto value = style.get<std::string>();
+							if (!value.empty())
+							{
+								ret.emplace_back(std::move(value));
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
 	return ret;
@@ -384,10 +475,10 @@ StringList QueryController::getCurrentArchitecture() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(Keys::Options);
-			if (settings.contains(Keys::OptionsArchitecture))
+			const auto& options = settingsFile.at(Keys::Options);
+			if (options.is_object() && options.contains(Keys::OptionsArchitecture))
 			{
-				const auto& arch = settings.at(Keys::OptionsArchitecture);
+				const auto& arch = options.at(Keys::OptionsArchitecture);
 				if (arch.is_string())
 				{
 					auto value = arch.get<std::string>();
@@ -418,10 +509,10 @@ StringList QueryController::getCurrentBuildConfiguration() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(Keys::Options);
-			if (settings.contains(Keys::OptionsBuildConfiguration))
+			const auto& options = settingsFile.at(Keys::Options);
+			if (options.is_object() && options.contains(Keys::OptionsBuildConfiguration))
 			{
-				const auto& configuration = settings.at(Keys::OptionsBuildConfiguration);
+				const auto& configuration = options.at(Keys::OptionsBuildConfiguration);
 				if (configuration.is_string())
 				{
 					auto value = configuration.get<std::string>();
@@ -447,10 +538,10 @@ StringList QueryController::getCurrentToolchain() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(Keys::Options);
-			if (settings.contains(Keys::OptionsToolchain))
+			const auto& options = settingsFile.at(Keys::Options);
+			if (options.is_object() && options.contains(Keys::OptionsToolchain))
 			{
-				const auto& toolchain = settings.at(Keys::OptionsToolchain);
+				const auto& toolchain = options.at(Keys::OptionsToolchain);
 				if (toolchain.is_string())
 				{
 					auto value = toolchain.get<std::string>();
@@ -551,10 +642,10 @@ StringList QueryController::getCurrentRunTarget() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& settings = settingsFile.at(Keys::Options);
-			if (settings.contains(Keys::OptionsRunTarget))
+			const auto& options = settingsFile.at(Keys::Options);
+			if (options.is_object() && options.contains(Keys::OptionsRunTarget))
 			{
-				const auto& runTarget = settings.at(Keys::OptionsRunTarget);
+				const auto& runTarget = options.at(Keys::OptionsRunTarget);
 				if (runTarget.is_string())
 				{
 					auto value = runTarget.get<std::string>();
