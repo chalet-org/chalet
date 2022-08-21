@@ -318,7 +318,7 @@ bool BuildState::initializeBuild()
 
 	Output::setShowCommandOverride(false);
 
-	Diagnostic::infoEllipsis("Initializing");
+	Diagnostic::infoEllipsis("Configuring build");
 
 	if (!paths.initialize())
 		return false;
