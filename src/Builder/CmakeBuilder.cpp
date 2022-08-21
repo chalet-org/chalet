@@ -108,7 +108,7 @@ bool CmakeBuilder::run()
 
 	m_outputLocation = getOutputLocation();
 
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const bool isNinja = usesNinja();
 
 	static const char* kNinjaStatus = "NINJA_STATUS";
 	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
@@ -185,7 +185,7 @@ bool CmakeBuilder::run()
 /*****************************************************************************/
 std::string CmakeBuilder::getGenerator() const
 {
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const bool isNinja = usesNinja();
 
 	std::string ret;
 	if (isNinja)
@@ -242,7 +242,7 @@ std::string CmakeBuilder::getGenerator() const
 /*****************************************************************************/
 std::string CmakeBuilder::getArchitecture() const
 {
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const bool isNinja = usesNinja();
 
 	std::string ret;
 
@@ -456,7 +456,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
+	const bool isNinja = usesNinja();
 
 	StringList ret{ getQuotedPath(cmake), "--build", getQuotedPath(inOutputLocation), "-j", std::to_string(maxJobs) };
 
@@ -510,6 +510,16 @@ std::string CmakeBuilder::getQuotedPath(const std::string& inPath) const
 		return fmt::format("\"{}\"", inPath);
 	else
 		return inPath;
+}
+
+/*****************************************************************************/
+bool CmakeBuilder::usesNinja() const
+{
+	// Note: Some CMake projects might vary between Visual Studio and Ninja generators
+	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
+	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
+	//
+	return m_state.toolchain.strategy() == StrategyType::Ninja || m_state.toolchain.strategy() == StrategyType::MSBuild;
 }
 
 }

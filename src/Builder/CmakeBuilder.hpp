@@ -37,6 +37,8 @@ private:
 	std::string getCMakeCompatibleBuildConfiguration() const;
 	std::string getQuotedPath(const std::string& inPath) const;
 
+	bool usesNinja() const;
+
 	const BuildState& m_state;
 	const CMakeTarget& m_target;
 
