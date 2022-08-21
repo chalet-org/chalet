@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
+#include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
@@ -39,6 +40,10 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 			return std::make_unique<CompileStrategyNinja>(inState);
 		case StrategyType::Native:
 			return std::make_unique<CompileStrategyNative>(inState);
+#if defined(CHALET_WIN32)
+		case StrategyType::MSBuild:
+			return std::make_unique<CompileStrategyMSBuild>(inState);
+#endif
 		default:
 			break;
 	}
@@ -75,6 +80,12 @@ void ICompileStrategy::setToolchainController(const SourceTarget& inProject, Com
 
 /*****************************************************************************/
 bool ICompileStrategy::doPreBuild()
+{
+	return true;
+}
+
+/*****************************************************************************/
+bool ICompileStrategy::doFullBuild()
 {
 	return true;
 }

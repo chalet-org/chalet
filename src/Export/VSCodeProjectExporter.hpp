@@ -14,7 +14,7 @@ struct SourceTarget;
 
 struct VSCodeProjectExporter final : public IProjectExporter
 {
-	explicit VSCodeProjectExporter(CentralState& inCentralState);
+	explicit VSCodeProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getProjectTypeName() const final;

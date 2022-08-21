@@ -13,19 +13,20 @@ namespace chalet
 struct CentralState;
 class BuildState;
 struct IBuildTarget;
+struct CommandLineInputs;
 
 struct IProjectExporter;
 using ProjectExporter = Unique<IProjectExporter>;
 
 struct IProjectExporter
 {
-	explicit IProjectExporter(CentralState& inCentralState, const ExportKind inKind);
+	explicit IProjectExporter(const CommandLineInputs& inInputs, const ExportKind inKind);
 	CHALET_DISALLOW_COPY_MOVE(IProjectExporter);
 	virtual ~IProjectExporter();
 
-	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, CentralState& inCentralState);
+	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, const CommandLineInputs& inInputs);
 
-	bool generate();
+	bool generate(CentralState& inCentralState);
 
 	ExportKind kind() const noexcept;
 
@@ -36,14 +37,14 @@ protected:
 
 	const std::string& workingDirectory() const noexcept;
 
+	bool useDirectory(const std::string& inDirectory);
 	bool useExportDirectory(const std::string& inSubDirectory = std::string());
 	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
-	CentralState& m_centralState;
+	const CommandLineInputs& m_inputs;
 
-	// std::string m_cwd;
-	std::string m_fullExportDir;
+	std::string m_directory;
 	std::string m_debugConfiguration;
 
 	Dictionary<StringList> m_headerFiles;
@@ -51,6 +52,9 @@ protected:
 	Dictionary<std::string> m_pathVariables;
 
 private:
+	bool generateStatesAndValidate(CentralState& inCentralState);
+	void populatePathVariable();
+
 	ExportKind m_kind;
 };
 }

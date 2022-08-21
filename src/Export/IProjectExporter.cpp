@@ -25,8 +25,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-IProjectExporter::IProjectExporter(CentralState& inCentralState, const ExportKind inKind) :
-	m_centralState(inCentralState),
+IProjectExporter::IProjectExporter(const CommandLineInputs& inInputs, const ExportKind inKind) :
+	m_inputs(inInputs),
 	m_kind(inKind)
 {
 }
@@ -35,18 +35,18 @@ IProjectExporter::IProjectExporter(CentralState& inCentralState, const ExportKin
 IProjectExporter::~IProjectExporter() = default;
 
 /*****************************************************************************/
-[[nodiscard]] ProjectExporter IProjectExporter::make(const ExportKind inKind, CentralState& inCentralState)
+[[nodiscard]] ProjectExporter IProjectExporter::make(const ExportKind inKind, const CommandLineInputs& inInputs)
 {
 	switch (inKind)
 	{
 		case ExportKind::CodeBlocks:
-			return std::make_unique<CodeBlocksProjectExporter>(inCentralState);
+			return std::make_unique<CodeBlocksProjectExporter>(inInputs);
 		case ExportKind::VisualStudioCodeJSON:
-			return std::make_unique<VSCodeProjectExporter>(inCentralState);
+			return std::make_unique<VSCodeProjectExporter>(inInputs);
 		case ExportKind::VisualStudioSolution:
-			return std::make_unique<VSSolutionProjectExporter>(inCentralState);
+			return std::make_unique<VSSolutionProjectExporter>(inInputs);
 		case ExportKind::VisualStudioJSON:
-			return std::make_unique<VSJsonProjectExporter>(inCentralState);
+			return std::make_unique<VSJsonProjectExporter>(inInputs);
 		default:
 			break;
 	}
@@ -64,28 +64,36 @@ ExportKind IProjectExporter::kind() const noexcept
 /*****************************************************************************/
 const std::string& IProjectExporter::workingDirectory() const noexcept
 {
-	return m_centralState.inputs().workingDirectory();
+	return m_inputs.workingDirectory();
+}
+
+/*****************************************************************************/
+bool IProjectExporter::useDirectory(const std::string& inDirectory)
+{
+	if (!Commands::pathExists(inDirectory))
+	{
+		if (!Commands::makeDirectory(inDirectory))
+		{
+			Diagnostic::error("There was a creating the '{}' directory.", inDirectory);
+			return false;
+		}
+	}
+
+	m_directory = fmt::format("{}/{}", workingDirectory(), inDirectory);
+	return true;
 }
 
 /*****************************************************************************/
 bool IProjectExporter::useExportDirectory(const std::string& inSubDirectory)
 {
+	if (!m_directory.empty())
+		return true;
+
 	std::string exportDirectory{ "chalet_export" };
 	if (!inSubDirectory.empty())
 		exportDirectory += fmt::format("/{}", inSubDirectory);
 
-	if (!Commands::pathExists(exportDirectory))
-	{
-		if (!Commands::makeDirectory(exportDirectory))
-		{
-			Diagnostic::error("There was a creating the '{}' directory.", exportDirectory);
-			return false;
-		}
-	}
-
-	m_fullExportDir = fmt::format("{}/{}", workingDirectory(), exportDirectory);
-
-	return true;
+	return useDirectory(exportDirectory);
 }
 
 /*****************************************************************************/
@@ -144,7 +152,7 @@ const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inStat
 }
 
 /*****************************************************************************/
-bool IProjectExporter::generate()
+bool IProjectExporter::generate(CentralState& inCentralState)
 {
 	Timer timer;
 
@@ -153,21 +161,40 @@ bool IProjectExporter::generate()
 	auto projectType = getProjectTypeName();
 	Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
 
+	if (!generateStatesAndValidate(inCentralState))
+		return false;
+
+	if (!generateProjectFiles())
+		return false;
+
+	Diagnostic::printDone(timer.asString());
+
+	Output::setShowCommandOverride(true);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
+{
 	m_states.clear();
-	m_pathVariables.clear();
 
-	auto makeState = [this](const std::string& configName) {
-		// auto configName = fmt::format("{}_{}", arch, inConfig);
-
-		CommandLineInputs inputs = m_centralState.inputs();
+	auto makeState = [this, &inCentralState](const std::string& configName) -> bool {
+		CommandLineInputs inputs = m_inputs;
 		inputs.setBuildConfiguration(std::string(configName));
-		// inputs.setTargetArchitecture(arch);
-		auto state = std::make_unique<BuildState>(std::move(inputs), m_centralState);
+
+		auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
+		if (!state->initialize())
+			return false;
 
 		m_states.emplace_back(std::move(state));
+		return true;
 	};
 
-	for (const auto& [name, config] : m_centralState.buildConfigurations())
+	bool quiet = Output::quietNonBuild();
+	Output::setQuietNonBuild(true);
+
+	for (const auto& [name, config] : inCentralState.buildConfigurations())
 	{
 		// skip configurations with sanitizers for now
 		if (config.enableSanitizers())
@@ -176,36 +203,11 @@ bool IProjectExporter::generate()
 		if (m_debugConfiguration.empty() && config.debugSymbols())
 			m_debugConfiguration = name;
 
-		makeState(name);
-	}
-
-	bool quiet = Output::quietNonBuild();
-	Output::setQuietNonBuild(true);
-
-	for (auto& state : m_states)
-	{
-		if (!state->initialize())
+		if (!makeState(name))
 			return false;
-
-		StringList paths;
-		for (auto& target : state->targets)
-		{
-			if (target->isSources())
-			{
-				auto& project = static_cast<SourceTarget&>(*target);
-				for (auto& p : project.libDirs())
-				{
-					List::addIfDoesNotExist(paths, p);
-				}
-				for (auto& p : project.macosFrameworkPaths())
-				{
-					List::addIfDoesNotExist(paths, p);
-				}
-			}
-		}
-		std::reverse(paths.begin(), paths.end());
-		m_pathVariables.emplace(state->configuration.name(), state->workspace.makePathVariable(std::string(), paths));
 	}
+
+	Output::setQuietNonBuild(quiet);
 
 	auto state = getAnyBuildStateButPreferDebug();
 	if (state == nullptr)
@@ -223,18 +225,40 @@ bool IProjectExporter::generate()
 		}
 	}
 
-	Output::setQuietNonBuild(quiet);
-
 	if (!validate(*state))
 		return false;
 
-	if (!generateProjectFiles())
-		return false;
-
-	Diagnostic::printDone(timer.asString());
-
-	Output::setShowCommandOverride(true);
+	populatePathVariable();
 
 	return true;
+}
+
+/*****************************************************************************/
+void IProjectExporter::populatePathVariable()
+{
+	m_pathVariables.clear();
+
+	for (auto& state : m_states)
+	{
+		StringList paths;
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<SourceTarget&>(*target);
+				for (auto& p : project.libDirs())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
+				for (auto& p : project.macosFrameworkPaths())
+				{
+					List::addIfDoesNotExist(paths, p);
+				}
+			}
+		}
+
+		std::reverse(paths.begin(), paths.end());
+		m_pathVariables.emplace(state->configuration.name(), state->workspace.makePathVariable(std::string(), paths));
+	}
 }
 }

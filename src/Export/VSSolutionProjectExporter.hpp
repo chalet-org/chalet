@@ -15,7 +15,7 @@ struct SourceTarget;
 
 struct VSSolutionProjectExporter final : public IProjectExporter
 {
-	explicit VSSolutionProjectExporter(CentralState& inCentralState);
+	explicit VSSolutionProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getProjectTypeName() const final;

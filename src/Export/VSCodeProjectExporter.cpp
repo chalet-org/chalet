@@ -17,8 +17,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeProjectExporter::VSCodeProjectExporter(CentralState& inCentralState) :
-	IProjectExporter(inCentralState, ExportKind::VisualStudioCodeJSON)
+VSCodeProjectExporter::VSCodeProjectExporter(const CommandLineInputs& inInputs) :
+	IProjectExporter(inInputs, ExportKind::VisualStudioCodeJSON)
 {
 }
 
@@ -42,7 +42,7 @@ bool VSCodeProjectExporter::generateProjectFiles()
 	if (!useExportDirectory("vscode"))
 		return false;
 
-	const std::string vscodeDir = fmt::format("{}/.vscode", m_fullExportDir);
+	const std::string vscodeDir = fmt::format("{}/.vscode", m_directory);
 	if (!Commands::pathExists(vscodeDir))
 	{
 		if (!Commands::makeDirectory(vscodeDir))

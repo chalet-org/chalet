@@ -267,8 +267,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
-			info.targetArchitectureTriple();
+			  inputs.targetArchitecture() :
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -533,6 +533,16 @@ bool BuildState::validateState()
 
 		toolchain.fetchNinjaVersion(cacheFile.sources());
 	}
+#if defined(CHALET_WIN32)
+	else if (strat == StrategyType::MSBuild)
+	{
+		if (!environment->isMsvc())
+		{
+			Diagnostic::error("The 'msbuild' strategy is only allowed with one of the VS toolchain presets.");
+			return false;
+		}
+	}
+#endif
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
@@ -812,8 +822,8 @@ void BuildState::enforceArchitectureInPath()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 {
-	// Just common mingw conventions at the moment
-	//
+// Just common mingw conventions at the moment
+//
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 

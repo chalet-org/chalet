@@ -14,7 +14,7 @@ struct SourceTarget;
 
 struct VSJsonProjectExporter final : public IProjectExporter
 {
-	explicit VSJsonProjectExporter(CentralState& inCentralState);
+	explicit VSJsonProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getProjectTypeName() const final;

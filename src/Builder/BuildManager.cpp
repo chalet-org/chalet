@@ -102,6 +102,13 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	if (!m_strategy->initialize())
 		return false;
 
+#if defined(CHALET_WIN32)
+	if (m_strategy->type() == StrategyType::MSBuild)
+	{
+		return true;
+	}
+#endif
+
 	if (!runRoute)
 	{
 		if (m_state.info.dumpAssembly())
@@ -388,6 +395,12 @@ std::string BuildManager::getBuildStrategyName() const
 		case StrategyType::Ninja:
 			ret = "Ninja";
 			break;
+
+#if defined(CHALET_WIN32)
+		case StrategyType::MSBuild:
+			ret = "MSBuild";
+			break;
+#endif
 
 		case StrategyType::Makefile: {
 			if (m_state.toolchain.makeIsNMake())

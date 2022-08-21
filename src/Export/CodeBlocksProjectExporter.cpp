@@ -22,8 +22,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-CodeBlocksProjectExporter::CodeBlocksProjectExporter(CentralState& inCentralState) :
-	IProjectExporter(inCentralState, ExportKind::CodeBlocks)
+CodeBlocksProjectExporter::CodeBlocksProjectExporter(const CommandLineInputs& inInputs) :
+	IProjectExporter(inInputs, ExportKind::CodeBlocks)
 {
 }
 
@@ -60,7 +60,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		{
 			if (target->isSources())
 			{
-				auto relativeFile = fmt::format("{}/{}.cbp", m_fullExportDir, target->name());
+				auto relativeFile = fmt::format("{}/{}.cbp", m_directory, target->name());
 				auto contents = getProjectContent(target->name());
 				if (!Commands::createFileWithContents(relativeFile, contents))
 				{
@@ -75,7 +75,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		if (hasSourceTargets)
 		{
 			{
-				auto workspaceFile = fmt::format("{}/project.workspace", m_fullExportDir);
+				auto workspaceFile = fmt::format("{}/project.workspace", m_directory);
 				auto contents = getWorkspaceContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
@@ -84,7 +84,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				}
 			}
 			{
-				auto workspaceFile = fmt::format("{}/project.workspace.layout", m_fullExportDir);
+				auto workspaceFile = fmt::format("{}/project.workspace.layout", m_directory);
 				auto contents = getWorkspaceLayoutContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{

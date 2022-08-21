@@ -34,22 +34,34 @@ Dictionary<BuildPathStyle> getBuildPathstyles()
 
 Dictionary<StrategyType> getStrategyTypes()
 {
-	return {
+	Dictionary<StrategyType> ret{
 		{ "makefile", StrategyType::Makefile },
 		{ "ninja", StrategyType::Ninja },
 		{ "native-experimental", StrategyType::Native },
 	};
+
+#if defined(CHALET_WIN32)
+	ret.emplace_back("msbuild", StrategyType::MSBuild);
+#endif
+
+	return ret;
 }
 }
 
 /*****************************************************************************/
 StringList CompilerTools::getToolchainStrategies()
 {
-	return {
+	StringList ret{
 		"makefile",
 		"ninja",
 		"native-experimental",
 	};
+
+#if defined(CHALET_WIN32)
+	ret.emplace_back("msbuild");
+#endif
+
+	return ret;
 }
 
 /*****************************************************************************/

@@ -19,6 +19,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -141,6 +142,13 @@ bool Router::runRoutesThatRequireState()
 		case RouteType::Run:
 		case RouteType::Clean: {
 			chalet_assert(buildState != nullptr, "");
+#if defined(CHALET_WIN32)
+			if (buildState->toolchain.strategy() == StrategyType::MSBuild)
+			{
+				if (!routeExport(*centralState))
+					break;
+			}
+#endif
 			result = buildState->doBuild(m_inputs.route());
 			break;
 		}
@@ -261,8 +269,8 @@ bool Router::parseTheme()
 /*****************************************************************************/
 bool Router::routeExport(CentralState& inCentralState)
 {
-	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), inCentralState);
-	if (!projectExporter->generate())
+	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
+	if (!projectExporter->generate(inCentralState))
 		return false;
 
 	return true;

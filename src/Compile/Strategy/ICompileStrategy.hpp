@@ -36,6 +36,7 @@ struct ICompileStrategy
 	virtual bool addProject(const SourceTarget& inProject);
 
 	virtual bool doPreBuild();
+	virtual bool doFullBuild();
 	virtual bool buildProject(const SourceTarget& inProject) = 0;
 	virtual bool doPostBuild() const;
 
