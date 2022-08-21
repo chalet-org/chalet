@@ -117,11 +117,11 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 		}
 
 		case QueryOption::BuildStrategy:
-			ret = getCurrentToolchainStrategy();
+			ret = getCurrentToolchainBuildStrategy();
 			break;
 
 		case QueryOption::BuildStrategies:
-			ret = getToolchainStrategies();
+			ret = getToolchainBuildStrategies();
 			break;
 
 		case QueryOption::BuildPathStyle:
@@ -255,7 +255,7 @@ StringList QueryController::getUserToolchainList() const
 }
 
 /*****************************************************************************/
-StringList QueryController::getCurrentToolchainStrategy() const
+StringList QueryController::getCurrentToolchainBuildStrategy() const
 {
 	StringList ret;
 
@@ -293,7 +293,7 @@ StringList QueryController::getCurrentToolchainStrategy() const
 }
 
 /*****************************************************************************/
-StringList QueryController::getToolchainStrategies() const
+StringList QueryController::getToolchainBuildStrategies() const
 {
 	auto ret = CompilerTools::getToolchainStrategies();
 
@@ -711,12 +711,12 @@ StringList QueryController::getChaletJsonState() const
 	Json output = Json::object();
 	output["configurations"] = getBuildConfigurationList();
 	output["configurationDetails"] = getBuildConfigurationDetails();
-	output["targets"] = getAllBuildTargets();
-	output["runTargets"] = getAllRunTargets();
-
 	auto runTargetRes = getCurrentRunTarget();
 	if (!runTargetRes.empty())
 		output["defaultRunTarget"] = std::move(runTargetRes.front());
+
+	output["runTargets"] = getAllRunTargets();
+	output["targets"] = getAllBuildTargets();
 
 	ret.emplace_back(output.dump());
 
@@ -732,16 +732,29 @@ StringList QueryController::getSettingsJsonState() const
 	auto toolchainPresets = m_centralState.inputs().getToolchainPresets();
 	auto userToolchains = getUserToolchainList();
 	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
-	output["toolchainPresets"] = std::move(toolchainPresets);
-	output["userToolchains"] = std::move(userToolchains);
-
 	auto archRes = getCurrentArchitecture();
 	if (!archRes.empty())
 		output["architecture"] = std::move(archRes.front());
+	output["architectures"] = Json::array();
+
+	auto bpathRes = getCurrentToolchainBuildPathStyle();
+	if (!bpathRes.empty())
+		output["buildPathStyle"] = std::move(bpathRes.front());
+
+	output["buildPathStyles"] = getToolchainBuildPathStyles();
+	auto bstratRes = getCurrentToolchainBuildStrategy();
+	if (!bstratRes.empty())
+		output["buildStrategy"] = std::move(bstratRes.front());
+
+	output["buildStrategies"] = getToolchainBuildStrategies();
 
 	auto configRes = getCurrentBuildConfiguration();
 	if (!configRes.empty())
 		output["configuration"] = std::move(configRes.front());
+
+	output["toolchain"] = std::string();
+	output["toolchainPresets"] = std::move(toolchainPresets);
+	output["userToolchains"] = std::move(userToolchains);
 
 	auto toolchainRes = getCurrentToolchain();
 	if (!toolchainRes.empty())

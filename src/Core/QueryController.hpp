@@ -33,8 +33,8 @@ private:
 	StringList getCurrentArchitecture() const;
 	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;
-	StringList getCurrentToolchainStrategy() const;
-	StringList getToolchainStrategies() const;
+	StringList getCurrentToolchainBuildStrategy() const;
+	StringList getToolchainBuildStrategies() const;
 	StringList getCurrentToolchainBuildPathStyle() const;
 	StringList getToolchainBuildPathStyles() const;
 	StringList getAllBuildTargets() const;
