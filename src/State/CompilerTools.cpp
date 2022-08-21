@@ -41,7 +41,7 @@ Dictionary<StrategyType> getStrategyTypes()
 	};
 
 #if defined(CHALET_WIN32)
-	ret.emplace_back("msbuild", StrategyType::MSBuild);
+	ret.emplace("msbuild", StrategyType::MSBuild);
 #endif
 
 	return ret;

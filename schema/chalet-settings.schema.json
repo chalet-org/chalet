@@ -342,7 +342,8 @@
 							"enum": [
 								"makefile",
 								"ninja",
-								"native-experimental"
+								"native-experimental",
+								"msbuild"
 							],
 							"default": "makefile"
 						},

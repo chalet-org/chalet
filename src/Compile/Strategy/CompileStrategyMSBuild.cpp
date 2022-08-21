@@ -34,6 +34,9 @@ bool CompileStrategyMSBuild::addProject(const SourceTarget& inProject)
 bool CompileStrategyMSBuild::doFullBuild()
 {
 	LOG("Building via MSBuild...");
+
+	// msbuild -nologo -t:Clean,Build -verbosity:m -clp:ForceConsoleColor -property:Configuration=Debug -property:Platform=x64 build/.projects/project.sln
+
 	return true;
 }
 

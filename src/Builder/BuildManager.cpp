@@ -105,7 +105,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 #if defined(CHALET_WIN32)
 	if (m_strategy->type() == StrategyType::MSBuild)
 	{
-		return true;
+		return m_strategy->doFullBuild();
 	}
 #endif
 

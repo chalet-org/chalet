@@ -145,7 +145,7 @@ bool Router::runRoutesThatRequireState()
 #if defined(CHALET_WIN32)
 			if (buildState->toolchain.strategy() == StrategyType::MSBuild)
 			{
-				if (!routeExport(*centralState))
+				if (!routeExportForBuild(*centralState, ExportKind::VisualStudioSolution))
 					break;
 			}
 #endif
@@ -271,6 +271,16 @@ bool Router::routeExport(CentralState& inCentralState)
 {
 	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
 	if (!projectExporter->generate(inCentralState))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Router::routeExportForBuild(CentralState& inCentralState, const ExportKind inKind)
+{
+	auto projectExporter = IProjectExporter::make(inKind, m_inputs);
+	if (!projectExporter->generate(inCentralState, true))
 		return false;
 
 	return true;

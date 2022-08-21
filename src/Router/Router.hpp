@@ -6,6 +6,8 @@
 #ifndef CHALET_ROUTER_HPP
 #define CHALET_ROUTER_HPP
 
+#include "Export/ExportKind.hpp"
+
 namespace chalet
 {
 struct CommandLineInputs;
@@ -31,6 +33,7 @@ private:
 
 	bool parseTheme();
 	bool routeExport(CentralState& inCentralState);
+	bool routeExportForBuild(CentralState& inCentralState, const ExportKind inKind);
 
 #if defined(CHALET_DEBUG)
 	bool routeDebug();

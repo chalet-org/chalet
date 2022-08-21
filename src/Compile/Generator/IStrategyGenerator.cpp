@@ -25,6 +25,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 	switch (inType)
 	{
 		case StrategyType::Native:
+		case StrategyType::MSBuild:
 			return nullptr;
 
 		case StrategyType::Ninja: {

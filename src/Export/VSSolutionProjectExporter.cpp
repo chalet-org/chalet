@@ -61,15 +61,12 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	auto targetGuids = getTargetGuids(projectTypeGUID);
 
 	const BuildState* firstState = getAnyBuildStateButPreferDebug();
-	chalet_assert(firstState != nullptr, "");
 	if (firstState != nullptr)
 	{
-		const auto& workspaceName = firstState->workspace.metadata().name();
-
 		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
-		if (!slnGen.saveToFile(fmt::format("{}/{}.sln", m_directory, workspaceName)))
+		if (!slnGen.saveToFile(fmt::format("{}/project.sln", m_directory)))
 		{
-			Diagnostic::error("There was a problem saving the {}.sln file.", workspaceName);
+			Diagnostic::error("There was a problem saving the workspace.sln file.");
 			return false;
 		}
 	}

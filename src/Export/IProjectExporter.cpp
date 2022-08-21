@@ -152,7 +152,7 @@ const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inStat
 }
 
 /*****************************************************************************/
-bool IProjectExporter::generate(CentralState& inCentralState)
+bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBuild)
 {
 	Timer timer;
 
@@ -163,6 +163,12 @@ bool IProjectExporter::generate(CentralState& inCentralState)
 
 	if (!generateStatesAndValidate(inCentralState))
 		return false;
+
+	if (inForBuild)
+	{
+		if (!useDirectory(fmt::format("{}/.projects", m_inputs.outputDirectory())))
+			return false;
+	}
 
 	if (!generateProjectFiles())
 		return false;

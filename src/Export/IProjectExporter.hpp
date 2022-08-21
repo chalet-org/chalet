@@ -26,7 +26,7 @@ struct IProjectExporter
 
 	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, const CommandLineInputs& inInputs);
 
-	bool generate(CentralState& inCentralState);
+	bool generate(CentralState& inCentralState, const bool inForBuild = false);
 
 	ExportKind kind() const noexcept;
 
