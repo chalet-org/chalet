@@ -36,6 +36,7 @@ public:
 	~BuildState();
 
 	bool initialize();
+	bool generateProjects();
 	bool doBuild(const CommandRoute& inRoute, const bool inShowSuccess = true);
 
 	void makeLibraryPathVariables();
@@ -70,7 +71,7 @@ private:
 	bool validateState();
 	bool validateDistribution();
 
-	bool makePathVariable();
+	void makePathVariable();
 	void makeCompilerDiagnosticsVariables();
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);

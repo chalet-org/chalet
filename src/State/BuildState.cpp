@@ -101,10 +101,8 @@ bool BuildState::initialize()
 	if (!initializeBuildConfiguration())
 		return false;
 
-	{
-		if (!initializeToolchain())
-			return false;
-	}
+	if (!initializeToolchain())
+		return false;
 
 	if (!parseChaletJson())
 		return false;
@@ -113,28 +111,25 @@ bool BuildState::initialize()
 	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
 		return false;
 
-	if (!inputs.route().isConfigure())
-	{
-		if (!initializeBuild())
-			return false;
+	if (!initializeBuild())
+		return false;
 
-		if (!validateDistribution())
-			return false;
+	if (!validateDistribution())
+		return false;
 
-		if (!validateState())
-			return false;
+	if (!validateState())
+		return false;
 
-		// calls enforceArchitectureInPath 2nd time
-		makePathVariable();
+	// calls enforceArchitectureInPath 2nd time
+	makePathVariable();
 
-		makeCompilerDiagnosticsVariables();
-	}
+	makeCompilerDiagnosticsVariables();
 
 	return true;
 }
 
 /*****************************************************************************/
-bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
+bool BuildState::generateProjects()
 {
 #if defined(CHALET_WIN32)
 	if (toolchain.strategy() == StrategyType::MSBuild)
@@ -144,6 +139,15 @@ bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
 			return false;
 	}
 #endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
+{
+	if (!generateProjects())
+		return false;
 
 	BuildManager mgr(*this);
 	return mgr.run(inRoute, inShowSuccess);
@@ -704,7 +708,7 @@ bool BuildState::validateDistribution()
 }
 
 /*****************************************************************************/
-bool BuildState::makePathVariable()
+void BuildState::makePathVariable()
 {
 	auto originalPath = Environment::getPath();
 	Path::sanitize(originalPath);
@@ -763,8 +767,6 @@ bool BuildState::makePathVariable()
 	auto pathVariable = workspace.makePathVariable(rootPath);
 	enforceArchitectureInPath(pathVariable);
 	Environment::setPath(pathVariable);
-
-	return true;
 }
 
 /*****************************************************************************/

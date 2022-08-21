@@ -164,6 +164,9 @@ bool Router::runRoutesThatRequireState()
 /*****************************************************************************/
 bool Router::routeConfigure(BuildState& inState)
 {
+	if (!inState.generateProjects())
+		return false;
+
 	bool addLineBreak = false;
 	if (inState.environment != nullptr)
 	{
