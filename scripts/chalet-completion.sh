@@ -31,7 +31,7 @@ _chalet_completions()
 	-b|--build-strategy|toolchains.*.strategy)
 		COMPREPLY=($(compgen -W "$(chalet query build-strategies)" -- $cur))
 		;;
-	toolchains.*.buildPathStyle)
+	-p|--build-path-style|toolchains.*.buildPathStyle)
 		COMPREPLY=($(compgen -W "$(chalet query build-path-styles)" -- $cur))
 		;;
 	get|getkeys|set|unset)

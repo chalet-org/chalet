@@ -25,6 +25,7 @@ struct CommandLineInputs
 
 	const std::string& defaultArchPreset() const noexcept;
 	const std::string& defaultToolchainPreset() const noexcept;
+	const std::string& defaultBuildStrategy() const noexcept;
 
 	const std::string& workingDirectory() const noexcept;
 	const std::string& homeDirectory() const noexcept;
@@ -82,8 +83,11 @@ struct CommandLineInputs
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
 
-	const std::string& strategyPreference() const noexcept;
-	void setStrategyPreference(std::string&& inValue);
+	const std::string& buildStrategyPreference() const noexcept;
+	void setBuildStrategyPreference(std::string&& inValue);
+
+	const std::string& buildPathStylePreference() const noexcept;
+	void setBuildPathStylePreference(std::string&& inValue);
 
 	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
@@ -201,6 +205,7 @@ private:
 #elif defined(CHALET_MACOS)
 	const std::string kToolchainPresetAppleLLVM;
 #endif
+	const std::string kBuildStrategyNinja;
 
 	std::string m_inputFile;
 	std::string m_settingsFile;
@@ -215,7 +220,8 @@ private:
 	std::string m_exportKindRaw;
 	std::string m_settingsKey;
 	std::string m_settingsValue;
-	std::string m_strategyPreference;
+	std::string m_buildStrategyPreference;
+	std::string m_buildPathStylePreference;
 
 	mutable std::string m_toolchainPreferenceName;
 	mutable std::string m_workingDirectory;

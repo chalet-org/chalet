@@ -9,6 +9,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Router/RouteType.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/DefinesVersion.hpp"
@@ -603,14 +604,7 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nBuild Strategies:\n";
-		StringList strategies{
-			"ninja",
-			"makefile",
-			"native-experimental",
-		};
-#if defined(CHALET_WIN32)
-		strategies.emplace_back("msbuild");
-#endif
+		StringList strategies = CompilerTools::getToolchainStrategies();
 
 		for (auto& strat : strategies)
 		{
@@ -619,6 +613,36 @@ std::string ArgumentParser::getHelp()
 				line += ' ';
 			line += '\t';
 			line += getStrategyPresetDescription(strat);
+
+			help += fmt::format("{}\n", line);
+		}
+	}
+
+	if (String::contains("--build-path-style", help))
+	{
+		auto getBuildPathStylePresetDescription = [](const std::string& preset) -> std::string {
+			if (String::equals("target-triple", preset))
+				return std::string("The target architecture's triple - ex: build/x64-linux-gnu_Debug");
+			else if (String::equals("toolchain-name", preset))
+				return std::string("The toolchain's name - ex: build/my-cool-toolchain_name_Debug");
+			else if (String::equals("architecture", preset))
+				return std::string("The architecture's identifier - ex: build/x86_64_Debug");
+			else if (String::equals("configuration", preset))
+				return std::string("Just the build configuration - ex: build/Debug");
+
+			return std::string();
+		};
+
+		help += "\nBuild Path Styles:\n";
+		StringList styles = CompilerTools::getToolchainBuildPathStyles();
+
+		for (auto& strat : styles)
+		{
+			std::string line = strat;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getBuildPathStylePresetDescription(strat);
 
 			help += fmt::format("{}\n", line);
 		}
@@ -892,10 +916,18 @@ void ArgumentParser::addArchArg()
 }
 
 /*****************************************************************************/
-void ArgumentParser::addStrategyArg()
+void ArgumentParser::addBuildStrategyArg()
 {
+	const auto& defaultValue = m_inputs.defaultBuildStrategy();
 	addTwoStringArguments(ArgumentIdentifier::BuildStrategy, "-b", "--build-strategy")
-		.setHelp("The build strategy to use for the selected toolchain.");
+		.setHelp(fmt::format("The build strategy to use for the selected toolchain. [default: \"{}\"]", defaultValue));
+}
+
+/*****************************************************************************/
+void ArgumentParser::addBuildPathStyleArg()
+{
+	addTwoStringArguments(ArgumentIdentifier::BuildPathStyle, "-p", "--build-path-style")
+		.setHelp("The build path style, with the configuration appended by an underscore.");
 }
 
 /*****************************************************************************/
@@ -1022,7 +1054,8 @@ void ArgumentParser::populateBuildArguments()
 	addBuildConfigurationArg();
 	addToolchainArg();
 	addArchArg();
-	addStrategyArg();
+	addBuildStrategyArg();
+	addBuildPathStyleArg();
 	addEnvFileArg();
 	addProjectGenArg();
 	addMaxJobsArg();

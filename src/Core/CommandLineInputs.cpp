@@ -127,6 +127,7 @@ CommandLineInputs::CommandLineInputs() :
 #elif defined(CHALET_MACOS)
 	kToolchainPresetAppleLLVM("apple-llvm"),
 #endif
+	kBuildStrategyNinja("ninja"),
 	m_settingsFile(kDefaultSettingsFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
@@ -159,6 +160,12 @@ const std::string& CommandLineInputs::defaultToolchainPreset() const noexcept
 #else
 	return kToolchainPresetGCC;
 #endif
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultBuildStrategy() const noexcept
+{
+	return kBuildStrategyNinja;
 }
 
 /*****************************************************************************/
@@ -470,17 +477,25 @@ void CommandLineInputs::setToolchainPreferenceName(std::string&& inValue) const 
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::strategyPreference() const noexcept
+const std::string& CommandLineInputs::buildStrategyPreference() const noexcept
 {
-	return m_strategyPreference;
+	return m_buildStrategyPreference;
 }
 
-void CommandLineInputs::setStrategyPreference(std::string&& inValue)
+void CommandLineInputs::setBuildStrategyPreference(std::string&& inValue)
 {
-	if (inValue.empty())
-		return;
+	m_buildStrategyPreference = std::move(inValue);
+}
 
-	m_strategyPreference = std::move(inValue);
+/*****************************************************************************/
+const std::string& CommandLineInputs::buildPathStylePreference() const noexcept
+{
+	return m_buildPathStylePreference;
+}
+
+void CommandLineInputs::setBuildPathStylePreference(std::string&& inValue)
+{
+	m_buildPathStylePreference = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -18,6 +18,7 @@ struct SourceCache;
 
 struct CompilerTools
 {
+	static StringList getToolchainStrategiesForSchema();
 	static StringList getToolchainStrategies();
 	static StringList getToolchainBuildPathStyles();
 
@@ -37,6 +38,7 @@ struct CompilerTools
 	BuildPathStyle buildPathStyle() const noexcept;
 	const std::string& buildPathStyleString() const noexcept;
 	void setBuildPathStyle(const std::string& inValue) noexcept;
+	bool buildPathStyleIsValid(const std::string& inValue) const;
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;

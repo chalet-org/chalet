@@ -22,7 +22,7 @@ namespace chalet
 {
 namespace
 {
-Dictionary<BuildPathStyle> getBuildPathstyles()
+Dictionary<BuildPathStyle> getBuildPathStyleTypes()
 {
 	return {
 		{ "target-triple", BuildPathStyle::TargetTriple },
@@ -46,7 +46,7 @@ Dictionary<StrategyType> getStrategyTypes()
 }
 
 /*****************************************************************************/
-StringList CompilerTools::getToolchainStrategies()
+StringList CompilerTools::getToolchainStrategiesForSchema()
 {
 	StringList ret{
 		"makefile",
@@ -54,6 +54,18 @@ StringList CompilerTools::getToolchainStrategies()
 		"native-experimental",
 		"msbuild",
 	};
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CompilerTools::getToolchainStrategies()
+{
+	StringList ret = getToolchainStrategiesForSchema();
+
+#if !defined(CHALET_WIN32)
+	List::removeIfExists(ret, "msbuild");
+#endif
 
 	return ret;
 }
@@ -308,11 +320,17 @@ void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 {
 	m_buildPathStyleString = inValue;
 
-	auto buildPathStyles = getBuildPathstyles();
-	if (buildPathStyles.find(inValue) != buildPathStyles.end())
-		m_buildPathStyle = buildPathStyles.at(inValue);
+	auto styles = getBuildPathStyleTypes();
+	if (styles.find(inValue) != styles.end())
+		m_buildPathStyle = styles.at(inValue);
 	else
 		m_buildPathStyle = BuildPathStyle::None;
+}
+
+bool CompilerTools::buildPathStyleIsValid(const std::string& inValue) const
+{
+	auto styles = getBuildPathStyleTypes();
+	return styles.find(inValue) != styles.end();
 }
 
 /*****************************************************************************/

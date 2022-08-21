@@ -29,6 +29,7 @@ enum class ArgumentIdentifier : ushort
 	Toolchain,
 	TargetArchitecture,
 	BuildStrategy,
+	BuildPathStyle,
 	MaxJobs,
 	RunTargetName,
 	RunTargetArguments,

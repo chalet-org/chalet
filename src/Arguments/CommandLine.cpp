@@ -109,7 +109,11 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						break;
 
 					case ArgumentIdentifier::BuildStrategy:
-						inputs->setStrategyPreference(std::move(value));
+						inputs->setBuildStrategyPreference(std::move(value));
+						break;
+
+					case ArgumentIdentifier::BuildPathStyle:
+						inputs->setBuildPathStylePreference(std::move(value));
 						break;
 
 					case ArgumentIdentifier::InitPath:

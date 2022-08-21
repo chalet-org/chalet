@@ -409,10 +409,10 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	whichAdd(toolchain, Keys::ToolchainNinja);
 
-	const auto& strategyFromInput = m_state.inputs.strategyPreference();
+	const auto& strategyFromInput = m_state.inputs.buildStrategyPreference();
 	if (!strategyFromInput.empty() && !m_state.toolchain.strategyIsValid(strategyFromInput))
 	{
-		Diagnostic::error("Invalid toolchain strategy type: {}", strategyFromInput);
+		Diagnostic::error("Invalid toolchain build strategy type: {}", strategyFromInput);
 		return false;
 	}
 
@@ -453,10 +453,22 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
+	const auto& buildPathStyleFromInput = m_state.inputs.buildPathStylePreference();
+	if (!buildPathStyleFromInput.empty() && !m_state.toolchain.buildPathStyleIsValid(buildPathStyleFromInput))
+	{
+		Diagnostic::error("Invalid toolchain build path style type: {}", buildPathStyleFromInput);
+		return false;
+	}
+
 	if (toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
 	{
 		// Note: this is only for validation. it gets changed later
-		if (preference.buildPathStyle == BuildPathStyle::TargetTriple)
+		if (!buildPathStyleFromInput.empty())
+		{
+			toolchain[Keys::ToolchainBuildPathStyle] = buildPathStyleFromInput;
+		}
+
+		else if (preference.buildPathStyle == BuildPathStyle::TargetTriple)
 		{
 			toolchain[Keys::ToolchainBuildPathStyle] = "target-triple";
 		}
@@ -473,6 +485,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			toolchain[Keys::ToolchainBuildPathStyle] = "architecture";
 		}
 
+		m_jsonFile.setDirty(true);
+	}
+	else if (!buildPathStyleFromInput.empty())
+	{
+		toolchain[Keys::ToolchainBuildPathStyle] = buildPathStyleFromInput;
 		m_jsonFile.setDirty(true);
 	}
 

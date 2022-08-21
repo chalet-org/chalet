@@ -295,13 +295,7 @@ StringList QueryController::getCurrentToolchainBuildStrategy() const
 /*****************************************************************************/
 StringList QueryController::getToolchainBuildStrategies() const
 {
-	auto ret = CompilerTools::getToolchainStrategies();
-
-#if !defined(CHALET_WIN32)
-	List::removeIfExists(ret, "msbuild");
-#endif
-
-	return ret;
+	return CompilerTools::getToolchainStrategies();
 }
 
 /*****************************************************************************/

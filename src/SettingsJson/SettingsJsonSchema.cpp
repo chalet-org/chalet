@@ -43,7 +43,7 @@ enum class Defs : ushort
 	/* Toolchains */
 	Version,
 	ToolchainBuildStrategy,
-	BuildPathStyle,
+	ToolchainBuildPathStyle,
 	CompilerCpp,
 	CompilerC,
 	CompilerWindowsResource,
@@ -232,15 +232,15 @@ Json SettingsJsonSchema::get()
 		"enum": [],
 		"default": "makefile"
 	})json"_ojson;
-	defs[Defs::ToolchainBuildStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategies();
+	defs[Defs::ToolchainBuildStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategiesForSchema();
 
-	defs[Defs::BuildPathStyle] = R"json({
+	defs[Defs::ToolchainBuildPathStyle] = R"json({
 		"type": "string",
-		"description": "The build path style, with the configuration appended following an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
+		"description": "The build path style, with the configuration appended by an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x86_64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
 		"enum": [],
 		"default": "target-triple"
 	})json"_ojson;
-	defs[Defs::BuildPathStyle][SKeys::Enum] = CompilerTools::getToolchainBuildPathStyles();
+	defs[Defs::ToolchainBuildPathStyle][SKeys::Enum] = CompilerTools::getToolchainBuildPathStyles();
 
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
 	defs[Defs::Archiver] = R"json({
@@ -470,7 +470,7 @@ Json SettingsJsonSchema::get()
 	})json"_ojson;
 	toolchain[SKeys::Properties] = Json::object();
 	toolchain[SKeys::Properties][Keys::ToolchainArchiver] = defs[Defs::Archiver];
-	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::BuildPathStyle];
+	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::ToolchainBuildPathStyle];
 	toolchain[SKeys::Properties][Keys::ToolchainCMake] = defs[Defs::CMake];
 	toolchain[SKeys::Properties][Keys::ToolchainCompilerC] = defs[Defs::CompilerC];
 	toolchain[SKeys::Properties][Keys::ToolchainCompilerCpp] = defs[Defs::CompilerCpp];
