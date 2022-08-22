@@ -346,6 +346,11 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	}
 #endif
 
+	if (m_jsonFile.json.contains(Keys::LastUpdateCheck))
+	{
+		m_jsonFile.json.erase(Keys::LastUpdateCheck);
+	}
+
 	return true;
 }
 

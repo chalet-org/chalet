@@ -417,6 +417,10 @@
 					}
 				}
 			]
+		},
+		"lastUpdateCheck": {
+			"type": "number",
+			"description": "The time of the last Chalet update check."
 		}
 	}
 }

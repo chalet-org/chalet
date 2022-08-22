@@ -77,6 +77,7 @@ enum class Defs : ushort
 	RunTarget,
 	RunArguments,
 	Theme,
+	LastUpdateCheck,
 
 	/* Theme */
 	ThemeColor
@@ -449,6 +450,11 @@ Json SettingsJsonSchema::get()
 	defs[Defs::Theme][SKeys::OneOf][0][SKeys::Enum] = ColorTheme::presets();
 	defs[Defs::Theme][SKeys::OneOf][1][SKeys::Properties] = Json::object();
 
+	defs[Defs::LastUpdateCheck] = R"json({
+		"type": "number",
+		"description": "The time of the last Chalet update check."
+	})json"_ojson;
+
 	Json themeRef = Json::object();
 	themeRef["$ref"] = std::string("#/definitions/theme-color");
 	for (const auto& key : ColorTheme::getKeys())
@@ -553,6 +559,7 @@ Json SettingsJsonSchema::get()
 	})json"_ojson;
 
 	ret[SKeys::Properties][Keys::Theme] = defs[Defs::Theme];
+	ret[SKeys::Properties][Keys::LastUpdateCheck] = defs[Defs::LastUpdateCheck];
 
 	return ret;
 }
