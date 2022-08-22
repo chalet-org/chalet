@@ -31,6 +31,7 @@ private:
 #if defined(CHALET_MACOS)
 	bool parseApplePlatformSdks(const Json& inNode, IntermediateSettingsState& outState);
 #endif
+	bool parseLastUpdate(Json& outNode);
 
 	CentralState& m_centralState;
 	JsonFile& m_jsonFile;

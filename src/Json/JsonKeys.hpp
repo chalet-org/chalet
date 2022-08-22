@@ -92,6 +92,7 @@ CH_STR(ToolsZip) = "zip";
 //
 CH_STR(AppleSdks) = "appleSdks";
 CH_STR(Theme) = "theme";
+CH_STR(LastUpdateCheck) = "lastUpdateCheck";
 }
 
 namespace SKeys

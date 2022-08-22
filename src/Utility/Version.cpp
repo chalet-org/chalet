@@ -10,6 +10,14 @@
 namespace chalet
 {
 /*****************************************************************************/
+Version Version::fromString(const std::string& inVersion)
+{
+	Version ret;
+	ret.setFromString(inVersion);
+	return ret;
+}
+
+/*****************************************************************************/
 bool Version::setFromString(const std::string& inVersion)
 {
 	m_segments = 0;
@@ -81,5 +89,43 @@ bool Version::hasTweak() const noexcept
 uint Version::tweak() const noexcept
 {
 	return m_tweak;
+}
+
+/*****************************************************************************/
+std::string Version::asString() const
+{
+	if (!hasMajor())
+		return std::string();
+
+	if (!hasMinor())
+		return fmt::format("{}", m_major);
+
+	if (!hasPatch())
+		return fmt::format("{}.{}", m_major, m_minor);
+
+	if (!hasTweak())
+		return fmt::format("{}.{}.{}", m_major, m_minor, m_patch);
+
+	return fmt::format("{}.{}.{}.{}", m_major, m_minor, m_patch, m_tweak);
+}
+
+/*****************************************************************************/
+bool Version::operator<(const Version& rhs) const noexcept
+{
+	bool res = false;
+
+	if (hasMajor() && rhs.hasMajor())
+		res |= m_major < rhs.m_major;
+
+	if (hasMinor() && rhs.hasMinor())
+		res |= (m_major == rhs.m_major && m_minor < rhs.m_minor);
+
+	if (hasPatch() && rhs.hasPatch())
+		res |= (m_major == rhs.m_major && m_minor == rhs.m_minor && m_patch < rhs.m_patch);
+
+	if (hasTweak() && rhs.hasTweak())
+		res |= (m_major == rhs.m_major && m_minor == rhs.m_minor && m_patch == rhs.m_patch && m_tweak < rhs.m_tweak);
+
+	return res;
 }
 }

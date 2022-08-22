@@ -10,6 +10,8 @@ namespace chalet
 {
 struct Version
 {
+	static Version fromString(const std::string& inVersion);
+
 	bool setFromString(const std::string& inVersion);
 
 	bool hasMajor() const noexcept;
@@ -23,6 +25,10 @@ struct Version
 
 	bool hasTweak() const noexcept;
 	uint tweak() const noexcept;
+
+	std::string asString() const;
+
+	bool operator<(const Version& rhs) const noexcept;
 
 private:
 	uint m_segments = 0;

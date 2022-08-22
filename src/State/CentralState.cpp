@@ -14,6 +14,7 @@
 #include "Core/Arch.hpp"
 #include "Core/DotEnvFileParser.hpp"
 #include "Core/QueryController.hpp"
+#include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
@@ -55,11 +56,14 @@ bool CentralState::initialize()
 	// if (!workspace.initialize())
 	// 	return false;
 
-	if (!parseGlobalSettingsJson())
-		return false;
+	{
+		IntermediateSettingsState state;
+		if (!parseGlobalSettingsJson(state))
+			return false;
 
-	if (!parseLocalSettingsJson())
-		return false;
+		if (!parseLocalSettingsJson(state))
+			return false;
+	}
 
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
@@ -305,19 +309,19 @@ bool CentralState::parseEnvFile()
 	return envParser.readVariablesFromInputs();
 }
 /*****************************************************************************/
-bool CentralState::parseGlobalSettingsJson()
+bool CentralState::parseGlobalSettingsJson(IntermediateSettingsState& outState)
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
 	GlobalSettingsJsonParser parser(*this, settingsFile);
-	return parser.serialize(m_globalSettingsState);
+	return parser.serialize(outState);
 }
 
 /*****************************************************************************/
-bool CentralState::parseLocalSettingsJson()
+bool CentralState::parseLocalSettingsJson(const IntermediateSettingsState& inState)
 {
 	auto& settingsFile = cache.getSettings(SettingsType::Local);
 	SettingsJsonParser parser(m_inputs, *this, settingsFile);
-	return parser.serialize(m_globalSettingsState);
+	return parser.serialize(inState);
 }
 
 /*****************************************************************************/
@@ -370,4 +374,25 @@ void CentralState::detectBuildConfiguration()
 	m_inputs.setBuildConfiguration(BuildConfiguration::getDefaultReleaseConfigurationName());
 }
 
+/*****************************************************************************/
+bool CentralState::shouldPerformUpdateCheck() const
+{
+	return m_shouldPerformUpdateCheck;
+}
+
+/*****************************************************************************/
+void CentralState::shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent)
+{
+	time_t difference = inCurrent - inLastUpdate;
+
+	// LOG("lastUpdateCheck:", inLastUpdate);
+	// LOG("currentTime:", inCurrent);
+	// LOG("difference:", difference);
+
+	time_t checkDuration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours(24)).count();
+	// time_t checkDuration = 5;
+	// LOG("checkDuration:", checkDuration);
+
+	m_shouldPerformUpdateCheck = difference < 0 || difference >= checkDuration;
+}
 }

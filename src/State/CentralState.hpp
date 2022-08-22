@@ -9,7 +9,6 @@
 #include "Libraries/Json.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/Dependency/IBuildDependency.hpp"
@@ -20,6 +19,7 @@
 namespace chalet
 {
 struct CommandLineInputs;
+struct IntermediateSettingsState;
 
 struct CentralState
 {
@@ -41,6 +41,8 @@ struct CentralState
 	void setRunArgumentMap(Dictionary<std::string>&& inMap);
 	void getRunTargetArguments();
 
+	bool shouldPerformUpdateCheck() const;
+
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
@@ -53,8 +55,8 @@ private:
 	bool createCache();
 
 	bool parseEnvFile();
-	bool parseGlobalSettingsJson();
-	bool parseLocalSettingsJson();
+	bool parseGlobalSettingsJson(IntermediateSettingsState& outState);
+	bool parseLocalSettingsJson(const IntermediateSettingsState& inState);
 	bool parseChaletJson();
 
 	bool validateConfigurations();
@@ -67,9 +69,10 @@ private:
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
 	void detectBuildConfiguration();
 
+	void shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent);
+
 	CommandLineInputs& m_inputs;
 
-	IntermediateSettingsState m_globalSettingsState;
 	BuildConfigurationMap m_buildConfigurations;
 
 	Dictionary<std::string> m_runArgumentMap;
@@ -79,6 +82,8 @@ private:
 	std::string m_filename;
 
 	JsonFile m_chaletJson;
+
+	bool m_shouldPerformUpdateCheck = true;
 };
 }
 

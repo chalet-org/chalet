@@ -244,6 +244,9 @@ bool GlobalSettingsJsonParser::serializeFromJsonRoot(Json& inJson, IntermediateS
 		return false;
 #endif
 
+	if (!parseLastUpdate(inJson))
+		return false;
+
 	return true;
 }
 
@@ -367,5 +370,24 @@ bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, Interm
 	return true;
 }
 #endif
+
+/*****************************************************************************/
+bool GlobalSettingsJsonParser::parseLastUpdate(Json& outNode)
+{
+	time_t lastUpdateCheck = 0;
+	time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	if (outNode.contains(Keys::LastUpdateCheck))
+	{
+		if (outNode.at(Keys::LastUpdateCheck).is_number_unsigned())
+		{
+			lastUpdateCheck = m_jsonFile.json.at(Keys::LastUpdateCheck).get<time_t>();
+			m_centralState.shouldCheckForUpdate(lastUpdateCheck, currentTime);
+		}
+	}
+
+	outNode[Keys::LastUpdateCheck] = m_centralState.shouldPerformUpdateCheck() ? currentTime : lastUpdateCheck;
+
+	return true;
+}
 
 }

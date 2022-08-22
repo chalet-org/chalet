@@ -11,6 +11,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/QueryController.hpp"
+#include "Core/UpdateNotifier.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/ProcessController.hpp"
 #include "Settings/SettingsAction.hpp"
@@ -28,12 +29,8 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/TerminalTest.hpp"
-#include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
-#include "Utility/Uuid.hpp"
-#include "Xml/Xml.hpp"
-#include "Xml/XmlFile.hpp"
 
 #include "Libraries/Json.hpp"
 
@@ -156,7 +153,12 @@ bool Router::runRoutesThatRequireState()
 	}
 
 	if (centralState != nullptr)
+	{
+		UpdateNotifier updater(*centralState);
+		updater.notifyForUpdates();
+
 		centralState->saveCaches();
+	}
 
 	return result;
 }
