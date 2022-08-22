@@ -14,7 +14,7 @@ enum class ExportKind : ushort
 	VisualStudioCodeJSON,
 	VisualStudioJSON,
 	VisualStudioSolution,
-	// XCode,
+	Xcode,
 	CodeBlocks,
 };
 }

@@ -31,6 +31,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 		{ "vscode", ExportKind::VisualStudioCodeJSON },
 		{ "vs-json", ExportKind::VisualStudioJSON },
 		{ "vs-solution", ExportKind::VisualStudioSolution },
+		{ "xcode", ExportKind::Xcode },
 		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

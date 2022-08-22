@@ -10,8 +10,6 @@
 
 namespace chalet
 {
-struct SourceTarget;
-
 struct VSJsonProjectExporter final : public IProjectExporter
 {
 	explicit VSJsonProjectExporter(const CommandLineInputs& inInputs);

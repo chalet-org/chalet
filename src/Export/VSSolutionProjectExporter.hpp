@@ -11,8 +11,6 @@
 
 namespace chalet
 {
-struct SourceTarget;
-
 struct VSSolutionProjectExporter final : public IProjectExporter
 {
 	explicit VSSolutionProjectExporter(const CommandLineInputs& inInputs);

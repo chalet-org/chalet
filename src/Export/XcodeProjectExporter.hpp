@@ -3,16 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VSCODE_PROJECT_EXPORTER_HPP
-#define CHALET_VSCODE_PROJECT_EXPORTER_HPP
+#ifndef CHALET_XCODE_PROJECT_EXPORTER_HPP
+#define CHALET_XCODE_PROJECT_EXPORTER_HPP
 
 #include "Export/IProjectExporter.hpp"
 
 namespace chalet
 {
-struct VSCodeProjectExporter final : public IProjectExporter
+struct XcodeProjectExporter final : public IProjectExporter
 {
-	explicit VSCodeProjectExporter(const CommandLineInputs& inInputs);
+	explicit XcodeProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getProjectTypeName() const final;
@@ -20,8 +20,10 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	//
+	bool validateXcodeGenIsInstalled(const std::string& inTypeName);
+
+	std::string m_xcodegen;
 };
 }
 
-#endif // CHALET_VSCODE_PROJECT_EXPORTER_HPP
+#endif // CHALET_XCODE_PROJECT_EXPORTER_HPP

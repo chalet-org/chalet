@@ -10,6 +10,7 @@
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
+#include "Export/XcodeProjectExporter.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -47,6 +48,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<VSSolutionProjectExporter>(inInputs);
 		case ExportKind::VisualStudioJSON:
 			return std::make_unique<VSJsonProjectExporter>(inInputs);
+		case ExportKind::Xcode:
+			return std::make_unique<XcodeProjectExporter>(inInputs);
 		default:
 			break;
 	}
