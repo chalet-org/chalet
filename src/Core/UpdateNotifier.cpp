@@ -87,7 +87,7 @@ void UpdateNotifier::showUpdateMessage(const std::string& inOld, const std::stri
 	if (route.isBuildRun() || route.isRun())
 		Output::lineBreak();
 
-	Diagnostic::info("Update available: {}{}{} -> {}{}{}\n   {}Get it from https://www.chalet-work.space/download{}", colOld, inOld, reset, colNew, inNew, reset, dim, reset);
+	Diagnostic::info("Update available: {}{}{} -> {}{}{}\n   {}Get it from: https://www.chalet-work.space/download{}", colOld, inOld, reset, colNew, inNew, reset, dim, reset);
 	Output::lineBreak();
 }
 
