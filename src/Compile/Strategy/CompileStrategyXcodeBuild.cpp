@@ -55,7 +55,7 @@ bool CompileStrategyXcodeBuild::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyXcodeBuild::doFullBuild()
 {
-	LOG("Hello XcodeBuild");
+	LOG("   Hello XcodeBuild");
 	return true;
 }
 

@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/Xcode/XcodeProjectSpecGen.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 
@@ -51,6 +52,13 @@ bool XcodeProjectExporter::generateProjectFiles()
 {
 	if (!useProjectBuildDirectory())
 		return false;
+
+	XcodeProjectSpecGen slnGen(m_states, m_directory);
+	if (!slnGen.saveToFile(fmt::format("{}/project-spec.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the Xcode project spec file.");
+		return false;
+	}
 
 	return true;
 }
