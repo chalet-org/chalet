@@ -273,6 +273,10 @@ bool Router::routeExport(CentralState& inCentralState)
 	if (!projectExporter->generate(inCentralState))
 		return false;
 
+	Output::lineBreak();
+	Output::msgBuildSuccess();
+	Output::lineBreak();
+
 	return true;
 }
 
