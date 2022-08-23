@@ -281,8 +281,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
-			info.targetArchitectureTriple();
+			  inputs.targetArchitecture() :
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -562,6 +562,19 @@ bool BuildState::validateState()
 		}
 #else
 		Diagnostic::error("The 'msbuild' strategy is only available on Windows.");
+		return false;
+#endif
+	}
+	else if (strat == StrategyType::XcodeBuild)
+	{
+#if defined(CHALET_MACOS)
+		if (!environment->isAppleClang())
+		{
+			Diagnostic::error("The 'xcodebuild' strategy is only allowed with the apple-llvm preset.");
+			return false;
+		}
+#else
+		Diagnostic::error("The 'xcodebuild' strategy is only available on macOS.");
 		return false;
 #endif
 	}

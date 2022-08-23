@@ -343,7 +343,8 @@
 								"makefile",
 								"ninja",
 								"native-experimental",
-								"msbuild"
+								"msbuild",
+								"xcodebuild"
 							],
 							"default": "makefile"
 						},

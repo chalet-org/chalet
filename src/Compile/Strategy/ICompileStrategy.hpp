@@ -27,6 +27,7 @@ struct ICompileStrategy
 
 	StrategyType type() const noexcept;
 	bool isMSBuild() const noexcept;
+	bool isXcodeBuild() const noexcept;
 
 	bool saveCompileCommands() const;
 

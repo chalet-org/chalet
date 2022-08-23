@@ -26,6 +26,7 @@ IStrategyGenerator::IStrategyGenerator(const BuildState& inState) :
 	{
 		case StrategyType::Native:
 		case StrategyType::MSBuild:
+		case StrategyType::XcodeBuild:
 			return nullptr;
 
 		case StrategyType::Ninja: {

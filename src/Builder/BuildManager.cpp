@@ -148,7 +148,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	const IBuildTarget* runTarget = nullptr;
 	bool error = false;
 
-	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too
+	bool buildAll = m_strategy->isMSBuild() || m_strategy->isXcodeBuild();
 
 	bool multiTarget = m_state.targets.size() > 1;
 	// bool breakAfterBuild = false;
@@ -219,10 +219,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (buildAll)
 	{
-#if defined(CHALET_WIN32)
-		error = !runMSBuildStrategy();
+		error = !runFullBuild();
 		Output::lineBreak();
-#endif
 	}
 
 	for (auto& target : m_state.targets)
@@ -371,6 +369,10 @@ std::string BuildManager::getBuildStrategyName() const
 #if defined(CHALET_WIN32)
 		case StrategyType::MSBuild:
 			ret = "MSBuild";
+			break;
+#elif defined(CHALET_MACOS)
+		case StrategyType::XcodeBuild:
+			ret = "XcodeBuild";
 			break;
 #endif
 
@@ -989,7 +991,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runMSBuildStrategy()
+bool BuildManager::runFullBuild()
 {
 	// Timer buildTimer;
 

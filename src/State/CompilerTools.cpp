@@ -39,6 +39,7 @@ Dictionary<StrategyType> getStrategyTypes()
 		{ "ninja", StrategyType::Ninja },
 		{ "native-experimental", StrategyType::Native },
 		{ "msbuild", StrategyType::MSBuild },
+		{ "xcodebuild", StrategyType::XcodeBuild },
 	};
 
 	return ret;
@@ -53,6 +54,7 @@ StringList CompilerTools::getToolchainStrategiesForSchema()
 		"ninja",
 		"native-experimental",
 		"msbuild",
+		"xcodebuild",
 	};
 
 	return ret;
@@ -65,6 +67,9 @@ StringList CompilerTools::getToolchainStrategies()
 
 #if !defined(CHALET_WIN32)
 	List::removeIfExists(ret, "msbuild");
+#endif
+#if !defined(CHALET_MACOS)
+	List::removeIfExists(ret, "xcodebuild");
 #endif
 
 	return ret;
