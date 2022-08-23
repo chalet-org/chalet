@@ -6,6 +6,8 @@
 #ifndef CHALET_XCODE_PROJECT_SPEC_GEN_HPP
 #define CHALET_XCODE_PROJECT_SPEC_GEN_HPP
 
+#include "State/SourceOutputs.hpp"
+
 namespace chalet
 {
 class BuildState;

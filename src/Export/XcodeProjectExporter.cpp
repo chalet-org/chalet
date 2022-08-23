@@ -53,14 +53,32 @@ bool XcodeProjectExporter::generateProjectFiles()
 	if (!useProjectBuildDirectory())
 		return false;
 
-	XcodeProjectSpecGen slnGen(m_states, m_directory);
-	if (!slnGen.saveToFile(fmt::format("{}/project-spec.json", m_directory)))
+	XcodeProjectSpecGen specGen(m_states, m_directory);
+	auto specFile = fmt::format("{}/project-spec.json", m_directory);
+	if (!specGen.saveToFile(specFile))
 	{
 		Diagnostic::error("There was a problem saving the Xcode project spec file.");
 		return false;
 	}
 
-	return true;
+	const auto& cwd = m_inputs.workingDirectory();
+
+	StringList cmd{
+		m_xcodegen,
+		"--no-env",
+		"--cache-path",
+		fmt::format("{}/.xcodegen/cache/{{SPEC_PATH_HASH}}", m_directory),
+		"--project",
+		m_directory,
+		"--project-root",
+		cwd,
+		"--spec",
+		specFile,
+		"--use-cache",
+		"--quiet",
+	};
+
+	return Commands::subprocess(cmd);
 }
 
 /*****************************************************************************/

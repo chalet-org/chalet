@@ -9,6 +9,7 @@
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -55,8 +56,62 @@ bool CompileStrategyXcodeBuild::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyXcodeBuild::doFullBuild()
 {
-	LOG("   Hello XcodeBuild");
-	return true;
+	// LOG("   Hello XcodeBuild");
+
+	// auto& route = m_state.inputs.route();
+
+	auto xcodebuild = Commands::which("xcodebuild");
+	if (xcodebuild.empty())
+	{
+		Diagnostic::error("Xcodebuild is required, but was not found in path.");
+		return false;
+	}
+
+	StringList cmd{
+		xcodebuild,
+		// "-verbose",
+		"-hideShellScriptEnvironment"
+	};
+
+	// if (!Output::showCommands())
+	// 	cmd.emplace_back("-verbose");
+
+	cmd.emplace_back("-configuration");
+	cmd.emplace_back(m_state.configuration.name());
+
+	cmd.emplace_back("-arch");
+	cmd.emplace_back(m_state.info.targetArchitectureString());
+
+	cmd.emplace_back("-alltargets");
+	// std::string target;
+	// if (route.isClean())
+	// 	target = "Clean";
+	// else if (route.isRebuild())
+	// 	target = "Clean,Build";
+	// else
+	// 	target = "Build";
+
+	// cmd.emplace_back(fmt::format("-target:{}", target));
+
+	cmd.emplace_back("-jobs");
+	cmd.emplace_back(std::to_string(m_state.info.maxJobs()));
+
+	cmd.emplace_back("-parallelizeTargets");
+
+	cmd.emplace_back("-project");
+	// cmd.emplace_back("project");
+	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
+	cmd.emplace_back(fmt::format("{}/project.xcodeproj", directory));
+
+	const auto& signingIdentity = m_state.tools.signingIdentity();
+	if (!signingIdentity.empty())
+	{
+		cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingIdentity));
+	}
+
+	bool result = Commands::subprocess(cmd);
+
+	return result;
 }
 
 /*****************************************************************************/

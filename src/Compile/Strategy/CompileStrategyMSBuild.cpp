@@ -57,7 +57,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 {
 	// msbuild -nologo -t:Clean,Build -verbosity:m -clp:ForceConsoleColor -property:Configuration=Debug -property:Platform=x64 build/.projects/project.sln
 
-	auto route = m_state.inputs.route();
+	auto& route = m_state.inputs.route();
 
 	auto msbuild = Commands::which("msbuild");
 	if (msbuild.empty())
