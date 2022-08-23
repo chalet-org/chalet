@@ -519,7 +519,9 @@ bool CmakeBuilder::usesNinja() const
 	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
 	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
 	//
-	return m_state.toolchain.strategy() == StrategyType::Ninja || m_state.toolchain.strategy() == StrategyType::MSBuild;
+	return m_state.toolchain.strategy() == StrategyType::Ninja
+		|| m_state.toolchain.strategy() == StrategyType::MSBuild
+		|| m_state.toolchain.strategy() == StrategyType::XcodeBuild;
 }
 
 }

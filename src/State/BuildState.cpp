@@ -138,6 +138,13 @@ bool BuildState::generateProjects()
 		if (!projectExporter->generate(m_impl->centralState, true))
 			return false;
 	}
+#elif defined(CHALET_MACOS)
+	if (toolchain.strategy() == StrategyType::XcodeBuild)
+	{
+		auto projectExporter = IProjectExporter::make(ExportKind::Xcode, inputs);
+		if (!projectExporter->generate(m_impl->centralState, true))
+			return false;
+	}
 #endif
 
 	return true;
