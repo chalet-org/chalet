@@ -6,11 +6,11 @@
 #include "Core/UpdateNotifier.hpp"
 
 #include "Cache/WorkspaceInternalCacheFile.hpp"
-#include "ChaletConfig.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/DefinesVersion.hpp"
 #include "Utility/Version.hpp"
 
 namespace chalet
@@ -64,7 +64,7 @@ void UpdateNotifier::notifyForUpdates()
 
 			auto lat = Version::fromString(versions.back());
 			// auto lat = Version::fromString("0.5.0");
-			auto ver = Version::fromString(std::string(PROJECT_VER));
+			auto ver = Version::fromString(std::string(CHALET_VERSION));
 
 			if (ver < lat)
 			{
