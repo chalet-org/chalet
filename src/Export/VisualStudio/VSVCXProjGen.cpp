@@ -528,6 +528,7 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 					node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 					node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 					node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardC());
+					// node2.addElementWithTextIfNotEmpty("MultiProcessorCompilation", "true"); // /MP
 
 					// C/C++ Settings
 					node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories());
@@ -556,7 +557,6 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 					node2.addElementWithTextIfNotEmpty("DiagnosticsFormat", vcxprojAdapter.getDiagnosticsFormat());
 					node2.addElementWithTextIfNotEmpty("DebugInformationFormat", vcxprojAdapter.getDebugInformationFormat());
 					node2.addElementWithTextIfNotEmpty("SupportJustMyCode", vcxprojAdapter.getSupportJustMyCode());
-					// MultiProcessorCompilation - true/false - /MP (Not used currentlY)
 					node2.addElementWithTextIfNotEmpty("Optimization", vcxprojAdapter.getOptimization());
 					node2.addElementWithTextIfNotEmpty("InlineFunctionExpansion", vcxprojAdapter.getInlineFunctionExpansion());
 					node2.addElementWithTextIfNotEmpty("FavorSizeOrSpeed", vcxprojAdapter.getFavorSizeOrSpeed());
