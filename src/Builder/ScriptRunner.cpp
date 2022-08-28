@@ -388,6 +388,10 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 		ret.emplace_back("-encoding");
 		ret.emplace_back("utf-8");
 	}
+	else if (scriptType == ScriptType::Awk)
+	{
+		ret.emplace_back("-f");
+	}
 
 	ret.emplace_back(std::move(outScriptPath));
 
