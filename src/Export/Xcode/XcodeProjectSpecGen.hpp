@@ -11,16 +11,23 @@
 namespace chalet
 {
 class BuildState;
+struct SourceTarget;
 
 struct XcodeProjectSpecGen
 {
 	explicit XcodeProjectSpecGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inExportDir);
 
-	bool saveToFile(const std::string& inFilename) const;
+	bool saveToFile(const std::string& inFilename);
 
 private:
+	Dictionary<std::string> getConfigSettings(const BuildState& inState, const std::string& inTarget);
+
+	const SourceTarget* getProjectFromStateContext(const BuildState& inState, const std::string& inName) const;
+
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_exportDir;
+
+	HeapDictionary<SourceOutputs> m_outputs;
 };
 }
 

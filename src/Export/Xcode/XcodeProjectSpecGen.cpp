@@ -5,6 +5,7 @@
 
 #include "Export/Xcode/XcodeProjectSpecGen.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -24,7 +25,7 @@ XcodeProjectSpecGen::XcodeProjectSpecGen(const std::vector<Unique<BuildState>>& 
 }
 
 /*****************************************************************************/
-bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename) const
+bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename)
 {
 	// LOG(inFilename);
 
@@ -53,20 +54,26 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename) const
 	root["name"] = "project";
 
 	root["configs"] = Json::object();
+	root["settings"] = Json::object();
+	// root["configFiles"] = Json::object();
 	{
 		auto& configs = root.at("configs");
+		// auto& configFiles = root.at("configFiles");
 		for (auto& state : m_states)
 		{
 			const auto& config = state->configuration;
+			const auto& name = config.name();
 
-			// TODO: we want to supply everything, not use a preset
+			// TODO: Need these defaults
 			std::string preset;
 			if (config.debugSymbols())
 				preset = "debug";
 			else
 				preset = "release";
 
-			configs[config.name()] = std::move(preset);
+			// configs[name] = "none";
+			configs[name] = std::move(preset);
+			// configFiles[name] = fmt::format("{}.xcconfig", name);
 		}
 	}
 
@@ -126,21 +133,132 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename) const
 					dir["path"] = include;
 					sources.emplace_back(std::move(dir));
 				}
+
+				tgtJson["settings"] = Json::object();
+				auto& globalSettings = tgtJson.at("settings");
+				globalSettings["configs"] = Json::object();
+				auto& settingsConfigs = globalSettings.at("configs");
+				for (auto& state : m_states)
+				{
+					auto settings = getConfigSettings(*state, target->name());
+					if (!settings.empty())
+					{
+						const auto& name = state->configuration.name();
+						settingsConfigs[name] = Json::object();
+						for (const auto& [key, value] : settings)
+						{
+							settingsConfigs[name][key] = value;
+						}
+					}
+				}
 			}
+		}
+
+		// jsonFile.dumpToTerminal();
+		jsonFile.setDirty(true);
+
+		if (!jsonFile.save())
+		{
+			Diagnostic::error("The xcodegen spec file failed to save.");
+			return false;
+		}
+
+		return true;
+	}
+}
+
+/*****************************************************************************/
+Dictionary<std::string> XcodeProjectSpecGen::getConfigSettings(const BuildState& inState, const std::string& inTarget)
+{
+	Dictionary<std::string> ret;
+
+	const SourceTarget* project = getProjectFromStateContext(inState, inTarget);
+	if (project != nullptr)
+	{
+		const auto& config = inState.configuration.name();
+		auto outputsName = fmt::format("{}_{}", project->name(), config);
+
+		StringList fileCache;
+		m_outputs.emplace(outputsName, inState.paths.getOutputs(*project, fileCache));
+
+		const auto& cwd = inState.inputs.workingDirectory();
+		// Release
+		{
+			ret["BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
+			ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+			ret["CONFIGURATION_TEMP_DIR"] = fmt::format("{}/{}", cwd, inState.paths.objDir());
+			ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
+			// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+			ret["ALWAYS_SEARCH_USER_PATHS"] = "NO";
+			ret["CLANG_ANALYZER_NONNULL"] = "YES";
+			ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
+			ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
+			ret["CLANG_CXX_LIBRARY"] = "libc++";
+			ret["CLANG_ENABLE_MODULES"] = "YES";
+			ret["CLANG_ENABLE_OBJC_ARC"] = "YES";
+			ret["CLANG_ENABLE_OBJC_WEAK"] = "YES";
+			ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = "YES";
+			ret["CLANG_WARN_BOOL_CONVERSION"] = "YES";
+			ret["CLANG_WARN_COMMA"] = "YES";
+			ret["CLANG_WARN_CONSTANT_CONVERSION"] = "YES";
+			ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = "YES";
+			ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
+			ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = "YES";
+			ret["CLANG_WARN_EMPTY_BODY"] = "YES";
+			ret["CLANG_WARN_ENUM_CONVERSION"] = "YES";
+			ret["CLANG_WARN_INFINITE_RECURSION"] = "YES";
+			ret["CLANG_WARN_INT_CONVERSION"] = "YES";
+			ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = "YES";
+			ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = "YES";
+			ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = "YES";
+			ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
+			ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = "YES";
+			ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = "YES";
+			ret["CLANG_WARN_STRICT_PROTOTYPES"] = "YES";
+			ret["CLANG_WARN_SUSPICIOUS_MOVE"] = "YES";
+			ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
+			ret["CLANG_WARN_UNREACHABLE_CODE"] = "YES";
+			ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = "YES";
+			ret["COPY_PHASE_STRIP"] = "NO";
+			ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
+			ret["ENABLE_NS_ASSERTIONS"] = "NO";
+			ret["ENABLE_STRICT_OBJC_MSGSEND"] = "YES";
+			ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
+			ret["GCC_NO_COMMON_BLOCKS"] = "YES";
+			ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = "YES";
+			ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
+			ret["GCC_WARN_UNDECLARED_SELECTOR"] = "YES";
+			ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
+			ret["GCC_WARN_UNUSED_FUNCTION"] = "YES";
+			ret["GCC_WARN_UNUSED_VARIABLE"] = "YES";
+			ret["MACOSX_DEPLOYMENT_TARGET"] = "11.1";
+			ret["MTL_ENABLE_DEBUG_INFO"] = "NO";
+			ret["MTL_FAST_MATH"] = "YES";
+			ret["SDKROOT"] = "macosx";
+			// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 		}
 	}
 
-	// jsonFile.dumpToTerminal();
-	jsonFile.setDirty(true);
+	return ret;
+}
 
-	if (!jsonFile.save())
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+// Utils
+/*****************************************************************************/
+const SourceTarget* XcodeProjectSpecGen::getProjectFromStateContext(const BuildState& inState, const std::string& inName) const
+{
+	const SourceTarget* ret = nullptr;
+	for (auto& target : inState.targets)
 	{
-		Diagnostic::error("The xcodegen spec file failed to save.");
-		return false;
+		if (target->isSources() && String::equals(target->name(), inName))
+		{
+			ret = static_cast<const SourceTarget*>(target.get());
+		}
 	}
 
-	return true;
-}
+	return ret;
 }
 
 /*
@@ -218,3 +336,4 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename) const
 	}
 }
 */
+}

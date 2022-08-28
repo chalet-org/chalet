@@ -74,13 +74,16 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	};
 
 	// if (!Output::showCommands())
-	// 	cmd.emplace_back("-verbose");
+	cmd.emplace_back("-verbose");
 
 	cmd.emplace_back("-configuration");
 	cmd.emplace_back(m_state.configuration.name());
 
 	cmd.emplace_back("-arch");
 	cmd.emplace_back(m_state.info.targetArchitectureString());
+
+	// cmd.emplace_back("-destination");
+	// cmd.emplace_back(fmt::format("platform=OS X,arch={}", m_state.info.targetArchitectureString()));
 
 	cmd.emplace_back("-alltargets");
 	// std::string target;
