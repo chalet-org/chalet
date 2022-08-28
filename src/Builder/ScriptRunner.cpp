@@ -62,7 +62,7 @@ ScriptType getScriptTypeFromString(const std::string& inStr)
 		return ScriptType::Perl;
 
 	if (String::equals("tcl", lower))
-		return ScriptType::Perl;
+		return ScriptType::Tcl;
 
 	if (String::equals("awk", lower))
 		return ScriptType::Awk;
