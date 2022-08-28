@@ -152,24 +152,24 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 			if (!search.empty())
 			{
 				scriptType = getScriptTypeFromString(search);
-				auto shellFromEnv = shebang.substr(space + 1);
-				shell = Commands::which(shellFromEnv);
-				if (!shell.empty() && String::startsWith("python", shellFromEnv))
+				shebang = shebang.substr(space + 1);
+				shell = Commands::which(shebang);
+				if (!shell.empty() && String::startsWith("python", shebang))
 				{
 					// Handle python 2/3 nastiness
 					// This is mostly for convenience across platforms
 					// For instance, mac uses "python3" and removed "python"
 					// while Windows installers use only "python.exe" now
 					//
-					if (String::equals("python", shellFromEnv))
+					if (String::equals("python", shebang))
 					{
 						shell = Commands::which("python3");
 					}
-					else if (String::equals("python3", shellFromEnv))
+					else if (String::equals("python3", shebang))
 					{
 						shell = Commands::which("python");
 					}
-					else if (String::equals("python2", shellFromEnv)) // just in case
+					else if (String::equals("python2", shebang)) // just in case
 					{
 						shell = Commands::which("python");
 					}
