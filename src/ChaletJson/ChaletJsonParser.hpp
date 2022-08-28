@@ -60,7 +60,7 @@ private:
 
 	bool parseRoot(const Json& inNode) const;
 
-	bool parseTarget(const Json& inNode);
+	bool parseTargets(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
 	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;

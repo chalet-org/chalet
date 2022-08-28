@@ -32,6 +32,10 @@ std::string getScriptTypeString(const ScriptType inType)
 			return "perl";
 		case ScriptType::Lua:
 			return "lua";
+		case ScriptType::Tcl:
+			return "tcl";
+		case ScriptType::Awk:
+			return "awk";
 		case ScriptType::UnixShell:
 		case ScriptType::Powershell:
 		case ScriptType::WindowsCommand:
@@ -45,19 +49,30 @@ std::string getScriptTypeString(const ScriptType inType)
 ScriptType getScriptTypeFromString(const std::string& inStr)
 {
 	auto lower = String::toLowerCase(inStr);
-	if (String::equals({ "python", "python3" }, lower))
+	if (String::startsWith("python", lower) && String::equals({ "python", "python3", "python2" }, lower))
 		return ScriptType::Python;
+
 	if (String::equals("lua", lower))
 		return ScriptType::Lua;
+
 	if (String::equals("ruby", lower))
 		return ScriptType::Ruby;
+
 	if (String::equals("perl", lower))
 		return ScriptType::Perl;
+
+	if (String::equals("tcl", lower))
+		return ScriptType::Perl;
+
+	if (String::equals("awk", lower))
+		return ScriptType::Awk;
+
 	if (String::equals("pwsh", lower))
 		return ScriptType::Powershell;
 
 	return ScriptType::UnixShell;
 }
+
 }
 
 /*****************************************************************************/
@@ -82,15 +97,17 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 	m_inputs.clearWorkingDirectory(script);
 
 	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
-	if (inShowExitCode || !result)
+	if (inShowExitCode)
 	{
-		if (inShowExitCode)
-			Output::printSeparator();
-		else
-			Output::lineBreak();
-
+		Output::printSeparator();
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 	}
+	else if (!result)
+	{
+		Diagnostic::error("{}", message);
+	}
+
+	// LOG("exitWithCode: ", inShowExitCode);
 
 	return result;
 }
@@ -135,7 +152,28 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 			if (!search.empty())
 			{
 				scriptType = getScriptTypeFromString(search);
-				shell = Commands::which(shebang.substr(space + 1));
+				auto shellFromEnv = shebang.substr(space + 1);
+				shell = Commands::which(shellFromEnv);
+				if (!shell.empty() && String::startsWith("python", shellFromEnv))
+				{
+					// Handle python 2/3 nastiness
+					// This is mostly for convenience across platforms
+					// For instance, mac uses "python3" and removed "python"
+					// while Windows installers use only "python.exe" now
+					//
+					if (String::equals("python", shellFromEnv))
+					{
+						shell = Commands::which("python3");
+					}
+					else if (String::equals("python3", shellFromEnv))
+					{
+						shell = Commands::which("python");
+					}
+					else if (String::equals("python2", shellFromEnv)) // just in case
+					{
+						shell = Commands::which("python");
+					}
+				}
 				shellFound = !shell.empty();
 			}
 		}
@@ -197,6 +235,16 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 					shell = std::move(python);
 					shellFound = true;
 				}
+				else
+				{
+					// just in case
+					python = Commands::which("python2");
+					if (!python.empty())
+					{
+						shell = std::move(python);
+						shellFound = true;
+					}
+				}
 			}
 		}
 		else if (String::endsWith(".rb", outScriptPath))
@@ -215,6 +263,28 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 			scriptType = ScriptType::Perl;
 
 			auto perl = Commands::which("perl");
+			if (!perl.empty())
+			{
+				shell = std::move(perl);
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".tcl", outScriptPath))
+		{
+			scriptType = ScriptType::Tcl;
+
+			auto perl = Commands::which("tclsh");
+			if (!perl.empty())
+			{
+				shell = std::move(perl);
+				shellFound = true;
+			}
+		}
+		else if (String::endsWith(".awk", outScriptPath))
+		{
+			scriptType = ScriptType::Awk;
+
+			auto perl = Commands::which("awk");
 			if (!perl.empty())
 			{
 				shell = std::move(perl);
@@ -311,6 +381,12 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 			Diagnostic::error("{}: The script '{}' requires '{}', but it was not found.", m_inputFile, inScript, type);
 
 		return std::make_pair(StringList{}, scriptType);
+	}
+
+	if (scriptType == ScriptType::Tcl)
+	{
+		ret.emplace_back("-encoding");
+		ret.emplace_back("utf-8");
 	}
 
 	ret.emplace_back(std::move(outScriptPath));

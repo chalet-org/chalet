@@ -16,6 +16,8 @@ enum class ScriptType
 	Ruby,
 	Perl,
 	Lua,
+	Tcl,
+	Awk,
 	Powershell,
 	WindowsCommand,
 };
