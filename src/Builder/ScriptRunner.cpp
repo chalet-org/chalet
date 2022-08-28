@@ -154,7 +154,7 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 				scriptType = getScriptTypeFromString(search);
 				shebang = shebang.substr(space + 1);
 				shell = Commands::which(shebang);
-				if (!shell.empty() && String::startsWith("python", shebang))
+				if (shell.empty() && String::startsWith("python", shebang))
 				{
 					// Handle python 2/3 nastiness
 					// This is mostly for convenience across platforms
