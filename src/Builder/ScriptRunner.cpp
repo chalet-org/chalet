@@ -151,8 +151,8 @@ std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& in
 			auto search = shebang.substr(space + 1);
 			if (!search.empty())
 			{
-				scriptType = getScriptTypeFromString(search);
 				shebang = shebang.substr(space + 1);
+				scriptType = getScriptTypeFromString(shebang);
 				shell = Commands::which(shebang);
 				if (shell.empty() && String::startsWith("python", shebang))
 				{
