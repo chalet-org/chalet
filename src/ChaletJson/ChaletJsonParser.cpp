@@ -95,7 +95,7 @@ bool ChaletJsonParser::serialize()
 	{
 		if (!validRunTargetRequestedFromInput())
 		{
-			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
+			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.runTarget());
 			return false;
 		}
 
@@ -120,7 +120,7 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 			return false;
 	}
 
-	if (!parseTarget(inJson))
+	if (!parseTargets(inJson))
 		return false;
 
 	return true;
@@ -222,7 +222,7 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::parseTarget(const Json& inNode)
+bool ChaletJsonParser::parseTargets(const Json& inNode)
 {
 	if (!inNode.contains(Keys::Targets))
 	{
@@ -571,7 +571,13 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 	if (!parseRunTargetProperties(outTarget, inNode))
 		return false;
 
-	return valid;
+	if (!valid)
+	{
+		// When a script has a "file" that is conditional to another platform
+		outTarget.setIncludeInBuild(false);
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

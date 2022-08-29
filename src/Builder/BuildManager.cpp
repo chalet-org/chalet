@@ -631,12 +631,15 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	if (!scriptRunner.run(file, arguments, inRunCommand))
 	{
+		if (!inRunCommand)
+			Output::previousLine();
+
 		Diagnostic::printErrors(true);
-		Output::previousLine();
 		result = false;
 	}
 
-	stopTimerAndShowBenchmark(buildTimer);
+	if (!inRunCommand && result)
+		stopTimerAndShowBenchmark(buildTimer);
 
 	return result;
 }
