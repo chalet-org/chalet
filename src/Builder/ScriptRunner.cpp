@@ -33,7 +33,7 @@ std::string getScriptTypeString(const ScriptType inType)
 		case ScriptType::Lua:
 			return "lua";
 		case ScriptType::Tcl:
-			return "tcl";
+			return "tclsh";
 		case ScriptType::Awk:
 			return "awk";
 		case ScriptType::UnixShell:
@@ -61,7 +61,7 @@ ScriptType getScriptTypeFromString(const std::string& inStr)
 	if (String::equals("perl", lower))
 		return ScriptType::Perl;
 
-	if (String::equals("tcl", lower))
+	if (String::equals("tclsh", lower))
 		return ScriptType::Tcl;
 
 	if (String::equals("awk", lower))
