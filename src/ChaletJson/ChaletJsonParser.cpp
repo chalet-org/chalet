@@ -95,7 +95,7 @@ bool ChaletJsonParser::serialize()
 	{
 		if (!validRunTargetRequestedFromInput())
 		{
-			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, is excluded from the build configuration '{}' or excluded on this platform.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
+			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.runTarget(), m_state.configuration.name());
 			return false;
 		}
 
