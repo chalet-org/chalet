@@ -223,8 +223,8 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
 	ret.emplace_back(makeEnvironment("configuration", configName));
 	ret.emplace_back(makeEnvironment("vsArch", Arch::toVSArch(inState.info.targetArchitecture())));
-	ret.emplace_back(makeEnvironment("arch", inState.info.targetArchitectureString()));
-	ret.emplace_back(makeEnvironment("archTriple", inState.info.targetArchitectureTriple()));
+	ret.emplace_back(makeEnvironment("architecture", inState.info.targetArchitectureString()));
+	ret.emplace_back(makeEnvironment("targetTriple", inState.info.targetArchitectureTriple()));
 
 	return ret;
 }
