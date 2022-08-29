@@ -219,10 +219,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (buildAll)
 	{
-#if defined(CHALET_WIN32)
 		error = !runFullBuild();
 		Output::lineBreak();
-#endif
 	}
 
 	for (auto& target : m_state.targets)
