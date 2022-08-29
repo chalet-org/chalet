@@ -220,7 +220,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	if (buildAll)
 	{
 #if defined(CHALET_WIN32)
-		error = !runMSBuildStrategy();
+		error = !runFullBuild();
 		Output::lineBreak();
 #endif
 	}
@@ -992,7 +992,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runMSBuildStrategy()
+bool BuildManager::runFullBuild()
 {
 	// Timer buildTimer;
 

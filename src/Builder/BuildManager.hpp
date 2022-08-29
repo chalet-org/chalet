@@ -61,7 +61,7 @@ private:
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
-	bool runMSBuildStrategy();
+	bool runFullBuild();
 	void stopTimerAndShowBenchmark(Timer& outTimer);
 
 	BuildState& m_state;
