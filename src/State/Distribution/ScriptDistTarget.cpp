@@ -5,6 +5,8 @@
 
 #include "State/Distribution/ScriptDistTarget.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -33,6 +35,13 @@ bool ScriptDistTarget::validate()
 {
 	const auto& targetName = this->name();
 
+	auto [resolved, scriptType] = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
+	if (scriptType == ScriptType::None)
+		return false;
+
+	m_file = std::move(resolved);
+	m_scriptType = scriptType;
+
 	if (!Commands::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
@@ -51,6 +60,17 @@ const std::string& ScriptDistTarget::file() const noexcept
 void ScriptDistTarget::setFile(std::string&& inValue) noexcept
 {
 	m_file = std::move(inValue);
+}
+
+/*****************************************************************************/
+ScriptType ScriptDistTarget::scriptType() const noexcept
+{
+	return m_scriptType;
+}
+
+void ScriptDistTarget::setScriptTye(const ScriptType inType) noexcept
+{
+	m_scriptType = inType;
 }
 
 /*****************************************************************************/

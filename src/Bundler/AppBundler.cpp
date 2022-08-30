@@ -386,7 +386,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	const auto& arguments = inTarget.arguments();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
-	if (!scriptRunner.run(file, arguments, showExitCode))
+	if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
 	{
 		Diagnostic::printErrors(true);
 		Output::previousLine();

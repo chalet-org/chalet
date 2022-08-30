@@ -10,71 +10,12 @@
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
-namespace
-{
-/*****************************************************************************/
-std::string getScriptTypeString(const ScriptType inType)
-{
-	switch (inType)
-	{
-		case ScriptType::Python:
-			return "python";
-		case ScriptType::Ruby:
-			return "ruby";
-		case ScriptType::Perl:
-			return "perl";
-		case ScriptType::Lua:
-			return "lua";
-		case ScriptType::Tcl:
-			return "tclsh";
-		case ScriptType::Awk:
-			return "awk";
-		case ScriptType::UnixShell:
-		case ScriptType::Powershell:
-		case ScriptType::WindowsCommand:
-		case ScriptType::None:
-		default:
-			return std::string();
-	}
-}
-
-/*****************************************************************************/
-ScriptType getScriptTypeFromString(const std::string& inStr)
-{
-	auto lower = String::toLowerCase(inStr);
-	if (String::startsWith("python", lower) && String::equals({ "python", "python3", "python2" }, lower))
-		return ScriptType::Python;
-
-	if (String::equals("lua", lower))
-		return ScriptType::Lua;
-
-	if (String::equals("ruby", lower))
-		return ScriptType::Ruby;
-
-	if (String::equals("perl", lower))
-		return ScriptType::Perl;
-
-	if (String::equals("tclsh", lower))
-		return ScriptType::Tcl;
-
-	if (String::equals("awk", lower))
-		return ScriptType::Awk;
-
-	if (String::equals("pwsh", lower))
-		return ScriptType::Powershell;
-
-	return ScriptType::UnixShell;
-}
-
-}
-
 /*****************************************************************************/
 ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools) :
 	m_inputs(inInputs),
@@ -84,9 +25,9 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 }
 
 /*****************************************************************************/
-bool ScriptRunner::run(const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
+bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
 {
-	auto [command, _] = getCommand(inScript, inArguments);
+	auto command = getCommand(inType, inScript, inArguments);
 	if (command.empty())
 		return false;
 
@@ -113,293 +54,37 @@ bool ScriptRunner::run(const std::string& inScript, const StringList& inArgument
 }
 
 /*****************************************************************************/
-std::pair<StringList, ScriptType> ScriptRunner::getCommand(const std::string& inScript, const StringList& inArguments)
+StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments)
 {
 	StringList ret;
 
-#if defined(CHALET_WIN32)
-	std::string parsedScriptPath = inScript;
-	if (String::endsWith(".exe", parsedScriptPath))
-		parsedScriptPath = parsedScriptPath.substr(0, parsedScriptPath.size() - 4);
+	const auto& executable = m_tools.scriptAdapter().getExecutable(inType);
+	if (executable.empty())
+		return ret;
 
-	auto outScriptPath = Commands::which(parsedScriptPath);
-#else
-	auto outScriptPath = Commands::which(inScript);
-#endif
-	if (outScriptPath.empty())
-		outScriptPath = fs::absolute(inScript).string();
+	ret.emplace_back(executable);
 
-	if (!Commands::pathExists(outScriptPath))
+	if (inType == ScriptType::WindowsCommand)
 	{
-		Diagnostic::error("{}: The script '{}' was not found. Aborting.", m_inputFile, inScript);
-		return std::make_pair(ret, ScriptType::None);
+		ret.emplace_back("/c");
 	}
-
-	Commands::setExecutableFlag(outScriptPath);
-
-	std::string shebang;
-	bool shellFound = false;
-	ScriptType scriptType = ScriptType::None;
-
-	std::string shell;
-	shebang = Commands::readShebangFromFile(outScriptPath);
-	if (!shebang.empty())
-	{
-		if (String::startsWith("/usr/bin/env ", shebang))
-		{
-			auto space = shebang.find(' ');
-			auto search = shebang.substr(space + 1);
-			if (!search.empty())
-			{
-				shebang = shebang.substr(space + 1);
-				scriptType = getScriptTypeFromString(shebang);
-				shell = Commands::which(shebang);
-				if (shell.empty() && String::startsWith("python", shebang))
-				{
-					// Handle python 2/3 nastiness
-					// This is mostly for convenience across platforms
-					// For instance, mac uses "python3" and removed "python"
-					// while Windows installers use only "python.exe" now
-					//
-					if (String::equals("python", shebang))
-					{
-						shell = Commands::which("python3");
-					}
-					else if (String::equals("python3", shebang))
-					{
-						shell = Commands::which("python");
-					}
-					else if (String::equals("python2", shebang)) // just in case
-					{
-						shell = Commands::which("python");
-					}
-				}
-				shellFound = !shell.empty();
-			}
-		}
-		else
-		{
-			auto search = String::getPathFilename(shebang);
-			if (!search.empty())
-			{
-				scriptType = getScriptTypeFromString(search);
-
-				shell = shebang;
-				shellFound = Commands::pathExists(shell);
-
-				if (!shellFound)
-				{
-					shell = Commands::which(search);
-					shellFound = !shell.empty();
-
-					if (!shellFound)
-					{
-						shell = Environment::getShell();
-						shellFound = !shell.empty();
-					}
-				}
-			}
-		}
-	}
-
-	if (!shellFound)
-	{
-		if (String::endsWith(StringList{ ".sh", ".bash" }, outScriptPath))
-		{
-			scriptType = ScriptType::UnixShell;
-
-			shell = Environment::getShell();
-			shellFound = !shell.empty();
-
-			if (!shellFound && !m_tools.bash().empty())
-			{
-				shell = m_tools.bash();
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".py", outScriptPath))
-		{
-			scriptType = ScriptType::Python;
-
-			auto python = Commands::which("python3");
-			if (!python.empty())
-			{
-				shell = std::move(python);
-				shellFound = true;
-			}
-			else
-			{
-				python = Commands::which("python");
-				if (!python.empty())
-				{
-					shell = std::move(python);
-					shellFound = true;
-				}
-				else
-				{
-					// just in case
-					python = Commands::which("python2");
-					if (!python.empty())
-					{
-						shell = std::move(python);
-						shellFound = true;
-					}
-				}
-			}
-		}
-		else if (String::endsWith(".rb", outScriptPath))
-		{
-			scriptType = ScriptType::Ruby;
-
-			auto ruby = Commands::which("ruby");
-			if (!ruby.empty())
-			{
-				shell = std::move(ruby);
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".pl", outScriptPath))
-		{
-			scriptType = ScriptType::Perl;
-
-			auto perl = Commands::which("perl");
-			if (!perl.empty())
-			{
-				shell = std::move(perl);
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".tcl", outScriptPath))
-		{
-			scriptType = ScriptType::Tcl;
-
-			auto perl = Commands::which("tclsh");
-			if (!perl.empty())
-			{
-				shell = std::move(perl);
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".awk", outScriptPath))
-		{
-			scriptType = ScriptType::Awk;
-
-			auto perl = Commands::which("awk");
-			if (!perl.empty())
-			{
-				shell = std::move(perl);
-				shellFound = true;
-			}
-		}
-		else if (String::endsWith(".lua", outScriptPath))
-		{
-			scriptType = ScriptType::Lua;
-
-			auto lua = Commands::which("lua");
-			if (!lua.empty())
-			{
-				shell = std::move(lua);
-				shellFound = true;
-			}
-		}
-	}
-
-	if (shellFound)
-	{
-		// LOG(shell);
-		ret.emplace_back(std::move(shell));
-	}
-
-	if (!shellFound)
-	{
-		const bool isPowershellScript = String::endsWith(".ps1", outScriptPath);
-#if defined(CHALET_WIN32)
-		const bool isBatchScript = String::endsWith(StringList{ ".bat", ".cmd" }, outScriptPath);
-		if (isBatchScript || isPowershellScript)
-		{
-			Path::sanitizeForWindows(outScriptPath);
-
-			auto& powershell = m_tools.powershell();
-			auto& cmd = m_tools.commandPrompt();
-
-			if (isBatchScript && !cmd.empty())
-			{
-				scriptType = ScriptType::WindowsCommand;
-
-				ret.push_back(cmd);
-				ret.emplace_back("/c");
-			}
-			else if (!powershell.empty())
-			{
-				scriptType = ScriptType::Powershell;
-
-				ret.push_back(powershell);
-			}
-			else if (isBatchScript)
-			{
-				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", m_inputFile, inScript);
-				return std::make_pair(StringList{}, scriptType);
-			}
-			else
-			{
-				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", m_inputFile, inScript);
-				return std::make_pair(StringList{}, scriptType);
-			}
-
-			shellFound = true;
-		}
-#else
-		if (isPowershellScript)
-		{
-			auto& powershell = m_tools.powershell();
-			if (!powershell.empty())
-			{
-				scriptType = ScriptType::Powershell;
-
-				ret.push_back(powershell);
-			}
-			else
-			{
-				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", m_inputFile, inScript);
-				return std::make_pair(StringList{}, scriptType);
-			}
-
-			shellFound = true;
-		}
-#endif
-	}
-
-	if (!shellFound)
-	{
-		auto type = shebang;
-		if (type.empty())
-			type = getScriptTypeString(scriptType);
-
-		if (type.empty())
-			Diagnostic::error("{}: The script '{}' was not recognized.", m_inputFile, inScript);
-		else
-			Diagnostic::error("{}: The script '{}' requires '{}', but it was not found.", m_inputFile, inScript, type);
-
-		return std::make_pair(StringList{}, scriptType);
-	}
-
-	if (scriptType == ScriptType::Tcl)
+	else if (inType == ScriptType::Tcl)
 	{
 		ret.emplace_back("-encoding");
 		ret.emplace_back("utf-8");
 	}
-	else if (scriptType == ScriptType::Awk)
+	else if (inType == ScriptType::Awk)
 	{
 		ret.emplace_back("-f");
 	}
 
-	ret.emplace_back(std::move(outScriptPath));
+	ret.emplace_back(inScript);
 
 	for (const auto& arg : inArguments)
 	{
 		ret.emplace_back(arg);
 	}
 
-	return std::make_pair(ret, scriptType);
+	return ret;
 }
 }

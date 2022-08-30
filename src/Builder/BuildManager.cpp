@@ -625,7 +625,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 
 	const auto& arguments = inTarget.arguments();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
-	if (!scriptRunner.run(file, arguments, inRunCommand))
+	if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
 	{
 		if (!inRunCommand)
 			Output::previousLine();

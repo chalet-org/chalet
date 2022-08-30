@@ -15,6 +15,12 @@
 namespace chalet
 {
 /*****************************************************************************/
+AncillaryTools::AncillaryTools() :
+	m_scriptAdapter(*this)
+{
+}
+
+/*****************************************************************************/
 bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 {
 	if (m_chalet.empty())
@@ -126,6 +132,12 @@ void AncillaryTools::fetchXcodeGenVersion()
 		}
 	}
 #endif
+}
+
+/*****************************************************************************/
+const ScriptAdapter& AncillaryTools::scriptAdapter() const
+{
+	return m_scriptAdapter;
 }
 
 /*****************************************************************************/
