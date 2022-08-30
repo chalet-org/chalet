@@ -197,9 +197,13 @@ CommandRoute ArgumentParser::getRoute() const noexcept
 /*****************************************************************************/
 StringList ArgumentParser::getRouteList() const
 {
+	StringList exclude{ "b", "r", "c" };
 	StringList ret;
 	for (auto& [cmd, _] : m_routeMap)
 	{
+		if (String::equals(exclude, cmd))
+			continue;
+
 		ret.emplace_back(cmd);
 	}
 
