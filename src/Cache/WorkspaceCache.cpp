@@ -49,7 +49,19 @@ bool WorkspaceCache::initialize(const CommandLineInputs& inInputs)
 /*****************************************************************************/
 bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 {
-	if (!m_globalSettings.load(inInputs.getGlobalSettingsFilePath()))
+	auto globalSettingsFile = inInputs.getGlobalSettingsFilePath();
+	auto globalSettingsFolder = String::getPathFolder(globalSettingsFile);
+	if (!Commands::pathExists(globalSettingsFolder))
+		Commands::makeDirectory(globalSettingsFolder);
+
+	// Migrate old settings path pre 0.5.0
+	auto oldGlobalSettingsFile = fmt::format("{}/.chaletconfig", inInputs.homeDirectory());
+	if (Commands::pathExists(oldGlobalSettingsFile))
+	{
+		Commands::moveSilent(oldGlobalSettingsFile, globalSettingsFile);
+	}
+
+	if (!m_globalSettings.load(globalSettingsFile))
 		return false;
 
 	if (!m_localSettings.load(inInputs.settingsFile()))

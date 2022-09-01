@@ -43,6 +43,7 @@ bool createSymbolicLink(const std::string& inFrom, const std::string& inTo);
 bool copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::overwrite_existing);
 bool copySilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::overwrite_existing);
 bool copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent = false);
+bool moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::overwrite_existing);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
 
 bool forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);

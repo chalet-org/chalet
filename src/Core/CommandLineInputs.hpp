@@ -44,6 +44,7 @@ struct CommandLineInputs
 	const std::string& settingsFile() const noexcept;
 	void setSettingsFile(std::string&& inValue) noexcept;
 	std::string getGlobalSettingsFilePath() const;
+	std::string getGlobalDirectory() const;
 
 	const std::string& rootDirectory() const noexcept;
 	void setRootDirectory(std::string&& inValue) noexcept;

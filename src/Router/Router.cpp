@@ -56,6 +56,9 @@ bool Router::run()
 	if (!parseTheme())
 		return false;
 
+	if (workingDirectoryIsGlobalChaletDirectory())
+		return false;
+
 	const auto& route = m_inputs.route();
 	if (route.isUnknown())
 	{
@@ -257,16 +260,6 @@ bool Router::routeTerminalTest()
 }
 
 /*****************************************************************************/
-bool Router::parseTheme()
-{
-	ThemeSettingsJsonParser themeParser(m_inputs);
-	if (!themeParser.serialize())
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
 bool Router::routeExport(CentralState& inCentralState)
 {
 	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
@@ -278,6 +271,32 @@ bool Router::routeExport(CentralState& inCentralState)
 	Output::lineBreak();
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Router::parseTheme()
+{
+	ThemeSettingsJsonParser themeParser(m_inputs);
+	if (!themeParser.serialize())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Router::workingDirectoryIsGlobalChaletDirectory()
+{
+	const auto& cwd = m_inputs.workingDirectory();
+	const auto globalDirectory = m_inputs.getGlobalDirectory();
+
+	if (String::startsWith(globalDirectory, cwd))
+	{
+		auto folder = String::getPathFilename(globalDirectory);
+		Diagnostic::error("Cannot run commands from the '{}' path - not allowed.", folder);
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
