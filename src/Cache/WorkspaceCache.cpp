@@ -6,6 +6,7 @@
 #include "Cache/WorkspaceCache.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -58,7 +59,13 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 	auto oldGlobalSettingsFile = fmt::format("{}/.chaletconfig", inInputs.homeDirectory());
 	if (Commands::pathExists(oldGlobalSettingsFile))
 	{
-		Commands::moveSilent(oldGlobalSettingsFile, globalSettingsFile);
+		if (Commands::moveSilent(oldGlobalSettingsFile, globalSettingsFile))
+		{
+			// Update the theme
+			ThemeSettingsJsonParser themeParser(inInputs);
+			// we don't care if this succeeded or not. we care about initializing settings below
+			themeParser.serialize();
+		}
 	}
 
 	if (!m_globalSettings.load(globalSettingsFile))
