@@ -110,7 +110,7 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultOutputDirectory("build"),
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
-	kGlobalSettingsFile(".chalet/config"),
+	kGlobalSettingsFile(".chalet/config.json"),
 	kArchPresetAuto("auto"),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
