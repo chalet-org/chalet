@@ -51,29 +51,36 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 /*****************************************************************************/
 bool IBuildTarget::initialize()
 {
-	replaceVariablesInPathList(m_copyFilesOnRun);
+	if (!replaceVariablesInPathList(m_copyFilesOnRun))
+		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-void IBuildTarget::replaceVariablesInPathList(StringList& outList) const
+bool IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 {
 	for (auto& dir : outList)
 	{
-		m_state.replaceVariablesInString(dir, this);
+		if (!m_state.replaceVariablesInString(dir, this))
+			return false;
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void IBuildTarget::processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const
+bool IBuildTarget::processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const
 {
-	replaceVariablesInPathList(inList);
+	if (!replaceVariablesInPathList(inList))
+		return false;
 
 	for (auto&& val : inList)
 	{
 		onProcess(std::move(val));
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

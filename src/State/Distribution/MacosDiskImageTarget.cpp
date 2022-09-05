@@ -22,8 +22,11 @@ MacosDiskImageTarget::MacosDiskImageTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool MacosDiskImageTarget::initialize()
 {
-	m_state.replaceVariablesInString(m_background1x, this);
-	m_state.replaceVariablesInString(m_background2x, this);
+	if (!m_state.replaceVariablesInString(m_background1x, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_background2x, this))
+		return false;
 
 	return true;
 }

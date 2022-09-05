@@ -55,8 +55,11 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool BundleTarget::initialize()
 {
-	replaceVariablesInPathList(m_rawIncludes);
-	replaceVariablesInPathList(m_excludes);
+	if (!replaceVariablesInPathList(m_rawIncludes))
+		return false;
+
+	if (!replaceVariablesInPathList(m_excludes))
+		return false;
 
 	return true;
 }
