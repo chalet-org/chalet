@@ -55,7 +55,7 @@ StringList CompilerCxxIntelClassicGCC::getPrecompiledHeaderCommand(const std::st
 	{
 		ret = CompilerCxxGCC::getPrecompiledHeaderCommand(inputFile, outputFile, generateDependency, dependency, arch);
 		ret.pop_back();
-		ret.push_back(m_pchSource);
+		ret.emplace_back(getQuotedPath(m_pchSource));
 	}
 
 	return ret;

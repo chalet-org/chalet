@@ -37,7 +37,7 @@ StringList CompilerWinResourceVisualStudioRC::getCommand(const std::string& inpu
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

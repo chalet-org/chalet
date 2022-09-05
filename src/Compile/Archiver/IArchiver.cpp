@@ -53,7 +53,8 @@ IArchiver::IArchiver(const BuildState& inState, const SourceTarget& inProject) :
 /*****************************************************************************/
 void IArchiver::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
-	if (m_state.toolchain.strategy() == StrategyType::Ninja)
+	auto strategy = m_state.toolchain.strategy();
+	if (strategy == StrategyType::Ninja || strategy == StrategyType::Makefile)
 	{
 		for (auto& source : sourceObjs)
 		{

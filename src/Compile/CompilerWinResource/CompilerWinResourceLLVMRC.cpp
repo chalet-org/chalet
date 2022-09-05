@@ -34,8 +34,8 @@ StringList CompilerWinResourceLLVMRC::getCommand(const std::string& inputFile, c
 	addIncludes(ret);
 
 	ret.emplace_back("-Fo");
-	ret.push_back(outputFile);
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

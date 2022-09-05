@@ -33,7 +33,7 @@ StringList ArchiverGNUAR::getCommand(const std::string& outputFile, const String
 	ret.emplace_back("-r");
 	ret.emplace_back("-s");
 
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 	addSourceObjects(ret, sourceObjs);
 
 	return ret;
