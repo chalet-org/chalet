@@ -81,7 +81,7 @@ bool CompilerCxxAppleClang::addMacosSysRootOption(StringList& outArgList, const 
 	}
 
 	outArgList.emplace_back("-isysroot");
-	outArgList.push_back(inState.tools.applePlatformSdk(sdk));
+	outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, inState.tools.applePlatformSdk(sdk)));
 
 	return true;
 }

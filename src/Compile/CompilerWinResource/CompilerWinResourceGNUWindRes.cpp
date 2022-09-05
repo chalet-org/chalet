@@ -28,7 +28,7 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 	if (!m_state.toolchain.canCompilerWindowsResources())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.compilerWindowsResource()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.compilerWindowsResource()));
 
 	ret.emplace_back("-J");
 	ret.emplace_back("rc");
@@ -44,21 +44,21 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 		//   See: https://sourceware.org/binutils/docs/binutils/windres.html
 
 		ret.emplace_back("--preprocessor-arg=-MT");
-		ret.emplace_back(fmt::format("--preprocessor-arg={}", outputFile));
+		ret.emplace_back(fmt::format("--preprocessor-arg={}", getQuotedPath(outputFile)));
 		ret.emplace_back("--preprocessor-arg=-MMD");
 		ret.emplace_back("--preprocessor-arg=-MP");
 		ret.emplace_back("--preprocessor-arg=-MF");
-		ret.emplace_back(fmt::format("--preprocessor-arg={}", dependency));
+		ret.emplace_back(fmt::format("--preprocessor-arg={}", getQuotedPath(dependency)));
 	}
 
 	addDefines(ret);
 	addIncludes(ret);
 
 	ret.emplace_back("-i");
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 
 	return ret;
 }

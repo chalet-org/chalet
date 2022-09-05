@@ -89,7 +89,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
@@ -141,7 +141,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	UNUSED(inputFile);
 
-	ret.push_back(m_msvcAdapter.pchSource());
+	ret.emplace_back(getQuotedPath(m_msvcAdapter.pchSource()));
 
 	return ret;
 }
@@ -160,7 +160,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
@@ -211,7 +211,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }
@@ -248,12 +248,12 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	}*/
 
 	ret.emplace_back("/stdIfcDir");
-	ret.emplace_back(m_ifcDirectory);
+	ret.emplace_back(getQuotedPath(m_ifcDirectory));
 
 	if (inType != ModuleFileType::ModuleImplementationUnit)
 	{
 		ret.emplace_back("/ifcOutput");
-		ret.emplace_back(interfaceFile);
+		ret.emplace_back(getQuotedPath(interfaceFile));
 	}
 
 	if (isDependency)
@@ -261,7 +261,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	else
 		ret.emplace_back("/sourceDependencies");
 
-	ret.emplace_back(dependencyFile);
+	ret.emplace_back(getQuotedPath(dependencyFile));
 
 	if (isHeaderUnit)
 		ret.emplace_back("/exportHeader");
@@ -271,13 +271,13 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	for (const auto& item : inModuleReferences)
 	{
 		ret.emplace_back("/reference");
-		ret.emplace_back(item);
+		ret.emplace_back(getQuotedPath(item));
 	}
 
 	for (const auto& item : inHeaderUnits)
 	{
 		ret.emplace_back("/headerUnit");
-		ret.emplace_back(item);
+		ret.emplace_back(getQuotedPath(item));
 	}
 
 	addCompileOptions(ret);
@@ -316,7 +316,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

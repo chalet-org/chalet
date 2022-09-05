@@ -203,9 +203,19 @@ bool ILinker::addArchitecture(StringList& outArgList, const std::string& inArch)
 /*****************************************************************************/
 void ILinker::addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const
 {
-	for (auto& source : sourceObjs)
+	if (m_state.toolchain.strategy() == StrategyType::Ninja)
 	{
-		outArgList.push_back(source);
+		for (auto& source : sourceObjs)
+		{
+			outArgList.emplace_back(source);
+		}
+	}
+	else
+	{
+		for (auto& source : sourceObjs)
+		{
+			outArgList.emplace_back(getQuotedPath(source));
+		}
 	}
 }
 

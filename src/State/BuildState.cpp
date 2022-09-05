@@ -281,8 +281,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
-			info.targetArchitectureTriple();
+			  inputs.targetArchitecture() :
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -987,6 +987,18 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				return Environment::getAsString(match.c_str());
 			}
 
+			if (String::startsWith("external:", match))
+			{
+				match = match.substr(9);
+				return fmt::format("{}/{}", inputs.externalDirectory(), match);
+			}
+
+			if (String::startsWith("externalBuild:", match))
+			{
+				match = match.substr(14);
+				return fmt::format("{}/{}", paths.externalBuildDir(), match);
+			}
+
 			if (onFail != nullptr)
 				return onFail(std::move(match));
 
@@ -1063,6 +1075,18 @@ void BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 			{
 				match = match.substr(4);
 				return Environment::getAsString(match.c_str());
+			}
+
+			if (String::startsWith("external:", match))
+			{
+				match = match.substr(9);
+				return fmt::format("{}", inputs.externalDirectory(), match);
+			}
+
+			if (String::startsWith("externalBuild:", match))
+			{
+				match = match.substr(14);
+				return fmt::format("{}", paths.externalBuildDir(), match);
 			}
 
 			if (onFail != nullptr)

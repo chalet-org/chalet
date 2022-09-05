@@ -27,7 +27,7 @@ StringList ArchiverGNUAR::getCommand(const std::string& outputFile, const String
 	if (m_state.toolchain.archiver().empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.archiver()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.archiver()));
 
 	ret.emplace_back("-c");
 	ret.emplace_back("-r");

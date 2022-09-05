@@ -74,7 +74,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 
 	ret.emplace_back("-shared");
 	if (m_state.environment->isMingw())
@@ -109,7 +109,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addLibDirs(ret);
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 	addSourceObjects(ret, sourceObjs);
 
 	addCppFilesystem(ret);
@@ -131,7 +131,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 
 	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
@@ -152,7 +152,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addLibDirs(ret);
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 
 	addRunPath(ret);
 	addSourceObjects(ret, sourceObjs);
@@ -488,13 +488,13 @@ void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
 		const std::string prefix = "-F";
 		for (auto& path : m_project.libDirs())
 		{
-			outArgList.emplace_back(prefix + path);
+			outArgList.emplace_back(getPathCommand(prefix, path));
 		}
 		for (auto& path : m_project.macosFrameworkPaths())
 		{
-			outArgList.emplace_back(prefix + path);
+			outArgList.emplace_back(getPathCommand(prefix, path));
 		}
-		List::addIfDoesNotExist(outArgList, prefix + "/Library/Frameworks");
+		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/Library/Frameworks"));
 	}
 	{
 		// const std::string suffix = ".framework";

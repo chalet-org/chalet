@@ -188,16 +188,16 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 
 	if (generateDependency)
 	{
 		ret.emplace_back("-MT");
-		ret.push_back(outputFile);
+		ret.emplace_back(getQuotedPath(outputFile));
 		ret.emplace_back("-MMD");
 		ret.emplace_back("-MP");
 		ret.emplace_back("-MF");
-		ret.push_back(dependency);
+		ret.emplace_back(getQuotedPath(dependency));
 	}
 
 	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
@@ -235,9 +235,9 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	// 	ret.emplace_back("c++-header");
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 	ret.emplace_back("-c");
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }
@@ -252,16 +252,16 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 
 	if (generateDependency)
 	{
 		ret.emplace_back("-MT");
-		ret.push_back(outputFile);
+		ret.emplace_back(getQuotedPath(outputFile));
 		ret.emplace_back("-MMD");
 		ret.emplace_back("-MP");
 		ret.emplace_back("-MF");
-		ret.push_back(dependency);
+		ret.emplace_back(getQuotedPath(dependency));
 	}
 
 	addOptimizations(ret);
@@ -298,9 +298,9 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addMacosSysRootOption(ret);
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 	ret.emplace_back("-c");
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }
