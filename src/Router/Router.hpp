@@ -31,8 +31,10 @@ private:
 	bool routeQuery();
 	bool routeTerminalTest();
 
-	bool parseTheme();
 	bool routeExport(CentralState& inCentralState);
+
+	bool parseTheme();
+	bool workingDirectoryIsGlobalChaletDirectory();
 
 #if defined(CHALET_DEBUG)
 	bool routeDebug();

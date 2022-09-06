@@ -32,6 +32,9 @@ struct BuildPaths
 	std::string intermediateDir(const SourceTarget& inProject) const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
 
+	std::string getExternalDir(const std::string& inName) const;
+	std::string getExternalBuildDir(const std::string& inName) const;
+
 	const StringList& allFileExtensions() const noexcept;
 	StringList objectiveCxxExtensions() const noexcept;
 	const StringList& resourceExtensions() const noexcept;

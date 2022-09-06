@@ -7,6 +7,7 @@
 #define CHALET_SCRIPT_DIST_TARGET_HPP
 
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/ScriptType.hpp"
 
 namespace chalet
 {
@@ -20,6 +21,9 @@ struct ScriptDistTarget final : public IDistTarget
 	const std::string& file() const noexcept;
 	void setFile(std::string&& inValue) noexcept;
 
+	ScriptType scriptType() const noexcept;
+	void setScriptTye(const ScriptType inType) noexcept;
+
 	const StringList& arguments() const noexcept;
 	void addArguments(StringList&& inList);
 	void addArgument(std::string&& inValue);
@@ -27,6 +31,8 @@ struct ScriptDistTarget final : public IDistTarget
 private:
 	std::string m_file;
 	StringList m_arguments;
+
+	ScriptType m_scriptType = ScriptType::None;
 };
 }
 

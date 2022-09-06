@@ -111,7 +111,7 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultOutputDirectory("build"),
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
-	kGlobalSettingsFile(".chaletconfig"),
+	kGlobalSettingsFile(".chalet/config.json"),
 	kArchPresetAuto("auto"),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
@@ -233,7 +233,11 @@ std::string CommandLineInputs::getGlobalSettingsFilePath() const
 {
 	return fmt::format("{}/{}", homeDirectory(), kGlobalSettingsFile);
 }
-//
+
+std::string CommandLineInputs::getGlobalDirectory() const
+{
+	return fmt::format("{}/.chalet", homeDirectory());
+}
 
 /*****************************************************************************/
 const std::string& CommandLineInputs::rootDirectory() const noexcept

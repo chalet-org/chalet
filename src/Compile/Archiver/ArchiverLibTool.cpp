@@ -27,13 +27,14 @@ StringList ArchiverLibTool::getCommand(const std::string& outputFile, const Stri
 	if (m_state.toolchain.archiver().empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.archiver()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.archiver()));
 
 	ret.emplace_back("-static");
 	ret.emplace_back("-no_warning_for_no_symbols");
-	ret.emplace_back("-o");
 
-	ret.push_back(outputFile);
+	ret.emplace_back("-o");
+	ret.emplace_back(getQuotedPath(outputFile));
+
 	addSourceObjects(ret, sourceObjs);
 
 	return ret;

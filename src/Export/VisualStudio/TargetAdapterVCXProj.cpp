@@ -80,12 +80,12 @@ std::string TargetAdapterVCXProj::getCommand() const
 		ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 		const auto& script = static_cast<const ScriptBuildTarget&>(m_target);
 
-		auto [cmd, type] = scriptRunner.getCommand(script.file(), script.arguments());
+		auto cmd = scriptRunner.getCommand(script.scriptType(), script.file(), script.arguments());
 		if (!cmd.empty())
 		{
 			cmd.front() = fmt::format("\"{}\"", cmd.front());
 			ret = String::join(cmd);
-			scriptType = type;
+			scriptType = script.scriptType();
 		}
 	}
 	else if (m_target.isProcess())

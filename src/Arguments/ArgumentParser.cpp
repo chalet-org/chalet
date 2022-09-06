@@ -197,9 +197,13 @@ CommandRoute ArgumentParser::getRoute() const noexcept
 /*****************************************************************************/
 StringList ArgumentParser::getRouteList() const
 {
+	StringList exclude{ "b", "r", "c" };
 	StringList ret;
 	for (auto& [cmd, _] : m_routeMap)
 	{
+		if (String::equals(exclude, cmd))
+			continue;
+
 		ret.emplace_back(cmd);
 	}
 
@@ -565,7 +569,7 @@ std::string ArgumentParser::getHelp()
 
 		const auto& defaultToolchain = m_inputs.defaultToolchainPreset();
 
-		help += "\nToolchain Presets:\n";
+		help += "\nToolchain presets:\n";
 		const auto toolchains = m_inputs.getToolchainPresets();
 		for (auto& toolchain : toolchains)
 		{
@@ -606,7 +610,7 @@ std::string ArgumentParser::getHelp()
 			return std::string();
 		};
 
-		help += "\nBuild Strategies:\n";
+		help += "\nBuild strategies:\n";
 		StringList strategies = CompilerTools::getToolchainStrategies();
 
 		for (auto& strat : strategies)
@@ -636,7 +640,7 @@ std::string ArgumentParser::getHelp()
 			return std::string();
 		};
 
-		help += "\nBuild Path Styles:\n";
+		help += "\nBuild path styles:\n";
 		StringList styles = CompilerTools::getToolchainBuildPathStyles();
 
 		for (auto& strat : styles)
@@ -670,7 +674,7 @@ std::string ArgumentParser::getHelp()
 			return std::string();
 		};
 
-		help += "\nExport Presets:\n";
+		help += "\nExport presets:\n";
 		StringList exportPresets{
 			"vscode",
 			"vs-solution",

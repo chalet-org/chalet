@@ -15,6 +15,12 @@
 namespace chalet
 {
 /*****************************************************************************/
+AncillaryTools::AncillaryTools() :
+	m_scriptAdapter(*this)
+{
+}
+
+/*****************************************************************************/
 bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 {
 	if (m_chalet.empty())
@@ -42,7 +48,10 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 
 	if (String::contains("${", m_signingIdentity))
 	{
-		RegexPatterns::matchAndReplacePathVariables(m_signingIdentity, [&](std::string match) {
+		// Note: we don't care about this result, because if the signing identity is blank,
+		//   the application simply won't be signed
+		//
+		UNUSED(RegexPatterns::matchAndReplacePathVariables(m_signingIdentity, [&](std::string match) {
 			if (String::equals("home", match))
 				return inHomeDirectory;
 
@@ -53,7 +62,7 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 			}
 
 			return std::string();
-		});
+		}));
 	}
 #else
 	UNUSED(inHomeDirectory);
@@ -126,6 +135,12 @@ void AncillaryTools::fetchXcodeGenVersion()
 		}
 	}
 #endif
+}
+
+/*****************************************************************************/
+const ScriptAdapter& AncillaryTools::scriptAdapter() const
+{
+	return m_scriptAdapter;
 }
 
 /*****************************************************************************/

@@ -6,10 +6,14 @@
 #ifndef CHALET_ANCILLARY_TOOLS_HPP
 #define CHALET_ANCILLARY_TOOLS_HPP
 
+#include "State/ScriptAdapter.hpp"
+
 namespace chalet
 {
 struct AncillaryTools
 {
+	AncillaryTools();
+
 	bool resolveOwnExecutable(const std::string& inAppPath);
 
 	bool validate(const std::string& inHomeDirectory);
@@ -17,6 +21,8 @@ struct AncillaryTools
 	void fetchBashVersion();
 	void fetchXcodeVersion();
 	void fetchXcodeGenVersion();
+
+	const ScriptAdapter& scriptAdapter() const;
 
 	const std::string& applePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
@@ -111,6 +117,8 @@ struct AncillaryTools
 	static bool gitIsRootPath(std::string& outPath);
 
 private:
+	ScriptAdapter m_scriptAdapter;
+
 	Dictionary<std::string> m_applePlatformSdk;
 
 	std::string m_chalet;

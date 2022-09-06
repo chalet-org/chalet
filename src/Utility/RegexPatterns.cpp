@@ -85,7 +85,7 @@ bool RegexPatterns::matchAndReplace(std::string& outText, const std::string& inV
 }
 
 /*****************************************************************************/
-void RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
+bool RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
 	static std::regex re("@(\\w+)@");
 	std::smatch sm;
@@ -93,13 +93,18 @@ void RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, 
 	{
 		auto prefix = sm.prefix().str();
 		auto replaceValue = onMatch(sm[1].str());
+		if (replaceValue.empty())
+			return false;
+
 		auto suffix = sm.suffix().str();
 		outText = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
+bool RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
 {
 	static std::regex re("\\$\\{([\\w:]+)\\}");
 	std::smatch sm;
@@ -107,8 +112,13 @@ void RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std
 	{
 		auto prefix = sm.prefix().str();
 		auto replaceValue = onMatch(sm[1].str());
+		if (replaceValue.empty())
+			return false;
+
 		auto suffix = sm.suffix().str();
 		outText = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 	}
+
+	return true;
 }
 }

@@ -27,15 +27,15 @@ StringList CompilerWinResourceLLVMRC::getCommand(const std::string& inputFile, c
 	if (!m_state.toolchain.canCompilerWindowsResources())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.compilerWindowsResource()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.compilerWindowsResource()));
 
 	// llvm-rc is basically rc.exe w/ GNU-style args
 	addDefines(ret);
 	addIncludes(ret);
 
 	ret.emplace_back("-Fo");
-	ret.push_back(outputFile);
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

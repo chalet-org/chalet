@@ -73,12 +73,15 @@ bool IDistTarget::isMacosDiskImage() const noexcept
 }
 
 /*****************************************************************************/
-void IDistTarget::replaceVariablesInPathList(StringList& outList)
+bool IDistTarget::replaceVariablesInPathList(StringList& outList)
 {
 	for (auto& dir : outList)
 	{
-		m_state.replaceVariablesInString(dir, this);
+		if (!m_state.replaceVariablesInString(dir, this))
+			return false;
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

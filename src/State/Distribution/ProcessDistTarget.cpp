@@ -21,9 +21,11 @@ ProcessDistTarget::ProcessDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
-	m_state.replaceVariablesInString(m_path, this);
+	if (!m_state.replaceVariablesInString(m_path, this))
+		return false;
 
-	replaceVariablesInPathList(m_arguments);
+	if (!replaceVariablesInPathList(m_arguments))
+		return false;
 
 	return true;
 }

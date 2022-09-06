@@ -5,6 +5,8 @@
 
 #include "State/Target/ScriptBuildTarget.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
@@ -24,9 +26,11 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	m_state.replaceVariablesInString(m_file, this);
+	if (!m_state.replaceVariablesInString(m_file, this))
+		return false;
 
-	replaceVariablesInPathList(m_arguments);
+	if (!replaceVariablesInPathList(m_arguments))
+		return false;
 
 	return true;
 }
@@ -34,6 +38,13 @@ bool ScriptBuildTarget::initialize()
 /*****************************************************************************/
 bool ScriptBuildTarget::validate()
 {
+	auto [resolved, scriptType] = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
+	if (scriptType == ScriptType::None)
+		return false;
+
+	m_file = std::move(resolved);
+	m_scriptType = scriptType;
+
 	if (!Commands::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", this->name(), m_file);
@@ -52,6 +63,17 @@ const std::string& ScriptBuildTarget::file() const noexcept
 void ScriptBuildTarget::setFile(std::string&& inValue) noexcept
 {
 	m_file = std::move(inValue);
+}
+
+/*****************************************************************************/
+ScriptType ScriptBuildTarget::scriptType() const noexcept
+{
+	return m_scriptType;
+}
+
+void ScriptBuildTarget::setScriptTye(const ScriptType inType) noexcept
+{
+	m_scriptType = inType;
 }
 
 /*****************************************************************************/

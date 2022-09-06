@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Dependency/IBuildDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -184,6 +185,34 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
 	};
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getExternalDir(const std::string& inName) const
+{
+	for (auto& dep : m_state.externalDependencies)
+	{
+		if (String::equals(dep->name(), inName))
+		{
+			return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+		}
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
+{
+	for (auto& dep : m_state.externalDependencies)
+	{
+		if (String::equals(dep->name(), inName))
+		{
+			return fmt::format("{}/{}", externalBuildDir(), dep->name());
+		}
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

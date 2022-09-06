@@ -15,8 +15,8 @@ bool matchesGnuCStandard(const std::string& inValue);
 bool matchesCxxStandardShort(const std::string& inValue);
 bool matchesFullVersionString(const std::string& inValue);
 bool matchAndReplace(std::string& outText, const std::string& inValue, const std::string& inReplaceValue);
-void matchAndReplaceConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch);
-void matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch);
+bool matchAndReplaceConfigureFileVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch);
+bool matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch);
 }
 }
 

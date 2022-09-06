@@ -556,6 +556,36 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 }
 
 /*****************************************************************************/
+bool Commands::moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
+{
+	CHALET_TRY
+	{
+		fs::path from{ inFrom };
+		fs::path to{ inTo };
+
+		if (Output::showCommands())
+			Output::printCommand(fmt::format("move to path: {} -> {}", inFrom, inTo));
+
+		if (fs::is_directory(from))
+		{
+			return copyDirectory(from, to, inOptions);
+		}
+		else
+		{
+			fs::copy(from, to, inOptions);
+			fs::remove(from);
+		}
+
+		return true;
+	}
+	CHALET_CATCH(const fs::filesystem_error& err)
+	{
+		CHALET_EXCEPT_ERROR(err.what())
+		return false;
+	}
+}
+
+/*****************************************************************************/
 bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting)
 {
 	CHALET_TRY

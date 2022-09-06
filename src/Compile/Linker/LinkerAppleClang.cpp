@@ -33,7 +33,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	if (executable.empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(executable));
+	ret.emplace_back(getQuotedPath(executable));
 
 	ret.emplace_back("-dynamiclib");
 	// ret.emplace_back("-flat_namespace");
@@ -59,7 +59,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addLibDirs(ret);
 
 	ret.emplace_back("-o");
-	ret.push_back(outputFile);
+	ret.emplace_back(getQuotedPath(outputFile));
 	addSourceObjects(ret, sourceObjs);
 
 	addCppFilesystem(ret);

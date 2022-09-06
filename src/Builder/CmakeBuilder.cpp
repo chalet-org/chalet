@@ -312,7 +312,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 	if (!toolset.empty())
 	{
 		ret.emplace_back("-T");
-		ret.push_back(getQuotedPath(toolset));
+		ret.emplace_back(getQuotedPath(toolset));
 	}
 
 	addCmakeDefines(ret);
@@ -320,14 +320,14 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 	if (m_cmakeVersionMajorMinor >= 313)
 	{
 		ret.emplace_back("-S");
-		ret.push_back(getQuotedPath(inLocation));
+		ret.emplace_back(getQuotedPath(inLocation));
 
 		ret.emplace_back("-B");
-		ret.push_back(getQuotedPath(m_outputLocation));
+		ret.emplace_back(getQuotedPath(m_outputLocation));
 	}
 	else
 	{
-		ret.push_back(getQuotedPath(inLocation));
+		ret.emplace_back(getQuotedPath(inLocation));
 	}
 
 	return ret;
@@ -495,7 +495,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 			ret.emplace_back("-v");
 
 		ret.emplace_back("-k");
-		ret.push_back(m_state.info.keepGoing() ? "0" : "1");
+		ret.emplace_back(m_state.info.keepGoing() ? "0" : "1");
 	}
 
 	// LOG(String::join(ret));

@@ -20,7 +20,9 @@ struct IToolchainExecutableBase
 	virtual ~IToolchainExecutableBase() = default;
 
 protected:
-	virtual std::string getQuotedExecutablePath(const std::string& inExecutable) const final;
+	static std::string getQuotedPath(const BuildState& inState, const std::string& inPath);
+
+	virtual std::string getQuotedPath(const std::string& inPath) const final;
 	virtual std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const final;
 
 	const BuildState& m_state;

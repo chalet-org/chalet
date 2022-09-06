@@ -48,7 +48,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	if (m_state.toolchain.linker().empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.linker()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.linker()));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/dll");
 
@@ -92,7 +92,7 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 	if (m_state.toolchain.linker().empty())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.linker()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.linker()));
 	ret.emplace_back("/nologo");
 
 	addLinkerOptions(ret);

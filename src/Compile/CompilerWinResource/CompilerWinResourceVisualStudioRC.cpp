@@ -29,7 +29,7 @@ StringList CompilerWinResourceVisualStudioRC::getCommand(const std::string& inpu
 	if (!m_state.toolchain.canCompilerWindowsResources())
 		return ret;
 
-	ret.emplace_back(getQuotedExecutablePath(m_state.toolchain.compilerWindowsResource()));
+	ret.emplace_back(getQuotedPath(m_state.toolchain.compilerWindowsResource()));
 	ret.emplace_back("/nologo");
 
 	addDefines(ret);
@@ -37,7 +37,7 @@ StringList CompilerWinResourceVisualStudioRC::getCommand(const std::string& inpu
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
-	ret.push_back(inputFile);
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

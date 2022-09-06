@@ -932,10 +932,10 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
 {
 	if (outString.empty())
-		return;
+		return true;
 
 	if (inCheckHome)
 	{
@@ -945,81 +945,110 @@ void BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
-			if (String::equals("cwd", match))
-				return inputs.workingDirectory();
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
+				if (String::equals("cwd", match))
+					return inputs.workingDirectory();
 
-			if (String::equals("architecture", match))
-				return info.targetArchitectureString();
+				if (String::equals("architecture", match))
+					return info.targetArchitectureString();
 
-			if (String::equals("targetTriple", match))
-				return info.targetArchitectureTriple();
+				if (String::equals("targetTriple", match))
+					return info.targetArchitectureTriple();
 
-			if (String::equals("configuration", match))
-				return configuration.name();
+				if (String::equals("configuration", match))
+					return configuration.name();
 
-			if (String::equals("buildDir", match))
-				return paths.buildOutputDir();
+				if (String::equals("buildDir", match))
+					return paths.buildOutputDir();
 
-			if (String::equals("externalDir", match))
-				return inputs.externalDirectory();
+				if (String::equals("home", match))
+					return inputs.homeDirectory();
 
-			if (String::equals("externalBuildDir", match))
-				return paths.externalBuildDir();
-
-			if (String::equals("home", match))
-				return inputs.homeDirectory();
-
-			if (inTarget != nullptr)
-			{
-				if (String::equals("name", match))
-					return inTarget->name();
-			}
-
-			if (String::startsWith("meta:workspace", match))
-			{
-				match = match.substr(14);
-				match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
-
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
-			else if (String::startsWith("meta:", match))
-			{
-				match = match.substr(5);
-				if (inTarget != nullptr && inTarget->isSources())
+				if (inTarget != nullptr)
 				{
-					const auto& project = static_cast<const SourceTarget&>(*inTarget);
-					if (project.hasMetadata())
-					{
-						const auto& metadata = project.metadata();
-						return metadata.getMetadataFromString(match);
-					}
+					if (String::equals("name", match))
+						return inTarget->name();
 				}
 
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
+				if (String::startsWith("meta:workspace", match))
+				{
+					match = match.substr(14);
+					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
 
-			if (String::startsWith("env:", match))
-			{
-				match = match.substr(4);
-				return Environment::getAsString(match.c_str());
-			}
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
+				else if (String::startsWith("meta:", match))
+				{
+					match = match.substr(5);
+					if (inTarget != nullptr && inTarget->isSources())
+					{
+						const auto& project = static_cast<const SourceTarget&>(*inTarget);
+						if (project.hasMetadata())
+						{
+							const auto& metadata = project.metadata();
+							return metadata.getMetadataFromString(match);
+						}
+					}
 
-			if (onFail != nullptr)
-				return onFail(std::move(match));
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
 
-			return std::string();
-		});
+				if (String::startsWith("env:", match))
+				{
+					match = match.substr(4);
+					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("external:", match))
+				{
+					match = match.substr(9);
+					return paths.getExternalDir(match);
+				}
+
+				if (String::startsWith("externalBuild:", match))
+				{
+					match = match.substr(14);
+					return paths.getExternalBuildDir(match);
+				}
+
+				if (String::equals("externalDir", match))
+				{
+					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
+					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
+					return inputs.externalDirectory();
+				}
+
+				if (String::equals("externalBuildDir", match))
+				{
+					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
+					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
+					return paths.externalBuildDir();
+				}
+
+				if (onFail != nullptr)
+					return onFail(std::move(match));
+
+				return std::string();
+			}))
+		{
+			const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+			Diagnostic::error("{}: Target '{}' has an unsupported variable in the value: {}", inputs.inputFile(), name, outString);
+			return false;
+		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/
-void BuildState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+bool BuildState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
 {
 	if (outString.empty())
-		return;
+		return true;
 
 	if (inCheckHome)
 	{
@@ -1029,68 +1058,97 @@ void BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
-			if (String::equals("cwd", match))
-				return inputs.workingDirectory();
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
+				if (String::equals("cwd", match))
+					return inputs.workingDirectory();
 
-			if (String::equals("architecture", match))
-				return info.targetArchitectureString();
+				if (String::equals("architecture", match))
+					return info.targetArchitectureString();
 
-			if (String::equals("targetTriple", match))
-				return info.targetArchitectureTriple();
+				if (String::equals("targetTriple", match))
+					return info.targetArchitectureTriple();
 
-			if (String::equals("configuration", match))
-				return configuration.name();
+				if (String::equals("configuration", match))
+					return configuration.name();
 
-			if (String::equals("buildDir", match))
-				return paths.buildOutputDir();
+				if (String::equals("buildDir", match))
+					return paths.buildOutputDir();
 
-			if (String::equals("distributionDir", match))
-				return inputs.distributionDirectory();
+				if (String::equals("distributionDir", match))
+					return inputs.distributionDirectory();
 
-			if (String::equals("externalDir", match))
-				return inputs.externalDirectory();
+				if (String::equals("home", match))
+					return inputs.homeDirectory();
 
-			if (String::equals("externalBuildDir", match))
-				return paths.externalBuildDir();
+				if (inTarget != nullptr)
+				{
+					if (String::equals("name", match))
+						return inTarget->name();
+				}
 
-			if (String::equals("home", match))
-				return inputs.homeDirectory();
+				if (String::startsWith("meta:workspace", match))
+				{
+					match = match.substr(14);
+					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
 
-			if (inTarget != nullptr)
-			{
-				if (String::equals("name", match))
-					return inTarget->name();
-			}
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
+				else if (String::startsWith("meta:", match))
+				{
+					match = match.substr(5);
 
-			if (String::startsWith("meta:workspace", match))
-			{
-				match = match.substr(14);
-				match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
 
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
-			else if (String::startsWith("meta:", match))
-			{
-				match = match.substr(5);
+				if (String::startsWith("env:", match))
+				{
+					match = match.substr(4);
+					return Environment::getAsString(match.c_str());
+				}
 
-				const auto& metadata = workspace.metadata();
-				return metadata.getMetadataFromString(match);
-			}
+				if (String::startsWith("external:", match))
+				{
+					match = match.substr(9);
+					return paths.getExternalDir(match);
+				}
 
-			if (String::startsWith("env:", match))
-			{
-				match = match.substr(4);
-				return Environment::getAsString(match.c_str());
-			}
+				if (String::startsWith("externalBuild:", match))
+				{
+					match = match.substr(14);
+					return paths.getExternalBuildDir(match);
+				}
 
-			if (onFail != nullptr)
-				return onFail(std::move(match));
+				if (String::equals("externalDir", match))
+				{
+					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
+					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
+					return inputs.externalDirectory();
+				}
 
-			return std::string();
-		});
+				if (String::equals("externalBuildDir", match))
+				{
+					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
+					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
+					return paths.externalBuildDir();
+				}
+
+				if (onFail != nullptr)
+					return onFail(std::move(match));
+
+				return std::string();
+			}))
+		{
+			const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+			Diagnostic::error("{}: Distribution target '{}' has an unsupported variable in: {}", inputs.inputFile(), name, outString);
+			return false;
+		}
 	}
+
+	return true;
 }
 
 /*****************************************************************************/

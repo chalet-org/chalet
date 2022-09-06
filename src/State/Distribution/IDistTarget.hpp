@@ -42,7 +42,7 @@ struct IDistTarget
 	void setIncludeInDistribution(const bool inValue);
 
 protected:
-	void replaceVariablesInPathList(StringList& outList);
+	bool replaceVariablesInPathList(StringList& outList);
 
 	const BuildState& m_state;
 

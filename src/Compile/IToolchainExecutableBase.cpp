@@ -19,12 +19,21 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 }
 
 /*****************************************************************************/
-std::string IToolchainExecutableBase::getQuotedExecutablePath(const std::string& inExecutable) const
+std::string IToolchainExecutableBase::getQuotedPath(const BuildState& inState, const std::string& inPath)
+{
+	if (inState.toolchain.strategy() == StrategyType::Native)
+		return inPath;
+	else
+		return fmt::format("\"{}\"", inPath);
+}
+
+/*****************************************************************************/
+std::string IToolchainExecutableBase::getQuotedPath(const std::string& inPath) const
 {
 	if (m_state.toolchain.strategy() == StrategyType::Native)
-		return inExecutable;
+		return inPath;
 	else
-		return fmt::format("\"{}\"", inExecutable);
+		return fmt::format("\"{}\"", inPath);
 }
 
 /*****************************************************************************/

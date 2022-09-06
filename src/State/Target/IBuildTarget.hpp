@@ -49,8 +49,8 @@ struct IBuildTarget
 	StringList getResolvedRunDependenciesList() const;
 
 protected:
-	void replaceVariablesInPathList(StringList& outList) const;
-	void processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const;
+	bool replaceVariablesInPathList(StringList& outList) const;
+	bool processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const;
 
 	const BuildState& m_state;
 

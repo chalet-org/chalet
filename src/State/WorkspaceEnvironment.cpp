@@ -34,7 +34,9 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 		if (String::contains(path + Environment::getPathSeparator(), originalPathVar))
 			continue;
 
-		inState.replaceVariablesInString(path, static_cast<const IBuildTarget*>(nullptr));
+		if (!inState.replaceVariablesInString(path, static_cast<const IBuildTarget*>(nullptr)))
+			return false;
+
 		addedPath += path;
 		addedPath += Environment::getPathSeparator();
 	}

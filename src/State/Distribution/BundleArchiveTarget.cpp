@@ -33,7 +33,8 @@ BundleArchiveTarget::BundleArchiveTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool BundleArchiveTarget::initialize()
 {
-	replaceVariablesInPathList(m_includes);
+	if (!replaceVariablesInPathList(m_includes))
+		return false;
 
 	return true;
 }
