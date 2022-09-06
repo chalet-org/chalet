@@ -104,15 +104,16 @@ bool RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, 
 }
 
 /*****************************************************************************/
-bool RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string)>& onMatch)
+bool RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string, bool&)>& onMatch)
 {
 	static std::regex re("\\$\\{([\\w:]+)\\}");
 	std::smatch sm;
 	while (std::regex_search(outText, sm, re))
 	{
 		auto prefix = sm.prefix().str();
-		auto replaceValue = onMatch(sm[1].str());
-		if (replaceValue.empty())
+		bool required = true;
+		auto replaceValue = onMatch(sm[1].str(), required);
+		if (required && replaceValue.empty())
 			return false;
 
 		auto suffix = sm.suffix().str();

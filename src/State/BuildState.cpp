@@ -925,7 +925,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -952,6 +952,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 				if (String::startsWith("meta:workspace", match))
 				{
+					required = false;
 					match = match.substr(14);
 					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
 
@@ -960,6 +961,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				}
 				else if (String::startsWith("meta:", match))
 				{
+					required = false;
 					match = match.substr(5);
 					if (inTarget != nullptr && inTarget->isSources())
 					{
@@ -977,6 +979,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 				if (String::startsWith("env:", match))
 				{
+					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
 				}
@@ -984,13 +987,23 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				if (String::startsWith("external:", match))
 				{
 					match = match.substr(9);
-					return paths.getExternalDir(match);
+					auto val = paths.getExternalDir(match);
+					if (val.empty())
+					{
+						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+					}
+					return val;
 				}
 
 				if (String::startsWith("externalBuild:", match))
 				{
 					match = match.substr(14);
-					return paths.getExternalBuildDir(match);
+					auto val = paths.getExternalBuildDir(match);
+					if (val.empty())
+					{
+						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+					}
+					return val;
 				}
 
 				if (String::equals("externalDir", match))
@@ -1038,7 +1051,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -1068,6 +1081,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 				if (String::startsWith("meta:workspace", match))
 				{
+					required = false;
 					match = match.substr(14);
 					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
 
@@ -1078,12 +1092,14 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				{
 					match = match.substr(5);
 
+					required = false;
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);
 				}
 
 				if (String::startsWith("env:", match))
 				{
+					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
 				}
@@ -1091,13 +1107,23 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				if (String::startsWith("external:", match))
 				{
 					match = match.substr(9);
-					return paths.getExternalDir(match);
+					auto val = paths.getExternalDir(match);
+					if (val.empty())
+					{
+						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+					}
+					return val;
 				}
 
 				if (String::startsWith("externalBuild:", match))
 				{
 					match = match.substr(14);
-					return paths.getExternalBuildDir(match);
+					auto val = paths.getExternalBuildDir(match);
+					if (val.empty())
+					{
+						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+					}
+					return val;
 				}
 
 				if (String::equals("externalDir", match))
