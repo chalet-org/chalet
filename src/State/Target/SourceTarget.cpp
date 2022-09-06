@@ -397,9 +397,6 @@ void SourceTarget::addLibDirs(StringList&& inList)
 
 void SourceTarget::addLibDir(std::string&& inValue)
 {
-	if (inValue.back() != '/')
-		inValue += '/';
-
 	List::addIfDoesNotExist(m_libDirs, std::move(inValue));
 }
 
@@ -417,9 +414,6 @@ void SourceTarget::addIncludeDirs(StringList&& inList)
 
 void SourceTarget::addIncludeDir(std::string&& inValue)
 {
-	if (inValue.back() != '/')
-		inValue += '/';
-
 	List::addIfDoesNotExist(m_includeDirs, std::move(inValue));
 }
 
@@ -503,9 +497,6 @@ void SourceTarget::addMacosFrameworkPaths(StringList&& inList)
 
 void SourceTarget::addMacosFrameworkPath(std::string&& inValue)
 {
-	if (inValue.back() != '/')
-		inValue += '/';
-
 	List::addIfDoesNotExist(m_macosFrameworkPaths, inValue);
 }
 
