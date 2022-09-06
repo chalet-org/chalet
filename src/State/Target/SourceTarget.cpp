@@ -35,25 +35,32 @@ bool SourceTarget::initialize()
 	if (List::contains<std::string>(m_warnings, "error"))
 		m_treatWarningsAsErrors = true;
 
-	processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
-		Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
-	});
+	if (!processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
+		}))
+		return false;
 
-	processEachPathList(std::move(m_libDirs), [this](std::string&& inValue) {
-		Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
-	});
+	if (!processEachPathList(std::move(m_libDirs), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
+		}))
+		return false;
 
-	processEachPathList(std::move(m_includeDirs), [this](std::string&& inValue) {
-		Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
-	});
+	if (!processEachPathList(std::move(m_includeDirs), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
+		}))
+		return false;
 
 	m_headers = m_files;
-	processEachPathList(std::move(m_files), [this](std::string&& inValue) {
-		Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
-	});
-	processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
-		Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
-	});
+
+	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
+		}))
+		return false;
+
+	if (!processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
+		}))
+		return false;
 
 	if (!replaceVariablesInPathList(m_defines))
 		return false;
@@ -633,11 +640,12 @@ StringList SourceTarget::getHeaderFiles() const
 	// Used as a last resort (right now, in project export)
 
 	StringList headers = m_headers;
-	processEachPathList(std::move(headers), [&headers](std::string&& inValue) {
-		auto header = String::getPathFolderBaseName(inValue);
-		header += ".{h,hh,hpp,hxx,H,inl,i,ii,ixx,ipp,txx,tpp,tpl,h\\+\\+}";
-		Commands::addPathToListWithGlob(std::move(header), headers, GlobMatch::Files);
-	});
+	if (!processEachPathList(std::move(headers), [&headers](std::string&& inValue) {
+			auto header = String::getPathFolderBaseName(inValue);
+			header += ".{h,hh,hpp,hxx,H,inl,i,ii,ixx,ipp,txx,tpp,tpl,h\\+\\+}";
+			return Commands::addPathToListWithGlob(std::move(header), headers, GlobMatch::Files);
+		}))
+		return StringList{};
 
 	return headers;
 }
