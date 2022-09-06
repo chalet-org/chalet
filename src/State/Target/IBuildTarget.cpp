@@ -70,14 +70,15 @@ bool IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 }
 
 /*****************************************************************************/
-bool IBuildTarget::processEachPathList(StringList inList, std::function<void(std::string&& inValue)> onProcess) const
+bool IBuildTarget::processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const
 {
 	if (!replaceVariablesInPathList(inList))
 		return false;
 
 	for (auto&& val : inList)
 	{
-		onProcess(std::move(val));
+		if (!onProcess(std::move(val)))
+			return false;
 	}
 
 	return true;
