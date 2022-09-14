@@ -24,7 +24,7 @@ Visit [https://www.chalet-work.space](https://www.chalet-work.space) to learn mo
 
 Visit [https://www.chalet-work.space/docs](https://www.chalet-work.space/docs) for the full documentation.
 
-Explore some of the example repositories at: [https://github.com/orgs/chalet-org/repositories](https://github.com/orgs/chalet-org/repositories)
+Explore some of the example repositories at: [https://github.com/orgs/chalet-org/repositories?q=chalet-example](https://github.com/orgs/chalet-org/repositories?q=chalet-example)
 
 ## Download
 
