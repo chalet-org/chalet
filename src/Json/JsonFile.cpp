@@ -143,6 +143,24 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const char* inKey,
 }
 
 /*****************************************************************************/
+std::string JsonFile::getSchema()
+{
+	std::string ret;
+
+	// don't think this even worked...
+	if (json.contains("$schema"))
+	{
+		if (json.at("$schema").is_string())
+		{
+			ret = json.get<std::string>();
+			// json.erase("$schema");
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool JsonFile::validate(Json&& inSchemaJson)
 {
 	if (m_filename.empty())

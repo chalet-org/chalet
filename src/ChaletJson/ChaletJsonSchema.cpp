@@ -32,12 +32,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 {
 	DefinitionMap defs;
 
-	defs[Defs::Schema] = R"json({
-		"type": "string",
-		"description": "",
-		"minLength": 1,
-		"pattern": ""
-	})json"_ojson;
 	//
 	// workspace metadata / root
 	//
@@ -1675,8 +1669,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 {
 	switch (inDef)
 	{
-		case Defs::Schema: return "schema";
-		//
 		case Defs::WorkspaceName: return "workspace-name";
 		case Defs::WorkspaceVersion: return "workspace-version";
 		case Defs::WorkspaceDescription: return "workspace-description";
@@ -1921,8 +1913,6 @@ Json ChaletJsonSchema::get()
 	//
 	ret[SKeys::Properties] = Json::object();
 	ret[SKeys::PatternProperties] = Json::object();
-
-	ret[SKeys::Properties]["$schema"] = getDefinition(Defs::Schema);
 
 	ret[SKeys::Properties]["author"] = getDefinition(Defs::WorkspaceAuthor);
 	ret[SKeys::Properties]["description"] = getDefinition(Defs::WorkspaceDescription);

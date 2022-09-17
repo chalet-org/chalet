@@ -8,12 +8,6 @@
 		"targets"
 	],
 	"definitions": {
-		"schema": {
-			"type": "string",
-			"description": "",
-			"minLength": 1,
-			"pattern": ""
-		},
 		"workspace-name": {
 			"type": "string",
 			"description": "A name to describe the entire workspace.",
@@ -2293,9 +2287,6 @@
 		}
 	},
 	"properties": {
-		"$schema": {
-			"$ref": "#/definitions/schema"
-		},
 		"author": {
 			"$ref": "#/definitions/workspace-author"
 		},

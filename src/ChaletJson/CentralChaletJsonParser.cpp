@@ -10,6 +10,7 @@
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/TargetMetadata.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"

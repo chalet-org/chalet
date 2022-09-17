@@ -33,6 +33,7 @@ struct JsonFile
 	const std::string& filename() const noexcept;
 	void makeNode(const char* inKey, const JsonDataType inType);
 
+	std::string getSchema();
 	bool validate(Json&& inSchemaJson);
 
 	template <typename T>
