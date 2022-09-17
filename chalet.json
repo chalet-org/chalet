@@ -124,6 +124,7 @@
 				"chalet"
 			],
 			"include": [
+				"scripts/chalet-completion-source.sh",
 				"scripts/chalet-completion.sh",
 				"scripts/chalet-completion.bash",
 				"scripts/chalet-completion.zsh",

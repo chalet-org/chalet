@@ -68,6 +68,7 @@ mkdir -p "$PKG_BIN"
 mkdir -p "$PKG_OPT"
 mkdir -p "$PKG_COMPLETIONS"
 
+cp "$DIST_FOLDER/chalet-completion-source.sh" "$PKG_COMPLETIONS/chalet-completion-source.sh"
 cp "$DIST_FOLDER/chalet-completion.sh" "$PKG_COMPLETIONS/chalet-completion.sh"
 cp "$DIST_FOLDER/chalet-completion.bash" "$PKG_COMPLETIONS/chalet-completion.bash"
 cp "$DIST_FOLDER/chalet-completion.zsh" "$PKG_COMPLETIONS/chalet-completion.zsh"
