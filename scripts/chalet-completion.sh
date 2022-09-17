@@ -3,7 +3,7 @@
 _get_toolchain()
 {
 	local _L=($1)
-	for index in "${!_L[@]}"; do
+	for index in ${!_L[@]}; do
 		local cur=${_L[$index]}
 		if [[ $cur == "-t" || $cur == "--toolchain" ]]; then
 			if [[ ${index+1} < ${#_L[@]} ]]; then
