@@ -21,7 +21,8 @@ Unicode true
 	!define FILES_LICENSE "LICENSE.txt"
 	!define FILES_README "README.md"
 	!define FILES_CMD "chalet.cmd"
-	!define FILES_SCRIPTS_BASH_COMPLETION "chalet-completion.sh"
+	!define FILES_SCRIPTS_BASH_COMPLETION "chalet-completion.bash"
+	!define FILES_SCRIPTS_ZSH_COMPLETION "chalet-completion.zsh"
 
 ; output
 	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-windows-installer.exe"
@@ -190,6 +191,7 @@ Section "MainSection" SEC01
 	File "${FOLDERS_DIST}\${FILES_MAIN}"
 
 	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_BASH_COMPLETION}"
+	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_ZSH_COMPLETION}"
 
 ; Shortcuts
 	; CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
@@ -277,6 +279,7 @@ Section Uninstall
 	Delete "$INSTDIR\${FILES_LICENSE}"
 	Delete "$INSTDIR\${FILES_README}"
 	Delete "${OUT_BIN}\${FILES_SCRIPTS_BASH_COMPLETION}"
+	Delete "${OUT_BIN}\${FILES_SCRIPTS_ZSH_COMPLETION}"
 	Delete "${OUT_BIN}\${FILES_MAIN}"
 	Delete "${OUT_BIN}\${FILES_CMD}"
 

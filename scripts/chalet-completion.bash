@@ -1,6 +1,18 @@
 #/usr/bin/env bash
 
-# Note: Don't think _get_architecture logic is possible, but will need to do some digging
+_get_toolchain()
+{
+	local _L=($1)
+	for index in ${!_L[@]}; do
+		local cur=${_L[$index]}
+		if [[ $cur == "-t" || $cur == "--toolchain" ]]; then
+			if [[ ${index+1} < ${#_L[@]} ]]; then
+				_TOOLCHAIN=${_L[$index+1]}
+			fi
+			return 0
+		fi
+	done
+}
 
 _chalet_completions()
 {
@@ -19,7 +31,9 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query all-toolchains)" -- $cur))
 		;;
 	-a|--arch|options.architecture)
+		_get_toolchain "$COMP_LINE"
 		COMPREPLY=($(compgen -W "$(chalet query architectures $_TOOLCHAIN)" -- $cur))
+		unset _TOOLCHAIN
 		;;
 	export)
 		COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
