@@ -33,6 +33,7 @@ _chalet_completions()
 	-a|--arch|options.architecture)
 		_get_toolchain "$COMP_LINE"
 		COMPREPLY=($(compgen -W "$(chalet query architectures $_TOOLCHAIN)" -- $cur))
+		unset _TOOLCHAIN
 		;;
 	export)
 		COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
@@ -59,7 +60,6 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query commands)" -- $cur))
 		;;
 	esac
-	unset _TOOLCHAIN
 }
 
 complete -o nospace -F _chalet_completions chalet
