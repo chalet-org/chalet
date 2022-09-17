@@ -1,4 +1,4 @@
-#/usr/bin/env bash
+#/usr/bin/env sh
 
 # Note: Don't think _get_architecture logic is possible, but will need to do some digging
 
