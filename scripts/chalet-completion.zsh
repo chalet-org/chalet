@@ -2,12 +2,13 @@
 
 _get_toolchain()
 {
+	# Note: this method works in sh, bash & zsh
 	local _L=($1)
-	for index in ${(@k)_L}; do
-		local cur=${_L[$index]}
+	for ((idx = 1; idx <= ${#_L[@]}; idx++)); do
+		local cur=${_L[$idx]}
 		if [[ $cur == "-t" || $cur == "--toolchain" ]]; then
-			if [[ ${index+1} < ${#_L[@]} ]]; then
-				_TOOLCHAIN=${_L[$index+1]}
+			if [[ ${idx+1} < ${#_L[@]} ]]; then
+				_TOOLCHAIN=${_L[$idx+1]}
 			fi
 			return 0
 		fi
