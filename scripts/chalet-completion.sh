@@ -1,10 +1,24 @@
 #/usr/bin/env bash
 
+_get_toolchain()
+{
+	local _L=($1)
+	for index in "${!_L[@]}"; do
+		local cur=${_L[$index]}
+		if [[ $cur == "-t" || $cur == "--toolchain" ]]; then
+			if [[ ${index+1} < ${#_L[@]} ]]; then
+				_TOOLCHAIN=${_L[$index+1]}
+			fi
+			return 0
+		fi
+	done
+}
+
 _chalet_completions()
 {
-	_CMDS=($COMP_LINE)
-	cur="${_CMDS[COMP_CWORD]}"
-	prev="${_CMDS[COMP_CWORD-1]}"
+	local _CMDS=($COMP_LINE)
+	local cur="${_CMDS[COMP_CWORD]}"
+	local prev="${_CMDS[COMP_CWORD-1]}"
 
 	case "${prev}" in
 	run|buildrun|options.runTarget)
@@ -17,7 +31,8 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query all-toolchains)" -- $cur))
 		;;
 	-a|--arch|options.architecture)
-		COMPREPLY=($(compgen -W "$(chalet query architectures)" -- $cur))
+		_get_toolchain "$COMP_LINE"
+		COMPREPLY=($(compgen -W "$(chalet query architectures $_TOOLCHAIN)" -- $cur))
 		;;
 	export)
 		COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
@@ -44,6 +59,7 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query commands)" -- $cur))
 		;;
 	esac
+	unset _TOOLCHAIN
 }
 
 complete -o nospace -F _chalet_completions chalet
