@@ -353,10 +353,17 @@ StringList QueryController::getArchitectures() const
 	}
 	else
 	{
-		return {
-			"auto",
-		};
+		auto toolchainList = getCurrentToolchain();
+		if (!toolchainList.empty())
+		{
+			auto& toolchain = toolchainList.front();
+			return getArchitectures(toolchain);
+		}
 	}
+
+	return {
+		"auto",
+	};
 }
 
 /*****************************************************************************/
