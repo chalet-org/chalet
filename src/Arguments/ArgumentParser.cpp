@@ -265,7 +265,7 @@ bool ArgumentParser::doParse()
 		if (m_routeString.empty())
 		{
 			if (containsOption(Positional::Argument1))
-				Diagnostic::error("Invalid subcommand requested: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
+				Diagnostic::error("Invalid subcommand: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
 			else
 				Diagnostic::error("Invalid argument(s) found. See 'chalet --help'.");
 			return false;
