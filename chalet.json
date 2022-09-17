@@ -1,4 +1,5 @@
 {
+	"$schema": "https://raw.githubusercontent.com/chalet-org/chalet/main/schema/chalet.schema.json",
 	"name": "Chalet",
 	"version": "0.4.3",
 	"description": "A JSON-based project & build tool",
