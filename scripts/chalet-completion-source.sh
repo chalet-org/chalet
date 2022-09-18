@@ -3,8 +3,8 @@
 if [[ $OSTYPE == 'darwin'* ]]; then
 	echo "chalet-completion-source.sh Error: This script isn't supported in macOS. Use 'source' to the completion script of your shell."
 else
+	_CD=$(dirname "$0")
 	_CURSHELL=$(basename $(readlink /proc/$$/exe))
-	_CD=$(dirname "$1")
 
 	if [[ $_CURSHELL == "zsh" ]]; then
 		source $_CD/chalet-completion.zsh
