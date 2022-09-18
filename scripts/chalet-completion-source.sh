@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 if [[ $OSTYPE == 'darwin'* ]]; then
-	echo "This script isn't supported in macOS. Use 'source' to the completion script of your shell."
+	echo "chalet-completion-source.sh Error: This script isn't supported in macOS. Use 'source' to the completion script of your shell."
 else
 	_CURSHELL=$(basename $(readlink /proc/$$/exe))
 	_CD=$(dirname "$1")
