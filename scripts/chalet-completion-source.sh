@@ -12,8 +12,6 @@ else
 		source $_CD/chalet-completion.bash
 	elif [[ $_CURSHELL == "sh" ]]; then
 		source $_CD/chalet-completion.sh
-	elif [[ $_CURSHELL == "fish" ]]; then
-		source $_CD/chalet-completion.fish
 	else
 		echo "chalet-completion-source.sh Error: Unsupported shell \"$_CURSHELL\" - Please open an issue here: https://github.com/chalet-org/chalet/issues"
 	fi
