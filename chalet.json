@@ -128,6 +128,7 @@
 				"scripts/chalet-completion.sh",
 				"scripts/chalet-completion.bash",
 				"scripts/chalet-completion.zsh",
+				"scripts/chalet-completion.fish",
 				"LICENSE.txt",
 				"README.md"
 			],

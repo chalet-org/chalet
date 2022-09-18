@@ -36,6 +36,12 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "$(chalet query architectures $_TOOLCHAIN)" -- $cur))
 		unset _TOOLCHAIN
 		;;
+	-b|--build-strategy|toolchains.*.strategy)
+		COMPREPLY=($(compgen -W "$(chalet query build-strategies)" -- $cur))
+		;;
+	-p|--build-path-style|toolchains.*.buildPathStyle)
+		COMPREPLY=($(compgen -W "$(chalet query build-path-styles)" -- $cur))
+		;;
 	export)
 		COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
 		;;
@@ -44,12 +50,6 @@ _chalet_completions()
 		;;
 	theme)
 		COMPREPLY=($(compgen -W "$(chalet query theme-names)" -- $cur))
-		;;
-	-b|--build-strategy|toolchains.*.strategy)
-		COMPREPLY=($(compgen -W "$(chalet query build-strategies)" -- $cur))
-		;;
-	-p|--build-path-style|toolchains.*.buildPathStyle)
-		COMPREPLY=($(compgen -W "$(chalet query build-path-styles)" -- $cur))
 		;;
 	get|getkeys|set|unset)
 		_CMDS[COMP_CWORD-1]=getkeys

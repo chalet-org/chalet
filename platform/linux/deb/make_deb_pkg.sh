@@ -72,6 +72,7 @@ cp "$DIST_FOLDER/chalet-completion-source.sh" "$PKG_COMPLETIONS/chalet-completio
 cp "$DIST_FOLDER/chalet-completion.sh" "$PKG_COMPLETIONS/chalet-completion.sh"
 cp "$DIST_FOLDER/chalet-completion.bash" "$PKG_COMPLETIONS/chalet-completion.bash"
 cp "$DIST_FOLDER/chalet-completion.zsh" "$PKG_COMPLETIONS/chalet-completion.zsh"
+cp "$DIST_FOLDER/chalet-completion.fish" "$PKG_COMPLETIONS/chalet-completion.fish"
 cp "$DIST_FOLDER/chalet" "$PKG_OPT"
 cp "$DIST_FOLDER/LICENSE.txt" "$PKG_OPT"
 cp "$DIST_FOLDER/README.md" "$PKG_OPT"

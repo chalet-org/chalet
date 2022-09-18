@@ -25,6 +25,7 @@ Unicode true
 	!define FILES_SCRIPTS_SH_COMPLETION "chalet-completion.sh"
 	!define FILES_SCRIPTS_BASH_COMPLETION "chalet-completion.bash"
 	!define FILES_SCRIPTS_ZSH_COMPLETION "chalet-completion.zsh"
+	!define FILES_SCRIPTS_FISH_COMPLETION "chalet-completion.fish"
 
 ; output
 	!define OUTPUT_FILE "${FOLDERS_DIST}\chalet-windows-installer.exe"
@@ -196,6 +197,7 @@ Section "MainSection" SEC01
 	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_SH_COMPLETION}"
 	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_BASH_COMPLETION}"
 	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_ZSH_COMPLETION}"
+	File "${FOLDERS_SCRIPTS}\${FILES_SCRIPTS_FISH_COMPLETION}"
 
 ; Shortcuts
 	; CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
@@ -286,6 +288,7 @@ Section Uninstall
 	Delete "${OUT_BIN}\${FILES_SCRIPTS_SH_COMPLETION}"
 	Delete "${OUT_BIN}\${FILES_SCRIPTS_BASH_COMPLETION}"
 	Delete "${OUT_BIN}\${FILES_SCRIPTS_ZSH_COMPLETION}"
+	Delete "${OUT_BIN}\${FILES_SCRIPTS_FISH_COMPLETION}"
 	Delete "${OUT_BIN}\${FILES_MAIN}"
 	Delete "${OUT_BIN}\${FILES_CMD}"
 
