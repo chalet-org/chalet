@@ -44,6 +44,10 @@ Chalet is released under the [BSD 3-Clause](https://opensource.org/licenses/BSD-
 -   [stduuid](https://github.com/mariusbancila/stduuid) - [MIT license](https://github.com/mariusbancila/stduuid/blob/master/LICENSE)
 -   [Catch2](https://github.com/catchorg/Catch2) - [BSL-1.0 license](https://github.com/catchorg/Catch2/blob/devel/LICENSE.txt)
 
+## Contributing
+
+If you would like to contribute, please review the [CONTRIBUTING.md](CONTRIBUTING.md) document.
+
 
 ## Build from Source
 
