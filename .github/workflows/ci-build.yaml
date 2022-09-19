@@ -104,7 +104,7 @@ jobs:
       - name: "Configure Chalet"
         run: |
           build/Debug/chalet-debug configure
-          build/Debug/chalet-debug set settings.signingIdentity $MACOS_SIGNING_IDENTITY
+          build/Debug/chalet-debug set options.signingIdentity $MACOS_SIGNING_IDENTITY
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"
