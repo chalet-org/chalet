@@ -46,7 +46,7 @@ jobs:
       - name: "Get GCC 11"
         run: |
           sudo apt update
-          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
+          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
         env:
@@ -57,18 +57,18 @@ jobs:
         run: build/Debug/chalet-debug configure
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
-      - name: "Build: Release (arm)"
-        run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
-      - name: "Upload assets (arm)"
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            ./dist/chalet-arm-linux-gnueabihf.zip
-            ./dist/chalet-arm-linux-debian.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
-          prerelease: false
+      # - name: "Build: Release (arm)"
+      #   run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
+      # - name: "Upload assets (arm)"
+      #   uses: softprops/action-gh-release@v1
+      #   if: startsWith(github.ref, 'refs/tags/')
+      #   with:
+      #     files: |
+      #       ./dist/chalet-arm-linux-gnueabihf.zip
+      #       ./dist/chalet-arm-linux-debian.zip
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     draft: true
+      #     prerelease: false
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native-experimental bundle
       - name: "Upload assets (x86_64)"
