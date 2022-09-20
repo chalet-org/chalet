@@ -67,6 +67,8 @@ jobs:
             ./dist/chalet-arm-linux-gnueabihf.zip
             ./dist/chalet-arm-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native-experimental bundle
       - name: "Upload assets (x86_64)"
@@ -77,6 +79,8 @@ jobs:
             ./dist/chalet-x86_64-linux-gnu.zip
             ./dist/chalet-amd64-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet run tests
   MacOS:
@@ -117,6 +121,8 @@ jobs:
         with:
           files: ./dist/chalet-x86_64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Build: Release (arm64)"
         run: build/Debug/chalet-debug -c Release -a arm64 -b native-experimental bundle
       - name: "Upload assets (arm64)"
@@ -125,6 +131,8 @@ jobs:
         with:
           files: ./dist/chalet-arm64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Build: Release (universal)"
         run: build/Debug/chalet-debug -c Release -a universal -b native-experimental bundle
       - name: "Upload assets (universal)"
@@ -133,6 +141,8 @@ jobs:
         with:
           files: ./dist/chalet-universal-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Run: Tests"
         run: build/universal-apple-darwin_Release/chalet run tests
   Windows-MSVC:
@@ -171,6 +181,8 @@ jobs:
             ./dist/chalet-x86_64-pc-windows-msvc.zip
             ./dist/chalet-x86_64-pc-windows-msvc-installer.zip
           token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       # - name: "Build: Release (arm64)"
       #   run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native-experimental bundle
       # - name: "Upload assets (arm64)"
@@ -181,5 +193,7 @@ jobs:
       #       ./dist/chalet-arm64-pc-windows-msvc.zip
       #       ./dist/chalet-arm64-pc-windows-msvc-installer.zip
       #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     draft: true
+      #     prerelease: false
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug run tests
