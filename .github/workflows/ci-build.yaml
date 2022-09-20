@@ -1,3 +1,5 @@
+# Note: Before creating a new major/minor release, update CURRENT_RELEASE_BRANCH
+
 name: Chalet Release
 
 on:
@@ -23,7 +25,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           commitish: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-          draft: false
+          draft: true
           prerelease: false
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
