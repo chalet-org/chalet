@@ -45,7 +45,6 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get GCC 11"
         run: |
-          sudo dpkg --add-architecture armhf
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Fetch Dependencies"
