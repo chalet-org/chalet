@@ -323,7 +323,7 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 	m_pid = fork();
 	if (m_pid == -1)
 	{
-		Diagnostic::error("can't fork process. Error: {}", errno);
+		Diagnostic::error("Couldn't fork process: {}", errno);
 		return false;
 	}
 	else if (m_pid == 0)
