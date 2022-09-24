@@ -137,11 +137,11 @@ CommandLineInputs::CommandLineInputs() :
 /*****************************************************************************/
 void CommandLineInputs::detectToolchainPreference() const
 {
-	if (!m_toolchainPreferenceName.empty())
-		return;
-
-	const auto& defaultPreset = defaultToolchainPreset();
-	m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	if (m_toolchainPreferenceName.empty())
+	{
+		const auto& defaultPreset = defaultToolchainPreset();
+		m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	}
 }
 
 /*****************************************************************************/

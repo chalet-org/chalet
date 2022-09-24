@@ -5,8 +5,6 @@
 
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 
-#include <thread>
-
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/CentralState.hpp"
@@ -41,7 +39,7 @@ bool GlobalSettingsJsonParser::serialize(IntermediateSettingsState& outState)
 }
 
 /*****************************************************************************/
-bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
+bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inState)
 {
 	// Create the json cache
 	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
@@ -56,127 +54,38 @@ bool GlobalSettingsJsonParser::makeCache(IntermediateSettingsState& outState)
 
 	Json& buildOptions = m_jsonFile.json.at(Keys::Options);
 
-	auto assignSettingsBool = [&](const char* inKey, const bool inDefault, const std::function<std::optional<bool>()>& onGetValue) {
-		m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, [&inDefault]() {
-			return inDefault;
-		});
-		auto value = onGetValue();
-		if (value.has_value())
-		{
-			buildOptions[inKey] = *value;
-		}
+	auto assignSettingBool = [this, &buildOptions](const char* inKey, const bool inDefault) {
+		return m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, inDefault);
 	};
 
-	auto assignSettingsUint = [&](const char* inKey, const uint inDefault, const std::function<std::optional<uint>()>& onGetValue) {
-		m_jsonFile.assignNodeIfEmpty<uint>(buildOptions, inKey, [&inDefault]() {
-			return inDefault;
-		});
-		auto value = onGetValue();
-		if (value.has_value())
-		{
-			buildOptions[inKey] = *value;
-		}
+	auto assignSettingUint = [this, &buildOptions](const char* inKey, const uint inDefault) {
+		return m_jsonFile.assignNodeIfEmpty<uint>(buildOptions, inKey, inDefault);
 	};
 
-	auto assignSettingsString = [&](const char* inKey, const std::function<std::string()>& onAssign) {
-		m_jsonFile.assignNodeIfEmpty<std::string>(buildOptions, inKey, []() {
-			return std::string();
-		});
-		std::string value = buildOptions.at(inKey).get<std::string>();
-		if (value.empty())
-		{
-			buildOptions[inKey] = onAssign();
-		}
+	auto assignSettingString = [this, &buildOptions](const char* inKey, const std::string& inDefault) {
+		return m_jsonFile.assignNodeIfEmpty<std::string>(buildOptions, inKey, inDefault);
 	};
 
-	assignSettingsBool(Keys::OptionsDumpAssembly, outState.dumpAssembly, [&]() {
-		return m_centralState.inputs().dumpAssembly();
-	});
+	assignSettingBool(Keys::OptionsDumpAssembly, inState.dumpAssembly);
+	assignSettingBool(Keys::OptionsShowCommands, inState.showCommands);
+	assignSettingBool(Keys::OptionsBenchmark, inState.benchmark);
+	assignSettingBool(Keys::OptionsLaunchProfiler, inState.launchProfiler);
+	assignSettingBool(Keys::OptionsKeepGoing, inState.keepGoing);
+	assignSettingBool(Keys::OptionsGenerateCompileCommands, inState.generateCompileCommands);
+	assignSettingUint(Keys::OptionsMaxJobs, inState.maxJobs);
+	assignSettingString(Keys::OptionsBuildConfiguration, inState.buildConfiguration);
+	assignSettingString(Keys::OptionsToolchain, inState.toolchainPreference);
+	assignSettingString(Keys::OptionsArchitecture, inState.architecturePreference);
+	assignSettingString(Keys::OptionsInputFile, inState.inputFile);
+	assignSettingString(Keys::OptionsEnvFile, inState.envFile);
+	assignSettingString(Keys::OptionsOutputDirectory, inState.outputDirectory);
+	assignSettingString(Keys::OptionsExternalDirectory, inState.externalDirectory);
+	assignSettingString(Keys::OptionsDistributionDirectory, inState.distributionDirectory);
+	assignSettingString(Keys::OptionsSigningIdentity, inState.signingIdentity);
+	assignSettingString(Keys::OptionsRunTarget, inState.runTarget);
 
-	assignSettingsBool(Keys::OptionsShowCommands, outState.showCommands, [&]() {
-		return m_centralState.inputs().showCommands();
-	});
-
-	assignSettingsBool(Keys::OptionsBenchmark, outState.benchmark, [&]() {
-		return m_centralState.inputs().benchmark();
-	});
-
-	assignSettingsBool(Keys::OptionsLaunchProfiler, outState.launchProfiler, [&]() {
-		return m_centralState.inputs().launchProfiler();
-	});
-
-	assignSettingsBool(Keys::OptionsKeepGoing, outState.keepGoing, [&]() {
-		return m_centralState.inputs().keepGoing();
-	});
-
-	assignSettingsBool(Keys::OptionsGenerateCompileCommands, outState.generateCompileCommands, [&]() {
-		return m_centralState.inputs().generateCompileCommands();
-	});
-
-	{
-		uint maxJobs = outState.maxJobs == 0 ? std::thread::hardware_concurrency() : outState.maxJobs;
-		assignSettingsUint(Keys::OptionsMaxJobs, maxJobs, [&]() {
-			return m_centralState.inputs().maxJobs();
-		});
-	}
-
-	assignSettingsString(Keys::OptionsBuildConfiguration, [&]() {
-		m_centralState.detectBuildConfiguration();
-		outState.buildConfiguration = m_centralState.inputs().buildConfiguration();
-		return outState.buildConfiguration;
-	});
-
-	assignSettingsString(Keys::OptionsToolchain, [&]() {
-		m_centralState.inputs().detectToolchainPreference();
-		outState.toolchainPreference = m_centralState.inputs().toolchainPreferenceName();
-		return outState.toolchainPreference;
-	});
-
-	assignSettingsString(Keys::OptionsArchitecture, [&]() {
-		outState.architecturePreference = m_centralState.inputs().architectureRaw();
-		return outState.architecturePreference;
-	});
-
-	assignSettingsString(Keys::OptionsInputFile, [&]() {
-		outState.inputFile = m_centralState.inputs().defaultInputFile();
-		return outState.inputFile;
-	});
-
-	assignSettingsString(Keys::OptionsEnvFile, [&]() {
-		outState.envFile = m_centralState.inputs().defaultEnvFile();
-		return outState.envFile;
-	});
-
-	buildOptions[Keys::OptionsRootDirectory] = std::string(); // Root directory should never be set globally
-	// assignSettingsString(Keys::OptionsRootDirectory, [&]() {
-	// 	outState.rootDirectory = m_centralState.inputs().rootDirectory();
-	// 	return outState.rootDirectory;
-	// });
-
-	assignSettingsString(Keys::OptionsOutputDirectory, [&]() {
-		outState.outputDirectory = m_centralState.inputs().defaultOutputDirectory();
-		return outState.outputDirectory;
-	});
-
-	assignSettingsString(Keys::OptionsExternalDirectory, [&]() {
-		outState.externalDirectory = m_centralState.inputs().defaultExternalDirectory();
-		return outState.externalDirectory;
-	});
-
-	assignSettingsString(Keys::OptionsDistributionDirectory, [&]() {
-		outState.distributionDirectory = m_centralState.inputs().defaultDistributionDirectory();
-		return outState.distributionDirectory;
-	});
-
-	assignSettingsString(Keys::OptionsSigningIdentity, [&]() {
-		outState.signingIdentity = std::string();
-		return outState.signingIdentity;
-	});
-
-	assignSettingsString(Keys::OptionsRunTarget, [&]() {
-		outState.runTarget = std::string();
-		return outState.runTarget;
-	});
+	chalet_assert(inState.rootDirectory.empty(), "Root directory should never be set globally");
+	buildOptions[Keys::OptionsRootDirectory] = inState.rootDirectory;
 
 	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
 	{

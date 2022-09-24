@@ -40,12 +40,12 @@ struct JsonFile
 	bool assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const;
 
 	template <typename T>
-	bool assignNodeIfEmpty(Json& outNode, const char* inKey, const std::function<T()>& onAssign);
+	bool assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue);
 
 	template <typename T>
 	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
 
-	bool assignStringIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA = nullptr);
+	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
 
 	template <typename T>
 	bool containsKeyForType(const Json& inNode, const char* inKey) const;

@@ -67,7 +67,6 @@ private:
 
 	bool makeDefaultBuildConfigurations();
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
-	void detectBuildConfiguration();
 
 	void shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent);
 
