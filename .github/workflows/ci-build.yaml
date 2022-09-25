@@ -4,34 +4,16 @@ name: Chalet Release
 
 on:
   push:
+    branches:
+      - ${{ secrets.CURRENT_RELEASE_BRANCH }}
     tags:
       - "v*"
   release:
     types: [created]
 
 jobs:
-  Release:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: "Create Release"
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          commitish: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-          draft: true
-          prerelease: false
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
   Linux-Ubuntu:
-    needs: Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash
@@ -43,37 +25,37 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-      - name: "Get GCC 11"
+      - name: "Get Packages"
         run: |
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
+      - name: "Get ARM packages"
+        run: |
+          curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
+          sudo dpkg --force-confold -i ./uuid-dev-armhf.deb
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Configure Chalet"
         run: build/Debug/chalet-debug configure
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
-      # - name: "Build: Release (arm)"
-      #   run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
-      # - name: "Upload assets (arm)"
-      #   uses: softprops/action-gh-release@v1
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   with:
-      #     files: |
-      #       ./dist/chalet-arm-linux-gnueabihf.zip
-      #       ./dist/chalet-arm-linux-debian.zip
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     draft: true
-      #     prerelease: false
+      - name: "Build: Release (arm)"
+        run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
+      - name: "Upload assets (arm)"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/chalet-arm-linux-gnueabihf.zip
+            ./dist/chalet-arm-linux-debian.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native-experimental bundle
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             ./dist/chalet-x86_64-linux-gnu.zip
@@ -84,8 +66,7 @@ jobs:
       - name: "Run: Tests"
         run: build/x86_64-linux-gnu_Release/chalet run tests
   MacOS:
-    needs: Release
-    runs-on: macos-latest
+    runs-on: macos-11
     defaults:
       run:
         shell: bash
@@ -103,8 +84,6 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Configure Chalet"
@@ -117,7 +96,6 @@ jobs:
         run: build/Debug/chalet-debug -c Release -a x86_64 -b native-experimental bundle
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./dist/chalet-x86_64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -127,7 +105,6 @@ jobs:
         run: build/Debug/chalet-debug -c Release -a arm64 -b native-experimental bundle
       - name: "Upload assets (arm64)"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./dist/chalet-arm64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -137,7 +114,6 @@ jobs:
         run: build/Debug/chalet-debug -c Release -a universal -b native-experimental bundle
       - name: "Upload assets (universal)"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: ./dist/chalet-universal-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -146,22 +122,21 @@ jobs:
       - name: "Run: Tests"
         run: build/universal-apple-darwin_Release/chalet run tests
   Windows-MSVC:
-    needs: Release
     runs-on: windows-latest
     defaults:
       run:
         shell: bash
     steps:
       - name: "Get MSVC Environment"
-        uses: ilammy/msvc-dev-cmd@v1
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64
       - name: "Checkout"
         uses: actions/checkout@v2
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Show Version Info"
         run: |
           makensis -version
@@ -175,7 +150,6 @@ jobs:
         run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 -b native-experimental bundle
       - name: "Upload assets (x64)"
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
             ./dist/chalet-x86_64-pc-windows-msvc.zip
@@ -183,17 +157,20 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: false
-      # - name: "Build: Release (arm64)"
-      #   run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native-experimental bundle
-      # - name: "Upload assets (arm64)"
-      #   uses: softprops/action-gh-release@v1
-      #   if: startsWith(github.ref, 'refs/tags/')
-      #   with:
-      #     files: |
-      #       ./dist/chalet-arm64-pc-windows-msvc.zip
-      #       ./dist/chalet-arm64-pc-windows-msvc-installer.zip
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     draft: true
-      #     prerelease: false
+      - name: "Change MSVC Environment"
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: amd64_arm64
+      - name: "Build: Release (arm64)"
+        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native-experimental bundle
+      - name: "Upload assets (arm64)"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/chalet-arm64-pc-windows-msvc.zip
+            ./dist/chalet-arm64-pc-windows-msvc-installer.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Run: Tests"
         run: build/msvc_Debug/chalet-debug run tests
