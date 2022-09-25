@@ -126,7 +126,7 @@ jobs:
         shell: bash
     steps:
       - name: "Get MSVC Environment"
-      - uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64
       - name: "Checkout"
