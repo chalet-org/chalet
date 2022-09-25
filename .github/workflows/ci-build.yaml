@@ -156,7 +156,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Change MSVC Environment"
-      - uses: ilammy/msvc-dev-cmd@v1
+        uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: amd64_arm64
       - name: "Build: Release (arm64)"
