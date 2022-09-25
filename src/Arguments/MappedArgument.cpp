@@ -34,9 +34,30 @@ const std::string& MappedArgument::keyLong() const noexcept
 	return m_keyLong;
 }
 
+const std::string& MappedArgument::keyLabel() const noexcept
+{
+	return m_keyLabel;
+}
+
 const Variant& MappedArgument::value() const noexcept
 {
 	return m_value;
+}
+
+/*****************************************************************************/
+MappedArgument& MappedArgument::addBooleanArgument(std::string inOption)
+{
+	if (!String::startsWith("--[no-]", inOption))
+		return addArgument(inOption);
+
+	auto baseArgument = inOption.substr(7);
+	chalet_assert(baseArgument.size() > 0, "");
+
+	m_key = fmt::format("--{}", baseArgument);
+	m_keyLong = fmt::format("--no-{}", baseArgument);
+	m_keyLabel = inOption;
+
+	return *this;
 }
 
 /*****************************************************************************/

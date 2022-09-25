@@ -19,8 +19,10 @@ struct MappedArgument
 
 	const std::string& key() const noexcept;
 	const std::string& keyLong() const noexcept;
+	const std::string& keyLabel() const noexcept;
 	const Variant& value() const noexcept;
 
+	MappedArgument& addBooleanArgument(std::string inOption);
 	MappedArgument& addArgument(std::string_view inOption);
 	MappedArgument& addArgument(std::string_view inShort, std::string_view inLong);
 
@@ -39,6 +41,7 @@ private:
 
 	std::string m_key;
 	std::string m_keyLong;
+	std::string m_keyLabel;
 
 	std::string m_help;
 
