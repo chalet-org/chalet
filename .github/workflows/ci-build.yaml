@@ -4,6 +4,8 @@ name: Chalet Release
 
 on:
   push:
+    branches:
+      - ${{ secrets.CURRENT_RELEASE_BRANCH }}
     tags:
       - "v*"
   release:
