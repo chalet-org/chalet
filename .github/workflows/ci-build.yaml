@@ -25,9 +25,8 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get Packages"
         run: |
-          sudo dpkg --add-architecture armhf
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net focal universe multiverse"
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net focal-updates universe multiverse"
+          sudo add-apt-repository "deb [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main"
+          sudo add-apt-repository "deb-src [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main"
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf uuid-dev:armhf
       - name: "Fetch Dependencies"
