@@ -30,7 +30,7 @@ jobs:
       - name: "Get ARM packages"
         run: |
           curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
-          sudo dpkg --force-confold -aarmhf -i ./uuid-dev-armhf.deb
+          sudo dpkg --force-confold -a armhf -i ./uuid-dev-armhf.deb
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
