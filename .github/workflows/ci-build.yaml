@@ -25,17 +25,11 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get Packages"
         run: |
-          sudo apt update
-          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
-      - name: "Get ARM packages"
-        run: |
-          curl http://launchpadlibrarian.net/596552917/libc6_2.31-0ubuntu9.9_armhf.deb --output ./libc6-armhf.deb
-          curl http://launchpadlibrarian.net/585023328/libuuid1_2.34-0.1ubuntu9.3_armhf.deb --output ./libuuid1-armhf.deb
-          curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
           sudo dpkg --add-architecture armhf
-          sudo dpkg --force-confold -i ./libc6-armhf.deb
-          sudo dpkg --force-confold -i ./libuuid1-armhf.deb
-          sudo dpkg --force-confold -i ./uuid-dev-armhf.deb
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/ubuntu/ focal universe multiverse"
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/ubuntu/ focal-updates universe multiverse"
+          sudo apt update
+          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf uuid-dev:armhf
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
