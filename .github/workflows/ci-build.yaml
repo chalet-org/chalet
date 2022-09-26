@@ -25,14 +25,8 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get Packages"
         run: |
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ADCE2AF3A4E0014F
-          sudo curl https://gist.githubusercontent.com/vczb/694d55169f67a3b2ad20df1385a3e983/raw/7f73c9b98bf70b0c0d87d49301a552f78d5efd86/sources.list --output /etc/apt/sources.list
-          sudo add-apt-repository -s ppa:ubuntu-security-proposed/ppa
-          sudo dpkg --add-architecture armhf
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
-          curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
-          sudo dpkg --force-confold -i ./uuid-dev-armhf.deb
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
@@ -41,17 +35,17 @@ jobs:
         run: build/Debug/chalet-debug configure
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
-      - name: "Build: Release (arm)"
-        run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
-      - name: "Upload assets (arm)"
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            ./dist/chalet-arm-linux-gnueabihf.zip
-            ./dist/chalet-arm-linux-debian.zip
-          token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
-          prerelease: false
+      # - name: "Build: Release (arm)"
+      #   run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
+      # - name: "Upload assets (arm)"
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     files: |
+      #       ./dist/chalet-arm-linux-gnueabihf.zip
+      #       ./dist/chalet-arm-linux-debian.zip
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     draft: true
+      #     prerelease: false
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native-experimental bundle
       - name: "Upload assets (x86_64)"
