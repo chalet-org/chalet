@@ -27,6 +27,7 @@ jobs:
         run: |
           sudo add-apt-repository "deb [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main"
           sudo add-apt-repository "deb-src [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main"
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ADCE2AF3A4E0014F
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf uuid-dev:armhf
       - name: "Fetch Dependencies"
