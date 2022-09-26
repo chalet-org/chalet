@@ -23,15 +23,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
+      - name: "Get Packages"
+        run: |
+          sudo apt update
+          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Get ARM packages"
         run: |
           curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
           sudo dpkg --add-architecture armhf
           sudo dpkg --force-confold -i ./uuid-dev-armhf.deb
-      - name: "Get Packages"
-        run: |
-          sudo apt update
-          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabi
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
