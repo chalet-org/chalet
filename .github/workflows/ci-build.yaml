@@ -25,7 +25,7 @@ jobs:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Get Packages"
         run: |
-          sudo add-apt-repository -s ppa:ubuntu-security-proposed/ppa
+          sudo add-apt-repository -s -r ppa:ubuntu-security-proposed/ppa
           sudo add-apt-repository "deb [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main universe"
           sudo add-apt-repository "deb [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal-updates main universe"
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ADCE2AF3A4E0014F
