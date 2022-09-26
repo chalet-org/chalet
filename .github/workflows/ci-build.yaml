@@ -58,7 +58,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Run: Tests"
-        run: build/x86_64-linux-gnu_Release/chalet run tests
+        run: build/Debug/chalet-debug run tests
   MacOS:
     runs-on: macos-11
     defaults:
@@ -114,7 +114,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Run: Tests"
-        run: build/universal-apple-darwin_Release/chalet run tests
+        run: build/Debug/chalet-debug run tests
   Windows-MSVC:
     runs-on: windows-latest
     defaults:
@@ -151,6 +151,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: false
+      - name: "Run: Tests"
+        run: build/msvc_Debug/chalet-debug run tests
       - name: "Change MSVC Environment"
         uses: ilammy/msvc-dev-cmd@v1
         with:
@@ -166,5 +168,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: false
-      - name: "Run: Tests"
-        run: build/msvc_Debug/chalet-debug run tests
