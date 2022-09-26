@@ -26,7 +26,9 @@ jobs:
       - name: "Get Packages"
         run: |
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ADCE2AF3A4E0014F
-          sudo add-apt-repository "deb [arch=armhf] https://ppa.launchpadcontent.net/ubuntu-security-proposed/ppa/ubuntu/ focal main"
+          sudo curl https://gist.githubusercontent.com/vczb/694d55169f67a3b2ad20df1385a3e983/raw/7f73c9b98bf70b0c0d87d49301a552f78d5efd86/sources.list --output /etc/apt/sources.list
+          sudo add-apt-repository -s ppa:ubuntu-security-proposed/ppa
+          sudo dpkg --add-architecture armhf
           sudo apt update
           sudo apt install gcc-11 g++-11 zip debhelper uuid-dev ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
           curl http://launchpadlibrarian.net/585023317/uuid-dev_2.34-0.1ubuntu9.3_armhf.deb --output ./uuid-dev-armhf.deb
