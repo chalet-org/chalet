@@ -45,6 +45,11 @@ CH_STR(RemainingArguments) = "...";
 
 #undef CH_STR
 
+namespace
+{
+constexpr std::size_t kColumnSize = 32;
+}
+
 /*****************************************************************************/
 ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 	BaseArgumentParser(),
@@ -452,8 +457,6 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 /*****************************************************************************/
 std::string ArgumentParser::getHelp()
 {
-	constexpr std::size_t kColumnSize = 32;
-
 	std::string title = "Chalet - A cross-platform JSON-based project & build tool";
 
 	std::string help;
@@ -797,7 +800,7 @@ void ArgumentParser::populateMainArguments()
 		for (std::size_t i = 0; i < subcommands.size(); ++i)
 		{
 			std::string line = subcommands.at(i);
-			while (line.size() < 28)
+			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
 			line += descriptions.at(i);

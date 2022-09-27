@@ -281,8 +281,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -1164,7 +1164,6 @@ std::string BuildState::getUniqueIdForState() const
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
-	// const auto& strategy = toolchain.strategyString();
 	const auto& buildConfig = info.buildConfiguration();
 	const auto extensions = String::join(paths.allFileExtensions(), '_');
 

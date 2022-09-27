@@ -165,15 +165,18 @@ bool CompilerTools::parseVersionString(CompilerInfo& outInfo)
 bool CompilerTools::validate()
 {
 	bool valid = true;
+	// Note: These get validated in ToolchainSettingsJsonParser::makeToolchain
+	//  this is a fallback...
+	//
 	if (m_strategy == StrategyType::None)
 	{
-		Diagnostic::error("Invalid toolchain strategy type: {}", m_strategyString);
+		Diagnostic::error("Invalid toolchain strategy.");
 		valid = false;
 	}
 
 	if (m_buildPathStyle == BuildPathStyle::None)
 	{
-		Diagnostic::error("Invalid toolchain buildPathStyle type: {}", m_buildPathStyleString);
+		Diagnostic::error("Invalid toolchain buildPathStyle.");
 		valid = false;
 	}
 
@@ -283,15 +286,8 @@ void CompilerTools::setStrategy(const StrategyType inValue) noexcept
 	m_strategy = inValue;
 }
 
-const std::string& CompilerTools::strategyString() const noexcept
-{
-	return m_strategyString;
-}
-
 void CompilerTools::setStrategy(const std::string& inValue) noexcept
 {
-	m_strategyString = inValue;
-
 	auto strategyTypes = getStrategyTypes();
 	if (strategyTypes.find(inValue) != strategyTypes.end())
 		m_strategy = strategyTypes.at(inValue);
@@ -311,15 +307,8 @@ BuildPathStyle CompilerTools::buildPathStyle() const noexcept
 	return m_buildPathStyle;
 }
 
-const std::string& CompilerTools::buildPathStyleString() const noexcept
-{
-	return m_buildPathStyleString;
-}
-
 void CompilerTools::setBuildPathStyle(const std::string& inValue) noexcept
 {
-	m_buildPathStyleString = inValue;
-
 	auto styles = getBuildPathStyleTypes();
 	if (styles.find(inValue) != styles.end())
 		m_buildPathStyle = styles.at(inValue);

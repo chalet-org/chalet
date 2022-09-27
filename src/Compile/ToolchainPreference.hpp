@@ -23,8 +23,8 @@ struct ToolchainPreference
 	std::string disassembler;
 
 	ToolchainType type = ToolchainType::Unknown;
-	StrategyType strategy = StrategyType::Makefile;
-	BuildPathStyle buildPathStyle = BuildPathStyle::TargetTriple;
+	StrategyType strategy = StrategyType::None;
+	BuildPathStyle buildPathStyle = BuildPathStyle::None;
 
 	void setType(const ToolchainType inType);
 };
