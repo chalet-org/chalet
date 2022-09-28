@@ -417,6 +417,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 			return {
 				std::move(kAuto),
 				"arm64",
+				"arm64_arm64",
 				"arm64_x64",
 				"arm64_x86",
 			};
@@ -428,11 +429,13 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 				"x86_64",
 				"i686",
 				"x64",
+				"x86",
+				"x64_x64",
 				"x64_x86",
 				"x64_arm",
 				"x64_arm64",
+				"x86_x86",
 				"x86_x64",
-				"x86",
 				"x86_arm",
 				"x86_arm64",
 			};
