@@ -59,8 +59,6 @@ bool CentralState::initialize()
 	// 	return false;
 
 	{
-		m_inputs.detectToolchainPreference();
-
 		// Set global defaults here
 		IntermediateSettingsState state;
 		state.maxJobs = std::thread::hardware_concurrency();
@@ -88,6 +86,9 @@ bool CentralState::initialize()
 		if (!parseLocalSettingsJson(state))
 			return false;
 	}
+
+	// If no toolchain was found in inputs or settings, use the default
+	m_inputs.detectToolchainPreference();
 
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
