@@ -353,6 +353,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_LIBRARY_ARCHITECTURE",
 			"CMAKE_LIBRARY_PATH",
 			"CMAKE_INCLUDE_PATH",
+			"CMAKE_SYSROOT",
 			"CMAKE_BUILD_WITH_INSTALL_RPATH",
 			"CMAKE_FIND_ROOT_PATH_MODE_PROGRAM",
 			"CMAKE_FIND_ROOT_PATH_MODE_LIBRARY",
@@ -431,7 +432,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 				outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + getQuotedPath(String::join(paths, ';')));
 		}
 
-		if (!isDefined["CMAKE_INCLUDE_PATH"])
+		/*if (!isDefined["CMAKE_INCLUDE_PATH"])
 		{
 			StringList paths;
 			if (!m_state.toolchain.compilerCpp().includeDir.empty())
@@ -442,7 +443,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 			if (!paths.empty())
 				outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + getQuotedPath(String::join(paths, ';')));
-		}
+		}*/
 
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
 		{
