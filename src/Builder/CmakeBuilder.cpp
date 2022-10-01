@@ -392,12 +392,21 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
-	/*
-		CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER
-		CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY
-		CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY
-		CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY
-	*/
+	if (!isDefined["CMAKE_LIBRARY_PATH"])
+	{
+		StringList libraryPaths;
+		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().libDir);
+		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().libDir));
+		outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + String::join(libraryPaths, ':'));
+	}
+
+	if (!isDefined["CMAKE_INCLUDE_PATH"])
+	{
+		StringList libraryPaths;
+		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().includeDir);
+		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().includeDir));
+		outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + String::join(libraryPaths, ':'));
+	}
 
 	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
 	{
