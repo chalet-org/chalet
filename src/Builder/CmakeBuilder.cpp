@@ -397,7 +397,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		StringList libraryPaths;
 		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().libDir);
 		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().libDir));
-		outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + String::join(libraryPaths, ':'));
+		outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + getQuotedPath(String::join(libraryPaths, ':')));
 	}
 
 	if (!isDefined["CMAKE_INCLUDE_PATH"])
@@ -405,7 +405,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		StringList libraryPaths;
 		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().includeDir);
 		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().includeDir));
-		outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + String::join(libraryPaths, ':'));
+		outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + getQuotedPath(String::join(libraryPaths, ':')));
+	}
+
+	// CMAKE_LIBRARY_ARCHITECTURE
+	if (!isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
+	{
+		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", m_state.info.targetArchitectureTriple()));
 	}
 
 	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
