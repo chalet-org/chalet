@@ -392,42 +392,9 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
-	/*if (!isDefined["CMAKE_LIBRARY_PATH"])
-	{
-		StringList libraryPaths;
-		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().libDir);
-		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().libDir));
-		outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + getQuotedPath(String::join(libraryPaths, ';')));
-	}
-
-	if (!isDefined["CMAKE_INCLUDE_PATH"])
-	{
-		StringList libraryPaths;
-		libraryPaths.emplace_back(m_state.toolchain.compilerCpp().includeDir);
-		List::addIfDoesNotExist(libraryPaths, std::string(m_state.toolchain.compilerC().includeDir));
-		outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + getQuotedPath(String::join(libraryPaths, ';')));
-	}*/
-
 	if (!isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
 	{
 		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", m_state.info.targetArchitectureTriple()));
-	}
-
-	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
-	{
-		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER");
-	}
-	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_LIBRARY"])
-	{
-		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY");
-	}
-	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_INCLUDE"])
-	{
-		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY");
-	}
-	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"])
-	{
-		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY");
 	}
 
 #if defined(CHALET_WIN32)
