@@ -392,6 +392,30 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
+	/*
+		CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER
+		CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY
+		CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY
+		CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY
+	*/
+
+	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
+	{
+		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER");
+	}
+	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_LIBRARY"])
+	{
+		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY");
+	}
+	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_INCLUDE"])
+	{
+		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY");
+	}
+	if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"])
+	{
+		outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY");
+	}
+
 #if defined(CHALET_WIN32)
 	/*if (!isDefined["CMAKE_SH"])
 	{
