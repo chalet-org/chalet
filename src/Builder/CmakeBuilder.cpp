@@ -392,6 +392,11 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
+	if (!isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
+	{
+		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", m_state.info.targetArchitectureTriple()));
+	}
+
 #if defined(CHALET_WIN32)
 	/*if (!isDefined["CMAKE_SH"])
 	{
