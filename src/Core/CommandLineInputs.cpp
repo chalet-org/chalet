@@ -1046,7 +1046,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 		ret.cpp = "clang++";
 		ret.cc = "clang";
+#if defined(CHALET_LINUX)
+		ret.rc = "llvm-windres";
+#else
 		ret.rc = "llvm-rc";
+#endif
 		ret.linker = "lld";
 		ret.archiver = "ar";
 		ret.profiler = "gprof";

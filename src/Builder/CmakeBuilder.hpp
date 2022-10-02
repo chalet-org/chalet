@@ -35,6 +35,8 @@ private:
 	std::string getArchitecture() const;
 	void addCmakeDefines(StringList& outList) const;
 	std::string getCMakeCompatibleBuildConfiguration() const;
+	std::string getCmakeSystemName(const std::string& inTargetTriple) const;
+
 	std::string getQuotedPath(const std::string& inPath) const;
 
 	bool usesNinja() const;

@@ -27,7 +27,7 @@ void LinkerLLVMClang::addLinks(StringList& outArgList) const
 {
 	LinkerGCC::addLinks(outArgList);
 
-	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang())
+	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang() || m_state.environment->isWindowsTarget())
 	{
 		const std::string prefix{ "-l" };
 		auto win32Links = getWin32CoreLibraryLinks();
