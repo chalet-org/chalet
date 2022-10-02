@@ -121,7 +121,7 @@ void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
 }
 
 /*****************************************************************************/
-bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB, const std::function<void()>& onAssignA)
+bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
 {
 	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
 	{
@@ -132,14 +132,29 @@ bool JsonFile::assignStringIfEmptyWithFallback(Json& outNode, const char* inKey,
 	auto value = outNode.at(inKey).get<std::string>();
 	if (!inValueA.empty() && inValueA != value)
 	{
-		if (onAssignA != nullptr)
-			onAssignA();
-
 		outNode[inKey] = inValueA;
 		setDirty(true);
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string JsonFile::getSchema()
+{
+	std::string ret;
+
+	// don't think this even worked...
+	if (json.contains("$schema"))
+	{
+		if (json.at("$schema").is_string())
+		{
+			ret = json.get<std::string>();
+			// json.erase("$schema");
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

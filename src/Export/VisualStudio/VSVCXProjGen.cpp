@@ -708,8 +708,12 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 					}
 				}
 
+				bool isModulesTarget = project.cppModules();
 				for (auto& header : headerFiles)
 				{
+					if (isModulesTarget && String::endsWith(".ixx", header))
+						continue;
+
 					auto file = fmt::format("{}/{}", cwd, header);
 					if (Commands::pathExists(file))
 						headers[file] = true;
@@ -783,30 +787,33 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 	auto& filters = outFiltersFile.xml.root();
 
-	outNode.addElement("ItemGroup", [&headers](XmlElement& node) {
-		for (auto& it : headers)
-		{
-			const auto& file = it.first;
+	if (!headers.empty())
+	{
+		outNode.addElement("ItemGroup", [&headers](XmlElement& node) {
+			for (auto& it : headers)
+			{
+				const auto& file = it.first;
 
-			node.addElement("ClInclude", [&file](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-			});
-		}
-	});
-	filters.addElement("ItemGroup", [&headers, &pchFile](XmlElement& node) {
-		for (auto& it : headers)
-		{
-			const auto& file = it.first;
+				node.addElement("ClInclude", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+				});
+			}
+		});
+		filters.addElement("ItemGroup", [&headers, &pchFile](XmlElement& node) {
+			for (auto& it : headers)
+			{
+				const auto& file = it.first;
 
-			if (String::equals(pchFile, file))
-				continue;
+				if (String::equals(pchFile, file))
+					continue;
 
-			node.addElement("ClInclude", [&file](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-				node2.addElementWithText("Filter", "Header Files");
-			});
-		}
-	});
+				node.addElement("ClInclude", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Header Files");
+				});
+			}
+		});
+	}
 	if (!pchFile.empty())
 	{
 		filters.addElement("ItemGroup", [&pchFile](XmlElement& node) {
@@ -826,86 +833,92 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 		});
 	}
 
-	outNode.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
-		if (!pchSource.empty())
-		{
-			node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
-				node2.addAttribute("Include", pchSource);
-				node2.addElementWithText("PrecompiledHeader", "Create");
-				node2.addElementWithText("ForcedIncludeFiles", std::string());
-				node2.addElementWithText("ObjectFileName", "$(IntDir)");
-			});
-		}
+	if (!pchSource.empty() || !sources.empty())
+	{
+		outNode.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
+			if (!pchSource.empty())
+			{
+				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
+					node2.addAttribute("Include", pchSource);
+					node2.addElementWithText("PrecompiledHeader", "Create");
+					node2.addElementWithText("ForcedIncludeFiles", std::string());
+					node2.addElementWithText("ObjectFileName", "$(IntDir)");
+				});
+			}
 
-		for (auto& it : sources)
-		{
-			const auto& file = it.first;
-			const auto& configs = it.second;
+			for (auto& it : sources)
+			{
+				const auto& file = it.first;
+				const auto& configs = it.second;
 
-			node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-				node2.addAttribute("Include", file);
+				node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+					node2.addAttribute("Include", file);
 
-				for (auto& config : allConfigs)
-				{
-					if (!List::contains(configs, config))
+					for (auto& config : allConfigs)
 					{
-						auto condition = getCondition(config);
-						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-							node3.addAttribute("Condition", condition);
-							node3.setText("true");
-						});
+						if (!List::contains(configs, config))
+						{
+							auto condition = getCondition(config);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
 					}
-				}
-			});
-		}
-	});
-	filters.addElement("ItemGroup", [&sources](XmlElement& node) {
-		for (auto& it : sources)
-		{
-			const auto& file = it.first;
+				});
+			}
+		});
+		filters.addElement("ItemGroup", [&sources](XmlElement& node) {
+			for (auto& it : sources)
+			{
+				const auto& file = it.first;
 
-			node.addElement("ClCompile", [&file](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-				node2.addElementWithText("Filter", "Source Files");
-			});
-		}
-	});
+				node.addElement("ClCompile", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Source Files");
+				});
+			}
+		});
+	}
 
-	outNode.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
-		for (auto& it : resources)
-		{
-			const auto& file = it.first;
-			const auto& configs = it.second;
+	if (!resources.empty())
+	{
+		outNode.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
+			for (auto& it : resources)
+			{
+				const auto& file = it.first;
+				const auto& configs = it.second;
 
-			node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-				node2.addElementWithText("PrecompiledHeader", "NotUsing");
+				node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("PrecompiledHeader", "NotUsing");
 
-				for (auto& config : allConfigs)
-				{
-					if (!List::contains(configs, config))
+					for (auto& config : allConfigs)
 					{
-						auto condition = getCondition(config);
-						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
-							node3.addAttribute("Condition", condition);
-							node3.setText("true");
-						});
+						if (!List::contains(configs, config))
+						{
+							auto condition = getCondition(config);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
 					}
-				}
-			});
-		}
-	});
-	filters.addElement("ItemGroup", [&resources](XmlElement& node) {
-		for (auto& it : resources)
-		{
-			const auto& file = it.first;
+				});
+			}
+		});
+		filters.addElement("ItemGroup", [&resources](XmlElement& node) {
+			for (auto& it : resources)
+			{
+				const auto& file = it.first;
 
-			node.addElement("ResourceCompile", [&file](XmlElement& node2) {
-				node2.addAttribute("Include", file);
-				node2.addElementWithText("Filter", "Resource Files");
-			});
-		}
-	});
+				node.addElement("ResourceCompile", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Resource Files");
+				});
+			}
+		});
+	}
 
 	if (!manifest.first.empty())
 	{

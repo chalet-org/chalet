@@ -30,8 +30,8 @@ struct IntermediateSettingsState
 	std::string runTarget;
 
 	uint maxJobs = 0;
-	bool benchmark = true;
-	bool launchProfiler = true;
+	bool benchmark = false;
+	bool launchProfiler = false;
 	bool keepGoing = false;
 	bool showCommands = false;
 	bool dumpAssembly = false;

@@ -11,7 +11,7 @@ TEST_CASE("chalet::ArgumentsTest", "[args]")
 
 	std::string res;
 	res = Commands::subprocessOutput({ exec, "badcmd" });
-	REQUIRE(String::endsWith("Invalid subcommand requested: 'badcmd'. See 'chalet --help'.", res));
+	REQUIRE(String::endsWith("Invalid subcommand: 'badcmd'. See 'chalet --help'.", res));
 
 	res = Commands::subprocessOutput({ exec, "configure", "extraarg" });
 	REQUIRE(String::endsWith("Maximum number of positional arguments exceeded. See 'chalet configure --help'.", res));

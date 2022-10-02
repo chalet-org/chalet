@@ -344,28 +344,47 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	};
 
+	StringList checkVariables
+	{
+		"CMAKE_EXPORT_COMPILE_COMMANDS",
+			"CMAKE_SYSTEM_NAME",
+			"CMAKE_SYSTEM_PROCESSOR",
+			"CMAKE_CXX_COMPILER",
+			"CMAKE_C_COMPILER",
+			"CMAKE_RC_COMPILER",
+			"CMAKE_BUILD_TYPE",
+			"CMAKE_LIBRARY_ARCHITECTURE",
+			"CMAKE_LIBRARY_PATH",
+			"CMAKE_INCLUDE_PATH",
+			"CMAKE_SYSROOT",
+			"CMAKE_BUILD_WITH_INSTALL_RPATH",
+			"CMAKE_FIND_ROOT_PATH_MODE_PROGRAM",
+			"CMAKE_FIND_ROOT_PATH_MODE_LIBRARY",
+			"CMAKE_FIND_ROOT_PATH_MODE_INCLUDE",
+			"CMAKE_FIND_ROOT_PATH_MODE_PACKAGE",
+			"CMAKE_C_COMPILER_TARGET",
+			"CMAKE_CXX_COMPILER_TARGET",
+#if defined(CHALET_WIN32)
+		// "CMAKE_SH",
+#elif defined(CHALET_MACOS)
+			"CMAKE_OSX_ARCHITECTURES",
+#endif
+	};
 	std::map<const char*, bool, charCompare> isDefined;
 	for (auto& define : m_target.defines())
 	{
 		outList.emplace_back("-D" + define);
 
-		if (String::contains("CMAKE_EXPORT_COMPILE_COMMANDS", define))
-			isDefined["CMAKE_EXPORT_COMPILE_COMMANDS"] = true;
-		else if (String::contains("CMAKE_C_COMPILER", define))
-			isDefined["CMAKE_C_COMPILER"] = true;
-		else if (String::contains("CMAKE_CXX_COMPILER", define))
-			isDefined["CMAKE_CXX_COMPILER"] = true;
-		else if (String::contains("CMAKE_BUILD_TYPE", define))
-			isDefined["CMAKE_BUILD_TYPE"] = true;
-#if defined(CHALET_WIN32)
-			// else if (String::contains("CMAKE_SH", define))
-			// 	isDefined["CMAKE_SH"] = true;
-#elif defined(CHALET_MACOS)
-		else if (String::contains("CMAKE_OSX_ARCHITECTURES", define))
-			isDefined["CMAKE_OSX_ARCHITECTURES"] = true;
-#endif
+		for (auto& var : checkVariables)
+		{
+			if (String::contains(var.c_str(), define))
+				isDefined[var.c_str()] = true;
+		}
 	}
 
+	const auto& hostTriple = m_state.info.hostArchitectureTriple();
+	const auto& targetTriple = m_state.info.targetArchitectureTriple();
+	const bool crossCompile = !hostTriple.empty() && !String::startsWith(hostTriple, targetTriple);
 	if (m_state.info.generateCompileCommands())
 	{
 		if (!isDefined["EXPORT_COMPILE_COMMANDS"])
@@ -374,22 +393,117 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	}
 
+	if (crossCompile)
+	{
+		if (!isDefined["CMAKE_SYSTEM_NAME"])
+		{
+			std::string systemName = getCmakeSystemName(targetTriple);
+			if (!systemName.empty())
+				outList.emplace_back(fmt::format("-DCMAKE_SYSTEM_NAME={}", systemName));
+		}
+
+		if (!isDefined["CMAKE_SYSTEM_PROCESSOR"])
+		{
+			outList.emplace_back(fmt::format("-DCMAKE_SYSTEM_PROCESSOR={}", m_state.info.targetArchitectureString()));
+		}
+	}
+
 	if (!isDefined["CMAKE_C_COMPILER"])
 	{
-		const auto& compilerC = m_state.toolchain.compilerC().path;
-		outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", getQuotedPath(compilerC)));
+		const auto& compiler = m_state.toolchain.compilerC().path;
+		if (!compiler.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", getQuotedPath(compiler)));
 	}
 
 	if (!isDefined["CMAKE_CXX_COMPILER"])
 	{
-		const auto& compilerC = m_state.toolchain.compilerCpp().path;
-		outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", getQuotedPath(compilerC)));
+		const auto& compiler = m_state.toolchain.compilerCpp().path;
+		if (!compiler.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", getQuotedPath(compiler)));
+	}
+
+	if (m_state.environment->isWindowsTarget() && !isDefined["CMAKE_RC_COMPILER"])
+	{
+		const auto& compiler = m_state.toolchain.compilerWindowsResource();
+		if (!compiler.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_RC_COMPILER={}", getQuotedPath(compiler)));
 	}
 
 	if (!isDefined["CMAKE_BUILD_TYPE"])
 	{
 		auto buildConfiguration = getCMakeCompatibleBuildConfiguration();
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
+	}
+
+	if (!isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
+	{
+		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", targetTriple));
+	}
+
+	if (!isDefined["CMAKE_BUILD_WITH_INSTALL_RPATH"])
+	{
+		outList.emplace_back("-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON");
+	}
+
+	if (crossCompile)
+	{
+		if (!isDefined["CMAKE_LIBRARY_PATH"])
+		{
+			StringList paths;
+			if (!m_state.toolchain.compilerCpp().libDir.empty())
+				paths.emplace_back(m_state.toolchain.compilerCpp().libDir);
+
+			if (!m_state.toolchain.compilerC().libDir.empty())
+				List::addIfDoesNotExist(paths, std::string(m_state.toolchain.compilerC().libDir));
+
+			if (!paths.empty())
+				outList.emplace_back("-DCMAKE_LIBRARY_PATH=" + getQuotedPath(String::join(paths, ';')));
+		}
+
+		if (!isDefined["CMAKE_INCLUDE_PATH"])
+		{
+			StringList paths;
+			if (!m_state.toolchain.compilerCpp().includeDir.empty())
+				paths.emplace_back(m_state.toolchain.compilerCpp().includeDir);
+
+			if (!m_state.toolchain.compilerC().includeDir.empty())
+				List::addIfDoesNotExist(paths, std::string(m_state.toolchain.compilerC().includeDir));
+
+			if (!paths.empty())
+				outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + getQuotedPath(String::join(paths, ';')));
+		}
+	}
+
+	if (crossCompile)
+	{
+		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
+		{
+			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER");
+		}
+		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_LIBRARY"])
+		{
+			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY");
+		}
+		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_INCLUDE"])
+		{
+			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY");
+		}
+		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"])
+		{
+			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY");
+		}
+
+		if (m_state.environment->isClang())
+		{
+			if (!isDefined["CMAKE_C_COMPILER_TARGET"])
+			{
+				outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER_TARGET={}", targetTriple));
+			}
+			if (!isDefined["CMAKE_CXX_COMPILER_TARGET"])
+			{
+				outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER_TARGET={}", targetTriple));
+			}
+		}
 	}
 
 #if defined(CHALET_WIN32)
@@ -412,7 +526,6 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(targetArch));
 		}
 	}
-
 #endif
 }
 
@@ -499,6 +612,23 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	}
 
 	// LOG(String::join(ret));
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) const
+{
+	// Full-ish list here: https://gitlab.kitware.com/cmake/cmake/-/issues/21489#note_1077167
+	// TODO: Android, iOS, etc.
+
+	std::string ret;
+	if (String::contains({ "pc", "windows", "mingw" }, inTargetTriple))
+		ret = "Windows";
+	else if (String::contains({ "apple", "darwin" }, inTargetTriple))
+		ret = "Darwin";
+	else
+		ret = "Linux";
 
 	return ret;
 }

@@ -138,11 +138,11 @@ CommandLineInputs::CommandLineInputs() :
 /*****************************************************************************/
 void CommandLineInputs::detectToolchainPreference() const
 {
-	if (!m_toolchainPreferenceName.empty())
-		return;
-
-	const auto& defaultPreset = defaultToolchainPreset();
-	m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	if (m_toolchainPreferenceName.empty())
+	{
+		const auto& defaultPreset = defaultToolchainPreset();
+		m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	}
 }
 
 /*****************************************************************************/
@@ -1047,7 +1047,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 		ret.cpp = "clang++";
 		ret.cc = "clang";
+#if defined(CHALET_LINUX)
+		ret.rc = "llvm-windres";
+#else
 		ret.rc = "llvm-rc";
+#endif
 		ret.linker = "lld";
 		ret.archiver = "ar";
 		ret.profiler = "gprof";

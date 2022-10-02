@@ -141,27 +141,22 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 	Json& buildOptions = m_jsonFile.json[Keys::Options];
 
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
-	m_jsonFile.assignNodeIfEmptyWithFallback<bool>(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback<uint>(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
-
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference, [&]() {
-		m_inputs.detectToolchainPreference();
-	});
-
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
-
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
 
 	if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
 	{
@@ -169,7 +164,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		buildOptions[Keys::OptionsSigningIdentity] = inState.signingIdentity;
 	}
 
-	m_jsonFile.assignStringIfEmptyWithFallback(buildOptions, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
 
 	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
 	{

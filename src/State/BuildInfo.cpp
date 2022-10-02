@@ -60,6 +60,21 @@ bool BuildInfo::initialize()
 	}
 #endif
 
+#if defined(CHALET_LINUX)
+	auto mainCompiler = Commands::which("gcc");
+	if (mainCompiler.empty())
+		mainCompiler = Commands::which("clang");
+
+	if (!mainCompiler.empty())
+	{
+		auto tripleResult = Commands::subprocessOutput({ mainCompiler, "-dumpmachine" });
+		if (!tripleResult.empty())
+		{
+			m_hostArchTriple = tripleResult.substr(0, tripleResult.find('\n'));
+		}
+	}
+#endif
+
 	return true;
 }
 
@@ -84,6 +99,12 @@ void BuildInfo::setBuildConfiguration(const std::string& inValue) noexcept
 Arch::Cpu BuildInfo::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture.val;
+}
+
+const std::string& BuildInfo::hostArchitectureTriple() const noexcept
+{
+	// Note: might be empty - Linux only at the moment
+	return m_hostArchTriple;
 }
 
 const std::string& BuildInfo::hostArchitectureString() const noexcept

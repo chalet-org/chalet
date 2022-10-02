@@ -45,6 +45,11 @@ CH_STR(RemainingArguments) = "...";
 
 #undef CH_STR
 
+namespace
+{
+constexpr std::size_t kColumnSize = 32;
+}
+
 /*****************************************************************************/
 ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 	BaseArgumentParser(),
@@ -115,11 +120,17 @@ StringList ArgumentParser::getTruthyArguments() const
 {
 	return {
 		"--show-commands",
+		"--no-show-commands",
 		"--dump-assembly",
+		"--no-dump-assembly",
 		"--benchmark",
+		"--no-benchmark",
 		"--launch-profiler",
+		"--no-launch-profiler",
 		"--keep-going",
+		"--no-keep-going",
 		"--generate-compile-commands",
+		"--no-generate-compile-commands",
 		"--save-schema",
 		"--quieter",
 		"-l",
@@ -265,7 +276,7 @@ bool ArgumentParser::doParse()
 		if (m_routeString.empty())
 		{
 			if (containsOption(Positional::Argument1))
-				Diagnostic::error("Invalid subcommand requested: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
+				Diagnostic::error("Invalid subcommand: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
 			else
 				Diagnostic::error("Invalid argument(s) found. See 'chalet --help'.");
 			return false;
@@ -384,15 +395,11 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 		switch (mapped.value().kind())
 		{
 			case Variant::Kind::Boolean:
-				mapped.setValue(String::equals("1", value));
+				mapped.setValue(String::equals('1', value));
 				break;
 
 			case Variant::Kind::OptionalBoolean: {
-				if (!value.empty())
-				{
-					int rawValue = atoi(value.c_str());
-					mapped.setValue(std::optional<bool>(rawValue == 1));
-				}
+				mapped.setValue(std::optional<bool>(String::equals('1', value)));
 				break;
 			}
 
@@ -450,8 +457,6 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 /*****************************************************************************/
 std::string ArgumentParser::getHelp()
 {
-	constexpr std::size_t kColumnSize = 28;
-
 	std::string title = "Chalet - A cross-platform JSON-based project & build tool";
 
 	std::string help;
@@ -516,7 +521,12 @@ std::string ArgumentParser::getHelp()
 	{
 		if (String::startsWith('-', mapped.key()))
 		{
-			std::string line = mapped.key() + ' ' + mapped.keyLong();
+			std::string line;
+			if (mapped.keyLabel().empty())
+				line = mapped.key() + ' ' + mapped.keyLong();
+			else
+				line = mapped.keyLabel();
+
 			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
@@ -725,7 +735,7 @@ MappedArgument& ArgumentParser::addBoolArgument(const ArgumentIdentifier inId, c
 MappedArgument& ArgumentParser::addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument)
 {
 	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalBoolean)
-		.addArgument(inArgument);
+		.addBooleanArgument(inArgument);
 }
 
 /*****************************************************************************/
@@ -793,7 +803,7 @@ void ArgumentParser::populateMainArguments()
 		for (std::size_t i = 0; i < subcommands.size(); ++i)
 		{
 			std::string line = subcommands.at(i);
-			while (line.size() < 28)
+			while (line.size() < kColumnSize)
 				line += ' ';
 			line += '\t';
 			line += descriptions.at(i);
@@ -992,42 +1002,42 @@ void ArgumentParser::addSettingsTypeArg()
 /*****************************************************************************/
 void ArgumentParser::addDumpAssemblyArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--dump-assembly")
+	addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--[no-]dump-assembly")
 		.setHelp("Create an .asm dump of each object file during the build.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addGenerateCompileCommandsArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--generate-compile-commands")
+	addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--[no-]generate-compile-commands")
 		.setHelp("Generate a compile_commands.json file for Clang tooling use.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addShowCommandsArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--show-commands")
+	addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--[no-]show-commands")
 		.setHelp("Show the commands run during the build.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBenchmarkArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::Benchmark, "--benchmark")
+	addOptionalBoolArgument(ArgumentIdentifier::Benchmark, "--[no-]benchmark")
 		.setHelp("Show all build times - total build time, build targets, other steps.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addLaunchProfilerArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::LaunchProfiler, "--launch-profiler")
+	addOptionalBoolArgument(ArgumentIdentifier::LaunchProfiler, "--[no-]launch-profiler")
 		.setHelp("If running profile targets, launch the preferred profiler afterwards.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addKeepGoingArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::KeepGoing, "--keep-going")
+	addOptionalBoolArgument(ArgumentIdentifier::KeepGoing, "--[no-]keep-going")
 		.setHelp("If there's a build error, continue as much of the build as possible.");
 }
 

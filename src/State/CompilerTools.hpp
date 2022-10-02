@@ -30,13 +30,11 @@ struct CompilerTools
 	void fetchNinjaVersion(SourceCache& inCache);
 
 	StrategyType strategy() const noexcept;
-	const std::string& strategyString() const noexcept;
 	void setStrategy(const StrategyType inValue) noexcept;
 	void setStrategy(const std::string& inValue) noexcept;
 	bool strategyIsValid(const std::string& inValue) const;
 
 	BuildPathStyle buildPathStyle() const noexcept;
-	const std::string& buildPathStyleString() const noexcept;
 	void setBuildPathStyle(const std::string& inValue) noexcept;
 	bool buildPathStyleIsValid(const std::string& inValue) const;
 
@@ -112,8 +110,6 @@ private:
 	CompilerInfo m_compilerCpp;
 	CompilerInfo m_compilerC;
 
-	std::string m_strategyString;
-	std::string m_buildPathStyleString;
 	std::string m_version;
 
 	uint m_toolchainVersionMajorMinor = 0;

@@ -51,7 +51,8 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 		// Note: we don't care about this result, because if the signing identity is blank,
 		//   the application simply won't be signed
 		//
-		UNUSED(RegexPatterns::matchAndReplacePathVariables(m_signingIdentity, [&](std::string match) {
+		UNUSED(RegexPatterns::matchAndReplacePathVariables(m_signingIdentity, [&](std::string match, bool& required) {
+			required = false;
 			if (String::equals("home", match))
 				return inHomeDirectory;
 

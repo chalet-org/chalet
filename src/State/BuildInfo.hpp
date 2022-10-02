@@ -22,6 +22,7 @@ struct BuildInfo
 	void setBuildConfiguration(const std::string& inValue) noexcept;
 
 	Arch::Cpu hostArchitecture() const noexcept;
+	const std::string& hostArchitectureTriple() const noexcept;
 	const std::string& hostArchitectureString() const noexcept;
 	void setHostArchitecture(const std::string& inValue) noexcept;
 
@@ -44,6 +45,7 @@ private:
 	std::string m_buildConfiguration;
 	std::string m_osTarget;
 	std::string m_osTargetVersion;
+	std::string m_hostArchTriple;
 
 	Arch m_hostArchitecture;
 	Arch m_targetArchitecture;

@@ -65,7 +65,6 @@ void UpdateNotifier::notifyForUpdates()
 			auto lat = Version::fromString(versions.back());
 			// auto lat = Version::fromString("0.5.0");
 			auto ver = Version::fromString(std::string(CHALET_VERSION));
-
 			if (ver < lat)
 			{
 				showUpdateMessage(ver.asString(), lat.asString());

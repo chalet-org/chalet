@@ -1,6 +1,6 @@
 {
 	"name": "Chalet",
-	"version": "0.4.3",
+	"version": "0.5.3",
 	"description": "A JSON-based project & build tool",
 	"homepage": "https://www.chalet-work.space",
 	"author": "Cosmic Road Interactive, LLC.",
@@ -124,7 +124,11 @@
 				"chalet"
 			],
 			"include": [
+				"scripts/chalet-completion-source.sh",
 				"scripts/chalet-completion.sh",
+				"scripts/chalet-completion.bash",
+				"scripts/chalet-completion.zsh",
+				"scripts/chalet-completion.fish",
 				"LICENSE.txt",
 				"README.md"
 			],

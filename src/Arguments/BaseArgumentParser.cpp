@@ -27,7 +27,10 @@ bool BaseArgumentParser::parse(const int argc, const char* argv[], const int inP
 		{
 			if (List::contains(truthyArguments, arg))
 			{
-				m_rawArguments.emplace(std::move(arg), "1");
+				if (String::startsWith("--no-", arg))
+					m_rawArguments.emplace(std::move(arg), "0");
+				else
+					m_rawArguments.emplace(std::move(arg), "1");
 				continue;
 			}
 			else if (String::contains('=', arg))

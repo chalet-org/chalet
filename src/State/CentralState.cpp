@@ -5,6 +5,8 @@
 
 #include "State/CentralState.hpp"
 
+#include <thread>
+
 #include "ChaletJson/CentralChaletJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
@@ -57,13 +59,36 @@ bool CentralState::initialize()
 	// 	return false;
 
 	{
+		// Set global defaults here
 		IntermediateSettingsState state;
+		state.maxJobs = std::thread::hardware_concurrency();
+		state.benchmark = true;
+		state.launchProfiler = true;
+		state.keepGoing = false;
+		state.showCommands = false;
+		state.dumpAssembly = false;
+		state.generateCompileCommands = false;
+		state.buildConfiguration = BuildConfiguration::getDefaultReleaseConfigurationName();
+		state.toolchainPreference = m_inputs.defaultToolchainPreset();
+		state.architecturePreference = "auto";
+		state.inputFile = m_inputs.defaultInputFile();
+		state.envFile = m_inputs.defaultEnvFile();
+		state.rootDirectory = std::string();
+		state.outputDirectory = m_inputs.defaultOutputDirectory();
+		state.externalDirectory = m_inputs.defaultExternalDirectory();
+		state.distributionDirectory = m_inputs.defaultDistributionDirectory();
+		state.signingIdentity = std::string();
+		state.runTarget = std::string();
+
 		if (!parseGlobalSettingsJson(state))
 			return false;
 
 		if (!parseLocalSettingsJson(state))
 			return false;
 	}
+
+	// If no toolchain was found in inputs or settings, use the default
+	m_inputs.detectToolchainPreference();
 
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
@@ -363,15 +388,6 @@ void CentralState::addBuildConfiguration(const std::string& inName, BuildConfigu
 	{
 		m_buildConfigurations.emplace(inName, std::move(inConfig));
 	}
-}
-
-/*****************************************************************************/
-void CentralState::detectBuildConfiguration()
-{
-	if (!m_inputs.buildConfiguration().empty())
-		return;
-
-	m_inputs.setBuildConfiguration(BuildConfiguration::getDefaultReleaseConfigurationName());
 }
 
 /*****************************************************************************/

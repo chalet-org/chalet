@@ -21,7 +21,7 @@ bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const char* inK
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::function<T()>& onAssign)
+bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue)
 {
 	bool result = false;
 	bool notFound = !outNode.contains(inKey);
@@ -31,7 +31,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	{
 		if (notFound || !outNode.at(inKey).is_string() || outNode.at(inKey).get<std::string>().empty())
 		{
-			outNode[inKey] = onAssign();
+			outNode[inKey] = inValue;
 			result = true;
 		}
 	}
@@ -39,7 +39,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	{
 		if (notFound || !outNode.at(inKey).is_boolean())
 		{
-			outNode[inKey] = onAssign();
+			outNode[inKey] = inValue;
 			result = true;
 		}
 	}
@@ -47,7 +47,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	{
 		if (notFound || !outNode.at(inKey).is_number_unsigned())
 		{
-			outNode[inKey] = onAssign();
+			outNode[inKey] = inValue;
 			result = true;
 		}
 	}
@@ -55,7 +55,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	{
 		if (notFound || !outNode.at(inKey).is_number_float())
 		{
-			outNode[inKey] = onAssign();
+			outNode[inKey] = inValue;
 			result = true;
 		}
 	}
@@ -63,7 +63,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	{
 		if (notFound || !outNode.at(inKey).is_number_integer())
 		{
-			outNode[inKey] = onAssign();
+			outNode[inKey] = inValue;
 			result = true;
 		}
 	}
@@ -80,6 +80,7 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const std::fu
 	return result;
 }
 
+/*****************************************************************************/
 template <typename T>
 bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB)
 {
@@ -104,7 +105,7 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, c
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::containsKeyForType(const Json& inNode, const char*inKey) const
+bool JsonFile::containsKeyForType(const Json& inNode, const char* inKey) const
 {
 	if (!inNode.contains(inKey))
 		return false;
