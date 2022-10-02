@@ -623,7 +623,7 @@ std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) 
 	// TODO: Android, iOS, etc.
 
 	std::string ret;
-	if (String::contains({ "pc", "windows", "mingw" }, inTargetTriple))
+	if (String::contains({ "windows", "mingw" }, inTargetTriple))
 		ret = "Windows";
 	else if (String::contains({ "apple", "darwin" }, inTargetTriple))
 		ret = "Darwin";
