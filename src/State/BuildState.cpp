@@ -231,8 +231,15 @@ bool BuildState::parseToolchainFromSettingsJson()
 	{
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
 		//
-
-		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", inputs.toolchainPreferenceName(), Environment::getPathKey());
+		const auto& name = inputs.toolchainPreferenceName();
+		if (String::equals("llvm", name))
+		{
+			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14'). Otherwise, try configuring it manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+		}
+		else
+		{
+			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+		}
 		return false;
 	}
 

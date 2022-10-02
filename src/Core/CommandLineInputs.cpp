@@ -999,6 +999,8 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
 	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !String::equals("auto", m_targetArchitecture);
 
+	bool hasLlvmPrefix = String::startsWith("llvm-", inValue);
+
 #if defined(CHALET_WIN32)
 	m_visualStudioVersion = VisualStudioVersion::None;
 
@@ -1031,25 +1033,32 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 #if defined(CHALET_MACOS)
 		bool isAppleClang = String::equals(kToolchainPresetAppleLLVM, inValue);
-	if (isAppleClang || String::equals(kToolchainPresetLLVM, inValue))
+	if (isAppleClang || String::equals(kToolchainPresetLLVM, inValue) || hasLlvmPrefix)
 #else
-	if (String::equals(kToolchainPresetLLVM, inValue))
+	if (String::equals(kToolchainPresetLLVM, inValue) || hasLlvmPrefix)
 #endif
 	{
 		m_isToolchainPreset = true;
+
+		std::string suffix;
+		if (hasLlvmPrefix)
+			suffix = inValue.substr(inValue.find_first_of('-'));
+
 		m_toolchainPreferenceName = inValue;
+
+		ret.disassembler = fmt::format("objdump{}", suffix);
 
 #if defined(CHALET_MACOS)
 		ret.type = isAppleClang ? ToolchainType::AppleLLVM : ToolchainType::LLVM;
 #else
 		ret.type = ToolchainType::LLVM;
 #endif
-		ret.cpp = "clang++";
-		ret.cc = "clang";
+		ret.cpp = fmt::format("clang++{}", suffix);
+		ret.cc = fmt::format("clang{}", suffix);
 #if defined(CHALET_LINUX)
-		ret.rc = "llvm-windres";
+		ret.rc = fmt::format("llvm-windres{}", suffix);
 #else
-		ret.rc = "llvm-rc";
+		ret.rc = fmt::format("llvm-rc{}", suffix);
 #endif
 		ret.linker = "lld";
 		ret.archiver = "ar";
@@ -1098,27 +1107,27 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		{
 			ret.cpp = inValue;
 			ret.cc = inValue;
+			ret.rc = inValue;
 			ret.archiver = inValue;
 			ret.linker = inValue;
 			ret.disassembler = inValue;
 			ret.profiler = inValue;
-			ret.rc = inValue;
 			String::replaceAll(ret.cpp, "-gcc-", "-g++-");
+			String::replaceAll(ret.rc, "-gcc-", "-windres-");
 			String::replaceAll(ret.archiver, "-gcc-", "-gcc-ar-");
 			String::replaceAll(ret.linker, "-gcc-", "-ld-");
 			String::replaceAll(ret.disassembler, "-gcc-", "-objdump-");
 			String::replaceAll(ret.profiler, "-gcc-", "-gprof-");
-			String::replaceAll(ret.rc, "-gcc-", "-windres-");
 		}
 		else
 		{
 			ret.cpp = fmt::format("{}g++{}", prefix, suffix);
 			ret.cc = fmt::format("{}gcc{}", prefix, suffix);
+			ret.rc = fmt::format("{}windres{}", prefix, suffix);
 			ret.archiver = fmt::format("{}gcc-ar{}", prefix, suffix); // gcc- will get stripped out later when it's searched
 			ret.linker = fmt::format("{}ld{}", prefix, suffix);
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
-			ret.rc = fmt::format("{}windres{}", prefix, suffix);
 		}
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -1136,9 +1145,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		ret.type = ToolchainType::IntelLLVM;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
-		ret.rc = "rc";
 		ret.cpp = "clang++";
 		ret.cc = "clang";
+		ret.rc = "rc";
 		ret.linker = "lld";
 		ret.archiver = "llvm-ar";
 		ret.profiler = "";

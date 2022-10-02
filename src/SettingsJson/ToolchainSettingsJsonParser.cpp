@@ -212,9 +212,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
 			searches.push_back(preference.linker); // lld
 			searches.emplace_back("lld-link");
-			searches.emplace_back("llvm-ld");
+			searches.emplace_back(fmt::format("llvm-ld", suffix));
 			searches.emplace_back("ld");
 		}
 		else if (isGNU)
@@ -260,7 +264,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
-			searches.emplace_back("llvm-ar");
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
+			searches.emplace_back(fmt::format("llvm-ar{}", suffix));
 		}
 		else if (isGNU)
 		{
@@ -322,7 +330,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
-			searches.emplace_back("llvm-objdump");
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
+			searches.emplace_back(fmt::format("llvm-objdump{}", suffix));
 			searches.push_back(preference.disassembler);
 		}
 		else if (isGNU)
