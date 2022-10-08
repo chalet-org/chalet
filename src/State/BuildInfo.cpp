@@ -71,6 +71,17 @@ bool BuildInfo::initialize()
 		if (!tripleResult.empty())
 		{
 			m_hostArchTriple = tripleResult.substr(0, tripleResult.find('\n'));
+
+			// Ubuntu hack to switch to the right architecture triple
+			// Clang builds uses (arch)-pc-linux-gnu while official gcc builds use (arch)-linux-gnu
+			//
+			bool targetHasPcLinux = String::contains("-pc-linux-", m_targetArchitecture.triple);
+			bool hostDoesntHavePcLinux = !String::contains("-pc-linux-", m_hostArchTriple);
+			bool hostHasLinux = String::contains("-linux-", m_hostArchTriple);
+			if (targetHasPcLinux && hostDoesntHavePcLinux && hostHasLinux)
+			{
+				String::replaceAll(m_targetArchitecture.triple, "-pc-", "-");
+			}
 		}
 	}
 #endif

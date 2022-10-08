@@ -327,6 +327,9 @@ bool BuildState::initializeBuild()
 
 	Diagnostic::infoEllipsis("Configuring build");
 
+	if (!info.initialize())
+		return false;
+
 	if (!paths.initialize())
 		return false;
 
@@ -396,9 +399,6 @@ bool BuildState::initializeBuild()
 
 		initializeCache();
 	}
-
-	if (!info.initialize())
-		return false;
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState();

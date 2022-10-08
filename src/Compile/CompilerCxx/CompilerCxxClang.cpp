@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -136,7 +137,26 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 
 	UNUSED(inArch);
 
-	const auto& targetArchString = inState.info.targetArchitectureTriple();
+	auto targetArchString = inState.info.targetArchitectureTriple();
+
+#if defined(CHALET_LINUX)
+	if (inState.info.targetArchitecture() == Arch::Cpu::ARM64)
+	{
+		String::replaceAll(targetArchString, "arm64", "aarch64");
+	}
+
+	// auto gccArchDir = fmt::format("/lib/gcc/{}", targetArchString);
+	// auto archDir = fmt::format("/usr/{}/lib", targetArchString);
+	// if (!Commands::pathExists(gccArchDir) && Commands::pathExists(archDir))
+	// {
+	// 	List::addIfDoesNotExist(outArgList, fmt::format("--gcc-toolchain={}", archDir));
+	// }
+	// auto libcDir = fmt::format("/usr/{}/lib/libc.a", targetArchString);
+	// if (Commands::pathExists(libcDir))
+	// {
+	// 	List::addIfDoesNotExist(outArgList, fmt::format("--sysroot={}", libcDir));
+	// }
+#endif
 
 	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);

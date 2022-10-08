@@ -815,7 +815,7 @@ bool CompilerCxxGCC::addArchitectureToCommand(StringList& outArgList, const std:
 	auto targetArch = inState.info.targetArchitecture();
 	auto requestedArch = inState.info.targetArchitectureString();
 
-	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64" }, requestedArch))
+	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64", "aarch64" }, requestedArch))
 	{
 		// don't do anything yet
 		return false;

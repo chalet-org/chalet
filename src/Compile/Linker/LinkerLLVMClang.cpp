@@ -188,5 +188,4 @@ void LinkerLLVMClang::startExplicitDynamicLinkGroup(StringList& outArgList) cons
 {
 	UNUSED(outArgList);
 }
-
 }
