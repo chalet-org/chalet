@@ -99,11 +99,6 @@ std::vector<CompilerPathStructure> CompileEnvironmentGNU::getValidCompilerPaths(
 	std::vector<CompilerPathStructure> ret;
 	auto triple = m_state.info.targetArchitectureTriple();
 	ret.push_back({ "/bin", fmt::format("/{}/lib", triple), fmt::format("/{}/include", triple) });
-	if (m_state.info.targetArchitecture() == Arch::Cpu::ARM64)
-	{
-		String::replaceAll(triple, "arm64", "aarch64");
-		ret.push_back({ "/bin", fmt::format("/{}/lib", triple), fmt::format("/{}/include", triple) });
-	}
 	ret.push_back({ "/bin", "/lib", "/include" });
 	return ret;
 }

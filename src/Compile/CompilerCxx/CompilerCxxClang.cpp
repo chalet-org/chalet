@@ -140,11 +140,6 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 	auto targetArchString = inState.info.targetArchitectureTriple();
 
 #if defined(CHALET_LINUX)
-	if (inState.info.targetArchitecture() == Arch::Cpu::ARM64)
-	{
-		String::replaceAll(targetArchString, "arm64", "aarch64");
-	}
-
 	// auto gccArchDir = fmt::format("/lib/gcc/{}", targetArchString);
 	// auto archDir = fmt::format("/usr/{}/lib", targetArchString);
 	// if (!Commands::pathExists(gccArchDir) && Commands::pathExists(archDir))

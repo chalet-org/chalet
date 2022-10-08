@@ -41,8 +41,8 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 			return "x64";
 		else if (String::equals("i686", inArch))
 			return "x86";
-		// else if (String::equals("aarch64", inArch))
-		// 	return "arm64";
+		else if (String::equals("aarch64", inArch))
+			return "arm64";
 
 		return inArch;
 	};
