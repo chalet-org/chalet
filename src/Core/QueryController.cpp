@@ -378,7 +378,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 
 	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
 
-	if (String::startsWith("llvm", inToolchain))
+	if (String::startsWith("llvm-", inToolchain))
 	{
 		List::addIfDoesNotExist(ret, "x86_64");
 		List::addIfDoesNotExist(ret, "i686");
