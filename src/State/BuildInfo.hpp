@@ -51,7 +51,6 @@ private:
 	Arch m_targetArchitecture;
 
 	uint m_maxJobs = 0;
-	uint m_processorCount = 0;
 
 	bool m_dumpAssembly = false;
 	bool m_generateCompileCommands = false;

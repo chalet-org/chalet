@@ -43,6 +43,7 @@ enum class ArgumentIdentifier : ushort
 	Benchmark,
 	LaunchProfiler,
 	KeepGoing,
+	SaveUserToolchainGlobally,
 	//
 	// Init
 	InitPath,

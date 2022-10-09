@@ -36,6 +36,8 @@ public:
 
 	std::string getProgramPath() const;
 
+	StringList getAllCliOptions();
+
 private:
 	virtual StringList getTruthyArguments() const final;
 
@@ -79,6 +81,7 @@ private:
 	void addRunTargetArg();
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
+	void addSaveUserToolchainGloballyArg();
 	void addQuietArgs();
 	void addSettingsTypeArg();
 	void addDumpAssemblyArg();

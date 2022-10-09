@@ -161,6 +161,9 @@ struct CommandLineInputs
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
+	bool saveUserToolchainGlobally() const noexcept;
+	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
+
 	StringList getToolchainPresets() const;
 	StringList getExportKindPresets() const;
 	StringList getProjectInitializationPresets() const;
@@ -253,6 +256,7 @@ private:
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isToolchainPreset = false;
+	bool m_saveUserToolchainGlobally = false;
 };
 }
 

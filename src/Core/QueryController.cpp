@@ -5,6 +5,7 @@
 
 #include "Core/QueryController.hpp"
 
+#include "Arguments/ArgumentParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -63,6 +64,10 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 
 		case QueryOption::Configurations:
 			ret = getBuildConfigurationList();
+			break;
+
+		case QueryOption::Arguments:
+			ret = getArguments();
 			break;
 
 		case QueryOption::ToolchainPresets:
@@ -448,6 +453,13 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getArguments() const
+{
+	ArgumentParser parser(m_centralState.inputs());
+	return parser.getAllCliOptions();
 }
 
 /*****************************************************************************/

@@ -38,10 +38,10 @@ OrderedDictionary<ExportKind> getExportKinds()
 Dictionary<QueryOption> getQueryOptions()
 {
 	return {
-		{ "version", QueryOption::Version },
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
 		{ "architectures", QueryOption::Architectures },
+		{ "arguments", QueryOption::Arguments },
 		{ "commands", QueryOption::Commands },
 		{ "configuration", QueryOption::Configuration },
 		{ "configurations", QueryOption::Configurations },
@@ -61,6 +61,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "state-settings-json", QueryOption::SettingsJsonState },
 		{ "schema-chalet-json", QueryOption::ChaletSchema },
 		{ "schema-settings-json", QueryOption::SettingsSchema },
+		{ "version", QueryOption::Version },
 	};
 }
 
@@ -886,6 +887,16 @@ const std::optional<bool>& CommandLineInputs::generateCompileCommands() const no
 void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 {
 	m_generateCompileCommands = inValue;
+}
+
+/*****************************************************************************/
+bool CommandLineInputs::saveUserToolchainGlobally() const noexcept
+{
+	return m_saveUserToolchainGlobally;
+}
+void CommandLineInputs::setSaveUserToolchainGlobally(const bool inValue) noexcept
+{
+	m_saveUserToolchainGlobally = inValue;
 }
 
 /*****************************************************************************/

@@ -15,8 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildInfo::BuildInfo(const CommandLineInputs& inInputs) :
-	m_processorCount(std::thread::hardware_concurrency())
+BuildInfo::BuildInfo(const CommandLineInputs& inInputs)
 {
 	m_hostArchitecture.set(inInputs.hostArchitecture());
 	setTargetArchitecture(inInputs.targetArchitecture());

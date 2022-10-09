@@ -58,8 +58,14 @@ _chalet_completions()
 		COMPREPLY=($(compgen -W "${_RESP//\\\\./\\\\\\\\.}" -- $cur))
 		;;
 	*)
-		COMPREPLY=($(compgen -W "$(chalet query commands)" -- $cur))
-		;;
+		case "${cur}" in
+		-)
+			COMPREPLY=($(compgen -W "$(chalet query arguments)" -- $cur))
+			;;
+		*)
+			COMPREPLY=($(compgen -W "$(chalet query commands)" -- $cur))
+			;;
+		esac
 	esac
 }
 
