@@ -30,7 +30,7 @@ private:
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
 	StringList getArchitectures(const std::string& inToolchain) const;
-	StringList getArguments() const;
+	StringList getOptions() const;
 	StringList getCurrentArchitecture() const;
 	StringList getCurrentBuildConfiguration() const;
 	StringList getCurrentToolchain() const;

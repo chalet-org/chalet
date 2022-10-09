@@ -66,8 +66,8 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			ret = getBuildConfigurationList();
 			break;
 
-		case QueryOption::Arguments:
-			ret = getArguments();
+		case QueryOption::Options:
+			ret = getOptions();
 			break;
 
 		case QueryOption::ToolchainPresets:
@@ -456,7 +456,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 }
 
 /*****************************************************************************/
-StringList QueryController::getArguments() const
+StringList QueryController::getOptions() const
 {
 	ArgumentParser parser(m_centralState.inputs());
 	return parser.getAllCliOptions();

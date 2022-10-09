@@ -41,7 +41,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
 		{ "architectures", QueryOption::Architectures },
-		{ "arguments", QueryOption::Arguments },
+		{ "options", QueryOption::Options },
 		{ "commands", QueryOption::Commands },
 		{ "configuration", QueryOption::Configuration },
 		{ "configurations", QueryOption::Configurations },

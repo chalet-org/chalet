@@ -60,7 +60,7 @@ _chalet_completions()
 	*)
 		case "${cur}" in
 		-*)
-			COMPREPLY=($(compgen -W "$(chalet query arguments)" -- $cur))
+			COMPREPLY=($(compgen -W "$(chalet query options)" -- $cur))
 			;;
 		*)
 			COMPREPLY=($(compgen -W "$(chalet query commands)" -- $cur))
