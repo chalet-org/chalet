@@ -84,12 +84,16 @@ bool SourceTarget::initialize()
 		auto itr = m_files.begin();
 		while (itr != m_files.end())
 		{
-			if (!itr->empty())
+			if (itr->empty())
+			{
+				itr = m_files.erase(itr);
+			}
+			else
 			{
 				auto& path = *itr;
-				bool excluded = false;
+				bool excluded = String::contains(path, excludes);
 
-				if (!String::contains(path, excludes))
+				if (!excluded)
 				{
 					for (auto& exclude : m_fileExcludes)
 					{
@@ -105,11 +109,6 @@ bool SourceTarget::initialize()
 					itr = m_files.erase(itr);
 				else
 					++itr;
-			}
-			else
-			{
-				// no dependencies - we don't care about it
-				itr = m_files.erase(itr);
 			}
 		}
 	}
