@@ -58,5 +58,4 @@ bool IStrategyGenerator::hasProjectRecipes() const
 {
 	return m_targetRecipes.size() > 0;
 }
-
 }

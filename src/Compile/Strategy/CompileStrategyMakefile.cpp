@@ -17,8 +17,6 @@
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 
-// #define CHALET_KEEP_OLD_CACHE 1
-
 namespace chalet
 {
 /*****************************************************************************/
@@ -83,9 +81,6 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 
 		m_generator->reset();
 	}
-
-	auto& hash = m_hashes.at(inProject.name());
-	setBuildEnvironment(*outputs, hash);
 
 	return ICompileStrategy::addProject(inProject);
 }
@@ -349,32 +344,4 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 	return result == EXIT_SUCCESS;
 }
 
-/*****************************************************************************/
-void CompileStrategyMakefile::setBuildEnvironment(const SourceOutputs& inOutput, const std::string& inHash) const
-{
-	auto objects = String::join(inOutput.objectListLinker);
-	Environment::set(fmt::format("OBJS_{}", inHash).c_str(), objects);
-
-	StringList depends;
-	for (auto& group : inOutput.groups)
-	{
-		depends.push_back(group->dependencyFile);
-	}
-
-	auto depdendencies = String::join(std::move(depends));
-	Environment::set(fmt::format("DEPS_{}", inHash).c_str(), depdendencies);
-}
-
-/*****************************************************************************/
-bool CompileStrategyMakefile::doPostBuild() const
-{
-	std::string emptyString;
-	for (auto& [_, hash] : m_hashes)
-	{
-		Environment::set(fmt::format("OBJS_{}", hash).c_str(), emptyString);
-		Environment::set(fmt::format("DEPS_{}", hash).c_str(), emptyString);
-	}
-
-	return ICompileStrategy::doPostBuild();
-}
 }

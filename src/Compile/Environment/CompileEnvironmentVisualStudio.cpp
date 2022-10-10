@@ -301,37 +301,37 @@ bool CompileEnvironmentVisualStudio::compilerVersionIsToolchainVersion() const
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getObjectFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.obj", m_state.paths.objDir(), inSource);
+	return fmt::format("{}/{}.obj", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getAssemblyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.obj.asm", m_state.paths.asmDir(), inSource);
+	return fmt::format("{}/{}.obj.asm", m_state.paths.asmDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.d.json", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.d.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getModuleDirectivesDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.module.json", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.module.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getModuleBinaryInterfaceFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.ifc", m_state.paths.objDir(), inSource);
+	return fmt::format("{}/{}.ifc", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string CompileEnvironmentVisualStudio::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.ifc.d.json", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.ifc.d.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 }

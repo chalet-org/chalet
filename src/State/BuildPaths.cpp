@@ -24,9 +24,6 @@ namespace chalet
 {
 BuildPaths::BuildPaths(const BuildState& inState) :
 	m_state(inState),
-	m_cExts({
-		"c",
-	}),
 	m_resourceExts({
 		"rc",
 		"RC",
@@ -35,9 +32,7 @@ BuildPaths::BuildPaths(const BuildState& inState) :
 		"m",
 		"M",
 	}),
-	m_objectiveCppExts({
-		"mm",
-	})
+	m_objectiveCppExt("mm")
 {
 }
 
@@ -220,14 +215,6 @@ const StringList& BuildPaths::allFileExtensions() const noexcept
 {
 	return m_allFileExtensions;
 }
-StringList BuildPaths::objectiveCxxExtensions() const noexcept
-{
-	return List::combine(m_objectiveCExts, m_objectiveCppExts);
-}
-const StringList& BuildPaths::resourceExtensions() const noexcept
-{
-	return m_resourceExts;
-}
 const std::string& BuildPaths::cxxExtension() const
 {
 	if (m_cxxExtension.empty())
@@ -256,12 +243,6 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 
 	SourceGroup files = *m_fileList.at(inProject.name());
 	SourceGroup directories = getDirectories(inProject);
-
-	for (const auto& file : files.list)
-	{
-		auto ext = String::getPathSuffix(file);
-		List::addIfDoesNotExist(ret->fileExtensions, std::move(ext));
-	}
 
 	// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
 
@@ -477,13 +458,45 @@ StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
 		auto outFolder = intermediateDir(inProject);
 		for (const auto& configureFile : inProject.configureFiles())
 		{
-			auto outFile = String::getPathFilename(configureFile);
+			auto outFile = String::getPathFilename(getNormalizedOutputPath(configureFile));
 			outFile = outFile.substr(0, outFile.size() - 3);
 
 			ret.emplace_back(fmt::format("{}/{}", outFolder, outFile));
 		}
 	}
 	return ret;
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getNormalizedOutputPath(const std::string& inPath) const
+{
+	std::string ret = inPath;
+
+	normalizedPath(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) const
+{
+	std::string ret = String::getPathFolder(inPath);
+	Path::sanitize(ret, true);
+
+	normalizedPath(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+void BuildPaths::normalizedPath(std::string& outPath) const
+{
+	String::replaceAll(outPath, "/../", "/p/");
+
+	if (String::startsWith("../", outPath))
+	{
+		outPath = fmt::format("p{}", outPath.substr(2));
+	}
 }
 
 /*****************************************************************************/
@@ -555,7 +568,7 @@ std::string BuildPaths::getObjectFile(const std::string& inSource) const
 	if (String::endsWith(m_resourceExts, inSource))
 	{
 		if (m_state.toolchain.canCompilerWindowsResources())
-			return fmt::format("{}/{}.res", objDir(), inSource);
+			return m_state.environment->getWindowsResourceObjectFile(inSource);
 	}
 	else
 	{
@@ -584,7 +597,7 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	const auto ext = String::getPathSuffix(inSource);
 	if (!ext.empty())
 	{
-		if (String::equals(m_cExts, ext))
+		if (String::equals('c', ext))
 		{
 			if (m_cxxExtension.empty())
 				m_cxxExtension = ext;
@@ -599,7 +612,7 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 		{
 			return SourceType::ObjectiveC;
 		}
-		else if (String::equals(m_objectiveCppExts, ext))
+		else if (String::equals(m_objectiveCppExt, ext))
 		{
 			return SourceType::ObjectiveCPlusPlus;
 		}
@@ -658,8 +671,6 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	auto iconResource = getWindowsIconResourceFilename(inProject);
 
-	// StringList extensions = List::combine(m_cExts, m_cppExts, m_cppModuleExts, m_resourceExts, m_objectiveCExts, m_objectiveCppExts);
-
 	const auto& files = inProject.files();
 	auto& pch = inProject.precompiledHeader();
 	bool usesPch = inProject.usesPrecompiledHeader();
@@ -672,12 +683,6 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 			Diagnostic::warn("Precompiled header explicitly included in 'files': {} (ignored)", file);
 			continue;
 		}
-
-		/*if (!String::endsWith(extensions, file))
-		{
-			Diagnostic::warn("File type in 'files' is not required or supported: {} (ignored)", file);
-			continue;
-		}*/
 
 		if (!Commands::pathExists(file))
 		{
@@ -715,8 +720,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		{
 			if (Commands::pathExists(inProject.precompiledHeader()))
 			{
-				std::string outPath = String::getPathFolder(inProject.precompiledHeader());
-				Path::sanitize(outPath, true);
+				auto outPath = getNormalizedDirectoryPath(inProject.precompiledHeader());
 
 #if defined(CHALET_MACOS)
 				if (!m_state.inputs.universalArches().empty())
@@ -738,10 +742,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 			if (!Commands::pathExists(file))
 				continue;
 
-			std::string outPath = String::getPathFolder(file);
-			Path::sanitize(outPath, true);
-
-			List::addIfDoesNotExist(ret, std::move(outPath));
+			List::addIfDoesNotExist(ret, getNormalizedDirectoryPath(file));
 		}
 
 		List::addIfDoesNotExist(ret, intermediateDir(inProject));

@@ -15,11 +15,9 @@ struct SourceOutputs
 	SourceFileGroupList groups;
 
 	std::string target;
-	std::string pch;
 
 	StringList objectListLinker;
 	StringList directories;
-	StringList fileExtensions;
 };
 }
 

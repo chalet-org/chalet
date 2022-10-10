@@ -40,6 +40,17 @@ void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, cons
 	const std::string buildRecipes = getBuildRecipes(inOutputs);
 	const auto printer = getPrinter();
 
+	const auto& depDir = m_state.paths.depDir();
+	std::string depends;
+	for (auto& group : inOutputs.groups)
+	{
+		if (group->dependencyFile.empty())
+			continue;
+
+		depends += ' ';
+		depends += group->dependencyFile;
+	}
+
 	//
 	//
 	//
@@ -50,11 +61,18 @@ void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, cons
 build_{hash}: {target}
 	@{printer}
 .PHONY: build_{hash}
+
+.PRECIOUS: {depDir}/%.d
+{depDir}/%.d: ;
+
+-include{depends}
 )makefile",
 		fmt::arg("hash", m_hash),
 		FMT_ARG(printer),
 		FMT_ARG(buildRecipes),
-		FMT_ARG(target));
+		FMT_ARG(target),
+		FMT_ARG(depDir),
+		FMT_ARG(depends));
 
 	m_targetRecipes.emplace_back(std::move(makeTemplate));
 
@@ -67,7 +85,6 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 {
 	UNUSED(inPath);
 
-	const auto& depDir = m_state.paths.depDir();
 	// const auto suffixes = String::getPrefixed(m_fileExtensions, ".");
 
 #if defined(CHALET_WIN32)
@@ -83,16 +100,10 @@ std::string MakefileGeneratorGNU::getContents(const std::string& inPath) const
 .SUFFIXES:
 
 SHELL := {shell}{recipes}
-.PRECIOUS: {depDir}/%.d
-{depDir}/%.d: ;
-
--include $(DEPS_{hash})
 )makefile",
-		fmt::arg("hash", m_hash),
 		// FMT_ARG(suffixes),
 		FMT_ARG(shell),
-		FMT_ARG(recipes),
-		FMT_ARG(depDir));
+		FMT_ARG(recipes));
 
 	return makeTemplate;
 }
@@ -101,7 +112,6 @@ SHELL := {shell}{recipes}
 void MakefileGeneratorGNU::reset()
 {
 	m_targetRecipes.clear();
-	// m_fileExtensions.clear();
 }
 
 /*****************************************************************************/
@@ -109,42 +119,53 @@ std::string MakefileGeneratorGNU::getBuildRecipes(const SourceOutputs& inOutputs
 {
 	chalet_assert(m_project != nullptr, "");
 
-	/*for (auto& ext : inOutputs.fileExtensions)
-	{
-		List::addIfDoesNotExist(m_fileExtensions, ext);
-	}*/
+	std::string recipes;
 
-	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
-	const auto& pch = m_project->precompiledHeader();
-
-	std::string recipes = getPchRecipe(pch, pchTarget);
-
-	auto nonCxxExtensions = List::combine(m_state.paths.objectiveCxxExtensions(), m_state.paths.resourceExtensions());
-
-	for (auto& ext : String::excludeIf(nonCxxExtensions, inOutputs.fileExtensions))
-	{
-		recipes += getCxxRecipe(ext, pchTarget);
-	}
-
-	if (m_project->objectiveCxx())
-	{
-		for (auto& ext : String::filterIf(m_state.paths.objectiveCxxExtensions(), inOutputs.fileExtensions))
-		{
-			recipes += getObjcRecipe(ext);
-		}
-	}
-
-	if (m_state.toolchain.canCompilerWindowsResources())
-	{
-		for (auto& ext : String::filterIf(m_state.paths.resourceExtensions(), inOutputs.fileExtensions))
-		{
-			recipes += getRcRecipe(ext, pchTarget);
-		}
-	}
-
-	recipes += getTargetRecipe(inOutputs.target);
+	recipes += getObjBuildRecipes(inOutputs.groups);
+	recipes += getTargetRecipe(inOutputs.target, inOutputs.objectListLinker);
 
 	return recipes;
+}
+
+/*****************************************************************************/
+std::string MakefileGeneratorGNU::getObjBuildRecipes(const SourceFileGroupList& inGroups)
+{
+	std::string ret;
+
+	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
+
+	for (auto& group : inGroups)
+	{
+		const auto& source = group->sourceFile;
+		const auto& object = group->objectFile;
+		const auto& dependency = group->dependencyFile;
+		if (source.empty())
+			continue;
+
+		switch (group->type)
+		{
+			case SourceType::C:
+			case SourceType::CPlusPlus:
+			case SourceType::ObjectiveC:
+			case SourceType::ObjectiveCPlusPlus:
+				ret += getCxxRecipe(source, object, dependency, pchTarget, group->getSpecialization());
+				break;
+
+			case SourceType::WindowsResource:
+				ret += getRcRecipe(source, object, dependency);
+				break;
+
+			case SourceType::CxxPrecompiledHeader:
+				ret += getPchRecipe(source, object, dependency);
+				break;
+
+			case SourceType::Unknown:
+			default:
+				break;
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -186,7 +207,7 @@ std::string MakefileGeneratorGNU::getLinkerEcho() const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const std::string& object)
+std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const std::string& object, const std::string& dependency)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -200,12 +221,8 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 
 	if (usePch && !List::contains(m_precompiledHeaders, pchCache))
 	{
-		// auto pchAbsolute = Commands::getAbsolutePath(source);
 		const auto quietFlag = getQuietFlag();
-		const auto& depDir = m_state.paths.depDir();
 		m_precompiledHeaders.emplace_back(std::move(pchCache));
-
-		const auto dependency = fmt::format("{}/{}.d", depDir, source);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -224,13 +241,14 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 					dependencies += fmt::format(" {}_{}/{}", baseFolder, lastArch, filename);
 				}
 
-				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$<", "$@", m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch));
 				if (!pchCompile.empty())
 				{
 					auto pch = String::getPathFolderBaseName(object);
 					String::replaceAll(pch, fmt::format("{}/", objDir), "");
 					pch += fmt::format(" ({})", arch);
 					const auto compileEcho = getCompileEchoSources(pch);
+
 					ret += fmt::format(R"makefile(
 {outObject}: {dependencies} | {dependency}
 	{compileEcho}
@@ -249,12 +267,13 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		else
 #endif
 		{
-			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$<", "$@", m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, m_generateDependencies, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
 				auto pch = String::getPathFolderBaseName(object);
 				String::replaceAll(pch, fmt::format("{}/", objDir), "");
 				const auto compileEcho = getCompileEchoSources(pch);
+
 				ret += fmt::format(R"makefile(
 {object}: {source} | {dependency}
 	{compileEcho}
@@ -274,7 +293,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std::string& pchTarget)
+std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const std::string& object, const std::string& dependency) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -282,19 +301,15 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto& depDir = m_state.paths.depDir();
-	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources();
+	const auto compileEcho = getCompileEchoSources(source);
 
-	const auto dependency = fmt::format("{}/$<.d", depDir);
-
-	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$<", "$@", m_generateDependencies, dependency));
+	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, m_generateDependencies, dependency));
 	if (!rcCompile.empty())
 	{
 		std::string makeDependency;
 		if (m_generateDependencies && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
 		{
-			makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, "$<", "$@"));
+			makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, object, source));
 		}
 
 		std::string configureFilesDeps;
@@ -305,16 +320,14 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 		}
 
 		ret += fmt::format(R"makefile(
-{objDir}/%.{ext}.res: %.{ext} {pchTarget} | {depDir}/%.{ext}.d{configureFilesDeps}
+{object}: {source} | {dependency}{configureFilesDeps}
 	{compileEcho}
 	{quietFlag}{rcCompile}{makeDependency}
 )makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(configureFilesDeps),
-			FMT_ARG(pchTarget),
+			FMT_ARG(object),
+			FMT_ARG(source),
 			FMT_ARG(dependency),
+			FMT_ARG(configureFilesDeps),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(rcCompile),
@@ -325,7 +338,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& ext, const std:
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std::string& pchTarget)
+std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const CxxSpecialization specialization) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -333,14 +346,9 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto& depDir = m_state.paths.depDir();
-	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources();
-	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
+	const auto compileEcho = getCompileEchoSources(source);
 
-	const auto dependency = fmt::format("{}/$<.d", depDir);
-
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, specialization));
 	if (!cppCompile.empty())
 	{
 		std::string pch = pchTarget;
@@ -360,15 +368,14 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 		}
 
 		ret += fmt::format(R"makefile(
-{objDir}/%.{ext}.o: %.{ext} {pch} | {depDir}/%.{ext}.d
+{object}: {source} {pch} | {dependency}
 	{compileEcho}
 	{quietFlag}{cppCompile}
 )makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(pch),
+			FMT_ARG(source),
+			FMT_ARG(object),
 			FMT_ARG(dependency),
+			FMT_ARG(pch),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(cppCompile));
@@ -378,46 +385,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& ext, const std
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getObjcRecipe(const std::string& ext)
-{
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	std::string ret;
-
-	const bool objectiveC = String::equals(StringList{ "m", "M" }, ext); // mm & M imply C++
-
-	const auto quietFlag = getQuietFlag();
-	const auto& depDir = m_state.paths.depDir();
-	const auto& objDir = m_state.paths.objDir();
-	const auto compileEcho = getCompileEchoSources();
-
-	const auto dependency = fmt::format("{}/$<.d", depDir);
-
-	const auto specialization = objectiveC ? CxxSpecialization::ObjectiveC : CxxSpecialization::ObjectiveCPlusPlus;
-	auto objcCompile = String::join(m_toolchain->compilerCxx->getCommand("$<", "$@", m_generateDependencies, dependency, specialization));
-	if (!objcCompile.empty())
-	{
-
-		ret += fmt::format(R"makefile(
-{objDir}/%.{ext}.o: %.{ext} | {depDir}/%.{ext}.d
-	{compileEcho}
-	{quietFlag}{objcCompile}
-)makefile",
-			FMT_ARG(objDir),
-			FMT_ARG(depDir),
-			FMT_ARG(ext),
-			FMT_ARG(dependency),
-			FMT_ARG(compileEcho),
-			FMT_ARG(quietFlag),
-			FMT_ARG(objcCompile));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarget) const
+std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -426,10 +394,10 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 
 	const auto quietFlag = getQuietFlag();
 
-	const auto preReqs = getLinkerPreReqs();
+	const auto preReqs = getLinkerPreReqs(objects);
 
 	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, { fmt::format("$(OBJS_{})", m_hash) }, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects, linkerTargetBase));
 	if (!linkerCommand.empty())
 	{
 		const auto linkerEcho = getLinkerEcho();
@@ -453,11 +421,11 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getLinkerPreReqs() const
+std::string MakefileGeneratorGNU::getLinkerPreReqs(const StringList& objects) const
 {
 	chalet_assert(m_project != nullptr, "");
 
-	std::string ret = fmt::format("$(OBJS_{})", m_hash);
+	std::string ret = String::join(objects);
 
 	uint count = 0;
 	for (auto& target : m_state.targets)

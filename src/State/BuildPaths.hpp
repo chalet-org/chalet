@@ -36,8 +36,6 @@ struct BuildPaths
 	std::string getExternalBuildDir(const std::string& inName) const;
 
 	const StringList& allFileExtensions() const noexcept;
-	StringList objectiveCxxExtensions() const noexcept;
-	const StringList& resourceExtensions() const noexcept;
 	const std::string& cxxExtension() const;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
@@ -50,6 +48,9 @@ struct BuildPaths
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 	StringList getConfigureFiles(const SourceTarget& inProject) const;
+
+	std::string getNormalizedOutputPath(const std::string& inPath) const;
+	std::string getNormalizedDirectoryPath(const std::string& inPath) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
 	void clearOutputCaches();
@@ -69,6 +70,8 @@ private:
 		StringList list;
 	};
 
+	void normalizedPath(std::string& outPath) const;
+
 	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache);
 	std::string getObjectFile(const std::string& inSource) const;
 	std::string getAssemblyFile(const std::string& inSource) const;
@@ -82,10 +85,9 @@ private:
 
 	const BuildState& m_state;
 
-	const StringList m_cExts;
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
-	const StringList m_objectiveCppExts;
+	const std::string m_objectiveCppExt;
 
 	HeapDictionary<SourceGroup> m_fileList;
 	StringList m_allFileExtensions;

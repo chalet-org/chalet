@@ -300,40 +300,46 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 /*****************************************************************************/
 std::string ICompileEnvironment::getObjectFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.o", m_state.paths.objDir(), inSource);
+	return fmt::format("{}/{}.o", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string ICompileEnvironment::getAssemblyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.o.asm", m_state.paths.asmDir(), inSource);
+	return fmt::format("{}/{}.o.asm", m_state.paths.asmDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string ICompileEnvironment::getWindowsResourceObjectFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.res", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string ICompileEnvironment::getDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.d", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string ICompileEnvironment::getModuleDirectivesDependencyFile(const std::string& inSource) const
 {
 	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
-	return fmt::format("{}/{}.d.module", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.d.module", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string ICompileEnvironment::getModuleBinaryInterfaceFile(const std::string& inSource) const
 {
 	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
-	return fmt::format("{}/{}.bmi", m_state.paths.objDir(), inSource);
+	return fmt::format("{}/{}.bmi", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
 std::string ICompileEnvironment::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
 {
 	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
-	return fmt::format("{}/{}.bmi.d", m_state.paths.depDir(), inSource);
+	return fmt::format("{}/{}.bmi.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
