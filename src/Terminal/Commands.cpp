@@ -680,6 +680,22 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	if (String::contains("${", inPattern))
 		return false;
 
+	std::string basePath;
+	auto pos = inPattern.find_first_of("*{");
+	if (pos != std::string::npos)
+	{
+		auto tmp = inPattern.substr(0, pos);
+		basePath = String::getPathFolder(tmp);
+		if (basePath.empty())
+			basePath = std::move(tmp);
+	}
+
+	if (basePath.empty())
+		basePath = Commands::getWorkingDirectory();
+
+	if (!Commands::pathIsDirectory(basePath))
+		return false;
+
 	auto pattern = inPattern;
 	String::replaceAll(pattern, '(', "\\(");
 	String::replaceAll(pattern, ')', "\\)");
@@ -690,7 +706,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	{
 		auto prefix = pattern.substr(0, start);
 		start += 1;
-		auto end = pattern.find("}", start);
+		auto end = pattern.find('}', start);
 		if (end != std::string::npos)
 		{
 			auto suffix = pattern.substr(end + 1);
@@ -699,21 +715,8 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			String::replaceAll(arr, ',', '|');
 			pattern = fmt::format("{}({}){}", prefix, arr, suffix);
 		}
-		start = pattern.find("{", start);
+		start = pattern.find('{', start);
 	}
-
-	std::string basePath;
-	auto pos = pattern.find("*");
-	if (pos != std::string::npos)
-	{
-		auto tmp = pattern.substr(0, pos);
-		basePath = String::getPathFolder(tmp);
-		if (basePath.empty())
-			basePath = std::move(tmp);
-	}
-
-	if (basePath.empty())
-		basePath = Commands::getWorkingDirectory();
 
 	Path::sanitize(pattern);
 	String::replaceAll(pattern, '{', "\\{");
@@ -727,9 +730,6 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, "**", "(.+)");
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
 	String::replaceAll(pattern, "(.+)", "(.*)");
-
-	if (!Commands::pathIsDirectory(basePath))
-		return false;
 
 	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
 		bool isDirectory = fs::is_directory(inmatch);
