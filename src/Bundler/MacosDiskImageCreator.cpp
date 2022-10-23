@@ -64,7 +64,6 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 				}
 
 				m_includedPaths.emplace(path, std::move(appPath));
-
 				break;
 			}
 		}

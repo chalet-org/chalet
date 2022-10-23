@@ -70,6 +70,26 @@ bool MacosDiskImageTarget::validate()
 		result = false;
 	}
 
+	auto diskName = String::getPathFolderBaseName(this->name());
+	for (auto& [path, _] : m_positions)
+	{
+		bool foundPath = false;
+		if (String::equals("Applications", path))
+			continue;
+
+		for (auto& target : m_state.distribution)
+		{
+			if (target->isDistributionBundle() && String::equals(target->name(), path))
+				foundPath = true;
+		}
+
+		if (!foundPath)
+		{
+			Diagnostic::error("Bundle target required by {}.dmg was not found: {}", diskName, path);
+			return false;
+		}
+	}
+
 	return result;
 }
 
