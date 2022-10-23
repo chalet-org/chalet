@@ -202,6 +202,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 
 	auto derivative = SourceType::CxxPrecompiledHeader;
 
+	addSourceFileInterpretation(ret, derivative);
 	addOptimizations(ret);
 	addLanguageStandard(ret, derivative);
 	addCppCoroutines(ret);

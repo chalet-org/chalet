@@ -1432,7 +1432,7 @@
 			]
 		},
 		"target-source-cxx-links": {
-			"description": "A list of dynamic links to use with the linker",
+			"description": "A list of dynamic links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1574,7 +1574,7 @@
 			"default": false
 		},
 		"target-source-cxx-staticLinks": {
-			"description": "A list of static links to use with the linker",
+			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"oneOf": [
 				{
 					"type": "string",
