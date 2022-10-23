@@ -141,11 +141,25 @@ StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 		}
 		else
 		{
-			// LOG("foreach", include);
-			Commands::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&](std::string inPath) {
-				// LOG("--", inPath);
-				ret.emplace_back(std::move(inPath));
-			});
+			auto filePath = fmt::format("{}/{}", m_outputDirectory, include);
+			if (Commands::pathExists(filePath))
+			{
+				List::addIfDoesNotExist(tmp, std::move(filePath));
+			}
+			else if (Commands::pathExists(include))
+			{
+				List::addIfDoesNotExist(ret, include);
+			}
+			else
+			{
+				Commands::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&](std::string inPath) {
+					List::addIfDoesNotExist(ret, std::move(inPath));
+				});
+
+				Commands::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&](std::string inPath) {
+					List::addIfDoesNotExist(ret, std::move(inPath));
+				});
+			}
 		}
 	}
 
@@ -210,7 +224,7 @@ bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& in
 		"Compress-Archive",
 		"-Force",
 		"-Path",
-		".",
+		"./*",
 		"-DestinationPath",
 		m_outputFilename,
 	};
@@ -227,6 +241,7 @@ bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& in
 
 	UNUSED(inIncludes);
 
+	return !inIncludes.empty();
 #else
 	const auto& zip = m_state.tools.zip();
 	outCmd.emplace_back(zip);
@@ -242,9 +257,9 @@ bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& in
 	{
 		outCmd.emplace_back(file);
 	}
-#endif
 
-	return !inIncludes.empty();
+	return !files.empty();
+#endif
 }
 
 /*****************************************************************************/
@@ -274,7 +289,7 @@ bool FileArchiver::getTarFormatCommand(StringList& outCmd, const std::string& in
 		outCmd.emplace_back(file);
 	}
 
-	return !inIncludes.empty();
+	return !files.empty();
 }
 
 /*****************************************************************************/

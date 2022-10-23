@@ -528,9 +528,6 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, co
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 
-		if (!fs::exists(from))
-			return false;
-
 		if (fs::is_directory(from))
 			return copyDirectory(from, to, inOptions, false);
 		else
@@ -705,7 +702,10 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	}
 
 	if (basePath.empty())
+	{
 		basePath = Commands::getWorkingDirectory();
+		Path::sanitize(basePath);
+	}
 
 	if (!Commands::pathIsDirectory(basePath))
 		return false;
