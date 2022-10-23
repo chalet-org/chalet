@@ -832,7 +832,7 @@ bool Commands::forEachGlobMatch(const std::string& inPath, const StringList& inP
 /*****************************************************************************/
 bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
 {
-	if (String::contains('*', inValue))
+	if (inValue.find_first_of("*{") != std::string::npos)
 	{
 		if (!Commands::forEachGlobMatch(inValue, inSettings, [&](std::string inPath) {
 				outList.emplace_back(std::move(inPath));
