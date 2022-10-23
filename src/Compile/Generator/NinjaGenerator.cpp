@@ -283,7 +283,7 @@ rule rc_{hash}
 }
 
 /*****************************************************************************/
-std::string NinjaGenerator::getCxxRule(const std::string inId, const CxxSpecialization inSpecialization)
+std::string NinjaGenerator::getCxxRule(const std::string inId, const SourceType derivative)
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -296,7 +296,7 @@ std::string NinjaGenerator::getCxxRule(const std::string inId, const CxxSpeciali
 	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, inSpecialization));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -318,25 +318,25 @@ rule {id}_{hash}
 /*****************************************************************************/
 std::string NinjaGenerator::getCRule()
 {
-	return getCxxRule("cc", CxxSpecialization::C);
+	return getCxxRule("cc", SourceType::C);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getCppRule()
 {
-	return getCxxRule("cpp", CxxSpecialization::CPlusPlus);
+	return getCxxRule("cpp", SourceType::CPlusPlus);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getObjcRule()
 {
-	return getCxxRule("objc", CxxSpecialization::ObjectiveC);
+	return getCxxRule("objc", SourceType::ObjectiveC);
 }
 
 /*****************************************************************************/
 std::string NinjaGenerator::getObjcppRule()
 {
-	return getCxxRule("objcpp", CxxSpecialization::ObjectiveCPlusPlus);
+	return getCxxRule("objcpp", SourceType::ObjectiveCPlusPlus);
 }
 
 /*****************************************************************************/

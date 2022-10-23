@@ -9,7 +9,6 @@
 #include "Compile/Archiver/IArchiver.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 #include "Compile/CompilerWinResource/ICompilerWinResource.hpp"
-#include "Compile/CxxSpecialization.hpp"
 #include "Compile/Linker/ILinker.hpp"
 
 namespace chalet

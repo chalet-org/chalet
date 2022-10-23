@@ -199,7 +199,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 		{
 			case SourceType::C:
 			case SourceType::CPlusPlus:
-				ret += getCxxRecipe(source, object, pchTarget, group->getSpecialization());
+				ret += getCxxRecipe(source, object, pchTarget, group->type);
 				break;
 
 			case SourceType::WindowsResource:
@@ -342,7 +342,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, const std::string& object, const std::string& pchTarget, const CxxSpecialization specialization) const
+std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, const std::string& object, const std::string& pchTarget, const SourceType derivative) const
 {
 	chalet_assert(m_project != nullptr, "");
 
@@ -351,7 +351,7 @@ std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, cons
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, specialization));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		std::string compilerEcho;

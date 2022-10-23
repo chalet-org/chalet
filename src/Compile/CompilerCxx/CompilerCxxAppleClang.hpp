@@ -20,16 +20,16 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
+	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const final;
 	virtual void addProfileInformation(StringList& outArgList) const final;
 	virtual void addSanitizerOptions(StringList& outArgList) const final;
-	virtual void addPchInclude(StringList& outArgList) const final;
+	virtual void addPchInclude(StringList& outArgList, const SourceType derivative) const final;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;
-	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const final;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const final;
 
 	// Objective-C / Objective-C++
-	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const final;
-	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const final;
+	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const final;
 
 private:
 };

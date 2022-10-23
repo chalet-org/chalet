@@ -561,24 +561,18 @@ void SourceTarget::setLanguage(const std::string& inValue) noexcept
 	if (String::equals("C++", inValue))
 	{
 		m_language = CodeLanguage::CPlusPlus;
-		m_cxxSpecialization = CxxSpecialization::CPlusPlus;
 	}
 	else if (String::equals("C", inValue))
 	{
 		m_language = CodeLanguage::C;
-		m_cxxSpecialization = CxxSpecialization::C;
 	}
 	else if (String::equals("Objective-C++", inValue))
 	{
-		m_language = CodeLanguage::CPlusPlus;
-		m_cxxSpecialization = CxxSpecialization::ObjectiveCPlusPlus;
-		setObjectiveCxx(true);
+		m_language = CodeLanguage::ObjectiveCPlusPlus;
 	}
 	else if (String::equals("Objective-C", inValue))
 	{
-		m_language = CodeLanguage::C;
-		m_cxxSpecialization = CxxSpecialization::ObjectiveC;
-		setObjectiveCxx(true);
+		m_language = CodeLanguage::ObjectiveC;
 	}
 	else
 	{
@@ -588,9 +582,18 @@ void SourceTarget::setLanguage(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-CxxSpecialization SourceTarget::cxxSpecialization() const noexcept
+SourceType SourceTarget::getDefaultSourceType() const
 {
-	return m_cxxSpecialization;
+	switch (m_language)
+	{
+		case CodeLanguage::ObjectiveC: return SourceType::ObjectiveC;
+		case CodeLanguage::ObjectiveCPlusPlus: return SourceType::ObjectiveCPlusPlus;
+		case CodeLanguage::C: return SourceType::C;
+		case CodeLanguage::CPlusPlus: return SourceType::CPlusPlus;
+		default: break;
+	}
+
+	return SourceType::Unknown;
 }
 
 /*****************************************************************************/
@@ -688,9 +691,9 @@ bool SourceTarget::usesPrecompiledHeader() const noexcept
 	// Note: Objective-C++ itself doesn't use them, but the target could be mixed
 	//   with plain C++, which does use them. might be worth reworking some of this logic
 	//
-	bool validSpecialization = m_cxxSpecialization == CxxSpecialization::CPlusPlus
-		|| m_cxxSpecialization == CxxSpecialization::ObjectiveCPlusPlus
-		|| m_cxxSpecialization == CxxSpecialization::C;
+	bool validSpecialization = m_language == CodeLanguage::CPlusPlus
+		|| m_language == CodeLanguage::ObjectiveCPlusPlus
+		|| m_language == CodeLanguage::C;
 
 	return !m_precompiledHeader.empty() && validSpecialization;
 }
@@ -918,12 +921,7 @@ void SourceTarget::setCppConcepts(const bool inValue) noexcept
 /*****************************************************************************/
 bool SourceTarget::objectiveCxx() const noexcept
 {
-	return m_objectiveCxx;
-}
-
-void SourceTarget::setObjectiveCxx(const bool inValue) noexcept
-{
-	m_objectiveCxx = inValue;
+	return m_language == CodeLanguage::ObjectiveC || m_language == CodeLanguage::ObjectiveCPlusPlus;
 }
 
 /*****************************************************************************/

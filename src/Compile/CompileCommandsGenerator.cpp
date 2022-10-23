@@ -48,7 +48,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus:
-				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, group.getSpecialization());
+				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, group.type);
 
 			case SourceType::WindowsResource:
 			case SourceType::Unknown:

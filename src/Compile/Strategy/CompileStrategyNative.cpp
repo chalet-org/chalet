@@ -305,7 +305,7 @@ CommandPool::CmdList CompileStrategyNative::getCompileCommands(const SourceFileG
 
 						CommandPool::Cmd out;
 						out.output = std::move(source);
-						out.command = getCxxCompile(source, target, m_project->cxxSpecialization());
+						out.command = getCxxCompile(source, target, group->type);
 						out.reference = out.output;
 
 						ret.emplace_back(std::move(out));
@@ -348,7 +348,7 @@ CommandPool::CmdList CompileStrategyNative::getLinkCommand(const std::string& in
 }
 
 /*****************************************************************************/
-StringList CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const
+StringList CompileStrategyNative::getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const
 {
 	chalet_assert(m_toolchain != nullptr, "");
 
@@ -357,7 +357,7 @@ StringList CompileStrategyNative::getCxxCompile(const std::string& source, const
 	const auto& depDir = m_state.paths.depDir();
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
-	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, specialization);
+	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, derivative);
 
 	return ret;
 }

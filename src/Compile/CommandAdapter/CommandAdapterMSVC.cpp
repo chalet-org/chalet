@@ -760,7 +760,10 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 
 		if (!found)
 		{
-			List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+			if (Commands::pathExists(link))
+				List::addIfDoesNotExist(ret, std::move(link));
+			else
+				List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
 		}
 	}
 

@@ -257,10 +257,10 @@ std::string CodeBlocksProjectExporter::getProjectCompileOptions(const SourceTarg
 {
 	std::string ret;
 
-	auto specialization = inTarget.cxxSpecialization();
+	auto derivative = inTarget.getDefaultSourceType();
 
 	StringList argList;
-	inToolchain.compilerCxx->getCommandOptions(argList, specialization);
+	inToolchain.compilerCxx->getCommandOptions(argList, derivative);
 	if (inTarget.usesPrecompiledHeader())
 	{
 		const auto& cwd = workingDirectory();

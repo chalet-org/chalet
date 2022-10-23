@@ -16,6 +16,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -180,29 +181,85 @@ void LinkerGCC::addLibDirs(StringList& outArgList) const
 void LinkerGCC::addLinks(StringList& outArgList) const
 {
 	const std::string prefix{ "-l" };
-	const bool hasStaticLinks = m_project.staticLinks().size() > 0;
-	const bool hasDynamicLinks = m_project.links().size() > 0;
+	const auto& staticLinks = m_project.staticLinks();
+	const auto& dynamicLinks = m_project.links();
 
-	if (hasStaticLinks)
+	if (!staticLinks.empty())
 	{
 		startStaticLinkGroup(outArgList);
 
-		for (auto& staticLink : m_project.staticLinks())
+		std::string search(".a");
+		for (auto& link : staticLinks)
 		{
-			if (isLinkSupported(staticLink))
-				outArgList.emplace_back(prefix + staticLink);
+			if (isLinkSupported(link))
+			{
+				bool resolved = false;
+				if (String::endsWith(search, link))
+				{
+					if (Commands::pathExists(link))
+					{
+						outArgList.emplace_back(getQuotedPath(link));
+						resolved = true;
+					}
+					else
+					{
+						const auto& libDirs = m_project.libDirs();
+						for (auto& dir : libDirs)
+						{
+							auto path = fmt::format("{}/{}", dir, link);
+							if (Commands::pathExists(path))
+							{
+								outArgList.emplace_back(getQuotedPath(path));
+								resolved = true;
+								break;
+							}
+						}
+					}
+				}
+
+				if (!resolved)
+					outArgList.emplace_back(prefix + link);
+			}
 		}
 
 		endStaticLinkGroup(outArgList);
 		startExplicitDynamicLinkGroup(outArgList);
 	}
 
-	if (hasDynamicLinks)
+	if (!dynamicLinks.empty())
 	{
-		for (auto& link : m_project.links())
+		std::string search(".a");
+		for (auto& link : dynamicLinks)
 		{
 			if (isLinkSupported(link))
-				outArgList.emplace_back(prefix + link);
+			{
+				bool resolved = false;
+				if (String::endsWith(search, link))
+				{
+					if (Commands::pathExists(link))
+					{
+						outArgList.emplace_back(getQuotedPath(link));
+						resolved = true;
+					}
+					else
+					{
+						const auto& libDirs = m_project.libDirs();
+						for (auto& dir : libDirs)
+						{
+							auto path = fmt::format("{}/{}", dir, link);
+							if (Commands::pathExists(path))
+							{
+								outArgList.emplace_back(getQuotedPath(path));
+								resolved = true;
+								break;
+							}
+						}
+					}
+				}
+
+				if (!resolved)
+					outArgList.emplace_back(prefix + link);
+			}
 		}
 	}
 

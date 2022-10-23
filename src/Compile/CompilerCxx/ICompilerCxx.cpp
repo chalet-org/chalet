@@ -65,6 +65,12 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 }
 
 /*****************************************************************************/
+void ICompilerCxx::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
+{
+	UNUSED(outArgList, derivative);
+}
+
+/*****************************************************************************/
 void ICompilerCxx::addIncludes(StringList& outArgList) const
 {
 	UNUSED(outArgList);
@@ -83,9 +89,9 @@ void ICompilerCxx::addDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addPchInclude(StringList& outArgList) const
+void ICompilerCxx::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -95,9 +101,9 @@ void ICompilerCxx::addOptimizations(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
+void ICompilerCxx::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/

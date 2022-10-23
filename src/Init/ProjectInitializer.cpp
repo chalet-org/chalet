@@ -110,16 +110,15 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
 
-	auto&& [language, specialization] = getCodeLanguage();
+	auto language = getCodeLanguage();
 	outProps.language = language;
-	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
 #if defined(CHALET_WIN32) // modules can only be used in MSVC so far
 	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
 #endif
-	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
@@ -127,7 +126,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 
 	if (!outProps.modules)
 	{
-		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	}
 
 	outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
@@ -137,13 +136,13 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
 
 	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
 	});
 
 	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
@@ -171,18 +170,17 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
 
-	auto&& [language, specialization] = getCodeLanguage();
+	auto language = getCodeLanguage();
 	outProps.language = language;
-	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
-	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
 	outProps.mainSource = getMainSourceFile(outProps.language);
-	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
 	outProps.envFile = getMakeEnvFile();
 	outProps.makeGitRepository = getMakeGitRepository();
@@ -190,13 +188,13 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
 
 	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
 	});
 
 	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
@@ -335,7 +333,7 @@ bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
-	const auto contents = StarterFileTemplates::getMainCxx(inProps.specialization, inProps.modules);
+	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.modules);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -344,7 +342,7 @@ bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 bool ProjectInitializer::makePch(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
-	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language, inProps.specialization);
+	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -507,11 +505,11 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 }
 
 /*****************************************************************************/
-std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage inLang, const CxxSpecialization inCxxSpecialization) const
+std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage inLang) const
 {
 	std::string result;
 
-	if (inCxxSpecialization != CxxSpecialization::ObjectiveC)
+	if (inLang != CodeLanguage::ObjectiveC)
 	{
 		if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
 		{
@@ -548,9 +546,9 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 }
 
 /*****************************************************************************/
-std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage() const
+CodeLanguage ProjectInitializer::getCodeLanguage() const
 {
-	std::pair<CodeLanguage, CxxSpecialization> ret;
+	CodeLanguage ret = CodeLanguage::None;
 
 #if defined(CHALET_MACOS)
 	StringList allowedLangs{ "C++", "C", "Objective-C", "Objective-C++" };
@@ -565,44 +563,40 @@ std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage()
 
 	if (String::equals("C", language))
 	{
-		ret.first = CodeLanguage::C;
-		ret.second = CxxSpecialization::C;
+		ret = CodeLanguage::C;
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("Objective-C", language))
 	{
-		ret.first = CodeLanguage::C;
-		ret.second = CxxSpecialization::ObjectiveC;
+		ret = CodeLanguage::ObjectiveC;
 	}
 	else if (String::equals("Objective-C++", language))
 	{
-		ret.first = CodeLanguage::CPlusPlus;
-		ret.second = CxxSpecialization::ObjectiveCPlusPlus;
+		ret = CodeLanguage::ObjectiveCPlusPlus;
 	}
 #endif
 	else
 	{
-		ret.first = CodeLanguage::CPlusPlus;
-		ret.second = CxxSpecialization::CPlusPlus;
+		ret = CodeLanguage::CPlusPlus;
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-StringList ProjectInitializer::getSourceExtensions(const CxxSpecialization inCxxSpecialization, const bool inModules) const
+StringList ProjectInitializer::getSourceExtensions(const CodeLanguage inCxxSpecialization, const bool inModules) const
 {
 	StringList ret;
-	if (inCxxSpecialization == CxxSpecialization::C)
+	if (inCxxSpecialization == CodeLanguage::C)
 	{
 		ret.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
-	else if (inCxxSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+	else if (inCxxSpecialization == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret.emplace_back(".mm");
 	}
-	else if (inCxxSpecialization == CxxSpecialization::C)
+	else if (inCxxSpecialization == CodeLanguage::C)
 	{
 		ret.emplace_back(".m");
 	}

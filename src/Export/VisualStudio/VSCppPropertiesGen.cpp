@@ -133,10 +133,10 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				compilers["cpp"]["path"] = state->toolchain.compilerCpp().path;
 			}
 
-			auto specialization = sourceTarget.cxxSpecialization();
+			auto derivative = sourceTarget.getDefaultSourceType();
 
 			StringList args;
-			toolchain->compilerCxx->getCommandOptions(args, specialization);
+			toolchain->compilerCxx->getCommandOptions(args, derivative);
 			config["compilerSwitches"] = String::join(args);
 		}
 

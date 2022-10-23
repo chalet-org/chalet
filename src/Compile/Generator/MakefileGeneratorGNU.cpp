@@ -148,7 +148,7 @@ std::string MakefileGeneratorGNU::getObjBuildRecipes(const SourceFileGroupList& 
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus:
-				ret += getCxxRecipe(source, object, dependency, pchTarget, group->getSpecialization());
+				ret += getCxxRecipe(source, object, dependency, pchTarget, group->type);
 				break;
 
 			case SourceType::WindowsResource:
@@ -338,7 +338,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const CxxSpecialization specialization) const
+std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const SourceType derivative) const
 {
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
@@ -348,7 +348,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const 
 	const auto quietFlag = getQuietFlag();
 	const auto compileEcho = getCompileEchoSources(source);
 
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, specialization));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		std::string pch = pchTarget;

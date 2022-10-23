@@ -6,7 +6,7 @@
 #ifndef CHALET_SOURCE_FILE_GROUP_HPP
 #define CHALET_SOURCE_FILE_GROUP_HPP
 
-#include "Compile/CxxSpecialization.hpp"
+#include "Compile/CodeLanguage.hpp"
 #include "State/SourceDataType.hpp"
 #include "State/SourceType.hpp"
 
@@ -20,8 +20,6 @@ struct SourceFileGroup
 	std::string otherFile;
 	SourceType type = SourceType::Unknown;
 	SourceDataType dataType = SourceDataType::None;
-
-	CxxSpecialization getSpecialization() const;
 };
 
 using SourceFileGroupList = std::vector<Unique<SourceFileGroup>>;

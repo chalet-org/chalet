@@ -7,7 +7,6 @@
 #define CHALET_ISTRATEGY_GENERATOR_HPP
 
 #include "Compile/CompileToolchainController.hpp"
-#include "Compile/CxxSpecialization.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -32,8 +31,6 @@ struct IStrategyGenerator
 	bool hasProjectRecipes() const;
 
 protected:
-	CxxSpecialization getSpecialization(const SourceType inType) const;
-
 	const BuildState& m_state;
 	CompileToolchainController* m_toolchain = nullptr;
 	const SourceTarget* m_project = nullptr;
