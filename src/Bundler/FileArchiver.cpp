@@ -34,14 +34,22 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		if (!zipIsValid())
 			return false;
 
-		cmd = getZipFormatCommand(inBaseName, inFiles);
+		if (!getZipFormatCommand(cmd, inBaseName, inFiles))
+		{
+			Diagnostic::error("Couldn't create archive '{}' because there were no input files.", m_outputFilename);
+			return false;
+		}
 	}
 	else if (m_format == ArchiveFormat::Tar)
 	{
 		if (!tarIsValid())
 			return false;
 
-		cmd = getTarFormatCommand(inBaseName, inFiles);
+		if (!getTarFormatCommand(cmd, inBaseName, inFiles))
+		{
+			Diagnostic::error("Couldn't create archive '{}' because there were no input files.", m_outputFilename);
+			return false;
+		}
 	}
 
 	if (cmd.empty())
@@ -129,9 +137,9 @@ std::string FileArchiver::makeTemporaryDirectory(const std::string& inBaseName, 
 }
 
 /*****************************************************************************/
-StringList FileArchiver::getZipFormatCommand(const std::string& inBaseName, const StringList& inFiles) const
+bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inFiles) const
 {
-	StringList cmd;
+	outCmd.clear();
 
 #if defined(CHALET_WIN32)
 	StringList pwshCmd{
@@ -147,56 +155,56 @@ StringList FileArchiver::getZipFormatCommand(const std::string& inBaseName, cons
 	//   which is done with $ProgressPreference
 
 	const auto& powershell = m_state.tools.powershell();
-	cmd.emplace_back(powershell);
-	cmd.emplace_back("-Command");
-	cmd.emplace_back("$ProgressPreference = \"SilentlyContinue\";");
-	cmd.emplace_back(fmt::format("{};", String::join(pwshCmd)));
-	cmd.emplace_back("$ProgressPreference = \"Continue\";");
+	outCmd.emplace_back(powershell);
+	outCmd.emplace_back("-Command");
+	outCmd.emplace_back("$ProgressPreference = \"SilentlyContinue\";");
+	outCmd.emplace_back(fmt::format("{};", String::join(pwshCmd)));
+	outCmd.emplace_back("$ProgressPreference = \"Continue\";");
 
 	UNUSED(inFiles);
 
 #else
 	const auto& zip = m_state.tools.zip();
-	cmd.emplace_back(zip);
-	cmd.emplace_back("-r");
-	cmd.emplace_back("-X");
-	cmd.emplace_back(m_outputFilename);
+	outCmd.emplace_back(zip);
+	outCmd.emplace_back("-r");
+	outCmd.emplace_back("-X");
+	outCmd.emplace_back(m_outputFilename);
 
 	for (auto& file : inFiles)
 	{
 		auto outFile = fmt::format("{}{}", inBaseName, file.substr(m_outputDirectory.size()));
-		cmd.emplace_back(std::move(outFile));
+		outCmd.emplace_back(std::move(outFile));
 	}
 #endif
 
-	return cmd;
+	return !inFiles.empty();
 }
 
 /*****************************************************************************/
-StringList FileArchiver::getTarFormatCommand(const std::string& inBaseName, const StringList& inFiles) const
+bool FileArchiver::getTarFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inFiles) const
 {
-	StringList cmd;
+	outCmd.clear();
 
 #if defined(CHALET_WIN32)
 	const auto& powershell = m_state.tools.powershell();
-	cmd.emplace_back(powershell);
-	cmd.emplace_back("tar");
+	outCmd.emplace_back(powershell);
+	outCmd.emplace_back("tar");
 #else
 	const auto& tar = m_state.tools.tar();
-	cmd.emplace_back(tar);
+	outCmd.emplace_back(tar);
 #endif
-	cmd.emplace_back("-c");
-	cmd.emplace_back("-z");
-	cmd.emplace_back("-f");
-	cmd.emplace_back(m_outputFilename);
-	cmd.emplace_back(fmt::format("--directory={}", inBaseName));
+	outCmd.emplace_back("-c");
+	outCmd.emplace_back("-z");
+	outCmd.emplace_back("-f");
+	outCmd.emplace_back(m_outputFilename);
+	outCmd.emplace_back(fmt::format("--directory={}", inBaseName));
 
 	for (auto& file : inFiles)
 	{
 		auto outFile = file.substr(m_outputDirectory.size() + 1);
-		cmd.emplace_back(std::move(outFile));
+		outCmd.emplace_back(std::move(outFile));
 	}
 
-	return cmd;
+	return !inFiles.empty();
 }
 }

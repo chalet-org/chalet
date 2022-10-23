@@ -26,8 +26,8 @@ private:
 
 	std::string makeTemporaryDirectory(const std::string& inBaseName, const StringList& inFiles, const StringList& inExcludes) const;
 
-	StringList getZipFormatCommand(const std::string& inBaseName, const StringList& inFiles) const;
-	StringList getTarFormatCommand(const std::string& inBaseName, const StringList& inFiles) const;
+	bool getZipFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inFiles) const;
+	bool getTarFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inFiles) const;
 
 	const BuildState& m_state;
 	const std::string& m_outputDirectory;
