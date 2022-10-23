@@ -21,8 +21,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"export",
-				"vscode"
+				"build"
 			],
 		},
 		{

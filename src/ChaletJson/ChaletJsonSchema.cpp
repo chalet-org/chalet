@@ -281,7 +281,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::DistributionArchiveFormat] = R"json({
 		"type": "string",
-		"description": "The archive format to use.",
+		"description": "The archive format to use. If not specified, 'zip' will be used.",
 		"minLength": 1,
 		"enum": [
 			"zip",

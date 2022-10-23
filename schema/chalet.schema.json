@@ -411,7 +411,7 @@
 		},
 		"dist-archive-format": {
 			"type": "string",
-			"description": "The archive format to use.",
+			"description": "The archive format to use. If not specified, 'zip' will be used.",
 			"minLength": 1,
 			"enum": [
 				"zip",

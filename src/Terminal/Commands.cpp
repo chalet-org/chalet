@@ -75,7 +75,7 @@ std::time_t timePointToTime(T tp)
 //   This is a custom version that more or less does the same thing,
 //   but preserves symlinks (needed for copying frameworks)
 //
-bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_options inOptions)
+bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_options inOptions, const bool inFailExists)
 {
 	CHALET_TRY
 	{
@@ -84,15 +84,26 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 			Diagnostic::error("Source directory {} does not exist or is not a directory.", source.string());
 			return false;
 		}
-		if (fs::exists(dest))
+		if (inFailExists)
 		{
-			Diagnostic::error("Destination directory {} already exists.", dest.string());
-			return false;
+			if (fs::exists(dest))
+			{
+				Diagnostic::error("Destination directory {} already exists.", dest.string());
+				return false;
+			}
+			if (!fs::create_directory(dest))
+			{
+				Diagnostic::error("Unable to create destination directory {}", dest.string());
+				return false;
+			}
 		}
-		if (!fs::create_directory(dest))
+		else
 		{
-			Diagnostic::error("Unable to create destination directory {}", dest.string());
-			return false;
+			if (!fs::exists(dest) && !fs::create_directory(dest))
+			{
+				Diagnostic::error("Unable to create destination directory {}", dest.string());
+				return false;
+			}
 		}
 	}
 	CHALET_CATCH(fs::filesystem_error & err)
@@ -113,7 +124,7 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 			}
 			else if (file.is_directory())
 			{
-				if (!copyDirectory(current, dest / current.filename(), inOptions))
+				if (!copyDirectory(current, dest / current.filename(), inOptions, inFailExists))
 					return false;
 			}
 			else
@@ -493,7 +504,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 			Output::msgCopying(inFrom, fmt::format("{}/{}", inTo, String::getPathFilename(inFrom)));
 
 		if (fs::is_directory(from))
-			return copyDirectory(from, to, inOptions);
+			return copyDirectory(from, to, inOptions, true);
 		else
 			fs::copy(from, to, inOptions);
 
@@ -517,14 +528,17 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, co
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 
+		if (!fs::exists(from))
+			return false;
+
 		if (fs::is_directory(from))
-			return copyDirectory(from, to, inOptions);
+			return copyDirectory(from, to, inOptions, false);
 		else
 			fs::copy(from, to, inOptions);
 
 		return true;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	CHALET_CATCH(const std::exception& err)
 	{
 		CHALET_EXCEPT_ERROR(err.what())
 		return false;
@@ -568,7 +582,7 @@ bool Commands::moveSilent(const std::string& inFrom, const std::string& inTo, co
 
 		if (fs::is_directory(from))
 		{
-			return copyDirectory(from, to, inOptions);
+			return copyDirectory(from, to, inOptions, false);
 		}
 		else
 		{
@@ -731,6 +745,13 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
 	String::replaceAll(pattern, "(.+)", "(.*)");
 
+	bool exactMatch = inSettings == GlobMatch::FilesAndFoldersExact;
+	if (exactMatch)
+	{
+		if (!String::startsWith(basePath, pattern))
+			pattern = basePath + '/' + pattern;
+	}
+
 	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
 		bool isDirectory = fs::is_directory(inmatch);
 		bool isRegularFile = fs::is_regular_file(inmatch);
@@ -744,16 +765,34 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		return isRegularFile || isDirectory;
 	};
 
-	std::regex re(pattern);
-	for (auto& it : fs::recursive_directory_iterator(basePath))
+	if (exactMatch)
 	{
-		const auto& fsPath = it.path();
-		if (matchIsValid(fsPath))
+		std::regex re(pattern);
+		for (auto& it : fs::recursive_directory_iterator(basePath))
 		{
-			auto p = fsPath.string();
-			Path::sanitize(p);
-			if (std::regex_search(p, re, std::regex_constants::match_default))
-				onFound(std::move(p));
+			const auto& fsPath = it.path();
+			if (matchIsValid(fsPath))
+			{
+				auto p = fsPath.string();
+				Path::sanitize(p);
+				if (std::regex_match(p, re, std::regex_constants::match_default))
+					onFound(std::move(p));
+			}
+		}
+	}
+	else
+	{
+		std::regex re(pattern);
+		for (auto& it : fs::recursive_directory_iterator(basePath))
+		{
+			const auto& fsPath = it.path();
+			if (matchIsValid(fsPath))
+			{
+				auto p = fsPath.string();
+				Path::sanitize(p);
+				if (std::regex_search(p, re, std::regex_constants::match_default))
+					onFound(std::move(p));
+			}
 		}
 	}
 

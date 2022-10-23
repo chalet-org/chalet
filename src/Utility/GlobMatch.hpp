@@ -13,6 +13,7 @@ enum class GlobMatch : uchar
 	Files,
 	Folders,
 	FilesAndFolders,
+	FilesAndFoldersExact,
 };
 }
 
