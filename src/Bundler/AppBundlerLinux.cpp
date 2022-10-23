@@ -74,7 +74,7 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!m_bundle.hasLinuxDesktopEntry())
 		return true; // Nothing to do
 
-	if (!getMainExecutable())
+	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable -- we don't care
 
 	const auto& icon = m_bundle.linuxDesktopEntryIcon();
@@ -91,9 +91,6 @@ bool AppBundlerLinux::bundleForPlatform()
 		if (!Commands::copy(icon, bundlePath))
 			return false;
 	}
-
-	if (m_mainExecutable.empty())
-		return false;
 
 	const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
 

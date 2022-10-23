@@ -36,11 +36,14 @@ private:
 
 	const std::string& m_inputFile;
 
+	std::string m_mainExecutable;
+
+	StringList m_executableOutputPaths;
+
+	std::string m_executablePath;
 	std::string m_bundlePath;
 	std::string m_frameworksPath;
 	std::string m_resourcePath;
-	std::string m_executablePath;
-	std::string m_executableOutputPath;
 	std::string m_iconBaseName;
 };
 }

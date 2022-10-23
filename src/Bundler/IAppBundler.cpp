@@ -54,7 +54,7 @@ const BundleTarget& IAppBundler::bundle() const noexcept
 }
 
 /*****************************************************************************/
-bool IAppBundler::getMainExecutable()
+bool IAppBundler::getMainExecutable(std::string& outMainExecutable)
 {
 	auto& buildTargets = m_bundle.buildTargets();
 	auto& mainExecutable = m_bundle.mainExecutable();
@@ -81,17 +81,41 @@ bool IAppBundler::getMainExecutable()
 				continue;
 
 			// LOG("Main exec:", project.name());
-			m_mainExecutable = project.outputFile();
+			outMainExecutable = project.outputFile();
 			break;
 		}
 	}
 
-	if (m_mainExecutable.empty())
+	if (outMainExecutable.empty())
 	{
-		m_mainExecutable = std::move(lastOutput);
+		outMainExecutable = std::move(lastOutput);
 		// return false;
 	}
 
-	return !m_mainExecutable.empty();
+	return !outMainExecutable.empty();
+}
+
+/*****************************************************************************/
+StringList IAppBundler::getAllExecutables() const
+{
+	StringList ret;
+
+	auto& buildTargets = m_bundle.buildTargets();
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+			if (!List::contains(buildTargets, project.name()))
+				continue;
+
+			if (!project.isExecutable())
+				continue;
+
+			ret.emplace_back(project.outputFile());
+		}
+	}
+
+	return ret;
 }
 }
