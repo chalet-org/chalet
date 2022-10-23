@@ -7,10 +7,10 @@
 #define CHALET_SOURCE_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "Compile/CxxSpecialization.hpp"
 #include "Compile/PositionIndependentCodeType.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/SourceKind.hpp"
+#include "State/SourceType.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WindowsEntryPoint.hpp"
 #include "State/WindowsSubSystem.hpp"
@@ -90,7 +90,7 @@ struct SourceTarget final : public IBuildTarget
 
 	CodeLanguage language() const noexcept;
 	void setLanguage(const std::string& inValue) noexcept;
-	CxxSpecialization cxxSpecialization() const noexcept;
+	SourceType getDefaultSourceType() const;
 
 	const std::string& cStandard() const noexcept;
 	void setCStandard(std::string&& inValue) noexcept;
@@ -173,7 +173,6 @@ struct SourceTarget final : public IBuildTarget
 	void setCppConcepts(const bool inValue) noexcept;
 
 	bool objectiveCxx() const noexcept;
-	void setObjectiveCxx(const bool inValue) noexcept;
 
 	bool runtimeTypeInformation() const noexcept;
 	void setRuntimeTypeInformation(const bool inValue) noexcept;
@@ -234,7 +233,6 @@ private:
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
-	CxxSpecialization m_cxxSpecialization = CxxSpecialization::C;
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
@@ -245,7 +243,6 @@ private:
 	bool m_cppModules = false;
 	bool m_cppCoroutines = false;
 	bool m_cppConcepts = false;
-	bool m_objectiveCxx = false;
 	bool m_runtimeTypeInformation = true;
 	bool m_exceptions = true;
 	bool m_fastMath = false;

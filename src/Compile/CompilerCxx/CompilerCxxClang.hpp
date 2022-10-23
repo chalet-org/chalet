@@ -25,7 +25,7 @@ protected:
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
-	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;

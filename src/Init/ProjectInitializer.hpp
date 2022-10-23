@@ -7,7 +7,6 @@
 #define CHALET_PROJECT_INITIALIZER_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "Compile/CxxSpecialization.hpp"
 
 namespace chalet
 {
@@ -44,9 +43,9 @@ private:
 	// lang bits
 	std::string getRootSourceDirectory() const;
 	std::string getMainSourceFile(const CodeLanguage inLang) const;
-	std::string getCxxPrecompiledHeaderFile(const CodeLanguage inLang, const CxxSpecialization inCxxSpecialization) const;
-	std::pair<CodeLanguage, CxxSpecialization> getCodeLanguage() const;
-	StringList getSourceExtensions(const CxxSpecialization inCxxSpecialization, const bool inModules) const;
+	std::string getCxxPrecompiledHeaderFile(const CodeLanguage inLang) const;
+	CodeLanguage getCodeLanguage() const;
+	StringList getSourceExtensions(const CodeLanguage inLang, const bool inModules) const;
 	std::string getLanguageStandard(const CodeLanguage inLang) const;
 
 	bool getUseCxxModules(const CodeLanguage inLang, std::string langStandard) const;

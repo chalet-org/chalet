@@ -12,7 +12,9 @@ enum class CodeLanguage : ushort
 {
 	None,
 	C,
-	CPlusPlus
+	CPlusPlus,
+	ObjectiveC,
+	ObjectiveCPlusPlus
 };
 }
 

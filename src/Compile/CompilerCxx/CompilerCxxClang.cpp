@@ -105,9 +105,9 @@ void CompilerCxxClang::addDiagnosticColorOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxClang::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxClang::addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/

@@ -32,7 +32,7 @@ private:
 	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
 	CommandPool::CmdList getLinkCommand(const std::string& inTarget, const StringList& inObjects);
 
-	StringList getCxxCompile(const std::string& source, const std::string& target, CxxSpecialization specialization) const;
+	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
 	CommandPool m_commandPool;

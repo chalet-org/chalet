@@ -30,7 +30,7 @@ private:
 
 	std::string getPchRecipe(const std::string& source, const std::string& object, const std::string& dependency);
 	std::string getRcRecipe(const std::string& source, const std::string& object, const std::string& dependency) const;
-	std::string getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const CxxSpecialization specialization) const;
+	std::string getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const SourceType derivative) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
 

@@ -701,7 +701,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		Json links = R"json({
 			"type": "string",
-			"description": "A list of dynamic links to use with the linker",
+			"description": "A list of dynamic links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"minLength": 1
 		})json"_ojson;
 		links[SKeys::Pattern] = kPatternTargetSourceLinks;
@@ -823,7 +823,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		Json staticLinks = R"json({
 			"type": "string",
-			"description": "A list of static links to use with the linker",
+			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"minLength": 1
 		})json"_ojson;
 		staticLinks[SKeys::Pattern] = kPatternTargetSourceLinks;

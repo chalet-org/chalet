@@ -87,8 +87,6 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	auto pchObject = m_state.paths.getPrecompiledHeaderObject(outputFile);
 
-	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-
 	ret.emplace_back(getQuotedPath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
@@ -100,7 +98,8 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 		ret.emplace_back("/showIncludes");
 	}
 
-	addLanguageStandard(ret, specialization);
+	addSourceFileInterpretation(ret, SourceType::CxxPrecompiledHeader);
+	addLanguageStandard(ret, SourceType::CxxPrecompiledHeader);
 	// addCppCoroutines(ret);
 
 	addCompileOptions(ret);
@@ -147,7 +146,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 }
 
 /*****************************************************************************/
-StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization)
+StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative)
 {
 	UNUSED(generateDependency, dependency);
 
@@ -172,7 +171,8 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 		ret.emplace_back("/showIncludes");
 	}
 
-	addLanguageStandard(ret, specialization);
+	addSourceFileInterpretation(ret, derivative);
+	addLanguageStandard(ret, derivative);
 	// addCppCoroutines(ret);
 
 	addCompileOptions(ret);
@@ -207,7 +207,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
-	addPchInclude(ret);
+	addPchInclude(ret, derivative);
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
@@ -237,7 +237,8 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	addCharsets(ret);
 	// ret.emplace_back("/MP");
 
-	addLanguageStandard(ret, CxxSpecialization::CPlusPlus);
+	addSourceFileInterpretation(ret, SourceType::CPlusPlus);
+	addLanguageStandard(ret, SourceType::CPlusPlus);
 	// addCppCoroutines(ret);
 
 	ret.emplace_back("/experimental:module");
@@ -312,7 +313,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	addNoRunTimeTypeInformationOption(ret);
 	addIncludes(ret);
 
-	// addPchInclude(ret);
+	// addPchInclude(ret, SourceType::CPlusPlus);
 
 	ret.emplace_back(getPathCommand("/Fo", outputFile));
 
@@ -322,13 +323,14 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const CxxSpecialization specialization)
+void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const SourceType derivative)
 {
 	outArgList.emplace_back("/c");
 	addCharsets(outArgList);
 	// outArgList.emplace_back("/MP");
 
-	addLanguageStandard(outArgList, specialization);
+	addSourceFileInterpretation(outArgList, derivative);
+	addLanguageStandard(outArgList, derivative);
 	// addCppCoroutines(outArgList);
 
 	addCompileOptions(outArgList);
@@ -363,6 +365,20 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 
 	addSanitizerOptions(outArgList);
 	addNoRunTimeTypeInformationOption(outArgList);
+}
+
+/*****************************************************************************/
+void CompilerCxxVisualStudioCL::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
+{
+	const CodeLanguage language = m_project.language();
+	if (derivative == SourceType::CPlusPlus || (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::CPlusPlus))
+	{
+		List::addIfDoesNotExist(outArgList, "/TP"); // Treat code as C++
+	}
+	else if (derivative == SourceType::C || (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C))
+	{
+		List::addIfDoesNotExist(outArgList, "/TC"); // Treat code as C
+	}
 }
 
 /*****************************************************************************/
@@ -414,8 +430,10 @@ void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList) const
+void CompilerCxxVisualStudioCL::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
+	UNUSED(derivative);
+
 	if (m_project.usesPrecompiledHeader())
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderTarget(m_project);
@@ -443,22 +461,21 @@ void CompilerCxxVisualStudioCL::addOptimizations(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxVisualStudioCL::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
 {
 	// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=msvc-160
 	// https://en.wikipedia.org/wiki/Microsoft_Visual_C%2B%2B
 
 	std::string standard;
 
-	if (specialization == CxxSpecialization::C)
+	const CodeLanguage language = m_project.language();
+	if (derivative == SourceType::CPlusPlus || (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::CPlusPlus))
 	{
-		List::addIfDoesNotExist(outArgList, "/TC"); // Treat code as C
-		standard = m_msvcAdapter.getLanguageStandardC();
-	}
-	else if (specialization == CxxSpecialization::CPlusPlus)
-	{
-		List::addIfDoesNotExist(outArgList, "/TP"); // Treat code as C++
 		standard = m_msvcAdapter.getLanguageStandardCpp();
+	}
+	else if (derivative == SourceType::C || (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C))
+	{
+		standard = m_msvcAdapter.getLanguageStandardC();
 	}
 
 	if (!standard.empty())
