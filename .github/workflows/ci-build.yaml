@@ -21,7 +21,7 @@ jobs:
       UBUNTU_VERSION: focal
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "arm setup"
@@ -84,7 +84,7 @@ jobs:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
@@ -137,7 +137,7 @@ jobs:
         with:
           arch: amd64
       - name: "Checkout"
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
