@@ -442,8 +442,7 @@ void CompilerCxxGCC::addDefines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	bool validFile = derivative == SourceType::C || derivative == SourceType::CPlusPlus;
-	if (validFile && m_project.usesPrecompiledHeader())
+	if (precompiledHeaderAllowedForSourceType(derivative))
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
@@ -515,9 +514,8 @@ void CompilerCxxGCC::addOptimizations(StringList& outArgList) const
 void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
 {
 	const CodeLanguage language = m_project.language();
-	const bool useC = derivative == SourceType::C
-		|| derivative == SourceType::ObjectiveC
-		|| (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C);
+	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::C || language == CodeLanguage::ObjectiveC);
+	bool useC = validPchType || derivative == SourceType::C || derivative == SourceType::ObjectiveC;
 
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
@@ -781,7 +779,7 @@ void CompilerCxxGCC::addCppConcepts(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const
 {
-	const bool isObjCxx = derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::ObjectiveC;
+	/*const bool isObjCxx = derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::ObjectiveC;
 	if (isObjCxx)
 	{
 #if defined(CHALET_MACOS)
@@ -791,7 +789,8 @@ void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const 
 #endif
 		// if (isFlagSupported(objcRuntime))
 		List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
-	}
+	}*/
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/

@@ -509,37 +509,34 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 {
 	std::string result;
 
-	if (inLang != CodeLanguage::ObjectiveC)
+	if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
 	{
-		if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
+		const bool isC = inLang == CodeLanguage::C || inLang == CodeLanguage::ObjectiveC;
+		StringList headerExts;
+		if (isC)
 		{
-			const bool isC = inLang == CodeLanguage::C;
-			StringList headerExts;
-			if (isC)
-			{
-				headerExts.emplace_back(".h");
-			}
-			else
-			{
-				headerExts.emplace_back(".hpp");
-				headerExts.emplace_back(".hxx");
-				headerExts.emplace_back(".hh");
-				headerExts.emplace_back(".h");
-			}
-
-			result = fmt::format("pch{}", headerExts.front());
-
-			auto label = isC ? "Must end in" : "Recommended extensions";
-			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
-				auto lower = String::toLowerCase(input);
-				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-				if (validChars && (isC && !String::endsWith(headerExts, input)))
-				{
-					input = String::getPathBaseName(input) + headerExts.front();
-				}
-				return validChars;
-			});
+			headerExts.emplace_back(".h");
 		}
+		else
+		{
+			headerExts.emplace_back(".hpp");
+			headerExts.emplace_back(".hxx");
+			headerExts.emplace_back(".hh");
+			headerExts.emplace_back(".h");
+		}
+
+		result = fmt::format("pch{}", headerExts.front());
+
+		auto label = isC ? "Must end in" : "Recommended extensions";
+		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			auto lower = String::toLowerCase(input);
+			bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
+			if (validChars && (isC && !String::endsWith(headerExts, input)))
+			{
+				input = String::getPathBaseName(input) + headerExts.front();
+			}
+			return validChars;
+		});
 	}
 
 	return result;
@@ -584,19 +581,19 @@ CodeLanguage ProjectInitializer::getCodeLanguage() const
 }
 
 /*****************************************************************************/
-StringList ProjectInitializer::getSourceExtensions(const CodeLanguage inCxxSpecialization, const bool inModules) const
+StringList ProjectInitializer::getSourceExtensions(const CodeLanguage inLang, const bool inModules) const
 {
 	StringList ret;
-	if (inCxxSpecialization == CodeLanguage::C)
+	if (inLang == CodeLanguage::C)
 	{
 		ret.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
-	else if (inCxxSpecialization == CodeLanguage::ObjectiveCPlusPlus)
+	else if (inLang == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret.emplace_back(".mm");
 	}
-	else if (inCxxSpecialization == CodeLanguage::C)
+	else if (inLang == CodeLanguage::ObjectiveC)
 	{
 		ret.emplace_back(".m");
 	}
@@ -625,7 +622,7 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 {
 	std::string ret;
 
-	if (inLang == CodeLanguage::CPlusPlus)
+	if (inLang == CodeLanguage::CPlusPlus || inLang == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret = "20";
 		Output::getUserInput("C++ Standard:", ret, "Common choices: 23 20 17 14 11", [](std::string& input) {

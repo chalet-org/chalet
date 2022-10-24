@@ -206,8 +206,7 @@ void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList) const
 //
 void CompilerCxxAppleClang::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	bool validFile = derivative == SourceType::C || derivative == SourceType::CPlusPlus;
-	if (validFile && m_project.usesPrecompiledHeader())
+	if (precompiledHeaderAllowedForSourceType(derivative))
 	{
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -263,7 +262,9 @@ bool CompilerCxxAppleClang::addArchitecture(StringList& outArgList, const std::s
 /*****************************************************************************/
 void CompilerCxxAppleClang::addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const
 {
-	if (derivative == SourceType::CPlusPlus || derivative == SourceType::CxxPrecompiledHeader || derivative == SourceType::ObjectiveCPlusPlus)
+	auto language = m_project.language();
+	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::CPlusPlus || language == CodeLanguage::ObjectiveCPlusPlus);
+	if (validPchType || derivative == SourceType::CPlusPlus || derivative == SourceType::ObjectiveCPlusPlus)
 	{
 		std::string flag{ "-stdlib=libc++" };
 		// if (isFlagSupported(flag))

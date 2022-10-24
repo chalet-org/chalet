@@ -688,14 +688,7 @@ void SourceTarget::setPrecompiledHeader(std::string&& inValue) noexcept
 
 bool SourceTarget::usesPrecompiledHeader() const noexcept
 {
-	// Note: Objective-C++ itself doesn't use them, but the target could be mixed
-	//   with plain C++, which does use them. might be worth reworking some of this logic
-	//
-	bool validSpecialization = m_language == CodeLanguage::CPlusPlus
-		|| m_language == CodeLanguage::ObjectiveCPlusPlus
-		|| m_language == CodeLanguage::C;
-
-	return !m_precompiledHeader.empty() && validSpecialization;
+	return !m_precompiledHeader.empty();
 }
 
 /*****************************************************************************/

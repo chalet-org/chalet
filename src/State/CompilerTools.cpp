@@ -369,7 +369,7 @@ uint CompilerTools::versionPatch() const noexcept
 /*****************************************************************************/
 const CompilerInfo& CompilerTools::compilerCxx(const CodeLanguage inLang) const noexcept
 {
-	if (inLang == CodeLanguage::C)
+	if (inLang == CodeLanguage::C || inLang == CodeLanguage::ObjectiveC)
 		return m_compilerC;
 	else
 		return m_compilerCpp;

@@ -29,6 +29,8 @@ struct ICompilerCxx : public IToolchainExecutableBase
 	virtual void addLanguageStandard(StringList& outArgList, const SourceType derivative) const;
 
 protected:
+	virtual bool precompiledHeaderAllowedForSourceType(const SourceType derivative) const final;
+
 	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const;
 	virtual void addIncludes(StringList& outArgList) const;
 	virtual void addWarnings(StringList& outArgList) const;

@@ -65,6 +65,21 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 }
 
 /*****************************************************************************/
+bool ICompilerCxx::precompiledHeaderAllowedForSourceType(const SourceType derivative) const
+{
+	if (!m_project.usesPrecompiledHeader())
+		return false;
+
+	auto language = m_project.language();
+	bool validFile = (language == CodeLanguage::ObjectiveCPlusPlus && derivative != SourceType::ObjectiveC)
+		|| (language == CodeLanguage::ObjectiveC && derivative != SourceType::ObjectiveCPlusPlus)
+		|| (language == CodeLanguage::C && derivative != SourceType::CPlusPlus)
+		|| (language == CodeLanguage::CPlusPlus && derivative != SourceType::C);
+
+	return validFile;
+}
+
+/*****************************************************************************/
 void ICompilerCxx::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
 {
 	UNUSED(outArgList, derivative);
