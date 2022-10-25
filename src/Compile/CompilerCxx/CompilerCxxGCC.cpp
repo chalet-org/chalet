@@ -336,8 +336,31 @@ void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const SourceType 
 /*****************************************************************************/
 void CompilerCxxGCC::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
 {
-	// Placeholder for now, but used by apple clang for objective-cxx
-	UNUSED(outArgList, derivative);
+	outArgList.emplace_back("-x");
+
+	auto language = m_project.language();
+	if (m_project.objectiveCxx())
+	{
+		if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveCPlusPlus)
+			outArgList.emplace_back("objective-c++-header");
+		else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveC)
+			outArgList.emplace_back("objective-c-header");
+		else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
+			outArgList.emplace_back("objective-c++");
+		else
+			outArgList.emplace_back("objective-c");
+	}
+	else
+	{
+		if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::CPlusPlus)
+			outArgList.emplace_back("c++-header");
+		else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C)
+			outArgList.emplace_back("c-header");
+		else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
+			outArgList.emplace_back("c++");
+		else
+			outArgList.emplace_back("c");
+	}
 }
 
 /*****************************************************************************/

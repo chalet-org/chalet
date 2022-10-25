@@ -129,25 +129,6 @@ bool CompilerCxxAppleClang::addMultiArchOptionsToCommand(StringList& outArgList,
 }
 
 /*****************************************************************************/
-void CompilerCxxAppleClang::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
-{
-	if (m_project.objectiveCxx())
-	{
-		outArgList.emplace_back("-x");
-
-		auto language = m_project.language();
-		if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveCPlusPlus)
-			outArgList.emplace_back("objective-c++-header");
-		else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveC)
-			outArgList.emplace_back("objective-c-header");
-		else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
-			outArgList.emplace_back("objective-c++");
-		else
-			outArgList.emplace_back("objective-c");
-	}
-}
-
-/*****************************************************************************/
 void CompilerCxxAppleClang::addProfileInformation(StringList& outArgList) const
 {
 	UNUSED(outArgList);

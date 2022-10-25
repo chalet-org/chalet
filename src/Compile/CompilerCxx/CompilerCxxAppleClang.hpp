@@ -20,7 +20,6 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
 protected:
-	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const final;
 	virtual void addProfileInformation(StringList& outArgList) const final;
 	virtual void addSanitizerOptions(StringList& outArgList) const final;
 	virtual void addPchInclude(StringList& outArgList, const SourceType derivative) const final;
