@@ -295,6 +295,10 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 
 	StringList ret{ getQuotedPath(cmake), "-G", getQuotedPath(generator) };
 
+#if !defined(CHALET_DEBUG)
+	ret.emplace_back("--no-warn-unused-cli");
+#endif
+
 	std::string arch = getArchitecture();
 	if (!arch.empty())
 	{

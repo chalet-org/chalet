@@ -1218,7 +1218,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention] = R"json({
 		"type": "boolean",
-		"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+		"description": "If true (default), shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
 		"default": true
 	})json"_ojson;
 
@@ -1265,19 +1265,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeRecheck] = R"json({
 		"type": "boolean",
-		"description": "If true, CMake will be invoked each time during the build.",
+		"description": "If true (default), CMake will be invoked each time during the build.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeRebuild] = R"json({
 		"type": "boolean",
-		"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"description": "If true (default), the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeClean] = R"json({
 		"type": "boolean",
-		"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+		"description": "If true (default), the CMake build folder will be cleaned when a clean is requested.",
 		"default": true
 	})json"_ojson;
 
@@ -1303,19 +1303,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetChaletRecheck] = R"json({
 		"type": "boolean",
-		"description": "If true, Chalet will be invoked each time during the build.",
+		"description": "If true (default), Chalet will be invoked each time during the build.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetChaletRebuild] = R"json({
 		"type": "boolean",
-		"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"description": "If true (default), the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetChaletClean] = R"json({
 		"type": "boolean",
-		"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
+		"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 		"default": true
 	})json"_ojson;
 

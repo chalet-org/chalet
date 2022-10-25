@@ -1937,7 +1937,7 @@
 		},
 		"target-source-cxx-mingwUnixSharedLibraryNamingConvention": {
 			"type": "boolean",
-			"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+			"description": "If true (default), shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
 			"default": true
 		},
 		"target-source-cxx-windowsSubSystem": {
@@ -2140,17 +2140,17 @@
 		},
 		"target-cmake-recheck": {
 			"type": "boolean",
-			"description": "If true, CMake will be invoked each time during the build.",
+			"description": "If true (default), CMake will be invoked each time during the build.",
 			"default": true
 		},
 		"target-cmake-rebuild": {
 			"type": "boolean",
-			"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"description": "If true (default), the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
 		},
 		"target-cmake-clean": {
 			"type": "boolean",
-			"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+			"description": "If true (default), the CMake build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
 		"target-cmake-toolset": {
@@ -2215,17 +2215,17 @@
 		},
 		"target-chalet-recheck": {
 			"type": "boolean",
-			"description": "If true, Chalet will be invoked each time during the build.",
+			"description": "If true (default), Chalet will be invoked each time during the build.",
 			"default": true
 		},
 		"target-chalet-rebuild": {
 			"type": "boolean",
-			"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"description": "If true (default), the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
 		},
 		"target-chalet-clean": {
 			"type": "boolean",
-			"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
+			"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
 		"target-process": {
