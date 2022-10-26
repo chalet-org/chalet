@@ -1065,7 +1065,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	{
 		m_isToolchainPreset = true;
 
+#if defined(CHALET_WIN32)
 		bool isVisualStudioLLVM = visualStudioLLVMPresets.find(inValue) != visualStudioLLVMPresets.end();
+#endif
 
 		std::string suffix;
 		if (hasLlvmPrefix)
