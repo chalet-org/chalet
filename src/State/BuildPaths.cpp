@@ -520,7 +520,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (type == SourceType::Unknown)
 			continue;
 
-		if (!m_state.toolchain.canCompilerWindowsResources() && type == SourceType::WindowsResource)
+		if (!m_state.toolchain.canCompileWindowsResources() && type == SourceType::WindowsResource)
 			continue;
 
 		auto group = std::make_unique<SourceFileGroup>();
@@ -567,7 +567,7 @@ std::string BuildPaths::getObjectFile(const std::string& inSource) const
 {
 	if (String::endsWith(m_resourceExts, inSource))
 	{
-		if (m_state.toolchain.canCompilerWindowsResources())
+		if (m_state.toolchain.canCompileWindowsResources())
 			return m_state.environment->getWindowsResourceObjectFile(inSource);
 	}
 	else

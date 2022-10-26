@@ -51,7 +51,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 		if (clang && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<CompilerCxxIntelClang>(inState, inProject);
 
-	if (clang || inType == ToolchainType::LLVM)
+	if (clang || inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM)
 		return std::make_unique<CompilerCxxClang>(inState, inProject);
 
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);

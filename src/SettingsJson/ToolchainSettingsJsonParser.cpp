@@ -151,8 +151,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[Keys::ToolchainBuildPathStyle] = std::string();
 	}
 
-	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
-	bool isGNU = preference.type == ToolchainType::GNU || preference.type == ToolchainType::MingwGNU;
+	bool isLLVM = preference.type == ToolchainType::LLVM
+		|| preference.type == ToolchainType::AppleLLVM
+		|| preference.type == ToolchainType::IntelLLVM
+		|| preference.type == ToolchainType::VisualStudioLLVM;
+
+	bool isGNU = preference.type == ToolchainType::GNU
+		|| preference.type == ToolchainType::MingwGNU;
 
 	std::string cpp;
 	std::string cc;
@@ -392,7 +397,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
 		StringList searches;
-		if (preference.type == ToolchainType::VisualStudio)
+		if (preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM)
 		{
 			searches.emplace_back("jom");
 			searches.emplace_back("nmake");

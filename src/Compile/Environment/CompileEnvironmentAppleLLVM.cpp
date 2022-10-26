@@ -5,7 +5,6 @@
 
 #include "Compile/Environment/CompileEnvironmentAppleLLVM.hpp"
 
-#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "Utility/String.hpp"
 

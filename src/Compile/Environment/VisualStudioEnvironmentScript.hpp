@@ -18,6 +18,8 @@ struct VisualStudioEnvironmentScript final : public IEnvironmentScript
 	virtual bool makeEnvironment(const BuildState& inState) final;
 	virtual void readEnvironmentVariablesFromDeltaFile() final;
 
+	bool validateArchitectureFromInput(const BuildState& inState, std::string& outHost, std::string& outTarget);
+
 	const std::string& architecture() const noexcept;
 	void setArchitecture(const std::string& inHost, const std::string& inTarget, const StringList& inOptions);
 

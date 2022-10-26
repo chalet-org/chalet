@@ -52,7 +52,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 		if (lld && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<LinkerIntelClang>(inState, inProject);
 
-	if (lld || inType == ToolchainType::LLVM)
+	if (lld || inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM)
 		return std::make_unique<LinkerLLVMClang>(inState, inProject);
 
 	return std::make_unique<LinkerGCC>(inState, inProject);

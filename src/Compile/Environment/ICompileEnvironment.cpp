@@ -23,6 +23,7 @@
 #include "Compile/Environment/CompileEnvironmentIntel.hpp"
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 #include "Compile/Environment/CompileEnvironmentVisualStudio.hpp"
+#include "Compile/Environment/CompileEnvironmentVisualStudioLLVM.hpp"
 
 namespace chalet
 {
@@ -53,6 +54,7 @@ bool ICompileEnvironment::isWindowsClang() const noexcept
 {
 #if defined(CHALET_WIN32)
 	return m_type == ToolchainType::LLVM
+		|| m_type == ToolchainType::VisualStudioLLVM
 		|| m_type == ToolchainType::IntelLLVM;
 #else
 	return false;
@@ -60,10 +62,17 @@ bool ICompileEnvironment::isWindowsClang() const noexcept
 }
 
 /*****************************************************************************/
+bool ICompileEnvironment::isMsvcClang() const noexcept
+{
+	return m_type == ToolchainType::VisualStudioLLVM;
+}
+
+/*****************************************************************************/
 bool ICompileEnvironment::isClang() const noexcept
 {
 	return m_type == ToolchainType::LLVM
 		|| m_type == ToolchainType::AppleLLVM
+		|| m_type == ToolchainType::VisualStudioLLVM
 		|| m_type == ToolchainType::IntelLLVM
 		|| m_type == ToolchainType::MingwLLVM
 		|| m_type == ToolchainType::EmScripten;
@@ -148,12 +157,6 @@ bool ICompileEnvironment::isCompilerFlagSupported(const std::string& inFlag) con
 }
 
 /*****************************************************************************/
-bool ICompileEnvironment::ouptuttedDescription() const noexcept
-{
-	return m_ouptuttedDescription;
-}
-
-/*****************************************************************************/
 // Protected/Private Town
 //
 ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState& inState) :
@@ -189,6 +192,8 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 		case ToolchainType::GNU:
 		case ToolchainType::MingwGNU:
 			return std::make_unique<CompileEnvironmentGNU>(type, inState);
+		case ToolchainType::VisualStudioLLVM:
+			return std::make_unique<CompileEnvironmentVisualStudioLLVM>(type, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -453,7 +458,16 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 
 	if (String::contains("clang", executable))
 	{
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+		StringList vsLLVM{
+			"/vc/tools/llvm/bin/clang.exe",
+			"/vc/tools/llvm/bin/clang++.exe",
+			"/vc/tools/llvm/x64/bin/clang.exe",
+			"/vc/tools/llvm/x64/bin/clang++.exe", //
+		};
+		if (String::endsWith(vsLLVM, executable))
+			return ToolchainType::VisualStudioLLVM;
+#elif defined(CHALET_MACOS)
 		if (String::contains(StringList{ "contents/developer", "code" }, executable))
 			return ToolchainType::AppleLLVM;
 #endif

@@ -206,6 +206,14 @@ bool BuildConfiguration::validate(const BuildState& inState)
 				result = false;
 			}
 		}
+		else if (inState.environment->isMsvcClang())
+		{
+			if (!sanitizeAddress())
+			{
+				Diagnostic::error("Only the 'address' sanitizer is supported on Windows clang.");
+				result = false;
+			}
+		}
 		else if (inState.environment->isAppleClang())
 		{
 			if (sanitizeHardwareAddress())

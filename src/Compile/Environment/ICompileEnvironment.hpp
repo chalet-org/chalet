@@ -28,6 +28,7 @@ struct ICompileEnvironment
 	bool isEmbeddedTarget() const noexcept;
 
 	bool isWindowsClang() const noexcept;
+	bool isMsvcClang() const noexcept;
 	bool isClang() const noexcept;
 	bool isAppleClang() const noexcept;
 	bool isGcc() const noexcept;
@@ -41,8 +42,6 @@ struct ICompileEnvironment
 	const std::string& detectedVersion() const;
 	std::string getMajorVersion() const;
 	bool isCompilerFlagSupported(const std::string& inFlag) const;
-
-	bool ouptuttedDescription() const noexcept;
 
 	virtual std::string getObjectFile(const std::string& inSource) const;
 	virtual std::string getAssemblyFile(const std::string& inSource) const;
@@ -90,7 +89,6 @@ protected:
 
 	mutable ToolchainType m_type;
 
-	bool m_ouptuttedDescription = false;
 	bool m_isWindowsTarget = false;
 	bool m_isEmbeddedTarget = false;
 

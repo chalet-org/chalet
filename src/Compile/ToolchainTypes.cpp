@@ -22,6 +22,8 @@ std::string ToolchainTypes::getTypeName(const ToolchainType inType) noexcept
 			return std::string("apple-llvm");
 		case ToolchainType::VisualStudio:
 			return std::string("msvc");
+		case ToolchainType::VisualStudioLLVM:
+			return std::string("vs-llvm");
 		case ToolchainType::MingwGNU:
 		case ToolchainType::MingwLLVM:
 			return std::string("mingw");
@@ -39,7 +41,7 @@ std::string ToolchainTypes::getTypeName(const ToolchainType inType) noexcept
 /*****************************************************************************/
 StringList ToolchainTypes::getNotTypes(const std::string& inType) noexcept
 {
-	StringList ret{ "gnu", "llvm", "apple-llvm", "msvc", "mingw", "intel-classic", "intel-llvm" };
+	StringList ret{ "gnu", "llvm", "apple-llvm", "msvc", "vs-llvm", "mingw", "intel-classic", "intel-llvm" };
 	ret.erase(std::remove_if(ret.begin(), ret.end(), [&inType](const std::string& val) {
 		return String::equals(inType, val);
 	}));
