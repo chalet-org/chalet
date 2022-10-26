@@ -15,6 +15,7 @@ enum class ToolchainType : ushort
 	LLVM,
 	AppleLLVM,
 	VisualStudio,
+	VisualStudioLLVM,
 	MingwGNU,
 	MingwLLVM,
 	IntelClassic,

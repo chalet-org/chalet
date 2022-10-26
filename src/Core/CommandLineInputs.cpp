@@ -80,6 +80,13 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
 		{ "vs-stable", VisualStudioVersion::Stable },
 	};
 }
+OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
+{
+	return {
+		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+	};
+}
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 {
@@ -914,6 +921,12 @@ StringList CommandLineInputs::getToolchainPresets() const
 
 		ret.emplace_back(name);
 	}
+	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
+	for (auto& [name, _] : visualStudioLLVMPresets)
+	{
+		ret.emplace_back(name);
+	}
+
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
 #elif defined(CHALET_MACOS)
@@ -1016,6 +1029,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	m_visualStudioVersion = VisualStudioVersion::None;
 
 	auto visualStudioPresets = getVisualStudioPresets();
+	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	#endif
@@ -1051,9 +1065,22 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	{
 		m_isToolchainPreset = true;
 
+		bool isVisualStudioLLVM = visualStudioLLVMPresets.find(inValue) != visualStudioLLVMPresets.end();
+
 		std::string suffix;
 		if (hasLlvmPrefix)
-			suffix = inValue.substr(inValue.find_first_of('-'));
+		{
+#if defined(CHALET_WIN32)
+			if (isVisualStudioLLVM)
+			{
+				m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
+			}
+			else
+#endif
+			{
+				suffix = inValue.substr(inValue.find_first_of('-'));
+			}
+		}
 
 		m_toolchainPreferenceName = inValue;
 
@@ -1061,6 +1088,8 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 #if defined(CHALET_MACOS)
 		ret.type = isAppleClang ? ToolchainType::AppleLLVM : ToolchainType::LLVM;
+#elif defined(CHALET_WIN32)
+		ret.type = isVisualStudioLLVM ? ToolchainType::VisualStudioLLVM : ToolchainType::LLVM;
 #else
 		ret.type = ToolchainType::LLVM;
 #endif
@@ -1073,7 +1102,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 		ret.linker = "lld";
 		ret.archiver = "ar";
+#if defined(CHALET_WIN32)
+		ret.profiler = isVisualStudioLLVM ? "vsinstr" : "gprof";
+#else
 		ret.profiler = "gprof";
+#endif
 #if defined(CHALET_WIN32)
 		ret.disassembler = "dumpbin";
 #elif defined(CHALET_MACOS)
@@ -1234,25 +1267,23 @@ QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inVal
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
 #if defined(CHALET_WIN32)
-	auto visualStudioPresets = getVisualStudioPresets();
-	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
-	{
-		return visualStudioPresets.at(inValue);
-	}
+	auto presets = getVisualStudioPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
+
+	presets = getVisualStudioLLVMPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	auto intelClassicPresets = getIntelClassicVSPresets();
-	if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
-	{
-		return intelClassicPresets.at(inValue);
-	}
+	presets = getIntelClassicVSPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	auto intelClangPresets = getIntelClangVSPresets();
-	if (intelClangPresets.find(inValue) != intelClangPresets.end())
-	{
-		return intelClangPresets.at(inValue);
-	}
+	presets = getIntelClangVSPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 	#endif
 #else
 	UNUSED(inValue);

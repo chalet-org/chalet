@@ -58,7 +58,7 @@ struct CompilerTools
 	const std::string& compilerWindowsResource() const noexcept;
 	void setCompilerWindowsResource(std::string&& inValue) noexcept;
 	bool isCompilerWindowsResourceLLVMRC() const noexcept;
-	bool canCompilerWindowsResources() const noexcept;
+	bool canCompileWindowsResources() const noexcept;
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;

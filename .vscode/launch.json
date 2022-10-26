@@ -28,13 +28,17 @@
 			"name": "GDB",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/Debug/chalet-debug",
-			"args": [
-				"build"
-			],
-			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
+			"program": "${workspaceFolder}/build/Debug/chalet-debug",
+			"stopAtEntry": false,
+			"args": [
+				"-t",
+				"llvm-vs-2022",
+				"-a",
+				"x86_64",
+				"build"
+			],
 			"externalConsole": false,
 			"setupCommands": [
 				{

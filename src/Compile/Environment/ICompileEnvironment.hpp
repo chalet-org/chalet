@@ -28,6 +28,7 @@ struct ICompileEnvironment
 	bool isEmbeddedTarget() const noexcept;
 
 	bool isWindowsClang() const noexcept;
+	bool isMsvcClang() const noexcept;
 	bool isClang() const noexcept;
 	bool isAppleClang() const noexcept;
 	bool isGcc() const noexcept;

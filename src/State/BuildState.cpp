@@ -533,7 +533,7 @@ bool BuildState::validateState()
 		{
 			if (target->isSources())
 			{
-				if (environment->isMsvc() && !toolchain.makeIsNMake())
+				if ((environment->isMsvc() || environment->isMsvcClang()) && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
 					return false;
