@@ -8,6 +8,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -91,11 +92,19 @@ void LinkerVisualStudioClang::addLinkerOptions(StringList& outArgList) const
 		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", m_outputFileBase));
 	}
 
-	auto options = m_msvcAdapter.getAdditionalLinkerOptions();
-	for (auto&& option : options)
+	auto lbr = m_msvcAdapter.supportsLongBranchRedirects();
+	if (lbr.has_value())
 	{
-		List::addIfDoesNotExist(outArgList, fmt::format("-Wl,{}", option));
+		if (*lbr)
+			List::addIfDoesNotExist(outArgList, "-Wl,/opt:LBR");
+		else
+			List::addIfDoesNotExist(outArgList, "-Wl,/opt:NOLBR");
 	}
+
+	// if (m_msvcAdapter.enableDebugging() && m_msvcAdapter.supportsProfiling())
+	// {
+	// 	List::addIfDoesNotExist(outArgList, "-Wl,/debugtype:cv,fixup");
+	// }
 
 	LinkerLLVMClang::addLinkerOptions(outArgList);
 }
