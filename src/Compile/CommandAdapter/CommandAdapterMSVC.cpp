@@ -624,7 +624,8 @@ StringList CommandAdapterMSVC::getIncludeDirectories() const
 {
 	StringList ret;
 
-	for (const auto& dir : m_project.includeDirs())
+	const auto& includeDirs = m_project.includeDirs();
+	for (const auto& dir : includeDirs)
 	{
 		std::string outDir = dir;
 		if (String::endsWith('/', outDir))

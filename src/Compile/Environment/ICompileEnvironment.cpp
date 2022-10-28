@@ -460,10 +460,10 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 	{
 #if defined(CHALET_WIN32)
 		StringList vsLLVM{
+			"/vc/tools/llvm/x64/bin/clang.exe",
+			"/vc/tools/llvm/x64/bin/clang++.exe",
 			"/vc/tools/llvm/bin/clang.exe",
 			"/vc/tools/llvm/bin/clang++.exe",
-			"/vc/tools/llvm/x64/bin/clang.exe",
-			"/vc/tools/llvm/x64/bin/clang++.exe", //
 		};
 		if (String::endsWith(vsLLVM, executable))
 			return ToolchainType::VisualStudioLLVM;

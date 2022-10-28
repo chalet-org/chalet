@@ -22,8 +22,6 @@ protected:
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
 	virtual void addStaticCompilerLibraries(StringList& outArgList) const override;
-	virtual void addSubSystem(StringList& outArgList) const override;
-	virtual void addEntryPoint(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
 	// Linking (Misc)

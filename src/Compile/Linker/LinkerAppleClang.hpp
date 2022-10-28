@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_APPLE_LLD_HPP
-#define CHALET_LINKER_APPLE_LLD_HPP
+#ifndef CHALET_LINKER_APPLE_CLANG_HPP
+#define CHALET_LINKER_APPLE_CLANG_HPP
 
 #include "Compile/Linker/LinkerLLVMClang.hpp"
 
@@ -29,4 +29,4 @@ protected:
 };
 }
 
-#endif // CHALET_LINKER_APPLE_LLD_HPP
+#endif // CHALET_LINKER_APPLE_CLANG_HPP

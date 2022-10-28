@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
-#define CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
+#ifndef CHALET_COMPILER_CXX_GCC_HPP
+#define CHALET_COMPILER_CXX_GCC_HPP
 
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 
@@ -70,4 +70,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
+#endif // CHALET_COMPILER_CXX_GCC_HPP

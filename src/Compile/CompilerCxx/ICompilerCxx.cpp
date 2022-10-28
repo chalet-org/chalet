@@ -17,6 +17,7 @@
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicCL.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicGCC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
+#include "Compile/CompilerCxx/CompilerCxxVisualStudioClang.hpp"
 
 namespace chalet
 {
@@ -51,8 +52,16 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 		if (clang && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<CompilerCxxIntelClang>(inState, inProject);
 
-	if (clang || inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM)
+#if defined(CHALET_WIN32)
+	if (clang && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
+		return std::make_unique<CompilerCxxVisualStudioClang>(inState, inProject);
+
+	if (clang && inType == ToolchainType::MingwLLVM)
 		return std::make_unique<CompilerCxxClang>(inState, inProject);
+#else
+	if (clang && inType == ToolchainType::LLVM)
+		return std::make_unique<CompilerCxxClang>(inState, inProject);
+#endif
 
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }

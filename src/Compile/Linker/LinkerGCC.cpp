@@ -70,6 +70,8 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 {
 	StringList ret;
 
+	m_outputFileBase = outputFileBase;
+
 	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
 
 	if (executable.empty())
@@ -123,7 +125,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 /*****************************************************************************/
 StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
-	UNUSED(outputFileBase);
+	m_outputFileBase = outputFileBase;
 
 	StringList ret;
 

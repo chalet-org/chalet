@@ -5,9 +5,12 @@
 
 #include "Compile/CompilerWinResource/CompilerWinResourceLLVMRC.hpp"
 
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Utility/List.hpp"
 
 namespace chalet
 {
@@ -38,5 +41,44 @@ StringList CompilerWinResourceLLVMRC::getCommand(const std::string& inputFile, c
 	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
+}
+
+/*****************************************************************************/
+void CompilerWinResourceLLVMRC::addDefines(StringList& outArgList) const
+{
+#if defined(CHALET_WIN32)
+	if (m_state.environment->isWindowsClang())
+	{
+
+		StringList defines;
+
+		CommandAdapterMSVC msvcAdapter(m_state, m_project);
+		auto crtType = msvcAdapter.getRuntimeLibraryType();
+
+		// https://learn.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library?view=msvc-170
+
+		defines.emplace_back("_MT");
+
+		if (crtType == WindowsRuntimeLibraryType::MultiThreadedDLL
+			|| crtType == WindowsRuntimeLibraryType::MultiThreadedDebugDLL)
+		{
+			defines.emplace_back("_DLL");
+		}
+
+		if (crtType == WindowsRuntimeLibraryType::MultiThreadedDebugDLL
+			|| crtType == WindowsRuntimeLibraryType::MultiThreadedDebug)
+		{
+			defines.emplace_back("_DEBUG");
+		}
+
+		const std::string prefix{ "-D" };
+		for (auto& define : defines)
+		{
+			List::addIfDoesNotExist(outArgList, prefix + define);
+		}
+	}
+#endif
+
+	CompilerWinResourceGNUWindRes::addDefines(outArgList);
 }
 }

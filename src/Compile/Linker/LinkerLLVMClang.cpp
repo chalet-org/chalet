@@ -96,37 +96,6 @@ void LinkerLLVMClang::addStaticCompilerLibraries(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMClang::addSubSystem(StringList& outArgList) const
-{
-	if (m_state.environment->isWindowsClang())
-	{
-		const SourceKind kind = m_project.kind();
-		if (kind == SourceKind::Executable)
-		{
-			// bit of a hack for now
-			CommandAdapterMSVC msvcAdapter(m_state, m_project);
-			const auto subSystem = msvcAdapter.getSubSystem();
-			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/subsystem:{}", subSystem));
-		}
-	}
-}
-
-/*****************************************************************************/
-void LinkerLLVMClang::addEntryPoint(StringList& outArgList) const
-{
-	if (m_state.environment->isWindowsClang())
-	{
-		// bit of a hack for now
-		CommandAdapterMSVC msvcAdapter(m_state, m_project);
-		const auto entryPoint = msvcAdapter.getEntryPoint();
-		if (!entryPoint.empty())
-		{
-			List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/entry:{}", entryPoint));
-		}
-	}
-}
-
-/*****************************************************************************/
 bool LinkerLLVMClang::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 	return CompilerCxxClang::addArchitectureToCommand(outArgList, inArch, m_state);

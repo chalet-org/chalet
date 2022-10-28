@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
-#define CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
+#ifndef CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
+#define CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
@@ -74,4 +74,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
+#endif // CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP

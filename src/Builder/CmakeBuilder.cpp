@@ -230,7 +230,18 @@ std::string CmakeBuilder::getGenerator() const
 	else
 	{
 #if defined(CHALET_WIN32)
-		ret = "MinGW Makefiles";
+		if (m_state.toolchain.makeIsJom())
+		{
+			ret = "NMake Makefiles JOM";
+		}
+		else if (m_state.toolchain.makeIsNMake())
+		{
+			ret = "NMake Makefiles";
+		}
+		else
+		{
+			ret = "MinGW Makefiles";
+		}
 #else
 		ret = "Unix Makefiles";
 #endif
@@ -410,6 +421,15 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		{
 			outList.emplace_back(fmt::format("-DCMAKE_SYSTEM_PROCESSOR={}", m_state.info.targetArchitectureString()));
 		}
+	}
+
+	bool needsCMakeProgram = !usesNinja() && !m_state.environment->isMsvc();
+
+	if (needsCMakeProgram && !isDefined["CMAKE_MAKE_PROGRAM"])
+	{
+		const auto& make = m_state.toolchain.make();
+		if (!make.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
 	}
 
 	if (!isDefined["CMAKE_C_COMPILER"])

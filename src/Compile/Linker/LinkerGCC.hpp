@@ -56,6 +56,8 @@ protected:
 	virtual bool addMacosSysRootOption(StringList& outArgList) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 
+	std::string m_outputFileBase;
+
 private:
 	// void initializeSupportedLinks();
 
