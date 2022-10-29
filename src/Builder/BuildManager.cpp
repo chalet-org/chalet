@@ -303,6 +303,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 /*****************************************************************************/
 void BuildManager::printBuildInformation()
 {
+	bool usingObjectiveCpp = false;
+	bool usingObjectiveC = false;
 	bool usingCpp = false;
 	bool usingC = false;
 	for (auto& target : m_state.targets)
@@ -310,7 +312,10 @@ void BuildManager::printBuildInformation()
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
+			auto language = project.language();
 
+			usingObjectiveCpp |= language == CodeLanguage::ObjectiveCPlusPlus;
+			usingObjectiveC |= language == CodeLanguage::ObjectiveC;
 			usingCpp |= project.language() == CodeLanguage::CPlusPlus;
 			usingC |= project.language() == CodeLanguage::C;
 		}
@@ -322,6 +327,12 @@ void BuildManager::printBuildInformation()
 
 		Diagnostic::info("{} Compiler: {}", inLang, inInfo.description);
 	};
+
+	if (usingObjectiveCpp)
+		printDetailsImpl(m_state.toolchain.compilerCpp(), "Objective-C++");
+
+	if (usingObjectiveC)
+		printDetailsImpl(m_state.toolchain.compilerCpp(), "Objective-C");
 
 	if (usingCpp)
 		printDetailsImpl(m_state.toolchain.compilerCpp(), "C++");
