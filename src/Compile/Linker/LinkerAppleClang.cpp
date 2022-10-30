@@ -28,6 +28,8 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 {
 	StringList ret;
 
+	m_outputFileBase = outputFileBase;
+
 	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
 
 	if (executable.empty())
@@ -37,8 +39,6 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 
 	ret.emplace_back("-dynamiclib");
 	// ret.emplace_back("-flat_namespace");
-
-	UNUSED(outputFileBase);
 
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
@@ -55,6 +55,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
+	addRunPath(ret);
 
 	addLibDirs(ret);
 

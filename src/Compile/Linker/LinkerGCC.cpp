@@ -108,6 +108,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
+	addRunPath(ret);
 
 	addLibDirs(ret);
 
@@ -151,13 +152,13 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addSubSystem(ret);
 	addEntryPoint(ret);
 	addMacosFrameworkOptions(ret);
+	addRunPath(ret);
 
 	addLibDirs(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
 
-	addRunPath(ret);
 	addSourceObjects(ret, sourceObjs);
 
 	addCppFilesystem(ret);
@@ -278,14 +279,28 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addRunPath(StringList& outArgList) const
 {
+	if (m_project.isExecutable())
+	{
 #if defined(CHALET_LINUX)
-	if (m_state.toolchain.strategy() == StrategyType::Native)
-		outArgList.emplace_back("-Wl,-rpath=$ORIGIN"); // Note: Single quotes are required!
-	else
-		outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
+		if (m_state.toolchain.strategy() == StrategyType::Native)
+			outArgList.emplace_back("-Wl,-rpath=$ORIGIN"); // Note: Single quotes are required!
+		else
+			outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
+#elif defined(CHALET_MACOS)
+		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}", String::getPathBaseName(m_outputFileBase)));
+		outArgList.emplace_back("-Wl,-rpath,@executable_path/.");
 #else
-	UNUSED(outArgList);
+		UNUSED(outArgList);
 #endif
+	}
+	else if (m_project.isSharedLibrary())
+	{
+#if defined(CHALET_MACOS)
+		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}.dylib", String::getPathBaseName(m_outputFileBase)));
+#else
+		UNUSED(outArgList);
+#endif
+	}
 }
 
 /*****************************************************************************/

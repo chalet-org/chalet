@@ -71,11 +71,11 @@ bool AppBundlerMacOS::bundleForPlatform()
 			return false;
 	}
 
-	for (auto& executable : m_executableOutputPaths)
+	/*for (auto& executable : m_executableOutputPaths)
 	{
 		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
 			return false;
-	}
+	}*/
 
 	// treat it like linux/windows
 	if (m_bundle.macosBundleType() == MacOSBundleType::None)
