@@ -526,8 +526,6 @@ bool BuildState::validateState()
 			return false;
 		}
 
-		toolchain.fetchMakeVersion(cacheFile.sources());
-
 #if defined(CHALET_WIN32)
 		for (auto& target : targets)
 		{
@@ -556,8 +554,6 @@ bool BuildState::validateState()
 			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
-
-		toolchain.fetchNinjaVersion(cacheFile.sources());
 	}
 	else if (strat == StrategyType::MSBuild)
 	{
@@ -572,6 +568,9 @@ bool BuildState::validateState()
 		return false;
 #endif
 	}
+
+	toolchain.fetchMakeVersion(cacheFile.sources());
+	toolchain.fetchNinjaVersion(cacheFile.sources());
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;

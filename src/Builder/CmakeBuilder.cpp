@@ -193,7 +193,9 @@ std::string CmakeBuilder::getGenerator() const
 		ret = "Ninja";
 	}
 #if defined(CHALET_WIN32)
-	else if (m_state.environment->isMsvc())
+	// The frustrating thing about these is that they always output files in the build configuration folder
+	//
+	/*else if (m_state.environment->isMsvc())
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
@@ -225,7 +227,7 @@ std::string CmakeBuilder::getGenerator() const
 		{
 			ret = "Visual Studio 10 2010";
 		}
-	}
+	}*/
 #endif
 	else
 	{
@@ -673,7 +675,11 @@ bool CmakeBuilder::usesNinja() const
 	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
 	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
 	//
-	return m_state.toolchain.strategy() == StrategyType::Ninja || m_state.toolchain.strategy() == StrategyType::MSBuild;
+	if (m_state.toolchain.strategy() == StrategyType::Ninja || m_state.toolchain.strategy() == StrategyType::MSBuild)
+		return true;
+
+	auto& ninjaExec = m_state.toolchain.ninja();
+	return !ninjaExec.empty() && Commands::pathExists(ninjaExec);
 }
 
 }
