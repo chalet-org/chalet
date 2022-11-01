@@ -266,7 +266,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 		}
 	}
 
-	if (m_state.environment->isMingwGcc())
+	if (m_state.environment->isMingwGcc() || m_state.environment->isMingwClang())
 	{
 		auto win32Links = getWin32CoreLibraryLinks();
 		for (const auto& link : win32Links)
