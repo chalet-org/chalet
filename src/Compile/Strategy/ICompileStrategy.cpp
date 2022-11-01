@@ -119,6 +119,8 @@ bool ICompileStrategy::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 {
+	m_state.paths.setBuildDirectoriesBasedOnProjectKind(inProject);
+
 	const auto& name = inProject.name();
 	if (m_outputs.find(name) != m_outputs.end())
 	{
