@@ -472,7 +472,7 @@ std::string ProjectAdapterVCXProj::getExceptionHandling() const
 	// false - "No"
 
 	if (m_msvcAdapter.supportsExceptions())
-		return "Sync";
+		return "ASync";
 
 	return "false";
 }

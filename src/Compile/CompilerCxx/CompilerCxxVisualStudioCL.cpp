@@ -517,7 +517,7 @@ void CompilerCxxVisualStudioCL::addNoExceptionsOption(StringList& outArgList) co
 	// c - functions declared as extern "C" never throw
 
 	if (m_msvcAdapter.supportsExceptions())
-		List::addIfDoesNotExist(outArgList, "/EHsc");
+		List::addIfDoesNotExist(outArgList, "/EHa");
 }
 
 /*****************************************************************************/
