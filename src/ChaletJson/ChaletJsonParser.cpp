@@ -100,7 +100,9 @@ bool ChaletJsonParser::serialize()
 		}
 
 		// do after run target is validated
-		m_centralState.getRunTargetArguments();
+		auto& runArguments = m_centralState.getRunTargetArguments();
+		if (runArguments.has_value())
+			m_state.inputs.setRunArguments(*runArguments);
 	}
 
 	// Diagnostic::printDone(timer.asString());

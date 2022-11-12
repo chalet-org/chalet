@@ -403,6 +403,14 @@ void CommandLineInputs::setRunArguments(StringList&& inValue) const noexcept
 	if (inValue.empty())
 		return;
 
+	m_runArguments = std::move(inValue);
+}
+
+void CommandLineInputs::setRunArguments(const StringList& inValue) const noexcept
+{
+	if (inValue.empty())
+		return;
+
 	m_runArguments = inValue;
 }
 

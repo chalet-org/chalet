@@ -231,7 +231,8 @@ void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
 	m_runArgumentMap = std::move(inMap);
 }
 
-void CentralState::getRunTargetArguments()
+/*****************************************************************************/
+const std::optional<StringList>& CentralState::getRunTargetArguments()
 {
 	const auto& runTarget = m_inputs.runTarget();
 	if (!runTarget.empty())
@@ -242,6 +243,8 @@ void CentralState::getRunTargetArguments()
 		}
 	}
 	m_runArgumentMap.clear();
+
+	return m_inputs.runArguments();
 }
 
 /*****************************************************************************/

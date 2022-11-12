@@ -528,7 +528,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			if (m_inputs.route().willRun() && String::equals(Keys::OptionsRunArguments, key))
 			{
 				Dictionary<std::string> map;
-				for (const auto& [k, v] : buildOptions.items())
+				for (const auto& [k, v] : value.items())
 				{
 					if (v.is_string())
 						map.emplace(k, v.get<std::string>());
