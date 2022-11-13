@@ -719,6 +719,8 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 /*****************************************************************************/
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
+	bool willRun = m_state.inputs.route().willRun();
+
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -729,7 +731,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (outTarget.name() == m_state.inputs.runTarget())
 				{
-					if (!m_state.inputs.runArguments().has_value())
+					if (willRun && !m_state.inputs.runArguments().has_value())
 						m_state.inputs.setRunArguments(std::move(val));
 				}
 			}
@@ -745,7 +747,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (outTarget.name() == m_state.inputs.runTarget())
 				{
-					if (!m_state.inputs.runArguments().has_value())
+					if (willRun && !m_state.inputs.runArguments().has_value())
 						m_state.inputs.setRunArguments(std::move(val));
 				}
 			}

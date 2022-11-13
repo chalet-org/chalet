@@ -347,6 +347,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 			settingsJson.setDirty(true);
 		}
 	}
+
 	if (optionsJson.contains(Keys::OptionsRunArguments) && !runTarget.empty())
 	{
 		auto& allRunArguments = optionsJson.at(Keys::OptionsRunArguments);

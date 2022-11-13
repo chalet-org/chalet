@@ -28,7 +28,7 @@
 			"name": "GDB",
 			"type": "cppdbg",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../pharos-engine",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopAtEntry": false,
