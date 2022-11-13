@@ -93,9 +93,6 @@ bool RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, 
 	{
 		auto prefix = sm.prefix().str();
 		auto replaceValue = onMatch(sm[1].str());
-		if (replaceValue.empty())
-			return false;
-
 		auto suffix = sm.suffix().str();
 		outText = fmt::format("{}{}{}", prefix, replaceValue, suffix);
 	}
