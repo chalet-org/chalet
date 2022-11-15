@@ -34,6 +34,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -901,7 +902,15 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	if (inFromDist)
 		Output::printSeparator();
 
+#if defined(CHALET_WIN32)
+	WindowsTerminal::cleanup();
+#endif
+
 	bool result = Commands::subprocessWithInput(inCmd);
+
+#if defined(CHALET_WIN32)
+	WindowsTerminal::initialize();
+#endif
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 

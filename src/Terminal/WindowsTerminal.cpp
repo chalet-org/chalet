@@ -23,8 +23,10 @@ namespace
 #if defined(CHALET_WIN32)
 static struct
 {
+	DWORD consoleMode = 0;
 	uint consoleCp = 0;
 	uint consoleOutputCp = 0;
+	bool firstCall = false;
 } state;
 #endif
 }
@@ -35,6 +37,12 @@ void WindowsTerminal::initialize()
 #if defined(CHALET_WIN32)
 	state.consoleCp = GetConsoleOutputCP();
 	state.consoleOutputCp = GetConsoleCP();
+
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hOut != INVALID_HANDLE_VALUE)
+	{
+		GetConsoleMode(hOut, &state.consoleMode);
+	}
 
 	{
 		auto result = SetConsoleOutputCP(CP_UTF8);
@@ -49,21 +57,25 @@ void WindowsTerminal::initialize()
 		// UNUSED(result);
 	}
 
-	SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
-	// SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
-	// SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-
-#endif
+	if (!state.firstCall)
+	{
+		SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+		// SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
+		// SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+	}
 
 	reset();
 
-#if defined(CHALET_DEBUG) && defined(CHALET_MSVC)
+	#if defined(CHALET_DEBUG) && defined(CHALET_MSVC)
+	if (!state.firstCall)
 	{
 		_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 		_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
 		_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 	}
+	#endif
+	state.firstCall = true;
 #endif
 }
 
@@ -110,6 +122,12 @@ void WindowsTerminal::cleanup()
 
 	if (state.consoleCp != 0)
 		SetConsoleCP(state.consoleCp);
+
+	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (hOut != INVALID_HANDLE_VALUE)
+	{
+		SetConsoleMode(hOut, state.consoleMode);
+	}
 #endif
 }
 }

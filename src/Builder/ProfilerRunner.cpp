@@ -18,6 +18,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/WindowsTerminal.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -111,7 +112,15 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 /*****************************************************************************/
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
+#if defined(CHALET_WIN32)
+	WindowsTerminal::cleanup();
+#endif
+
 	bool result = Commands::subprocessWithInput(inCommand);
+
+#if defined(CHALET_WIN32)
+	WindowsTerminal::initialize();
+#endif
 
 	printExitedWithCode(result);
 
@@ -233,7 +242,15 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	}
 
 	// Run the command
+	#if defined(CHALET_WIN32)
+	WindowsTerminal::cleanup();
+	#endif
+
 	bool result = Commands::subprocessWithInput(inCommand);
+
+	#if defined(CHALET_WIN32)
+	WindowsTerminal::initialize();
+	#endif
 
 	// Shut down the service
 	if (!Commands::subprocessMinimalOutput({
