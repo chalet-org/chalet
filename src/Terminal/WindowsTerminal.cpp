@@ -35,8 +35,8 @@ static struct
 void WindowsTerminal::initialize()
 {
 #if defined(CHALET_WIN32)
-	state.consoleCp = GetConsoleOutputCP();
-	state.consoleOutputCp = GetConsoleCP();
+	state.consoleCp = GetConsoleCP();
+	state.consoleOutputCp = GetConsoleOutputCP();
 
 	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (hOut != INVALID_HANDLE_VALUE)
