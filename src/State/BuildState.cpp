@@ -631,8 +631,14 @@ bool BuildState::validateState()
 			auto vsperfcmd = Commands::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe, but it was not found in Path.");
-				return false;
+				std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+				// TODO: more portable version
+				vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\vs2022\\vsperfcmd.exe", progFiles);
+				if (vsperfcmd.empty())
+				{
+					Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe or vsperf.exe, but they were not found in Path.");
+					return false;
+				}
 			}
 			tools.setVsperfcmd(std::move(vsperfcmd));
 		}
