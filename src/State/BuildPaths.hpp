@@ -53,8 +53,9 @@ struct BuildPaths
 	std::string getNormalizedDirectoryPath(const std::string& inPath) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
-	void clearOutputCaches();
 	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache);
+
+	SourceType getSourceType(const std::string& inSource) const;
 
 private:
 	friend class BuildState;
@@ -75,7 +76,6 @@ private:
 	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache);
 	std::string getObjectFile(const std::string& inSource) const;
 	std::string getAssemblyFile(const std::string& inSource) const;
-	SourceType getSourceType(const std::string& inSource) const;
 	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
 	std::unique_ptr<SourceGroup> getFiles(const SourceTarget& inProject) const;

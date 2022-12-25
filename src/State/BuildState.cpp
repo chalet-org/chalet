@@ -284,12 +284,12 @@ bool BuildState::initializeToolchain()
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native);
+	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native, false);
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
-			info.targetArchitectureTriple();
+			  inputs.targetArchitecture() :
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -384,16 +384,12 @@ bool BuildState::initializeBuild()
 
 		for (auto& target : targets)
 		{
-			// measure(fmt::format("initializing: {}", target->name()), [&target]() {
 			if (!target->initialize())
 				return false;
-			// });
 
 			if (target->isSources())
 			{
-				// measure(fmt::format("populating files: {}", target->name()), [this, &target]() {
 				paths.populateFileList(static_cast<SourceTarget&>(*target));
-				// });
 			}
 		}
 
@@ -402,7 +398,7 @@ bool BuildState::initializeBuild()
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState();
-	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy());
+	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy(), true);
 
 	Diagnostic::printDone(timer.asString());
 

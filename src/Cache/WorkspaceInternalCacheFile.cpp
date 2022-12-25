@@ -45,9 +45,10 @@ ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const StrategyType inStrategy)
+bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const StrategyType inStrategy, const bool inCheckHashChange)
 {
-	setBuildHash(inId);
+	if (inCheckHashChange)
+		setBuildHash(inId);
 
 	if (inStrategy == StrategyType::Native)
 		List::addIfDoesNotExist(m_doNotRemoves, inId);

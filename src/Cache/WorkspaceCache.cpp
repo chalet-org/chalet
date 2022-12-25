@@ -52,6 +52,7 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 {
 	auto globalSettingsFile = inInputs.getGlobalSettingsFilePath();
 	auto globalSettingsFolder = String::getPathFolder(globalSettingsFile);
+
 	if (!Commands::pathExists(globalSettingsFolder))
 		Commands::makeDirectory(globalSettingsFolder);
 

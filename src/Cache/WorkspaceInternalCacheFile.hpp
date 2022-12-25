@@ -27,7 +27,7 @@ struct WorkspaceInternalCacheFile
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
-	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
+	bool setSourceCache(const std::string& inId, const StrategyType inStrategy, const bool inCheckHashChange);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 

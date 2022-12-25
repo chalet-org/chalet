@@ -61,6 +61,7 @@ bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions = {});
 
 bool createFileWithContents(const std::string& inFile, const std::string& inContents);
+std::string getFileContents(const std::string& inFile);
 
 inline bool subprocess(const StringList& inCmd);
 inline bool subprocess(const StringList& inCmd, CreateSubprocessFunc inOnCreate);

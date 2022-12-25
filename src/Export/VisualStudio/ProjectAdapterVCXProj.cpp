@@ -502,6 +502,12 @@ std::string ProjectAdapterVCXProj::getRemoveUnreferencedCodeData() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getEnableUnitySupport() const
+{
+	return getBooleanIfTrue(m_project.unityBuild());
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getCallingConvention() const
 {
 	// __cdecl - /Gd

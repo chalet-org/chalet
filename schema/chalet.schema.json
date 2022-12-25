@@ -1204,6 +1204,9 @@
 				"treatWarningsAsErrors": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
 				},
+				"unityBuild": {
+					"$ref": "#/definitions/target-source-cxx-unityBuild"
+				},
 				"warningsPreset": {
 					"$ref": "#/definitions/target-source-cxx-warningsPreset"
 				},
@@ -1301,6 +1304,9 @@
 				},
 				"^treatWarningsAsErrors\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
+				},
+				"^unityBuild\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-unityBuild"
 				},
 				"^warningsPreset\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-warningsPreset"
@@ -1592,6 +1598,11 @@
 					}
 				}
 			]
+		},
+		"target-source-cxx-unityBuild": {
+			"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+			"type": "boolean",
+			"default": false
 		},
 		"target-source-cxx-warningsPreset": {
 			"type": "string",

@@ -830,6 +830,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceCxxStaticLinks] = makeArrayOrString(std::move(staticLinks));
 	}
 
+	defs[Defs::TargetSourceCxxUnityBuild] = R"json({
+		"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+		"type": "boolean",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxTreatWarningsAsErrors] = R"json({
 		"description": "true to treat all warnings as errors. false to disable (default).",
 		"type": "boolean",
@@ -1471,6 +1477,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "staticRuntimeLibrary", Defs::TargetSourceCxxStaticRuntimeLibrary, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "threads", Defs::TargetSourceCxxThreads, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "treatWarningsAsErrors", Defs::TargetSourceCxxTreatWarningsAsErrors, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "unityBuild", Defs::TargetSourceCxxUnityBuild, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "warningsPreset", Defs::TargetSourceCxxWarningsPreset, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "warnings", Defs::TargetSourceCxxWarnings, kPatternConditions);
 		// addProperty(sourceTargetCxx, "windowsOutputDef", Defs::TargetSourceCxxWindowsOutputDef);
@@ -1773,6 +1780,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxBuildSuffix: return "target-source-cxx-buildSuffix";
 		case Defs::TargetSourceCxxStaticRuntimeLibrary: return "target-source-cxx-staticRuntimeLibrary";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";
+		case Defs::TargetSourceCxxUnityBuild: return "target-source-cxx-unityBuild";
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
 		case Defs::TargetSourceCxxWarningsPreset: return "target-source-cxx-warningsPreset";
 		case Defs::TargetSourceCxxTreatWarningsAsErrors: return "target-source-cxx-treatWarningsAsErrors";

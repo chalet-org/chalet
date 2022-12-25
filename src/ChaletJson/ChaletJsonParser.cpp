@@ -849,6 +849,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setStaticRuntimeLibrary(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "fastMath", status))
 				outTarget.setFastMath(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "unityBuild", status))
+				outTarget.setUnityBuild(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "mingwUnixSharedLibraryNamingConvention", status))
 				outTarget.setMinGWUnixSharedLibraryNamingConvention(val);
 			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsOutputDef", status))

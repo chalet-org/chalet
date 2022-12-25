@@ -364,7 +364,7 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 					node.addElementWithTextIfNotEmpty("CharacterSet", vcxprojAdapter.getCharacterSet());
 					// VCToolsVersion - ex, 14.30.30705, 14.32.31326 (get from directory? env?)
 					// PreferredToolArchitecture - x86/x64/arm64 (get from toolchain)
-					// EnableUnitySupport - true/false // Unity build
+					node.addElementWithTextIfNotEmpty("EnableUnitySupport", vcxprojAdapter.getEnableUnitySupport());
 					// CLRSupport - NetCore // ..others
 					// UseOfMfc - Dynamic
 

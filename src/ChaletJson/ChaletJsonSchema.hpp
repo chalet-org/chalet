@@ -120,6 +120,7 @@ class ChaletJsonSchema
 		TargetSourceCxxBuildSuffix,
 		TargetSourceCxxStaticRuntimeLibrary,
 		TargetSourceCxxStaticLinks,
+		TargetSourceCxxUnityBuild,
 		TargetSourceCxxWarningsPreset,
 		TargetSourceCxxWarnings,
 		TargetSourceCxxTreatWarningsAsErrors,
