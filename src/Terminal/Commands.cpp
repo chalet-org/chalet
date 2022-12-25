@@ -930,6 +930,19 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
+std::string Commands::getFileContents(const std::string& inFile)
+{
+	if (!Commands::pathExists(inFile))
+		return std::string();
+
+	std::stringstream buffer;
+	std::ifstream file{ inFile };
+	buffer << file.rdbuf();
+
+	return buffer.str();
+}
+
+/*****************************************************************************/
 bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
