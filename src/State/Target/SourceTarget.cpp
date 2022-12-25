@@ -8,6 +8,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
@@ -182,7 +183,8 @@ bool SourceTarget::determinePicType()
 /*****************************************************************************/
 bool SourceTarget::initializeUnityBuild()
 {
-	if (m_unityBuild)
+	bool excludeInStrategies = m_state.toolchain.strategy() == StrategyType::MSBuild;
+	if (m_unityBuild && !excludeInStrategies)
 	{
 		for (auto& file : m_files)
 		{
