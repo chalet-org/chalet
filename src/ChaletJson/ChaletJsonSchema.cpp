@@ -1347,6 +1347,63 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		false);
 
 	//
+	// Platform Requires
+	//
+	defs[Defs::PlatformRequiresUbuntuSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Ubuntu system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresDebianSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Debian system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresArchLinuxSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Arch Linux system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresManjaroSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Manjaro system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresFedoraSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Fedora system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresRedHatSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Red Hat system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresWindowsMSYS2] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Windows MSYS2 packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresMacosMacPorts] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "MacOS MacPorts packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresMacosHomebrew] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "MacOS Homebrew packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	//
 	// Complex Definitions
 	//
 	{
@@ -1668,6 +1725,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
 
+	{
+		auto platformRequires = R"json({
+			"type": "object",
+			"description": "Define system packages to be verfied before the build begins.",
+			"additionalProperties": false
+		})json"_ojson;
+		addPropertyAndPattern(platformRequires, "ubuntu.system", Defs::PlatformRequiresUbuntuSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "debian.system", Defs::PlatformRequiresDebianSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "archlinux.system", Defs::PlatformRequiresArchLinuxSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "manjaro.system", Defs::PlatformRequiresManjaroSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "fedora.system", Defs::PlatformRequiresFedoraSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "redhat.system", Defs::PlatformRequiresRedHatSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "macos.macports", Defs::PlatformRequiresMacosMacPorts, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "macos.homebrew", Defs::PlatformRequiresMacosHomebrew, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "windows.msys2", Defs::PlatformRequiresWindowsMSYS2, kPatternConditions);
+
+		defs[Defs::PlatformRequires] = std::move(platformRequires);
+	}
+
 	return defs;
 }
 
@@ -1816,6 +1892,17 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";
 		case Defs::TargetProcessArguments: return "target-process-arguments";
+		//
+		case Defs::PlatformRequires: return "platform-requires";
+		case Defs::PlatformRequiresUbuntuSystem: return "platform-requires-ubuntu-system";
+		case Defs::PlatformRequiresDebianSystem: return "platform-requires-debian-system";
+		case Defs::PlatformRequiresArchLinuxSystem: return "platform-requires-archlinux-system";
+		case Defs::PlatformRequiresManjaroSystem: return "platform-requires-manjaro-system";
+		case Defs::PlatformRequiresFedoraSystem: return "platform-requires-fedora-system";
+		case Defs::PlatformRequiresRedHatSystem: return "platform-requires-redhat-system";
+		case Defs::PlatformRequiresWindowsMSYS2: return "platform-requires-windows-msys2";
+		case Defs::PlatformRequiresMacosMacPorts: return "platform-requires-macos-macports";
+		case Defs::PlatformRequiresMacosHomebrew: return "platform-requires-macos-homebrew";
 
 		default: break;
 	}
@@ -1929,6 +2016,8 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["name"] = getDefinition(Defs::WorkspaceName);
 	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
 	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+
+	ret[SKeys::Properties]["platformRequires"] = getDefinition(Defs::PlatformRequires);
 
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";

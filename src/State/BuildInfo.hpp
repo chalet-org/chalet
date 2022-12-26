@@ -17,6 +17,9 @@ struct BuildInfo
 
 	bool initialize();
 
+	void addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue);
+	void addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue);
+
 	const std::string& buildConfiguration() const noexcept;
 	const std::string& buildConfigurationNoAssert() const noexcept;
 	void setBuildConfiguration(const std::string& inValue) noexcept;
@@ -42,6 +45,8 @@ struct BuildInfo
 	bool keepGoing() const noexcept;
 
 private:
+	Dictionary<StringList> m_platformRequires;
+
 	std::string m_buildConfiguration;
 	std::string m_osTarget;
 	std::string m_osTargetVersion;

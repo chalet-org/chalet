@@ -74,7 +74,30 @@ bool BuildInfo::initialize()
 	}
 #endif
 
+	// for (auto& [key, list] : m_platformRequires)
+	// {
+	// 	LOG(key, '-', String::join(list));
+	// }
+
 	return true;
+}
+
+/*****************************************************************************/
+void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue)
+{
+	if (m_platformRequires.find(inKind) == m_platformRequires.end())
+		m_platformRequires.emplace(inKind, StringList{ std::move(inValue) });
+	else
+		m_platformRequires.at(inKind).emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue)
+{
+	if (m_platformRequires.find(inKind) == m_platformRequires.end())
+		m_platformRequires.emplace(inKind, std::move(inValue));
+	else
+		m_platformRequires.at(inKind) = std::move(inValue);
 }
 
 /*****************************************************************************/
