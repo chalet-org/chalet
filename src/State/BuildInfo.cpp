@@ -8,6 +8,8 @@
 #include <thread>
 
 #include "Core/CommandLineInputs.hpp"
+#include "Dependencies/PlatformDependencyManager.hpp"
+#include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -15,7 +17,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-BuildInfo::BuildInfo(const CommandLineInputs& inInputs)
+BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs) :
+	m_state(inState)
 {
 	m_hostArchitecture.set(inInputs.hostArchitecture());
 	setTargetArchitecture(inInputs.targetArchitecture());
@@ -35,6 +38,9 @@ BuildInfo::BuildInfo(const CommandLineInputs& inInputs)
 	if (inInputs.keepGoing().has_value())
 		m_keepGoing = *inInputs.keepGoing();
 }
+
+/*****************************************************************************/
+BuildInfo::~BuildInfo() = default;
 
 /*****************************************************************************/
 bool BuildInfo::initialize()
@@ -74,10 +80,14 @@ bool BuildInfo::initialize()
 	}
 #endif
 
-	// for (auto& [key, list] : m_platformRequires)
-	// {
-	// 	LOG(key, '-', String::join(list));
-	// }
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildInfo::validate()
+{
+	if (m_platformDeps != nullptr && !m_platformDeps->hasRequired())
+		return false;
 
 	return true;
 }
@@ -85,19 +95,19 @@ bool BuildInfo::initialize()
 /*****************************************************************************/
 void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue)
 {
-	if (m_platformRequires.find(inKind) == m_platformRequires.end())
-		m_platformRequires.emplace(inKind, StringList{ std::move(inValue) });
-	else
-		m_platformRequires.at(inKind).emplace_back(std::move(inValue));
+	if (m_platformDeps == nullptr)
+		m_platformDeps = std::make_unique<PlatformDependencyManager>(m_state);
+
+	m_platformDeps->addRequiredPlatformDependency(inKind, std::move(inValue));
 }
 
 /*****************************************************************************/
 void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue)
 {
-	if (m_platformRequires.find(inKind) == m_platformRequires.end())
-		m_platformRequires.emplace(inKind, std::move(inValue));
-	else
-		m_platformRequires.at(inKind) = std::move(inValue);
+	if (m_platformDeps == nullptr)
+		m_platformDeps = std::make_unique<PlatformDependencyManager>(m_state);
+
+	m_platformDeps->addRequiredPlatformDependency(inKind, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -211,6 +221,7 @@ bool BuildInfo::launchProfiler() const noexcept
 	return m_launchProfiler;
 }
 
+/*****************************************************************************/
 bool BuildInfo::keepGoing() const noexcept
 {
 	return m_keepGoing;

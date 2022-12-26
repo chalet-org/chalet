@@ -59,7 +59,7 @@ struct BuildState::Impl
 	Impl(CommandLineInputs&& inInputs, CentralState& inCentralState, BuildState& inState) :
 		inputs(std::move(inInputs)),
 		centralState(inCentralState),
-		info(inputs),
+		info(inState, inputs),
 		// workspace(centralState.workspace), // copy
 		paths(inState)
 	{
@@ -444,6 +444,9 @@ bool BuildState::validateState()
 			return false;
 		}
 	}
+
+	if (!info.validate())
+		return false;
 
 	if (!toolchain.validate())
 		return false;

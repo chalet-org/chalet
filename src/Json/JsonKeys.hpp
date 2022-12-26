@@ -32,6 +32,21 @@ CH_STR(Kind) = "kind";
 CH_STR(RunExecutable) = "runExecutable";
 
 //
+#if defined(CHALET_WINDOWS)
+CH_STR(ReqWindowsMSYS2) = "windows.msys2";
+#elif defined(CHALET_MACOS)
+CH_STR(ReqMacOSMacPorts) = "macos.macports";
+CH_STR(ReqMacOSHomebrew) = "macos.homebrew";
+#else
+CH_STR(ReqUbuntuSystem) = "ubuntu.system";
+CH_STR(ReqDebianSystem) = "debian.system";
+CH_STR(ReqArchLinuxSystem) = "archlinux.system";
+CH_STR(ReqManjaroSystem) = "manjaro.system";
+CH_STR(ReqFedoraSystem) = "fedora.system";
+CH_STR(ReqRedHatSystem) = "redhat.system";
+#endif
+
+//
 // .chaletrc
 CH_STR(Options) = "options";
 CH_STR(OptionsToolchain) = "toolchain";

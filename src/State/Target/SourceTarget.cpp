@@ -381,7 +381,7 @@ const TargetMetadata& SourceTarget::metadata() const noexcept
 	chalet_assert(m_metadata != nullptr, "metadata() accessed w/o data");
 	return *m_metadata;
 }
-void SourceTarget::setMetadata(Shared<TargetMetadata>&& inValue)
+void SourceTarget::setMetadata(Ref<TargetMetadata>&& inValue)
 {
 	m_metadata = std::move(inValue);
 }

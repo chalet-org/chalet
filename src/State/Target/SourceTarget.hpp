@@ -34,7 +34,7 @@ struct SourceTarget final : public IBuildTarget
 
 	bool hasMetadata() const noexcept;
 	const TargetMetadata& metadata() const noexcept;
-	void setMetadata(Shared<TargetMetadata>&& inValue);
+	void setMetadata(Ref<TargetMetadata>&& inValue);
 
 	const StringList& defines() const noexcept;
 	void addDefines(StringList&& inList);
@@ -206,7 +206,7 @@ private:
 	StringList getWarningPreset();
 	ProjectWarningPresets parseWarnings(const std::string& inValue);
 
-	Shared<TargetMetadata> m_metadata;
+	Ref<TargetMetadata> m_metadata;
 
 	StringList m_defines;
 	StringList m_links;
