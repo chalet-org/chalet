@@ -69,20 +69,42 @@ void Diagnostic::printDone(const std::string& inTime)
 
 	destroySpinnerThread();
 
-	std::string done;
-	// if (Output::showCommands())
-	// 	done = "... done";
-	// else
-	done = "done";
-
+	auto word{ "done" };
 	std::string output;
 	if (!inTime.empty() && Output::showBenchmarks())
 	{
-		output = fmt::format("{}{} ({}){}", color, done, inTime, reset);
+		output = fmt::format("{}{} ({}){}", color, word, inTime, reset);
 	}
 	else
 	{
-		output = fmt::format("{}{}{}", color, done, reset);
+		output = fmt::format("{}{}{}", color, word, reset);
+	}
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put('\n');
+	std::cout.flush();
+}
+
+/*****************************************************************************/
+void Diagnostic::printFound(const bool inFound, const std::string& inTime)
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto color = Output::getAnsiStyle(inFound ? Output::theme().flair : Output::theme().error);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	destroySpinnerThread();
+
+	std::string words = inFound ? "found" : "not found";
+	std::string output;
+	if (!inTime.empty() && Output::showBenchmarks())
+	{
+		output = fmt::format("{}{}{} ({}){}", reset, color, words, inTime, reset);
+	}
+	else
+	{
+		output = fmt::format("{}{}{}{}", reset, color, words, reset);
 	}
 
 	std::cout.write(output.data(), output.size());
@@ -103,6 +125,46 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 	const auto symbol = '>';
 
 	auto output = fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
+	std::cout.write(output.data(), output.size());
+
+	if (inLineBreak)
+	{
+		std::cout.write(reset.data(), reset.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
+	else
+	{
+		if (Output::showCommands())
+		{
+			output = fmt::format("{} ... {}", color, reset);
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
+		}
+		else
+		{
+			std::cout.write(color.data(), color.size());
+			std::cout.flush();
+
+			destroySpinnerThread();
+			state.spinnerThread = std::make_unique<Spinner>();
+			state.spinnerThread->start();
+		}
+	}
+}
+
+/*****************************************************************************/
+void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto& theme = Output::theme();
+	const auto color = Output::getAnsiStyle(theme.flair);
+	const auto infoColor = Output::getAnsiStyle(theme.info);
+	const auto reset = Output::getAnsiStyle(theme.reset);
+
+	auto output = fmt::format("{}   + {}{}", color, infoColor, inMessage);
 	std::cout.write(output.data(), output.size());
 
 	if (inLineBreak)

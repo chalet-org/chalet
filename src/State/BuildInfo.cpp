@@ -89,6 +89,8 @@ bool BuildInfo::validate()
 	if (m_platformDeps != nullptr && !m_platformDeps->hasRequired())
 		return false;
 
+	m_platformDeps.reset();
+
 	return true;
 }
 

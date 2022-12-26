@@ -7,6 +7,7 @@
 
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -23,18 +24,23 @@ PlatformDependencyManager::PlatformDependencyManager(const BuildState& inState) 
 void PlatformDependencyManager::addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue)
 {
 	if (m_platformRequires.find(inKind) == m_platformRequires.end())
-		m_platformRequires.emplace(inKind, StringList{ std::move(inValue) });
-	else
-		m_platformRequires.at(inKind).emplace_back(std::move(inValue));
+		m_platformRequires.emplace(inKind, StringList{});
+
+	auto& list = m_platformRequires.at(inKind);
+	List::addIfDoesNotExist(list, std::move(inValue));
 }
 
 /*****************************************************************************/
 void PlatformDependencyManager::addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue)
 {
 	if (m_platformRequires.find(inKind) == m_platformRequires.end())
-		m_platformRequires.emplace(inKind, std::move(inValue));
-	else
-		m_platformRequires.at(inKind) = std::move(inValue);
+		m_platformRequires.emplace(inKind, StringList{});
+
+	auto& list = m_platformRequires.at(inKind);
+	for (auto&& item : inValue)
+	{
+		List::addIfDoesNotExist(list, std::move(item));
+	}
 }
 
 /*****************************************************************************/
@@ -61,23 +67,50 @@ bool PlatformDependencyManager::hasRequired()
 			Diagnostic::info("{}Homebrew{}", prefix, suffix);
 			for (auto& item : list)
 			{
-				Diagnostic::infoEllipsis("{}", item);
-				// LOG("homebrew", '-', String::join(list, ','));
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto path = fmt::format("/usr/local/Cellar/{}", item);
 				bool exists = Commands::pathExists(path) && Commands::pathIsDirectory(path);
+				Diagnostic::printFound(exists);
 
 				if (!exists)
 				{
 					errors.push_back(fmt::format("Homebrew dependency '{}' was not found.", item));
 				}
-
-				Diagnostic::printDone();
 			}
 		}
 		else if (String::equals(Keys::ReqMacOSMacPorts, key))
 		{
-			LOG("macports", '-', String::join(list, ','));
+			Diagnostic::info("{}MacPorts{}", prefix, suffix);
+
+			auto port = Commands::which("port");
+			if (!port.empty())
+			{
+				auto installed = Commands::subprocessOutput({ port, "installed" });
+				if (!installed.empty())
+				{
+					for (auto& item : list)
+					{
+						if (item.empty())
+							continue;
+
+						Diagnostic::subInfoEllipsis("{}", item);
+
+						auto find = fmt::format("\n  {} ", item);
+
+						bool exists = String::contains(find, installed);
+						Diagnostic::printFound(exists);
+
+						if (!exists)
+						{
+							errors.push_back(fmt::format("MacPorts dependency '{}' was not found.", item));
+						}
+					}
+				}
+			}
 		}
 #else
 		if (String::equals(Keys::ReqUbuntuSystem, key))
@@ -89,10 +122,11 @@ bool PlatformDependencyManager::hasRequired()
 
 	if (!errors.empty())
 	{
-		for (auto& error : errors)
-		{
-			Diagnostic::error(error);
-		}
+		// for (auto it = errors.rbegin(); it != errors.rend(); ++it)
+		// {
+		// 	Diagnostic::error(*it);
+		// }
+		Diagnostic::error("One or more required platform dependencies were not found.");
 		return false;
 	}
 
