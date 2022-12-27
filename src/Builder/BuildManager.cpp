@@ -966,7 +966,8 @@ bool BuildManager::cmdClean()
 		Output::lineBreak();
 	};
 
-	if (!doLazyClean(onClean, true))
+	bool forceRebuild = m_state.cache.file().forceRebuild();
+	if (!doLazyClean(onClean, true, forceRebuild))
 	{
 		Output::msgNothingToClean();
 		Output::lineBreak();
