@@ -180,7 +180,20 @@ bool PlatformDependencyManager::hasRequired()
 #elif defined(CHALET_MACOS)
 		if (String::equals(Keys::ReqMacOSHomebrew, key))
 		{
-			// TODO: detect homebrew
+			if (m_state.info.targetArchitecture() != m_state.info.hostArchitecture())
+			{
+				Diagnostic::error("Homebrew was required by the build, but can only be used with the host architecture: ({})", m_state.info.hostArchitectureString());
+				return false;
+			}
+
+			auto brew = Commands::which("brew");
+			if (brew.empty() || !Commands::pathExists("/usr/local/Cellar"))
+			{
+				Diagnostic::error("Homebrew was required by the build, but was not detected.");
+				return false;
+			}
+
+			// Homebrew invocation is slow, so we'll just detect the Cellar paths
 
 			Diagnostic::info("{}Homebrew{}", prefix, suffix);
 			for (auto& item : list)
@@ -199,11 +212,16 @@ bool PlatformDependencyManager::hasRequired()
 		}
 		else if (String::equals(Keys::ReqMacOSMacPorts, key))
 		{
+			if (m_state.info.targetArchitecture() != m_state.info.hostArchitecture())
+			{
+				Diagnostic::error("MacPorts was required by the build, but can only be used with the host architecture: ({})", m_state.info.hostArchitectureString());
+				return false;
+			}
 
 			auto port = Commands::which("port");
 			if (port.empty())
 			{
-				Diagnostic::error("MacPorts was required by the build, but could not be detected.");
+				Diagnostic::error("MacPorts was required by the build, but was not detected.");
 				return false;
 			}
 
