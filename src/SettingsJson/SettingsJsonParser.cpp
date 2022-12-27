@@ -90,9 +90,6 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 	{
 		if (!Commands::pathExists(m_centralState.tools.applePlatformSdk(sdk)))
 		{
-	#if defined(CHALET_DEBUG)
-			m_jsonFile.dumpToTerminal();
-	#endif
 			if (inWithError)
 			{
 				Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
@@ -108,6 +105,10 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 
 	if (needsUpdate)
 	{
+	#if defined(CHALET_DEBUG)
+		m_jsonFile.dumpToTerminal();
+	#endif
+
 		if (!detectAppleSdks(true))
 			return false;
 
