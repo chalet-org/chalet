@@ -89,6 +89,8 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename)
 	{
 		auto& targets = root.at("targets");
 		StringList includeExcludes{
+			"/usr/include",
+			"/usr/local/include"
 			"/usr/include/",
 			"/usr/local/include/"
 		};
@@ -193,7 +195,7 @@ Dictionary<std::string> XcodeProjectSpecGen::getConfigSettings(const BuildState&
 			ret["CLANG_ANALYZER_NONNULL"] = "YES";
 			ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
 			ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
-			ret["CLANG_CXX_LIBRARY"] = "libc++";
+			ret["CLANG_CXX_LIBRARY"] = "libstdc++";
 			ret["CLANG_ENABLE_MODULES"] = "YES";
 			ret["CLANG_ENABLE_OBJC_ARC"] = "YES";
 			ret["CLANG_ENABLE_OBJC_WEAK"] = "YES";
