@@ -90,7 +90,14 @@ bool PlatformDependencyManager::hasRequired()
 	const bool linuxFedora = String::equals("fedora", id);
 	const bool linuxRedHat = String::equals("rhel", id);
 
-	const auto& arch = m_state.info.targetArchitectureString();
+	auto arch = m_state.info.targetArchitectureString();
+	if (linuxUbuntu || linuxDebian)
+	{
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
+			arch = "amd64";
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::ARM)
+			arch = "armhf";
+	}
 #endif
 
 	StringList errors;
@@ -297,6 +304,26 @@ bool PlatformDependencyManager::hasRequired()
 				return false;
 			}
 
+			auto split = String::split(installed, '\n');
+
+			StringList foundItems;
+
+			for (auto& line : split)
+			{
+				if (line.empty())
+					continue;
+
+				for (auto& item : list)
+				{
+					if (item.empty())
+						continue;
+
+					if (String::startsWith(fmt::format("{}/", item), line)
+						&& (String::contains(fmt::format(" {} [", arch), line) || String::contains(" all [", line)))
+						foundItems.emplace_back(item);
+				}
+			}
+
 			for (auto& item : list)
 			{
 				if (item.empty())
@@ -304,9 +331,7 @@ bool PlatformDependencyManager::hasRequired()
 
 				Diagnostic::subInfoEllipsis("{}", item);
 
-				auto find = fmt::format("\n{}/", item);
-
-				bool exists = String::contains(find, installed);
+				bool exists = List::contains(foundItems, item);
 				Diagnostic::printFound(exists);
 
 				if (!exists)
