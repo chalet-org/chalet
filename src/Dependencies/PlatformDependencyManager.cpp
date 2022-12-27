@@ -56,6 +56,40 @@ bool PlatformDependencyManager::hasRequired()
 	static const char prefix[] = "Verifying required ";
 	static const char suffix[] = " packages";
 
+#if defined(CHALET_LINUX)
+	auto os = Commands::getFileContents("/etc/os-release");
+	if (os.empty())
+	{
+		Diagnostic::error("There was a problem detecting the Linux OS ID.");
+		return false;
+	}
+
+	auto start = os.find("ID=");
+	auto end = start != std::string::npos ? os.find('\n', start + 3) : std::string::npos;
+	if (start == std::string::npos || end == std::string::npos)
+	{
+		Diagnostic::error("There was a problem detecting the Linux OS ID.");
+		return false;
+	}
+	start += 3;
+	auto id = os.substr(start, end - start);
+	if (id.empty())
+	{
+		Diagnostic::error("There was a problem detecting the Linux OS ID.");
+		return false;
+	}
+
+	// decent collection of os-release files:
+	//   https://github.com/zyga/os-release-zoo
+	//
+	const bool linuxArch = String::equals("arch", id);
+	const bool linuxManjaro = String::equals("manjaro", id);
+	const bool linuxUbuntu = String::equals("ubuntu", id);
+	const bool linuxDebian = String::equals("debian", id);
+	const bool linuxFedora = String::equals("fedora", id);
+	const bool linuxRedHat = String::equals("rhel", id);
+#endif
+
 	StringList errors;
 
 	for (auto& [key, list] : m_platformRequires)
@@ -176,9 +210,59 @@ bool PlatformDependencyManager::hasRequired()
 			}
 		}
 #else
-		if (String::equals(Keys::ReqUbuntuSystem, key))
+		if ((linuxArch && String::equals(Keys::ReqArchLinuxSystem, key))
+			|| (linuxManjaro && String::equals(Keys::ReqManjaroSystem, key)))
 		{
-			LOG("ubuntu", '-', String::join(list, ','));
+			auto pacman = Commands::which("pacman");
+			if (!Commands::pathExists(pacman))
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			Timer timer;
+
+			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
+			auto query = String::join(list);
+			if (query.empty())
+				continue;
+
+			auto installed = Commands::subprocessOutput({ pacman, "-Q", String::join(list) });
+			Diagnostic::printDone(timer.asString());
+
+			if (installed.empty())
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			installed = fmt::format("\n{}", installed);
+
+			for (auto& item : list)
+			{
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
+
+				auto find = fmt::format("\n{} ", item);
+
+				bool exists = String::contains(find, installed);
+				Diagnostic::printFound(exists);
+
+				if (!exists)
+				{
+					errors.push_back(fmt::format("MSYS2 dependency '{}' was not found.", item));
+				}
+			}
+		}
+		else if ((linuxUbuntu && String::equals(Keys::ReqUbuntuSystem, key))
+			|| (linuxDebian && String::equals(Keys::ReqDebianSystem, key)))
+		{
+		}
+		else if ((linuxFedora && String::equals(Keys::ReqFedoraSystem, key))
+			|| (linuxRedHat && String::equals(Keys::ReqRedHatSystem, key)))
+		{
 		}
 #endif
 	}
