@@ -59,7 +59,7 @@ struct BuildState::Impl
 	Impl(CommandLineInputs&& inInputs, CentralState& inCentralState, BuildState& inState) :
 		inputs(std::move(inInputs)),
 		centralState(inCentralState),
-		info(inputs),
+		info(inState, inputs),
 		// workspace(centralState.workspace), // copy
 		paths(inState)
 	{
@@ -288,8 +288,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -444,6 +444,9 @@ bool BuildState::validateState()
 			return false;
 		}
 	}
+
+	if (!info.validate())
+		return false;
 
 	if (!toolchain.validate())
 		return false;

@@ -20,7 +20,7 @@ struct WorkspaceEnvironment
 	bool initialize(const BuildState& inPaths);
 
 	const TargetMetadata& metadata() const noexcept;
-	void setMetadata(Shared<TargetMetadata>&& inValue);
+	void setMetadata(Ref<TargetMetadata>&& inValue);
 
 	const StringList& searchPaths() const noexcept;
 	void addSearchPaths(StringList&& inList);
@@ -31,7 +31,7 @@ struct WorkspaceEnvironment
 private:
 	StringList m_searchPaths;
 
-	Shared<TargetMetadata> m_metadata;
+	Ref<TargetMetadata> m_metadata;
 };
 }
 

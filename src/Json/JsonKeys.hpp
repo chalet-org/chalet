@@ -16,6 +16,7 @@ namespace Keys
 // chalet.json
 CH_STR(WorkspaceName) = "name";
 CH_STR(WorkspaceVersion) = "version";
+CH_STR(PlatformRequires) = "platformRequires";
 CH_STR(Abstracts) = "abstracts";
 CH_STR(AbstractsAll) = "abstracts:*";
 CH_STR(Targets) = "targets";
@@ -29,6 +30,21 @@ CH_STR(SearchPaths) = "searchPaths";
 //
 CH_STR(Kind) = "kind";
 CH_STR(RunExecutable) = "runExecutable";
+
+//
+#if defined(CHALET_WIN32)
+CH_STR(ReqWindowsMSYS2) = "windows.msys2";
+#elif defined(CHALET_MACOS)
+CH_STR(ReqMacOSMacPorts) = "macos.macports";
+CH_STR(ReqMacOSHomebrew) = "macos.homebrew";
+#else
+CH_STR(ReqUbuntuSystem) = "ubuntu.system";
+CH_STR(ReqDebianSystem) = "debian.system";
+CH_STR(ReqArchLinuxSystem) = "archlinux.system";
+CH_STR(ReqManjaroSystem) = "manjaro.system";
+CH_STR(ReqFedoraSystem) = "fedora.system";
+CH_STR(ReqRedHatSystem) = "redhat.system";
+#endif
 
 //
 // .chaletrc

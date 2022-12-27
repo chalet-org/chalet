@@ -58,7 +58,7 @@ const TargetMetadata& WorkspaceEnvironment::metadata() const noexcept
 {
 	return *m_metadata;
 }
-void WorkspaceEnvironment::setMetadata(Shared<TargetMetadata>&& inValue)
+void WorkspaceEnvironment::setMetadata(Ref<TargetMetadata>&& inValue)
 {
 	m_metadata = std::move(inValue);
 }
