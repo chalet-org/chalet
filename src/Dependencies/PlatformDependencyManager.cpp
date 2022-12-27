@@ -5,10 +5,14 @@
 
 #include "Dependencies/PlatformDependencyManager.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Json/JsonKeys.hpp"
 
 namespace chalet
@@ -56,14 +60,64 @@ bool PlatformDependencyManager::hasRequired()
 
 	for (auto& [key, list] : m_platformRequires)
 	{
-#if defined(CHALET_WINDOWS)
-		if (String::equals(Keys::ReqWindowsMSYS2, key))
+#if defined(CHALET_WIN32)
+		if (m_state.environment->isMingw() && String::equals(Keys::ReqWindowsMSYS2, key))
 		{
-			LOG("msys2", '-', String::join(list, ','));
+			auto& cc = m_state.toolchain.compilerCxxAny();
+
+			auto detect = String::getPathFolder(cc.path);
+			detect = Commands::getCanonicalPath(fmt::format("{}/../../usr/bin/msys-2.0.dll", detect));
+			if (!Commands::pathExists(detect))
+				continue; // if toolchain is not MSYS2 (could be some other MinGW version) ... skip
+
+			auto pacman = fmt::format("{}/pacman.exe", String::getPathFolder(detect));
+			if (!Commands::pathExists(pacman))
+			{
+				Diagnostic::error("There was a problem detecting the MSYS2 dependencies.");
+				return false;
+			}
+
+			Timer timer;
+
+			Diagnostic::infoEllipsis("{}MSYS2{}", prefix, suffix);
+			auto query = String::join(list);
+			if (query.empty())
+				continue;
+
+			auto installed = Commands::subprocessOutput({ pacman, "-Q", String::join(list) });
+			Diagnostic::printDone(timer.asString());
+
+			if (installed.empty())
+			{
+				Diagnostic::error("There was a problem detecting the MSYS2 dependencies.");
+				return false;
+			}
+
+			installed = fmt::format("\n{}", installed);
+
+			for (auto& item : list)
+			{
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
+
+				auto find = fmt::format("\n{} ", item);
+
+				bool exists = String::contains(find, installed);
+				Diagnostic::printFound(exists);
+
+				if (!exists)
+				{
+					errors.push_back(fmt::format("MSYS2 dependency '{}' was not found.", item));
+				}
+			}
 		}
 #elif defined(CHALET_MACOS)
 		if (String::equals(Keys::ReqMacOSHomebrew, key))
 		{
+			// TODO: detect homebrew
+
 			Diagnostic::info("{}Homebrew{}", prefix, suffix);
 			for (auto& item : list)
 			{
@@ -84,31 +138,40 @@ bool PlatformDependencyManager::hasRequired()
 		}
 		else if (String::equals(Keys::ReqMacOSMacPorts, key))
 		{
-			Diagnostic::info("{}MacPorts{}", prefix, suffix);
 
 			auto port = Commands::which("port");
-			if (!port.empty())
+			if (port.empty())
 			{
-				auto installed = Commands::subprocessOutput({ port, "installed" });
-				if (!installed.empty())
+				Diagnostic::error("MacPorts was required by the build, but could not be detected.");
+				return false;
+			}
+
+			Timer timer;
+			Diagnostic::infoEllipsis("{}MacPorts{}", prefix, suffix);
+			auto installed = Commands::subprocessOutput({ port, "installed" });
+			Diagnostic::printDone(timer.asString());
+
+			if (installed.empty())
+			{
+				Diagnostic::error("There was a problem detecting the MacPorts dependencies.");
+				return false;
+			}
+
+			for (auto& item : list)
+			{
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
+
+				auto find = fmt::format("\n  {} ", item);
+
+				bool exists = String::contains(find, installed);
+				Diagnostic::printFound(exists);
+
+				if (!exists)
 				{
-					for (auto& item : list)
-					{
-						if (item.empty())
-							continue;
-
-						Diagnostic::subInfoEllipsis("{}", item);
-
-						auto find = fmt::format("\n  {} ", item);
-
-						bool exists = String::contains(find, installed);
-						Diagnostic::printFound(exists);
-
-						if (!exists)
-						{
-							errors.push_back(fmt::format("MacPorts dependency '{}' was not found.", item));
-						}
-					}
+					errors.push_back(fmt::format("MacPorts dependency '{}' was not found.", item));
 				}
 			}
 		}

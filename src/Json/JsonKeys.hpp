@@ -32,7 +32,7 @@ CH_STR(Kind) = "kind";
 CH_STR(RunExecutable) = "runExecutable";
 
 //
-#if defined(CHALET_WINDOWS)
+#if defined(CHALET_WIN32)
 CH_STR(ReqWindowsMSYS2) = "windows.msys2";
 #elif defined(CHALET_MACOS)
 CH_STR(ReqMacOSMacPorts) = "macos.macports";

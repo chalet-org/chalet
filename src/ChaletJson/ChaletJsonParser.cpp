@@ -239,7 +239,7 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 		if (value.is_string())
 		{
 			std::string val;
-#if defined(CHALET_WINDOWS)
+#if defined(CHALET_WIN32)
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::ReqWindowsMSYS2, status))
 				m_state.info.addRequiredPlatformDependency(Keys::ReqWindowsMSYS2, String::split(val));
 #elif defined(CHALET_MACOS)
@@ -267,7 +267,7 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 		else if (value.is_array())
 		{
 			StringList val;
-#if defined(CHALET_WINDOWS)
+#if defined(CHALET_WIN32)
 			if (valueMatchesSearchKeyPattern(val, value, key, "windows.msys2", status))
 				m_state.info.addRequiredPlatformDependency("windows.msys2", std::move(val));
 #elif defined(CHALET_MACOS)

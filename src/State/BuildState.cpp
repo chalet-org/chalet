@@ -288,8 +288,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
