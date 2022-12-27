@@ -50,9 +50,27 @@ pacman -S mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-nin
 ---
 ### Linux
 
-**Install**: 
+**Ubuntu / Debian**
 
 A GCC version that supports C++17 is required. (`>= 7.3`)
 
-1. Install `git` and `cmake` from your package manager
+1. Install the following packages:
+
+```bash
+sudo apt install git cmake ninja-build uuid-dev zip debhelper
+```
+
 2. Run `bash ./build_all.sh` from the project root
+
+**Arch Linux / Manjaro**
+
+A GCC version that supports C++17 is required. (`>= 7.3`)
+
+1. Install the following packages:
+
+```bash
+sudo pacman -S git cmake ninja-build zip
+```
+
+2. Install `debhelper` from the AUR
+3. Run `bash ./build_all.sh` from the project root
