@@ -162,7 +162,7 @@ bool PlatformDependencyManager::hasRequired()
 				bool existsA = String::contains(findA, installed);
 				bool existsB = String::contains(findB, installed);
 
-				bool exists = existsA || existsB;
+				bool exists = existsB || existsA;
 
 				if (existsB)
 					Diagnostic::subInfoEllipsis("mingw-w64-{}-{}", arch, item);
