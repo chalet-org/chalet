@@ -28,6 +28,9 @@ PlatformDependencyManager::PlatformDependencyManager(const BuildState& inState) 
 /*****************************************************************************/
 void PlatformDependencyManager::addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue)
 {
+	if (inValue.empty())
+		return;
+
 	if (m_platformRequires.find(inKind) == m_platformRequires.end())
 		m_platformRequires.emplace(inKind, StringList{});
 
@@ -38,12 +41,18 @@ void PlatformDependencyManager::addRequiredPlatformDependency(const std::string&
 /*****************************************************************************/
 void PlatformDependencyManager::addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue)
 {
+	if (inValue.empty())
+		return;
+
 	if (m_platformRequires.find(inKind) == m_platformRequires.end())
 		m_platformRequires.emplace(inKind, StringList{});
 
 	auto& list = m_platformRequires.at(inKind);
 	for (auto&& item : inValue)
 	{
+		if (item.empty())
+			continue;
+
 		List::addIfDoesNotExist(list, std::move(item));
 	}
 }
@@ -126,9 +135,6 @@ bool PlatformDependencyManager::hasRequired()
 			Timer timer;
 
 			Diagnostic::infoEllipsis("{}MSYS2{}", prefix, suffix);
-			auto query = String::join(list);
-			if (query.empty())
-				continue;
 
 			StringList cmd{ pacman, "-Q" };
 			for (auto& item : list)
@@ -150,9 +156,6 @@ bool PlatformDependencyManager::hasRequired()
 
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				auto findA = fmt::format("\n{} ", item);
 				auto findB = fmt::format("\nmingw-w64-{}-{} ", arch, item);
 
@@ -182,9 +185,6 @@ bool PlatformDependencyManager::hasRequired()
 			Diagnostic::info("{}Homebrew{}", prefix, suffix);
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto path = fmt::format("/usr/local/Cellar/{}", item);
@@ -220,9 +220,6 @@ bool PlatformDependencyManager::hasRequired()
 
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto find = fmt::format("\n  {} ", item);
@@ -252,9 +249,6 @@ bool PlatformDependencyManager::hasRequired()
 			Timer timer;
 
 			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
-			auto query = String::join(list);
-			if (query.empty())
-				continue;
 
 			StringList cmd{ pacman, "-Q" };
 			for (auto& item : list)
@@ -273,9 +267,6 @@ bool PlatformDependencyManager::hasRequired()
 
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto find = fmt::format("\n{} ", item);
@@ -302,9 +293,6 @@ bool PlatformDependencyManager::hasRequired()
 			Timer timer;
 
 			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
-			auto query = String::join(list);
-			if (query.empty())
-				continue;
 
 			StringList cmd{ apt, "list", "--installed" };
 			for (auto& item : list)
@@ -330,9 +318,6 @@ bool PlatformDependencyManager::hasRequired()
 
 				for (auto& item : list)
 				{
-					if (item.empty())
-						continue;
-
 					if (String::startsWith(fmt::format("{}/", item), line)
 						&& (String::contains(fmt::format(" {} [", arch), line) || String::contains(" all [", line)))
 						foundItems.emplace_back(item);
@@ -341,9 +326,6 @@ bool PlatformDependencyManager::hasRequired()
 
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				bool exists = List::contains(foundItems, item);
@@ -368,9 +350,6 @@ bool PlatformDependencyManager::hasRequired()
 			Timer timer;
 
 			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
-			auto query = String::join(list);
-			if (query.empty())
-				continue;
 
 			StringList cmd{ yum, "list", "--installed", "--color=off" };
 			for (auto& item : list)
@@ -387,9 +366,6 @@ bool PlatformDependencyManager::hasRequired()
 
 			for (auto& item : list)
 			{
-				if (item.empty())
-					continue;
-
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto findA = fmt::format("\n{}.{}", item, arch);
