@@ -34,6 +34,9 @@ struct WorkspaceInternalCacheFile
 	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
 
+	bool forceRebuild() const noexcept;
+	void setForceRebuild(const bool inValue);
+
 	bool buildStrategyChanged(const StrategyType inStrategy);
 	bool buildStrategyChanged() const;
 
@@ -83,6 +86,7 @@ private:
 	std::optional<bool> m_buildStrategyChanged;
 	std::optional<bool> m_metadataChanged;
 
+	bool m_forceRebuild = false;
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;

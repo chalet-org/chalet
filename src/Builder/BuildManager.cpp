@@ -11,6 +11,7 @@
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/AssemblyDumper.hpp"
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
@@ -65,6 +66,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
+	bool forceRebuild = m_state.cache.file().forceRebuild();
 
 	if (inRoute.isClean())
 	{
@@ -77,10 +79,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 		return true;
 	}
-	else if (inRoute.isRebuild())
+	else if (forceRebuild || inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doLazyClean();
+		doLazyClean(nullptr, forceRebuild, forceRebuild);
 	}
 
 	if (m_buildRoutes.find(inRoute.type()) == m_buildRoutes.end())
@@ -476,7 +478,7 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool inCleanExternals)
+bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool inCleanExternals, const bool inForceCleanExternals)
 {
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -511,7 +513,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		else if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			if (subChaletTarget.clean() && inCleanExternals)
+			if (inForceCleanExternals || (subChaletTarget.clean() && inCleanExternals))
 				doSubChaletClean(subChaletTarget);
 			else
 				List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
@@ -519,7 +521,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			if (cmakeTarget.clean() && inCleanExternals)
+			if (inForceCleanExternals || (cmakeTarget.clean() && inCleanExternals))
 				doCMakeClean(cmakeTarget);
 			else
 				List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());

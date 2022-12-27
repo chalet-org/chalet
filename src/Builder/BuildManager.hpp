@@ -40,7 +40,7 @@ private:
 	bool copyRunDependencies(const IBuildTarget& inProject, uint& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
-	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false);
+	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false, const bool inForceCleanExternals = false);
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 

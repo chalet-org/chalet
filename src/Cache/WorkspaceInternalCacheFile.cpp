@@ -391,6 +391,19 @@ bool WorkspaceInternalCacheFile::buildFileChanged() const noexcept
 	return m_buildFileChanged;
 }
 
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::forceRebuild() const noexcept
+{
+	return m_forceRebuild;
+}
+
+void WorkspaceInternalCacheFile::setForceRebuild(const bool inValue)
+{
+	m_forceRebuild = inValue;
+	m_buildStrategyChanged = true;
+}
+
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::buildStrategyChanged(const StrategyType inStrategy)
 {
 	if (m_buildStrategyChanged.has_value())
@@ -402,6 +415,7 @@ bool WorkspaceInternalCacheFile::buildStrategyChanged(const StrategyType inStrat
 	return result;
 }
 
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::buildStrategyChanged() const
 {
 	if (m_buildStrategyChanged.has_value())
@@ -420,6 +434,7 @@ void WorkspaceInternalCacheFile::checkForMetadataChange(const std::string& inHas
 	}
 }
 
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::metadataChanged() const
 {
 	if (m_metadataChanged.has_value())
@@ -434,6 +449,7 @@ bool WorkspaceInternalCacheFile::themeChanged() const noexcept
 	return m_themeChanged;
 }
 
+/*****************************************************************************/
 void WorkspaceInternalCacheFile::checkIfThemeChanged()
 {
 	m_themeChanged = false;
@@ -454,6 +470,7 @@ bool WorkspaceInternalCacheFile::appVersionChanged() const noexcept
 	return m_appVersionChanged;
 }
 
+/*****************************************************************************/
 void WorkspaceInternalCacheFile::checkIfAppVersionChanged(const std::string& inAppPath)
 {
 	m_appVersionChanged = false;
