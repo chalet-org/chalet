@@ -6,6 +6,7 @@
 #include "Dependencies/PlatformDependencyManager.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -88,6 +89,8 @@ bool PlatformDependencyManager::hasRequired()
 	const bool linuxDebian = String::equals("debian", id);
 	const bool linuxFedora = String::equals("fedora", id);
 	const bool linuxRedHat = String::equals("rhel", id);
+
+	const auto& arch = m_state.info.targetArchitectureString();
 #endif
 
 	StringList errors;
@@ -349,9 +352,10 @@ bool PlatformDependencyManager::hasRequired()
 
 				Diagnostic::subInfoEllipsis("{}", item);
 
-				auto find = fmt::format("\n{}.", item);
+				auto findA = fmt::format("\n{}.{}", item, arch);
+				auto findB = fmt::format("\n{}.noarch", item);
 
-				bool exists = String::contains(find, installed);
+				bool exists = String::contains(findA, installed) || String::contains(findB, installed);
 				Diagnostic::printFound(exists);
 
 				if (!exists)
