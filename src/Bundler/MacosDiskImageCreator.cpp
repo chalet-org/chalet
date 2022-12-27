@@ -5,6 +5,7 @@
 
 #include "Bundler/MacosDiskImageCreator.hpp"
 
+#include "Bundler/MacosNotarizationMsg.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/AncillaryTools.hpp"
@@ -181,6 +182,9 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 	}
 
 	Diagnostic::printDone(timer.asString());
+
+	MacosNotarizationMsg notarization(m_state);
+	notarization.showMessage(inPath);
 
 	return true;
 }
