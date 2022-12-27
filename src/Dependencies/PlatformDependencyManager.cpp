@@ -57,7 +57,9 @@ bool PlatformDependencyManager::hasRequired()
 	static const char prefix[] = "Verifying required ";
 	static const char suffix[] = " packages";
 
-#if defined(CHALET_LINUX)
+#if defined(CHALET_WIN32)
+	auto arch = m_state.info.targetArchitectureString();
+#elif defined(CHALET_LINUX)
 	auto os = Commands::getFileContents("/etc/os-release");
 	if (os.empty())
 	{
@@ -130,7 +132,10 @@ bool PlatformDependencyManager::hasRequired()
 
 			StringList cmd{ pacman, "-Q" };
 			for (auto& item : list)
+			{
 				cmd.emplace_back(item);
+				cmd.emplace_back(fmt::format("mingw-w64-{}-{}", arch, item));
+			}
 
 			auto installed = Commands::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
@@ -148,11 +153,19 @@ bool PlatformDependencyManager::hasRequired()
 				if (item.empty())
 					continue;
 
-				Diagnostic::subInfoEllipsis("{}", item);
+				auto findA = fmt::format("\n{} ", item);
+				auto findB = fmt::format("\nmingw-w64-{}-{} ", arch, item);
 
-				auto find = fmt::format("\n{} ", item);
+				bool existsA = String::contains(findA, installed);
+				bool existsB = String::contains(findB, installed);
 
-				bool exists = String::contains(find, installed);
+				bool exists = existsA || existsB;
+
+				if (existsB)
+					Diagnostic::subInfoEllipsis("mingw-w64-{}-{}", arch, item);
+				else
+					Diagnostic::subInfoEllipsis("{}", item);
+
 				Diagnostic::printFound(exists);
 
 				if (!exists)
@@ -224,6 +237,8 @@ bool PlatformDependencyManager::hasRequired()
 			}
 		}
 #else
+		// TODO: MSYS2 cross-compile from linux
+
 		if ((linuxArch && String::equals(Keys::ReqArchLinuxSystem, key))
 			|| (linuxManjaro && String::equals(Keys::ReqManjaroSystem, key)))
 		{
