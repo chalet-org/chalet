@@ -118,7 +118,11 @@ bool PlatformDependencyManager::hasRequired()
 			if (query.empty())
 				continue;
 
-			auto installed = Commands::subprocessOutput({ pacman, "-Q", String::join(list) });
+			StringList cmd{ pacman, "-Q" };
+			for (auto& item : list)
+				cmd.emplace_back(item);
+
+			auto installed = Commands::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -227,7 +231,11 @@ bool PlatformDependencyManager::hasRequired()
 			if (query.empty())
 				continue;
 
-			auto installed = Commands::subprocessOutput({ pacman, "-Q", String::join(list) });
+			StringList cmd{ pacman, "-Q" };
+			for (auto& item : list)
+				cmd.emplace_back(item);
+
+			auto installed = Commands::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
