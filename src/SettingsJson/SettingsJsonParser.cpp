@@ -78,19 +78,31 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 {
 #if defined(CHALET_MACOS)
 	bool needsUpdate = false;
-	if (!Commands::pathExists(m_centralState.tools.applePlatformSdk("macosx")))
+	for (auto sdk : {
+			 "macosx",
+			 "appletvos",
+			 "appletvsimulator",
+			 "watchos",
+			 "watchsimulator",
+			 "iphoneos",
+			 "iphonesimulator",
+		 })
 	{
+		if (!Commands::pathExists(m_centralState.tools.applePlatformSdk(sdk)))
+		{
 	#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
+			m_jsonFile.dumpToTerminal();
 	#endif
-		if (inWithError)
-		{
-			Diagnostic::error("{}: The 'macosx' SDK path was either not found or from an older version of Xcode.", m_jsonFile.filename());
-			return false;
-		}
-		else
-		{
-			needsUpdate = true;
+			if (inWithError)
+			{
+				Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
+				return false;
+			}
+			else
+			{
+				needsUpdate = true;
+				break;
+			}
 		}
 	}
 
@@ -646,9 +658,9 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 
 	auto xcrun = Commands::which("xcrun");
 	for (auto sdk : {
+			 "macosx",
 			 "appletvos",
 			 "appletvsimulator",
-			 "macosx",
 			 "watchos",
 			 "watchsimulator",
 			 "iphoneos",
