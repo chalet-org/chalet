@@ -17,6 +17,7 @@
 #include "Compile/Linker/LinkerIntelClassicGCC.hpp"
 #include "Compile/Linker/LinkerIntelClassicLINK.hpp"
 #include "Compile/Linker/LinkerLLVMClang.hpp"
+#include "Compile/Linker/LinkerVisualStudioClang.hpp"
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
 
 namespace chalet
@@ -52,8 +53,16 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 		if (lld && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<LinkerIntelClang>(inState, inProject);
 
+#if defined(CHALET_WIN32)
+	if (lld && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
+		return std::make_unique<LinkerVisualStudioClang>(inState, inProject);
+
+	if (lld && inType == ToolchainType::MingwLLVM)
+		return std::make_unique<LinkerLLVMClang>(inState, inProject);
+#else
 	if (lld || inType == ToolchainType::LLVM)
 		return std::make_unique<LinkerLLVMClang>(inState, inProject);
+#endif
 
 	return std::make_unique<LinkerGCC>(inState, inProject);
 }

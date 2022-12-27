@@ -59,7 +59,7 @@ struct BuildState::Impl
 	Impl(CommandLineInputs&& inInputs, CentralState& inCentralState, BuildState& inState) :
 		inputs(std::move(inInputs)),
 		centralState(inCentralState),
-		info(inputs),
+		info(inState, inputs),
 		// workspace(centralState.workspace), // copy
 		paths(inState)
 	{
@@ -238,8 +238,15 @@ bool BuildState::parseToolchainFromSettingsJson()
 	{
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
 		//
-
-		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", inputs.toolchainPreferenceName(), Environment::getPathKey());
+		const auto& name = inputs.toolchainPreferenceName();
+		if (String::equals("llvm", name))
+		{
+			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14'). Otherwise, try configuring it manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+		}
+		else
+		{
+			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+		}
 		return false;
 	}
 
@@ -284,7 +291,7 @@ bool BuildState::initializeToolchain()
 
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native);
+	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native, false);
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
@@ -326,6 +333,9 @@ bool BuildState::initializeBuild()
 	Output::setShowCommandOverride(false);
 
 	Diagnostic::infoEllipsis("Configuring build");
+
+	if (!info.initialize())
+		return false;
 
 	if (!paths.initialize())
 		return false;
@@ -381,28 +391,21 @@ bool BuildState::initializeBuild()
 
 		for (auto& target : targets)
 		{
-			// measure(fmt::format("initializing: {}", target->name()), [&target]() {
 			if (!target->initialize())
 				return false;
-			// });
 
 			if (target->isSources())
 			{
-				// measure(fmt::format("populating files: {}", target->name()), [this, &target]() {
 				paths.populateFileList(static_cast<SourceTarget&>(*target));
-				// });
 			}
 		}
 
 		initializeCache();
 	}
 
-	if (!info.initialize())
-		return false;
-
 	auto& cacheFile = m_impl->centralState.cache.file();
 	m_uniqueId = getUniqueIdForState();
-	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy());
+	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy(), true);
 
 	Diagnostic::printDone(timer.asString());
 
@@ -448,6 +451,9 @@ bool BuildState::validateState()
 			return false;
 		}
 	}
+
+	if (!info.validate())
+		return false;
 
 	if (!toolchain.validate())
 		return false;
@@ -526,14 +532,12 @@ bool BuildState::validateState()
 			return false;
 		}
 
-		toolchain.fetchMakeVersion(cacheFile.sources());
-
 #if defined(CHALET_WIN32)
 		for (auto& target : targets)
 		{
 			if (target->isSources())
 			{
-				if (environment->isMsvc() && !toolchain.makeIsNMake())
+				if ((environment->isMsvc() || environment->isMsvcClang()) && !toolchain.makeIsNMake())
 				{
 					Diagnostic::error("If using the 'makefile' strategy alongside MSVC, only NMake or Qt Jom are supported (found GNU make).");
 					return false;
@@ -556,8 +560,6 @@ bool BuildState::validateState()
 			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
-
-		toolchain.fetchNinjaVersion(cacheFile.sources());
 	}
 	else if (strat == StrategyType::MSBuild)
 	{
@@ -585,6 +587,9 @@ bool BuildState::validateState()
 		return false;
 #endif
 	}
+
+	toolchain.fetchMakeVersion(cacheFile.sources());
+	toolchain.fetchNinjaVersion(cacheFile.sources());
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
@@ -645,8 +650,14 @@ bool BuildState::validateState()
 			auto vsperfcmd = Commands::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe, but it was not found in Path.");
-				return false;
+				std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+				// TODO: more portable version
+				vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\vs2022\\vsperfcmd.exe", progFiles);
+				if (vsperfcmd.empty())
+				{
+					Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe or vsperf.exe, but they were not found in Path.");
+					return false;
+				}
 			}
 			tools.setVsperfcmd(std::move(vsperfcmd));
 		}

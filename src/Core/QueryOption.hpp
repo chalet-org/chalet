@@ -15,6 +15,8 @@ enum class QueryOption : ushort
 	Version,
 	//
 	Commands,
+	Options,
+	//
 	Configurations,
 	AllToolchains,
 	UserToolchains,

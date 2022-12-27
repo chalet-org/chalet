@@ -131,6 +131,7 @@ StringList ArgumentParser::getTruthyArguments() const
 		"--no-keep-going",
 		"--generate-compile-commands",
 		"--no-generate-compile-commands",
+		"--save-user-toolchain-globally",
 		"--save-schema",
 		"--quieter",
 		"-l",
@@ -229,6 +230,41 @@ std::string ArgumentParser::getProgramPath() const
 		return m_rawArguments.at(Positional::ProgramArgument);
 
 	return std::string();
+}
+
+/*****************************************************************************/
+StringList ArgumentParser::getAllCliOptions()
+{
+	StringList ret;
+
+	ArgumentList previousArgumentList = std::move(m_argumentList);
+
+	// if (m_argumentList.empty())
+	{
+		addHelpArg();
+		addVersionArg();
+		populateBuildArguments();
+		addSettingsTypeArg();
+		ret.emplace_back("--template");
+	}
+
+	for (const auto& arg : m_argumentList)
+	{
+		const auto& key = arg.key();
+		const auto& keyLong = arg.keyLong();
+
+		if (!key.empty() && String::startsWith('-', key))
+			ret.emplace_back(key);
+
+		if (!keyLong.empty() && String::startsWith('-', keyLong))
+			ret.emplace_back(keyLong);
+	}
+
+	m_argumentList = std::move(previousArgumentList);
+
+	std::sort(ret.begin(), ret.end());
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -955,6 +991,13 @@ void ArgumentParser::addSaveSchemaArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addSaveUserToolchainGloballyArg()
+{
+	addOptionalBoolArgument(ArgumentIdentifier::SaveUserToolchainGlobally, "--save-user-toolchain-globally")
+		.setHelp("Save the current or generated toolchain globally and make it the default.");
+}
+
+/*****************************************************************************/
 void ArgumentParser::addQuietArgs()
 {
 	// TODO: other quiet flags
@@ -1082,6 +1125,7 @@ void ArgumentParser::populateBuildArguments()
 	addLaunchProfilerArg();
 	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
+	addSaveUserToolchainGloballyArg();
 #if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
 #endif

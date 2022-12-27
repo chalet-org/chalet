@@ -5,6 +5,7 @@
 
 #include "Core/QueryController.hpp"
 
+#include "Arguments/ArgumentParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -63,6 +64,10 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 
 		case QueryOption::Configurations:
 			ret = getBuildConfigurationList();
+			break;
+
+		case QueryOption::Options:
+			ret = getOptions();
 			break;
 
 		case QueryOption::ToolchainPresets:
@@ -369,44 +374,32 @@ StringList QueryController::getArchitectures() const
 /*****************************************************************************/
 StringList QueryController::getArchitectures(const std::string& inToolchain) const
 {
-	std::string kAuto{ "auto" };
+	StringList ret{ "auto" };
 
 	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
 
-	if (String::equals("llvm", inToolchain))
+	if (String::equals("llvm", inToolchain) || String::startsWith("llvm-", inToolchain))
 	{
-		return {
-			std::move(kAuto),
-			"x86_64",
-			"i686",
-			"arm",
-			"arm64",
-		};
+		List::addIfDoesNotExist(ret, "x86_64");
+		List::addIfDoesNotExist(ret, "i686");
+		List::addIfDoesNotExist(ret, "arm");
+		List::addIfDoesNotExist(ret, "arm64");
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("apple-llvm", inToolchain))
 	{
-		return {
-			std::move(kAuto),
-			"universal",
-			"x86_64",
-			"arm64",
-		};
+		List::addIfDoesNotExist(ret, "universal");
+		List::addIfDoesNotExist(ret, "x86_64");
+		List::addIfDoesNotExist(ret, "arm64");
 	}
 #endif
 	else if (String::equals("gcc", inToolchain))
 	{
 #if defined(CHALET_WIN32)
-		return {
-			std::move(kAuto),
-			"x86_64",
-			"i686",
-		};
+		List::addIfDoesNotExist(ret, "x86_64");
+		List::addIfDoesNotExist(ret, "i686");
 #else
-		return {
-			std::move(kAuto),
-			m_centralState.inputs().hostArchitecture(),
-		};
+		List::addIfDoesNotExist(ret, m_centralState.inputs().hostArchitecture());
 #endif
 	}
 #if defined(CHALET_WIN32)
@@ -414,61 +407,59 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 	{
 		if (String::equals("arm64", m_centralState.inputs().hostArchitecture()))
 		{
-			return {
-				std::move(kAuto),
-				"arm64",
-				"arm64_arm64",
-				"arm64_x64",
-				"arm64_x86",
-			};
+			List::addIfDoesNotExist(ret, "arm64");
+			List::addIfDoesNotExist(ret, "arm64_arm64");
+			List::addIfDoesNotExist(ret, "arm64_x64");
+			List::addIfDoesNotExist(ret, "arm64_x86");
 		}
 		else
 		{
-			return {
-				std::move(kAuto),
-				"x86_64",
-				"i686",
-				"x64",
-				"x86",
-				"x64_x64",
-				"x64_x86",
-				"x64_arm",
-				"x64_arm64",
-				"x86_x86",
-				"x86_x64",
-				"x86_arm",
-				"x86_arm64",
-			};
+			List::addIfDoesNotExist(ret, "x86_64");
+			List::addIfDoesNotExist(ret, "i686");
+			List::addIfDoesNotExist(ret, "x64");
+			List::addIfDoesNotExist(ret, "x86");
+			List::addIfDoesNotExist(ret, "x64_x64");
+			List::addIfDoesNotExist(ret, "x64_x86");
+			List::addIfDoesNotExist(ret, "x64_arm");
+			List::addIfDoesNotExist(ret, "x64_arm64");
+			List::addIfDoesNotExist(ret, "x86_x86");
+			List::addIfDoesNotExist(ret, "x86_x64");
+			List::addIfDoesNotExist(ret, "x86_arm");
+			List::addIfDoesNotExist(ret, "x86_arm64");
 		}
 	}
 #endif
 #if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
 	else if (String::startsWith("intel-classic", inToolchain))
 	{
-		return
-		{
-			std::move(kAuto),
-				"x86_64",
+		List::addIfDoesNotExist(ret, "x86_64");
 	#if !defined(CHALET_MACOS)
-				"i686",
+		List::addIfDoesNotExist(ret, "i686");
 	#endif
-		};
 	}
 #endif
 #if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
 	else if (String::startsWith("intel-llvm", inToolchain))
 	{
-		return {
-			std::move(kAuto),
-			"x86_64",
-			"i686",
-		};
+		List::addIfDoesNotExist(ret, "x86_64");
+		List::addIfDoesNotExist(ret, "i686");
 	}
 #endif
 
-	return {
-		std::move(kAuto),
-	};
+	auto currentArch = getCurrentArchitecture();
+	if (!currentArch.empty())
+	{
+		List::addIfDoesNotExist(ret, std::move(currentArch.front()));
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getOptions() const
+{
+	ArgumentParser parser(m_centralState.inputs());
+	return parser.getAllCliOptions();
 }
 
 /*****************************************************************************/

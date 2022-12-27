@@ -120,6 +120,7 @@ class ChaletJsonSchema
 		TargetSourceCxxBuildSuffix,
 		TargetSourceCxxStaticRuntimeLibrary,
 		TargetSourceCxxStaticLinks,
+		TargetSourceCxxUnityBuild,
 		TargetSourceCxxWarningsPreset,
 		TargetSourceCxxWarnings,
 		TargetSourceCxxTreatWarningsAsErrors,
@@ -154,7 +155,18 @@ class ChaletJsonSchema
 		//
 		TargetProcess,
 		TargetProcessPath,
-		TargetProcessArguments
+		TargetProcessArguments,
+		//
+		PlatformRequires,
+		PlatformRequiresUbuntuSystem,
+		PlatformRequiresDebianSystem,
+		PlatformRequiresArchLinuxSystem,
+		PlatformRequiresManjaroSystem,
+		PlatformRequiresFedoraSystem,
+		PlatformRequiresRedHatSystem,
+		PlatformRequiresWindowsMSYS2,
+		PlatformRequiresMacosMacPorts,
+		PlatformRequiresMacosHomebrew,
 	};
 	using DefinitionMap = std::map<Defs, Json>;
 

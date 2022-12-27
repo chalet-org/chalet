@@ -374,7 +374,7 @@ uint CompilerTools::versionPatch() const noexcept
 /*****************************************************************************/
 const CompilerInfo& CompilerTools::compilerCxx(const CodeLanguage inLang) const noexcept
 {
-	if (inLang == CodeLanguage::C)
+	if (inLang == CodeLanguage::C || inLang == CodeLanguage::ObjectiveC)
 		return m_compilerC;
 	else
 		return m_compilerCpp;
@@ -595,7 +595,7 @@ bool CompilerTools::isCompilerWindowsResourceLLVMRC() const noexcept
 	return m_isCompilerWindowsResourceLLVMRC;
 }
 
-bool CompilerTools::canCompilerWindowsResources() const noexcept
+bool CompilerTools::canCompileWindowsResources() const noexcept
 {
 	return !m_compilerWindowsResource.empty() && m_isWindowsTarget;
 }

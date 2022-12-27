@@ -142,8 +142,6 @@ bool CompileEnvironmentIntel::createFromVersion(const std::string& inVersion)
 	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
 	m_config->setEnvVarsFileDelta(getVarsPath("0"));
 
-	m_ouptuttedDescription = true;
-
 	if (m_config->envVarsFileDeltaExists())
 		Diagnostic::infoEllipsis("Reading Intel{} C/C++ Environment Cache", Unicode::registered());
 	else

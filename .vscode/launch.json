@@ -21,21 +21,20 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"export",
-				"vscode"
+				"build"
 			],
 		},
 		{
 			"name": "GDB",
 			"type": "cppdbg",
 			"request": "launch",
+			"cwd": "${workspaceFolder}/../new-project",
+			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
+			"stopAtEntry": false,
 			"args": [
 				"build"
 			],
-			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/../new-project",
-			"preLaunchTask": "Build: Debug",
 			"externalConsole": false,
 			"setupCommands": [
 				{

@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
-#define CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
+#ifndef CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
+#define CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
@@ -18,21 +18,22 @@ struct CompilerCxxVisualStudioCL : public ICompilerCxx
 	virtual bool initialize() override;
 
 	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
-	virtual void getCommandOptions(StringList& outArgList, const CxxSpecialization specialization) override;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative) override;
+	virtual void getCommandOptions(StringList& outArgList, const SourceType derivative) override;
 
 	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType) override;
 
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addLanguageStandard(StringList& outArgList, const SourceType derivative) const override;
 
 protected:
 	bool createPrecompiledHeaderSource();
 	bool configureWarnings();
 
+	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addIncludes(StringList& outArgList) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;
-	virtual void addPchInclude(StringList& outArgList) const override;
+	virtual void addPchInclude(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addOptimizations(StringList& outArgList) const override;
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addCharsets(StringList& outArgList) const override;
@@ -73,4 +74,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_EXECUTABLE_CXX_VISUAL_STUDIO_CL_HPP
+#endif // CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP

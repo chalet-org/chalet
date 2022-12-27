@@ -33,7 +33,7 @@ private:
 
 	std::string getPchRecipe(const std::string& source, const std::string& object);
 	std::string getRcRecipe(const std::string& source, const std::string& object) const;
-	std::string getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const;
+	std::string getCxxRecipe(const std::string& source, const std::string& object, const std::string& pchTarget, const SourceType derivative) const;
 
 	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
 
@@ -41,8 +41,6 @@ private:
 
 	std::string getQuietFlag() const;
 	std::string getPrinter(const std::string& inPrint = "") const;
-
-	// StringList m_fileExtensions;
 };
 }
 

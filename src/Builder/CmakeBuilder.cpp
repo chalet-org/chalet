@@ -193,7 +193,9 @@ std::string CmakeBuilder::getGenerator() const
 		ret = "Ninja";
 	}
 #if defined(CHALET_WIN32)
-	else if (m_state.environment->isMsvc())
+	// The frustrating thing about these is that they always output files in the build configuration folder
+	//
+	/*else if (m_state.environment->isMsvc())
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
@@ -225,12 +227,23 @@ std::string CmakeBuilder::getGenerator() const
 		{
 			ret = "Visual Studio 10 2010";
 		}
-	}
+	}*/
 #endif
 	else
 	{
 #if defined(CHALET_WIN32)
-		ret = "MinGW Makefiles";
+		if (m_state.toolchain.makeIsJom())
+		{
+			ret = "NMake Makefiles JOM";
+		}
+		else if (m_state.toolchain.makeIsNMake())
+		{
+			ret = "NMake Makefiles";
+		}
+		else
+		{
+			ret = "MinGW Makefiles";
+		}
 #else
 		ret = "Unix Makefiles";
 #endif
@@ -294,6 +307,10 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 	chalet_assert(!generator.empty(), "CMake Generator is empty");
 
 	StringList ret{ getQuotedPath(cmake), "-G", getQuotedPath(generator) };
+
+#if !defined(CHALET_DEBUG)
+	ret.emplace_back("--no-warn-unused-cli");
+#endif
 
 	std::string arch = getArchitecture();
 	if (!arch.empty())
@@ -406,6 +423,15 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		{
 			outList.emplace_back(fmt::format("-DCMAKE_SYSTEM_PROCESSOR={}", m_state.info.targetArchitectureString()));
 		}
+	}
+
+	bool needsCMakeProgram = !usesNinja() && !m_state.environment->isMsvc();
+
+	if (needsCMakeProgram && !isDefined["CMAKE_MAKE_PROGRAM"])
+	{
+		const auto& make = m_state.toolchain.make();
+		if (!make.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
 	}
 
 	if (!isDefined["CMAKE_C_COMPILER"])
@@ -623,7 +649,7 @@ std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) 
 	// TODO: Android, iOS, etc.
 
 	std::string ret;
-	if (String::contains({ "pc", "windows", "mingw" }, inTargetTriple))
+	if (String::contains({ "windows", "mingw" }, inTargetTriple))
 		ret = "Windows";
 	else if (String::contains({ "apple", "darwin" }, inTargetTriple))
 		ret = "Darwin";
@@ -649,9 +675,14 @@ bool CmakeBuilder::usesNinja() const
 	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
 	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
 	//
-	return m_state.toolchain.strategy() == StrategyType::Ninja
-		|| m_state.toolchain.strategy() == StrategyType::MSBuild
-		|| m_state.toolchain.strategy() == StrategyType::XcodeBuild;
+	auto strategy = m_state.toolchain.strategy();
+	if (strategy == StrategyType::Ninja
+		|| strategy == StrategyType::MSBuild
+		|| strategy == StrategyType::XcodeBuild)
+		return true;
+
+	auto& ninjaExec = m_state.toolchain.ninja();
+	return !ninjaExec.empty() && Commands::pathExists(ninjaExec);
 }
 
 }

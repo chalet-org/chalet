@@ -23,24 +23,22 @@ struct MakefileGeneratorGNU final : IStrategyGenerator
 
 private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
+	std::string getObjBuildRecipes(const SourceFileGroupList& inGroups);
 
-	std::string getCompileEchoSources(const std::string& inFile = "$<") const;
+	std::string getCompileEchoSources(const std::string& inFile) const;
 	std::string getLinkerEcho() const;
 
-	std::string getPchRecipe(const std::string& source, const std::string& object);
-	std::string getRcRecipe(const std::string& ext, const std::string& pchTarget);
-	std::string getCxxRecipe(const std::string& ext, const std::string& pchTarget);
-	std::string getObjcRecipe(const std::string& ext);
+	std::string getPchRecipe(const std::string& source, const std::string& object, const std::string& dependency);
+	std::string getRcRecipe(const std::string& source, const std::string& object, const std::string& dependency) const;
+	std::string getCxxRecipe(const std::string& source, const std::string& object, const std::string& dependency, const std::string& pchTarget, const SourceType derivative) const;
 
-	std::string getTargetRecipe(const std::string& linkerTarget) const;
+	std::string getTargetRecipe(const std::string& linkerTarget, const StringList& objects) const;
 
-	std::string getLinkerPreReqs() const;
+	std::string getLinkerPreReqs(const StringList& objects) const;
 
 	std::string getQuietFlag() const;
 	std::string getFallbackMakeDependsCommand(const std::string& inDependencyFile, const std::string& object, const std::string& source) const;
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
-
-	// StringList m_fileExtensions;
 };
 }
 

@@ -7,10 +7,10 @@
 #define CHALET_SOURCE_TARGET_HPP
 
 #include "Compile/CodeLanguage.hpp"
-#include "Compile/CxxSpecialization.hpp"
 #include "Compile/PositionIndependentCodeType.hpp"
 #include "State/ProjectWarningPresets.hpp"
 #include "State/SourceKind.hpp"
+#include "State/SourceType.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/WindowsEntryPoint.hpp"
 #include "State/WindowsSubSystem.hpp"
@@ -34,7 +34,7 @@ struct SourceTarget final : public IBuildTarget
 
 	bool hasMetadata() const noexcept;
 	const TargetMetadata& metadata() const noexcept;
-	void setMetadata(Shared<TargetMetadata>&& inValue);
+	void setMetadata(Ref<TargetMetadata>&& inValue);
 
 	const StringList& defines() const noexcept;
 	void addDefines(StringList&& inList);
@@ -90,7 +90,7 @@ struct SourceTarget final : public IBuildTarget
 
 	CodeLanguage language() const noexcept;
 	void setLanguage(const std::string& inValue) noexcept;
-	CxxSpecialization cxxSpecialization() const noexcept;
+	SourceType getDefaultSourceType() const;
 
 	const std::string& cStandard() const noexcept;
 	void setCStandard(std::string&& inValue) noexcept;
@@ -173,7 +173,6 @@ struct SourceTarget final : public IBuildTarget
 	void setCppConcepts(const bool inValue) noexcept;
 
 	bool objectiveCxx() const noexcept;
-	void setObjectiveCxx(const bool inValue) noexcept;
 
 	bool runtimeTypeInformation() const noexcept;
 	void setRuntimeTypeInformation(const bool inValue) noexcept;
@@ -187,6 +186,9 @@ struct SourceTarget final : public IBuildTarget
 	bool staticRuntimeLibrary() const noexcept;
 	void setStaticRuntimeLibrary(const bool inValue) noexcept;
 
+	bool unityBuild() const noexcept;
+	void setUnityBuild(const bool inValue) noexcept;
+
 	bool unixSharedLibraryNamingConvention() const noexcept;
 	void setMinGWUnixSharedLibraryNamingConvention(const bool inValue) noexcept;
 
@@ -194,13 +196,17 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
 private:
+	bool removeExcludedFiles();
+	bool determinePicType();
+	bool initializeUnityBuild();
+
 	SourceKind parseProjectKind(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
 	StringList getWarningPreset();
 	ProjectWarningPresets parseWarnings(const std::string& inValue);
 
-	Shared<TargetMetadata> m_metadata;
+	Ref<TargetMetadata> m_metadata;
 
 	StringList m_defines;
 	StringList m_links;
@@ -234,7 +240,6 @@ private:
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;
-	CxxSpecialization m_cxxSpecialization = CxxSpecialization::C;
 	ProjectWarningPresets m_warningsPreset = ProjectWarningPresets::None;
 	WindowsSubSystem m_windowsSubSystem = WindowsSubSystem::Console;
 	WindowsEntryPoint m_windowsEntryPoint = WindowsEntryPoint::Main;
@@ -245,7 +250,6 @@ private:
 	bool m_cppModules = false;
 	bool m_cppCoroutines = false;
 	bool m_cppConcepts = false;
-	bool m_objectiveCxx = false;
 	bool m_runtimeTypeInformation = true;
 	bool m_exceptions = true;
 	bool m_fastMath = false;
@@ -253,6 +257,7 @@ private:
 	bool m_treatWarningsAsErrors = false;
 	bool m_posixThreads = true;
 	bool m_invalidWarningPreset = false;
+	bool m_unityBuild = false;
 	bool m_windowsApplicationManifestGenerationEnabled = true;
 	bool m_mingwUnixSharedLibraryNamingConvention = true;
 	bool m_setWindowsPrefixOutputFilename = false;

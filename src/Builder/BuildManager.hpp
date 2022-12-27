@@ -40,11 +40,10 @@ private:
 	bool copyRunDependencies(const IBuildTarget& inProject, uint& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
-	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false);
+	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false, const bool inForceCleanExternals = false);
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 
-	bool saveCompileCommands() const;
 	bool onFinishBuild(const SourceTarget& inProject) const;
 
 	// commands
@@ -55,7 +54,6 @@ private:
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
-	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject);
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);

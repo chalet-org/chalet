@@ -27,12 +27,15 @@ struct WorkspaceInternalCacheFile
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
-	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
+	bool setSourceCache(const std::string& inId, const StrategyType inStrategy, const bool inCheckHashChange);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
 	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
+
+	bool forceRebuild() const noexcept;
+	void setForceRebuild(const bool inValue);
 
 	bool buildStrategyChanged(const StrategyType inStrategy);
 	bool buildStrategyChanged() const;
@@ -83,6 +86,7 @@ private:
 	std::optional<bool> m_buildStrategyChanged;
 	std::optional<bool> m_metadataChanged;
 
+	bool m_forceRebuild = false;
 	bool m_buildHashChanged = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;

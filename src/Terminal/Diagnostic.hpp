@@ -22,12 +22,19 @@ struct Diagnostic
 	Diagnostic() = delete;
 
 	static void printDone(const std::string& inTime = std::string());
+	static void printFound(const bool inFound, const std::string& inTime = std::string());
 
 	template <typename... Args>
 	static void info(fmt::format_string<Args...> inFmt, Args&&... args);
 
 	template <typename... Args>
 	static void infoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args);
+
+	template <typename... Args>
+	static void subInfo(fmt::format_string<Args...> inFmt, Args&&... args);
+
+	template <typename... Args>
+	static void subInfoEllipsis(fmt::format_string<Args...> inFmt, Args&&... args);
 
 	template <typename... Args>
 	static void stepInfo(fmt::format_string<Args...> inFmt, Args&&... args);
@@ -56,6 +63,7 @@ struct Diagnostic
 
 private:
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);
+	static void showSubInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showStepInfo(std::string&& inMessage, const bool inLineBreak);
 	static void showErrorAndAbort(std::string&& inMessage);
 	static void showHeader(const Type inType, std::string&& inTitle);

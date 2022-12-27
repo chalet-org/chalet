@@ -25,7 +25,7 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 {
 	StringList ret;
 
-	if (!m_state.toolchain.canCompilerWindowsResources())
+	if (!m_state.toolchain.canCompileWindowsResources())
 		return ret;
 
 	ret.emplace_back(getQuotedPath(m_state.toolchain.compilerWindowsResource()));
@@ -96,11 +96,11 @@ void CompilerWinResourceGNUWindRes::addDefines(StringList& outArgList) const
 			std::string key = define.substr(0, pos);
 			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
 			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-			outArgList.emplace_back(prefix + def);
+			List::addIfDoesNotExist(outArgList, prefix + def);
 		}
 		else
 		{
-			outArgList.emplace_back(prefix + define);
+			List::addIfDoesNotExist(outArgList, prefix + define);
 		}
 	}
 }

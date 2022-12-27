@@ -23,7 +23,7 @@ struct SettingsJsonParser
 	bool serialize(const IntermediateSettingsState& inState);
 
 private:
-	bool validatePaths();
+	bool validatePaths(const bool inWithError);
 	bool makeSettingsJson(const IntermediateSettingsState& inState);
 	bool serializeFromJsonRoot(Json& inJson);
 
@@ -31,6 +31,7 @@ private:
 
 	bool parseTools(Json& inNode);
 #if defined(CHALET_MACOS)
+	bool detectAppleSdks(const bool inForce = false);
 	bool parseAppleSdks(Json& inNode);
 #endif
 

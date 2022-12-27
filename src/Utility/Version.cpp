@@ -26,7 +26,7 @@ bool Version::setFromString(const std::string& inVersion)
 		return false;
 
 	auto split = String::split(inVersion, '.');
-	if (split.size() > std::numeric_limits<int>::max())
+	if (split.empty())
 		return false;
 
 	m_segments = static_cast<uint>(split.size());

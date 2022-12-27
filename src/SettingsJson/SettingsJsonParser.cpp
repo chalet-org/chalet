@@ -65,7 +65,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 		return false;
 	}
 
-	if (!validatePaths())
+	if (!validatePaths(false))
 		return false;
 
 	// Diagnostic::printDone(timer.asString());
@@ -74,19 +74,61 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::validatePaths()
+bool SettingsJsonParser::validatePaths(const bool inWithError)
 {
 #if defined(CHALET_MACOS)
-	if (!Commands::pathExists(m_centralState.tools.applePlatformSdk("macosx")))
+	bool needsUpdate = false;
+	for (auto sdk : {
+			 "macosx",
+			 "appletvos",
+			 "appletvsimulator",
+			 "watchos",
+			 "watchsimulator",
+			 "iphoneos",
+			 "iphonesimulator",
+		 })
+	{
+		if (!Commands::pathExists(m_centralState.tools.applePlatformSdk(sdk)))
+		{
+			if (inWithError)
+			{
+				Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
+				return false;
+			}
+			else
+			{
+				needsUpdate = true;
+				break;
+			}
+		}
+	}
+
+	if (needsUpdate)
 	{
 	#if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::error("{}: 'No MacOS SDK path could be found. Please install either Xcode or Command Line Tools.", m_jsonFile.filename());
-		return false;
+
+		if (!detectAppleSdks(true))
+			return false;
+
+		if (!parseAppleSdks(m_jsonFile.json))
+			return false;
 	}
 #endif
 
+	if (!inWithError && !validatePaths(true))
+		return false;
+
+#if defined(CHALET_MACOS)
+	if (needsUpdate)
+	{
+		// If the 2nd validation pass hasn't errored
+		// force rebuild the project - the sdks changed
+		//
+		m_centralState.cache.file().setForceRebuild(true);
+	}
+#endif
 	return true;
 }
 
@@ -312,33 +354,8 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #endif
 
 #if defined(CHALET_MACOS)
-	// AppleTVOS.platform/
-	// AppleTVSimulator.platform
-	// MacOSX.platform
-	// WatchOS.platform
-	// WatchSimulator.platform
-	// iPhoneOS.platform
-	// iPhoneSimulator.platform
-	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
-
-	auto xcrun = Commands::which("xcrun");
-	for (auto sdk : {
-			 "appletvos",
-			 "appletvsimulator",
-			 "macosx",
-			 "watchos",
-			 "watchsimulator",
-			 "iphoneos",
-			 "iphonesimulator",
-		 })
-	{
-		if (!appleSkdsJson.contains(sdk))
-		{
-			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" });
-			appleSkdsJson[sdk] = std::move(sdkPath);
-			m_jsonFile.setDirty(true);
-		}
-	}
+	if (!detectAppleSdks())
+		return false;
 #endif
 
 	if (m_jsonFile.json.contains(Keys::LastUpdateCheck))
@@ -528,7 +545,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			if (m_inputs.route().willRun() && String::equals(Keys::OptionsRunArguments, key))
 			{
 				Dictionary<std::string> map;
-				for (const auto& [k, v] : buildOptions.items())
+				for (const auto& [k, v] : value.items())
 				{
 					if (v.is_string())
 						map.emplace(k, v.get<std::string>());
@@ -628,6 +645,39 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 }
 
 #if defined(CHALET_MACOS)
+/*****************************************************************************/
+bool SettingsJsonParser::detectAppleSdks(const bool inForce)
+{
+	// AppleTVOS.platform
+	// AppleTVSimulator.platform
+	// MacOSX.platform
+	// WatchOS.platform
+	// WatchSimulator.platform
+	// iPhoneOS.platform
+	// iPhoneSimulator.platform
+	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
+
+	auto xcrun = Commands::which("xcrun");
+	for (auto sdk : {
+			 "macosx",
+			 "appletvos",
+			 "appletvsimulator",
+			 "watchos",
+			 "watchsimulator",
+			 "iphoneos",
+			 "iphonesimulator",
+		 })
+	{
+		if (inForce || !appleSkdsJson.contains(sdk))
+		{
+			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" });
+			appleSkdsJson[sdk] = std::move(sdkPath);
+			m_jsonFile.setDirty(true);
+		}
+	}
+
+	return true;
+}
 /*****************************************************************************/
 bool SettingsJsonParser::parseAppleSdks(Json& inNode)
 {

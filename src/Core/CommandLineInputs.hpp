@@ -69,6 +69,7 @@ struct CommandLineInputs
 
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;
+	void setRunArguments(const StringList& inValue) const noexcept;
 	void setRunArguments(std::string&& inValue) const noexcept;
 
 	const std::string& appPath() const noexcept;
@@ -160,6 +161,9 @@ struct CommandLineInputs
 
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
+
+	bool saveUserToolchainGlobally() const noexcept;
+	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
 
 	StringList getToolchainPresets() const;
 	StringList getExportKindPresets() const;
@@ -253,6 +257,7 @@ private:
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isToolchainPreset = false;
+	bool m_saveUserToolchainGlobally = false;
 };
 }
 

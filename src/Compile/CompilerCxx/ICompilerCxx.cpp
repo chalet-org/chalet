@@ -17,6 +17,7 @@
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicCL.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicGCC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
+#include "Compile/CompilerCxx/CompilerCxxVisualStudioClang.hpp"
 
 namespace chalet
 {
@@ -51,8 +52,16 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 		if (clang && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<CompilerCxxIntelClang>(inState, inProject);
 
-	if (clang || inType == ToolchainType::LLVM)
+#if defined(CHALET_WIN32)
+	if (clang && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
+		return std::make_unique<CompilerCxxVisualStudioClang>(inState, inProject);
+
+	if (clang && inType == ToolchainType::MingwLLVM)
 		return std::make_unique<CompilerCxxClang>(inState, inProject);
+#else
+	if (clang && inType == ToolchainType::LLVM)
+		return std::make_unique<CompilerCxxClang>(inState, inProject);
+#endif
 
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }
@@ -62,6 +71,27 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 {
 	UNUSED(inputFile, outputFile, dependencyFile, interfaceFile, inModuleReferences, inHeaderUnits, inType);
 	return StringList();
+}
+
+/*****************************************************************************/
+bool ICompilerCxx::precompiledHeaderAllowedForSourceType(const SourceType derivative) const
+{
+	if (!m_project.usesPrecompiledHeader())
+		return false;
+
+	auto language = m_project.language();
+	bool validFile = (language == CodeLanguage::ObjectiveCPlusPlus && derivative != SourceType::ObjectiveC)
+		|| (language == CodeLanguage::ObjectiveC && derivative != SourceType::ObjectiveCPlusPlus)
+		|| (language == CodeLanguage::C && derivative != SourceType::CPlusPlus)
+		|| (language == CodeLanguage::CPlusPlus && derivative != SourceType::C);
+
+	return validFile;
+}
+
+/*****************************************************************************/
+void ICompilerCxx::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
+{
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -83,9 +113,9 @@ void ICompilerCxx::addDefines(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addPchInclude(StringList& outArgList) const
+void ICompilerCxx::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -95,9 +125,9 @@ void ICompilerCxx::addOptimizations(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ICompilerCxx::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
+void ICompilerCxx::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/

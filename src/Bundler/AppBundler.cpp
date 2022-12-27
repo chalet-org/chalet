@@ -482,18 +482,12 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 
 	displayHeader("Compressing", inTarget, filename);
 
-	StringList resolvedIncludes;
-	for (auto& include : inTarget.includes())
-	{
-		Commands::addPathToListWithGlob(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), include), resolvedIncludes, GlobMatch::FilesAndFolders);
-	}
-
 	Timer timer;
 
 	Diagnostic::stepInfoEllipsis("Compressing files");
 
 	FileArchiver archiver(m_state);
-	if (!archiver.archive(inTarget, baseName, resolvedIncludes, m_archives))
+	if (!archiver.archive(inTarget, baseName, inTarget.includes(), m_archives))
 		return false;
 
 	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));

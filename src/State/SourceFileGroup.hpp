@@ -6,6 +6,7 @@
 #ifndef CHALET_SOURCE_FILE_GROUP_HPP
 #define CHALET_SOURCE_FILE_GROUP_HPP
 
+#include "Compile/CodeLanguage.hpp"
 #include "State/SourceDataType.hpp"
 #include "State/SourceType.hpp"
 

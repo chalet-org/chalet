@@ -39,10 +39,10 @@ OrderedDictionary<ExportKind> getExportKinds()
 Dictionary<QueryOption> getQueryOptions()
 {
 	return {
-		{ "version", QueryOption::Version },
 		{ "all-toolchains", QueryOption::AllToolchains },
 		{ "architecture", QueryOption::Architecture },
 		{ "architectures", QueryOption::Architectures },
+		{ "options", QueryOption::Options },
 		{ "commands", QueryOption::Commands },
 		{ "configuration", QueryOption::Configuration },
 		{ "configurations", QueryOption::Configurations },
@@ -62,6 +62,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "state-settings-json", QueryOption::SettingsJsonState },
 		{ "schema-chalet-json", QueryOption::ChaletSchema },
 		{ "schema-settings-json", QueryOption::SettingsSchema },
+		{ "version", QueryOption::Version },
 	};
 }
 
@@ -78,6 +79,13 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
 		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
 		{ "vs-preview", VisualStudioVersion::Preview },
 		{ "vs-stable", VisualStudioVersion::Stable },
+	};
+}
+OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
+{
+	return {
+		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
+		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
 	};
 }
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
@@ -392,6 +400,14 @@ const std::optional<StringList>& CommandLineInputs::runArguments() const noexcep
 }
 
 void CommandLineInputs::setRunArguments(StringList&& inValue) const noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_runArguments = std::move(inValue);
+}
+
+void CommandLineInputs::setRunArguments(const StringList& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
@@ -890,6 +906,16 @@ void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+bool CommandLineInputs::saveUserToolchainGlobally() const noexcept
+{
+	return m_saveUserToolchainGlobally;
+}
+void CommandLineInputs::setSaveUserToolchainGlobally(const bool inValue) noexcept
+{
+	m_saveUserToolchainGlobally = inValue;
+}
+
+/*****************************************************************************/
 StringList CommandLineInputs::getToolchainPresets() const
 {
 	StringList ret;
@@ -904,6 +930,12 @@ StringList CommandLineInputs::getToolchainPresets() const
 
 		ret.emplace_back(name);
 	}
+	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
+	for (auto& [name, _] : visualStudioLLVMPresets)
+	{
+		ret.emplace_back(name);
+	}
+
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
 #elif defined(CHALET_MACOS)
@@ -1000,10 +1032,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
 	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !String::equals("auto", m_targetArchitecture);
 
+	bool hasLlvmPrefix = String::startsWith("llvm-", inValue);
+
 #if defined(CHALET_WIN32)
 	m_visualStudioVersion = VisualStudioVersion::None;
 
 	auto visualStudioPresets = getVisualStudioPresets();
+	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	#endif
@@ -1032,29 +1067,57 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 #if defined(CHALET_MACOS)
 		bool isAppleClang = String::equals(kToolchainPresetAppleLLVM, inValue);
-	if (isAppleClang || String::equals(kToolchainPresetLLVM, inValue))
+	if (isAppleClang || String::equals(kToolchainPresetLLVM, inValue) || hasLlvmPrefix)
 #else
-	if (String::equals(kToolchainPresetLLVM, inValue))
+	if (String::equals(kToolchainPresetLLVM, inValue) || hasLlvmPrefix)
 #endif
 	{
 		m_isToolchainPreset = true;
+
+#if defined(CHALET_WIN32)
+		bool isVisualStudioLLVM = visualStudioLLVMPresets.find(inValue) != visualStudioLLVMPresets.end();
+#endif
+
+		std::string suffix;
+		if (hasLlvmPrefix)
+		{
+#if defined(CHALET_WIN32)
+			if (isVisualStudioLLVM)
+			{
+				m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
+			}
+			else
+#endif
+			{
+				suffix = inValue.substr(inValue.find_first_of('-'));
+			}
+		}
+
 		m_toolchainPreferenceName = inValue;
+
+		ret.disassembler = fmt::format("objdump{}", suffix);
 
 #if defined(CHALET_MACOS)
 		ret.type = isAppleClang ? ToolchainType::AppleLLVM : ToolchainType::LLVM;
+#elif defined(CHALET_WIN32)
+		ret.type = isVisualStudioLLVM ? ToolchainType::VisualStudioLLVM : ToolchainType::LLVM;
 #else
 		ret.type = ToolchainType::LLVM;
 #endif
-		ret.cpp = "clang++";
-		ret.cc = "clang";
+		ret.cpp = fmt::format("clang++{}", suffix);
+		ret.cc = fmt::format("clang{}", suffix);
 #if defined(CHALET_LINUX)
-		ret.rc = "llvm-windres";
+		ret.rc = fmt::format("llvm-windres{}", suffix);
 #else
-		ret.rc = "llvm-rc";
+		ret.rc = fmt::format("llvm-rc{}", suffix);
 #endif
 		ret.linker = "lld";
 		ret.archiver = "ar";
+#if defined(CHALET_WIN32)
+		ret.profiler = isVisualStudioLLVM ? "vsinstr" : "gprof";
+#else
 		ret.profiler = "gprof";
+#endif
 #if defined(CHALET_WIN32)
 		ret.disassembler = "dumpbin";
 #elif defined(CHALET_MACOS)
@@ -1099,27 +1162,27 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		{
 			ret.cpp = inValue;
 			ret.cc = inValue;
+			ret.rc = inValue;
 			ret.archiver = inValue;
 			ret.linker = inValue;
 			ret.disassembler = inValue;
 			ret.profiler = inValue;
-			ret.rc = inValue;
 			String::replaceAll(ret.cpp, "-gcc-", "-g++-");
+			String::replaceAll(ret.rc, "-gcc-", "-windres-");
 			String::replaceAll(ret.archiver, "-gcc-", "-gcc-ar-");
 			String::replaceAll(ret.linker, "-gcc-", "-ld-");
 			String::replaceAll(ret.disassembler, "-gcc-", "-objdump-");
 			String::replaceAll(ret.profiler, "-gcc-", "-gprof-");
-			String::replaceAll(ret.rc, "-gcc-", "-windres-");
 		}
 		else
 		{
 			ret.cpp = fmt::format("{}g++{}", prefix, suffix);
 			ret.cc = fmt::format("{}gcc{}", prefix, suffix);
+			ret.rc = fmt::format("{}windres{}", prefix, suffix);
 			ret.archiver = fmt::format("{}gcc-ar{}", prefix, suffix); // gcc- will get stripped out later when it's searched
 			ret.linker = fmt::format("{}ld{}", prefix, suffix);
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
-			ret.rc = fmt::format("{}windres{}", prefix, suffix);
 		}
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -1137,9 +1200,9 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		ret.type = ToolchainType::IntelLLVM;
 		ret.buildPathStyle = BuildPathStyle::ToolchainName;
-		ret.rc = "rc";
 		ret.cpp = "clang++";
 		ret.cc = "clang";
+		ret.rc = "rc";
 		ret.linker = "lld";
 		ret.archiver = "llvm-ar";
 		ret.profiler = "";
@@ -1215,25 +1278,23 @@ QueryOption CommandLineInputs::getQueryOptionFromString(const std::string& inVal
 VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(const std::string& inValue) const
 {
 #if defined(CHALET_WIN32)
-	auto visualStudioPresets = getVisualStudioPresets();
-	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
-	{
-		return visualStudioPresets.at(inValue);
-	}
+	auto presets = getVisualStudioPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
+
+	presets = getVisualStudioLLVMPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
-	auto intelClassicPresets = getIntelClassicVSPresets();
-	if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
-	{
-		return intelClassicPresets.at(inValue);
-	}
+	presets = getIntelClassicVSPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 	#endif
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	auto intelClangPresets = getIntelClangVSPresets();
-	if (intelClangPresets.find(inValue) != intelClangPresets.end())
-	{
-		return intelClangPresets.at(inValue);
-	}
+	presets = getIntelClangVSPresets();
+	if (presets.find(inValue) != presets.end())
+		return presets.at(inValue);
 	#endif
 #else
 	UNUSED(inValue);

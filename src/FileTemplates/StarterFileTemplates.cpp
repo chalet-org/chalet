@@ -20,19 +20,19 @@ namespace chalet
 /*****************************************************************************/
 Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 {
-	auto getLanguage = [](CxxSpecialization inSpecialization) -> const char* {
-		switch (inSpecialization)
+	auto getLanguage = [](CodeLanguage inLanguage) -> const char* {
+		switch (inLanguage)
 		{
-			case CxxSpecialization::CPlusPlus: return "C++";
-			case CxxSpecialization::ObjectiveC: return "Objective-C";
-			case CxxSpecialization::ObjectiveCPlusPlus: return "Objective-C++";
+			case CodeLanguage::CPlusPlus: return "C++";
+			case CodeLanguage::ObjectiveC: return "Objective-C";
+			case CodeLanguage::ObjectiveCPlusPlus: return "Objective-C++";
 			default: return "C";
 		}
 	};
 
-	const bool cpp = inProps.language == CodeLanguage::CPlusPlus;
-	const bool objectiveCxx = inProps.specialization == CxxSpecialization::ObjectiveC || inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus;
-	auto language = getLanguage(inProps.specialization);
+	const bool cpp = inProps.language == CodeLanguage::CPlusPlus || inProps.language == CodeLanguage::ObjectiveCPlusPlus;
+	const bool objectiveCxx = inProps.language == CodeLanguage::ObjectiveC || inProps.language == CodeLanguage::ObjectiveCPlusPlus;
+	auto language = getLanguage(inProps.language);
 	auto langStandardKey = cpp ? "cppStandard" : "cStandard";
 	const auto& project = inProps.projectName;
 
@@ -97,10 +97,10 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCxx(const CxxSpecialization inSpecialization, const bool inModules)
+std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const bool inModules)
 {
 	std::string ret;
-	if (inSpecialization == CxxSpecialization::CPlusPlus)
+	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
 		if (inModules)
 		{
@@ -137,7 +137,7 @@ int main(const int argc, const char* argv[])
 })cpp";
 		}
 	}
-	else if (inSpecialization == CxxSpecialization::C)
+	else if (inLanguage == CodeLanguage::C)
 	{
 
 		ret = R"c(#include <stdio.h>
@@ -155,7 +155,7 @@ int main(const int argc, const char* argv[])
 	return 0;
 })c";
 	}
-	else if (inSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+	else if (inLanguage == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret = R"objc(#import <Foundation/Foundation.h>
 
@@ -174,7 +174,7 @@ int main(int argc, const char* argv[])
 })objc";
 	}
 
-	else if (inSpecialization == CxxSpecialization::ObjectiveC)
+	else if (inLanguage == CodeLanguage::ObjectiveC)
 	{
 		ret = R"objc(#import <Foundation/Foundation.h>
 
@@ -197,7 +197,7 @@ int main(int argc, const char* argv[])
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage, const CxxSpecialization inSpecialization)
+std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage)
 {
 	auto file = String::toUpperCase(String::getPathFilename(inFile));
 	String::replaceAll(file, '.', '_');
@@ -206,7 +206,6 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 	}),
 		file.end());
 
-	UNUSED(inSpecialization);
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
@@ -356,7 +355,7 @@ target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch}))cmake",
 	std::string standardRequired;
 	std::string extraSettings;
 	std::string extraProperties;
-	if (inProps.specialization == CxxSpecialization::C)
+	if (inProps.language == CodeLanguage::C)
 	{
 		if (String::equals(StringList{ "17", "23" }, inProps.langStandard))
 			minimumCMakeVersion = "3.21";
@@ -365,7 +364,7 @@ target_precompile_headers(${{TARGET_NAME}} PRIVATE {pch}))cmake",
 		standardRequired = "CMAKE_C_STANDARD_REQUIRED";
 	}
 #if defined(CHALET_MACOS)
-	else if (inProps.specialization == CxxSpecialization::ObjectiveCPlusPlus)
+	else if (inProps.language == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		standard = fmt::format("CMAKE_OBJCXX_STANDARD {}", inProps.langStandard);
 		standardRequired = "CMAKE_OBJCXX_STANDARD_REQUIRED";
@@ -375,7 +374,7 @@ enable_language(OBJCXX))cmake";
 target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
 )cmake";
 	}
-	else if (inProps.specialization == CxxSpecialization::ObjectiveC)
+	else if (inProps.language == CodeLanguage::ObjectiveC)
 	{
 		standard = fmt::format("CMAKE_OBJC_STANDARD {}", inProps.langStandard);
 		standardRequired = "CMAKE_OBJC_STANDARD_REQUIRED";

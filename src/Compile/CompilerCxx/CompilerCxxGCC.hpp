@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
-#define CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
+#ifndef CHALET_COMPILER_CXX_GCC_HPP
+#define CHALET_COMPILER_CXX_GCC_HPP
 
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 
@@ -17,13 +17,13 @@ struct CompilerCxxGCC : public ICompilerCxx
 	virtual bool initialize() override;
 
 	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization) override;
-	virtual void getCommandOptions(StringList& outArgList, const CxxSpecialization specialization) override;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative) override;
+	virtual void getCommandOptions(StringList& outArgList, const SourceType derivative) override;
 
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
-	virtual void addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const override;
+	virtual void addLanguageStandard(StringList& outArgList, const SourceType derivative) const override;
 
 protected:
 	bool configureWarnings();
@@ -32,10 +32,11 @@ protected:
 	virtual StringList getWarningExclusions() const;
 	virtual bool isFlagSupported(const std::string& inFlag) const;
 
+	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addIncludes(StringList& outArgList) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;
-	virtual void addPchInclude(StringList& outArgList) const override;
+	virtual void addPchInclude(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addOptimizations(StringList& outArgList) const override;
 	virtual void addDebuggingInformationOption(StringList& outArgList) const override;
 	virtual void addProfileInformation(StringList& outArgList) const override;
@@ -43,7 +44,7 @@ protected:
 	virtual void addCompileOptions(StringList& outArgList) const override;
 	virtual void addCharsets(StringList& outArgList) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
-	virtual void addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
+	virtual void addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void addNoRunTimeTypeInformationOption(StringList& outArgList) const override;
 	virtual void addNoExceptionsOption(StringList& outArgList) const override;
@@ -56,8 +57,7 @@ protected:
 	virtual void addCppConcepts(StringList& outArgList) const;
 
 	// Objective-C / Objective-C++
-	virtual void addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const;
-	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const;
+	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const;
 
 	// MacOS
 	virtual bool addMacosSysRootOption(StringList& outArgList) const;
@@ -70,4 +70,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_EXECUTABLE_CXX_GCC_HPP
+#endif // CHALET_COMPILER_CXX_GCC_HPP

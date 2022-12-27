@@ -23,7 +23,7 @@ template <typename PtrType>
 using Unique = std::unique_ptr<PtrType>;
 
 template <typename PtrType>
-using Shared = std::shared_ptr<PtrType>;
+using Ref = std::shared_ptr<PtrType>;
 
 template <typename MapType>
 using OrderedDictionary = std::map<std::string, MapType>;

@@ -23,10 +23,21 @@ FileArchiver::FileArchiver(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inFiles, const StringList& inExcludes)
+bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes)
 {
 	m_format = inTarget.format();
-	m_outputFilename = inTarget.getOutputFilename(inBaseName);
+	auto exactpath = Commands::getAbsolutePath(Commands::getCanonicalPath(m_outputDirectory));
+	m_outputFilename = fmt::format("{}/{}", exactpath, inTarget.getOutputFilename(inBaseName));
+
+	if (Commands::pathExists(m_outputFilename))
+		Commands::remove(m_outputFilename);
+
+	auto resolvedIncludes = getResolvedIncludes(inIncludes);
+
+	m_tmpDirectory = makeTemporaryDirectory(inBaseName);
+
+	if (!copyIncludestoTemporaryDirectory(resolvedIncludes, inExcludes, m_tmpDirectory))
+		return false;
 
 	StringList cmd;
 	if (m_format == ArchiveFormat::Zip)
@@ -34,14 +45,22 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		if (!zipIsValid())
 			return false;
 
-		cmd = getZipFormatCommand(inBaseName, inFiles);
+		if (!getZipFormatCommand(cmd, inBaseName, resolvedIncludes))
+		{
+			Diagnostic::error("Couldn't create archive '{}' because there were no input files.", m_outputFilename);
+			return false;
+		}
 	}
 	else if (m_format == ArchiveFormat::Tar)
 	{
 		if (!tarIsValid())
 			return false;
 
-		cmd = getTarFormatCommand(inBaseName, inFiles);
+		if (!getTarFormatCommand(cmd, inBaseName, resolvedIncludes))
+		{
+			Diagnostic::error("Couldn't create archive '{}' because there were no input files.", m_outputFilename);
+			return false;
+		}
 	}
 
 	if (cmd.empty())
@@ -50,9 +69,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		return false;
 	}
 
-	m_tmpDirectory = makeTemporaryDirectory(inBaseName, inFiles, inExcludes);
-
-	bool result = Commands::subprocessMinimalOutput(cmd, m_outputDirectory);
+	bool result = Commands::subprocessMinimalOutput(cmd, m_tmpDirectory);
 	Commands::removeRecursively(m_tmpDirectory);
 	if (!result)
 	{
@@ -112,33 +129,102 @@ bool FileArchiver::tarIsValid() const
 }
 
 /*****************************************************************************/
-std::string FileArchiver::makeTemporaryDirectory(const std::string& inBaseName, const StringList& inFiles, const StringList& inExcludes) const
+StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 {
-	auto ret = fmt::format("{}/{}", m_outputDirectory, inBaseName);
-	Commands::makeDirectory(ret);
-
-	for (auto& file : inFiles)
+	StringList ret;
+	StringList tmp;
+	for (auto& include : inIncludes)
 	{
-		if (List::contains(inExcludes, file))
-			continue;
+		if (String::equals('*', include))
+		{
+			Commands::addPathToListWithGlob(fmt::format("{}/*", m_outputDirectory), tmp, GlobMatch::FilesAndFoldersExact);
+		}
+		else
+		{
+			auto filePath = fmt::format("{}/{}", m_outputDirectory, include);
+			if (Commands::pathExists(filePath))
+			{
+				List::addIfDoesNotExist(tmp, std::move(filePath));
+			}
+			else if (Commands::pathExists(include))
+			{
+				List::addIfDoesNotExist(ret, include);
+			}
+			else
+			{
+				Commands::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&](std::string inPath) {
+					List::addIfDoesNotExist(ret, std::move(inPath));
+				});
 
-		Commands::copySilent(file, ret);
+				Commands::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&](std::string inPath) {
+					List::addIfDoesNotExist(ret, std::move(inPath));
+				});
+			}
+		}
+	}
+
+	for (auto& include : tmp)
+	{
+		List::addIfDoesNotExist(ret, include.substr(m_outputDirectory.size() + 1));
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-StringList FileArchiver::getZipFormatCommand(const std::string& inBaseName, const StringList& inFiles) const
+std::string FileArchiver::makeTemporaryDirectory(const std::string& inBaseName) const
 {
-	StringList cmd;
+	auto ret = fmt::format("{}/{}", m_outputDirectory, inBaseName);
+	if (Commands::pathExists(ret))
+		Commands::removeRecursively(ret);
+
+	Commands::makeDirectory(ret);
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool FileArchiver::copyIncludestoTemporaryDirectory(const StringList& inIncludes, const StringList& inExcludes, const std::string& inDirectory) const
+{
+	if (inDirectory.empty())
+		return false;
+
+	for (auto& file : inIncludes)
+	{
+		if (List::contains(inExcludes, file))
+			continue;
+
+		// if (!Commands::pathExists(file))
+		// 	continue;
+
+		auto resolved = fmt::format("{}/{}", m_outputDirectory, file);
+		if (!Commands::pathExists(resolved))
+			resolved = file;
+
+		if (!Commands::copySilent(resolved, inDirectory))
+		{
+			Diagnostic::error("File not found: {}", file);
+			Diagnostic::error("Couldn't create archive '{}'.", m_outputFilename);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inIncludes) const
+{
+	outCmd.clear();
+
+	UNUSED(inBaseName);
 
 #if defined(CHALET_WIN32)
 	StringList pwshCmd{
 		"Compress-Archive",
 		"-Force",
 		"-Path",
-		inBaseName, // (m_tmpDirectory)
+		"./*",
 		"-DestinationPath",
 		m_outputFilename,
 	};
@@ -147,56 +233,91 @@ StringList FileArchiver::getZipFormatCommand(const std::string& inBaseName, cons
 	//   which is done with $ProgressPreference
 
 	const auto& powershell = m_state.tools.powershell();
-	cmd.emplace_back(powershell);
-	cmd.emplace_back("-Command");
-	cmd.emplace_back("$ProgressPreference = \"SilentlyContinue\";");
-	cmd.emplace_back(fmt::format("{};", String::join(pwshCmd)));
-	cmd.emplace_back("$ProgressPreference = \"Continue\";");
+	outCmd.emplace_back(powershell);
+	outCmd.emplace_back("-Command");
+	outCmd.emplace_back("$ProgressPreference = \"SilentlyContinue\";");
+	outCmd.emplace_back(fmt::format("{};", String::join(pwshCmd)));
+	outCmd.emplace_back("$ProgressPreference = \"Continue\";");
 
-	UNUSED(inFiles);
+	UNUSED(inIncludes);
 
+	return !inIncludes.empty();
 #else
 	const auto& zip = m_state.tools.zip();
-	cmd.emplace_back(zip);
-	cmd.emplace_back("-r");
-	cmd.emplace_back("-X");
-	cmd.emplace_back(m_outputFilename);
+	outCmd.emplace_back(zip);
+	outCmd.emplace_back("-r");
+	outCmd.emplace_back("-X");
+	outCmd.emplace_back(m_outputFilename);
+	outCmd.emplace_back("--symlinks");
+	outCmd.emplace_back(".");
+	outCmd.emplace_back("-i");
 
-	for (auto& file : inFiles)
+	auto files = getIncludesForCommand(inIncludes);
+	for (auto& file : files)
 	{
-		auto outFile = fmt::format("{}{}", inBaseName, file.substr(m_outputDirectory.size()));
-		cmd.emplace_back(std::move(outFile));
+		outCmd.emplace_back(file);
 	}
-#endif
 
-	return cmd;
+	return !files.empty();
+#endif
 }
 
 /*****************************************************************************/
-StringList FileArchiver::getTarFormatCommand(const std::string& inBaseName, const StringList& inFiles) const
+bool FileArchiver::getTarFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inIncludes) const
 {
-	StringList cmd;
+	outCmd.clear();
+
+	UNUSED(inBaseName);
 
 #if defined(CHALET_WIN32)
 	const auto& powershell = m_state.tools.powershell();
-	cmd.emplace_back(powershell);
-	cmd.emplace_back("tar");
+	outCmd.emplace_back(powershell);
+	outCmd.emplace_back("tar");
 #else
 	const auto& tar = m_state.tools.tar();
-	cmd.emplace_back(tar);
+	outCmd.emplace_back(tar);
 #endif
-	cmd.emplace_back("-c");
-	cmd.emplace_back("-z");
-	cmd.emplace_back("-f");
-	cmd.emplace_back(m_outputFilename);
-	cmd.emplace_back(fmt::format("--directory={}", inBaseName));
+	outCmd.emplace_back("-c");
+	outCmd.emplace_back("-z");
+	outCmd.emplace_back("-f");
+	outCmd.emplace_back(m_outputFilename);
+	// outCmd.emplace_back(fmt::format("--directory={}", inBaseName));
 
-	for (auto& file : inFiles)
+	auto files = getIncludesForCommand(inIncludes);
+	for (auto& file : files)
 	{
-		auto outFile = file.substr(m_outputDirectory.size() + 1);
-		cmd.emplace_back(std::move(outFile));
+		outCmd.emplace_back(file);
 	}
 
-	return cmd;
+	return !files.empty();
+}
+
+/*****************************************************************************/
+StringList FileArchiver::getIncludesForCommand(const StringList& inIncludes) const
+{
+	StringList ret;
+
+	auto cwd = Commands::getWorkingDirectory();
+	Commands::changeWorkingDirectory(m_tmpDirectory);
+
+	for (auto& file : inIncludes)
+	{
+		auto filename = String::getPathFilename(file);
+		if (Commands::pathIsDirectory(filename))
+		{
+			Commands::addPathToListWithGlob(fmt::format("{}/*", filename), ret, GlobMatch::FilesAndFolders);
+		}
+		else
+		{
+			if (Commands::pathExists(filename))
+				List::addIfDoesNotExist(ret, std::move(filename));
+			else
+				List::addIfDoesNotExist(ret, file);
+		}
+	}
+
+	Commands::changeWorkingDirectory(cwd);
+
+	return ret;
 }
 }

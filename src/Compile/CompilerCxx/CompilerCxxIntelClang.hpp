@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_EXECUTABLE_CXX_INTEL_CLANG_HPP
-#define CHALET_COMPILER_EXECUTABLE_CXX_INTEL_CLANG_HPP
+#ifndef CHALET_COMPILER_CXX_INTEL_CLANG_HPP
+#define CHALET_COMPILER_CXX_INTEL_CLANG_HPP
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
@@ -21,4 +21,4 @@ private:
 };
 }
 
-#endif // CHALET_COMPILER_EXECUTABLE_CXX_INTEL_CLANG_HPP
+#endif // CHALET_COMPILER_CXX_INTEL_CLANG_HPP

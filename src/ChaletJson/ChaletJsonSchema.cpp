@@ -19,7 +19,7 @@ namespace chalet
 ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
 	kPatternAbstractName(R"regex([A-Za-z\-_]+)regex"),
-	kPatternTargetSourceLinks(R"regex(^[\w\-+.]+$)regex"),
+	kPatternTargetSourceLinks(R"regex(^[\w\-+./]+$)regex"),
 	kPatternDistributionName(R"regex(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
 	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
 	kPatternVersion(R"regex(^((\d+\.){1,3})?\d+$)regex"),
@@ -281,7 +281,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::DistributionArchiveFormat] = R"json({
 		"type": "string",
-		"description": "The archive format to use.",
+		"description": "The archive format to use. If not specified, 'zip' will be used.",
 		"minLength": 1,
 		"enum": [
 			"zip",
@@ -701,7 +701,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		Json links = R"json({
 			"type": "string",
-			"description": "A list of dynamic links to use with the linker",
+			"description": "A list of dynamic links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"minLength": 1
 		})json"_ojson;
 		links[SKeys::Pattern] = kPatternTargetSourceLinks;
@@ -823,12 +823,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		Json staticLinks = R"json({
 			"type": "string",
-			"description": "A list of static links to use with the linker",
+			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"minLength": 1
 		})json"_ojson;
 		staticLinks[SKeys::Pattern] = kPatternTargetSourceLinks;
 		defs[Defs::TargetSourceCxxStaticLinks] = makeArrayOrString(std::move(staticLinks));
 	}
+
+	defs[Defs::TargetSourceCxxUnityBuild] = R"json({
+		"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+		"type": "boolean",
+		"default": false
+	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxTreatWarningsAsErrors] = R"json({
 		"description": "true to treat all warnings as errors. false to disable (default).",
@@ -1218,7 +1224,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention] = R"json({
 		"type": "boolean",
-		"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+		"description": "If true (default), shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
 		"default": true
 	})json"_ojson;
 
@@ -1265,19 +1271,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeRecheck] = R"json({
 		"type": "boolean",
-		"description": "If true, CMake will be invoked each time during the build.",
+		"description": "If true (default), CMake will be invoked each time during the build.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeRebuild] = R"json({
 		"type": "boolean",
-		"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"description": "If true (default), the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetCMakeClean] = R"json({
 		"type": "boolean",
-		"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+		"description": "If true (default), the CMake build folder will be cleaned when a clean is requested.",
 		"default": true
 	})json"_ojson;
 
@@ -1303,19 +1309,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetChaletRecheck] = R"json({
 		"type": "boolean",
-		"description": "If true, Chalet will be invoked each time during the build.",
+		"description": "If true (default), Chalet will be invoked each time during the build.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetChaletRebuild] = R"json({
 		"type": "boolean",
-		"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"description": "If true (default), the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
 		"default": true
 	})json"_ojson;
 
 	defs[Defs::TargetChaletClean] = R"json({
 		"type": "boolean",
-		"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
+		"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 		"default": true
 	})json"_ojson;
 
@@ -1339,6 +1345,63 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson,
 		false);
+
+	//
+	// Platform Requires
+	//
+	defs[Defs::PlatformRequiresUbuntuSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Ubuntu system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresDebianSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Debian system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresArchLinuxSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Arch Linux system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresManjaroSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Manjaro system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresFedoraSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Fedora system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresRedHatSystem] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Red Hat system packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresWindowsMSYS2] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Windows MSYS2 packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresMacosMacPorts] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "MacOS MacPorts packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::PlatformRequiresMacosHomebrew] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "MacOS Homebrew packages to be checked before the build.",
+		"minLength": 1
+	})json"_ojson);
 
 	//
 	// Complex Definitions
@@ -1471,6 +1534,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "staticRuntimeLibrary", Defs::TargetSourceCxxStaticRuntimeLibrary, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "threads", Defs::TargetSourceCxxThreads, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "treatWarningsAsErrors", Defs::TargetSourceCxxTreatWarningsAsErrors, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "unityBuild", Defs::TargetSourceCxxUnityBuild, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "warningsPreset", Defs::TargetSourceCxxWarningsPreset, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "warnings", Defs::TargetSourceCxxWarnings, kPatternConditions);
 		// addProperty(sourceTargetCxx, "windowsOutputDef", Defs::TargetSourceCxxWindowsOutputDef);
@@ -1661,6 +1725,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
 
+	{
+		auto platformRequires = R"json({
+			"type": "object",
+			"description": "Define system packages to be verfied before the build begins.",
+			"additionalProperties": false
+		})json"_ojson;
+		addPropertyAndPattern(platformRequires, "ubuntu.system", Defs::PlatformRequiresUbuntuSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "debian.system", Defs::PlatformRequiresDebianSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "archlinux.system", Defs::PlatformRequiresArchLinuxSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "manjaro.system", Defs::PlatformRequiresManjaroSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "fedora.system", Defs::PlatformRequiresFedoraSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "redhat.system", Defs::PlatformRequiresRedHatSystem, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "macos.macports", Defs::PlatformRequiresMacosMacPorts, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "macos.homebrew", Defs::PlatformRequiresMacosHomebrew, kPatternConditions);
+		addPropertyAndPattern(platformRequires, "windows.msys2", Defs::PlatformRequiresWindowsMSYS2, kPatternConditions);
+
+		defs[Defs::PlatformRequires] = std::move(platformRequires);
+	}
+
 	return defs;
 }
 
@@ -1773,6 +1856,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxBuildSuffix: return "target-source-cxx-buildSuffix";
 		case Defs::TargetSourceCxxStaticRuntimeLibrary: return "target-source-cxx-staticRuntimeLibrary";
 		case Defs::TargetSourceCxxStaticLinks: return "target-source-cxx-staticLinks";
+		case Defs::TargetSourceCxxUnityBuild: return "target-source-cxx-unityBuild";
 		case Defs::TargetSourceCxxWarnings: return "target-source-cxx-warnings";
 		case Defs::TargetSourceCxxWarningsPreset: return "target-source-cxx-warningsPreset";
 		case Defs::TargetSourceCxxTreatWarningsAsErrors: return "target-source-cxx-treatWarningsAsErrors";
@@ -1808,6 +1892,17 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";
 		case Defs::TargetProcessArguments: return "target-process-arguments";
+		//
+		case Defs::PlatformRequires: return "platform-requires";
+		case Defs::PlatformRequiresUbuntuSystem: return "platform-requires-ubuntu-system";
+		case Defs::PlatformRequiresDebianSystem: return "platform-requires-debian-system";
+		case Defs::PlatformRequiresArchLinuxSystem: return "platform-requires-archlinux-system";
+		case Defs::PlatformRequiresManjaroSystem: return "platform-requires-manjaro-system";
+		case Defs::PlatformRequiresFedoraSystem: return "platform-requires-fedora-system";
+		case Defs::PlatformRequiresRedHatSystem: return "platform-requires-redhat-system";
+		case Defs::PlatformRequiresWindowsMSYS2: return "platform-requires-windows-msys2";
+		case Defs::PlatformRequiresMacosMacPorts: return "platform-requires-macos-macports";
+		case Defs::PlatformRequiresMacosHomebrew: return "platform-requires-macos-homebrew";
 
 		default: break;
 	}
@@ -1921,6 +2016,8 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["name"] = getDefinition(Defs::WorkspaceName);
 	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
 	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+
+	ret[SKeys::Properties]["platformRequires"] = getDefinition(Defs::PlatformRequires);
 
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";

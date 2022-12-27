@@ -17,17 +17,20 @@ struct FileArchiver
 {
 	explicit FileArchiver(const BuildState& inState);
 
-	bool archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inFiles, const StringList& inExcludes);
+	bool archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes);
 
 private:
 	bool powerShellIsValid() const;
 	bool zipIsValid() const;
 	bool tarIsValid() const;
 
-	std::string makeTemporaryDirectory(const std::string& inBaseName, const StringList& inFiles, const StringList& inExcludes) const;
+	StringList getResolvedIncludes(const StringList& inIncludes) const;
+	std::string makeTemporaryDirectory(const std::string& inBaseName) const;
+	bool copyIncludestoTemporaryDirectory(const StringList& inIncludes, const StringList& inExcludes, const std::string& inDirectory) const;
 
-	StringList getZipFormatCommand(const std::string& inBaseName, const StringList& inFiles) const;
-	StringList getTarFormatCommand(const std::string& inBaseName, const StringList& inFiles) const;
+	bool getZipFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inIncludes) const;
+	bool getTarFormatCommand(StringList& outCmd, const std::string& inBaseName, const StringList& inIncludes) const;
+	StringList getIncludesForCommand(const StringList& inIncludes) const;
 
 	const BuildState& m_state;
 	const std::string& m_outputDirectory;

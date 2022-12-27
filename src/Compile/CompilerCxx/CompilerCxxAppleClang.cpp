@@ -185,9 +185,9 @@ void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList) const
 /*****************************************************************************/
 // Note: Noops mean a flag/feature isn't supported
 //
-void CompilerCxxAppleClang::addPchInclude(StringList& outArgList) const
+void CompilerCxxAppleClang::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	if (m_project.usesPrecompiledHeader())
+	if (precompiledHeaderAllowedForSourceType(derivative))
 	{
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -211,7 +211,7 @@ void CompilerCxxAppleClang::addPchInclude(StringList& outArgList) const
 		else
 #endif
 		{
-			CompilerCxxClang::addPchInclude(outArgList);
+			CompilerCxxClang::addPchInclude(outArgList, derivative);
 		}
 	}
 }
@@ -241,16 +241,15 @@ bool CompilerCxxAppleClang::addArchitecture(StringList& outArgList, const std::s
 }
 
 /*****************************************************************************/
-void CompilerCxxAppleClang::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxAppleClang::addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const
 {
-	if (specialization != CxxSpecialization::ObjectiveC)
+	auto language = m_project.language();
+	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::CPlusPlus || language == CodeLanguage::ObjectiveCPlusPlus);
+	if (validPchType || derivative == SourceType::CPlusPlus || derivative == SourceType::ObjectiveCPlusPlus)
 	{
-		if (m_project.language() == CodeLanguage::CPlusPlus)
-		{
-			std::string flag{ "-stdlib=libc++" };
-			// if (isFlagSupported(flag))
-			List::addIfDoesNotExist(outArgList, std::move(flag));
-		}
+		std::string flag{ "-stdlib=libc++" };
+		// if (isFlagSupported(flag))
+		List::addIfDoesNotExist(outArgList, std::move(flag));
 	}
 }
 
@@ -263,26 +262,10 @@ void CompilerCxxAppleClang::addDiagnosticColorOption(StringList& outArgList) con
 }
 
 /*****************************************************************************/
-void CompilerCxxAppleClang::addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
-{
-	const bool isObjCpp = specialization == CxxSpecialization::ObjectiveCPlusPlus;
-	const bool isObjC = specialization == CxxSpecialization::ObjectiveC;
-	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCPlusPlus || specialization == CxxSpecialization::ObjectiveC;
-	if (m_project.objectiveCxx() && isObjCxx)
-	{
-		outArgList.emplace_back("-x");
-		if (isObjCpp)
-			outArgList.emplace_back("objective-c++");
-		else if (isObjC)
-			outArgList.emplace_back("objective-c");
-	}
-}
-
-/*****************************************************************************/
-void CompilerCxxAppleClang::addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxAppleClang::addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const
 {
 	// Unused in AppleClang
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 }

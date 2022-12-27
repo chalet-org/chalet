@@ -59,6 +59,7 @@ private:
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode) const;
+	bool parsePlatformRequires(const Json& inNode) const;
 
 	bool parseTargets(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;

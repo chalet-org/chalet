@@ -80,21 +80,6 @@ bool CMakeTarget::validate()
 		result = false;
 	}
 
-#if defined(CHALET_WIN32)
-	if (m_state.environment->isMsvc())
-	{
-		const auto& version = m_state.toolchain.version();
-		if (!String::startsWith(StringList{ "17", "16", "15", "14", "12", "11", "10" }, version))
-		{
-			if (version.empty())
-				Diagnostic::error("Visual Studio version was not detected.");
-			else
-				Diagnostic::error("Visual Studio version '{}' was detected, but is not yet supported in Chalet's CMake integration.", version);
-			result = false;
-		}
-	}
-#endif
-
 	return result;
 }
 

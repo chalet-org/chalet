@@ -221,6 +221,10 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						inputs->setSaveSchemaToFile(value);
 						break;
 
+					case ArgumentIdentifier::SaveUserToolchainGlobally:
+						inputs->setSaveUserToolchainGlobally(value);
+						break;
+
 					case ArgumentIdentifier::Quieter:
 						Output::setQuietNonBuild(value);
 						break;

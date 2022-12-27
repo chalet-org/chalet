@@ -411,7 +411,7 @@
 		},
 		"dist-archive-format": {
 			"type": "string",
-			"description": "The archive format to use.",
+			"description": "The archive format to use. If not specified, 'zip' will be used.",
 			"minLength": 1,
 			"enum": [
 				"zip",
@@ -1204,6 +1204,9 @@
 				"treatWarningsAsErrors": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
 				},
+				"unityBuild": {
+					"$ref": "#/definitions/target-source-cxx-unityBuild"
+				},
 				"warningsPreset": {
 					"$ref": "#/definitions/target-source-cxx-warningsPreset"
 				},
@@ -1301,6 +1304,9 @@
 				},
 				"^treatWarningsAsErrors\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-treatWarningsAsErrors"
+				},
+				"^unityBuild\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-unityBuild"
 				},
 				"^warningsPreset\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-warningsPreset"
@@ -1432,12 +1438,12 @@
 			]
 		},
 		"target-source-cxx-links": {
-			"description": "A list of dynamic links to use with the linker",
+			"description": "A list of dynamic links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+.]+$"
+					"pattern": "^[\\w\\-+./]+$"
 				},
 				{
 					"type": "array",
@@ -1446,7 +1452,7 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+.]+$"
+						"pattern": "^[\\w\\-+./]+$"
 					}
 				}
 			]
@@ -1574,12 +1580,12 @@
 			"default": false
 		},
 		"target-source-cxx-staticLinks": {
-			"description": "A list of static links to use with the linker",
+			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
 			"oneOf": [
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+.]+$"
+					"pattern": "^[\\w\\-+./]+$"
 				},
 				{
 					"type": "array",
@@ -1588,10 +1594,15 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+.]+$"
+						"pattern": "^[\\w\\-+./]+$"
 					}
 				}
 			]
+		},
+		"target-source-cxx-unityBuild": {
+			"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+			"type": "boolean",
+			"default": false
 		},
 		"target-source-cxx-warningsPreset": {
 			"type": "string",
@@ -1937,7 +1948,7 @@
 		},
 		"target-source-cxx-mingwUnixSharedLibraryNamingConvention": {
 			"type": "boolean",
-			"description": "If true, shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+			"description": "If true (default), shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
 			"default": true
 		},
 		"target-source-cxx-windowsSubSystem": {
@@ -2140,17 +2151,17 @@
 		},
 		"target-cmake-recheck": {
 			"type": "boolean",
-			"description": "If true, CMake will be invoked each time during the build.",
+			"description": "If true (default), CMake will be invoked each time during the build.",
 			"default": true
 		},
 		"target-cmake-rebuild": {
 			"type": "boolean",
-			"description": "If true, the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"description": "If true (default), the CMake build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
 		},
 		"target-cmake-clean": {
 			"type": "boolean",
-			"description": "If true, the CMake build folder will be cleaned when a clean is requested.",
+			"description": "If true (default), the CMake build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
 		"target-cmake-toolset": {
@@ -2215,17 +2226,17 @@
 		},
 		"target-chalet-recheck": {
 			"type": "boolean",
-			"description": "If true, Chalet will be invoked each time during the build.",
+			"description": "If true (default), Chalet will be invoked each time during the build.",
 			"default": true
 		},
 		"target-chalet-rebuild": {
 			"type": "boolean",
-			"description": "If true, the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"description": "If true (default), the Chalet build folder will be cleaned and rebuilt when a rebuild is requested.",
 			"default": true
 		},
 		"target-chalet-clean": {
 			"type": "boolean",
-			"description": "If true, the Chalet build folder will be cleaned when a clean is requested.",
+			"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
 		"target-process": {
@@ -2284,6 +2295,231 @@
 					}
 				}
 			]
+		},
+		"platform-requires": {
+			"type": "object",
+			"description": "Define system packages to be verfied before the build begins.",
+			"additionalProperties": false,
+			"properties": {
+				"ubuntu.system": {
+					"$ref": "#/definitions/platform-requires-ubuntu-system"
+				},
+				"debian.system": {
+					"$ref": "#/definitions/platform-requires-debian-system"
+				},
+				"archlinux.system": {
+					"$ref": "#/definitions/platform-requires-archlinux-system"
+				},
+				"manjaro.system": {
+					"$ref": "#/definitions/platform-requires-manjaro-system"
+				},
+				"fedora.system": {
+					"$ref": "#/definitions/platform-requires-fedora-system"
+				},
+				"redhat.system": {
+					"$ref": "#/definitions/platform-requires-redhat-system"
+				},
+				"macos.macports": {
+					"$ref": "#/definitions/platform-requires-macos-macports"
+				},
+				"macos.homebrew": {
+					"$ref": "#/definitions/platform-requires-macos-homebrew"
+				},
+				"windows.msys2": {
+					"$ref": "#/definitions/platform-requires-windows-msys2"
+				}
+			},
+			"patternProperties": {
+				"^ubuntu.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-ubuntu-system"
+				},
+				"^debian.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-debian-system"
+				},
+				"^archlinux.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-archlinux-system"
+				},
+				"^manjaro.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-manjaro-system"
+				},
+				"^fedora.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-fedora-system"
+				},
+				"^redhat.system\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-redhat-system"
+				},
+				"^macos.macports\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-macos-macports"
+				},
+				"^macos.homebrew\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-macos-homebrew"
+				},
+				"^windows.msys2\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/platform-requires-windows-msys2"
+				}
+			}
+		},
+		"platform-requires-ubuntu-system": {
+			"description": "Ubuntu system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-debian-system": {
+			"description": "Debian system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-archlinux-system": {
+			"description": "Arch Linux system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-manjaro-system": {
+			"description": "Manjaro system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-fedora-system": {
+			"description": "Fedora system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-redhat-system": {
+			"description": "Red Hat system packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-windows-msys2": {
+			"description": "Windows MSYS2 packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-macos-macports": {
+			"description": "MacOS MacPorts packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"platform-requires-macos-homebrew": {
+			"description": "MacOS Homebrew packages to be checked before the build.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		}
 	},
 	"properties": {
@@ -2307,6 +2543,9 @@
 		},
 		"version": {
 			"$ref": "#/definitions/workspace-version"
+		},
+		"platformRequires": {
+			"$ref": "#/definitions/platform-requires"
 		},
 		"abstracts": {
 			"type": "object",

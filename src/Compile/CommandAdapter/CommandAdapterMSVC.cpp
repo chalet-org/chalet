@@ -624,7 +624,8 @@ StringList CommandAdapterMSVC::getIncludeDirectories() const
 {
 	StringList ret;
 
-	for (const auto& dir : m_project.includeDirs())
+	const auto& includeDirs = m_project.includeDirs();
+	for (const auto& dir : includeDirs)
 	{
 		std::string outDir = dir;
 		if (String::endsWith('/', outDir))
@@ -760,7 +761,10 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 
 		if (!found)
 		{
-			List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+			if (Commands::pathExists(link))
+				List::addIfDoesNotExist(ret, std::move(link));
+			else
+				List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
 		}
 	}
 

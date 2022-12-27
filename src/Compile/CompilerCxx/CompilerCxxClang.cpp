@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -104,9 +105,9 @@ void CompilerCxxClang::addDiagnosticColorOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxClang::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxClang::addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -136,7 +137,21 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 
 	UNUSED(inArch);
 
-	const auto& targetArchString = inState.info.targetArchitectureTriple();
+	auto targetArchString = inState.info.targetArchitectureTriple();
+
+#if defined(CHALET_LINUX)
+	// auto gccArchDir = fmt::format("/lib/gcc/{}", targetArchString);
+	// auto archDir = fmt::format("/usr/{}/lib", targetArchString);
+	// if (!Commands::pathExists(gccArchDir) && Commands::pathExists(archDir))
+	// {
+	// 	List::addIfDoesNotExist(outArgList, fmt::format("--gcc-toolchain={}", archDir));
+	// }
+	// auto libcDir = fmt::format("/usr/{}/lib/libc.a", targetArchString);
+	// if (Commands::pathExists(libcDir))
+	// {
+	// 	List::addIfDoesNotExist(outArgList, fmt::format("--sysroot={}", libcDir));
+	// }
+#endif
 
 	outArgList.emplace_back("-target");
 	outArgList.push_back(targetArchString);

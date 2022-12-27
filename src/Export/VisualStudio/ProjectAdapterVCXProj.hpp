@@ -41,6 +41,7 @@ struct ProjectAdapterVCXProj
 	std::string getPlatformToolset() const;
 	std::string getWholeProgramOptimization() const;
 	std::string getCharacterSet() const;
+	std::string getEnableUnitySupport() const;
 
 	std::string getFunctionLevelLinking() const;
 	std::string getIntrinsicFunctions() const;

@@ -52,6 +52,7 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 {
 	auto globalSettingsFile = inInputs.getGlobalSettingsFilePath();
 	auto globalSettingsFolder = String::getPathFolder(globalSettingsFile);
+
 	if (!Commands::pathExists(globalSettingsFolder))
 		Commands::makeDirectory(globalSettingsFolder);
 
@@ -279,8 +280,10 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CompilerTools& inToolchain)
 {
 	auto& settingsJson = getSettings(SettingsType::Local);
+	auto& globalSettingsJson = getSettings(SettingsType::Global);
 
-	const auto& settingsFile = inInputs.settingsFile();
+	const auto& settingsFile = settingsJson.filename();
+	const auto& globalSettingsFile = globalSettingsJson.filename();
 	const auto& preference = inInputs.toolchainPreferenceName();
 
 	if (!settingsJson.json.contains(Keys::Options))
@@ -288,9 +291,19 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Options);
 		return false;
 	}
+	if (!globalSettingsJson.json.contains(Keys::Options))
+	{
+		Diagnostic::error("{}: '{}' did not correctly initialize.", globalSettingsFile, Keys::Options);
+		return false;
+	}
 	if (!settingsJson.json.contains(Keys::Toolchains))
 	{
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Toolchains);
+		return false;
+	}
+	if (!globalSettingsJson.json.contains(Keys::Toolchains))
+	{
+		Diagnostic::error("{}: '{}' did not correctly initialize.", globalSettingsFile, Keys::Toolchains);
 		return false;
 	}
 
@@ -335,6 +348,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 			settingsJson.setDirty(true);
 		}
 	}
+
 	if (optionsJson.contains(Keys::OptionsRunArguments) && !runTarget.empty())
 	{
 		auto& allRunArguments = optionsJson.at(Keys::OptionsRunArguments);
@@ -367,6 +381,17 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 			toolchain[Keys::ToolchainVersion] = versionString;
 			settingsJson.setDirty(true);
 		}
+	}
+
+	if (inInputs.saveUserToolchainGlobally())
+	{
+		auto& globalToolchains = globalSettingsJson.json.at(Keys::Toolchains);
+		globalToolchains[preference] = toolchain;
+
+		auto& globalOptionsJson = settingsJson.json.at(Keys::Options);
+		globalOptionsJson[Keys::OptionsToolchain] = preference;
+
+		globalSettingsJson.setDirty(true);
 	}
 
 	return true;

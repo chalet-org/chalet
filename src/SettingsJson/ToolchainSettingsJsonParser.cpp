@@ -151,8 +151,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[Keys::ToolchainBuildPathStyle] = std::string();
 	}
 
-	bool isLLVM = preference.type == ToolchainType::LLVM || preference.type == ToolchainType::AppleLLVM || preference.type == ToolchainType::IntelLLVM;
-	bool isGNU = preference.type == ToolchainType::GNU || preference.type == ToolchainType::MingwGNU;
+	bool isLLVM = preference.type == ToolchainType::LLVM
+		|| preference.type == ToolchainType::AppleLLVM
+		|| preference.type == ToolchainType::IntelLLVM
+		|| preference.type == ToolchainType::VisualStudioLLVM;
+
+	bool isGNU = preference.type == ToolchainType::GNU
+		|| preference.type == ToolchainType::MingwGNU;
 
 	std::string cpp;
 	std::string cc;
@@ -212,9 +217,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
 			searches.push_back(preference.linker); // lld
 			searches.emplace_back("lld-link");
-			searches.emplace_back("llvm-ld");
+			searches.emplace_back(fmt::format("llvm-ld", suffix));
 			searches.emplace_back("ld");
 		}
 		else if (isGNU)
@@ -260,7 +269,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
-			searches.emplace_back("llvm-ar");
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
+			searches.emplace_back(fmt::format("llvm-ar{}", suffix));
 		}
 		else if (isGNU)
 		{
@@ -322,7 +335,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (isLLVM)
 		{
-			searches.emplace_back("llvm-objdump");
+			std::string suffix;
+			if (String::contains('-', preference.cc))
+				suffix = preference.cc.substr(preference.cc.find_first_of('-'));
+
+			searches.emplace_back(fmt::format("llvm-objdump{}", suffix));
 			searches.push_back(preference.disassembler);
 		}
 		else if (isGNU)
@@ -380,7 +397,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		// jom.exe - Qt's parallel NMAKE
 		// nmake.exe - MSVC's make-ish build tool, alternative to MSBuild
 		StringList searches;
-		if (preference.type == ToolchainType::VisualStudio)
+		if (preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM)
 		{
 			searches.emplace_back("jom");
 			searches.emplace_back("nmake");

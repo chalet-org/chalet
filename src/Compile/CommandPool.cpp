@@ -41,6 +41,7 @@ struct PoolState
 };
 
 static PoolState* state = nullptr;
+static std::size_t refCount = 0;
 
 /*****************************************************************************/
 bool printCommand(std::string inText)
@@ -239,6 +240,8 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 	{
 		state = new PoolState();
 	}
+	if (refCount < std::numeric_limits<std::size_t>::max())
+		refCount++;
 
 	::signal(SIGINT, signalHandler);
 	::signal(SIGTERM, signalHandler);
@@ -248,7 +251,10 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 /*****************************************************************************/
 CommandPool::~CommandPool()
 {
-	if (state != nullptr)
+	if (refCount > 0)
+		refCount--;
+
+	if (state != nullptr && refCount == 0)
 	{
 		delete state;
 		state = nullptr;

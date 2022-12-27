@@ -62,7 +62,6 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 	UNUSED(inPath);
 
 	const auto& depDir = m_state.paths.depDir();
-	// const auto suffixes = String::getPrefixed(m_fileExtensions, ".");
 	const auto shell = "cmd.exe";
 
 	auto recipes = String::join(m_targetRecipes);
@@ -95,12 +94,6 @@ SHELL = {shell}
 		FMT_ARG(recipes),
 		FMT_ARG(depDirs));
 
-	// if (!isBash)
-	// {
-	// 	String::replaceAll(makefileTemplate, "/%)", "\\\\\\\\%)");
-	// 	String::replaceAll(makefileTemplate, "/", "\\\\");
-	// }
-
 	return makefileTemplate;
 }
 
@@ -108,7 +101,6 @@ SHELL = {shell}
 void MakefileGeneratorNMake::reset()
 {
 	m_targetRecipes.clear();
-	// m_fileExtensions.clear();
 }
 
 /*****************************************************************************/
@@ -157,15 +149,9 @@ std::string MakefileGeneratorNMake::getBuildRecipes(const SourceOutputs& inOutpu
 {
 	chalet_assert(m_project != nullptr, "");
 
-	/*for (auto& ext : inOutputs.fileExtensions)
-	{
-		List::addIfDoesNotExist(m_fileExtensions, ext);
-	}*/
-
 	std::string recipes;
 
 	recipes += getObjBuildRecipes(inOutputs.groups);
-
 	recipes += getTargetRecipe(inOutputs.target, inOutputs.objectListLinker);
 
 	return recipes;
@@ -213,7 +199,7 @@ std::string MakefileGeneratorNMake::getObjBuildRecipes(const SourceFileGroupList
 		{
 			case SourceType::C:
 			case SourceType::CPlusPlus:
-				ret += getCppRecipe(source, object, pchTarget);
+				ret += getCxxRecipe(source, object, pchTarget, group->type);
 				break;
 
 			case SourceType::WindowsResource:
@@ -356,7 +342,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, const std::string& object, const std::string& pchTarget) const
+std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, const std::string& object, const std::string& pchTarget, const SourceType derivative) const
 {
 	chalet_assert(m_project != nullptr, "");
 
@@ -365,8 +351,7 @@ std::string MakefileGeneratorNMake::getCppRecipe(const std::string& source, cons
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	const auto specialization = m_project->language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, specialization));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		std::string compilerEcho;

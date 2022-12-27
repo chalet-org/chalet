@@ -11,11 +11,20 @@
 namespace chalet
 {
 struct CommandLineInputs;
+struct PlatformDependencyManager;
+class BuildState;
+
 struct BuildInfo
 {
-	explicit BuildInfo(const CommandLineInputs& inInputs);
+	explicit BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs);
+	CHALET_DISALLOW_COPY_MOVE(BuildInfo);
+	~BuildInfo();
 
 	bool initialize();
+	bool validate();
+
+	void addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue);
+	void addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue);
 
 	const std::string& buildConfiguration() const noexcept;
 	const std::string& buildConfigurationNoAssert() const noexcept;
@@ -42,6 +51,10 @@ struct BuildInfo
 	bool keepGoing() const noexcept;
 
 private:
+	const BuildState& m_state;
+
+	Unique<PlatformDependencyManager> m_platformDeps;
+
 	std::string m_buildConfiguration;
 	std::string m_osTarget;
 	std::string m_osTargetVersion;
@@ -51,7 +64,6 @@ private:
 	Arch m_targetArchitecture;
 
 	uint m_maxJobs = 0;
-	uint m_processorCount = 0;
 
 	bool m_dumpAssembly = false;
 	bool m_generateCompileCommands = false;

@@ -46,10 +46,17 @@ bool AppBundlerMacOS::bundleForPlatform()
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
 
-	if (!getMainExecutable())
+	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable. we don't care
 
-	m_executableOutputPath = fmt::format("{}/{}", m_executablePath, m_mainExecutable);
+	{
+		auto executables = getAllExecutables();
+		m_executableOutputPaths.clear();
+		for (auto& executable : executables)
+		{
+			m_executableOutputPaths.emplace_back(fmt::format("{}/{}", m_executablePath, executable));
+		}
+	}
 
 	if (!Commands::pathExists(m_frameworksPath))
 		Commands::makeDirectory(m_frameworksPath);
@@ -64,8 +71,11 @@ bool AppBundlerMacOS::bundleForPlatform()
 			return false;
 	}
 
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", m_executableOutputPath }))
-		return false;
+	/*for (auto& executable : m_executableOutputPaths)
+	{
+		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
+			return false;
+	}*/
 
 	// treat it like linux/windows
 	if (m_bundle.macosBundleType() == MacOSBundleType::None)
@@ -182,6 +192,15 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 			Diagnostic::error("install_name_tool error");
 			return false;
 		}
+
+		// For dylibs linked w/o .a files, they get assigned "@executable_path/../Frameworks/"
+		//   so we need to attempt to update them as well
+		auto depFrameworkPath = fmt::format("@executable_path/../Frameworks/{}", depFile);
+		if (!Commands::subprocess({ inInstallNameTool, "-change", depFrameworkPath, fmt::format("@rpath/{}", depFile), inOutputFile }))
+		{
+			Diagnostic::error("install_name_tool error");
+			return false;
+		}
 	}
 
 	return true;
@@ -291,14 +310,17 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	auto& installNameTool = m_state.tools.installNameTool();
 
 	// install_name_tool
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", m_executableOutputPath }))
-		return false;
+	for (auto& executable : m_executableOutputPaths)
+	{
+		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
+			return false;
 
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", m_executableOutputPath }))
-		return false;
+		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
+			return false;
 
-	if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", m_executableOutputPath }))
-		return false;
+		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
+			return false;
+	}
 
 	StringList addedFrameworks;
 
@@ -332,8 +354,11 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworksPath, framework);
 
-					if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), m_executableOutputPath }))
-						return false;
+					for (auto& executable : m_executableOutputPaths)
+					{
+						if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
+							return false;
+					}
 
 					++i;
 

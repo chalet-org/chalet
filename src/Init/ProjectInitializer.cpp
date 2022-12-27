@@ -110,16 +110,15 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
 
-	auto&& [language, specialization] = getCodeLanguage();
+	auto language = getCodeLanguage();
 	outProps.language = language;
-	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
 #if defined(CHALET_WIN32) // modules can only be used in MSVC so far
 	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
 #endif
-	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
@@ -127,7 +126,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 
 	if (!outProps.modules)
 	{
-		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	}
 
 	outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
@@ -137,13 +136,13 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
 
 	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
 	});
 
 	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
@@ -171,18 +170,17 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
 
-	auto&& [language, specialization] = getCodeLanguage();
+	auto language = getCodeLanguage();
 	outProps.language = language;
-	outProps.specialization = specialization;
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
-	m_sourceExts = getSourceExtensions(outProps.specialization, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
 	outProps.location = getRootSourceDirectory();
 	outProps.mainSource = getMainSourceFile(outProps.language);
-	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language, outProps.specialization);
+	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
 	outProps.envFile = getMakeEnvFile();
 	outProps.makeGitRepository = getMakeGitRepository();
@@ -190,13 +188,13 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.specialization, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
 
 	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language, outProps.specialization);
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
 	});
 
 	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
@@ -335,7 +333,7 @@ bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
-	const auto contents = StarterFileTemplates::getMainCxx(inProps.specialization, inProps.modules);
+	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.modules);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -344,7 +342,7 @@ bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 bool ProjectInitializer::makePch(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
-	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language, inProps.specialization);
+	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -507,50 +505,47 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 }
 
 /*****************************************************************************/
-std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage inLang, const CxxSpecialization inCxxSpecialization) const
+std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage inLang) const
 {
 	std::string result;
 
-	if (inCxxSpecialization != CxxSpecialization::ObjectiveC)
+	if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
 	{
-		if (Output::getUserInputYesNo("Use a precompiled header?", true, "Precompiled headers are a way of reducing compile times"))
+		const bool isC = inLang == CodeLanguage::C || inLang == CodeLanguage::ObjectiveC;
+		StringList headerExts;
+		if (isC)
 		{
-			const bool isC = inLang == CodeLanguage::C;
-			StringList headerExts;
-			if (isC)
-			{
-				headerExts.emplace_back(".h");
-			}
-			else
-			{
-				headerExts.emplace_back(".hpp");
-				headerExts.emplace_back(".hxx");
-				headerExts.emplace_back(".hh");
-				headerExts.emplace_back(".h");
-			}
-
-			result = fmt::format("pch{}", headerExts.front());
-
-			auto label = isC ? "Must end in" : "Recommended extensions";
-			Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
-				auto lower = String::toLowerCase(input);
-				bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-				if (validChars && (isC && !String::endsWith(headerExts, input)))
-				{
-					input = String::getPathBaseName(input) + headerExts.front();
-				}
-				return validChars;
-			});
+			headerExts.emplace_back(".h");
 		}
+		else
+		{
+			headerExts.emplace_back(".hpp");
+			headerExts.emplace_back(".hxx");
+			headerExts.emplace_back(".hh");
+			headerExts.emplace_back(".h");
+		}
+
+		result = fmt::format("pch{}", headerExts.front());
+
+		auto label = isC ? "Must end in" : "Recommended extensions";
+		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
+			auto lower = String::toLowerCase(input);
+			bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
+			if (validChars && (isC && !String::endsWith(headerExts, input)))
+			{
+				input = String::getPathBaseName(input) + headerExts.front();
+			}
+			return validChars;
+		});
 	}
 
 	return result;
 }
 
 /*****************************************************************************/
-std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage() const
+CodeLanguage ProjectInitializer::getCodeLanguage() const
 {
-	std::pair<CodeLanguage, CxxSpecialization> ret;
+	CodeLanguage ret = CodeLanguage::None;
 
 #if defined(CHALET_MACOS)
 	StringList allowedLangs{ "C++", "C", "Objective-C", "Objective-C++" };
@@ -565,44 +560,40 @@ std::pair<CodeLanguage, CxxSpecialization> ProjectInitializer::getCodeLanguage()
 
 	if (String::equals("C", language))
 	{
-		ret.first = CodeLanguage::C;
-		ret.second = CxxSpecialization::C;
+		ret = CodeLanguage::C;
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("Objective-C", language))
 	{
-		ret.first = CodeLanguage::C;
-		ret.second = CxxSpecialization::ObjectiveC;
+		ret = CodeLanguage::ObjectiveC;
 	}
 	else if (String::equals("Objective-C++", language))
 	{
-		ret.first = CodeLanguage::CPlusPlus;
-		ret.second = CxxSpecialization::ObjectiveCPlusPlus;
+		ret = CodeLanguage::ObjectiveCPlusPlus;
 	}
 #endif
 	else
 	{
-		ret.first = CodeLanguage::CPlusPlus;
-		ret.second = CxxSpecialization::CPlusPlus;
+		ret = CodeLanguage::CPlusPlus;
 	}
 
 	return ret;
 }
 
 /*****************************************************************************/
-StringList ProjectInitializer::getSourceExtensions(const CxxSpecialization inCxxSpecialization, const bool inModules) const
+StringList ProjectInitializer::getSourceExtensions(const CodeLanguage inLang, const bool inModules) const
 {
 	StringList ret;
-	if (inCxxSpecialization == CxxSpecialization::C)
+	if (inLang == CodeLanguage::C)
 	{
 		ret.emplace_back(".c");
 	}
 #if defined(CHALET_MACOS)
-	else if (inCxxSpecialization == CxxSpecialization::ObjectiveCPlusPlus)
+	else if (inLang == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret.emplace_back(".mm");
 	}
-	else if (inCxxSpecialization == CxxSpecialization::C)
+	else if (inLang == CodeLanguage::ObjectiveC)
 	{
 		ret.emplace_back(".m");
 	}
@@ -631,7 +622,7 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 {
 	std::string ret;
 
-	if (inLang == CodeLanguage::CPlusPlus)
+	if (inLang == CodeLanguage::CPlusPlus || inLang == CodeLanguage::ObjectiveCPlusPlus)
 	{
 		ret = "20";
 		Output::getUserInput("C++ Standard:", ret, "Common choices: 23 20 17 14 11", [](std::string& input) {

@@ -200,18 +200,20 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 		ret.emplace_back(getQuotedPath(dependency));
 	}
 
-	const auto specialization = m_project.language() == CodeLanguage::CPlusPlus ? CxxSpecialization::CPlusPlus : CxxSpecialization::C;
+	auto derivative = SourceType::CxxPrecompiledHeader;
+
+	addSourceFileInterpretation(ret, derivative);
 	addOptimizations(ret);
-	addLanguageStandard(ret, specialization);
+	addLanguageStandard(ret, derivative);
 	addCppCoroutines(ret);
 	addCppConcepts(ret);
 	addWarnings(ret);
 
 	addCharsets(ret);
-	addLibStdCppCompileOption(ret, specialization);
+	addLibStdCppCompileOption(ret, derivative);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
-	addObjectiveCxxRuntimeOption(ret, specialization);
+	addObjectiveCxxRuntimeOption(ret, derivative);
 	addDiagnosticColorOption(ret);
 	addFastMathOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
@@ -228,12 +230,6 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addIncludes(ret);
 	addMacosSysRootOption(ret);
 
-	// ret.emplace_back("-x");
-	// if (specialization == CxxSpecialization::C)
-	// 	ret.emplace_back("c-header");
-	// else
-	// 	ret.emplace_back("c++-header");
-
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
 	ret.emplace_back("-c");
@@ -243,7 +239,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 }
 
 /*****************************************************************************/
-StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const CxxSpecialization specialization)
+StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative)
 {
 	StringList ret;
 
@@ -264,18 +260,18 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 		ret.emplace_back(getQuotedPath(dependency));
 	}
 
+	addSourceFileInterpretation(ret, derivative);
 	addOptimizations(ret);
-	addLanguageStandard(ret, specialization);
+	addLanguageStandard(ret, derivative);
 	addCppCoroutines(ret);
 	addCppConcepts(ret);
 	addWarnings(ret);
-	addObjectiveCxxCompileOption(ret, specialization);
 
 	addCharsets(ret);
-	addLibStdCppCompileOption(ret, specialization);
+	addLibStdCppCompileOption(ret, derivative);
 	addPositionIndependentCodeOption(ret);
 	addCompileOptions(ret);
-	addObjectiveCxxRuntimeOption(ret, specialization);
+	addObjectiveCxxRuntimeOption(ret, derivative);
 	addDiagnosticColorOption(ret);
 	addFastMathOption(ret);
 	addNoRunTimeTypeInformationOption(ret);
@@ -291,8 +287,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addDefines(ret);
 
 	// Before other includes
-	if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
-		addPchInclude(ret);
+	addPchInclude(ret, derivative);
 
 	addIncludes(ret);
 	addMacosSysRootOption(ret);
@@ -306,20 +301,20 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const CxxSpecialization specialization)
+void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const SourceType derivative)
 {
+	addSourceFileInterpretation(outArgList, derivative);
 	addOptimizations(outArgList);
-	addLanguageStandard(outArgList, specialization);
+	addLanguageStandard(outArgList, derivative);
 	addCppCoroutines(outArgList);
 	addCppConcepts(outArgList);
 	addWarnings(outArgList);
-	addObjectiveCxxCompileOption(outArgList, specialization);
 
 	addCharsets(outArgList);
-	addLibStdCppCompileOption(outArgList, specialization);
+	addLibStdCppCompileOption(outArgList, derivative);
 	addPositionIndependentCodeOption(outArgList);
 	addCompileOptions(outArgList);
-	addObjectiveCxxRuntimeOption(outArgList, specialization);
+	addObjectiveCxxRuntimeOption(outArgList, derivative);
 	addDiagnosticColorOption(outArgList);
 	addFastMathOption(outArgList);
 	addNoRunTimeTypeInformationOption(outArgList);
@@ -335,8 +330,37 @@ void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const CxxSpeciali
 	addDefines(outArgList);
 
 	// Before other includes
-	// if (specialization == CxxSpecialization::C || specialization == CxxSpecialization::CPlusPlus)
-	// 	addPchInclude(outArgList);
+	// addPchInclude(outArgList, derivative);
+}
+
+/*****************************************************************************/
+void CompilerCxxGCC::addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const
+{
+	outArgList.emplace_back("-x");
+
+	auto language = m_project.language();
+	if (m_project.objectiveCxx())
+	{
+		if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveCPlusPlus)
+			outArgList.emplace_back("objective-c++-header");
+		else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::ObjectiveC)
+			outArgList.emplace_back("objective-c-header");
+		else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
+			outArgList.emplace_back("objective-c++");
+		else
+			outArgList.emplace_back("objective-c");
+	}
+	else
+	{
+		if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::CPlusPlus)
+			outArgList.emplace_back("c++-header");
+		else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C)
+			outArgList.emplace_back("c-header");
+		else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
+			outArgList.emplace_back("c++");
+		else
+			outArgList.emplace_back("c");
+	}
 }
 
 /*****************************************************************************/
@@ -429,19 +453,19 @@ void CompilerCxxGCC::addDefines(StringList& outArgList) const
 			std::string key = define.substr(0, pos);
 			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
 			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-			outArgList.emplace_back(prefix + def);
+			List::addIfDoesNotExist(outArgList, prefix + def);
 		}
 		else
 		{
-			outArgList.emplace_back(prefix + define);
+			List::addIfDoesNotExist(outArgList, prefix + define);
 		}
 	}
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addPchInclude(StringList& outArgList) const
+void CompilerCxxGCC::addPchInclude(StringList& outArgList, const SourceType derivative) const
 {
-	if (m_project.usesPrecompiledHeader())
+	if (precompiledHeaderAllowedForSourceType(derivative))
 	{
 		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
 
@@ -510,9 +534,12 @@ void CompilerCxxGCC::addOptimizations(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
 {
-	const bool useC = m_project.language() == CodeLanguage::C || specialization == CxxSpecialization::ObjectiveC;
+	const CodeLanguage language = m_project.language();
+	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::C || language == CodeLanguage::ObjectiveC);
+	bool useC = validPchType || derivative == SourceType::C || derivative == SourceType::ObjectiveC;
+
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
@@ -657,9 +684,9 @@ void CompilerCxxGCC::addDiagnosticColorOption(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addLibStdCppCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxGCC::addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const
 {
-	UNUSED(outArgList, specialization);
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -773,16 +800,9 @@ void CompilerCxxGCC::addCppConcepts(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void CompilerCxxGCC::addObjectiveCxxCompileOption(StringList& outArgList, const CxxSpecialization specialization) const
+void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const
 {
-	// Used by AppleClang
-	UNUSED(outArgList, specialization);
-}
-
-/*****************************************************************************/
-void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const CxxSpecialization specialization) const
-{
-	const bool isObjCxx = specialization == CxxSpecialization::ObjectiveCPlusPlus || specialization == CxxSpecialization::ObjectiveC;
+	/*const bool isObjCxx = derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::ObjectiveC;
 	if (isObjCxx)
 	{
 #if defined(CHALET_MACOS)
@@ -792,7 +812,8 @@ void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const 
 #endif
 		// if (isFlagSupported(objcRuntime))
 		List::addIfDoesNotExist(outArgList, std::move(objcRuntime));
-	}
+	}*/
+	UNUSED(outArgList, derivative);
 }
 
 /*****************************************************************************/
@@ -815,7 +836,7 @@ bool CompilerCxxGCC::addArchitectureToCommand(StringList& outArgList, const std:
 	auto targetArch = inState.info.targetArchitecture();
 	auto requestedArch = inState.info.targetArchitectureString();
 
-	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64" }, requestedArch))
+	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64", "aarch64" }, requestedArch))
 	{
 		// don't do anything yet
 		return false;

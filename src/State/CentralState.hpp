@@ -39,7 +39,7 @@ struct CentralState
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 
 	void setRunArgumentMap(Dictionary<std::string>&& inMap);
-	void getRunTargetArguments();
+	const std::optional<StringList>& getRunTargetArguments();
 
 	bool shouldPerformUpdateCheck() const;
 

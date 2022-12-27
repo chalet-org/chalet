@@ -6,8 +6,10 @@
 #include "Compile/Environment/VisualStudioEnvironmentScript.hpp"
 
 #include "Core/Arch.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -362,5 +364,97 @@ StringList VisualStudioEnvironmentScript::getAllowedArchitectures()
 	}
 
 	return ret;
+}
+
+bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildState& inState, std::string& outHost, std::string& outTarget)
+{
+	auto gnuArchToMsvcArch = [](const std::string& inArch) -> std::string {
+		if (String::equals("x86_64", inArch))
+			return "x64";
+		else if (String::equals("i686", inArch))
+			return "x86";
+		else if (String::equals("aarch64", inArch))
+			return "arm64";
+
+		return inArch;
+	};
+
+	auto splitHostTarget = [](std::string& outHost2, std::string& outTarget2) -> void {
+		if (!String::contains('_', outTarget2))
+			return;
+
+		auto split = String::split(outTarget2, '_');
+
+		if (outHost2.empty())
+			outHost2 = split.front();
+
+		outTarget2 = split.back();
+	};
+
+	std::string host;
+	std::string target = gnuArchToMsvcArch(inState.inputs.targetArchitecture());
+
+	const auto& compiler = inState.toolchain.compilerCxxAny().path;
+	if (!compiler.empty())
+	{
+		std::string lower = String::toLowerCase(compiler);
+		auto search = lower.find("/bin/host");
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		auto nextPath = lower.find('/', search + 5);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Host architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		search += 9;
+		std::string hostFromCompilerPath = lower.substr(search, nextPath - search);
+		search = nextPath + 1;
+		nextPath = lower.find('/', search);
+		if (search == std::string::npos)
+		{
+			Diagnostic::error("MSVC Target architecture was not detected in compiler path: {}", compiler);
+			return false;
+		}
+
+		splitHostTarget(host, target);
+		if (host.empty())
+			host = hostFromCompilerPath;
+
+		std::string targetFromCompilerPath = lower.substr(search, nextPath - search);
+		if (target.empty() || (target == targetFromCompilerPath && host == hostFromCompilerPath))
+		{
+			target = lower.substr(search, nextPath - search);
+		}
+		else
+		{
+			const auto& preferenceName = inState.inputs.toolchainPreferenceName();
+			Diagnostic::error("Expected host '{}' and target '{}'. Please use a different toolchain or create a new one for this architecture.", hostFromCompilerPath, targetFromCompilerPath);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", inState.inputs.targetArchitecture(), preferenceName);
+			return false;
+		}
+	}
+	else
+	{
+		if (target.empty())
+			target = gnuArchToMsvcArch(inState.inputs.hostArchitecture());
+
+		splitHostTarget(host, target);
+
+		if (host.empty())
+			host = gnuArchToMsvcArch(inState.inputs.hostArchitecture());
+	}
+
+	setArchitecture(host, target, inState.inputs.archOptions());
+
+	outHost = std::move(host);
+	outTarget = std::move(target);
+
+	return true;
 }
 }
