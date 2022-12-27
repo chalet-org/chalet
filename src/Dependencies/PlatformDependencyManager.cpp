@@ -315,6 +315,50 @@ bool PlatformDependencyManager::hasRequired()
 		else if ((linuxFedora && String::equals(Keys::ReqFedoraSystem, key))
 			|| (linuxRedHat && String::equals(Keys::ReqRedHatSystem, key)))
 		{
+			auto yum = Commands::which("yum");
+			if (!Commands::pathExists(yum))
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			Timer timer;
+
+			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
+			auto query = String::join(list);
+			if (query.empty())
+				continue;
+
+			StringList cmd{ yum, "list", "--installed", "--color=off" };
+			for (auto& item : list)
+				cmd.emplace_back(item);
+
+			auto installed = Commands::subprocessOutput(cmd);
+			Diagnostic::printDone(timer.asString());
+
+			if (installed.empty())
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			for (auto& item : list)
+			{
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
+
+				auto find = fmt::format("\n{}.", item);
+
+				bool exists = String::contains(find, installed);
+				Diagnostic::printFound(exists);
+
+				if (!exists)
+				{
+					errors.push_back(fmt::format("system dependency '{}' was not found.", item));
+				}
+			}
 		}
 #endif
 	}
