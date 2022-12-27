@@ -44,7 +44,6 @@ private:
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 
-	bool saveCompileCommands() const;
 	bool onFinishBuild(const SourceTarget& inProject) const;
 
 	// commands
@@ -55,7 +54,6 @@ private:
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
-	bool createAppBundle();
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject);
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
