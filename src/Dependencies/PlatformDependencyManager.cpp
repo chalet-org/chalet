@@ -64,14 +64,14 @@ bool PlatformDependencyManager::hasRequired()
 		return false;
 	}
 
-	auto start = os.find("ID=");
-	auto end = start != std::string::npos ? os.find('\n', start + 3) : std::string::npos;
+	auto start = os.find("\nID=");
+	auto end = start != std::string::npos ? os.find('\n', start + 4) : std::string::npos;
 	if (start == std::string::npos || end == std::string::npos)
 	{
 		Diagnostic::error("There was a problem detecting the Linux OS ID.");
 		return false;
 	}
-	start += 3;
+	start += 4;
 	auto id = os.substr(start, end - start);
 	if (id.empty())
 	{
@@ -252,13 +252,57 @@ bool PlatformDependencyManager::hasRequired()
 
 				if (!exists)
 				{
-					errors.push_back(fmt::format("MSYS2 dependency '{}' was not found.", item));
+					errors.push_back(fmt::format("system dependency '{}' was not found.", item));
 				}
 			}
 		}
 		else if ((linuxUbuntu && String::equals(Keys::ReqUbuntuSystem, key))
 			|| (linuxDebian && String::equals(Keys::ReqDebianSystem, key)))
 		{
+			auto apt = Commands::which("apt");
+			if (!Commands::pathExists(apt))
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			Timer timer;
+
+			Diagnostic::infoEllipsis("{}system{}", prefix, suffix);
+			auto query = String::join(list);
+			if (query.empty())
+				continue;
+
+			StringList cmd{ apt, "list", "--installed" };
+			for (auto& item : list)
+				cmd.emplace_back(item);
+
+			auto installed = Commands::subprocessOutput(cmd);
+			Diagnostic::printDone(timer.asString());
+
+			if (installed.empty())
+			{
+				Diagnostic::error("There was a problem detecting the system dependencies.");
+				return false;
+			}
+
+			for (auto& item : list)
+			{
+				if (item.empty())
+					continue;
+
+				Diagnostic::subInfoEllipsis("{}", item);
+
+				auto find = fmt::format("\n{}/", item);
+
+				bool exists = String::contains(find, installed);
+				Diagnostic::printFound(exists);
+
+				if (!exists)
+				{
+					errors.push_back(fmt::format("system dependency '{}' was not found.", item));
+				}
+			}
 		}
 		else if ((linuxFedora && String::equals(Keys::ReqFedoraSystem, key))
 			|| (linuxRedHat && String::equals(Keys::ReqRedHatSystem, key)))
