@@ -13,6 +13,7 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -353,6 +354,26 @@ bool SourceTarget::validate()
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+std::string SourceTarget::getHash() const
+{
+	auto files = String::join(m_files);
+	auto defines = String::join(m_defines);
+	auto links = String::join(m_links);
+	auto staticLinks = String::join(m_staticLinks);
+	auto warnings = String::join(m_warnings);
+	auto compileOptions = String::join(m_compileOptions);
+	auto libDirs = String::join(m_libDirs);
+	auto includeDirs = String::join(m_includeDirs);
+	auto macosFrameworkPaths = String::join(m_macosFrameworkPaths);
+	auto macosFrameworks = String::join(m_macosFrameworks);
+	auto configureFiles = String::join(m_configureFiles);
+
+	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, macosFrameworkPaths, macosFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_linkerScript, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
+
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

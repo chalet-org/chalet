@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -81,6 +82,17 @@ bool CMakeTarget::validate()
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+std::string CMakeTarget::getHash() const
+{
+	auto defines = String::join(m_defines);
+	auto targets = String::join(m_targets);
+
+	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_recheck, m_rebuild, m_clean);
+
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

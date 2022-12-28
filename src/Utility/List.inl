@@ -44,6 +44,8 @@ bool List::contains(const std::vector<VectorType>& inList, const VectorType& inV
 	return std::find(inList.begin(), inList.end(), inValue) != inList.end();
 }
 
+namespace priv
+{
 /*****************************************************************************/
 template <typename T>
 void addArg(StringList& outList, const T& inArg)
@@ -65,13 +67,14 @@ void addArg(StringList& outList, const T& inArg)
 			outList.emplace_back(std::move(value));
 	}
 }
+}
 
 template <typename... Args>
 StringList List::combine(Args&&... args)
 {
 	StringList ret;
 
-	((addArg<Args>(ret, std::forward<Args>(args))), ...);
+	((priv::addArg<Args>(ret, std::forward<Args>(args))), ...);
 
 	return ret;
 }

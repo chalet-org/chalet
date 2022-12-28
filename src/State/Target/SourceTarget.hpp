@@ -27,6 +27,7 @@ struct SourceTarget final : public IBuildTarget
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
+	virtual std::string getHash() const final;
 
 	bool isExecutable() const noexcept;
 	bool isSharedLibrary() const noexcept;

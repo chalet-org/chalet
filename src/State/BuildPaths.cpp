@@ -92,23 +92,6 @@ void BuildPaths::populateFileList(const SourceTarget& inProject)
 		return;
 
 	auto files = getFiles(inProject);
-
-	bool extChanged = false;
-	for (auto& file : files->list)
-	{
-		auto ext = String::getPathSuffix(file);
-		if (ext.empty())
-			continue;
-
-		if (List::addIfDoesNotExist(m_allFileExtensions, std::move(ext)))
-		{
-			extChanged = true;
-		}
-	}
-
-	if (extChanged)
-		std::sort(m_allFileExtensions.rbegin(), m_allFileExtensions.rend());
-
 	m_fileList.emplace(inProject.name(), std::move(files));
 }
 
@@ -211,10 +194,6 @@ std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
 }
 
 /*****************************************************************************/
-const StringList& BuildPaths::allFileExtensions() const noexcept
-{
-	return m_allFileExtensions;
-}
 const std::string& BuildPaths::cxxExtension() const
 {
 	if (m_cxxExtension.empty())

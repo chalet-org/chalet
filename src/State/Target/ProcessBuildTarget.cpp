@@ -8,7 +8,9 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -49,6 +51,16 @@ bool ProcessBuildTarget::validate()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string ProcessBuildTarget::getHash() const
+{
+	auto args = String::join(m_arguments);
+
+	auto hashable = Hash::getHashableString(this->name(), m_path, args);
+
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

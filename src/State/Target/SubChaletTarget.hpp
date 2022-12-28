@@ -16,6 +16,7 @@ struct SubChaletTarget final : public IBuildTarget
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
+	virtual std::string getHash() const final;
 
 	const std::string& location() const noexcept;
 	const std::string& targetFolder() const noexcept;
