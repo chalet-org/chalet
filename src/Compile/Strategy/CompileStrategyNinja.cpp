@@ -31,10 +31,10 @@ bool CompileStrategyNinja::initialize()
 	if (m_initialized)
 		return false;
 
-	const auto& uniqueId = m_state.uniqueId();
+	const auto& cachePathId = m_state.cachePathId();
 
 	auto& cacheFile = m_state.cache.file();
-	m_cacheFolder = m_state.cache.getCachePath(uniqueId, CacheType::Local);
+	m_cacheFolder = m_state.cache.getCachePath(cachePathId, CacheType::Local);
 	m_cacheFile = fmt::format("{}/build.ninja", m_cacheFolder);
 
 	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
