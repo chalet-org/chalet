@@ -43,7 +43,7 @@ public:
 
 	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
-	const std::string& uniqueId() const noexcept;
+	const std::string& cachePathId() const noexcept;
 
 	AncillaryTools& tools;
 	WorkspaceCache& cache;
@@ -76,8 +76,9 @@ private:
 	void enforceArchitectureInPath();
 	void enforceArchitectureInPath(std::string& outPathVariable);
 
-	std::string getUniqueIdForState() const;
+	void generateUniqueIdForState();
 
+	std::string m_cachePathId;
 	std::string m_uniqueId;
 };
 }

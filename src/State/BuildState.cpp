@@ -161,9 +161,9 @@ bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
 }
 
 /*****************************************************************************/
-const std::string& BuildState::uniqueId() const noexcept
+const std::string& BuildState::cachePathId() const noexcept
 {
-	return m_uniqueId;
+	return m_cachePathId;
 }
 
 /*****************************************************************************/
@@ -290,8 +290,9 @@ bool BuildState::initializeToolchain()
 	Timer timer;
 
 	auto& cacheFile = m_impl->centralState.cache.file();
-	m_uniqueId = getUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setSourceCache(m_uniqueId, StrategyType::Native, false);
+	generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
+	cacheFile.setBuildHash(m_uniqueId);
+	cacheFile.setSourceCache(m_cachePathId, StrategyType::Native);
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
@@ -404,8 +405,9 @@ bool BuildState::initializeBuild()
 	}
 
 	auto& cacheFile = m_impl->centralState.cache.file();
-	m_uniqueId = getUniqueIdForState();
-	cacheFile.setSourceCache(m_uniqueId, toolchain.strategy(), true);
+	generateUniqueIdForState();
+	cacheFile.setBuildHash(m_uniqueId);
+	cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
 
 	Diagnostic::printDone(timer.asString());
 
@@ -1189,9 +1191,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 }
 
 /*****************************************************************************/
-std::string BuildState::getUniqueIdForState() const
+void BuildState::generateUniqueIdForState()
 {
-	std::string ret;
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
@@ -1215,9 +1216,13 @@ std::string BuildState::getUniqueIdForState() const
 		targetHash += target->getHash();
 	}
 
-	ret = Hash::getHashableString(hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly, targetHash);
+	// Note: no targetHash
+	auto hashable = Hash::getHashableString(hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly);
+	m_cachePathId = Hash::string(hashable);
 
-	return Hash::string(ret);
+	// Unique ID is used by the internal cache to determine if the build files need to be updated
+	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash);
+	m_uniqueId = Hash::string(hashableTargets);
 }
 
 }

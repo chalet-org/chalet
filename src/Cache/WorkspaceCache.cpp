@@ -199,9 +199,9 @@ void WorkspaceCache::saveSettings(const SettingsType inType)
 bool WorkspaceCache::removeStaleProjectCaches()
 {
 	const auto& cacheRef = getCacheRef(CacheType::Local);
-	StringList ids = m_cacheFile.getCacheIdsForRemoval();
+	StringList ids = m_cacheFile.getCacheIdsToNotRemove();
 
-	if (!Commands::pathExists(cacheRef) || ids.size() == 0)
+	if (!Commands::pathExists(cacheRef) || ids.empty())
 		return true;
 
 	Output::setShowCommandOverride(false);

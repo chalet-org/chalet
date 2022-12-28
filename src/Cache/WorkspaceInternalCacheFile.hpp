@@ -27,12 +27,13 @@ struct WorkspaceInternalCacheFile
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
-	bool setSourceCache(const std::string& inId, const StrategyType inStrategy, const bool inCheckHashChange);
+	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
 	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
+	void setBuildHash(const std::string& inValue) noexcept;
 
 	bool forceRebuild() const noexcept;
 	void setForceRebuild(const bool inValue);
@@ -56,11 +57,9 @@ struct WorkspaceInternalCacheFile
 	SourceCache& sources() const;
 	ExternalDependencyCache& externalDependencies();
 
-	StringList getCacheIdsForRemoval() const;
+	StringList getCacheIdsToNotRemove() const;
 
 private:
-	void setBuildHash(const std::string& inValue) noexcept;
-
 	std::string getAppVersionHash(const std::string& inAppPath);
 
 	StringList m_doNotRemoves;

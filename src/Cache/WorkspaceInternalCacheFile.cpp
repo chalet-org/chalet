@@ -28,7 +28,7 @@ void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexce
 {
 	m_buildHashChanged = m_buildHash != inValue;
 	m_dirty |= m_buildHashChanged;
-	m_buildHash = std::move(inValue);
+	m_buildHash = inValue;
 }
 
 /*****************************************************************************/
@@ -45,14 +45,8 @@ ExternalDependencyCache& WorkspaceInternalCacheFile::externalDependencies()
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const StrategyType inStrategy, const bool inCheckHashChange)
+bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const StrategyType inStrategy)
 {
-	if (inCheckHashChange)
-		setBuildHash(inId);
-
-	if (inStrategy == StrategyType::Native)
-		List::addIfDoesNotExist(m_doNotRemoves, inId);
-
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
@@ -517,24 +511,18 @@ std::string WorkspaceInternalCacheFile::getAppVersionHash(const std::string& inA
 }
 
 /*****************************************************************************/
-StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
+StringList WorkspaceInternalCacheFile::getCacheIdsToNotRemove() const
 {
 	StringList ret;
 	ret.emplace_back(String::getPathFilename(m_filename));
 
 	for (auto& id : m_extraHashes)
 	{
-		if (List::contains(m_doNotRemoves, id))
-			continue;
-
 		List::addIfDoesNotExist(ret, id);
 	}
 
 	for (auto& [id, _] : m_sourceCaches)
 	{
-		if (List::contains(m_doNotRemoves, id))
-			continue;
-
 		List::addIfDoesNotExist(ret, id);
 	}
 
@@ -546,9 +534,6 @@ StringList WorkspaceInternalCacheFile::getCacheIdsForRemoval() const
 		{
 			for (auto [id, _] : builds.items())
 			{
-				if (List::contains(m_doNotRemoves, id))
-					continue;
-
 				List::addIfDoesNotExist(ret, id);
 			}
 		}
