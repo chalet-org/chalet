@@ -10,7 +10,9 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -52,6 +54,16 @@ bool ScriptBuildTarget::validate()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string ScriptBuildTarget::getHash() const
+{
+	auto args = String::join(m_arguments);
+
+	auto hashable = Hash::getHashableString(this->name(), m_file, args);
+
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

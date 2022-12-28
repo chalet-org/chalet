@@ -7,6 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -55,6 +56,14 @@ bool SubChaletTarget::validate()
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+std::string SubChaletTarget::getHash() const
+{
+	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_buildFile, m_recheck, m_rebuild, m_clean);
+
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

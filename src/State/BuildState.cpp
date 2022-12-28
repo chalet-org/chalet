@@ -1176,21 +1176,26 @@ std::string BuildState::getUniqueIdForState() const
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
 	const auto& buildConfig = info.buildConfiguration();
-	const auto extensions = String::join(paths.allFileExtensions(), '_');
 
-	int showCmds = 0;
+	bool showCmds = false;
 	if (toolchain.strategy() != StrategyType::Ninja)
 	{
-		showCmds = Output::showCommands() ? 1 : 0;
+		showCmds = Output::showCommands();
 	}
 
-	int dumpAssembly = 0;
+	bool dumpAssembly = false;
 	/*if (m_impl->environment->type() == ToolchainType::VisualStudio)
 	{
-		dumpAssembly = info.dumpAssembly() ? 1 : 0;
+		dumpAssembly = info.dumpAssembly();
 	}*/
 
-	ret = fmt::format("{}_{}_{}_{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly, extensions);
+	std::string targetHash;
+	for (auto& target : targets)
+	{
+		targetHash += target->getHash();
+	}
+
+	ret = Hash::getHashableString(hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly, targetHash);
 
 	return Hash::string(ret);
 }

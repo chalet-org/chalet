@@ -23,6 +23,7 @@ struct IBuildTarget
 	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual bool validate() = 0;
+	virtual std::string getHash() const = 0;
 
 	virtual bool initialize();
 

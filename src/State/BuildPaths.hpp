@@ -35,7 +35,6 @@ struct BuildPaths
 	std::string getExternalDir(const std::string& inName) const;
 	std::string getExternalBuildDir(const std::string& inName) const;
 
-	const StringList& allFileExtensions() const noexcept;
 	const std::string& cxxExtension() const;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
@@ -90,7 +89,6 @@ private:
 	const std::string m_objectiveCppExt;
 
 	HeapDictionary<SourceGroup> m_fileList;
-	StringList m_allFileExtensions;
 
 	std::string m_buildOutputDir;
 	std::string m_currentBuildDir;
