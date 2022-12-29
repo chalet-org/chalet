@@ -161,6 +161,12 @@ bool BuildState::doBuild(const CommandRoute& inRoute, const bool inShowSuccess)
 }
 
 /*****************************************************************************/
+void BuildState::setCacheEnabled(const bool inValue)
+{
+	m_cacheEnabled = inValue;
+}
+
+/*****************************************************************************/
 const std::string& BuildState::cachePathId() const noexcept
 {
 	return m_cachePathId;
@@ -228,8 +234,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->checkForEnvironment = true;
 	}
 
-	auto& cacheFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
-	ToolchainSettingsJsonParser parser(*this, cacheFile);
+	auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
+	ToolchainSettingsJsonParser parser(*this, settingsFile);
 	if (!parser.serialize())
 		return false;
 
@@ -289,10 +295,13 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	auto& cacheFile = m_impl->centralState.cache.file();
-	generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-	cacheFile.setBuildHash(m_uniqueId);
-	cacheFile.setSourceCache(m_cachePathId, StrategyType::None);
+	if (m_cacheEnabled)
+	{
+		auto& cacheFile = m_impl->centralState.cache.file();
+		generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
+		cacheFile.setBuildHash(m_uniqueId);
+		cacheFile.setSourceCache(m_cachePathId, StrategyType::None);
+	}
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
@@ -404,10 +413,13 @@ bool BuildState::initializeBuild()
 		initializeCache();
 	}
 
-	auto& cacheFile = m_impl->centralState.cache.file();
-	generateUniqueIdForState();
-	cacheFile.setBuildHash(m_uniqueId);
-	cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
+	if (m_cacheEnabled)
+	{
+		auto& cacheFile = m_impl->centralState.cache.file();
+		generateUniqueIdForState();
+		cacheFile.setBuildHash(m_uniqueId);
+		cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
+	}
 
 	Diagnostic::printDone(timer.asString());
 

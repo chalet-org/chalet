@@ -38,6 +38,7 @@ public:
 	bool initialize();
 	bool generateProjects();
 	bool doBuild(const CommandRoute& inRoute, const bool inShowSuccess = true);
+	void setCacheEnabled(const bool inValue);
 
 	void makeLibraryPathVariables();
 
@@ -80,6 +81,8 @@ private:
 
 	std::string m_cachePathId;
 	std::string m_uniqueId;
+
+	bool m_cacheEnabled = true;
 };
 }
 

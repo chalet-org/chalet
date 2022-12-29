@@ -188,7 +188,7 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 	auto itr = m_sourceCaches.find(inId);
 	if (itr != m_sourceCaches.end())
 	{
-		if (itr->second->lastBuildStrategy() != StrategyType::Native)
+		if (itr->second->canRemoveCachedFolder())
 		{
 			if (m_sources == itr->second.get())
 				m_sources = nullptr;

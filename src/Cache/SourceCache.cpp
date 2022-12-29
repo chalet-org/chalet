@@ -21,11 +21,6 @@ SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 }
 
 /*****************************************************************************/
-StrategyType SourceCache::lastBuildStrategy() const noexcept
-{
-	return m_lastBuildStrategy;
-}
-
 void SourceCache::setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges) noexcept
 {
 	if (inCheckChanges && !m_buildStrategyChanged)
@@ -48,6 +43,12 @@ void SourceCache::setLastBuildStrategy(const int inValue, const bool inCheckChan
 bool SourceCache::buildStrategyChanged() const noexcept
 {
 	return m_buildStrategyChanged;
+}
+
+/*****************************************************************************/
+bool SourceCache::canRemoveCachedFolder() const noexcept
+{
+	return m_lastBuildStrategy != StrategyType::Native && m_lastBuildStrategy != StrategyType::MSBuild;
 }
 
 /*****************************************************************************/
