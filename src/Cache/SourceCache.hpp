@@ -18,10 +18,10 @@ struct SourceCache
 {
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
-	StrategyType lastBuildStrategy() const noexcept;
 	void setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges = false) noexcept;
 	void setLastBuildStrategy(const int inValue, const bool inCheckChanges = false) noexcept;
 	bool buildStrategyChanged() const noexcept;
+	bool canRemoveCachedFolder() const noexcept;
 
 	void addVersion(const std::string& inExecutable, const std::string& inValue);
 	void addArch(const std::string& inExecutable, const std::string& inValue);

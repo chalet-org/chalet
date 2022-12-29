@@ -190,6 +190,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		inputs.setBuildConfiguration(std::string(configName));
 
 		auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
+		state->setCacheEnabled(false);
 		if (!state->initialize())
 			return false;
 
