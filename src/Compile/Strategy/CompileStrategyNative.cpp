@@ -43,7 +43,7 @@ bool CompileStrategyNative::initialize()
 	const auto& cachePathId = m_state.cachePathId();
 	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
 
-	const bool buildStrategyChanged = cacheFile.buildStrategyChanged(m_state.toolchain.strategy());
+	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
 		Commands::removeRecursively(m_state.paths.buildOutputDir());

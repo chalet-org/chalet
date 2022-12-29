@@ -26,17 +26,28 @@ StrategyType SourceCache::lastBuildStrategy() const noexcept
 	return m_lastBuildStrategy;
 }
 
-void SourceCache::setLastBuildStrategy(const StrategyType inValue) noexcept
+void SourceCache::setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges) noexcept
 {
+	if (inCheckChanges && !m_buildStrategyChanged)
+		m_buildStrategyChanged = inValue != m_lastBuildStrategy;
+
 	m_lastBuildStrategy = inValue;
 }
 
-void SourceCache::setLastBuildStrategy(const int inValue) noexcept
+void SourceCache::setLastBuildStrategy(const int inValue, const bool inCheckChanges) noexcept
 {
-	if (inValue < static_cast<int>(StrategyType::None) || inValue > static_cast<int>(StrategyType::Native))
+	if (inValue < static_cast<int>(StrategyType::None) || inValue >= static_cast<int>(StrategyType::Count))
 		return;
 
+	if (inCheckChanges && !m_buildStrategyChanged)
+		m_buildStrategyChanged = static_cast<StrategyType>(inValue) != m_lastBuildStrategy;
+
 	m_lastBuildStrategy = static_cast<StrategyType>(inValue);
+}
+
+bool SourceCache::buildStrategyChanged() const noexcept
+{
+	return m_buildStrategyChanged;
 }
 
 /*****************************************************************************/
