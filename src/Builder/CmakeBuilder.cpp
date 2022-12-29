@@ -609,7 +609,17 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		}
 	}
 
-	if (isMake)
+	if (isNinja)
+	{
+		ret.emplace_back("--");
+
+		if (Output::showCommands())
+			ret.emplace_back("-v");
+
+		ret.emplace_back("-k");
+		ret.emplace_back(m_state.info.keepGoing() ? "0" : "1");
+	}
+	else if (isMake)
 	{
 		ret.emplace_back("--");
 
@@ -625,16 +635,6 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 			ret.emplace_back("--no-builtin-variables");
 			ret.emplace_back("--no-print-directory");
 		}
-	}
-	else if (isNinja && Output::showCommands())
-	{
-		ret.emplace_back("--");
-
-		if (Output::showCommands())
-			ret.emplace_back("-v");
-
-		ret.emplace_back("-k");
-		ret.emplace_back(m_state.info.keepGoing() ? "0" : "1");
 	}
 
 	// LOG(String::join(ret));
