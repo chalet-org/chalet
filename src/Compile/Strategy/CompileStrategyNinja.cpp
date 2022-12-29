@@ -9,6 +9,7 @@
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -42,7 +43,11 @@ bool CompileStrategyNinja::initialize()
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
-	const bool buildStrategyChanged = cacheFile.buildStrategyChanged(m_state.toolchain.strategy());
+	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
+	if (buildStrategyChanged)
+	{
+		Commands::removeRecursively(m_state.paths.buildOutputDir());
+	}
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || buildStrategyChanged || themeChanged;
 

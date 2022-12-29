@@ -38,7 +38,6 @@ struct WorkspaceInternalCacheFile
 	bool forceRebuild() const noexcept;
 	void setForceRebuild(const bool inValue);
 
-	bool buildStrategyChanged(const StrategyType inStrategy);
 	bool buildStrategyChanged() const;
 
 	void checkForMetadataChange(const std::string& inHash);
@@ -82,7 +81,6 @@ private:
 	ExternalDependencyCache m_externalDependencies;
 	HeapDictionary<SourceCache> m_sourceCaches;
 
-	std::optional<bool> m_buildStrategyChanged;
 	std::optional<bool> m_metadataChanged;
 
 	bool m_forceRebuild = false;

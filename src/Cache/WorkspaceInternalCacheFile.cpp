@@ -142,8 +142,8 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 		}
 	}
 
-	if (m_sources->lastBuildStrategy() == StrategyType::None)
-		m_sources->setLastBuildStrategy(inStrategy);
+	if (inStrategy != StrategyType::None)
+		m_sources->setLastBuildStrategy(inStrategy, true);
 
 	m_sources->updateInitializedTime();
 
@@ -394,28 +394,12 @@ bool WorkspaceInternalCacheFile::forceRebuild() const noexcept
 void WorkspaceInternalCacheFile::setForceRebuild(const bool inValue)
 {
 	m_forceRebuild = inValue;
-	m_buildStrategyChanged = true;
-}
-
-/*****************************************************************************/
-bool WorkspaceInternalCacheFile::buildStrategyChanged(const StrategyType inStrategy)
-{
-	if (m_buildStrategyChanged.has_value())
-		return *m_buildStrategyChanged;
-
-	bool result = sources().lastBuildStrategy() != inStrategy;
-	sources().setLastBuildStrategy(inStrategy);
-	m_buildStrategyChanged = result;
-	return result;
 }
 
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::buildStrategyChanged() const
 {
-	if (m_buildStrategyChanged.has_value())
-		return *m_buildStrategyChanged;
-
-	return false;
+	return m_forceRebuild || sources().buildStrategyChanged();
 }
 
 /*****************************************************************************/

@@ -285,7 +285,7 @@ bool BuildState::initializeToolchain()
 	auto& cacheFile = m_impl->centralState.cache.file();
 	generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
 	cacheFile.setBuildHash(m_uniqueId);
-	cacheFile.setSourceCache(m_cachePathId, StrategyType::Native);
+	cacheFile.setSourceCache(m_cachePathId, StrategyType::None);
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?

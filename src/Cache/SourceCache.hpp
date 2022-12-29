@@ -19,8 +19,9 @@ struct SourceCache
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
 	StrategyType lastBuildStrategy() const noexcept;
-	void setLastBuildStrategy(const StrategyType inValue) noexcept;
-	void setLastBuildStrategy(const int inValue) noexcept;
+	void setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges = false) noexcept;
+	void setLastBuildStrategy(const int inValue, const bool inCheckChanges = false) noexcept;
+	bool buildStrategyChanged() const noexcept;
 
 	void addVersion(const std::string& inExecutable, const std::string& inValue);
 	void addArch(const std::string& inExecutable, const std::string& inValue);
@@ -61,6 +62,7 @@ private:
 	std::time_t m_lastBuildTime = 0;
 
 	StrategyType m_lastBuildStrategy = StrategyType::None;
+	bool m_buildStrategyChanged = false;
 	mutable bool m_dirty = false;
 };
 }
