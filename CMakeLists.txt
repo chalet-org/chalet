@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(chalet-debug
-	VERSION 0.5.15
+	VERSION 0.5.16
 	DESCRIPTION "A JSON-based project & build tool"
 	HOMEPAGE_URL "https://www.chalet-work.space"
 	LANGUAGES CXX

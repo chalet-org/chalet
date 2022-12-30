@@ -1170,7 +1170,7 @@ std::string VSVCXProjGen::getVisualStudioVersion() const
 /*****************************************************************************/
 std::string VSVCXProjGen::getCondition(const std::string& inConfig) const
 {
-	auto arch = Arch::toVSArch2(m_states.front()->info.hostArchitecture());
+	auto arch = Arch::toVSArch2(m_states.front()->info.targetArchitecture());
 	return fmt::format("'$(Configuration)|$(Platform)'=='{}|{}'", inConfig, arch);
 }
 
