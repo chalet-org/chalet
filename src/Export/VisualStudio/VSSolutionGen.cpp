@@ -25,7 +25,6 @@ struct VisualStudioConfig
 {
 	std::string name;
 	std::string arch;
-	std::string arch2;
 };
 }
 
@@ -46,13 +45,12 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 	std::vector<VisualStudioConfig> vsConfigs;
 	for (auto& state : m_states)
 	{
-		std::string arch = Arch::toVSArch(state->info.targetArchitecture());
-		std::string arch2 = Arch::toVSArch2(state->info.targetArchitecture());
+		// std::string arch = Arch::toVSArch(state->info.targetArchitecture());
+		std::string arch = Arch::toVSArch2(state->info.targetArchitecture());
 
 		vsConfigs.emplace_back(VisualStudioConfig{
 			state->configuration.name(),
 			std::move(arch),
-			std::move(arch2),
 		});
 	}
 
@@ -74,9 +72,8 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		std::string configs;
 		std::string projectConfigs;
 
-		for (auto& [name, arch, arch2] : vsConfigs)
+		for (auto& [name, arch] : vsConfigs)
 		{
-			UNUSED(arch2);
 			configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
 		}
 
@@ -90,23 +87,21 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 			vsProjectsString += "EndProject\n";
 
-			for (auto& [conf, arch, arch2] : vsConfigs)
+			for (auto& [conf, arch] : vsConfigs)
 			{
 				bool includedInBuild = projectWillBuild(name, conf);
 
-				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.ActiveCfg = {conf}|{arch2}",
+				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.ActiveCfg = {conf}|{arch}",
 					FMT_ARG(projectGUID),
 					FMT_ARG(conf),
-					FMT_ARG(arch),
-					FMT_ARG(arch2));
+					FMT_ARG(arch));
 
 				if (includedInBuild)
 				{
-					projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch2}",
+					projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch}",
 						FMT_ARG(projectGUID),
 						FMT_ARG(conf),
-						FMT_ARG(arch),
-						FMT_ARG(arch2));
+						FMT_ARG(arch));
 				}
 			}
 		}

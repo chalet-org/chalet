@@ -78,7 +78,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 	const auto& configuration = m_state.configuration.name();
 	cmd.emplace_back(fmt::format("-property:Configuration={}", configuration));
 
-	auto arch = Arch::toVSArch2(m_state.info.hostArchitecture());
+	auto arch = Arch::toVSArch2(m_state.info.targetArchitecture());
 	cmd.emplace_back(fmt::format("-property:Platform={}", arch));
 
 	std::string target;
