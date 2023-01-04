@@ -17,6 +17,7 @@ bool isMicrosoftTerminalOrWindowsBash();
 bool isCommandPromptOrPowerShell();
 bool isContinuousIntegrationServer();
 bool isVisualStudioOutput();
+bool isJetBrainsOutput();
 
 const char* get(const char* inName);
 std::string getAsString(const char* inName, std::string inFallback = std::string());

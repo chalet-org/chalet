@@ -51,6 +51,7 @@ enum class ShellType
 	GenericColorTerm,
 	CommandPrompt,
 	CommandPromptVisualStudio,
+	CommandPromptJetBrains,
 	Powershell,
 	PowershellIse,
 	PowershellOpenSource, // 6+
@@ -215,6 +216,10 @@ void printTermType()
 			term = "Command Prompt";
 			break;
 
+		case ShellType::CommandPromptJetBrains:
+			term = "Command Prompt (CLion / JetBrains)";
+			break;
+
 		case ShellType::CommandPromptVisualStudio:
 			term = "Command Prompt (Visual Studio)";
 			break;
@@ -292,6 +297,11 @@ void setTerminalType()
 		else if (String::endsWith("cmd.exe", parentPath))
 		{
 			state.terminalType = ShellType::CommandPrompt;
+			return printTermType();
+		}
+		else if (String::endsWith("clion64.exe", parentPath) || String::contains("JetBrains", parentPath))
+		{
+			state.terminalType = ShellType::CommandPromptJetBrains;
 			return printTermType();
 		}
 	}
@@ -407,6 +417,7 @@ bool Environment::isMicrosoftTerminalOrWindowsBash()
 #if defined(CHALET_WIN32)
 	return state.terminalType == ShellType::CommandPrompt
 		|| state.terminalType == ShellType::CommandPromptVisualStudio
+		|| state.terminalType == ShellType::CommandPromptJetBrains
 		|| state.terminalType == ShellType::Powershell
 		|| state.terminalType == ShellType::PowershellOpenSource
 		|| state.terminalType == ShellType::PowershellIse
@@ -423,9 +434,9 @@ bool Environment::isCommandPromptOrPowerShell()
 	if (state.terminalType == ShellType::Unset)
 		setTerminalType();
 
-	// Note: intentionally not using ShellType::CommandPromptVisualStudio
 	return state.terminalType == ShellType::CommandPrompt
 		|| state.terminalType == ShellType::CommandPromptVisualStudio
+		|| state.terminalType == ShellType::CommandPromptJetBrains
 		|| state.terminalType == ShellType::Powershell
 		|| state.terminalType == ShellType::PowershellOpenSource
 		|| state.terminalType == ShellType::PowershellIse;
@@ -451,6 +462,19 @@ bool Environment::isVisualStudioOutput()
 
 #if defined(CHALET_WIN32)
 	return state.terminalType == ShellType::CommandPromptVisualStudio;
+#else
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool Environment::isJetBrainsOutput()
+{
+	if (state.terminalType == ShellType::Unset)
+		setTerminalType();
+
+#if defined(CHALET_WIN32)
+	return state.terminalType == ShellType::CommandPromptJetBrains;
 #else
 	return false;
 #endif
