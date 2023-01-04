@@ -288,7 +288,7 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	if (m_cacheEnabled)
+	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
@@ -406,7 +406,7 @@ bool BuildState::initializeBuild()
 		initializeCache();
 	}
 
-	if (m_cacheEnabled)
+	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState();

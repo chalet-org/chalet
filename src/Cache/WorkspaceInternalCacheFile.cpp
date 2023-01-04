@@ -32,6 +32,12 @@ void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexce
 }
 
 /*****************************************************************************/
+bool WorkspaceInternalCacheFile::sourceCacheAvailable() const
+{
+	return m_sources != nullptr;
+}
+
+/*****************************************************************************/
 SourceCache& WorkspaceInternalCacheFile::sources() const
 {
 	chalet_assert(m_sources != nullptr, "");
