@@ -23,6 +23,8 @@ ScriptDistTarget::ScriptDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
+	Path::sanitize(m_file);
+
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;
 

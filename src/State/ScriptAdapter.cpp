@@ -88,6 +88,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		parsedScriptPath = parsedScriptPath.substr(0, parsedScriptPath.size() - 4);
 
 	auto outScriptPath = Commands::which(parsedScriptPath);
+
 	auto gitPath = AncillaryTools::getPathToGit();
 	if (!gitPath.empty())
 	{
@@ -104,7 +105,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 	std::string gitPath;
 #endif
 	if (outScriptPath.empty())
-		outScriptPath = fs::absolute(inScript).string();
+		outScriptPath = Commands::getAbsolutePath(inScript);
 
 	if (!Commands::pathExists(outScriptPath))
 	{
