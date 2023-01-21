@@ -10,6 +10,8 @@
 
 namespace chalet
 {
+struct MacosCodeSignOptions;
+
 struct AncillaryTools
 {
 	AncillaryTools();
@@ -106,12 +108,13 @@ struct AncillaryTools
 
 	// Commands
 
-	bool macosCodeSignFile(const std::string& inPath, const bool inForce = true) const;
-	bool macosCodeSignDiskImage(const std::string& inPath) const;
-	bool macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const;
+	bool macosCodeSignFile(const std::string& inPath, const MacosCodeSignOptions& inOptions) const;
+	bool macosCodeSignDiskImage(const std::string& inPath, const MacosCodeSignOptions& inOptions) const;
+	bool macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId, const MacosCodeSignOptions& inOptions) const;
 
 	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const;
 	bool plistConvertToJson(const std::string& inInput, const std::string& inOutput) const;
+	bool plistConvertToXml(const std::string& inInput, const std::string& inOutput) const;
 
 	static std::string getPathToGit();
 	static bool gitIsRootPath(std::string& outPath);

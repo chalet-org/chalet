@@ -5,6 +5,7 @@
 
 #include "State/AncillaryTools.hpp"
 
+#include "Bundler/MacosCodeSignOptions.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
@@ -433,12 +434,26 @@ void AncillaryTools::setVsperfcmd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inForce) const
+bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const MacosCodeSignOptions& inOptions) const
 {
 #if defined(CHALET_MACOS)
-	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue" };
+	StringList cmd{ m_codesign };
 
-	if (inForce)
+	if (inOptions.timestamp)
+		cmd.emplace_back("--timestamp");
+
+	if (inOptions.hardenedRuntime)
+		cmd.emplace_back("--options=runtime");
+
+	if (inOptions.strict)
+		cmd.emplace_back("--strict");
+
+	cmd.emplace_back("--continue");
+
+	if (!inOptions.entitlementsFile.empty())
+		cmd.emplace_back(fmt::format("--entitlements={}", inOptions.entitlementsFile));
+
+	if (inOptions.force)
 		cmd.emplace_back("-f");
 
 	cmd.emplace_back("-s");
@@ -457,12 +472,26 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const bool inF
 }
 
 /*****************************************************************************/
-bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
+bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath, const MacosCodeSignOptions& inOptions) const
 {
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".dmg", inPath), "Must be a .dmg");
 
-	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-s", m_signingIdentity };
+	StringList cmd{ m_codesign };
+
+	if (inOptions.timestamp)
+		cmd.emplace_back("--timestamp");
+
+	if (inOptions.hardenedRuntime)
+		cmd.emplace_back("--options=runtime");
+
+	if (inOptions.strict)
+		cmd.emplace_back("--strict");
+
+	cmd.emplace_back("--continue");
+
+	cmd.emplace_back("-s");
+	cmd.push_back(m_signingIdentity);
 
 	if (Output::showCommands())
 		cmd.emplace_back("-v");
@@ -477,12 +506,33 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath) const
 }
 
 /*****************************************************************************/
-bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId) const
+bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId, const MacosCodeSignOptions& inOptions) const
 {
 #if defined(CHALET_MACOS)
 	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
 
-	StringList cmd{ m_codesign, "--timestamp", "--options=runtime", "--strict", "--continue", "-f", "-s", m_signingIdentity };
+	StringList cmd{ m_codesign };
+
+	if (inOptions.timestamp)
+		cmd.emplace_back("--timestamp");
+
+	if (inOptions.hardenedRuntime)
+		cmd.emplace_back("--options=runtime");
+
+	if (inOptions.strict)
+		cmd.emplace_back("--strict");
+
+	cmd.emplace_back("--continue");
+
+	if (!inOptions.entitlementsFile.empty())
+		cmd.emplace_back(fmt::format("--entitlements={}", inOptions.entitlementsFile));
+
+	if (inOptions.force)
+		cmd.emplace_back("-f");
+
+	cmd.emplace_back("-s");
+	cmd.push_back(m_signingIdentity);
+
 	cmd.emplace_back(fmt::format("-bundle-version={}", inVersionId));
 
 	if (Output::showCommands())
@@ -512,6 +562,17 @@ bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::s
 {
 #if defined(CHALET_MACOS)
 	return Commands::subprocess({ m_plutil, "-convert", "json", inInput, "-o", inOutput });
+#else
+	UNUSED(inInput, inOutput);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool AncillaryTools::plistConvertToXml(const std::string& inInput, const std::string& inOutput) const
+{
+#if defined(CHALET_MACOS)
+	return Commands::subprocess({ m_plutil, "-convert", "xml1", inInput, "-o", inOutput });
 #else
 	UNUSED(inInput, inOutput);
 	return false;

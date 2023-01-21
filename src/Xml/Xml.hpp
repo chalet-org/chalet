@@ -17,6 +17,8 @@ struct Xml
 
 	std::string dump(const int inIndent = -1, const char inIndentChar = ' ') const;
 
+	void addRawHeader(std::string inHeader);
+
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inVersion);
 
@@ -28,6 +30,8 @@ struct Xml
 private:
 	std::string m_version{ "1.0" };
 	std::string m_encoding{ "utf-8" };
+
+	StringList m_headers;
 
 	XmlElement m_root;
 };
