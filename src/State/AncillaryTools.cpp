@@ -466,7 +466,7 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const MacosCod
 
 	return Commands::subprocessNoOutput(cmd);
 #else
-	UNUSED(inPath, inForce);
+	UNUSED(inPath, inOptions);
 	return false;
 #endif
 }
@@ -500,7 +500,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath, const Mac
 
 	return Commands::subprocessNoOutput(cmd);
 #else
-	UNUSED(inPath);
+	UNUSED(inPath, inOptions);
 	return false;
 #endif
 }
@@ -541,7 +541,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 	cmd.push_back(inFrameworkPath);
 	return Commands::subprocessNoOutput(cmd);
 #else
-	UNUSED(inFrameworkPath, inVersionId);
+	UNUSED(inFrameworkPath, inVersionId, inOptions);
 	return false;
 #endif
 }
