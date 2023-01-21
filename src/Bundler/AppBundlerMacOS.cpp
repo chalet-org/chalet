@@ -218,14 +218,16 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 /*****************************************************************************/
 std::string AppBundlerMacOS::getEntitlementsFilePath() const
 {
+#if defined(CHALET_MACOS)
 	const auto& entitlements = m_bundle.macosBundleEntitlementsPropertyList();
 	const auto& entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
 
 	// No entitlements
-	if (entitlements.empty() && entitlementsContent.empty())
-		return std::string();
+	if (!entitlements.empty() || !entitlementsContent.empty())
+		return fmt::format("{}/Entitlements.plist", m_bundle.subdirectory());
+#endif
 
-	return fmt::format("{}/Entitlements.plist", m_bundle.subdirectory());
+	return std::string();
 }
 
 /*****************************************************************************/
