@@ -7,6 +7,7 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
+#include "Bundler/MacosCodeSignOptions.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -45,6 +46,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 	m_frameworksPath = getFrameworksPath();
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
+
+	m_entitlementsFile = fmt::format("{}/Entitlements.plist", m_bundle.subdirectory());
 
 	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable. we don't care
@@ -89,7 +92,10 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!createBundleIcon())
 			return false;
 
-		if (!createPListAndReplaceVariables())
+		if (!createInfoPropertyListAndReplaceVariables())
+			return false;
+
+		if (!createEntitlementsPropertyList())
 			return false;
 
 		if (!setExecutablePaths())
@@ -97,6 +103,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 		if (!signAppBundle())
 			return false;
+
+		if (Commands::pathExists(m_entitlementsFile))
+			Commands::remove(m_entitlementsFile);
 
 		return true;
 	}
@@ -244,7 +253,7 @@ bool AppBundlerMacOS::createBundleIcon()
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::createPListAndReplaceVariables() const
+bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables() const
 {
 #if defined(CHALET_MACOS)
 	// const auto& version = m_state.workspace.version();
@@ -258,7 +267,7 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 		// String::replaceAll(outContent, "${version}", version);
 	};
 
-	std::string tmpInfoPlist = fmt::format("{}/Info.plist.json", m_bundle.subdirectory());
+	std::string tmpPlist = fmt::format("{}/Info.plist.json", m_bundle.subdirectory());
 	std::string infoPropertyList = m_bundle.macosBundleInfoPropertyList();
 	std::string infoPropertyListContent = m_bundle.macosBundleInfoPropertyListContent();
 
@@ -272,10 +281,10 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 
 		if (String::endsWith(".plist", infoPropertyList))
 		{
-			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpInfoPlist))
+			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpPlist))
 				return false;
 
-			infoPropertyList = tmpInfoPlist;
+			infoPropertyList = tmpPlist;
 		}
 		else if (!String::endsWith(".json", infoPropertyList))
 		{
@@ -292,13 +301,59 @@ bool AppBundlerMacOS::createPListAndReplaceVariables() const
 	}
 
 	replacePlistVariables(infoPropertyListContent);
-	std::ofstream(tmpInfoPlist) << infoPropertyListContent << std::endl;
+	std::ofstream(tmpPlist) << infoPropertyListContent << std::endl;
 
 	const std::string outInfoPropertyList = fmt::format("{}/Info.plist", m_bundlePath);
-	if (!m_state.tools.plistConvertToBinary(tmpInfoPlist, outInfoPropertyList))
+	if (!m_state.tools.plistConvertToBinary(tmpPlist, outInfoPropertyList))
 		return false;
 
-	Commands::remove(tmpInfoPlist);
+	Commands::remove(tmpPlist);
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createEntitlementsPropertyList() const
+{
+#if defined(CHALET_MACOS)
+	std::string tmpPlist = fmt::format("{}.json", m_entitlementsFile);
+	std::string entitlements = m_bundle.macosBundleEntitlementsPropertyList();
+	std::string entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
+
+	// No entitlements
+	if (entitlements.empty() && entitlementsContent.empty())
+		return true;
+
+	if (entitlementsContent.empty())
+	{
+		if (String::endsWith({ ".plist", ".xml" }, entitlements))
+		{
+			if (!m_state.tools.plistConvertToJson(entitlements, tmpPlist))
+				return false;
+
+			entitlements = tmpPlist;
+		}
+		else if (!String::endsWith(".json", entitlements))
+		{
+			Diagnostic::error("Unknown plist file '{}' - Must be in json or xml1 format", entitlements);
+			return true;
+		}
+
+		std::ifstream input(entitlements);
+		for (std::string line; std::getline(input, line);)
+		{
+			entitlementsContent += line + "\n";
+		}
+		input.close();
+	}
+
+	std::ofstream(tmpPlist) << entitlementsContent << std::endl;
+
+	if (!m_state.tools.plistConvertToXml(tmpPlist, m_entitlementsFile))
+		return false;
+
+	Commands::remove(tmpPlist);
 #endif
 
 	return true;
@@ -393,8 +448,13 @@ bool AppBundlerMacOS::signAppBundle() const
 		Diagnostic::stepInfoEllipsis("Signing binaries");
 	}
 
-	// TODO: Entitlements
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);
+
+	// TODO: provisioning profile (includes the entitlements section)
+
+	MacosCodeSignOptions entitlementOptions;
+	entitlementOptions.entitlementsFile = m_entitlementsFile;
+	entitlementOptions.hardenedRuntime = true;
 
 	StringList signPaths;
 	StringList signLater;
@@ -427,7 +487,7 @@ bool AppBundlerMacOS::signAppBundle() const
 				auto path = entry.path().string();
 				if (entry.is_regular_file() || (entry.is_directory() && String::endsWith(bundleExtensions, path)))
 				{
-					if (!m_state.tools.macosCodeSignFile(path))
+					if (!m_state.tools.macosCodeSignFile(path, entitlementOptions))
 					{
 						signLater.push_back(path);
 					}
@@ -443,7 +503,7 @@ bool AppBundlerMacOS::signAppBundle() const
 			{
 				--it;
 				auto& path = (*it);
-				if (m_state.tools.macosCodeSignFile(path))
+				if (m_state.tools.macosCodeSignFile(path, entitlementOptions))
 				{
 					it = signLater.erase(it);
 				}
@@ -464,7 +524,7 @@ bool AppBundlerMacOS::signAppBundle() const
 		if (isBundle)
 		{
 			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
-			if (!m_state.tools.macosCodeSignFile(appPath))
+			if (!m_state.tools.macosCodeSignFile(appPath, entitlementOptions))
 			{
 				Diagnostic::error("Failed to sign: {}", appPath);
 				return false;

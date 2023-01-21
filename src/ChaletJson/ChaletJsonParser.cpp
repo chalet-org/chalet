@@ -1283,12 +1283,18 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 							outTarget.setMacosBundleIcon(v.get<std::string>());
 						else if (String::equals("infoPropertyList", k))
 							outTarget.setMacosBundleInfoPropertyList(v.get<std::string>());
+						else if (String::equals("entitlementsPropertyList", k))
+							outTarget.setMacosBundleEntitlementsPropertyList(v.get<std::string>());
 					}
 					else if (v.is_object())
 					{
 						if (String::equals("infoPropertyList", k))
 						{
 							outTarget.setMacosBundleInfoPropertyListContent(v.dump());
+						}
+						else if (String::equals("entitlementsPropertyList", k))
+						{
+							outTarget.setMacosBundleEntitlementsPropertyListContent(v.dump());
 						}
 					}
 				}

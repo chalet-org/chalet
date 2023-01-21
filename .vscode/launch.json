@@ -16,12 +16,12 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}/../pharos-engine",
 			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"build"
+				"bundle"
 			],
 		},
 		{

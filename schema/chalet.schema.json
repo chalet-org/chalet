@@ -210,14 +210,18 @@
 						"infoPropertyList"
 					],
 					"properties": {
-						"type": {
-							"type": "string",
-							"description": "The MacOS bundle type (only .app is supported currently)",
-							"minLength": 1,
-							"enum": [
-								"app"
-							],
-							"default": "app"
+						"entitlementsPropertyList": {
+							"description": "The path to a property list (.xml) file, .json file, or the properties themselves to describe the entitlements required to run the app. Only applies to codesigned bundles",
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1,
+									"default": "Entitlements.plist.json"
+								},
+								{
+									"type": "object"
+								}
+							]
 						},
 						"icon": {
 							"type": "string",
@@ -251,6 +255,15 @@
 									}
 								}
 							]
+						},
+						"type": {
+							"type": "string",
+							"description": "The MacOS bundle type (only .app is supported currently)",
+							"minLength": 1,
+							"enum": [
+								"app"
+							],
+							"default": "app"
 						}
 					}
 				},

@@ -201,6 +201,21 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		macosInfoPropertyList[SKeys::OneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
+		auto macosEntitlementsPropertyList = R"json({
+			"description": "The path to a property list (.xml) file, .json file, or the properties themselves to describe the entitlements required to run the app. Only applies to codesigned bundles",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1,
+					"default": "Entitlements.plist.json"
+				},
+				{
+					"type": "object"
+				}
+			]
+		})json"_ojson;
+		macosInfoPropertyList[SKeys::OneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
+
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({
 			"type": "object",
 			"description": "Properties to describe the MacOS bundle.",
@@ -211,9 +226,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			],
 			"properties": {}
 		})json"_ojson;
-		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["type"] = std::move(macosBundleType);
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["entitlementsPropertyList"] = std::move(macosEntitlementsPropertyList);
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["icon"] = std::move(macosBundleIcon);
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["infoPropertyList"] = std::move(macosInfoPropertyList);
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["type"] = std::move(macosBundleType);
 	}
 
 	{
