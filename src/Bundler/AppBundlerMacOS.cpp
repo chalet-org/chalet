@@ -47,7 +47,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 	m_resourcePath = getResourcePath();
 	m_executablePath = getExecutablePath();
 
-	m_entitlementsFile = fmt::format("{}/Entitlements.plist", m_bundle.subdirectory());
+	m_entitlementsFile = getEntitlementsFilePath();
 
 	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable. we don't care
@@ -213,6 +213,19 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string AppBundlerMacOS::getEntitlementsFilePath() const
+{
+	const auto& entitlements = m_bundle.macosBundleEntitlementsPropertyList();
+	const auto& entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
+
+	// No entitlements
+	if (entitlements.empty() && entitlementsContent.empty())
+		return std::string();
+
+	return fmt::format("{}/Entitlements.plist", m_bundle.subdirectory());
 }
 
 /*****************************************************************************/

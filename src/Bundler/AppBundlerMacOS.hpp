@@ -29,6 +29,8 @@ public:
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
 private:
+	std::string getEntitlementsFilePath() const;
+
 	bool createBundleIcon();
 	bool createInfoPropertyListAndReplaceVariables() const;
 	bool createEntitlementsPropertyList() const;
