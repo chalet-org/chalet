@@ -5,11 +5,14 @@
 
 #include "Core/DotEnvFileGenerator.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"
 
@@ -46,8 +49,21 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 		}
 	}
 
-	StringList allPaths = List::combine(libDirs, frameworks);
+	std::string rootPath;
+#if defined(CHALET_LINUX)
+	if (inState.environment->isMingw())
+	{
+		auto binPath = fmt::format("/usr/lib/gcc/{}/10-posix", inState.info.targetArchitectureTriple());
+		if (Commands::pathExists(binPath))
+		{
+			rootPath = std::move(binPath);
+		}
+	}
+#endif
+
+	StringList allPaths = List::combine(libDirs, frameworks, rootPath);
 	addEnvironmentPath("PATH", allPaths);
+
 	env.setRunPaths(inState.workspace.makePathVariable(std::string(), allPaths));
 
 #if defined(CHALET_LINUX)
@@ -103,5 +119,4 @@ bool DotEnvFileGenerator::save(const std::string& inFilename)
 
 	return true;
 }
-
 }
