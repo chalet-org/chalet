@@ -488,19 +488,13 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 
 						// Note: Do not change this order
 						//
-						// auto cppFolder = fmt::format("{}/include/c++", sysroot);
-						// if (Commands::pathExists(cppFolder))
-						{
-							addInclude(fmt::format("{}/include/c++", sysroot));
-							addInclude(fmt::format("{}/include/c++/{}", sysroot, targetArch));
-							addInclude(fmt::format("{}/include/c++/backward", sysroot));
-						}
-						// else
-						{
-							addInclude(fmt::format("{}/include/c++", sysroot2));
-							addInclude(fmt::format("{}/include/c++/{}", sysroot2, targetArch));
-							addInclude(fmt::format("{}/include/c++/backward", sysroot2));
-						}
+						addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
+						addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
+						addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+
+						addInclude(fmt::format("{}/include/c++", sysroot2));
+						addInclude(fmt::format("{}/include/c++/{}", sysroot2, targetArch));
+						addInclude(fmt::format("{}/include/c++/backward", sysroot2));
 
 						addInclude(fmt::format("{}/include", sysroot2));
 						addInclude(fmt::format("{}/include-fixed", sysroot2));
