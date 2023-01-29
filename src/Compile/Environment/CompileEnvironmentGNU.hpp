@@ -14,6 +14,8 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 {
 	explicit CompileEnvironmentGNU(const ToolchainType inType, BuildState& inState);
 
+	virtual void generateTargetSystemPaths() override;
+
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;

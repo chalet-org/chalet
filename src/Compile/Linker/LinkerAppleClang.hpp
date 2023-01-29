@@ -23,6 +23,8 @@ protected:
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const final;
 	virtual void addSanitizerOptions(StringList& outArgList) const final;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;
+	virtual bool addSystemRootOption(StringList& outArgList) const final;
+	virtual bool addSystemLibDirs(StringList& outArgList) const final;
 
 	// Objective-C / Objective-C++
 	virtual void addObjectiveCxxLink(StringList& outArgList) const final;

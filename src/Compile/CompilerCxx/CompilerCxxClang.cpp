@@ -137,7 +137,7 @@ bool CompilerCxxClang::addArchitectureToCommand(StringList& outArgList, const st
 
 	UNUSED(inArch);
 
-	auto targetArchString = inState.info.targetArchitectureTriple();
+	const auto& targetArchString = inState.info.targetArchitectureTriple();
 
 #if defined(CHALET_LINUX)
 	// auto gccArchDir = fmt::format("/lib/gcc/{}", targetArchString);

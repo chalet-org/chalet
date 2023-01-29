@@ -420,4 +420,95 @@ void CompileEnvironmentGNU::parseSupportedFlagsFromHelpList(const StringList& in
 		}
 	}
 }
+
+/*****************************************************************************/
+/*
+	Resolve the system include directories. When cross-compiling, we have to
+	explicitly use these with clang later.
+
+	They are typically:
+		/usr/(arch-triple)/ - libraries for this architecture
+		/usr/lib/gcc/(arch-triple)/(version) - system libs only
+
+	This is the system path include order (if they exist):
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++/(arch-triple)
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++/backward
+		/usr/lib/gcc/(arch-triple)/(version)/include
+		/usr/lib/gcc/(arch-triple)/(version)/include-fixed
+		/usr/(arch-triple)/include
+
+	Viewed with:
+		x86_64-w64-mingw32-gcc -xc++ -E -v -
+*/
+void CompileEnvironmentGNU::generateTargetSystemPaths()
+{
+#if defined(CHALET_LINUX)
+	const auto& targetArch = m_state.info.targetArchitectureTriple();
+
+	m_sysroot.clear();
+	m_targetSystemVersion.clear();
+	m_targetSystemPaths.clear();
+
+	// TODO: if using a custom llvm & gcc toolchain build, user would need to give the path here
+	auto basePath = "/usr";
+
+	auto otherCompiler = fmt::format("{}/bin/{}-gcc", basePath, targetArch);
+	if (Commands::pathExists(otherCompiler))
+	{
+		auto version = Commands::subprocessOutput({ otherCompiler, "-dumpfullversion" });
+		if (!version.empty())
+		{
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+			if (!version.empty())
+			{
+				auto sysroot = fmt::format("{}/{}", basePath, targetArch);
+				if (Commands::pathExists(sysroot))
+				{
+					auto sysroot2 = fmt::format("{}/lib/gcc/{}/{}", basePath, targetArch, version);
+					if (!Commands::pathExists(sysroot2))
+					{
+						// TODO: way to control '-posix' or '-win32'
+						//
+						sysroot2 = fmt::format("{}/lib/gcc/{}/{}-posix", basePath, targetArch, version);
+
+						if (!Commands::pathExists(sysroot2))
+							sysroot2.clear();
+					}
+
+					if (!sysroot2.empty())
+					{
+						// LOG(sysroot);
+						// LOG(sysroot2);
+
+						auto addInclude = [this](std::string&& path) {
+							if (Commands::pathExists(path))
+								m_targetSystemPaths.emplace_back(std::move(path));
+						};
+
+						// Note: Do not change this order
+						//
+						addInclude(fmt::format("{}/include/c++", sysroot2));
+						addInclude(fmt::format("{}/include/c++/{}", sysroot2, targetArch));
+						addInclude(fmt::format("{}/include/c++/backward", sysroot2));
+						addInclude(fmt::format("{}/include", sysroot2));
+						addInclude(fmt::format("{}/include-fixed", sysroot2));
+
+						addInclude(fmt::format("{}/include", sysroot));
+
+						// for (auto& path : m_targetSystemPaths)
+						// {
+						// 	LOG(path);
+						// }
+
+						// m_sysroot = sysroot;
+						m_sysroot = sysroot2;
+						m_targetSystemVersion = version;
+					}
+				}
+			}
+		}
+	}
+#endif
+}
 }

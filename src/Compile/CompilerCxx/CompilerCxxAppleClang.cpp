@@ -63,7 +63,7 @@ CompilerCxxAppleClang::CompilerCxxAppleClang(const BuildState& inState, const So
 }
 
 /*****************************************************************************/
-bool CompilerCxxAppleClang::addMacosSysRootOption(StringList& outArgList, const BuildState& inState)
+bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState)
 {
 	const auto& osTarget = inState.info.osTarget();
 	std::string sdk{ "macosx" };
@@ -259,6 +259,19 @@ void CompilerCxxAppleClang::addDiagnosticColorOption(StringList& outArgList) con
 	std::string diagnosticColor{ "-fdiagnostics-color=always" };
 	// if (isFlagSupported(diagnosticColor))
 	List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
+}
+
+/*****************************************************************************/
+bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList) const
+{
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+}
+
+/*****************************************************************************/
+bool CompilerCxxAppleClang::addSystemIncludes(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+	return true;
 }
 
 /*****************************************************************************/

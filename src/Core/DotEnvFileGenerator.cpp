@@ -9,6 +9,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -50,14 +51,12 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 	}
 
 	std::string rootPath;
+
 #if defined(CHALET_LINUX)
-	if (inState.environment->isMingw())
+	const auto& sysroot = inState.environment->sysroot();
+	if (!sysroot.empty())
 	{
-		auto binPath = fmt::format("/usr/lib/gcc/{}/10-posix", inState.info.targetArchitectureTriple());
-		if (Commands::pathExists(binPath))
-		{
-			rootPath = std::move(binPath);
-		}
+		rootPath = inState.environment->sysroot();
 	}
 #endif
 

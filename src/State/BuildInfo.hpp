@@ -40,6 +40,7 @@ struct BuildInfo
 	const std::string& targetArchitectureString() const noexcept;
 	const std::string& targetArchitectureTripleSuffix() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) noexcept;
+	bool targettingMinGW() const;
 
 	const std::string& osTarget() const noexcept;
 	const std::string& osTargetVersion() const noexcept;

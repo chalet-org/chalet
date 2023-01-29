@@ -53,7 +53,8 @@ protected:
 	virtual void addMacosFrameworkOptions(StringList& outArgList) const;
 
 	// GNU GCC stuff
-	virtual bool addMacosSysRootOption(StringList& outArgList) const;
+	virtual bool addSystemRootOption(StringList& outArgList) const;
+	virtual bool addSystemLibDirs(StringList& outArgList) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
 
 	std::string m_outputFileBase;

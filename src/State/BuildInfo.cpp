@@ -189,6 +189,12 @@ void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+bool BuildInfo::targettingMinGW() const
+{
+	return String::contains("mingw32", m_targetArchitecture.triple);
+}
+
+/*****************************************************************************/
 const std::string& BuildInfo::osTarget() const noexcept
 {
 	return m_osTarget;

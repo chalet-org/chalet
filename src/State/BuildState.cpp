@@ -343,6 +343,23 @@ bool BuildState::initializeBuild()
 	if (!paths.initialize())
 		return false;
 
+	// These should only be relevant if cross-compiling (so far)
+	//
+	environment->generateTargetSystemPaths();
+
+	// Get the path to windres, but with this method, it's not saved in settings
+	//  - it's specific to this architecture that we're building for
+	//
+	if (environment->isClang() && info.targettingMinGW())
+	{
+		auto compilerPath = toolchain.compilerCxxAny().binDir;
+		auto windres = fmt::format("{}/{}-windres", compilerPath, info.targetArchitectureTriple());
+		if (Commands::pathExists(windres))
+		{
+			toolchain.setCompilerWindowsResource(std::move(windres));
+		}
+	}
+
 	for (auto& target : targets)
 	{
 		if (target->isSources())
@@ -367,6 +384,8 @@ bool BuildState::initializeBuild()
 				}
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+				const auto& systemPaths = environment->targetSystemPaths();
+				if (systemPaths.empty())
 				{
 					std::string localLib{ "/usr/local/lib" };
 					if (Commands::pathExists(localLib))

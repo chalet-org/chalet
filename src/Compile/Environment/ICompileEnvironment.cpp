@@ -303,6 +303,11 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 }
 
 /*****************************************************************************/
+void ICompileEnvironment::generateTargetSystemPaths()
+{
+}
+
+/*****************************************************************************/
 std::string ICompileEnvironment::getObjectFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.o", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));
@@ -345,6 +350,23 @@ std::string ICompileEnvironment::getModuleBinaryInterfaceDependencyFile(const st
 {
 	// Note: This isn't an actual convention, just a placeholder until GCC/Clang have one
 	return fmt::format("{}/{}.bmi.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+const std::string& ICompileEnvironment::sysroot() const noexcept
+{
+	return m_sysroot;
+}
+
+const std::string& ICompileEnvironment::targetSystemVersion() const noexcept
+{
+	return m_targetSystemVersion;
+}
+
+/*****************************************************************************/
+const StringList& ICompileEnvironment::targetSystemPaths() const noexcept
+{
+	return m_targetSystemPaths;
 }
 
 /*****************************************************************************/
