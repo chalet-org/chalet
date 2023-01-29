@@ -7,6 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -174,7 +175,9 @@ bool isRunningWindowsSubsystemForLinux()
 	if (uname.empty())
 		return false;
 
+	Output::setShowCommandOverride(false);
 	auto result = Commands::subprocessOutput({ uname, "-a" });
+	Output::setShowCommandOverride(true);
 	if (result.empty())
 		return false;
 
