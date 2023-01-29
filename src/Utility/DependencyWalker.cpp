@@ -108,7 +108,7 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList, StringList* outNotFound)
 {
 	std::vector<char> bytes = readAllBytes(inFile.c_str());
-	StringList ignoreList{ inFile, "System32", "SYSTEM32", "SysWOW64", "SYSWOW64" };
+	StringList ignoreList{ inFile, "system32", "syswow64" };
 
 	constexpr auto MAGIC_NUM_32BIT = static_cast<WORD>(0x10b);		// 267
 	constexpr auto MAGIC_NUM_64BIT = static_cast<WORD>(0x20b);		// 523
@@ -195,13 +195,17 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					{
 						outNotFound->push_back(dependency);
 					}
-					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
+					if (!dependency.empty())
 					{
-						// LOG(inFile, dependency);
-						if (!dependencyResolved.empty())
-							List::addIfDoesNotExist(outList, std::move(dependencyResolved));
-						else
-							List::addIfDoesNotExist(outList, std::move(dependency));
+						auto lowercase = String::toLowerCase(dependencyResolved);
+						if (!String::contains(ignoreList, lowercase))
+						{
+							// LOG(inFile, dependency);
+							if (!dependencyResolved.empty())
+								List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+							else
+								List::addIfDoesNotExist(outList, std::move(dependency));
+						}
 					}
 					++foundDepends;
 
@@ -244,13 +248,17 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					{
 						outNotFound->push_back(dependency);
 					}
-					if (!dependency.empty() && !String::contains(ignoreList, dependencyResolved))
+					if (!dependency.empty())
 					{
-						// LOG(inFile, dependency);
-						if (!dependencyResolved.empty())
-							List::addIfDoesNotExist(outList, std::move(dependencyResolved));
-						else
-							List::addIfDoesNotExist(outList, std::move(dependency));
+						auto lowercase = String::toLowerCase(dependencyResolved);
+						if (!String::contains(ignoreList, lowercase))
+						{
+							// LOG(inFile, dependency);
+							if (!dependencyResolved.empty())
+								List::addIfDoesNotExist(outList, std::move(dependencyResolved));
+							else
+								List::addIfDoesNotExist(outList, std::move(dependency));
+						}
 					}
 					++foundDepends;
 

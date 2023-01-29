@@ -12,6 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -71,7 +72,20 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 				// parseThreadModelFromVersionOutput(line, threadModel);
 			}
 
-			version = version.substr(0, version.find_first_not_of("0123456789."));
+#if defined(CHALET_LINUX)
+			if (Environment::isWindowsSubsystemForLinux())
+			{
+				if (String::contains({ "(GCC)", "-win32 " }, version))
+					version = version.substr(0, version.find(" ("));
+				else
+					version = version.substr(0, version.find_first_not_of("0123456789."));
+			}
+			else
+#endif
+			{
+				version = version.substr(0, version.find_first_not_of("0123456789."));
+			}
+
 			if (!version.empty())
 				cachedVersion = std::move(version);
 		}

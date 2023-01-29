@@ -56,7 +56,7 @@ enum class ShellType
 	PowershellIse,
 	PowershellOpenSource, // 6+
 	PowershellOpenSourceNonWindows,
-	// WindowsTerminal,
+	WindowsSubsystemForLinux,
 };
 
 static struct
@@ -167,6 +167,24 @@ std::string getParentProcessPath()
 }
 
 /*****************************************************************************/
+#if defined(CHALET_LINUX)
+bool isRunningWindowsSubsystemForLinux()
+{
+	auto uname = Commands::which("uname");
+	if (uname.empty())
+		return false;
+
+	auto result = Commands::subprocessOutput({ uname, "-a" });
+	if (result.empty())
+		return false;
+
+	auto lowercase = String::toLowerCase(result);
+
+	return String::contains({ "microsoft", "wsl2" }, lowercase);
+}
+#endif
+
+/*****************************************************************************/
 void printTermType()
 {
 	std::string term;
@@ -238,6 +256,10 @@ void printTermType()
 
 		case ShellType::PowershellOpenSourceNonWindows:
 			term = "Powershell (Open Source)";
+			break;
+
+		case ShellType::WindowsSubsystemForLinux:
+			term = "Windows Subsystem for Linux (1 or 2)";
 			break;
 
 		case ShellType::Unset:
@@ -321,8 +343,15 @@ void setTerminalType()
 		return printTermType();
 	}
 #else
+	#if defined(CHALET_LINUX)
+	if (isRunningWindowsSubsystemForLinux())
+	{
+		state.terminalType = ShellType::WindowsSubsystemForLinux;
+		return printTermType();
+	}
+	#endif
+
 	auto parentPath = getParentProcessPath();
-	// LOG("parentPath:", parentPath);
 
 	if (String::endsWith("/bash", parentPath))
 	{
@@ -423,6 +452,19 @@ bool Environment::isMicrosoftTerminalOrWindowsBash()
 		|| state.terminalType == ShellType::PowershellIse
 		|| state.terminalType == ShellType::WindowsTerminal
 		|| state.terminalType == ShellType::Bash;
+#else
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool Environment::isWindowsSubsystemForLinux()
+{
+	if (state.terminalType == ShellType::Unset)
+		setTerminalType();
+
+#if defined(CHALET_LINUX)
+	return state.terminalType == ShellType::WindowsSubsystemForLinux;
 #else
 	return false;
 #endif

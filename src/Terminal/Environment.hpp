@@ -14,6 +14,7 @@ bool isSubprocess();
 bool isBash();
 bool isBashGenericColorTermOrWindowsTerminal();
 bool isMicrosoftTerminalOrWindowsBash();
+bool isWindowsSubsystemForLinux();
 bool isCommandPromptOrPowerShell();
 bool isContinuousIntegrationServer();
 bool isVisualStudioOutput();

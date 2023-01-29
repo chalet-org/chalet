@@ -45,6 +45,10 @@ const char* Unicode::checkmark()
 	else if (Environment::isMicrosoftTerminalOrWindowsBash())
 		return reinterpret_cast<const char*>(u8"\u2713");
 	else
+#elif defined(CHALET_LINUX)
+	if (Environment::isWindowsSubsystemForLinux())
+		return reinterpret_cast<const char*>(u8"\u2713");
+	else
 #endif
 		return reinterpret_cast<const char*>(u8"\u2714");
 }
