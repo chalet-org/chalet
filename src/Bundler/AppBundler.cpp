@@ -135,6 +135,7 @@ void AppBundler::reportErrors()
 
 	std::sort(m_notCopied.rbegin(), m_notCopied.rend());
 
+	bool validNotCopiedDeps = false;
 	StringList excludes{ "msvcrt.dll", "kernel32.dll" };
 	for (auto& dep : m_notCopied)
 	{
@@ -142,9 +143,10 @@ void AppBundler::reportErrors()
 			continue;
 
 		Diagnostic::warn("{}", String::getPathFilename(dep));
+		validNotCopiedDeps = true;
 	}
 
-	if (!m_notCopied.empty())
+	if (validNotCopiedDeps)
 		Diagnostic::warn("Dependencies not copied:");
 }
 
