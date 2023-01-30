@@ -462,6 +462,8 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 			version = version.substr(0, version.find_first_not_of("0123456789."));
 			if (!version.empty())
 			{
+				auto shortVersion = version.substr(0, version.find_first_not_of("0123456789"));
+
 				auto sysroot = fmt::format("{}/{}", basePath, targetArch);
 				if (Commands::pathExists(sysroot))
 				{
@@ -471,9 +473,12 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 						// TODO: way to control '-posix' or '-win32'
 						//
 						sysroot2 = fmt::format("{}/lib/gcc/{}/{}-posix", basePath, targetArch, version);
-
 						if (!Commands::pathExists(sysroot2))
-							sysroot2.clear();
+						{
+							sysroot2 = fmt::format("{}/lib/gcc-cross/{}/{}", basePath, targetArch, shortVersion);
+							if (!Commands::pathExists(sysroot2))
+								sysroot2.clear();
+						}
 					}
 
 					if (!sysroot2.empty())
@@ -488,9 +493,22 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 
 						// Note: Do not change this order
 						//
-						addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
-						addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
-						addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+						if (!String::equals(shortVersion, version))
+						{
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, shortVersion));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, shortVersion, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, shortVersion));
+
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+						}
+						else
+						{
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+						}
 
 						addInclude(fmt::format("{}/include/c++", sysroot2));
 						addInclude(fmt::format("{}/include/c++/{}", sysroot2, targetArch));
