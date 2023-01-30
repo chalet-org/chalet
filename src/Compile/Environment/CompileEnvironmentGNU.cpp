@@ -113,6 +113,9 @@ std::vector<CompilerPathStructure> CompileEnvironmentGNU::getValidCompilerPaths(
 	std::vector<CompilerPathStructure> ret;
 	auto triple = m_state.info.targetArchitectureTriple();
 	ret.push_back({ "/bin", fmt::format("/{}/lib", triple), fmt::format("/{}/include", triple) });
+#if defined(CHALET_LINUX)
+	ret.push_back({ "/bin", fmt::format("/lib/{}/lib", triple), fmt::format("/lib/{}/include", triple) });
+#endif
 	ret.push_back({ "/bin", "/lib", "/include" });
 	return ret;
 }
@@ -284,7 +287,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 	}
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
-	m_isEmbeddedTarget = String::contains(StringList{ "-none-" }, m_state.info.targetArchitectureTriple());
+	m_isEmbeddedTarget = String::contains(StringList{ "-none-eabi" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }
@@ -465,7 +468,14 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 				auto shortVersion = version.substr(0, version.find_first_not_of("0123456789"));
 
 				auto sysroot = fmt::format("{}/{}", basePath, targetArch);
-				if (Commands::pathExists(sysroot))
+				if (!Commands::pathExists(sysroot))
+				{
+					sysroot = fmt::format("{}/lib/{}", basePath, targetArch);
+					if (!Commands::pathExists(sysroot))
+						sysroot.clear();
+				}
+
+				if (!sysroot.empty())
 				{
 					auto sysroot2 = fmt::format("{}/lib/gcc/{}/{}", basePath, targetArch, version);
 					if (!Commands::pathExists(sysroot2))

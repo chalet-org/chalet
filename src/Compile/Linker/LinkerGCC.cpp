@@ -598,6 +598,11 @@ bool LinkerGCC::addSystemRootOption(StringList& outArgList) const
 #if defined(CHALET_MACOS)
 	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
 #else
+	if (m_state.environment->isEmbeddedTarget())
+	{
+		outArgList.emplace_back("--specs=nosys.specs");
+	}
+
 	UNUSED(outArgList);
 	return true;
 #endif
