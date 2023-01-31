@@ -13,6 +13,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -184,7 +185,9 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
 	{
-		Diagnostic::error("Failed to query predefined compiler macros.");
+		auto output = getCompilerMacros(inCompilerExec, PipeOption::Pipe);
+		Output::print(Color::Reset, output);
+		Diagnostic::error("Failed to query compiler for details. See error above");
 		return false;
 	}
 
@@ -200,7 +203,13 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 
 	ToolchainType detectedType = getToolchainTypeFromMacros(macroResult);
 	// LOG("types:", static_cast<int>(detectedType), static_cast<int>(m_type));
-	return detectedType == m_type;
+	if (detectedType != m_type)
+	{
+		Diagnostic::error("No compiler executable was found");
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -324,7 +333,7 @@ ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::strin
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec)
+std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError)
 {
 	if (inCompilerExec.empty())
 		return std::string();
@@ -347,9 +356,12 @@ std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompil
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
 		StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
-		result = Commands::subprocessOutput(command, std::move(compilerPath));
+		result = Commands::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
-		std::ofstream(macrosFile) << result;
+		if (!result.empty())
+		{
+			std::ofstream(macrosFile) << result;
+		}
 	}
 	else
 	{

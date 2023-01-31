@@ -1015,6 +1015,13 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 			ret += std::move(inData);
 		};
 	}
+	else if (options.stderrOption == PipeOption::Close)
+	{
+		options.stderrOption = PipeOption::Pipe;
+		options.onStdErr = [](std::string inData) {
+			UNUSED(inData);
+		};
+	}
 
 	UNUSED(ProcessController::run(inCmd, options));
 

@@ -7,6 +7,7 @@
 #define CHALET_COMPILE_ENVIRONMENT_GNU_HPP
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Process/PipeOption.hpp"
 
 namespace chalet
 {
@@ -36,7 +37,7 @@ protected:
 	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand);
 
 private:
-	std::string getCompilerMacros(const std::string& inCompilerExec);
+	std::string getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError = PipeOption::Close);
 
 	bool m_genericGcc = false;
 };
