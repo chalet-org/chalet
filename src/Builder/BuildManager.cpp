@@ -732,24 +732,27 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 	if (Commands::pathIsEmpty(intermediateDir))
 		Commands::remove(intermediateDir);
 
-	fs::recursive_directory_iterator it(buildOutputDir);
-	fs::recursive_directory_iterator itEnd;
-
-	while (it != itEnd)
+	if (Commands::pathExists(buildOutputDir))
 	{
-		std::error_code ec;
-		const auto& path = it->path();
+		fs::recursive_directory_iterator it(buildOutputDir);
+		fs::recursive_directory_iterator itEnd;
 
-		if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+		while (it != itEnd)
 		{
-			auto pth = path;
-			++it;
+			std::error_code ec;
+			const auto& path = it->path();
 
-			fs::remove(pth, ec);
-		}
-		else
-		{
-			++it;
+			if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+			{
+				auto pth = path;
+				++it;
+
+				fs::remove(pth, ec);
+			}
+			else
+			{
+				++it;
+			}
 		}
 	}
 
