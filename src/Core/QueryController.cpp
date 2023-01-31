@@ -383,6 +383,9 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		List::addIfDoesNotExist(ret, "x86_64");
 		List::addIfDoesNotExist(ret, "i686");
 		List::addIfDoesNotExist(ret, "arm");
+#if defined(CHALET_LINUX)
+		List::addIfDoesNotExist(ret, "armhf");
+#endif
 		List::addIfDoesNotExist(ret, "arm64");
 	}
 #if defined(CHALET_MACOS)

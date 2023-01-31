@@ -271,6 +271,7 @@ std::string CmakeBuilder::getArchitecture() const
 				ret = "x64";
 				break;
 			case Arch::Cpu::ARM:
+			case Arch::Cpu::ARMHF:
 				ret = "ARM";
 				break;
 			case Arch::Cpu::ARM64:

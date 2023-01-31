@@ -106,8 +106,12 @@ bool PlatformDependencyManager::hasRequired()
 	{
 		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
 			arch = "amd64";
-		else if (m_state.info.targetArchitecture() == Arch::Cpu::ARM)
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::ARM64)
+			arch = "arm64";
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::ARMHF)
 			arch = "armhf";
+		else if (m_state.info.targetArchitecture() == Arch::Cpu::ARM)
+			arch = "arm";
 	}
 #endif
 

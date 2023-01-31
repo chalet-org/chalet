@@ -308,7 +308,7 @@ bool CommandAdapterMSVC::supportsOptimizeReferences() const
 std::optional<bool> CommandAdapterMSVC::supportsLongBranchRedirects() const
 {
 	const auto arch = m_state.info.targetArchitecture();
-	if (arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARM64)
+	if (arch == Arch::Cpu::ARM || arch == Arch::Cpu::ARMHF || arch == Arch::Cpu::ARM64)
 	{
 		return !m_state.configuration.debugSymbols();
 	}
@@ -607,6 +607,7 @@ std::string CommandAdapterMSVC::getMachineArchitecture() const
 			return "X86";
 
 		case Arch::Cpu::ARM:
+		case Arch::Cpu::ARMHF:
 			return "ARM";
 
 		case Arch::Cpu::ARM64:

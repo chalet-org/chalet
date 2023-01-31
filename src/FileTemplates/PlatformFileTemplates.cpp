@@ -20,6 +20,7 @@ const char* getWindowsManifestArch(const Arch::Cpu inCpu)
 			return "arm64";
 
 		case Arch::Cpu::ARM:
+		case Arch::Cpu::ARMHF:
 			return "arm";
 
 		case Arch::Cpu::X64:

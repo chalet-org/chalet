@@ -76,7 +76,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		const auto& targetTriple = m_state.info.targetArchitectureTriple();
+		auto targetTriple = m_state.info.targetArchitectureTriple();
 
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
 		if (emptyInputArch || !String::contains('-', targetTriple))
@@ -88,7 +88,47 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			if (!valid)
 				return false;
 
-			cachedArch = fmt::format("{}{}", targetTriple, cachedArch.substr(firstDash));
+			auto suffix = cachedArch.substr(firstDash);
+#if defined(CHALET_LINUX)
+			Arch::Cpu arch = m_state.info.targetArchitecture();
+			if (arch == Arch::Cpu::ARMHF)
+			{
+				suffix += "eabihf";
+				targetTriple = "arm";
+			}
+			else if (arch == Arch::Cpu::ARM)
+			{
+				suffix += "eabi";
+				targetTriple = "arm";
+			}
+			else if (arch == Arch::Cpu::ARM64)
+			{
+				targetTriple = "aarch64";
+			}
+#endif
+			cachedArch = fmt::format("{}{}", targetTriple, suffix);
+
+#if defined(CHALET_LINUX)
+			auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+			auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+			bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+			if (!found && String::startsWith("-pc-linux-gnu", suffix))
+			{
+				suffix = suffix.substr(3);
+				cachedArch = fmt::format("{}{}", targetTriple, suffix);
+
+				searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+				searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+				found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+			}
+
+			if (!found)
+			{
+				cachedArch.clear();
+			}
+#endif
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = cachedArch.find("apple-darwin");
