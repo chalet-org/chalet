@@ -61,6 +61,24 @@ bool BundleTarget::initialize()
 	if (!replaceVariablesInPathList(m_excludes))
 		return false;
 
+#if defined(CHALET_MACOS)
+	if (!m_state.replaceVariablesInString(m_macosBundleInfoPropertyList, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_macosBundleEntitlementsPropertyList, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_macosBundleIcon, this))
+		return false;
+
+#elif defined(CHALET_LINUX)
+	if (!m_state.replaceVariablesInString(m_linuxDesktopEntryTemplate, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_linuxDesktopEntryIcon, this))
+		return false;
+#endif
+
 	return true;
 }
 
