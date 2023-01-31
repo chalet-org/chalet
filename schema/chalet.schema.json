@@ -646,6 +646,7 @@
 		},
 		"external-dependency": {
 			"type": "object",
+			"description": "An external dependency",
 			"required": [
 				"repository"
 			],
@@ -694,8 +695,22 @@
 			"description": "Do submodules need to be cloned?",
 			"default": false
 		},
-		"environment-searchPaths": {
-			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
+		"variables": {
+			"type": "object",
+			"description": "Local variables to be used inside of the build file, but shouldn't be part of the environment (.env) - ie. shortcuts to paths that may otherwise be verbose.",
+			"patternProperties": {
+				"^[A-Za-z0-9_]{3,255}$": {
+					"$ref": "#/definitions/variable-value"
+				}
+			}
+		},
+		"variable-value": {
+			"type": "string",
+			"description": "The value to assign to an environment variable",
+			"minLength": 1
+		},
+		"searchPaths": {
+			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${external:(name)}",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2695,10 +2710,13 @@
 				}
 			}
 		},
+		"variables": {
+			"$ref": "#/definitions/variables"
+		},
 		"externalDependencies": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'.",
+			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'.",
 			"patternProperties": {
 				"^[\\w\\-+.]{3,100}$": {
 					"$ref": "#/definitions/external-dependency"
@@ -2706,7 +2724,7 @@
 			}
 		},
 		"searchPaths": {
-			"$ref": "#/definitions/environment-searchPaths"
+			"$ref": "#/definitions/searchPaths"
 		},
 		"targets": {
 			"type": "object",
@@ -2808,7 +2826,7 @@
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
 		"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-			"$ref": "#/definitions/environment-searchPaths"
+			"$ref": "#/definitions/searchPaths"
 		}
 	}
 }

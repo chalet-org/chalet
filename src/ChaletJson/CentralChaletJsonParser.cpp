@@ -11,6 +11,7 @@
 #include "State/Dependency/GitDependency.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -69,6 +70,9 @@ bool CentralChaletJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) 
 	if (!parseRoot(inNode))
 		return false;
 
+	if (!parseVariables(inNode))
+		return false;
+
 	if (!parseMetadata(inNode))
 		return false;
 
@@ -122,6 +126,35 @@ bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
 	}
 
 	m_centralState.workspace.setMetadata(std::move(metadata));
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
+{
+	if (inNode.contains(Keys::Variables))
+	{
+		const Json& variables = inNode.at(Keys::Variables);
+		if (variables.is_object())
+		{
+			auto& vars = m_centralState.tools.variables;
+			for (auto& [key, value] : variables.items())
+			{
+				if (value.is_string())
+				{
+					if (!vars.contains(key))
+					{
+						vars.set(key, value.get<std::string>());
+					}
+					else
+					{
+						Diagnostic::warn("Variable not set because it already exists: {}", key);
+					}
+				}
+			}
+		}
+	}
 
 	return true;
 }

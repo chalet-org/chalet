@@ -67,6 +67,8 @@ class ChaletJsonSchema
 		//
 		// EnumPlatform,
 		//
+		Variables,
+		VariableValue,
 		EnvironmentSearchPaths,
 		//
 		TargetOutputDescription,

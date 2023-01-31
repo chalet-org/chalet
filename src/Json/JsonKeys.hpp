@@ -17,6 +17,7 @@ namespace Keys
 CH_STR(WorkspaceName) = "name";
 CH_STR(WorkspaceVersion) = "version";
 CH_STR(PlatformRequires) = "platformRequires";
+CH_STR(Variables) = "variables";
 CH_STR(Abstracts) = "abstracts";
 CH_STR(AbstractsAll) = "abstracts:*";
 CH_STR(Targets) = "targets";

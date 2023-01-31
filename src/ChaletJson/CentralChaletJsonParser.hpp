@@ -35,6 +35,7 @@ private:
 	bool parseRoot(const Json& inNode) const;
 	bool parseMetadata(const Json& inNode) const;
 
+	bool parseVariables(const Json& inNode) const;
 	bool parseDefaultConfigurations(const Json& inNode) const;
 	bool parseConfigurations(const Json& inNode) const;
 

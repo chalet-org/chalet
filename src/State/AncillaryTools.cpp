@@ -63,6 +63,12 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 				return Environment::getAsString(match.c_str());
 			}
 
+			if (String::startsWith("var:", match))
+			{
+				match = match.substr(4);
+				return variables.get(match);
+			}
+
 			return std::string();
 		}));
 	}

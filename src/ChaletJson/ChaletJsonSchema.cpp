@@ -459,11 +459,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	//
-	// other
+	// environment
 	//
+	defs[Defs::VariableValue] = R"json({
+		"type": "string",
+		"description": "The value to assign to an environment variable",
+		"minLength": 1
+	})json"_ojson;
+
 	defs[Defs::EnvironmentSearchPaths] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
+		"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${external:(name)}",
 		"minLength": 1
 	})json"_ojson);
 
@@ -1500,8 +1506,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	{
+		auto variables = R"json({
+			"type": "object",
+			"description": "Local variables to be used inside of the build file, but shouldn't be part of the environment (.env) - ie. shortcuts to paths that may otherwise be verbose."
+		})json"_ojson;
+		variables[SKeys::PatternProperties][R"(^[A-Za-z0-9_]{3,255}$)"] = getDefinition(Defs::VariableValue);
+		defs[Defs::Variables] = std::move(variables);
+	}
+
+	{
 		auto externalDependency = R"json({
 			"type": "object",
+			"description": "An external dependency",
 			"required": [
 				"repository"
 			],
@@ -1819,7 +1835,9 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::ExternalDependencyGitTag: return "external-git-tag";
 		case Defs::ExternalDependencyGitSubmodules: return "external-git-submodules";
 		//
-		case Defs::EnvironmentSearchPaths: return "environment-searchPaths";
+		case Defs::Variables: return "variables";
+		case Defs::VariableValue: return "variable-value";
+		case Defs::EnvironmentSearchPaths: return "searchPaths";
 		//
 		case Defs::TargetOutputDescription: return "target-outputDescription";
 		case Defs::TargetKind: return "target-kind";
@@ -2106,10 +2124,12 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionMacosDiskImage);
 	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
 
+	ret[SKeys::Properties]["variables"] = getDefinition(Defs::Variables);
+
 	ret[SKeys::Properties]["externalDependencies"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'."
+		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'."
 	})json"_ojson;
 	ret[SKeys::Properties]["externalDependencies"][SKeys::PatternProperties]["^[\\w\\-+.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
 

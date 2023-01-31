@@ -1034,6 +1034,13 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return Environment::getAsString(match.c_str());
 				}
 
+				if (String::startsWith("var:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return tools.variables.get(match);
+				}
+
 				if (String::startsWith("external:", match))
 				{
 					match = match.substr(9);
@@ -1152,6 +1159,13 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("var:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return tools.variables.get(match);
 				}
 
 				if (String::startsWith("external:", match))

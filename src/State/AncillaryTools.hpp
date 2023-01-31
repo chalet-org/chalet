@@ -7,6 +7,7 @@
 #define CHALET_ANCILLARY_TOOLS_HPP
 
 #include "State/ScriptAdapter.hpp"
+#include "State/VariableAdapter.hpp"
 
 namespace chalet
 {
@@ -118,6 +119,8 @@ struct AncillaryTools
 
 	static std::string getPathToGit();
 	static bool gitIsRootPath(std::string& outPath);
+
+	VariableAdapter variables;
 
 private:
 	ScriptAdapter m_scriptAdapter;
