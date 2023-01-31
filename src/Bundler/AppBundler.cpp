@@ -47,9 +47,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 	if (!inTarget->isArchive() && !isTargetNameValid(*inTarget))
 		return false;
 
-	if (!inTarget->initialize())
-		return false;
-
 	Timer timer;
 
 	if (inTarget->isDistributionBundle())

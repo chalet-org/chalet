@@ -298,8 +298,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			inputs.targetArchitecture() :
-			info.targetArchitectureTriple();
+			  inputs.targetArchitecture() :
+			  info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{
@@ -420,6 +420,12 @@ bool BuildState::initializeBuild()
 			{
 				paths.populateFileList(static_cast<SourceTarget&>(*target));
 			}
+		}
+
+		for (auto& target : distribution)
+		{
+			if (!target->initialize())
+				return false;
 		}
 
 		initializeCache();
