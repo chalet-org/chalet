@@ -540,6 +540,7 @@ void CompileEnvironmentGNU::generateTargetSystemPaths()
 						addInclude(fmt::format("{}/include-fixed", sysroot2));
 
 						addInclude(fmt::format("{}/include", sysroot));
+						addInclude(fmt::format("{}/include", basePath));
 
 						// for (auto& path : m_targetSystemPaths)
 						// {
