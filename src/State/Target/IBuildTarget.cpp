@@ -51,9 +51,6 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 /*****************************************************************************/
 bool IBuildTarget::initialize()
 {
-	if (!replaceVariablesInPathList(m_copyFilesOnRun))
-		return false;
-
 	return true;
 }
 
@@ -131,25 +128,6 @@ void IBuildTarget::setOutputDescription(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const StringList& IBuildTarget::copyFilesOnRun() const noexcept
-{
-	return m_copyFilesOnRun;
-}
-
-void IBuildTarget::addCopyFilesOnRun(StringList&& inList)
-{
-	List::forEach(inList, this, &IBuildTarget::addCopyFileOnRun);
-}
-
-void IBuildTarget::addCopyFileOnRun(std::string&& inValue)
-{
-	// if (inValue.back() != '/')
-	// 	inValue += '/'; // no!
-
-	List::addIfDoesNotExist(m_copyFilesOnRun, std::move(inValue));
-}
-
-/*****************************************************************************/
 bool IBuildTarget::includeInBuild() const noexcept
 {
 	return m_includeInBuild;
@@ -158,58 +136,6 @@ bool IBuildTarget::includeInBuild() const noexcept
 void IBuildTarget::setIncludeInBuild(const bool inValue)
 {
 	m_includeInBuild &= inValue;
-}
-
-/*****************************************************************************/
-StringList IBuildTarget::getResolvedRunDependenciesList() const
-{
-	StringList ret;
-
-	for (auto& dep : m_copyFilesOnRun)
-	{
-		if (Commands::pathExists(dep))
-		{
-			ret.push_back(dep);
-			continue;
-		}
-
-		std::string resolved;
-		if (isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*this);
-			const auto& compilerPathBin = m_state.toolchain.compilerCxx(project.language()).binDir;
-
-			resolved = fmt::format("{}/{}", compilerPathBin, dep);
-			if (Commands::pathExists(resolved))
-			{
-				ret.emplace_back(std::move(resolved));
-				continue;
-			}
-		}
-
-		bool found = false;
-		for (auto& path : m_state.workspace.searchPaths())
-		{
-			resolved = fmt::format("{}/{}", path, dep);
-			if (Commands::pathExists(resolved))
-			{
-				ret.emplace_back(std::move(resolved));
-				found = true;
-				break;
-			}
-		}
-
-		if (!found)
-		{
-			resolved = Commands::which(dep);
-			if (!resolved.empty())
-			{
-				ret.emplace_back(std::move(resolved));
-			}
-		}
-	}
-
-	return ret;
 }
 
 }

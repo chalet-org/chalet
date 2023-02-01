@@ -811,9 +811,17 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outTarget.addCopyFilesOnRun(std::move(val));
+			{
+				if (outTarget.isSources())
+				{
+					auto& project = static_cast<SourceTarget&>(outTarget);
+					project.addCopyFilesOnRun(std::move(val));
+				}
+			}
 			else if (isInvalid(status))
+			{
 				return false;
+			}
 		}
 		else if (value.is_string())
 		{
@@ -827,7 +835,13 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outTarget.addCopyFileOnRun(std::move(val));
+			{
+				if (outTarget.isSources())
+				{
+					auto& project = static_cast<SourceTarget&>(outTarget);
+					project.addCopyFileOnRun(std::move(val));
+				}
+			}
 			else if (isInvalid(status))
 				return false;
 		}

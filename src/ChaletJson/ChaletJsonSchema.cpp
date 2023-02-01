@@ -664,7 +664,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCopyFilesOnRun] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libaries that need to be resolved from the same directory as the run target.",
+		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target.",
 		"minLength": 1
 	})json"_ojson);
 

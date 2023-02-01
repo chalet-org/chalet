@@ -225,9 +225,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			if (!target->copyFilesOnRun().empty())
+			if (!project.copyFilesOnRun().empty())
 			{
-				StringList runDeps = target->getResolvedRunDependenciesList();
+				StringList runDeps = project.getResolvedRunDependenciesList();
 				for (auto& dep : runDeps)
 				{
 					List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));

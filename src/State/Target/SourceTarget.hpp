@@ -83,6 +83,10 @@ struct SourceTarget final : public IBuildTarget
 	void addMacosFrameworks(StringList&& inList);
 	void addMacosFramework(std::string&& inValue);
 
+	const StringList& copyFilesOnRun() const noexcept;
+	void addCopyFilesOnRun(StringList&& inList);
+	void addCopyFileOnRun(std::string&& inValue);
+
 	//
 	void parseOutputFilename() noexcept;
 
@@ -196,6 +200,8 @@ struct SourceTarget final : public IBuildTarget
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
+	StringList getResolvedRunDependenciesList() const;
+
 private:
 	bool removeExcludedFiles();
 	bool determinePicType();
@@ -221,6 +227,7 @@ private:
 	StringList m_linkerOptions;
 	StringList m_macosFrameworkPaths;
 	StringList m_macosFrameworks;
+	StringList m_copyFilesOnRun;
 	StringList m_files;
 	StringList m_headers;
 	StringList m_fileExcludes;

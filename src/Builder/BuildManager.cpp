@@ -448,15 +448,20 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCo
 {
 	bool result = true;
 
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto copyFilesOnRun = inTarget.getResolvedRunDependenciesList();
-	for (auto& dep : copyFilesOnRun)
+	if (inTarget.isSources())
 	{
-		auto depFile = String::getPathFilename(dep);
-		if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
+		const auto& sourceTarget = static_cast<const SourceTarget&>(inTarget);
+
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		auto copyFilesOnRun = sourceTarget.getResolvedRunDependenciesList();
+		for (auto& dep : copyFilesOnRun)
 		{
-			result &= Commands::copy(dep, buildOutputDir);
-			++outCopied;
+			auto depFile = String::getPathFilename(dep);
+			if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
+			{
+				result &= Commands::copy(dep, buildOutputDir);
+				++outCopied;
+			}
 		}
 	}
 
@@ -856,17 +861,21 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	uint copied = 0;
 	for (auto& target : m_state.targets)
 	{
-		if (!target->copyFilesOnRun().empty())
+		if (target->isSources())
 		{
-			if (!copyRunDependencies(*target, copied))
+			auto& project = static_cast<const SourceTarget&>(*target);
+			if (!project.copyFilesOnRun().empty())
 			{
-				Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
-				return false;
+				if (!copyRunDependencies(*target, copied))
+				{
+					Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
+					return false;
+				}
 			}
-		}
 
-		if (String::equals(inTarget.name(), target->name()))
-			break;
+			if (String::equals(inTarget.name(), target->name()))
+				break;
+		}
 	}
 
 	if (copied > 0)
