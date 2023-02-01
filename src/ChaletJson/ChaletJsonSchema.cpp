@@ -655,18 +655,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCopyFilesOnRun] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the 'MacOS' folder path alongside the executable.",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "If the project is the run target, a string of arguments to pass to the run command.",
 		"minLength": 1
 	})json"_ojson,
 		false);
-
-	defs[Defs::TargetCopyFilesOnRun] = makeArrayOrString(R"json({
-		"type": "string",
-		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target.",
-		"minLength": 1
-	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxCStandard] = R"json({
 		"type": "string",
@@ -1641,7 +1641,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		//
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
-		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetCopyFilesOnRun, kPatternConditions);
+		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 	}
 
 	{
@@ -1843,7 +1843,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetKind: return "target-kind";
 		case Defs::TargetCondition: return "target-condition";
 		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";
-		case Defs::TargetCopyFilesOnRun: return "target-copyFilesOnRun";
+		case Defs::TargetSourceCopyFilesOnRun: return "target-copyFilesOnRun";
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";

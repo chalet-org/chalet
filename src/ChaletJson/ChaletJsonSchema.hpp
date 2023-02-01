@@ -76,7 +76,6 @@ class ChaletJsonSchema
 		TargetCondition,
 		TargetRunTarget,
 		TargetDefaultRunArguments,
-		TargetCopyFilesOnRun,
 		//
 		TargetAbstract,
 		TargetSourceExecutable,
@@ -85,6 +84,7 @@ class ChaletJsonSchema
 		TargetSourceFiles,
 		TargetSourceLanguage,
 		TargetSourceConfigureFiles,
+		TargetSourceCopyFilesOnRun,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,
