@@ -21,7 +21,7 @@ struct WorkspaceCache;
 struct WorkspaceEnvironment;
 struct ICompileEnvironment;
 struct IBuildTarget;
-struct IBuildDependency;
+struct IExternalDependency;
 struct ICompileEnvironment;
 struct IDistTarget;
 
@@ -57,7 +57,7 @@ public:
 	std::vector<Unique<IBuildTarget>>& targets;
 	std::vector<Unique<IDistTarget>>& distribution;
 	const CommandLineInputs& inputs;
-	const std::vector<Unique<IBuildDependency>>& externalDependencies;
+	const std::vector<Unique<IExternalDependency>>& externalDependencies;
 	ICompileEnvironment* environment = nullptr;
 
 private:

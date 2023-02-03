@@ -15,7 +15,7 @@
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/CentralState.hpp"
-#include "State/Dependency/BuildDependencyType.hpp"
+#include "State/Dependency/ExternalDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"

@@ -275,10 +275,10 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		return false;
 	}
 
-	BuildDependencyType type = BuildDependencyType::Git;
+	ExternalDependencyType type = ExternalDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = IBuildDependency::make(type, m_centralState);
+		auto dependency = IExternalDependency::make(type, m_centralState);
 		dependency->setName(name);
 
 		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))

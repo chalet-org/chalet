@@ -11,7 +11,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
@@ -46,7 +46,7 @@ struct CentralState
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
-	BuildDependencyList externalDependencies;
+	ExternalDependencyList externalDependencies;
 
 private:
 	friend struct CentralChaletJsonParser;

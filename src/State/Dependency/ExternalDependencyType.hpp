@@ -3,17 +3,17 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_DEPENDENCY_TYPE_HPP
-#define CHALET_BUILD_DEPENDENCY_TYPE_HPP
+#ifndef CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
+#define CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
 
 namespace chalet
 {
 // Source control + packages
-enum class BuildDependencyType : ushort
+enum class ExternalDependencyType : ushort
 {
 	Git,
 	SVN,
 };
 }
 
-#endif // CHALET_BUILD_DEPENDENCY_TYPE_HPP
+#endif // CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP

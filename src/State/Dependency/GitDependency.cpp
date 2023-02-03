@@ -15,7 +15,7 @@ namespace chalet
 {
 /*****************************************************************************/
 GitDependency::GitDependency(const CentralState& inCentralState) :
-	IBuildDependency(inCentralState, BuildDependencyType::Git)
+	IExternalDependency(inCentralState, ExternalDependencyType::Git)
 {
 }
 

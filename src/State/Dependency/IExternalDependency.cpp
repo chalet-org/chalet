@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
@@ -12,20 +12,20 @@
 namespace chalet
 {
 /*****************************************************************************/
-IBuildDependency::IBuildDependency(const CentralState& inCentralState, const BuildDependencyType inType) :
+IExternalDependency::IExternalDependency(const CentralState& inCentralState, const ExternalDependencyType inType) :
 	m_centralState(inCentralState),
 	m_type(inType)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildDependency IBuildDependency::make(const BuildDependencyType inType, const CentralState& inCentralState)
+[[nodiscard]] ExternalDependency IExternalDependency::make(const ExternalDependencyType inType, const CentralState& inCentralState)
 {
 	switch (inType)
 	{
-		case BuildDependencyType::Git:
+		case ExternalDependencyType::Git:
 			return std::make_unique<GitDependency>(inCentralState);
-		case BuildDependencyType::SVN:
+		case ExternalDependencyType::SVN:
 		default:
 			break;
 	}
@@ -35,23 +35,23 @@ IBuildDependency::IBuildDependency(const CentralState& inCentralState, const Bui
 }
 
 /*****************************************************************************/
-BuildDependencyType IBuildDependency::type() const noexcept
+ExternalDependencyType IExternalDependency::type() const noexcept
 {
 	return m_type;
 }
 
 /*****************************************************************************/
-bool IBuildDependency::isGit() const noexcept
+bool IExternalDependency::isGit() const noexcept
 {
-	return m_type == BuildDependencyType::Git;
+	return m_type == ExternalDependencyType::Git;
 }
 
 /*****************************************************************************/
-const std::string& IBuildDependency::name() const noexcept
+const std::string& IExternalDependency::name() const noexcept
 {
 	return m_name;
 }
-void IBuildDependency::setName(const std::string& inValue) noexcept
+void IExternalDependency::setName(const std::string& inValue) noexcept
 {
 	if (String::startsWith('.', inValue) || String::startsWith('_', inValue) || String::startsWith('-', inValue) || String::startsWith('+', inValue))
 		return;
