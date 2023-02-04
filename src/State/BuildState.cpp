@@ -205,7 +205,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
-			Diagnostic::error("The environment must be created when the toolchain is initialized.");
+			// Diagnostic::error("The environment must be created when the toolchain is initialized.");
 			return false;
 		}
 
@@ -220,7 +220,10 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (preference.type != ToolchainType::Unknown)
 	{
 		if (!createEnvironment())
+		{
+			Diagnostic::error("Toolchain was not recognized.");
 			return false;
+		}
 	}
 	else
 	{
@@ -251,11 +254,12 @@ bool BuildState::parseToolchainFromSettingsJson()
 
 	if (m_impl->checkForEnvironment)
 	{
-		if (!createEnvironment())
-			return false;
+		// if (!createEnvironment())
+		// 	return false;
+		createEnvironment(); // If this fails, we want it to pass to validatePaths()
 	}
 
-	if (toolchain.version().empty())
+	if (m_impl->environment != nullptr && toolchain.version().empty())
 		toolchain.setVersion(m_impl->environment->detectedVersion());
 
 	if (!parser.validatePaths())
@@ -298,8 +302,8 @@ bool BuildState::initializeToolchain()
 
 	auto onError = [this]() -> bool {
 		const auto& targetArch = m_impl->environment->type() == ToolchainType::GNU ?
-			  inputs.targetArchitecture() :
-			  info.targetArchitectureTriple();
+			inputs.targetArchitecture() :
+			info.targetArchitectureTriple();
 
 		if (!targetArch.empty())
 		{

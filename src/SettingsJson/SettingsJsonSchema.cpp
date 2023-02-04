@@ -472,7 +472,8 @@ Json SettingsJsonSchema::get()
 
 	auto toolchain = R"json({
 		"type": "object",
-		"description": "A list of compilers and tools needing for the build itself."
+		"description": "A list of compilers and tools needing for the build itself.",
+		"additionalProperties": false
 	})json"_ojson;
 	toolchain[SKeys::Properties] = Json::object();
 	toolchain[SKeys::Properties][Keys::ToolchainArchiver] = defs[Defs::Archiver];
@@ -489,9 +490,13 @@ Json SettingsJsonSchema::get()
 	toolchain[SKeys::Properties][Keys::ToolchainBuildStrategy] = defs[Defs::ToolchainBuildStrategy];
 	toolchain[SKeys::Properties][Keys::ToolchainVersion] = defs[Defs::Version];
 
+	Json toolchainRef = Json::object();
+	toolchainRef["$ref"] = std::string("#/definitions/toolchain");
+
 	//
 	ret[SKeys::Definitions] = Json::object();
 	ret[SKeys::Definitions]["theme-color"] = defs[Defs::ThemeColor];
+	ret[SKeys::Definitions]["toolchain"] = toolchain;
 
 	//
 	ret[SKeys::Properties] = Json::object();
@@ -547,11 +552,24 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcrun] = defs[Defs::XcRun];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsZip] = defs[Defs::Zip];
 
-	ret[SKeys::Properties][Keys::Toolchains] = R"json({
-		"type": "object",
-		"description": "A list of toolchains."
-	})json"_ojson;
-	ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][R"(^[\w\-+.]{3,}$)"] = toolchain;
+	{
+		std::string toolchainNamePattern{ R"(^[\w\-+.]{3,}$)" };
+		ret[SKeys::Properties][Keys::Toolchains] = R"json({
+			"type": "object",
+			"description": "A list of toolchains."
+		})json"_ojson;
+		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf] = Json::array();
+		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][0] = toolchainRef;
+
+		std::string toolchainArchPattern{ R"(^(x86_64|i686|i386|arm|armhf|arm64|aarch64|amd64|x64|x86|x64_x64|x64_x86|x64_arm|x64_arm64|x86_x86|x86_x64|x86_arm|x86_arm64|arm64_arm64|arm64_x64|arm64_x86)$)" };
+		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][1] = R"json({
+			"type": "object",
+			"patternProperties": {},
+			"additionalProperties": false
+		})json"_ojson;
+		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][1][SKeys::PatternProperties][toolchainArchPattern] = toolchainRef;
+		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][1][SKeys::PatternProperties][toolchainArchPattern][SKeys::Description] = "A list of compilers and tools needing for this toolchain architecture.";
+	}
 
 	ret[SKeys::Properties][Keys::AppleSdks] = R"json({
 		"type": "object",

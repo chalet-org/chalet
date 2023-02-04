@@ -93,6 +93,7 @@ struct CommandLineInputs
 
 	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
+	bool isToolchainMultiArchPreset() const noexcept;
 
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
@@ -110,6 +111,7 @@ struct CommandLineInputs
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
+	std::string resolvedTargetArchitecture() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) const noexcept;
 
 	const StringList& universalArches() const noexcept;
@@ -257,6 +259,7 @@ private:
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isToolchainPreset = false;
+	mutable bool m_isToolchainMultiArchPreset = false;
 	bool m_saveUserToolchainGlobally = false;
 };
 }

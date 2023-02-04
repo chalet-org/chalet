@@ -129,14 +129,7 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 /*****************************************************************************/
 bool CompileEnvironmentIntel::validateArchitectureFromInput()
 {
-	std::string target = m_state.inputs.targetArchitecture();
-	if (target.empty())
-	{
-		target = m_state.inputs.hostArchitecture();
-
-		m_state.inputs.setTargetArchitecture(target);
-		m_state.info.setTargetArchitecture(m_state.inputs.targetArchitecture());
-	}
+	m_state.info.setTargetArchitecture(m_state.inputs.resolvedTargetArchitecture());
 
 	return true;
 }

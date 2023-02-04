@@ -529,6 +529,11 @@ bool CommandLineInputs::isToolchainPreset() const noexcept
 	return m_isToolchainPreset;
 }
 
+bool CommandLineInputs::isToolchainMultiArchPreset() const noexcept
+{
+	return m_isToolchainMultiArchPreset;
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
 {
@@ -676,6 +681,14 @@ const std::string& CommandLineInputs::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture;
 }
+std::string CommandLineInputs::resolvedTargetArchitecture() const noexcept
+{
+	if (m_targetArchitecture.empty())
+		return m_hostArchitecture;
+
+	return m_targetArchitecture;
+}
+
 void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const noexcept
 {
 	if (inValue.empty())
@@ -1026,10 +1039,12 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	m_isToolchainPreset = false;
 
+	bool autoArch = String::equals("auto", m_targetArchitecture);
+
 	bool hasGccPrefix = String::startsWith("gcc-", inValue);
 	bool hasGccSuffix = String::endsWith("-gcc", inValue);
 	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
-	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !String::equals("auto", m_targetArchitecture);
+	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !autoArch;
 
 	bool hasLlvmPrefix = String::startsWith("llvm-", inValue);
 
@@ -1048,12 +1063,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
+		m_isToolchainMultiArchPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::VisualStudio;
-		ret.buildPathStyle = BuildPathStyle::ToolchainName;
+		ret.buildPathStyle = BuildPathStyle::TargetTriple;
 		ret.cpp = "cl";
 		ret.cc = "cl";
 		ret.rc = "rc";
@@ -1192,6 +1208,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 	{
 		m_isToolchainPreset = true;
+		m_isToolchainMultiArchPreset = true;
 		m_toolchainPreferenceName = inValue;
 	#if defined(CHALET_WIN32)
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);

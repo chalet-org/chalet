@@ -5,27 +5,29 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
-			"args": [],
+			"cwd": "${workspaceFolder}/../new-project",
+			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
 			"console": "integratedTerminal",
-			"envFile": "${workspaceFolder}/.env.windows"
+			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
+			"args": [
+				"-t",
+				"msvc17",
+				"-a",
+				"booga",
+				"build"
+			]
 		},
 		{
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
-			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
+			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"--save-schema",
-				"-c",
-				"Release",
-				"buildrun",
-				"chalet"
+				"build"
 			],
 		},
 		{

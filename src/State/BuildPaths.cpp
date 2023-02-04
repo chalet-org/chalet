@@ -52,11 +52,15 @@ bool BuildPaths::initialize()
 
 	const auto& buildConfig = m_state.info.buildConfiguration();
 	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
+	const auto& arch = m_state.info.targetArchitectureString();
 
 	auto style = m_state.toolchain.buildPathStyle();
 	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
 	{
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
+		if (m_state.inputs.isToolchainMultiArchPreset())
+			m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, toolchainPreference, arch, buildConfig);
+		else
+			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
 	}
 	else if (style == BuildPathStyle::Configuration)
 	{
@@ -64,13 +68,12 @@ bool BuildPaths::initialize()
 	}
 	else if (style == BuildPathStyle::ArchConfiguration)
 	{
-		const auto& arch = m_state.info.targetArchitectureString();
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 	else // BuildPathStyle::TargetTriple
 	{
-		const auto& arch = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
+		const auto& arch2 = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch2, buildConfig);
 	}
 
 	m_intermediateDir = fmt::format("{}/int", outputDirectory);
