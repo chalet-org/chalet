@@ -5,7 +5,7 @@
 	"options": {
 		"env": {
 			"CHALET_DEBUG": "build/Debug/chalet-debug",
-			"CMAKE_BUILD_SCRIPT": "bash ./build.sh"
+			"CMAKE_BUILD_SCRIPT": "./build.sh"
 		}
 	},
 	"windows": {
