@@ -175,7 +175,7 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 		type = ICompileEnvironment::detectToolchainTypeFromPath(compiler);
 		if (type == ToolchainType::Unknown)
 		{
-			Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", compiler);
+			// Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", compiler);
 			return nullptr;
 		}
 	}

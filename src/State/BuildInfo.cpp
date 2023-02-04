@@ -21,7 +21,7 @@ BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInput
 	m_state(inState)
 {
 	m_hostArchitecture.set(inInputs.hostArchitecture());
-	setTargetArchitecture(inInputs.targetArchitecture());
+	setTargetArchitecture(inInputs.resolvedTargetArchitecture());
 
 	if (inInputs.maxJobs().has_value())
 		m_maxJobs = *inInputs.maxJobs();
@@ -177,15 +177,7 @@ const std::string& BuildInfo::targetArchitectureTripleSuffix() const noexcept
 
 void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 {
-	if (inValue.empty())
-	{
-		auto arch = Arch::getHostCpuArchitecture();
-		m_targetArchitecture.set(arch);
-	}
-	else
-	{
-		m_targetArchitecture.set(inValue);
-	}
+	m_targetArchitecture.set(inValue);
 }
 
 /*****************************************************************************/

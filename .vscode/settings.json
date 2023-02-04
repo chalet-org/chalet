@@ -27,21 +27,19 @@
 	},
 	"[cppin]": {
 		"editor.formatOnSave": false
-	},
-	"json.schemas": [
+	}
+	/*"json.schemas": [
 		{
 			"fileMatch": [
-				"chalet.json",
-				"chalet-*.json"
+				"chalet.json"
 			],
 			"url": "./schema/chalet.schema.json"
 		},
 		{
 			"fileMatch": [
-				".chaletrc",
-				"build/chalet-settings.json"
+				".chaletrc"
 			],
 			"url": "./schema/chalet-settings.schema.json"
 		}
-	]
+	]*/
 }

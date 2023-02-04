@@ -417,18 +417,24 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		}
 		else
 		{
+			// Default gnu-style
 			List::addIfDoesNotExist(ret, "x86_64");
 			List::addIfDoesNotExist(ret, "i686");
-			List::addIfDoesNotExist(ret, "x64");
-			List::addIfDoesNotExist(ret, "x86");
+			List::addIfDoesNotExist(ret, "arm64");
+			List::addIfDoesNotExist(ret, "arm");
+			// x64 host arches
 			List::addIfDoesNotExist(ret, "x64_x64");
 			List::addIfDoesNotExist(ret, "x64_x86");
 			List::addIfDoesNotExist(ret, "x64_arm");
 			List::addIfDoesNotExist(ret, "x64_arm64");
+			//
 			List::addIfDoesNotExist(ret, "x86_x86");
 			List::addIfDoesNotExist(ret, "x86_x64");
 			List::addIfDoesNotExist(ret, "x86_arm");
 			List::addIfDoesNotExist(ret, "x86_arm64");
+			// aliases
+			List::addIfDoesNotExist(ret, "x64");
+			List::addIfDoesNotExist(ret, "x86");
 		}
 	}
 #endif

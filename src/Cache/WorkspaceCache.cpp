@@ -285,6 +285,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	const auto& settingsFile = settingsJson.filename();
 	const auto& globalSettingsFile = globalSettingsJson.filename();
 	const auto& preference = inInputs.toolchainPreferenceName();
+	const auto& arch = inInputs.resolvedTargetArchitecture();
 
 	if (!settingsJson.json.contains(Keys::Options))
 	{
@@ -315,7 +316,14 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	}
 
 	auto& optionsJson = settingsJson.json.at(Keys::Options);
-	auto& toolchain = toolchains.at(preference);
+	auto fetchToolchain = [&toolchains, &preference, &arch]() -> Json& {
+		auto& rootToolchain = toolchains.at(preference);
+		if (rootToolchain.contains(arch))
+			return rootToolchain.at(arch);
+		else
+			return rootToolchain;
+	};
+	auto& toolchain = fetchToolchain();
 
 	if (optionsJson.contains(Keys::OptionsToolchain))
 	{
@@ -330,8 +338,8 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	if (optionsJson.contains(Keys::OptionsArchitecture))
 	{
 		std::string archString = inInputs.targetArchitecture().empty() ? "auto" : inInputs.targetArchitecture();
-		auto& arch = optionsJson.at(Keys::OptionsArchitecture);
-		if (arch.is_string() && arch.get<std::string>() != archString)
+		auto& archJson = optionsJson.at(Keys::OptionsArchitecture);
+		if (archJson.is_string() && archJson.get<std::string>() != archString)
 		{
 			optionsJson[Keys::OptionsArchitecture] = archString;
 			settingsJson.setDirty(true);
