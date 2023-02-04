@@ -205,7 +205,9 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
-			// Diagnostic::error("The environment must be created when the toolchain is initialized.");
+			const auto& toolchainName = inputs.toolchainPreferenceName();
+			auto arch = inputs.resolvedTargetArchitecture();
+			Diagnostic::error("The toolchain '{}' (arch: {}) could either not be detected or was not defined in settings.", toolchainName, arch);
 			return false;
 		}
 
@@ -254,9 +256,8 @@ bool BuildState::parseToolchainFromSettingsJson()
 
 	if (m_impl->checkForEnvironment)
 	{
-		// if (!createEnvironment())
-		// 	return false;
-		createEnvironment(); // If this fails, we want it to pass to validatePaths()
+		if (!createEnvironment())
+			return false;
 	}
 
 	if (m_impl->environment != nullptr && toolchain.version().empty())
