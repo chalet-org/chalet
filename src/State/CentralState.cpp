@@ -118,7 +118,10 @@ bool CentralState::initialize()
 		if (!createCache())
 			return false;
 
-		if (!validateBuildFile())
+		if (!validateAncillaryTools())
+			return false;
+
+		if (!validate())
 			return false;
 
 		Diagnostic::printDone(timer.asString());
@@ -273,9 +276,15 @@ bool CentralState::validateExternalDependencies()
 {
 	for (auto& dependency : externalDependencies)
 	{
+		if (!dependency->initialize())
+		{
+			Diagnostic::error("Error initializing the '{}' dependency.", dependency->name());
+			return false;
+		}
+
 		if (!dependency->validate())
 		{
-			Diagnostic::error("Error validating the '{}' external dependency.", dependency->name());
+			Diagnostic::error("Error validating the '{}' dependency.", dependency->name());
 			return false;
 		}
 	}
@@ -284,16 +293,13 @@ bool CentralState::validateExternalDependencies()
 }
 
 /*****************************************************************************/
-bool CentralState::validateBuildFile()
+bool CentralState::validateAncillaryTools()
 {
 	if (!tools.validate(m_inputs.homeDirectory()))
 	{
 		Diagnostic::error("Error validating ancillary tools.");
 		return false;
 	}
-
-	if (!validate())
-		return false;
 
 	return true;
 }
@@ -414,4 +420,88 @@ void CentralState::shouldCheckForUpdate(const time_t inLastUpdate, const time_t 
 
 	m_shouldPerformUpdateCheck = difference < 0 || difference >= checkDuration;
 }
+
+/*****************************************************************************/
+bool CentralState::replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+{
+	if (outString.empty())
+		return true;
+
+	if (inCheckHome)
+	{
+		const auto& homeDirectory = m_inputs.homeDirectory();
+		Environment::replaceCommonVariables(outString, homeDirectory);
+	}
+
+	if (String::contains("${", outString))
+	{
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
+				if (String::equals("cwd", match))
+					return m_inputs.workingDirectory();
+
+				// if (String::equals("architecture", match))
+				// 	return info.targetArchitectureString();
+
+				// if (String::equals("targetTriple", match))
+				// 	return info.targetArchitectureTriple();
+
+				// if (String::equals("configuration", match))
+				// 	return configuration.name();
+
+				if (String::equals("home", match))
+					return m_inputs.homeDirectory();
+
+				if (inTarget != nullptr)
+				{
+					if (String::equals("name", match))
+						return inTarget->name();
+				}
+
+				if (String::startsWith("meta:workspace", match))
+				{
+					required = false;
+					match = match.substr(14);
+					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
+				else if (String::startsWith("meta:", match))
+				{
+					match = match.substr(5);
+
+					required = false;
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
+
+				if (String::startsWith("env:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("var:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return tools.variables.get(match);
+				}
+
+				if (onFail != nullptr)
+					return onFail(std::move(match));
+
+				return std::string();
+			}))
+		{
+			const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
+			Diagnostic::error("{}: External dependency '{}' has an unsupported variable in: {}", m_inputs.inputFile(), name, outString);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 }

@@ -32,44 +32,34 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 }
 
 /*****************************************************************************/
-bool GitRunner::run()
+bool GitRunner::run(GitDependency& gitDependency)
 {
-	for (auto& dependency : m_centralState.externalDependencies)
+	bool destinationExists = Commands::pathExists(gitDependency.destination());
+	if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
+		return true;
+
+	gitDependency.setNeedsUpdate(true);
+	destinationExists = Commands::pathExists(gitDependency.destination());
+	if (fetchDependency(gitDependency, destinationExists))
 	{
-		if (dependency->isGit())
+		if (!updateDependencyCache(gitDependency))
 		{
-			auto& gitDependency = static_cast<GitDependency&>(*dependency);
-
-			bool destinationExists = Commands::pathExists(gitDependency.destination());
-			if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
-				continue;
-
-			gitDependency.setNeedsUpdate(true);
-			destinationExists = Commands::pathExists(gitDependency.destination());
-			if (fetchDependency(gitDependency, destinationExists))
-			{
-				if (!updateDependencyCache(gitDependency))
-				{
-					Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
-					return false;
-				}
-
-				continue;
-			}
-			else
-			{
-				const auto& destination = gitDependency.destination();
-
-				if (Commands::pathExists(destination))
-					Commands::removeRecursively(destination);
-			}
-
 			Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
 			return false;
 		}
+
+		return true;
+	}
+	else
+	{
+		const auto& destination = gitDependency.destination();
+
+		if (Commands::pathExists(destination))
+			Commands::removeRecursively(destination);
 	}
 
-	return true;
+	Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
+	return false;
 }
 
 /*****************************************************************************/

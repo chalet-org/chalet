@@ -16,7 +16,7 @@ struct GitRunner
 {
 	explicit GitRunner(CentralState& inCentralState);
 
-	bool run();
+	bool run(GitDependency& gitDependency);
 
 private:
 	bool gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists);

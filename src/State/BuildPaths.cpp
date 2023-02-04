@@ -11,7 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -19,6 +19,9 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+
+#include "State/Dependency/LocalDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
 
 namespace chalet
 {
@@ -172,7 +175,20 @@ std::string BuildPaths::getExternalDir(const std::string& inName) const
 	{
 		if (String::equals(dep->name(), inName))
 		{
-			return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			if (dep->isGit())
+			{
+				return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			}
+			else if (dep->isScript())
+			{
+				const auto& scriptDep = static_cast<const ScriptDependency&>(*dep);
+				return scriptDep.file();
+			}
+			else if (dep->isLocal())
+			{
+				const auto& localDep = static_cast<const LocalDependency&>(*dep);
+				return localDep.path();
+			}
 		}
 	}
 

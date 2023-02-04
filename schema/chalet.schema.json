@@ -644,56 +644,126 @@
 				}
 			}
 		},
-		"external-dependency": {
+		"external-dependency-kind": {
+			"type": "string",
+			"description": "Whether the external dependency is a git repository, local folder, or script.",
+			"minLength": 1,
+			"enum": [
+				"git",
+				"local",
+				"script"
+			]
+		},
+		"external-dependency-condition": {
+			"type": "string",
+			"description": "A rule describing when to include this dependency during the build. Only accepts env and platform variables.",
+			"minLength": 1,
+			"pattern": "^\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$"
+		},
+		"external-dependency-git": {
 			"type": "object",
-			"description": "An external dependency",
+			"additionalProperties": false,
+			"description": "An external git dependency",
 			"required": [
+				"kind",
 				"repository"
 			],
 			"properties": {
 				"branch": {
-					"$ref": "#/definitions/external-git-branch"
+					"$ref": "#/definitions/external-dependency-git-branch"
 				},
 				"commit": {
-					"$ref": "#/definitions/external-git-commit"
+					"$ref": "#/definitions/external-dependency-git-commit"
+				},
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
 				},
 				"repository": {
-					"$ref": "#/definitions/external-git-repository"
+					"$ref": "#/definitions/external-dependency-git-repository"
 				},
 				"submodules": {
-					"$ref": "#/definitions/external-git-submodules"
+					"$ref": "#/definitions/external-dependency-git-submodules"
 				},
 				"tag": {
-					"$ref": "#/definitions/external-git-tag"
+					"$ref": "#/definitions/external-dependency-git-tag"
 				}
 			}
 		},
-		"external-git-repository": {
+		"external-dependency-git-repository": {
 			"type": "string",
 			"description": "The url of the git repository.",
 			"minLength": 1,
 			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)?(\\/?|#[\\w\\d\\-._]+?)$"
 		},
-		"external-git-branch": {
+		"external-dependency-git-branch": {
 			"type": "string",
 			"description": "The branch to checkout. Uses the repository's default if not set.",
 			"minLength": 1
 		},
-		"external-git-commit": {
+		"external-dependency-git-commit": {
 			"type": "string",
 			"description": "The SHA1 hash of the commit to checkout.",
 			"pattern": "^[0-9a-f]{7,40}$",
 			"minLength": 1
 		},
-		"external-git-tag": {
+		"external-dependency-git-tag": {
 			"type": "string",
 			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
 			"minLength": 1
 		},
-		"external-git-submodules": {
+		"external-dependency-git-submodules": {
 			"type": "boolean",
 			"description": "Do submodules need to be cloned?",
 			"default": false
+		},
+		"external-dependency-local": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
+				},
+				"path": {
+					"$ref": "#/definitions/external-dependency-local-path"
+				}
+			}
+		},
+		"external-dependency-local-path": {
+			"type": "string",
+			"description": "The local path to a dependency to build from. Can take 'env' substitution variables. (ie. '${env:SOME_PATH}')",
+			"minLength": 1
+		},
+		"external-dependency-script": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"file"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
+				},
+				"file": {
+					"$ref": "#/definitions/target-script-file"
+				}
+			}
 		},
 		"variables": {
 			"type": "object",
@@ -2701,7 +2771,12 @@
 									},
 									"else": {
 										"type": "object",
-										"additionalProperties": false
+										"additionalProperties": false,
+										"properties": {
+											"kind": {
+												"$ref": "#/definitions/dist-kind"
+											}
+										}
 									}
 								}
 							}
@@ -2719,7 +2794,51 @@
 			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'.",
 			"patternProperties": {
 				"^[\\w\\-+.]{3,100}$": {
-					"$ref": "#/definitions/external-dependency"
+					"type": "object",
+					"description": "A single external dependency or script.",
+					"if": {
+						"properties": {
+							"kind": {
+								"const": "git"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/external-dependency-git"
+					},
+					"else": {
+						"if": {
+							"properties": {
+								"kind": {
+									"const": "local"
+								}
+							}
+						},
+						"then": {
+							"$ref": "#/definitions/external-dependency-local"
+						},
+						"else": {
+							"if": {
+								"properties": {
+									"kind": {
+										"const": "script"
+									}
+								}
+							},
+							"then": {
+								"$ref": "#/definitions/external-dependency-script"
+							},
+							"else": {
+								"type": "object",
+								"additionalProperties": false,
+								"properties": {
+									"kind": {
+										"$ref": "#/definitions/external-dependency-kind"
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		},
@@ -2804,11 +2923,11 @@
 										},
 										"else": {
 											"type": "object",
-											"additionalProperties": false
-										},
-										"properties": {
-											"kind": {
-												"$ref": "#/definitions/target-kind"
+											"additionalProperties": false,
+											"properties": {
+												"kind": {
+													"$ref": "#/definitions/target-kind"
+												}
 											}
 										}
 									}

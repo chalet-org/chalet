@@ -15,20 +15,25 @@ namespace chalet
 {
 /*****************************************************************************/
 GitDependency::GitDependency(const CentralState& inCentralState) :
-	IBuildDependency(inCentralState, BuildDependencyType::Git)
+	IExternalDependency(inCentralState, ExternalDependencyType::Git)
 {
+}
+
+/*****************************************************************************/
+bool GitDependency::initialize()
+{
+	if (!parseDestination())
+		return false;
+
+	return true;
 }
 
 /*****************************************************************************/
 bool GitDependency::validate()
 {
-	if (!parseDestination())
-		return false;
-
-	if (m_destination.empty() || String::startsWith('.', m_destination) || String::startsWith('/', m_destination))
+	if (m_destination.empty())
 	{
-		// This shouldn't occur, but would be pretty bad if it did
-		Diagnostic::error("The external dependency destination was blank for '{}'.", m_repository);
+		Diagnostic::error("The git dependency destination was blank for '{}'.", this->name());
 		return false;
 	}
 

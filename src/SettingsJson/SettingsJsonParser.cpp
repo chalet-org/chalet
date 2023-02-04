@@ -670,9 +670,12 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
-			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" });
-			appleSkdsJson[sdk] = std::move(sdkPath);
-			m_jsonFile.setDirty(true);
+			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
+			if (!sdkPath.empty())
+			{
+				appleSkdsJson[sdk] = std::move(sdkPath);
+				m_jsonFile.setDirty(true);
+			}
 		}
 	}
 

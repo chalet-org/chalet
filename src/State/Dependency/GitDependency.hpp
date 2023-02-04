@@ -3,17 +3,18 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEPENDENCY_GIT_HPP
-#define CHALET_DEPENDENCY_GIT_HPP
+#ifndef CHALET_GIT_DEPENDENCY_HPP
+#define CHALET_GIT_DEPENDENCY_HPP
 
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 
 namespace chalet
 {
-struct GitDependency final : public IBuildDependency
+struct GitDependency final : public IExternalDependency
 {
 	explicit GitDependency(const CentralState& inCentralState);
 
+	virtual bool initialize() final;
 	virtual bool validate() final;
 
 	const std::string& repository() const noexcept;
@@ -50,4 +51,4 @@ private:
 };
 }
 
-#endif // CHALET_DEPENDENCY_GIT_HPP
+#endif // CHALET_GIT_DEPENDENCY_HPP

@@ -11,7 +11,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Json/JsonFile.hpp"
@@ -43,10 +43,12 @@ struct CentralState
 
 	bool shouldPerformUpdateCheck() const;
 
+	bool replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
+
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
-	BuildDependencyList externalDependencies;
+	ExternalDependencyList externalDependencies;
 
 private:
 	friend struct CentralChaletJsonParser;
@@ -61,7 +63,7 @@ private:
 
 	bool validateConfigurations();
 	bool validateExternalDependencies();
-	bool validateBuildFile();
+	bool validateAncillaryTools();
 
 	bool runDependencyManager();
 
