@@ -376,6 +376,8 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 {
 	StringList ret{ "auto" };
 
+	bool handledRest = false;
+
 	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
 
 	if (String::equals("llvm", inToolchain) || String::startsWith("llvm-", inToolchain))
@@ -454,11 +456,36 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		List::addIfDoesNotExist(ret, "i686");
 	}
 #endif
-
-	auto currentArch = getCurrentArchitecture();
-	if (!currentArch.empty())
+	else
 	{
-		List::addIfDoesNotExist(ret, std::move(currentArch.front()));
+		const auto& settingsFile = getSettingsJson();
+		if (!settingsFile.is_null())
+		{
+			if (settingsFile.contains(Keys::Toolchains))
+			{
+				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				if (toolchains.contains(inToolchain))
+				{
+					const auto& toolchain = toolchains.at(inToolchain);
+					for (auto& [key, item] : toolchain.items())
+					{
+						if (item.is_object())
+							ret.emplace_back(key);
+					}
+
+					handledRest = true;
+				}
+			}
+		}
+	}
+
+	if (!handledRest)
+	{
+		auto currentArch = getCurrentArchitecture();
+		if (!currentArch.empty())
+		{
+			List::addIfDoesNotExist(ret, std::move(currentArch.front()));
+		}
 	}
 
 	return ret;
