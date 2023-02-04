@@ -17,6 +17,7 @@
 #include "Core/DotEnvFileParser.hpp"
 #include "Core/QueryController.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
+#include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
@@ -487,6 +488,40 @@ bool CentralState::replaceVariablesInString(std::string& outString, const IExter
 					required = false;
 					match = match.substr(4);
 					return tools.variables.get(match);
+				}
+
+				if (String::startsWith("external:", match))
+				{
+					match = match.substr(9);
+
+					if (String::equals(inTarget->name(), match))
+					{
+						Diagnostic::error("{}: External dependency '{}' has references itself.", m_inputs.inputFile(), inTarget->name());
+					}
+					else
+					{
+						for (auto& dep : this->externalDependencies)
+						{
+							if (String::equals(dep->name(), inTarget->name()))
+								break;
+
+							if (String::equals(dep->name(), match))
+							{
+								if (dep->isGit())
+								{
+									return fmt::format("{}/{}", m_inputs.externalDirectory(), dep->name());
+								}
+								else if (dep->isLocal())
+								{
+									const auto& localDep = static_cast<const LocalDependency&>(*dep);
+									return localDep.path();
+								}
+							}
+						}
+					}
+
+					Diagnostic::error("{}: External dependency '{}' does not exist or is required before it's declared.", m_inputs.inputFile(), match);
+					return std::string();
 				}
 
 				if (onFail != nullptr)
