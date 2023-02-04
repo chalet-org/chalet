@@ -8,7 +8,6 @@
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
-#include "State/Dependency/GitDependency.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -16,12 +15,17 @@
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
 
+#include "State/Dependency/GitDependency.hpp"
+#include "State/Dependency/LocalDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
 CentralChaletJsonParser::CentralChaletJsonParser(CentralState& inCentralState) :
 	m_centralState(inCentralState),
 	m_chaletJson(inCentralState.chaletJson()),
+	kValidPlatforms(Platform::validPlatforms()),
 	m_notPlatforms(Platform::notPlatforms()),
 	m_platform(Platform::platform())
 {
@@ -275,14 +279,76 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		return false;
 	}
 
-	ExternalDependencyType type = ExternalDependencyType::Git;
 	for (auto& [name, dependencyJson] : externalDependencies.items())
 	{
-		auto dependency = IExternalDependency::make(type, m_centralState);
+		if (!dependencyJson.is_object())
+		{
+			Diagnostic::error("{}: external dependency '{}' must be an object.", m_chaletJson.filename(), name);
+			return false;
+		}
+
+		ExternalDependencyType type = ExternalDependencyType::Local;
+		if (std::string val; m_chaletJson.assignFromKey(val, dependencyJson, "kind"))
+		{
+			if (String::equals("git", val))
+			{
+				type = ExternalDependencyType::Git;
+			}
+			else if (String::equals("local", val))
+			{
+				type = ExternalDependencyType::Local;
+			}
+			else if (String::equals("script", val))
+			{
+				type = ExternalDependencyType::Script;
+			}
+			else
+			{
+				Diagnostic::error("{}: Found unrecognized external dependency kind of '{}'", m_chaletJson.filename(), val);
+				return false;
+			}
+		}
+		else
+		{
+			Diagnostic::error("{}: Found unrecognized external dependency of '{}'", m_chaletJson.filename(), name);
+			return false;
+		}
+
+		ExternalDependency dependency = IExternalDependency::make(type, m_centralState);
 		dependency->setName(name);
 
-		if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
+		auto conditionResult = parseDependencyCondition(dependencyJson);
+		if (!conditionResult.has_value())
 			return false;
+
+		if (!(*conditionResult))
+			continue; // true to skip project
+
+		if (dependency->isGit())
+		{
+			// A script could be only for a specific platform
+			if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
+				return false;
+		}
+		else if (dependency->isLocal())
+		{
+			if (!parseLocalDependency(static_cast<LocalDependency&>(*dependency), dependencyJson))
+			{
+				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'local'.", m_chaletJson.filename(), name);
+				return false;
+			}
+		}
+		else if (dependency->isScript())
+		{
+			// A script could be only for a specific platform
+			if (!parseScriptDependency(static_cast<ScriptDependency&>(*dependency), dependencyJson))
+				return false;
+		}
+		else
+		{
+			Diagnostic::error("{}: Unknown external dependency: {}", m_chaletJson.filename(), name);
+			return false;
+		}
 
 		m_centralState.externalDependencies.emplace_back(std::move(dependency));
 	}
@@ -319,7 +385,7 @@ bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, c
 
 	if (!hasRepository)
 	{
-		Diagnostic::error("{}: 'repository' is required for all  external dependencies.", m_chaletJson.filename());
+		Diagnostic::error("{}: 'repository' is required for git dependencies.", m_chaletJson.filename());
 		return false;
 	}
 
@@ -333,6 +399,164 @@ bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, c
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseLocalDependency(LocalDependency& outDependency, const Json& inNode) const
+{
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals("path", key))
+				outDependency.setPath(value.get<std::string>());
+		}
+	}
+
+	bool hasPath = !outDependency.path().empty();
+	if (!hasPath)
+	{
+		Diagnostic::error("{}: 'path' is required for local dependencies.", m_chaletJson.filename());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDependency, const Json& inNode) const
+{
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals("file", key))
+			{
+				outDependency.setFile(value.get<std::string>());
+				valid = true;
+			}
+			else if (String::equals("arguments", key))
+				outDependency.addArgument(value.get<std::string>());
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (String::equals("arguments", key))
+				outDependency.addArguments(std::move(val));
+		}
+	}
+
+	if (!valid)
+	{
+		Diagnostic::error("{}: 'file' is required for script dependencies.", m_chaletJson.filename());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+std::optional<bool> CentralChaletJsonParser::parseDependencyCondition(const Json& inNode) const
+{
+	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
+	{
+		auto res = conditionIsValid(val);
+		if (!res.has_value())
+			return std::nullopt;
+
+		return *res;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+std::optional<bool> CentralChaletJsonParser::conditionIsValid(const std::string& inContent) const
+{
+	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
+			auto res = checkConditionVariable(inContent, key, value, negate);
+			return res == ConditionResult::Pass;
+		}))
+	{
+		if (m_adapter.lastOp == ConditionOp::InvalidOr)
+		{
+			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
+			return std::nullopt;
+		}
+
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+ConditionResult CentralChaletJsonParser::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+{
+	// LOG("  ", key, value, negate);
+
+	if (key.empty())
+	{
+		if (String::equals(kValidPlatforms, value))
+		{
+			if (negate)
+			{
+				if (String::equals(value, m_platform))
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (List::contains(m_notPlatforms, value))
+					return ConditionResult::Fail;
+			}
+		}
+		else
+		{
+			Diagnostic::error("Invalid condition '{}' found in: {}", value, inString);
+			return ConditionResult::Invalid;
+		}
+	}
+	else if (String::equals("platform", key))
+	{
+		if (!String::equals(kValidPlatforms, value))
+		{
+			Diagnostic::error("Invalid platform '{}' found in: {}", value, inString);
+			return ConditionResult::Invalid;
+		}
+
+		if (negate)
+		{
+			if (String::equals(value, m_platform))
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (List::contains(m_notPlatforms, value))
+				return ConditionResult::Fail;
+		}
+	}
+	else if (String::equals("env", key))
+	{
+		auto res = Environment::get(value.c_str());
+		if (negate)
+		{
+			if (res != nullptr)
+				return ConditionResult::Fail;
+		}
+		else
+		{
+			if (res == nullptr)
+				return ConditionResult::Fail;
+		}
+	}
+	else
+	{
+		Diagnostic::error("Invalid condition property '{}' found in: {}", key, inString);
+		return ConditionResult::Invalid;
+	}
+
+	return ConditionResult::Pass;
 }
 
 }

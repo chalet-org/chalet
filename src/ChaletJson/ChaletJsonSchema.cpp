@@ -426,6 +426,17 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	// externalDependency
 	//
+	defs[Defs::ExternalDependencyKind] = R"json({
+		"type": "string",
+		"description": "Whether the external dependency is a git repository, local folder, or script.",
+		"minLength": 1,
+		"enum": [
+			"git",
+			"local",
+			"script"
+		]
+	})json"_ojson;
+
 	defs[Defs::ExternalDependencyGitRepository] = R"json({
 		"type": "string",
 		"description": "The url of the git repository.",
@@ -456,6 +467,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "boolean",
 		"description": "Do submodules need to be cloned?",
 		"default": false
+	})json"_ojson;
+
+	defs[Defs::ExternalDependencyLocalPath] = R"json({
+		"type": "string",
+		"description": "The local path to a dependency to build from. Can take 'env' substitution variables. (ie. '${env:SOME_PATH}')",
+		"minLength": 1
 	})json"_ojson;
 
 	//
@@ -495,6 +512,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 	defs[Defs::DistributionCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternConditions);
+
+	defs[Defs::ExternalDependencyCondition] = R"json({
+		"type": "string",
+		"description": "A rule describing when to include this dependency during the build. Only accepts env and platform variables.",
+		"minLength": 1
+	})json"_ojson;
+	defs[Defs::ExternalDependencyCondition][SKeys::Pattern] = fmt::format("^{}$", kPatternConditions);
 
 	defs[Defs::TargetSourceExtends] = R"json({
 		"type": "string",
@@ -1515,23 +1539,54 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	{
-		auto externalDependency = R"json({
+		auto externalGit = R"json({
 			"type": "object",
-			"description": "An external dependency",
+			"additionalProperties": false,
+			"description": "An external git dependency",
 			"required": [
+				"kind",
 				"repository"
-			],
-			"properties": {}
+			]
 		})json"_ojson;
-		externalDependency[SKeys::Properties] = Json::object();
-		addProperty(externalDependency, "branch", Defs::ExternalDependencyGitBranch);
-		addProperty(externalDependency, "commit", Defs::ExternalDependencyGitCommit);
-		addProperty(externalDependency, "repository", Defs::ExternalDependencyGitRepository);
-		addProperty(externalDependency, "submodules", Defs::ExternalDependencyGitSubmodules);
-		addProperty(externalDependency, "tag", Defs::ExternalDependencyGitTag);
-		defs[Defs::ExternalDependency] = std::move(externalDependency);
+		externalGit[SKeys::Properties] = Json::object();
+		addProperty(externalGit, "branch", Defs::ExternalDependencyGitBranch);
+		addProperty(externalGit, "commit", Defs::ExternalDependencyGitCommit);
+		addProperty(externalGit, "condition", Defs::ExternalDependencyCondition);
+		addProperty(externalGit, "kind", Defs::ExternalDependencyKind);
+		addProperty(externalGit, "repository", Defs::ExternalDependencyGitRepository);
+		addProperty(externalGit, "submodules", Defs::ExternalDependencyGitSubmodules);
+		addProperty(externalGit, "tag", Defs::ExternalDependencyGitTag);
+		defs[Defs::ExternalDependencyGit] = std::move(externalGit);
 	}
-
+	{
+		auto externalLocal = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			]
+		})json"_ojson;
+		addProperty(externalLocal, "condition", Defs::ExternalDependencyCondition);
+		addProperty(externalLocal, "kind", Defs::ExternalDependencyKind);
+		addProperty(externalLocal, "path", Defs::ExternalDependencyLocalPath);
+		defs[Defs::ExternalDependencyLocal] = std::move(externalLocal);
+	}
+	{
+		auto externalScript = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"file"
+			]
+		})json"_ojson;
+		addProperty(externalScript, "arguments", Defs::TargetScriptArguments);
+		addProperty(externalScript, "condition", Defs::ExternalDependencyCondition);
+		addProperty(externalScript, "kind", Defs::ExternalDependencyKind);
+		addProperty(externalScript, "file", Defs::TargetScriptFile);
+		defs[Defs::ExternalDependencyScript] = std::move(externalScript);
+	}
 	{
 		auto sourceTargetCxx = R"json({
 			"type": "object",
@@ -1829,11 +1884,20 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionProcess: return "dist-process";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
-		case Defs::ExternalDependencyGitRepository: return "external-git-repository";
-		case Defs::ExternalDependencyGitBranch: return "external-git-branch";
-		case Defs::ExternalDependencyGitCommit: return "external-git-commit";
-		case Defs::ExternalDependencyGitTag: return "external-git-tag";
-		case Defs::ExternalDependencyGitSubmodules: return "external-git-submodules";
+		case Defs::ExternalDependencyKind: return "external-dependency-kind";
+		case Defs::ExternalDependencyCondition: return "external-dependency-condition";
+		//
+		case Defs::ExternalDependencyGit: return "external-dependency-git";
+		case Defs::ExternalDependencyGitRepository: return "external-dependency-git-repository";
+		case Defs::ExternalDependencyGitBranch: return "external-dependency-git-branch";
+		case Defs::ExternalDependencyGitCommit: return "external-dependency-git-commit";
+		case Defs::ExternalDependencyGitTag: return "external-dependency-git-tag";
+		case Defs::ExternalDependencyGitSubmodules: return "external-dependency-git-submodules";
+		//
+		case Defs::ExternalDependencyLocal: return "external-dependency-local";
+		case Defs::ExternalDependencyLocalPath: return "external-dependency-local-path";
+		//
+		case Defs::ExternalDependencyScript: return "external-dependency-script";
 		//
 		case Defs::Variables: return "variables";
 		case Defs::VariableValue: return "variable-value";
@@ -2084,12 +2148,13 @@ Json ChaletJsonSchema::get()
 	})json"_ojson;
 	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
 
-	ret[SKeys::Properties]["distribution"] = R"json({
+	const auto distribution = "distribution";
+	ret[SKeys::Properties][distribution] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of distribution targets to be created during the bundle phase."
 	})json"_ojson;
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName] = R"json({
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
 		"description": "A single distribution target.",
 		"if": { "properties": {
@@ -2118,20 +2183,44 @@ Json ChaletJsonSchema::get()
 		}
 	})json"_ojson;
 	//
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Then] = getDefinition(Defs::DistributionBundle);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionScript);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionArchive);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionMacosDiskImage);
-	ret[SKeys::Properties]["distribution"][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Then] = getDefinition(Defs::DistributionBundle);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionScript);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionArchive);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionMacosDiskImage);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
 
 	ret[SKeys::Properties]["variables"] = getDefinition(Defs::Variables);
 
-	ret[SKeys::Properties]["externalDependencies"] = R"json({
+	const auto externalDependencies = "externalDependencies";
+	const std::string patternExternalName{ "^[\\w\\-+.]{3,100}$" };
+	ret[SKeys::Properties][externalDependencies] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'."
 	})json"_ojson;
-	ret[SKeys::Properties]["externalDependencies"][SKeys::PatternProperties]["^[\\w\\-+.]{3,100}$"] = getDefinition(Defs::ExternalDependency);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName] = R"json({
+		"type": "object",
+		"description": "A single external dependency or script.",
+		"if": { "properties": { "kind": { "const": "git" }}},
+		"then": {},
+		"else": {
+			"if": { "properties": { "kind": { "const": "local" }}},
+			"then": {},
+			"else": {
+				"if": { "properties": { "kind": { "const": "script" }}},
+				"then": {},
+				"else": {
+					"type": "object",
+					"additionalProperties": false
+				}
+			}
+		}
+	})json"_ojson;
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Then] = getDefinition(Defs::ExternalDependencyGit);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Then] = getDefinition(Defs::ExternalDependencyLocal);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::ExternalDependencyScript);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::ExternalDependencyKind);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
@@ -2177,7 +2266,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetChalet);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetScript);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetProcess);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
 
 	return ret;
 }

@@ -6,6 +6,7 @@
 #ifndef CHALET_CHALET_JSON_PARSER_HPP
 #define CHALET_CHALET_JSON_PARSER_HPP
 
+#include "ChaletJson/ChaletJsonParserAdapter.hpp"
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -44,18 +45,6 @@ struct ChaletJsonParser
 	bool serialize();
 
 private:
-	enum class ConditionOp
-	{
-		And,
-		Or,
-		InvalidOr,
-	};
-	enum class ConditionResult
-	{
-		Fail,
-		Pass,
-		Invalid,
-	};
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode) const;
@@ -88,7 +77,6 @@ private:
 	std::optional<bool> conditionIsValid(const std::string& inContent) const;
 	ConditionResult checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 	ConditionResult checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
-	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 
 	template <typename T>
 	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
@@ -99,14 +87,14 @@ private:
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;
 
+	ChaletJsonParserAdapter m_adapter;
+
 	const StringList kValidPlatforms;
 
 	StringList m_notPlatforms;
 	// StringList m_notToolchains;
 	std::string m_platform;
 	// std::string m_toolchain;
-
-	mutable ConditionOp m_lastOp = ConditionOp::And;
 };
 }
 

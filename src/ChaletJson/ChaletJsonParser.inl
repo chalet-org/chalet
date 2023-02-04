@@ -20,7 +20,7 @@ bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& 
 
 		inStatus = JsonNodeReadStatus::ValidKeyUnreadValue;
 
-		if (!matchConditionVariables(inKey, [this, &inKey, &inStatus](const std::string& key, const std::string& value, bool negate) {
+		if (!m_adapter.matchConditionVariables(inKey, [this, &inKey, &inStatus](const std::string& key, const std::string& value, bool negate) {
 				auto res = checkConditionVariable(inKey, key, value, negate);
 				if (res == ConditionResult::Invalid)
 					inStatus = JsonNodeReadStatus::Invalid;
@@ -28,7 +28,7 @@ bool ChaletJsonParser::valueMatchesSearchKeyPattern(T& outVariable, const Json& 
 				return res == ConditionResult::Pass;
 			}))
 		{
-			if (m_lastOp == ConditionOp::InvalidOr)
+			if (m_adapter.lastOp == ConditionOp::InvalidOr)
 			{
 				inStatus = JsonNodeReadStatus::Invalid;
 				Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inKey);

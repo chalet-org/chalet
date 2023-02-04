@@ -12,7 +12,9 @@ namespace chalet
 enum class ExternalDependencyType : ushort
 {
 	Git,
-	SVN,
+	Local,
+	// SVN,
+	Script,
 };
 }
 

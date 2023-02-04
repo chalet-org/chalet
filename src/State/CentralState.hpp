@@ -43,6 +43,8 @@ struct CentralState
 
 	bool shouldPerformUpdateCheck() const;
 
+	bool replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
+
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
 	AncillaryTools tools;
@@ -61,7 +63,7 @@ private:
 
 	bool validateConfigurations();
 	bool validateExternalDependencies();
-	bool validateBuildFile();
+	bool validateAncillaryTools();
 
 	bool runDependencyManager();
 

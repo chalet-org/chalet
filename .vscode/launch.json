@@ -16,12 +16,16 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../chalet-example-openframeworks",
+			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "Build: Debug",
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
 			"args": [
-				"build"
+				"--save-schema",
+				"-c",
+				"Release",
+				"buildrun",
+				"chalet"
 			],
 		},
 		{

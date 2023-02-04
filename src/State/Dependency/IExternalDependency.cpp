@@ -6,8 +6,11 @@
 #include "State/Dependency/IExternalDependency.hpp"
 
 #include "State/CentralState.hpp"
-#include "State/Dependency/GitDependency.hpp"
 #include "Utility/String.hpp"
+
+#include "State/Dependency/GitDependency.hpp"
+#include "State/Dependency/LocalDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
 
 namespace chalet
 {
@@ -25,7 +28,11 @@ IExternalDependency::IExternalDependency(const CentralState& inCentralState, con
 	{
 		case ExternalDependencyType::Git:
 			return std::make_unique<GitDependency>(inCentralState);
-		case ExternalDependencyType::SVN:
+		case ExternalDependencyType::Local:
+			return std::make_unique<LocalDependency>(inCentralState);
+		case ExternalDependencyType::Script:
+			return std::make_unique<ScriptDependency>(inCentralState);
+		// case ExternalDependencyType::SVN:
 		default:
 			break;
 	}
@@ -44,6 +51,30 @@ ExternalDependencyType IExternalDependency::type() const noexcept
 bool IExternalDependency::isGit() const noexcept
 {
 	return m_type == ExternalDependencyType::Git;
+}
+
+/*****************************************************************************/
+bool IExternalDependency::isLocal() const noexcept
+{
+	return m_type == ExternalDependencyType::Local;
+}
+
+/*****************************************************************************/
+bool IExternalDependency::isScript() const noexcept
+{
+	return m_type == ExternalDependencyType::Script;
+}
+
+/*****************************************************************************/
+bool IExternalDependency::replaceVariablesInPathList(StringList& outList)
+{
+	for (auto& dir : outList)
+	{
+		if (!m_centralState.replaceVariablesInString(dir, this))
+			return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

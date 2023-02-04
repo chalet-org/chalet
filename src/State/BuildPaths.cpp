@@ -20,6 +20,9 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
+#include "State/Dependency/LocalDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
+
 namespace chalet
 {
 BuildPaths::BuildPaths(const BuildState& inState) :
@@ -172,7 +175,20 @@ std::string BuildPaths::getExternalDir(const std::string& inName) const
 	{
 		if (String::equals(dep->name(), inName))
 		{
-			return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			if (dep->isGit())
+			{
+				return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			}
+			else if (dep->isScript())
+			{
+				const auto& scriptDep = static_cast<const ScriptDependency&>(*dep);
+				return scriptDep.file();
+			}
+			else if (dep->isLocal())
+			{
+				const auto& localDep = static_cast<const LocalDependency&>(*dep);
+				return localDep.path();
+			}
 		}
 	}
 

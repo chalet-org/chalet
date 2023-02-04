@@ -21,15 +21,20 @@ struct IExternalDependency
 
 	[[nodiscard]] static ExternalDependency make(const ExternalDependencyType inType, const CentralState& inCentralState);
 
+	virtual bool initialize() = 0;
 	virtual bool validate() = 0;
 
 	ExternalDependencyType type() const noexcept;
 	bool isGit() const noexcept;
+	bool isLocal() const noexcept;
+	bool isScript() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
 protected:
+	bool replaceVariablesInPathList(StringList& outList);
+
 	const CentralState& m_centralState;
 
 private:

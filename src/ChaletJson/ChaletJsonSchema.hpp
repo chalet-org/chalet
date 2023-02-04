@@ -59,11 +59,20 @@ class ChaletJsonSchema
 		DistributionProcess,
 		//
 		ExternalDependency,
+		ExternalDependencyKind,
+		ExternalDependencyCondition,
+		//
+		ExternalDependencyGit,
 		ExternalDependencyGitRepository,
 		ExternalDependencyGitBranch,
 		ExternalDependencyGitCommit,
 		ExternalDependencyGitTag,
 		ExternalDependencyGitSubmodules,
+		//
+		ExternalDependencyLocal,
+		ExternalDependencyLocalPath,
+		//
+		ExternalDependencyScript,
 		//
 		// EnumPlatform,
 		//
