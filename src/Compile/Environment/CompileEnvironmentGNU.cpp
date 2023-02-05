@@ -276,7 +276,13 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 #endif
 		}
 
-		if (!emptyInputArch && !String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
+		std::string archFromInfo = m_state.info.targetArchitectureString();
+		if (String::equals("armhf", archFromInfo))
+		{
+			archFromInfo = "arm";
+		}
+
+		if (!emptyInputArch && !String::startsWith(archFromInfo, cachedArch))
 		{
 			auto expectedArch = Arch::from(cachedArch);
 			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
