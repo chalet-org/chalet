@@ -8,12 +8,14 @@ elif [[ $OSTYPE == 'msys' || $OSTYPE == 'win32' ]]; then
 	PLATFORM=windows
 fi
 
-if [[ $PLATFORM == "windows" ]]; then
-	PATH="/c/msys64/mingw64/bin:$PATH"
-fi
-
 bash ./fetch_externals.sh
 
-bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
+if [[ $PLATFORM == "windows" ]]; then
+	# PATH="/c/msys64/mingw64/bin:$PATH"
+	# bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
+	./build.bat Debug && build/msvc_Debug/chalet-debug -c Release buildrun
+else
+	bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
+fi
 
 echo "exited with code $?"
