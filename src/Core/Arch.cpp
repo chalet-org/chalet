@@ -14,6 +14,14 @@
 namespace chalet
 {
 /*****************************************************************************/
+Arch Arch::from(const std::string& inValue)
+{
+	Arch arch;
+	arch.set(inValue);
+	return arch;
+}
+
+/*****************************************************************************/
 std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
@@ -121,6 +129,11 @@ void Arch::set(const std::string& inValue)
 		str = Arch::toGnuArch(str);
 		triple = fmt::format("{}{}", str, suffix);
 	}
+
+#if defined(CHALET_LINUX)
+	if (String::endsWith("eabihf", triple))
+		str += "hf";
+#endif
 
 	if (String::equals("x86_64", str))
 	{

@@ -39,6 +39,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopAtEntry": false,
 			"args": [
+				"-t",
+				"gcc",
+				"-a",
+				"auto",
 				"build"
 			],
 			"externalConsole": false,

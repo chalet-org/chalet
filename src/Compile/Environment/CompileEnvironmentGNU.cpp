@@ -278,16 +278,15 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 
 		if (!emptyInputArch && !String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
 		{
-			Arch expectedArch;
-			expectedArch.set(cachedArch);
+			auto expectedArch = Arch::from(cachedArch);
 			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
-			if (m_genericGcc)
+			/*if (m_genericGcc)
 			{
-				const auto& arch = m_state.info.targetArchitectureString();
-				auto name = m_state.inputs.toolchainPreferenceName();
-				String::replaceAll(name, arch, expectedArch.str);
-				m_state.inputs.setToolchainPreferenceName(std::move(name));
-			}
+				// const auto& arch = m_state.info.targetArchitectureString();
+				// auto name = m_state.inputs.toolchainPreferenceName();
+				// String::replaceAll(name, arch, expectedArch.str);
+				// m_state.inputs.setToolchainPreferenceName(std::move(name));
+			}*/
 			return false;
 		}
 
@@ -304,14 +303,14 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 /*****************************************************************************/
 bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
-	auto& toolchain = m_state.inputs.toolchainPreferenceName();
+	/*auto& toolchain = m_state.inputs.toolchainPreferenceName();
 	// If the tooclhain was a preset and was not a target triple
 	if (m_state.inputs.isToolchainPreset() && (String::equals("gcc", toolchain) || String::startsWith("gcc-", toolchain)))
 	{
-		const auto& arch = m_state.info.targetArchitectureString();
-		m_state.inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
+		// const auto& arch = m_state.info.targetArchitectureString();
+		// m_state.inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
 		m_genericGcc = true;
-	}
+	}*/
 
 	return true;
 }

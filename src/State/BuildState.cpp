@@ -206,7 +206,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		if (m_impl->environment == nullptr)
 		{
 			const auto& toolchainName = inputs.toolchainPreferenceName();
-			auto arch = inputs.resolvedTargetArchitecture();
+			auto arch = inputs.getResolvedTargetArchitecture();
 			Diagnostic::error("The toolchain '{}' (arch: {}) could either not be detected or was not defined in settings.", toolchainName, arch);
 			return false;
 		}

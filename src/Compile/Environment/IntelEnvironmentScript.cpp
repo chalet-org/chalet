@@ -120,7 +120,7 @@ bool IntelEnvironmentScript::saveEnvironmentFromScript()
 	if (!String::equals(allowedArches, m_intelSetVarsArch))
 	{
 		auto setVarsFile = String::getPathFilename(m_intelSetVars);
-		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.resolvedTargetArchitecture(), setVarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.getResolvedTargetArchitecture(), setVarsFile);
 		return false;
 	}
 

@@ -39,7 +39,7 @@ protected:
 private:
 	std::string getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError = PipeOption::Close);
 
-	bool m_genericGcc = false;
+	// bool m_genericGcc = false;
 };
 }
 

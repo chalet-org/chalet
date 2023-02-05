@@ -23,6 +23,7 @@ struct Arch
 	std::string suffix;
 	Cpu val = Cpu::Unknown;
 
+	static Arch from(const std::string& inValue);
 	static std::string getHostCpuArchitecture();
 	static std::string toGnuArch(const std::string& inValue);
 	static std::string toVSArch(Arch::Cpu inCpu);

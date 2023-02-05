@@ -6,6 +6,7 @@
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -32,7 +33,7 @@ bool ToolchainSettingsJsonParser::serialize()
 
 	auto& rootNode = m_jsonFile.json;
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
-	auto arch = m_state.inputs.resolvedTargetArchitecture();
+	auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
 	auto& toolchains = rootNode["toolchains"];
 
@@ -50,12 +51,13 @@ bool ToolchainSettingsJsonParser::serialize()
 	auto& node = toolchains.at(preferenceName);
 	if (m_state.inputs.isToolchainMultiArchPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown)
 	{
-		if (!node.contains(arch))
+		auto arch2 = Arch::from(arch);
+		if (!node.contains(arch2.str))
 		{
-			node[arch] = Json::object();
+			node[arch2.str] = Json::object();
 		}
 
-		if (!serialize(node.at(arch)))
+		if (!serialize(node.at(arch2.str)))
 			return false;
 	}
 	else
@@ -144,7 +146,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 	if (!result)
 	{
 		auto& preference = m_state.inputs.toolchainPreferenceName();
-		auto arch = m_state.inputs.resolvedTargetArchitecture();
+		auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
 		Diagnostic::error("{}: The requested toolchain of '{}' (arch: {}) could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, arch, Environment::getPathKey());
 	}

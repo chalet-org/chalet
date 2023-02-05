@@ -76,10 +76,10 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		auto targetTriple = m_state.info.targetArchitectureTriple();
+		auto targetArch = m_state.info.targetArchitectureTriple();
 
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-		if (emptyInputArch || !String::contains('-', targetTriple))
+		if (emptyInputArch || !String::contains('-', targetArch))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
@@ -94,19 +94,19 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			if (arch == Arch::Cpu::ARMHF)
 			{
 				suffix += "eabihf";
-				targetTriple = "arm";
+				targetArch = "arm";
 			}
 			else if (arch == Arch::Cpu::ARM)
 			{
 				suffix += "eabi";
-				targetTriple = "arm";
+				targetArch = "arm";
 			}
 			else if (arch == Arch::Cpu::ARM64)
 			{
-				targetTriple = "aarch64";
+				targetArch = "aarch64";
 			}
 #endif
-			cachedArch = fmt::format("{}{}", targetTriple, suffix);
+			cachedArch = fmt::format("{}{}", targetArch, suffix);
 
 #if defined(CHALET_LINUX)
 			auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
@@ -116,7 +116,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			if (!found && String::startsWith("-pc-linux-gnu", suffix))
 			{
 				suffix = suffix.substr(3);
-				cachedArch = fmt::format("{}{}", targetTriple, suffix);
+				cachedArch = fmt::format("{}{}", targetArch, suffix);
 
 				searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 				searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
@@ -140,7 +140,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		}
 		else
 		{
-			cachedArch = targetTriple;
+			cachedArch = targetArch;
 		}
 	}
 

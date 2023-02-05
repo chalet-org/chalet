@@ -111,7 +111,7 @@ struct CommandLineInputs
 
 	const std::string& hostArchitecture() const noexcept;
 	const std::string& targetArchitecture() const noexcept;
-	std::string resolvedTargetArchitecture() const noexcept;
+	std::string getResolvedTargetArchitecture() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) const noexcept;
 
 	const StringList& universalArches() const noexcept;
@@ -178,6 +178,7 @@ private:
 	QueryOption getQueryOptionFromString(const std::string& inValue) const;
 	VisualStudioVersion getVisualStudioVersionFromPresetString(const std::string& inValue) const;
 	InitTemplateType getInitTemplateFromString(const std::string& inValue) const;
+	std::string getValidGccArchTripleFromArch(const std::string& inArch) const;
 
 	mutable ToolchainPreference m_toolchainPreference;
 

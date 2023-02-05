@@ -561,7 +561,7 @@ Json SettingsJsonSchema::get()
 		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf] = Json::array();
 		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][0] = toolchainRef;
 
-		std::string toolchainArchPattern{ R"(^(x86_64|i686|i386|arm|armhf|arm64|aarch64|amd64|x64|x86|x64_x64|x64_x86|x64_arm|x64_arm64|x86_x86|x86_x64|x86_arm|x86_arm64|arm64_arm64|arm64_x64|arm64_x86)$)" };
+		std::string toolchainArchPattern{ R"(^[\w\-+.]{3,}$)" };
 		ret[SKeys::Properties][Keys::Toolchains][SKeys::PatternProperties][toolchainNamePattern][SKeys::OneOf][1] = R"json({
 			"type": "object",
 			"patternProperties": {},

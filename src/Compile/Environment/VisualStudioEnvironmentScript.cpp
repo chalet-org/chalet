@@ -393,7 +393,7 @@ bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildSta
 	};
 
 	std::string host;
-	std::string target = gnuArchToMsvcArch(inState.inputs.resolvedTargetArchitecture());
+	std::string target = gnuArchToMsvcArch(inState.inputs.getResolvedTargetArchitecture());
 
 	const auto& compiler = inState.toolchain.compilerCxxAny().path;
 	if (!compiler.empty())
@@ -436,7 +436,7 @@ bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildSta
 		{
 			const auto& preferenceName = inState.inputs.toolchainPreferenceName();
 			Diagnostic::error("Expected host '{}' and target '{}'. Please use a different toolchain or create a new one for this architecture.", hostFromCompilerPath, targetFromCompilerPath);
-			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", inState.inputs.resolvedTargetArchitecture(), preferenceName);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", inState.inputs.getResolvedTargetArchitecture(), preferenceName);
 			return false;
 		}
 	}

@@ -21,7 +21,7 @@ BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInput
 	m_state(inState)
 {
 	m_hostArchitecture.set(inInputs.hostArchitecture());
-	setTargetArchitecture(inInputs.resolvedTargetArchitecture());
+	setTargetArchitecture(inInputs.getResolvedTargetArchitecture());
 
 	if (inInputs.maxJobs().has_value())
 		m_maxJobs = *inInputs.maxJobs();

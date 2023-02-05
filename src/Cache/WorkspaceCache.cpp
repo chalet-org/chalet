@@ -5,6 +5,7 @@
 
 #include "Cache/WorkspaceCache.hpp"
 
+#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildPaths.hpp"
@@ -285,7 +286,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	const auto& settingsFile = settingsJson.filename();
 	const auto& globalSettingsFile = globalSettingsJson.filename();
 	const auto& preference = inInputs.toolchainPreferenceName();
-	const auto& arch = inInputs.resolvedTargetArchitecture();
+	const auto& arch = inInputs.getResolvedTargetArchitecture();
 
 	if (!settingsJson.json.contains(Keys::Options))
 	{
@@ -317,9 +318,10 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	auto& optionsJson = settingsJson.json.at(Keys::Options);
 	auto fetchToolchain = [&toolchains, &preference, &arch]() -> Json& {
+		auto arch2 = Arch::from(arch);
 		auto& rootToolchain = toolchains.at(preference);
-		if (rootToolchain.contains(arch))
-			return rootToolchain.at(arch);
+		if (rootToolchain.contains(arch2.str))
+			return rootToolchain.at(arch2.str);
 		else
 			return rootToolchain;
 	};
@@ -337,7 +339,19 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	if (optionsJson.contains(Keys::OptionsArchitecture))
 	{
-		std::string archString = inInputs.targetArchitecture().empty() ? "auto" : inInputs.targetArchitecture();
+		std::string archString{ "auto" };
+		if (!inInputs.targetArchitecture().empty())
+		{
+			if (String::equals("gcc", preference))
+			{
+				auto arch2 = Arch::from(arch);
+				archString = arch2.str;
+			}
+			else
+			{
+				archString = inInputs.targetArchitecture();
+			}
+		}
 		auto& archJson = optionsJson.at(Keys::OptionsArchitecture);
 		if (archJson.is_string() && archJson.get<std::string>() != archString)
 		{
