@@ -58,7 +58,8 @@ IProjectExporter::~IProjectExporter() = default;
 /*****************************************************************************/
 std::string IProjectExporter::getProjectBuildFolder(const CommandLineInputs& inInputs)
 {
-	return fmt::format("{}/.project", inInputs.outputDirectory());
+	// return fmt::format("{}/.project", inInputs.outputDirectory());
+	return inInputs.outputDirectory();
 }
 
 /*****************************************************************************/

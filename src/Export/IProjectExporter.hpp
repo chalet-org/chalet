@@ -39,7 +39,7 @@ protected:
 	const std::string& workingDirectory() const noexcept;
 
 	bool useDirectory(const std::string& inDirectory);
-	bool useProjectBuildDirectory(const std::string& inSubDirectory = std::string());
+	bool useProjectBuildDirectory(const std::string& inSubDirectory);
 	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 

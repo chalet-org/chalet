@@ -48,7 +48,7 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool CodeBlocksProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory())
+	if (!useProjectBuildDirectory(".codeblocks"))
 		return false;
 
 	auto state = getAnyBuildStateButPreferDebug();

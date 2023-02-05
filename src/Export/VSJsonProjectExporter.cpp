@@ -48,7 +48,7 @@ bool VSJsonProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSJsonProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory("vsjson"))
+	if (!useProjectBuildDirectory(".vsjson"))
 		return false;
 
 	const BuildState* state = getAnyBuildStateButPreferDebug();
