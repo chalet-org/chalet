@@ -45,16 +45,20 @@ int Application::run(const int argc, const char* argv[])
 /*****************************************************************************/
 bool Application::handleRoute()
 {
+#if !defined(CHALET_DEBUG)
 	CHALET_TRY
+#endif
 	{
 		Router routes(*m_inputs);
 		return routes.run();
 	}
+#if !defined(CHALET_DEBUG)
 	CHALET_CATCH(const std::exception& err)
 	{
 		Diagnostic::error("Uncaught exception: {}", err.what());
 		return false;
 	}
+#endif
 }
 
 /*****************************************************************************/

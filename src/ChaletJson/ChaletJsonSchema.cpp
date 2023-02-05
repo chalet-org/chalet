@@ -136,18 +136,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	//
 	// distribution
+	// bundle, script, process, archive, macosDiskImage
 	//
 	defs[Defs::DistributionKind] = R"json({
 		"type": "string",
 		"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
-		"minLength": 1,
-		"enum": [
-			"bundle",
-			"script",
-			"process",
-			"archive",
-			"macosDiskImage"
-		]
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::DistributionBundleInclude] = makeArrayOrString(R"json({
@@ -425,16 +419,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	//
 	// externalDependency
+	// git, local, script
 	//
 	defs[Defs::ExternalDependencyKind] = R"json({
 		"type": "string",
 		"description": "Whether the external dependency is a git repository, local folder, or script.",
-		"minLength": 1,
-		"enum": [
-			"git",
-			"local",
-			"script"
-		]
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitRepository] = R"json({
@@ -598,19 +588,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditions)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["exclude"];
 	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditions)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["include"];
 
+	// staticLibrary, sharedLibrary, executable, cmakeProject, chaletProject, script, process
+	//
 	defs[Defs::TargetKind] = R"json({
 		"type": "string",
 		"description": "The type of the target's compiled binary, a script or external project.",
-		"minLength": 1,
-		"enum": [
-			"staticLibrary",
-			"sharedLibrary",
-			"executable",
-			"cmakeProject",
-			"chaletProject",
-			"script",
-			"process"
-		]
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::TargetSourceLanguage] = R"json({
@@ -1481,7 +1464,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(distTarget, "exclude", Defs::DistributionBundleExclude, kPatternConditions);
 		addPropertyAndPattern(distTarget, "include", Defs::DistributionBundleInclude, kPatternConditions);
 		addProperty(distTarget, "includeDependentSharedLibraries", Defs::DistributionBundleIncludeDependentSharedLibraries);
-		addProperty(distTarget, "kind", Defs::DistributionKind);
+		addKind(distTarget, defs, Defs::DistributionKind, "bundle");
 		addProperty(distTarget, "linuxDesktopEntry", Defs::DistributionBundleLinuxDesktopEntry, false);
 		addProperty(distTarget, "macosBundle", Defs::DistributionBundleMacOSBundle, false);
 		addProperty(distTarget, "mainExecutable", Defs::DistributionBundleMainExecutable);
@@ -1502,7 +1485,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(distArchive, "condition", Defs::DistributionCondition);
 		addPropertyAndPattern(distArchive, "format", Defs::DistributionArchiveFormat, kPatternConditions);
 		addPropertyAndPattern(distArchive, "include", Defs::DistributionArchiveInclude, kPatternConditions);
-		addProperty(distArchive, "kind", Defs::DistributionKind);
+		addKind(distArchive, defs, Defs::DistributionKind, "archive");
 		addProperty(distArchive, "outputDescription", Defs::TargetOutputDescription);
 		defs[Defs::DistributionArchive] = std::move(distArchive);
 	}
@@ -1520,13 +1503,43 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		distMacosDiskImage[SKeys::Properties]["background"] = defs[Defs::DistributionMacosDiskImageBackground];
 		addProperty(distMacosDiskImage, "iconSize", Defs::DistributionMacosDiskImageIconSize);
-		addProperty(distMacosDiskImage, "kind", Defs::DistributionKind);
+		addKind(distMacosDiskImage, defs, Defs::DistributionKind, "macosDiskImage");
 		addProperty(distMacosDiskImage, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(distMacosDiskImage, "pathbarVisible", Defs::DistributionMacosDiskImagePathbarVisible);
 		addProperty(distMacosDiskImage, "positions", Defs::DistributionMacosDiskImagePositions, false);
 		addProperty(distMacosDiskImage, "size", Defs::DistributionMacosDiskImageSize, false);
 		addProperty(distMacosDiskImage, "textSize", Defs::DistributionMacosDiskImageTextSize);
 		defs[Defs::DistributionMacosDiskImage] = std::move(distMacosDiskImage);
+	}
+	{
+		auto distScript = R"json({
+			"type": "object",
+			"additionalProperties": false
+		})json"_ojson;
+		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
+		addProperty(distScript, "condition", Defs::DistributionCondition);
+		addKind(distScript, defs, Defs::DistributionKind, "script");
+		addPropertyAndPattern(distScript, "file", Defs::TargetScriptFile, kPatternConditions);
+		addProperty(distScript, "outputDescription", Defs::TargetOutputDescription);
+		defs[Defs::DistributionScript] = std::move(distScript);
+	}
+	{
+		// DistributionProcess
+		auto distProcess = R"json({
+			"type": "object",
+			"description": "Run a process",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			]
+		})json"_ojson;
+		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
+		addProperty(distProcess, "condition", Defs::DistributionCondition);
+		addKind(distProcess, defs, Defs::DistributionKind, "process");
+		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConditions);
+		defs[Defs::DistributionProcess] = std::move(distProcess);
 	}
 
 	{
@@ -1552,7 +1565,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(externalGit, "branch", Defs::ExternalDependencyGitBranch);
 		addProperty(externalGit, "commit", Defs::ExternalDependencyGitCommit);
 		addProperty(externalGit, "condition", Defs::ExternalDependencyCondition);
-		addProperty(externalGit, "kind", Defs::ExternalDependencyKind);
+		addKind(externalGit, defs, Defs::ExternalDependencyKind, "git");
 		addProperty(externalGit, "repository", Defs::ExternalDependencyGitRepository);
 		addProperty(externalGit, "submodules", Defs::ExternalDependencyGitSubmodules);
 		addProperty(externalGit, "tag", Defs::ExternalDependencyGitTag);
@@ -1568,7 +1581,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		addProperty(externalLocal, "condition", Defs::ExternalDependencyCondition);
-		addProperty(externalLocal, "kind", Defs::ExternalDependencyKind);
+		addKind(externalLocal, defs, Defs::ExternalDependencyKind, "local");
 		addProperty(externalLocal, "path", Defs::ExternalDependencyLocalPath);
 		defs[Defs::ExternalDependencyLocal] = std::move(externalLocal);
 	}
@@ -1583,7 +1596,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addProperty(externalScript, "arguments", Defs::TargetScriptArguments);
 		addProperty(externalScript, "condition", Defs::ExternalDependencyCondition);
-		addProperty(externalScript, "kind", Defs::ExternalDependencyKind);
+		addKind(externalScript, defs, Defs::ExternalDependencyKind, "script");
 		addProperty(externalScript, "file", Defs::TargetScriptFile);
 		defs[Defs::ExternalDependencyScript] = std::move(externalScript);
 	}
@@ -1682,7 +1695,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetSource, "configureFiles", Defs::TargetSourceConfigureFiles);
 		addProperty(targetSource, "extends", Defs::TargetSourceExtends);
 		addPropertyAndPattern(targetSource, "files", Defs::TargetSourceFiles, kPatternConditions);
-		addProperty(targetSource, "kind", Defs::TargetKind);
+		addKindEnum(targetSource, defs, Defs::TargetKind, { "staticLibrary", "sharedLibrary" });
 		addPropertyAndPattern(targetSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(targetSource, "metadata", Defs::TargetSourceMetadata);
 		addProperty(targetSource, "outputDescription", Defs::TargetOutputDescription);
@@ -1695,6 +1708,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 		//
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
+		addKind(defs[Defs::TargetSourceExecutable], defs, Defs::TargetKind, "executable");
 		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 	}
@@ -1709,29 +1723,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(targetScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(targetScript, "condition", Defs::TargetCondition);
-		addProperty(targetScript, "kind", Defs::TargetKind);
+		addKind(targetScript, defs, Defs::TargetKind, "script");
 		// addProperty(targetScript, "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addPropertyAndPattern(targetScript, "file", Defs::TargetScriptFile, kPatternConditions);
 		addProperty(targetScript, "outputDescription", Defs::TargetOutputDescription);
 		defs[Defs::TargetScript] = std::move(targetScript);
 	}
-
 	{
-		auto distScript = R"json({
-			"type": "object",
-			"additionalProperties": false
-		})json"_ojson;
-		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
-		addProperty(distScript, "condition", Defs::DistributionCondition);
-		addProperty(distScript, "kind", Defs::DistributionKind);
-		addPropertyAndPattern(distScript, "file", Defs::TargetScriptFile, kPatternConditions);
-		addProperty(distScript, "outputDescription", Defs::TargetOutputDescription);
-		defs[Defs::DistributionScript] = std::move(distScript);
-	}
-
-	{
-		// DistributionProcess
-		auto distProcess = R"json({
+		auto targetProcess = R"json({
 			"type": "object",
 			"description": "Run a process",
 			"additionalProperties": false,
@@ -1740,13 +1739,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"path"
 			]
 		})json"_ojson;
-		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
-		addProperty(distProcess, "condition", Defs::DistributionCondition);
-		addProperty(distProcess, "kind", Defs::DistributionKind);
-		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
-		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConditions);
-		defs[Defs::DistributionProcess] = std::move(distProcess);
+		addPropertyAndPattern(targetProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
+		addProperty(targetProcess, "condition", Defs::TargetCondition);
+		addKind(targetProcess, defs, Defs::TargetKind, "process");
+		addProperty(targetProcess, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(targetProcess, "path", Defs::TargetProcessPath, kPatternConditions);
+		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
+
 	{
 		auto targetCMake = R"json({
 			"type": "object",
@@ -1761,7 +1761,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "condition", Defs::TargetCondition);
 		addProperty(targetCMake, "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addPropertyAndPattern(targetCMake, "defines", Defs::TargetCMakeDefines, kPatternConditions);
-		addProperty(targetCMake, "kind", Defs::TargetKind);
+		addKind(targetCMake, defs, Defs::TargetKind, "cmakeProject");
 		addProperty(targetCMake, "location", Defs::TargetCMakeLocation);
 		addProperty(targetCMake, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(targetCMake, "recheck", Defs::TargetCMakeRecheck);
@@ -1785,31 +1785,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(targetChalet, "buildFile", Defs::TargetChaletBuildFile, kPatternConditions);
 		addProperty(targetChalet, "condition", Defs::TargetCondition);
-		addProperty(targetChalet, "kind", Defs::TargetKind);
+		addKind(targetChalet, defs, Defs::TargetKind, "chaletProject");
 		addProperty(targetChalet, "location", Defs::TargetChaletLocation);
 		addProperty(targetChalet, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(targetChalet, "recheck", Defs::TargetChaletRecheck);
 		addProperty(targetChalet, "rebuild", Defs::TargetChaletRebuild);
 		addProperty(targetChalet, "clean", Defs::TargetChaletClean);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
-	}
-
-	{
-		auto targetProcess = R"json({
-			"type": "object",
-			"description": "Run a process",
-			"additionalProperties": false,
-			"required": [
-				"kind",
-				"path"
-			]
-		})json"_ojson;
-		addPropertyAndPattern(targetProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
-		addProperty(targetProcess, "condition", Defs::TargetCondition);
-		addProperty(targetProcess, "kind", Defs::TargetKind);
-		addProperty(targetProcess, "outputDescription", Defs::TargetOutputDescription);
-		addPropertyAndPattern(targetProcess, "path", Defs::TargetProcessPath, kPatternConditions);
-		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
 
 	{
@@ -2078,6 +2060,20 @@ void ChaletJsonSchema::addPatternProperty(Json& outJson, const char* inKey, cons
 }
 
 /*****************************************************************************/
+void ChaletJsonSchema::addKind(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, std::string&& inConst)
+{
+	outJson[SKeys::Properties]["kind"] = inDefs.at(inDef);
+	outJson[SKeys::Properties]["kind"][SKeys::Const] = inConst;
+}
+
+/*****************************************************************************/
+void ChaletJsonSchema::addKindEnum(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, StringList&& inEnums)
+{
+	outJson[SKeys::Properties]["kind"] = inDefs.at(inDef);
+	outJson[SKeys::Properties]["kind"][SKeys::Enum] = inEnums;
+}
+
+/*****************************************************************************/
 Json ChaletJsonSchema::get()
 {
 	Json ret;
@@ -2157,38 +2153,23 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
 		"description": "A single distribution target.",
-		"if": { "properties": {
-			"kind": { "const": "bundle" }
-		}},
-		"then": {},
-		"else": {
-			"if": { "properties": { "kind": { "const": "script" }}},
-			"then": {},
-			"else": {
-				"if": { "properties": { "kind": { "const": "archive" }}},
-				"then": {},
-				"else": {
-					"if": { "properties": { "kind": { "const": "macosDiskImage" }}},
-					"then": {},
-					"else": {
-						"if": { "properties": { "kind": { "const": "process" }}},
-						"then": {},
-						"else": {
-							"type": "object",
-							"additionalProperties": false
-						}
-					}
-				}
-			}
-		}
+		"properties": {},
+		"oneOf": []
 	})json"_ojson;
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"]["enum"] = R"json([
+		"bundle",
+		"script",
+		"process",
+		"archive",
+		"macosDiskImage"
+	])json"_ojson;
 	//
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Then] = getDefinition(Defs::DistributionBundle);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionScript);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionArchive);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionMacosDiskImage);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::DistributionProcess);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::DistributionKind);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][0] = getDefinition(Defs::DistributionBundle);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][1] = getDefinition(Defs::DistributionScript);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][2] = getDefinition(Defs::DistributionArchive);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][3] = getDefinition(Defs::DistributionMacosDiskImage);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][4] = getDefinition(Defs::DistributionProcess);
 
 	ret[SKeys::Properties]["variables"] = getDefinition(Defs::Variables);
 
@@ -2202,28 +2183,32 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName] = R"json({
 		"type": "object",
 		"description": "A single external dependency or script.",
-		"if": { "properties": { "kind": { "const": "git" }}},
-		"then": {},
-		"else": {
-			"if": { "properties": { "kind": { "const": "local" }}},
-			"then": {},
-			"else": {
-				"if": { "properties": { "kind": { "const": "script" }}},
-				"then": {},
-				"else": {
-					"type": "object",
-					"additionalProperties": false
-				}
-			}
-		}
+		"properties": {},
+		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Then] = getDefinition(Defs::ExternalDependencyGit);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Then] = getDefinition(Defs::ExternalDependencyLocal);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::ExternalDependencyScript);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Properties]["kind"]["enum"] = R"json([
+		"git",
+		"local",
+		"script"
+	])json"_ojson;
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyScript);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
+	/*
+		"enum": [
+			"staticLibrary",
+			"sharedLibrary",
+			"executable",
+			"cmakeProject",
+			"chaletProject",
+			"script",
+			"process"
+		]
+	*/
 	const auto targets = "targets";
 	ret[SKeys::Properties][targets] = R"json({
 		"type": "object",
@@ -2233,40 +2218,25 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single build target or script.",
-		"if": { "properties": { "kind": { "const": "executable" }}},
-		"then": {},
-		"else": {
-			"if": { "properties": { "kind": { "enum": [ "staticLibrary", "sharedLibrary" ] }}},
-			"then": {},
-			"else": {
-				"if": { "properties": { "kind": { "const": "cmakeProject" }}},
-				"then": {},
-				"else": {
-					"if": { "properties": { "kind": { "const": "chaletProject" }}},
-					"then": {},
-					"else": {
-						"if": { "properties": { "kind": { "const": "script" }}},
-						"then": {},
-						"else": {
-							"if": { "properties": { "kind": { "const": "process" }}},
-							"then": {},
-							"else": {
-								"type": "object",
-								"additionalProperties": false
-							}
-						}
-					}
-				}
-			}
-		}
+		"properties": {},
+		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Then] = getDefinition(Defs::TargetSourceExecutable);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetSourceLibrary);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetCMake);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetChalet);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetScript);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Then] = getDefinition(Defs::TargetProcess);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Else][SKeys::Properties]["kind"] = getDefinition(Defs::TargetKind);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
+		"staticLibrary",
+		"sharedLibrary",
+		"executable",
+		"cmakeProject",
+		"chaletProject",
+		"script",
+		"process"
+	])json"_ojson;
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::TargetSourceExecutable);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::TargetSourceLibrary);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::TargetCMake);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetChalet);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetScript);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetProcess);
 
 	return ret;
 }

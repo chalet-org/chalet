@@ -114,6 +114,8 @@ CH_STR(LastUpdateCheck) = "lastUpdateCheck";
 
 namespace SKeys
 {
+// Note: dont' use if/else - less supported (looking at you, IntelliJ/CLion)
+//
 CH_STR(Definitions) = "definitions";
 CH_STR(Items) = "items";
 CH_STR(UniqueItems) = "uniqueItems";
@@ -124,12 +126,11 @@ CH_STR(PatternProperties) = "patternProperties";
 CH_STR(Description) = "description";
 CH_STR(Default) = "default";
 CH_STR(Enum) = "enum";
+CH_STR(Const) = "const";
 CH_STR(Examples) = "examples";
 CH_STR(AnyOf) = "anyOf";
 CH_STR(AllOf) = "allOf";
 CH_STR(OneOf) = "oneOf";
-CH_STR(Then) = "then";
-CH_STR(Else) = "else";
 }
 
 namespace CacheKeys

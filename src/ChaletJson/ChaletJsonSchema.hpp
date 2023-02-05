@@ -195,6 +195,8 @@ private:
 	void addProperty(Json& outJson, const char* inKey, const Defs inDef, const bool inIndexed = true);
 	void addPropertyAndPattern(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
 	void addPatternProperty(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
+	void addKind(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, std::string&& inConst);
+	void addKindEnum(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, StringList&& inEnums);
 
 	//
 	const std::string kPatternTargetName;

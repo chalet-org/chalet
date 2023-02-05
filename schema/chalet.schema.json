@@ -138,14 +138,7 @@
 		"dist-kind": {
 			"type": "string",
 			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
-			"minLength": 1,
-			"enum": [
-				"bundle",
-				"script",
-				"process",
-				"archive",
-				"macosDiskImage"
-			]
+			"minLength": 1
 		},
 		"dist-condition": {
 			"type": "string",
@@ -177,7 +170,10 @@
 					"$ref": "#/definitions/dist-bundle-includeDependentSharedLibraries"
 				},
 				"kind": {
-					"$ref": "#/definitions/dist-kind"
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "bundle"
 				},
 				"linuxDesktopEntry": {
 					"type": "object",
@@ -371,7 +367,10 @@
 					"$ref": "#/definitions/dist-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/dist-kind"
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "script"
 				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
@@ -407,7 +406,10 @@
 					"$ref": "#/definitions/dist-archive-include"
 				},
 				"kind": {
-					"$ref": "#/definitions/dist-kind"
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "archive"
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -493,7 +495,10 @@
 					"$ref": "#/definitions/dist-macos-disk-image-iconSize"
 				},
 				"kind": {
-					"$ref": "#/definitions/dist-kind"
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "macosDiskImage"
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -626,7 +631,10 @@
 					"$ref": "#/definitions/dist-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/dist-kind"
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "process"
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -647,12 +655,7 @@
 		"external-dependency-kind": {
 			"type": "string",
 			"description": "Whether the external dependency is a git repository, local folder, or script.",
-			"minLength": 1,
-			"enum": [
-				"git",
-				"local",
-				"script"
-			]
+			"minLength": 1
 		},
 		"external-dependency-condition": {
 			"type": "string",
@@ -679,7 +682,10 @@
 					"$ref": "#/definitions/external-dependency-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/external-dependency-kind"
+					"type": "string",
+					"description": "Whether the external dependency is a git repository, local folder, or script.",
+					"minLength": 1,
+					"const": "git"
 				},
 				"repository": {
 					"$ref": "#/definitions/external-dependency-git-repository"
@@ -731,7 +737,10 @@
 					"$ref": "#/definitions/external-dependency-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/external-dependency-kind"
+					"type": "string",
+					"description": "Whether the external dependency is a git repository, local folder, or script.",
+					"minLength": 1,
+					"const": "local"
 				},
 				"path": {
 					"$ref": "#/definitions/external-dependency-local-path"
@@ -758,7 +767,10 @@
 					"$ref": "#/definitions/external-dependency-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/external-dependency-kind"
+					"type": "string",
+					"description": "Whether the external dependency is a git repository, local folder, or script.",
+					"minLength": 1,
+					"const": "script"
 				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
@@ -805,16 +817,7 @@
 		"target-kind": {
 			"type": "string",
 			"description": "The type of the target's compiled binary, a script or external project.",
-			"minLength": 1,
-			"enum": [
-				"staticLibrary",
-				"sharedLibrary",
-				"executable",
-				"cmakeProject",
-				"chaletProject",
-				"script",
-				"process"
-			]
+			"minLength": 1
 		},
 		"target-condition": {
 			"type": "string",
@@ -899,7 +902,10 @@
 					"$ref": "#/definitions/target-source-files"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "executable"
 				},
 				"language": {
 					"$ref": "#/definitions/target-source-language"
@@ -962,7 +968,13 @@
 					"$ref": "#/definitions/target-source-files"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"enum": [
+						"staticLibrary",
+						"sharedLibrary"
+					]
 				},
 				"language": {
 					"$ref": "#/definitions/target-source-language"
@@ -2093,7 +2105,10 @@
 					"$ref": "#/definitions/target-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "script"
 				},
 				"file": {
 					"$ref": "#/definitions/target-script-file"
@@ -2156,7 +2171,10 @@
 					"$ref": "#/definitions/target-cmake-defines"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "cmakeProject"
 				},
 				"location": {
 					"$ref": "#/definitions/target-cmake-location"
@@ -2288,7 +2306,10 @@
 					"$ref": "#/definitions/target-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "chaletProject"
 				},
 				"location": {
 					"$ref": "#/definitions/target-chalet-location"
@@ -2353,7 +2374,10 @@
 					"$ref": "#/definitions/target-condition"
 				},
 				"kind": {
-					"$ref": "#/definitions/target-kind"
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "process"
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
@@ -2715,73 +2739,37 @@
 				"^(([\\w\\-+. ()]+)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
 					"type": "object",
 					"description": "A single distribution target.",
-					"if": {
-						"properties": {
-							"kind": {
-								"const": "bundle"
-							}
+					"properties": {
+						"kind": {
+							"type": "string",
+							"description": "Whether the external dependency is a git repository, local folder, or script.",
+							"minLength": 1,
+							"enum": [
+								"bundle",
+								"script",
+								"process",
+								"archive",
+								"macosDiskImage"
+							]
 						}
 					},
-					"then": {
-						"$ref": "#/definitions/dist-bundle"
-					},
-					"else": {
-						"if": {
-							"properties": {
-								"kind": {
-									"const": "script"
-								}
-							}
+					"oneOf": [
+						{
+							"$ref": "#/definitions/dist-bundle"
 						},
-						"then": {
+						{
 							"$ref": "#/definitions/dist-script"
 						},
-						"else": {
-							"if": {
-								"properties": {
-									"kind": {
-										"const": "archive"
-									}
-								}
-							},
-							"then": {
-								"$ref": "#/definitions/dist-archive"
-							},
-							"else": {
-								"if": {
-									"properties": {
-										"kind": {
-											"const": "macosDiskImage"
-										}
-									}
-								},
-								"then": {
-									"$ref": "#/definitions/dist-macos-disk-image"
-								},
-								"else": {
-									"if": {
-										"properties": {
-											"kind": {
-												"const": "process"
-											}
-										}
-									},
-									"then": {
-										"$ref": "#/definitions/dist-process"
-									},
-									"else": {
-										"type": "object",
-										"additionalProperties": false,
-										"properties": {
-											"kind": {
-												"$ref": "#/definitions/dist-kind"
-											}
-										}
-									}
-								}
-							}
+						{
+							"$ref": "#/definitions/dist-archive"
+						},
+						{
+							"$ref": "#/definitions/dist-macos-disk-image"
+						},
+						{
+							"$ref": "#/definitions/dist-process"
 						}
-					}
+					]
 				}
 			}
 		},
@@ -2796,49 +2784,29 @@
 				"^[\\w\\-+.]{3,100}$": {
 					"type": "object",
 					"description": "A single external dependency or script.",
-					"if": {
-						"properties": {
-							"kind": {
-								"const": "git"
-							}
+					"properties": {
+						"kind": {
+							"type": "string",
+							"description": "Whether the external dependency is a git repository, local folder, or script.",
+							"minLength": 1,
+							"enum": [
+								"git",
+								"local",
+								"script"
+							]
 						}
 					},
-					"then": {
-						"$ref": "#/definitions/external-dependency-git"
-					},
-					"else": {
-						"if": {
-							"properties": {
-								"kind": {
-									"const": "local"
-								}
-							}
+					"oneOf": [
+						{
+							"$ref": "#/definitions/external-dependency-git"
 						},
-						"then": {
+						{
 							"$ref": "#/definitions/external-dependency-local"
 						},
-						"else": {
-							"if": {
-								"properties": {
-									"kind": {
-										"const": "script"
-									}
-								}
-							},
-							"then": {
-								"$ref": "#/definitions/external-dependency-script"
-							},
-							"else": {
-								"type": "object",
-								"additionalProperties": false,
-								"properties": {
-									"kind": {
-										"$ref": "#/definitions/external-dependency-kind"
-									}
-								}
-							}
+						{
+							"$ref": "#/definitions/external-dependency-script"
 						}
-					}
+					]
 				}
 			}
 		},
@@ -2853,88 +2821,42 @@
 				"^[\\w\\-+.]{3,}$": {
 					"type": "object",
 					"description": "A single build target or script.",
-					"if": {
-						"properties": {
-							"kind": {
-								"const": "executable"
-							}
+					"properties": {
+						"kind": {
+							"type": "string",
+							"description": "Whether the external dependency is a git repository, local folder, or script.",
+							"minLength": 1,
+							"enum": [
+								"staticLibrary",
+								"sharedLibrary",
+								"executable",
+								"cmakeProject",
+								"chaletProject",
+								"script",
+								"process"
+							]
 						}
 					},
-					"then": {
-						"$ref": "#/definitions/target-source-executable"
-					},
-					"else": {
-						"if": {
-							"properties": {
-								"kind": {
-									"enum": [
-										"staticLibrary",
-										"sharedLibrary"
-									]
-								}
-							}
+					"oneOf": [
+						{
+							"$ref": "#/definitions/target-source-executable"
 						},
-						"then": {
+						{
 							"$ref": "#/definitions/target-source-library"
 						},
-						"else": {
-							"if": {
-								"properties": {
-									"kind": {
-										"const": "cmakeProject"
-									}
-								}
-							},
-							"then": {
-								"$ref": "#/definitions/target-cmake"
-							},
-							"else": {
-								"if": {
-									"properties": {
-										"kind": {
-											"const": "chaletProject"
-										}
-									}
-								},
-								"then": {
-									"$ref": "#/definitions/target-chalet"
-								},
-								"else": {
-									"if": {
-										"properties": {
-											"kind": {
-												"const": "script"
-											}
-										}
-									},
-									"then": {
-										"$ref": "#/definitions/target-script"
-									},
-									"else": {
-										"if": {
-											"properties": {
-												"kind": {
-													"const": "process"
-												}
-											}
-										},
-										"then": {
-											"$ref": "#/definitions/target-process"
-										},
-										"else": {
-											"type": "object",
-											"additionalProperties": false,
-											"properties": {
-												"kind": {
-													"$ref": "#/definitions/target-kind"
-												}
-											}
-										}
-									}
-								}
-							}
+						{
+							"$ref": "#/definitions/target-cmake"
+						},
+						{
+							"$ref": "#/definitions/target-chalet"
+						},
+						{
+							"$ref": "#/definitions/target-script"
+						},
+						{
+							"$ref": "#/definitions/target-process"
 						}
-					}
+					]
 				}
 			}
 		}
