@@ -76,10 +76,10 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	std::string cachedArch;
 	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 	{
-		const auto& targetTriple = m_state.info.targetArchitectureTriple();
+		auto targetArch = m_state.info.targetArchitectureTriple();
 
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-		if (emptyInputArch || !String::contains('-', targetTriple))
+		if (emptyInputArch || !String::contains('-', targetArch))
 		{
 			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
@@ -88,7 +88,47 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			if (!valid)
 				return false;
 
-			cachedArch = fmt::format("{}{}", targetTriple, cachedArch.substr(firstDash));
+			auto suffix = cachedArch.substr(firstDash);
+#if defined(CHALET_LINUX)
+			Arch::Cpu arch = m_state.info.targetArchitecture();
+			if (arch == Arch::Cpu::ARMHF)
+			{
+				suffix += "eabihf";
+				targetArch = "arm";
+			}
+			else if (arch == Arch::Cpu::ARM)
+			{
+				suffix += "eabi";
+				targetArch = "arm";
+			}
+			else if (arch == Arch::Cpu::ARM64)
+			{
+				targetArch = "aarch64";
+			}
+#endif
+			cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+#if defined(CHALET_LINUX)
+			auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+			auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+			bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+			if (!found && String::startsWith("-pc-linux-gnu", suffix))
+			{
+				suffix = suffix.substr(3);
+				cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+				searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+				searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+				found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+			}
+
+			if (!found)
+			{
+				cachedArch.clear();
+			}
+#endif
 #if defined(CHALET_MACOS)
 			// Strip out version in auto-detected mac triple
 			auto darwin = cachedArch.find("apple-darwin");
@@ -100,7 +140,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		}
 		else
 		{
-			cachedArch = targetTriple;
+			cachedArch = targetArch;
 		}
 	}
 
@@ -111,7 +151,7 @@ bool CompileEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	sourceCache.addArch(compiler, cachedArch);
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
-	m_isEmbeddedTarget = String::contains(StringList{ "-none-" }, m_state.info.targetArchitectureTriple());
+	m_isEmbeddedTarget = String::contains(StringList{ "-none-eabi" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }

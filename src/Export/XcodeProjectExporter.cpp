@@ -50,7 +50,7 @@ bool XcodeProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool XcodeProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory())
+	if (!useProjectBuildDirectory(".xcode"))
 		return false;
 
 	XcodeProjectSpecGen specGen(m_states, m_directory);

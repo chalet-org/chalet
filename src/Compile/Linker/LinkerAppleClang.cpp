@@ -6,6 +6,7 @@
 #include "Compile/Linker/LinkerAppleClang.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
+#include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -42,7 +43,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
+	addSystemRootOption(ret);
 	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
@@ -58,6 +59,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addRunPath(ret);
 
 	addLibDirs(ret);
+	addSystemLibDirs(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
@@ -131,6 +133,19 @@ bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string
 	}
 #endif
 
+	return true;
+}
+
+/*****************************************************************************/
+bool LinkerAppleClang::addSystemRootOption(StringList& outArgList) const
+{
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+}
+
+/*****************************************************************************/
+bool LinkerAppleClang::addSystemLibDirs(StringList& outArgList) const
+{
+	UNUSED(outArgList);
 	return true;
 }
 

@@ -51,6 +51,10 @@ struct ICompileEnvironment
 	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const;
 	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const;
 
+	const std::string& sysroot() const noexcept;
+	const std::string& targetSystemVersion() const noexcept;
+	const StringList& targetSystemPaths() const noexcept;
+
 protected:
 	friend class BuildState;
 	friend struct CompilerTools;
@@ -68,6 +72,7 @@ protected:
 	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 
+	virtual void generateTargetSystemPaths();
 	virtual bool readArchitectureTripleFromCompiler();
 	virtual bool compilerVersionIsToolchainVersion() const;
 	virtual bool createFromVersion(const std::string& inVersion);
@@ -82,6 +87,10 @@ protected:
 	std::string getVarsPath(const std::string& inUniqueId) const;
 
 	BuildState& m_state;
+
+	std::string m_sysroot;
+	std::string m_targetSystemVersion;
+	StringList m_targetSystemPaths;
 
 	Dictionary<bool> m_supportedFlags;
 

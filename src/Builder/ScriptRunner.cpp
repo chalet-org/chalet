@@ -34,8 +34,8 @@ bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, con
 	bool result = Commands::subprocess(command);
 	auto exitCode = ProcessController::getLastExitCode();
 
-	std::string script = inScript;
-	m_inputs.clearWorkingDirectory(script);
+	// std::string script = inScript;
+	// m_inputs.clearWorkingDirectory(script);
 
 	auto message = fmt::format("{} exited with code: {}", inScript, exitCode);
 	if (inShowExitCode)

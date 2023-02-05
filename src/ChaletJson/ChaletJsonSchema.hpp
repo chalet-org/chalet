@@ -59,14 +59,25 @@ class ChaletJsonSchema
 		DistributionProcess,
 		//
 		ExternalDependency,
+		ExternalDependencyKind,
+		ExternalDependencyCondition,
+		//
+		ExternalDependencyGit,
 		ExternalDependencyGitRepository,
 		ExternalDependencyGitBranch,
 		ExternalDependencyGitCommit,
 		ExternalDependencyGitTag,
 		ExternalDependencyGitSubmodules,
 		//
+		ExternalDependencyLocal,
+		ExternalDependencyLocalPath,
+		//
+		ExternalDependencyScript,
+		//
 		// EnumPlatform,
 		//
+		Variables,
+		VariableValue,
 		EnvironmentSearchPaths,
 		//
 		TargetOutputDescription,
@@ -74,7 +85,6 @@ class ChaletJsonSchema
 		TargetCondition,
 		TargetRunTarget,
 		TargetDefaultRunArguments,
-		TargetCopyFilesOnRun,
 		//
 		TargetAbstract,
 		TargetSourceExecutable,
@@ -83,6 +93,7 @@ class ChaletJsonSchema
 		TargetSourceFiles,
 		TargetSourceLanguage,
 		TargetSourceConfigureFiles,
+		TargetSourceCopyFilesOnRun,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,

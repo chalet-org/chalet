@@ -4,7 +4,16 @@
 	"version": "2.0.0",
 	"options": {
 		"env": {
-			"CHALET_DEBUG": "build/Debug/chalet-debug"
+			"CHALET_DEBUG": "build/Debug/chalet-debug",
+			"CMAKE_BUILD_SCRIPT": "./build.sh"
+		}
+	},
+	"windows": {
+		"options": {
+			"env": {
+				"CHALET_DEBUG": "build/msvc_Debug/chalet-debug",
+				"CMAKE_BUILD_SCRIPT": "./build.bat"
+			}
 		}
 	},
 	"presentation": {
@@ -19,7 +28,7 @@
 	"tasks": [
 		{
 			"label": "Configure",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema configure",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema configure",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [
@@ -73,7 +82,7 @@
 		},
 		{
 			"label": "Build & Run: Debug",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [
@@ -82,7 +91,7 @@
 		},
 		{
 			"label": "Build: Debug",
-			"command": "bash ./build.sh Debug",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [
@@ -91,7 +100,7 @@
 		},
 		{
 			"label": "Rebuild: Debug",
-			"command": "rm -rf build/Debug && bash ./build.sh Debug",
+			"command": "rm -rf build/Debug && ${CMAKE_BUILD_SCRIPT} Debug",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [
@@ -127,7 +136,7 @@
 		},
 		{
 			"label": "Debug (Chalet Command)",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [
@@ -136,7 +145,7 @@
 		},
 		{
 			"label": "Bundle",
-			"command": "bash ./build.sh Debug && ${CHALET_DEBUG} --save-schema -c Release bundle",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release bundle",
 			"type": "shell",
 			"group": "build",
 			"problemMatcher": [

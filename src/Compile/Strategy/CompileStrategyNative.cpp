@@ -39,8 +39,9 @@ bool CompileStrategyNative::initialize()
 	if (m_initialized)
 		return false;
 
-	auto& cacheFile = m_state.cache.file();
 	const auto& cachePathId = m_state.cachePathId();
+
+	auto& cacheFile = m_state.cache.file();
 	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
 
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();

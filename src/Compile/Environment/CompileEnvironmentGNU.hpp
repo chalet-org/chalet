@@ -7,12 +7,15 @@
 #define CHALET_COMPILE_ENVIRONMENT_GNU_HPP
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Process/PipeOption.hpp"
 
 namespace chalet
 {
 struct CompileEnvironmentGNU : ICompileEnvironment
 {
 	explicit CompileEnvironmentGNU(const ToolchainType inType, BuildState& inState);
+
+	virtual void generateTargetSystemPaths() override;
 
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
@@ -34,9 +37,9 @@ protected:
 	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand);
 
 private:
-	std::string getCompilerMacros(const std::string& inCompilerExec);
+	std::string getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError = PipeOption::Close);
 
-	bool m_genericGcc = false;
+	// bool m_genericGcc = false;
 };
 }
 

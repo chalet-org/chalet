@@ -29,8 +29,8 @@ OrderedDictionary<ExportKind> getExportKinds()
 {
 	return {
 		{ "vscode", ExportKind::VisualStudioCodeJSON },
-		{ "vs-json", ExportKind::VisualStudioJSON },
-		{ "vs-solution", ExportKind::VisualStudioSolution },
+		{ "vsjson", ExportKind::VisualStudioJSON },
+		{ "vssolution", ExportKind::VisualStudioSolution },
 		{ "xcode", ExportKind::Xcode },
 		{ "codeblocks", ExportKind::CodeBlocks },
 	};
@@ -530,6 +530,11 @@ bool CommandLineInputs::isToolchainPreset() const noexcept
 	return m_isToolchainPreset;
 }
 
+bool CommandLineInputs::isToolchainMultiArchPreset() const noexcept
+{
+	return m_isToolchainMultiArchPreset;
+}
+
 /*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
 {
@@ -677,6 +682,14 @@ const std::string& CommandLineInputs::targetArchitecture() const noexcept
 {
 	return m_targetArchitecture;
 }
+std::string CommandLineInputs::getResolvedTargetArchitecture() const noexcept
+{
+	if (m_targetArchitecture.empty())
+		return m_hostArchitecture;
+
+	return m_targetArchitecture;
+}
+
 void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const noexcept
 {
 	if (inValue.empty())
@@ -1030,7 +1043,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	bool hasGccPrefix = String::startsWith("gcc-", inValue);
 	bool hasGccSuffix = String::endsWith("-gcc", inValue);
 	bool hasGccPrefixAndSuffix = String::contains("-gcc-", inValue);
-	bool isGccWithArch = String::equals("gcc", inValue) && !m_targetArchitecture.empty() && !String::equals("auto", m_targetArchitecture);
+	bool isGcc = String::equals(kToolchainPresetGCC, inValue);
 
 	bool hasLlvmPrefix = String::startsWith("llvm-", inValue);
 
@@ -1049,12 +1062,13 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
+		m_isToolchainMultiArchPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::VisualStudio;
-		ret.buildPathStyle = BuildPathStyle::ToolchainName;
+		ret.buildPathStyle = BuildPathStyle::TargetTriple;
 		ret.cpp = "cl";
 		ret.cc = "cl";
 		ret.rc = "rc";
@@ -1126,36 +1140,16 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "objdump";
 #endif
 	}
-	else if (String::equals(kToolchainPresetGCC, inValue) || hasGccPrefix || hasGccSuffix || isGccWithArch || hasGccPrefixAndSuffix)
+	else if (isGcc || hasGccPrefix || hasGccSuffix || hasGccPrefixAndSuffix)
 	{
 		m_isToolchainPreset = true;
+		if (isGcc)
+			m_isToolchainMultiArchPreset = true;
 
-		std::string suffix;
-		if (hasGccPrefix)
-			suffix = inValue.substr(inValue.find_first_of('-'));
-
-		std::string prefix;
-		if (hasGccSuffix)
-			prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
-
-		if (isGccWithArch)
-		{
-			// assume (arch)-gcc
-			m_toolchainPreferenceName = m_targetArchitecture + "-gcc";
-			prefix = m_targetArchitecture + '-';
-		}
-		else
-		{
-			m_toolchainPreferenceName = inValue;
-		}
+		m_toolchainPreferenceName = inValue;
 
 #if defined(CHALET_WIN32)
 		ret.type = ToolchainType::MingwGNU;
-#else
-		if (String::contains("mingw", inValue))
-			ret.type = ToolchainType::MingwGNU;
-		else
-			ret.type = ToolchainType::GNU;
 #endif
 
 		if (hasGccPrefixAndSuffix)
@@ -1176,6 +1170,23 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		}
 		else
 		{
+			std::string suffix;
+			if (hasGccPrefix)
+				suffix = inValue.substr(inValue.find_first_of('-'));
+
+			std::string prefix;
+			if (hasGccSuffix)
+				prefix = inValue.substr(0, inValue.find_last_of('-') + 1);
+
+			if (isGcc)
+			{
+				if (!m_targetArchitecture.empty() && m_targetArchitecture != m_hostArchitecture && ret.type != ToolchainType::MingwGNU)
+				{
+					m_targetArchitecture = getValidGccArchTripleFromArch(m_targetArchitecture);
+					prefix = m_targetArchitecture + '-';
+				}
+			}
+
 			ret.cpp = fmt::format("{}g++{}", prefix, suffix);
 			ret.cc = fmt::format("{}gcc{}", prefix, suffix);
 			ret.rc = fmt::format("{}windres{}", prefix, suffix);
@@ -1183,7 +1194,19 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.linker = fmt::format("{}ld{}", prefix, suffix);
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
+
+			if (!m_isToolchainMultiArchPreset)
+			{
+				m_toolchainPreferenceName = ret.cc;
+			}
 		}
+
+#if !defined(CHALET_WIN32)
+		if (String::contains("mingw", m_toolchainPreferenceName))
+			ret.type = ToolchainType::MingwGNU;
+		else
+			ret.type = ToolchainType::GNU;
+#endif
 	}
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
@@ -1193,6 +1216,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 	{
 		m_isToolchainPreset = true;
+		m_isToolchainMultiArchPreset = true;
 		m_toolchainPreferenceName = inValue;
 	#if defined(CHALET_WIN32)
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -1313,5 +1337,71 @@ InitTemplateType CommandLineInputs::getInitTemplateFromString(const std::string&
 	}
 
 	return InitTemplateType::None;
+}
+
+/*****************************************************************************/
+std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& inArch) const
+{
+#if defined(CHALET_LINUX)
+	auto firstDash = inArch.find_first_of('-');
+	if (firstDash == std::string::npos)
+	{
+		auto gcc = Commands::which("gcc");
+		if (!gcc.empty())
+		{
+			auto cachedArch = Commands::subprocessOutput({ gcc, "-dumpmachine" });
+			firstDash = cachedArch.find_first_of('-');
+
+			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
+			if (valid)
+			{
+				auto suffix = cachedArch.substr(firstDash);
+
+				auto arch = Arch::from(inArch);
+				std::string targetArch = arch.str;
+				if (arch.val == Arch::Cpu::ARMHF)
+				{
+					suffix += "eabihf";
+					targetArch = "arm";
+				}
+				else if (arch.val == Arch::Cpu::ARM)
+				{
+					suffix += "eabi";
+					targetArch = "arm";
+				}
+				else if (arch.val == Arch::Cpu::ARM64)
+				{
+					targetArch = "aarch64";
+				}
+
+				cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+				auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+				auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+				bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+				if (!found && String::startsWith("-pc-linux-gnu", suffix))
+				{
+					suffix = suffix.substr(3);
+					cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+					searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+					searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+					found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+				}
+
+				if (found)
+				{
+					return cachedArch;
+				}
+			}
+		}
+	}
+#endif
+
+	m_isToolchainMultiArchPreset = false;
+
+	return inArch;
 }
 }

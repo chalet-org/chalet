@@ -1,0 +1,96 @@
+/*
+	Distributed under the OSI-approved BSD 3-Clause License.
+	See accompanying file LICENSE.txt for details.
+*/
+
+#include "State/Dependency/ScriptDependency.hpp"
+
+#include "Core/CommandLineInputs.hpp"
+#include "State/AncillaryTools.hpp"
+#include "State/CentralState.hpp"
+#include "Terminal/Commands.hpp"
+#include "Terminal/Path.hpp"
+#include "Utility/List.hpp"
+
+namespace chalet
+{
+/*****************************************************************************/
+ScriptDependency::ScriptDependency(const CentralState& inCentralState) :
+	IExternalDependency(inCentralState, ExternalDependencyType::Script)
+{
+}
+
+/*****************************************************************************/
+bool ScriptDependency::initialize()
+{
+	Path::sanitize(m_file);
+
+	if (!m_centralState.replaceVariablesInString(m_file, this))
+		return false;
+
+	if (!replaceVariablesInPathList(m_arguments))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ScriptDependency::validate()
+{
+	const auto& targetName = this->name();
+
+	auto [resolved, scriptType] = m_centralState.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_centralState.inputs().inputFile());
+	if (scriptType == ScriptType::None)
+		return false;
+
+	m_file = std::move(resolved);
+	m_scriptType = scriptType;
+
+	if (!Commands::pathExists(m_file))
+	{
+		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+const std::string& ScriptDependency::file() const noexcept
+{
+	return m_file;
+}
+
+void ScriptDependency::setFile(std::string&& inValue) noexcept
+{
+	m_file = std::move(inValue);
+}
+
+/*****************************************************************************/
+ScriptType ScriptDependency::scriptType() const noexcept
+{
+	return m_scriptType;
+}
+
+void ScriptDependency::setScriptTye(const ScriptType inType) noexcept
+{
+	m_scriptType = inType;
+}
+
+/*****************************************************************************/
+const StringList& ScriptDependency::arguments() const noexcept
+{
+	return m_arguments;
+}
+
+void ScriptDependency::addArguments(StringList&& inList)
+{
+	List::forEach(inList, this, &ScriptDependency::addArgument);
+}
+
+void ScriptDependency::addArgument(std::string&& inValue)
+{
+	m_arguments.emplace_back(std::move(inValue));
+}
+
+}

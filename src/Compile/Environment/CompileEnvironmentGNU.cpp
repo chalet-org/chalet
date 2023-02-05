@@ -12,6 +12,8 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -71,7 +73,20 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 				// parseThreadModelFromVersionOutput(line, threadModel);
 			}
 
-			version = version.substr(0, version.find_first_not_of("0123456789."));
+#if defined(CHALET_LINUX)
+			if (Environment::isWindowsSubsystemForLinux())
+			{
+				if (String::contains({ "(GCC)", "-win32 " }, version))
+					version = version.substr(0, version.find(" ("));
+				else
+					version = version.substr(0, version.find_first_not_of("0123456789."));
+			}
+			else
+#endif
+			{
+				version = version.substr(0, version.find_first_not_of("0123456789."));
+			}
+
 			if (!version.empty())
 				cachedVersion = std::move(version);
 		}
@@ -99,6 +114,9 @@ std::vector<CompilerPathStructure> CompileEnvironmentGNU::getValidCompilerPaths(
 	std::vector<CompilerPathStructure> ret;
 	auto triple = m_state.info.targetArchitectureTriple();
 	ret.push_back({ "/bin", fmt::format("/{}/lib", triple), fmt::format("/{}/include", triple) });
+#if defined(CHALET_LINUX)
+	ret.push_back({ "/bin", fmt::format("/lib/{}/lib", triple), fmt::format("/lib/{}/include", triple) });
+#endif
 	ret.push_back({ "/bin", "/lib", "/include" });
 	return ret;
 }
@@ -167,7 +185,9 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
 	{
-		Diagnostic::error("Failed to query predefined compiler macros.");
+		auto output = getCompilerMacros(inCompilerExec, PipeOption::Pipe);
+		Output::print(Color::Reset, output);
+		Diagnostic::error("Failed to query compiler for details. See error above");
 		return false;
 	}
 
@@ -183,7 +203,13 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 
 	ToolchainType detectedType = getToolchainTypeFromMacros(macroResult);
 	// LOG("types:", static_cast<int>(detectedType), static_cast<int>(m_type));
-	return detectedType == m_type;
+	if (detectedType != m_type)
+	{
+		Diagnostic::error("No compiler executable was found");
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -252,16 +278,15 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 
 		if (!emptyInputArch && !String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
 		{
-			Arch expectedArch;
-			expectedArch.set(cachedArch);
+			auto expectedArch = Arch::from(cachedArch);
 			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
-			if (m_genericGcc)
+			/*if (m_genericGcc)
 			{
-				const auto& arch = m_state.info.targetArchitectureString();
-				auto name = m_state.inputs.toolchainPreferenceName();
-				String::replaceAll(name, arch, expectedArch.str);
-				m_state.inputs.setToolchainPreferenceName(std::move(name));
-			}
+				// const auto& arch = m_state.info.targetArchitectureString();
+				// auto name = m_state.inputs.toolchainPreferenceName();
+				// String::replaceAll(name, arch, expectedArch.str);
+				// m_state.inputs.setToolchainPreferenceName(std::move(name));
+			}*/
 			return false;
 		}
 
@@ -270,7 +295,7 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 	}
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
-	m_isEmbeddedTarget = String::contains(StringList{ "-none-" }, m_state.info.targetArchitectureTriple());
+	m_isEmbeddedTarget = String::contains(StringList{ "-none-eabi" }, m_state.info.targetArchitectureTriple());
 
 	return true;
 }
@@ -278,14 +303,14 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 /*****************************************************************************/
 bool CompileEnvironmentGNU::validateArchitectureFromInput()
 {
-	auto& toolchain = m_state.inputs.toolchainPreferenceName();
+	/*auto& toolchain = m_state.inputs.toolchainPreferenceName();
 	// If the tooclhain was a preset and was not a target triple
 	if (m_state.inputs.isToolchainPreset() && (String::equals("gcc", toolchain) || String::startsWith("gcc-", toolchain)))
 	{
-		const auto& arch = m_state.info.targetArchitectureString();
-		m_state.inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
+		// const auto& arch = m_state.info.targetArchitectureString();
+		// m_state.inputs.setToolchainPreferenceName(fmt::format("{}-{}", arch, toolchain));
 		m_genericGcc = true;
-	}
+	}*/
 
 	return true;
 }
@@ -307,7 +332,7 @@ ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::strin
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec)
+std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError)
 {
 	if (inCompilerExec.empty())
 		return std::string();
@@ -330,9 +355,12 @@ std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompil
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
 		StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
-		result = Commands::subprocessOutput(command, std::move(compilerPath));
+		result = Commands::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
-		std::ofstream(macrosFile) << result;
+		if (!result.empty())
+		{
+			std::ofstream(macrosFile) << result;
+		}
 	}
 	else
 	{
@@ -405,5 +433,127 @@ void CompileEnvironmentGNU::parseSupportedFlagsFromHelpList(const StringList& in
 			}
 		}
 	}
+}
+
+/*****************************************************************************/
+/*
+	Resolve the system include directories. When cross-compiling, we have to
+	explicitly use these with clang later.
+
+	They are typically:
+		/usr/(arch-triple)/ - libraries for this architecture
+		/usr/lib/gcc/(arch-triple)/(version) - system libs only
+
+	This is the system path include order (if they exist):
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++/(arch-triple)
+		/usr/lib/gcc/(arch-triple)/(version)/include/c++/backward
+		/usr/lib/gcc/(arch-triple)/(version)/include
+		/usr/lib/gcc/(arch-triple)/(version)/include-fixed
+		/usr/(arch-triple)/include
+
+	Viewed with:
+		x86_64-w64-mingw32-gcc -xc++ -E -v -
+*/
+void CompileEnvironmentGNU::generateTargetSystemPaths()
+{
+#if defined(CHALET_LINUX)
+	const auto& targetArch = m_state.info.targetArchitectureTriple();
+
+	m_sysroot.clear();
+	m_targetSystemVersion.clear();
+	m_targetSystemPaths.clear();
+
+	// TODO: if using a custom llvm & gcc toolchain build, user would need to give the path here
+	auto basePath = "/usr";
+
+	auto otherCompiler = fmt::format("{}/bin/{}-gcc", basePath, targetArch);
+	if (Commands::pathExists(otherCompiler))
+	{
+		auto version = Commands::subprocessOutput({ otherCompiler, "-dumpfullversion" });
+		if (!version.empty())
+		{
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+			if (!version.empty())
+			{
+				auto shortVersion = version.substr(0, version.find_first_not_of("0123456789"));
+
+				auto sysroot = fmt::format("{}/{}", basePath, targetArch);
+				if (!Commands::pathExists(sysroot))
+				{
+					sysroot = fmt::format("{}/lib/{}", basePath, targetArch);
+					if (!Commands::pathExists(sysroot))
+						sysroot.clear();
+				}
+
+				if (!sysroot.empty())
+				{
+					auto sysroot2 = fmt::format("{}/lib/gcc/{}/{}", basePath, targetArch, version);
+					if (!Commands::pathExists(sysroot2))
+					{
+						// TODO: way to control '-posix' or '-win32'
+						//
+						sysroot2 = fmt::format("{}/lib/gcc/{}/{}-posix", basePath, targetArch, version);
+						if (!Commands::pathExists(sysroot2))
+						{
+							sysroot2 = fmt::format("{}/lib/gcc-cross/{}/{}", basePath, targetArch, shortVersion);
+							if (!Commands::pathExists(sysroot2))
+								sysroot2.clear();
+						}
+					}
+
+					if (!sysroot2.empty())
+					{
+						// LOG(sysroot);
+						// LOG(sysroot2);
+
+						auto addInclude = [this](std::string&& path) {
+							if (Commands::pathExists(path))
+								m_targetSystemPaths.emplace_back(std::move(path));
+						};
+
+						// Note: Do not change this order
+						//
+						if (!String::equals(shortVersion, version))
+						{
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, shortVersion));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, shortVersion, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, shortVersion));
+
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+						}
+						else
+						{
+							addInclude(fmt::format("{}/include/c++/{}", sysroot, version));
+							addInclude(fmt::format("{}/include/c++/{}/{}", sysroot, version, targetArch));
+							addInclude(fmt::format("{}/include/c++/{}/backward", sysroot, version));
+						}
+
+						addInclude(fmt::format("{}/include/c++", sysroot2));
+						addInclude(fmt::format("{}/include/c++/{}", sysroot2, targetArch));
+						addInclude(fmt::format("{}/include/c++/backward", sysroot2));
+
+						addInclude(fmt::format("{}/include", sysroot2));
+						addInclude(fmt::format("{}/include-fixed", sysroot2));
+
+						addInclude(fmt::format("{}/include", sysroot));
+						addInclude(fmt::format("{}/include", basePath));
+
+						// for (auto& path : m_targetSystemPaths)
+						// {
+						// 	LOG(path);
+						// }
+
+						// m_sysroot = sysroot;
+						m_sysroot = sysroot2;
+						m_targetSystemVersion = version;
+					}
+				}
+			}
+		}
+	}
+#endif
 }
 }

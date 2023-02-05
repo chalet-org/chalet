@@ -40,29 +40,52 @@ bool SourceTarget::initialize()
 	if (!processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
 		}))
+	{
+		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target", this->name());
 		return false;
+	}
 
 	if (!processEachPathList(std::move(m_libDirs), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
 		}))
+	{
+		Diagnostic::error("There was a problem resolving the lib directories for the '{}' target", this->name());
 		return false;
+	}
 
 	if (!processEachPathList(std::move(m_includeDirs), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
 		}))
+	{
+		Diagnostic::error("There was a problem resolving the include directories for the '{}' target", this->name());
 		return false;
+	}
 
 	m_headers = m_files;
 
 	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 		}))
+	{
+		Diagnostic::error("There was a problem resolving the files for the '{}' target", this->name());
 		return false;
+	}
 
 	if (!processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
 		}))
+	{
+		Diagnostic::error("There was a problem resolving the excluded files for the '{}' target", this->name());
 		return false;
+	}
+
+	if (!processEachPathList(std::move(m_copyFilesOnRun), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_copyFilesOnRun, GlobMatch::FilesAndFolders);
+		}))
+	{
+		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target", this->name());
+		return false;
+	}
 
 	if (!replaceVariablesInPathList(m_defines))
 		return false;
@@ -77,6 +100,12 @@ bool SourceTarget::initialize()
 		return false;
 
 	if (!replaceVariablesInPathList(m_linkerOptions))
+		return false;
+
+	if (!replaceVariablesInPathList(m_links))
+		return false;
+
+	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
 
 	if (!removeExcludedFiles())
@@ -644,6 +673,25 @@ void SourceTarget::addMacosFrameworks(StringList&& inList)
 void SourceTarget::addMacosFramework(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_macosFrameworks, std::move(inValue));
+}
+
+/*****************************************************************************/
+const StringList& SourceTarget::copyFilesOnRun() const noexcept
+{
+	return m_copyFilesOnRun;
+}
+
+void SourceTarget::addCopyFilesOnRun(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addCopyFileOnRun);
+}
+
+void SourceTarget::addCopyFileOnRun(std::string&& inValue)
+{
+	// if (inValue.back() != '/')
+	// 	inValue += '/'; // no!
+
+	List::addIfDoesNotExist(m_copyFilesOnRun, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -1253,6 +1301,58 @@ void SourceTarget::parseOutputFilename() noexcept
 		default:
 			break;
 	}
+}
+
+/*****************************************************************************/
+StringList SourceTarget::getResolvedRunDependenciesList() const
+{
+	StringList ret;
+
+	for (auto& dep : m_copyFilesOnRun)
+	{
+		if (Commands::pathExists(dep))
+		{
+			ret.push_back(dep);
+			continue;
+		}
+
+		std::string resolved;
+		if (isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*this);
+			const auto& compilerPathBin = m_state.toolchain.compilerCxx(project.language()).binDir;
+
+			resolved = fmt::format("{}/{}", compilerPathBin, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.emplace_back(std::move(resolved));
+				continue;
+			}
+		}
+
+		bool found = false;
+		for (auto& path : m_state.workspace.searchPaths())
+		{
+			resolved = fmt::format("{}/{}", path, dep);
+			if (Commands::pathExists(resolved))
+			{
+				ret.emplace_back(std::move(resolved));
+				found = true;
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			resolved = Commands::which(dep);
+			if (!resolved.empty())
+			{
+				ret.emplace_back(std::move(resolved));
+			}
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

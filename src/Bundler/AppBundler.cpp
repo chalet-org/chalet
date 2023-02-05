@@ -47,9 +47,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 	if (!inTarget->isArchive() && !isTargetNameValid(*inTarget))
 		return false;
 
-	if (!inTarget->initialize())
-		return false;
-
 	Timer timer;
 
 	if (inTarget->isDistributionBundle())
@@ -135,6 +132,7 @@ void AppBundler::reportErrors()
 
 	std::sort(m_notCopied.rbegin(), m_notCopied.rend());
 
+	bool validNotCopiedDeps = false;
 	StringList excludes{ "msvcrt.dll", "kernel32.dll" };
 	for (auto& dep : m_notCopied)
 	{
@@ -142,9 +140,10 @@ void AppBundler::reportErrors()
 			continue;
 
 		Diagnostic::warn("{}", String::getPathFilename(dep));
+		validNotCopiedDeps = true;
 	}
 
-	if (!m_notCopied.empty())
+	if (validNotCopiedDeps)
 		Diagnostic::warn("Dependencies not copied:");
 }
 
@@ -226,9 +225,9 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			if (!List::contains(buildTargets, project.name()))
 				continue;
 
-			if (!target->copyFilesOnRun().empty())
+			if (!project.copyFilesOnRun().empty())
 			{
-				StringList runDeps = target->getResolvedRunDependenciesList();
+				StringList runDeps = project.getResolvedRunDependenciesList();
 				for (auto& dep : runDeps)
 				{
 					List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));

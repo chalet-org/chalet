@@ -6,6 +6,7 @@
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -32,7 +33,10 @@ bool ToolchainSettingsJsonParser::serialize()
 
 	auto& rootNode = m_jsonFile.json;
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
+	auto arch = m_state.inputs.getResolvedTargetArchitecture();
+
 	auto& toolchains = rootNode["toolchains"];
+
 	bool containsPref = toolchains.contains(preferenceName);
 
 	if (!containsPref && !m_state.inputs.isToolchainPreset())
@@ -42,11 +46,26 @@ bool ToolchainSettingsJsonParser::serialize()
 	}
 
 	if (!containsPref)
-		toolchains[preferenceName] = JsonDataType::object;
+		toolchains[preferenceName] = Json::object();
 
 	auto& node = toolchains.at(preferenceName);
-	if (!serialize(node))
-		return false;
+	if (m_state.inputs.isToolchainMultiArchPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown)
+	{
+		auto arch2 = Arch::from(arch);
+		if (!node.contains(arch2.str))
+		{
+			node[arch2.str] = Json::object();
+		}
+
+		if (!serialize(node.at(arch2.str)))
+			return false;
+	}
+	else
+	{
+
+		if (!serialize(node))
+			return false;
+	}
 
 	Output::setShowCommandOverride(true);
 
@@ -127,7 +146,9 @@ bool ToolchainSettingsJsonParser::validatePaths()
 	if (!result)
 	{
 		auto& preference = m_state.inputs.toolchainPreferenceName();
-		Diagnostic::error("{}: The requested toolchain of '{}' could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, Environment::getPathKey());
+		auto arch = m_state.inputs.getResolvedTargetArchitecture();
+
+		Diagnostic::error("{}: The requested toolchain of '{}' (arch: {}) could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, arch, Environment::getPathKey());
 	}
 
 	return result;
@@ -163,28 +184,16 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	std::string cc;
 	if (!toolchain.contains(Keys::ToolchainCompilerCpp))
 	{
-		// auto varCXX = Environment::get("CXX");
-		// if (varCXX != nullptr)
-		// 	cpp = Commands::which(varCXX);
-
 		if (cpp.empty())
-		{
 			cpp = Commands::which(preference.cpp);
-		}
 
 		toolchain[Keys::ToolchainCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
 	if (!toolchain.contains(Keys::ToolchainCompilerC) || !toolchain[Keys::ToolchainCompilerC].is_string() || toolchain[Keys::ToolchainCompilerC].get<std::string>().empty())
 	{
-		// auto varCC = Environment::get("CC");
-		// if (varCC != nullptr)
-		// 	cc = Commands::which(varCC);
-
 		if (cc.empty())
-		{
 			cc = Commands::which(preference.cc);
-		}
 
 		toolchain[Keys::ToolchainCompilerC] = cc;
 		m_jsonFile.setDirty(true);
@@ -195,10 +204,9 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		std::string rc;
 		StringList searches;
 		searches.push_back(preference.rc);
+
 		if (isGNU)
-		{
 			searches.push_back("windres");
-		}
 
 		for (const auto& search : searches)
 		{
@@ -285,10 +293,9 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 #if defined(CHALET_MACOS)
 		if (isLLVM || isGNU)
-		{
 			searches.emplace_back("libtool");
-		}
 #endif
+
 		if (!isGNU)
 			searches.push_back(preference.archiver);
 
@@ -412,9 +419,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			make = Commands::which(search);
 			if (!make.empty())
-			{
 				break;
-			}
 		}
 #else
 		std::string make = Commands::which(Keys::ToolchainMake);

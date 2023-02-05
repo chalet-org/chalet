@@ -66,6 +66,12 @@ struct BundleTarget final : public IDistTarget
 
 	const std::string& macosBundleInfoPropertyListContent() const noexcept;
 	void setMacosBundleInfoPropertyListContent(std::string&& inValue);
+
+	const std::string& macosBundleEntitlementsPropertyList() const noexcept;
+	void setMacosBundleEntitlementsPropertyList(std::string&& inValue);
+
+	const std::string& macosBundleEntitlementsPropertyListContent() const noexcept;
+	void setMacosBundleEntitlementsPropertyListContent(std::string&& inValue);
 #elif defined(CHALET_LINUX)
 	const std::string& linuxDesktopEntryIcon() const noexcept;
 	void setLinuxDesktopEntryIcon(std::string&& inValue);
@@ -92,6 +98,8 @@ private:
 	std::string m_macosBundleIcon;
 	std::string m_macosBundleInfoPropertyList;
 	std::string m_macosBundleInfoPropertyListContent;
+	std::string m_macosBundleEntitlementsPropertyList;
+	std::string m_macosBundleEntitlementsPropertyListContent;
 
 	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
 #elif defined(CHALET_LINUX)

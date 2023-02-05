@@ -20,7 +20,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -212,7 +212,9 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
-			Diagnostic::error("The environment must be created when the toolchain is initialized.");
+			const auto& toolchainName = inputs.toolchainPreferenceName();
+			auto arch = inputs.getResolvedTargetArchitecture();
+			Diagnostic::error("The toolchain '{}' (arch: {}) could either not be detected or was not defined in settings.", toolchainName, arch);
 			return false;
 		}
 
@@ -227,7 +229,10 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (preference.type != ToolchainType::Unknown)
 	{
 		if (!createEnvironment())
+		{
+			Diagnostic::error("Toolchain was not recognized.");
 			return false;
+		}
 	}
 	else
 	{
@@ -262,7 +267,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 			return false;
 	}
 
-	if (toolchain.version().empty())
+	if (m_impl->environment != nullptr && toolchain.version().empty())
 		toolchain.setVersion(m_impl->environment->detectedVersion());
 
 	if (!parser.validatePaths())
@@ -295,7 +300,7 @@ bool BuildState::initializeToolchain()
 {
 	Timer timer;
 
-	if (m_cacheEnabled)
+	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
@@ -350,6 +355,23 @@ bool BuildState::initializeBuild()
 	if (!paths.initialize())
 		return false;
 
+	// These should only be relevant if cross-compiling (so far)
+	//
+	environment->generateTargetSystemPaths();
+
+	// Get the path to windres, but with this method, it's not saved in settings
+	//  - it's specific to this architecture that we're building for
+	//
+	if (environment->isClang() && info.targettingMinGW())
+	{
+		auto compilerPath = toolchain.compilerCxxAny().binDir;
+		auto windres = fmt::format("{}/{}-windres", compilerPath, info.targetArchitectureTriple());
+		if (Commands::pathExists(windres))
+		{
+			toolchain.setCompilerWindowsResource(std::move(windres));
+		}
+	}
+
 	for (auto& target : targets)
 	{
 		if (target->isSources())
@@ -374,6 +396,8 @@ bool BuildState::initializeBuild()
 				}
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+				const auto& systemPaths = environment->targetSystemPaths();
+				if (systemPaths.empty())
 				{
 					std::string localLib{ "/usr/local/lib" };
 					if (Commands::pathExists(localLib))
@@ -410,10 +434,16 @@ bool BuildState::initializeBuild()
 			}
 		}
 
+		for (auto& target : distribution)
+		{
+			if (!target->initialize())
+				return false;
+		}
+
 		initializeCache();
 	}
 
-	if (m_cacheEnabled)
+	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState();
@@ -1029,6 +1059,13 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return Environment::getAsString(match.c_str());
 				}
 
+				if (String::startsWith("var:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return tools.variables.get(match);
+				}
+
 				if (String::startsWith("external:", match))
 				{
 					match = match.substr(9);
@@ -1147,6 +1184,13 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("var:", match))
+				{
+					required = false;
+					match = match.substr(4);
+					return tools.variables.get(match);
 				}
 
 				if (String::startsWith("external:", match))

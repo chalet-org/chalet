@@ -11,7 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "State/Dependency/IBuildDependency.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -19,6 +19,9 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+
+#include "State/Dependency/LocalDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
 
 namespace chalet
 {
@@ -49,11 +52,15 @@ bool BuildPaths::initialize()
 
 	const auto& buildConfig = m_state.info.buildConfiguration();
 	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
+	const auto& arch = m_state.info.targetArchitectureString();
 
 	auto style = m_state.toolchain.buildPathStyle();
 	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
 	{
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
+		if (m_state.inputs.isToolchainMultiArchPreset())
+			m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, toolchainPreference, arch, buildConfig);
+		else
+			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
 	}
 	else if (style == BuildPathStyle::Configuration)
 	{
@@ -61,13 +68,12 @@ bool BuildPaths::initialize()
 	}
 	else if (style == BuildPathStyle::ArchConfiguration)
 	{
-		const auto& arch = m_state.info.targetArchitectureString();
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
 	}
 	else // BuildPathStyle::TargetTriple
 	{
-		const auto& arch = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
+		const auto& arch2 = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch2, buildConfig);
 	}
 
 	m_intermediateDir = fmt::format("{}/int", outputDirectory);
@@ -172,7 +178,20 @@ std::string BuildPaths::getExternalDir(const std::string& inName) const
 	{
 		if (String::equals(dep->name(), inName))
 		{
-			return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			if (dep->isGit())
+			{
+				return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+			}
+			else if (dep->isScript())
+			{
+				const auto& scriptDep = static_cast<const ScriptDependency&>(*dep);
+				return scriptDep.file();
+			}
+			else if (dep->isLocal())
+			{
+				const auto& localDep = static_cast<const LocalDependency&>(*dep);
+				return localDep.path();
+			}
 		}
 	}
 

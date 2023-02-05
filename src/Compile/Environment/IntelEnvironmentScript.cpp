@@ -114,13 +114,13 @@ void IntelEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 bool IntelEnvironmentScript::saveEnvironmentFromScript()
 {
 #if defined(CHALET_WIN32)
-	StringList cmd{ m_intelSetVars };
+	StringList cmd{ fmt::format("\"{}\"", m_intelSetVars) };
 
 	StringList allowedArches = getAllowedArchitectures();
 	if (!String::equals(allowedArches, m_intelSetVarsArch))
 	{
 		auto setVarsFile = String::getPathFilename(m_intelSetVars);
-		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.targetArchitecture(), setVarsFile);
+		Diagnostic::error("Requested arch '{}' is not supported by {}", m_inputs.getResolvedTargetArchitecture(), setVarsFile);
 		return false;
 	}
 

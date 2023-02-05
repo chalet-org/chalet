@@ -28,6 +28,8 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
+	Path::sanitize(m_file);
+
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;
 

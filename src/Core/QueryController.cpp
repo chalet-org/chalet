@@ -14,6 +14,7 @@
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/DefinesVersion.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -376,28 +377,39 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 {
 	StringList ret{ "auto" };
 
+	bool handledRest = false;
+
 	// TODO: Link these up with the toolchain presets declared in CommandLineInputs
 
 	if (String::equals("llvm", inToolchain) || String::startsWith("llvm-", inToolchain))
 	{
-		List::addIfDoesNotExist(ret, "x86_64");
-		List::addIfDoesNotExist(ret, "i686");
-		List::addIfDoesNotExist(ret, "arm");
-		List::addIfDoesNotExist(ret, "arm64");
+		ret.emplace_back("x86_64");
+		ret.emplace_back("i686");
+		ret.emplace_back("arm64");
+		ret.emplace_back("arm");
+#if defined(CHALET_LINUX)
+		ret.emplace_back("armhf");
+#endif
 	}
 #if defined(CHALET_MACOS)
 	else if (String::equals("apple-llvm", inToolchain))
 	{
-		List::addIfDoesNotExist(ret, "universal");
-		List::addIfDoesNotExist(ret, "x86_64");
-		List::addIfDoesNotExist(ret, "arm64");
+		ret.emplace_back("universal");
+		ret.emplace_back("x86_64");
+		ret.emplace_back("arm64");
 	}
 #endif
 	else if (String::equals("gcc", inToolchain))
 	{
 #if defined(CHALET_WIN32)
-		List::addIfDoesNotExist(ret, "x86_64");
-		List::addIfDoesNotExist(ret, "i686");
+		ret.emplace_back("x86_64");
+		ret.emplace_back("i686");
+#elif defined(CHALET_LINUX)
+		ret.emplace_back("x86_64");
+		ret.emplace_back("i686");
+		ret.emplace_back("arm64");
+		ret.emplace_back("arm");
+		ret.emplace_back("armhf");
 #else
 		List::addIfDoesNotExist(ret, m_centralState.inputs().hostArchitecture());
 #endif
@@ -407,49 +419,80 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 	{
 		if (String::equals("arm64", m_centralState.inputs().hostArchitecture()))
 		{
-			List::addIfDoesNotExist(ret, "arm64");
-			List::addIfDoesNotExist(ret, "arm64_arm64");
-			List::addIfDoesNotExist(ret, "arm64_x64");
-			List::addIfDoesNotExist(ret, "arm64_x86");
+			ret.emplace_back("arm64");
+			ret.emplace_back("arm64_arm64");
+			ret.emplace_back("arm64_x64");
+			ret.emplace_back("arm64_x86");
 		}
 		else
 		{
-			List::addIfDoesNotExist(ret, "x86_64");
-			List::addIfDoesNotExist(ret, "i686");
-			List::addIfDoesNotExist(ret, "x64");
-			List::addIfDoesNotExist(ret, "x86");
-			List::addIfDoesNotExist(ret, "x64_x64");
-			List::addIfDoesNotExist(ret, "x64_x86");
-			List::addIfDoesNotExist(ret, "x64_arm");
-			List::addIfDoesNotExist(ret, "x64_arm64");
-			List::addIfDoesNotExist(ret, "x86_x86");
-			List::addIfDoesNotExist(ret, "x86_x64");
-			List::addIfDoesNotExist(ret, "x86_arm");
-			List::addIfDoesNotExist(ret, "x86_arm64");
+			// Default gnu-style
+			ret.emplace_back("x86_64");
+			ret.emplace_back("i686");
+			ret.emplace_back("arm64");
+			ret.emplace_back("arm");
+			// x64 host arches
+			ret.emplace_back("x64_x64");
+			ret.emplace_back("x64_x86");
+			ret.emplace_back("x64_arm64");
+			ret.emplace_back("x64_arm");
+			//
+			ret.emplace_back("x86_x86");
+			ret.emplace_back("x86_x64");
+			ret.emplace_back("x86_arm64");
+			ret.emplace_back("x86_arm");
+			// aliases
+			ret.emplace_back("x64");
+			ret.emplace_back("x86");
 		}
 	}
 #endif
 #if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
 	else if (String::startsWith("intel-classic", inToolchain))
 	{
-		List::addIfDoesNotExist(ret, "x86_64");
+		ret.emplace_back("x86_64");
 	#if !defined(CHALET_MACOS)
-		List::addIfDoesNotExist(ret, "i686");
+		ret.emplace_back("i686");
 	#endif
 	}
 #endif
 #if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
 	else if (String::startsWith("intel-llvm", inToolchain))
 	{
-		List::addIfDoesNotExist(ret, "x86_64");
-		List::addIfDoesNotExist(ret, "i686");
+		ret.emplace_back("x86_64");
+		ret.emplace_back("i686");
 	}
 #endif
-
-	auto currentArch = getCurrentArchitecture();
-	if (!currentArch.empty())
+	else
 	{
-		List::addIfDoesNotExist(ret, std::move(currentArch.front()));
+		const auto& settingsFile = getSettingsJson();
+		if (!settingsFile.is_null())
+		{
+			if (settingsFile.contains(Keys::Toolchains))
+			{
+				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				if (toolchains.contains(inToolchain))
+				{
+					const auto& toolchain = toolchains.at(inToolchain);
+					for (auto& [key, item] : toolchain.items())
+					{
+						if (item.is_object())
+							ret.emplace_back(key);
+					}
+
+					handledRest = true;
+				}
+			}
+		}
+	}
+
+	if (!handledRest)
+	{
+		auto currentArch = getCurrentArchitecture();
+		if (!currentArch.empty())
+		{
+			List::addIfDoesNotExist(ret, std::move(currentArch.front()));
+		}
 	}
 
 	return ret;

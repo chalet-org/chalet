@@ -5,11 +5,13 @@
 
 #include "Dependencies/DependencyManager.hpp"
 
+#include "Builder/ScriptRunner.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/GitRunner.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/Dependency/ScriptDependency.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -31,13 +33,27 @@ bool DependencyManager::run()
 {
 	m_centralState.cache.file().loadExternalDependencies(m_centralState.inputs().externalDirectory());
 
-	// Output::lineBreak();
-
-	if (!m_centralState.tools.git().empty())
+	for (auto& dependency : m_centralState.externalDependencies)
 	{
-		GitRunner git(m_centralState);
-		if (!git.run())
-			return false;
+		if (dependency->isGit())
+		{
+			if (!m_centralState.tools.git().empty())
+			{
+				GitRunner git(m_centralState);
+				if (!git.run(static_cast<GitDependency&>(*dependency)))
+					return false;
+			}
+			else
+			{
+				Diagnostic::error("Git dependency '{}' requested, but git is not installed", dependency->name());
+				return false;
+			}
+		}
+		else if (dependency->isScript())
+		{
+			if (!runScriptDependency(static_cast<ScriptDependency&>(*dependency)))
+				return false;
+		}
 	}
 
 	StringList eraseList = getUnusedDependencies();
@@ -53,6 +69,50 @@ bool DependencyManager::run()
 }
 
 /*****************************************************************************/
+bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency)
+{
+	const auto& file = inDependency.file();
+	if (file.empty())
+		return false;
+
+	auto cachedName = fmt::format("{}/{}", m_centralState.inputs().externalDirectory(), inDependency.name());
+	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
+	if (dependencyCache.contains(cachedName))
+	{
+		Json json = dependencyCache.get(cachedName);
+		if (!json.is_object())
+			json = Json::object();
+
+		auto args = String::join(inDependency.arguments());
+
+		const auto lastCachedFile = json["f"].is_string() ? json["f"].get<std::string>() : std::string();
+		const auto lastCachedArgs = json["a"].is_string() ? json["a"].get<std::string>() : std::string();
+
+		bool fileNeedsUpdate = lastCachedFile != file;
+		bool argsNeedsUpdate = lastCachedArgs != args;
+
+		if (!fileNeedsUpdate && !argsNeedsUpdate)
+			return true;
+	}
+	else
+	{
+		Json json;
+		json["f"] = file;
+		json["a"] = String::join(inDependency.arguments());
+
+		dependencyCache.emplace(cachedName, std::move(json));
+	}
+
+	const auto& arguments = inDependency.arguments();
+	ScriptRunner scriptRunner(m_centralState.inputs(), m_centralState.tools);
+	bool showExitCode = false;
+	if (!scriptRunner.run(inDependency.scriptType(), file, arguments, showExitCode))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 StringList DependencyManager::getUnusedDependencies() const
 {
 	StringList destinationCache;
@@ -62,6 +122,10 @@ StringList DependencyManager::getUnusedDependencies() const
 		{
 			auto& gitDependency = static_cast<const GitDependency&>(*dependency);
 			destinationCache.push_back(gitDependency.destination());
+		}
+		else if (dependency->isScript())
+		{
+			destinationCache.push_back(fmt::format("{}/{}", m_centralState.inputs().externalDirectory(), dependency->name()));
 		}
 	}
 
@@ -79,6 +143,8 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 
 	for (auto& it : inList)
 	{
+		LOG(it);
+
 		if (Commands::pathExists(it))
 		{
 			if (Commands::removeRecursively(it))

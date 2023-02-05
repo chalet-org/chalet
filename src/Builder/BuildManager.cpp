@@ -452,15 +452,20 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCo
 {
 	bool result = true;
 
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto copyFilesOnRun = inTarget.getResolvedRunDependenciesList();
-	for (auto& dep : copyFilesOnRun)
+	if (inTarget.isSources())
 	{
-		auto depFile = String::getPathFilename(dep);
-		if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
+		const auto& sourceTarget = static_cast<const SourceTarget&>(inTarget);
+
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		auto copyFilesOnRun = sourceTarget.getResolvedRunDependenciesList();
+		for (auto& dep : copyFilesOnRun)
 		{
-			result &= Commands::copy(dep, buildOutputDir);
-			++outCopied;
+			auto depFile = String::getPathFilename(dep);
+			if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
+			{
+				result &= Commands::copy(dep, buildOutputDir);
+				++outCopied;
+			}
 		}
 	}
 
@@ -736,24 +741,27 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 	if (Commands::pathIsEmpty(intermediateDir))
 		Commands::remove(intermediateDir);
 
-	fs::recursive_directory_iterator it(buildOutputDir);
-	fs::recursive_directory_iterator itEnd;
-
-	while (it != itEnd)
+	if (Commands::pathExists(buildOutputDir))
 	{
-		std::error_code ec;
-		const auto& path = it->path();
+		fs::recursive_directory_iterator it(buildOutputDir);
+		fs::recursive_directory_iterator itEnd;
 
-		if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+		while (it != itEnd)
 		{
-			auto pth = path;
-			++it;
+			std::error_code ec;
+			const auto& path = it->path();
 
-			fs::remove(pth, ec);
-		}
-		else
-		{
-			++it;
+			if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+			{
+				auto pth = path;
+				++it;
+
+				fs::remove(pth, ec);
+			}
+			else
+			{
+				++it;
+			}
 		}
 	}
 
@@ -857,17 +865,21 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	uint copied = 0;
 	for (auto& target : m_state.targets)
 	{
-		if (!target->copyFilesOnRun().empty())
+		if (target->isSources())
 		{
-			if (!copyRunDependencies(*target, copied))
+			auto& project = static_cast<const SourceTarget&>(*target);
+			if (!project.copyFilesOnRun().empty())
 			{
-				Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
-				return false;
+				if (!copyRunDependencies(*target, copied))
+				{
+					Diagnostic::error("There was an error copying run dependencies for: {}", target->name());
+					return false;
+				}
 			}
-		}
 
-		if (String::equals(inTarget.name(), target->name()))
-			break;
+			if (String::equals(inTarget.name(), target->name()))
+				break;
+		}
 	}
 
 	if (copied > 0)

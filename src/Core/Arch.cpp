@@ -14,6 +14,14 @@
 namespace chalet
 {
 /*****************************************************************************/
+Arch Arch::from(const std::string& inValue)
+{
+	Arch arch;
+	arch.set(inValue);
+	return arch;
+}
+
+/*****************************************************************************/
 std::string Arch::getHostCpuArchitecture()
 {
 #if defined(CHALET_MACOS)
@@ -58,6 +66,7 @@ std::string Arch::toVSArch(Arch::Cpu inCpu)
 		case Arch::Cpu::X86:
 			return "x86";
 		case Arch::Cpu::ARM:
+		case Arch::Cpu::ARMHF:
 			return "arm";
 		case Arch::Cpu::ARM64:
 			return "arm64";
@@ -75,6 +84,7 @@ std::string Arch::toVSArch2(Arch::Cpu inCpu)
 		case Arch::Cpu::X86:
 			return "Win32";
 		case Arch::Cpu::ARM:
+		case Arch::Cpu::ARMHF:
 			return "ARM";
 		case Arch::Cpu::ARM64:
 			return "ARM64";
@@ -120,6 +130,11 @@ void Arch::set(const std::string& inValue)
 		triple = fmt::format("{}{}", str, suffix);
 	}
 
+#if defined(CHALET_LINUX)
+	if (String::endsWith("eabihf", triple))
+		str += "hf";
+#endif
+
 	if (String::equals("x86_64", str))
 	{
 		val = Arch::Cpu::X64;
@@ -132,10 +147,16 @@ void Arch::set(const std::string& inValue)
 	{
 		val = Arch::Cpu::ARM64;
 	}
-	else if (String::startsWith("arm", str))
+	else if (String::equals("arm", str))
 	{
 		val = Arch::Cpu::ARM;
 	}
+#if defined(CHALET_LINUX)
+	else if (String::equals("armhf", str))
+	{
+		val = Arch::Cpu::ARMHF;
+	}
+#endif
 #if defined(CHALET_MACOS)
 	else if (String::startsWith("universal", str))
 	{

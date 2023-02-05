@@ -1,6 +1,6 @@
 {
 	"name": "Chalet",
-	"version": "0.5.16",
+	"version": "0.5.21",
 	"description": "A JSON-based project & build tool",
 	"homepage": "https://www.chalet-work.space",
 	"author": "Cosmic Road Interactive, LLC.",
@@ -8,13 +8,16 @@
 	"readme": "README.md",
 	/*"externalDependencies": {
 		"catch2": {
+			"kind": "git",
 			"repository": "git@github.com:catchorg/Catch2.git",
 			"branch": "v2.x"
 		},
 		"fmt": {
+			"kind": "git",
 			"repository": "git@github.com:fmtlib/fmt.git"
 		},
 		"nlohmann_json": {
+			"kind": "git",
 			"repository": "git@github.com:nlohmann/json.git"
 		}
 	},*/

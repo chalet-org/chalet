@@ -10,6 +10,7 @@ namespace chalet
 {
 struct CentralState;
 struct GitDependency;
+struct ScriptDependency;
 
 class DependencyManager
 {
@@ -19,6 +20,8 @@ public:
 	bool run();
 
 private:
+	bool runScriptDependency(const ScriptDependency& inTarget);
+
 	StringList getUnusedDependencies() const;
 	bool removeUnusedDependencies(const StringList& inList);
 	bool removeExternalDependencyDirectoryIfEmpty() const;

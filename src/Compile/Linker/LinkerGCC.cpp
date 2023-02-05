@@ -40,7 +40,7 @@ void LinkerGCC::getCommandOptions(StringList& outArgList)
 	addPositionIndependentCodeOption(outArgList);
 	addStripSymbols(outArgList);
 	addLinkerOptions(outArgList);
-	addMacosSysRootOption(outArgList);
+	addSystemRootOption(outArgList);
 	addProfileInformation(outArgList);
 	addLinkTimeOptimizations(outArgList);
 	addThreadModelLinks(outArgList);
@@ -96,7 +96,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
+	addSystemRootOption(ret);
 	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
@@ -111,6 +111,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addRunPath(ret);
 
 	addLibDirs(ret);
+	addSystemLibDirs(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
@@ -140,7 +141,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
-	addMacosSysRootOption(ret);
+	addSystemRootOption(ret);
 	addProfileInformation(ret);
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
@@ -155,6 +156,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addRunPath(ret);
 
 	addLibDirs(ret);
+	addSystemLibDirs(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
@@ -591,10 +593,34 @@ bool LinkerGCC::addArchitecture(StringList& outArgList, const std::string& inArc
 }
 
 /*****************************************************************************/
-bool LinkerGCC::addMacosSysRootOption(StringList& outArgList) const
+bool LinkerGCC::addSystemRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
-	return CompilerCxxAppleClang::addMacosSysRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+#else
+	if (m_state.environment->isEmbeddedTarget())
+	{
+		outArgList.emplace_back("--specs=nosys.specs");
+	}
+
+	UNUSED(outArgList);
+	return true;
+#endif
+}
+
+/*****************************************************************************/
+bool LinkerGCC::addSystemLibDirs(StringList& outArgList) const
+{
+#if defined(CHALET_LINUX)
+	const auto& systemIncludes = m_state.environment->targetSystemPaths();
+	const auto& sysroot = m_state.environment->sysroot();
+	if (!systemIncludes.empty() && !sysroot.empty())
+	{
+		const std::string prefix{ "-L" };
+		outArgList.emplace_back(getPathCommand(prefix, sysroot));
+	}
+
+	return true;
 #else
 	UNUSED(outArgList);
 	return true;

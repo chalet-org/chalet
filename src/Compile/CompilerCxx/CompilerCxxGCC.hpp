@@ -52,15 +52,14 @@ protected:
 	virtual void addThreadModelCompileOption(StringList& outArgList) const override;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
+	virtual bool addSystemRootOption(StringList& outArgList) const;
+	virtual bool addSystemIncludes(StringList& outArgList) const;
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const;
 	virtual void addCppCoroutines(StringList& outArgList) const;
 	virtual void addCppConcepts(StringList& outArgList) const;
 
 	// Objective-C / Objective-C++
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const;
-
-	// MacOS
-	virtual bool addMacosSysRootOption(StringList& outArgList) const;
 
 private:
 	static const StringList& getSupportedX86Architectures();

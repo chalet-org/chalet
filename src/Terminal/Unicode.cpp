@@ -13,7 +13,7 @@ namespace chalet
 const char* Unicode::triangle()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Environment::isVisualStudioOutput() || Environment::isJetBrainsOutput())
 		return "*";
 	else if (Environment::isCommandPromptOrPowerShell())
 		return "»";
@@ -26,7 +26,7 @@ const char* Unicode::triangle()
 const char* Unicode::diamond()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Environment::isVisualStudioOutput() || Environment::isJetBrainsOutput())
 		return "+";
 	else if (Environment::isCommandPromptOrPowerShell())
 		return "•";
@@ -38,11 +38,15 @@ const char* Unicode::diamond()
 const char* Unicode::checkmark()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Environment::isVisualStudioOutput() || Environment::isJetBrainsOutput())
 		return "<";
 	else if (Environment::isCommandPromptOrPowerShell())
 		return "√";
 	else if (Environment::isMicrosoftTerminalOrWindowsBash())
+		return reinterpret_cast<const char*>(u8"\u2713");
+	else
+#elif defined(CHALET_LINUX)
+	if (Environment::isWindowsSubsystemForLinux())
 		return reinterpret_cast<const char*>(u8"\u2713");
 	else
 #endif
@@ -64,7 +68,7 @@ const char* Unicode::heavyBallotX()
 const char* Unicode::warning()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Environment::isVisualStudioOutput() || Environment::isJetBrainsOutput())
 		return ">";
 	else if (Environment::isCommandPromptOrPowerShell())
 		return "»";
@@ -78,7 +82,7 @@ const char* Unicode::warning()
 const char* Unicode::heavyCurvedDownRightArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Environment::isVisualStudioOutput() || Environment::isJetBrainsOutput())
 		return "-";
 	else if (Environment::isCommandPromptOrPowerShell())
 		return "¬";

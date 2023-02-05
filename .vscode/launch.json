@@ -5,12 +5,18 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
-			"args": [],
+			"cwd": "${workspaceFolder}/../new-project",
+			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}",
 			"console": "integratedTerminal",
-			"envFile": "${workspaceFolder}/.env.windows"
+			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
+			"args": [
+				"-t",
+				"gcc",
+				"-a",
+				"x86",
+				"build"
+			]
 		},
 		{
 			"name": "LLDB",
@@ -18,8 +24,8 @@
 			"request": "launch",
 			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
-			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopOnEntry": false,
+			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
 				"build"
 			],
@@ -33,6 +39,10 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopAtEntry": false,
 			"args": [
+				"-t",
+				"gcc",
+				"-a",
+				"auto",
 				"build"
 			],
 			"externalConsole": false,

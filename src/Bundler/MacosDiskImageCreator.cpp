@@ -5,6 +5,7 @@
 
 #include "Bundler/MacosDiskImageCreator.hpp"
 
+#include "Bundler/MacosCodeSignOptions.hpp"
 #include "Bundler/MacosNotarizationMsg.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
@@ -175,7 +176,8 @@ bool MacosDiskImageCreator::signDmgImage(const std::string& inPath) const
 	Timer timer;
 	Diagnostic::stepInfoEllipsis("Signing the disk image");
 
-	if (!m_state.tools.macosCodeSignDiskImage(inPath))
+	MacosCodeSignOptions entitlementOptions;
+	if (!m_state.tools.macosCodeSignDiskImage(inPath, entitlementOptions))
 	{
 		Diagnostic::error("Failed to sign: {}", inPath);
 		return false;

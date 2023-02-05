@@ -40,14 +40,8 @@ struct IBuildTarget
 	const std::string& outputDescription() const noexcept;
 	void setOutputDescription(std::string&& inValue) noexcept;
 
-	const StringList& copyFilesOnRun() const noexcept;
-	void addCopyFilesOnRun(StringList&& inList);
-	void addCopyFileOnRun(std::string&& inValue);
-
 	bool includeInBuild() const noexcept;
 	void setIncludeInBuild(const bool inValue);
-
-	StringList getResolvedRunDependenciesList() const;
 
 protected:
 	bool replaceVariablesInPathList(StringList& outList) const;
@@ -56,8 +50,6 @@ protected:
 	const BuildState& m_state;
 
 private:
-	StringList m_copyFilesOnRun;
-
 	std::string m_name;
 	std::string m_outputDescription;
 

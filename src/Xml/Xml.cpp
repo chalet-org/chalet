@@ -20,11 +20,26 @@ std::string Xml::dump(const int inIndent, const char inIndentChar) const
 	if (inIndent >= 0)
 		ret += '\n';
 
+	for (const auto& header : m_headers)
+	{
+		ret += header;
+		ret += '\n';
+	}
+
 	ret += m_root.dump(0, inIndent, inIndentChar);
 	if (ret.back() == '\n')
 		ret.pop_back();
 
 	return ret;
+}
+
+/*****************************************************************************/
+void Xml::addRawHeader(std::string inHeader)
+{
+	while (inHeader.back() == '\n')
+		inHeader.pop_back();
+
+	m_headers.emplace_back(std::move(inHeader));
 }
 
 /*****************************************************************************/

@@ -210,14 +210,18 @@
 						"infoPropertyList"
 					],
 					"properties": {
-						"type": {
-							"type": "string",
-							"description": "The MacOS bundle type (only .app is supported currently)",
-							"minLength": 1,
-							"enum": [
-								"app"
-							],
-							"default": "app"
+						"entitlementsPropertyList": {
+							"description": "The path to a property list (.xml) file, .json file, or the properties themselves to describe the entitlements required to run the app. Only applies to codesigned bundles",
+							"oneOf": [
+								{
+									"type": "string",
+									"minLength": 1,
+									"default": "Entitlements.plist.json"
+								},
+								{
+									"type": "object"
+								}
+							]
 						},
 						"icon": {
 							"type": "string",
@@ -251,6 +255,15 @@
 									}
 								}
 							]
+						},
+						"type": {
+							"type": "string",
+							"description": "The MacOS bundle type (only .app is supported currently)",
+							"minLength": 1,
+							"enum": [
+								"app"
+							],
+							"default": "app"
 						}
 					}
 				},
@@ -631,58 +644,143 @@
 				}
 			}
 		},
-		"external-dependency": {
+		"external-dependency-kind": {
+			"type": "string",
+			"description": "Whether the external dependency is a git repository, local folder, or script.",
+			"minLength": 1,
+			"enum": [
+				"git",
+				"local",
+				"script"
+			]
+		},
+		"external-dependency-condition": {
+			"type": "string",
+			"description": "A rule describing when to include this dependency during the build. Only accepts env and platform variables.",
+			"minLength": 1,
+			"pattern": "^\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$"
+		},
+		"external-dependency-git": {
 			"type": "object",
+			"additionalProperties": false,
+			"description": "An external git dependency",
 			"required": [
+				"kind",
 				"repository"
 			],
 			"properties": {
 				"branch": {
-					"$ref": "#/definitions/external-git-branch"
+					"$ref": "#/definitions/external-dependency-git-branch"
 				},
 				"commit": {
-					"$ref": "#/definitions/external-git-commit"
+					"$ref": "#/definitions/external-dependency-git-commit"
+				},
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
 				},
 				"repository": {
-					"$ref": "#/definitions/external-git-repository"
+					"$ref": "#/definitions/external-dependency-git-repository"
 				},
 				"submodules": {
-					"$ref": "#/definitions/external-git-submodules"
+					"$ref": "#/definitions/external-dependency-git-submodules"
 				},
 				"tag": {
-					"$ref": "#/definitions/external-git-tag"
+					"$ref": "#/definitions/external-dependency-git-tag"
 				}
 			}
 		},
-		"external-git-repository": {
+		"external-dependency-git-repository": {
 			"type": "string",
 			"description": "The url of the git repository.",
 			"minLength": 1,
 			"pattern": "^(?:git|ssh|git\\+ssh|https?|git@[\\w\\-.]+):(\\/\\/)?(.*?)(\\.git)?(\\/?|#[\\w\\d\\-._]+?)$"
 		},
-		"external-git-branch": {
+		"external-dependency-git-branch": {
 			"type": "string",
 			"description": "The branch to checkout. Uses the repository's default if not set.",
 			"minLength": 1
 		},
-		"external-git-commit": {
+		"external-dependency-git-commit": {
 			"type": "string",
 			"description": "The SHA1 hash of the commit to checkout.",
 			"pattern": "^[0-9a-f]{7,40}$",
 			"minLength": 1
 		},
-		"external-git-tag": {
+		"external-dependency-git-tag": {
 			"type": "string",
 			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
 			"minLength": 1
 		},
-		"external-git-submodules": {
+		"external-dependency-git-submodules": {
 			"type": "boolean",
 			"description": "Do submodules need to be cloned?",
 			"default": false
 		},
-		"environment-searchPaths": {
-			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${externalDir}",
+		"external-dependency-local": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
+				},
+				"path": {
+					"$ref": "#/definitions/external-dependency-local-path"
+				}
+			}
+		},
+		"external-dependency-local-path": {
+			"type": "string",
+			"description": "The local path to a dependency to build from. Can take 'env' substitution variables. (ie. '${env:SOME_PATH}')",
+			"minLength": 1
+		},
+		"external-dependency-script": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"file"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-script-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"$ref": "#/definitions/external-dependency-kind"
+				},
+				"file": {
+					"$ref": "#/definitions/target-script-file"
+				}
+			}
+		},
+		"variables": {
+			"type": "object",
+			"description": "Local variables to be used inside of the build file, but shouldn't be part of the environment (.env) - ie. shortcuts to paths that may otherwise be verbose.",
+			"patternProperties": {
+				"^[A-Za-z0-9_]{3,255}$": {
+					"$ref": "#/definitions/variable-value"
+				}
+			}
+		},
+		"variable-value": {
+			"type": "string",
+			"description": "The value to assign to an environment variable",
+			"minLength": 1
+		},
+		"searchPaths": {
+			"description": "Any additional search paths to include. Accepts Chalet variables such as ${buildDir} & ${external:(name)}",
 			"oneOf": [
 				{
 					"type": "string",
@@ -734,24 +832,6 @@
 				{
 					"type": "array",
 					"uniqueItems": false,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				}
-			]
-		},
-		"target-copyFilesOnRun": {
-			"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libaries that need to be resolved from the same directory as the run target.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
 					"minItems": 1,
 					"items": {
 						"type": "string",
@@ -1034,6 +1114,24 @@
 		},
 		"target-source-configureFiles": {
 			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-copyFilesOnRun": {
+			"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the 'MacOS' folder path alongside the executable.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1443,7 +1541,7 @@
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+./]+$"
+					"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
 				},
 				{
 					"type": "array",
@@ -1452,7 +1550,7 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+./]+$"
+						"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
 					}
 				}
 			]
@@ -1585,7 +1683,7 @@
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+./]+$"
+					"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
 				},
 				{
 					"type": "array",
@@ -1594,7 +1692,7 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+./]+$"
+						"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
 					}
 				}
 			]
@@ -2673,7 +2771,12 @@
 									},
 									"else": {
 										"type": "object",
-										"additionalProperties": false
+										"additionalProperties": false,
+										"properties": {
+											"kind": {
+												"$ref": "#/definitions/dist-kind"
+											}
+										}
 									}
 								}
 							}
@@ -2682,18 +2785,65 @@
 				}
 			}
 		},
+		"variables": {
+			"$ref": "#/definitions/variables"
+		},
 		"externalDependencies": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'externalDir'.",
+			"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'.",
 			"patternProperties": {
 				"^[\\w\\-+.]{3,100}$": {
-					"$ref": "#/definitions/external-dependency"
+					"type": "object",
+					"description": "A single external dependency or script.",
+					"if": {
+						"properties": {
+							"kind": {
+								"const": "git"
+							}
+						}
+					},
+					"then": {
+						"$ref": "#/definitions/external-dependency-git"
+					},
+					"else": {
+						"if": {
+							"properties": {
+								"kind": {
+									"const": "local"
+								}
+							}
+						},
+						"then": {
+							"$ref": "#/definitions/external-dependency-local"
+						},
+						"else": {
+							"if": {
+								"properties": {
+									"kind": {
+										"const": "script"
+									}
+								}
+							},
+							"then": {
+								"$ref": "#/definitions/external-dependency-script"
+							},
+							"else": {
+								"type": "object",
+								"additionalProperties": false,
+								"properties": {
+									"kind": {
+										"$ref": "#/definitions/external-dependency-kind"
+									}
+								}
+							}
+						}
+					}
 				}
 			}
 		},
 		"searchPaths": {
-			"$ref": "#/definitions/environment-searchPaths"
+			"$ref": "#/definitions/searchPaths"
 		},
 		"targets": {
 			"type": "object",
@@ -2773,11 +2923,11 @@
 										},
 										"else": {
 											"type": "object",
-											"additionalProperties": false
-										},
-										"properties": {
-											"kind": {
-												"$ref": "#/definitions/target-kind"
+											"additionalProperties": false,
+											"properties": {
+												"kind": {
+													"$ref": "#/definitions/target-kind"
+												}
 											}
 										}
 									}
@@ -2795,7 +2945,7 @@
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},
 		"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-			"$ref": "#/definitions/environment-searchPaths"
+			"$ref": "#/definitions/searchPaths"
 		}
 	}
 }

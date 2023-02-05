@@ -220,6 +220,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret, arch);
+	addSystemRootOption(ret);
 	addLinkTimeOptimizations(ret);
 
 	addDebuggingInformationOption(ret);
@@ -228,7 +229,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 
 	addDefines(ret);
 	addIncludes(ret);
-	addMacosSysRootOption(ret);
+	addSystemIncludes(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
@@ -278,6 +279,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addNoExceptionsOption(ret);
 	addThreadModelCompileOption(ret);
 	addArchitecture(ret, std::string());
+	addSystemRootOption(ret);
 	addLinkTimeOptimizations(ret);
 
 	addDebuggingInformationOption(ret);
@@ -290,7 +292,7 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 	addPchInclude(ret, derivative);
 
 	addIncludes(ret);
-	addMacosSysRootOption(ret);
+	addSystemIncludes(ret);
 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
@@ -321,6 +323,7 @@ void CompilerCxxGCC::getCommandOptions(StringList& outArgList, const SourceType 
 	addNoExceptionsOption(outArgList);
 	addThreadModelCompileOption(outArgList);
 	addArchitecture(outArgList, std::string());
+	addSystemRootOption(outArgList);
 	addLinkTimeOptimizations(outArgList);
 
 	addDebuggingInformationOption(outArgList);
@@ -817,10 +820,34 @@ void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const 
 }
 
 /*****************************************************************************/
-bool CompilerCxxGCC::addMacosSysRootOption(StringList& outArgList) const
+bool CompilerCxxGCC::addSystemRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
-	return CompilerCxxAppleClang::addMacosSysRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+#else
+	UNUSED(outArgList);
+	return true;
+#endif
+}
+
+/*****************************************************************************/
+bool CompilerCxxGCC::addSystemIncludes(StringList& outArgList) const
+{
+#if defined(CHALET_LINUX)
+	const auto& systemIncludes = m_state.environment->targetSystemPaths();
+	const auto& sysroot = m_state.environment->sysroot();
+	if (!systemIncludes.empty() && !sysroot.empty())
+	{
+		outArgList.emplace_back("-nostdinc");
+
+		for (auto& include : systemIncludes)
+		{
+			outArgList.emplace_back("-isystem");
+			outArgList.emplace_back(include);
+		}
+	}
+
+	return true;
 #else
 	UNUSED(outArgList);
 	return true;
@@ -836,7 +863,7 @@ bool CompilerCxxGCC::addArchitectureToCommand(StringList& outArgList, const std:
 	auto targetArch = inState.info.targetArchitecture();
 	auto requestedArch = inState.info.targetArchitectureString();
 
-	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "arm64", "aarch64" }, requestedArch))
+	if (inState.environment->isMingw() || String::equals(StringList{ "arm", "armhf", "arm64", "aarch64" }, requestedArch))
 	{
 		// don't do anything yet
 		return false;

@@ -48,7 +48,6 @@ bool CompileEnvironmentVisualStudio::validateArchitectureFromInput()
 	// TODO: universal windows platform - uwp-windows-msvc
 
 	m_state.info.setHostArchitecture(host);
-	m_state.inputs.setTargetArchitecture(m_config->architecture());
 	m_state.info.setTargetArchitecture(fmt::format("{}-pc-windows-msvc", Arch::toGnuArch(target)));
 
 	return true;
@@ -79,10 +78,10 @@ bool CompileEnvironmentVisualStudio::createFromVersion(const std::string& inVers
 	m_detectedVersion = m_config->detectedVersion();
 	m_config->readEnvironmentVariablesFromDeltaFile();
 
-	if (m_config->isPreset())
-	{
-		m_state.inputs.setToolchainPreferenceName(makeToolchainName(m_config->architecture()));
-	}
+	// if (m_config->isPreset())
+	// {
+	// 	m_state.inputs.setToolchainPreferenceName(makeToolchainName(m_config->architecture()));
+	// }
 
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 

@@ -15,7 +15,7 @@
 #include "Core/Platform.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/CentralState.hpp"
-#include "State/Dependency/BuildDependencyType.hpp"
+#include "State/Dependency/ExternalDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
@@ -811,9 +811,17 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outTarget.addCopyFilesOnRun(std::move(val));
+			{
+				if (outTarget.isSources())
+				{
+					auto& project = static_cast<SourceTarget&>(outTarget);
+					project.addCopyFilesOnRun(std::move(val));
+				}
+			}
 			else if (isInvalid(status))
+			{
 				return false;
+			}
 		}
 		else if (value.is_string())
 		{
@@ -827,7 +835,13 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outTarget.addCopyFileOnRun(std::move(val));
+			{
+				if (outTarget.isSources())
+				{
+					auto& project = static_cast<SourceTarget&>(outTarget);
+					project.addCopyFileOnRun(std::move(val));
+				}
+			}
 			else if (isInvalid(status))
 				return false;
 		}
@@ -1283,12 +1297,18 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 							outTarget.setMacosBundleIcon(v.get<std::string>());
 						else if (String::equals("infoPropertyList", k))
 							outTarget.setMacosBundleInfoPropertyList(v.get<std::string>());
+						else if (String::equals("entitlementsPropertyList", k))
+							outTarget.setMacosBundleEntitlementsPropertyList(v.get<std::string>());
 					}
 					else if (v.is_object())
 					{
 						if (String::equals("infoPropertyList", k))
 						{
 							outTarget.setMacosBundleInfoPropertyListContent(v.dump());
+						}
+						else if (String::equals("entitlementsPropertyList", k))
+						{
+							outTarget.setMacosBundleEntitlementsPropertyListContent(v.dump());
 						}
 					}
 				}
@@ -1481,12 +1501,12 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarge
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const
 {
-	if (!matchConditionVariables(inContent, [this, &inContent, &outTarget](const std::string& key, const std::string& value, bool negate) {
+	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent, &outTarget](const std::string& key, const std::string& value, bool negate) {
 			auto res = checkConditionVariable(outTarget, inContent, key, value, negate);
 			return res == ConditionResult::Pass;
 		}))
 	{
-		if (m_lastOp == ConditionOp::InvalidOr)
+		if (m_adapter.lastOp == ConditionOp::InvalidOr)
 		{
 			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
 			return std::nullopt;
@@ -1501,12 +1521,12 @@ std::optional<bool> ChaletJsonParser::conditionIsValid(IBuildTarget& outTarget, 
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inContent) const
 {
-	if (!matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
+	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
 			auto res = checkConditionVariable(inContent, key, value, negate);
 			return res == ConditionResult::Pass;
 		}))
 	{
-		if (m_lastOp == ConditionOp::InvalidOr)
+		if (m_adapter.lastOp == ConditionOp::InvalidOr)
 		{
 			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
 			return std::nullopt;
@@ -1519,7 +1539,7 @@ std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inCont
 }
 
 /*****************************************************************************/
-ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const
 {
 	if (key.empty())
 	{
@@ -1579,7 +1599,7 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(IBuil
 }
 
 /*****************************************************************************/
-ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
 {
 	// LOG("  ", key, value, negate);
 
@@ -1737,127 +1757,4 @@ ChaletJsonParser::ConditionResult ChaletJsonParser::checkConditionVariable(const
 	return ConditionResult::Pass;
 }
 
-/*****************************************************************************/
-bool ChaletJsonParser::matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const
-{
-	auto squareBracketBegin = inText.find('[');
-	if (squareBracketBegin == std::string::npos)
-		return true;
-
-	auto squareBracketEnd = inText.find(']', squareBracketBegin);
-	if (squareBracketEnd == std::string::npos)
-		return true;
-
-	// LOG("evaluating:", inText);
-
-	char op;
-	auto raw = inText.substr(squareBracketBegin + 1, (squareBracketEnd - squareBracketBegin) - 1);
-	if (raw.find('|') != std::string::npos)
-	{
-		m_lastOp = ConditionOp::Or;
-		op = '|';
-	}
-	else
-	{
-		m_lastOp = ConditionOp::And;
-		op = '+';
-	}
-
-	bool isOr = m_lastOp == ConditionOp::Or;
-	if (isOr && raw.find('+') != std::string::npos)
-	{
-		m_lastOp = ConditionOp::InvalidOr;
-		return false;
-	}
-
-	bool result = !isOr;
-	auto split = String::split(raw, op);
-	for (auto& prop : split)
-	{
-		auto propSplit = String::split(prop, ':');
-		auto& key = propSplit.front();
-		if (key.find_first_of("!{},") != std::string::npos)
-		{
-			result = false;
-			break;
-		}
-
-		if (propSplit.size() > 1)
-		{
-			auto& inner = propSplit.at(1);
-			if (inner.front() == '{' && inner.back() == '}')
-			{
-				inner = inner.substr(1);
-				inner.pop_back();
-			}
-
-			if (String::contains(',', inner))
-			{
-				bool valid = false;
-				auto innerSplit = String::split(inner, ',');
-				for (auto& v : innerSplit)
-				{
-					bool negate = false;
-					if (v.front() == '!')
-					{
-						v = v.substr(1);
-						negate = true;
-					}
-
-					if (v.find_first_of("!{},") == std::string::npos)
-					{
-						valid |= onMatch(key, v, negate);
-					}
-					else
-					{
-						valid = false;
-						break;
-					}
-				}
-				if (isOr)
-					result |= valid;
-				else
-					result &= valid;
-			}
-			else
-			{
-				bool negate = false;
-				if (inner.front() == '!')
-				{
-					inner = inner.substr(1);
-					negate = true;
-				}
-
-				if (inner.find_first_of("!{},") == std::string::npos)
-				{
-					if (isOr)
-						result |= onMatch(key, inner, negate);
-					else
-						result &= onMatch(key, inner, negate);
-				}
-				else
-				{
-					result = false;
-					break;
-				}
-			}
-		}
-		else
-		{
-			bool negate = false;
-			if (key.front() == '!')
-			{
-				key = key.substr(1);
-				negate = true;
-			}
-
-			if (isOr)
-				result |= onMatch(key, std::string{}, negate);
-			else
-				result &= onMatch(key, std::string{}, negate);
-		}
-	}
-
-	return result;
-}
 }

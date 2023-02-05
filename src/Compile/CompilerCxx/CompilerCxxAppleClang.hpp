@@ -14,7 +14,7 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 {
 	explicit CompilerCxxAppleClang(const BuildState& inState, const SourceTarget& inProject);
 
-	static bool addMacosSysRootOption(StringList& outArgList, const BuildState& inState);
+	static bool addSystemRootOption(StringList& outArgList, const BuildState& inState);
 	static bool addArchitectureToCommand(StringList& outArgList, const BuildState& inState);
 	static bool addMultiArchOptionsToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
@@ -26,6 +26,9 @@ protected:
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const final;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const final;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const final;
+
+	virtual bool addSystemRootOption(StringList& outArgList) const final;
+	virtual bool addSystemIncludes(StringList& outArgList) const final;
 
 	// Objective-C / Objective-C++
 	virtual void addObjectiveCxxRuntimeOption(StringList& outArgList, const SourceType derivative) const final;

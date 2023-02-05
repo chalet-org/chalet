@@ -26,6 +26,8 @@ bool ProcessBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
+	Path::sanitize(m_path);
+
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;
 

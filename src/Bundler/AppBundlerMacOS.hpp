@@ -29,8 +29,11 @@ public:
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
 private:
+	std::string getEntitlementsFilePath() const;
+
 	bool createBundleIcon();
-	bool createPListAndReplaceVariables() const;
+	bool createInfoPropertyListAndReplaceVariables() const;
+	bool createEntitlementsPropertyList() const;
 	bool setExecutablePaths() const;
 	bool signAppBundle() const;
 
@@ -45,6 +48,8 @@ private:
 	std::string m_frameworksPath;
 	std::string m_resourcePath;
 	std::string m_iconBaseName;
+
+	std::string m_entitlementsFile;
 };
 }
 

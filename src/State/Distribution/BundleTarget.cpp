@@ -61,6 +61,24 @@ bool BundleTarget::initialize()
 	if (!replaceVariablesInPathList(m_excludes))
 		return false;
 
+#if defined(CHALET_MACOS)
+	if (!m_state.replaceVariablesInString(m_macosBundleInfoPropertyList, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_macosBundleEntitlementsPropertyList, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_macosBundleIcon, this))
+		return false;
+
+#elif defined(CHALET_LINUX)
+	if (!m_state.replaceVariablesInString(m_linuxDesktopEntryTemplate, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_linuxDesktopEntryIcon, this))
+		return false;
+#endif
+
 	return true;
 }
 
@@ -80,12 +98,12 @@ bool BundleTarget::validate()
 	{
 		if (!String::endsWith(StringList{ ".png", ".icns" }, m_macosBundleIcon))
 		{
-			Diagnostic::error("bundle.macosBundleIcon must end with '.png' or '.icns', but was '{}'.", m_macosBundleIcon);
+			Diagnostic::error("bundle.macosBundle.icon must end with '.png' or '.icns', but was '{}'.", m_macosBundleIcon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_macosBundleIcon))
 		{
-			Diagnostic::error("bundle.macosBundleIcon '{}' was not found.", m_macosBundleIcon);
+			Diagnostic::error("bundle.macosBundle.icon '{}' was not found.", m_macosBundleIcon);
 			result = false;
 		}
 	}
@@ -94,14 +112,14 @@ bool BundleTarget::validate()
 	{
 		if (!String::endsWith(StringList{ ".plist", ".json" }, m_macosBundleInfoPropertyList))
 		{
-			Diagnostic::error("bundle.macosBundleInfoPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleInfoPropertyList);
+			Diagnostic::error("bundle.macosBundle.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleInfoPropertyList);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_macosBundleInfoPropertyList))
 		{
 			if (String::endsWith(".plist", m_macosBundleInfoPropertyList))
 			{
-				Diagnostic::error("bundle.macosBundleInfoPropertyList '{}' was not found.", m_macosBundleInfoPropertyList);
+				Diagnostic::error("bundle.macosBundle.infoPropertyList '{}' was not found.", m_macosBundleInfoPropertyList);
 				result = false;
 			}
 			else
@@ -110,17 +128,38 @@ bool BundleTarget::validate()
 			}
 		}
 	}
+
+	if (!m_macosBundleEntitlementsPropertyList.empty())
+	{
+		if (!String::endsWith(StringList{ ".plist", ".json", ".xml" }, m_macosBundleEntitlementsPropertyList))
+		{
+			Diagnostic::error("bundle.macosBundle.entitlementsPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleEntitlementsPropertyList);
+			result = false;
+		}
+		else if (!Commands::pathExists(m_macosBundleEntitlementsPropertyList))
+		{
+			if (String::endsWith(".plist", m_macosBundleEntitlementsPropertyList))
+			{
+				Diagnostic::error("bundle.macosBundle.entitlementsPropertyList '{}' was not found.", m_macosBundleEntitlementsPropertyList);
+				result = false;
+			}
+			else
+			{
+				std::ofstream(m_macosBundleEntitlementsPropertyList) << PlatformFileTemplates::macosInfoPlist();
+			}
+		}
+	}
 #elif defined(CHALET_LINUX)
 	if (!m_linuxDesktopEntryIcon.empty())
 	{
 		if (!String::endsWith(StringList{ ".png", ".svg" }, m_linuxDesktopEntryIcon))
 		{
-			Diagnostic::error("bundle.linuxDesktopEntryIcon must end with '.png' or '.svg', but was '{}'.", m_linuxDesktopEntryIcon);
+			Diagnostic::error("bundle.linuxDesktopEntry.icon must end with '.png' or '.svg', but was '{}'.", m_linuxDesktopEntryIcon);
 			result = false;
 		}
 		else if (!Commands::pathExists(m_linuxDesktopEntryIcon))
 		{
-			Diagnostic::error("bundle.linuxDesktopEntryIcon '{}' was not found.", m_linuxDesktopEntryIcon);
+			Diagnostic::error("bundle.linuxDesktopEntry.icon '{}' was not found.", m_linuxDesktopEntryIcon);
 			result = false;
 		}
 	}
@@ -410,6 +449,28 @@ const std::string& BundleTarget::macosBundleInfoPropertyListContent() const noex
 void BundleTarget::setMacosBundleInfoPropertyListContent(std::string&& inValue)
 {
 	m_macosBundleInfoPropertyListContent = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& BundleTarget::macosBundleEntitlementsPropertyList() const noexcept
+{
+	return m_macosBundleEntitlementsPropertyList;
+}
+
+void BundleTarget::setMacosBundleEntitlementsPropertyList(std::string&& inValue)
+{
+	m_macosBundleEntitlementsPropertyList = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& BundleTarget::macosBundleEntitlementsPropertyListContent() const noexcept
+{
+	return m_macosBundleEntitlementsPropertyListContent;
+}
+
+void BundleTarget::setMacosBundleEntitlementsPropertyListContent(std::string&& inValue)
+{
+	m_macosBundleEntitlementsPropertyListContent = std::move(inValue);
 }
 
 #elif defined(CHALET_LINUX)

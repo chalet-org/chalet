@@ -55,6 +55,9 @@ void addArg(StringList& outList, const T& inArg)
 	{
 		for (const auto& item : inArg)
 		{
+			if (item.empty())
+				continue;
+
 			if (std::find(outList.begin(), outList.end(), item) == outList.end())
 				outList.emplace_back(item);
 		}
@@ -62,6 +65,9 @@ void addArg(StringList& outList, const T& inArg)
 	else
 	{
 		static_assert((std::is_constructible_v<std::string, const T&>));
+		if (inArg.empty())
+			return;
+
 		std::string value(inArg);
 		if (std::find(outList.begin(), outList.end(), value) == outList.end())
 			outList.emplace_back(std::move(value));

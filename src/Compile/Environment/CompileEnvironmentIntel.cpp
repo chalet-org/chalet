@@ -97,18 +97,30 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 	std::vector<CompilerPathStructure> ret = CompileEnvironmentGNU::getValidCompilerPaths();
 
 	// TODO: Linux
+	auto arch = m_state.info.targetArchitecture();
 
 	if (m_type == ToolchainType::IntelLLVM)
 	{
 #if defined(CHALET_WIN32)
-		ret.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
-		ret.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
+		if (arch == Arch::Cpu::X64)
+		{
+			ret.push_back({ "/bin/intel64", "/compiler/lib/intel64_win", "/compiler/include" });
+			ret.push_back({ "/bin-llvm", "/compiler/lib/intel64_win", "/compiler/include" });
+		}
+		else if (arch == Arch::Cpu::X86)
+		{
+			ret.push_back({ "/bin/intel64_ia32", "/compiler/lib/ia32_win", "/compiler/include" });
+			ret.push_back({ "/bin-llvm", "/compiler/lib/ia32_win", "/compiler/include" });
+		}
 #else
 #endif
 	}
 	else
 	{
-		ret.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
+		if (arch == Arch::Cpu::X64)
+		{
+			ret.push_back({ "/bin/intel64", "/compiler/lib", "/compiler/include" });
+		}
 	}
 
 	return ret;
@@ -117,14 +129,7 @@ std::vector<CompilerPathStructure> CompileEnvironmentIntel::getValidCompilerPath
 /*****************************************************************************/
 bool CompileEnvironmentIntel::validateArchitectureFromInput()
 {
-	std::string target = m_state.inputs.targetArchitecture();
-	if (target.empty())
-	{
-		target = m_state.inputs.hostArchitecture();
-
-		m_state.inputs.setTargetArchitecture(target);
-		m_state.info.setTargetArchitecture(m_state.inputs.targetArchitecture());
-	}
+	m_state.info.setTargetArchitecture(m_state.inputs.getResolvedTargetArchitecture());
 
 	return true;
 }

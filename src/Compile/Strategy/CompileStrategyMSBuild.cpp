@@ -92,7 +92,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 	cmd.emplace_back(fmt::format("-target:{}", target));
 
 	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
-	cmd.emplace_back(fmt::format("{}/project.sln", directory));
+	cmd.emplace_back(fmt::format("{}/.vssolution/project.sln", directory));
 
 	bool result = Commands::subprocess(cmd);
 

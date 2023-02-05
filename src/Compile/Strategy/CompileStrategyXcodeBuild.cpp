@@ -33,10 +33,10 @@ bool CompileStrategyXcodeBuild::initialize()
 		return false;
 
 	auto& cacheFile = m_state.cache.file();
-	const auto& uniqueId = m_state.uniqueId();
-	UNUSED(m_state.cache.getCachePath(uniqueId, CacheType::Local));
+	const auto& cachePathId = m_state.cachePathId();
+	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
 
-	const bool buildStrategyChanged = cacheFile.buildStrategyChanged(m_state.toolchain.strategy());
+	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
 		Commands::removeRecursively(m_state.paths.buildOutputDir());
