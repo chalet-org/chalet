@@ -12,9 +12,9 @@
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
 				"-t",
-				"msvc17",
+				"gcc",
 				"-a",
-				"booga",
+				"x86",
 				"build"
 			]
 		},

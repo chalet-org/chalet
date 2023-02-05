@@ -1147,6 +1147,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 		m_toolchainPreferenceName = inValue;
 
+#if defined(CHALET_WIN32)
+		ret.type = ToolchainType::MingwGNU;
+#endif
+
 		if (hasGccPrefixAndSuffix)
 		{
 			ret.cpp = inValue;
@@ -1175,7 +1179,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 			if (isGcc)
 			{
-				if (!m_targetArchitecture.empty() && m_targetArchitecture != m_hostArchitecture)
+				if (!m_targetArchitecture.empty() && m_targetArchitecture != m_hostArchitecture && ret.type != ToolchainType::MingwGNU)
 				{
 					m_targetArchitecture = getValidGccArchTripleFromArch(m_targetArchitecture);
 					prefix = m_targetArchitecture + '-';
@@ -1196,9 +1200,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			}
 		}
 
-#if defined(CHALET_WIN32)
-		ret.type = ToolchainType::MingwGNU;
-#else
+#if !defined(CHALET_WIN32)
 		if (String::contains("mingw", m_toolchainPreferenceName))
 			ret.type = ToolchainType::MingwGNU;
 		else
