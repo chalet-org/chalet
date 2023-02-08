@@ -187,7 +187,7 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	{
 		auto output = getCompilerMacros(inCompilerExec, PipeOption::Pipe);
 		Output::print(Color::Reset, output);
-		Diagnostic::error("Failed to query compiler for details. See error above");
+		Diagnostic::error("Failed to query compiler for details. See above output.");
 		return false;
 	}
 
