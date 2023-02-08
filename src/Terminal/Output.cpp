@@ -207,7 +207,14 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 	std::string result{ inDefaultYes ? "yes" : "no" };
 	return getUserInput(
 		inUserQuery, result, std::move(inNote), [](std::string& input) {
-			return !String::equals(StringList{ "no", "n" }, String::toLowerCase(input));
+			bool result = !String::equals(StringList{ "no", "n" }, String::toLowerCase(input));
+
+			if (result)
+				input = "yes";
+			else
+				input = "no";
+
+			return result;
 		},
 		false);
 }
