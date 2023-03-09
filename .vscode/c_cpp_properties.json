@@ -31,7 +31,6 @@
         },
         {
             "name": "Mac",
-            "intelliSenseMode": "macos-clang-x64",
             "compilerPath": "/usr/bin/clang",
             "macFrameworkPath": [
                 "/System/Library/Frameworks",

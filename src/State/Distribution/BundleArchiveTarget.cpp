@@ -10,6 +10,7 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/GlobMatch.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -67,6 +68,9 @@ void BundleArchiveTarget::addIncludes(StringList&& inList)
 
 void BundleArchiveTarget::addInclude(std::string&& inValue)
 {
+	if (String::endsWith('/', inValue))
+		inValue.pop_back();
+
 	List::addIfDoesNotExist(m_includes, std::move(inValue));
 }
 
