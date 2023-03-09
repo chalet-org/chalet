@@ -283,11 +283,14 @@ bool CentralState::validateExternalDependencies()
 			return false;
 		}
 
-		if (!dependency->validate())
-		{
-			Diagnostic::error("Error validating the '{}' dependency.", dependency->name());
-			return false;
-		}
+		// Note: dependencies are validated in the DependencyManager at the time they are run,
+		// because paths might not exist yet (ie. a script)
+		//
+		// if (!dependency->validate())
+		// {
+		// 	Diagnostic::error("Error validating the '{}' dependency.", dependency->name());
+		// 	return false;
+		// }
 	}
 
 	return true;
