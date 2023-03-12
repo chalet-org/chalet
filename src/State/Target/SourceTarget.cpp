@@ -19,6 +19,8 @@
 
 namespace chalet
 {
+static constexpr const char* globMessage = "Check that they exist and glob patterns can be resolved";
+
 /*****************************************************************************/
 SourceTarget::SourceTarget(const BuildState& inState) :
 	IBuildTarget(inState, BuildTargetType::Source),
@@ -41,7 +43,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -49,7 +51,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the lib directories for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the lib directories for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -57,7 +59,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the include directories for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the include directories for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -67,7 +69,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the files for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -75,7 +77,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the excluded files for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the excluded files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -83,7 +85,7 @@ bool SourceTarget::initialize()
 			return Commands::addPathToListWithGlob(std::move(inValue), m_copyFilesOnRun, GlobMatch::FilesAndFolders);
 		}))
 	{
-		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target", this->name());
+		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
