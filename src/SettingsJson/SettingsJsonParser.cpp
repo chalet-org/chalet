@@ -78,28 +78,23 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 {
 #if defined(CHALET_MACOS)
 	bool needsUpdate = false;
-	for (auto sdk : {
-			 "macosx",
-			 "appletvos",
-			 "appletvsimulator",
-			 "watchos",
-			 "watchsimulator",
-			 "iphoneos",
-			 "iphonesimulator",
-		 })
+	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
+	for (const auto& sdk : sdkPaths)
 	{
-		if (!Commands::pathExists(m_centralState.tools.applePlatformSdk(sdk)))
+		if (commandLineTools && !String::equals("macosx", sdk))
+			continue;
+
+		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
+		bool found = !sdkPath.empty() && Commands::pathExists(sdkPath);
+		if (inWithError && !found)
 		{
-			if (inWithError)
-			{
-				Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
-				return false;
-			}
-			else
-			{
-				needsUpdate = true;
-				break;
-			}
+			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
+			return false;
+		}
+		else if (!found)
+		{
+			needsUpdate = true;
+			break;
 		}
 	}
 
@@ -646,6 +641,32 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
+std::pair<StringList, bool> SettingsJsonParser::getAppleSdks() const
+{
+	// AppleTVOS.platform
+	// AppleTVSimulator.platform
+	// MacOSX.platform
+	// WatchOS.platform
+	// WatchSimulator.platform
+	// iPhoneOS.platform
+	// iPhoneSimulator.platform
+	//
+	const auto& xcodePath = Commands::getXcodePath();
+	bool commandLineTools = String::startsWith("/Library/Developer/CommandLineTools", xcodePath);
+	// clang-format off
+	return std::make_pair(StringList{
+			"macosx",
+			"appletvos",
+			"appletvsimulator",
+			"watchos",
+			"watchsimulator",
+			"iphoneos",
+			"iphonesimulator",
+		},
+		commandLineTools);
+	// clang-format on
+}
+/*****************************************************************************/
 bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 {
 	// AppleTVOS.platform
@@ -658,15 +679,8 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
 
 	auto xcrun = Commands::which("xcrun");
-	for (auto sdk : {
-			 "macosx",
-			 "appletvos",
-			 "appletvsimulator",
-			 "watchos",
-			 "watchsimulator",
-			 "iphoneos",
-			 "iphonesimulator",
-		 })
+	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
+	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{

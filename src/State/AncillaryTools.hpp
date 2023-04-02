@@ -27,7 +27,7 @@ struct AncillaryTools
 
 	const ScriptAdapter& scriptAdapter() const;
 
-	const std::string& applePlatformSdk(const std::string& inKey) const;
+	std::string getApplePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
 
 	const std::string& chalet() const noexcept;

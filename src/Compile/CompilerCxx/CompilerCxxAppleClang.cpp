@@ -80,8 +80,12 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 		sdk = "appletvos";
 	}
 
-	outArgList.emplace_back("-isysroot");
-	outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, inState.tools.applePlatformSdk(sdk)));
+	auto sdkPath = inState.tools.getApplePlatformSdk(sdk);
+	if (!sdkPath.empty())
+	{
+		outArgList.emplace_back("-isysroot");
+		outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, sdkPath));
+	}
 
 	return true;
 }
