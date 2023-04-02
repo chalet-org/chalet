@@ -81,12 +81,10 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
 	for (const auto& sdk : sdkPaths)
 	{
-		if (commandLineTools && !String::equals("macosx", sdk))
-			continue;
-
 		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
 		bool found = !sdkPath.empty() && Commands::pathExists(sdkPath);
-		if (inWithError && !found)
+		bool required = !found && (!commandLineTools || (commandLineTools && String::equals("macosx", sdk)));
+		if (inWithError && required)
 		{
 			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
 			return false;
