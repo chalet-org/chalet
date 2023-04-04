@@ -632,13 +632,18 @@ bool BuildState::validateState()
 	if (hasSubChaletTargets && !m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
 		return false;
 
-	for (auto& target : targets)
+	// Note: Ignored in the clean command so targets with external dependency paths don't get validated
+	//
+	if (!inputs.route().isClean())
 	{
-		// must validate after cmake/sub-chalet check
-		if (!target->validate())
+		for (auto& target : targets)
 		{
-			Diagnostic::error("Error validating the '{}' target.", target->name());
-			return false;
+			// must validate after cmake/sub-chalet check
+			if (!target->validate())
+			{
+				Diagnostic::error("Error validating the '{}' target.", target->name());
+				return false;
+			}
 		}
 	}
 
