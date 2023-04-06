@@ -104,7 +104,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-project");
 	// cmd.emplace_back("project");
 	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
-	cmd.emplace_back(fmt::format("{}/project.xcodeproj", directory));
+	cmd.emplace_back(fmt::format("{}/.xcode/project.xcodeproj", directory));
 
 	const auto& signingIdentity = m_state.tools.signingIdentity();
 	if (!signingIdentity.empty())
