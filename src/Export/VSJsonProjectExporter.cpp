@@ -35,9 +35,9 @@ bool VSJsonProjectExporter::validate(const BuildState& inState)
 	if (!inState.environment->isMsvc())
 	{
 #if defined(CHALET_WIN32)
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
 #else
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain on Windows.", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain on Windows.", typeName);
 #endif
 		return false;
 	}

@@ -34,9 +34,9 @@ bool XcodeProjectExporter::validate(const BuildState& inState)
 		// TODO: also check to make sure the Xcode path is set via xcode-select
 		//
 #if defined(CHALET_MACOS)
-		Diagnostic::error("{} exporter requires Xcode (Apple clang toolchain) (set with --toolchain/-t).", typeName);
+		Diagnostic::error("{} project format requires Xcode (Apple clang toolchain) (set with --toolchain/-t).", typeName);
 #else
-		Diagnostic::error("{} exporter requires Xcode (Apple clang toolchain) on macOS.", typeName);
+		Diagnostic::error("{} project format requires Xcode (Apple clang toolchain) on macOS.", typeName);
 #endif
 		return false;
 	}
@@ -90,12 +90,12 @@ bool XcodeProjectExporter::validateXcodeGenIsInstalled(const std::string& inType
 		auto brew = Commands::which("brew");
 		if (brew.empty())
 		{
-			Diagnostic::error("{} exporter requires xcodegen, installed via Homebrew - https://brew.sh", inTypeName);
+			Diagnostic::error("{} project format requires xcodegen, installed via Homebrew - https://brew.sh", inTypeName);
 			return false;
 		}
 		else
 		{
-			Diagnostic::error("{} exporter requires xcodegen, installed via 'brew install xcodegen'", inTypeName);
+			Diagnostic::error("{} project format requires xcodegen, installed via 'brew install xcodegen'", inTypeName);
 			return false;
 		}
 	}

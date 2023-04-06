@@ -38,7 +38,7 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 {
 	if (!inState.environment->isGcc())
 	{
-		Diagnostic::error("CodeBlocks project exporter requires a GCC toolchain (set with --toolchain/-t).");
+		Diagnostic::error("CodeBlocks project format requires a GCC toolchain (set with --toolchain/-t).");
 		return false;
 	}
 
