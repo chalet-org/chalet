@@ -35,6 +35,12 @@ bool DependencyManager::run()
 
 	for (auto& dependency : m_centralState.externalDependencies)
 	{
+		if (!dependency->validate())
+		{
+			Diagnostic::error("Error validating the '{}' dependency.", dependency->name());
+			return false;
+		}
+
 		if (dependency->isGit())
 		{
 			if (!m_centralState.tools.git().empty())

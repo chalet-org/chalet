@@ -5,16 +5,12 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}/../chalet-example-modules",
 			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"-t",
-				"gcc",
-				"-a",
-				"x86",
 				"build"
 			]
 		},
@@ -39,11 +35,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopAtEntry": false,
 			"args": [
-				"-t",
-				"gcc",
-				"-a",
-				"auto",
-				"build"
+				"run"
 			],
 			"externalConsole": false,
 			"setupCommands": [

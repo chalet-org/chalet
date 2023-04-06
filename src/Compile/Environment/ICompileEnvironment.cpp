@@ -492,6 +492,8 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 #elif defined(CHALET_MACOS)
 		if (String::contains(StringList{ "contents/developer", "code" }, executable))
 			return ToolchainType::AppleLLVM;
+		else if (String::contains("developer/commandlinetools", executable))
+			return ToolchainType::AppleLLVM;
 #endif
 
 		return ToolchainType::LLVM;
@@ -501,6 +503,8 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 	{
 #if defined(CHALET_MACOS)
 		if (String::contains(StringList{ "contents/developer", "xcode" }, executable))
+			return ToolchainType::AppleLLVM;
+		else if (String::contains("developer/commandlinetools", executable))
 			return ToolchainType::AppleLLVM;
 #endif
 

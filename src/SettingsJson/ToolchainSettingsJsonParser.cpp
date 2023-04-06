@@ -49,7 +49,28 @@ bool ToolchainSettingsJsonParser::serialize()
 		toolchains[preferenceName] = Json::object();
 
 	auto& node = toolchains.at(preferenceName);
-	if (m_state.inputs.isToolchainMultiArchPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown)
+	bool isDefined = false;
+	StringList keys{
+		Keys::ToolchainCompilerC,
+		Keys::ToolchainCompilerCpp,
+		Keys::ToolchainLinker,
+		Keys::ToolchainArchiver,
+		Keys::ToolchainDisassembler,
+		Keys::ToolchainBuildStrategy,
+		Keys::ToolchainBuildPathStyle,
+		Keys::ToolchainCMake,
+		Keys::ToolchainMake,
+		Keys::ToolchainNinja,
+		Keys::ToolchainProfiler,
+		Keys::ToolchainVersion,
+	};
+	for (auto& [key, _] : node.items())
+	{
+		isDefined |= String::equals(keys, key);
+		if (isDefined)
+			break;
+	}
+	if (!isDefined && (m_state.inputs.isToolchainMultiArchPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
 	{
 		auto arch2 = Arch::from(arch);
 		if (!node.contains(arch2.str))
@@ -62,7 +83,6 @@ bool ToolchainSettingsJsonParser::serialize()
 	}
 	else
 	{
-
 		if (!serialize(node))
 			return false;
 	}

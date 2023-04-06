@@ -1068,7 +1068,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_toolchainPreferenceName = inValue;
 
 		ret.type = ToolchainType::VisualStudio;
-		ret.buildPathStyle = BuildPathStyle::TargetTriple;
 		ret.cpp = "cl";
 		ret.cc = "cl";
 		ret.rc = "rc";
@@ -1223,7 +1222,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 
 		ret.type = ToolchainType::IntelLLVM;
-		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.cpp = "clang++";
 		ret.cc = "clang";
 		ret.rc = "rc";
@@ -1247,7 +1245,6 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 
 		ret.type = ToolchainType::IntelClassic;
-		ret.buildPathStyle = BuildPathStyle::ToolchainName;
 		ret.rc = "rc";
 	#if defined(CHALET_WIN32)
 		ret.cpp = "icl";

@@ -152,8 +152,11 @@ const ScriptAdapter& AncillaryTools::scriptAdapter() const
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::applePlatformSdk(const std::string& inKey) const
+std::string AncillaryTools::getApplePlatformSdk(const std::string& inKey) const
 {
+	if (m_applePlatformSdk.find(inKey) == m_applePlatformSdk.end())
+		return std::string();
+
 	return m_applePlatformSdk.at(inKey);
 }
 void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)

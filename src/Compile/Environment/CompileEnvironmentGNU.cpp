@@ -187,7 +187,7 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	{
 		auto output = getCompilerMacros(inCompilerExec, PipeOption::Pipe);
 		Output::print(Color::Reset, output);
-		Diagnostic::error("Failed to query compiler for details. See error above");
+		Diagnostic::error("Failed to query compiler for details. See above output.");
 		return false;
 	}
 
@@ -276,7 +276,13 @@ bool CompileEnvironmentGNU::readArchitectureTripleFromCompiler()
 #endif
 		}
 
-		if (!emptyInputArch && !String::startsWith(m_state.info.targetArchitectureString(), cachedArch))
+		std::string archFromInfo = m_state.info.targetArchitectureString();
+		if (String::equals("armhf", archFromInfo))
+		{
+			archFromInfo = "arm";
+		}
+
+		if (!emptyInputArch && !String::startsWith(archFromInfo, cachedArch))
 		{
 			auto expectedArch = Arch::from(cachedArch);
 			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
