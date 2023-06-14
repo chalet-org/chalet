@@ -7,6 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/ProcessController.hpp"
@@ -540,17 +541,44 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
 	}*/
 #elif defined(CHALET_MACOS)
-	if (m_state.environment->isAppleClang() && !isDefined["CMAKE_OSX_ARCHITECTURES"])
+	if (m_state.environment->isAppleClang())
 	{
-		if (!m_state.inputs.universalArches().empty())
+		if (!isDefined["CMAKE_OSX_SYSROOT"])
 		{
-			auto value = String::join(m_state.inputs.universalArches(), ';');
-			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(value));
+			const auto& osTarget = m_state.info.osTarget();
+			if (!osTarget.empty())
+			{
+				auto kAllowedTargets = CompilerCxxAppleClang::getAllowedSDKTargets();
+				if (String::equals(kAllowedTargets, osTarget))
+				{
+					auto sdkPath = m_state.tools.getApplePlatformSdk(osTarget);
+					if (!sdkPath.empty())
+					{
+						outList.emplace_back("-DCMAKE_OSX_SYSROOT=" + sdkPath);
+					}
+				}
+			}
 		}
-		else
+		if (!isDefined["CMAKE_OSX_DEPLOYMENT_TARGET"])
 		{
-			const auto& targetArch = m_state.info.targetArchitectureString();
-			outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(targetArch));
+			const auto& osTargetVersion = m_state.info.osTargetVersion();
+			if (!osTargetVersion.empty())
+			{
+				outList.emplace_back("-DCMAKE_OSX_DEPLOYMENT_TARGET=" + osTargetVersion);
+			}
+		}
+		if (!isDefined["CMAKE_OSX_ARCHITECTURES"])
+		{
+			if (!m_state.inputs.universalArches().empty())
+			{
+				auto value = String::join(m_state.inputs.universalArches(), ';');
+				outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(value));
+			}
+			else
+			{
+				const auto& targetArch = m_state.info.targetArchitectureString();
+				outList.emplace_back("-DCMAKE_OSX_ARCHITECTURES=" + std::move(targetArch));
+			}
 		}
 	}
 #endif
