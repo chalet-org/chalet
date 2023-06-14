@@ -5,6 +5,7 @@
 
 #include "SettingsJson/SettingsJsonParser.hpp"
 
+#include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp" // getAllowedSDKTargets
 #include "Core/CommandLineInputs.hpp"
 #include "Core/HostPlatform.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
@@ -83,7 +84,8 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 	{
 		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
 		bool found = !sdkPath.empty() && Commands::pathExists(sdkPath);
-		bool required = !found && (!commandLineTools || (commandLineTools && String::equals("macosx", sdk)));
+		// bool required = !found && (!commandLineTools || (commandLineTools && String::equals("macosx", sdk)));
+		bool required = !found && String::equals("macosx", sdk);
 		if (inWithError && required)
 		{
 			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
@@ -652,16 +654,7 @@ std::pair<StringList, bool> SettingsJsonParser::getAppleSdks() const
 	const auto& xcodePath = Commands::getXcodePath();
 	bool commandLineTools = String::startsWith("/Library/Developer/CommandLineTools", xcodePath);
 	// clang-format off
-	return std::make_pair(StringList{
-			"macosx",
-			"appletvos",
-			"appletvsimulator",
-			"watchos",
-			"watchsimulator",
-			"iphoneos",
-			"iphonesimulator",
-		},
-		commandLineTools);
+	return std::make_pair(CompilerCxxAppleClang::getAllowedSDKTargets(), commandLineTools);
 	// clang-format on
 }
 /*****************************************************************************/

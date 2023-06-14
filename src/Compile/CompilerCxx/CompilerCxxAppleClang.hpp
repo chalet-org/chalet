@@ -14,6 +14,8 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 {
 	explicit CompilerCxxAppleClang(const BuildState& inState, const SourceTarget& inProject);
 
+	static StringList getAllowedSDKTargets();
+
 	static bool addSystemRootOption(StringList& outArgList, const BuildState& inState);
 	static bool addArchitectureToCommand(StringList& outArgList, const BuildState& inState);
 	static bool addMultiArchOptionsToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);

@@ -46,23 +46,37 @@ BuildInfo::~BuildInfo() = default;
 bool BuildInfo::initialize()
 {
 #if defined(CHALET_MACOS)
-	std::string macosVersion;
-	auto triple = String::split(m_targetArchitecture.triple, '-');
-	if (triple.size() == 3)
+	if (m_osTarget.empty() || m_osTargetVersion.empty())
 	{
-		auto& sys = triple.back();
-		sys = String::toLowerCase(sys);
-
-		for (auto& target : StringList{ "darwin", "macosx", "ios", "watchos", "tvos" })
+		auto swVers = Commands::which("sw_vers");
+		if (!swVers.empty())
 		{
-			if (String::startsWith(target, sys))
+			auto result = Commands::subprocessOutput({ swVers });
+			if (!result.empty())
 			{
-				m_osTarget = target;
-				m_osTargetVersion = sys.substr(target.size());
-				break;
+				auto split = String::split(result, '\n');
+				for (auto& line : split)
+				{
+					auto firstColon = line.find_first_of(':');
+					auto lastTab = line.find_last_of('\t');
+					if (firstColon != std::string::npos && lastTab != std::string::npos)
+					{
+						auto key = line.substr(0, firstColon);
+						auto value = line.substr(lastTab + 1);
+						if (String::equals("ProductVersion", key))
+						{
+							// Note: there is also "ProductName" but it varies between os versions
+							//  - Older versions had "Mac OS X" and newer ones have "macOS"
+							//
+							m_osTarget = "macosx";
+							m_osTargetVersion = String::toLowerCase(value);
+						}
+					}
+				}
 			}
 		}
 	}
+
 #endif
 
 #if defined(CHALET_LINUX)
