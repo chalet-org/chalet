@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -233,10 +234,10 @@ Dictionary<std::string> XcodeProjectSpecGen::getConfigSettings(const BuildState&
 			ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
 			ret["GCC_WARN_UNUSED_FUNCTION"] = "YES";
 			ret["GCC_WARN_UNUSED_VARIABLE"] = "YES";
-			ret["MACOSX_DEPLOYMENT_TARGET"] = "11.1";
 			ret["MTL_ENABLE_DEBUG_INFO"] = "NO";
 			ret["MTL_FAST_MATH"] = "YES";
-			ret["SDKROOT"] = "macosx";
+			ret["SDKROOT"] = inState.info.osTargetName();
+			ret["MACOSX_DEPLOYMENT_TARGET"] = inState.info.osTargetVersion();
 			// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 		}
 	}
