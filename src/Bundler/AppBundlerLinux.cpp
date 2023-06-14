@@ -15,6 +15,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -77,12 +78,10 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable -- we don't care
 
+	Timer timer;
+
 	const auto& icon = m_bundle.linuxDesktopEntryIcon();
 	const auto& desktopEntry = m_bundle.linuxDesktopEntryTemplate();
-
-	Output::lineBreak();
-	Diagnostic::info("Creating the XDG Desktop Entry for the application");
-	Output::lineBreak();
 
 	const std::string bundlePath = getBundlePath();
 
@@ -99,6 +98,8 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	if (!Commands::copyRename(desktopEntry, desktopEntryFile))
 		return false;
+
+	Diagnostic::stepInfoEllipsis("Creating the XDG Desktop Entry for the application");
 
 	if (!Commands::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
 			String::replaceAll(fileContents, "${mainExecutable}", Commands::getAbsolutePath(filename));
@@ -118,6 +119,8 @@ bool AppBundlerLinux::bundleForPlatform()
 	}*/
 
 	// Output::lineBreak();
+
+	Diagnostic::printDone(timer.asString());
 
 	return true;
 #else

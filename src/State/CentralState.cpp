@@ -144,8 +144,11 @@ bool CentralState::initialize()
 
 	Output::setShowCommandOverride(true);
 
-	if (!runDependencyManager())
-		return false;
+	if (!route.isClean())
+	{
+		if (!runDependencyManager())
+			return false;
+	}
 
 	return true;
 }
