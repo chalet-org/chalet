@@ -61,6 +61,7 @@ private:
 	bool parseLocalSettingsJson(const IntermediateSettingsState& inState);
 	bool parseChaletJson();
 
+	bool validateOsTarget();
 	bool validateConfigurations();
 	bool validateExternalDependencies();
 	bool validateAncillaryTools();

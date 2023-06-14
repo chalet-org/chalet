@@ -468,6 +468,9 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 		if (String::equals(Positional::ProgramArgument, key))
 			continue;
 
+		if (key.empty())
+			continue;
+
 		if (String::startsWith('@', key))
 			++positionalArgs;
 	}
@@ -745,6 +748,14 @@ std::string ArgumentParser::getHelp()
 
 /*****************************************************************************/
 /*****************************************************************************/
+MappedArgument& ArgumentParser::addStringArgument(const ArgumentIdentifier inId, const char* inArg, std::string inDefaultValue)
+{
+	return m_argumentList.emplace_back(inId, Variant::Kind::String)
+		.addArgument(inArg)
+		.setValue(std::move(inDefaultValue));
+}
+
+/*****************************************************************************/
 MappedArgument& ArgumentParser::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
 	return m_argumentList.emplace_back(inId, Variant::Kind::String)
@@ -928,16 +939,6 @@ void ArgumentParser::addDistributionDirArg()
 }
 
 /*****************************************************************************/
-void ArgumentParser::addProjectGenArg()
-{
-// future
-#if 0
-	addTwoStringArguments("-p", "--project-gen")
-		.help("Project file generator [vs2019,vscode,xcode]");
-#endif
-}
-
-/*****************************************************************************/
 void ArgumentParser::addToolchainArg()
 {
 	const auto& defaultValue = m_inputs.defaultToolchainPreset();
@@ -1085,6 +1086,39 @@ void ArgumentParser::addKeepGoingArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addSigningIdentityArg()
+{
+	addStringArgument(ArgumentIdentifier::SigningIdentity, "--signing-identity")
+		.setHelp("The code-signing identity to use when bundling the application distribution.");
+}
+
+/*****************************************************************************/
+void ArgumentParser::addOsTargetNameArg()
+{
+#if defined(CHALET_MACOS)
+	const auto& defaultValue = m_inputs.getDefaultOsTargetName();
+	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name", defaultValue)
+		.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
+#else
+	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name")
+		.setHelp("The name of the operating system to target the build for.");
+#endif
+}
+
+/*****************************************************************************/
+void ArgumentParser::addOsTargetVersionArg()
+{
+#if defined(CHALET_MACOS)
+	const auto& defaultValue = m_inputs.getDefaultOsTargetVersion();
+	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version", defaultValue)
+		.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
+#else
+	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version")
+		.setHelp("The version of the operating system to target the build for.");
+#endif
+}
+
+/*****************************************************************************/
 void ArgumentParser::populateBuildRunArguments()
 {
 	populateBuildArguments();
@@ -1117,8 +1151,10 @@ void ArgumentParser::populateBuildArguments()
 	addBuildStrategyArg();
 	addBuildPathStyleArg();
 	addEnvFileArg();
-	addProjectGenArg();
 	addMaxJobsArg();
+	addOsTargetNameArg();
+	addOsTargetVersionArg();
+	addSigningIdentityArg();
 	addShowCommandsArg();
 	addDumpAssemblyArg();
 	addBenchmarkArg();

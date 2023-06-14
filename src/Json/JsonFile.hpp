@@ -46,6 +46,7 @@ struct JsonFile
 	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
 
 	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
+	bool assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
 
 	template <typename T>
 	bool containsKeyForType(const Json& inNode, const char* inKey) const;

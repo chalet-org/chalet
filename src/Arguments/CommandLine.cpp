@@ -96,6 +96,18 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						toolchainPreference = std::move(value);
 						break;
 
+					case ArgumentIdentifier::SigningIdentity:
+						inputs->setSigningIdentity(std::move(value));
+						break;
+
+					case ArgumentIdentifier::OsTargetName:
+						inputs->setOsTargetName(std::move(value));
+						break;
+
+					case ArgumentIdentifier::OsTargetVersion:
+						inputs->setOsTargetVersion(std::move(value));
+						break;
+
 					case ArgumentIdentifier::ExportKind:
 						inputs->setExportKind(std::move(value));
 						break;

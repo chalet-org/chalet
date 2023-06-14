@@ -201,9 +201,9 @@ const std::string& AncillaryTools::signingIdentity() const noexcept
 {
 	return m_signingIdentity;
 }
-void AncillaryTools::setSigningIdentity(std::string&& inValue) noexcept
+void AncillaryTools::setSigningIdentity(const std::string& inValue) noexcept
 {
-	m_signingIdentity = std::move(inValue);
+	m_signingIdentity = inValue;
 }
 bool AncillaryTools::isSigningIdentityValid() const
 {

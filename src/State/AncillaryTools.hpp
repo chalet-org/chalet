@@ -40,7 +40,7 @@ struct AncillaryTools
 	void setCodesign(std::string&& inValue) noexcept;
 
 	const std::string& signingIdentity() const noexcept;
-	void setSigningIdentity(std::string&& inValue) noexcept;
+	void setSigningIdentity(const std::string& inValue) noexcept;
 	bool isSigningIdentityValid() const;
 
 	const std::string& commandPrompt() const noexcept;

@@ -8,6 +8,7 @@
 #include <thread>
 
 #include "ChaletJson/CentralChaletJsonParser.hpp"
+#include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
@@ -28,6 +29,7 @@
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Utility/Version.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -74,12 +76,14 @@ bool CentralState::initialize()
 		state.architecturePreference = "auto";
 		state.inputFile = m_inputs.defaultInputFile();
 		state.envFile = m_inputs.defaultEnvFile();
-		state.rootDirectory = std::string();
+		// state.rootDirectory = std::string();
 		state.outputDirectory = m_inputs.defaultOutputDirectory();
 		state.externalDirectory = m_inputs.defaultExternalDirectory();
 		state.distributionDirectory = m_inputs.defaultDistributionDirectory();
-		state.signingIdentity = std::string();
-		state.runTarget = std::string();
+		// state.signingIdentity = std::string();
+		state.osTargetName = m_inputs.getDefaultOsTargetName();
+		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
+		// state.runTarget = std::string();
 
 		if (!parseGlobalSettingsJson(state))
 			return false;
@@ -87,6 +91,8 @@ bool CentralState::initialize()
 		if (!parseLocalSettingsJson(state))
 			return false;
 	}
+
+	tools.setSigningIdentity(m_inputs.signingIdentity());
 
 	// If no toolchain was found in inputs or settings, use the default
 	m_inputs.detectToolchainPreference();
@@ -181,6 +187,9 @@ bool CentralState::initializeForList()
 /*****************************************************************************/
 bool CentralState::validate()
 {
+	if (!validateOsTarget())
+		return false;
+
 	if (!validateConfigurations())
 		return false;
 
@@ -252,6 +261,40 @@ const std::optional<StringList>& CentralState::getRunTargetArguments()
 	m_runArgumentMap.clear();
 
 	return m_inputs.runArguments();
+}
+
+/*****************************************************************************/
+bool CentralState::validateOsTarget()
+{
+#if defined(CHALET_MACOS)
+	auto& osTargetName = m_inputs.osTargetName();
+	if (osTargetName.empty())
+	{
+		Diagnostic::error("Error in configuration: expected an os target, but it was blank.");
+		return false;
+	}
+
+	auto allowedSdkTargets = CompilerCxxAppleClang::getAllowedSDKTargets();
+	if (!String::equals(allowedSdkTargets, osTargetName))
+	{
+		Diagnostic::error("Error in configuration: found an invalid os target value of '{}'", osTargetName);
+		return false;
+	}
+	auto& osTargetVersion = m_inputs.osTargetVersion();
+	if (osTargetVersion.empty())
+	{
+		Diagnostic::error("Error in configuration: expected an os target version, but it was blank.");
+		return false;
+	}
+	Version version;
+	if (!version.setFromString(osTargetVersion))
+	{
+		Diagnostic::error("Error in configuration: found an invalid os target version of '{}'", osTargetVersion);
+		return false;
+	}
+#endif
+
+	return true;
 }
 
 /*****************************************************************************/

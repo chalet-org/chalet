@@ -67,6 +67,8 @@ enum class Defs : ushort
 	LastToolchain,
 	LastArchitecture,
 	SigningIdentity,
+	OsTargetName,
+	OsTargetVersion,
 	InputFile,
 	SettingsFile,
 	EnvFile,
@@ -379,7 +381,17 @@ Json SettingsJsonSchema::get()
 
 	defs[Defs::SigningIdentity] = R"json({
 		"type": "string",
-		"description": "The signing identity to use when bundling the macos application distribution."
+		"description": "The code-signing identity to use when bundling the application distribution."
+	})json"_ojson;
+
+	defs[Defs::OsTargetName] = R"json({
+		"type": "string",
+		"description": "The name of the operating system to target the build for. On macOS, this corresponds to the lower-case identifier of the Apple SDK (see 'appleSdks')"
+	})json"_ojson;
+
+	defs[Defs::OsTargetVersion] = R"json({
+		"type": "string",
+		"description": "The version of the operating system to target the build for."
 	})json"_ojson;
 
 	defs[Defs::InputFile] = R"json({
@@ -524,6 +536,8 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunArguments] = defs[Defs::RunArguments];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOsTargetName] = defs[Defs::OsTargetName];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOsTargetVersion] = defs[Defs::OsTargetVersion];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];
 
 	ret[SKeys::Properties][Keys::Tools] = R"json({

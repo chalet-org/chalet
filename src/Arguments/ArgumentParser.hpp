@@ -52,6 +52,7 @@ private:
 	std::string getHelp();
 	std::string getSeeHelpMessage();
 
+	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArg, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
 	MappedArgument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
@@ -70,7 +71,6 @@ private:
 	void addExternalDirArg();
 	void addOutputDirArg();
 	void addDistributionDirArg();
-	void addProjectGenArg();
 	void addToolchainArg();
 	void addArchArg();
 	void addBuildStrategyArg();
@@ -90,6 +90,9 @@ private:
 	void addBenchmarkArg();
 	void addLaunchProfilerArg();
 	void addKeepGoingArg();
+	void addSigningIdentityArg();
+	void addOsTargetNameArg();
+	void addOsTargetVersionArg();
 
 	void populateBuildRunArguments();
 	void populateRunArguments();

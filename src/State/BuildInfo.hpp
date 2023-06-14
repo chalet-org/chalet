@@ -42,7 +42,7 @@ struct BuildInfo
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 	bool targettingMinGW() const;
 
-	const std::string& osTarget() const noexcept;
+	const std::string& osTargetName() const noexcept;
 	const std::string& osTargetVersion() const noexcept;
 
 	uint maxJobs() const noexcept;
@@ -57,7 +57,7 @@ private:
 	Unique<PlatformDependencyManager> m_platformDeps;
 
 	std::string m_buildConfiguration;
-	std::string m_osTarget;
+	std::string m_osTargetName;
 	std::string m_osTargetVersion;
 	std::string m_hostArchTriple;
 

@@ -140,6 +140,25 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, c
 }
 
 /*****************************************************************************/
+bool JsonFile::assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
+{
+	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
+	{
+		outNode[inKey] = inValueB;
+		setDirty(true);
+	}
+
+	auto value = outNode.at(inKey).get<std::string>();
+	if (!inValueA.empty() && !value.empty() && inValueA != value)
+	{
+		outNode[inKey] = inValueA;
+		setDirty(true);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 std::string JsonFile::getSchema()
 {
 	std::string ret;

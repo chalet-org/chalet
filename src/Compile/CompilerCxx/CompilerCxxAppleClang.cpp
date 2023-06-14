@@ -63,28 +63,40 @@ CompilerCxxAppleClang::CompilerCxxAppleClang(const BuildState& inState, const So
 }
 
 /*****************************************************************************/
+StringList CompilerCxxAppleClang::getAllowedSDKTargets()
+{
+	StringList ret{
+		"macosx",
+		"iphoneos",
+		"iphonesimulator",
+		"watchos",
+		"watchsimulator",
+		"appletvos",
+		"appletvsimulator",
+		// "visionos", // maybe ?
+		// "visionsimulator" // maybe ?
+	};
+	return ret;
+}
+
+/*****************************************************************************/
 bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState)
 {
-	const auto& osTarget = inState.info.osTarget();
-	std::string sdk{ "macosx" };
-	if (String::equals("ios", osTarget))
+	const auto& osTargetName = inState.info.osTargetName();
+	if (!osTargetName.empty())
 	{
-		sdk = "iphoneos";
-	}
-	else if (String::equals("watchos", osTarget))
-	{
-		sdk = "watchos";
-	}
-	else if (String::equals("tvos", osTarget))
-	{
-		sdk = "appletvos";
-	}
-
-	auto sdkPath = inState.tools.getApplePlatformSdk(sdk);
-	if (!sdkPath.empty())
-	{
-		outArgList.emplace_back("-isysroot");
-		outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, sdkPath));
+		auto kAllowedTargets = getAllowedSDKTargets();
+		if (String::equals(kAllowedTargets, osTargetName))
+		{
+			auto sdkPath = inState.tools.getApplePlatformSdk(osTargetName);
+			if (!sdkPath.empty())
+			{
+				// Note: If -m(sdk)-version-min= isn't specified, the version is inferred from the SDK,
+				//   which has its own minimum version ("MacOSX13.3.sdk" is 13.0 for instance)
+				outArgList.emplace_back("-isysroot");
+				outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, sdkPath));
+			}
+		}
 	}
 
 	return true;
@@ -93,19 +105,15 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 /*****************************************************************************/
 bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState)
 {
-	const auto& osTarget = inState.info.osTarget();
+	const auto& osTargetName = inState.info.osTargetName();
 	const auto& osTargetVersion = inState.info.osTargetVersion();
 	if (!osTargetVersion.empty())
 	{
-		if (String::equals("macosx", osTarget))
+		auto kAllowedTargets = getAllowedSDKTargets();
+		if (String::equals(kAllowedTargets, osTargetName))
 		{
-			// -mmacosx-version-min=
-			outArgList.emplace_back(fmt::format("-mmacosx-version-min={}", osTargetVersion));
-		}
-		else if (String::equals("ios", osTarget))
-		{
-			// -mmacosx-version-min=
-			outArgList.emplace_back(fmt::format("-mios-version-min={}", osTargetVersion));
+			// Example: -mmacosx-version-min=13.1
+			outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTargetName, osTargetVersion));
 		}
 	}
 

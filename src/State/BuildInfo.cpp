@@ -23,6 +23,9 @@ BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInput
 	m_hostArchitecture.set(inInputs.hostArchitecture());
 	setTargetArchitecture(inInputs.getResolvedTargetArchitecture());
 
+	m_osTargetName = inInputs.osTargetName();
+	m_osTargetVersion = inInputs.osTargetVersion();
+
 	if (inInputs.maxJobs().has_value())
 		m_maxJobs = *inInputs.maxJobs();
 
@@ -45,26 +48,6 @@ BuildInfo::~BuildInfo() = default;
 /*****************************************************************************/
 bool BuildInfo::initialize()
 {
-#if defined(CHALET_MACOS)
-	std::string macosVersion;
-	auto triple = String::split(m_targetArchitecture.triple, '-');
-	if (triple.size() == 3)
-	{
-		auto& sys = triple.back();
-		sys = String::toLowerCase(sys);
-
-		for (auto& target : StringList{ "darwin", "macosx", "ios", "watchos", "tvos" })
-		{
-			if (String::startsWith(target, sys))
-			{
-				m_osTarget = target;
-				m_osTargetVersion = sys.substr(target.size());
-				break;
-			}
-		}
-	}
-#endif
-
 #if defined(CHALET_LINUX)
 	auto mainCompiler = Commands::which("gcc");
 	if (mainCompiler.empty())
@@ -187,9 +170,9 @@ bool BuildInfo::targettingMinGW() const
 }
 
 /*****************************************************************************/
-const std::string& BuildInfo::osTarget() const noexcept
+const std::string& BuildInfo::osTargetName() const noexcept
 {
-	return m_osTarget;
+	return m_osTargetName;
 }
 
 const std::string& BuildInfo::osTargetVersion() const noexcept

@@ -718,6 +718,79 @@ void CommandLineInputs::setTargetArchitecture(const std::string& inValue) const 
 }
 
 /*****************************************************************************/
+const std::string& CommandLineInputs::signingIdentity() const noexcept
+{
+	return m_signingIdentity;
+}
+void CommandLineInputs::setSigningIdentity(std::string&& inValue) noexcept
+{
+	m_signingIdentity = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::osTargetName() const noexcept
+{
+	return m_osTargetName;
+}
+void CommandLineInputs::setOsTargetName(std::string&& inValue) noexcept
+{
+	m_osTargetName = std::move(inValue);
+}
+std::string CommandLineInputs::getDefaultOsTargetName() const
+{
+#if defined(CHALET_MACOS)
+	return std::string("macosx");
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::osTargetVersion() const noexcept
+{
+	return m_osTargetVersion;
+}
+void CommandLineInputs::setOsTargetVersion(std::string&& inValue) noexcept
+{
+	m_osTargetVersion = std::move(inValue);
+}
+std::string CommandLineInputs::getDefaultOsTargetVersion() const
+{
+#if defined(CHALET_MACOS)
+	if (kDefaultOsTarget.empty())
+	{
+		auto swVers = Commands::which("sw_vers");
+		if (!swVers.empty())
+		{
+			auto result = Commands::subprocessOutput({ swVers });
+			if (!result.empty())
+			{
+				auto split = String::split(result, '\n');
+				for (auto& line : split)
+				{
+					// Note: there is also "ProductName" but it varies between os versions
+					//  - Older versions had "Mac OS X" and newer ones have "macOS"
+					//
+					if (String::startsWith("ProductVersion", line))
+					{
+						auto lastTab = line.find_last_of('\t');
+						if (lastTab != std::string::npos)
+						{
+							auto value = line.substr(lastTab + 1);
+							kDefaultOsTarget = String::toLowerCase(value);
+						}
+					}
+				}
+			}
+		}
+	}
+	return kDefaultOsTarget;
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
 const StringList& CommandLineInputs::universalArches() const noexcept
 {
 	return m_universalArches;
