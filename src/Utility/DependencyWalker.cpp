@@ -128,8 +128,6 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 
 	const char* KNOWN_IMG_SIGNATURE = static_cast<const char*>("PE\0\0");
 
-	int foundDepends = 0;
-
 	bool is64Bit = false;
 	bool is32Bit = false;
 
@@ -207,7 +205,6 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 								List::addIfDoesNotExist(outList, std::move(dependency));
 						}
 					}
-					++foundDepends;
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);
 				}
@@ -260,7 +257,6 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 								List::addIfDoesNotExist(outList, std::move(dependency));
 						}
 					}
-					++foundDepends;
 
 					importTableOffset = importTableOffset + sizeof(IMAGE_IMPORT_DESCRIPTOR);
 				}
