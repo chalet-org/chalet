@@ -394,7 +394,6 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 	StringList addedFrameworks;
 
-	uint i = 0;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -429,8 +428,6 @@ bool AppBundlerMacOS::setExecutablePaths() const
 						if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
 							return false;
 					}
-
-					++i;
 
 					break;
 				}
