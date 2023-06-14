@@ -241,7 +241,15 @@
 				},
 				"signingIdentity": {
 					"type": "string",
-					"description": "The signing identity to use when bundling the macos application distribution."
+					"description": "The code-signing identity to use when bundling the application distribution."
+				},
+				"osTargetName": {
+					"type": "string",
+					"description": "The name of the operating system to target the build for. On macOS, this corresponds to the lower-case identifier of the Apple SDK (see 'appleSdks')"
+				},
+				"osTargetVersion": {
+					"type": "string",
+					"description": "The version of the operating system to target the build for."
 				},
 				"toolchain": {
 					"type": "string",

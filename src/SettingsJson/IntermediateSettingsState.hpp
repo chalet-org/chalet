@@ -27,6 +27,8 @@ struct IntermediateSettingsState
 	std::string externalDirectory;
 	std::string distributionDirectory;
 	std::string signingIdentity;
+	std::string osTargetName;
+	std::string osTargetVersion;
 	std::string runTarget;
 
 	uint maxJobs = 0;

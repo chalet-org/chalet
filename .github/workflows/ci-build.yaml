@@ -92,9 +92,7 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Configure Chalet"
-        run: |
-          build/Debug/chalet-debug configure
-          build/Debug/chalet-debug set options.signingIdentity $MACOS_SIGNING_IDENTITY
+        run: build/Debug/chalet-debug configure --signing-identity $MACOS_SIGNING_IDENTITY
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"

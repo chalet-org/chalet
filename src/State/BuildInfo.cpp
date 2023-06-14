@@ -23,6 +23,9 @@ BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInput
 	m_hostArchitecture.set(inInputs.hostArchitecture());
 	setTargetArchitecture(inInputs.getResolvedTargetArchitecture());
 
+	m_osTargetName = inInputs.osTargetName();
+	m_osTargetVersion = inInputs.osTargetVersion();
+
 	if (inInputs.maxJobs().has_value())
 		m_maxJobs = *inInputs.maxJobs();
 
@@ -45,40 +48,6 @@ BuildInfo::~BuildInfo() = default;
 /*****************************************************************************/
 bool BuildInfo::initialize()
 {
-#if defined(CHALET_MACOS)
-	if (m_osTarget.empty() || m_osTargetVersion.empty())
-	{
-		auto swVers = Commands::which("sw_vers");
-		if (!swVers.empty())
-		{
-			auto result = Commands::subprocessOutput({ swVers });
-			if (!result.empty())
-			{
-				auto split = String::split(result, '\n');
-				for (auto& line : split)
-				{
-					auto firstColon = line.find_first_of(':');
-					auto lastTab = line.find_last_of('\t');
-					if (firstColon != std::string::npos && lastTab != std::string::npos)
-					{
-						auto key = line.substr(0, firstColon);
-						auto value = line.substr(lastTab + 1);
-						if (String::equals("ProductVersion", key))
-						{
-							// Note: there is also "ProductName" but it varies between os versions
-							//  - Older versions had "Mac OS X" and newer ones have "macOS"
-							//
-							m_osTarget = "macosx";
-							m_osTargetVersion = String::toLowerCase(value);
-						}
-					}
-				}
-			}
-		}
-	}
-
-#endif
-
 #if defined(CHALET_LINUX)
 	auto mainCompiler = Commands::which("gcc");
 	if (mainCompiler.empty())
@@ -201,9 +170,9 @@ bool BuildInfo::targettingMinGW() const
 }
 
 /*****************************************************************************/
-const std::string& BuildInfo::osTarget() const noexcept
+const std::string& BuildInfo::osTargetName() const noexcept
 {
-	return m_osTarget;
+	return m_osTargetName;
 }
 
 const std::string& BuildInfo::osTargetVersion() const noexcept

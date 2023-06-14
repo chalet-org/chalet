@@ -82,13 +82,13 @@ StringList CompilerCxxAppleClang::getAllowedSDKTargets()
 /*****************************************************************************/
 bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState)
 {
-	const auto& osTarget = inState.info.osTarget();
-	if (!osTarget.empty())
+	const auto& osTargetName = inState.info.osTargetName();
+	if (!osTargetName.empty())
 	{
 		auto kAllowedTargets = getAllowedSDKTargets();
-		if (String::equals(kAllowedTargets, osTarget))
+		if (String::equals(kAllowedTargets, osTargetName))
 		{
-			auto sdkPath = inState.tools.getApplePlatformSdk(osTarget);
+			auto sdkPath = inState.tools.getApplePlatformSdk(osTargetName);
 			if (!sdkPath.empty())
 			{
 				// Note: If -m(sdk)-version-min= isn't specified, the version is inferred from the SDK,
@@ -105,15 +105,15 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 /*****************************************************************************/
 bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState)
 {
-	const auto& osTarget = inState.info.osTarget();
+	const auto& osTargetName = inState.info.osTargetName();
 	const auto& osTargetVersion = inState.info.osTargetVersion();
 	if (!osTargetVersion.empty())
 	{
 		auto kAllowedTargets = getAllowedSDKTargets();
-		if (String::equals(kAllowedTargets, osTarget))
+		if (String::equals(kAllowedTargets, osTargetName))
 		{
 			// Example: -mmacosx-version-min=13.1
-			outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTarget, osTargetVersion));
+			outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTargetName, osTargetVersion));
 		}
 	}
 

@@ -44,6 +44,9 @@ enum class ArgumentIdentifier : ushort
 	LaunchProfiler,
 	KeepGoing,
 	SaveUserToolchainGlobally,
+	SigningIdentity,
+	OsTargetName,
+	OsTargetVersion,
 	//
 	// Init
 	InitPath,

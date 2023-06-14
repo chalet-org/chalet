@@ -545,13 +545,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	{
 		if (!isDefined["CMAKE_OSX_SYSROOT"])
 		{
-			const auto& osTarget = m_state.info.osTarget();
-			if (!osTarget.empty())
+			const auto& osTargetName = m_state.info.osTargetName();
+			if (!osTargetName.empty())
 			{
 				auto kAllowedTargets = CompilerCxxAppleClang::getAllowedSDKTargets();
-				if (String::equals(kAllowedTargets, osTarget))
+				if (String::equals(kAllowedTargets, osTargetName))
 				{
-					auto sdkPath = m_state.tools.getApplePlatformSdk(osTarget);
+					auto sdkPath = m_state.tools.getApplePlatformSdk(osTargetName);
 					if (!sdkPath.empty())
 					{
 						outList.emplace_back("-DCMAKE_OSX_SYSROOT=" + sdkPath);

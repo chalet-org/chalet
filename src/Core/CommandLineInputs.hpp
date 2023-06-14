@@ -114,6 +114,17 @@ struct CommandLineInputs
 	std::string getResolvedTargetArchitecture() const noexcept;
 	void setTargetArchitecture(const std::string& inValue) const noexcept;
 
+	const std::string& signingIdentity() const noexcept;
+	void setSigningIdentity(std::string&& inValue) noexcept;
+
+	const std::string& osTargetName() const noexcept;
+	void setOsTargetName(std::string&& inValue) noexcept;
+	std::string getDefaultOsTargetName() const;
+
+	const std::string& osTargetVersion() const noexcept;
+	void setOsTargetVersion(std::string&& inValue) noexcept;
+	std::string getDefaultOsTargetVersion() const;
+
 	const StringList& universalArches() const noexcept;
 
 	const StringList& archOptions() const noexcept;
@@ -214,6 +225,9 @@ private:
 	const std::string kToolchainPresetAppleLLVM;
 #endif
 	const std::string kBuildStrategyNinja;
+#if defined(CHALET_MACOS)
+	mutable std::string kDefaultOsTarget;
+#endif
 
 	std::string m_inputFile;
 	std::string m_settingsFile;
@@ -230,6 +244,9 @@ private:
 	std::string m_settingsValue;
 	std::string m_buildStrategyPreference;
 	std::string m_buildPathStylePreference;
+	std::string m_signingIdentity;
+	std::string m_osTargetName;
+	std::string m_osTargetVersion;
 
 	mutable std::string m_toolchainPreferenceName;
 	mutable std::string m_workingDirectory;

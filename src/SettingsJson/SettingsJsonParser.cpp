@@ -195,17 +195,35 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
 
-	if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
+	// We always want to save these values
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), inState.osTargetName);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
+	if (buildOptions.at(Keys::OptionsOsTargetName).get<std::string>().empty() && !inState.osTargetName.empty())
 	{
-		// Note: don't check if string is empty - empty is valid
-		buildOptions[Keys::OptionsSigningIdentity] = inState.signingIdentity;
+		buildOptions[Keys::OptionsOsTargetName] = inState.osTargetName;
+		m_jsonFile.setDirty(true);
 	}
+	if (buildOptions.at(Keys::OptionsOsTargetVersion).get<std::string>().empty() && !inState.osTargetVersion.empty())
+	{
+		buildOptions[Keys::OptionsOsTargetVersion] = inState.osTargetVersion;
+		m_jsonFile.setDirty(true);
+	}
+
+	m_jsonFile.assignNodeWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
+
+	// if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
+	// {
+	// 	// Note: don't check if string is empty - empty is valid
+	// 	buildOptions[Keys::OptionsSigningIdentity] = inState.signingIdentity;
+	// 	m_jsonFile.setDirty(true);
+	// }
 
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
 
 	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
 	{
 		buildOptions[Keys::OptionsRunArguments] = Json::object();
+		m_jsonFile.setDirty(true);
 	}
 
 	//
@@ -441,7 +459,18 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			}
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 			{
-				m_centralState.tools.setSigningIdentity(value.get<std::string>());
+				if (m_inputs.signingIdentity().empty())
+					m_inputs.setSigningIdentity(value.get<std::string>());
+			}
+			else if (String::equals(Keys::OptionsOsTargetName, key))
+			{
+				if (m_inputs.osTargetName().empty())
+					m_inputs.setOsTargetName(value.get<std::string>());
+			}
+			else if (String::equals(Keys::OptionsOsTargetVersion, key))
+			{
+				if (m_inputs.osTargetVersion().empty())
+					m_inputs.setOsTargetVersion(value.get<std::string>());
 			}
 			else if (String::equals(Keys::OptionsInputFile, key))
 			{
