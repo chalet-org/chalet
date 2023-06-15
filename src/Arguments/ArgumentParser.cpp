@@ -1097,7 +1097,7 @@ void ArgumentParser::addOsTargetNameArg()
 {
 #if defined(CHALET_MACOS)
 	const auto& defaultValue = m_inputs.getDefaultOsTargetName();
-	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name", defaultValue)
+	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name")
 		.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
 	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name")
@@ -1110,7 +1110,7 @@ void ArgumentParser::addOsTargetVersionArg()
 {
 #if defined(CHALET_MACOS)
 	const auto& defaultValue = m_inputs.getDefaultOsTargetVersion();
-	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version", defaultValue)
+	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version")
 		.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
 	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version")
