@@ -83,7 +83,7 @@ bool CentralState::initialize()
 		// state.signingIdentity = std::string();
 		state.osTargetName = m_inputs.getDefaultOsTargetName();
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
-		// state.runTarget = std::string();
+		state.runTarget = "all";
 
 		if (!parseGlobalSettingsJson(state))
 			return false;

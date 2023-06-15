@@ -360,16 +360,22 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			auto& abstract = it->second;
 			if (!parseSourceTarget(*abstract, abstractJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' abstract project.", m_chaletJson.filename(), name);
+				Diagnostic::error("{}: Error parsing the '{}' abstract target.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
 		else
 		{
 			// not sure if this would actually get triggered?
-			Diagnostic::error("{}: project template '{}' already exists.", m_chaletJson.filename(), name);
+			Diagnostic::error("{}: Abstract target '{}' already exists.", m_chaletJson.filename(), name);
 			return false;
 		}
+	}
+
+	if (m_abstractSourceTarget.find("all") != m_abstractSourceTarget.end())
+	{
+		Diagnostic::error("{}: 'all' is a reserved build target name, and cannot be used inside 'abstracts'.", m_chaletJson.filename());
+		return false;
 	}
 
 	StringList sourceTargets{
@@ -380,6 +386,12 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 
 	for (auto& [name, targetJson] : targets.items())
 	{
+		if (String::equals("all", name))
+		{
+			Diagnostic::error("{}: 'all' is a reserved build target name, and cannot be used inside 'targets'.", m_chaletJson.filename());
+			return false;
+		}
+
 		if (!targetJson.is_object())
 		{
 			Diagnostic::error("{}: target '{}' must be an object.", m_chaletJson.filename(), name);
@@ -406,7 +418,8 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 				type = BuildTargetType::Process;
 			}
 			else if (String::equals(sourceTargets, val))
-			{}
+			{
+			}
 			else
 			{
 				Diagnostic::error("{}: Found unrecognized target kind of '{}'", m_chaletJson.filename(), val);
@@ -436,7 +449,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			{
 				if (!String::equals('*', extends))
 				{
-					Diagnostic::error("{}: project template '{}' is base of project '{}', but doesn't exist.", m_chaletJson.filename(), extends, name);
+					Diagnostic::error("{}: Build target '{}' extends '{}', but doesn't exist.", m_chaletJson.filename(), extends, name);
 					return false;
 				}
 
@@ -482,7 +495,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		{
 			if (!parseProcessTarget(static_cast<ProcessBuildTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_chaletJson.filename(), name);
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'process'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -490,7 +503,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		{
 			if (!parseSourceTarget(static_cast<SourceTarget&>(*target), targetJson))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' project target.", m_chaletJson.filename(), name);
+				Diagnostic::error("{}: Error parsing the '{}' build target.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -1068,7 +1081,8 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 #endif
 			}
 			else if (String::equals("bundle", val))
-			{}
+			{
+			}
 			else
 			{
 				Diagnostic::error("{}: Found unrecognized distribution kind of '{}'", m_chaletJson.filename(), val);
