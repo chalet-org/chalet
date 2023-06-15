@@ -197,6 +197,11 @@
 					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
 					"default": false
 				},
+				"onlyRequired": {
+					"type": "boolean",
+					"description": "true to only build targets required by the target given at the command line (if not all), false otherwise (default).",
+					"default": false
+				},
 				"inputFile": {
 					"type": "string",
 					"description": "An input build file to use.",

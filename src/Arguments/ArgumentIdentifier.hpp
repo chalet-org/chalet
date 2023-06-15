@@ -39,6 +39,7 @@ enum class ArgumentIdentifier : ushort
 	GlobalSettings,
 	DumpAssembly,
 	GenerateCompileCommands,
+	OnlyRequired,
 	ShowCommands,
 	Benchmark,
 	LaunchProfiler,

@@ -25,7 +25,7 @@ _chalet_completions()
 	run|buildrun)
 		COMPREPLY=($(compgen -W "$(chalet query all-run-targets)" -- $cur))
 		;;
-	build|rebuild|clean|options.lastTarget)
+	build|rebuild|options.lastTarget)
 		COMPREPLY=($(compgen -W "$(chalet query all-build-targets)" -- $cur))
 		;;
 	-c|--configuration|options.configuration)

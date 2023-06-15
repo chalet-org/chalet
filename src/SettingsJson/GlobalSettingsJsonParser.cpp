@@ -82,6 +82,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 	assignSettingBool(Keys::OptionsLaunchProfiler, inState.launchProfiler);
 	assignSettingBool(Keys::OptionsKeepGoing, inState.keepGoing);
 	assignSettingBool(Keys::OptionsGenerateCompileCommands, inState.generateCompileCommands);
+	assignSettingBool(Keys::OptionsOnlyRequired, inState.onlyRequired);
 	assignSettingUint(Keys::OptionsMaxJobs, inState.maxJobs);
 	assignSettingString(Keys::OptionsBuildConfiguration, inState.buildConfiguration);
 	assignSettingString(Keys::OptionsToolchain, inState.toolchainPreference);
@@ -229,6 +230,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.keepGoing = value.get<bool>();
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 				outState.generateCompileCommands = value.get<bool>();
+			else if (String::equals(Keys::OptionsOnlyRequired, key))
+				outState.onlyRequired = value.get<bool>();
 		}
 		else if (value.is_number())
 		{

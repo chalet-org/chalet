@@ -38,6 +38,7 @@ struct IntermediateSettingsState
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;
+	bool onlyRequired = false;
 };
 }
 

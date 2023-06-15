@@ -59,7 +59,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::Run, &ArgumentParser::populateRunArguments },
 		{ RouteType::Build, &ArgumentParser::populateBuildArguments },
 		{ RouteType::Rebuild, &ArgumentParser::populateBuildArguments },
-		{ RouteType::Clean, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Clean, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Bundle, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Configure, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Init, &ArgumentParser::populateInitArguments },
@@ -131,6 +131,8 @@ StringList ArgumentParser::getTruthyArguments() const
 		"--no-keep-going",
 		"--generate-compile-commands",
 		"--no-generate-compile-commands",
+		"--only-required",
+		"--no-only-required",
 		"--save-user-toolchain-globally",
 		"--save-schema",
 		"--quieter",
@@ -1062,6 +1064,13 @@ void ArgumentParser::addGenerateCompileCommandsArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addOnlyRequiredArg()
+{
+	addOptionalBoolArgument(ArgumentIdentifier::OnlyRequired, "--[no-]only-required")
+		.setHelp("Only build targets required by the target given at the command line.");
+}
+
+/*****************************************************************************/
 void ArgumentParser::addShowCommandsArg()
 {
 	addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--[no-]show-commands")
@@ -1165,6 +1174,7 @@ void ArgumentParser::populateCommonBuildArguments()
 	addLaunchProfilerArg();
 	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
+	addOnlyRequiredArg();
 	addSaveUserToolchainGloballyArg();
 #if defined(CHALET_DEBUG)
 	addSaveSchemaArg();

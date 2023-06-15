@@ -87,6 +87,7 @@ private:
 	void addSettingsTypeArg();
 	void addDumpAssemblyArg();
 	void addGenerateCompileCommandsArg();
+	void addOnlyRequiredArg();
 	void addShowCommandsArg();
 	void addBenchmarkArg();
 	void addLaunchProfilerArg();

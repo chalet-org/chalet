@@ -94,10 +94,7 @@ bool ChaletJsonParser::serialize()
 	if (m_state.inputs.route().willRun())
 	{
 		if (!validRunTargetRequestedFromInput())
-		{
-			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
 			return false;
-		}
 
 		// do after run target is validated
 		auto& runArguments = m_centralState.getRunTargetArguments();
@@ -156,49 +153,33 @@ bool ChaletJsonParser::validBuildRequested() const
 bool ChaletJsonParser::validRunTargetRequestedFromInput()
 {
 	auto lastTarget = m_state.inputs.lastTarget();
-	if (String::equals("all", lastTarget))
-		return true;
+	if (String::equals("all", lastTarget) && !m_state.targets.empty())
+		lastTarget.clear();
 
-	// for (int i = 0; i < 2; ++i)
+	bool setRunTarget = lastTarget.empty();
+	for (auto& target : m_state.targets)
 	{
-		bool setRunTarget = lastTarget.empty();
-		for (auto& target : m_state.targets)
+		auto& name = target->name();
+		if (!setRunTarget && name != lastTarget)
+			continue;
+
+		if (target->isSources())
 		{
-			auto& name = target->name();
-			if (!setRunTarget && name != lastTarget)
-				continue;
-
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (project.isExecutable())
-				{
-					if (setRunTarget)
-						m_state.inputs.setLastTarget(std::string(target->name()));
-					return true;
-				}
-			}
-			else if (target->isCMake())
-			{
-				auto& project = static_cast<const CMakeTarget&>(*target);
-				if (!project.runExecutable().empty())
-				{
-					if (setRunTarget)
-						m_state.inputs.setLastTarget(std::string(target->name()));
-					return true;
-				}
-			}
-			else if (target->isScript())
-			{
-				if (setRunTarget)
-					m_state.inputs.setLastTarget(std::string(target->name()));
+			auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.isExecutable())
 				return true;
-			}
 		}
-
-		// lastTarget = std::string();
+		else if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (!project.runExecutable().empty())
+				return true;
+		}
+		else if (target->isScript())
+			return true;
 	}
 
+	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
 	return false;
 }
 

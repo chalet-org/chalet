@@ -58,6 +58,7 @@ enum class Defs : ushort
 	/* Settings */
 	DumpAssembly,
 	GenerateCompileCommands,
+	OnlyRequired,
 	MaxJobs,
 	ShowCommands,
 	Benchmark,
@@ -334,6 +335,12 @@ Json SettingsJsonSchema::get()
 		"default": false
 	})json"_ojson;
 
+	defs[Defs::OnlyRequired] = R"json({
+		"type": "boolean",
+		"description": "true to only build targets required by the target given at the command line (if not all), false otherwise (default).",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::MaxJobs] = R"json({
 		"type": "integer",
 		"description": "The number of jobs to run during compilation (default: the number of cpu cores).",
@@ -526,6 +533,7 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsEnvFile] = defs[Defs::EnvFile];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsExternalDirectory] = defs[Defs::ExternalDir];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsGenerateCompileCommands] = defs[Defs::GenerateCompileCommands];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOnlyRequired] = defs[Defs::OnlyRequired];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];

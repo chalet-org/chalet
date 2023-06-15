@@ -55,6 +55,7 @@ CH_STR(OptionsArchitecture) = "architecture";
 CH_STR(OptionsBuildConfiguration) = "configuration";
 CH_STR(OptionsDumpAssembly) = "dumpAssembly";
 CH_STR(OptionsGenerateCompileCommands) = "generateCompileCommands";
+CH_STR(OptionsOnlyRequired) = "onlyRequired";
 CH_STR(OptionsMaxJobs) = "maxJobs";
 CH_STR(OptionsShowCommands) = "showCommands";
 CH_STR(OptionsBenchmark) = "benchmark";

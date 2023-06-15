@@ -159,7 +159,6 @@ StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
 StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings) const
 {
 	StringList cmd{ getQuotedPath(m_state.tools.chalet()) };
-	cmd.emplace_back("build");
 	cmd.emplace_back("--quieter");
 
 	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
@@ -212,6 +211,8 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 		cmd.emplace_back("--arch");
 		cmd.push_back(m_state.inputs.architectureRaw());
 	}
+	cmd.emplace_back("build");
+	cmd.emplace_back("all");
 
 	return cmd;
 }

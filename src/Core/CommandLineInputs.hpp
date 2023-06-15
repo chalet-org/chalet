@@ -175,6 +175,9 @@ struct CommandLineInputs
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
+	const std::optional<bool>& onlyRequired() const noexcept;
+	void setOnlyRequired(const bool inValue) noexcept;
+
 	bool saveUserToolchainGlobally() const noexcept;
 	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
 
@@ -265,6 +268,7 @@ private:
 	std::optional<bool> m_launchProfiler;
 	std::optional<bool> m_keepGoing;
 	std::optional<bool> m_generateCompileCommands;
+	std::optional<bool> m_onlyRequired;
 
 	CommandRoute m_route;
 

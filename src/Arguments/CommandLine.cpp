@@ -229,6 +229,10 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						inputs->setGenerateCompileCommands(value);
 						break;
 
+					case ArgumentIdentifier::OnlyRequired:
+						inputs->setOnlyRequired(value);
+						break;
+
 					case ArgumentIdentifier::SaveSchema:
 						inputs->setSaveSchemaToFile(value);
 						break;

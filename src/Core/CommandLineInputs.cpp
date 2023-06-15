@@ -992,6 +992,16 @@ void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::onlyRequired() const noexcept
+{
+	return m_onlyRequired;
+}
+void CommandLineInputs::setOnlyRequired(const bool inValue) noexcept
+{
+	m_onlyRequired = inValue;
+}
+
+/*****************************************************************************/
 bool CommandLineInputs::saveUserToolchainGlobally() const noexcept
 {
 	return m_saveUserToolchainGlobally;

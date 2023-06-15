@@ -61,12 +61,112 @@ BuildManager::BuildManager(BuildState& inState) :
 BuildManager::~BuildManager() = default;
 
 /*****************************************************************************/
+void BuildManager::getTargetDependencies(const std::string& inTargetName, StringList& outList)
+{
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources() && String::equals(inTargetName, target->name()))
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+			for (auto& link : project.projectSharedLinks())
+			{
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(link, outList);
+			}
+
+			for (auto& link : project.projectStaticLinks())
+			{
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(link, outList);
+			}
+			break;
+		}
+	}
+	List::addIfDoesNotExist(outList, inTargetName);
+}
+
+/*****************************************************************************/
+void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
+{
+	UNUSED(inRoute);
+	m_buildTargets.clear();
+
+	auto& lastTarget = m_state.inputs.lastTarget();
+	const bool addAllTargets = String::equals("all", lastTarget) || !m_state.info.onlyRequired();
+
+	StringList requiredTargets;
+	if (!addAllTargets)
+	{
+		getTargetDependencies(lastTarget, requiredTargets);
+	}
+
+	for (auto& target : m_state.targets)
+	{
+		auto& targetName = target->name();
+		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
+			continue;
+
+		m_buildTargets.emplace_back(target.get());
+
+		if (!addAllTargets && String::equals(lastTarget, targetName))
+			break;
+	}
+}
+
+/*****************************************************************************/
+const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
+{
+	const IBuildTarget* runTarget = nullptr;
+	if (inRoute.willRun())
+	{
+		const auto& lastTarget = m_state.inputs.lastTarget();
+
+		const bool pickAnyTarget = lastTarget.empty() || String::equals("all", lastTarget);
+		for (auto& target : m_state.targets)
+		{
+			auto& name = target->name();
+			if (!pickAnyTarget && !String::equals(name, lastTarget))
+				continue;
+
+			if (target->isSources())
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (project.isExecutable())
+				{
+					runTarget = target.get();
+					break;
+				}
+			}
+			else if (target->isCMake())
+			{
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				if (!project.runExecutable().empty())
+				{
+					runTarget = target.get();
+					break;
+				}
+			}
+			else if (target->isScript())
+			{
+				runTarget = target.get();
+				break;
+			}
+		}
+	}
+
+	return runTarget;
+}
+
+/*****************************************************************************/
 bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 {
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
 	bool forceRebuild = m_state.cache.file().forceRebuild();
+
+	populateBuildTargets(inRoute);
+	auto runTarget = getRunTarget(inRoute);
 
 	if (inRoute.isClean())
 	{
@@ -148,26 +248,20 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Output::lineBreak();
 	}
 
-	const IBuildTarget* lastTarget = nullptr;
+	// const IBuildTarget* runTarget = nullptr;
 	bool error = false;
 
 	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too
-	bool isAllTarget = String::equals("all", lastTargetName);
-
-	bool multiTarget = m_state.targets.size() > 1;
-	// bool breakAfterBuild = false;
-	for (auto& target : m_state.targets)
+	bool multiTarget = m_buildTargets.size() > 1;
+	for (auto& target : m_buildTargets)
 	{
 		if (routeWillRun)
 		{
 			bool isRunTarget = String::equals(lastTargetName, target->name());
-			bool noExplicitRunTarget = (lastTargetName.empty() || isAllTarget) && lastTarget == nullptr;
+			bool noExplicitRunTarget = lastTargetName.empty() && runTarget == nullptr;
 
 			if (isRunTarget || noExplicitRunTarget)
 			{
-				lastTarget = target.get();
-				// breakAfterBuild = true;
-
 				if (target->isScript())
 					break;
 			}
@@ -227,7 +321,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 	}
 
-	for (auto& target : m_state.targets)
+	for (auto& target : m_buildTargets)
 	{
 		if (target->isSources())
 		{
@@ -278,21 +372,20 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (routeWillRun)
 	{
-		if (lastTarget == nullptr)
+		if (runTarget == nullptr)
 		{
 			Diagnostic::error("No executable project was found to run.");
 			return false;
 		}
-		else if (lastTarget->isSources() || lastTarget->isCMake())
+		else if (runTarget->isSources() || runTarget->isCMake())
 		{
 			Output::lineBreak();
-			return cmdRun(*lastTarget);
+			return cmdRun(*runTarget);
 		}
-		else if (lastTarget->isScript())
+		else if (runTarget->isScript())
 		{
-			auto& script = static_cast<const ScriptBuildTarget&>(*lastTarget);
 			Output::lineBreak();
-			return runScriptTarget(script, true);
+			return runScriptTarget(static_cast<const ScriptBuildTarget&>(*runTarget), true);
 		}
 		else
 		{
@@ -311,7 +404,7 @@ void BuildManager::printBuildInformation()
 	bool usingObjectiveC = false;
 	bool usingCpp = false;
 	bool usingC = false;
-	for (auto& target : m_state.targets)
+	for (auto& target : m_buildTargets)
 	{
 		if (target->isSources())
 		{
@@ -506,7 +599,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 
 	StringList buildDirs;
 	StringList externalLocations;
-	for (const auto& target : m_state.targets)
+	for (const auto& target : m_buildTargets)
 	{
 		if (target->isSources())
 		{
@@ -860,7 +953,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 
 	uint copied = 0;
-	for (auto& target : m_state.targets)
+	for (const auto& target : m_buildTargets)
 	{
 		if (target->isSources())
 		{
