@@ -178,6 +178,16 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 	Json& buildOptions = m_jsonFile.json[Keys::Options];
 
+	{
+		// pre 6.0.0
+		const std::string kRunTarget{ "runTarget" };
+		if (buildOptions.contains(kRunTarget))
+		{
+			buildOptions.erase(kRunTarget);
+			m_jsonFile.setDirty(true);
+		}
+	}
+
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);

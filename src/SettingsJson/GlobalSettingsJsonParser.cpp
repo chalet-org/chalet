@@ -54,6 +54,16 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 
 	Json& buildOptions = m_jsonFile.json.at(Keys::Options);
 
+	{
+		// pre 6.0.0
+		const std::string kRunTarget{ "runTarget" };
+		if (buildOptions.contains(kRunTarget))
+		{
+			buildOptions.erase(kRunTarget);
+			m_jsonFile.setDirty(true);
+		}
+	}
+
 	auto assignSettingBool = [this, &buildOptions](const char* inKey, const bool inDefault) {
 		return m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, inDefault);
 	};
