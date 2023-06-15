@@ -609,7 +609,7 @@ StringList QueryController::getCurrentToolchain() const
 /*****************************************************************************/
 StringList QueryController::getAllBuildTargets() const
 {
-	StringList ret;
+	StringList ret{ "all" };
 
 	const auto& chaletJson = m_centralState.chaletJson().json;
 

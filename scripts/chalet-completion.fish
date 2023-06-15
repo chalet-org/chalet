@@ -48,7 +48,7 @@ function __fish_generate_completions
 
     # Various completions we want
     complete -c $executable -n "__fish_chalet_prev_arg run buildrun" -a "$(chalet query all-run-targets)" -d ""
-    complete -c $executable -n "__fish_chalet_prev_arg options.lastTarget" -a "$(chalet query all-build-targets)" -d ""
+    complete -c $executable -n "__fish_chalet_prev_arg build rebuild clean options.lastTarget" -a "$(chalet query all-build-targets)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -c --configuration options.configuration" -a "$(chalet query configurations)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -t --toolchain options.toolchain" -a "$(chalet query all-toolchains)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -a --arch options.architecture" -a "$(chalet query architectures)" -d ""
