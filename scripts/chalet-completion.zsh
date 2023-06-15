@@ -22,8 +22,11 @@ _chalet_completions()
 	local prev="${_CMDS[COMP_CWORD-1]}"
 
 	case "${prev}" in
-	run|buildrun|options.runTarget)
+	run|buildrun)
 		COMPREPLY=($(compgen -W "$(chalet query all-run-targets)" -- $cur))
+		;;
+	options.lastTarget)
+		COMPREPLY=($(compgen -W "$(chalet query all-build-targets)" -- $cur))
 		;;
 	-c|--configuration|options.configuration)
 		COMPREPLY=($(compgen -W "$(chalet query configurations)" -- $cur))

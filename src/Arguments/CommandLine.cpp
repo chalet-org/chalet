@@ -56,8 +56,8 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 
 				switch (id)
 				{
-					case ArgumentIdentifier::RunTargetName:
-						inputs->setRunTarget(std::move(value));
+					case ArgumentIdentifier::BuildTargetName:
+						inputs->setLastTarget(std::move(value));
 						break;
 
 					case ArgumentIdentifier::BuildConfiguration:

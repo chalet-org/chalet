@@ -31,7 +31,7 @@ enum class ArgumentIdentifier : ushort
 	BuildStrategy,
 	BuildPathStyle,
 	MaxJobs,
-	RunTargetName,
+	BuildTargetName,
 	RunTargetArguments,
 	SaveSchema,
 	Quieter,

@@ -83,7 +83,6 @@ class ChaletJsonSchema
 		TargetOutputDescription,
 		TargetKind,
 		TargetCondition,
-		TargetRunTarget,
 		TargetDefaultRunArguments,
 		//
 		TargetAbstract,

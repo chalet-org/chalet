@@ -94,7 +94,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	const bool runRoute = inRoute.isRun();
 	const bool routeWillRun = inRoute.willRun();
-	const auto& runTargetName = m_state.inputs.runTarget();
+	const auto& lastTargetName = m_state.inputs.lastTarget();
 
 	if (!runRoute)
 	{
@@ -148,10 +148,11 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Output::lineBreak();
 	}
 
-	const IBuildTarget* runTarget = nullptr;
+	const IBuildTarget* lastTarget = nullptr;
 	bool error = false;
 
 	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too
+	bool isAllTarget = String::equals("all", lastTargetName);
 
 	bool multiTarget = m_state.targets.size() > 1;
 	// bool breakAfterBuild = false;
@@ -159,12 +160,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	{
 		if (routeWillRun)
 		{
-			bool isRunTarget = String::equals(runTargetName, target->name());
-			bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
+			bool isRunTarget = String::equals(lastTargetName, target->name());
+			bool noExplicitRunTarget = (lastTargetName.empty() || isAllTarget) && lastTarget == nullptr;
 
 			if (isRunTarget || noExplicitRunTarget)
 			{
-				runTarget = target.get();
+				lastTarget = target.get();
 				// breakAfterBuild = true;
 
 				if (target->isScript())
@@ -277,25 +278,25 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (routeWillRun)
 	{
-		if (runTarget == nullptr)
+		if (lastTarget == nullptr)
 		{
 			Diagnostic::error("No executable project was found to run.");
 			return false;
 		}
-		else if (runTarget->isSources() || runTarget->isCMake())
+		else if (lastTarget->isSources() || lastTarget->isCMake())
 		{
 			Output::lineBreak();
-			return cmdRun(*runTarget);
+			return cmdRun(*lastTarget);
 		}
-		else if (runTarget->isScript())
+		else if (lastTarget->isScript())
 		{
-			auto& script = static_cast<const ScriptBuildTarget&>(*runTarget);
+			auto& script = static_cast<const ScriptBuildTarget&>(*lastTarget);
 			Output::lineBreak();
 			return runScriptTarget(script, true);
 		}
 		else
 		{
-			Diagnostic::error("Run target not found: '{}'", runTargetName);
+			Diagnostic::error("Run target not found: '{}'", lastTargetName);
 			return false;
 		}
 	}

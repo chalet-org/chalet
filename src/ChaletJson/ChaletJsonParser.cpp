@@ -95,7 +95,7 @@ bool ChaletJsonParser::serialize()
 	{
 		if (!validRunTargetRequestedFromInput())
 		{
-			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.runTarget());
+			Diagnostic::error("{}: Run target of '{}' is either: not a valid project name, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
 			return false;
 		}
 
@@ -155,14 +155,17 @@ bool ChaletJsonParser::validBuildRequested() const
 /*****************************************************************************/
 bool ChaletJsonParser::validRunTargetRequestedFromInput()
 {
-	auto runTarget = m_state.inputs.runTarget();
+	auto lastTarget = m_state.inputs.lastTarget();
+	if (String::equals("all", lastTarget))
+		return true;
+
 	// for (int i = 0; i < 2; ++i)
 	{
-		bool setRunTarget = runTarget.empty();
+		bool setRunTarget = lastTarget.empty();
 		for (auto& target : m_state.targets)
 		{
 			auto& name = target->name();
-			if (!setRunTarget && name != runTarget)
+			if (!setRunTarget && name != lastTarget)
 				continue;
 
 			if (target->isSources())
@@ -171,7 +174,7 @@ bool ChaletJsonParser::validRunTargetRequestedFromInput()
 				if (project.isExecutable())
 				{
 					if (setRunTarget)
-						m_state.inputs.setRunTarget(std::string(target->name()));
+						m_state.inputs.setLastTarget(std::string(target->name()));
 					return true;
 				}
 			}
@@ -181,19 +184,19 @@ bool ChaletJsonParser::validRunTargetRequestedFromInput()
 				if (!project.runExecutable().empty())
 				{
 					if (setRunTarget)
-						m_state.inputs.setRunTarget(std::string(target->name()));
+						m_state.inputs.setLastTarget(std::string(target->name()));
 					return true;
 				}
 			}
 			else if (target->isScript())
 			{
 				if (setRunTarget)
-					m_state.inputs.setRunTarget(std::string(target->name()));
+					m_state.inputs.setLastTarget(std::string(target->name()));
 				return true;
 			}
 		}
 
-		// runTarget = std::string();
+		// lastTarget = std::string();
 	}
 
 	return false;
@@ -817,7 +820,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (outTarget.name() == m_state.inputs.runTarget())
+				if (outTarget.name() == m_state.inputs.lastTarget())
 				{
 					if (willRun && !m_state.inputs.runArguments().has_value())
 						m_state.inputs.setRunArguments(std::move(val));
@@ -841,7 +844,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (outTarget.name() == m_state.inputs.runTarget())
+				if (outTarget.name() == m_state.inputs.lastTarget())
 				{
 					if (willRun && !m_state.inputs.runArguments().has_value())
 						m_state.inputs.setRunArguments(std::move(val));
@@ -1560,19 +1563,19 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 		if (String::equals("runTarget", value))
 		{
 			const bool routeWillRun = m_state.inputs.route().willRun();
-			const auto& runTarget = m_state.inputs.runTarget();
+			const auto& lastTarget = m_state.inputs.lastTarget();
 
-			if (!routeWillRun || runTarget.empty())
+			if (!routeWillRun || lastTarget.empty())
 				return ConditionResult::Fail;
 
 			if (negate)
 			{
-				if (String::equals(runTarget, outTarget.name()))
+				if (String::equals(lastTarget, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(runTarget, outTarget.name()))
+				if (!String::equals(lastTarget, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 
@@ -1584,19 +1587,19 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 		if (String::equals("runTarget", value))
 		{
 			const bool routeWillRun = m_state.inputs.route().willRun();
-			const auto& runTarget = m_state.inputs.runTarget();
+			const auto& lastTarget = m_state.inputs.lastTarget();
 
-			if (!routeWillRun || runTarget.empty())
+			if (!routeWillRun || lastTarget.empty())
 				return ConditionResult::Fail;
 
 			if (negate)
 			{
-				if (String::equals(runTarget, outTarget.name()))
+				if (String::equals(lastTarget, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(runTarget, outTarget.name()))
+				if (!String::equals(lastTarget, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 

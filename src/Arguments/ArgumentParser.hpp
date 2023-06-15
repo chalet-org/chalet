@@ -78,6 +78,7 @@ private:
 	void addMaxJobsArg();
 	void addEnvFileArg();
 	void addBuildConfigurationArg();
+	void addBuildTargetArg();
 	void addRunTargetArg();
 	void addRunArgumentsArg();
 	void addSaveSchemaArg();
@@ -96,6 +97,7 @@ private:
 
 	void populateBuildRunArguments();
 	void populateRunArguments();
+	void populateCommonBuildArguments();
 	void populateBuildArguments();
 
 	void populateInitArguments();

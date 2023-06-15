@@ -69,7 +69,7 @@ CH_STR(OptionsRootDirectory) = "rootDir";
 CH_STR(OptionsOutputDirectory) = "outputDir";
 CH_STR(OptionsExternalDirectory) = "externalDir";
 CH_STR(OptionsDistributionDirectory) = "distributionDir";
-CH_STR(OptionsRunTarget) = "runTarget";
+CH_STR(OptionsLastTarget) = "lastTarget";
 CH_STR(OptionsRunArguments) = "runArguments";
 //
 CH_STR(Toolchains) = "toolchains";

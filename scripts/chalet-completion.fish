@@ -28,7 +28,7 @@ function __fish_chalet_needs_subcommand
     set -l COMP_CWORD (count $_CMDS)
     if test $COMP_CWORD -gt 0
         set -l prev $_CMDS[$COMP_CWORD]
-        set -l list run buildrun options.runTarget -c --configuration options.configuration -t --toolchain options.toolchain -a --arch options.architecture -b --build-strategy strategy -p --build-path-style buildPathStyle export query theme get getkeys set unset
+        set -l list run buildrun options.lastTarget -c --configuration options.configuration -t --toolchain options.toolchain -a --arch options.architecture -b --build-strategy strategy -p --build-path-style buildPathStyle export query theme get getkeys set unset
         if contains -- $prev $list
             return 1
         end
@@ -47,7 +47,8 @@ function __fish_generate_completions
     complete -c $executable -n "__fish_chalet_needs_subcommand ''" -a "$(chalet query commands)" -d ""
 
     # Various completions we want
-    complete -c $executable -n "__fish_chalet_prev_arg run buildrun options.runTarget" -a "$(chalet query all-run-targets)" -d ""
+    complete -c $executable -n "__fish_chalet_prev_arg run buildrun" -a "$(chalet query all-run-targets)" -d ""
+    complete -c $executable -n "__fish_chalet_prev_arg options.lastTarget" -a "$(chalet query all-build-targets)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -c --configuration options.configuration" -a "$(chalet query configurations)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -t --toolchain options.toolchain" -a "$(chalet query all-toolchains)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -a --arch options.architecture" -a "$(chalet query architectures)" -d ""

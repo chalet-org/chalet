@@ -76,7 +76,7 @@ enum class Defs : ushort
 	OutputDir,
 	ExternalDir,
 	DistributionDir,
-	RunTarget,
+	LastTarget,
 	RunArguments,
 	Theme,
 	LastUpdateCheck,
@@ -428,9 +428,9 @@ Json SettingsJsonSchema::get()
 		"description": "The root directory of all distribution bundles."
 	})json"_ojson;
 
-	defs[Defs::RunTarget] = R"json({
+	defs[Defs::LastTarget] = R"json({
 		"type": "string",
-		"description": "An executable or script target to run, if requested."
+		"description": "The last build target used (or ran), or 'all' if one was not specified."
 	})json"_ojson;
 
 	defs[Defs::RunArguments] = R"json({
@@ -532,7 +532,7 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRootDirectory] = defs[Defs::RootDir];
-	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunTarget] = defs[Defs::RunTarget];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLastTarget] = defs[Defs::LastTarget];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunArguments] = defs[Defs::RunArguments];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];

@@ -64,8 +64,8 @@ struct CommandLineInputs
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
 
-	const std::string& runTarget() const noexcept;
-	void setRunTarget(std::string&& inValue) const noexcept;
+	const std::string& lastTarget() const noexcept;
+	void setLastTarget(std::string&& inValue) const noexcept;
 
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;
@@ -237,7 +237,7 @@ private:
 	std::string m_distributionDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
-	mutable std::string m_runTarget;
+	mutable std::string m_lastTarget;
 	std::string m_appPath;
 	std::string m_exportKindRaw;
 	std::string m_settingsKey;

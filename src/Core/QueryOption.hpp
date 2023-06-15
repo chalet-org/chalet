@@ -22,6 +22,7 @@ enum class QueryOption : ushort
 	UserToolchains,
 	ToolchainPresets,
 	Architectures,
+	AllBuildTargets,
 	AllRunTargets,
 	BuildStrategies,
 	BuildPathStyles,
