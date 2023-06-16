@@ -1073,22 +1073,6 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return val;
 				}
 
-				if (String::equals("externalDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return inputs.externalDirectory();
-				}
-
-				if (String::equals("externalBuildDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return paths.externalBuildDir();
-				}
-
 				if (onFail != nullptr)
 					return onFail(std::move(match));
 
@@ -1198,22 +1182,6 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 					}
 					return val;
-				}
-
-				if (String::equals("externalDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return inputs.externalDirectory();
-				}
-
-				if (String::equals("externalBuildDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return paths.externalBuildDir();
 				}
 
 				if (onFail != nullptr)
