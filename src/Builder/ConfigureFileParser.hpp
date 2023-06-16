@@ -10,6 +10,7 @@ namespace chalet
 {
 class BuildState;
 struct SourceTarget;
+struct IBuildTarget;
 
 struct ConfigureFileParser
 {

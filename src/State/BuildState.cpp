@@ -370,9 +370,13 @@ bool BuildState::initializeBuild()
 		if (target->isSources())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
+			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
 
-			std::string intermediateDir = paths.intermediateDir(project);
+			auto objDir = paths.objDir();
+			project.addIncludeDir(std::move(objDir));
+
+			auto intermediateDir = paths.intermediateDir(project);
 			project.addIncludeDir(std::move(intermediateDir));
 
 			if (!inputs.route().isExport())
@@ -381,10 +385,10 @@ bool BuildState::initializeBuild()
 				if (!isMsvc)
 				{
 					auto& compilerInfo = toolchain.compilerCxx(project.language());
-					std::string libDir = compilerInfo.libDir;
+					auto libDir = compilerInfo.libDir;
 					project.addLibDir(std::move(libDir));
 
-					std::string includeDir = compilerInfo.includeDir;
+					auto includeDir = compilerInfo.includeDir;
 					project.addIncludeDir(std::move(includeDir));
 				}
 
@@ -985,7 +989,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -1042,6 +1046,27 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("defined:", match))
+				{
+					required = false;
+					match = match.substr(8);
+					auto result = Environment::get(match.c_str());
+					if (result == nullptr)
+					{
+						if (inTarget->isSources())
+						{
+							auto& project = static_cast<const SourceTarget&>(*inTarget);
+							const auto& defines = project.defines();
+							for (auto& define : defines)
+							{
+								if (String::equals(match, define))
+									result = "1";
+							}
+						}
+					}
+					return std::string(result != nullptr ? "true" : "false");
 				}
 
 				if (String::startsWith("var:", match))
@@ -1102,7 +1127,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -1153,6 +1178,14 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					required = false;
 					match = match.substr(4);
 					return Environment::getAsString(match.c_str());
+				}
+
+				if (String::startsWith("defined:", match))
+				{
+					required = false;
+					match = match.substr(8);
+					auto result = Environment::get(match.c_str());
+					return std::string(result != nullptr ? "true" : "false");
 				}
 
 				if (String::startsWith("var:", match))

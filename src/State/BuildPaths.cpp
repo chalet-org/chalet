@@ -453,7 +453,7 @@ StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
 
 	if (!inProject.configureFiles().empty())
 	{
-		auto outFolder = intermediateDir(inProject);
+		auto& outFolder = objDir();
 		for (const auto& configureFile : inProject.configureFiles())
 		{
 			auto outFile = String::getPathFilename(getNormalizedOutputPath(configureFile));
