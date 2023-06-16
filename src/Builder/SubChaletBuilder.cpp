@@ -121,42 +121,52 @@ bool SubChaletBuilder::run()
 	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
+	auto onRunFailure = [&oldPath]() -> bool {
+		Environment::setPath(oldPath);
+		Output::lineBreak();
+		return false;
+	};
+
 	bool result = true;
 
 	if (outDirectoryDoesNotExist || recheckChalet)
 	{
 		// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("new cwd: {}", cwd), false);
 
-		StringList cmd = getBuildCommand();
-		result = Commands::subprocess(cmd);
+		for (auto& targetName : m_target.targets())
+		{
+			auto cmd = getBuildCommand(targetName);
+			result = Commands::subprocess(cmd);
+			if (!result)
+				return onRunFailure();
+		}
 		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
-
-		Environment::setPath(oldPath);
 	}
 
 	if (result)
 	{
+		Environment::setPath(oldPath);
 		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
 	}
 	else
 	{
-		Output::lineBreak();
+		return onRunFailure();
 	}
 
 	return result;
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const std::string& inTarget, const bool hasSettings) const
 {
 	auto location = getLocation();
 	auto buildFile = getBuildFile();
 
-	return getBuildCommand(location, buildFile, hasSettings);
+	return getBuildCommand(location, buildFile, inTarget, hasSettings);
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const std::string& inTarget, const bool hasSettings) const
 {
 	StringList cmd{ getQuotedPath(m_state.tools.chalet()) };
 	cmd.emplace_back("--quieter");
@@ -211,8 +221,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 		cmd.emplace_back("--arch");
 		cmd.push_back(m_state.inputs.architectureRaw());
 	}
+
+	cmd.emplace_back("--only-required");
 	cmd.emplace_back("build");
-	cmd.emplace_back("all");
+	cmd.emplace_back(inTarget);
 
 	return cmd;
 }

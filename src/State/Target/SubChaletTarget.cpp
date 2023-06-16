@@ -8,6 +8,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/Hash.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -34,6 +35,11 @@ bool SubChaletTarget::initialize()
 	if (String::equals('.', m_targetFolder))
 		m_targetFolder = this->name();
 
+	if (m_targets.empty())
+	{
+		m_targets.emplace_back("all");
+	}
+
 	return true;
 }
 
@@ -55,15 +61,37 @@ bool SubChaletTarget::validate()
 		result = false;
 	}
 
+	if (m_targets.empty())
+	{
+		Diagnostic::error("Chalet target '{}' did not contain any targets (expected at least 'all')", targetName);
+		result = false;
+	}
+
 	return result;
 }
 
 /*****************************************************************************/
 std::string SubChaletTarget::getHash() const
 {
-	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_buildFile, m_recheck, m_rebuild, m_clean);
+	auto targets = String::join(m_targets);
+
+	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_buildFile, targets, m_recheck, m_rebuild, m_clean);
 
 	return Hash::string(hashable);
+}
+
+/*****************************************************************************/
+const StringList& SubChaletTarget::targets() const noexcept
+{
+	return m_targets;
+}
+void SubChaletTarget::addTargets(StringList&& inList)
+{
+	List::forEach(inList, this, &SubChaletTarget::addTarget);
+}
+void SubChaletTarget::addTarget(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_targets, std::move(inValue));
 }
 
 /*****************************************************************************/

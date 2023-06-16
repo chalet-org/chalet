@@ -159,6 +159,7 @@ class ChaletJsonSchema
 		TargetChalet,
 		TargetChaletLocation,
 		TargetChaletBuildFile,
+		TargetChaletTargetNames,
 		TargetChaletRecheck,
 		TargetChaletRebuild,
 		TargetChaletClean,
