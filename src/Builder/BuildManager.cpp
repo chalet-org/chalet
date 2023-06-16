@@ -321,7 +321,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 	}
 
-	for (auto& target : m_buildTargets)
+	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
 		{
