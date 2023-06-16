@@ -91,7 +91,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
 			return false;
 		}
-		else if (!found)
+		else if (!found && required)
 		{
 			needsUpdate = true;
 			break;
