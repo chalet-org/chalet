@@ -49,6 +49,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "list-names", QueryOption::QueryNames },
 		{ "export-kinds", QueryOption::ExportKinds },
 		{ "run-target", QueryOption::RunTarget },
+		{ "all-build-targets", QueryOption::AllBuildTargets },
 		{ "all-run-targets", QueryOption::AllRunTargets },
 		{ "theme-names", QueryOption::ThemeNames },
 		{ "toolchain", QueryOption::Toolchain },
@@ -380,17 +381,17 @@ void CommandLineInputs::setBuildConfiguration(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& CommandLineInputs::runTarget() const noexcept
+const std::string& CommandLineInputs::lastTarget() const noexcept
 {
-	return m_runTarget;
+	return m_lastTarget;
 }
 
-void CommandLineInputs::setRunTarget(std::string&& inValue) const noexcept
+void CommandLineInputs::setLastTarget(std::string&& inValue) const noexcept
 {
 	if (inValue.empty())
 		return;
 
-	m_runTarget = std::move(inValue);
+	m_lastTarget = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -989,6 +990,16 @@ const std::optional<bool>& CommandLineInputs::generateCompileCommands() const no
 void CommandLineInputs::setGenerateCompileCommands(const bool inValue) noexcept
 {
 	m_generateCompileCommands = inValue;
+}
+
+/*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::onlyRequired() const noexcept
+{
+	return m_onlyRequired;
+}
+void CommandLineInputs::setOnlyRequired(const bool inValue) noexcept
+{
+	m_onlyRequired = inValue;
 }
 
 /*****************************************************************************/

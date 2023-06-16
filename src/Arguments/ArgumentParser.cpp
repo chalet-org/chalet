@@ -23,7 +23,7 @@ namespace chalet
 
 namespace Arg
 {
-CH_STR(RunTarget) = "[<target>]";
+CH_STR(BuildTarget) = "[<target>]";
 CH_STR(RemainingArguments) = "[ARG...]";
 // CH_STR(InitName) = "<name>";
 CH_STR(InitPath) = "<path>";
@@ -59,9 +59,9 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::Run, &ArgumentParser::populateRunArguments },
 		{ RouteType::Build, &ArgumentParser::populateBuildArguments },
 		{ RouteType::Rebuild, &ArgumentParser::populateBuildArguments },
-		{ RouteType::Clean, &ArgumentParser::populateBuildArguments },
-		{ RouteType::Bundle, &ArgumentParser::populateBuildArguments },
-		{ RouteType::Configure, &ArgumentParser::populateBuildArguments },
+		{ RouteType::Clean, &ArgumentParser::populateCommonBuildArguments },
+		{ RouteType::Bundle, &ArgumentParser::populateCommonBuildArguments },
+		{ RouteType::Configure, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Init, &ArgumentParser::populateInitArguments },
 		{ RouteType::Export, &ArgumentParser::populateExportArguments },
 		{ RouteType::SettingsGet, &ArgumentParser::populateSettingsGetArguments },
@@ -131,6 +131,8 @@ StringList ArgumentParser::getTruthyArguments() const
 		"--no-keep-going",
 		"--generate-compile-commands",
 		"--no-generate-compile-commands",
+		"--only-required",
+		"--no-only-required",
 		"--save-user-toolchain-globally",
 		"--save-schema",
 		"--quieter",
@@ -243,7 +245,7 @@ StringList ArgumentParser::getAllCliOptions()
 	{
 		addHelpArg();
 		addVersionArg();
-		populateBuildArguments();
+		populateCommonBuildArguments();
 		addSettingsTypeArg();
 		ret.emplace_back("--template");
 	}
@@ -805,10 +807,10 @@ void ArgumentParser::populateMainArguments()
 	subcommands.push_back("configure,c");
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Configure));
 
-	subcommands.push_back(fmt::format("buildrun,r {} {}", Arg::RunTarget, Arg::RemainingArguments));
+	subcommands.push_back(fmt::format("buildrun,r {} {}", Arg::BuildTarget, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::BuildRun));
 
-	subcommands.push_back(fmt::format("run {} {}", Arg::RunTarget, Arg::RemainingArguments));
+	subcommands.push_back(fmt::format("run {} {}", Arg::BuildTarget, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Run));
 
 	subcommands.push_back("build,b");
@@ -1018,9 +1020,16 @@ void ArgumentParser::addBuildConfigurationArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addBuildTargetArg()
+{
+	addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget)
+		.setHelp("A build target to select. [default: \"all\"]");
+}
+
+/*****************************************************************************/
 void ArgumentParser::addRunTargetArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::RunTargetName, Positional::Argument2, Arg::RunTarget)
+	addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget)
 		.setHelp("An executable or script target to run.");
 }
 
@@ -1055,6 +1064,13 @@ void ArgumentParser::addGenerateCompileCommandsArg()
 {
 	addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--[no-]generate-compile-commands")
 		.setHelp("Generate a compile_commands.json file for Clang tooling use.");
+}
+
+/*****************************************************************************/
+void ArgumentParser::addOnlyRequiredArg()
+{
+	addOptionalBoolArgument(ArgumentIdentifier::OnlyRequired, "--[no-]only-required")
+		.setHelp("Only build targets required by the target given at the command line.");
 }
 
 /*****************************************************************************/
@@ -1121,7 +1137,7 @@ void ArgumentParser::addOsTargetVersionArg()
 /*****************************************************************************/
 void ArgumentParser::populateBuildRunArguments()
 {
-	populateBuildArguments();
+	populateCommonBuildArguments();
 
 	addRunTargetArg();
 	addRunArgumentsArg();
@@ -1130,14 +1146,14 @@ void ArgumentParser::populateBuildRunArguments()
 /*****************************************************************************/
 void ArgumentParser::populateRunArguments()
 {
-	populateBuildArguments();
+	populateCommonBuildArguments();
 
 	addRunTargetArg();
 	addRunArgumentsArg();
 }
 
 /*****************************************************************************/
-void ArgumentParser::populateBuildArguments()
+void ArgumentParser::populateCommonBuildArguments()
 {
 	addInputFileArg();
 	addSettingsFileArg();
@@ -1161,11 +1177,20 @@ void ArgumentParser::populateBuildArguments()
 	addLaunchProfilerArg();
 	addKeepGoingArg();
 	addGenerateCompileCommandsArg();
+	addOnlyRequiredArg();
 	addSaveUserToolchainGloballyArg();
 #if defined(CHALET_DEBUG)
 	addSaveSchemaArg();
 #endif
 	addQuietArgs();
+}
+
+/*****************************************************************************/
+void ArgumentParser::populateBuildArguments()
+{
+	populateCommonBuildArguments();
+
+	addBuildTargetArg();
 }
 
 /*****************************************************************************/
@@ -1261,7 +1286,7 @@ void ArgumentParser::populateTerminalTestArguments()
 #if defined(CHALET_DEBUG)
 void ArgumentParser::populateDebugArguments()
 {
-	populateBuildArguments();
+	populateCommonBuildArguments();
 }
 #endif
 }

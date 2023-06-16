@@ -360,34 +360,34 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
-	auto& runTarget = inInputs.runTarget();
-	if (optionsJson.contains(Keys::OptionsRunTarget))
+	auto& lastTarget = inInputs.lastTarget();
+	if (optionsJson.contains(Keys::OptionsLastTarget))
 	{
-		auto& runTargetNode = optionsJson.at(Keys::OptionsRunTarget);
-		if (runTargetNode.is_string() && runTargetNode.get<std::string>() != runTarget)
+		auto& lastTargetNode = optionsJson.at(Keys::OptionsLastTarget);
+		if (lastTargetNode.is_string() && lastTargetNode.get<std::string>() != lastTarget)
 		{
-			optionsJson[Keys::OptionsRunTarget] = runTarget;
+			optionsJson[Keys::OptionsLastTarget] = lastTarget;
 			settingsJson.setDirty(true);
 		}
 	}
 
-	if (optionsJson.contains(Keys::OptionsRunArguments) && !runTarget.empty())
+	if (optionsJson.contains(Keys::OptionsRunArguments) && !lastTarget.empty() && !String::equals("all", lastTarget))
 	{
-		auto& allRunArguments = optionsJson.at(Keys::OptionsRunArguments);
-		if (allRunArguments.is_object())
+		auto& runArgsJson = optionsJson.at(Keys::OptionsRunArguments);
+		if (runArgsJson.is_object())
 		{
-			if (!allRunArguments.contains(runTarget) || !allRunArguments[runTarget].is_string())
+			if (!runArgsJson.contains(lastTarget) || !runArgsJson[lastTarget].is_string())
 			{
-				allRunArguments[runTarget] = std::string();
+				runArgsJson[lastTarget] = std::string();
 			}
 
 			if (inInputs.runArguments().has_value())
 			{
 				auto inputsRunArguments = String::join(*inInputs.runArguments());
-				auto& runArguments = allRunArguments.at(runTarget);
+				auto& runArguments = runArgsJson.at(lastTarget);
 				if (runArguments.get<std::string>() != inputsRunArguments)
 				{
-					allRunArguments[runTarget] = inputsRunArguments;
+					runArgsJson[lastTarget] = inputsRunArguments;
 					settingsJson.setDirty(true);
 				}
 			}

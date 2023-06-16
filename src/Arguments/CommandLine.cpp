@@ -56,8 +56,8 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 
 				switch (id)
 				{
-					case ArgumentIdentifier::RunTargetName:
-						inputs->setRunTarget(std::move(value));
+					case ArgumentIdentifier::BuildTargetName:
+						inputs->setLastTarget(std::move(value));
 						break;
 
 					case ArgumentIdentifier::BuildConfiguration:
@@ -227,6 +227,10 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 
 					case ArgumentIdentifier::GenerateCompileCommands:
 						inputs->setGenerateCompileCommands(value);
+						break;
+
+					case ArgumentIdentifier::OnlyRequired:
+						inputs->setOnlyRequired(value);
 						break;
 
 					case ArgumentIdentifier::SaveSchema:

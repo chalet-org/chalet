@@ -55,6 +55,7 @@ CH_STR(OptionsArchitecture) = "architecture";
 CH_STR(OptionsBuildConfiguration) = "configuration";
 CH_STR(OptionsDumpAssembly) = "dumpAssembly";
 CH_STR(OptionsGenerateCompileCommands) = "generateCompileCommands";
+CH_STR(OptionsOnlyRequired) = "onlyRequired";
 CH_STR(OptionsMaxJobs) = "maxJobs";
 CH_STR(OptionsShowCommands) = "showCommands";
 CH_STR(OptionsBenchmark) = "benchmark";
@@ -69,7 +70,7 @@ CH_STR(OptionsRootDirectory) = "rootDir";
 CH_STR(OptionsOutputDirectory) = "outputDir";
 CH_STR(OptionsExternalDirectory) = "externalDir";
 CH_STR(OptionsDistributionDirectory) = "distributionDir";
-CH_STR(OptionsRunTarget) = "runTarget";
+CH_STR(OptionsLastTarget) = "lastTarget";
 CH_STR(OptionsRunArguments) = "runArguments";
 //
 CH_STR(Toolchains) = "toolchains";

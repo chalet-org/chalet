@@ -40,6 +40,9 @@ BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInput
 
 	if (inInputs.keepGoing().has_value())
 		m_keepGoing = *inInputs.keepGoing();
+
+	if (inInputs.onlyRequired().has_value())
+		m_onlyRequired = *inInputs.onlyRequired();
 }
 
 /*****************************************************************************/
@@ -208,6 +211,12 @@ bool BuildInfo::launchProfiler() const noexcept
 bool BuildInfo::keepGoing() const noexcept
 {
 	return m_keepGoing;
+}
+
+/*****************************************************************************/
+bool BuildInfo::onlyRequired() const noexcept
+{
+	return m_onlyRequired;
 }
 
 }

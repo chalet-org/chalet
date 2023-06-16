@@ -18,6 +18,10 @@ struct SubChaletTarget final : public IBuildTarget
 	virtual bool validate() final;
 	virtual std::string getHash() const final;
 
+	const StringList& targets() const noexcept;
+	void addTargets(StringList&& inList);
+	void addTarget(std::string&& inValue);
+
 	const std::string& location() const noexcept;
 	const std::string& targetFolder() const noexcept;
 	void setLocation(std::string&& inValue) noexcept;
@@ -35,6 +39,7 @@ struct SubChaletTarget final : public IBuildTarget
 	void setClean(const bool inValue) noexcept;
 
 private:
+	StringList m_targets;
 	std::string m_location;
 	std::string m_targetFolder;
 	std::string m_buildFile;

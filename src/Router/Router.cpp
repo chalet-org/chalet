@@ -182,12 +182,15 @@ bool Router::routeConfigure(BuildState& inState)
 /*****************************************************************************/
 bool Router::routeBundle(BuildState& inState)
 {
-	const auto& inputFile = m_inputs.inputFile();
+	const auto& inputFile = inState.inputs.inputFile();
 	if (inState.distribution.empty())
 	{
 		Diagnostic::error("{}: There are no distribution targets: missing 'distribution'", inputFile);
 		return false;
 	}
+
+	// We always want to build all targets during the bundle step
+	inState.inputs.setLastTarget("all");
 
 	AppBundler bundler(inState);
 	{
@@ -252,6 +255,9 @@ bool Router::routeTerminalTest()
 /*****************************************************************************/
 bool Router::routeExport(CentralState& inCentralState)
 {
+	// We want export to assume all targets are needed
+	m_inputs.setLastTarget("all");
+
 	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
 	if (!projectExporter->generate(inCentralState))
 		return false;
