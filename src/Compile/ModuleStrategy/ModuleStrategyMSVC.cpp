@@ -158,6 +158,14 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 				{
 					outModules[systemModule].source = std::move(resolvedPath);
 					outModules[systemModule].systemModule = true;
+
+					if (String::equals("std.compat", systemModule))
+					{
+						// This is a bit of a hack so we don't have to scan std and std.compat deps if they're not used
+						// maybe fix later...
+						//
+						outModules[systemModule].importedModules.push_back("std");
+					}
 				}
 			}
 		}

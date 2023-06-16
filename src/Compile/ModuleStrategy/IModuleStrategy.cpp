@@ -172,11 +172,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 			modulePayload[module.source] = ModulePayload();
 
-			if (module.systemModule)
-				continue;
-
 			if (!addModuleRecursively(module, module, modules, modulePayload))
 				return onFailure();
+
+			if (module.systemModule)
+				continue;
 
 			bool rebuildFromHeader = false;
 			for (auto& header : module.importedHeaderUnits)
