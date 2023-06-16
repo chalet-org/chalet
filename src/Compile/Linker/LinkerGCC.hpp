@@ -50,7 +50,7 @@ protected:
 	virtual void addObjectiveCxxLink(StringList& outArgList) const;
 
 	// MacOS
-	virtual void addMacosFrameworkOptions(StringList& outArgList) const;
+	virtual void addAppleFrameworkOptions(StringList& outArgList) const;
 
 	// GNU GCC stuff
 	virtual bool addSystemRootOption(StringList& outArgList) const;

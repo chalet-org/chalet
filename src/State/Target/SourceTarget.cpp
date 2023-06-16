@@ -39,8 +39,8 @@ bool SourceTarget::initialize()
 	if (List::contains<std::string>(m_warnings, "error"))
 		m_treatWarningsAsErrors = true;
 
-	if (!processEachPathList(std::move(m_macosFrameworkPaths), [this](std::string&& inValue) {
-			return Commands::addPathToListWithGlob(std::move(inValue), m_macosFrameworkPaths, GlobMatch::Folders);
+	if (!processEachPathList(std::move(m_appleFrameworkPaths), [this](std::string&& inValue) {
+			return Commands::addPathToListWithGlob(std::move(inValue), m_appleFrameworkPaths, GlobMatch::Folders);
 		}))
 	{
 		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target. {}.", this->name(), globMessage);
@@ -398,11 +398,11 @@ std::string SourceTarget::getHash() const
 	auto compileOptions = String::join(m_compileOptions);
 	auto libDirs = String::join(m_libDirs);
 	auto includeDirs = String::join(m_includeDirs);
-	auto macosFrameworkPaths = String::join(m_macosFrameworkPaths);
-	auto macosFrameworks = String::join(m_macosFrameworks);
+	auto appleFrameworkPaths = String::join(m_appleFrameworkPaths);
+	auto appleFrameworks = String::join(m_appleFrameworks);
 	auto configureFiles = String::join(m_configureFiles);
 
-	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, macosFrameworkPaths, macosFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_linkerScript, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
+	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_linkerScript, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
 
 	return Hash::string(hashable);
 }
@@ -644,37 +644,37 @@ void SourceTarget::addLinkerOption(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& SourceTarget::macosFrameworkPaths() const noexcept
+const StringList& SourceTarget::appleFrameworkPaths() const noexcept
 {
-	return m_macosFrameworkPaths;
+	return m_appleFrameworkPaths;
 }
 
-void SourceTarget::addMacosFrameworkPaths(StringList&& inList)
+void SourceTarget::addAppleFrameworkPaths(StringList&& inList)
 {
 	// -F
-	List::forEach(inList, this, &SourceTarget::addMacosFrameworkPath);
+	List::forEach(inList, this, &SourceTarget::addAppleFrameworkPath);
 }
 
-void SourceTarget::addMacosFrameworkPath(std::string&& inValue)
+void SourceTarget::addAppleFrameworkPath(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_macosFrameworkPaths, inValue);
+	List::addIfDoesNotExist(m_appleFrameworkPaths, inValue);
 }
 
 /*****************************************************************************/
-const StringList& SourceTarget::macosFrameworks() const noexcept
+const StringList& SourceTarget::appleFrameworks() const noexcept
 {
-	return m_macosFrameworks;
+	return m_appleFrameworks;
 }
 
-void SourceTarget::addMacosFrameworks(StringList&& inList)
+void SourceTarget::addAppleFrameworks(StringList&& inList)
 {
 	// -framework *.framework
-	List::forEach(inList, this, &SourceTarget::addMacosFramework);
+	List::forEach(inList, this, &SourceTarget::addAppleFramework);
 }
 
-void SourceTarget::addMacosFramework(std::string&& inValue)
+void SourceTarget::addAppleFramework(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_macosFrameworks, std::move(inValue));
+	List::addIfDoesNotExist(m_appleFrameworks, std::move(inValue));
 }
 
 /*****************************************************************************/

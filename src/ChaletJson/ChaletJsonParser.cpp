@@ -910,10 +910,14 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outTarget.addIncludeDir(std::move(val));
 #if defined(CHALET_MACOS)
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+				outTarget.addAppleFrameworkPath(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+				outTarget.addAppleFramework(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
-				outTarget.addMacosFrameworkPath(std::move(val));
+				outTarget.addAppleFrameworkPath(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
-				outTarget.addMacosFramework(std::move(val));
+				outTarget.addAppleFramework(std::move(val));
 #endif
 			else if (isInvalid(status))
 				return false;
@@ -976,14 +980,30 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outTarget.addLinkerOptions(std::move(val));
 #if defined(CHALET_MACOS)
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+				outTarget.addAppleFrameworkPaths(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+				outTarget.addAppleFrameworks(std::move(val));
+
+			// deprecated
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
-				outTarget.addMacosFrameworkPaths(std::move(val));
+				outTarget.addAppleFrameworkPaths(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
-				outTarget.addMacosFrameworks(std::move(val));
+				outTarget.addAppleFrameworks(std::move(val));
 #endif
 			else if (isInvalid(status))
 				return false;
 		}
+	}
+
+	// macosFrameworks
+	if (inNode.contains("macosFrameworkPaths"))
+	{
+		Diagnostic::warn("{}: 'macosFrameworkPaths' has been replaced with 'appleFrameworkPaths'. It will be removed in a future version.", m_chaletJson.filename());
+	}
+	if (inNode.contains("macosFrameworks"))
+	{
+		Diagnostic::warn("{}: 'macosFrameworks' has been replaced with 'appleFrameworks'. It will be removed in a future version.", m_chaletJson.filename());
 	}
 
 	return true;

@@ -406,8 +406,8 @@ bool BuildState::initializeBuild()
 				}
 #endif
 #if defined(CHALET_MACOS)
-				project.addMacosFrameworkPath("/Library/Frameworks");
-				project.addMacosFrameworkPath("/System/Library/Frameworks");
+				project.addAppleFrameworkPath("/Library/Frameworks");
+				project.addAppleFrameworkPath("/System/Library/Frameworks");
 #endif
 			}
 

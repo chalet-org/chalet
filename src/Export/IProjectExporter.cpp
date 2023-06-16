@@ -258,7 +258,7 @@ void IProjectExporter::populatePathVariable()
 				{
 					List::addIfDoesNotExist(paths, p);
 				}
-				for (auto& p : project.macosFrameworkPaths())
+				for (auto& p : project.appleFrameworkPaths())
 				{
 					List::addIfDoesNotExist(paths, p);
 				}

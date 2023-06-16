@@ -1230,6 +1230,12 @@
 			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
 			"additionalProperties": false,
 			"properties": {
+				"appleFrameworkPaths": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+				},
+				"appleFrameworks": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+				},
 				"buildSuffix": {
 					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
@@ -1337,6 +1343,12 @@
 				}
 			},
 			"patternProperties": {
+				"^appleFrameworkPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+				},
+				"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+				},
 				"^compileOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
@@ -1568,7 +1580,7 @@
 			]
 		},
 		"target-source-cxx-macosFrameworkPaths": {
-			"description": "A list of paths to search for MacOS Frameworks",
+			"description": "[deprecated: use appleFrameworkPaths]\n\nA list of paths to search for MacOS Frameworks",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1586,7 +1598,43 @@
 			]
 		},
 		"target-source-cxx-macosFrameworks": {
-			"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+			"description": "[deprecated: use appleFrameworks]\n\nA list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-appleFrameworkPaths": {
+			"description": "A list of paths to search for Apple Frameworks",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-appleFrameworks": {
+			"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 			"oneOf": [
 				{
 					"type": "string",

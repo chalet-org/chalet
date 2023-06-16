@@ -739,13 +739,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxMacOsFrameworkPaths] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of paths to search for MacOS Frameworks",
+		"description": "[deprecated: use appleFrameworkPaths]\n\nA list of paths to search for MacOS Frameworks",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxMacOsFrameworks] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+		"description": "[deprecated: use appleFrameworks]\n\nA list of MacOS Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxAppleFrameworkPaths] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of paths to search for Apple Frameworks",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxAppleFrameworks] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
 		"minLength": 1
 	})json"_ojson);
 
@@ -1612,6 +1624,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
 			"additionalProperties": false
 		})json"_ojson;
+		addPropertyAndPattern(sourceTargetCxx, "appleFrameworkPaths", Defs::TargetSourceCxxAppleFrameworkPaths, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "appleFrameworks", Defs::TargetSourceCxxAppleFrameworks, kPatternConditions);
 		addProperty(sourceTargetCxx, "buildSuffix", Defs::TargetSourceCxxBuildSuffix);
 		addPropertyAndPattern(sourceTargetCxx, "compileOptions", Defs::TargetSourceCxxCompileOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppConcepts", Defs::TargetSourceCxxCppConcepts, kPatternConditions);
@@ -1630,8 +1644,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "linkerScript", Defs::TargetSourceCxxLinkerScript, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "links", Defs::TargetSourceCxxLinks, kPatternConditions);
+
+		// deprecated
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworkPaths", Defs::TargetSourceCxxMacOsFrameworkPaths, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "macosFrameworks", Defs::TargetSourceCxxMacOsFrameworks, kPatternConditions);
+
 		addPropertyAndPattern(sourceTargetCxx, "mingwUnixSharedLibraryNamingConvention", Defs::TargetSourceCxxMinGWUnixSharedLibraryNamingConvention, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "positionIndependentCode", Defs::TargetSourceCxxPositionIndependent, kPatternConditions);
 		addProperty(sourceTargetCxx, "precompiledHeader", Defs::TargetSourceCxxPrecompiledHeader);
@@ -1928,6 +1945,8 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxLinks: return "target-source-cxx-links";
 		case Defs::TargetSourceCxxMacOsFrameworkPaths: return "target-source-cxx-macosFrameworkPaths";
 		case Defs::TargetSourceCxxMacOsFrameworks: return "target-source-cxx-macosFrameworks";
+		case Defs::TargetSourceCxxAppleFrameworkPaths: return "target-source-cxx-appleFrameworkPaths";
+		case Defs::TargetSourceCxxAppleFrameworks: return "target-source-cxx-appleFrameworks";
 		case Defs::TargetSourceCxxPrecompiledHeader: return "target-source-cxx-precompiledHeader";
 		case Defs::TargetSourceCxxInputCharSet: return "target-source-cxx-inputCharset";
 		case Defs::TargetSourceCxxExecutionCharSet: return "target-source-cxx-executionCharset";
