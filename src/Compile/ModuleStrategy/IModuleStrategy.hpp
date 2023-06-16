@@ -46,6 +46,7 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
+	virtual bool isSystemHeader(const std::string& inHeader) const = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
 
 protected:

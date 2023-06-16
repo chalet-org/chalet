@@ -131,9 +131,22 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				std::string file;
 
 				auto group = std::make_unique<SourceFileGroup>();
-				if (auto f = String::toLowerCase(header); String::startsWith(cwd, f))
+				if (isSystemHeader(header))
 				{
-					file = header.substr(cwd.size());
+					file = String::getPathFilename(header);
+					file = fmt::format("{}_{}", file, moduleId);
+
+					group->sourceFile = header;
+					group->dataType = SourceDataType::SystemHeaderUnit;
+				}
+				else
+				{
+					auto lowerHeader = String::toLowerCase(header);
+					if (String::startsWith(cwd, lowerHeader))
+						file = header.substr(cwd.size());
+					else
+						file = header;
+
 					auto p = String::getPathFolder(file);
 					auto dir = fmt::format("{}/{}", objDir, p);
 					if (!Commands::pathExists(dir))
@@ -143,14 +156,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 					group->sourceFile = file;
 					group->dataType = SourceDataType::UserHeaderUnit;
-				}
-				else
-				{
-					file = String::getPathFilename(header);
-					file = fmt::format("{}_{}", file, moduleId);
-
-					group->sourceFile = header;
-					group->dataType = SourceDataType::SystemHeaderUnit;
 				}
 
 				{
@@ -456,6 +461,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			auto& sourceCache = m_state.cache.file().sources();
 			for (auto& failure : commandPool.failures())
 			{
+				auto objectFile = m_state.environment->getObjectFile(failure);
+
+				if (Commands::pathExists(objectFile))
+					Commands::remove(objectFile);
+
 				sourceCache.markForLater(failure);
 			}
 			return onFailure();

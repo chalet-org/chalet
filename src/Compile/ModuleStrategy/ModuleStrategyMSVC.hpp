@@ -17,11 +17,13 @@ struct ModuleStrategyMSVC final : public IModuleStrategy
 	virtual bool initialize() final;
 
 protected:
+	virtual bool isSystemHeader(const std::string& inHeader) const final;
 	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) final;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
 
 private:
 	std::string m_msvcToolsDirectory;
+	std::string m_msvcToolsDirectoryLower;
 };
 }
 

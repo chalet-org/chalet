@@ -30,9 +30,18 @@ bool ModuleStrategyMSVC::initialize()
 	{
 		m_msvcToolsDirectory = Environment::getAsString("VCToolsInstallDir");
 		Path::sanitize(m_msvcToolsDirectory);
+
+		m_msvcToolsDirectoryLower = String::toLowerCase(m_msvcToolsDirectory);
+		Path::sanitizeForWindows(m_msvcToolsDirectoryLower);
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool ModuleStrategyMSVC::isSystemHeader(const std::string& inHeader) const
+{
+	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inHeader);
 }
 
 /*****************************************************************************/

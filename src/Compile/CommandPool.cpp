@@ -405,7 +405,8 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 				{
 					signalHandler(SIGTERM);
 					if (String::equals("build error", err.what()))
-					{}
+					{
+					}
 					else
 					{
 						m_exceptionThrown = std::string(err.what());
