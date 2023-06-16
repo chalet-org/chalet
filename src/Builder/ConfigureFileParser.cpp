@@ -44,12 +44,13 @@ bool ConfigureFileParser::run()
 	};
 
 	auto& sources = m_state.cache.file().sources();
+	const auto& configureFiles = m_project.configureFiles();
 
 	bool metadataChanged = m_state.cache.file().metadataChanged();
 
 	std::string suffix(".in");
-	auto outFolder = m_state.paths.intermediateDir(m_project);
-	for (const auto& configureFile : m_project.configureFiles())
+	auto& outFolder = m_state.paths.objDir();
+	for (const auto& configureFile : configureFiles)
 	{
 		if (!Commands::pathExists(configureFile))
 		{
@@ -166,5 +167,4 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 
 	return std::string();
 }
-
 }

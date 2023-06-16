@@ -75,13 +75,13 @@ struct SourceTarget final : public IBuildTarget
 	void addLinkerOptions(StringList&& inList);
 	void addLinkerOption(std::string&& inValue);
 
-	const StringList& macosFrameworkPaths() const noexcept;
-	void addMacosFrameworkPaths(StringList&& inList);
-	void addMacosFrameworkPath(std::string&& inValue);
+	const StringList& appleFrameworkPaths() const noexcept;
+	void addAppleFrameworkPaths(StringList&& inList);
+	void addAppleFrameworkPath(std::string&& inValue);
 
-	const StringList& macosFrameworks() const noexcept;
-	void addMacosFrameworks(StringList&& inList);
-	void addMacosFramework(std::string&& inValue);
+	const StringList& appleFrameworks() const noexcept;
+	void addAppleFrameworks(StringList&& inList);
+	void addAppleFramework(std::string&& inValue);
 
 	const StringList& copyFilesOnRun() const noexcept;
 	void addCopyFilesOnRun(StringList&& inList);
@@ -225,8 +225,8 @@ private:
 	StringList m_warnings;
 	StringList m_compileOptions;
 	StringList m_linkerOptions;
-	StringList m_macosFrameworkPaths;
-	StringList m_macosFrameworks;
+	StringList m_appleFrameworkPaths;
+	StringList m_appleFrameworks;
 	StringList m_copyFilesOnRun;
 	StringList m_files;
 	StringList m_headers;

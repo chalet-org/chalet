@@ -377,9 +377,13 @@ bool BuildState::initializeBuild()
 		if (target->isSources())
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
+			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
 
-			std::string intermediateDir = paths.intermediateDir(project);
+			auto objDir = paths.objDir();
+			project.addIncludeDir(std::move(objDir));
+
+			auto intermediateDir = paths.intermediateDir(project);
 			project.addIncludeDir(std::move(intermediateDir));
 
 			if (!inputs.route().isExport())
@@ -388,10 +392,10 @@ bool BuildState::initializeBuild()
 				if (!isMsvc)
 				{
 					auto& compilerInfo = toolchain.compilerCxx(project.language());
-					std::string libDir = compilerInfo.libDir;
+					auto libDir = compilerInfo.libDir;
 					project.addLibDir(std::move(libDir));
 
-					std::string includeDir = compilerInfo.includeDir;
+					auto includeDir = compilerInfo.includeDir;
 					project.addIncludeDir(std::move(includeDir));
 				}
 
@@ -409,8 +413,8 @@ bool BuildState::initializeBuild()
 				}
 #endif
 #if defined(CHALET_MACOS)
-				project.addMacosFrameworkPath("/Library/Frameworks");
-				project.addMacosFrameworkPath("/System/Library/Frameworks");
+				project.addAppleFrameworkPath("/Library/Frameworks");
+				project.addAppleFrameworkPath("/System/Library/Frameworks");
 #endif
 			}
 
@@ -1005,7 +1009,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -1064,6 +1068,27 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return Environment::getAsString(match.c_str());
 				}
 
+				if (String::startsWith("defined:", match))
+				{
+					required = false;
+					match = match.substr(8);
+					auto result = Environment::get(match.c_str());
+					if (result == nullptr)
+					{
+						if (inTarget->isSources())
+						{
+							auto& project = static_cast<const SourceTarget&>(*inTarget);
+							const auto& defines = project.defines();
+							for (auto& define : defines)
+							{
+								if (String::equals(match, define))
+									result = "1";
+							}
+						}
+					}
+					return std::string(result != nullptr ? "true" : "false");
+				}
+
 				if (String::startsWith("var:", match))
 				{
 					required = false;
@@ -1091,22 +1116,6 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 					}
 					return val;
-				}
-
-				if (String::equals("externalDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return inputs.externalDirectory();
-				}
-
-				if (String::equals("externalBuildDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return paths.externalBuildDir();
 				}
 
 				if (onFail != nullptr)
@@ -1138,7 +1147,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [&](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
 				if (String::equals("cwd", match))
 					return inputs.workingDirectory();
 
@@ -1191,6 +1200,14 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return Environment::getAsString(match.c_str());
 				}
 
+				if (String::startsWith("defined:", match))
+				{
+					required = false;
+					match = match.substr(8);
+					auto result = Environment::get(match.c_str());
+					return std::string(result != nullptr ? "true" : "false");
+				}
+
 				if (String::startsWith("var:", match))
 				{
 					required = false;
@@ -1218,22 +1235,6 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 					}
 					return val;
-				}
-
-				if (String::equals("externalDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalDir' has been deprecated - use 'external:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return inputs.externalDirectory();
-				}
-
-				if (String::equals("externalBuildDir", match))
-				{
-					const auto& name = inTarget != nullptr ? inTarget->name() : std::string();
-					Diagnostic::warn("{}: The variable 'externalBuildDir' has been deprecated -  use 'externalBuild:name' instead", inputs.inputFile());
-					Diagnostic::warn("{}: Target '{}' has a deprecated variable in the value: {}", inputs.inputFile(), name, outString);
-					return paths.externalBuildDir();
 				}
 
 				if (onFail != nullptr)

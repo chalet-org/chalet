@@ -55,7 +55,7 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
-	addMacosFrameworkOptions(ret);
+	addAppleFrameworkOptions(ret);
 	addRunPath(ret);
 
 	addLibDirs(ret);

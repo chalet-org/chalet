@@ -73,8 +73,8 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 
 	if (objectiveCxx)
 	{
-		ret[Keys::Targets][project][Keys::SettingsCxx]["macosFrameworks"] = Json::array();
-		ret[Keys::Targets][project][Keys::SettingsCxx]["macosFrameworks"][0] = "Foundation";
+		ret[Keys::Targets][project][Keys::SettingsCxx]["appleFrameworks"] = Json::array();
+		ret[Keys::Targets][project][Keys::SettingsCxx]["appleFrameworks"][0] = "Foundation";
 	}
 	if (inProps.useLocation)
 	{

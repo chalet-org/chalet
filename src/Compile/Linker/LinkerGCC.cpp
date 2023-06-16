@@ -51,7 +51,7 @@ void LinkerGCC::getCommandOptions(StringList& outArgList)
 	addStaticCompilerLibraries(outArgList);
 	addSubSystem(outArgList);
 	addEntryPoint(outArgList);
-	addMacosFrameworkOptions(outArgList);
+	addAppleFrameworkOptions(outArgList);
 }
 
 /*****************************************************************************/
@@ -107,7 +107,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
-	addMacosFrameworkOptions(ret);
+	addAppleFrameworkOptions(ret);
 	addRunPath(ret);
 
 	addLibDirs(ret);
@@ -152,7 +152,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addStaticCompilerLibraries(ret);
 	addSubSystem(ret);
 	addEntryPoint(ret);
-	addMacosFrameworkOptions(ret);
+	addAppleFrameworkOptions(ret);
 	addRunPath(ret);
 
 	addLibDirs(ret);
@@ -285,7 +285,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 	{
 #if defined(CHALET_LINUX)
 		if (m_state.toolchain.strategy() == StrategyType::Native)
-			outArgList.emplace_back("-Wl,-rpath=$ORIGIN"); // Note: Single quotes are required!
+			outArgList.emplace_back("-Wl,-rpath=$ORIGIN");	  // Note: Single quotes are required!
 		else
 			outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #elif defined(CHALET_MACOS)
@@ -557,7 +557,7 @@ void LinkerGCC::addObjectiveCxxLink(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
+void LinkerGCC::addAppleFrameworkOptions(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
 	{
@@ -566,7 +566,7 @@ void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
 		{
 			outArgList.emplace_back(getPathCommand(prefix, path));
 		}
-		for (auto& path : m_project.macosFrameworkPaths())
+		for (auto& path : m_project.appleFrameworkPaths())
 		{
 			outArgList.emplace_back(getPathCommand(prefix, path));
 		}
@@ -574,7 +574,7 @@ void LinkerGCC::addMacosFrameworkOptions(StringList& outArgList) const
 	}
 	{
 		// const std::string suffix = ".framework";
-		for (auto& framework : m_project.macosFrameworks())
+		for (auto& framework : m_project.appleFrameworks())
 		{
 			outArgList.emplace_back("-framework");
 			outArgList.push_back(framework);

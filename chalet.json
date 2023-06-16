@@ -78,7 +78,7 @@
 				"links[:linux]": [
 					"uuid"
 				],
-				"macosFrameworks": [
+				"appleFrameworks": [
 					"CoreFoundation"
 				]
 			},
@@ -103,7 +103,7 @@
 				"links[:linux]": [
 					"uuid"
 				],
-				"macosFrameworks": [
+				"appleFrameworks": [
 					"CoreFoundation"
 				]
 			},

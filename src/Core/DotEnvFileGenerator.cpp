@@ -43,7 +43,7 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 			{
 				List::addIfDoesNotExist(libDirs, p);
 			}
-			for (auto& p : project.macosFrameworkPaths())
+			for (auto& p : project.appleFrameworkPaths())
 			{
 				List::addIfDoesNotExist(frameworks, p);
 			}

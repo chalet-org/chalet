@@ -100,7 +100,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			}
 
 #if defined(CHALET_MACOS)
-			for (auto path : project.macosFrameworkPaths())
+			for (auto path : project.appleFrameworkPaths())
 			{
 				if (path.back() == '/')
 					path.pop_back();

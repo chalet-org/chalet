@@ -400,9 +400,9 @@ bool AppBundlerMacOS::setExecutablePaths() const
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 
-			for (auto& framework : project.macosFrameworks())
+			for (auto& framework : project.appleFrameworks())
 			{
-				for (auto& path : project.macosFrameworkPaths())
+				for (auto& path : project.appleFrameworkPaths())
 				{
 					// Don't include System frameworks
 					// TODO: maybe make an option for this? Not sure what scenarios this is needed
