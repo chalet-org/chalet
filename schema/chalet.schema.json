@@ -2230,7 +2230,7 @@
 			"minLength": 1
 		},
 		"target-cmake-targets": {
-			"description": "A specific CMake target, or targets to build instead of the default.",
+			"description": "A specific CMake target, or targets to build instead of the default (all).",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2325,11 +2325,17 @@
 				},
 				"clean": {
 					"$ref": "#/definitions/target-chalet-clean"
+				},
+				"targets": {
+					"$ref": "#/definitions/target-chalet-targets"
 				}
 			},
 			"patternProperties": {
 				"^buildFile\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-chalet-buildFile"
+				},
+				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-chalet-targets"
 				}
 			}
 		},
@@ -2342,6 +2348,24 @@
 			"type": "string",
 			"description": "The build file to use, if not chalet.json, relative to the location.",
 			"minLength": 1
+		},
+		"target-chalet-targets": {
+			"description": "A specific Chalet target, or targets to build instead of the default (all).",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-chalet-recheck": {
 			"type": "boolean",

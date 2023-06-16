@@ -54,6 +54,16 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 
 	Json& buildOptions = m_jsonFile.json.at(Keys::Options);
 
+	{
+		// pre 6.0.0
+		const std::string kRunTarget{ "runTarget" };
+		if (buildOptions.contains(kRunTarget))
+		{
+			buildOptions.erase(kRunTarget);
+			m_jsonFile.setDirty(true);
+		}
+	}
+
 	auto assignSettingBool = [this, &buildOptions](const char* inKey, const bool inDefault) {
 		return m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, inDefault);
 	};
@@ -72,6 +82,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 	assignSettingBool(Keys::OptionsLaunchProfiler, inState.launchProfiler);
 	assignSettingBool(Keys::OptionsKeepGoing, inState.keepGoing);
 	assignSettingBool(Keys::OptionsGenerateCompileCommands, inState.generateCompileCommands);
+	assignSettingBool(Keys::OptionsOnlyRequired, inState.onlyRequired);
 	assignSettingUint(Keys::OptionsMaxJobs, inState.maxJobs);
 	assignSettingString(Keys::OptionsBuildConfiguration, inState.buildConfiguration);
 	assignSettingString(Keys::OptionsToolchain, inState.toolchainPreference);
@@ -84,7 +95,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 	assignSettingString(Keys::OptionsOsTargetName, inState.osTargetName);
 	assignSettingString(Keys::OptionsOsTargetVersion, inState.osTargetVersion);
 	assignSettingString(Keys::OptionsSigningIdentity, inState.signingIdentity);
-	assignSettingString(Keys::OptionsRunTarget, inState.runTarget);
+	assignSettingString(Keys::OptionsLastTarget, inState.lastTarget);
 
 	chalet_assert(inState.rootDirectory.empty(), "Root directory should never be set globally");
 	buildOptions[Keys::OptionsRootDirectory] = inState.rootDirectory;
@@ -190,8 +201,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.osTargetName = value.get<std::string>();
 			else if (String::equals(Keys::OptionsOsTargetVersion, key))
 				outState.osTargetVersion = value.get<std::string>();
-			else if (String::equals(Keys::OptionsRunTarget, key))
-				outState.runTarget = value.get<std::string>();
+			else if (String::equals(Keys::OptionsLastTarget, key))
+				outState.lastTarget = value.get<std::string>();
 			else if (String::equals(Keys::OptionsInputFile, key))
 				outState.inputFile = value.get<std::string>();
 			else if (String::equals(Keys::OptionsEnvFile, key))
@@ -219,6 +230,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.keepGoing = value.get<bool>();
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 				outState.generateCompileCommands = value.get<bool>();
+			else if (String::equals(Keys::OptionsOnlyRequired, key))
+				outState.onlyRequired = value.get<bool>();
 		}
 		else if (value.is_number())
 		{

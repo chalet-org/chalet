@@ -29,7 +29,7 @@ struct IntermediateSettingsState
 	std::string signingIdentity;
 	std::string osTargetName;
 	std::string osTargetVersion;
-	std::string runTarget;
+	std::string lastTarget;
 
 	uint maxJobs = 0;
 	bool benchmark = false;
@@ -38,6 +38,7 @@ struct IntermediateSettingsState
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;
+	bool onlyRequired = false;
 };
 }
 

@@ -178,12 +178,23 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 	Json& buildOptions = m_jsonFile.json[Keys::Options];
 
+	{
+		// pre 6.0.0
+		const std::string kRunTarget{ "runTarget" };
+		if (buildOptions.contains(kRunTarget))
+		{
+			buildOptions.erase(kRunTarget);
+			m_jsonFile.setDirty(true);
+		}
+	}
+
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOnlyRequired, m_inputs.onlyRequired(), inState.onlyRequired);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
@@ -218,7 +229,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	// 	m_jsonFile.setDirty(true);
 	// }
 
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRunTarget, m_inputs.runTarget(), inState.runTarget);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLastTarget, m_inputs.lastTarget(), inState.lastTarget);
 
 	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
 	{
@@ -452,10 +463,10 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 				if (m_inputs.architectureRaw().empty())
 					m_inputs.setArchitectureRaw(value.get<std::string>());
 			}
-			else if (String::equals(Keys::OptionsRunTarget, key))
+			else if (String::equals(Keys::OptionsLastTarget, key))
 			{
-				if (m_inputs.runTarget().empty())
-					m_inputs.setRunTarget(value.get<std::string>());
+				if (m_inputs.lastTarget().empty())
+					m_inputs.setLastTarget(value.get<std::string>());
 			}
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 			{
@@ -550,6 +561,11 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			{
 				if (!m_inputs.generateCompileCommands().has_value())
 					m_inputs.setGenerateCompileCommands(value.get<bool>());
+			}
+			else if (String::equals(Keys::OptionsOnlyRequired, key))
+			{
+				if (!m_inputs.onlyRequired().has_value())
+					m_inputs.setOnlyRequired(value.get<bool>());
 			}
 			else
 				removeKeys.push_back(key);

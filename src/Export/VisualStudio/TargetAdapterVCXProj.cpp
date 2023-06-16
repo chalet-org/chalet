@@ -123,9 +123,12 @@ std::string TargetAdapterVCXProj::getCommand() const
 		constexpr bool quotedPaths = true;
 		constexpr bool hasSettings = false;
 		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
-		auto buildCmd = builder.getBuildCommand(hasSettings);
-
-		ret = String::join(buildCmd);
+		const auto& targetNames = subChaletTarget.targets();
+		for (auto& targetName : targetNames)
+		{
+			auto buildCmd = builder.getBuildCommand(targetName, hasSettings);
+			ret += fmt::format("{}\r\n", String::join(buildCmd));
+		}
 	}
 
 	if (!ret.empty())

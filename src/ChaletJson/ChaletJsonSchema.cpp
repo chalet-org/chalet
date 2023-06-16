@@ -1288,7 +1288,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeTargetNames] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A specific CMake target, or targets to build instead of the default.",
+		"description": "A specific CMake target, or targets to build instead of the default (all).",
 		"minLength": 1
 	})json"_ojson);
 
@@ -1335,6 +1335,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "The build file to use, if not chalet.json, relative to the location.",
 		"minLength": 1
 	})json"_ojson;
+
+	defs[Defs::TargetChaletTargetNames] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A specific Chalet target, or targets to build instead of the default (all).",
+		"minLength": 1
+	})json"_ojson);
 
 	defs[Defs::TargetChaletRecheck] = R"json({
 		"type": "boolean",
@@ -1791,6 +1797,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetChalet, "recheck", Defs::TargetChaletRecheck);
 		addProperty(targetChalet, "rebuild", Defs::TargetChaletRebuild);
 		addProperty(targetChalet, "clean", Defs::TargetChaletClean);
+		addPropertyAndPattern(targetChalet, "targets", Defs::TargetChaletTargetNames, kPatternConditions);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
 
@@ -1965,6 +1972,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChalet: return "target-chalet";
 		case Defs::TargetChaletLocation: return "target-chalet-location";
 		case Defs::TargetChaletBuildFile: return "target-chalet-buildFile";
+		case Defs::TargetChaletTargetNames: return "target-chalet-targets";
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
 		case Defs::TargetChaletClean: return "target-chalet-clean";

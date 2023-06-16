@@ -83,7 +83,7 @@ bool CentralState::initialize()
 		// state.signingIdentity = std::string();
 		state.osTargetName = m_inputs.getDefaultOsTargetName();
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
-		// state.runTarget = std::string();
+		state.lastTarget = "all";
 
 		if (!parseGlobalSettingsJson(state))
 			return false;
@@ -114,7 +114,21 @@ bool CentralState::initialize()
 
 	Output::setShowCommandOverride(false);
 
-	if (!route.isConfigure())
+	if (route.isConfigure())
+	{
+		if (!parseChaletJson())
+			return false;
+
+		// if (!externalDependencies.empty())
+		{
+			if (!createCache())
+				return false;
+
+			if (!validate())
+				return false;
+		}
+	}
+	else
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
@@ -132,20 +146,6 @@ bool CentralState::initialize()
 			return false;
 
 		Diagnostic::printDone(timer.asString());
-	}
-	else
-	{
-		if (!parseChaletJson())
-			return false;
-
-		// if (!externalDependencies.empty())
-		{
-			if (!createCache())
-				return false;
-
-			if (!validate())
-				return false;
-		}
 	}
 
 	Output::setShowCommandOverride(true);
@@ -250,12 +250,12 @@ void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
 /*****************************************************************************/
 const std::optional<StringList>& CentralState::getRunTargetArguments()
 {
-	const auto& runTarget = m_inputs.runTarget();
-	if (!runTarget.empty())
+	const auto& lastTarget = m_inputs.lastTarget();
+	if (!lastTarget.empty())
 	{
-		if (m_runArgumentMap.find(runTarget) != m_runArgumentMap.end())
+		if (m_runArgumentMap.find(lastTarget) != m_runArgumentMap.end())
 		{
-			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(runTarget)));
+			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(lastTarget)));
 		}
 	}
 	m_runArgumentMap.clear();

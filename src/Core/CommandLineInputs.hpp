@@ -64,8 +64,8 @@ struct CommandLineInputs
 	const std::string& buildConfiguration() const noexcept;
 	void setBuildConfiguration(std::string&& inValue) noexcept;
 
-	const std::string& runTarget() const noexcept;
-	void setRunTarget(std::string&& inValue) const noexcept;
+	const std::string& lastTarget() const noexcept;
+	void setLastTarget(std::string&& inValue) const noexcept;
 
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;
@@ -175,6 +175,9 @@ struct CommandLineInputs
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
+	const std::optional<bool>& onlyRequired() const noexcept;
+	void setOnlyRequired(const bool inValue) noexcept;
+
 	bool saveUserToolchainGlobally() const noexcept;
 	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
 
@@ -237,7 +240,7 @@ private:
 	std::string m_distributionDirectory;
 	std::string m_buildConfiguration;
 	std::string m_buildFromCommandLine;
-	mutable std::string m_runTarget;
+	mutable std::string m_lastTarget;
 	std::string m_appPath;
 	std::string m_exportKindRaw;
 	std::string m_settingsKey;
@@ -265,6 +268,7 @@ private:
 	std::optional<bool> m_launchProfiler;
 	std::optional<bool> m_keepGoing;
 	std::optional<bool> m_generateCompileCommands;
+	std::optional<bool> m_onlyRequired;
 
 	CommandRoute m_route;
 

@@ -115,6 +115,10 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			ret = getAllRunTargets();
 			break;
 
+		case QueryOption::AllBuildTargets:
+			ret = getAllBuildTargets();
+			break;
+
 		case QueryOption::AllToolchains: {
 			StringList presets = m_centralState.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
@@ -605,7 +609,7 @@ StringList QueryController::getCurrentToolchain() const
 /*****************************************************************************/
 StringList QueryController::getAllBuildTargets() const
 {
-	StringList ret;
+	StringList ret{ "all" };
 
 	const auto& chaletJson = m_centralState.chaletJson().json;
 
@@ -683,12 +687,12 @@ StringList QueryController::getCurrentRunTarget() const
 		if (settingsFile.contains(Keys::Options))
 		{
 			const auto& options = settingsFile.at(Keys::Options);
-			if (options.is_object() && options.contains(Keys::OptionsRunTarget))
+			if (options.is_object() && options.contains(Keys::OptionsLastTarget))
 			{
-				const auto& runTarget = options.at(Keys::OptionsRunTarget);
-				if (runTarget.is_string())
+				const auto& lastTarget = options.at(Keys::OptionsLastTarget);
+				if (lastTarget.is_string())
 				{
-					auto value = runTarget.get<std::string>();
+					auto value = lastTarget.get<std::string>();
 					if (!value.empty())
 					{
 						ret.emplace_back(std::move(value));
