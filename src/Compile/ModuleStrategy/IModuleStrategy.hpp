@@ -27,6 +27,7 @@ protected:
 		std::string source;
 		StringList importedModules;
 		StringList importedHeaderUnits;
+		bool systemModule = false;
 	};
 
 	struct ModulePayload
@@ -46,7 +47,7 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
-	virtual bool isSystemHeader(const std::string& inHeader) const = 0;
+	virtual bool isSystemModuleFile(const std::string& inFile) const = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
 
 protected:
@@ -56,7 +57,7 @@ protected:
 	void addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	CommandPool::CmdList getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks);
 
-	bool addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
+	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
 
 	BuildState& m_state;
 
@@ -73,6 +74,10 @@ protected:
 private:
 	std::string getModuleId() const;
 	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
+
+	std::string m_moduleId;
+
+	Dictionary<std::string> m_systemModules;
 };
 }
 

@@ -97,14 +97,32 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const bool inModules)
+std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const std::string& inStandard, const bool inModules)
 {
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
-		if (inModules)
+		if (inModules && String::equals("20", inStandard))
 		{
 			ret = R"cpp(import <iostream>;
+
+int main(const int argc, const char* argv[])
+{
+	std::cout << "Hello world!\n\n";
+	std::cout << "Args:\n";
+
+	for (int i = 0; i < argc; ++i)
+	{
+		std::cout << "  " << argv[i] << '\n';
+	}
+
+	return 0;
+})cpp";
+		}
+		else if (inModules)
+		{
+			// c++ 23 and up
+			ret = R"cpp(import std;
 
 int main(const int argc, const char* argv[])
 {

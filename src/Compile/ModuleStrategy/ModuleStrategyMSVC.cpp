@@ -30,24 +30,29 @@ bool ModuleStrategyMSVC::initialize()
 	{
 		m_msvcToolsDirectory = Environment::getAsString("VCToolsInstallDir");
 		Path::sanitize(m_msvcToolsDirectory);
-
-		m_msvcToolsDirectoryLower = String::toLowerCase(m_msvcToolsDirectory);
-		Path::sanitizeForWindows(m_msvcToolsDirectoryLower);
 	}
 
 	return true;
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::isSystemHeader(const std::string& inHeader) const
+bool ModuleStrategyMSVC::isSystemModuleFile(const std::string& inFile) const
 {
-	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inHeader);
+	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inFile);
 }
 
 /*****************************************************************************/
 bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
 {
 	// Version 1.1
+
+	auto kSystemModules = getSystemModules();
+	// for (auto& [name, file] : kSystemModules)
+	// {
+	// 	LOG(name, file);
+	// }
+
+	StringList foundSystemModules;
 
 	for (auto& group : inOutputs.groups)
 	{
@@ -117,7 +122,12 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 				return false;
 			}
 
-			List::addIfDoesNotExist(outModules[name].importedModules, mod.get<std::string>());
+			auto moduleName = mod.get<std::string>();
+			if (kSystemModules.find(moduleName) != kSystemModules.end())
+			{
+				foundSystemModules.emplace_back(moduleName);
+			}
+			List::addIfDoesNotExist(outModules[name].importedModules, std::move(moduleName));
 		}
 
 		for (auto& fileItr : data.at(MSVCKeys::ImportedHeaderUnits).items())
@@ -136,6 +146,23 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 		}
 	}
 
+	if (!kSystemModules.empty())
+	{
+		for (auto& systemModule : foundSystemModules)
+		{
+			if (kSystemModules.find(systemModule) != kSystemModules.end())
+			{
+				auto& filename = kSystemModules.at(systemModule);
+				auto resolvedPath = fmt::format("{}/modules/{}", m_msvcToolsDirectory, filename);
+				if (Commands::pathExists(resolvedPath))
+				{
+					outModules[systemModule].source = std::move(resolvedPath);
+					outModules[systemModule].systemModule = true;
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -146,6 +173,42 @@ std::string ModuleStrategyMSVC::getBuildOutputForFile(const SourceFileGroup& inF
 	if (String::startsWith(m_msvcToolsDirectory, ret))
 	{
 		ret = String::getPathFilename(ret);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
+{
+	Dictionary<std::string> ret;
+
+	if (!m_msvcToolsDirectory.empty())
+	{
+		auto modulesJsonPath = fmt::format("{}/modules/modules.json", m_msvcToolsDirectory);
+		if (!Commands::pathExists(modulesJsonPath))
+			return ret;
+
+		Json json;
+		if (!JsonComments::parse(json, modulesJsonPath))
+			return ret;
+
+		if (json.contains("module-sources"))
+		{
+			const auto& sources = json.at("module-sources");
+			if (sources.is_array())
+			{
+				for (auto& value : sources)
+				{
+					if (value.is_string())
+					{
+						auto filename = value.get<std::string>();
+						auto moduleName = String::getPathFolderBaseName(filename);
+						ret.emplace(moduleName, std::move(filename));
+					}
+				}
+			}
+		}
 	}
 
 	return ret;

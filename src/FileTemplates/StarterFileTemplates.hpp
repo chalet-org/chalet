@@ -14,7 +14,7 @@ namespace chalet
 namespace StarterFileTemplates
 {
 Json getStandardChaletJson(const ChaletJsonProps& inProps);
-std::string getMainCxx(const CodeLanguage inLanguage, const bool inModules);
+std::string getMainCxx(const CodeLanguage inLanguage, const std::string& inStandard, const bool inModules);
 std::string getPch(const std::string& inFile, const CodeLanguage inLanguage);
 std::string getGitIgnore(const std::string& inBuildFolder, const std::string& inSettingsFile);
 std::string getDotEnv();

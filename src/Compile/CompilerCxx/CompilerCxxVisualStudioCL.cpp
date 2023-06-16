@@ -45,7 +45,17 @@ bool CompilerCxxVisualStudioCL::initialize()
 		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)
 			arch = "arm64";
 
-		m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
+		std::string configuration;
+		if (m_state.configuration.debugSymbols())
+			configuration = "Debug";
+		else
+			configuration = "Release";
+
+		m_ifcDirectory = fmt::format("{}/ifc/{}/{}", toolsDir, arch, configuration);
+		if (!Commands::pathExists(m_ifcDirectory))
+		{
+			m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
+		}
 	}
 
 	return true;

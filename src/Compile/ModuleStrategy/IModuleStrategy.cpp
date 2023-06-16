@@ -62,7 +62,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	Dictionary<ModuleLookup> modules;
 
-	auto moduleId = getModuleId();
+	m_moduleId = getModuleId();
 
 	auto onFailure = [this]() -> bool {
 		Output::lineBreak();
@@ -94,8 +94,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.run(target, settings))
 			return onFailure();
-
-		Output::lineBreak();
 	}
 
 	// Read dependency files for header units and determine build order
@@ -111,6 +109,58 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	SourceFileGroupList headerUnitList;
 
 	{
+		std::vector<ModuleLookup*> systemModules;
+		for (auto& [name, module] : modules)
+		{
+			if (module.systemModule)
+				systemModules.emplace_back(&module);
+		}
+
+		if (!systemModules.empty())
+		{
+			auto& cppStandard = inProject.cppStandard();
+			if (String::equals("c++20", cppStandard))
+			{
+				StringList sysModList;
+				for (auto& module : systemModules)
+				{
+
+					sysModList.emplace_back(String::getPathBaseName(module->source));
+				}
+
+				Diagnostic::error("This project requires cppStandard=c++23 at a minimum because it imports the standard library module(s): {}", String::join(sysModList, ','));
+				Diagnostic::printErrors();
+
+				m_state.toolchain.setStrategy(m_oldStrategy);
+				return false;
+			}
+			// Requires C++23
+
+			for (auto& module : systemModules)
+			{
+				modulePayload[module->source] = ModulePayload();
+
+				auto baseName = String::getPathBaseName(module->source);
+				baseName = fmt::format("{}_{}", baseName, m_moduleId);
+				m_systemModules[module->source] = baseName;
+
+				auto group = std::make_unique<SourceFileGroup>();
+				group->type = SourceType::CPlusPlus;
+				group->sourceFile = module->source;
+				group->objectFile = m_state.environment->getObjectFile(baseName);
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(baseName);
+				group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(baseName);
+
+				inOutputs->groups.emplace_back(std::move(group));
+			}
+		}
+	}
+
+	// Do this line break after the std module check
+	if (!target.list.empty())
+		Output::lineBreak();
+
+	{
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
 
@@ -122,7 +172,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 			modulePayload[module.source] = ModulePayload();
 
-			if (!addHeaderUnitsRecursively(module, module, modules, modulePayload))
+			if (module.systemModule)
+				continue;
+
+			if (!addModuleRecursively(module, module, modules, modulePayload))
 				return onFailure();
 
 			bool rebuildFromHeader = false;
@@ -131,10 +184,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				std::string file;
 
 				auto group = std::make_unique<SourceFileGroup>();
-				if (isSystemHeader(header))
+				if (isSystemModuleFile(header))
 				{
 					file = String::getPathFilename(header);
-					file = fmt::format("{}_{}", file, moduleId);
+					file = fmt::format("{}_{}", file, m_moduleId);
 
 					group->sourceFile = header;
 					group->dataType = SourceDataType::SystemHeaderUnit;
@@ -230,7 +283,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			else
 			{
 				auto file = String::getPathFilename(group->sourceFile);
-				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, moduleId));
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, m_moduleId));
 			}
 		}
 
@@ -244,16 +297,26 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	headerUnitList.clear(); // No longer needed
 
 	{
-		auto addSourceGroup = [&](SourceFileGroup* inGroup, SourceFileGroupList& outList) {
+		auto addSourceGroup = [this](SourceFileGroup* inGroup, SourceFileGroupList& outList) {
 			if (inGroup->type != SourceType::CPlusPlus)
 				return;
 
 			auto group = std::make_unique<SourceFileGroup>();
 			group->type = SourceType::CPlusPlus;
 			group->sourceFile = inGroup->sourceFile;
-			group->objectFile = inGroup->objectFile;
-			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(inGroup->sourceFile);
-			group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(inGroup->sourceFile);
+			if (isSystemModuleFile(group->sourceFile))
+			{
+				auto& file = m_systemModules.at(inGroup->sourceFile);
+				group->objectFile = m_state.environment->getObjectFile(file);
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(file);
+				group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(file);
+			}
+			else
+			{
+				group->objectFile = inGroup->objectFile;
+				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile);
+				group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile);
+			}
 
 			outList.emplace_back(std::move(group));
 		};
@@ -295,6 +358,9 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 						continue;
 
 					const auto& otherModule = modules.at(m);
+					if (outGroups.find(otherModule.source) == outGroups.end())
+						continue;
+
 					dependencyGraph[outGroups.at(module.source)].push_back(outGroups.at(otherModule.source));
 				}
 			}
@@ -412,7 +478,9 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		}
 	}
 
-	modules.clear(); // No longer needed
+	// No longer needed
+	modules.clear();
+	m_systemModules.clear();
 
 	//
 
@@ -610,7 +678,7 @@ CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController&
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
 {
 	for (const auto& imported : inModule.importedModules)
 	{
@@ -619,7 +687,15 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 
 		const auto& otherModule = inModules.at(imported);
 
-		auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(otherModule.source);
+		std::string ifcFile;
+		if (m_systemModules.find(otherModule.source) != m_systemModules.end())
+		{
+			ifcFile = m_state.environment->getModuleBinaryInterfaceFile(m_systemModules.at(otherModule.source));
+		}
+		else
+		{
+			ifcFile = m_state.environment->getModuleBinaryInterfaceFile(otherModule.source);
+		}
 
 		List::addIfDoesNotExist(outPayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
 
@@ -648,7 +724,7 @@ bool IModuleStrategy::addHeaderUnitsRecursively(ModuleLookup& outModule, const M
 		}
 
 		m_previousSource = inModule.source;
-		if (!addHeaderUnitsRecursively(outModule, otherModule, inModules, outPayload))
+		if (!addModuleRecursively(outModule, otherModule, inModules, outPayload))
 			return false;
 	}
 
