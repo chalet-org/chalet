@@ -49,6 +49,7 @@ public:
 	virtual bool initialize() = 0;
 	virtual bool isSystemModuleFile(const std::string& inFile) const = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
+	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
 
 protected:
 	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject);

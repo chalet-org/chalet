@@ -20,6 +20,7 @@ protected:
 	virtual bool isSystemModuleFile(const std::string& inFile) const final;
 	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) final;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
+	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) final;
 
 private:
 	Dictionary<std::string> getSystemModules() const;

@@ -167,6 +167,60 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 }
 
 /*****************************************************************************/
+bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
+{
+	Json json;
+	if (!JsonComments::parse(json, inFile))
+	{
+		Diagnostic::error("Failed to parse: {}", inFile);
+		return false;
+	}
+
+	if (!json.contains(MSVCKeys::Version) || !json.at(MSVCKeys::Version).is_string())
+	{
+		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Version);
+		return false;
+	}
+
+	std::string version = json.at(MSVCKeys::Version).get<std::string>();
+	if (!String::equals("1.2", version))
+	{
+		Diagnostic::error("{}: Found version '{}', but only '1.2' is supported", inFile, version);
+		return false;
+	}
+
+	if (!json.contains(MSVCKeys::Data) || !json.at(MSVCKeys::Data).is_object())
+	{
+		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Data);
+		return false;
+	}
+
+	const auto& data = json.at(MSVCKeys::Data);
+	if (!data.contains(MSVCKeys::Includes) || !data.at(MSVCKeys::Includes).is_array())
+	{
+		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Includes);
+		return false;
+	}
+
+	for (auto& includeItr : data.at(MSVCKeys::Includes).items())
+	{
+		auto& include = includeItr.value();
+		if (!include.is_string())
+		{
+			Diagnostic::error("{}: Unexpected structure for '{}'", inFile, MSVCKeys::Includes);
+			return false;
+		}
+
+		auto outInclude = include.get<std::string>();
+		Path::sanitize(outInclude);
+
+		outList.emplace_back(std::move(outInclude));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 std::string ModuleStrategyMSVC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject)
 {
 	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;

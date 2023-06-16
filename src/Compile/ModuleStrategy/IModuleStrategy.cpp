@@ -17,10 +17,10 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
-#include "Utility/List.hpp"
-// #include "Utility/Timer.hpp"
 #include "Utility/Hash.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
+// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -237,6 +237,41 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			}
 
 			m_compileCache[module.source] |= rebuildFromHeader;
+		}
+	}
+
+	// Scan Includes deduced from the .d.json files
+	{
+		bool rebuildFromIncludes = false;
+		auto& sourceCache = m_state.cache.file().sources();
+		for (auto& group : inOutputs->groups)
+		{
+			if (group->type != SourceType::CPlusPlus)
+				continue;
+
+			const auto& sourceFile = group->sourceFile;
+			rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
+			if (!rebuildFromIncludes)
+			{
+				std::string dependencyFile;
+				if (isSystemModuleFile(sourceFile))
+					dependencyFile = group->dependencyFile;
+				else
+					dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
+
+				if (!dependencyFile.empty() && Commands::pathExists(dependencyFile))
+				{
+					StringList includes;
+					if (!readIncludesFromDependencyFile(dependencyFile, includes))
+						continue;
+
+					for (auto& include : includes)
+					{
+						rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
+					}
+					m_compileCache[sourceFile] |= rebuildFromIncludes;
+				}
+			}
 		}
 	}
 
