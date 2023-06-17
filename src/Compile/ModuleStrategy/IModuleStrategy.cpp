@@ -54,56 +54,23 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	m_state.toolchain.setStrategy(StrategyType::Native);
 	m_implementationUnits.clear();
 	m_previousSource.clear();
-
-	auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
-	Path::sanitize(cwd);
-	if (cwd.back() != '/')
-		cwd += '/';
+	m_moduleId = getModuleId();
 
 	Dictionary<ModuleLookup> modules;
 
-	m_moduleId = getModuleId();
-
-	auto onFailure = [this]() -> bool {
-		Output::lineBreak();
-
-		m_state.toolchain.setStrategy(m_oldStrategy);
-		// m_state.cache.file().setDisallowSave(true);
-		return false;
-	};
-
-	CommandPool::Settings settings;
-	settings.color = Output::theme().build;
-	settings.msvcCommand = m_state.environment->isMsvc();
-	settings.keepGoing = m_state.info.keepGoing();
-	settings.showCommands = Output::showCommands();
-	settings.quiet = Output::quietNonBuild();
-
-	// const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(inProject);
-
 	CommandPool::Job target;
-	// target.pre = getPchCommands(pchTarget);
-	target.list = getModuleCommands(*inToolchain, inOutputs->groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
-	if (!target.list.empty())
-	{
-		// Scan sources for module dependencies
 
-		// Output::msgScanningForModuleDependencies();
-		// Output::lineBreak();
+	// 1. Generate module source file dependency files to determine build order later
+	//
+	if (!scanSourcesForModuleDependencies(target, *inToolchain, inOutputs->groups))
+		return onFailure();
 
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(target, settings))
-			return onFailure();
-	}
-
-	// Read dependency files for header units and determine build order
-	// Build header units (build order shouldn't matter)
-
-	// Timer timer;
-
+	// 2. Read the module dependency files that were generated
+	//
 	if (!readModuleDependencies(*inOutputs, modules))
 		return onFailure();
 
+	// Build header units (build order shouldn't matter)
 	Dictionary<ModulePayload> modulePayload;
 	StringList headerUnitObjects;
 	SourceFileGroupList headerUnitList;
@@ -146,6 +113,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 				auto group = std::make_unique<SourceFileGroup>();
 				group->type = SourceType::CPlusPlus;
+				group->dataType = SourceDataType::SystemModule;
 				group->sourceFile = module->source;
 				group->objectFile = m_state.environment->getObjectFile(baseName);
 				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(baseName);
@@ -161,10 +129,16 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		Output::lineBreak();
 
 	{
+		auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
+		Path::sanitize(cwd);
+		if (cwd.back() != '/')
+			cwd += '/';
+
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
 
 		StringList addedHeaderUnits;
+		SourceFileGroupList userHeaderUnits;
 		for (auto& [name, module] : modules)
 		{
 			if (String::startsWith('@', name))
@@ -232,76 +206,42 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
 				group->otherFile = ifcFile;
 
-				headerUnitObjects.emplace_back(group->objectFile);
-				headerUnitList.emplace_back(std::move(group));
+				if (group->dataType == SourceDataType::UserHeaderUnit)
+				{
+					userHeaderUnits.emplace_back(std::move(group));
+				}
+				else
+				{
+					headerUnitObjects.emplace_back(group->objectFile);
+					headerUnitList.emplace_back(std::move(group));
+				}
 			}
 
 			m_compileCache[module.source] |= rebuildFromHeader;
 		}
-	}
 
-	// Scan Includes deduced from the .d.json files
-	{
-		bool rebuildFromIncludes = false;
-		auto& sourceCache = m_state.cache.file().sources();
-		for (auto& group : inOutputs->groups)
+		// Sort user header units at the end of headerUnitList
+		//
+		auto itr = userHeaderUnits.begin();
+		while (itr != userHeaderUnits.end())
 		{
-			if (group->type != SourceType::CPlusPlus)
-				continue;
-
-			const auto& sourceFile = group->sourceFile;
-			rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
-			if (!rebuildFromIncludes)
-			{
-				std::string dependencyFile;
-				if (isSystemModuleFile(sourceFile))
-					dependencyFile = group->dependencyFile;
-				else
-					dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
-
-				if (!dependencyFile.empty() && Commands::pathExists(dependencyFile))
-				{
-					StringList includes;
-					if (!readIncludesFromDependencyFile(dependencyFile, includes))
-						continue;
-
-					for (auto& include : includes)
-					{
-						rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
-					}
-					m_compileCache[sourceFile] |= rebuildFromIncludes;
-				}
-			}
+			auto&& group = *itr;
+			headerUnitObjects.emplace_back(group->objectFile);
+			headerUnitList.emplace_back(std::move(group));
+			itr = userHeaderUnits.erase(itr);
 		}
 	}
 
-	/*for (auto& [source, data] : modulePayload)
-	{
-		LOG(source);
+	// Scan Includes deduced from the dependency files files
+	checkIncludedHeaderFilesForChanges(inOutputs->groups);
 
-		LOG("  Imported modules:");
-		for (auto& item : data.moduleTranslations)
-			LOG("    ", item);
+	// Log the current payload
+	// logPayload(modulePayload);
 
-		LOG("  Imported headers:");
-		for (auto& item : data.headerUnitTranslations)
-			LOG("    ", item);
-	}*/
-
-	target.list = getModuleCommands(*inToolchain, headerUnitList, modulePayload, ModuleFileType::HeaderUnitDependency);
-	if (!target.list.empty())
-	{
-		// Scan sources for module dependencies
-
-		// Output::msgBuildingRequiredHeaderUnits();
-		// Output::lineBreak();
-
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(target, settings))
-			return onFailure();
-
-		Output::lineBreak();
-	}
+	// Generate module header unit dependency files to determine their build order
+	//
+	if (!scanHeaderUnitsForModuleDependencies(target, *inToolchain, modulePayload, headerUnitList))
+		return onFailure();
 
 	// Header units compiled first
 	StringList headerUnitTranslations;
@@ -332,42 +272,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	headerUnitList.clear(); // No longer needed
 
 	{
-		auto addSourceGroup = [this](SourceFileGroup* inGroup, SourceFileGroupList& outList) {
-			if (inGroup->type != SourceType::CPlusPlus)
-				return;
-
-			auto group = std::make_unique<SourceFileGroup>();
-			group->type = SourceType::CPlusPlus;
-			group->sourceFile = inGroup->sourceFile;
-			if (isSystemModuleFile(group->sourceFile))
-			{
-				auto& file = m_systemModules.at(inGroup->sourceFile);
-				group->objectFile = m_state.environment->getObjectFile(file);
-				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(file);
-				group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(file);
-			}
-			else
-			{
-				group->objectFile = inGroup->objectFile;
-				group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile);
-				group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile);
-			}
-
-			outList.emplace_back(std::move(group));
-		};
-
-		auto makeBatch = [&](const SourceFileGroupList& inList) {
-			if (inList.empty())
-				return;
-
-			auto job = std::make_unique<CommandPool::Job>();
-			job->list = getModuleCommands(*inToolchain, inList, modulePayload, ModuleFileType::ModuleObject);
-			if (!job->list.empty())
-			{
-				buildJobs.emplace_back(std::move(job));
-			}
-		};
-
 		SourceFileGroupList sourceCompiles;
 		DependencyGraph dependencyGraph;
 		{
@@ -401,116 +305,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			}
 		}
 
-		// Check for dependency changes
-		{
-			std::vector<SourceFileGroup*> needsRebuild;
-			for (auto& [group, dependencies] : dependencyGraph)
-			{
-				if (m_compileCache[group->sourceFile])
-					needsRebuild.push_back(group);
-			}
-
-			auto dependencyGraphCopy = dependencyGraph;
-			auto itr = dependencyGraphCopy.begin();
-			while (itr != dependencyGraphCopy.end())
-			{
-				if (!itr->second.empty())
-				{
-					bool erased = false;
-					for (auto dep : itr->second)
-					{
-						if (!List::contains(needsRebuild, dep))
-							continue;
-
-						auto group = itr->first;
-						m_compileCache[group->sourceFile] = true;
-						needsRebuild.push_back(group);
-						itr = dependencyGraphCopy.erase(itr);
-						itr = dependencyGraphCopy.begin(); // We need to rescan
-						erased = true;
-						break;
-					}
-					if (!erased)
-						++itr;
-				}
-				else
-				{
-					// no dependencies - we don't care about it
-					itr = dependencyGraphCopy.erase(itr);
-				}
-			}
-		}
-
-		//
-
-		std::vector<SourceFileGroup*> groupsAdded;
-
-		{
-			auto itr = dependencyGraph.begin();
-			while (itr != dependencyGraph.end())
-			{
-				if (itr->second.empty())
-				{
-					auto group = itr->first;
-					addSourceGroup(group, sourceCompiles);
-					groupsAdded.push_back(group);
-					itr = dependencyGraph.erase(itr);
-				}
-				else
-					++itr;
-			}
-		}
-
-		if (!sourceCompiles.empty())
-		{
-			/*LOG("group:");
-			for (auto& group : sourceCompiles)
-			{
-				LOG("  ", group->sourceFile);
-			}*/
-			makeBatch(sourceCompiles);
-			sourceCompiles.clear();
-		}
-
-		std::vector<SourceFileGroup*> addedThisLoop;
-		auto itr = dependencyGraph.begin();
-		while (!dependencyGraph.empty())
-		{
-			bool canAdd = true;
-			for (auto& dep : itr->second)
-			{
-				canAdd &= (List::contains(groupsAdded, dep) && !List::contains(addedThisLoop, dep));
-			}
-
-			if (canAdd)
-			{
-				auto group = itr->first;
-				addSourceGroup(group, sourceCompiles);
-				groupsAdded.push_back(group);
-				addedThisLoop.push_back(group);
-				itr = dependencyGraph.erase(itr);
-			}
-			else
-				++itr;
-
-			if (itr == dependencyGraph.end())
-			{
-				addedThisLoop.clear();
-				if (!sourceCompiles.empty())
-				{
-					// LOG("group:");
-					for (auto& group : sourceCompiles)
-					{
-						// LOG("  ", group->sourceFile);
-						groupsAdded.push_back(group.get());
-					}
-
-					makeBatch(sourceCompiles);
-					sourceCompiles.clear();
-				}
-				itr = dependencyGraph.begin();
-			}
-		}
+		checkForDependencyChanges(dependencyGraph);
+		addModuleBuildJobs(*inToolchain, modulePayload, sourceCompiles, dependencyGraph, buildJobs);
 	}
 
 	// No longer needed
@@ -543,6 +339,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		// Output::msgModulesCompiling();
 		// Output::lineBreak();
 
+		auto settings = getCommandPoolSettings();
 		settings.startIndex = 1;
 		settings.total = 0;
 
@@ -585,13 +382,19 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 }
 
 /*****************************************************************************/
-std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject)
+std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const
 {
-	return inIsObject ? inSource.sourceFile : inSource.dependencyFile;
+	if (!inIsObject)
+		return inSource.dependencyFile;
+
+	if (inSource.dataType == SourceDataType::SystemHeaderUnit || inSource.dataType == SourceDataType::SystemModule)
+		return String::getPathFilename(inSource.sourceFile);
+
+	return inSource.sourceFile;
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType)
+CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType) const
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
@@ -602,16 +405,15 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 	for (auto& group : inGroups)
 	{
-		const auto& source = group->sourceFile;
+		if (group->type != SourceType::CPlusPlus)
+			continue;
 
+		const auto& source = group->sourceFile;
 		if (source.empty())
 			continue;
 
 		const auto& target = group->objectFile;
 		const auto& dependency = group->dependencyFile;
-
-		if (group->type != SourceType::CPlusPlus)
-			continue;
 
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
@@ -638,13 +440,13 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				const auto& module = inModules.at(source);
 
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
+				out.reference = source;
 			}
 			else
 			{
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
+				out.reference = source;
 			}
-
-			out.reference = source;
 
 			ret.emplace_back(std::move(out));
 		}
@@ -806,4 +608,284 @@ bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) co
 	return result;
 }
 
+/*****************************************************************************/
+bool IModuleStrategy::onFailure()
+{
+	Output::lineBreak();
+
+	m_state.toolchain.setStrategy(m_oldStrategy);
+	// m_state.cache.file().setDisallowSave(true);
+	return false;
+}
+
+/*****************************************************************************/
+CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
+{
+	CommandPool::Settings ret;
+	ret.color = Output::theme().build;
+	ret.msvcCommand = m_state.environment->isMsvc();
+	ret.keepGoing = m_state.info.keepGoing();
+	ret.showCommands = Output::showCommands();
+	ret.quiet = Output::quietNonBuild();
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) const
+{
+	// Scan sources for module dependencies
+
+	outJob.list = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	if (!outJob.list.empty())
+	{
+		// Output::msgScanningForModuleDependencies();
+		// Output::lineBreak();
+
+		auto settings = getCommandPoolSettings();
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.run(outJob, settings))
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups)
+{
+	bool rebuildFromIncludes = false;
+	auto& sourceCache = m_state.cache.file().sources();
+	for (auto& group : inGroups)
+	{
+		if (group->type != SourceType::CPlusPlus)
+			continue;
+
+		const auto& sourceFile = group->sourceFile;
+		rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
+		if (!rebuildFromIncludes)
+		{
+			std::string dependencyFile;
+			if (isSystemModuleFile(sourceFile))
+				dependencyFile = group->dependencyFile;
+			else
+				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
+
+			if (!dependencyFile.empty() && Commands::pathExists(dependencyFile))
+			{
+				StringList includes;
+				if (!readIncludesFromDependencyFile(dependencyFile, includes))
+					continue;
+
+				for (auto& include : includes)
+				{
+					rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
+				}
+				m_compileCache[sourceFile] |= rebuildFromIncludes;
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) const
+{
+	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	if (!outJob.list.empty())
+	{
+		// Scan sources for module dependencies
+
+		// Output::msgBuildingRequiredHeaderUnits();
+		// Output::lineBreak();
+
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.run(outJob, getCommandPoolSettings()))
+			return false;
+
+		Output::lineBreak();
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::checkForDependencyChanges(DependencyGraph& inDependencyGraph) const
+{
+	std::vector<SourceFileGroup*> needsRebuild;
+	for (auto& [group, dependencies] : inDependencyGraph)
+	{
+		if (m_compileCache[group->sourceFile])
+			needsRebuild.push_back(group);
+	}
+
+	auto dependencyGraphCopy = inDependencyGraph;
+	auto itr = dependencyGraphCopy.begin();
+	while (itr != dependencyGraphCopy.end())
+	{
+		if (!itr->second.empty())
+		{
+			bool erased = false;
+			for (auto dep : itr->second)
+			{
+				if (!List::contains(needsRebuild, dep))
+					continue;
+
+				auto group = itr->first;
+				m_compileCache[group->sourceFile] = true;
+				needsRebuild.push_back(group);
+				itr = dependencyGraphCopy.erase(itr);
+				itr = dependencyGraphCopy.begin(); // We need to rescan
+				erased = true;
+				break;
+			}
+			if (!erased)
+				++itr;
+		}
+		else
+		{
+			// no dependencies - we don't care about it
+			itr = dependencyGraphCopy.erase(itr);
+		}
+	}
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupList& outList) const
+{
+	if (inGroup->type != SourceType::CPlusPlus)
+		return false;
+
+	auto group = std::make_unique<SourceFileGroup>();
+	group->type = SourceType::CPlusPlus;
+	group->dataType = inGroup->dataType;
+	group->sourceFile = inGroup->sourceFile;
+
+	if (group->dataType == SourceDataType::SystemModule)
+	{
+		auto& file = m_systemModules.at(inGroup->sourceFile);
+		group->objectFile = m_state.environment->getObjectFile(file);
+		group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(file);
+		group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(file);
+	}
+	else
+	{
+		group->objectFile = inGroup->objectFile;
+		group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(group->sourceFile);
+		group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile);
+	}
+
+	outList.emplace_back(std::move(group));
+	return true;
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList) const
+{
+	if (inList.empty())
+		return false;
+
+	auto job = std::make_unique<CommandPool::Job>();
+	job->list = getModuleCommands(inToolchain, inList, inModules, ModuleFileType::ModuleObject);
+	if (!job->list.empty())
+	{
+		outJobList.emplace_back(std::move(job));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+std::vector<SourceFileGroup*> IModuleStrategy::getSourceFileGroupsForBuild(DependencyGraph& outDependencyGraph, SourceFileGroupList& outList) const
+{
+	std::vector<SourceFileGroup*> ret;
+
+	auto itr = outDependencyGraph.begin();
+	while (itr != outDependencyGraph.end())
+	{
+		if (itr->second.empty())
+		{
+			auto group = itr->first;
+			addSourceGroup(group, outList);
+			ret.push_back(group);
+			itr = outDependencyGraph.erase(itr);
+		}
+		else
+			++itr;
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList) const
+{
+	auto groupsAdded = getSourceFileGroupsForBuild(outDependencyGraph, sourceCompiles);
+	if (!sourceCompiles.empty())
+	{
+		/*LOG("group:");
+		for (auto& group : sourceCompiles)
+		{
+			LOG("  ", group->sourceFile);
+		}*/
+		makeModuleBatch(inToolchain, inModules, sourceCompiles, outJobList);
+		sourceCompiles.clear();
+	}
+
+	std::vector<SourceFileGroup*> addedThisLoop;
+	auto itr = outDependencyGraph.begin();
+	while (!outDependencyGraph.empty())
+	{
+		bool canAdd = true;
+		for (auto& dep : itr->second)
+		{
+			canAdd &= (List::contains(groupsAdded, dep) && !List::contains(addedThisLoop, dep));
+		}
+
+		if (canAdd)
+		{
+			auto group = itr->first;
+			addSourceGroup(group, sourceCompiles);
+			groupsAdded.push_back(group);
+			addedThisLoop.push_back(group);
+			itr = outDependencyGraph.erase(itr);
+		}
+		else
+			++itr;
+
+		if (itr == outDependencyGraph.end())
+		{
+			addedThisLoop.clear();
+			if (!sourceCompiles.empty())
+			{
+				// LOG("group:");
+				for (auto& group : sourceCompiles)
+				{
+					// LOG("  ", group->sourceFile);
+					groupsAdded.push_back(group.get());
+				}
+
+				makeModuleBatch(inToolchain, inModules, sourceCompiles, outJobList);
+				sourceCompiles.clear();
+			}
+			itr = outDependencyGraph.begin();
+		}
+	}
+}
+
+/*****************************************************************************/
+void IModuleStrategy::logPayload(const Dictionary<ModulePayload>& inPayload) const
+{
+	for (auto& [source, data] : inPayload)
+	{
+		LOG(source);
+
+		LOG("  Imported modules:");
+		for (auto& item : data.moduleTranslations)
+			LOG("    ", item);
+
+		LOG("  Imported headers:");
+		for (auto& item : data.headerUnitTranslations)
+			LOG("    ", item);
+	}
+}
 }

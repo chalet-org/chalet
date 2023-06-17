@@ -18,6 +18,7 @@ enum class SourceDataType : ushort
 	None,
 	UserHeaderUnit,
 	SystemHeaderUnit,
+	SystemModule,
 	Module,
 };
 }
