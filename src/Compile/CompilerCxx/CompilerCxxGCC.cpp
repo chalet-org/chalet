@@ -549,7 +549,6 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 	// TODO: Make this "dumber" so only the allowed strings are used by each compiler
 
 	bool isGcc = m_state.environment->isGcc();
-
 	if (!useC)
 	{
 		if (RegexPatterns::matchesGnuCppStandard(ret))
