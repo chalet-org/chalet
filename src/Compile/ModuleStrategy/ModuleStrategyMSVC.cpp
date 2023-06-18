@@ -229,7 +229,7 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 }
 
 /*****************************************************************************/
-std::string ModuleStrategyMSVC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject)
+std::string ModuleStrategyMSVC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
 {
 	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
 	if (String::startsWith(m_msvcToolsDirectory, ret))
