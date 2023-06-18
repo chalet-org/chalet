@@ -80,7 +80,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)))
+				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}

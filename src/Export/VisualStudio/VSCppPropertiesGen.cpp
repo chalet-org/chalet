@@ -81,7 +81,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					if (path.back() == '/')
 						path.pop_back();
 
-					if (Commands::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)))
+					if (Commands::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)) || String::equals(path, state->paths.objDir()))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
