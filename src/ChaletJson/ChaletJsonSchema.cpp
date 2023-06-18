@@ -2205,7 +2205,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][externalDependencies] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'."
+		"description": "Dependencies to resolve prior to building or via the configure command, that are considered external to this project. The object key will be used as a reference to the resulting location via '${external:(key)}'."
 	})json"_ojson;
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName] = R"json({
 		"type": "object",
