@@ -76,7 +76,6 @@ struct CommandAdapterMSVC
 	StringList getLinks(const bool inIncludeCore = true) const;
 
 	bool createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath);
-	std::string getPchObject(const std::string& inOutputFile);
 	const std::string& pchSource() const noexcept;
 	const std::string& pchTarget() const noexcept;
 	const std::string& pchMinusLocation() const noexcept;

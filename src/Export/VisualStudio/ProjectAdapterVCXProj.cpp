@@ -319,7 +319,7 @@ std::string ProjectAdapterVCXProj::getDebugInformationFormat() const
 	if (m_msvcAdapter.supportsEditAndContinue())
 		return "EditAndContinue"; // ZI
 
-	return "ProgramDatabase"; // Zi
+	return "ProgramDatabase";	  // Zi
 }
 
 /*****************************************************************************/

@@ -67,7 +67,7 @@ bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 	if (m_state.toolchain.strategy() == StrategyType::MSBuild)
 		return true; // created by the project exporter
 
-	std::string path = m_state.paths.objDir();
+	std::string path = m_state.paths.intermediateDir(m_project);
 	path.push_back('/');
 
 	return m_msvcAdapter.createPrecompiledHeaderSource(path, path);
