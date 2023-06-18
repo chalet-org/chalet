@@ -758,7 +758,6 @@ StringList QueryController::getChaletJsonState() const
 	output["runTargets"] = getAllRunTargets();
 	output["buildTargets"] = getAllBuildTargets();
 
-	// TODO: this belongs with settings state
 	auto lastTargetRes = getCurrentLastTarget();
 	if (!lastTargetRes.empty())
 		output["defaultRunTarget"] = std::move(lastTargetRes.front());
