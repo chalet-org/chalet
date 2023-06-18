@@ -232,7 +232,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		}
 	}
 
-	// Scan Includes deduced from the dependency files files
+	// Scan Includes deduced from the dependency files
 	checkIncludedHeaderFilesForChanges(inOutputs->groups);
 
 	// Log the current payload

@@ -40,7 +40,7 @@ private:
 	StringList getToolchainBuildPathStyles() const;
 	StringList getAllBuildTargets() const;
 	StringList getAllRunTargets() const;
-	StringList getCurrentRunTarget() const;
+	StringList getCurrentLastTarget() const;
 	StringList getChaletJsonState() const;
 	StringList getSettingsJsonState() const;
 	StringList getChaletSchema() const;
