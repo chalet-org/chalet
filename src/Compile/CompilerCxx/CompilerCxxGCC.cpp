@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -78,6 +79,17 @@ bool CompilerCxxGCC::initialize()
 		else
 #endif
 		{
+			// If The previous build with this build path (matching target triples) has a PCH source file, remove it (MSVC -> LLVM)
+			bool buildHashChanged = m_state.cache.file().buildHashChanged();
+			const auto& cxxExt = m_state.paths.cxxExtension();
+			if (buildHashChanged && !cxxExt.empty())
+			{
+				auto pchSource = fmt::format("{}{}.{}", objDir, pch, cxxExt);
+				if (Commands::pathExists(pchSource))
+					Commands::remove(pchSource);
+			}
+
+			// make the intermediate header for the PCH
 			if (!makeIntermediateHeader(pchIntermediate, pch))
 				return false;
 		}

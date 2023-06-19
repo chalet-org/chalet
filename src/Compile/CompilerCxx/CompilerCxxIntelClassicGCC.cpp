@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicGCC.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -32,9 +33,19 @@ bool CompilerCxxIntelClassicGCC::initialize()
 
 	if (m_project.usesPrecompiledHeader())
 	{
+		bool buildHashChanged = m_state.cache.file().buildHashChanged();
+
 		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();
 		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
+
+		if (buildHashChanged)
+		{
+			// If The previous build with this build path (matching target triples) has an intermediate PCH file, remove it
+			auto oldPch = fmt::format("{}/{}", m_state.paths.objDir(), pch);
+			if (Commands::pathExists(oldPch))
+				Commands::remove(oldPch);
+		}
 
 		if (!Commands::pathExists(m_pchSource))
 		{
