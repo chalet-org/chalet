@@ -57,13 +57,13 @@ bool CompilerCxxGCC::initialize()
 			return true;
 		};
 
+		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();
+		std::string pchIntermediate = fmt::format("{}/{}", objDir, pch);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
-			const auto& objDir = m_state.paths.objDir();
-			std::string pchIntermediate = fmt::format("{}/{}", objDir, pch);
 			auto baseFolder = String::getPathFolder(pchIntermediate);
 			auto filename = String::getPathFilename(pchIntermediate);
 
@@ -78,8 +78,6 @@ bool CompilerCxxGCC::initialize()
 		else
 #endif
 		{
-			std::string intermediateDir = m_state.paths.intermediateDir(m_project);
-			std::string pchIntermediate = fmt::format("{}/{}", intermediateDir, pch);
 			if (!makeIntermediateHeader(pchIntermediate, pch))
 				return false;
 		}

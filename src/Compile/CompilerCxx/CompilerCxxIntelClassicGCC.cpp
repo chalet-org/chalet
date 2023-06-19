@@ -32,9 +32,9 @@ bool CompilerCxxIntelClassicGCC::initialize()
 
 	if (m_project.usesPrecompiledHeader())
 	{
-		const auto& intermediateDir = m_state.paths.intermediateDir(m_project);
+		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();
-		m_pchSource = fmt::format("{}/{}.{}", intermediateDir, pch, cxxExt);
+		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
 
 		if (!Commands::pathExists(m_pchSource))
 		{
