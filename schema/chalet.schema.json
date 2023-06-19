@@ -1161,44 +1161,51 @@
 			]
 		},
 		"target-source-metadata": {
-			"type": "object",
-			"additionalProperties": false,
 			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
-			"properties": {
-				"author": {
-					"$ref": "#/definitions/target-source-metadata-author"
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"author": {
+							"$ref": "#/definitions/target-source-metadata-author"
+						},
+						"description": {
+							"$ref": "#/definitions/target-source-metadata-description"
+						},
+						"homepage": {
+							"$ref": "#/definitions/target-source-metadata-homepage"
+						},
+						"license": {
+							"$ref": "#/definitions/target-source-metadata-license"
+						},
+						"name": {
+							"$ref": "#/definitions/target-source-metadata-name"
+						},
+						"readme": {
+							"$ref": "#/definitions/target-source-metadata-readme"
+						},
+						"version": {
+							"$ref": "#/definitions/target-source-metadata-version"
+						}
+					}
 				},
-				"description": {
-					"$ref": "#/definitions/target-source-metadata-description"
-				},
-				"homepage": {
-					"$ref": "#/definitions/target-source-metadata-homepage"
-				},
-				"license": {
-					"$ref": "#/definitions/target-source-metadata-license"
-				},
-				"name": {
-					"$ref": "#/definitions/target-source-metadata-name"
-				},
-				"readme": {
-					"$ref": "#/definitions/target-source-metadata-readme"
-				},
-				"version": {
-					"$ref": "#/definitions/target-source-metadata-version"
+				{
+					"type": "string",
+					"const": "workspace"
 				}
-			}
+			]
 		},
 		"target-source-metadata-name": {
 			"type": "string",
 			"description": "A name to describe the build target.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-+ ]+$"
+			"pattern": "^[\\w\\-+ \\$\\{\\}:]+$"
 		},
 		"target-source-metadata-version": {
 			"type": "string",
 			"description": "A version to give to the build target.",
-			"minLength": 1,
-			"pattern": "^((\\d+\\.){1,3})?\\d+$"
+			"minLength": 1
 		},
 		"target-source-metadata-description": {
 			"type": "string",

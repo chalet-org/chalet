@@ -622,7 +622,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "string",
 		"description": "A name to describe the build target.",
 		"minLength": 1,
-		"pattern": "^[\\w\\-+ ]+$"
+		"pattern": "^[\\w\\-+ \\$\\{\\}:]+$"
 	})json"_ojson;
 
 	defs[Defs::TargetSourceMetadataVersion] = R"json({
@@ -630,7 +630,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "A version to give to the build target.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::TargetSourceMetadataVersion][SKeys::Pattern] = kPatternVersion;
+	// defs[Defs::TargetSourceMetadataVersion][SKeys::Pattern] = kPatternVersion;
 
 	defs[Defs::TargetSourceMetadataDescription] = R"json({
 		"type": "string",
@@ -1671,17 +1671,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	{
 		auto sourceMetadata = R"json({
-			"type": "object",
-			"additionalProperties": false,
-			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)"
+			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false
+				},
+				{
+					"type": "string",
+					"const": "workspace"
+				}
+			]
 		})json"_ojson;
-		addProperty(sourceMetadata, "author", Defs::TargetSourceMetadataAuthor);
-		addProperty(sourceMetadata, "description", Defs::TargetSourceMetadataDescription);
-		addProperty(sourceMetadata, "homepage", Defs::TargetSourceMetadataHomepage);
-		addProperty(sourceMetadata, "license", Defs::TargetSourceMetadataLicense);
-		addProperty(sourceMetadata, "name", Defs::TargetSourceMetadataName);
-		addProperty(sourceMetadata, "readme", Defs::TargetSourceMetadataReadme);
-		addProperty(sourceMetadata, "version", Defs::TargetSourceMetadataVersion);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "author", Defs::TargetSourceMetadataAuthor);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "description", Defs::TargetSourceMetadataDescription);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "homepage", Defs::TargetSourceMetadataHomepage);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "license", Defs::TargetSourceMetadataLicense);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "name", Defs::TargetSourceMetadataName);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "readme", Defs::TargetSourceMetadataReadme);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "version", Defs::TargetSourceMetadataVersion);
 
 		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
 	}

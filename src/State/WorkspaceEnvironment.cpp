@@ -47,7 +47,7 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 		Environment::setPath(pathVar);
 	}
 
-	if (!m_metadata->initialize())
+	if (!m_metadata->initialize(inState, nullptr, true))
 		return false;
 
 	return true;

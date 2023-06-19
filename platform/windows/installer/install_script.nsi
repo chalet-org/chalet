@@ -166,8 +166,6 @@ Unicode true
 	ShowUnInstDetails show
 	RequestExecutionLevel highest
 
-; TODO: Compile dist\chalet.exe in 32-bits and support it here
-
 Function .onInit
 	!insertmacro MUI_LANGDLL_DISPLAY
 ${If} ${RunningX64}

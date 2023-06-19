@@ -1013,6 +1013,22 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 bool ChaletJsonParser::parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const
 {
 	Ref<TargetMetadata> metadata;
+
+	if (inNode.is_string())
+	{
+		const auto value = inNode.get<std::string>();
+		if (String::equals("workspace", value))
+		{
+			metadata = std::make_shared<TargetMetadata>(m_state.workspace.metadata());
+			outTarget.setMetadata(std::move(metadata));
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	if (outTarget.hasMetadata())
 		metadata = std::make_shared<TargetMetadata>(outTarget.metadata());
 	else

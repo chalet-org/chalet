@@ -10,9 +10,12 @@
 
 namespace chalet
 {
+class BuildState;
+struct IBuildTarget;
+
 struct TargetMetadata
 {
-	bool initialize();
+	bool initialize(const BuildState& inState, const IBuildTarget* inTarget, const bool isWorkspace = false);
 
 	const std::string& name() const noexcept;
 	void setName(std::string&& inValue) noexcept;

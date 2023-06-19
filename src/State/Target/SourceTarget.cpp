@@ -121,7 +121,7 @@ bool SourceTarget::initialize()
 
 	if (m_metadata != nullptr)
 	{
-		if (!m_metadata->initialize())
+		if (!m_metadata->initialize(m_state, this))
 			return false;
 	}
 

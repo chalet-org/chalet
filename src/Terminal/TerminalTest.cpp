@@ -36,9 +36,10 @@ bool TerminalTest::run()
 	std::cout.write(output.data(), output.size());
 	std::cout.flush();
 
-#if defined(CHALET_DEBUG)
-	printColorCombinations();
-#endif
+	// #if defined(CHALET_DEBUG)
+	// 	printColorCombinations();
+	// #endif
+
 	printChaletColorThemes();
 	printUnicodeCharacters();
 	printTerminalCapabilities();
@@ -251,10 +252,10 @@ void TerminalTest::printThemeSimple(const ColorTheme& theme)
 		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 		fmt::arg("info", Output::getAnsiStyle(theme.info)),
 		FMT_ARG(m_reset));
-	output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
-	output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
+	output += fmt::format("{}  | {}{}  theme.header{}\n", static_cast<int>(theme.header), Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
+	output += fmt::format("{}   |    [1/1] {}theme.build{}\n", static_cast<int>(theme.build), Output::getAnsiStyle(theme.build), m_reset);
 	// output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
-	output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
+	output += fmt::format("{}  | {}{}  theme.success{}\n", static_cast<int>(theme.success), Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
 	// output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
 	// output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
 	// output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
