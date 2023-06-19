@@ -11,7 +11,7 @@ IF [%1] == [] (
 )
 
 cmake -G "Visual Studio 17 2022" -DCMAKE_BUILD_TYPE=%BUILD_CONFIGURATION% -S %CWD% -B %BUILD_FOLDER%
-cmake --build %BUILD_FOLDER%
+cmake --build %BUILD_FOLDER% -- -nologo -clp:ForceConsoleColor -m
 
 set ERROR=%errorlevel%
 

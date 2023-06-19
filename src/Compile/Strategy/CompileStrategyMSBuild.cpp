@@ -72,6 +72,10 @@ bool CompileStrategyMSBuild::doFullBuild()
 		"-clp:ForceConsoleColor",
 	};
 
+	auto maxJobs = m_state.info.maxJobs();
+	if (maxJobs > 1)
+		cmd.emplace_back(fmt::format("-m:{}", maxJobs));
+
 	if (!Output::showCommands())
 		cmd.emplace_back("-verbosity:m");
 
