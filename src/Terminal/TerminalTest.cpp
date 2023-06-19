@@ -5,7 +5,6 @@
 
 #include "Terminal/TerminalTest.hpp"
 
-#include "Terminal/Color.hpp"
 #include "Terminal/Diagnostic.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
@@ -37,6 +36,9 @@ bool TerminalTest::run()
 	std::cout.write(output.data(), output.size());
 	std::cout.flush();
 
+#if defined(CHALET_DEBUG)
+	printColorCombinations();
+#endif
 	printChaletColorThemes();
 	printUnicodeCharacters();
 	printTerminalCapabilities();
@@ -156,32 +158,46 @@ void TerminalTest::printChaletColorThemes()
 
 	for (const auto& theme : themes)
 	{
-		std::string output = m_separator;
-		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
-		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
-			FMT_ARG(m_gray),
-			FMT_ARG(m_white),
-			FMT_ARG(name),
-			FMT_ARG(m_reset));
-		output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
-			fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
-			fmt::arg("info", Output::getAnsiStyle(theme.info)),
-			FMT_ARG(m_reset));
-		output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
-		output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
-		output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
-		output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
-		output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
-		output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
-		output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
-
-		std::cout.write(output.data(), output.size());
+		printTheme(theme);
 	}
 
 	auto total = fmt::format("Total built-in themes: {}\n", totalThemes);
 
 	std::cout.write(m_separator.data(), m_separator.size());
 	std::cout.write(total.data(), total.size());
+}
+
+/*****************************************************************************/
+void TerminalTest::printColorCombinations()
+{
+	printBanner("Color Combinations");
+	std::cout.write(m_separator.data(), m_separator.size());
+
+	std::vector<int> headers{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
+	std::vector<int> colors{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
+	int flair = 90;
+	int assembly = 90;
+	// for (int flair : colors)
+	for (int header : headers)
+		for (int build : colors)
+			// for (int assembly : colors)
+			for (int success : colors)
+			{
+				// printColored("doot", clfg, attr);
+				ColorTheme theme;
+				theme.info = Color::Reset;
+				theme.flair = static_cast<Color>(200 + flair);
+				theme.header = static_cast<Color>(100 + header);
+				theme.build = static_cast<Color>(build);
+				theme.assembly = static_cast<Color>(assembly);
+				theme.success = static_cast<Color>(100 + success);
+				printThemeSimple(theme);
+			}
+
+	std::cout.write(m_reset.data(), m_reset.size());
+	std::cout.put('\n');
+
+	std::cout.write(m_separator.data(), m_separator.size());
 }
 
 /*****************************************************************************/
@@ -192,6 +208,56 @@ void TerminalTest::printBanner(const std::string& inText)
 	std::string padding(middle - textMiddle, ' ');
 
 	auto output = fmt::format("{}{}{}\n", m_separator, padding, inText);
+
+	std::cout.write(output.data(), output.size());
+}
+
+/*****************************************************************************/
+void TerminalTest::printTheme(const ColorTheme& theme)
+{
+	std::string output = m_separator;
+	std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
+	output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
+		FMT_ARG(m_gray),
+		FMT_ARG(m_white),
+		FMT_ARG(name),
+		FMT_ARG(m_reset));
+	output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
+		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
+		fmt::arg("info", Output::getAnsiStyle(theme.info)),
+		FMT_ARG(m_reset));
+	output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
+	output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
+	output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
+	output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
+	output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
+	output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
+	output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
+
+	std::cout.write(output.data(), output.size());
+}
+
+/*****************************************************************************/
+void TerminalTest::printThemeSimple(const ColorTheme& theme)
+{
+	std::string output = m_separator;
+	// std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
+	// output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
+	// 	FMT_ARG(m_gray),
+	// 	FMT_ARG(m_white),
+	// 	FMT_ARG(name),
+	// 	FMT_ARG(m_reset));
+	output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
+		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
+		fmt::arg("info", Output::getAnsiStyle(theme.info)),
+		FMT_ARG(m_reset));
+	output += fmt::format("{}{}  theme.header{}\n", Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
+	output += fmt::format("   [1/1] {}theme.build{}\n", Output::getAnsiStyle(theme.build), m_reset);
+	// output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
+	output += fmt::format("{}{}  theme.success{}\n", Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
+	// output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
+	// output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
+	// output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);
 
 	std::cout.write(output.data(), output.size());
 }
