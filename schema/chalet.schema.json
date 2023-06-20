@@ -10,39 +10,39 @@
 	"definitions": {
 		"workspace-name": {
 			"type": "string",
-			"description": "A name to describe the entire workspace.",
+			"description": "Metadata: A name to describe the entire workspace.",
 			"minLength": 1,
 			"pattern": "^[\\w\\-+ ]+$"
 		},
 		"workspace-version": {
 			"type": "string",
-			"description": "A version to give to the entire workspace.",
+			"description": "Metadata: A version to give to the entire workspace.",
 			"minLength": 1,
 			"pattern": "^((\\d+\\.){1,3})?\\d+$"
 		},
 		"workspace-description": {
 			"type": "string",
-			"description": "A description for the workspace.",
+			"description": "Metadata: A description for the workspace.",
 			"minLength": 1
 		},
 		"workspace-homepage": {
 			"type": "string",
-			"description": "A homepage URL for the workspace.",
+			"description": "Metadata: A homepage URL for the workspace.",
 			"minLength": 1
 		},
 		"workspace-author": {
 			"type": "string",
-			"description": "An individual or business entity involved in creating or maintaining the workspace.",
+			"description": "Metadata: An individual or business entity involved in creating or maintaining the workspace.",
 			"minLength": 1
 		},
 		"workspace-license": {
 			"type": "string",
-			"description": "A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
+			"description": "Metadata: A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
 			"minLength": 1
 		},
 		"workspace-readme": {
 			"type": "string",
-			"description": "A path to the readme file of the workspace.",
+			"description": "Metadata: A path to the readme file of the workspace.",
 			"minLength": 1
 		},
 		"configuration": {
@@ -69,22 +69,22 @@
 		},
 		"configuration-debugSymbols": {
 			"type": "boolean",
-			"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
+			"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-g3` option (`-g` & macro information expansion) and forces `-O0` if the optimizationLevel is not `0` or `debug`.\nIn MSVC, this enables `/debug`, `/incremental` and forces `/Od` if the optimizationLevel is not `0` or `debug`.\nAdditionally, `_DEBUG` will be defined in `*-pc-windows-msvc` targets.\nThis flag is also the determining factor whether the `:debug` suffix is used in a chalet.json property.",
 			"default": false
 		},
 		"configuration-enableProfiling": {
 			"type": "boolean",
-			"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option\nIn MSVC, this adds equivalent options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
+			"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-pg` option\nIn MSVC, this adds the `/debug:FULL` and `/profile` options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 			"default": false
 		},
 		"configuration-interproceduralOptimization": {
 			"type": "boolean",
-			"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the '-flto' & '-fno-fat-lto-objects' options to the compiler, and '-flto' to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing /GL to cl.exe and /LTCG to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
+			"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the `-flto` & `-fno-fat-lto-objects` options to the compiler, and `-flto` to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing `/GL` to cl.exe and `/LTCG` to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
 			"default": false
 		},
 		"configuration-optimizationLevel": {
 			"type": "string",
-			"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
+			"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective `-O` option, except for debug - `-Od` and size - `-Os`.\nIn MSVC, it's mapped as follows: 0 - `/Od`, 1 - `/O1`, 2 - `/O2`, 3 - `/Ox`, size - `/Os`, fast - `/Ot`, debug - `/Od`\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
 			"minLength": 1,
 			"enum": [
 				"0",
@@ -254,7 +254,7 @@
 						},
 						"type": {
 							"type": "string",
-							"description": "The MacOS bundle type (only .app is supported currently)",
+							"description": "The MacOS bundle type (only `.app` is supported currently)",
 							"minLength": 1,
 							"enum": [
 								"app"
@@ -283,7 +283,7 @@
 			}
 		},
 		"dist-bundle-exclude": {
-			"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
+			"description": "In folder paths that are included with `include`, exclude certain files or paths.\nCan accept a glob pattern.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -301,7 +301,7 @@
 			]
 		},
 		"dist-bundle-include": {
-			"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+			"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the `Resources` folder of the application bundle.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -320,17 +320,16 @@
 		},
 		"dist-bundle-mainExecutable": {
 			"type": "string",
-			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'buildTargets' array of the bundle will be chosen as the main executable.",
+			"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the `buildTargets` array of the bundle will be chosen as the main executable.",
 			"minLength": 1
 		},
 		"dist-bundle-subdirectory": {
 			"type": "string",
-			"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
-			"minLength": 1,
-			"default": "dist"
+			"description": "The sub-directory to be placed inside of the `dist` directory (it not otherwise changed) to place this bundle along with all of its included resources and shared libraries.",
+			"minLength": 1
 		},
 		"dist-bundle-buildTargets": {
-			"description": "Either an array of build target names to include in this bundle. A single string value of '*' will include all build targets.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+			"description": "Either an array of build target names to include in this bundle. A single string value of `*` will include all build targets.\nIf `mainExecutable` is not defined, the first executable target in this list will be chosen as the main executable.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -426,7 +425,7 @@
 		},
 		"dist-archive-format": {
 			"type": "string",
-			"description": "The archive format to use. If not specified, 'zip' will be used.",
+			"description": "The archive format to use. If not specified, `zip` will be used.",
 			"minLength": 1,
 			"enum": [
 				"zip",
@@ -435,7 +434,7 @@
 			"default": "zip"
 		},
 		"dist-archive-include": {
-			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
+			"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of `*` will archive everything in the bundle directory.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -464,7 +463,7 @@
 			],
 			"properties": {
 				"background": {
-					"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+					"description": "Either a single path to a TIFF or a PNG background image, or paths to 1x/2x PNG background images.",
 					"oneOf": [
 						{
 							"type": "string",
@@ -508,7 +507,7 @@
 				},
 				"positions": {
 					"type": "object",
-					"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
+					"description": "Icon positions for the root disk image paths.\nSpecifying the name of a bundle will include it in the image. Specifying `Applications` will include a symbolic link to the `/Applications` path.\nAdditionally, if there is a bundle named `Applications`, it will be ignored, and an error will be displayed.",
 					"additionalProperties": false,
 					"patternProperties": {
 						"^[\\w\\-+. ()]{2,}$": {
@@ -529,7 +528,7 @@
 								},
 								"y": {
 									"type": "integer",
-									"description": "The x position of the path's icon",
+									"description": "The y position of the path's icon",
 									"default": 80,
 									"minimum": -1024,
 									"maximum": 32000
@@ -540,7 +539,7 @@
 				},
 				"size": {
 					"type": "object",
-					"description": "The dimensions of the root of the disk image.",
+					"description": "The visible window dimensions of the disk image.",
 					"additionalProperties": false,
 					"required": [
 						"width",
@@ -588,7 +587,7 @@
 			"maximum": 16
 		},
 		"dist-macos-disk-image-background": {
-			"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+			"description": "Either a single path to a TIFF or a PNG background image, or paths to 1x/2x PNG background images.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -706,18 +705,18 @@
 		},
 		"external-dependency-git-branch": {
 			"type": "string",
-			"description": "The branch to checkout. Uses the repository's default if not set.",
+			"description": "The git branch to checkout. Uses the repository's default if not set.",
 			"minLength": 1
 		},
 		"external-dependency-git-commit": {
 			"type": "string",
-			"description": "The SHA1 hash of the commit to checkout.",
+			"description": "The SHA1 hash of the git commit to checkout.",
 			"pattern": "^[0-9a-f]{7,40}$",
 			"minLength": 1
 		},
 		"external-dependency-git-tag": {
 			"type": "string",
-			"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+			"description": "The tag to checkout on the selected git branch. If it's blank or not found, the head of the branch will be checked out.",
 			"minLength": 1
 		},
 		"external-dependency-git-submodules": {
@@ -749,7 +748,7 @@
 		},
 		"external-dependency-local-path": {
 			"type": "string",
-			"description": "The local path to a dependency to build from. Can take 'env' substitution variables. (ie. '${env:SOME_PATH}')",
+			"description": "The local path to a dependency to build from. Can take `env` and `var` substitution variables. (ie. `${env:SOME_PATH}`)",
 			"minLength": 1
 		},
 		"external-dependency-script": {
@@ -826,7 +825,7 @@
 			"pattern": "^\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$"
 		},
 		"target-defaultRunArguments": {
-			"description": "If the project is the run target, a string of arguments to pass to the run command.",
+			"description": "If this is the run target, a string of arguments to pass to the run command.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1010,7 +1009,7 @@
 		},
 		"target-source-extends": {
 			"type": "string",
-			"description": "A project template to extend. Defaults to '*' implicitly.",
+			"description": "An abstract source target template to extend from. Defaults to `*` implicitly.\n If `abstracts:*` is not defined, then effectively, nothing is extended.",
 			"pattern": "^(\\*|[A-Za-z\\-_]+)$",
 			"minLength": 1,
 			"default": "*"
@@ -1114,7 +1113,7 @@
 		},
 		"target-source-language": {
 			"type": "string",
-			"description": "The target language of the project.",
+			"description": "The desired programming language of the project.",
 			"minLength": 1,
 			"enum": [
 				"C",
@@ -1125,7 +1124,7 @@
 			"default": "C++"
 		},
 		"target-source-configureFiles": {
-			"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
+			"description": "A list of files to copy into an intermediate build folder, which may include susbstitution variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1143,7 +1142,7 @@
 			]
 		},
 		"target-copyFilesOnRun": {
-			"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the 'MacOS' folder path alongside the executable.",
+			"description": "If this is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the `MacOS` folder path alongside the executable.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1200,12 +1199,13 @@
 			"type": "string",
 			"description": "A name to describe the build target.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-+ \\$\\{\\}:]+$"
+			"pattern": "^[\\w\\-+ \\.\\$\\{\\}:]+$"
 		},
 		"target-source-metadata-version": {
 			"type": "string",
 			"description": "A version to give to the build target.",
-			"minLength": 1
+			"minLength": 1,
+			"pattern": "^[\\w\\-+ \\.\\$\\{\\}:]+$"
 		},
 		"target-source-metadata-description": {
 			"type": "string",
@@ -1466,13 +1466,13 @@
 		},
 		"target-source-cxx-cppStandard": {
 			"type": "string",
-			"description": "The C++ standard to use in the compilation",
+			"description": "The C++ standard to use during compilation",
 			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
 			"minLength": 1,
 			"default": "c++17"
 		},
 		"target-source-cxx-compileOptions": {
-			"description": "Addtional options (per compiler type) to add during the compilation step.",
+			"description": "Addtional options per compiler type (via property conditions) to add during the compilation step.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1508,7 +1508,7 @@
 			]
 		},
 		"target-source-cxx-includeDirs": {
-			"description": "A list of directories to include with the project.",
+			"description": "A list of directories to include during compilation.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1526,7 +1526,7 @@
 			]
 		},
 		"target-source-cxx-libDirs": {
-			"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
+			"description": "Fallback search paths to look for static or dynamic libraries (`/usr/lib` is included by default)",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1545,11 +1545,11 @@
 		},
 		"target-source-cxx-linkerScript": {
 			"type": "string",
-			"description": "An LD linker script path (.ld file) to pass to the linker command",
+			"description": "An LD linker script path (`.ld` file) to pass to the linker command.\nThis is only used by GCC / MinGW toolchains.",
 			"minLength": 1
 		},
 		"target-source-cxx-linkerOptions": {
-			"description": "Addtional options (per compiler type) to add during the linking step.",
+			"description": "Addtional options per compiler type (via property conditions) to add during the linking step.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1641,7 +1641,7 @@
 			]
 		},
 		"target-source-cxx-appleFrameworks": {
-			"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+			"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: `Foundation` instead of `Foundation.framework`)",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1660,7 +1660,7 @@
 		},
 		"target-source-cxx-precompiledHeader": {
 			"type": "string",
-			"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
+			"description": "Treat a header file as a pre-compiled header and include it during compilation of every object file in the project. Define a path relative to the workspace root, but it must be contained within a sub-folder (such as `src`).",
 			"minLength": 1
 		},
 		"target-source-cxx-threads": {
@@ -1670,7 +1670,7 @@
 		},
 		"target-source-cxx-cppFilesystem": {
 			"type": "boolean",
-			"description": "true to enable C++17 filesystem, false to disable (default).",
+			"description": "true to enable C++17 filesystem in previous language standards (equivalent to `-lc++-fs`), false to disable (default).",
 			"default": false
 		},
 		"target-source-cxx-cppModules": {
@@ -1680,12 +1680,12 @@
 		},
 		"target-source-cxx-cppCoroutines": {
 			"type": "boolean",
-			"description": "true to enable C++20 coroutines, false to disable (default).",
+			"description": "true to enable C++20 coroutines (equivalent to `-fcoroutines` or `-fcoroutines-ts`), false to disable (default).",
 			"default": false
 		},
 		"target-source-cxx-cppConcepts": {
 			"type": "boolean",
-			"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
+			"description": "true to enable C++20 concepts in previous language standards (equivalent to `-fconcepts` or `-fconcepts-ts`), false to disable (default).",
 			"default": false
 		},
 		"target-source-cxx-runtimeTypeInformation": {
@@ -1713,7 +1713,7 @@
 		},
 		"target-source-cxx-fastMath": {
 			"type": "boolean",
-			"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to '-ffast-math'). false to disable (default).",
+			"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to `-ffast-math`). false to disable (default).",
 			"default": false
 		},
 		"target-source-cxx-exceptions": {
@@ -1745,7 +1745,7 @@
 			"default": false
 		},
 		"target-source-cxx-staticLinks": {
-			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
+			"description": "A list of libraries to statically link with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static library.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -1765,13 +1765,13 @@
 			]
 		},
 		"target-source-cxx-unityBuild": {
-			"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+			"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in `files`.",
 			"type": "boolean",
 			"default": false
 		},
 		"target-source-cxx-warningsPreset": {
 			"type": "string",
-			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding `-W` prefix)",
 			"minLength": 1,
 			"enum": [
 				"none",
@@ -1785,7 +1785,7 @@
 		},
 		"target-source-cxx-warnings": {
 			"type": "array",
-			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+			"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding `-W` prefix)",
 			"uniqueItems": true,
 			"minItems": 1,
 			"items": {
@@ -2118,7 +2118,7 @@
 		},
 		"target-source-cxx-windowsSubSystem": {
 			"type": "string",
-			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+			"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to `console`",
 			"minLength": 1,
 			"enum": [
 				"console",
@@ -2135,7 +2135,7 @@
 		},
 		"target-source-cxx-windowsEntryPoint": {
 			"type": "string",
-			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+			"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to `main`",
 			"minLength": 1,
 			"enum": [
 				"main",
@@ -2281,7 +2281,7 @@
 		},
 		"target-cmake-buildFile": {
 			"type": "string",
-			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
+			"description": "The build file to use, if not CMakeLists.txt, relative to the location. (`-C` options)",
 			"minLength": 1
 		},
 		"target-cmake-targets": {
@@ -2303,7 +2303,7 @@
 			]
 		},
 		"target-cmake-defines": {
-			"description": "Macro definitions to be passed into CMake. (-D)",
+			"description": "Macro definitions to be passed into CMake. (`-D` options)",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2337,7 +2337,7 @@
 		},
 		"target-cmake-toolset": {
 			"type": "string",
-			"description": "A toolset to be passed to CMake with the -T option.",
+			"description": "A toolset file to be passed to CMake (`-T` option).",
 			"minLength": 1
 		},
 		"target-cmake-runExecutable": {

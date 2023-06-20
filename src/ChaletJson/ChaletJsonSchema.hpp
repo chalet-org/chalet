@@ -36,7 +36,7 @@ class ChaletJsonSchema
 		DistributionBundleExclude,
 		DistributionBundleInclude,
 		DistributionBundleMainExecutable,
-		DistributionBundleOutputDirectory,
+		DistributionBundleSubDirectory,
 		DistributionBundleBuildTargets,
 		DistributionBundleIncludeDependentSharedLibraries,
 		DistributionBundleMacOSBundle,
@@ -76,8 +76,8 @@ class ChaletJsonSchema
 		//
 		// EnumPlatform,
 		//
-		Variables,
-		VariableValue,
+		EnvironmentVariables,
+		EnvironmentVariableValue,
 		EnvironmentSearchPaths,
 		//
 		TargetOutputDescription,
@@ -206,7 +206,6 @@ private:
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;
-	const std::string kPatternVersion;
 	const std::string kPatternConditions;
 
 	DefinitionMap m_defs;
