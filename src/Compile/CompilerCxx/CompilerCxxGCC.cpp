@@ -558,8 +558,6 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
-	// TODO: Make this "dumber" so only the allowed strings are used by each compiler
-
 	bool isGcc = m_state.environment->isGcc();
 	if (!useC)
 	{
@@ -613,8 +611,6 @@ void CompilerCxxGCC::addDebuggingInformationOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addProfileInformation(StringList& outArgList) const
 {
-	// TODO: gcc/clang distinction on mac?
-
 	if (m_state.configuration.enableProfiling())
 	{
 		if (!m_project.isSharedLibrary())

@@ -191,7 +191,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 		}
 
 		// Get the delta between the two and save it to a file
-		Environment::createDeltaEnvFile(m_envVarsFileBefore, m_envVarsFileAfter, m_envVarsFileDelta, [&](std::string& line) {
+		Environment::createDeltaEnvFile(m_envVarsFileBefore, m_envVarsFileAfter, m_envVarsFileDelta, [this](std::string& line) {
 			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
 			{
 				if (String::contains(m_pathInject, line))

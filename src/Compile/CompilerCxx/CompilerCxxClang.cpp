@@ -107,8 +107,6 @@ void CompilerCxxClang::addLanguageStandard(StringList& outArgList, const SourceT
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
-	// TODO: Make this "dumber" so only the allowed strings are used by each compiler
-
 	bool isClang = m_state.environment->isClang();
 	if (!useC)
 	{

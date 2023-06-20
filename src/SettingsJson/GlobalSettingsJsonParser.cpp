@@ -129,7 +129,7 @@ void GlobalSettingsJsonParser::initializeTheme()
 	else if (themeJson.is_object())
 	{
 		const auto& theme = Output::theme();
-		auto makeThemeKeyValueFromTheme = [&](const std::string& inKey) {
+		auto makeThemeKeyValueFromTheme = [&themeJson, &theme](const std::string& inKey) {
 			if (!themeJson.contains(inKey) || !themeJson[inKey].is_string())
 			{
 				themeJson[inKey] = theme.getAsString(inKey);

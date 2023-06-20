@@ -19,7 +19,7 @@ void VariableAdapter::set(const std::string& inKey, std::string&& inValue)
 		// Note: we don't care about this result, because if the signing identity is blank,
 		//   the application simply won't be signed
 		//
-		UNUSED(RegexPatterns::matchAndReplacePathVariables(inValue, [&](std::string match, bool& required) {
+		UNUSED(RegexPatterns::matchAndReplacePathVariables(inValue, [this](std::string match, bool& required) {
 			required = false;
 
 			if (String::startsWith("env:", match))

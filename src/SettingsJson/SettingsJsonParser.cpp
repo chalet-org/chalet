@@ -247,7 +247,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	HostPlatform platform = HostPlatform::Linux;
 #endif
 
-	auto whichAdd = [&](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
+	auto whichAdd = [this, &platform](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
 		if (!inNode.contains(inKey))
 		{
 			if (inPlatform == HostPlatform::Any || inPlatform == platform)

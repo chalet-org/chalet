@@ -399,7 +399,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	// 	toolchain.erase(Keys::ToolchainCompilerWindowsResource);
 	// }
 
-	auto whichAdd = [&](Json& inNode, const std::string& inKey) -> bool {
+	auto whichAdd = [this](Json& inNode, const std::string& inKey) -> bool {
 		if (!inNode.contains(inKey) || !inNode.at(inKey).is_string() || inNode.at(inKey).get<std::string>().empty())
 		{
 			auto path = Commands::which(inKey);

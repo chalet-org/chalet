@@ -160,9 +160,6 @@ bool BuildConfiguration::validate(const BuildState& inState)
 {
 	bool result = true;
 
-	// TODO: Check custom configurations - if both lto & debug info / profiling are enabled, throw error (lto wipes out debug/profiling symbols)
-	//   Maybe just a warning?
-
 	if (sanitizeAddress() && sanitizeHardwareAddress())
 	{
 		Diagnostic::error("Sanitizer 'address' cannot be combined with 'hwaddress'");
