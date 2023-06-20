@@ -91,6 +91,13 @@ void VisualStudioEnvironmentScript::setVersion(const std::string& inValue, const
 	if (m_rawVersion.empty())
 	{
 		m_detectedVersion = getVisualStudioVersion(m_vsVersion);
+
+		// If there is more than one version installed, prefer the first version retrieved
+		auto lineBreak = m_detectedVersion.find('\n');
+		if (lineBreak != std::string::npos)
+		{
+			m_detectedVersion = m_detectedVersion.substr(0, lineBreak);
+		}
 	}
 	else
 	{
