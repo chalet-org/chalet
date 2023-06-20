@@ -86,6 +86,8 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 	return {
 		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "llvm-vs-preview", VisualStudioVersion::Preview },
+		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
 }
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
