@@ -457,24 +457,7 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addDefines(StringList& outArgList) const
 {
-
-	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-	const std::string prefix{ "-D" };
-	for (auto& define : m_project.defines())
-	{
-		auto pos = define.find("=\"");
-		if (!isNative && pos != std::string::npos && define.back() == '\"')
-		{
-			std::string key = define.substr(0, pos);
-			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
-			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-			List::addIfDoesNotExist(outArgList, prefix + def);
-		}
-		else
-		{
-			List::addIfDoesNotExist(outArgList, prefix + define);
-		}
-	}
+	addDefinesToList(outArgList, "-D");
 }
 
 /*****************************************************************************/

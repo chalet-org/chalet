@@ -49,7 +49,6 @@ void CompilerWinResourceLLVMRC::addDefines(StringList& outArgList) const
 #if defined(CHALET_WIN32)
 	if (m_state.environment->isWindowsClang())
 	{
-
 		StringList defines;
 
 		CommandAdapterMSVC msvcAdapter(m_state, m_project);

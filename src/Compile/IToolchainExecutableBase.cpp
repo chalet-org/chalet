@@ -8,6 +8,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Utility/List.hpp"
 
 namespace chalet
 {
@@ -43,6 +44,27 @@ std::string IToolchainExecutableBase::getPathCommand(std::string_view inCmd, con
 		return fmt::format("{}\"{}\"", inCmd, inPath);
 	else
 		return fmt::format("{}{}", inCmd, inPath);
+}
+
+/*****************************************************************************/
+void IToolchainExecutableBase::addDefinesToList(StringList& outArgList, const std::string& inPrefix) const
+{
+	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
+	for (auto& define : m_project.defines())
+	{
+		auto pos = define.find("=\"");
+		if (!isNative && pos != std::string::npos && define.back() == '\"')
+		{
+			std::string key = define.substr(0, pos);
+			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
+			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
+			List::addIfDoesNotExist(outArgList, inPrefix + def);
+		}
+		else
+		{
+			List::addIfDoesNotExist(outArgList, inPrefix + define);
+		}
+	}
 }
 
 }
