@@ -35,10 +35,9 @@ bool ToolchainSettingsJsonParser::serialize()
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 	auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
-	auto& toolchains = rootNode["toolchains"];
+	auto& toolchains = rootNode[Keys::Toolchains];
 
 	bool containsPref = toolchains.contains(preferenceName);
-
 	if (!containsPref && !m_state.inputs.isToolchainPreset())
 	{
 		Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
@@ -70,7 +69,7 @@ bool ToolchainSettingsJsonParser::serialize()
 		if (isDefined)
 			break;
 	}
-	if (!isDefined && (m_state.inputs.isToolchainMultiArchPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
+	if (!isDefined && (m_state.inputs.isMultiArchToolchainPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
 	{
 		auto arch2 = Arch::from(arch);
 		if (!node.contains(arch2.str))
@@ -80,6 +79,8 @@ bool ToolchainSettingsJsonParser::serialize()
 
 		if (!serialize(node.at(arch2.str)))
 			return false;
+
+		m_state.inputs.setMultiArchToolchainPreset(true);
 	}
 	else
 	{

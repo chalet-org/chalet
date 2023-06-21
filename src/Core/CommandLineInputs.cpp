@@ -532,9 +532,14 @@ bool CommandLineInputs::isToolchainPreset() const noexcept
 	return m_isToolchainPreset;
 }
 
-bool CommandLineInputs::isToolchainMultiArchPreset() const noexcept
+bool CommandLineInputs::isMultiArchToolchainPreset() const noexcept
 {
-	return m_isToolchainMultiArchPreset;
+	return m_isMultiArchToolchainPreset;
+}
+
+void CommandLineInputs::setMultiArchToolchainPreset(const bool inValue) const noexcept
+{
+	m_isMultiArchToolchainPreset = inValue;
 }
 
 /*****************************************************************************/
@@ -1147,7 +1152,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
-		m_isToolchainMultiArchPreset = true;
+		m_isMultiArchToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 
 		m_toolchainPreferenceName = inValue;
@@ -1228,7 +1233,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	{
 		m_isToolchainPreset = true;
 		if (isGcc)
-			m_isToolchainMultiArchPreset = true;
+			m_isMultiArchToolchainPreset = true;
 
 		m_toolchainPreferenceName = inValue;
 
@@ -1279,7 +1284,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
 
-			if (!m_isToolchainMultiArchPreset)
+			if (!m_isMultiArchToolchainPreset)
 			{
 				m_toolchainPreferenceName = ret.cc;
 			}
@@ -1300,7 +1305,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 	{
 		m_isToolchainPreset = true;
-		m_isToolchainMultiArchPreset = true;
+		m_isMultiArchToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 	#if defined(CHALET_WIN32)
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -1482,7 +1487,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 	}
 #endif
 
-	m_isToolchainMultiArchPreset = false;
+	m_isMultiArchToolchainPreset = false;
 
 	return inArch;
 }

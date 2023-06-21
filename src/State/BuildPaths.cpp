@@ -57,8 +57,8 @@ bool BuildPaths::initialize()
 	auto style = m_state.toolchain.buildPathStyle();
 	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
 	{
-		if (m_state.inputs.isToolchainMultiArchPreset())
-			m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, toolchainPreference, arch, buildConfig);
+		if (m_state.inputs.isMultiArchToolchainPreset())
+			m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, arch, toolchainPreference, buildConfig);
 		else
 			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
 	}
