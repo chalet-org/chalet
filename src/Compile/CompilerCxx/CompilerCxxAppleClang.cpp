@@ -112,14 +112,21 @@ bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, con
 		auto kAllowedTargets = getAllowedSDKTargets();
 		if (String::equals(kAllowedTargets, osTargetName))
 		{
-			if (inVersionMajorMinor < 1400)
+			auto outputTargetName = osTargetName;
+			String::replaceAll(outputTargetName, "simulator", "os");
+			String::replaceAll(outputTargetName, "iphone", "i");
+
+			UNUSED(inVersionMajorMinor);
+			// if (inVersionMajorMinor >= 1400)
+			if (String::startsWith("xr", osTargetName))
 			{
-				// Example: -mmacosx-version-min=13.1
-				outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTargetName, osTargetVersion));
+
+				outArgList.emplace_back(fmt::format("-mtargetos={}{}", outputTargetName, osTargetVersion));
 			}
 			else
 			{
-				outArgList.emplace_back(fmt::format("-mtargetos={}{}", osTargetName, osTargetVersion));
+				// Example: -mmacosx-version-min=13.1
+				outArgList.emplace_back(fmt::format("-m{}-version-min={}", outputTargetName, osTargetVersion));
 			}
 		}
 	}
