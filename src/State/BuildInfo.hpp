@@ -16,7 +16,7 @@ class BuildState;
 
 struct BuildInfo
 {
-	explicit BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs);
+	BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs);
 	CHALET_DISALLOW_COPY_MOVE(BuildInfo);
 	~BuildInfo();
 
@@ -42,9 +42,6 @@ struct BuildInfo
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 	bool targettingMinGW() const;
 
-	const std::string& osTargetName() const noexcept;
-	const std::string& osTargetVersion() const noexcept;
-
 	uint maxJobs() const noexcept;
 	bool dumpAssembly() const noexcept;
 	bool generateCompileCommands() const noexcept;
@@ -54,12 +51,11 @@ struct BuildInfo
 
 private:
 	const BuildState& m_state;
+	const CommandLineInputs& m_inputs;
 
 	Unique<PlatformDependencyManager> m_platformDeps;
 
 	std::string m_buildConfiguration;
-	std::string m_osTargetName;
-	std::string m_osTargetVersion;
 	std::string m_hostArchTriple;
 
 	Arch m_hostArchitecture;

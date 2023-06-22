@@ -18,31 +18,29 @@ namespace chalet
 {
 /*****************************************************************************/
 BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs) :
-	m_state(inState)
+	m_state(inState),
+	m_inputs(inInputs)
 {
-	m_hostArchitecture.set(inInputs.hostArchitecture());
-	setTargetArchitecture(inInputs.getResolvedTargetArchitecture());
+	m_hostArchitecture.set(m_inputs.hostArchitecture());
+	setTargetArchitecture(m_inputs.getResolvedTargetArchitecture());
 
-	m_osTargetName = inInputs.osTargetName();
-	m_osTargetVersion = inInputs.osTargetVersion();
+	if (m_inputs.maxJobs().has_value())
+		m_maxJobs = *m_inputs.maxJobs();
 
-	if (inInputs.maxJobs().has_value())
-		m_maxJobs = *inInputs.maxJobs();
+	if (m_inputs.dumpAssembly().has_value())
+		m_dumpAssembly = *m_inputs.dumpAssembly();
 
-	if (inInputs.dumpAssembly().has_value())
-		m_dumpAssembly = *inInputs.dumpAssembly();
+	if (m_inputs.generateCompileCommands().has_value())
+		m_generateCompileCommands = *m_inputs.generateCompileCommands();
 
-	if (inInputs.generateCompileCommands().has_value())
-		m_generateCompileCommands = *inInputs.generateCompileCommands();
+	if (m_inputs.launchProfiler().has_value())
+		m_launchProfiler = *m_inputs.launchProfiler();
 
-	if (inInputs.launchProfiler().has_value())
-		m_launchProfiler = *inInputs.launchProfiler();
+	if (m_inputs.keepGoing().has_value())
+		m_keepGoing = *m_inputs.keepGoing();
 
-	if (inInputs.keepGoing().has_value())
-		m_keepGoing = *inInputs.keepGoing();
-
-	if (inInputs.onlyRequired().has_value())
-		m_onlyRequired = *inInputs.onlyRequired();
+	if (m_inputs.onlyRequired().has_value())
+		m_onlyRequired = *m_inputs.onlyRequired();
 }
 
 /*****************************************************************************/
@@ -170,17 +168,6 @@ void BuildInfo::setTargetArchitecture(const std::string& inValue) noexcept
 bool BuildInfo::targettingMinGW() const
 {
 	return String::contains("mingw32", m_targetArchitecture.triple);
-}
-
-/*****************************************************************************/
-const std::string& BuildInfo::osTargetName() const noexcept
-{
-	return m_osTargetName;
-}
-
-const std::string& BuildInfo::osTargetVersion() const noexcept
-{
-	return m_osTargetVersion;
 }
 
 /*****************************************************************************/

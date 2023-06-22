@@ -209,16 +209,6 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	// We always want to save these values
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), inState.osTargetName);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
-	if (buildOptions.at(Keys::OptionsOsTargetName).get<std::string>().empty() && !inState.osTargetName.empty())
-	{
-		buildOptions[Keys::OptionsOsTargetName] = inState.osTargetName;
-		m_jsonFile.setDirty(true);
-	}
-	if (buildOptions.at(Keys::OptionsOsTargetVersion).get<std::string>().empty() && !inState.osTargetVersion.empty())
-	{
-		buildOptions[Keys::OptionsOsTargetVersion] = inState.osTargetVersion;
-		m_jsonFile.setDirty(true);
-	}
 
 	m_jsonFile.assignNodeWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
 

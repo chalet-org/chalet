@@ -123,7 +123,7 @@ bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string
 		if (!LinkerLLVMClang::addArchitecture(outArgList, inArch))
 			return false;
 
-		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state))
+		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state, m_versionMajorMinor))
 			return false;
 	}
 #if defined(CHALET_MACOS)

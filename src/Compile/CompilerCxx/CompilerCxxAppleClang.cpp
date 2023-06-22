@@ -73,8 +73,8 @@ StringList CompilerCxxAppleClang::getAllowedSDKTargets()
 		"watchsimulator",
 		"appletvos",
 		"appletvsimulator",
-		// "visionos", // maybe ?
-		// "visionsimulator" // maybe ?
+		"xros",
+		"xrsimulator"
 	};
 	return ret;
 }
@@ -82,7 +82,7 @@ StringList CompilerCxxAppleClang::getAllowedSDKTargets()
 /*****************************************************************************/
 bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState)
 {
-	const auto& osTargetName = inState.info.osTargetName();
+	const auto& osTargetName = inState.inputs.osTargetName();
 	if (!osTargetName.empty())
 	{
 		auto kAllowedTargets = getAllowedSDKTargets();
@@ -103,17 +103,24 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 }
 
 /*****************************************************************************/
-bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState)
+bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const uint inVersionMajorMinor)
 {
-	const auto& osTargetName = inState.info.osTargetName();
-	const auto& osTargetVersion = inState.info.osTargetVersion();
+	const auto& osTargetName = inState.inputs.osTargetName();
+	const auto& osTargetVersion = inState.inputs.osTargetVersion();
 	if (!osTargetVersion.empty())
 	{
 		auto kAllowedTargets = getAllowedSDKTargets();
 		if (String::equals(kAllowedTargets, osTargetName))
 		{
-			// Example: -mmacosx-version-min=13.1
-			outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTargetName, osTargetVersion));
+			if (inVersionMajorMinor < 1400)
+			{
+				// Example: -mmacosx-version-min=13.1
+				outArgList.emplace_back(fmt::format("-m{}-version-min={}", osTargetName, osTargetVersion));
+			}
+			else
+			{
+				outArgList.emplace_back(fmt::format("-mtargetos={}{}", osTargetName, osTargetVersion));
+			}
 		}
 	}
 
@@ -238,7 +245,7 @@ bool CompilerCxxAppleClang::addArchitecture(StringList& outArgList, const std::s
 		if (!CompilerCxxClang::addArchitecture(outArgList, inArch))
 			return false;
 
-		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state))
+		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state, m_versionMajorMinor))
 			return false;
 	}
 #if defined(CHALET_MACOS)

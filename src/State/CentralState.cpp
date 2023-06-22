@@ -90,6 +90,12 @@ bool CentralState::initialize()
 
 		if (!parseLocalSettingsJson(state))
 			return false;
+
+		if (m_inputs.osTargetName().empty())
+			m_inputs.setOsTargetName(m_inputs.getDefaultOsTargetName());
+
+		if (m_inputs.osTargetVersion().empty())
+			m_inputs.setOsTargetVersion(m_inputs.getDefaultOsTargetVersion());
 	}
 
 	tools.setSigningIdentity(m_inputs.signingIdentity());
@@ -286,6 +292,7 @@ bool CentralState::validateOsTarget()
 		Diagnostic::error("Error in configuration: expected an os target version, but it was blank.");
 		return false;
 	}
+
 	Version version;
 	if (!version.setFromString(osTargetVersion))
 	{

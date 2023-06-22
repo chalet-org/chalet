@@ -545,7 +545,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	{
 		if (!isDefined["CMAKE_OSX_SYSROOT"])
 		{
-			const auto& osTargetName = m_state.info.osTargetName();
+			const auto& osTargetName = m_state.inputs.osTargetName();
 			if (!osTargetName.empty())
 			{
 				auto kAllowedTargets = CompilerCxxAppleClang::getAllowedSDKTargets();
@@ -561,7 +561,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 		if (!isDefined["CMAKE_OSX_DEPLOYMENT_TARGET"])
 		{
-			const auto& osTargetVersion = m_state.info.osTargetVersion();
+			const auto& osTargetVersion = m_state.inputs.osTargetVersion();
 			if (!osTargetVersion.empty())
 			{
 				outList.emplace_back("-DCMAKE_OSX_DEPLOYMENT_TARGET=" + osTargetVersion);
