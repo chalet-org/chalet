@@ -706,16 +706,15 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 
 	auto xcrun = Commands::which("xcrun");
 	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
+
 	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
 			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
-			if (!sdkPath.empty())
-			{
-				appleSkdsJson[sdk] = std::move(sdkPath);
-				m_jsonFile.setDirty(true);
-			}
+
+			appleSkdsJson[sdk] = std::move(sdkPath);
+			m_jsonFile.setDirty(true);
 		}
 	}
 
