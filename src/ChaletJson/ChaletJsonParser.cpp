@@ -93,11 +93,12 @@ bool ChaletJsonParser::serialize()
 
 	if (m_state.inputs.route().willRun())
 	{
-		if (!validRunTargetRequestedFromInput())
+		auto runTarget = getValidRunTargetFromInput();
+		if (runTarget.empty())
 			return false;
 
 		// do after run target is validated
-		auto& runArguments = m_centralState.getRunTargetArguments();
+		auto& runArguments = m_centralState.getRunTargetArguments(runTarget);
 		if (runArguments.has_value())
 			m_state.inputs.setRunArguments(*runArguments);
 	}
@@ -150,12 +151,13 @@ bool ChaletJsonParser::validBuildRequested() const
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::validRunTargetRequestedFromInput()
+std::string ChaletJsonParser::getValidRunTargetFromInput() const
 {
 	auto lastTarget = m_state.inputs.lastTarget();
 	if (String::equals("all", lastTarget) && !m_state.targets.empty())
 		lastTarget.clear();
 
+	std::string ret;
 	bool setRunTarget = lastTarget.empty();
 	for (auto& target : m_state.targets)
 	{
@@ -167,20 +169,29 @@ bool ChaletJsonParser::validRunTargetRequestedFromInput()
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable())
-				return true;
+			{
+				ret = name;
+				return ret;
+			}
 		}
 		else if (target->isCMake())
 		{
 			auto& project = static_cast<const CMakeTarget&>(*target);
 			if (!project.runExecutable().empty())
-				return true;
+			{
+				ret = name;
+				return ret;
+			}
 		}
 		else if (target->isScript())
-			return true;
+		{
+			ret = name;
+			return ret;
+		}
 	}
 
 	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
-	return false;
+	return ret;
 }
 
 /*****************************************************************************/

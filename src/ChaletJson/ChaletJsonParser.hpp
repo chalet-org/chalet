@@ -71,8 +71,7 @@ private:
 	std::optional<bool> parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;
 
 	bool validBuildRequested() const;
-	bool validRunTargetRequested() const;
-	bool validRunTargetRequestedFromInput();
+	std::string getValidRunTargetFromInput() const;
 	std::optional<bool> conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const;
 	std::optional<bool> conditionIsValid(const std::string& inContent) const;
 	ConditionResult checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
