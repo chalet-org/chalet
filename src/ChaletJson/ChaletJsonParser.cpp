@@ -830,7 +830,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value())
+					if (willRun && !m_state.inputs.runArguments().has_value() && !m_state.inputs.expectedRunTarget().empty())
 					{
 						m_state.inputs.setRunArguments(std::move(val));
 						m_state.inputs.setExpectedRunTarget(outTarget.name());
@@ -857,7 +857,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value())
+					if (willRun && !m_state.inputs.runArguments().has_value() && !m_state.inputs.expectedRunTarget().empty())
 					{
 						m_state.inputs.setRunArguments(std::move(val));
 						m_state.inputs.setExpectedRunTarget(outTarget.name());
