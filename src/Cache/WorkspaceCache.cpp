@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -279,7 +280,7 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CompilerTools& inToolchain)
+bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CentralState& inCentralState, const CompilerTools& inToolchain)
 {
 	auto& settingsJson = getSettings(SettingsType::Local);
 	auto& globalSettingsJson = getSettings(SettingsType::Global);
@@ -362,7 +363,6 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	}
 
 	auto& lastTarget = inInputs.lastTarget();
-	auto& expectedRunTarget = inInputs.expectedRunTarget();
 	if (optionsJson.contains(Keys::OptionsLastTarget))
 	{
 		auto& lastTargetNode = optionsJson.at(Keys::OptionsLastTarget);
@@ -373,25 +373,26 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
-	if (optionsJson.contains(Keys::OptionsRunArguments) && !lastTarget.empty())
+	if (optionsJson.contains(Keys::OptionsRunArguments))
 	{
 		auto& runArgsJson = optionsJson.at(Keys::OptionsRunArguments);
 		if (runArgsJson.is_object())
 		{
-			auto& target = String::equals(Values::All, lastTarget) ? expectedRunTarget : lastTarget;
-			if (!runArgsJson.contains(target) || !runArgsJson[target].is_string())
+			const auto& argumentMap = inCentralState.runArgumentMap();
+			for (const auto& [key, value] : argumentMap)
 			{
-				runArgsJson[target] = std::string();
-			}
-
-			if (inInputs.runArguments().has_value())
-			{
-
-				auto inputsRunArguments = String::join(*inInputs.runArguments());
-				auto& runArguments = runArgsJson.at(target);
-				if (runArguments.get<std::string>() != inputsRunArguments)
+				if (runArgsJson.find(key) != runArgsJson.end())
 				{
-					runArgsJson[target] = inputsRunArguments;
+					auto& existing = runArgsJson.at(key);
+					if (existing.is_string() && existing.get<std::string>() != value)
+					{
+						runArgsJson[key] = value;
+						settingsJson.setDirty(true);
+					}
+				}
+				else
+				{
+					runArgsJson[key] = value;
 					settingsJson.setDirty(true);
 				}
 			}

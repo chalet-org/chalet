@@ -396,15 +396,6 @@ void CommandLineInputs::setLastTarget(std::string&& inValue) const noexcept
 	m_lastTarget = std::move(inValue);
 }
 
-const std::string& CommandLineInputs::expectedRunTarget() const noexcept
-{
-	return m_expectedRunTarget;
-}
-void CommandLineInputs::setExpectedRunTarget(const std::string& inValue) const noexcept
-{
-	m_expectedRunTarget = inValue;
-}
-
 /*****************************************************************************/
 const std::optional<StringList>& CommandLineInputs::runArguments() const noexcept
 {

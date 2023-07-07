@@ -108,7 +108,7 @@ bool BuildState::initialize()
 		return false;
 
 	// Update settings after toolchain & chalet.json have been parsed
-	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
+	if (!cache.updateSettingsFromToolchain(inputs, m_impl->centralState, toolchain))
 		return false;
 
 	if (!initializeBuild())
@@ -350,6 +350,9 @@ bool BuildState::initializeBuild()
 
 	if (!paths.initialize())
 		return false;
+
+	// No longer needed
+	m_impl->centralState.clearRunArgumentMap();
 
 	// These should only be relevant if cross-compiling (so far)
 	//

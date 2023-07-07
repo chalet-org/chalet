@@ -813,9 +813,7 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 /*****************************************************************************/
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
-	bool willRun = m_state.inputs.route().willRun();
 	const auto& lastTarget = m_state.inputs.lastTarget();
-
 	for (const auto& [key, value] : inNode.items())
 	{
 		StringList validNames{
@@ -830,11 +828,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value() && !m_state.inputs.expectedRunTarget().empty())
-					{
-						m_state.inputs.setRunArguments(std::move(val));
-						m_state.inputs.setExpectedRunTarget(outTarget.name());
-					}
+					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
@@ -857,11 +851,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			{
 				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value() && !m_state.inputs.expectedRunTarget().empty())
-					{
-						m_state.inputs.setRunArguments(std::move(val));
-						m_state.inputs.setExpectedRunTarget(outTarget.name());
-					}
+					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))

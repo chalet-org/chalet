@@ -156,11 +156,6 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 		}
 	}
 
-	if (runTarget != nullptr && !m_state.inputs.expectedRunTarget().empty())
-	{
-		chalet_assert(String::equals(runTarget->name(), m_state.inputs.expectedRunTarget()), "expected run target mismatch");
-	}
-
 	return runTarget;
 }
 

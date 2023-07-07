@@ -255,6 +255,31 @@ void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
 }
 
 /*****************************************************************************/
+void CentralState::addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue)
+{
+	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
+	{
+		m_runArgumentMap[inKey] = std::move(inValue);
+	}
+}
+
+/*****************************************************************************/
+void CentralState::addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue)
+{
+	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
+	{
+		// TODO: probably a bad idea to join the arguments like this here... rework later
+		m_runArgumentMap[inKey] = String::join(inValue);
+	}
+}
+
+/*****************************************************************************/
+const Dictionary<std::string>& CentralState::runArgumentMap() const noexcept
+{
+	return m_runArgumentMap;
+}
+
+/*****************************************************************************/
 const std::optional<StringList>& CentralState::getRunTargetArguments(const std::string& inTarget)
 {
 	if (!inTarget.empty())
@@ -264,9 +289,14 @@ const std::optional<StringList>& CentralState::getRunTargetArguments(const std::
 			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(inTarget)));
 		}
 	}
-	m_runArgumentMap.clear();
 
 	return m_inputs.runArguments();
+}
+
+/*****************************************************************************/
+void CentralState::clearRunArgumentMap()
+{
+	m_runArgumentMap.clear();
 }
 
 /*****************************************************************************/
