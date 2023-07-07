@@ -149,8 +149,6 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 
 	for (auto& it : inList)
 	{
-		LOG(it);
-
 		if (Commands::pathExists(it))
 		{
 			if (Commands::removeRecursively(it))
