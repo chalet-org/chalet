@@ -19,6 +19,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -372,14 +373,14 @@ StringList QueryController::getArchitectures() const
 	}
 
 	return {
-		"auto",
+		Values::Auto,
 	};
 }
 
 /*****************************************************************************/
 StringList QueryController::getArchitectures(const std::string& inToolchain) const
 {
-	StringList ret{ "auto" };
+	StringList ret{ Values::Auto };
 
 	bool handledRest = false;
 
@@ -609,7 +610,7 @@ StringList QueryController::getCurrentToolchain() const
 /*****************************************************************************/
 StringList QueryController::getAllBuildTargets() const
 {
-	StringList ret{ "all" };
+	StringList ret{ Values::All };
 
 	const auto& chaletJson = m_centralState.chaletJson().json;
 

@@ -39,6 +39,8 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 #include "Json/JsonComments.hpp"
 
@@ -92,7 +94,7 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	m_buildTargets.clear();
 
 	auto& lastTarget = m_state.inputs.lastTarget();
-	const bool addAllTargets = String::equals("all", lastTarget) || !m_state.info.onlyRequired();
+	const bool addAllTargets = String::equals(Values::All, lastTarget) || !m_state.info.onlyRequired();
 
 	StringList requiredTargets;
 	if (!addAllTargets)
@@ -121,7 +123,7 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 	{
 		const auto& lastTarget = m_state.inputs.lastTarget();
 
-		const bool pickAnyTarget = lastTarget.empty() || String::equals("all", lastTarget);
+		const bool pickAnyTarget = lastTarget.empty() || String::equals(Values::All, lastTarget);
 		for (auto& target : m_state.targets)
 		{
 			auto& name = target->name();
@@ -152,6 +154,11 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 				break;
 			}
 		}
+	}
+
+	if (runTarget != nullptr && !m_state.inputs.expectedRunTarget().empty())
+	{
+		chalet_assert(String::equals(runTarget->name(), m_state.inputs.expectedRunTarget()), "expected run target mismatch");
 	}
 
 	return runTarget;
@@ -248,7 +255,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Output::lineBreak();
 	}
 
-	// const IBuildTarget* runTarget = nullptr;
 	bool error = false;
 
 	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too

@@ -10,6 +10,7 @@
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -37,7 +38,7 @@ bool SubChaletTarget::initialize()
 
 	if (m_targets.empty())
 	{
-		m_targets.emplace_back("all");
+		m_targets.emplace_back(Values::All);
 	}
 
 	return true;

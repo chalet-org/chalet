@@ -10,6 +10,7 @@
 
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -295,7 +296,7 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 
 	if (!toolchainPreference.empty() && architecturePreference.empty())
 	{
-		inputs->setArchitectureRaw("auto");
+		inputs->setArchitectureRaw(Values::Auto);
 		inputs->setToolchainPreference(std::move(toolchainPreference));
 	}
 	else

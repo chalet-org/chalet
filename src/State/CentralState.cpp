@@ -31,6 +31,7 @@
 #include "Utility/Timer.hpp"
 #include "Utility/Version.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -73,7 +74,7 @@ bool CentralState::initialize()
 		state.generateCompileCommands = false;
 		state.buildConfiguration = BuildConfiguration::getDefaultReleaseConfigurationName();
 		state.toolchainPreference = m_inputs.defaultToolchainPreset();
-		state.architecturePreference = "auto";
+		state.architecturePreference = Values::Auto;
 		state.inputFile = m_inputs.defaultInputFile();
 		state.envFile = m_inputs.defaultEnvFile();
 		// state.rootDirectory = std::string();
@@ -83,7 +84,7 @@ bool CentralState::initialize()
 		// state.signingIdentity = std::string();
 		state.osTargetName = m_inputs.getDefaultOsTargetName();
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
-		state.lastTarget = "all";
+		state.lastTarget = Values::All;
 
 		if (!parseGlobalSettingsJson(state))
 			return false;

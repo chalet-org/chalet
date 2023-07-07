@@ -13,6 +13,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -122,7 +123,7 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
 	kGlobalSettingsFile(".chalet/config.json"),
-	kArchPresetAuto("auto"),
+	kArchPresetAuto(Values::Auto),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
@@ -395,6 +396,15 @@ void CommandLineInputs::setLastTarget(std::string&& inValue) const noexcept
 	m_lastTarget = std::move(inValue);
 }
 
+const std::string& CommandLineInputs::expectedRunTarget() const noexcept
+{
+	return m_expectedRunTarget;
+}
+void CommandLineInputs::setExpectedRunTarget(const std::string& inValue) const noexcept
+{
+	m_expectedRunTarget = inValue;
+}
+
 /*****************************************************************************/
 const std::optional<StringList>& CommandLineInputs::runArguments() const noexcept
 {
@@ -662,7 +672,7 @@ void CommandLineInputs::setArchitectureRaw(std::string&& inValue) const noexcept
 	}
 	else
 	{
-		m_architectureRaw = std::string{ "auto" };
+		m_architectureRaw = std::string{ Values::Auto };
 	}
 
 	if (String::contains(',', m_architectureRaw))

@@ -18,6 +18,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -339,7 +340,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	if (optionsJson.contains(Keys::OptionsArchitecture))
 	{
-		std::string archString{ "auto" };
+		std::string archString{ Values::Auto };
 		if (!inInputs.targetArchitecture().empty())
 		{
 			if (String::equals("gcc", preference))
@@ -361,6 +362,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	}
 
 	auto& lastTarget = inInputs.lastTarget();
+	auto& expectedRunTarget = inInputs.expectedRunTarget();
 	if (optionsJson.contains(Keys::OptionsLastTarget))
 	{
 		auto& lastTargetNode = optionsJson.at(Keys::OptionsLastTarget);
@@ -371,23 +373,25 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
-	if (optionsJson.contains(Keys::OptionsRunArguments) && !lastTarget.empty() && !String::equals("all", lastTarget))
+	if (optionsJson.contains(Keys::OptionsRunArguments) && !lastTarget.empty())
 	{
 		auto& runArgsJson = optionsJson.at(Keys::OptionsRunArguments);
 		if (runArgsJson.is_object())
 		{
-			if (!runArgsJson.contains(lastTarget) || !runArgsJson[lastTarget].is_string())
+			auto& target = String::equals(Values::All, lastTarget) ? expectedRunTarget : lastTarget;
+			if (!runArgsJson.contains(target) || !runArgsJson[target].is_string())
 			{
-				runArgsJson[lastTarget] = std::string();
+				runArgsJson[target] = std::string();
 			}
 
 			if (inInputs.runArguments().has_value())
 			{
+
 				auto inputsRunArguments = String::join(*inInputs.runArguments());
-				auto& runArguments = runArgsJson.at(lastTarget);
+				auto& runArguments = runArgsJson.at(target);
 				if (runArguments.get<std::string>() != inputsRunArguments)
 				{
-					runArgsJson[lastTarget] = inputsRunArguments;
+					runArgsJson[target] = inputsRunArguments;
 					settingsJson.setDirty(true);
 				}
 			}

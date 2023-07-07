@@ -14,6 +14,7 @@
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -87,7 +88,7 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
 	}
 
-	std::string distTarget = "all";
+	std::string distTarget = Values::All;
 	ret[Keys::Distribution] = Json::object();
 	ret[Keys::Distribution][distTarget] = Json::object();
 	ret[Keys::Distribution][distTarget][Keys::Kind] = "bundle";
