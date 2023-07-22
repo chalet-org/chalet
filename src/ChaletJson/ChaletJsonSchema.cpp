@@ -690,7 +690,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetSourceCxxCppStandard] = R"json({
 		"type": "string",
 		"description": "The C++ standard to use during compilation",
-		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzabc]$",
 		"minLength": 1,
 		"default": "c++17"
 	})json"_ojson;
