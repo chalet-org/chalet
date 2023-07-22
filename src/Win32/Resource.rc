@@ -15,7 +15,7 @@
 WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
 #endif
 
-WIN32_ICON_MAIN ICON "platform/windows/app.ico"
+WIN32_ICON_MAIN ICON "platform/windows/chalet.ico"
 
 /*****************************************************************************/
 // Version Info
