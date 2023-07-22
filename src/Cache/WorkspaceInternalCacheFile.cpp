@@ -500,10 +500,15 @@ void WorkspaceInternalCacheFile::setDisallowSave(const bool inValue)
 }
 
 /*****************************************************************************/
-std::string WorkspaceInternalCacheFile::getAppVersionHash(const std::string& inAppPath)
+std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath) const
 {
 	Output::setShowCommandOverride(false);
-	auto lastWrite = Commands::getLastWriteTime(inAppPath);
+	if (!Commands::pathExists(appPath))
+	{
+		appPath = Commands::which(appPath);
+	}
+
+	auto lastWrite = Commands::getLastWriteTime(appPath);
 	Output::setShowCommandOverride(true);
 
 	return Hash::string(std::to_string(lastWrite));

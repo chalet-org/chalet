@@ -60,7 +60,7 @@ struct WorkspaceInternalCacheFile
 	StringList getCacheIdsToNotRemove() const;
 
 private:
-	std::string getAppVersionHash(const std::string& inAppPath);
+	std::string getAppVersionHash(std::string appPath) const;
 
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;
