@@ -684,7 +684,11 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
 	Path::sanitize(outputLocation);
 
-	if (inTarget.rebuild() && Commands::pathExists(outputLocation))
+	bool rebuild = true;
+	if (m_state.inputs.route().isRebuild())
+		rebuild = inTarget.rebuild();
+
+	if (rebuild && Commands::pathExists(outputLocation))
 	{
 		if (!Commands::removeRecursively(outputLocation))
 		{
@@ -703,7 +707,11 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
 	Path::sanitize(outputLocation);
 
-	if (inTarget.rebuild() && Commands::pathExists(outputLocation))
+	bool rebuild = true;
+	if (m_state.inputs.route().isRebuild())
+		rebuild = inTarget.rebuild();
+
+	if (rebuild && Commands::pathExists(outputLocation))
 	{
 		if (!Commands::removeRecursively(outputLocation))
 		{

@@ -299,9 +299,6 @@ bool BuildState::initializeToolchain()
 		generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
 		cacheFile.setBuildHash(m_uniqueId, true);
 		cacheFile.setSourceCache(m_cachePathId, StrategyType::None);
-
-		if (m_impl->inputs.route().isRebuild())
-			cacheFile.setForceRebuild(true);
 	}
 
 	auto onError = [this]() -> bool {
