@@ -575,6 +575,16 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 	{
 		if (RegexPatterns::matchesGnuCStandard(ret))
 		{
+			std::string yearOnly = ret;
+			String::replaceAll(yearOnly, "gnu", "");
+			String::replaceAll(yearOnly, "c", "");
+
+			// TODO: determine correct revision where 23 can be used
+			if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1500))
+			{
+				String::replaceAll(ret, "23", "2x");
+			}
+
 			ret = "-std=" + ret;
 			outArgList.emplace_back(std::move(ret));
 		}
