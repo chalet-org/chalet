@@ -406,7 +406,9 @@ target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
 #endif
 	else
 	{
-		if (String::equals("23", inProps.langStandard))
+		if (String::equals("26", inProps.langStandard))
+			minimumCMakeVersion = "3.25";
+		else if (String::equals("23", inProps.langStandard))
 			minimumCMakeVersion = "3.20";
 
 		standard = fmt::format("CMAKE_CXX_STANDARD {}", inProps.langStandard);

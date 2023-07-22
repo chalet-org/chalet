@@ -1467,7 +1467,7 @@
 		"target-source-cxx-cppStandard": {
 			"type": "string",
 			"description": "The C++ standard to use during compilation",
-			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+			"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzabc]$",
 			"minLength": 1,
 			"default": "c++17"
 		},

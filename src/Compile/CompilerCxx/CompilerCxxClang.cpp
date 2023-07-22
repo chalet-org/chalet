@@ -116,7 +116,11 @@ void CompilerCxxClang::addLanguageStandard(StringList& outArgList, const SourceT
 			String::replaceAll(yearOnly, "gnu++", "");
 			String::replaceAll(yearOnly, "c++", "");
 
-			if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1700))
+			if (String::equals("26", yearOnly) && (isClang /* && m_versionMajorMinor < 1700 */))
+			{
+				String::replaceAll(ret, "26", "2c");
+			}
+			else if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1700))
 			{
 				String::replaceAll(ret, "23", "2b");
 			}
