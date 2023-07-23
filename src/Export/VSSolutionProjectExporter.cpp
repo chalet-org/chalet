@@ -66,7 +66,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
 		if (!slnGen.saveToFile(fmt::format("{}/project.sln", m_directory)))
 		{
-			Diagnostic::error("There was a problem saving the workspace.sln file.");
+			Diagnostic::error("There was a problem saving the project.sln file.");
 			return false;
 		}
 	}

@@ -7,9 +7,12 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/Xcode/XcodePBXProjGen.hpp"
 #include "Export/Xcode/XcodeProjectSpecGen.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
+
+#define CHALET_XCODE_USE_SPEC_GEN 0
 
 namespace chalet
 {
@@ -53,6 +56,7 @@ bool XcodeProjectExporter::generateProjectFiles()
 	if (!useProjectBuildDirectory(".xcode"))
 		return false;
 
+#if CHALET_XCODE_USE_SPEC_GEN
 	XcodeProjectSpecGen specGen(m_states, m_directory);
 	auto specFile = fmt::format("{}/project-spec.json", m_directory);
 	if (!specGen.saveToFile(specFile))
@@ -79,6 +83,36 @@ bool XcodeProjectExporter::generateProjectFiles()
 	};
 
 	return Commands::subprocess(cmd);
+#else
+	auto xcodeproj = fmt::format("{}/project.xcodeproj", m_directory);
+	if (!Commands::pathExists(xcodeproj))
+		Commands::makeDirectory(xcodeproj);
+
+	auto xcworkspace = fmt::format("{}/project.xcworkspace", xcodeproj);
+	if (!Commands::pathExists(xcworkspace))
+		Commands::makeDirectory(xcworkspace);
+
+	// contents.xcworkspacedata
+	auto xcworkspacedata = fmt::format("{}/contents.xcworkspacedata", xcworkspace);
+	if (!Commands::pathExists(xcworkspacedata))
+	{
+		Commands::createFileWithContents(xcworkspacedata, R"xml(<?xml version="1.0" encoding="UTF-8"?>
+<Workspace version="1.0">
+   <FileRef location="self:">
+   </FileRef>
+</Workspace>)xml");
+	}
+
+	XcodePBXProjGen slnGen(m_states);
+	if (!slnGen.saveToFile(fmt::format("{}/project.pbxproj", xcodeproj)))
+	{
+		Diagnostic::error("There was a problem saving the project.pbxproj file.");
+		return false;
+	}
+
+	LOG(xcodeproj);
+	return false;
+#endif
 }
 
 /*****************************************************************************/
