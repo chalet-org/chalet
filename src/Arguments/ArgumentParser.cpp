@@ -581,7 +581,7 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getToolchainPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("llvm", preset))
-				return std::string("The LLVM Project");
+				return std::string("The LLVM Compiler Infrastructure Project");
 #if defined(CHALET_WIN32)
 			else if (String::equals("gcc", preset))
 				return std::string("MinGW: Minimalist GNU Compiler Collection for Windows");
