@@ -581,7 +581,7 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getToolchainPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("llvm", preset))
-				return std::string("The LLVM Project");
+				return std::string("The LLVM Compiler Infrastructure Project");
 #if defined(CHALET_WIN32)
 			else if (String::equals("gcc", preset))
 				return std::string("MinGW: Minimalist GNU Compiler Collection for Windows");
@@ -607,6 +607,14 @@ std::string ArgumentParser::getHelp()
 				return fmt::format("Microsoft{} Visual Studio 2019", Unicode::registered());
 			else if (String::equals("vs-2017", preset))
 				return fmt::format("Microsoft{} Visual Studio 2017", Unicode::registered());
+			else if (String::equals("llvm-vs-stable", preset))
+				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio (latest stable)", Unicode::registered());
+			else if (String::equals("llvm-vs-preview", preset))
+				return fmt::format("LLVM/CLang in Microsoft{} Visual Studio (latest preview)", Unicode::registered());
+			else if (String::equals("llvm-vs-2022", preset))
+				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2022", Unicode::registered());
+			else if (String::equals("llvm-vs-2019", preset))
+				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2019", Unicode::registered());
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
 			else if (String::equals("intel-llvm-vs-2022", preset))
 				return fmt::format("Intel{} oneAPI DPC++/C++ Compiler with Visual Studio 2022 environment", Unicode::registered());

@@ -1034,9 +1034,11 @@ StringList CommandLineInputs::getToolchainPresets() const
 
 		ret.emplace_back(name);
 	}
+
 	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
-	for (auto& [name, _] : visualStudioLLVMPresets)
+	for (auto it = visualStudioLLVMPresets.rbegin(); it != visualStudioLLVMPresets.rend(); ++it)
 	{
+		auto& [name, type] = *it;
 		ret.emplace_back(name);
 	}
 
