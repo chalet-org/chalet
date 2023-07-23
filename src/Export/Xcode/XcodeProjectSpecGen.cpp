@@ -39,11 +39,13 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename)
 			StringList fileCache;
 
 			auto intermediateDir = firstState.paths.intermediateDir(project);
-
-			if (!Commands::makeDirectory(intermediateDir))
+			if (!Commands::pathExists(intermediateDir))
 			{
-				Diagnostic::error("Error creating paths for project: {}", project.name());
-				return false;
+				if (!Commands::makeDirectory(intermediateDir))
+				{
+					Diagnostic::error("Error creating paths for project: {}", project.name());
+					return false;
+				}
 			}
 		}
 	}
@@ -64,6 +66,10 @@ bool XcodeProjectSpecGen::saveToFile(const std::string& inFilename)
 		{
 			const auto& config = state->configuration;
 			const auto& name = config.name();
+
+			const auto& objDir = state->paths.objDir();
+			if (!Commands::pathExists(objDir))
+				Commands::makeDirectory(objDir);
 
 			// TODO: Need these defaults
 			std::string preset;
