@@ -52,7 +52,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	if (!Commands::createFileWithContents(inFilename, contents))
 	{
-		Diagnostic::error("There was a problem creating the VS solution: {}", inFilename);
+		Diagnostic::error("There was a problem creating the Xcode project: {}", inFilename);
 		return false;
 	}
 
