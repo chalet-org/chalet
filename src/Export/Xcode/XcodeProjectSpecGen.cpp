@@ -236,8 +236,8 @@ Dictionary<std::string> XcodeProjectSpecGen::getConfigSettings(const BuildState&
 			ret["GCC_WARN_UNUSED_VARIABLE"] = "YES";
 			ret["MTL_ENABLE_DEBUG_INFO"] = "NO";
 			ret["MTL_FAST_MATH"] = "YES";
-			ret["SDKROOT"] = inState.info.osTargetName();
-			ret["MACOSX_DEPLOYMENT_TARGET"] = inState.info.osTargetVersion();
+			ret["SDKROOT"] = inState.inputs.osTargetName();
+			ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
 			// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 		}
 	}
