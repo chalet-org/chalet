@@ -25,6 +25,8 @@ protected:
 	virtual std::string getQuotedPath(const std::string& inPath) const final;
 	virtual std::string getPathCommand(std::string_view inCmd, const std::string& inPath) const final;
 
+	virtual void addDefinesToList(StringList& outArgList, const std::string& inPrefix) const final;
+
 	const BuildState& m_state;
 	const SourceTarget& m_project;
 };

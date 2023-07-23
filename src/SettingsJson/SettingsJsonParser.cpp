@@ -91,7 +91,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
 			return false;
 		}
-		else if (!found)
+		else if (!found && required)
 		{
 			needsUpdate = true;
 			break;
@@ -209,16 +209,6 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	// We always want to save these values
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), inState.osTargetName);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
-	if (buildOptions.at(Keys::OptionsOsTargetName).get<std::string>().empty() && !inState.osTargetName.empty())
-	{
-		buildOptions[Keys::OptionsOsTargetName] = inState.osTargetName;
-		m_jsonFile.setDirty(true);
-	}
-	if (buildOptions.at(Keys::OptionsOsTargetVersion).get<std::string>().empty() && !inState.osTargetVersion.empty())
-	{
-		buildOptions[Keys::OptionsOsTargetVersion] = inState.osTargetVersion;
-		m_jsonFile.setDirty(true);
-	}
 
 	m_jsonFile.assignNodeWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
 
@@ -247,7 +237,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	HostPlatform platform = HostPlatform::Linux;
 #endif
 
-	auto whichAdd = [&](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
+	auto whichAdd = [this, &platform](Json& inNode, const std::string& inKey, const HostPlatform inPlatform = HostPlatform::Any) -> bool {
 		if (!inNode.contains(inKey))
 		{
 			if (inPlatform == HostPlatform::Any || inPlatform == platform)
@@ -716,16 +706,15 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 
 	auto xcrun = Commands::which("xcrun");
 	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
+
 	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
 			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
-			if (!sdkPath.empty())
-			{
-				appleSkdsJson[sdk] = std::move(sdkPath);
-				m_jsonFile.setDirty(true);
-			}
+
+			appleSkdsJson[sdk] = std::move(sdkPath);
+			m_jsonFile.setDirty(true);
 		}
 	}
 

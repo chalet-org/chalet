@@ -99,7 +99,8 @@ void LinkerAppleClang::addLibStdCppLinkerOption(StringList& outArgList) const
 		// if (isFlagSupported(flag))
 		List::addIfDoesNotExist(outArgList, std::move(flag));
 
-		// TODO: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
+		// Note: Apple has a "-stdlib=libstdc++" flag that is pre-C++11 for compatibility
+		//  but it is not supported in later versions of Xcode
 	}
 }
 
@@ -122,7 +123,7 @@ bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string
 		if (!LinkerLLVMClang::addArchitecture(outArgList, inArch))
 			return false;
 
-		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state))
+		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state, m_versionMajorMinor))
 			return false;
 	}
 #if defined(CHALET_MACOS)

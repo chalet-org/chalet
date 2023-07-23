@@ -32,7 +32,7 @@ bool ConfigureFileParser::run()
 	// Timer timer;
 	bool result = true;
 
-	auto onReplaceContents = [&](std::string& fileContents) {
+	auto onReplaceContents = [this](std::string& fileContents) {
 		auto onReplace = [this](auto match) {
 			return this->getReplaceValue(std::move(match));
 		};

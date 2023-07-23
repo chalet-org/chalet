@@ -24,11 +24,19 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() = default;
 WorkspaceInternalCacheFile::~WorkspaceInternalCacheFile() = default;
 
 /*****************************************************************************/
-void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
+void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue, const bool inTemp) noexcept
 {
-	m_buildHashChanged = m_buildHash != inValue;
-	m_dirty |= m_buildHashChanged;
-	m_buildHash = inValue;
+	if (inTemp)
+	{
+		m_tempBuildHash = inValue;
+	}
+	else
+	{
+		m_buildHashChanged = m_buildHash != inValue;
+		m_dirty |= m_buildHashChanged;
+		m_buildHash = inValue;
+		m_tempBuildHash.clear();
+	}
 }
 
 /*****************************************************************************/
@@ -306,7 +314,8 @@ bool WorkspaceInternalCacheFile::save()
 		return false;
 
 	// configure step without building first would not have one. don't do anything
-	if (m_buildHash.empty())
+	auto& buildHash = !m_tempBuildHash.empty() ? m_tempBuildHash : m_buildHash;
+	if (buildHash.empty())
 		return true;
 
 	for (auto& [_, sourceCache] : m_sourceCaches)
@@ -320,8 +329,8 @@ bool WorkspaceInternalCacheFile::save()
 
 		rootNode[CacheKeys::Hashes] = Json::object();
 
-		if (!m_buildHash.empty())
-			rootNode[CacheKeys::Hashes][CacheKeys::HashBuild] = m_buildHash;
+		if (!buildHash.empty())
+			rootNode[CacheKeys::Hashes][CacheKeys::HashBuild] = buildHash;
 
 		if (!m_hashTheme.empty())
 			rootNode[CacheKeys::Hashes][CacheKeys::HashTheme] = m_hashTheme;
@@ -491,10 +500,15 @@ void WorkspaceInternalCacheFile::setDisallowSave(const bool inValue)
 }
 
 /*****************************************************************************/
-std::string WorkspaceInternalCacheFile::getAppVersionHash(const std::string& inAppPath)
+std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath) const
 {
 	Output::setShowCommandOverride(false);
-	auto lastWrite = Commands::getLastWriteTime(inAppPath);
+	if (!Commands::pathExists(appPath))
+	{
+		appPath = Commands::which(appPath);
+	}
+
+	auto lastWrite = Commands::getLastWriteTime(appPath);
 	Output::setShowCommandOverride(true);
 
 	return Hash::string(std::to_string(lastWrite));

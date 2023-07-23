@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
@@ -66,11 +67,21 @@ bool CompileStrategyMSBuild::doFullBuild()
 		return false;
 	}
 
+	// TODO: In a recent version of MSBuild (observed in 17.6.3), there's an extra line break in minimal verbosity mode.
+	//   Unsure if it's intentional, or a bug, but we'll heandle it for now
+	//
+	if (m_state.toolchain.versionMajorMinor() >= 1706 && !Output::showCommands())
+		Output::previousLine();
+
 	StringList cmd{
 		msbuild,
 		"-nologo",
 		"-clp:ForceConsoleColor",
 	};
+
+	auto maxJobs = m_state.info.maxJobs();
+	if (maxJobs > 1)
+		cmd.emplace_back(fmt::format("-m:{}", maxJobs));
 
 	if (!Output::showCommands())
 		cmd.emplace_back("-verbosity:m");

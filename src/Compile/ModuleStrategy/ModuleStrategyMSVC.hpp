@@ -17,10 +17,14 @@ struct ModuleStrategyMSVC final : public IModuleStrategy
 	virtual bool initialize() final;
 
 protected:
-	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) final;
+	virtual bool isSystemModuleFile(const std::string& inFile) const final;
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const final;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
+	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) final;
 
 private:
+	Dictionary<std::string> getSystemModules() const;
+
 	std::string m_msvcToolsDirectory;
 };
 }

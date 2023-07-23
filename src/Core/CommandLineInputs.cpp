@@ -13,6 +13,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -87,6 +88,8 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 	return {
 		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "llvm-vs-preview", VisualStudioVersion::Preview },
+		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
 }
 	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
@@ -121,7 +124,7 @@ CommandLineInputs::CommandLineInputs() :
 	kDefaultExternalDirectory("chalet_external"),
 	kDefaultDistributionDirectory("dist"),
 	kGlobalSettingsFile(".chalet/config.json"),
-	kArchPresetAuto("auto"),
+	kArchPresetAuto(Values::Auto),
 	kToolchainPresetGCC("gcc"),
 	kToolchainPresetLLVM("llvm"),
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
@@ -531,9 +534,14 @@ bool CommandLineInputs::isToolchainPreset() const noexcept
 	return m_isToolchainPreset;
 }
 
-bool CommandLineInputs::isToolchainMultiArchPreset() const noexcept
+bool CommandLineInputs::isMultiArchToolchainPreset() const noexcept
 {
-	return m_isToolchainMultiArchPreset;
+	return m_isMultiArchToolchainPreset;
+}
+
+void CommandLineInputs::setMultiArchToolchainPreset(const bool inValue) const noexcept
+{
+	m_isMultiArchToolchainPreset = inValue;
 }
 
 /*****************************************************************************/
@@ -656,7 +664,7 @@ void CommandLineInputs::setArchitectureRaw(std::string&& inValue) const noexcept
 	}
 	else
 	{
-		m_architectureRaw = std::string{ "auto" };
+		m_architectureRaw = std::string{ Values::Auto };
 	}
 
 	if (String::contains(',', m_architectureRaw))
@@ -1027,9 +1035,11 @@ StringList CommandLineInputs::getToolchainPresets() const
 
 		ret.emplace_back(name);
 	}
+
 	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
-	for (auto& [name, _] : visualStudioLLVMPresets)
+	for (auto it = visualStudioLLVMPresets.rbegin(); it != visualStudioLLVMPresets.rend(); ++it)
 	{
+		auto& [name, type] = *it;
 		ret.emplace_back(name);
 	}
 
@@ -1146,7 +1156,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	if (visualStudioPresets.find(inValue) != visualStudioPresets.end())
 	{
 		m_isToolchainPreset = true;
-		m_isToolchainMultiArchPreset = true;
+		m_isMultiArchToolchainPreset = true;
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
 
 		m_toolchainPreferenceName = inValue;
@@ -1227,7 +1237,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	{
 		m_isToolchainPreset = true;
 		if (isGcc)
-			m_isToolchainMultiArchPreset = true;
+			m_isMultiArchToolchainPreset = true;
 
 		m_toolchainPreferenceName = inValue;
 
@@ -1278,7 +1288,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.disassembler = fmt::format("{}objdump{}", prefix, suffix);
 			ret.profiler = fmt::format("{}gprof{}", prefix, suffix);
 
-			if (!m_isToolchainMultiArchPreset)
+			if (!m_isMultiArchToolchainPreset)
 			{
 				m_toolchainPreferenceName = ret.cc;
 			}
@@ -1299,7 +1309,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 	{
 		m_isToolchainPreset = true;
-		m_isToolchainMultiArchPreset = true;
+		m_isMultiArchToolchainPreset = true;
 		m_toolchainPreferenceName = inValue;
 	#if defined(CHALET_WIN32)
 		m_visualStudioVersion = getVisualStudioVersionFromPresetString(inValue);
@@ -1481,7 +1491,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 	}
 #endif
 
-	m_isToolchainMultiArchPreset = false;
+	m_isMultiArchToolchainPreset = false;
 
 	return inArch;
 }

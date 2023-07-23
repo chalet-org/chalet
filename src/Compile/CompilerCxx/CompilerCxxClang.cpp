@@ -13,6 +13,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
+#include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -93,6 +94,70 @@ void CompilerCxxClang::addSanitizerOptions(StringList& outArgList) const
 	if (m_state.configuration.enableSanitizers())
 	{
 		CompilerCxxClang::addSanitizerOptions(outArgList, m_state);
+	}
+}
+
+/*****************************************************************************/
+void CompilerCxxClang::addLanguageStandard(StringList& outArgList, const SourceType derivative) const
+{
+	const CodeLanguage language = m_project.language();
+	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::C || language == CodeLanguage::ObjectiveC);
+	bool useC = validPchType || derivative == SourceType::C || derivative == SourceType::ObjectiveC;
+
+	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
+	std::string ret = String::toLowerCase(langStandard);
+
+	bool isClang = m_state.environment->isClang();
+	if (!useC)
+	{
+		if (RegexPatterns::matchesGnuCppStandard(ret))
+		{
+			std::string yearOnly = ret;
+			String::replaceAll(yearOnly, "gnu++", "");
+			String::replaceAll(yearOnly, "c++", "");
+
+			if (String::equals("26", yearOnly) && (isClang /* && m_versionMajorMinor < 1700 */))
+			{
+				String::replaceAll(ret, "26", "2c");
+			}
+			else if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1700))
+			{
+				String::replaceAll(ret, "23", "2b");
+			}
+			else if (String::equals("20", yearOnly) && (isClang && m_versionMajorMinor < 1000))
+			{
+				String::replaceAll(ret, "20", "2a");
+			}
+			else if (String::equals("17", yearOnly) && (isClang && m_versionMajorMinor < 500))
+			{
+				String::replaceAll(ret, "17", "1z");
+			}
+			else if (String::equals("14", yearOnly) && (isClang && m_versionMajorMinor < 350))
+			{
+				String::replaceAll(ret, "14", "1y");
+			}
+
+			ret = "-std=" + ret;
+			outArgList.emplace_back(std::move(ret));
+		}
+	}
+	else
+	{
+		if (RegexPatterns::matchesGnuCStandard(ret))
+		{
+			std::string yearOnly = ret;
+			String::replaceAll(yearOnly, "gnu", "");
+			String::replaceAll(yearOnly, "c", "");
+
+			// TODO: determine correct revision where 23 can be used
+			if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1600))
+			{
+				String::replaceAll(ret, "23", "2x");
+			}
+
+			ret = "-std=" + ret;
+			outArgList.emplace_back(std::move(ret));
+		}
 	}
 }
 

@@ -34,7 +34,7 @@ struct WorkspaceInternalCacheFile
 
 	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
-	void setBuildHash(const std::string& inValue) noexcept;
+	void setBuildHash(const std::string& inValue, const bool inTemp) noexcept;
 
 	bool forceRebuild() const noexcept;
 	void setForceRebuild(const bool inValue);
@@ -60,7 +60,7 @@ struct WorkspaceInternalCacheFile
 	StringList getCacheIdsToNotRemove() const;
 
 private:
-	std::string getAppVersionHash(const std::string& inAppPath);
+	std::string getAppVersionHash(std::string appPath) const;
 
 	StringList m_doNotRemoves;
 	StringList m_extraHashes;
@@ -68,6 +68,7 @@ private:
 	Unique<JsonFile> m_dataFile;
 
 	std::string m_filename;
+	std::string m_tempBuildHash;
 	std::string m_buildHash;
 	std::string m_hashTheme;
 	std::string m_hashMetadata;

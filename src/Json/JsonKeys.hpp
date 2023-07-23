@@ -164,6 +164,9 @@ CH_STR(Data) = "Data";
 CH_STR(ProvidedModule) = "ProvidedModule";
 CH_STR(ImportedModules) = "ImportedModules";
 CH_STR(ImportedHeaderUnits) = "ImportedHeaderUnits";
+CH_STR(Includes) = "Includes";
+CH_STR(Header) = "Header";
+CH_STR(BMI) = "BMI";
 }
 }
 

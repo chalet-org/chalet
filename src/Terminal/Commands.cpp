@@ -752,7 +752,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			pattern = basePath + '/' + pattern;
 	}
 
-	auto matchIsValid = [&](const fs::path& inmatch) -> bool {
+	auto matchIsValid = [&inSettings](const fs::path& inmatch) -> bool {
 		bool isDirectory = fs::is_directory(inmatch);
 		bool isRegularFile = fs::is_regular_file(inmatch);
 
@@ -834,7 +834,7 @@ bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList,
 {
 	if (inValue.find_first_of("*{") != std::string::npos)
 	{
-		if (!Commands::forEachGlobMatch(inValue, inSettings, [&](std::string inPath) {
+		if (!Commands::forEachGlobMatch(inValue, inSettings, [&outList](std::string inPath) {
 				outList.emplace_back(std::move(inPath));
 			}))
 			return false;

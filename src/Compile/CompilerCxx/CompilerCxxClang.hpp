@@ -24,6 +24,7 @@ protected:
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;
+	virtual void addLanguageStandard(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addDiagnosticColorOption(StringList& outArgList) const override;
 	virtual void addLibStdCppCompileOption(StringList& outArgList, const SourceType derivative) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;

@@ -73,7 +73,7 @@
                 "${workspaceFolder}/external/stduuid/gsl",
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
-                "${workspaceFolder}/build/Debug",
+                "${workspaceFolder}/build/msvc_Debug",
                 "${workspaceFolder}/build/int.chalet"
             ],
             "defines": [

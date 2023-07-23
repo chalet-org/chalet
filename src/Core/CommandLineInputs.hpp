@@ -93,7 +93,8 @@ struct CommandLineInputs
 
 	VisualStudioVersion visualStudioVersion() const noexcept;
 	bool isToolchainPreset() const noexcept;
-	bool isToolchainMultiArchPreset() const noexcept;
+	bool isMultiArchToolchainPreset() const noexcept;
+	void setMultiArchToolchainPreset(const bool inValue) const noexcept;
 
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;
@@ -281,7 +282,7 @@ private:
 
 	bool m_saveSchemaToFile = false;
 	mutable bool m_isToolchainPreset = false;
-	mutable bool m_isToolchainMultiArchPreset = false;
+	mutable bool m_isMultiArchToolchainPreset = false;
 	bool m_saveUserToolchainGlobally = false;
 };
 }

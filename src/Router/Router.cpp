@@ -31,6 +31,7 @@
 #include "Terminal/TerminalTest.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonValues.hpp"
 
 #include "Libraries/Json.hpp"
 
@@ -190,7 +191,7 @@ bool Router::routeBundle(BuildState& inState)
 	}
 
 	// We always want to build all targets during the bundle step
-	inState.inputs.setLastTarget("all");
+	inState.inputs.setLastTarget(Values::All);
 
 	AppBundler bundler(inState);
 	{
@@ -256,7 +257,7 @@ bool Router::routeTerminalTest()
 bool Router::routeExport(CentralState& inCentralState)
 {
 	// We want export to assume all targets are needed
-	m_inputs.setLastTarget("all");
+	m_inputs.setLastTarget(Values::All);
 
 	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
 	if (!projectExporter->generate(inCentralState))

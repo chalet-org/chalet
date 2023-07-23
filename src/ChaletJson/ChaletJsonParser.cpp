@@ -25,6 +25,7 @@
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
@@ -93,11 +94,12 @@ bool ChaletJsonParser::serialize()
 
 	if (m_state.inputs.route().willRun())
 	{
-		if (!validRunTargetRequestedFromInput())
+		auto runTarget = getValidRunTargetFromInput();
+		if (runTarget.empty())
 			return false;
 
 		// do after run target is validated
-		auto& runArguments = m_centralState.getRunTargetArguments();
+		auto& runArguments = m_centralState.getRunTargetArguments(runTarget);
 		if (runArguments.has_value())
 			m_state.inputs.setRunArguments(*runArguments);
 	}
@@ -150,12 +152,13 @@ bool ChaletJsonParser::validBuildRequested() const
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::validRunTargetRequestedFromInput()
+std::string ChaletJsonParser::getValidRunTargetFromInput() const
 {
 	auto lastTarget = m_state.inputs.lastTarget();
-	if (String::equals("all", lastTarget) && !m_state.targets.empty())
+	if (String::equals(Values::All, lastTarget) && !m_state.targets.empty())
 		lastTarget.clear();
 
+	std::string ret;
 	bool setRunTarget = lastTarget.empty();
 	for (auto& target : m_state.targets)
 	{
@@ -167,20 +170,29 @@ bool ChaletJsonParser::validRunTargetRequestedFromInput()
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			if (project.isExecutable())
-				return true;
+			{
+				ret = name;
+				return ret;
+			}
 		}
 		else if (target->isCMake())
 		{
 			auto& project = static_cast<const CMakeTarget&>(*target);
 			if (!project.runExecutable().empty())
-				return true;
+			{
+				ret = name;
+				return ret;
+			}
 		}
 		else if (target->isScript())
-			return true;
+		{
+			ret = name;
+			return ret;
+		}
 	}
 
 	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
-	return false;
+	return ret;
 }
 
 /*****************************************************************************/
@@ -356,7 +368,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		}
 	}
 
-	if (m_abstractSourceTarget.find("all") != m_abstractSourceTarget.end())
+	if (m_abstractSourceTarget.find(Values::All) != m_abstractSourceTarget.end())
 	{
 		Diagnostic::error("{}: 'all' is a reserved build target name, and cannot be used inside 'abstracts'.", m_chaletJson.filename());
 		return false;
@@ -370,7 +382,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 
 	for (auto& [name, targetJson] : targets.items())
 	{
-		if (String::equals("all", name))
+		if (String::equals(Values::All, name))
 		{
 			Diagnostic::error("{}: 'all' is a reserved build target name, and cannot be used inside 'targets'.", m_chaletJson.filename());
 			return false;
@@ -801,20 +813,22 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 /*****************************************************************************/
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
-	bool willRun = m_state.inputs.route().willRun();
-
+	const auto& lastTarget = m_state.inputs.lastTarget();
 	for (const auto& [key, value] : inNode.items())
 	{
+		StringList validNames{
+			outTarget.name(),
+			Values::All,
+		};
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_array())
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (outTarget.name() == m_state.inputs.lastTarget())
+				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value())
-						m_state.inputs.setRunArguments(std::move(val));
+					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
@@ -835,10 +849,9 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (outTarget.name() == m_state.inputs.lastTarget())
+				if (String::equals(validNames, lastTarget))
 				{
-					if (willRun && !m_state.inputs.runArguments().has_value())
-						m_state.inputs.setRunArguments(std::move(val));
+					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 				}
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
@@ -1013,6 +1026,22 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 bool ChaletJsonParser::parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const
 {
 	Ref<TargetMetadata> metadata;
+
+	if (inNode.is_string())
+	{
+		const auto value = inNode.get<std::string>();
+		if (String::equals("workspace", value))
+		{
+			metadata = std::make_shared<TargetMetadata>(m_state.workspace.metadata());
+			outTarget.setMetadata(std::move(metadata));
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	if (outTarget.hasMetadata())
 		metadata = std::make_shared<TargetMetadata>(outTarget.metadata());
 	else
@@ -1784,5 +1813,4 @@ ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inSt
 
 	return ConditionResult::Pass;
 }
-
 }

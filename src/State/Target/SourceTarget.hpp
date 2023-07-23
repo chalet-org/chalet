@@ -207,6 +207,8 @@ private:
 	bool determinePicType();
 	bool initializeUnityBuild();
 
+	std::string getPrecompiledHeaderResolvedToRoot() const;
+
 	SourceKind parseProjectKind(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);

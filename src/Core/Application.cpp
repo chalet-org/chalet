@@ -76,7 +76,7 @@ void Application::initializeTerminal()
 		Diagnostic::printErrors();
 		this->cleanup();
 	});
-#endif // _DEBUG
+#endif
 }
 
 /*****************************************************************************/

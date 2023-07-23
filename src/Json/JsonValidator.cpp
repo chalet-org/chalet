@@ -97,8 +97,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 	auto& data = outError.data;
 
 	/*
-		// Leftover from old error handler (wtf was this?)
-
+		// Leftover from old error handler (what was this?)
 		if (String::startsWith("Value", outError.messageRaw))
 		{
 			return fmt::format("An invalid value was found in '{}'. {}", outError.key, outError.messageRaw);
@@ -108,7 +107,6 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 	// LOG("outError.type: ", static_cast<int>(outError.type));
 
 	const std::string& parentKey = outError.key.empty() ? kRootKey : outError.key;
-
 	switch (outError.type)
 	{
 		case JsonSchemaError::schema_ref_unresolved:

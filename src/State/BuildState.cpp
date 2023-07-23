@@ -108,7 +108,7 @@ bool BuildState::initialize()
 		return false;
 
 	// Update settings after toolchain & chalet.json have been parsed
-	if (!cache.updateSettingsFromToolchain(inputs, toolchain))
+	if (!cache.updateSettingsFromToolchain(inputs, m_impl->centralState, toolchain))
 		return false;
 
 	if (!initializeBuild())
@@ -304,7 +304,7 @@ bool BuildState::initializeToolchain()
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState(); // this will be incomplete by this point, but wee need it when the toolchain initializes
-		cacheFile.setBuildHash(m_uniqueId);
+		cacheFile.setBuildHash(m_uniqueId, true);
 		cacheFile.setSourceCache(m_cachePathId, StrategyType::None);
 	}
 
@@ -354,6 +354,9 @@ bool BuildState::initializeBuild()
 
 	if (!paths.initialize())
 		return false;
+
+	// No longer needed
+	m_impl->centralState.clearRunArgumentMap();
 
 	// These should only be relevant if cross-compiling (so far)
 	//
@@ -451,7 +454,7 @@ bool BuildState::initializeBuild()
 	{
 		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState();
-		cacheFile.setBuildHash(m_uniqueId);
+		cacheFile.setBuildHash(m_uniqueId, false);
 		cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
 	}
 
@@ -1259,6 +1262,8 @@ void BuildState::generateUniqueIdForState()
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
 	const auto& buildConfig = info.buildConfiguration();
+	const auto& targetOsName = inputs.osTargetName();
+	const auto& targetOsVersion = inputs.osTargetVersion();
 
 	bool showCmds = false;
 	if (toolchain.strategy() != StrategyType::Ninja)
@@ -1279,7 +1284,7 @@ void BuildState::generateUniqueIdForState()
 	}
 
 	// Note: no targetHash
-	auto hashable = Hash::getHashableString(hostArch, targetArch, envId, buildConfig, showCmds, dumpAssembly);
+	auto hashable = Hash::getHashableString(hostArch, targetArch, targetOsName, targetOsVersion, envId, buildConfig, showCmds, dumpAssembly);
 	m_cachePathId = Hash::string(hashable);
 
 	// Unique ID is used by the internal cache to determine if the build files need to be updated

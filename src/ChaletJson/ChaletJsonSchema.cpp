@@ -22,7 +22,6 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
 	kPatternDistributionName(R"regex(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
 	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
-	kPatternVersion(R"regex(^((\d+\.){1,3})?\d+$)regex"),
 	kPatternConditions(R"regex(\[(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\}))([\+\|](\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\})))*\])regex") // https://regexr.com/6jni8
 {
 }
@@ -37,45 +36,45 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::WorkspaceName] = R"json({
 		"type": "string",
-		"description": "A name to describe the entire workspace.",
+		"description": "Metadata: A name to describe the entire workspace.",
 		"minLength": 1,
 		"pattern": "^[\\w\\-+ ]+$"
 	})json"_ojson;
 
 	defs[Defs::WorkspaceVersion] = R"json({
 		"type": "string",
-		"description": "A version to give to the entire workspace.",
+		"description": "Metadata: A version to give to the entire workspace.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::WorkspaceVersion][SKeys::Pattern] = kPatternVersion;
+	defs[Defs::WorkspaceVersion][SKeys::Pattern] = R"regex(^((\d+\.){1,3})?\d+$)regex";
 
 	defs[Defs::WorkspaceDescription] = R"json({
 		"type": "string",
-		"description": "A description for the workspace.",
+		"description": "Metadata: A description for the workspace.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::WorkspaceHomepage] = R"json({
 		"type": "string",
-		"description": "A homepage URL for the workspace.",
+		"description": "Metadata: A homepage URL for the workspace.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::WorkspaceAuthor] = R"json({
 		"type": "string",
-		"description": "An individual or business entity involved in creating or maintaining the workspace.",
+		"description": "Metadata: An individual or business entity involved in creating or maintaining the workspace.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::WorkspaceLicense] = R"json({
 		"type": "string",
-		"description": "A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
+		"description": "Metadata: A license identifier or text file path that describes how people are permitted or restricted to use this workspace.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::WorkspaceReadme] = R"json({
 		"type": "string",
-		"description": "A path to the readme file of the workspace.",
+		"description": "Metadata: A path to the readme file of the workspace.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -84,25 +83,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::ConfigurationDebugSymbols] = R"json({
 		"type": "boolean",
-		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-g3' option (-g & macro expansion information) and forces '-O0' if the optimizationLevel is not '0' or 'debug'.\nIn MSVC, this enables '/debug', '/incremental' and forces '/Od' if the optimizationLevel is not '0' or 'debug'.\nThis flag is also the determining factor whether the ':debug' suffix is used in a chalet.json property.",
+		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-g3` option (`-g` & macro information expansion) and forces `-O0` if the optimizationLevel is not `0` or `debug`.\nIn MSVC, this enables `/debug`, `/incremental` and forces `/Od` if the optimizationLevel is not `0` or `debug`.\nAdditionally, `_DEBUG` will be defined in `*-pc-windows-msvc` targets.\nThis flag is also the determining factor whether the `:debug` suffix is used in a chalet.json property.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigurationEnableProfiling] = R"json({
 		"type": "boolean",
-		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the '-pg' option\nIn MSVC, this adds equivalent options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
+		"description": "true to enable profiling for this configuration, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-pg` option\nIn MSVC, this adds the `/debug:FULL` and `/profile` options.\nIf profiling is enabled and the project is run, a compatible profiler application will be launched when the program is run.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigurationInterproceduralOptimization] = R"json({
 		"type": "boolean",
-		"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the '-flto' & '-fno-fat-lto-objects' options to the compiler, and '-flto' to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing /GL to cl.exe and /LTCG to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
+		"description": "true to use interprocedural optimizations, false otherwise.\nIn GCC, this enables link-time optimizations - the equivalent to passing the `-flto` & `-fno-fat-lto-objects` options to the compiler, and `-flto` to the linker.\nIn MSVC, this performs whole program optimizations - the equivalent to passing `/GL` to cl.exe and `/LTCG` to link.exe and lib.exe\nIn Clang, so far, this does nothing.",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::ConfigurationOptimizationLevel] = R"json({
 		"type": "string",
-		"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective '-O' option, except for 'debug' (-Od) and 'size' (-Os).\nIn MSVC, it's mapped as follows: 0 (/Od), 1 (/O1), 2 (/O2), 3 (/Ox), size (/Os), fast (/Ot), debug (/Od)\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
+		"description": "The optimization level of the build.\nIn GNU-based compilers, This maps 1:1 with its respective `-O` option, except for debug - `-Od` and size - `-Os`.\nIn MSVC, it's mapped as follows: 0 - `/Od`, 1 - `/O1`, 2 - `/O2`, 3 - `/Ox`, size - `/Os`, fast - `/Ot`, debug - `/Od`\nIf this value is unset, no optimization level will be used (implying the compiler's default).",
 		"minLength": 1,
 		"enum": [
 			"0",
@@ -146,13 +145,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::DistributionBundleInclude] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the 'Resources' folder of the application bundle.",
+		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the `Resources` folder of the application bundle.",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::DistributionBundleExclude] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "In folder paths that are included with 'include', exclude certain files or paths.\nCan accept a glob pattern.",
+		"description": "In folder paths that are included with `include`, exclude certain files or paths.\nCan accept a glob pattern.",
 		"minLength": 1
 	})json"_ojson);
 
@@ -165,7 +164,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto macosBundleType = R"json({
 			"type": "string",
-			"description": "The MacOS bundle type (only .app is supported currently)",
+			"description": "The MacOS bundle type (only `.app` is supported currently)",
 			"minLength": 1,
 			"enum": [
 				"app"
@@ -256,19 +255,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::DistributionBundleMainExecutable] = R"json({
 		"type": "string",
-		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the 'buildTargets' array of the bundle will be chosen as the main executable.",
+		"description": "The name of the main executable project target.\nIf this property is not defined, the first executable in the `buildTargets` array of the bundle will be chosen as the main executable.",
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::DistributionBundleOutputDirectory] = R"json({
+	defs[Defs::DistributionBundleSubDirectory] = R"json({
 		"type": "string",
-		"description": "The output folder to place the final build along with all of its included resources and shared libraries.",
-		"minLength": 1,
-		"default": "dist"
+		"description": "The sub-directory to be placed inside of the `dist` directory (it not otherwise changed) to place this bundle along with all of its included resources and shared libraries.",
+		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::DistributionBundleBuildTargets] = R"json({
-		"description": "Either an array of build target names to include in this bundle. A single string value of '*' will include all build targets.\nIf 'mainExecutable' is not defined, the first executable target in this list will be chosen as the main exectuable.",
+		"description": "Either an array of build target names to include in this bundle. A single string value of `*` will include all build targets.\nIf `mainExecutable` is not defined, the first executable target in this list will be chosen as the main executable.",
 		"oneOf": [
 			{
 				"type": "string",
@@ -291,7 +289,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::DistributionArchiveFormat] = R"json({
 		"type": "string",
-		"description": "The archive format to use. If not specified, 'zip' will be used.",
+		"description": "The archive format to use. If not specified, `zip` will be used.",
 		"minLength": 1,
 		"enum": [
 			"zip",
@@ -302,7 +300,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::DistributionArchiveInclude] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of '*' will archive everything in the bundle directory.",
+		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of `*` will archive everything in the bundle directory.",
 		"minLength": 1
 	})json"_ojson);
 	defs[Defs::DistributionArchiveInclude][SKeys::OneOf][0][SKeys::Default] = "*";
@@ -332,7 +330,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	defs[Defs::DistributionMacosDiskImageBackground] = R"json({
-		"description": "Either a path to a TIFF, a PNG background image, or paths to 1x/2x PNG background images.",
+		"description": "Either a single path to a TIFF or a PNG background image, or paths to 1x/2x PNG background images.",
 		"oneOf": [
 			{
 				"type": "string",
@@ -362,7 +360,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	m_nonIndexedDefs[Defs::DistributionMacosDiskImageSize] = R"json({
 		"type": "object",
-		"description": "The dimensions of the root of the disk image.",
+		"description": "The visible window dimensions of the disk image.",
 		"additionalProperties": false,
 		"required": [
 			"width",
@@ -388,7 +386,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions] = R"json({
 		"type": "object",
-		"description": "The icon positions of paths in the root disk image. Specifying the name of a bundle will include it in the image. Specifying 'Applications' will include a symlink to the '/Applications' path. Additionally, if there is a bundle named 'Applications', it will be ignored, and an error will be displayed.",
+		"description": "Icon positions for the root disk image paths.\nSpecifying the name of a bundle will include it in the image. Specifying `Applications` will include a symbolic link to the `/Applications` path.\nAdditionally, if there is a bundle named `Applications`, it will be ignored, and an error will be displayed.",
 		"additionalProperties": false
 	})json"_ojson;
 	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][SKeys::PatternProperties][kPatternDistributionNameSimple] = R"json({
@@ -409,7 +407,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			},
 			"y": {
 				"type": "integer",
-				"description": "The x position of the path's icon",
+				"description": "The y position of the path's icon",
 				"default": 80,
 				"minimum": -1024,
 				"maximum": 32000
@@ -436,20 +434,20 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::ExternalDependencyGitBranch] = R"json({
 		"type": "string",
-		"description": "The branch to checkout. Uses the repository's default if not set.",
+		"description": "The git branch to checkout. Uses the repository's default if not set.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitCommit] = R"json({
 		"type": "string",
-		"description": "The SHA1 hash of the commit to checkout.",
+		"description": "The SHA1 hash of the git commit to checkout.",
 		"pattern": "^[0-9a-f]{7,40}$",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::ExternalDependencyGitTag] = R"json({
 		"type": "string",
-		"description": "The tag to checkout on the selected branch. If it's blank or not found, the head of the branch will be checked out.",
+		"description": "The tag to checkout on the selected git branch. If it's blank or not found, the head of the branch will be checked out.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -461,14 +459,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::ExternalDependencyLocalPath] = R"json({
 		"type": "string",
-		"description": "The local path to a dependency to build from. Can take 'env' substitution variables. (ie. '${env:SOME_PATH}')",
+		"description": "The local path to a dependency to build from. Can take `env` and `var` substitution variables. (ie. `${env:SOME_PATH}`)",
 		"minLength": 1
 	})json"_ojson;
 
 	//
 	// environment
 	//
-	defs[Defs::VariableValue] = R"json({
+	defs[Defs::EnvironmentVariableValue] = R"json({
 		"type": "string",
 		"description": "The value to assign to an environment variable",
 		"minLength": 1
@@ -512,7 +510,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceExtends] = R"json({
 		"type": "string",
-		"description": "A project template to extend. Defaults to '*' implicitly.",
+		"description": "An abstract source target template to extend from. Defaults to `*` implicitly.\n If `abstracts:*` is not defined, then effectively, nothing is extended.",
 		"pattern": "",
 		"minLength": 1,
 		"default": "*"
@@ -598,7 +596,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceLanguage] = R"json({
 		"type": "string",
-		"description": "The target language of the project.",
+		"description": "The desired programming language of the project.",
 		"minLength": 1,
 		"enum": [
 			"C",
@@ -611,7 +609,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceConfigureFiles] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of files to copy into an intermediate build folder, and susbstitute variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
+		"description": "A list of files to copy into an intermediate build folder, which may include susbstitution variables formatted as either `@VAR` or `${VAR}`. These refer to metadata values at the workspace level or at the source target (project) level. They will be replaced with the variables' value, or an empty string if not recognized. Some backwards compatibility with CMake configure files are supported for convenience.\nThe variables are:\n`WORKSPACE_NAME` `WORKSPACE_DESCRIPTION` `WORKSPACE_AUTHOR` `WORKSPACE_HOMEPAGE_URL` `WORKSPACE_LICENSE` `WORKSPACE_README` `WORKSPACE_VERSION` `WORKSPACE_VERSION_MAJOR` `WORKSPACE_VERSION_MINOR` `WORKSPACE_VERSION_PATCH` `WORKSPACE_VERSION_TWEAK`\n`PROJECT_NAME` `PROJECT_DESCRIPTION` `PROJECT_AUTHOR` `PROJECT_HOMEPAGE_URL` `PROJECT_LICENSE` `PROJECT_README` `PROJECT_VERSION` `PROJECT_VERSION_MAJOR` `PROJECT_VERSION_MINOR` `PROJECT_VERSION_PATCH` `PROJECT_VERSION_TWEAK`\n`CMAKE_PROJECT_NAME` `CMAKE_PROJECT_DESCRIPTION` `CMAKE_PROJECT_AUTHOR` `CMAKE_PROJECT_HOMEPAGE_URL` `CMAKE_PROJECT_LICENSE` `CMAKE_PROJECT_README` `CMAKE_PROJECT_VERSION` `CMAKE_PROJECT_VERSION_MAJOR` `CMAKE_PROJECT_VERSION_MINOR` `CMAKE_PROJECT_VERSION_PATCH` `CMAKE_PROJECT_VERSION_TWEAK`\n\n`CMAKE_PROJECT_` variables are equivalent to `WORKSPACE_` so using them is a matter of compatibility and preference.",
 		"minLength": 1
 	})json"_ojson);
 
@@ -622,7 +620,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "string",
 		"description": "A name to describe the build target.",
 		"minLength": 1,
-		"pattern": "^[\\w\\-+ ]+$"
+		"pattern": "^[\\w\\-+ \\.\\$\\{\\}:]+$"
 	})json"_ojson;
 
 	defs[Defs::TargetSourceMetadataVersion] = R"json({
@@ -630,7 +628,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "A version to give to the build target.",
 		"minLength": 1
 	})json"_ojson;
-	defs[Defs::TargetSourceMetadataVersion][SKeys::Pattern] = kPatternVersion;
+	defs[Defs::TargetSourceMetadataVersion][SKeys::Pattern] = R"regex(^[\w\-+ \.\$\{\}:]+$)regex";
 
 	defs[Defs::TargetSourceMetadataDescription] = R"json({
 		"type": "string",
@@ -664,13 +662,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCopyFilesOnRun] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "If the project is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the 'MacOS' folder path alongside the executable.",
+		"description": "If this is the run target, a list of files that should be copied into the build folder before running. This is primarily meant for libraries that need to be resolved from the same directory as the run target. In the case of MacOS bundles, these will be copied inside the `MacOS` folder path alongside the executable.",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetDefaultRunArguments] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "If the project is the run target, a string of arguments to pass to the run command.",
+		"description": "If this is the run target, a string of arguments to pass to the run command.",
 		"minLength": 1
 	})json"_ojson,
 		false);
@@ -685,14 +683,14 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxCompileOptions] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Addtional options (per compiler type) to add during the compilation step.",
+		"description": "Addtional options per compiler type (via property conditions) to add during the compilation step.",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxCppStandard] = R"json({
 		"type": "string",
-		"description": "The C++ standard to use in the compilation",
-		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzab]$",
+		"description": "The C++ standard to use during compilation",
+		"pattern": "^(c|gnu)\\+\\+\\d[\\dxyzabc]$",
 		"minLength": 1,
 		"default": "c++17"
 	})json"_ojson;
@@ -705,25 +703,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxIncludeDirs] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of directories to include with the project.",
+		"description": "A list of directories to include during compilation.",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxLibDirs] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Fallback search paths to look for static or dynamic libraries (/usr/lib is included by default)",
+		"description": "Fallback search paths to look for static or dynamic libraries (`/usr/lib` is included by default)",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxLinkerScript] = R"json({
 		"type": "string",
-		"description": "An LD linker script path (.ld file) to pass to the linker command",
+		"description": "An LD linker script path (`.ld` file) to pass to the linker command.\nThis is only used by GCC / MinGW toolchains.",
 		"minLength": 1
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxLinkerOptions] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Addtional options (per compiler type) to add during the linking step.",
+		"description": "Addtional options per compiler type (via property conditions) to add during the linking step.",
 		"minLength": 1
 	})json"_ojson);
 
@@ -757,13 +755,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxAppleFrameworks] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: 'Foundation' instead of Foundation.framework)",
+		"description": "A list of Apple Frameworks to link to the project.\n\nNote: Only the name of the framework is necessary (ex: `Foundation` instead of `Foundation.framework`)",
 		"minLength": 1
 	})json"_ojson);
 
 	defs[Defs::TargetSourceCxxPrecompiledHeader] = R"json({
 		"type": "string",
-		"description": "Compile a header file as a pre-compiled header and include it in compilation of every object file in the project. Define a path relative to the workspace root.",
+		"description": "Treat a header file as a pre-compiled header and include it during compilation of every object file in the project. Define a path relative to the workspace root, but it must be contained within a sub-folder (such as `src`).",
 		"minLength": 1
 	})json"_ojson;
 
@@ -789,7 +787,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxCppFilesystem] = R"json({
 		"type": "boolean",
-		"description": "true to enable C++17 filesystem, false to disable (default).",
+		"description": "true to enable C++17 filesystem in previous language standards (equivalent to `-lc++-fs`), false to disable (default).",
 		"default": false
 	})json"_ojson;
 
@@ -801,13 +799,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxCppCoroutines] = R"json({
 		"type": "boolean",
-		"description": "true to enable C++20 coroutines, false to disable (default).",
+		"description": "true to enable C++20 coroutines (equivalent to `-fcoroutines` or `-fcoroutines-ts`), false to disable (default).",
 		"default": false
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxCppConcepts] = R"json({
 		"type": "boolean",
-		"description": "true to enable C++20 concepts in previous language standards (equivalent to '-fconcepts' or '-fconcepts-ts'), false to disable (default).",
+		"description": "true to enable C++20 concepts in previous language standards (equivalent to `-fconcepts` or `-fconcepts-ts`), false to disable (default).",
 		"default": false
 	})json"_ojson;
 
@@ -838,7 +836,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxFastMath] = R"json({
 		"type": "boolean",
-		"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to '-ffast-math'). false to disable (default).",
+		"description": "true to enable additional (and potentially dangerous) floating point optimizations (equivalent to `-ffast-math`). false to disable (default).",
 		"default": false
 	})json"_ojson;
 
@@ -864,7 +862,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		Json staticLinks = R"json({
 			"type": "string",
-			"description": "A list of static links to use with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static or dynamic library.",
+			"description": "A list of libraries to statically link with the linker. Can be the name of the source target, a link identifier (no extension), or the full relative path to a static library.",
 			"minLength": 1
 		})json"_ojson;
 		staticLinks[SKeys::Pattern] = kPatternTargetSourceLinks;
@@ -872,7 +870,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	defs[Defs::TargetSourceCxxUnityBuild] = R"json({
-		"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in 'files'.",
+		"description": "true to automatically build this target as a unity build. false to disable (default). This will combine all included source files into a single compilation unit in the order they're declared in `files`.",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
@@ -885,7 +883,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxWarningsPreset] = R"json({
 		"type": "string",
-		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding `-W` prefix)",
 		"minLength": 1,
 		"enum": [
 			"none",
@@ -900,7 +898,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxWarnings] = R"json({
 		"type": "array",
-		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding '-W' prefix)",
+		"description": "Either a preset of the warnings to use, or the warnings flags themselves (excluding `-W` prefix)",
 		"uniqueItems": true,
 		"minItems": 1,
 		"items": {
@@ -1233,7 +1231,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxWindowsSubSystem] = R"json({
 		"type": "string",
-		"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to 'console'",
+		"description": "The subsystem to use for the target on Windows systems. If not specified, defaults to `console`",
 		"minLength": 1,
 		"enum": [
 			"console",
@@ -1251,7 +1249,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxWindowsEntryPoint] = R"json({
 		"type": "string",
-		"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to 'main'",
+		"description": "The type of entry point to use for the target on Windows systems. If not specified, defaults to `main`",
 		"minLength": 1,
 		"enum": [
 			"main",
@@ -1294,7 +1292,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeBuildFile] = R"json({
 		"type": "string",
-		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (-C)",
+		"description": "The build file to use, if not CMakeLists.txt, relative to the location. (`-C` options)",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1306,7 +1304,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeDefines] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Macro definitions to be passed into CMake. (-D)",
+		"description": "Macro definitions to be passed into CMake. (`-D` options)",
 		"minLength": 1
 	})json"_ojson);
 
@@ -1330,7 +1328,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeToolset] = R"json({
 		"type": "string",
-		"description": "A toolset to be passed to CMake with the -T option.",
+		"description": "A toolset file to be passed to CMake (`-T` option).",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1487,7 +1485,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(distTarget, "macosBundle", Defs::DistributionBundleMacOSBundle, false);
 		addProperty(distTarget, "mainExecutable", Defs::DistributionBundleMainExecutable);
 		addProperty(distTarget, "outputDescription", Defs::TargetOutputDescription);
-		addProperty(distTarget, "subdirectory", Defs::DistributionBundleOutputDirectory);
+		addProperty(distTarget, "subdirectory", Defs::DistributionBundleSubDirectory);
 		defs[Defs::DistributionBundle] = std::move(distTarget);
 	}
 
@@ -1565,8 +1563,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"type": "object",
 			"description": "Local variables to be used inside of the build file, but shouldn't be part of the environment (.env) - ie. shortcuts to paths that may otherwise be verbose."
 		})json"_ojson;
-		variables[SKeys::PatternProperties][R"(^[A-Za-z0-9_]{3,255}$)"] = getDefinition(Defs::VariableValue);
-		defs[Defs::Variables] = std::move(variables);
+		variables[SKeys::PatternProperties][R"(^[A-Za-z0-9_]{3,255}$)"] = getDefinition(Defs::EnvironmentVariableValue);
+		defs[Defs::EnvironmentVariables] = std::move(variables);
 	}
 
 	{
@@ -1671,17 +1669,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	{
 		auto sourceMetadata = R"json({
-			"type": "object",
-			"additionalProperties": false,
-			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)"
+			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
+			"oneOf": [
+				{
+					"type": "object",
+					"additionalProperties": false
+				},
+				{
+					"type": "string",
+					"const": "workspace"
+				}
+			]
 		})json"_ojson;
-		addProperty(sourceMetadata, "author", Defs::TargetSourceMetadataAuthor);
-		addProperty(sourceMetadata, "description", Defs::TargetSourceMetadataDescription);
-		addProperty(sourceMetadata, "homepage", Defs::TargetSourceMetadataHomepage);
-		addProperty(sourceMetadata, "license", Defs::TargetSourceMetadataLicense);
-		addProperty(sourceMetadata, "name", Defs::TargetSourceMetadataName);
-		addProperty(sourceMetadata, "readme", Defs::TargetSourceMetadataReadme);
-		addProperty(sourceMetadata, "version", Defs::TargetSourceMetadataVersion);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "author", Defs::TargetSourceMetadataAuthor);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "description", Defs::TargetSourceMetadataDescription);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "homepage", Defs::TargetSourceMetadataHomepage);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "license", Defs::TargetSourceMetadataLicense);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "name", Defs::TargetSourceMetadataName);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "readme", Defs::TargetSourceMetadataReadme);
+		addProperty(sourceMetadata[SKeys::OneOf][0], "version", Defs::TargetSourceMetadataVersion);
 
 		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
 	}
@@ -1867,7 +1873,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionBundleInclude: return "dist-bundle-include";
 		case Defs::DistributionBundleExclude: return "dist-bundle-exclude";
 		case Defs::DistributionBundleMainExecutable: return "dist-bundle-mainExecutable";
-		case Defs::DistributionBundleOutputDirectory: return "dist-bundle-subdirectory";
+		case Defs::DistributionBundleSubDirectory: return "dist-bundle-subdirectory";
 		case Defs::DistributionBundleBuildTargets: return "dist-bundle-buildTargets";
 		case Defs::DistributionBundleIncludeDependentSharedLibraries: return "dist-bundle-includeDependentSharedLibraries";
 		case Defs::DistributionBundleMacOSBundle: return "dist-bundle-macosBundle";
@@ -1905,8 +1911,8 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::ExternalDependencyScript: return "external-dependency-script";
 		//
-		case Defs::Variables: return "variables";
-		case Defs::VariableValue: return "variable-value";
+		case Defs::EnvironmentVariables: return "variables";
+		case Defs::EnvironmentVariableValue: return "variable-value";
 		case Defs::EnvironmentSearchPaths: return "searchPaths";
 		//
 		case Defs::TargetOutputDescription: return "target-outputDescription";
@@ -2198,14 +2204,14 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][3] = getDefinition(Defs::DistributionMacosDiskImage);
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][4] = getDefinition(Defs::DistributionProcess);
 
-	ret[SKeys::Properties]["variables"] = getDefinition(Defs::Variables);
+	ret[SKeys::Properties]["variables"] = getDefinition(Defs::EnvironmentVariables);
 
 	const auto externalDependencies = "externalDependencies";
 	const std::string patternExternalName{ "^[\\w\\-+.]{3,100}$" };
 	ret[SKeys::Properties][externalDependencies] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of externalDependencies to install prior to building or via the configure command. The key will be the destination directory name for the repository within the folder defined by the command-line option 'external:(name)'."
+		"description": "Dependencies to resolve prior to building or via the configure command, that are considered external to this project. The object key will be used as a reference to the resulting location via '${external:(key)}'."
 	})json"_ojson;
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName] = R"json({
 		"type": "object",

@@ -58,7 +58,6 @@ bool CentralChaletJsonParser::validateAgainstSchema() const
 		JsonFile::saveToFile(jsonSchema, "schema/chalet.schema.json");
 	}
 
-	// TODO: schema versioning
 	if (!m_chaletJson.validate(std::move(jsonSchema)))
 		return false;
 

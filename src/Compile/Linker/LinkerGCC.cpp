@@ -411,7 +411,7 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 
 	if (m_project.staticRuntimeLibrary())
 	{
-		auto addFlag = [&](std::string flag) {
+		auto addFlag = [&outArgList](std::string flag) {
 			// if (isFlagSupported(flag))
 			List::addIfDoesNotExist(outArgList, std::move(flag));
 		};

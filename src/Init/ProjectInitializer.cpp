@@ -136,7 +136,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
@@ -188,7 +188,7 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	printUserInputSplit();
 
 	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.modules);
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
 		String::replaceAll(mainCpp, '\t', "   ");
 		return mainCpp;
 	});
@@ -333,7 +333,7 @@ bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
-	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.modules);
+	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.langStandard, inProps.modules);
 
 	return Commands::createFileWithContents(outFile, contents);
 }
@@ -651,7 +651,7 @@ bool ProjectInitializer::getUseCxxModules(const CodeLanguage inLang, std::string
 
 	if (!langStandard.empty() && langStandard.front() == '2')
 	{
-		return Output::getUserInputYesNo("Enable C++20 modules?", false, "If true, C++ source files are treated as modules. (MSVC Only)");
+		return Output::getUserInputYesNo("Enable C++ modules?", false, "If true, C++ source files are treated as modules. (MSVC Only)");
 	}
 
 	return false;

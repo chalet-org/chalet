@@ -7,18 +7,72 @@
 
 #include "Utility/Hash.hpp"
 
+#include "State/BuildState.hpp"
+#include "State/Target/IBuildTarget.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-bool TargetMetadata::initialize()
+bool TargetMetadata::initialize(const BuildState& inState, const IBuildTarget* inTarget, const bool isWorkspace)
 {
+	auto replaceVariableIfValid = [&](std::string& outVar) -> bool {
+		if (isWorkspace && String::contains("${meta:workspace", outVar))
+		{
+			Diagnostic::error("Workspace metadata cannot reference itself: {}", outVar);
+			return false;
+		}
+
+		return inState.replaceVariablesInString(outVar, inTarget);
+	};
+
+	if (!replaceVariableIfValid(m_name))
+	{
+		Diagnostic::error("The name could not be parsed: {}", m_name);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_description))
+	{
+		Diagnostic::error("The description could not be parsed: {}", m_description);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_homepage))
+	{
+		Diagnostic::error("The homepage could not be parsed: {}", m_homepage);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_author))
+	{
+		Diagnostic::error("The author could not be parsed: {}", m_author);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_license))
+	{
+		Diagnostic::error("The license could not be parsed: {}", m_license);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_readme))
+	{
+		Diagnostic::error("The readme could not be parsed: {}", m_readme);
+		return false;
+	}
+
+	if (!replaceVariableIfValid(m_versionString))
+	{
+		Diagnostic::error("The version could not be parsed: {}", m_versionString);
+		return false;
+	}
+
 	if (!m_versionString.empty())
 	{
 		if (!m_version.setFromString(m_versionString))
 		{
-			Diagnostic::error("The supplied workspace version was invalid.");
+			Diagnostic::error("The version was invalid: {}", m_versionString);
 			return false;
 		}
 	}

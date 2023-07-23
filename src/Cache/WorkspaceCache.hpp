@@ -48,7 +48,7 @@ private:
 	bool initialize(const CommandLineInputs& inInputs);
 	bool initializeSettings(const CommandLineInputs& inInputs);
 
-	bool updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CompilerTools& inToolchain);
+	bool updateSettingsFromToolchain(const CommandLineInputs& inInputs, const CentralState& inCentralState, const CompilerTools& inToolchain);
 
 	WorkspaceInternalCacheFile m_cacheFile;
 

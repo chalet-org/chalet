@@ -31,6 +31,7 @@
 #include "Utility/Timer.hpp"
 #include "Utility/Version.hpp"
 #include "Json/JsonFile.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -73,7 +74,7 @@ bool CentralState::initialize()
 		state.generateCompileCommands = false;
 		state.buildConfiguration = BuildConfiguration::getDefaultReleaseConfigurationName();
 		state.toolchainPreference = m_inputs.defaultToolchainPreset();
-		state.architecturePreference = "auto";
+		state.architecturePreference = Values::Auto;
 		state.inputFile = m_inputs.defaultInputFile();
 		state.envFile = m_inputs.defaultEnvFile();
 		// state.rootDirectory = std::string();
@@ -83,13 +84,19 @@ bool CentralState::initialize()
 		// state.signingIdentity = std::string();
 		state.osTargetName = m_inputs.getDefaultOsTargetName();
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
-		state.lastTarget = "all";
+		state.lastTarget = Values::All;
 
 		if (!parseGlobalSettingsJson(state))
 			return false;
 
 		if (!parseLocalSettingsJson(state))
 			return false;
+
+		if (m_inputs.osTargetName().empty())
+			m_inputs.setOsTargetName(m_inputs.getDefaultOsTargetName());
+
+		if (m_inputs.osTargetVersion().empty())
+			m_inputs.setOsTargetVersion(m_inputs.getDefaultOsTargetVersion());
 	}
 
 	tools.setSigningIdentity(m_inputs.signingIdentity());
@@ -248,19 +255,48 @@ void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
 }
 
 /*****************************************************************************/
-const std::optional<StringList>& CentralState::getRunTargetArguments()
+void CentralState::addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue)
 {
-	const auto& lastTarget = m_inputs.lastTarget();
-	if (!lastTarget.empty())
+	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
 	{
-		if (m_runArgumentMap.find(lastTarget) != m_runArgumentMap.end())
+		m_runArgumentMap[inKey] = std::move(inValue);
+	}
+}
+
+/*****************************************************************************/
+void CentralState::addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue)
+{
+	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
+	{
+		// TODO: probably a bad idea to join the arguments like this here... rework later
+		m_runArgumentMap[inKey] = String::join(inValue);
+	}
+}
+
+/*****************************************************************************/
+const Dictionary<std::string>& CentralState::runArgumentMap() const noexcept
+{
+	return m_runArgumentMap;
+}
+
+/*****************************************************************************/
+const std::optional<StringList>& CentralState::getRunTargetArguments(const std::string& inTarget)
+{
+	if (!inTarget.empty())
+	{
+		if (m_runArgumentMap.find(inTarget) != m_runArgumentMap.end())
 		{
-			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(lastTarget)));
+			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(inTarget)));
 		}
 	}
-	m_runArgumentMap.clear();
 
 	return m_inputs.runArguments();
+}
+
+/*****************************************************************************/
+void CentralState::clearRunArgumentMap()
+{
+	m_runArgumentMap.clear();
 }
 
 /*****************************************************************************/
@@ -286,6 +322,7 @@ bool CentralState::validateOsTarget()
 		Diagnostic::error("Error in configuration: expected an os target version, but it was blank.");
 		return false;
 	}
+
 	Version version;
 	if (!version.setFromString(osTargetVersion))
 	{

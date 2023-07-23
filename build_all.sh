@@ -14,6 +14,8 @@ if [[ $PLATFORM == "windows" ]]; then
 	# PATH="/c/msys64/mingw64/bin:$PATH"
 	# bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
 	./build.bat Debug && build/msvc_Debug/chalet-debug -c Release buildrun
+elif [[ $PLATFORM == "macos" ]]; then
+	bash ./build.sh Debug && build/Debug/chalet-debug --os-target-name macosx --os-target-version 11.0 -c Release buildrun
 else
 	bash ./build.sh Debug && build/Debug/chalet-debug -c Release buildrun
 fi

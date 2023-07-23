@@ -25,24 +25,6 @@ bool CompilerCxxIntelClang::initialize()
 	if (!CompilerCxxClang::initialize())
 		return false;
 
-	/*const auto& cxxExt = m_state.paths.cxxExtension();
-	if (cxxExt.empty())
-		return false;
-
-	if (m_project.usesPrecompiledHeader())
-	{
-		const auto& objDir = m_state.paths.objDir();
-		const auto& pch = m_project.precompiledHeader();
-		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
-
-		if (!Commands::pathExists(m_pchSource))
-		{
-			auto pchMinusLocation = String::getPathFilename(pch);
-			if (!Commands::createFileWithContents(m_pchSource, fmt::format("#include \"{}\"", pchMinusLocation)))
-				return false;
-		}
-	}*/
-
 	return true;
 }
 

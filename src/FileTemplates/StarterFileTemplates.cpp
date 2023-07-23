@@ -14,6 +14,7 @@
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -87,7 +88,7 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 		ret[Keys::Targets][project]["files"][0] = fmt::format("{}/{}", inProps.location, inProps.mainSource);
 	}
 
-	std::string distTarget = "all";
+	std::string distTarget = Values::All;
 	ret[Keys::Distribution] = Json::object();
 	ret[Keys::Distribution][distTarget] = Json::object();
 	ret[Keys::Distribution][distTarget][Keys::Kind] = "bundle";
@@ -97,14 +98,32 @@ Json StarterFileTemplates::getStandardChaletJson(const ChaletJsonProps& inProps)
 }
 
 /*****************************************************************************/
-std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const bool inModules)
+std::string StarterFileTemplates::getMainCxx(const CodeLanguage inLanguage, const std::string& inStandard, const bool inModules)
 {
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
 	{
-		if (inModules)
+		if (inModules && String::equals("20", inStandard))
 		{
 			ret = R"cpp(import <iostream>;
+
+int main(const int argc, const char* argv[])
+{
+	std::cout << "Hello world!\n\n";
+	std::cout << "Args:\n";
+
+	for (int i = 0; i < argc; ++i)
+	{
+		std::cout << "  " << argv[i] << '\n';
+	}
+
+	return 0;
+})cpp";
+		}
+		else if (inModules)
+		{
+			// c++ 23 and up
+			ret = R"cpp(import std;
 
 int main(const int argc, const char* argv[])
 {
@@ -387,7 +406,9 @@ target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
 #endif
 	else
 	{
-		if (String::equals("23", inProps.langStandard))
+		if (String::equals("26", inProps.langStandard))
+			minimumCMakeVersion = "3.25";
+		else if (String::equals("23", inProps.langStandard))
 			minimumCMakeVersion = "3.20";
 
 		standard = fmt::format("CMAKE_CXX_STANDARD {}", inProps.langStandard);

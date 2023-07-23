@@ -19,6 +19,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -108,7 +109,7 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			break;
 
 		case QueryOption::RunTarget:
-			ret = getCurrentRunTarget();
+			ret = getCurrentLastTarget();
 			break;
 
 		case QueryOption::AllRunTargets:
@@ -372,14 +373,14 @@ StringList QueryController::getArchitectures() const
 	}
 
 	return {
-		"auto",
+		Values::Auto,
 	};
 }
 
 /*****************************************************************************/
 StringList QueryController::getArchitectures(const std::string& inToolchain) const
 {
-	StringList ret{ "auto" };
+	StringList ret{ Values::Auto };
 
 	bool handledRest = false;
 
@@ -609,7 +610,7 @@ StringList QueryController::getCurrentToolchain() const
 /*****************************************************************************/
 StringList QueryController::getAllBuildTargets() const
 {
-	StringList ret{ "all" };
+	StringList ret{ Values::All };
 
 	const auto& chaletJson = m_centralState.chaletJson().json;
 
@@ -677,7 +678,7 @@ StringList QueryController::getAllRunTargets() const
 }
 
 /*****************************************************************************/
-StringList QueryController::getCurrentRunTarget() const
+StringList QueryController::getCurrentLastTarget() const
 {
 	StringList ret;
 
@@ -755,12 +756,12 @@ StringList QueryController::getChaletJsonState() const
 	Json output = Json::object();
 	output["configurations"] = getBuildConfigurationList();
 	output["configurationDetails"] = getBuildConfigurationDetails();
-	auto runTargetRes = getCurrentRunTarget();
-	if (!runTargetRes.empty())
-		output["defaultRunTarget"] = std::move(runTargetRes.front());
-
 	output["runTargets"] = getAllRunTargets();
-	output["targets"] = getAllBuildTargets();
+	output["buildTargets"] = getAllBuildTargets();
+
+	auto lastTargetRes = getCurrentLastTarget();
+	if (!lastTargetRes.empty())
+		output["defaultRunTarget"] = std::move(lastTargetRes.front());
 
 	ret.emplace_back(output.dump());
 
@@ -806,6 +807,13 @@ StringList QueryController::getSettingsJsonState() const
 		auto toolchain = std::move(toolchainRes.front());
 		output["architectures"] = getArchitectures(toolchain);
 		output["toolchain"] = std::move(toolchain);
+	}
+
+	auto lastTargetRes = getCurrentLastTarget();
+	if (!lastTargetRes.empty())
+	{
+		output["lastRunTarget"] = lastTargetRes.front();
+		output["lastBuildTarget"] = lastTargetRes.front();
 	}
 
 	ret.emplace_back(output.dump());

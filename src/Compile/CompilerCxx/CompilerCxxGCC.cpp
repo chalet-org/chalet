@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -78,6 +79,17 @@ bool CompilerCxxGCC::initialize()
 		else
 #endif
 		{
+			// If The previous build with this build path (matching target triples) has a PCH source file, remove it (MSVC -> LLVM)
+			bool buildHashChanged = m_state.cache.file().buildHashChanged();
+			const auto& cxxExt = m_state.paths.cxxExtension();
+			if (buildHashChanged && !cxxExt.empty())
+			{
+				auto pchSource = fmt::format("{}{}.{}", objDir, pch, cxxExt);
+				if (Commands::pathExists(pchSource))
+					Commands::remove(pchSource);
+			}
+
+			// make the intermediate header for the PCH
 			if (!makeIntermediateHeader(pchIntermediate, pch))
 				return false;
 		}
@@ -445,24 +457,7 @@ void CompilerCxxGCC::addWarnings(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addDefines(StringList& outArgList) const
 {
-
-	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-	const std::string prefix{ "-D" };
-	for (auto& define : m_project.defines())
-	{
-		auto pos = define.find("=\"");
-		if (!isNative && pos != std::string::npos && define.back() == '\"')
-		{
-			std::string key = define.substr(0, pos);
-			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
-			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-			List::addIfDoesNotExist(outArgList, prefix + def);
-		}
-		else
-		{
-			List::addIfDoesNotExist(outArgList, prefix + define);
-		}
-	}
+	addDefinesToList(outArgList, "-D");
 }
 
 /*****************************************************************************/
@@ -546,10 +541,7 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
 	std::string ret = String::toLowerCase(langStandard);
 
-	// TODO: Make this "dumber" so only the allowed strings are used by each compiler
-
 	bool isGcc = m_state.environment->isGcc();
-
 	if (!useC)
 	{
 		if (RegexPatterns::matchesGnuCppStandard(ret))
@@ -558,7 +550,11 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 			String::replaceAll(yearOnly, "gnu++", "");
 			String::replaceAll(yearOnly, "c++", "");
 
-			if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1200)) // might be 12.x, might be 13.x
+			if (String::equals("26", yearOnly) && (isGcc /* && m_versionMajorMinor < 1300 */))
+			{
+				String::replaceAll(ret, "26", "2c");
+			}
+			else if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1300))
 			{
 				String::replaceAll(ret, "23", "2b");
 			}
@@ -583,6 +579,16 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 	{
 		if (RegexPatterns::matchesGnuCStandard(ret))
 		{
+			std::string yearOnly = ret;
+			String::replaceAll(yearOnly, "gnu", "");
+			String::replaceAll(yearOnly, "c", "");
+
+			// TODO: determine correct revision where 23 can be used
+			if (String::equals("23", yearOnly) && (isGcc && m_versionMajorMinor < 1500))
+			{
+				String::replaceAll(ret, "23", "2x");
+			}
+
 			ret = "-std=" + ret;
 			outArgList.emplace_back(std::move(ret));
 		}
@@ -602,8 +608,6 @@ void CompilerCxxGCC::addDebuggingInformationOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addProfileInformation(StringList& outArgList) const
 {
-	// TODO: gcc/clang distinction on mac?
-
 	if (m_state.configuration.enableProfiling())
 	{
 		if (!m_project.isSharedLibrary())

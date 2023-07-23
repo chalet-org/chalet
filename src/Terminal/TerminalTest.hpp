@@ -6,6 +6,8 @@
 #ifndef CHALET_TERMINAL_TEST_HPP
 #define CHALET_TERMINAL_TEST_HPP
 
+#include "Terminal/ColorTheme.hpp"
+
 namespace chalet
 {
 struct TerminalTest
@@ -18,8 +20,11 @@ private:
 	void printTerminalCapabilities();
 	void printUnicodeCharacters();
 	void printChaletColorThemes();
+	void printColorCombinations();
 
 	void printBanner(const std::string& inText);
+	void printTheme(const ColorTheme& inTheme);
+	void printThemeSimple(const ColorTheme& inTheme);
 
 	const char kEsc;
 	const std::size_t kWidth;

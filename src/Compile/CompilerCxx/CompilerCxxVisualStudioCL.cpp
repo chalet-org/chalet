@@ -45,7 +45,17 @@ bool CompilerCxxVisualStudioCL::initialize()
 		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)
 			arch = "arm64";
 
-		m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
+		std::string configuration;
+		if (m_state.configuration.debugSymbols())
+			configuration = "Debug";
+		else
+			configuration = "Release";
+
+		m_ifcDirectory = fmt::format("{}/ifc/{}/{}", toolsDir, arch, configuration);
+		if (!Commands::pathExists(m_ifcDirectory))
+		{
+			m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
+		}
 	}
 
 	return true;
@@ -407,23 +417,8 @@ void CompilerCxxVisualStudioCL::addWarnings(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addDefines(StringList& outArgList) const
 {
-	bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
 	const std::string prefix{ "/D" };
-	for (auto& define : m_project.defines())
-	{
-		auto pos = define.find("=\"");
-		if (!isNative && pos != std::string::npos && define.back() == '\"')
-		{
-			std::string key = define.substr(0, pos);
-			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
-			std::string def = fmt::format("{}=\\\"{}\\\"", key, value);
-			outArgList.emplace_back(prefix + def);
-		}
-		else
-		{
-			outArgList.emplace_back(prefix + define);
-		}
-	}
+	addDefinesToList(outArgList, prefix);
 
 	if (!m_msvcAdapter.supportsExceptions())
 		List::addIfDoesNotExist(outArgList, prefix + "_HAS_EXCEPTIONS=0");
