@@ -23,7 +23,6 @@ struct AncillaryTools
 
 	void fetchBashVersion();
 	void fetchXcodeVersion();
-	void fetchXcodeGenVersion();
 
 	const ScriptAdapter& scriptAdapter() const;
 
@@ -90,13 +89,6 @@ struct AncillaryTools
 	uint xcodeVersionMajor() const noexcept;
 	uint xcodeVersionMinor() const noexcept;
 
-	// xcodegen
-	const std::string& xcodegen() const noexcept;
-	void setXcodegen(std::string&& inValue) noexcept;
-	uint xcodegenVersionMajor() const noexcept;
-	uint xcodegenVersionMinor() const noexcept;
-	uint xcodegenVersionPatch() const noexcept;
-
 	const std::string& xcrun() const noexcept;
 	void setXcrun(std::string&& inValue) noexcept;
 
@@ -153,7 +145,6 @@ private:
 	std::string m_tar;
 	std::string m_tiffutil;
 	std::string m_xcodebuild;
-	std::string m_xcodegen;
 	std::string m_xcrun;
 	std::string m_zip;
 
@@ -163,10 +154,6 @@ private:
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;
-
-	uint m_xcodegenVersionMajor = 0;
-	uint m_xcodegenVersionMinor = 0;
-	uint m_xcodegenVersionPatch = 0;
 
 	bool m_bashAvailable = false;
 };

@@ -32,6 +32,8 @@ struct Uuid
 	 */
 	static Uuid v5(std::string_view inStr, std::string_view inNameSpace);
 
+	Uuid();
+
 	bool operator==(const Uuid& rhs) const;
 	bool operator!=(const Uuid& rhs) const;
 
@@ -41,7 +43,6 @@ struct Uuid
 	std::string toAppleHash() const;
 
 private:
-	Uuid();
 	Uuid(std::string&& inStr);
 
 	std::string m_str;

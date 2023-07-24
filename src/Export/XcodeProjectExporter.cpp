@@ -44,8 +44,10 @@ bool XcodeProjectExporter::validate(const BuildState& inState)
 		return false;
 	}
 
+#if CHALET_XCODE_USE_SPEC_GEN
 	if (!validateXcodeGenIsInstalled(typeName))
 		return false;
+#endif
 
 	return true;
 }

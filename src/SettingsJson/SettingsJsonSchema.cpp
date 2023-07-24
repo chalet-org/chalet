@@ -36,7 +36,6 @@ enum class Defs : ushort
 	Tar,
 	TiffUtil,
 	XcodeBuild,
-	// XcodeGen,
 	XcRun,
 	Zip,
 
@@ -202,12 +201,6 @@ Json SettingsJsonSchema::get()
 		"description": "The executable path to Apple's xcodebuild command-line utility. (MacOS)",
 		"default": "/usr/bin/xcodebuild"
 	})json"_ojson;
-
-	/*defs[Defs::XcodeGen] = R"json({
-		"type": "string",
-		"description": "The executable path to the xcodegen Homebrew application (MacOS)",
-		"default": "/usr/local/bin/xcodegen"
-	})json"_ojson;*/
 
 	defs[Defs::XcRun] = R"json({
 		"type": "string",
@@ -570,7 +563,6 @@ Json SettingsJsonSchema::get()
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTar] = defs[Defs::Tar];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTiffutil] = defs[Defs::TiffUtil];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodebuild] = defs[Defs::XcodeBuild];
-	// ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodeGen] = defs[Defs::XcodeGen];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcrun] = defs[Defs::XcRun];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsZip] = defs[Defs::Zip];
 

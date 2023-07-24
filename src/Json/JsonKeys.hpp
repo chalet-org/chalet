@@ -106,7 +106,6 @@ CH_STR(ToolsSips) = "sips";
 CH_STR(ToolsTar) = "tar";
 CH_STR(ToolsTiffutil) = "tiffutil";
 CH_STR(ToolsXcodebuild) = "xcodebuild";
-// CH_STR(ToolsXcodegen) = "xcodegen";
 CH_STR(ToolsXcrun) = "xcrun";
 CH_STR(ToolsZip) = "zip";
 //
