@@ -38,6 +38,8 @@ struct Uuid
 	const std::string& str() const noexcept;
 	std::string toUpperCase() const;
 
+	std::string toAppleHash() const;
+
 private:
 	Uuid();
 	Uuid(std::string&& inStr);

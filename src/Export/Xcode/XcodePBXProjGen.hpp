@@ -6,8 +6,8 @@
 #ifndef CHALET_XCODE_PBXPROJ_GEN_HPP
 #define CHALET_XCODE_PBXPROJ_GEN_HPP
 
+#include "Libraries/Json.hpp"
 #include "Utility/Uuid.hpp"
-#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
@@ -20,7 +20,15 @@ struct XcodePBXProjGen
 	bool saveToFile(const std::string& inFilename);
 
 private:
+	std::string getHashWithLabel(const std::string& inValue) const;
+	std::string getHashWithLabel(const Uuid& inHash, const std::string& inLabel) const;
+	UJson getHashedJsonValue(const std::string& inValue) const;
+	UJson getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
+
 	const std::vector<Unique<BuildState>>& m_states;
+
+	std::string m_xcodeNamespaceGuid;
+	std::string m_projectGuid;
 };
 }
 
