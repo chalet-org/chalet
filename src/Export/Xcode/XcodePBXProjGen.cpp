@@ -19,10 +19,14 @@
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
 
 namespace chalet
 {
+struct PBXGroup
+{
+	std::string path;
+	StringList children;
+};
 enum class PBXFileEncoding : uint
 {
 	Default = 0,
@@ -79,26 +83,86 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	m_projectUUID = Uuid::v5(fmt::format("{}_PBXPROJ", workspaceName), m_xcodeNamespaceGuid);
 	m_projectGuid = m_projectUUID.str();
 
-	std::string testA{ "int.new-project in Resources" };
-	std::string testB{ "int.new-project" };
-	LOG(Uuid::v5(testA, m_projectGuid).toAppleHash(), fmt::format("/* {} */", testA));
-	LOG(Uuid::v5(testB, m_projectGuid).toAppleHash(), fmt::format("/* {} */", testB));
+	StringList directories;
+	StringList sources;
+	StringList headers;
+	StringList targets;
+	std::map<std::string, PBXGroup> groups;
 
-	StringList directories{
-		"int.new-project",
-		"obj.new-project"
-	};
-	StringList sources{
-		"main.cpp"
-	};
-	StringList headers{
-		"pch.hpp"
-	};
-	StringList targets{
-		"new-project"
-	};
+	{
+		StringList paths;
+		for (auto& state : m_states)
+		{
+			for (auto& target : state->targets)
+			{
+				if (target->isSources())
+				{
+					const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
+					state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
 
-	Timer timer;
+					List::addIfDoesNotExist(directories, String::getPathFilename(state->paths.intermediateDir(sourceTarget)));
+					List::addIfDoesNotExist(directories, String::getPathFilename(state->paths.objDir()));
+
+					List::addIfDoesNotExist(targets, sourceTarget.outputFile());
+
+					auto& pch = sourceTarget.precompiledHeader();
+
+					for (auto& include : sourceTarget.includeDirs())
+					{
+						List::addIfDoesNotExist(paths, include);
+					}
+
+					for (auto& file : sourceTarget.files())
+					{
+						List::addIfDoesNotExist(sources, String::getPathFilename(file));
+						List::addIfDoesNotExist(paths, file);
+					}
+
+					if (!pch.empty())
+					{
+						List::addIfDoesNotExist(headers, String::getPathFilename(pch));
+						List::addIfDoesNotExist(paths, pch);
+					}
+					auto tmpHeaders = sourceTarget.getHeaderFiles();
+					for (auto& file : tmpHeaders)
+					{
+						List::addIfDoesNotExist(headers, String::getPathFilename(file));
+						List::addIfDoesNotExist(paths, file);
+					}
+				}
+			}
+		}
+
+		for (auto& pathRaw : paths)
+		{
+			if (String::startsWith("/usr", pathRaw))
+				continue;
+
+			auto child = String::getPathFilename(pathRaw);
+			auto name = String::getPathFilename(String::getPathFolder(pathRaw));
+			std::string path;
+			if (name.empty())
+			{
+				name = std::move(child);
+				path = Commands::getProximatePath(pathRaw, fmt::format("{}/../..", inFilename));
+			}
+			else
+			{
+				path = Commands::getProximatePath(String::getPathFolder(pathRaw), fmt::format("{}/../..", inFilename));
+			}
+
+			if (groups.find(name) == groups.end())
+			{
+				groups.emplace(name, PBXGroup{});
+				groups[name].path = std::move(path);
+			}
+
+			if (!child.empty())
+			{
+				List::addIfDoesNotExist(groups[name].children, getHashWithLabel(child));
+			}
+		}
+	}
 
 	Json json;
 	json["archiveVersion"] = 1;
@@ -106,6 +170,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	json["objectVersion"] = kMinimumObjectVersion;
 	json["objects"] = Json::object();
 	auto& objects = json.at("objects");
+
+	auto mainGroup = Uuid::v5("mainGroup", m_xcodeNamespaceGuid).toAppleHash();
+	auto products = getHashWithLabel("Products");
+	const std::string group{ "<group>" };
 
 	// PBXBuildFile
 	{
@@ -136,23 +204,23 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto key = getHashWithLabel(dir);
 			node[key]["isa"] = section;
 			node[key]["path"] = dir;
-			node[key]["sourceTree"] = "<group>";
+			node[key]["sourceTree"] = group;
 		}
 		for (const auto& source : sources)
 		{
 			auto key = getHashWithLabel(source);
 			node[key]["isa"] = section;
-			node[key]["path"] = source;
 			node[key]["lastKnownFileType"] = "sourcecode.cpp.cpp";
-			node[key]["sourceTree"] = "<group>";
+			node[key]["path"] = source;
+			node[key]["sourceTree"] = group;
 		}
 		for (const auto& header : headers)
 		{
 			auto key = getHashWithLabel(header);
 			node[key]["isa"] = section;
-			node[key]["path"] = header;
 			node[key]["lastKnownFileType"] = "sourcecode.cpp.h";
-			node[key]["sourceTree"] = "<group>";
+			node[key]["path"] = header;
+			node[key]["sourceTree"] = group;
 		}
 		for (const auto& target : targets)
 		{
@@ -166,7 +234,37 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	// PBXGroup
 	{
-		//
+		const std::string section{ "PBXGroup" };
+		objects[section] = Json::object();
+		auto& node = objects.at(section);
+
+		StringList childNodes;
+		for (const auto& [name, pbxGroup] : groups)
+		{
+			auto key = getHashWithLabel(name);
+			node[key]["isa"] = section;
+			node[key]["children"] = pbxGroup.children;
+			node[key]["name"] = name;
+			node[key]["path"] = pbxGroup.path;
+			node[key]["sourceTree"] = group;
+			childNodes.emplace_back(std::move(key));
+		}
+
+		node[products] = Json::object();
+		node[products]["isa"] = section;
+		node[products]["children"] = Json::array();
+		for (auto& target : targets)
+		{
+			node[products]["children"].push_back(getHashWithLabel(target));
+		}
+		node[products]["name"] = "Products";
+		node[products]["sourceTree"] = group;
+
+		node[mainGroup] = Json::object();
+		node[mainGroup]["isa"] = section;
+		node[mainGroup]["children"] = childNodes;
+		node[mainGroup]["children"].emplace_back(products);
+		node[mainGroup]["sourceTree"] = group;
 	}
 
 	// PBXNativeTarget
@@ -175,12 +273,20 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
 
-		// literally the executable(s)
 		for (const auto& target : targets)
 		{
-			auto key = getHashWithLabel(m_projectUUID, target);
+			auto key = getTargetHashWithLabel(target);
 			node[key]["isa"] = section;
 			node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(target));
+			node[key]["buildPhases"] = Json::array();
+			node[key]["buildPhases"].push_back(getHashWithLabel("Sources"));
+			node[key]["buildPhases"].push_back(getHashWithLabel("Resources"));
+			node[key]["buildRules"] = Json::array();
+			node[key]["dependencies"] = Json::array();
+			node[key]["name"] = target;
+			node[key]["productName"] = target;
+			node[key]["productReference"] = getHashWithLabel(target);
+			node[key]["productType"] = "com.apple.product-type.tool";
 		}
 	}
 
@@ -196,21 +302,20 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["attributes"] = Json::object();
 		node[key]["attributes"]["LastUpgradeCheck"] = 1200;
 		node[key]["attributes"]["TargetAttributes"] = Json::object();
-		node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(name));
+		node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(name, false));
 		node[key]["compatibilityVersion"] = "Xcode 11.0";
 		node[key]["developmentRegion"] = region;
 		node[key]["hasScannedForEncodings"] = 0;
 		node[key]["knownRegions"] = Json::array();
 		node[key]["knownRegions"].push_back("Base");
 		node[key]["knownRegions"].push_back(region);
-		node[key]["mainGroup"] = 0; // TODO: apple hash pointing to a PBXGroup
+		node[key]["mainGroup"] = mainGroup;
 		node[key]["projectDirPath"] = "";
 		node[key]["projectRoot"] = "";
 		node[key]["targets"] = Json::array();
 		for (const auto& target : targets)
 		{
-			auto hash = getHashWithLabel(target);
-			node[key]["targets"].push_back(hash);
+			node[key]["targets"].push_back(getTargetHashWithLabel(target));
 		}
 	}
 
@@ -258,8 +363,19 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto& name = state->configuration.name();
 			auto key = getHashWithLabel(name);
 			node[key]["isa"] = section;
-			node[key]["buildSettings"] = getBuildSettings(*state);
 			// node[key]["buildSettings"] = Json::object();
+			node[key]["buildSettings"] = getBuildSettings(*state);
+			// node[key]["baseConfigurationReference"] = "";
+			node[key]["name"] = name;
+		}
+		for (auto& state : m_states)
+		{
+			auto& name = state->configuration.name();
+			auto hash = Uuid::v5(fmt::format("{}_PROJECT", name), m_xcodeNamespaceGuid);
+			auto key = getHashWithLabel(hash, name);
+			node[key]["isa"] = section;
+			// node[key]["buildSettings"] = Json::object();
+			node[key]["buildSettings"] = getProductBuildSettings(*state);
 			// node[key]["baseConfigurationReference"] = "";
 			node[key]["name"] = name;
 		}
@@ -274,21 +390,27 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		StringList configurations;
 		for (auto& state : m_states)
 		{
-			configurations.emplace_back(getHashWithLabel(state->configuration.name()));
+			auto hash = Uuid::v5(fmt::format("{}_PROJECT", state->configuration.name()), m_xcodeNamespaceGuid);
+			configurations.emplace_back(getHashWithLabel(hash, state->configuration.name()));
 		}
 
 		auto& node = objects.at(section);
 		{
-			auto key = getBuildConfigurationListLabel(project, false);
+			auto key = getHashWithLabel(getBuildConfigurationListLabel(project, false));
 			node[key]["isa"] = section;
 			node[key]["buildConfigurations"] = configurations;
 			node[key]["defaultConfigurationIsVisible"] = 0;
 			node[key]["defaultConfigurationName"] = firstState.configuration.name();
 		}
 
+		configurations.clear();
+		for (auto& state : m_states)
+		{
+			configurations.emplace_back(getHashWithLabel(state->configuration.name()));
+		}
 		for (const auto& target : targets)
 		{
-			auto key = getBuildConfigurationListLabel(target);
+			auto key = getHashWithLabel(getBuildConfigurationListLabel(target));
 			node[key]["isa"] = section;
 			node[key]["buildConfigurations"] = configurations;
 			node[key]["defaultConfigurationIsVisible"] = 0;
@@ -300,9 +422,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	// LOG(json.dump(2, ' '));
 
-	LOG("Generated in:", timer.asString());
-
 	auto contents = generateFromJson(json);
+
+	// LOG(contents);
+
 	if (!Commands::createFileWithContents(inFilename, contents))
 	{
 		Diagnostic::error("There was a problem creating the Xcode project: {}", inFilename);
@@ -323,6 +446,12 @@ std::string XcodePBXProjGen::getHashWithLabel(const std::string& inValue) const
 std::string XcodePBXProjGen::getHashWithLabel(const Uuid& inHash, const std::string& inLabel) const
 {
 	return fmt::format("{} /* {} */", inHash.toAppleHash(), inLabel);
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getTargetHashWithLabel(const std::string& inTarget) const
+{
+	return getHashWithLabel(Uuid::v5(fmt::format("{}_TARGET", inTarget), m_xcodeNamespaceGuid), inTarget);
 }
 
 /*****************************************************************************/
@@ -420,6 +549,86 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
 }
 
 /*****************************************************************************/
+Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
+{
+	// TODO: this is currently just based on a Debug mode
+
+	Json ret;
+	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
+	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
+	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
+	ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
+	ret["CLANG_CXX_LIBRARY"] = "libc++";
+	ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
+	ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
+	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
+	ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
+	ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_COMMA"] = getBoolString(true);
+	ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
+	ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
+	ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
+	ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
+	ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
+	ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
+	ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
+	ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
+	ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
+	ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
+	ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
+	ret["CLANG_WARN_SUSPICIOUS_MOVE"] = getBoolString(true);
+	ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
+	ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
+	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
+	ret["COPY_PHASE_STRIP"] = getBoolString(false);
+	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
+	ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
+	ret["ENABLE_TESTABILITY"] = getBoolString(true);
+	ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
+	ret["GCC_DYNAMIC_NO_PIC"] = getBoolString(false);
+	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
+	ret["GCC_OPTIMIZATION_LEVEL"] = 0;
+	ret["GCC_PREPROCESSOR_DEFINITIONS"] = {
+		"$(inherited)",
+		"DEBUG=1",
+	};
+	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
+	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
+	ret["GCC_WARN_UNDECLARED_SELECTOR"] = getBoolString(true);
+	ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
+	ret["GCC_WARN_UNUSED_FUNCTION"] = getBoolString(true);
+	ret["GCC_WARN_UNUSED_VARIABLE"] = getBoolString(true);
+	ret["MTL_ENABLE_DEBUG_INFO"] = "INCLUDE_SOURCE";
+	ret["MTL_FAST_MATH"] = getBoolString(false);
+	ret["ONLY_ACTIVE_ARCH"] = getBoolString(true);
+	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
+	ret["SDKROOT"] = inState.inputs.osTargetName();
+	// ret["LD_RUNPATH_SEARCH_PATHS"] = {
+	// 	"$(inherited)",
+	// 	"@executable_path/../Frameworks",
+	// 	"@loader_path/../Frameworks",
+	// };
+
+	// Swift?
+	// ret["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] = "DEBUG";
+	// ret["SWIFT_OPTIMIZATION_LEVEL"] = "-Onone";
+	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "$(SRCROOT)/src/SwiftBridgeHeader.h";
+	// ret["SWIFT_VERSION"] = "5.0";
+
+	// Code signing
+	// ret["CODE_SIGN_STYLE"] = "Automatic";
+	// ret["DEVELOPMENT_TEAM"] = ""; // required!
+
+	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string XcodePBXProjGen::getBoolString(const bool inValue) const
 {
 	return inValue ? "YES" : "NO";
@@ -435,7 +644,6 @@ std::string XcodePBXProjGen::getProductBundleIdentifier(const std::string& inWor
 /*****************************************************************************/
 std::string XcodePBXProjGen::generateFromJson(const Json& inJson) const
 {
-	Timer timer;
 
 	int archiveVersion = inJson["archiveVersion"].get<int>();
 	int objectVersion = inJson["objectVersion"].get<int>();
@@ -473,6 +681,8 @@ std::string XcodePBXProjGen::generateFromJson(const Json& inJson) const
 		sections += fmt::format("/* End {} section */\n", section);
 	}
 
+	sections.pop_back();
+
 	auto contents = fmt::format(R"pbxproj(// !$*UTF8*$!
 {{
 	archiveVersion = {archiveVersion};
@@ -488,10 +698,6 @@ std::string XcodePBXProjGen::generateFromJson(const Json& inJson) const
 		FMT_ARG(objectVersion),
 		FMT_ARG(sections),
 		FMT_ARG(rootObject));
-
-	LOG(contents);
-
-	LOG("pbxproj generated in:", timer.asString());
 
 	return contents;
 }
@@ -531,33 +737,26 @@ std::string XcodePBXProjGen::getNodeAsPListFormat(const Json& inJson, const size
 		ret += "(\n";
 		for (auto& value : inJson)
 		{
-			if (value.is_string())
-			{
-				ret += std::string(indent + 1, '\t');
-				ret += value.get<std::string>();
-				ret += ",\n";
-			}
+			ret += std::string(indent + 1, '\t');
+			ret += getNodeAsPListString(value);
+			ret += ",\n";
 		}
 
+		// removes last comma
 		// ret.pop_back();
 		// ret.pop_back();
 		// ret += '\n';
+
 		ret += std::string(indent, '\t');
 		ret += ')';
 	}
 	else if (inJson.is_string())
 	{
-		auto str = inJson.get<std::string>();
-		if (str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_.") == std::string::npos)
-		{
-			ret += str;
-		}
-		else
-		{
-			ret += '"';
-			ret += str;
-			ret += '"';
-		}
+		ret += getNodeAsPListString(inJson);
+	}
+	else if (inJson.is_number_float())
+	{
+		ret += std::to_string(inJson.get<float>());
 	}
 	else if (inJson.is_number_integer())
 	{
@@ -575,5 +774,32 @@ std::string XcodePBXProjGen::getNodeAsPListFormat(const Json& inJson, const size
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getNodeAsPListString(const Json& inJson) const
+{
+	if (!inJson.is_string())
+		return "\"\"";
+
+	bool startsWithHash = false;
+	auto str = inJson.get<std::string>();
+	if (str.size() > 24)
+	{
+		auto substring = str.substr(0, 23);
+		if (substring.find_first_not_of("01234567890ABCDEF") == std::string::npos)
+		{
+			startsWithHash = true;
+		}
+	}
+
+	if (!str.empty() && (startsWithHash || str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_./") == std::string::npos))
+	{
+		return str;
+	}
+	else
+	{
+		return fmt::format("\"{}\"", str);
+	}
 }
 }

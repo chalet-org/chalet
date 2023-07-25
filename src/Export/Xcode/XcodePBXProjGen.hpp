@@ -22,6 +22,7 @@ struct XcodePBXProjGen
 private:
 	std::string getHashWithLabel(const std::string& inValue) const;
 	std::string getHashWithLabel(const Uuid& inHash, const std::string& inLabel) const;
+	std::string getTargetHashWithLabel(const std::string& inTarget) const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
@@ -29,11 +30,13 @@ private:
 	std::string getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject = true) const;
 
 	Json getBuildSettings(const BuildState& inState) const;
+	Json getProductBuildSettings(const BuildState& inState) const;
 	std::string getBoolString(const bool inValue) const;
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
 
 	std::string generateFromJson(const Json& inJson) const;
 	std::string getNodeAsPListFormat(const Json& inJson, const size_t indent = 1) const;
+	std::string getNodeAsPListString(const Json& inJson) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 

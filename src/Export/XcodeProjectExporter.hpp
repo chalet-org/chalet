@@ -20,9 +20,7 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	bool validateXcodeGenIsInstalled(const std::string& inTypeName);
-
-	std::string m_xcodegen;
+	//
 };
 }
 
