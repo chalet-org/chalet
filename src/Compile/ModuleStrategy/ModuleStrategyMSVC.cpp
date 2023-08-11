@@ -28,7 +28,7 @@ bool ModuleStrategyMSVC::initialize()
 {
 	if (m_msvcToolsDirectory.empty())
 	{
-		m_msvcToolsDirectory = Environment::getAsString("VCToolsInstallDir");
+		m_msvcToolsDirectory = Environment::getString("VCToolsInstallDir");
 		Path::sanitize(m_msvcToolsDirectory);
 	}
 

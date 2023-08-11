@@ -32,19 +32,19 @@ bool VisualStudioEnvironmentScript::visualStudioExists()
 #if defined(CHALET_WIN32)
 	if (state.exists == -1)
 	{
-		std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+		std::string progFiles = Environment::getString("ProgramFiles(x86)");
 		state.vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
 
 		bool vswhereFound = Commands::pathExists(state.vswhere);
 		if (!vswhereFound)
 		{
-			std::string progData = Environment::getAsString("ProgramData");
+			std::string progData = Environment::getString("ProgramData");
 			state.vswhere = fmt::format("{}\\chocolatey\\lib\\vswhere\\tools\\vswhere.exe", progData);
 			vswhereFound = Commands::pathExists(state.vswhere);
 		}
 		if (!vswhereFound)
 		{
-			std::string progFiles64 = Environment::getAsString("ProgramFiles");
+			std::string progFiles64 = Environment::getString("ProgramFiles");
 			String::replaceAll(state.vswhere, progFiles, progFiles64);
 
 			vswhereFound = Commands::pathExists(state.vswhere);
@@ -126,7 +126,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	m_pathVariable = Environment::getPath();
 
 	// Note: See Note about __CHALET_PATH_INJECT__ in Environment.cpp
-	auto appDataPath = Environment::getAsString("APPDATA");
+	auto appDataPath = Environment::getString("APPDATA");
 	m_pathInject = fmt::format("{}\\__CHALET_PATH_INJECT__", appDataPath);
 
 	if (!m_envVarsFileDeltaExists)

@@ -131,7 +131,7 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 	auto& hash = m_hashes.at(inProject.name());
 
 	static const char* kNinjaStatus = "NINJA_STATUS";
-	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
+	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
 
 	auto color = Output::getAnsiStyle(Output::theme().build);
 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
