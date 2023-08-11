@@ -1139,7 +1139,7 @@ const IBuildTarget* VSVCXProjGen::getTargetFromStateContext(const BuildState& in
 /*****************************************************************************/
 std::string VSVCXProjGen::getWindowsTargetPlatformVersion() const
 {
-	auto ret = Environment::getAsString("UCRTVersion");
+	auto ret = Environment::getString("UCRTVersion");
 	if (ret.empty())
 		ret = "10.0";
 

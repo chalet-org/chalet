@@ -38,7 +38,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 
 	if (m_project.cppModules())
 	{
-		auto toolsDir = Environment::getAsString("VCToolsInstallDir");
+		auto toolsDir = Environment::getString("VCToolsInstallDir");
 		Path::sanitize(toolsDir);
 
 		std::string arch{ "x64" };

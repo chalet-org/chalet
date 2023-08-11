@@ -243,14 +243,26 @@ bool BuildState::parseToolchainFromSettingsJson()
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
 		//
 		const auto& name = inputs.toolchainPreferenceName();
+		std::string details;
 		if (String::equals("llvm", name))
 		{
-			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14'). Otherwise, try configuring it manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+			details = "If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14').";
 		}
-		else
+#if defined(CHALET_WIN32)
+		else if (preference.type == ToolchainType::MingwGNU)
 		{
-			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+			details = "An installation of MinGW was expected to be present in the 'Path' environment variable - set directly or via a '.env' file.";
 		}
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+		else if (preference.type == ToolchainType::IntelLLVM)
+		{
+			details = "The 'intel-llvm-*' preset requires oneAPI DPC++/C++ compiler to be installed, and the 'ONEAPI_ROOT' environment variable to be set.";
+		}
+	#endif
+#endif
+
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}. {}", name, Environment::getPathKey(), details);
+
 		return false;
 	}
 
@@ -686,7 +698,7 @@ bool BuildState::validateState()
 			auto vsperfcmd = Commands::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+				std::string progFiles = Environment::getString("ProgramFiles(x86)");
 				// TODO: more portable version
 				vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\vs2022\\vsperfcmd.exe", progFiles);
 				if (vsperfcmd.empty())
@@ -851,7 +863,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
-	auto currentGccColors = Environment::getAsString("GCC_COLORS");
+	auto currentGccColors = Environment::getString("GCC_COLORS");
 	if (currentGccColors.empty())
 	{
 		bool usesGcc = environment->isGcc();
@@ -909,15 +921,34 @@ void BuildState::enforceArchitectureInPath()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 {
-// Just common mingw conventions at the moment
-//
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (inputs.toolchainPreference().type != ToolchainType::VisualStudio)
+	auto type = inputs.toolchainPreference().type;
+
+	if (type != ToolchainType::VisualStudio)
 	{
 		std::string lower = String::toLowerCase(outPathVariable);
 
+		// If using Intel LLVM, add the compiler path (This might just work with the 2023 version)
+		//
+		if (type == ToolchainType::IntelLLVM)
+		{
+			auto oneApi = Environment::getString("ONEAPI_ROOT");
+			if (!oneApi.empty())
+			{
+				Path::sanitizeForWindows(oneApi);
+				oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
+				std::string lowerOneApi = String::toLowerCase(oneApi);
+				if (!String::contains(lowerOneApi, lower))
+				{
+					outPathVariable = fmt::format("{};{}", oneApi, outPathVariable);
+				}
+			}
+		}
+
+		// Common MinGW conventions
+		//
 		if (targetArch == Arch::Cpu::X64)
 		{
 			auto start = lower.find("\\mingw32\\");
@@ -1048,7 +1079,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				{
 					required = false;
 					match = match.substr(4);
-					return Environment::getAsString(match.c_str());
+					return Environment::getString(match.c_str());
 				}
 
 				if (String::startsWith("defined:", match))
@@ -1180,7 +1211,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				{
 					required = false;
 					match = match.substr(4);
-					return Environment::getAsString(match.c_str());
+					return Environment::getString(match.c_str());
 				}
 
 				if (String::startsWith("defined:", match))

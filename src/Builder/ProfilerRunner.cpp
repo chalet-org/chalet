@@ -277,7 +277,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		auto visualStudio = Commands::which("devenv");
 		if (visualStudio.empty())
 		{
-			devEnvDir = Environment::getAsString("DevEnvDir");
+			devEnvDir = Environment::getString("DevEnvDir");
 			visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
 			if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
 			{

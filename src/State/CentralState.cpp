@@ -566,7 +566,7 @@ bool CentralState::replaceVariablesInString(std::string& outString, const IExter
 				{
 					required = false;
 					match = match.substr(4);
-					return Environment::getAsString(match.c_str());
+					return Environment::getString(match.c_str());
 				}
 
 				if (String::startsWith("var:", match))
