@@ -81,12 +81,12 @@ namespace chalet
 {
 // #if defined(CHALET_WIN32)
 /*****************************************************************************/
-bool DependencyWalker::read(const std::string& inFile, StringList& outList, StringList* outNotFound)
+bool DependencyWalker::read(const std::string& inFile, StringList& outList, StringList* outNotFound, const bool includeWinUCRT)
 {
 	if (!verifyImageFile(inFile))
 		return false;
 
-	if (!parseFile(inFile, outList, outNotFound))
+	if (!parseFile(inFile, outList, outNotFound, includeWinUCRT))
 		return false;
 
 	return true;
@@ -105,10 +105,19 @@ bool DependencyWalker::verifyImageFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
-bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList, StringList* outNotFound)
+bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList, StringList* outNotFound, const bool includeWinUCRT)
 {
 	std::vector<char> bytes = readAllBytes(inFile.c_str());
-	StringList ignoreList{ inFile, "system32", "syswow64" };
+	StringList ignoreList{
+		inFile,
+		"system32",
+		"syswow64",
+	};
+	if (!includeWinUCRT)
+	{
+		ignoreList.emplace_back("api-ms-win-");
+		ignoreList.emplace_back("ucrtbase");
+	}
 
 	constexpr auto MAGIC_NUM_32BIT = static_cast<WORD>(0x10b);		// 267
 	constexpr auto MAGIC_NUM_64BIT = static_cast<WORD>(0x20b);		// 523

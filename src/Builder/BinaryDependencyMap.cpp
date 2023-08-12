@@ -36,6 +36,12 @@ BinaryDependencyMap::InnerMap::const_iterator BinaryDependencyMap::end() const
 }
 
 /*****************************************************************************/
+void BinaryDependencyMap::setIncludeWinUCRT(const bool inValue)
+{
+	m_includeWinUCRT = inValue;
+}
+
+/*****************************************************************************/
 void BinaryDependencyMap::addExcludesFromList(const StringList& inList)
 {
 	m_excludes.clear();
@@ -253,7 +259,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 	if (m_state.environment->isWindowsTarget())
 	{
 		DependencyWalker depsWalker;
-		if (!depsWalker.read(inPath, outList, outNotFound))
+		if (!depsWalker.read(inPath, outList, outNotFound, m_includeWinUCRT))
 		{
 			Diagnostic::error("Dependencies for file '{}' could not be read.", inPath);
 			return false;

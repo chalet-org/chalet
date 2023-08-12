@@ -22,6 +22,8 @@ public:
 	InnerMap::const_iterator begin() const;
 	InnerMap::const_iterator end() const;
 
+	void setIncludeWinUCRT(const bool inValue);
+
 	void addExcludesFromList(const StringList& inList);
 
 	void clearSearchDirs() noexcept;
@@ -47,6 +49,8 @@ private:
 	StringList m_searchDirs;
 
 	StringList m_notCopied;
+
+	bool m_includeWinUCRT = true;
 };
 }
 
