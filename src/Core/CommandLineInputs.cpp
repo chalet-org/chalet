@@ -1421,13 +1421,16 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 /*****************************************************************************/
 InitTemplateType CommandLineInputs::getInitTemplateFromString(const std::string& inValue) const
 {
+	if (inValue.empty())
+		return InitTemplateType::None;
+
 	auto initTemplates = getInitTemplates();
 	if (initTemplates.find(inValue) != initTemplates.end())
 	{
 		return initTemplates.at(inValue);
 	}
 
-	return InitTemplateType::None;
+	return InitTemplateType::Unknown;
 }
 
 /*****************************************************************************/
