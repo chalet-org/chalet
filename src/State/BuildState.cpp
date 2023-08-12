@@ -584,7 +584,7 @@ bool BuildState::validateState()
 		const auto& makeExec = toolchain.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
-			Diagnostic::error("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec);
+			Diagnostic::error("{} was either not defined in the toolchain, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
 		}
 
@@ -613,7 +613,7 @@ bool BuildState::validateState()
 		auto& ninjaExec = toolchain.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
-			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
+			Diagnostic::error("{} was either not defined in the toolchain, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
 	}
@@ -1016,6 +1016,32 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 						if (!String::contains(lowerMinGwPath, lower))
 						{
 							outPathVariable = fmt::format("{};{}", mingwPath, outPathVariable);
+						}
+					}
+				}
+			}
+		}
+	}
+	// If using LLVM, detect it from Program Files if clang doesn't exist in Path
+	//
+	else if (type == ToolchainType::LLVM)
+	{
+		auto& preferenceName = inputs.toolchainPreferenceName();
+		if (String::equals("llvm", preferenceName))
+		{
+			auto clang = Commands::which("clang");
+			if (clang.empty())
+			{
+				auto programFiles = Environment::getString("ProgramFiles");
+				if (!programFiles.empty())
+				{
+					auto clangPath = fmt::format("{}\\LLVM\\bin", programFiles);
+					if (Commands::pathExists(fmt::format("{}\\clang.exe", clangPath)))
+					{
+						std::string lowerClangPath = String::toLowerCase(clangPath);
+						if (!String::contains(lowerClangPath, lower))
+						{
+							outPathVariable = fmt::format("{};{}", clangPath, outPathVariable);
 						}
 					}
 				}
