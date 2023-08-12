@@ -16,7 +16,7 @@ struct CompileEnvironmentLLVM : CompileEnvironmentGNU
 
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
+	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;
 
 	virtual bool readArchitectureTripleFromCompiler() override;
 	virtual bool validateArchitectureFromInput() override;

@@ -31,9 +31,24 @@ StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecuta
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inVersion) const
+std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
-	return fmt::format("GNU Compiler Collection version {}", inVersion);
+	if (m_type == ToolchainType::MingwGNU)
+	{
+		// Get the MSYSTEM from the executable path (expects MSYSTEM/bin)
+		//
+		auto flavor = String::getPathFilename(String::getPathFolder(String::getPathFolder(inPath)));
+		if (!flavor.empty() && (String::endsWith("64", flavor) || String::endsWith("32", flavor)))
+		{
+			flavor = String::toUpperCase(flavor);
+			flavor = fmt::format(" ({})", flavor);
+		}
+		return fmt::format("Minimalist GNU Compiler Collection for Windows version {}{}", inVersion, flavor);
+	}
+	else
+	{
+		return fmt::format("GNU Compiler Collection version {}", inVersion);
+	}
 }
 
 /*****************************************************************************/
@@ -98,7 +113,7 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 
 		sourceCache.addVersion(outInfo.path, outInfo.version);
 
-		outInfo.description = getFullCxxCompilerString(outInfo.version);
+		outInfo.description = getFullCxxCompilerString(outInfo.path, outInfo.version);
 		return true;
 	}
 	else

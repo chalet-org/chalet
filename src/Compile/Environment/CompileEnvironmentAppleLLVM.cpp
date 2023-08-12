@@ -17,8 +17,9 @@ CompileEnvironmentAppleLLVM::CompileEnvironmentAppleLLVM(const ToolchainType inT
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentAppleLLVM::getFullCxxCompilerString(const std::string& inVersion) const
+std::string CompileEnvironmentAppleLLVM::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
+	UNUSED(inPath);
 	return fmt::format("Apple Clang version {}", inVersion);
 }
 

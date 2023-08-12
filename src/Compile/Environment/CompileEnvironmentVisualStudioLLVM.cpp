@@ -144,8 +144,9 @@ std::vector<CompilerPathStructure> CompileEnvironmentVisualStudioLLVM::getValidC
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentVisualStudioLLVM::getFullCxxCompilerString(const std::string& inVersion) const
+std::string CompileEnvironmentVisualStudioLLVM::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
+	UNUSED(inPath);
 	const auto& vsVersion = m_detectedVersion.empty() ? m_state.toolchain.version() : m_detectedVersion;
 	return fmt::format("LLVM Clang version {} (VS {})", inVersion, vsVersion);
 }

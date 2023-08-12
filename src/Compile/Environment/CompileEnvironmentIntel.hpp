@@ -20,7 +20,7 @@ struct CompileEnvironmentIntel final : CompileEnvironmentLLVM
 
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
+	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
 	virtual bool readArchitectureTripleFromCompiler() final;

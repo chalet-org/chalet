@@ -29,7 +29,7 @@ struct CompileEnvironmentVisualStudio final : ICompileEnvironment
 
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
+	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;
 	virtual bool verifyToolchain() final;
 	virtual bool supportsFlagFile() final;
 

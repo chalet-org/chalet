@@ -925,83 +925,158 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
 	auto type = inputs.toolchainPreference().type;
+	if (type == ToolchainType::VisualStudio)
+		return;
 
-	if (type != ToolchainType::VisualStudio)
+	std::string lower = String::toLowerCase(outPathVariable);
+
+	// If using Intel LLVM, add the compiler path (This might just work with the 2023 version)
+	//
+	if (type == ToolchainType::IntelLLVM)
 	{
-		std::string lower = String::toLowerCase(outPathVariable);
-
-		// If using Intel LLVM, add the compiler path (This might just work with the 2023 version)
-		//
-		if (type == ToolchainType::IntelLLVM)
+		auto oneApi = Environment::getString("ONEAPI_ROOT");
+		if (!oneApi.empty())
 		{
-			auto oneApi = Environment::getString("ONEAPI_ROOT");
-			if (!oneApi.empty())
+			Path::sanitizeForWindows(oneApi);
+			oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
+			std::string lowerOneApi = String::toLowerCase(oneApi);
+			if (!String::contains(lowerOneApi, lower))
 			{
-				Path::sanitizeForWindows(oneApi);
-				oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
-				std::string lowerOneApi = String::toLowerCase(oneApi);
-				if (!String::contains(lowerOneApi, lower))
+				outPathVariable = fmt::format("{};{}", oneApi, outPathVariable);
+			}
+		}
+	}
+	// If using MinGW, search the most common install paths
+	//   x64:
+	//    C:/msys64/ucrt64 - recommended by the MSYS2 team
+	//    C:/msys64/mingw64 - if ucrt64 is not available
+	//    C:/mingw64
+	//   x86:
+	//    C:/msys64/mingw32
+	//    C:/mingw32
+	//
+	else if (type == ToolchainType::MingwGNU)
+	{
+		// We only want to do this if the preference name was simply "gcc", and a "gcc.exe" was not found
+		//   Other GCC toolchain variants (with prefixes/suffixes) should not assume anything
+		//
+		auto& preferenceName = inputs.toolchainPreferenceName();
+		if (String::equals("gcc", preferenceName))
+		{
+			auto gcc = Commands::which("gcc");
+			if (gcc.empty())
+			{
+				auto homeDrive = Environment::getString("HOMEDRIVE");
+				if (!homeDrive.empty())
 				{
-					outPathVariable = fmt::format("{};{}", oneApi, outPathVariable);
+					// Check for MSYS2 first
+					//
+					std::string mingwPath;
+					auto msysPath = fmt::format("{}\\msys64", homeDrive);
+					if (Commands::pathExists(msysPath))
+					{
+						if (targetArch == Arch::Cpu::X64)
+						{
+							// Favor the UCRT version if it's installed
+							//
+							mingwPath = fmt::format("{}\\ucrt64\\bin", msysPath);
+
+							if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+							{
+								mingwPath = fmt::format("{}\\mingw64\\bin", msysPath);
+							}
+						}
+						else if (targetArch == Arch::Cpu::X86)
+						{
+							mingwPath = fmt::format("{}\\mingw32\\bin", msysPath);
+						}
+					}
+					// Then check for C:/mingw64
+					//
+					else
+					{
+						if (targetArch == Arch::Cpu::X64)
+						{
+							mingwPath = fmt::format("{}\\mingw64\\bin", homeDrive);
+						}
+						else if (targetArch == Arch::Cpu::X86)
+						{
+							mingwPath = fmt::format("{}\\mingw32\\bin", msysPath);
+						}
+					}
+
+					if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+					{
+						mingwPath.clear();
+					}
+
+					if (!mingwPath.empty())
+					{
+						std::string lowerMinGwPath = String::toLowerCase(mingwPath);
+						if (!String::contains(lowerMinGwPath, lower))
+						{
+							outPathVariable = fmt::format("{};{}", mingwPath, outPathVariable);
+						}
+					}
 				}
 			}
 		}
+	}
 
-		// Common MinGW conventions
-		//
-		if (targetArch == Arch::Cpu::X64)
+	// Common MinGW conventions
+	//
+	if (targetArch == Arch::Cpu::X64)
+	{
+		auto start = lower.find("\\mingw32\\");
+		if (start != std::string::npos)
 		{
-			auto start = lower.find("\\mingw32\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
-			}
-
-			start = lower.find("\\clang32\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
-			}
-
-			start = lower.find("\\clangarm64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang64\\");
-			}
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
 		}
-		else if (targetArch == Arch::Cpu::X86)
+
+		start = lower.find("\\clang32\\");
+		if (start != std::string::npos)
 		{
-			auto start = lower.find("\\mingw64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
-			}
-
-			start = lower.find("\\clang64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
-			}
-
-			start = lower.find("\\clangarm64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang32\\");
-			}
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
 		}
-		else if (targetArch == Arch::Cpu::ARM64)
-		{
-			auto start = lower.find("\\clang32\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
-			}
 
-			start = lower.find("\\clang64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
-			}
+		start = lower.find("\\clangarm64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang64\\");
+		}
+	}
+	else if (targetArch == Arch::Cpu::X86)
+	{
+		auto start = lower.find("\\mingw64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
+		}
+
+		start = lower.find("\\clang64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
+		}
+
+		start = lower.find("\\clangarm64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang32\\");
+		}
+	}
+	else if (targetArch == Arch::Cpu::ARM64)
+	{
+		auto start = lower.find("\\clang32\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
+		}
+
+		start = lower.find("\\clang64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
 		}
 	}
 #else
@@ -1302,5 +1377,4 @@ void BuildState::generateUniqueIdForState()
 	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash);
 	m_uniqueId = Hash::string(hashableTargets);
 }
-
 }
