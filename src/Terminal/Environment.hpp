@@ -21,7 +21,8 @@ bool isVisualStudioOutput();
 bool isJetBrainsOutput();
 
 const char* get(const char* inName);
-std::string getAsString(const char* inName, std::string inFallback = std::string());
+std::string getString(const char* inName);
+std::string getString(const char* inName, const std::string& inFallback);
 void set(const char* inName, const std::string& inValue);
 
 void replaceCommonVariables(std::string& outString, const std::string& inHomeDirectory);

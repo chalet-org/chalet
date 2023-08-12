@@ -72,12 +72,12 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
 	}),
 	m_routeDescriptions({
-		{ RouteType::BuildRun, "Build the project and run a valid executable build target." },
+		{ RouteType::BuildRun, "Build a project and run a valid executable build target." },
 		{ RouteType::Run, "Run a valid executable build target." },
-		{ RouteType::Build, "Build the project and create a configuration if it doesn't exist." },
+		{ RouteType::Build, "Build a project and create its configuration if it doesn't exist." },
 		{ RouteType::Rebuild, "Rebuild the project and create a configuration if it doesn't exist." },
 		{ RouteType::Clean, "Unceremoniously clean the build folder." },
-		{ RouteType::Bundle, "Bundle the project for distribution." },
+		{ RouteType::Bundle, "Bundle a project for distribution." },
 		{ RouteType::Configure, "Create a project configuration and fetch external dependencies." },
 		{ RouteType::Export, "Export the project to another project format." },
 		{ RouteType::Init, "Initialize a project in either the current directory or a subdirectory." },
@@ -531,7 +531,7 @@ std::string ArgumentParser::getHelp()
 	if (m_route != RouteType::Unknown)
 	{
 		help += "Description:\n";
-		help += fmt::format("   {}\n", m_routeDescriptions.at(m_route));
+		help += fmt::format("{}\n", m_routeDescriptions.at(m_route));
 		help += '\n';
 	}
 	help += "Commands:\n";
@@ -556,6 +556,7 @@ std::string ArgumentParser::getHelp()
 	}
 
 	help += '\n';
+
 	help += "Options:\n";
 
 	for (auto& mapped : m_argumentList)
@@ -750,6 +751,29 @@ std::string ArgumentParser::getHelp()
 			line += getExportPresetDescription(preset);
 
 			help += fmt::format("{}\n", line);
+		}
+	}
+
+	help += "\nApplication Paths:\n";
+	StringList applicationPaths{
+		"~/.chalet/",
+		fmt::format("~/{}", m_inputs.globalSettingsFile()),
+	};
+	{
+		uint i = 0;
+		for (auto& preset : applicationPaths)
+		{
+			std::string line = preset;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			if (i == 0)
+				line += "The global directory for settings across projects and future needs";
+			else
+				line += "The global settings file, where defaults and toolchains are set across projects";
+
+			help += fmt::format("{}\n", line);
+			i++;
 		}
 	}
 

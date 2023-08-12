@@ -49,7 +49,7 @@ bool Output::ansiColorsSupportedInComSpec()
 {
 	if (state.commandPromptVersion == -1)
 	{
-		state.commandPromptVersion = Commands::getLastWriteTime(Environment::getAsString("COMSPEC"));
+		state.commandPromptVersion = Commands::getLastWriteTime(Environment::getString("COMSPEC"));
 		if (state.commandPromptVersion > 0)
 			state.commandPromptVersion *= 1000;
 	}

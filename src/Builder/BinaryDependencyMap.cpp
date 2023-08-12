@@ -191,11 +191,11 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 #if defined(CHALET_WIN32)
 	if (String::startsWith("api-ms-win-", filename))
 	{
-		auto ucrtDir = Environment::getAsString("UniversalCRTSdkDir");
-		auto arch = Environment::getAsString("VSCMD_ARG_TGT_ARCH");
+		auto ucrtDir = Environment::getString("UniversalCRTSdkDir");
+		auto arch = Environment::getString("VSCMD_ARG_TGT_ARCH");
 		if (!ucrtDir.empty() && !arch.empty())
 		{
-			auto ucrtVersion = Environment::getAsString("UCRTVersion");
+			auto ucrtVersion = Environment::getString("UCRTVersion");
 
 			if (ucrtDir.back() == '\\')
 				ucrtDir.pop_back();

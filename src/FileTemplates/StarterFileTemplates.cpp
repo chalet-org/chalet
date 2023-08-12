@@ -298,7 +298,7 @@ std::string StarterFileTemplates::getDotEnv()
 	auto paths = String::split(Environment::getPath(), Environment::getPathSeparator());
 	if (gitExists && !List::contains(paths, gitPath))
 	{
-		auto programFiles = Environment::getAsString("ProgramFiles");
+		auto programFiles = Environment::getString("ProgramFiles");
 		Path::sanitize(programFiles);
 		String::replaceAll(gitPath, programFiles, "%ProgramFiles%");
 		Path::sanitizeForWindows(gitPath);

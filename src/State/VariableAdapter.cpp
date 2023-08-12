@@ -25,7 +25,7 @@ void VariableAdapter::set(const std::string& inKey, std::string&& inValue)
 			if (String::startsWith("env:", match))
 			{
 				match = match.substr(4);
-				return Environment::getAsString(match.c_str());
+				return Environment::getString(match.c_str());
 			}
 
 			if (String::startsWith("var:", match))

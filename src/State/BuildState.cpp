@@ -250,14 +250,26 @@ bool BuildState::parseToolchainFromSettingsJson()
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
 		//
 		const auto& name = inputs.toolchainPreferenceName();
+		std::string details;
 		if (String::equals("llvm", name))
 		{
-			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14'). Otherwise, try configuring it manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+			details = "If the version of LLVM requires a suffix, include it in the preset name (ie. 'llvm-14').";
 		}
-		else
+#if defined(CHALET_WIN32)
+		else if (preference.type == ToolchainType::MingwGNU)
 		{
-			Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}.", name, Environment::getPathKey());
+			details = "An installation of MinGW was expected to be present in the 'Path' environment variable - set directly or via a '.env' file.";
 		}
+	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+		else if (preference.type == ToolchainType::IntelLLVM)
+		{
+			details = "The 'intel-llvm-*' preset requires oneAPI DPC++/C++ compiler to be installed, and the 'ONEAPI_ROOT' environment variable to be set.";
+		}
+	#endif
+#endif
+
+		Diagnostic::error("Could not find a suitable toolchain that matches '{}'. Try configuring one manually, or ensuring the compiler is searchable from {}. {}", name, Environment::getPathKey(), details);
+
 		return false;
 	}
 
@@ -579,7 +591,7 @@ bool BuildState::validateState()
 		const auto& makeExec = toolchain.make();
 		if (makeExec.empty() || !Commands::pathExists(makeExec))
 		{
-			Diagnostic::error("{} was either not defined in the cache, or not found.", makeExec.empty() ? "make" : makeExec);
+			Diagnostic::error("{} was either not defined in the toolchain, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
 		}
 
@@ -608,7 +620,7 @@ bool BuildState::validateState()
 		auto& ninjaExec = toolchain.ninja();
 		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
 		{
-			Diagnostic::error("{} was either not defined in the cache, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
+			Diagnostic::error("{} was either not defined in the toolchain, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
 		}
 	}
@@ -706,7 +718,7 @@ bool BuildState::validateState()
 			auto vsperfcmd = Commands::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				std::string progFiles = Environment::getAsString("ProgramFiles(x86)");
+				std::string progFiles = Environment::getString("ProgramFiles(x86)");
 				// TODO: more portable version
 				vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\vs2022\\vsperfcmd.exe", progFiles);
 				if (vsperfcmd.empty())
@@ -871,7 +883,7 @@ void BuildState::makeCompilerDiagnosticsVariables()
 	Environment::set("CLICOLOR_FORCE", "1");
 	Environment::set("CLANG_FORCE_COLOR_DIAGNOSTICS", "1");
 
-	auto currentGccColors = Environment::getAsString("GCC_COLORS");
+	auto currentGccColors = Environment::getString("GCC_COLORS");
 	if (currentGccColors.empty())
 	{
 		bool usesGcc = environment->isGcc();
@@ -929,68 +941,188 @@ void BuildState::enforceArchitectureInPath()
 /*****************************************************************************/
 void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 {
-// Just common mingw conventions at the moment
-//
 #if defined(CHALET_WIN32)
 	Arch::Cpu targetArch = info.targetArchitecture();
 
-	if (inputs.toolchainPreference().type != ToolchainType::VisualStudio)
+	auto type = inputs.toolchainPreference().type;
+	if (type == ToolchainType::VisualStudio)
+		return;
+
+	std::string lower = String::toLowerCase(outPathVariable);
+
+	// If using Intel LLVM, add the compiler path (This might just work with the 2023 version)
+	//
+	if (type == ToolchainType::IntelLLVM)
 	{
-		std::string lower = String::toLowerCase(outPathVariable);
-
-		if (targetArch == Arch::Cpu::X64)
+		auto oneApi = Environment::getString("ONEAPI_ROOT");
+		if (!oneApi.empty())
 		{
-			auto start = lower.find("\\mingw32\\");
-			if (start != std::string::npos)
+			Path::sanitizeForWindows(oneApi);
+			oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
+			std::string lowerOneApi = String::toLowerCase(oneApi);
+			if (!String::contains(lowerOneApi, lower))
 			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
-			}
-
-			start = lower.find("\\clang32\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
-			}
-
-			start = lower.find("\\clangarm64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang64\\");
+				outPathVariable = fmt::format("{};{}", oneApi, outPathVariable);
 			}
 		}
-		else if (targetArch == Arch::Cpu::X86)
+	}
+	// If using MinGW, search the most common install paths
+	//   x64:
+	//    C:/msys64/ucrt64 - recommended by the MSYS2 team
+	//    C:/msys64/mingw64 - if ucrt64 is not available
+	//    C:/mingw64
+	//   x86:
+	//    C:/msys64/mingw32
+	//    C:/mingw32
+	//
+	else if (type == ToolchainType::MingwGNU)
+	{
+		// We only want to do this if the preference name was simply "gcc", and a "gcc.exe" was not found
+		//   Other GCC toolchain variants (with prefixes/suffixes) should not assume anything
+		//
+		auto& preferenceName = inputs.toolchainPreferenceName();
+		if (String::equals("gcc", preferenceName))
 		{
-			auto start = lower.find("\\mingw64\\");
-			if (start != std::string::npos)
+			auto gcc = Commands::which("gcc");
+			if (gcc.empty())
 			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
-			}
+				auto homeDrive = Environment::getString("HOMEDRIVE");
+				if (!homeDrive.empty())
+				{
+					// Check for MSYS2 first
+					//
+					std::string mingwPath;
+					auto msysPath = fmt::format("{}\\msys64", homeDrive);
+					if (Commands::pathExists(msysPath))
+					{
+						if (targetArch == Arch::Cpu::X64)
+						{
+							// Favor the UCRT version if it's installed
+							//
+							mingwPath = fmt::format("{}\\ucrt64\\bin", msysPath);
 
-			start = lower.find("\\clang64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
-			}
+							if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+							{
+								mingwPath = fmt::format("{}\\mingw64\\bin", msysPath);
+							}
+						}
+						else if (targetArch == Arch::Cpu::X86)
+						{
+							mingwPath = fmt::format("{}\\mingw32\\bin", msysPath);
+						}
+					}
+					// Then check for C:/mingw64
+					//
+					else
+					{
+						if (targetArch == Arch::Cpu::X64)
+						{
+							mingwPath = fmt::format("{}\\mingw64\\bin", homeDrive);
+						}
+						else if (targetArch == Arch::Cpu::X86)
+						{
+							mingwPath = fmt::format("{}\\mingw32\\bin", msysPath);
+						}
+					}
 
-			start = lower.find("\\clangarm64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang32\\");
+					if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+					{
+						mingwPath.clear();
+					}
+
+					if (!mingwPath.empty())
+					{
+						std::string lowerMinGwPath = String::toLowerCase(mingwPath);
+						if (!String::contains(lowerMinGwPath, lower))
+						{
+							outPathVariable = fmt::format("{};{}", mingwPath, outPathVariable);
+						}
+					}
+				}
 			}
 		}
-		else if (targetArch == Arch::Cpu::ARM64)
+	}
+	// If using LLVM, detect it from Program Files if clang doesn't exist in Path
+	//
+	else if (type == ToolchainType::LLVM)
+	{
+		auto& preferenceName = inputs.toolchainPreferenceName();
+		if (String::equals("llvm", preferenceName))
 		{
-			auto start = lower.find("\\clang32\\");
-			if (start != std::string::npos)
+			auto clang = Commands::which("clang");
+			if (clang.empty())
 			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
+				auto programFiles = Environment::getString("ProgramFiles");
+				if (!programFiles.empty())
+				{
+					auto clangPath = fmt::format("{}\\LLVM\\bin", programFiles);
+					if (Commands::pathExists(fmt::format("{}\\clang.exe", clangPath)))
+					{
+						std::string lowerClangPath = String::toLowerCase(clangPath);
+						if (!String::contains(lowerClangPath, lower))
+						{
+							outPathVariable = fmt::format("{};{}", clangPath, outPathVariable);
+						}
+					}
+				}
 			}
+		}
+	}
 
-			start = lower.find("\\clang64\\");
-			if (start != std::string::npos)
-			{
-				String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
-			}
+	// Common MinGW conventions
+	//
+	if (targetArch == Arch::Cpu::X64)
+	{
+		auto start = lower.find("\\mingw32\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw64\\");
+		}
+
+		start = lower.find("\\clang32\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang64\\");
+		}
+
+		start = lower.find("\\clangarm64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang64\\");
+		}
+	}
+	else if (targetArch == Arch::Cpu::X86)
+	{
+		auto start = lower.find("\\mingw64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\mingw32\\");
+		}
+
+		start = lower.find("\\clang64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clang32\\");
+		}
+
+		start = lower.find("\\clangarm64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 12), "\\clang32\\");
+		}
+	}
+	else if (targetArch == Arch::Cpu::ARM64)
+	{
+		auto start = lower.find("\\clang32\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
+		}
+
+		start = lower.find("\\clang64\\");
+		if (start != std::string::npos)
+		{
+			String::replaceAll(outPathVariable, outPathVariable.substr(start, 9), "\\clangarm64\\");
 		}
 	}
 #else
@@ -1068,7 +1200,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				{
 					required = false;
 					match = match.substr(4);
-					return Environment::getAsString(match.c_str());
+					return Environment::getString(match.c_str());
 				}
 
 				if (String::startsWith("defined:", match))
@@ -1200,7 +1332,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				{
 					required = false;
 					match = match.substr(4);
-					return Environment::getAsString(match.c_str());
+					return Environment::getString(match.c_str());
 				}
 
 				if (String::startsWith("defined:", match))
@@ -1291,5 +1423,4 @@ void BuildState::generateUniqueIdForState()
 	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash);
 	m_uniqueId = Hash::string(hashableTargets);
 }
-
 }

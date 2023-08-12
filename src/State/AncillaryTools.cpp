@@ -60,7 +60,7 @@ bool AncillaryTools::validate(const std::string& inHomeDirectory)
 			if (String::startsWith("env:", match))
 			{
 				match = match.substr(4);
-				return Environment::getAsString(match.c_str());
+				return Environment::getString(match.c_str());
 			}
 
 			if (String::startsWith("var:", match))
@@ -550,7 +550,7 @@ std::string AncillaryTools::getPathToGit()
 #if defined(CHALET_WIN32)
 	if (git.empty())
 	{
-		auto programs = Environment::getAsString("ProgramFiles");
+		auto programs = Environment::getString("ProgramFiles");
 		if (!programs.empty())
 		{
 			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);

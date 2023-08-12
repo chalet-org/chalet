@@ -19,7 +19,7 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const override;
+	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;
 	virtual bool supportsFlagFile() override;
 

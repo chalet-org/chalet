@@ -112,7 +112,7 @@ bool CmakeBuilder::run()
 	const bool isNinja = usesNinja();
 
 	static const char* kNinjaStatus = "NINJA_STATUS";
-	auto oldNinjaStatus = Environment::getAsString(kNinjaStatus);
+	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
 
 	auto onRunFailure = [this, &oldNinjaStatus, &isNinja](const bool inRemoveDir = true) -> bool {
 #if defined(CHALET_WIN32)

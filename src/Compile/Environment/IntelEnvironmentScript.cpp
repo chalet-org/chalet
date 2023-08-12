@@ -36,7 +36,7 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 	if (!m_envVarsFileDeltaExists)
 	{
 #if defined(CHALET_WIN32)
-		auto oneApiRoot = Environment::getAsString("ONEAPI_ROOT");
+		auto oneApiRoot = Environment::getString("ONEAPI_ROOT");
 		if (oneApiRoot.back() == '/' || oneApiRoot.back() == '\\')
 			oneApiRoot.pop_back();
 

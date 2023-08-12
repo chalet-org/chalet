@@ -41,8 +41,10 @@ StringList CompileEnvironmentIntel::getVersionCommand(const std::string& inExecu
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string& inVersion) const
+std::string CompileEnvironmentIntel::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
+	UNUSED(inPath);
+
 	if (m_type == ToolchainType::IntelLLVM)
 		return fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), inVersion);
 	else
@@ -207,7 +209,9 @@ std::string CompileEnvironmentIntel::makeToolchainName(const std::string& inArch
 	std::string ret;
 	if (m_type == ToolchainType::IntelLLVM)
 	{
-		ret = fmt::format("{}-intel-llvm", inArch);
+		// ret = fmt::format("{}-intel-llvm", inArch);
+		UNUSED(inArch);
+		ret = "intel-llvm";
 
 #if defined(CHALET_WIN32)
 		const auto vsVersion = m_state.inputs.visualStudioVersion();

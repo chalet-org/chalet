@@ -21,7 +21,7 @@ struct CompileEnvironmentVisualStudioLLVM final : CompileEnvironmentLLVM
 	virtual std::string getObjectFile(const std::string& inSource) const final;
 
 protected:
-	virtual std::string getFullCxxCompilerString(const std::string& inVersion) const final;
+	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;

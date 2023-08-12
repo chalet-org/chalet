@@ -25,7 +25,7 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 	DotEnvFileGenerator env;
 
 	auto addEnvironmentPath = [&inState, &env](const char* inKey, const StringList& inAdditionalPaths = StringList()) {
-		auto path = Environment::getAsString(inKey);
+		auto path = Environment::getString(inKey);
 		auto outPath = inState.workspace.makePathVariable(path, inAdditionalPaths);
 
 		// if (!String::equals(outPath, path))

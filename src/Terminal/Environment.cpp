@@ -532,7 +532,17 @@ const char* Environment::get(const char* inName)
 }
 
 /*****************************************************************************/
-std::string Environment::getAsString(const char* inName, std::string inFallback)
+std::string Environment::getString(const char* inName)
+{
+	const char* result = std::getenv(inName);
+	if (result != nullptr)
+		return std::string(result);
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string Environment::getString(const char* inName, const std::string& inFallback)
 {
 	const char* result = std::getenv(inName);
 	if (result != nullptr)
@@ -641,13 +651,13 @@ std::string Environment::getUserDirectory()
 /*****************************************************************************/
 std::string Environment::getShell()
 {
-	return getAsString("SHELL");
+	return getString("SHELL");
 }
 
 /*****************************************************************************/
 std::string Environment::getComSpec()
 {
-	return getAsString("COMSPEC", "cmd.exe");
+	return getString("COMSPEC", "cmd.exe");
 }
 
 /*****************************************************************************/
