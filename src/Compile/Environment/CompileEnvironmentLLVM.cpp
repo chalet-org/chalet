@@ -31,8 +31,9 @@ StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecut
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inVersion) const
+std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
+	UNUSED(inPath);
 	return fmt::format("LLVM Clang version {}", inVersion);
 }
 
