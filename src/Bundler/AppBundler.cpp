@@ -74,6 +74,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		Output::lineBreak();
 
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
+		m_dependencyMap->setIncludeWinUCRT(true);
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap, m_state.inputs.inputFile());
 		if (!removeOldFiles(*bundler))
 		{
@@ -456,6 +457,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 		StringList dependencies;
 		StringList dependenciesNotFound;
 
+		tmpMap.setIncludeWinUCRT(true);
 		if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
 		{
 			const auto& unknownDep = dependenciesNotFound.front();
