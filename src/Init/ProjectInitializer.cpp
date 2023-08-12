@@ -58,6 +58,13 @@ bool ProjectInitializer::run()
 
 	Path::sanitize(m_rootPath);
 
+	auto initTemplate = m_inputs.initTemplate();
+	if (initTemplate == InitTemplateType::Unknown)
+	{
+		Diagnostic::error("The specified initialization template was not recognized");
+		return false;
+	}
+
 	{
 		/*auto banner = String::split(getBannerV2(), '\n');
 		for (auto& line : banner)
@@ -72,7 +79,7 @@ bool ProjectInitializer::run()
 		std::cout.flush();
 	}
 
-	bool isCmakeTemplate = m_inputs.initTemplate() == InitTemplateType::CMake;
+	bool isCmakeTemplate = initTemplate == InitTemplateType::CMake;
 
 	bool result = false;
 	ChaletJsonProps props;
