@@ -12,6 +12,7 @@ enum class InitTemplateType : ushort
 {
 	None,
 	CMake,
+	Unknown,
 };
 }
 
