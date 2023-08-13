@@ -47,8 +47,8 @@ struct BundleTarget final : public IDistTarget
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
 
-	bool windowsIncludeUCRTDlls() const noexcept;
-	void setWindowsIncludeUCRTDlls(const bool inValue) noexcept;
+	bool windowsIncludeRuntimeDlls() const noexcept;
+	void setWindowsIncludeRuntimeDlls(const bool inValue) noexcept;
 
 #if defined(CHALET_MACOS)
 	MacOSBundleType macosBundleType() const noexcept;
@@ -110,7 +110,7 @@ private:
 	std::string m_linuxDesktopEntryIcon;
 #endif
 
-	bool m_windowsIncludeUCRTDlls = false;
+	bool m_windowsIncludeRuntimeDlls = false;
 	bool m_hasAllBuildTargets = false;
 	bool m_includeDependentSharedLibraries = true;
 	bool m_includesResolved = false;
