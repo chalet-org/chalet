@@ -320,10 +320,9 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	auto& optionsJson = settingsJson.json.at(Keys::Options);
 	auto fetchToolchain = [&toolchains, &preference, &arch]() -> Json& {
-		auto arch2 = Arch::from(arch);
 		auto& rootToolchain = toolchains.at(preference);
-		if (rootToolchain.contains(arch2.str))
-			return rootToolchain.at(arch2.str);
+		if (rootToolchain.contains(arch))
+			return rootToolchain.at(arch);
 		else
 			return rootToolchain;
 	};
