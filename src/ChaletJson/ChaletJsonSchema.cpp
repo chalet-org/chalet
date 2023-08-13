@@ -162,7 +162,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	{
-		auto includeUCRTDlls = R"json({
+		auto includeRuntimeDlls = R"json({
 			"type": "boolean",
 			"description": "If true, include the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default). This only applies if 'includeDependentSharedLibraries' is set to true",
 			"default": false
@@ -174,7 +174,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false,
 			"properties": {}
 		})json"_ojson;
-		m_nonIndexedDefs[Defs::DistributionBundleWindows][SKeys::Properties]["includeUCRTDlls"] = std::move(includeUCRTDlls);
+		m_nonIndexedDefs[Defs::DistributionBundleWindows][SKeys::Properties]["includeRuntimeDlls"] = std::move(includeRuntimeDlls);
 	}
 
 	{

@@ -1330,8 +1330,8 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 				{
 					if (v.is_boolean())
 					{
-						if (String::equals("includeUCRTDlls", k))
-							outTarget.setWindowsIncludeUCRTDlls(v.get<bool>());
+						if (String::equals("includeRuntimeDlls", k))
+							outTarget.setWindowsIncludeRuntimeDlls(v.get<bool>());
 					}
 				}
 			}

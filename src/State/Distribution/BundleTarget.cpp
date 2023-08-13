@@ -375,13 +375,13 @@ void BundleTarget::addInclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-bool BundleTarget::windowsIncludeUCRTDlls() const noexcept
+bool BundleTarget::windowsIncludeRuntimeDlls() const noexcept
 {
-	return m_windowsIncludeUCRTDlls;
+	return m_windowsIncludeRuntimeDlls;
 }
-void BundleTarget::setWindowsIncludeUCRTDlls(const bool inValue) noexcept
+void BundleTarget::setWindowsIncludeRuntimeDlls(const bool inValue) noexcept
 {
-	m_windowsIncludeUCRTDlls = inValue;
+	m_windowsIncludeRuntimeDlls = inValue;
 }
 
 #if defined(CHALET_MACOS)
