@@ -175,6 +175,18 @@
 					"minLength": 1,
 					"const": "bundle"
 				},
+				"windows": {
+					"type": "object",
+					"description": "Properties applicable to Windows application distribution.",
+					"additionalProperties": false,
+					"properties": {
+						"includeUCRTDlls": {
+							"type": "boolean",
+							"description": "If true, the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default).",
+							"default": false
+						}
+					}
+				},
 				"linuxDesktopEntry": {
 					"type": "object",
 					"description": "Properties to describe an XDG Desktop Entry.",
@@ -1740,7 +1752,7 @@
 			"pattern": "^[\\w\\-+.]{3,}$"
 		},
 		"target-source-cxx-staticRuntimeLibrary": {
-			"description": "true to statically link against compiler runtime libraries (libc++, ms-crt, etc.). false to dynamically link them (default).",
+			"description": "true to statically link against compiler runtime libraries (libc++, MS UCRT, etc.). false to dynamically link them (default).",
 			"type": "boolean",
 			"default": false
 		},

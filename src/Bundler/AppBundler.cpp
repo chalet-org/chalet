@@ -74,7 +74,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		Output::lineBreak();
 
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
-		m_dependencyMap->setIncludeWinUCRT(true);
+		m_dependencyMap->setIncludeWinUCRT(bundle.windowsIncludeUCRTDlls());
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap, m_state.inputs.inputFile());
 		if (!removeOldFiles(*bundler))
 		{

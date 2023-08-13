@@ -374,6 +374,16 @@ void BundleTarget::addInclude(std::string&& inValue)
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 
+/*****************************************************************************/
+bool BundleTarget::windowsIncludeUCRTDlls() const noexcept
+{
+	return m_windowsIncludeUCRTDlls;
+}
+void BundleTarget::setWindowsIncludeUCRTDlls(const bool inValue) noexcept
+{
+	m_windowsIncludeUCRTDlls = inValue;
+}
+
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
 MacOSBundleType BundleTarget::macosBundleType() const noexcept
