@@ -1324,7 +1324,18 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 		}
 		else if (value.is_object())
 		{
-			if (String::equals("linuxDesktopEntry", key))
+			if (String::equals("windows", key))
+			{
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_boolean())
+					{
+						if (String::equals("includeUCRTDlls", k))
+							outTarget.setWindowsIncludeUCRTDlls(v.get<bool>());
+					}
+				}
+			}
+			else if (String::equals("linuxDesktopEntry", key))
 			{
 #if defined(CHALET_LINUX)
 				for (const auto& [k, v] : value.items())
