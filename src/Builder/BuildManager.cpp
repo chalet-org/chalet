@@ -1061,6 +1061,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 		StringList dependencies;
 		StringList dependenciesNotFound;
 
+		tmpMap.setIncludeWinUCRT(true);
 		if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
 		{
 			const auto& unknownDep = dependenciesNotFound.front();

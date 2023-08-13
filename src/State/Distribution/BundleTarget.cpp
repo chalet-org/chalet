@@ -374,6 +374,16 @@ void BundleTarget::addInclude(std::string&& inValue)
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 
+/*****************************************************************************/
+bool BundleTarget::windowsIncludeRuntimeDlls() const noexcept
+{
+	return m_windowsIncludeRuntimeDlls;
+}
+void BundleTarget::setWindowsIncludeRuntimeDlls(const bool inValue) noexcept
+{
+	m_windowsIncludeRuntimeDlls = inValue;
+}
+
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
 MacOSBundleType BundleTarget::macosBundleType() const noexcept

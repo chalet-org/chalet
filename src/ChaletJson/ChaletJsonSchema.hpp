@@ -39,6 +39,7 @@ class ChaletJsonSchema
 		DistributionBundleSubDirectory,
 		DistributionBundleBuildTargets,
 		DistributionBundleIncludeDependentSharedLibraries,
+		DistributionBundleWindows,
 		DistributionBundleMacOSBundle,
 		DistributionBundleLinuxDesktopEntry,
 		//

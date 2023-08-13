@@ -157,9 +157,25 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::DistributionBundleIncludeDependentSharedLibraries] = R"json({
 		"type": "boolean",
-		"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
+		"description": "If true (default), any shared libraries that the bundle depends on will also be copied.",
 		"default": true
 	})json"_ojson;
+
+	{
+		auto includeRuntimeDlls = R"json({
+			"type": "boolean",
+			"description": "If true, include the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default). This only applies if 'includeDependentSharedLibraries' is set to true",
+			"default": false
+		})json"_ojson;
+
+		m_nonIndexedDefs[Defs::DistributionBundleWindows] = R"json({
+			"type": "object",
+			"description": "Properties applicable to Windows application distribution.",
+			"additionalProperties": false,
+			"properties": {}
+		})json"_ojson;
+		m_nonIndexedDefs[Defs::DistributionBundleWindows][SKeys::Properties]["includeRuntimeDlls"] = std::move(includeRuntimeDlls);
+	}
 
 	{
 		auto macosBundleType = R"json({
@@ -854,7 +870,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetSourceCxxBuildSuffix][SKeys::Pattern] = kPatternTargetName;
 
 	defs[Defs::TargetSourceCxxStaticRuntimeLibrary] = R"json({
-		"description": "true to statically link against compiler runtime libraries (libc++, ms-crt, etc.). false to dynamically link them (default).",
+		"description": "true to statically link against compiler runtime libraries (libc++, MS UCRT, etc.). false to dynamically link them (default).",
 		"type": "boolean",
 		"default": false
 	})json"_ojson;
@@ -1481,6 +1497,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(distTarget, "include", Defs::DistributionBundleInclude, kPatternConditions);
 		addProperty(distTarget, "includeDependentSharedLibraries", Defs::DistributionBundleIncludeDependentSharedLibraries);
 		addKind(distTarget, defs, Defs::DistributionKind, "bundle");
+		addProperty(distTarget, "windows", Defs::DistributionBundleWindows, false);
 		addProperty(distTarget, "linuxDesktopEntry", Defs::DistributionBundleLinuxDesktopEntry, false);
 		addProperty(distTarget, "macosBundle", Defs::DistributionBundleMacOSBundle, false);
 		addProperty(distTarget, "mainExecutable", Defs::DistributionBundleMainExecutable);
@@ -1876,6 +1893,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionBundleSubDirectory: return "dist-bundle-subdirectory";
 		case Defs::DistributionBundleBuildTargets: return "dist-bundle-buildTargets";
 		case Defs::DistributionBundleIncludeDependentSharedLibraries: return "dist-bundle-includeDependentSharedLibraries";
+		case Defs::DistributionBundleWindows: return "dist-bundle-windows";
 		case Defs::DistributionBundleMacOSBundle: return "dist-bundle-macosBundle";
 		case Defs::DistributionBundleLinuxDesktopEntry: return "dist-bundle-linuxDesktopEntry";
 		//
