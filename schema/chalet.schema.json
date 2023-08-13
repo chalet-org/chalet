@@ -180,7 +180,7 @@
 					"description": "Properties applicable to Windows application distribution.",
 					"additionalProperties": false,
 					"properties": {
-						"includeUCRTDlls": {
+						"includeRuntimeDlls": {
 							"type": "boolean",
 							"description": "If true, include the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default). This only applies if 'includeDependentSharedLibraries' is set to true",
 							"default": false
