@@ -182,7 +182,7 @@
 					"properties": {
 						"includeUCRTDlls": {
 							"type": "boolean",
-							"description": "If true, the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default).",
+							"description": "If true, include the Windows UCRT dlls if 'staticRuntimeLibrary' is set to false by the build target. false to exclude them (default). This only applies if 'includeDependentSharedLibraries' is set to true",
 							"default": false
 						}
 					}
@@ -364,7 +364,7 @@
 		},
 		"dist-bundle-includeDependentSharedLibraries": {
 			"type": "boolean",
-			"description": "If true (default), any shared libraries that the bundle depeends on will also be copied.",
+			"description": "If true (default), any shared libraries that the bundle depends on will also be copied.",
 			"default": true
 		},
 		"dist-script": {
