@@ -189,6 +189,11 @@ std::string ChaletJsonParser::getValidRunTargetFromInput() const
 			ret = name;
 			return ret;
 		}
+		else if (target->isProcess())
+		{
+			ret = name;
+			return ret;
+		}
 	}
 
 	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
@@ -641,6 +646,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -794,6 +801,8 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -1202,6 +1211,8 @@ bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, cons
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -1237,6 +1248,8 @@ bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, co
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}

@@ -658,7 +658,7 @@ StringList QueryController::getAllRunTargets() const
 					continue;
 
 				auto kindValue = kind.get<std::string>();
-				if (!String::equals(StringList{ "executable", "script", "cmakeProject" }, kindValue))
+				if (!String::equals(StringList{ "executable", "script", "process", "cmakeProject" }, kindValue))
 					continue;
 
 				bool isExecutable = true;

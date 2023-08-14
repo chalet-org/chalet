@@ -11,6 +11,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -46,9 +47,36 @@ bool ScriptDistTarget::validate()
 	m_file = std::move(resolved);
 	m_scriptType = scriptType;
 
-	if (!Commands::pathExists(m_file))
+	if (!m_dependsOn.empty())
 	{
-		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
+		if (String::equals(this->name(), m_dependsOn))
+		{
+			Diagnostic::error("The distribution script target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
+			return false;
+		}
+
+		bool found = false;
+		for (auto& target : m_state.distribution)
+		{
+			if (String::equals(target->name(), this->name()))
+				break;
+
+			if (String::equals(target->name(), m_dependsOn))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			Diagnostic::error("The distribution script target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), m_dependsOn);
+			return false;
+		}
+	}
+
+	if (m_dependsOn.empty() && !Commands::pathExists(m_file))
+	{
+		Diagnostic::error("File for the distribution script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;
 	}
 
@@ -91,6 +119,17 @@ void ScriptDistTarget::addArguments(StringList&& inList)
 void ScriptDistTarget::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ScriptDistTarget::dependsOn() const noexcept
+{
+	return m_dependsOn;
+}
+
+void ScriptDistTarget::setDependsOn(std::string&& inValue) noexcept
+{
+	m_dependsOn = std::move(inValue);
 }
 
 }

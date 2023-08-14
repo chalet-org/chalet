@@ -9,6 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -35,10 +36,37 @@ bool ProcessDistTarget::initialize()
 /*****************************************************************************/
 bool ProcessDistTarget::validate()
 {
+	if (!m_dependsOn.empty())
+	{
+		if (String::equals(this->name(), m_dependsOn))
+		{
+			Diagnostic::error("The process target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
+			return false;
+		}
+
+		bool found = false;
+		for (auto& target : m_state.distribution)
+		{
+			if (String::equals(target->name(), this->name()))
+				break;
+
+			if (String::equals(target->name(), m_dependsOn))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			Diagnostic::error("The distribution target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), m_dependsOn);
+			return false;
+		}
+	}
+
 	if (!Commands::pathExists(m_path))
 	{
 		auto resolved = Commands::which(m_path);
-		if (resolved.empty())
+		if (resolved.empty() && m_dependsOn.empty())
 		{
 			Diagnostic::error("The process path for the distribution target '{}' doesn't exist: {}", this->name(), m_path);
 			return false;
@@ -77,4 +105,14 @@ void ProcessDistTarget::addArgument(std::string&& inValue)
 	m_arguments.emplace_back(std::move(inValue));
 }
 
+/*****************************************************************************/
+const std::string& ProcessDistTarget::dependsOn() const noexcept
+{
+	return m_dependsOn;
+}
+
+void ProcessDistTarget::setDependsOn(std::string&& inValue) noexcept
+{
+	m_dependsOn = std::move(inValue);
+}
 }
