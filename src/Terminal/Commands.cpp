@@ -424,9 +424,11 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("set executable permission: {}", inPath));
 
+		std::error_code ec;
 		fs::permissions(inPath,
 			fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
-			fs::perm_options::add);
+			fs::perm_options::add,
+			ec);
 
 		return true;
 	}

@@ -147,6 +147,7 @@ class ChaletJsonSchema
 		TargetScript,
 		TargetScriptFile,
 		TargetScriptArguments,
+		TargetScriptDependsOn,
 		//
 		TargetCMake,
 		TargetCMakeLocation,
@@ -170,6 +171,7 @@ class ChaletJsonSchema
 		TargetProcess,
 		TargetProcessPath,
 		TargetProcessArguments,
+		TargetProcessDependsOn,
 		//
 		PlatformRequires,
 		PlatformRequiresUbuntuSystem,

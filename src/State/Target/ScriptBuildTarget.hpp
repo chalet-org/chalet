@@ -29,9 +29,14 @@ struct ScriptBuildTarget final : public IBuildTarget
 	void addArguments(StringList&& inList);
 	void addArgument(std::string&& inValue);
 
+	const std::string& dependsOn() const noexcept;
+	void setDependsOn(std::string&& inValue) noexcept;
+
 private:
 	std::string m_file;
 	StringList m_arguments;
+
+	std::string m_dependsOn;
 
 	ScriptType m_scriptType = ScriptType::None;
 };
