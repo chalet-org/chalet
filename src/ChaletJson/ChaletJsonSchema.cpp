@@ -1298,6 +1298,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
+	defs[Defs::TargetScriptDependsOn] = R"json({
+		"type": "string",
+		"description": "A target this script depends on in order to run.",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 
 	defs[Defs::TargetCMakeLocation] = R"json({
@@ -1406,6 +1412,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson,
 		false);
+
+	defs[Defs::TargetProcessDependsOn] = R"json({
+		"type": "string",
+		"description": "A target this process depends on in order to run.",
+		"minLength": 1
+	})json"_ojson;
 
 	//
 	// Platform Requires
@@ -1551,6 +1563,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(distScript, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distScript, "dependsOn", Defs::TargetScriptDependsOn, kPatternConditions);
 		addKind(distScript, defs, Defs::DistributionKind, "script");
 		addPropertyAndPattern(distScript, "file", Defs::TargetScriptFile, kPatternConditions);
 		addProperty(distScript, "outputDescription", Defs::TargetOutputDescription);
@@ -1569,6 +1582,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
 		addProperty(distProcess, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distProcess, "dependsOn", Defs::TargetProcessDependsOn, kPatternConditions);
 		addKind(distProcess, defs, Defs::DistributionKind, "process");
 		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
 		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConditions);
@@ -1769,6 +1783,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(targetScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(targetScript, "condition", Defs::TargetCondition);
+		addPropertyAndPattern(targetScript, "dependsOn", Defs::TargetScriptDependsOn, kPatternConditions);
 		addKind(targetScript, defs, Defs::TargetKind, "script");
 		// addProperty(targetScript, "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addPropertyAndPattern(targetScript, "file", Defs::TargetScriptFile, kPatternConditions);
@@ -1787,6 +1802,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(targetProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
 		addProperty(targetProcess, "condition", Defs::TargetCondition);
+		addPropertyAndPattern(targetProcess, "dependsOn", Defs::TargetProcessDependsOn, kPatternConditions);
 		addKind(targetProcess, defs, Defs::TargetKind, "process");
 		addProperty(targetProcess, "outputDescription", Defs::TargetOutputDescription);
 		addPropertyAndPattern(targetProcess, "path", Defs::TargetProcessPath, kPatternConditions);
@@ -2000,6 +2016,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetScript: return "target-script";
 		case Defs::TargetScriptFile: return "target-script-file";
 		case Defs::TargetScriptArguments: return "target-script-arguments";
+		case Defs::TargetScriptDependsOn: return "target-script-dependsOn";
 		//
 		case Defs::TargetCMake: return "target-cmake";
 		case Defs::TargetCMakeLocation: return "target-cmake-location";
@@ -2023,6 +2040,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";
 		case Defs::TargetProcessArguments: return "target-process-arguments";
+		case Defs::TargetProcessDependsOn: return "target-process-dependsOn";
 		//
 		case Defs::PlatformRequires: return "platform-requires";
 		case Defs::PlatformRequiresUbuntuSystem: return "platform-requires-ubuntu-system";

@@ -377,6 +377,9 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-script-dependsOn"
+				},
 				"kind": {
 					"type": "string",
 					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
@@ -393,6 +396,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-script-dependsOn"
 				},
 				"^file\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
@@ -641,6 +647,9 @@
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
 				"kind": {
 					"type": "string",
 					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
@@ -657,6 +666,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-dependsOn"
 				},
 				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-path"
@@ -2171,6 +2183,9 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-script-dependsOn"
+				},
 				"kind": {
 					"type": "string",
 					"description": "The type of the target's compiled binary, a script or external project.",
@@ -2187,6 +2202,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-script-dependsOn"
 				},
 				"^file\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
@@ -2215,6 +2233,11 @@
 					}
 				}
 			]
+		},
+		"target-script-dependsOn": {
+			"type": "string",
+			"description": "A target this script depends on in order to run.",
+			"minLength": 1
 		},
 		"target-cmake": {
 			"type": "object",
@@ -2464,6 +2487,9 @@
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
 				"kind": {
 					"type": "string",
 					"description": "The type of the target's compiled binary, a script or external project.",
@@ -2480,6 +2506,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-dependsOn"
 				},
 				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-path"
@@ -2508,6 +2537,11 @@
 					}
 				}
 			]
+		},
+		"target-process-dependsOn": {
+			"type": "string",
+			"description": "A target this process depends on in order to run.",
+			"minLength": 1
 		},
 		"platform-requires": {
 			"type": "object",
