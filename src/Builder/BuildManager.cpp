@@ -153,6 +153,11 @@ const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 				runTarget = target.get();
 				break;
 			}
+			else if (target->isProcess())
+			{
+				runTarget = target.get();
+				break;
+			}
 		}
 	}
 
@@ -263,7 +268,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 			if (isRunTarget || noExplicitRunTarget)
 			{
-				if (target->isScript())
+				if (target->isScript() || target->isProcess())
 					break;
 			}
 
@@ -387,6 +392,11 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		{
 			Output::lineBreak();
 			return runScriptTarget(static_cast<const ScriptBuildTarget&>(*runTarget), true);
+		}
+		else if (runTarget->isProcess())
+		{
+			Output::lineBreak();
+			return runProcessTarget(static_cast<const ProcessBuildTarget&>(*runTarget));
 		}
 		else
 		{
