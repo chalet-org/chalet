@@ -78,7 +78,8 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 {
 	m_warningFlag = getWarningLevel(m_msvcAdapter.getWarningLevel());
 
-	return !m_warningFlag.empty();
+	// return !m_warningFlag.empty();
+	return true;
 }
 
 /*****************************************************************************/

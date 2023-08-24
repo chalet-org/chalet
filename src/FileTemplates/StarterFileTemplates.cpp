@@ -276,6 +276,7 @@ std::string StarterFileTemplates::getGitIgnore(const std::string& inBuildFolder,
 {build}
 chalet_external
 dist
+.env*
 
 # Other
 Thumbs.db
