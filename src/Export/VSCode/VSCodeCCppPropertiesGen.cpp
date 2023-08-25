@@ -36,9 +36,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	Json config;
 	config["name"] = getName();
 	config["intelliSenseMode"] = getIntellisenseMode();
-
-	if (!m_state.environment->isMsvc())
-		config["compilerPath"] = getCompilerPath();
+	config["compilerPath"] = getCompilerPath();
 
 	std::string cStandard;
 	std::string cppStandard;
