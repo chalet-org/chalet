@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -74,6 +75,23 @@ bool VSCodeProjectExporter::generateProjectFiles()
 				}
 			}
 		}
+	}
+
+	const auto& cwd = workingDirectory();
+	auto vscodeDirectory = fmt::format("{}/.vscode", cwd);
+	if (!Commands::pathExists(vscodeDirectory) && Commands::pathExists(m_directory))
+	{
+		if (!Commands::copySilent(m_directory, cwd))
+		{
+			Diagnostic::error("There was a problem copying the .vscode directory to the workspace.");
+			return false;
+		}
+	}
+	else
+	{
+		auto directory = m_directory;
+		String::replaceAll(directory, fmt::format("{}/", cwd), "");
+		Diagnostic::warn("The .vscode directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
 	}
 
 	return true;
