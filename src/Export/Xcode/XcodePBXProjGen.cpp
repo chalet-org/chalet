@@ -17,6 +17,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -423,10 +424,23 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// LOG(json.dump(2, ' '));
 
 	auto contents = generateFromJson(json);
+	bool replaceContents = true;
+
+	if (Commands::pathExists(inFilename))
+	{
+		auto contentHash = Hash::uint64(contents);
+		auto existing = Commands::getFileContents(inFilename);
+		if (!existing.empty())
+		{
+			existing.pop_back();
+			auto existingHash = Hash::uint64(existing);
+			replaceContents = existingHash != contentHash;
+		}
+	}
 
 	// LOG(contents);
 
-	if (!Commands::createFileWithContents(inFilename, contents))
+	if (replaceContents && !Commands::createFileWithContents(inFilename, contents))
 	{
 		Diagnostic::error("There was a problem creating the Xcode project: {}", inFilename);
 		return false;

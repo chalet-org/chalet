@@ -48,7 +48,9 @@ bool SourceCache::buildStrategyChanged() const noexcept
 /*****************************************************************************/
 bool SourceCache::canRemoveCachedFolder() const noexcept
 {
-	return m_lastBuildStrategy != StrategyType::Native && m_lastBuildStrategy != StrategyType::MSBuild;
+	return m_lastBuildStrategy != StrategyType::Native
+		&& m_lastBuildStrategy != StrategyType::MSBuild
+		&& m_lastBuildStrategy != StrategyType::XcodeBuild;
 }
 
 /*****************************************************************************/
