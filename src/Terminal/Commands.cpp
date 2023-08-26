@@ -1275,14 +1275,17 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 		// Ld
 		else if (String::startsWith("Ld ", inLine))
 		{
-			// auto target = getTargetName(inLine);
 			auto path = getTargetPath(inLine);
-			if (/*!target.empty() && */ !path.empty())
+			if (!path.empty())
 			{
-				auto output = fmt::format("   Linking \u2192 {}\n", path);
-				std::cout.write(output.data(), output.size());
-				std::cout.flush();
-				printed = true;
+				path = String::getPathFilename(path);
+				if (!path.empty())
+				{
+					auto output = fmt::format("   Linking \u2192 {}\n", path);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
 			}
 		}
 	};
