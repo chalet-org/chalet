@@ -215,14 +215,22 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 		for (const auto& source : sources)
 		{
+			auto type = firstState.paths.getSourceType(source);
 			auto key = getHashWithLabel(source);
 			node[key]["isa"] = section;
-			node[key]["lastKnownFileType"] = "sourcecode.cpp.cpp";
+			node[key]["lastKnownFileType"] = getLastKnownFileType(type);
 			node[key]["path"] = source;
 			node[key]["sourceTree"] = group;
 		}
 		for (const auto& header : headers)
 		{
+			auto suffix = String::getPathSuffix(header);
+			std::string type;
+			if (String::equals('h', suffix))
+				type = "sourcecode.c.h";
+			else
+				type = "sourcecode.cpp.h";
+
 			auto key = getHashWithLabel(header);
 			node[key]["isa"] = section;
 			node[key]["lastKnownFileType"] = "sourcecode.cpp.h";
@@ -667,6 +675,23 @@ std::string XcodePBXProjGen::getProductBundleIdentifier(const std::string& inWor
 {
 	// TODO - appleProductBundleIdentiifer or something
 	return fmt::format("com.myapp.{}", inWorkspaceName);
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getLastKnownFileType(const SourceType inType) const
+{
+	switch (inType)
+	{
+		case SourceType::ObjectiveCPlusPlus:
+			return "sourcecode.cpp.objcpp";
+		case SourceType::ObjectiveC:
+			return "sourcecode.c.objc";
+		case SourceType::C:
+			return "sourcecode.c.c";
+		case SourceType::CPlusPlus:
+		default:
+			return "sourcecode.cpp.cpp";
+	}
 }
 
 /*****************************************************************************/
