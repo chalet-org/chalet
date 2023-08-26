@@ -1328,11 +1328,30 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 
 	if (!errors.empty())
 	{
-		if (printed)
-			Output::lineBreak(true);
+		bool printed2 = false;
+		auto list = String::split(errors, '\n');
+		for (auto& line : list)
+		{
+			if (line.empty())
+				continue;
 
-		std::cout.write(errors.data(), errors.size());
-		Output::lineBreak(true);
+			// TODO: figure out what this is - seems like a false positive
+			if (String::contains("DVTCoreDeviceEnabledState:", line))
+				continue;
+
+			bool last = &line == &list.back();
+			if (!last)
+				line += '\n';
+
+			if (!printed2 && printed)
+				Output::lineBreak(true);
+
+			std::cout.write(line.data(), line.size());
+			printed2 = true;
+		}
+
+		if (printed2)
+			Output::lineBreak(true);
 	}
 
 	if (result == EXIT_SUCCESS)
