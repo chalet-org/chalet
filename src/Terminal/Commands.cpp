@@ -1131,7 +1131,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 
 	int result = ProcessController::run(inCmd, options);
 
-	if (capData.size() > 0)
+	if (!capData.empty())
 	{
 		std::string noWork = fmt::format("ninja: no work to do.{}", cap.endlineReplace);
 		if (String::endsWith(noWork, capData))
@@ -1142,6 +1142,206 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 
 	return result == EXIT_SUCCESS;
 }
+
+#if defined(CHALET_MACOS)
+/*****************************************************************************/
+bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& inProject, std::string inCwd)
+{
+	if (Output::showCommands())
+		Output::printCommand(inCmd);
+
+	static auto getTargetName = [](const std::string& inLine) {
+		auto lastParen = inLine.find_last_of('(');
+		if (lastParen != std::string::npos)
+		{
+			auto substring = inLine.substr(lastParen);
+			auto apost = substring.find('\'');
+			if (apost != std::string::npos)
+			{
+				substring = substring.substr(apost + 1);
+				apost = substring.find('\'');
+				if (apost != std::string::npos)
+				{
+					return substring.substr(0, apost);
+				}
+			}
+		}
+
+		return std::string();
+	};
+
+	static auto getFilePath = [](const std::string& inLine) {
+		auto firstSpace = inLine.find(' ');
+		if (firstSpace != std::string::npos)
+		{
+			auto substring = inLine.substr(firstSpace + 1);
+			auto nextSpace = substring.find(' ');
+			if (nextSpace != std::string::npos)
+			{
+				substring = substring.substr(0, nextSpace);
+				if (!String::startsWith('/', substring))
+					substring.clear();
+			}
+			return substring;
+		}
+
+		return std::string();
+	};
+
+	static auto getTargetPath = [](const std::string& inLine) {
+		auto firstSpace = inLine.find(' ');
+		if (firstSpace != std::string::npos)
+		{
+			auto substring = inLine.substr(firstSpace + 1);
+			auto lastParen = substring.find_last_of('(');
+			if (lastParen != std::string::npos)
+			{
+				substring = substring.substr(0, lastParen - 1);
+				while (!substring.empty())
+				{
+					auto lastSpace = substring.find_last_of(' ');
+					if (lastSpace == std::string::npos)
+						break;
+
+					auto next = substring.substr(lastSpace + 1);
+					if (String::startsWith('/', next))
+					{
+						substring = std::move(next);
+						break;
+					}
+					else
+					{
+						substring = substring.substr(0, lastSpace);
+					}
+				}
+
+				return substring;
+			}
+		}
+
+		return std::string();
+	};
+
+	bool printed = false;
+	auto processLine = [&printed](const std::string& inLine) {
+		UNUSED(inLine);
+		UNUSED(getTargetName);
+
+		if (String::startsWith("Compile", inLine))
+		{
+			auto path = getTargetPath(inLine);
+			if (!path.empty())
+			{
+				path = String::getPathFilename(path);
+				if (!path.empty())
+				{
+					auto output = fmt::format("   {}\n", path);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
+		else if (String::startsWith("Generate", inLine))
+		{
+			auto path = getFilePath(inLine);
+			if (!path.empty())
+			{
+				path = String::getPathFilename(path);
+				if (!path.empty())
+				{
+					auto output = fmt::format("   Generating \u2192 {}\n", path);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
+		else if (String::startsWith("CodeSign", inLine))
+		{
+			auto path = getTargetPath(inLine);
+			if (!path.empty())
+			{
+				path = String::getPathFilename(path);
+				if (!path.empty())
+				{
+					auto output = fmt::format("   Signing \u2192 {}\n", path);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
+		// Ld
+		else if (String::startsWith("Ld ", inLine))
+		{
+			// auto target = getTargetName(inLine);
+			auto path = getTargetPath(inLine);
+			if (/*!target.empty() && */ !path.empty())
+			{
+				auto output = fmt::format("   Linking \u2192 {}\n", path);
+				std::cout.write(output.data(), output.size());
+				std::cout.flush();
+				printed = true;
+			}
+		}
+	};
+
+	std::string data;
+	std::string errors;
+
+	ProcessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdErr = [&errors](std::string inData) -> void {
+		errors += std::move(inData);
+	};
+	options.onStdOut = [&processLine, &data](std::string inData) -> void {
+		auto lineBreak = inData.find('\n');
+		if (lineBreak == std::string::npos)
+		{
+			data += std::move(inData);
+		}
+		else
+		{
+			while (lineBreak != std::string::npos)
+			{
+				data += inData.substr(0, lineBreak + 1);
+				processLine(data);
+				data.clear();
+
+				inData = inData.substr(lineBreak + 1);
+				lineBreak = inData.find('\n');
+				if (lineBreak == std::string::npos)
+				{
+					data += std::move(inData);
+				}
+			}
+		}
+	};
+
+	int result = ProcessController::run(inCmd, options);
+
+	if (!errors.empty())
+	{
+		if (printed)
+			Output::lineBreak(true);
+
+		std::cout.write(errors.data(), errors.size());
+		Output::lineBreak(true);
+	}
+
+	if (result == EXIT_SUCCESS)
+	{
+		auto output = fmt::format("   Succeeded \u2192 {}", inProject);
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
+	}
+
+	return result == EXIT_SUCCESS;
+}
+#endif
 
 /*****************************************************************************/
 std::string Commands::isolateVersion(const std::string& outString)

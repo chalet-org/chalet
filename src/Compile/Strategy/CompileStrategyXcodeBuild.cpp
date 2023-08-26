@@ -73,8 +73,8 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		"-hideShellScriptEnvironment"
 	};
 
-	// if (!Output::showCommands())
-	cmd.emplace_back("-verbose");
+	if (Output::showCommands())
+		cmd.emplace_back("-verbose");
 
 	cmd.emplace_back("-configuration");
 	cmd.emplace_back(m_state.configuration.name());
@@ -104,7 +104,8 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-project");
 	// cmd.emplace_back("project");
 	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
-	cmd.emplace_back(fmt::format("{}/.xcode/project.xcodeproj", directory));
+	auto project = fmt::format("{}/.xcode/project.xcodeproj", directory);
+	cmd.emplace_back(project);
 
 	const auto& signingIdentity = m_state.tools.signingIdentity();
 	if (!signingIdentity.empty())
@@ -112,7 +113,16 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingIdentity));
 	}
 
-	bool result = Commands::subprocess(cmd);
+	bool result = false;
+	if (Output::showCommands())
+	{
+		result = Commands::subprocess(cmd);
+	}
+	else
+	{
+		result = Commands::subprocessXcodeBuild(cmd, project);
+		Output::lineBreak();
+	}
 
 	return result;
 }
