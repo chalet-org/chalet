@@ -96,6 +96,7 @@ const std::string& getCygPath();
 #endif
 #if defined(CHALET_MACOS)
 const std::string& getXcodePath();
+bool isUsingAppleCommandLineTools();
 #endif
 }
 }

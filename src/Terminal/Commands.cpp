@@ -1505,5 +1505,12 @@ const std::string& Commands::getXcodePath()
 
 	return state.xcodePath;
 }
+
+/*****************************************************************************/
+bool Commands::isUsingAppleCommandLineTools()
+{
+	const auto& xcodePath = Commands::getXcodePath();
+	return String::startsWith("/Library/Developer/CommandLineTools", xcodePath);
+}
 #endif
 }

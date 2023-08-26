@@ -683,11 +683,8 @@ std::pair<StringList, bool> SettingsJsonParser::getAppleSdks() const
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
 	//
-	const auto& xcodePath = Commands::getXcodePath();
-	bool commandLineTools = String::startsWith("/Library/Developer/CommandLineTools", xcodePath);
-	// clang-format off
+	const bool commandLineTools = Commands::isUsingAppleCommandLineTools();
 	return std::make_pair(CompilerCxxAppleClang::getAllowedSDKTargets(), commandLineTools);
-	// clang-format on
 }
 /*****************************************************************************/
 bool SettingsJsonParser::detectAppleSdks(const bool inForce)

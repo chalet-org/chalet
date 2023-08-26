@@ -645,6 +645,12 @@ bool BuildState::validateState()
 			Diagnostic::error("The 'xcodebuild' strategy is only allowed with the apple-llvm preset.");
 			return false;
 		}
+
+		if (Commands::isUsingAppleCommandLineTools())
+		{
+			Diagnostic::error("The 'xcodebuild' strategy cannot be used with CommandLineTools. Please run 'sudo xcode-select -s /Applications/Xcode.app/Contents/Developer' (or with your chosen path to Xcode)");
+			return false;
+		}
 #else
 		Diagnostic::error("The 'xcodebuild' strategy is only available on macOS.");
 		return false;
