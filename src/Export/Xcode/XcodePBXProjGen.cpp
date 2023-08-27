@@ -9,6 +9,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Json.hpp"
+#include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -557,17 +558,23 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	CommandAdapterClang clangAdapter(inState, inTarget);
 
 	const auto& cwd = inState.inputs.workingDirectory();
+	auto lang = inTarget.language();
 
 	// TODO: this is currently just based on a Release mode
 
 	Json ret;
 
-	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
+	// ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 	ret["BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
 
-	ret["CLANG_CXX_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardCpp();
+	auto cStandard = clangAdapter.getLanguageStandardC();
+	auto cppStandard = clangAdapter.getLanguageStandardCpp();
+
+	if (!cppStandard.empty())
+		ret["CLANG_CXX_LANGUAGE_STANDARD"] = std::move(cppStandard);
+
 	ret["CLANG_CXX_LIBRARY"] = clangAdapter.getCxxLibrary();
 
 	if (inTarget.objectiveCxx())
@@ -610,13 +617,24 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
 	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	// ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
+
+	// ret["CODE_SIGN_IDENTITY"] = inState.tools.signingIdentity();
+	ret["CODE_SIGN_IDENTITY"] = "";
+	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
+
 	ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	ret["CONFIGURATION_TEMP_DIR"] = fmt::format("{}/{}", cwd, inState.paths.objDir());
-	ret["COPY_PHASE_STRIP"] = getBoolString(false);
-	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
-	ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
-	ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
-	ret["GCC_C_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardC();
+	// ret["COPY_PHASE_STRIP"] = getBoolString(false);
+	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
+
+	if (inTarget.objectiveCxx())
+	{
+		ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
+	}
+
+	if (!cStandard.empty())
+		ret["GCC_C_LANGUAGE_STANDARD"] = std::move(cStandard);
+
 	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
 	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
 	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
@@ -628,10 +646,25 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 		"$(inherited)",
 		"@executable_path/../Frameworks",
 	};
+	ret["MACH_O_TYPE"] = getMachOType(inTarget);
 	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
 	// ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
 	// ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
+
+	const auto& flags = inTarget.compileOptions();
+	if (!flags.empty())
+	{
+		if (lang == CodeLanguage::C || lang == CodeLanguage::ObjectiveC)
+		{
+			ret["OTHER_CFLAGS"] = flags;
+		}
+		else if (lang == CodeLanguage::CPlusPlus || lang == CodeLanguage::ObjectiveCPlusPlus)
+		{
+			ret["OTHER_CPLUSPLUSFLAGS"] = flags;
+		}
+	}
+
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
 	ret["SDKROOT"] = inState.inputs.osTargetName();
 
@@ -714,6 +747,17 @@ std::string XcodePBXProjGen::getLastKnownFileType(const SourceType inType) const
 		default:
 			return "sourcecode.cpp.cpp";
 	}
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getMachOType(const SourceTarget& inTarget) const
+{
+	if (inTarget.isStaticLibrary())
+		return "staticlib";
+	else if (inTarget.isSharedLibrary())
+		return "mh_dylib";
+	else
+		return "mh_execute";
 }
 
 /*****************************************************************************/

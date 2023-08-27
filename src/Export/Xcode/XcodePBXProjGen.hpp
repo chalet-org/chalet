@@ -36,6 +36,7 @@ private:
 	std::string getBoolString(const bool inValue) const;
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
 	std::string getLastKnownFileType(const SourceType inType) const;
+	std::string getMachOType(const SourceTarget& inTarget) const;
 
 	std::string generateFromJson(const Json& inJson) const;
 	std::string getNodeAsPListFormat(const Json& inJson, const size_t indent = 1) const;
