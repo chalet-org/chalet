@@ -561,30 +561,47 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	// TODO: this is currently just based on a Release mode
 
 	Json ret;
+
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 	ret["BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
+
 	ret["CLANG_CXX_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardCpp();
-	ret["CLANG_CXX_LIBRARY"] = "libc++";
-	ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
-	ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
-	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
+	ret["CLANG_CXX_LIBRARY"] = clangAdapter.getCxxLibrary();
+
+	if (inTarget.objectiveCxx())
+	{
+		ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
+		ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
+		ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
+	}
+
 	ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
 	ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
 	ret["CLANG_WARN_COMMA"] = getBoolString(true);
 	ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
-	ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
+
+	if (inTarget.objectiveCxx())
+	{
+		ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
+		ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
+	}
+
 	ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
 	ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
 	ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
 	ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
 	ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
 	ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
+
+	if (inTarget.objectiveCxx())
+	{
+		ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
+		ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
+		ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
+	}
+
 	ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
 	ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
 	ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
@@ -592,7 +609,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
 	ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
 	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
-	ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
+	// ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
 	ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	ret["CONFIGURATION_TEMP_DIR"] = fmt::format("{}/{}", cwd, inState.paths.objDir());
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
@@ -612,8 +629,8 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 		"@executable_path/../Frameworks",
 	};
 	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
-	ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
-	ret["MTL_FAST_MATH"] = getBoolString(false);
+	// ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
+	// ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
 	ret["SDKROOT"] = inState.inputs.osTargetName();
@@ -627,41 +644,30 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 /*****************************************************************************/
 Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 {
+	const auto& config = inState.configuration;
+	SourceTarget dummyTarget(inState);
+	CommandAdapterClang clangAdapter(inState, dummyTarget);
+
 	Json ret;
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	// ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
-	// ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
-	// ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
-	// ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
-	// ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_COMMA"] = getBoolString(true);
-	// ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
-	// ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
-	// ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
-	// ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
-	// ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
-	// ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
-	// ret["CLANG_WARN_SUSPICIOUS_MOVE"] = getBoolString(true);
-	// ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
-	// ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
-	// ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
-	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
+	if (config.debugSymbols())
+	{
+		ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
+	}
 	ret["ENABLE_TESTABILITY"] = getBoolString(true);
-	// ret["GCC_DYNAMIC_NO_PIC"] = getBoolString(false);
-	// ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
-	// ret["GCC_OPTIMIZATION_LEVEL"] = 0;
+	ret["GENERATE_PROFILING_CODE"] = getBoolString(config.enableProfiling());
+	ret["GCC_GENERATE_DEBUGGING_SYMBOLS"] = getBoolString(config.debugSymbols());
+	ret["GCC_OPTIMIZATION_LEVEL"] = clangAdapter.getOptimizationLevel();
 	// ret["GCC_PREPROCESSOR_DEFINITIONS"] = {
 	// 	"$(inherited)",
 	// 	"DEBUG=1",
 	// };
-	// reg["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(inState.
-	ret["MTL_ENABLE_DEBUG_INFO"] = "INCLUDE_SOURCE";
-	ret["MTL_FAST_MATH"] = getBoolString(false);
+
+	// YES, YES_THIN, NO
+	//   TODO: thin = incremental - maybe add in the future?
+	ret["LLVM_LTO"] = getBoolString(config.interproceduralOptimization());
+
 	ret["ONLY_ACTIVE_ARCH"] = getBoolString(true);
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
 	ret["SDKROOT"] = inState.inputs.osTargetName();
