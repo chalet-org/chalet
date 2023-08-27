@@ -95,7 +95,7 @@ void LinkerAppleClang::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	if (m_project.language() == CodeLanguage::CPlusPlus)
 	{
-		std::string flag{ "-stdlib=libc++" };
+		auto flag = fmt::format("-stdlib={}", m_clangAdapter.getCxxLibrary());
 		// if (isFlagSupported(flag))
 		List::addIfDoesNotExist(outArgList, std::move(flag));
 

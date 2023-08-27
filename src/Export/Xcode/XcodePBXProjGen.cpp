@@ -5,6 +5,7 @@
 
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 
+#include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Json.hpp"
@@ -13,7 +14,6 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
@@ -92,19 +92,31 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	StringList pches;
 	StringList targets;
 	std::map<std::string, PBXGroup> groups;
+	std::map<std::string, std::vector<const SourceTarget*>> targetPtrs;
+	std::map<std::string, const BuildState*> statePtrs;
 
 	{
 		StringList paths;
 		for (auto& state : m_states)
 		{
+			const auto& configName = state->configuration.name();
 			buildDirs.emplace_back(String::getPathFilename(state->paths.buildOutputDir()));
-			buildConfigurations.emplace_back(state->configuration.name());
+			buildConfigurations.emplace_back(configName);
+
+			if (statePtrs.find(configName) == statePtrs.end())
+				statePtrs.emplace(configName, state.get());
+
+			if (targetPtrs.find(configName) == targetPtrs.end())
+				targetPtrs.emplace(configName, std::vector<const SourceTarget*>{});
+
 			for (auto& target : state->targets)
 			{
 				if (target->isSources())
 				{
 					const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 					state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
+
+					targetPtrs[configName].push_back(static_cast<const SourceTarget*>(target.get()));
 
 					List::addIfDoesNotExist(intDirs, String::getPathFilename(state->paths.intermediateDir(sourceTarget)));
 
@@ -414,15 +426,18 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			// node[key]["baseConfigurationReference"] = "";
 			node[key]["name"] = name;
 		}
-		for (auto& state : m_states)
+		for (auto& [name, state] : statePtrs)
 		{
-			auto& name = state->configuration.name();
-			auto key = getHashWithLabel(name);
-			node[key]["isa"] = section;
-			// node[key]["buildSettings"] = Json::object();
-			node[key]["buildSettings"] = getBuildSettings(*state);
-			// node[key]["baseConfigurationReference"] = "";
-			node[key]["name"] = name;
+			auto& configTargets = targetPtrs.at(name);
+			for (auto& target : configTargets)
+			{
+				auto key = getHashWithLabel(name);
+				node[key]["isa"] = section;
+				// node[key]["buildSettings"] = Json::object();
+				node[key]["buildSettings"] = getBuildSettings(*state, *target);
+				// node[key]["baseConfigurationReference"] = "";
+				node[key]["name"] = name;
+			}
 		}
 	}
 
@@ -537,8 +552,10 @@ std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& i
 }
 
 /*****************************************************************************/
-Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
+Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTarget& inTarget) const
 {
+	CommandAdapterClang clangAdapter(inState, inTarget);
+
 	const auto& cwd = inState.inputs.workingDirectory();
 
 	// TODO: this is currently just based on a Release mode
@@ -548,7 +565,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
 	ret["BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
-	ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
+	ret["CLANG_CXX_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardCpp();
 	ret["CLANG_CXX_LIBRARY"] = "libc++";
 	ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
 	ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
@@ -582,7 +599,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
 	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
 	ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
 	ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
-	ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
+	ret["GCC_C_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardC();
 	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
 	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
 	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
@@ -603,6 +620,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
 
 	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
+
 	return ret;
 }
 
@@ -613,26 +631,17 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 	// ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	// ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
-	// ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
-	// ret["CLANG_CXX_LIBRARY"] = "libc++";
 	// ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
-	// ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
-	// ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
 	// ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
 	// ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
 	// ret["CLANG_WARN_COMMA"] = getBoolString(true);
 	// ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
-	// ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
 	// ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
 	// ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
 	// ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
 	// ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
 	// ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
 	// ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
-	// ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
-	// ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
 	// ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
 	// ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
 	// ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
@@ -642,9 +651,7 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	// ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
-	ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
 	ret["ENABLE_TESTABILITY"] = getBoolString(true);
-	// ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
 	// ret["GCC_DYNAMIC_NO_PIC"] = getBoolString(false);
 	// ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
 	// ret["GCC_OPTIMIZATION_LEVEL"] = 0;
@@ -653,12 +660,6 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	// 	"DEBUG=1",
 	// };
 	// reg["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(inState.
-	// ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
-	// ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
-	// ret["GCC_WARN_UNDECLARED_SELECTOR"] = getBoolString(true);
-	// ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
-	// ret["GCC_WARN_UNUSED_FUNCTION"] = getBoolString(true);
-	// ret["GCC_WARN_UNUSED_VARIABLE"] = getBoolString(true);
 	ret["MTL_ENABLE_DEBUG_INFO"] = "INCLUDE_SOURCE";
 	ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["ONLY_ACTIVE_ARCH"] = getBoolString(true);
@@ -669,12 +670,6 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	// 	"@executable_path/../Frameworks",
 	// 	"@loader_path/../Frameworks",
 	// };
-
-	// Swift?
-	// ret["SWIFT_ACTIVE_COMPILATION_CONDITIONS"] = "DEBUG";
-	// ret["SWIFT_OPTIMIZATION_LEVEL"] = "-Onone";
-	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "$(SRCROOT)/src/SwiftBridgeHeader.h";
-	// ret["SWIFT_VERSION"] = "5.0";
 
 	// Code signing
 	// ret["CODE_SIGN_STYLE"] = "Automatic";

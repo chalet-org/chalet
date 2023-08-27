@@ -6,6 +6,7 @@
 #ifndef CHALET_COMPILER_CXX_CLANG_HPP
 #define CHALET_COMPILER_CXX_CLANG_HPP
 
+#include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 
 namespace chalet
@@ -34,6 +35,8 @@ protected:
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
 	virtual void addCppCoroutines(StringList& outArgList) const override;
 	virtual void addCppConcepts(StringList& outArgList) const override;
+
+	CommandAdapterClang m_clangAdapter;
 };
 }
 

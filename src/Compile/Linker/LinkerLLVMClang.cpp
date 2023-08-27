@@ -18,7 +18,8 @@ namespace chalet
 {
 /*****************************************************************************/
 LinkerLLVMClang::LinkerLLVMClang(const BuildState& inState, const SourceTarget& inProject) :
-	LinkerGCC(inState, inProject)
+	LinkerGCC(inState, inProject),
+	m_clangAdapter(inState, inProject)
 {
 }
 

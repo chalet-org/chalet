@@ -273,7 +273,7 @@ void CompilerCxxAppleClang::addLibStdCppCompileOption(StringList& outArgList, co
 	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::CPlusPlus || language == CodeLanguage::ObjectiveCPlusPlus);
 	if (validPchType || derivative == SourceType::CPlusPlus || derivative == SourceType::ObjectiveCPlusPlus)
 	{
-		std::string flag{ "-stdlib=libc++" };
+		auto flag = fmt::format("-stdlib={}", m_clangAdapter.getCxxLibrary());
 		// if (isFlagSupported(flag))
 		List::addIfDoesNotExist(outArgList, std::move(flag));
 	}

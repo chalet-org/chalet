@@ -8,6 +8,7 @@
 
 #include "Libraries/Json.hpp"
 #include "State/SourceType.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Utility/Uuid.hpp"
 
 namespace chalet
@@ -30,7 +31,7 @@ private:
 
 	std::string getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject = true) const;
 
-	Json getBuildSettings(const BuildState& inState) const;
+	Json getBuildSettings(const BuildState& inState, const SourceTarget& inTarget) const;
 	Json getProductBuildSettings(const BuildState& inState) const;
 	std::string getBoolString(const bool inValue) const;
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
