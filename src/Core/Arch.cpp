@@ -171,6 +171,25 @@ void Arch::set(const std::string& inValue)
 		val = Arch::Cpu::UniversalMacOS;
 	}
 #endif
+#if defined(CHALET_WIN32)
+	// MSVC host_target style arches
+	else if (String::endsWith("_x64", str))
+	{
+		val = Arch::Cpu::X64;
+	}
+	else if (String::endsWith("_x86", str))
+	{
+		val = Arch::Cpu::X86;
+	}
+	else if (String::endsWith("_arm", str))
+	{
+		val = Arch::Cpu::ARM;
+	}
+	else if (String::endsWith("_arm64", str))
+	{
+		val = Arch::Cpu::ARMHF;
+	}
+#endif
 	else
 	{
 		val = Arch::Cpu::Unknown;
