@@ -103,6 +103,7 @@ void Arch::set(const std::string& inValue)
 	// hopefully we got a triple, but it might not be
 	triple = inValue;
 
+	bool checkUnderScore = true;
 	auto firstDash = triple.find('-');
 	if (firstDash != std::string::npos)
 	{
@@ -111,6 +112,13 @@ void Arch::set(const std::string& inValue)
 	}
 	else
 	{
+//
+#if defined(CHALET_WIN32)
+		if (String::endsWith({ "_x64", "_x86", "_arm", "_arm64" }, triple))
+		{
+			checkUnderScore = false;
+		}
+#endif
 		str = triple;
 		suffix.clear();
 	}
@@ -118,7 +126,7 @@ void Arch::set(const std::string& inValue)
 	std::string preUnderscoreCheck = str;
 
 	auto firstUnderScore = str.find_last_of('_');
-	if (firstUnderScore != std::string::npos)
+	if (checkUnderScore && firstUnderScore != std::string::npos)
 	{
 		str = str.substr(firstUnderScore + 1);
 		if (String::equals("64", str))

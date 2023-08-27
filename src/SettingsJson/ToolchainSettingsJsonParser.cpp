@@ -71,12 +71,13 @@ bool ToolchainSettingsJsonParser::serialize()
 	}
 	if (!isDefined && (m_state.inputs.isMultiArchToolchainPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
 	{
-		if (!node.contains(arch))
+		auto arch2 = Arch::from(arch);
+		if (!node.contains(arch2.str))
 		{
-			node[arch] = Json::object();
+			node[arch2.str] = Json::object();
 		}
 
-		if (!serialize(node.at(arch)))
+		if (!serialize(node.at(arch2.str)))
 			return false;
 
 		m_state.inputs.setMultiArchToolchainPreset(true);
