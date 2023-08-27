@@ -91,7 +91,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	StringList sources;
 	StringList headers;
 	StringList pches;
-	StringList targets;
+	std::map<std::string, std::string> outputFiles;
 	std::map<std::string, PBXGroup> groups;
 	std::map<std::string, std::vector<const SourceTarget*>> targetPtrs;
 	std::map<std::string, const BuildState*> statePtrs;
@@ -121,7 +121,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 					List::addIfDoesNotExist(intDirs, String::getPathFilename(state->paths.intermediateDir(sourceTarget)));
 
-					List::addIfDoesNotExist(targets, sourceTarget.outputFile());
+					outputFiles[sourceTarget.name()] = sourceTarget.outputFile();
 
 					auto& pch = sourceTarget.precompiledHeader();
 
@@ -272,12 +272,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["path"] = header;
 			node[key]["sourceTree"] = group;
 		}
-		for (const auto& target : targets)
+		for (const auto& [target, file] : outputFiles)
 		{
 			auto key = getHashWithLabel(target);
 			node[key]["isa"] = section;
 			node[key]["includeInIndex"] = 0;
-			node[key]["path"] = target;
+			node[key]["path"] = file;
 			node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
 		}
 	}
@@ -307,7 +307,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[products] = Json::object();
 		node[products]["isa"] = section;
 		node[products]["children"] = Json::array();
-		for (auto& target : targets)
+		for (const auto& [target, file] : outputFiles)
 		{
 			node[products]["children"].push_back(getHashWithLabel(target));
 		}
@@ -327,7 +327,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
 
-		for (const auto& target : targets)
+		for (const auto& [target, _] : outputFiles)
 		{
 			auto key = getTargetHashWithLabel(target);
 			node[key]["isa"] = section;
@@ -367,7 +367,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["projectDirPath"] = "";
 		node[key]["projectRoot"] = "";
 		node[key]["targets"] = Json::array();
-		for (const auto& target : targets)
+		for (const auto& [target, _] : outputFiles)
 		{
 			node[key]["targets"].push_back(getTargetHashWithLabel(target));
 		}
@@ -432,7 +432,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto& configTargets = targetPtrs.at(name);
 			for (auto& target : configTargets)
 			{
-				auto key = getHashWithLabel(name);
+				auto hash = Uuid::v5(fmt::format("{}-{}", name, target->name()), m_xcodeNamespaceGuid);
+				auto key = getHashWithLabel(hash, name);
 				node[key]["isa"] = section;
 				// node[key]["buildSettings"] = Json::object();
 				node[key]["buildSettings"] = getBuildSettings(*state, *target);
@@ -464,13 +465,15 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["defaultConfigurationName"] = firstState.configuration.name();
 		}
 
-		configurations.clear();
-		for (auto& configName : buildConfigurations)
+		for (const auto& [target, _] : outputFiles)
 		{
-			configurations.emplace_back(getHashWithLabel(configName));
-		}
-		for (const auto& target : targets)
-		{
+			configurations.clear();
+			for (auto& name : buildConfigurations)
+			{
+				auto hash = Uuid::v5(fmt::format("{}-{}", name, target), m_xcodeNamespaceGuid);
+				configurations.emplace_back(getHashWithLabel(hash, name));
+			}
+
 			auto key = getHashWithLabel(getBuildConfigurationListLabel(target));
 			node[key]["isa"] = section;
 			node[key]["buildConfigurations"] = configurations;
@@ -481,7 +484,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	json["rootObject"] = getHashedJsonValue(m_projectUUID, "Project object");
 
-	// LOG(json.dump(2, ' '));
+	LOG(json.dump(2, ' '));
 
 	auto contents = generateFromJson(json);
 	bool replaceContents = true;
