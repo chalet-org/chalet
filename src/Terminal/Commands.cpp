@@ -1223,7 +1223,8 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 	};
 
 	bool printed = false;
-	auto processLine = [&printed](const std::string& inLine) {
+	bool errored = false;
+	auto processLine = [&printed, &errored](const std::string& inLine) {
 		UNUSED(inLine);
 		UNUSED(getTargetName);
 
@@ -1287,6 +1288,13 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 					printed = true;
 				}
 			}
+		}
+		else if (errored || String::contains("error:", inLine))
+		{
+			std::cout.write(inLine.data(), inLine.size());
+			std::cout.flush();
+			printed = true;
+			errored = true;
 		}
 	};
 

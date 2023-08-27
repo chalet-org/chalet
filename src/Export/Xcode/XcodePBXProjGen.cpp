@@ -89,6 +89,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	StringList buildConfigurations;
 	StringList sources;
 	StringList headers;
+	StringList pches;
 	StringList targets;
 	std::map<std::string, PBXGroup> groups;
 
@@ -124,7 +125,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 					if (!pch.empty())
 					{
-						List::addIfDoesNotExist(headers, String::getPathFilename(pch));
+						List::addIfDoesNotExist(pches, String::getPathFilename(pch));
 						List::addIfDoesNotExist(paths, pch);
 					}
 					auto tmpHeaders = sourceTarget.getHeaderFiles();
@@ -193,6 +194,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["isa"] = section;
 			node[key]["fileRef"] = getHashedJsonValue(dir);
 		}
+		for (const auto& source : pches)
+		{
+			auto key = getHashWithLabel(fmt::format("{} in Sources", source));
+			node[key]["isa"] = section;
+			node[key]["fileRef"] = getHashedJsonValue(source);
+		}
 		for (const auto& source : sources)
 		{
 			auto key = getHashWithLabel(fmt::format("{} in Sources", source));
@@ -222,6 +229,21 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["path"] = source;
 			node[key]["sourceTree"] = group;
 		}
+		for (const auto& header : pches)
+		{
+			auto suffix = String::getPathSuffix(header);
+			std::string type;
+			if (String::equals('h', suffix))
+				type = "sourcecode.c.h";
+			else
+				type = "sourcecode.cpp.h";
+
+			auto key = getHashWithLabel(header);
+			node[key]["isa"] = section;
+			node[key]["lastKnownFileType"] = type;
+			node[key]["path"] = header;
+			node[key]["sourceTree"] = group;
+		}
 		for (const auto& header : headers)
 		{
 			auto suffix = String::getPathSuffix(header);
@@ -233,7 +255,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			auto key = getHashWithLabel(header);
 			node[key]["isa"] = section;
-			node[key]["lastKnownFileType"] = "sourcecode.cpp.h";
+			node[key]["lastKnownFileType"] = type;
 			node[key]["path"] = header;
 			node[key]["sourceTree"] = group;
 		}
@@ -384,21 +406,21 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		for (auto& state : m_states)
 		{
 			auto& name = state->configuration.name();
-			auto key = getHashWithLabel(name);
+			auto hash = Uuid::v5(fmt::format("{}_PROJECT", name), m_xcodeNamespaceGuid);
+			auto key = getHashWithLabel(hash, name);
 			node[key]["isa"] = section;
 			// node[key]["buildSettings"] = Json::object();
-			node[key]["buildSettings"] = getBuildSettings(*state);
+			node[key]["buildSettings"] = getProductBuildSettings(*state);
 			// node[key]["baseConfigurationReference"] = "";
 			node[key]["name"] = name;
 		}
 		for (auto& state : m_states)
 		{
 			auto& name = state->configuration.name();
-			auto hash = Uuid::v5(fmt::format("{}_PROJECT", name), m_xcodeNamespaceGuid);
-			auto key = getHashWithLabel(hash, name);
+			auto key = getHashWithLabel(name);
 			node[key]["isa"] = section;
 			// node[key]["buildSettings"] = Json::object();
-			node[key]["buildSettings"] = getProductBuildSettings(*state);
+			node[key]["buildSettings"] = getBuildSettings(*state);
 			// node[key]["baseConfigurationReference"] = "";
 			node[key]["name"] = name;
 		}
@@ -587,57 +609,56 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState) const
 /*****************************************************************************/
 Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 {
-	// TODO: this is currently just based on a Debug mode
-
 	Json ret;
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
-	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
-	ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
-	ret["CLANG_CXX_LIBRARY"] = "libc++";
-	ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
-	ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
-	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
-	ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
-	ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_COMMA"] = getBoolString(true);
-	ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
-	ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
-	ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
-	ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
-	ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
-	ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
-	ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
-	ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
-	ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
-	ret["CLANG_WARN_SUSPICIOUS_MOVE"] = getBoolString(true);
-	ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
-	ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
-	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
+	// ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
+	// ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
+	// ret["CLANG_CXX_LANGUAGE_STANDARD"] = "c++17";
+	// ret["CLANG_CXX_LIBRARY"] = "libc++";
+	// ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
+	// ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
+	// ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
+	// ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
+	// ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_COMMA"] = getBoolString(true);
+	// ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS"] = getBoolString(true);
+	// ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
+	// ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
+	// ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
+	// ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
+	// ret["CLANG_WARN_INT_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_NON_LITERAL_NULL_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF"] = getBoolString(true);
+	// ret["CLANG_WARN_OBJC_LITERAL_CONVERSION"] = getBoolString(true);
+	// ret["CLANG_WARN_OBJC_ROOT_CLASS"] = "YES_ERROR";
+	// ret["CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER"] = getBoolString(true);
+	// ret["CLANG_WARN_RANGE_LOOP_ANALYSIS"] = getBoolString(true);
+	// ret["CLANG_WARN_STRICT_PROTOTYPES"] = getBoolString(true);
+	// ret["CLANG_WARN_SUSPICIOUS_MOVE"] = getBoolString(true);
+	// ret["CLANG_WARN_UNGUARDED_AVAILABILITY"] = "YES_AGGRESSIVE";
+	// ret["CLANG_WARN_UNREACHABLE_CODE"] = getBoolString(true);
+	// ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
 	ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
 	ret["ENABLE_TESTABILITY"] = getBoolString(true);
-	ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
-	ret["GCC_DYNAMIC_NO_PIC"] = getBoolString(false);
-	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
-	ret["GCC_OPTIMIZATION_LEVEL"] = 0;
-	ret["GCC_PREPROCESSOR_DEFINITIONS"] = {
-		"$(inherited)",
-		"DEBUG=1",
-	};
-	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
-	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
-	ret["GCC_WARN_UNDECLARED_SELECTOR"] = getBoolString(true);
-	ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
-	ret["GCC_WARN_UNUSED_FUNCTION"] = getBoolString(true);
-	ret["GCC_WARN_UNUSED_VARIABLE"] = getBoolString(true);
+	// ret["GCC_C_LANGUAGE_STANDARD"] = "gnu11";
+	// ret["GCC_DYNAMIC_NO_PIC"] = getBoolString(false);
+	// ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
+	// ret["GCC_OPTIMIZATION_LEVEL"] = 0;
+	// ret["GCC_PREPROCESSOR_DEFINITIONS"] = {
+	// 	"$(inherited)",
+	// 	"DEBUG=1",
+	// };
+	// reg["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(inState.
+	// ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
+	// ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
+	// ret["GCC_WARN_UNDECLARED_SELECTOR"] = getBoolString(true);
+	// ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
+	// ret["GCC_WARN_UNUSED_FUNCTION"] = getBoolString(true);
+	// ret["GCC_WARN_UNUSED_VARIABLE"] = getBoolString(true);
 	ret["MTL_ENABLE_DEBUG_INFO"] = "INCLUDE_SOURCE";
 	ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["ONLY_ACTIVE_ARCH"] = getBoolString(true);
