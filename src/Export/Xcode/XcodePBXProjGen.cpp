@@ -652,17 +652,23 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	// ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
 
-	const auto& flags = inTarget.compileOptions();
-	if (!flags.empty())
+	const auto& compileOptions = inTarget.compileOptions();
+	if (!compileOptions.empty())
 	{
 		if (lang == CodeLanguage::C || lang == CodeLanguage::ObjectiveC)
 		{
-			ret["OTHER_CFLAGS"] = flags;
+			ret["OTHER_CFLAGS"] = compileOptions;
 		}
 		else if (lang == CodeLanguage::CPlusPlus || lang == CodeLanguage::ObjectiveCPlusPlus)
 		{
-			ret["OTHER_CPLUSPLUSFLAGS"] = flags;
+			ret["OTHER_CPLUSPLUSFLAGS"] = compileOptions;
 		}
+	}
+
+	const auto& linkerOptions = inTarget.linkerOptions();
+	if (!linkerOptions.empty())
+	{
+		ret["OTHER_LDFLAGS"] = linkerOptions;
 	}
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
