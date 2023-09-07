@@ -226,13 +226,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		const std::string section{ "PBXFileReference" };
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
-		for (const auto& dir : intDirs)
-		{
-			auto key = getHashWithLabel(dir);
-			node[key]["isa"] = section;
-			node[key]["path"] = dir;
-			node[key]["sourceTree"] = group;
-		}
+		// for (const auto& dir : intDirs)
+		// {
+		// 	auto key = getHashWithLabel(dir);
+		// 	node[key]["isa"] = section;
+		// 	node[key]["path"] = dir;
+		// 	node[key]["sourceTree"] = group;
+		// }
 		for (const auto& source : sources)
 		{
 			auto type = firstState.paths.getSourceType(source);
@@ -411,6 +411,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["runOnlyForDeploymentPostprocessing"] = 0;
 	}
 
+	LOG(json.dump(2, ' '));
+
 	// XCBuildConfiguration
 	{
 		const std::string section{ "XCBuildConfiguration" };
@@ -484,7 +486,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	json["rootObject"] = getHashedJsonValue(m_projectUUID, "Project object");
 
-	LOG(json.dump(2, ' '));
+	// LOG(json.dump(2, ' '));
 
 	auto contents = generateFromJson(json);
 	bool replaceContents = true;
