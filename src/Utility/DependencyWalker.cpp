@@ -196,7 +196,8 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					char* dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = String::toLowerCase(std::string(dependencyName));
+					std::string dependency(dependencyName);
+					// dependency = String::toLowerCase(dependency);
 					std::string dependencyResolved = Commands::which(dependency);
 					if (outNotFound != nullptr && dependencyResolved.empty())
 					{
@@ -248,7 +249,8 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 					DWORD nameOffset = dependencyNameAddress - queriedSectionHeader->VirtualAddress + queriedSectionHeader->PointerToRawData;
 					auto dependencyName = (char*)&bytes[nameOffset];
 
-					std::string dependency = String::toLowerCase(std::string(dependencyName));
+					std::string dependency(dependencyName);
+					// dependency = String::toLowerCase(dependency);
 					std::string dependencyResolved = Commands::which(dependency);
 					if (outNotFound != nullptr && dependencyResolved.empty())
 					{
