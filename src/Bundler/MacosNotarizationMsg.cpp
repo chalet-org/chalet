@@ -33,8 +33,7 @@ void MacosNotarizationMsg::showMessage(const std::string& inFile)
    5. Staple your ticket: {color}xcrun stapler staple {file}{reset}
 
    {dim}If the above is inaccurate or out of date, please open an issue:
-   https://github.com/chalet-org/chalet/issues{reset}
-)text",
+   https://github.com/chalet-org/chalet/issues{reset})text",
 		fmt::arg("file", inFile),
 		FMT_ARG(color),
 		FMT_ARG(dim),
