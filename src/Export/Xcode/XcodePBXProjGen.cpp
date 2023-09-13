@@ -637,6 +637,12 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 		ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
 	}
 
+	if (inTarget.usesPrecompiledHeader())
+	{
+		ret["GCC_PREFIX_HEADER"] = fmt::format("{}/{}", cwd, inTarget.precompiledHeader());
+		ret["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(true);
+	}
+
 	if (!cStandard.empty())
 		ret["GCC_C_LANGUAGE_STANDARD"] = std::move(cStandard);
 
