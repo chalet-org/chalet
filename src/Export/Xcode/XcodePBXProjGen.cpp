@@ -411,7 +411,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["runOnlyForDeploymentPostprocessing"] = 0;
 	}
 
-	LOG(json.dump(2, ' '));
+	// LOG(json.dump(2, ' '));
 
 	// XCBuildConfiguration
 	{
