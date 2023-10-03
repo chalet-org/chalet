@@ -17,20 +17,20 @@
 #endif
 
 #if defined(CHALET_MSVC)
-	// #pragma warning(push)
+	#pragma warning(push)
 	// #pragma warning(disable : 4100)
+	#pragma warning(disable : 4996)
 #else
 	#pragma GCC diagnostic push
 	#pragma GCC diagnostic ignored "-Wpedantic"
 	#pragma GCC diagnostic ignored "-Wunused-parameter"
 #endif
 
+#include <nlohmann/json-schema.hpp>
 #include <nlohmann/json.hpp>
 
-#include <nlohmann/json-schema.hpp>
-
 #if defined(CHALET_MSVC)
-	// #pragma warning(pop)
+	#pragma warning(pop)
 #else
 	#pragma GCC diagnostic pop
 #endif
