@@ -313,7 +313,12 @@ bool GlobalSettingsJsonParser::parseLastUpdate(Json& outNode)
 		}
 	}
 
-	outNode[Keys::LastUpdateCheck] = m_centralState.shouldPerformUpdateCheck() ? currentTime : lastUpdateCheck;
+	bool shouldUpdate = m_centralState.shouldPerformUpdateCheck();
+	outNode[Keys::LastUpdateCheck] = shouldUpdate ? currentTime : lastUpdateCheck;
+	if (shouldUpdate)
+	{
+		m_jsonFile.setDirty(true);
+	}
 
 	return true;
 }
