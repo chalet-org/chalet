@@ -36,7 +36,6 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 	std::string architecturePreference;
 	std::string inputFile;
 	std::string settingsFile;
-	std::string file;
 	std::string rootDirectory;
 	std::string outputDirectory;
 	std::string externalDirectory;
@@ -74,7 +73,7 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						break;
 
 					case ArgumentIdentifier::File:
-						file = std::move(value);
+						settingsFile = std::move(value);
 						break;
 
 					case ArgumentIdentifier::RootDirectory:
@@ -145,15 +144,23 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 						inputs->setSettingsValue(std::move(value));
 						break;
 
+					case ArgumentIdentifier::SettingsKeysRemainingArgs:
+						break;
+
+					case ArgumentIdentifier::ValidateSchemaFile:
+						settingsFile = std::move(value);
+						break;
+
+					case ArgumentIdentifier::ValidateFilesRemainingArgs:
+						inputs->setRunArguments(std::move(value));
+						break;
+
 					case ArgumentIdentifier::QueryType:
 						inputs->setQueryOption(std::move(value));
 						break;
 
 					case ArgumentIdentifier::RunTargetArguments:
 						inputs->setRunArguments(std::move(value));
-						break;
-
-					case ArgumentIdentifier::SettingsKeysRemainingArgs:
 						break;
 
 					case ArgumentIdentifier::QueryDataRemainingArgs:
@@ -166,22 +173,22 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 				break;
 			}
 
-				/*case Variant::Kind::StringList: {
-				if (id == ArgumentIdentifier::RunTargetArguments)
-				{
-					auto runArgs = String::join(mapped.value().asStringList());
-					inputs->setRunArguments(std::move(runArgs));
-				}
-				else if (id == ArgumentIdentifier::SettingsKeysRemainingArgs)
-				{
-					// ignore
-				}
-				else if (id == ArgumentIdentifier::QueryDataRemainingArgs)
-				{
-					inputs->setQueryData(mapped.value().asStringList());
-				}
+			case Variant::Kind::StringList: {
+				// if (id == ArgumentIdentifier::RunTargetArguments)
+				// {
+				// 	auto runArgs = String::join(mapped.value().asStringList());
+				// 	inputs->setRunArguments(std::move(runArgs));
+				// }
+				// else if (id == ArgumentIdentifier::SettingsKeysRemainingArgs)
+				// {
+				// 	// ignore
+				// }
+				// else if (id == ArgumentIdentifier::QueryDataRemainingArgs)
+				// {
+				// 	inputs->setQueryData(mapped.value().asStringList());
+				// }
 				break;
-			}*/
+			}
 
 			case Variant::Kind::OptionalInteger: {
 				auto rawValue = mapped.value().asOptionalInt();
@@ -287,10 +294,7 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 	inputs->setInputFile(std::move(inputFile));
 	inputs->setEnvFile(std::move(envFile));
 
-	if (!file.empty())
-		inputs->setSettingsFile(std::move(file));
-	else
-		inputs->setSettingsFile(std::move(settingsFile));
+	inputs->setSettingsFile(std::move(settingsFile));
 
 	inputs->setBuildConfiguration(std::move(buildConfiguration));
 

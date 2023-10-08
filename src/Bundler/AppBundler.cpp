@@ -5,6 +5,7 @@
 
 #include "Bundler/AppBundler.hpp"
 
+#include "Builder/BatchValidator.hpp"
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/FileArchiver.hpp"
@@ -22,13 +23,13 @@
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/ValidationDistTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -93,7 +94,17 @@ bool AppBundler::run(const DistTarget& inTarget)
 	}
 	else
 	{
-		if (inTarget->isScript())
+		if (inTarget->isArchive())
+		{
+			if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
+				return false;
+		}
+		else if (inTarget->isMacosDiskImage())
+		{
+			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+				return false;
+		}
+		else if (inTarget->isScript())
 		{
 			if (!runScriptTarget(static_cast<const ScriptDistTarget&>(*inTarget)))
 				return false;
@@ -103,14 +114,9 @@ bool AppBundler::run(const DistTarget& inTarget)
 			if (!runProcessTarget(static_cast<const ProcessDistTarget&>(*inTarget)))
 				return false;
 		}
-		else if (inTarget->isArchive())
+		else if (inTarget->isValidation())
 		{
-			if (!runArchiveTarget(static_cast<const BundleArchiveTarget&>(*inTarget)))
-				return false;
-		}
-		else if (inTarget->isMacosDiskImage())
-		{
-			if (!runMacosDiskImageTarget(static_cast<const MacosDiskImageTarget&>(*inTarget)))
+			if (!runValidationTarget(static_cast<const ValidationDistTarget&>(*inTarget)))
 				return false;
 		}
 	}
@@ -375,6 +381,48 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 }
 
 /*****************************************************************************/
+bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
+{
+	const auto& includes = inTarget.includes();
+	if (includes.empty())
+		return false;
+
+	auto baseName = inTarget.name();
+	if (!isTargetNameValid(inTarget, baseName))
+		return false;
+
+	auto filename = inTarget.getOutputFilename(baseName);
+
+	displayHeader("Compressing", inTarget, filename);
+
+	Timer timer;
+
+	Diagnostic::stepInfoEllipsis("Compressing files");
+
+	FileArchiver archiver(m_state);
+	if (!archiver.archive(inTarget, baseName, inTarget.includes(), m_archives))
+		return false;
+
+	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));
+
+	Diagnostic::printDone(timer.asString());
+
+	return true;
+}
+
+/*****************************************************************************/
+bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
+{
+	displayHeader("Disk Image", inTarget);
+
+	MacosDiskImageCreator diskImageCreator(m_state);
+	if (!diskImageCreator.make(inTarget))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 {
 	const auto& file = inTarget.file();
@@ -430,6 +478,27 @@ bool AppBundler::runProcessTarget(const ProcessDistTarget& inTarget)
 }
 
 /*****************************************************************************/
+bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
+{
+	const auto& schema = inTarget.schema();
+	if (schema.empty())
+		return false;
+
+	Timer timer;
+
+	displayHeader("Validation", inTarget);
+
+	BatchValidator validator(&m_state, inTarget.schema());
+	bool result = validator.validate(inTarget.files(), false);
+	if (!result)
+		Output::lineBreak();
+
+	stopTimerAndShowBenchmark(timer);
+
+	return result;
+}
+
+/*****************************************************************************/
 bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
 	bool result = Commands::subprocessWithInput(inCmd);
@@ -469,48 +538,6 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 }
 
 /*****************************************************************************/
-bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
-{
-	const auto& includes = inTarget.includes();
-	if (includes.empty())
-		return false;
-
-	auto baseName = inTarget.name();
-	if (!isTargetNameValid(inTarget, baseName))
-		return false;
-
-	auto filename = inTarget.getOutputFilename(baseName);
-
-	displayHeader("Compressing", inTarget, filename);
-
-	Timer timer;
-
-	Diagnostic::stepInfoEllipsis("Compressing files");
-
-	FileArchiver archiver(m_state);
-	if (!archiver.archive(inTarget, baseName, inTarget.includes(), m_archives))
-		return false;
-
-	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));
-
-	Diagnostic::printDone(timer.asString());
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundler::runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget)
-{
-	displayHeader("Disk Image", inTarget);
-
-	MacosDiskImageCreator diskImageCreator(m_state);
-	if (!diskImageCreator.make(inTarget))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
 bool AppBundler::isTargetNameValid(const IDistTarget& inTarget) const
 {
 	if (String::contains(StringList{ "$", "{", "}" }, inTarget.name()))
@@ -539,6 +566,16 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& out
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+void AppBundler::stopTimerAndShowBenchmark(Timer& outTimer)
+{
+	int64_t result = outTimer.stop();
+	if (result > 0 && Output::showBenchmarks())
+	{
+		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
+	}
 }
 
 /*****************************************************************************/

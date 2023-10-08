@@ -48,6 +48,8 @@ enum class ArgumentIdentifier : ushort
 	SigningIdentity,
 	OsTargetName,
 	OsTargetVersion,
+	ValidateSchemaFile,
+	ValidateFilesRemainingArgs,
 	//
 	// Init
 	InitPath,

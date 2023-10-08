@@ -11,9 +11,8 @@
 
 namespace chalet
 {
-namespace
-{
-bool printLinesWithError(std::basic_istream<char>& inContents, const char* inError, const std::string& inOutputError)
+/*****************************************************************************/
+bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, const char* inError, std::string& outOutput)
 {
 	std::string error(inError);
 	auto lastSquareBrace = error.find(']');
@@ -60,7 +59,7 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 		return false;
 	}
 
-	std::string output = fmt::format("{}\n", error);
+	outOutput = fmt::format("{}\n", error);
 
 	auto colorGray = Output::getAnsiStyle(Output::theme().flair);
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
@@ -72,7 +71,7 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 		if (i >= lineNo - 4 && i <= lineNo + 2)
 		{
 			if (i > 0)
-				output += '\n';
+				outOutput += '\n';
 
 			bool current = i == lineNo - 1;
 			auto& color = current ? colorError : colorGray;
@@ -92,14 +91,11 @@ bool printLinesWithError(std::basic_istream<char>& inContents, const char* inErr
 			{
 				outLine = std::move(line);
 			}
-			output += fmt::format("{}{} | {}{}", color, i + 1, colorReset, outLine);
+			outOutput += fmt::format("{}{} | {}{}", color, i + 1, colorReset, outLine);
 		}
 	}
 
-	Diagnostic::error("{}", output);
-	Diagnostic::error("{}", inOutputError);
 	return true;
-}
 }
 
 /*****************************************************************************/
@@ -131,7 +127,14 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename, const boo
 			{
 				auto msg = "There was a problem reading the json file";
 				std::ifstream jsonFile(inFilename);
-				if (!printLinesWithError(jsonFile, error, fmt::format("{}: {}", msg, inFilename)))
+				std::string output;
+				auto firstMessage = fmt::format("{}: {}", msg, inFilename);
+				bool printResult = printLinesWithError(jsonFile, error, output);
+
+				Diagnostic::error("{}", output);
+				Diagnostic::error("{}", firstMessage);
+
+				if (!printResult)
 				{
 					Diagnostic::error("{}", error);
 					Diagnostic::error("{}: {}", msg, inFilename);
@@ -161,7 +164,14 @@ Json JsonComments::parseLiteral(const std::string& inJsonContent)
 			auto msg = "There was a problem reading the json";
 			std::stringstream stream;
 			stream << inJsonContent;
-			if (!printLinesWithError(stream, error, fmt::format("{}", msg)))
+			std::string output;
+			auto firstMessage = fmt::format("{}", msg);
+			bool printResult = printLinesWithError(stream, error, output);
+
+			Diagnostic::error("{}", output);
+			Diagnostic::error("{}", firstMessage);
+
+			if (!printResult)
 			{
 				Diagnostic::error("{}", error);
 				Diagnostic::error("{}", msg);

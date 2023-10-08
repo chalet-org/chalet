@@ -86,6 +86,25 @@ void Diagnostic::printDone(const std::string& inTime)
 }
 
 /*****************************************************************************/
+void Diagnostic::printValid(const bool inValid)
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto color = Output::getAnsiStyle(inValid ? Output::theme().flair : Output::theme().error);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	destroySpinnerThread();
+
+	auto valid = inValid ? "valid" : "FAILED";
+	auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
+
+	std::cout.write(output.data(), output.size());
+	std::cout.put('\n');
+	std::cout.flush();
+}
+
+/*****************************************************************************/
 void Diagnostic::printFound(const bool inFound, const std::string& inTime)
 {
 	if (Output::quietNonBuild())
@@ -96,7 +115,7 @@ void Diagnostic::printFound(const bool inFound, const std::string& inTime)
 
 	destroySpinnerThread();
 
-	std::string words = inFound ? "found" : "not found";
+	auto words = inFound ? "found" : "not found";
 	std::string output;
 	if (!inTime.empty() && Output::showBenchmarks())
 	{

@@ -12,6 +12,7 @@ namespace chalet
 {
 namespace JsonComments
 {
+bool printLinesWithError(std::basic_istream<char>& inContents, const char* inError, std::string& outOutput);
 bool parse(Json& outJson, const std::string& inFilename, const bool inError = true);
 Json parseLiteral(const std::string& inJsonContent);
 }

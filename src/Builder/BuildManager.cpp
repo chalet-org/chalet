@@ -5,6 +5,7 @@
 
 #include "Builder/BuildManager.hpp"
 
+#include "Builder/BatchValidator.hpp"
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ConfigureFileParser.hpp"
@@ -28,6 +29,7 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/Target/ValidationBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
@@ -295,6 +297,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		else if (target->isProcess())
 		{
 			result = runProcessTarget(static_cast<const ProcessBuildTarget&>(*target));
+		}
+		else if (target->isValidation())
+		{
+			result = runValidationTarget(static_cast<const ValidationBuildTarget&>(*target));
 		}
 		else
 		{
@@ -785,12 +791,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 
 	Timer buildTimer;
 
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
-	else
-		Output::msgTargetOfType("Process", inTarget.name(), Output::theme().header);
-
-	Output::lineBreak();
+	displayHeader("Process", inTarget);
 
 	StringList cmd;
 	cmd.push_back(inTarget.path());
@@ -810,16 +811,44 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 }
 
 /*****************************************************************************/
+bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
+{
+	const auto& schema = inTarget.schema();
+	if (schema.empty())
+		return false;
+
+	Timer buildTimer;
+
+	displayHeader("Validation", inTarget);
+
+	BatchValidator validator(&m_state, inTarget.schema());
+	bool result = validator.validate(inTarget.files());
+
+	stopTimerAndShowBenchmark(buildTimer);
+
+	if (!result)
+		Output::lineBreak();
+
+	return result;
+}
+
+/*****************************************************************************/
+void BuildManager::displayHeader(const std::string& inLabel, const IBuildTarget& inTarget, const std::string& inName) const
+{
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
+	else
+		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), Output::theme().header);
+
+	Output::lineBreak();
+}
+
+/*****************************************************************************/
 bool BuildManager::cmdBuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	if (!inProject.outputDescription().empty())
-		Output::msgTargetDescription(inProject.outputDescription(), Output::theme().header);
-	else
-		Output::msgBuild(outputFile);
-
-	Output::lineBreak();
+	displayHeader("Build", inProject, outputFile);
 
 	if (inProject.cppModules())
 	{
@@ -886,12 +915,7 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	if (!inProject.outputDescription().empty())
-		Output::msgTargetDescription(inProject.outputDescription(), Output::theme().header);
-	else
-		Output::msgRebuild(outputFile);
-
-	Output::lineBreak();
+	displayHeader("Rebuild", inProject, outputFile);
 
 	if (inProject.cppModules())
 	{
@@ -1115,6 +1139,8 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
+	displayHeader("Build", inTarget);
+
 	SubChaletBuilder subChalet(m_state, inTarget);
 	if (!subChalet.run())
 		return false;
@@ -1133,6 +1159,8 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
+	displayHeader("Build", inTarget);
+
 	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
 		return false;
@@ -1150,9 +1178,9 @@ bool BuildManager::runFullBuild()
 	const auto& workspace = m_state.workspace.metadata().name();
 
 	if (m_state.inputs.route().isRebuild())
-		Output::msgRebuild(workspace);
+		Output::msgTargetOfType("Rebuild", workspace, Output::theme().header);
 	else
-		Output::msgBuild(workspace);
+		Output::msgTargetOfType("Build", workspace, Output::theme().header);
 
 	Output::lineBreak();
 

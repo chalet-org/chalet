@@ -1306,6 +1306,41 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	//
 
+	defs[Defs::TargetProcessPath] = R"json({
+		"type": "string",
+		"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetProcessArguments] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of arguments to pass along to the process.",
+		"minLength": 1
+	})json"_ojson,
+		false);
+
+	defs[Defs::TargetProcessDependsOn] = R"json({
+		"type": "string",
+		"description": "A target this process depends on in order to run.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
+
+	defs[Defs::TargetValidationSchema] = R"json({
+		"type": "string",
+		"description": "A JSON schema (Draft 7) to validate files against. File requires the '$schema' key/value.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetValidationFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "File(s) to be validated using the selected schema.",
+		"minLength": 1
+	})json"_ojson);
+
+	//
+
 	defs[Defs::TargetCMakeLocation] = R"json({
 		"type": "string",
 		"description": "The folder path of the root CMakeLists.txt for the project.",
@@ -1395,27 +1430,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::TargetCMakeRunExecutable] = R"json({
 		"type": "string",
 		"description": "The path to an executable to run, relative to the build directory.",
-		"minLength": 1
-	})json"_ojson;
-
-	//
-
-	defs[Defs::TargetProcessPath] = R"json({
-		"type": "string",
-		"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
-		"minLength": 1
-	})json"_ojson;
-
-	defs[Defs::TargetProcessArguments] = makeArrayOrString(R"json({
-		"type": "string",
-		"description": "A list of arguments to pass along to the process.",
-		"minLength": 1
-	})json"_ojson,
-		false);
-
-	defs[Defs::TargetProcessDependsOn] = R"json({
-		"type": "string",
-		"description": "A target this process depends on in order to run.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1559,7 +1573,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto distScript = R"json({
 			"type": "object",
-			"additionalProperties": false
+			"description": "Run a single script.",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			]
 		})json"_ojson;
 		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(distScript, "condition", Defs::DistributionCondition);
@@ -1570,10 +1588,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::DistributionScript] = std::move(distScript);
 	}
 	{
-		// DistributionProcess
 		auto distProcess = R"json({
 			"type": "object",
-			"description": "Run a process",
+			"description": "Run a single process.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -1587,6 +1604,22 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
 		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConditions);
 		defs[Defs::DistributionProcess] = std::move(distProcess);
+	}
+	{
+		auto distValidation = R"json({
+			"type": "object",
+			"description": "Validate JSON file(s) against a schema. Unlike with build validation target, all files will always validate.",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			]
+		})json"_ojson;
+		addProperty(distValidation, "condition", Defs::DistributionCondition);
+		addPropertyAndPattern(distValidation, "files", Defs::TargetValidationFiles, kPatternConditions);
+		addKind(distValidation, defs, Defs::DistributionKind, "validation");
+		addProperty(distValidation, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(distValidation, "schema", Defs::TargetValidationSchema, kPatternConditions);
+		defs[Defs::DistributionValidation] = std::move(distValidation);
 	}
 
 	{
@@ -1746,6 +1779,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto targetSource = R"json({
 			"type": "object",
+			"description": "Build a target from source files.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -1776,6 +1810,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto targetScript = R"json({
 			"type": "object",
+			"description": "Run a single script.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -1793,7 +1828,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto targetProcess = R"json({
 			"type": "object",
-			"description": "Run a process",
+			"description": "Run a single process.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -1808,11 +1843,27 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(targetProcess, "path", Defs::TargetProcessPath, kPatternConditions);
 		defs[Defs::TargetProcess] = std::move(targetProcess);
 	}
+	{
+		auto targetValidation = R"json({
+			"type": "object",
+			"description": "Validate JSON file(s) against a schema.",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			]
+		})json"_ojson;
+		addProperty(targetValidation, "condition", Defs::TargetCondition);
+		addPropertyAndPattern(targetValidation, "files", Defs::TargetValidationFiles, kPatternConditions);
+		addKind(targetValidation, defs, Defs::TargetKind, "validation");
+		addProperty(targetValidation, "outputDescription", Defs::TargetOutputDescription);
+		addPropertyAndPattern(targetValidation, "schema", Defs::TargetValidationSchema, kPatternConditions);
+		defs[Defs::TargetValidation] = std::move(targetValidation);
+	}
 
 	{
 		auto targetCMake = R"json({
 			"type": "object",
-			"description": "Build the location with CMake",
+			"description": "Build target(s) utilizing CMake.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -1838,7 +1889,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	{
 		auto targetChalet = R"json({
 			"type": "object",
-			"description": "Build the location with Chalet",
+			"description": "Build target(s) utilizing separate Chalet projects.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -1915,6 +1966,10 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::DistributionScript: return "dist-script";
 		//
+		case Defs::DistributionProcess: return "dist-process";
+		//
+		case Defs::DistributionValidation: return "dist-validation";
+		//
 		case Defs::DistributionArchive: return "dist-archive";
 		case Defs::DistributionArchiveInclude: return "dist-archive-include";
 		case Defs::DistributionArchiveFormat: return "dist-archive-format";
@@ -1926,8 +1981,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionMacosDiskImageBackground: return "dist-macos-disk-image-background";
 		case Defs::DistributionMacosDiskImageSize: return "dist-macos-disk-image-size";
 		case Defs::DistributionMacosDiskImagePositions: return "dist-macos-disk-image-positions";
-		//
-		case Defs::DistributionProcess: return "dist-process";
 		//
 		case Defs::ExternalDependency: return "external-dependency";
 		case Defs::ExternalDependencyKind: return "external-dependency-kind";
@@ -2018,6 +2071,15 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetScriptArguments: return "target-script-arguments";
 		case Defs::TargetScriptDependsOn: return "target-script-dependsOn";
 		//
+		case Defs::TargetProcess: return "target-process";
+		case Defs::TargetProcessPath: return "target-process-path";
+		case Defs::TargetProcessArguments: return "target-process-arguments";
+		case Defs::TargetProcessDependsOn: return "target-process-dependsOn";
+		//
+		case Defs::TargetValidation: return "target-validation";
+		case Defs::TargetValidationSchema: return "target-validation-schema";
+		case Defs::TargetValidationFiles: return "target-validation-files";
+		//
 		case Defs::TargetCMake: return "target-cmake";
 		case Defs::TargetCMakeLocation: return "target-cmake-location";
 		case Defs::TargetCMakeBuildFile: return "target-cmake-buildFile";
@@ -2036,11 +2098,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
 		case Defs::TargetChaletClean: return "target-chalet-clean";
-		//
-		case Defs::TargetProcess: return "target-process";
-		case Defs::TargetProcessPath: return "target-process-path";
-		case Defs::TargetProcessArguments: return "target-process-arguments";
-		case Defs::TargetProcessDependsOn: return "target-process-dependsOn";
 		//
 		case Defs::PlatformRequires: return "platform-requires";
 		case Defs::PlatformRequiresUbuntuSystem: return "platform-requires-ubuntu-system";
@@ -2225,11 +2282,12 @@ Json ChaletJsonSchema::get()
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"] = m_defs.at(Defs::DistributionKind);
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"bundle",
 		"script",
 		"process",
+		"validation",
 		"archive",
 		"macosDiskImage"
 	])json"_ojson;
@@ -2239,6 +2297,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][2] = getDefinition(Defs::DistributionArchive);
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][3] = getDefinition(Defs::DistributionMacosDiskImage);
 	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][4] = getDefinition(Defs::DistributionProcess);
+	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][5] = getDefinition(Defs::DistributionValidation);
 
 	ret[SKeys::Properties]["variables"] = getDefinition(Defs::EnvironmentVariables);
 
@@ -2267,17 +2326,7 @@ Json ChaletJsonSchema::get()
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
-	/*
-		"enum": [
-			"staticLibrary",
-			"sharedLibrary",
-			"executable",
-			"cmakeProject",
-			"chaletProject",
-			"script",
-			"process"
-		]
-	*/
+	//
 	const auto targets = "targets";
 	ret[SKeys::Properties][targets] = R"json({
 		"type": "object",
@@ -2290,7 +2339,7 @@ Json ChaletJsonSchema::get()
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::TargetKind);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"staticLibrary",
 		"sharedLibrary",
@@ -2298,7 +2347,8 @@ Json ChaletJsonSchema::get()
 		"cmakeProject",
 		"chaletProject",
 		"script",
-		"process"
+		"process",
+		"validation"
 	])json"_ojson;
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::TargetSourceExecutable);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::TargetSourceLibrary);
@@ -2306,6 +2356,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetChalet);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetScript);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetProcess);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][6] = getDefinition(Defs::TargetValidation);
 
 	return ret;
 }

@@ -32,12 +32,14 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/Target/ValidationBuildTarget.hpp"
 
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/ValidationDistTarget.hpp"
 
 namespace chalet
 {
@@ -399,16 +401,20 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			return false;
 		}
 
-		BuildTargetType type = BuildTargetType::Source;
+		BuildTargetType type = BuildTargetType::Unknown;
 		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
 		{
-			if (String::equals("cmakeProject", val))
+			if (String::equals(sourceTargets, val))
 			{
-				type = BuildTargetType::CMake;
+				type = BuildTargetType::Source;
 			}
 			else if (String::equals("chaletProject", val))
 			{
 				type = BuildTargetType::SubChalet;
+			}
+			else if (String::equals("cmakeProject", val))
+			{
+				type = BuildTargetType::CMake;
 			}
 			else if (String::equals("script", val))
 			{
@@ -418,8 +424,9 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			{
 				type = BuildTargetType::Process;
 			}
-			else if (String::equals(sourceTargets, val))
+			else if (String::equals("validation", val))
 			{
+				type = BuildTargetType::Validation;
 			}
 			else
 			{
@@ -470,13 +477,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		if (!(*conditionResult))
 			continue; // true to skip project
 
-		if (target->isScript())
-		{
-			// A script could be only for a specific platform
-			if (!parseScriptTarget(static_cast<ScriptBuildTarget&>(*target), targetJson))
-				return false;
-		}
-		else if (target->isSubChalet())
+		if (target->isSubChalet())
 		{
 			if (!parseSubChaletTarget(static_cast<SubChaletTarget&>(*target), targetJson))
 			{
@@ -492,9 +493,23 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 				return false;
 			}
 		}
+		else if (target->isScript())
+		{
+			// A script could be only for a specific platform
+			if (!parseScriptTarget(static_cast<ScriptBuildTarget&>(*target), targetJson))
+				return false;
+		}
 		else if (target->isProcess())
 		{
 			if (!parseProcessTarget(static_cast<ProcessBuildTarget&>(*target), targetJson))
+			{
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'process'.", m_chaletJson.filename(), name);
+				return false;
+			}
+		}
+		else if (target->isValidation())
+		{
+			if (!parseValidationTarget(static_cast<ValidationBuildTarget&>(*target), targetJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' target of type 'process'.", m_chaletJson.filename(), name);
 				return false;
@@ -628,52 +643,6 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
-{
-	bool valid = false;
-	for (const auto& [key, value] : inNode.items())
-	{
-		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
-		if (value.is_string())
-		{
-			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
-			{
-				outTarget.setFile(std::move(val));
-				valid = true;
-			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
-				outTarget.setOutputDescription(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArgument(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
-				outTarget.setDependsOn(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-		else if (value.is_array())
-		{
-			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArguments(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-	}
-
-	if (!parseRunTargetProperties(outTarget, inNode))
-		return false;
-
-	if (!valid)
-	{
-		// When a script has a "file" that is conditional to another platform
-		outTarget.setIncludeInBuild(false);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool ChaletJsonParser::parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const
 {
 	bool valid = false;
@@ -783,6 +752,52 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 }
 
 /*****************************************************************************/
+bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const
+{
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
+			{
+				outTarget.setFile(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	if (!parseRunTargetProperties(outTarget, inNode))
+		return false;
+
+	if (!valid)
+	{
+		// When a script has a "file" that is conditional to another platform
+		outTarget.setIncludeInBuild(false);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const
 {
 	bool valid = false;
@@ -817,6 +832,48 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 	}
 
 	return valid;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseValidationTarget(ValidationBuildTarget& outTarget, const Json& inNode) const
+{
+	bool hasSchema = false;
+	bool hasFiles = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "schema", status))
+			{
+				outTarget.setSchema(std::move(val));
+				hasSchema = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "files", status))
+			{
+				outTarget.addFile(std::move(val));
+				hasFiles = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
+			{
+				outTarget.addFiles(std::move(val));
+				hasFiles = true;
+			}
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	return hasSchema && hasFiles;
 }
 
 /*****************************************************************************/
@@ -1109,16 +1166,12 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 			return false;
 		}
 
-		DistTargetType type = DistTargetType::DistributionBundle;
+		DistTargetType type = DistTargetType::Unknown;
 		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
 		{
-			if (String::equals("script", val))
+			if (String::equals("bundle", val))
 			{
-				type = DistTargetType::Script;
-			}
-			else if (String::equals("process", val))
-			{
-				type = DistTargetType::Process;
+				type = DistTargetType::DistributionBundle;
 			}
 			else if (String::equals("archive", val))
 			{
@@ -1132,8 +1185,17 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 				continue;
 #endif
 			}
-			else if (String::equals("bundle", val))
+			else if (String::equals("script", val))
 			{
+				type = DistTargetType::Script;
+			}
+			else if (String::equals("process", val))
+			{
+				type = DistTargetType::Process;
+			}
+			else if (String::equals("validation", val))
+			{
+				type = DistTargetType::Validation;
 			}
 			else
 			{
@@ -1157,7 +1219,22 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 		if (!(*conditionResult))
 			continue; // skip target
 
-		if (target->isScript())
+		if (target->isDistributionBundle())
+		{
+			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson, inNode))
+				return false;
+		}
+		else if (target->isArchive())
+		{
+			if (!parseDistributionArchive(static_cast<BundleArchiveTarget&>(*target), targetJson))
+				return false;
+		}
+		else if (target->isMacosDiskImage())
+		{
+			if (!parseMacosDiskImage(static_cast<MacosDiskImageTarget&>(*target), targetJson))
+				return false;
+		}
+		else if (target->isScript())
 		{
 			if (!parseDistributionScript(static_cast<ScriptDistTarget&>(*target), targetJson))
 				return false;
@@ -1167,19 +1244,9 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 			if (!parseDistributionProcess(static_cast<ProcessDistTarget&>(*target), targetJson))
 				return false;
 		}
-		else if (target->isArchive())
+		else if (target->isValidation())
 		{
-			if (!parseDistributionArchive(static_cast<BundleArchiveTarget&>(*target), targetJson))
-				return false;
-		}
-		else if (target->isDistributionBundle())
-		{
-			if (!parseDistributionBundle(static_cast<BundleTarget&>(*target), targetJson, inNode))
-				return false;
-		}
-		else if (target->isMacosDiskImage())
-		{
-			if (!parseMacosDiskImage(static_cast<MacosDiskImageTarget&>(*target), targetJson))
+			if (!parseDistributionValidation(static_cast<ValidationDistTarget&>(*target), targetJson))
 				return false;
 		}
 
@@ -1190,80 +1257,6 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
-{
-	bool valid = false;
-	for (const auto& [key, value] : inNode.items())
-	{
-		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
-		if (value.is_string())
-		{
-			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
-			{
-				outTarget.setFile(std::move(val));
-				valid = true;
-			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
-				outTarget.setOutputDescription(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArgument(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
-				outTarget.setDependsOn(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-		else if (value.is_array())
-		{
-			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArguments(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-	}
-
-	return valid;
-}
-
-/*****************************************************************************/
-bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
-{
-	bool valid = false;
-	for (const auto& [key, value] : inNode.items())
-	{
-		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
-		if (value.is_string())
-		{
-			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "path", status))
-			{
-				outTarget.setPath(std::move(val));
-				valid = true;
-			}
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
-				outTarget.setOutputDescription(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArgument(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
-				outTarget.setDependsOn(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-		else if (value.is_array())
-		{
-			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
-				outTarget.addArguments(std::move(val));
-			else if (isInvalid(status))
-				return false;
-		}
-	}
-
-	return valid;
 }
 
 /*****************************************************************************/
@@ -1547,6 +1540,122 @@ bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, cons
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const
+{
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "file", status))
+			{
+				outTarget.setFile(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	return valid;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const
+{
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "path", status))
+			{
+				outTarget.setPath(std::move(val));
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.setDependsOn(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
+				outTarget.addArguments(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	return valid;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseDistributionValidation(ValidationDistTarget& outTarget, const Json& inNode) const
+{
+	bool hasSchema = false;
+	bool hasFiles = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "schema", status))
+			{
+				outTarget.setSchema(std::move(val));
+				hasSchema = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "files", status))
+			{
+				outTarget.addFile(std::move(val));
+				hasFiles = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
+			{
+				outTarget.addFiles(std::move(val));
+				hasFiles = true;
+			}
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	return hasSchema && hasFiles;
 }
 
 /*****************************************************************************/

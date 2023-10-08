@@ -28,6 +28,7 @@ private:
 	bool routeBundle(BuildState& inState);
 	bool routeInit();
 	bool routeSettings();
+	bool routeValidate();
 	bool routeQuery();
 	bool routeTerminalTest();
 

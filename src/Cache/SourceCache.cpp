@@ -200,7 +200,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 	}
 
 	auto& fileData = getLastWrite(inFile);
-	if (fileData.needsUpdate)
+	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
 		makeUpdate(inFile, fileData);
 
 	return fileData.lastWrite > m_lastBuildTime;
@@ -218,7 +218,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std
 	}
 
 	auto& fileData = getLastWrite(inFile);
-	if (fileData.needsUpdate)
+	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
 		makeUpdate(inFile, fileData);
 
 	return fileData.lastWrite > m_lastBuildTime;
@@ -238,6 +238,7 @@ void SourceCache::markForLater(const std::string& inFile)
 		auto& fileData = m_lastWrites.at(inFile);
 		fileData.lastWrite = std::numeric_limits<std::time_t>::max();
 		fileData.needsUpdate = false;
+		m_dirty = true;
 	}
 }
 

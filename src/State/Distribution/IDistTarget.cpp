@@ -6,11 +6,13 @@
 #include "State/Distribution/IDistTarget.hpp"
 
 #include "State/BuildState.hpp"
+
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 #include "State/Distribution/ProcessDistTarget.hpp"
 #include "State/Distribution/ScriptDistTarget.hpp"
+#include "State/Distribution/ValidationDistTarget.hpp"
 
 namespace chalet
 {
@@ -28,16 +30,18 @@ IDistTarget::IDistTarget(const BuildState& inState, const DistTargetType inType)
 	{
 		case DistTargetType::DistributionBundle:
 			return std::make_unique<BundleTarget>(inState);
-		case DistTargetType::Script:
-			return std::make_unique<ScriptDistTarget>(inState);
-		case DistTargetType::Process:
-			return std::make_unique<ProcessDistTarget>(inState);
 		case DistTargetType::BundleArchive:
 			return std::make_unique<BundleArchiveTarget>(inState);
 #if defined(CHALET_MACOS)
 		case DistTargetType::MacosDiskImage:
 			return std::make_unique<MacosDiskImageTarget>(inState);
 #endif
+		case DistTargetType::Script:
+			return std::make_unique<ScriptDistTarget>(inState);
+		case DistTargetType::Process:
+			return std::make_unique<ProcessDistTarget>(inState);
+		case DistTargetType::Validation:
+			return std::make_unique<ValidationDistTarget>(inState);
 		default:
 			break;
 	}
@@ -51,14 +55,6 @@ DistTargetType IDistTarget::type() const noexcept
 {
 	return m_type;
 }
-bool IDistTarget::isScript() const noexcept
-{
-	return m_type == DistTargetType::Script;
-}
-bool IDistTarget::isProcess() const noexcept
-{
-	return m_type == DistTargetType::Process;
-}
 bool IDistTarget::isDistributionBundle() const noexcept
 {
 	return m_type == DistTargetType::DistributionBundle;
@@ -71,13 +67,40 @@ bool IDistTarget::isMacosDiskImage() const noexcept
 {
 	return m_type == DistTargetType::MacosDiskImage;
 }
+bool IDistTarget::isScript() const noexcept
+{
+	return m_type == DistTargetType::Script;
+}
+bool IDistTarget::isProcess() const noexcept
+{
+	return m_type == DistTargetType::Process;
+}
+bool IDistTarget::isValidation() const noexcept
+{
+	return m_type == DistTargetType::Validation;
+}
 
 /*****************************************************************************/
-bool IDistTarget::replaceVariablesInPathList(StringList& outList)
+bool IDistTarget::replaceVariablesInPathList(StringList& outList) const
 {
 	for (auto& dir : outList)
 	{
 		if (!m_state.replaceVariablesInString(dir, this))
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IDistTarget::processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const
+{
+	if (!replaceVariablesInPathList(inList))
+		return false;
+
+	for (auto&& val : inList)
+	{
+		if (!onProcess(std::move(val)))
 			return false;
 	}
 

@@ -12,10 +12,11 @@ enum class BuildTargetType
 {
 	Unknown,
 	Source,
-	Script,
 	SubChalet,
 	CMake,
-	Process
+	Script,
+	Process,
+	Validation,
 };
 }
 

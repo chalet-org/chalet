@@ -369,7 +369,11 @@
 		},
 		"dist-script": {
 			"type": "object",
+			"description": "Run a single script.",
 			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
 			"properties": {
 				"arguments": {
 					"$ref": "#/definitions/target-script-arguments"
@@ -402,6 +406,85 @@
 				},
 				"^file\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
+				}
+			}
+		},
+		"dist-process": {
+			"type": "object",
+			"description": "Run a single process.",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/dist-condition"
+				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
+				"kind": {
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "process"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
+				"path": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			},
+			"patternProperties": {
+				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
+				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			}
+		},
+		"dist-validation": {
+			"type": "object",
+			"description": "Validate JSON file(s) against a schema. Unlike with build validation target, all files will always validate.",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/dist-condition"
+				},
+				"files": {
+					"$ref": "#/definitions/target-validation-files"
+				},
+				"kind": {
+					"type": "string",
+					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
+					"minLength": 1,
+					"const": "validation"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
+				"schema": {
+					"$ref": "#/definitions/target-validation-schema"
+				}
+			},
+			"patternProperties": {
+				"^files\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-validation-files"
+				},
+				"^schema\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-validation-schema"
 				}
 			}
 		},
@@ -631,49 +714,6 @@
 					}
 				}
 			]
-		},
-		"dist-process": {
-			"type": "object",
-			"description": "Run a process",
-			"additionalProperties": false,
-			"required": [
-				"kind",
-				"path"
-			],
-			"properties": {
-				"arguments": {
-					"$ref": "#/definitions/target-process-arguments"
-				},
-				"condition": {
-					"$ref": "#/definitions/dist-condition"
-				},
-				"dependsOn": {
-					"$ref": "#/definitions/target-process-dependsOn"
-				},
-				"kind": {
-					"type": "string",
-					"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
-					"minLength": 1,
-					"const": "process"
-				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
-				"path": {
-					"$ref": "#/definitions/target-process-path"
-				}
-			},
-			"patternProperties": {
-				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-arguments"
-				},
-				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-dependsOn"
-				},
-				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-path"
-				}
-			}
 		},
 		"external-dependency-kind": {
 			"type": "string",
@@ -907,6 +947,7 @@
 		},
 		"target-source-executable": {
 			"type": "object",
+			"description": "Build a target from source files.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -973,6 +1014,7 @@
 		},
 		"target-source-library": {
 			"type": "object",
+			"description": "Build a target from source files.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -2172,6 +2214,7 @@
 		},
 		"target-script": {
 			"type": "object",
+			"description": "Run a single script.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -2239,9 +2282,139 @@
 			"description": "A target this script depends on in order to run.",
 			"minLength": 1
 		},
+		"target-process": {
+			"type": "object",
+			"description": "Run a single process.",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"path"
+			],
+			"properties": {
+				"arguments": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"dependsOn": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
+				"kind": {
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "process"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
+				"path": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			},
+			"patternProperties": {
+				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-dependsOn"
+				},
+				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-path"
+				}
+			}
+		},
+		"target-process-path": {
+			"type": "string",
+			"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
+			"minLength": 1
+		},
+		"target-process-arguments": {
+			"description": "A list of arguments to pass along to the process.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": false,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-process-dependsOn": {
+			"type": "string",
+			"description": "A target this process depends on in order to run.",
+			"minLength": 1
+		},
+		"target-validation": {
+			"type": "object",
+			"description": "Validate JSON file(s) against a schema.",
+			"additionalProperties": false,
+			"required": [
+				"kind"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"files": {
+					"$ref": "#/definitions/target-validation-files"
+				},
+				"kind": {
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "validation"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
+				"schema": {
+					"$ref": "#/definitions/target-validation-schema"
+				}
+			},
+			"patternProperties": {
+				"^files\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-validation-files"
+				},
+				"^schema\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-validation-schema"
+				}
+			}
+		},
+		"target-validation-schema": {
+			"type": "string",
+			"description": "A JSON schema (Draft 7) to validate files against. File requires the '$schema' key/value.",
+			"minLength": 1
+		},
+		"target-validation-files": {
+			"description": "File(s) to be validated using the selected schema.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
 		"target-cmake": {
 			"type": "object",
-			"description": "Build the location with CMake",
+			"description": "Build target(s) utilizing CMake.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -2382,7 +2555,7 @@
 		},
 		"target-chalet": {
 			"type": "object",
-			"description": "Build the location with Chalet",
+			"description": "Build target(s) utilizing separate Chalet projects.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -2471,77 +2644,6 @@
 			"type": "boolean",
 			"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
-		},
-		"target-process": {
-			"type": "object",
-			"description": "Run a process",
-			"additionalProperties": false,
-			"required": [
-				"kind",
-				"path"
-			],
-			"properties": {
-				"arguments": {
-					"$ref": "#/definitions/target-process-arguments"
-				},
-				"condition": {
-					"$ref": "#/definitions/target-condition"
-				},
-				"dependsOn": {
-					"$ref": "#/definitions/target-process-dependsOn"
-				},
-				"kind": {
-					"type": "string",
-					"description": "The type of the target's compiled binary, a script or external project.",
-					"minLength": 1,
-					"const": "process"
-				},
-				"outputDescription": {
-					"$ref": "#/definitions/target-outputDescription"
-				},
-				"path": {
-					"$ref": "#/definitions/target-process-path"
-				}
-			},
-			"patternProperties": {
-				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-arguments"
-				},
-				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-dependsOn"
-				},
-				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-path"
-				}
-			}
-		},
-		"target-process-path": {
-			"type": "string",
-			"description": "Either the full path to an exectuable, or a shell compatible name to be resolved.",
-			"minLength": 1
-		},
-		"target-process-arguments": {
-			"description": "A list of arguments to pass along to the process.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": false,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				}
-			]
-		},
-		"target-process-dependsOn": {
-			"type": "string",
-			"description": "A target this process depends on in order to run.",
-			"minLength": 1
 		},
 		"platform-requires": {
 			"type": "object",
@@ -2867,12 +2969,13 @@
 					"properties": {
 						"kind": {
 							"type": "string",
-							"description": "Whether the external dependency is a git repository, local folder, or script.",
+							"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
 							"minLength": 1,
 							"enum": [
 								"bundle",
 								"script",
 								"process",
+								"validation",
 								"archive",
 								"macosDiskImage"
 							]
@@ -2893,6 +2996,9 @@
 						},
 						{
 							"$ref": "#/definitions/dist-process"
+						},
+						{
+							"$ref": "#/definitions/dist-validation"
 						}
 					]
 				}
@@ -2949,7 +3055,7 @@
 					"properties": {
 						"kind": {
 							"type": "string",
-							"description": "Whether the external dependency is a git repository, local folder, or script.",
+							"description": "The type of the target's compiled binary, a script or external project.",
 							"minLength": 1,
 							"enum": [
 								"staticLibrary",
@@ -2958,7 +3064,8 @@
 								"cmakeProject",
 								"chaletProject",
 								"script",
-								"process"
+								"process",
+								"validation"
 							]
 						}
 					},
@@ -2980,6 +3087,9 @@
 						},
 						{
 							"$ref": "#/definitions/target-process"
+						},
+						{
+							"$ref": "#/definitions/target-validation"
 						}
 					]
 				}

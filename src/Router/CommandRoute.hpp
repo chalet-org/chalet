@@ -28,6 +28,7 @@ struct CommandRoute
 	constexpr bool isExport() const noexcept;
 	constexpr bool isBundle() const noexcept;
 	constexpr bool isQuery() const noexcept;
+	constexpr bool isValidate() const noexcept;
 
 	constexpr bool willRun() const noexcept;
 

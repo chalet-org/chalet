@@ -29,10 +29,11 @@ struct IBuildTarget
 
 	BuildTargetType type() const noexcept;
 	bool isSources() const noexcept;
-	bool isScript() const noexcept;
 	bool isSubChalet() const noexcept;
 	bool isCMake() const noexcept;
+	bool isScript() const noexcept;
 	bool isProcess() const noexcept;
+	bool isValidation() const noexcept;
 
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;

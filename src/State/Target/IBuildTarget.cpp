@@ -7,15 +7,17 @@
 
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/WorkspaceEnvironment.hpp"
+#include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
+
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
-#include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
-#include "Utility/List.hpp"
-#include "Utility/String.hpp"
+#include "State/Target/ValidationBuildTarget.hpp"
 
 namespace chalet
 {
@@ -40,6 +42,8 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<CMakeTarget>(inState);
 		case BuildTargetType::Process:
 			return std::make_unique<ProcessBuildTarget>(inState);
+		case BuildTargetType::Validation:
+			return std::make_unique<ValidationBuildTarget>(inState);
 		default:
 			break;
 	}
@@ -90,10 +94,6 @@ bool IBuildTarget::isSources() const noexcept
 {
 	return m_type == BuildTargetType::Source;
 }
-bool IBuildTarget::isScript() const noexcept
-{
-	return m_type == BuildTargetType::Script;
-}
 bool IBuildTarget::isSubChalet() const noexcept
 {
 	return m_type == BuildTargetType::SubChalet;
@@ -102,9 +102,17 @@ bool IBuildTarget::isCMake() const noexcept
 {
 	return m_type == BuildTargetType::CMake;
 }
+bool IBuildTarget::isScript() const noexcept
+{
+	return m_type == BuildTargetType::Script;
+}
 bool IBuildTarget::isProcess() const noexcept
 {
 	return m_type == BuildTargetType::Process;
+}
+bool IBuildTarget::isValidation() const noexcept
+{
+	return m_type == BuildTargetType::Validation;
 }
 
 /*****************************************************************************/
