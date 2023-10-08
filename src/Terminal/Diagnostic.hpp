@@ -23,6 +23,7 @@ struct Diagnostic
 
 	static void printDone(const std::string& inTime = std::string());
 	static void printFound(const bool inFound, const std::string& inTime = std::string());
+	static void printValid(const bool inValid);
 
 	template <typename... Args>
 	static void info(fmt::format_string<Args...> inFmt, Args&&... args);

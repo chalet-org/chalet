@@ -98,9 +98,6 @@ bool SubChaletBuilder::run()
 
 	const auto& name = m_target.name();
 
-	Output::msgBuild(name);
-	Output::lineBreak();
-
 	m_outputLocation = getOutputLocation();
 
 	const auto oldPath = Environment::getPath();

@@ -130,6 +130,10 @@ std::string TargetAdapterVCXProj::getCommand() const
 			ret += fmt::format("{}\r\n", String::join(buildCmd));
 		}
 	}
+	else if (m_target.isValidation())
+	{
+		// TODO
+	}
 
 	if (!ret.empty())
 	{

@@ -10,11 +10,13 @@ namespace chalet
 {
 enum class DistTargetType
 {
+	Unknown,
 	DistributionBundle,
-	Script,
-	Process,
 	BundleArchive,
 	MacosDiskImage,
+	Script,
+	Process,
+	Validation,
 };
 }
 

@@ -45,6 +45,10 @@ class ChaletJsonSchema
 		//
 		DistributionScript,
 		//
+		DistributionProcess,
+		//
+		DistributionValidation,
+		//
 		DistributionArchive,
 		DistributionArchiveFormat,
 		DistributionArchiveInclude,
@@ -56,8 +60,6 @@ class ChaletJsonSchema
 		DistributionMacosDiskImageBackground,
 		DistributionMacosDiskImageSize,
 		DistributionMacosDiskImagePositions,
-		//
-		DistributionProcess,
 		//
 		ExternalDependency,
 		ExternalDependencyKind,
@@ -149,6 +151,15 @@ class ChaletJsonSchema
 		TargetScriptArguments,
 		TargetScriptDependsOn,
 		//
+		TargetProcess,
+		TargetProcessPath,
+		TargetProcessArguments,
+		TargetProcessDependsOn,
+		//
+		TargetValidation,
+		TargetValidationSchema,
+		TargetValidationFiles,
+		//
 		TargetCMake,
 		TargetCMakeLocation,
 		TargetCMakeBuildFile,
@@ -167,11 +178,6 @@ class ChaletJsonSchema
 		TargetChaletRecheck,
 		TargetChaletRebuild,
 		TargetChaletClean,
-		//
-		TargetProcess,
-		TargetProcessPath,
-		TargetProcessArguments,
-		TargetProcessDependsOn,
 		//
 		PlatformRequires,
 		PlatformRequiresUbuntuSystem,

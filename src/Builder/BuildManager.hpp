@@ -20,6 +20,7 @@ struct SourceTarget;
 struct AssemblyDumper;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
+struct ValidationBuildTarget;
 
 class BuildManager
 {
@@ -58,6 +59,7 @@ private:
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget);
+	bool runValidationTarget(const ValidationBuildTarget& inTarget);
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject);
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
@@ -65,6 +67,8 @@ private:
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	bool runFullBuild();
 	void stopTimerAndShowBenchmark(Timer& outTimer);
+
+	void displayHeader(const std::string& inLabel, const IBuildTarget& inTarget, const std::string& inName = std::string()) const;
 
 	BuildState& m_state;
 
