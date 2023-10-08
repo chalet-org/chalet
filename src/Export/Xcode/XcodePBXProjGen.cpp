@@ -81,12 +81,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	const auto& firstState = *m_states.front();
 	const auto& workspaceName = firstState.workspace.metadata().name();
+	const auto& outputDirectory = firstState.inputs.outputDirectory();
 
 	m_projectUUID = Uuid::v5(fmt::format("{}_PBXPROJ", workspaceName), m_xcodeNamespaceGuid);
 	m_projectGuid = m_projectUUID.str();
 
 	StringList intDirs;
-	StringList buildDirs;
+	StringList buildDirs{ outputDirectory };
 	StringList buildConfigurations;
 	StringList sources;
 	StringList headers;
@@ -193,7 +194,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	auto& objects = json.at("objects");
 
 	auto mainGroup = Uuid::v5("mainGroup", m_xcodeNamespaceGuid).toAppleHash();
-	auto products = getHashWithLabel("Products");
+	// auto products = getHashWithLabel("Products");
 	const std::string group{ "<group>" };
 
 	// PBXBuildFile
@@ -304,20 +305,20 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			childNodes.emplace_back(std::move(key));
 		}
 
-		node[products] = Json::object();
-		node[products]["isa"] = section;
-		node[products]["children"] = Json::array();
-		for (const auto& [target, file] : outputFiles)
-		{
-			node[products]["children"].push_back(getHashWithLabel(target));
-		}
-		node[products]["name"] = "Products";
-		node[products]["sourceTree"] = group;
+		// node[products] = Json::object();
+		// node[products]["isa"] = section;
+		// node[products]["children"] = Json::array();
+		// for (const auto& [target, file] : outputFiles)
+		// {
+		// 	node[products]["children"].push_back(getHashWithLabel(target));
+		// }
+		// node[products]["name"] = "Products";
+		// node[products]["sourceTree"] = group;
 
 		node[mainGroup] = Json::object();
 		node[mainGroup]["isa"] = section;
 		node[mainGroup]["children"] = childNodes;
-		node[mainGroup]["children"].emplace_back(products);
+		// node[mainGroup]["children"].emplace_back(products);
 		node[mainGroup]["sourceTree"] = group;
 	}
 
@@ -624,7 +625,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	// ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
 
 	// ret["CODE_SIGN_IDENTITY"] = inState.tools.signingIdentity();
-	ret["CODE_SIGN_IDENTITY"] = "";
+	ret["CODE_SIGN_IDENTITY"] = "-";
 	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
 
 	ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
