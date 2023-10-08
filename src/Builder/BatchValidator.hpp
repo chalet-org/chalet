@@ -15,7 +15,7 @@ class BuildState;
 
 struct BatchValidator
 {
-	explicit BatchValidator(const BuildState& inState, const std::string& inSchemaFile);
+	explicit BatchValidator(const BuildState* inState, const std::string& inSchemaFile);
 
 	bool validate(const StringList& inFiles, const bool inCache = true);
 
@@ -23,7 +23,7 @@ private:
 	bool parse(Json& outJson, const std::string& inFilename, const bool inPrintValid) const;
 	void showErrorMessage(const std::string& inMessage) const;
 
-	const BuildState& m_state;
+	const BuildState* m_state = nullptr;
 	const std::string& m_schemaFile;
 };
 }

@@ -25,6 +25,7 @@ enum class RouteType : ushort
 	SettingsGetKeys,
 	SettingsSet,
 	SettingsUnset,
+	Validate,
 	Query,
 	TerminalTest,
 #if defined(CHALET_DEBUG)

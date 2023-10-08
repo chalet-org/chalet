@@ -44,7 +44,7 @@ bool ValidationDistTarget::initialize()
 /*****************************************************************************/
 bool ValidationDistTarget::validate()
 {
-	if (!Commands::pathExists(m_schema))
+	if (m_schema.empty() || !Commands::pathExists(m_schema))
 	{
 		Diagnostic::error("Schema file for the validation target '{}' doesn't exist: {}", this->name(), m_schema);
 		return false;
@@ -52,7 +52,7 @@ bool ValidationDistTarget::validate()
 
 	for (auto& file : m_files)
 	{
-		if (!Commands::pathExists(file))
+		if (file.empty() || !Commands::pathExists(file))
 		{
 			Diagnostic::error("File for the validation target '{}' doesn't exist: {}", this->name(), file);
 			return false;

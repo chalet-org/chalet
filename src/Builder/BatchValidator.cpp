@@ -18,7 +18,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-BatchValidator::BatchValidator(const BuildState& inState, const std::string& inSchemaFile) :
+BatchValidator::BatchValidator(const BuildState* inState, const std::string& inSchemaFile) :
 	m_state(inState),
 	m_schemaFile(inSchemaFile)
 {
@@ -31,8 +31,12 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 	{
 		bool result = true;
 
-		auto& sourceCache = m_state.cache.file().sources();
-		bool schemaChanged = !inCache || sourceCache.fileChangedOrDoesNotExist(m_schemaFile);
+		SourceCache* sourceCache = nullptr;
+		if (m_state != nullptr && inCache)
+		{
+			sourceCache = &m_state->cache.file().sources();
+		}
+		bool schemaChanged = !inCache || (sourceCache && sourceCache->fileChangedOrDoesNotExist(m_schemaFile));
 
 		// After files have been checked for changes
 		StringList files;
@@ -44,7 +48,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			for (auto& file : inFiles)
 			{
-				if (sourceCache.fileChangedOrDoesNotExist(file))
+				if (sourceCache && sourceCache->fileChangedOrDoesNotExist(file))
 					files.emplace_back(file);
 			}
 		}
@@ -55,7 +59,8 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			if (!this->parse(schema, m_schemaFile, false))
 			{
-				sourceCache.markForLater(m_schemaFile);
+				if (sourceCache)
+					sourceCache->markForLater(m_schemaFile);
 				return false;
 			}
 
@@ -90,7 +95,9 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			Json jsonFile;
 			if (!this->parse(jsonFile, file, true))
 			{
-				sourceCache.markForLater(file);
+				if (sourceCache)
+					sourceCache->markForLater(file);
+
 				result = false;
 				continue;
 			}
@@ -99,7 +106,9 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			bool fileValid = validator.validate(jsonFile, file, errors);
 			if (!fileValid)
 			{
-				sourceCache.markForLater(file);
+				if (sourceCache)
+					sourceCache->markForLater(file);
+
 				Diagnostic::error("File: {}", file);
 				if (!validator.printErrors(errors))
 					result = false;

@@ -1329,7 +1329,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetValidationSchema] = R"json({
 		"type": "string",
-		"description": "A schema to validate files against (currently supports JSON Schema Draft 7). File requires the '$schema' key/value",
+		"description": "A JSON schema (Draft 7) to validate files against. File requires the '$schema' key/value.",
 		"minLength": 1
 	})json"_ojson;
 

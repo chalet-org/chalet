@@ -16,6 +16,7 @@
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
+#include "State/Target/ValidationBuildTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
@@ -132,7 +133,18 @@ std::string TargetAdapterVCXProj::getCommand() const
 	}
 	else if (m_target.isValidation())
 	{
-		// TODO
+		const auto& validationTarget = static_cast<const ValidationBuildTarget&>(m_target);
+		StringList validateCmd{
+			fmt::format("\"{}\"", m_state.tools.chalet()),
+			"validate",
+			fmt::format("'{}'", validationTarget.schema()),
+		};
+		auto& files = validationTarget.files();
+		for (auto& file : files)
+		{
+			validateCmd.emplace_back(fmt::format("'{}'", file));
+		}
+		ret += fmt::format("{}\r\n", String::join(validateCmd));
 	}
 
 	if (!ret.empty())

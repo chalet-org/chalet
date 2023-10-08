@@ -31,6 +31,7 @@ CH_STR(ExportKind) = "<kind>";
 CH_STR(SettingsKey) = "<key>";
 CH_STR(SettingsKeyQuery) = "<query>";
 CH_STR(SettingsValue) = "<value>";
+CH_STR(ValidateSchema) = "<schema>";
 CH_STR(QueryType) = "<type>";
 // CH_STR(QueryData) = "<data>";
 }
@@ -68,6 +69,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::SettingsGetKeys, &ArgumentParser::populateSettingsGetKeysArguments },
 		{ RouteType::SettingsSet, &ArgumentParser::populateSettingsSetArguments },
 		{ RouteType::SettingsUnset, &ArgumentParser::populateSettingsUnsetArguments },
+		{ RouteType::Validate, &ArgumentParser::populateValidateArguments },
 		{ RouteType::Query, &ArgumentParser::populateQueryArguments },
 		{ RouteType::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
 	}),
@@ -85,6 +87,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::SettingsGetKeys, "If the given property is an object, display the names of its properties." },
 		{ RouteType::SettingsSet, "Set the given property to the given value." },
 		{ RouteType::SettingsUnset, "Remove the key/value pair given a valid property key." },
+		{ RouteType::Validate, "Validate JSON file(s) against a schema." },
 		{ RouteType::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
 		{ RouteType::TerminalTest, "Display all color themes and terminal capabilities." },
 	}),
@@ -105,6 +108,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ "getkeys", RouteType::SettingsGetKeys },
 		{ "set", RouteType::SettingsSet },
 		{ "unset", RouteType::SettingsUnset },
+		{ "validate", RouteType::Validate },
 		{ "query", RouteType::Query },
 		{ "termtest", RouteType::TerminalTest },
 	})
@@ -369,6 +373,20 @@ std::string ArgumentParser::getSeeHelpMessage()
 /*****************************************************************************/
 bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 {
+	// Add exceptions for routes with only required remaining arguments
+	// we need to remove the assumed @2 for the first of them
+	// bool routeHasOnePositionalArgument = m_route == RouteType::Validate;
+	// if (routeHasOnePositionalArgument)
+	// {
+	// 	// If it doesn't exist, let it fail later
+	// 	if (containsOption(Positional::Argument2))
+	// 	{
+	// 		auto value = m_rawArguments.at(Positional::Argument2);
+	// 		m_rawArguments.erase(Positional::Argument2);
+	// 		m_rawArguments[Positional::RemainingArguments] = fmt::format("'{}' {}", value, m_rawArguments[Positional::RemainingArguments]);
+	// 	}
+	// }
+
 	StringList invalid;
 	for (auto& [key, _] : m_rawArguments)
 	{
@@ -396,6 +414,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 	}
 
 	m_hasRemaining = containsOption(Positional::RemainingArguments);
+
 	bool allowsRemaining = false;
 
 	int maxPositionalArgs = 0;
@@ -403,13 +422,14 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 	// TODO: Check invalid
 	for (auto& mapped : m_argumentList)
 	{
+		bool isRemaining = String::equals(Positional::RemainingArguments, mapped.key());
 		if (String::startsWith('@', mapped.key()))
-			++maxPositionalArgs;
+			maxPositionalArgs++;
 
 		if (mapped.id() == ArgumentIdentifier::RouteString)
 			continue;
 
-		allowsRemaining |= String::equals(Positional::RemainingArguments, mapped.key());
+		allowsRemaining |= isRemaining;
 
 		std::string value;
 		if (containsOption(mapped.key()))
@@ -474,7 +494,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 			continue;
 
 		if (String::startsWith('@', key))
-			++positionalArgs;
+			positionalArgs++;
 	}
 
 	if (positionalArgs > maxPositionalArgs)
@@ -868,6 +888,9 @@ void ArgumentParser::populateMainArguments()
 
 	subcommands.push_back(fmt::format("export {}", Arg::ExportKind));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Export));
+
+	subcommands.push_back(fmt::format("validate {} {}", Arg::ValidateSchema, Arg::RemainingArguments));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Validate));
 
 	subcommands.push_back(fmt::format("query {} {}", Arg::QueryType, Arg::RemainingArguments));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Query));
@@ -1291,6 +1314,18 @@ void ArgumentParser::populateSettingsUnsetArguments()
 
 	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
 		.setHelp("The config key to remove.")
+		.setRequired();
+}
+
+/*****************************************************************************/
+void ArgumentParser::populateValidateArguments()
+{
+	addTwoStringArguments(ArgumentIdentifier::ValidateSchemaFile, Positional::Argument2, Arg::ValidateSchema)
+		.setHelp("A JSON schema (Draft 7) to validate files against. File requires '$schema'.")
+		.setRequired();
+
+	addTwoStringArguments(ArgumentIdentifier::ValidateFilesRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
+		.setHelp("File(s) to be validated using the selected schema.")
 		.setRequired();
 }
 
