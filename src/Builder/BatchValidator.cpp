@@ -50,30 +50,33 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		}
 
 		Json schema;
-		if (!this->parse(schema, m_schemaFile, false))
+		JsonValidator validator;
+		if (!files.empty())
 		{
-			sourceCache.markForLater(m_schemaFile);
-			return false;
-		}
-
-		if (schema.contains("$schema") && schema.at("$schema").is_string())
-		{
-			auto schemaUrl = schema.at("$schema").get<std::string>();
-			auto draft07 = "http://json-schema.org/draft-07/schema";
-			if (!String::equals(draft07, schemaUrl))
+			if (!this->parse(schema, m_schemaFile, false))
 			{
-				showErrorMessage(fmt::format("Validation targets require '$schema' defined with the value '{}'", draft07));
+				sourceCache.markForLater(m_schemaFile);
 				return false;
 			}
-		}
-		else
-		{
-			showErrorMessage("validation targets require a '$schema' key, but none was found.");
-			return false;
-		}
 
-		JsonValidator validator;
-		validator.setSchema(std::move(schema));
+			if (schema.contains("$schema") && schema.at("$schema").is_string())
+			{
+				auto schemaUrl = schema.at("$schema").get<std::string>();
+				auto draft07 = "http://json-schema.org/draft-07/schema";
+				if (!String::equals(draft07, schemaUrl))
+				{
+					showErrorMessage(fmt::format("Validation targets require '$schema' defined with the value '{}'", draft07));
+					return false;
+				}
+			}
+			else
+			{
+				showErrorMessage("validation targets require a '$schema' key, but none was found.");
+				return false;
+			}
+
+			validator.setSchema(std::move(schema));
+		}
 
 		if (!files.empty())
 		{
