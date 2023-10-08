@@ -369,6 +369,7 @@
 		},
 		"dist-script": {
 			"type": "object",
+			"description": "Run a single script.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
@@ -410,7 +411,7 @@
 		},
 		"dist-process": {
 			"type": "object",
-			"description": "Run a process",
+			"description": "Run a single process.",
 			"additionalProperties": false,
 			"required": [
 				"kind",
@@ -453,6 +454,7 @@
 		},
 		"dist-validation": {
 			"type": "object",
+			"description": "Validate JSON file(s) against a schema. Unlike with build validation target, all files will always validate.",
 			"additionalProperties": false,
 			"required": [
 				"kind"
