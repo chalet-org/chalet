@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ProjectInitializer.hpp"
 
+#include "Builder/BatchValidator.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/QueryController.hpp"
 #include "Core/UpdateNotifier.hpp"
@@ -84,6 +85,9 @@ bool Router::run()
 		case RouteType::SettingsUnset:
 		case RouteType::SettingsGetKeys:
 			return routeSettings();
+
+		case RouteType::Validate:
+			return routeValidate();
 
 #if defined(CHALET_DEBUG)
 		case RouteType::Debug:
@@ -233,6 +237,47 @@ bool Router::routeSettings()
 		return true;
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Router::routeValidate()
+{
+	auto& schema = m_inputs.settingsFile();
+	StringList files;
+	auto& argumentsOpt = m_inputs.runArguments();
+	if (argumentsOpt.has_value())
+	{
+		auto& arguments = *argumentsOpt;
+		for (const auto& val : arguments)
+		{
+			if (!Commands::addPathToListWithGlob(std::string(val), files, GlobMatch::FilesAndFolders))
+				return false;
+		}
+	}
+
+	if (schema.empty() || !Commands::pathExists(schema))
+	{
+		Diagnostic::error("Schema file for the validation doesn't exist: {}", schema);
+		return false;
+	}
+
+	for (auto& file : files)
+	{
+		if (file.empty() || !Commands::pathExists(file))
+		{
+			Diagnostic::error("File for the validation doesn't exist: {}", file);
+			return false;
+		}
+	}
+
+	Diagnostic::info("Validating files against the selected schema");
+
+	Output::lineBreak();
+
+	BatchValidator validator(nullptr, schema);
+	bool result = validator.validate(files, false);
+
+	return result;
 }
 
 /*****************************************************************************/

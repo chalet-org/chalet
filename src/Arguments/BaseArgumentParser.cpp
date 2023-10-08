@@ -67,6 +67,12 @@ bool BaseArgumentParser::parse(const int argc, const char* argv[], const int inP
 		}
 		else if (inPositionalArgs > 0)
 		{
+			if (arg.front() == '\'' && arg.back() == '\'')
+			{
+				arg.pop_back();
+				arg = arg.substr(1);
+			}
+
 			m_rawArguments.emplace(fmt::format("@{}", j + 1), arg);
 			++j;
 

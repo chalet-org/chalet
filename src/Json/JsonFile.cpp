@@ -182,15 +182,16 @@ bool JsonFile::validate(Json&& inSchemaJson)
 	if (m_filename.empty())
 		return false;
 
-	JsonValidator validator(m_filename);
+	JsonValidator validator;
 	if (!validator.setSchema(std::move(inSchemaJson)))
 		return false;
 
+	JsonValidationErrors errors;
 	// false if any errors
-	if (!validator.validate(json))
+	if (!validator.validate(json, m_filename, errors))
 	{
 		// false if fatal error
-		if (!validator.printErrors())
+		if (!validator.printErrors(errors))
 		{
 			Diagnostic::error("Failed to validate the json file: {}", m_filename);
 			return false;

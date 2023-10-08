@@ -104,9 +104,6 @@ bool CmakeBuilder::run()
 
 	// TODO: add doxygen to path?
 
-	Output::msgBuild(name);
-	Output::lineBreak();
-
 	m_outputLocation = getOutputLocation();
 
 	const bool isNinja = usesNinja();

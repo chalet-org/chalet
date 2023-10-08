@@ -84,6 +84,12 @@ constexpr bool CommandRoute::isQuery() const noexcept
 }
 
 /*****************************************************************************/
+constexpr bool CommandRoute::isValidate() const noexcept
+{
+	return m_route == RouteType::Validate;
+}
+
+/*****************************************************************************/
 constexpr bool CommandRoute::willRun() const noexcept
 {
 	return m_route == RouteType::BuildRun || m_route == RouteType::Run;

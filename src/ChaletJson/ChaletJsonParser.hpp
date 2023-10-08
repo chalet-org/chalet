@@ -25,16 +25,18 @@ class BuildState;
 struct BundleTarget;
 struct CMakeTarget;
 struct SourceTarget;
-struct ProcessBuildTarget;
-struct ScriptBuildTarget;
 struct SubChaletTarget;
+struct ScriptBuildTarget;
+struct ProcessBuildTarget;
+struct ValidationBuildTarget;
 
 struct IDistTarget;
 struct BundleTarget;
-struct ScriptDistTarget;
-struct ProcessDistTarget;
 struct BundleArchiveTarget;
 struct MacosDiskImageTarget;
+struct ScriptDistTarget;
+struct ProcessDistTarget;
+struct ValidationDistTarget;
 
 struct ChaletJsonParser
 {
@@ -52,20 +54,22 @@ private:
 
 	bool parseTargets(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
-	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
 	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;
 	bool parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const;
+	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
 	bool parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const;
+	bool parseValidationTarget(ValidationBuildTarget& outTarget, const Json& inNode) const;
 	bool parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const;
 	bool parseCompilerSettingsCxx(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseSourceTargetMetadata(SourceTarget& outTarget, const Json& inNode) const;
 
 	bool parseDistribution(const Json& inNode) const;
-	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
-	bool parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionArchive(BundleArchiveTarget& outTarget, const Json& inNode) const;
 	bool parseDistributionBundle(BundleTarget& outTarget, const Json& inNode, const Json& inRoot) const;
 	bool parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionScript(ScriptDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionProcess(ProcessDistTarget& outTarget, const Json& inNode) const;
+	bool parseDistributionValidation(ValidationDistTarget& outTarget, const Json& inNode) const;
 
 	std::optional<bool> parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const;
 	std::optional<bool> parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const;

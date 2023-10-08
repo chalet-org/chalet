@@ -19,7 +19,6 @@
 
 namespace chalet
 {
-static constexpr const char* globMessage = "Check that they exist and glob patterns can be resolved";
 
 /*****************************************************************************/
 SourceTarget::SourceTarget(const BuildState& inState) :
@@ -39,6 +38,7 @@ bool SourceTarget::initialize()
 	if (List::contains<std::string>(m_warnings, "error"))
 		m_treatWarningsAsErrors = true;
 
+	const auto globMessage = "Check that they exist and glob patterns can be resolved";
 	if (!processEachPathList(std::move(m_appleFrameworkPaths), [this](std::string&& inValue) {
 			return Commands::addPathToListWithGlob(std::move(inValue), m_appleFrameworkPaths, GlobMatch::Folders);
 		}))

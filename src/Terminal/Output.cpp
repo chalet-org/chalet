@@ -618,20 +618,6 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 }
 
 /*****************************************************************************/
-void Output::msgBuild(const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(state.theme.header, symbol, "Build" + getFormattedBuildTarget(inName));
-}
-
-/*****************************************************************************/
-void Output::msgRebuild(const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(state.theme.header, symbol, "Rebuild" + getFormattedBuildTarget(inName));
-}
-
-/*****************************************************************************/
 void Output::msgTargetOfType(const std::string& inLabel, const std::string& inName, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
