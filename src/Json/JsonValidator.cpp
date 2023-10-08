@@ -36,6 +36,7 @@ private:
 	std::string getValueFromDump(const std::string& inString);
 	std::string getPropertyFromErrorMsg(const std::string& inString);
 	std::string parseRawError(JsonValidationError& outError);
+	void getValueWithTypCheck(std::any& data, std::string& outString) const;
 
 	virtual void error(const nlohmann::json_pointer<nlohmann::json>& pointer, const nlohmann::json& instance, const JsonSchemaError type, std::any data) final;
 };
@@ -92,19 +93,19 @@ std::string ErrorHandler::getPropertyFromErrorMsg(const std::string& inString)
 }
 
 /*****************************************************************************/
-void getValueWithTypCheck(std::any& data, std::string& outString)
+void ErrorHandler::getValueWithTypCheck(std::any& data, std::string& outString) const
 {
-	if (data.type() == typeid(double) || data.type() == typeid(float))
+	if (std::any_cast<double>(&data) || std::any_cast<float>(&data))
 	{
 		auto val = std::any_cast<Json::number_float_t>(data);
 		outString = std::to_string(val);
 	}
-	else if (data.type() == typeid(std::int64_t) || data.type() == typeid(std::int32_t))
+	else if (std::any_cast<std::int64_t>(&data) || std::any_cast<std::int32_t>(&data))
 	{
 		auto val = std::any_cast<Json::number_integer_t>(data);
 		outString = std::to_string(val);
 	}
-	else if (data.type() == typeid(std::uint64_t) || data.type() == typeid(std::uint32_t))
+	else if (std::any_cast<std::uint64_t>(&data) || std::any_cast<std::uint32_t>(&data))
 	{
 		auto val = std::any_cast<Json::number_unsigned_t>(data);
 		outString = std::to_string(val);
