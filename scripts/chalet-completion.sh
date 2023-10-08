@@ -50,11 +50,35 @@ _chalet_completions()
 		-p|--build-path-style|toolchains.*.buildPathStyle)
 			COMPREPLY=($(compgen -W "$(chalet query build-path-styles)" -- $cur))
 			;;
+		-s|--settings-file)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-f|--file)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-i|--input-file|options.inputFile)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-r|--root-dir|options.rootDir)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-o|--output-dir|options.outputDir)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-x|--external-dir|options.externalDir)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-d|--distribution-dir|options.distributionDir)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
+		-e|--env-file|options.envFile)
+            COMPREPLY=($(compgen -f "$cur"))
+			;;
 		export)
 			COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
 			;;
 		validate)
-			COMPREPLY=
+            COMPREPLY=($(compgen -f "$cur"))
 			;;
 		query)
 			COMPREPLY=($(compgen -W "$(chalet query list-names)" -- $cur))
