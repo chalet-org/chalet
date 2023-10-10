@@ -1289,6 +1289,22 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				}
 			}
 		}
+		// Libtool
+		else if (String::startsWith("Libtool ", inLine))
+		{
+			auto path = getTargetPath(inLine);
+			if (!path.empty())
+			{
+				path = String::getPathFilename(path);
+				if (!path.empty())
+				{
+					auto output = fmt::format("   Archiving \u2192 {}\n", path);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
 		else if (errored || String::contains("error:", inLine))
 		{
 			std::cout.write(inLine.data(), inLine.size());
@@ -1296,6 +1312,12 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			printed = true;
 			errored = true;
 		}
+		// else
+		// {
+		// 	std::cout.write(inLine.data(), inLine.size());
+		// 	std::cout.flush();
+		// 	printed = true;
+		// }
 	};
 
 	std::string data;

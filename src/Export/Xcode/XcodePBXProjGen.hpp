@@ -17,7 +17,7 @@ class BuildState;
 
 struct XcodePBXProjGen
 {
-	explicit XcodePBXProjGen(const std::vector<Unique<BuildState>>& inStates);
+	explicit XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -31,7 +31,7 @@ private:
 
 	std::string getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject = true) const;
 
-	Json getBuildSettings(const BuildState& inState, const SourceTarget& inTarget) const;
+	Json getBuildSettings(BuildState& inState, const SourceTarget& inTarget) const;
 	Json getProductBuildSettings(const BuildState& inState) const;
 	std::string getBoolString(const bool inValue) const;
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
@@ -42,7 +42,7 @@ private:
 	std::string getNodeAsPListFormat(const Json& inJson, const size_t indent = 1) const;
 	std::string getNodeAsPListString(const Json& inJson) const;
 
-	const std::vector<Unique<BuildState>>& m_states;
+	std::vector<Unique<BuildState>>& m_states;
 
 	Uuid m_projectUUID;
 

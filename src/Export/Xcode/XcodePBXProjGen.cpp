@@ -65,7 +65,7 @@ constexpr int kMinimumObjectVersion = 46;
 constexpr int kBuildActionMask = 2147483647;
 
 /*****************************************************************************/
-XcodePBXProjGen::XcodePBXProjGen(const std::vector<Unique<BuildState>>& inStates) :
+XcodePBXProjGen::XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates) :
 	m_states(inStates),
 	// This is an arbitrary namespace guid to use for hashing
 	m_xcodeNamespaceGuid("3C17F435-21B3-4D0A-A482-A276EDE1F0A2")
@@ -92,11 +92,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	StringList buildConfigurations;
 	StringList sources;
 	StringList headers;
-	std::map<std::string, StringList> allFiles;
 	std::map<std::string, std::string> outputFiles;
 	std::map<std::string, PBXGroup> groups;
 	std::map<std::string, std::vector<const SourceTarget*>> targetPtrs;
-	std::map<std::string, const BuildState*> statePtrs;
+	std::map<std::string, BuildState*> statePtrs;
 
 	{
 		for (auto& state : m_states)
@@ -237,6 +236,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto key = getHashWithLabel(filename);
 			node[key]["isa"] = section;
 			node[key]["explicitFileType"] = lastKnownFileType;
+			node[key]["fileEncoding"] = 4;
 			node[key]["name"] = filename;
 			node[key]["path"] = file;
 			node[key]["sourceTree"] = group;
@@ -381,7 +381,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["runOnlyForDeploymentPostprocessing"] = 0;
 	}
 
-	LOG(json.dump(2, ' '));
+	// LOG(json.dump(2, ' '));
 
 	// XCBuildConfiguration
 	{
@@ -456,7 +456,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	json["rootObject"] = getHashedJsonValue(m_projectUUID, "Project object");
 
-	// LOG(json.dump(2, ' '));
+	LOG(json.dump(2, ' '));
 
 	auto contents = generateFromJson(json);
 	bool replaceContents = true;
@@ -528,12 +528,13 @@ std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& i
 }
 
 /*****************************************************************************/
-Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTarget& inTarget) const
+Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& inTarget) const
 {
 	CommandAdapterClang clangAdapter(inState, inTarget);
 
 	const auto& cwd = inState.inputs.workingDirectory();
 	auto lang = inTarget.language();
+	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
 
 	// TODO: this is currently just based on a Release mode
 
@@ -598,9 +599,36 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
 
 	ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	ret["CONFIGURATION_TEMP_DIR"] = fmt::format("{}/{}", cwd, inState.paths.objDir());
+
+	// Note: can't use buildSuffix
+	auto newObjDir = fmt::format("{}/{}/obj.{}", cwd, inState.paths.buildOutputDir(), inTarget.name());
+	ret["CONFIGURATION_TEMP_DIR"] = newObjDir;
 	// ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
+
+	// include dirs
+	{
+		StringList includes;
+		const auto& includeDirs = inTarget.includeDirs();
+		const auto& objDir = inState.paths.objDir();
+		const auto& intDir = inState.paths.intermediateDir(inTarget);
+		for (auto& include : includeDirs)
+		{
+			if (String::equals(objDir, include))
+			{
+				includes.emplace_back(newObjDir);
+			}
+			else
+			{
+				auto temp = fmt::format("{}/{}", cwd, include);
+				if (String::equals(intDir, include) || Commands::pathExists(temp))
+					includes.emplace_back(std::move(temp));
+				else
+					includes.emplace_back(include);
+			}
+		}
+		ret["HEADER_SEARCH_PATHS"] = std::move(includes);
+	}
 
 	if (inTarget.objectiveCxx())
 	{
@@ -654,6 +682,7 @@ Json XcodePBXProjGen::getBuildSettings(const BuildState& inState, const SourceTa
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
 	ret["SDKROOT"] = inState.inputs.osTargetName();
+	ret["TARGET_TEMP_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
 
 	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
@@ -670,6 +699,7 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 
 	Json ret;
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
+	ret["ARCHES"] = inState.info.targetArchitectureString();
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	if (config.debugSymbols())
 	{
