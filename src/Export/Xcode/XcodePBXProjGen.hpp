@@ -25,6 +25,7 @@ private:
 	std::string getHashWithLabel(const std::string& inValue) const;
 	std::string getHashWithLabel(const Uuid& inHash, const std::string& inLabel) const;
 	std::string getTargetHashWithLabel(const std::string& inTarget) const;
+	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
@@ -35,12 +36,15 @@ private:
 	Json getProductBuildSettings(const BuildState& inState) const;
 	std::string getBoolString(const bool inValue) const;
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
-	std::string getLastKnownFileType(const SourceType inType) const;
+	std::string getXcodeFileType(const SourceType inType) const;
+	std::string getXcodeFileType(const SourceKind inKind) const;
 	std::string getMachOType(const SourceTarget& inTarget) const;
+	std::string getNativeProductType(const SourceKind inKind) const;
 
 	std::string generateFromJson(const Json& inJson) const;
 	std::string getNodeAsPListFormat(const Json& inJson, const size_t indent = 1) const;
 	std::string getNodeAsPListString(const Json& inJson) const;
+	std::string getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const;
 
 	std::vector<Unique<BuildState>>& m_states;
 
