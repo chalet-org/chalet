@@ -12,7 +12,7 @@ namespace chalet
 {
 struct OldPListGenerator
 {
-	OldPListGenerator();
+	OldPListGenerator() = default;
 
 	inline Json& operator[](const char* inKey);
 	inline Json& at(const std::string& inKey);

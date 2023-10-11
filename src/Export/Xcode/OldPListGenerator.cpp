@@ -10,9 +10,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-OldPListGenerator::OldPListGenerator() = default;
-
-/*****************************************************************************/
 void OldPListGenerator::dumpToTerminal()
 {
 	auto output = m_json.dump(2, ' ');

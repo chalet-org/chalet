@@ -92,6 +92,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	const auto& workspaceName = firstState.workspace.metadata().name();
 	const auto& workingDirectory = firstState.inputs.workingDirectory();
 
+	m_exportPath = String::getPathFolder(String::getPathFolder(inFilename));
+
 	m_projectUUID = Uuid::v5(fmt::format("{}_PBXPROJ", workspaceName), m_xcodeNamespaceGuid);
 	m_projectGuid = m_projectUUID.str();
 
@@ -410,12 +412,16 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		{
 			node[key]["buildStyles"].push_back(getSectionKeyForTarget(configName, configName));
 		}
+
+		// match version specified in kMinimumObjectVersion
 		node[key]["compatibilityVersion"] = "Xcode 3.2";
+
 		node[key]["developmentRegion"] = region;
 		node[key]["hasScannedForEncodings"] = 0;
-		node[key]["knownRegions"] = Json::array();
-		node[key]["knownRegions"].push_back("Base");
-		node[key]["knownRegions"].push_back(region);
+		node[key]["knownRegions"] = StringList{
+			"Base",
+			region,
+		};
 		node[key]["mainGroup"] = mainGroup;
 		node[key]["projectDirPath"] = workingDirectory;
 		node[key]["projectRoot"] = "";
@@ -738,10 +744,14 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	// TODO: this is currently just based on a Release mode
 
+	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
+	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
+
 	Json ret;
 
 	// ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	ret["BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
+	ret["BUILD_DIR"] = buildDir;
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
 
@@ -798,14 +808,12 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
 	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
 
-	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	ret["CONFIGURATION_BUILD_DIR"] = buildDir;
-
-	// Note: can't use buildSuffix
-	auto newObjDir = fmt::format("{}/obj.{}", buildDir, inTarget.name());
-	ret["CONFIGURATION_TEMP_DIR"] = newObjDir;
+	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
+	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	// ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
+
+	// ret["DERIVED_FILE_DIR"] = objectDirectory; // $(CONFIGURATION_TEMP_DIR)/DerivedSources dir
 
 	// include dirs
 	{
@@ -817,7 +825,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		{
 			if (String::equals(objDir, include))
 			{
-				includes.emplace_back(newObjDir);
+				includes.emplace_back(objectDirectory);
 			}
 			else
 			{
@@ -874,7 +882,8 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
 	// ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
 	// ret["MTL_FAST_MATH"] = getBoolString(false);
-	ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
+	ret["OBJECT_FILE_DIR"] = objectDirectory;
+	ret["OBJROOT"] = buildOutputDir;
 
 	auto compileOptions = getCompilerOptions(inState, inTarget);
 	if (!compileOptions.empty())
@@ -897,7 +906,8 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
 	ret["SDKROOT"] = inState.inputs.osTargetName();
-	ret["TARGET_TEMP_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
+	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
+	ret["TARGET_TEMP_DIR"] = objectDirectory;
 
 	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
@@ -909,6 +919,8 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 {
 	const auto& config = inState.configuration;
+
+	// Only used here to get the optimization level, stored in the config anyway
 	SourceTarget dummyTarget(inState);
 	CommandAdapterClang clangAdapter(inState, dummyTarget);
 

@@ -52,6 +52,7 @@ private:
 
 	Uuid m_projectUUID;
 
+	std::string m_exportPath;
 	std::string m_xcodeNamespaceGuid;
 	std::string m_projectGuid;
 };
