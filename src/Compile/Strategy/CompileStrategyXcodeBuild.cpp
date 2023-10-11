@@ -56,9 +56,8 @@ bool CompileStrategyXcodeBuild::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyXcodeBuild::doFullBuild()
 {
-	// LOG("   Hello XcodeBuild");
-
 	// auto& route = m_state.inputs.route();
+	auto& cwd = m_state.inputs.workingDirectory();
 
 	auto xcodebuild = Commands::which("xcodebuild");
 	if (xcodebuild.empty())
@@ -124,7 +123,17 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	}
 	else
 	{
-		result = Commands::subprocessXcodeBuild(cmd, project);
+		result = Commands::subprocessXcodeBuild(cmd, cwd);
+		if (result)
+		{
+			const auto color = Output::getAnsiStyle(Output::theme().build);
+			const auto flair = Output::getAnsiStyle(Output::theme().flair);
+			const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+			auto output = fmt::format("   Succeeded {}\u2192 {}{}{}", flair, color, project, reset);
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
+		}
 		Output::lineBreak();
 	}
 

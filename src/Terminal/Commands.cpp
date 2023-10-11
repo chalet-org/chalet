@@ -1145,7 +1145,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
-bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& inProject, std::string inCwd)
+bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -1223,12 +1223,13 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 	};
 
 	const auto color = Output::getAnsiStyle(Output::theme().build);
-	const auto flair = Output::getAnsiStyle(Output::theme().flair);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	const auto cwd = fmt::format("{}/", inCwd);
 
 	bool printed = false;
 	bool errored = false;
-	auto processLine = [&printed, &errored, &color, &flair, &reset](const std::string& inLine) {
+	auto processLine = [&cwd, &printed, &errored, &color, &reset](const std::string& inLine) {
 		UNUSED(inLine);
 		UNUSED(getTargetName);
 
@@ -1237,7 +1238,8 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			auto path = getTargetPath(inLine);
 			if (!path.empty())
 			{
-				path = String::getPathFilename(path);
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
 				if (!path.empty())
 				{
 					auto output = fmt::format("   {}{}{}\n", color, path, reset);
@@ -1252,10 +1254,11 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			auto path = getFilePath(inLine);
 			if (!path.empty())
 			{
-				path = String::getPathFilename(path);
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Generating {}\u2192 {}{}{}\n", flair, color, path, reset);
+					auto output = fmt::format("   {}Generating {}{}\n", color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1267,10 +1270,11 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			auto path = getTargetPath(inLine);
 			if (!path.empty())
 			{
-				path = String::getPathFilename(path);
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Signing {}\u2192 {}{}{}\n", flair, color, path, reset);
+					auto output = fmt::format("   {}Signing {}{}\n", color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1283,10 +1287,11 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			auto path = getTargetPath(inLine);
 			if (!path.empty())
 			{
-				path = String::getPathFilename(path);
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Linking {}\u2192 {}{}{}\n", flair, color, path, reset);
+					auto output = fmt::format("   {}Linking {}{}\n", color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1299,10 +1304,28 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 			auto path = getTargetPath(inLine);
 			if (!path.empty())
 			{
-				path = String::getPathFilename(path);
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Archiving {}\u2192 {}{}{}\n", flair, color, path, reset);
+					auto output = fmt::format("   {}Archiving {}{}\n", color, path, reset);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
+		// ProcessPCH
+		else if (String::startsWith("ProcessPCH", inLine))
+		{
+			auto path = getTargetPath(inLine);
+			if (!path.empty())
+			{
+				// path = String::getPathFilename(path);
+				String::replaceAll(path, cwd, "");
+				if (!path.empty())
+				{
+					auto output = fmt::format("   {}{}{}\n", color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1386,13 +1409,6 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 
 		if (printed2)
 			Output::lineBreak(true);
-	}
-
-	if (result == EXIT_SUCCESS)
-	{
-		auto output = fmt::format("   Succeeded {}\u2192 {}{}{}", flair, color, inProject, reset);
-		std::cout.write(output.data(), output.size());
-		std::cout.flush();
 	}
 
 	return result == EXIT_SUCCESS;

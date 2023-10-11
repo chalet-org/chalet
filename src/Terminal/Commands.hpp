@@ -85,7 +85,7 @@ std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirec
 
 bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
 #if defined(CHALET_MACOS)
-bool subprocessXcodeBuild(const StringList& inCmd, const std::string& inProject, std::string inCwd = std::string());
+bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd = std::string());
 #endif
 
 std::string isolateVersion(const std::string& outString);
