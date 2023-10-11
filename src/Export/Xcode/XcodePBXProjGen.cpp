@@ -9,6 +9,7 @@
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/Xcode/OldPListGenerator.hpp"
 #include "Libraries/Json.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -165,12 +166,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		std::sort(group.headers.begin(), group.headers.end());
 	}
 
-	Json json;
-	json["archiveVersion"] = 1;
-	json["classes"] = Json::array();
-	json["objectVersion"] = kMinimumObjectVersion;
-	json["objects"] = Json::object();
-	auto& objects = json.at("objects");
+	OldPListGenerator pbxproj;
+	pbxproj["archiveVersion"] = 1;
+	pbxproj["classes"] = Json::array();
+	pbxproj["objectVersion"] = kMinimumObjectVersion;
+	pbxproj["objects"] = Json::object();
+	auto& objects = pbxproj.at("objects");
 
 	auto mainGroup = Uuid::v5("mainGroup", m_xcodeNamespaceGuid).toAppleHash();
 	auto products = getHashWithLabel("Products");
@@ -473,7 +474,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 	}
 
-	// LOG(json.dump(2, ' '));
+	// pbxproj.dumpToTerminal();
 
 	// XCBuildConfiguration
 	{
@@ -545,11 +546,14 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 	}
 
-	json["rootObject"] = getHashedJsonValue(m_projectUUID, "Project object");
+	pbxproj["rootObject"] = getHashedJsonValue(m_projectUUID, "Project object");
 
-	// LOG(json.dump(2, ' '));
+	// pbxproj.dumpToTerminal();
 
-	auto contents = generateFromJson(json);
+	auto contents = pbxproj.getContents({
+		"PBXBuildFile",
+		"PBXFileReference",
+	});
 	bool replaceContents = true;
 
 	if (Commands::pathExists(inFilename))
@@ -619,6 +623,13 @@ std::string XcodePBXProjGen::getSectionKeyForTarget(const std::string& inKey, co
 }
 
 /*****************************************************************************/
+std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject) const
+{
+	auto type = inNativeProject ? "PBXNativeTarget" : "PBXProject";
+	return fmt::format("Build configuration list for {} \"{}\"", type, inName);
+}
+
+/*****************************************************************************/
 Json XcodePBXProjGen::getHashedJsonValue(const std::string& inValue) const
 {
 	auto hash = Uuid::v5(inValue, m_xcodeNamespaceGuid);
@@ -632,10 +643,88 @@ Json XcodePBXProjGen::getHashedJsonValue(const Uuid& inHash, const std::string& 
 }
 
 /*****************************************************************************/
-std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject) const
+std::string XcodePBXProjGen::getBoolString(const bool inValue) const
 {
-	auto type = inNativeProject ? "PBXNativeTarget" : "PBXProject";
-	return fmt::format("Build configuration list for {} \"{}\"", type, inName);
+	return inValue ? "YES" : "NO";
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getProductBundleIdentifier(const std::string& inWorkspaceName) const
+{
+	// TODO - appleProductBundleIdentiifer or something
+	return fmt::format("com.myapp.{}", inWorkspaceName);
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getXcodeFileType(const SourceType inType) const
+{
+	switch (inType)
+	{
+		case SourceType::ObjectiveCPlusPlus:
+			return "sourcecode.cpp.objcpp";
+		case SourceType::ObjectiveC:
+			return "sourcecode.c.objc";
+		case SourceType::C:
+			return "sourcecode.c.c";
+		case SourceType::CPlusPlus:
+		default:
+			return "sourcecode.cpp.cpp";
+	}
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getXcodeFileType(const SourceKind inKind) const
+{
+	switch (inKind)
+	{
+		case SourceKind::Executable:
+			return "compiled.mach-o.executable";
+		case SourceKind::SharedLibrary:
+			return "compiled.mach-o.dylib";
+		case SourceKind::StaticLibrary:
+			return "archive.ar";
+		default:
+			return std::string();
+	}
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getMachOType(const SourceTarget& inTarget) const
+{
+	if (inTarget.isStaticLibrary())
+		return "staticlib";
+	else if (inTarget.isSharedLibrary())
+		return "mh_dylib";
+	else
+		return "mh_execute";
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getNativeProductType(const SourceKind inKind) const
+{
+	/*
+		com.apple.product-type.library.static
+		com.apple.product-type.library.dynamic
+		com.apple.product-type.tool
+		com.apple.product-type.application
+	*/
+	switch (inKind)
+	{
+		case SourceKind::Executable:
+			return "com.apple.product-type.tool";
+		case SourceKind::SharedLibrary:
+			return "com.apple.product-type.library.dynamic";
+		case SourceKind::StaticLibrary:
+			return "com.apple.product-type.library.static";
+		default:
+			return std::string();
+	}
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const
+{
+	return fmt::format("[{}] {}", inSuffix, inFile);
 }
 
 /*****************************************************************************/
@@ -858,252 +947,6 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	// ret["DEVELOPMENT_TEAM"] = ""; // required!
 
 	return ret;
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getBoolString(const bool inValue) const
-{
-	return inValue ? "YES" : "NO";
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getProductBundleIdentifier(const std::string& inWorkspaceName) const
-{
-	// TODO - appleProductBundleIdentiifer or something
-	return fmt::format("com.myapp.{}", inWorkspaceName);
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getXcodeFileType(const SourceType inType) const
-{
-	switch (inType)
-	{
-		case SourceType::ObjectiveCPlusPlus:
-			return "sourcecode.cpp.objcpp";
-		case SourceType::ObjectiveC:
-			return "sourcecode.c.objc";
-		case SourceType::C:
-			return "sourcecode.c.c";
-		case SourceType::CPlusPlus:
-		default:
-			return "sourcecode.cpp.cpp";
-	}
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getXcodeFileType(const SourceKind inKind) const
-{
-	switch (inKind)
-	{
-		case SourceKind::Executable:
-			return "compiled.mach-o.executable";
-		case SourceKind::SharedLibrary:
-			return "compiled.mach-o.dylib";
-		case SourceKind::StaticLibrary:
-			return "archive.ar";
-		default:
-			return std::string();
-	}
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getMachOType(const SourceTarget& inTarget) const
-{
-	if (inTarget.isStaticLibrary())
-		return "staticlib";
-	else if (inTarget.isSharedLibrary())
-		return "mh_dylib";
-	else
-		return "mh_execute";
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getNativeProductType(const SourceKind inKind) const
-{
-	/*
-		com.apple.product-type.library.static
-		com.apple.product-type.library.dynamic
-		com.apple.product-type.tool
-		com.apple.product-type.application
-	*/
-	switch (inKind)
-	{
-		case SourceKind::Executable:
-			return "com.apple.product-type.tool";
-		case SourceKind::SharedLibrary:
-			return "com.apple.product-type.library.dynamic";
-		case SourceKind::StaticLibrary:
-			return "com.apple.product-type.library.static";
-		default:
-			return std::string();
-	}
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::generateFromJson(const Json& inJson) const
-{
-	int archiveVersion = inJson["archiveVersion"].get<int>();
-	int objectVersion = inJson["objectVersion"].get<int>();
-	auto rootObject = inJson["rootObject"].get<std::string>();
-
-	StringList singleLineSections{
-		"PBXBuildFile",
-		"PBXFileReference",
-	};
-
-	std::string sections;
-	const auto& objects = inJson.at("objects");
-	for (auto& [key, value] : objects.items())
-	{
-		const auto& section = key;
-		if (!value.is_object())
-			continue;
-
-		int indent = 2;
-		if (String::equals(singleLineSections, section))
-			indent = 0;
-
-		sections += fmt::format("\n/* Begin {} section */\n", section);
-		for (auto& [subkey, subvalue] : value.items())
-		{
-			if (!subvalue.is_object())
-				continue;
-
-			sections += std::string(2, '\t');
-			sections += subkey;
-			sections += " = ";
-			sections += getNodeAsPListFormat(subvalue, indent);
-			sections += ";\n";
-		}
-		sections += fmt::format("/* End {} section */\n", section);
-	}
-
-	sections.pop_back();
-
-	auto contents = fmt::format(R"pbxproj(// !$*UTF8*$!
-{{
-	archiveVersion = {archiveVersion};
-	classes = {{
-	}};
-	objectVersion = {objectVersion};
-	objects = {{
-{sections}
-	}};
-	rootObject = {rootObject};
-}})pbxproj",
-		FMT_ARG(archiveVersion),
-		FMT_ARG(objectVersion),
-		FMT_ARG(sections),
-		FMT_ARG(rootObject));
-
-	return contents;
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getNodeAsPListFormat(const Json& inJson, const size_t indent) const
-{
-	std::string ret;
-
-	if (inJson.is_object())
-	{
-		ret += "{\n";
-
-		if (inJson.contains("isa"))
-		{
-			const auto value = inJson.at("isa").get<std::string>();
-			ret += std::string(indent + 1, '\t');
-			ret += fmt::format("isa = {};\n", value);
-		}
-
-		for (auto& [key, value] : inJson.items())
-		{
-			if (String::equals("isa", key))
-				continue;
-
-			ret += std::string(indent + 1, '\t');
-			ret += key;
-			ret += " = ";
-			ret += getNodeAsPListFormat(value, indent + 1);
-			ret += ";\n";
-		}
-		ret += std::string(indent, '\t');
-		ret += '}';
-	}
-	else if (inJson.is_array())
-	{
-		ret += "(\n";
-		for (auto& value : inJson)
-		{
-			ret += std::string(indent + 1, '\t');
-			ret += getNodeAsPListString(value);
-			ret += ",\n";
-		}
-
-		// removes last comma
-		// ret.pop_back();
-		// ret.pop_back();
-		// ret += '\n';
-
-		ret += std::string(indent, '\t');
-		ret += ')';
-	}
-	else if (inJson.is_string())
-	{
-		ret += getNodeAsPListString(inJson);
-	}
-	else if (inJson.is_number_float())
-	{
-		ret += std::to_string(inJson.get<float>());
-	}
-	else if (inJson.is_number_integer())
-	{
-		ret += std::to_string(inJson.get<std::int64_t>());
-	}
-	else if (inJson.is_number_unsigned())
-	{
-		ret += std::to_string(inJson.get<std::uint64_t>());
-	}
-
-	if (indent == 0)
-	{
-		String::replaceAll(ret, '\n', ' ');
-		String::replaceAll(ret, '\t', "");
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getNodeAsPListString(const Json& inJson) const
-{
-	if (!inJson.is_string())
-		return "\"\"";
-
-	bool startsWithHash = false;
-	auto str = inJson.get<std::string>();
-	if (str.size() > 24)
-	{
-		auto substring = str.substr(0, 23);
-		if (substring.find_first_not_of("01234567890ABCDEF") == std::string::npos)
-		{
-			startsWithHash = true;
-		}
-	}
-
-	if (!str.empty() && (startsWithHash || str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_/") == std::string::npos))
-	{
-		return str;
-	}
-	else
-	{
-		return fmt::format("\"{}\"", str);
-	}
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const
-{
-	return fmt::format("[{}] {}", inSuffix, inFile);
 }
 
 /*****************************************************************************/
