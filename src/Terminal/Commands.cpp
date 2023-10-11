@@ -1222,9 +1222,13 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 		return std::string();
 	};
 
+	const auto color = Output::getAnsiStyle(Output::theme().build);
+	const auto flair = Output::getAnsiStyle(Output::theme().flair);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
 	bool printed = false;
 	bool errored = false;
-	auto processLine = [&printed, &errored](const std::string& inLine) {
+	auto processLine = [&printed, &errored, &color, &flair, &reset](const std::string& inLine) {
 		UNUSED(inLine);
 		UNUSED(getTargetName);
 
@@ -1236,7 +1240,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				path = String::getPathFilename(path);
 				if (!path.empty())
 				{
-					auto output = fmt::format("   {}\n", path);
+					auto output = fmt::format("   {}{}{}\n", color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1251,7 +1255,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				path = String::getPathFilename(path);
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Generating \u2192 {}\n", path);
+					auto output = fmt::format("   Generating {}\u2192 {}{}{}\n", flair, color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1266,7 +1270,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				path = String::getPathFilename(path);
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Signing \u2192 {}\n", path);
+					auto output = fmt::format("   Signing {}\u2192 {}{}{}\n", flair, color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1282,7 +1286,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				path = String::getPathFilename(path);
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Linking \u2192 {}\n", path);
+					auto output = fmt::format("   Linking {}\u2192 {}{}{}\n", flair, color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1298,7 +1302,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 				path = String::getPathFilename(path);
 				if (!path.empty())
 				{
-					auto output = fmt::format("   Archiving \u2192 {}\n", path);
+					auto output = fmt::format("   Archiving {}\u2192 {}{}{}\n", flair, color, path, reset);
 					std::cout.write(output.data(), output.size());
 					std::cout.flush();
 					printed = true;
@@ -1386,7 +1390,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, const std::string& 
 
 	if (result == EXIT_SUCCESS)
 	{
-		auto output = fmt::format("   Succeeded \u2192 {}", inProject);
+		auto output = fmt::format("   Succeeded {}\u2192 {}{}{}", flair, color, inProject, reset);
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
 	}

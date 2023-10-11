@@ -98,13 +98,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	m_projectGuid = m_projectUUID.str();
 
 	std::map<std::string, SourceTargetGroup> groups;
-	std::map<std::string, std::vector<const SourceTarget*>> configToTargets;
+	std::map<std::string, std::vector<const IBuildTarget*>> configToTargets;
 
 	for (auto& state : m_states)
 	{
 		const auto& configName = state->configuration.name();
 		if (configToTargets.find(configName) == configToTargets.end())
-			configToTargets.emplace(configName, std::vector<const SourceTarget*>{});
+			configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
 		for (auto& target : state->targets)
 		{
@@ -503,12 +503,15 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto& configTargets = configToTargets.at(configName);
 			for (auto& target : configTargets)
 			{
-				auto hash = getTargetConfigurationHash(configName, target->name());
-				auto key = getHashWithLabel(hash, configName);
-				node[key]["isa"] = section;
-				node[key]["buildSettings"] = getBuildSettings(*state, *target);
-				// node[key]["baseConfigurationReference"] = "";
-				node[key]["name"] = configName;
+				if (target->isSources())
+				{
+					auto hash = getTargetConfigurationHash(configName, target->name());
+					auto key = getHashWithLabel(hash, configName);
+					node[key]["isa"] = section;
+					node[key]["buildSettings"] = getBuildSettings(*state, static_cast<const SourceTarget&>(*target));
+					// node[key]["baseConfigurationReference"] = "";
+					node[key]["name"] = configName;
+				}
 			}
 		}
 	}
