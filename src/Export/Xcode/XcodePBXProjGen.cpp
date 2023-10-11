@@ -10,6 +10,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Xcode/OldPListGenerator.hpp"
+#include "Export/Xcode/TargetAdapterPBXProj.hpp"
 #include "Libraries/Json.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -106,8 +107,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		if (configToTargets.find(configName) == configToTargets.end())
 			configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
+		std::string lastDependency;
+		bool lastDependencyWasSource = false;
+		UNUSED(lastDependencyWasSource);
 		for (auto& target : state->targets)
 		{
+			configToTargets[configName].push_back(target.get());
+
 			if (target->isSources())
 			{
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
@@ -125,11 +131,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					groups[name].kind = sourceTarget.kind();
 				}
 
-				configToTargets[configName].push_back(static_cast<const SourceTarget*>(target.get()));
-
 				groups[name].intDir = state->paths.intermediateDir(sourceTarget);
 
 				auto& pch = sourceTarget.precompiledHeader();
+
+				// if (!lastDependencyWasSource && !lastDependency.empty())
+				// 	List::addIfDoesNotExist(groups[name].dependencies, lastDependency);
 
 				auto& sharedLinks = sourceTarget.projectSharedLinks();
 				for (auto& link : sharedLinks)
@@ -158,6 +165,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					List::addIfDoesNotExist(groups[name].children, file);
 				}
 			}
+
+			lastDependency = target->name();
+			lastDependencyWasSource = target->isSources();
 		}
 	}
 
@@ -429,6 +439,61 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		for (const auto& [target, _] : groups)
 		{
 			node[key]["targets"].push_back(getTargetHashWithLabel(target));
+		}
+	}
+
+	// PBXShellScriptBuildPhase
+	/*
+		026D4B1740DFA6D467C9AB69 // MyName // = {
+		 	isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "MyName";
+			outputPaths = (
+				/Users/andrew/dev/chalet/build/xcode_Debug/CMakeFiles/ALL_BUILD
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo 'Hello World' ";
+			showEnvVarsInLog = 0;
+		};
+	*/
+	{
+		// Add to buildPhases
+		const std::string section{ "PBXShellScriptBuildPhase" };
+		objects[section] = Json::object();
+		auto& node = objects.at(section);
+
+		for (auto& state : m_states)
+		{
+			for (auto& target : state->targets)
+			{
+				if (target->isSources())
+					continue;
+
+				TargetAdapterPBXProj adapter(*state, *target);
+				auto command = adapter.getCommand();
+				if (!command.empty())
+				{
+					auto& targetName = target->name();
+					auto key = getHashWithLabel(fmt::format("{} [{}]", targetName, state->configuration.name()));
+					node[key]["isa"] = section;
+					node[key]["alwaysOutOfDate"] = 1;
+					node[key]["buildActionMask"] = kBuildActionMask;
+					node[key]["files"] = Json::array();
+					node[key]["inputPaths"] = Json::array();
+					node[key]["name"] = targetName;
+					node[key]["outputPaths"] = Json::array();
+					node[key]["runOnlyForDeploymentPostprocessing"] = 0;
+					node[key]["shellPath"] = "/bin/sh";
+					node[key]["shellScript"] = command;
+					node[key]["showEnvVarsInLog"] = 0;
+				}
+			}
 		}
 	}
 
@@ -1114,5 +1179,4 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 
 	return ret;
 }
-
 }

@@ -1332,7 +1332,7 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 				}
 			}
 		}
-		else if (errored || String::contains("error:", inLine))
+		else if (errored || String::contains("error:", inLine) || String::startsWith("ld:", inLine))
 		{
 			std::cout.write(inLine.data(), inLine.size());
 			std::cout.flush();
