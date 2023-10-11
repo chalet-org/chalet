@@ -763,9 +763,10 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	ret["CLANG_CXX_LIBRARY"] = clangAdapter.getCxxLibrary();
 
+	ret["CLANG_ENABLE_MODULES"] = getBoolString(inTarget.objectiveCxx());
+
 	if (inTarget.objectiveCxx())
 	{
-		ret["CLANG_ENABLE_MODULES"] = getBoolString(true);
 		ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
 		ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
 	}
@@ -867,10 +868,15 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	if (!cStandard.empty())
 		ret["GCC_C_LANGUAGE_STANDARD"] = std::move(cStandard);
 
+	ret["GCC_ENABLE_CPP_EXCEPTIONS"] = getBoolString(clangAdapter.supportsExceptions());
+	ret["GCC_ENABLE_CPP_RTTI"] = getBoolString(clangAdapter.supportsRunTimeTypeInformation());
+
 	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
 
 	ret["GCC_PREPROCESSOR_DEFINITIONS"] = inTarget.defines();
 	ret["GCC_PREPROCESSOR_DEFINITIONS"].push_back("$(inherited)");
+
+	ret["GCC_TREAT_WARNINGS_AS_ERRORS"] = getBoolString(inTarget.treatWarningsAsErrors());
 
 	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
 	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
@@ -884,8 +890,8 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	};
 	ret["MACH_O_TYPE"] = getMachOType(inTarget);
 	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
-	// ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
-	// ret["MTL_FAST_MATH"] = getBoolString(false);
+	ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
+	ret["MTL_FAST_MATH"] = getBoolString(clangAdapter.supportsFastMath());
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
 	ret["OBJROOT"] = buildOutputDir;
 
@@ -912,6 +918,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["SDKROOT"] = inState.inputs.osTargetName();
 	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
+	ret["USE_HEADERMAP"] = getBoolString(false);
 
 	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
@@ -947,7 +954,8 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 
 	// YES, YES_THIN, NO
 	//   TODO: thin = incremental - maybe add in the future?
-	ret["LLVM_LTO"] = getBoolString(config.interproceduralOptimization());
+	// ret["LLVM_LTO"] = getBoolString(config.interproceduralOptimization());
+	ret["LLVM_LTO"] = config.interproceduralOptimization() ? "YES_THIN" : "NO";
 
 	ret["ONLY_ACTIVE_ARCH"] = getBoolString(false);
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
@@ -969,29 +977,106 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 StringList XcodePBXProjGen::getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const
 {
 	UNUSED(inState);
+	CommandAdapterClang clangAdapter(inState, inTarget);
 
 	StringList ret;
-	ret = inTarget.compileOptions();
+
+	// Coroutines
+	if (clangAdapter.supportsCppCoroutines())
+		ret.emplace_back("-fcoroutines-ts");
+
+	// Concepts
+	if (clangAdapter.supportsCppConcepts())
+		ret.emplace_back("-fconcepts-ts");
+
+	//  Warnings
+	auto warnings = clangAdapter.getWarningList();
+	for (auto& warning : warnings)
+	{
+		if (String::equals("pedantic-errors", warning))
+			ret.emplace_back(fmt::format("-{}", warning));
+		else
+			ret.emplace_back(fmt::format("-W{}", warning));
+	}
+
+	// Charsets
+	auto inputCharset = String::toUpperCase(inTarget.inputCharset());
+	ret.emplace_back(fmt::format("-finput-charset={}", inputCharset));
+
+	auto execCharset = String::toUpperCase(inTarget.executionCharset());
+	ret.emplace_back(fmt::format("-fexec-charset={}", execCharset));
+
+	// Position Independent Code
+	if (inTarget.positionIndependentCode())
+		ret.emplace_back("-fPIC");
+	else if (inTarget.positionIndependentExecutable())
+		ret.emplace_back("-fPIE");
+
+	// Diagnostic Color
+	ret.emplace_back("-fdiagnostics-color=always");
+
+	// User Compile Options
+	auto& compileOptions = inTarget.compileOptions();
+	for (auto& option : compileOptions)
+		List::addIfDoesNotExist(ret, option);
+
+	// Fast Math
+	// if (clangAdapter.supportsFastMath())
+	// 	List::addIfDoesNotExist(ret, "-ffast-math");
+
+	// RTTI
+	// if (!clangAdapter.supportsRunTimeTypeInformation())
+	// 	List::addIfDoesNotExist(ret, "-fno-rtti");
+
+	// Exceptions
+	// if (!clangAdapter.supportsExceptions())
+	// 	List::addIfDoesNotExist(ret, "-fno-exceptions");
+
+	// Thread Model
+	if (inTarget.threads())
+		List::addIfDoesNotExist(ret, "-pthread");
+
+	// Sanitizers
+	StringList sanitizers = clangAdapter.getSanitizersList();
+	if (!sanitizers.empty())
+	{
+		auto list = String::join(sanitizers, ',');
+		ret.emplace_back(fmt::format("-fsanitize={}", list));
+	}
+
 	return ret;
 }
 
 /*****************************************************************************/
 StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const SourceTarget& inTarget) const
 {
+	CommandAdapterClang clangAdapter(inState, inTarget);
+
 	StringList ret;
 
+	// Position Independent Code
+	if (inTarget.positionIndependentCode())
+		ret.emplace_back("-fPIC");
+	else if (inTarget.positionIndependentExecutable())
+		ret.emplace_back("-fPIE");
+
+	// User Linker Options
 	for (auto& option : inTarget.linkerOptions())
 		ret.push_back(option);
 
-	if (inState.configuration.enableProfiling() && inTarget.isExecutable())
-		List::addIfDoesNotExist(ret, "-pg");
-
+	// Thread Model
 	if (inTarget.threads())
 		List::addIfDoesNotExist(ret, "-pthread");
 
-	if (inState.configuration.enableSanitizers())
-		CompilerCxxGCC::addSanitizerOptions(ret, inState);
+	// Sanitizers
+	StringList sanitizers = clangAdapter.getSanitizersList();
+	if (!sanitizers.empty())
+	{
+		auto list = String::join(sanitizers, ',');
+		ret.emplace_back(fmt::format("-fsanitize={}", list));
+	}
 
+	// Static Compiler Libraries
 	if (inTarget.staticRuntimeLibrary() && inState.configuration.sanitizeAddress())
 		List::addIfDoesNotExist(ret, "-static-libsan");
 
@@ -1005,6 +1090,25 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 	{
 		ret.push_back(fmt::format("-l{}", link));
 	}
+
+	// Apple Framework Options
+	{
+		for (auto& path : inTarget.libDirs())
+		{
+			ret.emplace_back(fmt::format("-F{}", path));
+		}
+		for (auto& path : inTarget.appleFrameworkPaths())
+		{
+			ret.emplace_back(fmt::format("-F{}", path));
+		}
+		List::addIfDoesNotExist(ret, "-F/Library/Frameworks");
+	}
+	for (auto& framework : inTarget.appleFrameworks())
+	{
+		ret.emplace_back("-framework");
+		ret.push_back(framework);
+	}
+
 	return ret;
 }
 

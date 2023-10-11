@@ -141,4 +141,153 @@ std::string CommandAdapterClang::getOptimizationLevel() const
 	}
 	return std::string();
 }
+
+/*****************************************************************************/
+StringList CommandAdapterClang::getWarningList() const
+{
+	StringList ret;
+
+	auto getWithUserWarnings = [this](StringList&& warnings) {
+		auto& userWarnings = m_project.warnings();
+		auto exclusions = getWarningExclusions();
+		for (auto& warning : userWarnings)
+		{
+			if (List::contains(exclusions, warning))
+				continue;
+
+			List::addIfDoesNotExist(warnings, warning);
+		}
+
+		if (m_project.usesPrecompiledHeader())
+			List::addIfDoesNotExist(warnings, "invalid-pch");
+
+		if (m_project.treatWarningsAsErrors())
+			List::addIfDoesNotExist(warnings, "error");
+
+		return warnings;
+	};
+
+	auto warningsPreset = m_project.warningsPreset();
+	if (warningsPreset == ProjectWarningPresets::None)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("all");
+
+	if (warningsPreset == ProjectWarningPresets::Minimal)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("extra");
+
+	if (warningsPreset == ProjectWarningPresets::Extra)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("pedantic");
+	// ret.emplace_back("pedantic-errors");
+
+	if (warningsPreset == ProjectWarningPresets::Pedantic)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("unused");
+	ret.emplace_back("cast-align");
+	ret.emplace_back("double-promotion");
+	ret.emplace_back("format=2");
+	ret.emplace_back("missing-declarations");
+	ret.emplace_back("missing-include-dirs");
+	ret.emplace_back("non-virtual-dtor");
+	ret.emplace_back("redundant-decls");
+
+	if (warningsPreset == ProjectWarningPresets::Strict)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("unreachable-code"); // clang only
+	ret.emplace_back("shadow");
+
+	if (warningsPreset == ProjectWarningPresets::StrictPedantic)
+		return getWithUserWarnings(std::move(ret));
+
+	ret.emplace_back("noexcept");
+	ret.emplace_back("undef");
+	ret.emplace_back("conversion");
+	ret.emplace_back("cast-qual");
+	ret.emplace_back("float-equal");
+	ret.emplace_back("inline");
+	ret.emplace_back("old-style-cast");
+	ret.emplace_back("strict-null-sentinel");
+	ret.emplace_back("overloaded-virtual");
+	ret.emplace_back("sign-conversion");
+	ret.emplace_back("sign-promo");
+
+	// if (warningsPreset == ProjectWarningPresets::VeryStrict)
+	// 	return getWithUserWarnings(std::move(ret));
+
+	return getWithUserWarnings(std::move(ret));
+}
+
+/*****************************************************************************/
+StringList CommandAdapterClang::getWarningExclusions() const
+{
+	return {};
+}
+
+/*****************************************************************************/
+StringList CommandAdapterClang::getSanitizersList() const
+{
+	StringList ret;
+	if (m_state.configuration.sanitizeAddress())
+	{
+		ret.emplace_back("address");
+	}
+	if (m_state.configuration.sanitizeHardwareAddress())
+	{
+		ret.emplace_back("hwaddress");
+	}
+	if (m_state.configuration.sanitizeThread())
+	{
+		ret.emplace_back("thread");
+	}
+	if (m_state.configuration.sanitizeMemory())
+	{
+		ret.emplace_back("memory");
+	}
+	if (m_state.configuration.sanitizeLeaks())
+	{
+		ret.emplace_back("leak");
+	}
+	if (m_state.configuration.sanitizeUndefinedBehavior())
+	{
+		ret.emplace_back("undefined");
+		ret.emplace_back("integer");
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool CommandAdapterClang::supportsCppCoroutines() const
+{
+	return m_project.cppCoroutines() && m_versionMajorMinor >= 500;
+}
+
+/*****************************************************************************/
+bool CommandAdapterClang::supportsCppConcepts() const
+{
+	return m_project.cppConcepts() && m_versionMajorMinor >= 600 && m_versionMajorMinor < 1000;
+}
+
+/*****************************************************************************/
+bool CommandAdapterClang::supportsFastMath() const
+{
+	return m_project.fastMath();
+}
+
+/*****************************************************************************/
+bool CommandAdapterClang::supportsExceptions() const
+{
+	return m_project.exceptions();
+}
+/*****************************************************************************/
+bool CommandAdapterClang::supportsRunTimeTypeInformation() const
+{
+	return m_project.runtimeTypeInformation();
+}
 }

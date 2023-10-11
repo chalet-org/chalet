@@ -20,6 +20,10 @@ struct CommandAdapterClang
 	std::string getCxxLibrary() const;
 	std::string getOptimizationLevel() const;
 
+	StringList getWarningList() const;
+	StringList getWarningExclusions() const;
+	StringList getSanitizersList() const;
+
 	// StringList getIncludeDirectories() const;
 	// StringList getAdditionalCompilerOptions(const bool inCharsetFlags = false) const;
 	// StringList getAdditionalLinkerOptions() const;
@@ -31,6 +35,12 @@ struct CommandAdapterClang
 	// const std::string& pchSource() const noexcept;
 	// const std::string& pchTarget() const noexcept;
 	// const std::string& pchMinusLocation() const noexcept;
+
+	bool supportsCppCoroutines() const;
+	bool supportsCppConcepts() const;
+	bool supportsFastMath() const;
+	bool supportsExceptions() const;
+	bool supportsRunTimeTypeInformation() const;
 
 private:
 	const BuildState& m_state;

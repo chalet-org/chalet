@@ -55,33 +55,9 @@ void CompilerCxxClang::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
-	StringList sanitizers;
-	if (inState.configuration.sanitizeAddress())
-	{
-		sanitizers.emplace_back("address");
-	}
-	if (inState.configuration.sanitizeHardwareAddress())
-	{
-		sanitizers.emplace_back("hwaddress");
-	}
-	if (inState.configuration.sanitizeThread())
-	{
-		sanitizers.emplace_back("thread");
-	}
-	if (inState.configuration.sanitizeMemory())
-	{
-		sanitizers.emplace_back("memory");
-	}
-	if (inState.configuration.sanitizeLeaks())
-	{
-		sanitizers.emplace_back("leak");
-	}
-	if (inState.configuration.sanitizeUndefinedBehavior())
-	{
-		sanitizers.emplace_back("undefined");
-		sanitizers.emplace_back("integer");
-	}
-
+	SourceTarget dummyTarget(inState);
+	CommandAdapterClang clangAdapter(inState, dummyTarget);
+	StringList sanitizers = clangAdapter.getSanitizersList();
 	if (!sanitizers.empty())
 	{
 		auto list = String::join(sanitizers, ',');
@@ -178,7 +154,7 @@ void CompilerCxxClang::addLinkTimeOptimizations(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
 {
-	if (m_project.cppCoroutines() && m_versionMajorMinor >= 500)
+	if (m_clangAdapter.supportsCppCoroutines())
 	{
 		std::string option{ "-fcoroutines-ts" };
 		// if (isFlagSupported(option))
@@ -189,7 +165,7 @@ void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addCppConcepts(StringList& outArgList) const
 {
-	if (m_project.cppConcepts() && m_versionMajorMinor >= 600 && m_versionMajorMinor < 1000)
+	if (m_clangAdapter.supportsCppConcepts())
 	{
 		std::string option{ "-fconcepts-ts" };
 		// if (isFlagSupported(option))
