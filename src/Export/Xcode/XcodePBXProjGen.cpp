@@ -6,6 +6,7 @@
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
+#include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Json.hpp"
@@ -708,10 +709,11 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
 	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
 
-	ret["CONFIGURATION_BUILD_DIR"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	ret["CONFIGURATION_BUILD_DIR"] = buildDir;
 
 	// Note: can't use buildSuffix
-	auto newObjDir = fmt::format("{}/{}/obj.{}", cwd, inState.paths.buildOutputDir(), inTarget.name());
+	auto newObjDir = fmt::format("{}/obj.{}", buildDir, inTarget.name());
 	ret["CONFIGURATION_TEMP_DIR"] = newObjDir;
 	// ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
@@ -785,7 +787,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	// ret["MTL_FAST_MATH"] = getBoolString(false);
 	ret["OBJECT_FILE_DIR"] = ret.at("CONFIGURATION_TEMP_DIR");
 
-	const auto& compileOptions = inTarget.compileOptions();
+	auto compileOptions = getCompilerOptions(inState, inTarget);
 	if (!compileOptions.empty())
 	{
 		if (lang == CodeLanguage::C || lang == CodeLanguage::ObjectiveC)
@@ -798,24 +800,10 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		}
 	}
 
+	auto linkerOptions = getLinkerOptions(inState, inTarget);
+	if (!linkerOptions.empty())
 	{
-
-		const auto& linkerOptions = inTarget.linkerOptions();
-		if (!linkerOptions.empty())
-		{
-			ret["OTHER_LDFLAGS"] = linkerOptions;
-		}
-		ret["OTHER_LDFLAGS"] = Json::array();
-		const auto& links = inTarget.links();
-		for (auto& link : links)
-		{
-			ret["OTHER_LDFLAGS"].push_back(fmt::format("-l{}", link));
-		}
-		const auto& staticLinks = inTarget.staticLinks();
-		for (auto& link : staticLinks)
-		{
-			ret["OTHER_LDFLAGS"].push_back(fmt::format("-l{}", link));
-		}
+		ret["OTHER_LDFLAGS"] = linkerOptions;
 	}
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
@@ -1117,4 +1105,48 @@ std::string XcodePBXProjGen::getSourceWithSuffix(const std::string& inFile, cons
 {
 	return fmt::format("[{}] {}", inSuffix, inFile);
 }
+
+/*****************************************************************************/
+StringList XcodePBXProjGen::getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const
+{
+	UNUSED(inState);
+
+	StringList ret;
+	ret = inTarget.compileOptions();
+	return ret;
+}
+
+/*****************************************************************************/
+StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const SourceTarget& inTarget) const
+{
+	StringList ret;
+
+	for (auto& option : inTarget.linkerOptions())
+		ret.push_back(option);
+
+	if (inState.configuration.enableProfiling() && inTarget.isExecutable())
+		List::addIfDoesNotExist(ret, "-pg");
+
+	if (inTarget.threads())
+		List::addIfDoesNotExist(ret, "-pthread");
+
+	if (inState.configuration.enableSanitizers())
+		CompilerCxxGCC::addSanitizerOptions(ret, inState);
+
+	if (inTarget.staticRuntimeLibrary() && inState.configuration.sanitizeAddress())
+		List::addIfDoesNotExist(ret, "-static-libsan");
+
+	const auto& links = inTarget.links();
+	for (auto& link : links)
+	{
+		ret.push_back(fmt::format("-l{}", link));
+	}
+	const auto& staticLinks = inTarget.staticLinks();
+	for (auto& link : staticLinks)
+	{
+		ret.push_back(fmt::format("-l{}", link));
+	}
+	return ret;
+}
+
 }

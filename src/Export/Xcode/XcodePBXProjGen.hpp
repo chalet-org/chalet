@@ -49,6 +49,9 @@ private:
 	std::string getNodeAsPListString(const Json& inJson) const;
 	std::string getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const;
 
+	StringList getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
+	StringList getLinkerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
+
 	std::vector<Unique<BuildState>>& m_states;
 
 	Uuid m_projectUUID;
