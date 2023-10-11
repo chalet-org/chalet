@@ -79,8 +79,12 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-configuration");
 	cmd.emplace_back(m_state.configuration.name());
 
-	cmd.emplace_back("-arch");
-	cmd.emplace_back(m_state.info.targetArchitectureString());
+	auto& arches = m_state.inputs.universalArches();
+	if (arches.empty())
+	{
+		cmd.emplace_back("-arch");
+		cmd.emplace_back(m_state.info.targetArchitectureString());
+	}
 
 	// cmd.emplace_back("-destination");
 	// cmd.emplace_back(fmt::format("platform=OS X,arch={}", m_state.info.targetArchitectureString()));

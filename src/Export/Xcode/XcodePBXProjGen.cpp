@@ -418,7 +418,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 		node[key]["developmentRegion"] = region;
 		node[key]["hasScannedForEncodings"] = 0;
-		node[key]["knownRegions"] = StringList{
+		node[key]["knownRegions"] = {
 			"Base",
 			region,
 		};
@@ -868,6 +868,10 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["GCC_C_LANGUAGE_STANDARD"] = std::move(cStandard);
 
 	ret["GCC_NO_COMMON_BLOCKS"] = getBoolString(true);
+
+	ret["GCC_PREPROCESSOR_DEFINITIONS"] = inTarget.defines();
+	ret["GCC_PREPROCESSOR_DEFINITIONS"].push_back("$(inherited)");
+
 	ret["GCC_WARN_64_TO_32_BIT_CONVERSION"] = getBoolString(true);
 	ret["GCC_WARN_ABOUT_RETURN_TYPE"] = "YES_ERROR";
 	ret["GCC_WARN_UNDECLARED_SELECTOR"] = getBoolString(true);
@@ -926,7 +930,11 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 
 	Json ret;
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	ret["ARCHES"] = inState.info.targetArchitectureString();
+
+	// Note: do not set "ARCHES"
+	// The default is set to $(ARCHS_STANDARD) and creates universal binaries
+	// during xcodebuild invocation, we manually set "-arch" if not universal
+
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	if (config.debugSymbols())
 	{
@@ -936,16 +944,12 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	ret["GENERATE_PROFILING_CODE"] = getBoolString(config.enableProfiling());
 	ret["GCC_GENERATE_DEBUGGING_SYMBOLS"] = getBoolString(config.debugSymbols());
 	ret["GCC_OPTIMIZATION_LEVEL"] = clangAdapter.getOptimizationLevel();
-	// ret["GCC_PREPROCESSOR_DEFINITIONS"] = {
-	// 	"$(inherited)",
-	// 	"DEBUG=1",
-	// };
 
 	// YES, YES_THIN, NO
 	//   TODO: thin = incremental - maybe add in the future?
 	ret["LLVM_LTO"] = getBoolString(config.interproceduralOptimization());
 
-	ret["ONLY_ACTIVE_ARCH"] = getBoolString(true);
+	ret["ONLY_ACTIVE_ARCH"] = getBoolString(false);
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
 	ret["SDKROOT"] = inState.inputs.osTargetName();
 	// ret["LD_RUNPATH_SEARCH_PATHS"] = {
