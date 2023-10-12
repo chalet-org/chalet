@@ -1212,7 +1212,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		const auto& intDir = inState.paths.intermediateDir(inTarget);
 		const auto& appleFrameworkPaths = inTarget.appleFrameworkPaths();
 
-		LOG(externalBuildDir);
 		for (auto& libDir : libDirs)
 		{
 			if (String::equals(objDir, libDir))
@@ -1299,6 +1298,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
+	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	// ret["SYMROOT"] = buildOutputDir;
 	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
@@ -1336,9 +1336,10 @@ Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildT
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
 	ret["OBJROOT"] = buildOutputDir;
+	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
-	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
+	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	// ret["SYMROOT"] = buildOutputDir;
 	// ret["USE_HEADERMAP"] = getBoolString(false);
 
@@ -1360,6 +1361,7 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	if (arches.empty())
 		ret["ARCHS"] = inState.info.targetArchitectureString();
 
+	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	// ret["SYMROOT"] = buildOutputDir;
 

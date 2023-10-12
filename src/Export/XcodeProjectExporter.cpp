@@ -8,6 +8,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Xcode/XcodePBXProjGen.hpp"
+#include "Export/Xcode/XcodeXSchemeGen.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 
@@ -81,11 +82,26 @@ bool XcodeProjectExporter::generateProjectFiles()
 </Workspace>)xml");
 	}
 
-	XcodePBXProjGen xcodeGen(m_states);
-	if (!xcodeGen.saveToFile(fmt::format("{}/project.pbxproj", xcodeproj)))
+	auto xcschemes = fmt::format("{}/xcshareddata/xcschemes", xcodeproj);
+	if (!Commands::pathExists(xcschemes))
+		Commands::makeDirectory(xcschemes);
+
 	{
-		Diagnostic::error("There was a problem saving the project.pbxproj file.");
-		return false;
+		XcodeXSchemeGen schemaGen(m_states, xcodeproj);
+		if (!schemaGen.createSchemes(xcschemes))
+		{
+			Diagnostic::error("There was a problem creating the xcschemes files.");
+			return false;
+		}
+	}
+
+	{
+		XcodePBXProjGen xcodeGen(m_states);
+		if (!xcodeGen.saveToFile(fmt::format("{}/project.pbxproj", xcodeproj)))
+		{
+			Diagnostic::error("There was a problem saving the project.pbxproj file.");
+			return false;
+		}
 	}
 
 	return true;
