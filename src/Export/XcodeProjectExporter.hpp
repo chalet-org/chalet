@@ -14,7 +14,7 @@ struct XcodeProjectExporter final : public IProjectExporter
 {
 	explicit XcodeProjectExporter(const CommandLineInputs& inInputs);
 
-	std::string getMainProjectOutput(const BuildState& inState) const;
+	std::string getMainProjectOutput(const BuildState& inState);
 
 protected:
 	virtual std::string getMainProjectOutput() final;
@@ -23,7 +23,7 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	std::string getProjectName() const;
+	std::string getProjectName(const BuildState& inState) const;
 };
 }
 

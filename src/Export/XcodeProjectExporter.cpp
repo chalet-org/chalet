@@ -25,14 +25,8 @@ XcodeProjectExporter::XcodeProjectExporter(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 std::string XcodeProjectExporter::getMainProjectOutput()
 {
-	if (m_directory.empty())
-	{
-		if (!useProjectBuildDirectory(".xcode"))
-			return std::string();
-	}
-
-	auto project = getProjectName();
-	return fmt::format("{}/{}.xcodeproj", m_directory, project);
+	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	return getMainProjectOutput(*m_states.front());
 }
 
 /*****************************************************************************/
@@ -70,9 +64,9 @@ bool XcodeProjectExporter::generateProjectFiles()
 	if (!Commands::pathExists(xcodeproj))
 		Commands::makeDirectory(xcodeproj);
 
-	auto project = getProjectName();
+	auto project = getProjectName(*m_states.front());
 
-	auto xcworkspace = fmt::format("{}/project.xcworkspace", xcodeproj);
+	auto xcworkspace = fmt::format("{}/{}.xcworkspace", xcodeproj, project);
 	if (!Commands::pathExists(xcworkspace))
 		Commands::makeDirectory(xcworkspace);
 
@@ -113,15 +107,23 @@ bool XcodeProjectExporter::generateProjectFiles()
 }
 
 /*****************************************************************************/
-std::string XcodeProjectExporter::getProjectName() const
+std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState)
 {
-	chalet_assert(!m_states.empty(), "states were empty getting project name");
-	return getMainProjectOutput(*m_states.front());
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".xcode"))
+			return std::string();
+	}
+
+	auto project = getProjectName(inState);
+	return fmt::format("{}/{}.xcodeproj", m_directory, project);
 }
 
-std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState) const
+/*****************************************************************************/
+std::string XcodeProjectExporter::getProjectName(const BuildState& inState) const
 {
 	const auto& workspaceName = inState.workspace.metadata().name();
 	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
+
 }

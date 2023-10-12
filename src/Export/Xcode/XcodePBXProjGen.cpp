@@ -861,7 +861,7 @@ std::string XcodePBXProjGen::getProjectName() const
 {
 	// const auto& firstState = *m_states.front();
 	// const auto& workspaceName = firstState.workspace.metadata().name();
-	// return !workspaceName.empty() ? workspaceName : "project";
+	// return !workspaceName.empty() ? workspaceName : std::string("project");
 
 	return std::string("project");
 }
