@@ -1097,9 +1097,10 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
 
-	auto& signingIdentity = inState.tools.signingIdentity();
+	// auto& signingIdentity = inState.tools.signingIdentity();
+	std::string signingIdentity;
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
-	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(true);
+	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
 
 	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
@@ -1250,7 +1251,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		}
 
 		runPaths.emplace_back("$(inherited)");
-		runPaths.emplace_back("@executable_path/../Frameworks");
 		ret["LD_RUNPATH_SEARCH_PATHS"] = std::move(runPaths);
 
 		searchPaths.emplace_back("$(inherited)");
