@@ -43,7 +43,6 @@ private:
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
 
 	std::string getBoolString(const bool inValue) const;
-	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
 	std::string getXcodeFileType(const SourceType inType) const;
 	std::string getXcodeFileType(const SourceKind inKind) const;
 	std::string getXcodeFileTypeFromHeader(const std::string& inFile) const;

@@ -876,13 +876,6 @@ std::string XcodePBXProjGen::getBoolString(const bool inValue) const
 }
 
 /*****************************************************************************/
-std::string XcodePBXProjGen::getProductBundleIdentifier(const std::string& inWorkspaceName) const
-{
-	// TODO - appleProductBundleIdentiifer or something
-	return fmt::format("com.myapp.{}", inWorkspaceName);
-}
-
-/*****************************************************************************/
 std::string XcodePBXProjGen::getXcodeFileType(const SourceType inType) const
 {
 	switch (inType)
@@ -1296,7 +1289,9 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["OTHER_LDFLAGS"] = linkerOptions;
 	}
 
-	ret["PRODUCT_BUNDLE_IDENTIFIER"] = getProductBundleIdentifier(inState.workspace.metadata().name());
+	// TODO: Generate .app target based on the distribution
+	// ret["PRODUCT_BUNDLE_IDENTIFIER"] = "com.developer.application";
+
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
 	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
