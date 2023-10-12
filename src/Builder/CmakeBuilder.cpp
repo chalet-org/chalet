@@ -424,13 +424,21 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	}
 
-	bool needsCMakeProgram = !usesNinja() && !m_state.environment->isMsvc();
-
+	bool needsCMakeProgram = !m_state.environment->isMsvc();
 	if (needsCMakeProgram && !isDefined["CMAKE_MAKE_PROGRAM"])
 	{
-		const auto& make = m_state.toolchain.make();
-		if (!make.empty())
-			outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
+		if (usesNinja())
+		{
+			const auto& ninja = m_state.toolchain.ninja();
+			if (!ninja.empty())
+				outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(ninja)));
+		}
+		else
+		{
+			const auto& make = m_state.toolchain.make();
+			if (!make.empty())
+				outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
+		}
 	}
 
 	if (!isDefined["CMAKE_C_COMPILER"])

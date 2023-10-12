@@ -45,6 +45,7 @@ private:
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
 	std::string getXcodeFileType(const SourceType inType) const;
 	std::string getXcodeFileType(const SourceKind inKind) const;
+	std::string getXcodeFileTypeFromFile(const std::string& inFile) const;
 	std::string getMachOType(const SourceTarget& inTarget) const;
 	std::string getNativeProductType(const SourceKind inKind) const;
 	std::string getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const;

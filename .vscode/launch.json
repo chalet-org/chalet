@@ -18,12 +18,12 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}/../chalet-example-glfw",
 			"preLaunchTask": "Build: Debug",
 			"stopOnEntry": false,
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"rebuild"
+				"build"
 			],
 		},
 		{

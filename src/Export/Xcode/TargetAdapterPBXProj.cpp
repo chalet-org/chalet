@@ -106,7 +106,7 @@ std::string TargetAdapterPBXProj::getCommand() const
 	else if (m_target.isCMake())
 	{
 		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
-		bool quotedPaths = true;
+		bool quotedPaths = false;
 		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
 
 		auto genCmd = builder.getGeneratorCommand();

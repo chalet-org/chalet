@@ -130,7 +130,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					groups[name].isSource = true;
 				}
 
-				groups[name].intDir = state->paths.intermediateDir(sourceTarget);
+				// groups[name].intDir = state->paths.intermediateDir(sourceTarget);
 
 				auto& pch = sourceTarget.precompiledHeader();
 
@@ -180,7 +180,18 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					{
 						groups.emplace(name, SourceTargetGroup{});
 					}
-					groups[name].sources.emplace_back(std::move(command));
+
+					// Fix an edge case where arches need to be quoted in makefile
+					auto& arches = state->inputs.universalArches();
+					if (target->isCMake() && !arches.empty())
+					{
+						auto archString = String::join(arches, ';');
+						auto define = "-DCMAKE_OSX_ARCHITECTURES";
+						String::replaceAll(command, fmt::format("{}={}", define, archString), fmt::format("{}=\"{}\"", define, archString));
+					}
+
+					groups[name].sources.push_back(std::move(command));
+					groups[name].children = adapter.getFiles();
 
 					if (!lastDependencies.empty())
 					{
@@ -199,12 +210,32 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	for (auto& [name, group] : groups)
 	{
-		if (!group.isSource)
-			continue;
+		if (group.isSource)
+		{
+			std::sort(group.children.begin(), group.children.end());
+			std::sort(group.sources.begin(), group.sources.end());
+			std::sort(group.headers.begin(), group.headers.end());
+		}
+		else
+		{
+			std::string makefileContents;
+			size_t index = 0;
+			for (auto& [configName, _] : configToTargets)
+			{
+				auto& source = group.sources.at(index);
+				auto split = String::split(source, '\n');
+				makefileContents += fmt::format(R"shell({}:
+	@{}
 
-		std::sort(group.children.begin(), group.children.end());
-		std::sort(group.sources.begin(), group.sources.end());
-		std::sort(group.headers.begin(), group.headers.end());
+)shell",
+					configName,
+					String::join(split, "\n\t@"));
+				index++;
+			}
+
+			auto outPath = fmt::format("{}/scripts/{}.make", m_exportPath, name);
+			Commands::createFileWithContents(outPath, makefileContents);
+		}
 	}
 
 	OldPListGenerator pbxproj;
@@ -215,7 +246,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	auto& objects = pbxproj.at("objects");
 
 	auto mainGroup = Uuid::v5("mainGroup", m_xcodeNamespaceGuid).toAppleHash();
-	auto products = getHashWithLabel("Products");
 	const std::string group{ "SOURCE_ROOT" };
 
 	// PBXAggregateTarget
@@ -251,29 +281,39 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
-				continue;
+			if (pbxGroup.isSource)
+			{
+				if (!pbxGroup.intDir.empty())
+				{
+					auto key = getHashWithLabel(fmt::format("{} in Resources", pbxGroup.intDir));
+					node[key]["isa"] = section;
+					node[key]["fileRef"] = getHashedJsonValue(pbxGroup.intDir);
+				}
 
-			if (!pbxGroup.intDir.empty())
-			{
-				auto key = getHashWithLabel(fmt::format("{} in Resources", pbxGroup.intDir));
-				node[key]["isa"] = section;
-				node[key]["fileRef"] = getHashedJsonValue(pbxGroup.intDir);
+				for (auto& file : pbxGroup.sources)
+				{
+					auto filename = getSourceWithSuffix(file, target);
+					auto key = getHashWithLabel(fmt::format("{} in Sources", filename));
+					node[key]["isa"] = section;
+					node[key]["fileRef"] = getHashedJsonValue(getSourceWithSuffix(file, target));
+				}
+				for (auto& file : pbxGroup.headers)
+				{
+					auto filename = getSourceWithSuffix(file, target);
+					auto key = getHashWithLabel(fmt::format("{} in Sources", filename));
+					node[key]["isa"] = section;
+					node[key]["fileRef"] = getHashedJsonValue(getSourceWithSuffix(file, target));
+				}
 			}
-
-			for (auto& file : pbxGroup.sources)
+			else
 			{
-				auto filename = getSourceWithSuffix(file, target);
-				auto key = getHashWithLabel(fmt::format("{} in Sources", filename));
-				node[key]["isa"] = section;
-				node[key]["fileRef"] = getHashedJsonValue(getSourceWithSuffix(file, target));
-			}
-			for (auto& file : pbxGroup.headers)
-			{
-				auto filename = getSourceWithSuffix(file, target);
-				auto key = getHashWithLabel(fmt::format("{} in Sources", filename));
-				node[key]["isa"] = section;
-				node[key]["fileRef"] = getHashedJsonValue(getSourceWithSuffix(file, target));
+				for (auto& file : pbxGroup.children)
+				{
+					auto filename = getSourceWithSuffix(file, target);
+					auto key = getHashWithLabel(fmt::format("{} in Resources", filename));
+					node[key]["isa"] = section;
+					node[key]["fileRef"] = getHashedJsonValue(getSourceWithSuffix(file, target));
+				}
 			}
 		}
 	}
@@ -354,17 +394,33 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["path"] = set.file;
 			node[key]["sourceTree"] = "SOURCE_ROOT";
 		}
+
+		//<group>
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
-				continue;
-
-			auto key = getHashWithLabel(target);
-			node[key]["isa"] = section;
-			node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.kind);
-			node[key]["includeInIndex"] = 0;
-			node[key]["path"] = pbxGroup.outputFile;
-			node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
+			if (pbxGroup.isSource)
+			{
+				auto key = getHashWithLabel(target);
+				node[key]["isa"] = section;
+				node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.kind);
+				node[key]["includeInIndex"] = 0;
+				node[key]["path"] = pbxGroup.outputFile;
+				node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
+			}
+			else
+			{
+				for (auto& file : pbxGroup.children)
+				{
+					auto name = getSourceWithSuffix(file, target);
+					auto key = getHashWithLabel(name);
+					node[key]["isa"] = section;
+					node[key]["explicitFileType"] = getXcodeFileTypeFromFile(file);
+					node[key]["includeInIndex"] = 0;
+					node[key]["name"] = String::getPathFilename(file);
+					node[key]["path"] = file;
+					node[key]["sourceTree"] = "SOURCE_ROOT";
+				}
+			}
 		}
 	}
 
@@ -394,8 +450,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		StringList childNodes;
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
-				continue;
+			// if (!pbxGroup.isSource)
+			// 	continue;
 
 			auto key = getHashWithLabel(fmt::format("Sources [{}]", target));
 			node[key]["isa"] = section;
@@ -410,6 +466,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			childNodes.emplace_back(std::move(key));
 		}
 
+		//
+		auto products = getHashWithLabel("Products");
 		node[products] = Json::object();
 		node[products]["isa"] = section;
 		node[products]["children"] = Json::array();
@@ -423,6 +481,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[products]["name"] = "Products";
 		node[products]["sourceTree"] = group;
 
+		//
 		node[mainGroup] = Json::object();
 		node[mainGroup]["isa"] = section;
 		node[mainGroup]["children"] = childNodes;
@@ -534,28 +593,40 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			if (!pbxGroup.sources.empty())
 			{
-				std::string shellScript{ "set -e\n" };
-				size_t index = 0;
-				for (auto& [configName, _] : configToTargets)
-				{
-					auto& source = pbxGroup.sources.at(index);
-					auto split = String::split(source, '\n');
-					shellScript += fmt::format(R"shell(if test "$CONFIGURATION" = "{}"; then :
-	echo "*== script start ==*"
-	{}
-	echo "*== script end ==*"
-fi
+				// 				std::string shellScript{ "set -e\n" };
+				// 				size_t index = 0;
+				// 				for (auto& [configName, _] : configToTargets)
+				// 				{
+				// 					auto& source = pbxGroup.sources.at(index);
+				// 					auto split = String::split(source, '\n');
+				// 					shellScript += fmt::format(R"shell(if test "$CONFIGURATION" = "{}"; then :
+				// 	echo "*== script start ==*"
+				// 	{}
+				// 	echo "*== script end ==*"
+				// fi
+				// )shell",
+				// 						configName,
+				// 						String::join(split, "\n\t"));
+				// 					index++;
+				// 				}
+
+				auto makefilePath = fmt::format("{}/scripts/{}.make", m_exportPath, target);
+				auto shellScript = fmt::format(R"shell(set -e
+echo "*== script start ==*"
+make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
+echo "*== script end ==*"
 )shell",
-						configName,
-						String::join(split, "\n\t"));
-					index++;
-				}
+					makefilePath);
 
 				auto key = getHashWithLabel(target);
 				node[key]["isa"] = section;
 				node[key]["alwaysOutOfDate"] = 1;
 				node[key]["buildActionMask"] = kBuildActionMask;
 				node[key]["files"] = Json::array();
+				for (auto& filename : pbxGroup.children)
+				{
+					node[key]["files"].push_back(getHashWithLabel(fmt::format("{} in Resources", filename)));
+				}
 				node[key]["inputPaths"] = Json::array();
 				node[key]["name"] = target;
 				node[key]["outputPaths"] = Json::array();
@@ -846,6 +917,14 @@ std::string XcodePBXProjGen::getXcodeFileType(const SourceKind inKind) const
 }
 
 /*****************************************************************************/
+std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile) const
+{
+	auto ext = String::getPathSuffix(inFile);
+	LOG(ext);
+	return std::string("text");
+}
+
+/*****************************************************************************/
 std::string XcodePBXProjGen::getMachOType(const SourceTarget& inTarget) const
 {
 	if (inTarget.isStaticLibrary())
@@ -902,10 +981,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
 	Json ret;
-
-	// Note: do not set "ARCHES"
-	// The default is set to $(ARCHS_STANDARD) and creates universal binaries
-	// during xcodebuild invocation, we manually set "-arch" if not universal
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 	ret["BUILD_DIR"] = buildDir;
@@ -1173,6 +1248,10 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 
 	const auto& cwd = inState.inputs.workingDirectory();
 	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+
+	auto arches = inState.inputs.universalArches();
+	if (arches.empty())
+		ret["ARCHS"] = inState.info.targetArchitectureString();
 
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	// ret["SYMROOT"] = buildOutputDir;
