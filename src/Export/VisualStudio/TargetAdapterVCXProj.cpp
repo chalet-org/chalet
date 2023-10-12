@@ -66,6 +66,15 @@ StringList TargetAdapterVCXProj::getFiles() const
 
 		ret.emplace_back(std::move(buildFile));
 	}
+	else if (m_target.isValidation())
+	{
+		const auto& validationTarget = static_cast<const ValidationBuildTarget&>(m_target);
+		auto& files = validationTarget.files();
+		for (auto& file : files)
+		{
+			ret.emplace_back(file);
+		}
+	}
 
 	return ret;
 }
