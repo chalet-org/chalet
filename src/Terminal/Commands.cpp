@@ -1229,7 +1229,8 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 
 	bool printed = false;
 	bool errored = false;
-	auto processLine = [&cwd, &printed, &errored, &color, &reset](const std::string& inLine) {
+	bool allowOutput = false;
+	auto processLine = [&cwd, &printed, &allowOutput, &errored, &color, &reset](std::string& inLine) {
 		UNUSED(inLine);
 		UNUSED(getTargetName);
 
@@ -1333,21 +1334,15 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 			}
 		}
 		// PhaseScriptExecution
-		else if (String::startsWith("PhaseScriptExecution ", inLine))
+		else if (String::startsWith("*== script start ==*", inLine))
 		{
-			auto path = getTargetPath(inLine);
-			if (!path.empty())
-			{
-				path = String::getPathFilename(path);
-				// String::replaceAll(path, cwd, "");
-				if (!path.empty())
-				{
-					auto output = fmt::format("   {}{}{}\n", color, path, reset);
-					std::cout.write(output.data(), output.size());
-					std::cout.flush();
-					printed = true;
-				}
-			}
+			inLine.clear();
+			allowOutput = true;
+		}
+		// WriteAuxiliaryFile
+		else if (String::startsWith("*== script end ==*", inLine))
+		{
+			allowOutput = false;
 		}
 		else if (errored || String::contains("error:", inLine) || String::startsWith("ld:", inLine))
 		{
@@ -1362,6 +1357,11 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 		// 	std::cout.flush();
 		// 	printed = true;
 		// }
+		if (allowOutput && !inLine.empty())
+		{
+			std::cout.write(inLine.data(), inLine.size());
+			std::cout.flush();
+		}
 	};
 
 	std::string data;

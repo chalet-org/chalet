@@ -17,6 +17,13 @@ class BuildState;
 
 struct XcodePBXProjGen
 {
+	enum class ListType
+	{
+		Project,
+		NativeProject,
+		AggregateTarget,
+	};
+
 	explicit XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates);
 
 	bool saveToFile(const std::string& inFilename);
@@ -29,7 +36,7 @@ private:
 	Uuid getTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const;
 	std::string getTargetHashWithLabel(const std::string& inTarget) const;
 	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
-	std::string getBuildConfigurationListLabel(const std::string& inName, const bool inNativeProject = true) const;
+	std::string getBuildConfigurationListLabel(const std::string& inName, const ListType inType) const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
@@ -43,6 +50,7 @@ private:
 	std::string getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const;
 
 	Json getBuildSettings(BuildState& inState, const SourceTarget& inTarget) const;
+	Json getGenericBuildSettings(BuildState& inState, const IBuildTarget& inTarget) const;
 	Json getProductBuildSettings(const BuildState& inState) const;
 
 	StringList getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
