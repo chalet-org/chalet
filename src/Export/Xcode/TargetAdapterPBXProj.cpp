@@ -146,12 +146,12 @@ std::string TargetAdapterPBXProj::getCommand() const
 		StringList validateCmd{
 			fmt::format("\"{}\"", m_state.tools.chalet()),
 			"validate",
-			fmt::format("'{}'", validationTarget.schema()),
+			fmt::format("\"{}\"", validationTarget.schema()),
 		};
 		auto& files = validationTarget.files();
 		for (auto& file : files)
 		{
-			validateCmd.emplace_back(fmt::format("'{}'", file));
+			validateCmd.emplace_back(fmt::format("\"{}\"", file));
 		}
 		ret += fmt::format("{}\n", String::join(validateCmd));
 	}

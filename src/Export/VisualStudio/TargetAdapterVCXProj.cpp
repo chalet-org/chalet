@@ -18,6 +18,7 @@
 #include "State/Target/SubChaletTarget.hpp"
 #include "State/Target/ValidationBuildTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -72,7 +73,8 @@ StringList TargetAdapterVCXProj::getFiles() const
 		auto& files = validationTarget.files();
 		for (auto& file : files)
 		{
-			ret.emplace_back(file);
+			auto outFile = fmt::format("{}/{}", cwd, file);
+			ret.emplace_back(outFile);
 		}
 	}
 
@@ -84,6 +86,7 @@ std::string TargetAdapterVCXProj::getCommand() const
 {
 	std::string ret;
 
+	const auto& cwd = m_state.inputs.workingDirectory();
 	ScriptType scriptType = ScriptType::None;
 	if (m_target.isScript())
 	{
@@ -124,7 +127,7 @@ std::string TargetAdapterVCXProj::getCommand() const
 		auto buildCmd = builder.getBuildCommand();
 		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
 
-		ret = fmt::format("{}\r\n{}", String::join(genCmd), String::join(buildCmd));
+		ret = fmt::format("{}\r\n{}\r\n", String::join(genCmd), String::join(buildCmd));
 	}
 	else if (m_target.isSubChalet())
 	{
@@ -146,19 +149,18 @@ std::string TargetAdapterVCXProj::getCommand() const
 		StringList validateCmd{
 			fmt::format("\"{}\"", m_state.tools.chalet()),
 			"validate",
-			fmt::format("'{}'", validationTarget.schema()),
+			fmt::format("\"{}\"", validationTarget.schema()),
 		};
 		auto& files = validationTarget.files();
 		for (auto& file : files)
 		{
-			validateCmd.emplace_back(fmt::format("'{}'", file));
+			validateCmd.emplace_back(fmt::format("\"{}\"", file));
 		}
 		ret += fmt::format("{}\r\n", String::join(validateCmd));
 	}
 
 	if (!ret.empty())
 	{
-		const auto& cwd = m_state.inputs.workingDirectory();
 		if (scriptType == ScriptType::Python)
 		{
 			ret = fmt::format("cd {}\r\nset PYTHONIOENCODING=utf-8\r\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\r\n{}", cwd, ret);
