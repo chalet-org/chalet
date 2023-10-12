@@ -9,6 +9,7 @@
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
+#include "Export/XcodeProjectExporter.hpp"
 #include "Process/ProcessController.hpp"
 #include "Process/ProcessOptions.hpp"
 #include "State/AncillaryTools.hpp"
@@ -69,6 +70,8 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		return false;
 	}
 
+	XcodeProjectExporter exporter(m_state.inputs);
+
 	StringList cmd{
 		xcodebuild,
 		// "-verbose",
@@ -109,9 +112,9 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 
 	cmd.emplace_back("-project");
 	// cmd.emplace_back("project");
-	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
-	auto project = fmt::format("{}/.xcode/project.xcodeproj", directory);
-	cmd.emplace_back(project);
+
+	auto project = exporter.getMainProjectOutput();
+	cmd.emplace_back(exporter.getMainProjectOutput());
 
 	const auto& signingIdentity = m_state.tools.signingIdentity();
 	if (!signingIdentity.empty())

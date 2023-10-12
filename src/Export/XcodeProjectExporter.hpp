@@ -14,14 +14,15 @@ struct XcodeProjectExporter final : public IProjectExporter
 {
 	explicit XcodeProjectExporter(const CommandLineInputs& inInputs);
 
-protected:
 	virtual std::string getMainProjectOutput() final;
+
+protected:
 	virtual std::string getProjectTypeName() const final;
 	virtual bool validate(const BuildState& inState) final;
 	virtual bool generateProjectFiles() final;
 
 private:
-	//
+	std::string getProjectName() const;
 };
 }
 

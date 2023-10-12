@@ -38,6 +38,7 @@ private:
 	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
 	std::string getBuildConfigurationListLabel(const std::string& inName, const ListType inType) const;
 	std::string getAllTargetName() const;
+	std::string getProjectName() const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;

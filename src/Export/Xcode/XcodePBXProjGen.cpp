@@ -554,7 +554,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	{
 		const std::string section{ "PBXProject" };
 		const std::string region{ "en" };
-		const std::string name{ "project" };
+		auto name = getProjectName();
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
 		auto key = getHashWithLabel(m_projectUUID, "Project object");
@@ -722,7 +722,7 @@ echo "*== script end ==*"
 
 	// XCConfigurationList
 	{
-		const std::string project{ "project" };
+		auto project = getProjectName();
 		const std::string section{ "XCConfigurationList" };
 		objects[section] = Json::object();
 
@@ -854,6 +854,16 @@ std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& i
 std::string XcodePBXProjGen::getAllTargetName() const
 {
 	return std::string("[all]");
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getProjectName() const
+{
+	// const auto& firstState = *m_states.front();
+	// const auto& workspaceName = firstState.workspace.metadata().name();
+	// return !workspaceName.empty() ? workspaceName : "project";
+
+	return std::string("project");
 }
 
 /*****************************************************************************/

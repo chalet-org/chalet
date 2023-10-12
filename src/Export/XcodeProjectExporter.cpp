@@ -10,6 +10,8 @@
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 #include "Export/Xcode/XcodeXSchemeGen.hpp"
 #include "State/BuildState.hpp"
+#include "State/TargetMetadata.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 
 namespace chalet
@@ -29,7 +31,8 @@ std::string XcodeProjectExporter::getMainProjectOutput()
 			return std::string();
 	}
 
-	return fmt::format("{}/project.xcodeproj", m_directory);
+	auto project = getProjectName();
+	return fmt::format("{}/{}.xcodeproj", m_directory, project);
 }
 
 /*****************************************************************************/
@@ -66,6 +69,8 @@ bool XcodeProjectExporter::generateProjectFiles()
 
 	if (!Commands::pathExists(xcodeproj))
 		Commands::makeDirectory(xcodeproj);
+
+	auto project = getProjectName();
 
 	auto xcworkspace = fmt::format("{}/project.xcworkspace", xcodeproj);
 	if (!Commands::pathExists(xcworkspace))
@@ -105,5 +110,13 @@ bool XcodeProjectExporter::generateProjectFiles()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string XcodeProjectExporter::getProjectName() const
+{
+	const auto& firstState = *m_states.front();
+	const auto& workspaceName = firstState.workspace.metadata().name();
+	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 }
