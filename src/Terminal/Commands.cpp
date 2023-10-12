@@ -1332,6 +1332,23 @@ bool Commands::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
 				}
 			}
 		}
+		// PhaseScriptExecution
+		else if (String::startsWith("PhaseScriptExecution ", inLine))
+		{
+			auto path = getTargetPath(inLine);
+			if (!path.empty())
+			{
+				path = String::getPathFilename(path);
+				// String::replaceAll(path, cwd, "");
+				if (!path.empty())
+				{
+					auto output = fmt::format("   {}{}{}\n", color, path, reset);
+					std::cout.write(output.data(), output.size());
+					std::cout.flush();
+					printed = true;
+				}
+			}
+		}
 		else if (errored || String::contains("error:", inLine) || String::startsWith("ld:", inLine))
 		{
 			std::cout.write(inLine.data(), inLine.size());
