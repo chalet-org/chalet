@@ -1069,7 +1069,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	if (inTarget.objectiveCxx())
 	{
-		ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(true);
+		ret["CLANG_ENABLE_OBJC_ARC"] = getBoolString(false);
 		ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true);
 	}
 

@@ -674,7 +674,8 @@ bool BuildState::validateState()
 		return false;
 	}
 
-	if (hasSubChaletTargets && !m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
+	UNUSED(hasSubChaletTargets);
+	if (!m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
 		return false;
 
 	// Note: Ignored in the clean command so targets with external dependency paths don't get validated

@@ -5,6 +5,7 @@
 
 #include "Export/IProjectExporter.hpp"
 
+#include "Builder/ConfigureFileParser.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
@@ -250,6 +251,17 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		{
 			const auto& project = static_cast<const SourceTarget&>(*target);
 			m_headerFiles.emplace(project.name(), project.getHeaderFiles());
+
+			// Generate the configure files upfront
+			//   kind of a brittle solution, but they'll have to be worked into the
+			//   pbxproj generator otherwise
+			//
+			if (!project.configureFiles().empty())
+			{
+				ConfigureFileParser confFileParser(*state, project);
+				if (!confFileParser.run())
+					return false;
+			}
 		}
 	}
 

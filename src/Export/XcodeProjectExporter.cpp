@@ -66,7 +66,7 @@ bool XcodeProjectExporter::generateProjectFiles()
 
 	auto project = getProjectName(*m_states.front());
 
-	auto xcworkspace = fmt::format("{}/{}.xcworkspace", xcodeproj, project);
+	auto xcworkspace = fmt::format("{}/project.xcworkspace", xcodeproj);
 	if (!Commands::pathExists(xcworkspace))
 		Commands::makeDirectory(xcworkspace);
 
