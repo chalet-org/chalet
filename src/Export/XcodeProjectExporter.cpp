@@ -20,6 +20,18 @@ XcodeProjectExporter::XcodeProjectExporter(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
+std::string XcodeProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".xcode"))
+			return std::string();
+	}
+
+	return fmt::format("{}/project.xcodeproj", m_directory);
+}
+
+/*****************************************************************************/
 std::string XcodeProjectExporter::getProjectTypeName() const
 {
 	return std::string("Xcode");
@@ -47,10 +59,10 @@ bool XcodeProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool XcodeProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".xcode"))
+	auto xcodeproj = getMainProjectOutput();
+	if (xcodeproj.empty())
 		return false;
 
-	auto xcodeproj = fmt::format("{}/project.xcodeproj", m_directory);
 	if (!Commands::pathExists(xcodeproj))
 		Commands::makeDirectory(xcodeproj);
 

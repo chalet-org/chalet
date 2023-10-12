@@ -84,7 +84,7 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 	{
 		if (!Commands::makeDirectory(inDirectory))
 		{
-			Diagnostic::error("There was a creating the '{}' directory.", inDirectory);
+			Diagnostic::error("There was a problem creating the '{}' directory.", inDirectory);
 			return false;
 		}
 	}
@@ -180,6 +180,23 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	Diagnostic::printDone(timer.asString());
 
 	Output::setShowCommandOverride(true);
+
+	const auto& inputs = inCentralState.inputs();
+	if (inputs.route().isExport())
+	{
+		const auto color = Output::getAnsiStyle(Output::theme().build);
+		const auto flair = Output::getAnsiStyle(Output::theme().flair);
+		const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+		auto directory = IProjectExporter::getProjectBuildFolder(inputs);
+		auto project = getMainProjectOutput();
+		const auto& cwd = inputs.workingDirectory();
+		String::replaceAll(project, fmt::format("{}/", cwd), "");
+
+		auto output = fmt::format("\n   Ouptut {}\u2192 {}{}{}\n", flair, color, project, reset);
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
+	}
 
 	return true;
 }

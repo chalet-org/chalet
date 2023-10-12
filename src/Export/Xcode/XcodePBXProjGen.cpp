@@ -1081,7 +1081,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["CLANG_WARN_DIRECT_OBJC_ISA_USAGE"] = "YES_ERROR";
 	}
 
-	ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(true);
+	ret["CLANG_WARN_DOCUMENTATION_COMMENTS"] = getBoolString(false);
 	ret["CLANG_WARN_EMPTY_BODY"] = getBoolString(true);
 	ret["CLANG_WARN_ENUM_CONVERSION"] = getBoolString(true);
 	ret["CLANG_WARN_INFINITE_RECURSION"] = getBoolString(true);
@@ -1124,12 +1124,17 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		StringList searchPaths;
 		const auto& includeDirs = inTarget.includeDirs();
 		const auto& objDir = inState.paths.objDir();
+		const auto& externalBuildDir = inState.paths.externalBuildDir();
 		const auto& intDir = inState.paths.intermediateDir(inTarget);
 		for (auto& include : includeDirs)
 		{
 			if (String::equals(objDir, include))
 			{
 				searchPaths.emplace_back(objectDirectory);
+			}
+			else if (String::startsWith(externalBuildDir, include))
+			{
+				searchPaths.emplace_back(fmt::format("{}/{}", cwd, include));
 			}
 			else
 			{
@@ -1194,32 +1199,67 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["GCC_WARN_UNINITIALIZED_AUTOS"] = "YES_AGGRESSIVE";
 	ret["GCC_WARN_UNUSED_FUNCTION"] = getBoolString(true);
 	ret["GCC_WARN_UNUSED_VARIABLE"] = getBoolString(true);
-	ret["LD_RUNPATH_SEARCH_PATHS"] = {
-		"$(inherited)",
-		"@executable_path/../Frameworks",
-	};
 
-	// lib dirs
+	// lib dirs & Runpath search paths
 	{
+		StringList runPaths;
 		StringList searchPaths;
 		const auto& libDirs = inTarget.libDirs();
+		const auto& workspaceSearchPaths = inState.workspace.searchPaths();
 		const auto& objDir = inState.paths.objDir();
+		const auto& externalDir = inState.inputs.externalDirectory();
+		const auto& externalBuildDir = inState.paths.externalBuildDir();
 		const auto& intDir = inState.paths.intermediateDir(inTarget);
+		const auto& appleFrameworkPaths = inTarget.appleFrameworkPaths();
+
+		LOG(externalBuildDir);
 		for (auto& libDir : libDirs)
 		{
 			if (String::equals(objDir, libDir))
 			{
 				searchPaths.emplace_back(objectDirectory);
 			}
+			else if (String::startsWith(externalBuildDir, libDir) || String::startsWith(externalDir, libDir))
+			{
+				auto temp = fmt::format("{}/{}", cwd, libDir);
+				runPaths.emplace_back(temp);
+				searchPaths.emplace_back(temp);
+			}
 			else
 			{
 				auto temp = fmt::format("{}/{}", cwd, libDir);
 				if (String::equals(intDir, libDir) || Commands::pathExists(temp))
-					searchPaths.emplace_back(std::move(temp));
+				{
+					runPaths.emplace_back(temp);
+					searchPaths.emplace_back(temp);
+				}
 				else
+				{
+					runPaths.emplace_back(libDir);
 					searchPaths.emplace_back(libDir);
+				}
 			}
 		}
+		for (auto& path : appleFrameworkPaths)
+		{
+			if (String::startsWith(externalBuildDir, path) || String::startsWith(externalDir, path))
+			{
+				auto temp = fmt::format("{}/{}", cwd, path);
+				runPaths.emplace_back(temp);
+			}
+			else
+			{
+				runPaths.emplace_back(path);
+			}
+		}
+		for (auto& path : workspaceSearchPaths)
+		{
+			runPaths.emplace_back(path);
+		}
+
+		runPaths.emplace_back("$(inherited)");
+		runPaths.emplace_back("@executable_path/../Frameworks");
+		ret["LD_RUNPATH_SEARCH_PATHS"] = std::move(runPaths);
 
 		searchPaths.emplace_back("$(inherited)");
 		ret["LIBRARY_SEARCH_PATHS"] = std::move(searchPaths);

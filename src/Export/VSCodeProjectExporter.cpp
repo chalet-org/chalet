@@ -24,6 +24,18 @@ VSCodeProjectExporter::VSCodeProjectExporter(const CommandLineInputs& inInputs) 
 }
 
 /*****************************************************************************/
+std::string VSCodeProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".vscode"))
+			return std::string();
+	}
+
+	return m_directory;
+}
+
+/*****************************************************************************/
 std::string VSCodeProjectExporter::getProjectTypeName() const
 {
 	return std::string("Visual Studio Code");
@@ -40,7 +52,8 @@ bool VSCodeProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSCodeProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".vscode"))
+	auto output = getMainProjectOutput();
+	if (output.empty())
 		return false;
 
 	const BuildState* state = getAnyBuildStateButPreferDebug();

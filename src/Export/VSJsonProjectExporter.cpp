@@ -23,6 +23,17 @@ VSJsonProjectExporter::VSJsonProjectExporter(const CommandLineInputs& inInputs) 
 }
 
 /*****************************************************************************/
+std::string VSJsonProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".vsjson"))
+			return std::string();
+	}
+
+	return m_directory;
+}
+/*****************************************************************************/
 std::string VSJsonProjectExporter::getProjectTypeName() const
 {
 	return std::string("Visual Studio JSON");
@@ -48,7 +59,8 @@ bool VSJsonProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSJsonProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".vsjson"))
+	auto output = getMainProjectOutput();
+	if (output.empty())
 		return false;
 
 	const BuildState* state = getAnyBuildStateButPreferDebug();

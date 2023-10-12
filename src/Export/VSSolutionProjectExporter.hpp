@@ -16,6 +16,7 @@ struct VSSolutionProjectExporter final : public IProjectExporter
 	explicit VSSolutionProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
+	virtual std::string getMainProjectOutput() final;
 	virtual std::string getProjectTypeName() const final;
 	virtual bool validate(const BuildState& inState) final;
 	virtual bool generateProjectFiles() final;
