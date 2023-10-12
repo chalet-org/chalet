@@ -382,13 +382,13 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	// install_name_tool
 	for (auto& executable : m_executableOutputPaths)
 	{
-		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
+		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
 			return false;
 
-		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
+		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
 			return false;
 
-		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
+		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
 			return false;
 	}
 
