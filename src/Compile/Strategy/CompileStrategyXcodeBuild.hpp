@@ -23,6 +23,8 @@ struct CompileStrategyXcodeBuild final : ICompileStrategy
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
+	bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd);
+
 	bool m_initialized = false;
 };
 }
