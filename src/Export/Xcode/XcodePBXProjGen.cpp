@@ -27,17 +27,11 @@
 
 namespace chalet
 {
-struct SourceTargetGroup
+enum class PBXGroupKind : ushort
 {
-	std::string path;
-	std::string outputFile;
-	std::string intDir;
-	StringList children;
-	StringList sources;
-	StringList headers;
-	StringList dependencies;
-	SourceKind kind = SourceKind::None;
-	bool isSource = false;
+	Source,
+	Script,
+	BuildAll,
 };
 enum class PBXFileEncoding : uint
 {
@@ -58,6 +52,18 @@ enum class PBXFileEncoding : uint
 	CentralEuropean = 2147483677,
 	Turkish = 2147483683,
 	Icelandic = 2147483685,
+};
+struct SourceTargetGroup
+{
+	std::string path;
+	std::string outputFile;
+	std::string intDir;
+	StringList children;
+	StringList sources;
+	StringList headers;
+	StringList dependencies;
+	SourceKind sourceKind = SourceKind::None;
+	PBXGroupKind kind = PBXGroupKind::Script;
 };
 
 // Corresponds to minimum Xcode version the project format supports
@@ -92,6 +98,11 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	const auto& firstState = *m_states.front();
 	const auto& workspaceName = firstState.workspace.metadata().name();
 	const auto& workingDirectory = firstState.inputs.workingDirectory();
+	const auto& inputFile = firstState.inputs.inputFile();
+
+	auto rootBuildFile = fmt::format("{}/{}", workingDirectory, inputFile);
+	if (!Commands::pathExists(rootBuildFile))
+		rootBuildFile = inputFile;
 
 	m_exportPath = String::getPathFolder(String::getPathFolder(inFilename));
 
@@ -126,8 +137,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					groups.emplace(name, SourceTargetGroup{});
 					groups[name].path = workingDirectory;
 					groups[name].outputFile = sourceTarget.outputFile();
-					groups[name].kind = sourceTarget.kind();
-					groups[name].isSource = true;
+					groups[name].sourceKind = sourceTarget.kind();
+					groups[name].kind = PBXGroupKind::Source;
 				}
 
 				// groups[name].intDir = state->paths.intermediateDir(sourceTarget);
@@ -190,6 +201,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						String::replaceAll(command, fmt::format("{}={}", define, archString), fmt::format("{}=\"{}\"", define, archString));
 					}
 
+					groups[name].kind = PBXGroupKind::Script;
 					groups[name].sources.push_back(std::move(command));
 					groups[name].children = adapter.getFiles();
 
@@ -208,15 +220,27 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 	}
 
+	{
+		SourceTargetGroup buildAllGroup;
+		buildAllGroup.kind = PBXGroupKind::BuildAll;
+		buildAllGroup.path = workingDirectory;
+		buildAllGroup.children.emplace_back(rootBuildFile);
+		for (const auto& [target, _] : groups)
+			buildAllGroup.dependencies.emplace_back(target);
+
+		auto name = getAllTargetName();
+		groups.emplace(name, std::move(buildAllGroup));
+	}
+
 	for (auto& [name, group] : groups)
 	{
-		if (group.isSource)
+		if (group.kind == PBXGroupKind::Source)
 		{
 			std::sort(group.children.begin(), group.children.end());
 			std::sort(group.sources.begin(), group.sources.end());
 			std::sort(group.headers.begin(), group.headers.end());
 		}
-		else
+		else if (group.kind == PBXGroupKind::Script)
 		{
 			std::string makefileContents;
 			size_t index = 0;
@@ -255,15 +279,18 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.isSource)
+			if (pbxGroup.kind == PBXGroupKind::Source)
 				continue;
 
-			auto phase = getHashWithLabel(target);
 			auto key = getTargetHashWithLabel(target);
 			node[key]["isa"] = section;
 			node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(target, ListType::AggregateTarget));
 			node[key]["buildPhases"] = Json::array();
-			node[key]["buildPhases"].push_back(phase);
+			if (pbxGroup.kind == PBXGroupKind::Script)
+			{
+				auto phase = getHashWithLabel(target);
+				node[key]["buildPhases"].push_back(phase);
+			}
 			node[key]["dependencies"] = Json::array();
 			for (auto& dependency : pbxGroup.dependencies)
 			{
@@ -281,7 +308,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.isSource)
+			if (pbxGroup.kind == PBXGroupKind::Source)
 			{
 				if (!pbxGroup.intDir.empty())
 				{
@@ -338,13 +365,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		const std::string section{ "PBXFileReference" };
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
-		// for (const auto& dir : intDirs)
-		// {
-		// 	auto key = getHashWithLabel(dir);
-		// 	node[key]["isa"] = section;
-		// 	node[key]["path"] = dir;
-		// 	node[key]["sourceTree"] = group;
-		// }
 		struct ProjectFileSet
 		{
 			std::string file;
@@ -353,7 +373,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		std::map<std::string, ProjectFileSet> projectFileList;
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			for (auto& file : pbxGroup.sources)
@@ -366,18 +386,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			for (auto& file : pbxGroup.headers)
 			{
 				auto name = getSourceWithSuffix(file, target);
-				auto ext = String::getPathSuffix(file);
-				std::string type;
-				if (String::equals('h', ext))
-					type = "sourcecode.c.h";
-				else
-					type = "sourcecode.cpp.h";
+				auto type = getXcodeFileTypeFromHeader(file);
 
 				if (projectFileList.find(name) == projectFileList.end())
 					projectFileList.emplace(name, ProjectFileSet{ file, type });
@@ -389,7 +404,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto key = getHashWithLabel(name);
 			node[key]["isa"] = section;
 			node[key]["explicitFileType"] = set.fileType;
-			node[key]["fileEncoding"] = 4;
+			node[key]["fileEncoding"] = PBXFileEncoding::UTF8; // assume UTF-8 for now
 			node[key]["name"] = String::getPathFilename(set.file);
 			node[key]["path"] = set.file;
 			node[key]["sourceTree"] = "SOURCE_ROOT";
@@ -398,11 +413,11 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		//<group>
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.isSource)
+			if (pbxGroup.kind == PBXGroupKind::Source)
 			{
 				auto key = getHashWithLabel(target);
 				node[key]["isa"] = section;
-				node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.kind);
+				node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.sourceKind);
 				node[key]["includeInIndex"] = 0;
 				node[key]["path"] = pbxGroup.outputFile;
 				node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
@@ -450,10 +465,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		StringList childNodes;
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			// if (!pbxGroup.isSource)
-			// 	continue;
-
-			auto key = getHashWithLabel(fmt::format("Sources [{}]", target));
+			auto label = pbxGroup.kind == PBXGroupKind::BuildAll ? "Build" : "Sources";
+			auto key = getHashWithLabel(fmt::format("{} [{}]", label, target));
 			node[key]["isa"] = section;
 			node[key]["children"] = Json::array();
 			for (auto& child : pbxGroup.children)
@@ -473,11 +486,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[products]["children"] = Json::array();
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			node[products]["children"].push_back(getHashWithLabel(target));
 		}
+		node[products]["children"].push_back(getHashWithLabel(getAllTargetName()));
 		node[products]["name"] = "Products";
 		node[products]["sourceTree"] = group;
 
@@ -512,7 +526,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			auto sources = getSectionKeyForTarget("Sources", target);
@@ -532,7 +546,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["name"] = target;
 			node[key]["productName"] = target;
 			node[key]["productReference"] = getHashWithLabel(target);
-			node[key]["productType"] = getNativeProductType(pbxGroup.kind);
+			node[key]["productType"] = getNativeProductType(pbxGroup.sourceKind);
 		}
 	}
 
@@ -572,44 +586,23 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["targets"] = Json::array();
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			// if (!pbxGroup.isSource)
-			// 	continue;
-
 			node[key]["targets"].push_back(getTargetHashWithLabel(target));
 		}
 	}
 
 	// PBXShellScriptBuildPhase
 	{
-		// Add to buildPhases
 		const std::string section{ "PBXShellScriptBuildPhase" };
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.isSource)
+			if (pbxGroup.kind == PBXGroupKind::Source)
 				continue;
 
 			if (!pbxGroup.sources.empty())
 			{
-				// 				std::string shellScript{ "set -e\n" };
-				// 				size_t index = 0;
-				// 				for (auto& [configName, _] : configToTargets)
-				// 				{
-				// 					auto& source = pbxGroup.sources.at(index);
-				// 					auto split = String::split(source, '\n');
-				// 					shellScript += fmt::format(R"shell(if test "$CONFIGURATION" = "{}"; then :
-				// 	echo "*== script start ==*"
-				// 	{}
-				// 	echo "*== script end ==*"
-				// fi
-				// )shell",
-				// 						configName,
-				// 						String::join(split, "\n\t"));
-				// 					index++;
-				// 				}
-
 				auto makefilePath = fmt::format("{}/scripts/{}.make", m_exportPath, target);
 				auto shellScript = fmt::format(R"shell(set -e
 echo "*== script start ==*"
@@ -645,7 +638,7 @@ echo "*== script end ==*"
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			if (pbxGroup.intDir.empty())
@@ -674,7 +667,7 @@ echo "*== script end ==*"
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (!pbxGroup.isSource)
+			if (pbxGroup.kind != PBXGroupKind::Source)
 				continue;
 
 			auto key = getSectionKeyForTarget("Sources", target);
@@ -758,7 +751,7 @@ echo "*== script end ==*"
 				configurations.emplace_back(getHashWithLabel(hash, configName));
 			}
 
-			auto type = pbxGroup.isSource ? ListType::NativeProject : ListType::AggregateTarget;
+			auto type = pbxGroup.kind == PBXGroupKind::Source ? ListType::NativeProject : ListType::AggregateTarget;
 			auto key = getHashWithLabel(getBuildConfigurationListLabel(target, type));
 			node[key]["isa"] = section;
 			node[key]["buildConfigurations"] = configurations;
@@ -858,6 +851,12 @@ std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& i
 }
 
 /*****************************************************************************/
+std::string XcodePBXProjGen::getAllTargetName() const
+{
+	return std::string("[all]");
+}
+
+/*****************************************************************************/
 Json XcodePBXProjGen::getHashedJsonValue(const std::string& inValue) const
 {
 	auto hash = Uuid::v5(inValue, m_xcodeNamespaceGuid);
@@ -895,8 +894,9 @@ std::string XcodePBXProjGen::getXcodeFileType(const SourceType inType) const
 		case SourceType::C:
 			return "sourcecode.c.c";
 		case SourceType::CPlusPlus:
-		default:
 			return "sourcecode.cpp.cpp";
+		default:
+			return "automatic";
 	}
 }
 
@@ -917,11 +917,78 @@ std::string XcodePBXProjGen::getXcodeFileType(const SourceKind inKind) const
 }
 
 /*****************************************************************************/
+std::string XcodePBXProjGen::getXcodeFileTypeFromHeader(const std::string& inFile) const
+{
+	auto ext = String::getPathSuffix(inFile);
+	if (String::equals('h', ext))
+		return "sourcecode.c.h";
+	else
+		return "sourcecode.cpp.h";
+}
+
+/*****************************************************************************/
 std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile) const
 {
 	auto ext = String::getPathSuffix(inFile);
-	LOG(ext);
-	return std::string("text");
+	if (ext.empty())
+		return "automatic";
+
+	if (String::equals("txt", ext))
+		return "text";
+	else if (String::equals("json", ext))
+		return "text.json";
+	else if (String::equals("storyboard", ext))
+		return "file.storyboard";
+	else if (String::equals({ "png", "gif", "jpg" }, ext))
+		return "image";
+	// Source code (easy)
+	else if (String::equals("c", ext))
+		return "sourcecode.c.c";
+	else if (String::equals("mm", ext))
+		return "sourcecode.cpp.objcpp";
+	else if (String::equals("swift", ext))
+		return "sourcecode.swift";
+	else if (String::equals("plist", ext))
+		return "sourcecode.text.plist";
+	else if (String::equals("h", ext))
+		return "sourcecode.c.h";
+	else if (String::equals("asm", ext))
+		return "sourcecode.asm";
+	else if (String::equals("metal", ext))
+		return "sourcecode.metal";
+	else if (String::equals("mig", ext))
+		return "sourcecode.mig";
+	else if (String::equals("tbd", ext))
+		return "sourcecode.text-based-dylib-definition";
+	// Apple
+	else if (String::equals("xctest", ext))
+		return "wrapper.cfbundle";
+	else if (String::equals("framework", ext))
+		return "wrapper.framework";
+	else if (String::equals("xcassets", ext))
+		return "folder.assetcatalog";
+	else if (String::equals("xcconfig", ext))
+		return "text.xcconfig";
+	else if (String::equals("xib", ext))
+		return "file.xib";
+	// Compiled
+	else if (String::equals("a", ext))
+		return "archive.ar";
+	else if (String::equals("o", ext))
+		return "compiled.mach-o.objfile";
+	else if (String::equals("dylib", ext))
+		return "compiled.mach-o.dylib";
+	// Source code (complex)
+	else if (String::equals({ "m", "M" }, ext))
+		return "sourcecode.c.objc";
+	else if (String::equals({ "hpp", "hh", "hxx", "H", "inl", "ii", "ixx", "h++", "ipp", "txx", "tpp", "tpl" }, ext))
+		return "sourcecode.cpp.h";
+	else if (String::equals({ "cpp", "cc", "cxx", "C", "c++", "cppm" }, ext))
+		return "sourcecode.cpp.cpp";
+	else if (String::equals({ "for", "f90", "f" }, ext))
+		return "sourcecode.fortran.f90";
+
+	return "automatic";
 }
 
 /*****************************************************************************/

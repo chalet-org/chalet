@@ -37,6 +37,7 @@ private:
 	std::string getTargetHashWithLabel(const std::string& inTarget) const;
 	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
 	std::string getBuildConfigurationListLabel(const std::string& inName, const ListType inType) const;
+	std::string getAllTargetName() const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
 	Json getHashedJsonValue(const Uuid& inHash, const std::string& inLabel) const;
@@ -45,6 +46,7 @@ private:
 	std::string getProductBundleIdentifier(const std::string& inWorkspaceName) const;
 	std::string getXcodeFileType(const SourceType inType) const;
 	std::string getXcodeFileType(const SourceKind inKind) const;
+	std::string getXcodeFileTypeFromHeader(const std::string& inFile) const;
 	std::string getXcodeFileTypeFromFile(const std::string& inFile) const;
 	std::string getMachOType(const SourceTarget& inTarget) const;
 	std::string getNativeProductType(const SourceKind inKind) const;
