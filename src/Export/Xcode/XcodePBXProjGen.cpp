@@ -1075,7 +1075,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	ret["CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING"] = getBoolString(true);
 	ret["CLANG_WARN_BOOL_CONVERSION"] = getBoolString(true);
-	ret["CLANG_WARN_COMMA"] = getBoolString(true);
+	ret["CLANG_WARN_COMMA"] = getBoolString(false);
 	ret["CLANG_WARN_CONSTANT_CONVERSION"] = getBoolString(true);
 
 	if (inTarget.objectiveCxx())

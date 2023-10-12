@@ -16,7 +16,7 @@ struct ConfigureFileParser
 {
 	explicit ConfigureFileParser(const BuildState& inState, const SourceTarget& inProject);
 
-	bool run();
+	bool run(const std::string& inOutputFolder);
 
 private:
 	std::string getReplaceValue(std::string inKey) const;

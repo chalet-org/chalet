@@ -594,7 +594,7 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
 {
 	ConfigureFileParser confFileParser(m_state, inProject);
-	return confFileParser.run();
+	return confFileParser.run(m_state.paths.objDir());
 }
 
 /*****************************************************************************/

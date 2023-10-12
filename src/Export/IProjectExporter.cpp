@@ -238,34 +238,50 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 
 	Output::setQuietNonBuild(quiet);
 
-	auto state = getAnyBuildStateButPreferDebug();
-	if (state == nullptr)
+	auto debugState = getAnyBuildStateButPreferDebug();
+	if (debugState == nullptr)
 	{
 		Diagnostic::error("There are no valid projects to export.");
 		return false;
 	}
 
-	for (auto& target : state->targets)
+	for (auto& target : debugState->targets)
 	{
 		if (target->isSources())
 		{
 			const auto& project = static_cast<const SourceTarget&>(*target);
 			m_headerFiles.emplace(project.name(), project.getHeaderFiles());
+		}
+	}
 
-			// Generate the configure files upfront
-			//   kind of a brittle solution, but they'll have to be worked into the
-			//   pbxproj generator otherwise
-			//
-			if (!project.configureFiles().empty())
+	for (auto& state : m_states)
+	{
+		for (auto& target : state->targets)
+		{
+			if (target->isSources())
 			{
-				ConfigureFileParser confFileParser(*state, project);
-				if (!confFileParser.run())
-					return false;
+				const auto& project = static_cast<const SourceTarget&>(*target);
+
+				// Generate the configure files upfront
+				//   kind of a brittle solution, but they'll have to be worked into the
+				//   pbxproj generator otherwise
+				//
+				if (!project.configureFiles().empty())
+				{
+					auto outFolder = state->paths.objDir();
+					if (m_kind == ExportKind::Xcode)
+					{
+						outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
+					}
+					ConfigureFileParser confFileParser(*state, project);
+					if (!confFileParser.run(outFolder))
+						return false;
+				}
 			}
 		}
 	}
 
-	if (!validate(*state))
+	if (!validate(*debugState))
 		return false;
 
 	populatePathVariable();

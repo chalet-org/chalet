@@ -27,8 +27,14 @@ ConfigureFileParser::ConfigureFileParser(const BuildState& inState, const Source
 }
 
 /*****************************************************************************/
-bool ConfigureFileParser::run()
+bool ConfigureFileParser::run(const std::string& inOutputFolder)
 {
+	if (inOutputFolder.empty())
+	{
+		Diagnostic::error("bad path sent to ConfigureFileParser");
+		return false;
+	}
+
 	// Timer timer;
 	bool result = true;
 
@@ -49,9 +55,8 @@ bool ConfigureFileParser::run()
 	bool metadataChanged = m_state.cache.file().metadataChanged();
 
 	std::string suffix(".in");
-	auto& outFolder = m_state.paths.objDir();
-	if (!Commands::pathExists(outFolder))
-		Commands::makeDirectory(outFolder);
+	if (!Commands::pathExists(inOutputFolder))
+		Commands::makeDirectory(inOutputFolder);
 
 	for (const auto& configureFile : configureFiles)
 	{
@@ -72,7 +77,7 @@ bool ConfigureFileParser::run()
 		auto outFile = String::getPathFilename(configureFile);
 		outFile = outFile.substr(0, outFile.size() - 3);
 
-		auto outPath = fmt::format("{}/{}", outFolder, outFile);
+		auto outPath = fmt::format("{}/{}", inOutputFolder, outFile);
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
 		bool pathExists = Commands::pathExists(outPath);
