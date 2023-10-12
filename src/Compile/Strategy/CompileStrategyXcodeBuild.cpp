@@ -113,8 +113,8 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-project");
 	// cmd.emplace_back("project");
 
-	auto project = exporter.getMainProjectOutput();
-	cmd.emplace_back(exporter.getMainProjectOutput());
+	auto project = exporter.getMainProjectOutput(m_state);
+	cmd.emplace_back(project);
 
 	const auto& signingIdentity = m_state.tools.signingIdentity();
 	if (!signingIdentity.empty())

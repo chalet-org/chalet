@@ -115,8 +115,13 @@ bool XcodeProjectExporter::generateProjectFiles()
 /*****************************************************************************/
 std::string XcodeProjectExporter::getProjectName() const
 {
-	const auto& firstState = *m_states.front();
-	const auto& workspaceName = firstState.workspace.metadata().name();
+	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	return getMainProjectOutput(*m_states.front());
+}
+
+std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState) const
+{
+	const auto& workspaceName = inState.workspace.metadata().name();
 	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 }
