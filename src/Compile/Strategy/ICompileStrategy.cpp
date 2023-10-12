@@ -17,6 +17,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
+#include "Compile/Strategy/CompileStrategyXcodeBuild.hpp"
 
 namespace chalet
 {
@@ -43,6 +44,9 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 #if defined(CHALET_WIN32)
 		case StrategyType::MSBuild:
 			return std::make_unique<CompileStrategyMSBuild>(inState);
+#elif defined(CHALET_MACOS)
+		case StrategyType::XcodeBuild:
+			return std::make_unique<CompileStrategyXcodeBuild>(inState);
 #endif
 		default:
 			break;
@@ -61,6 +65,11 @@ StrategyType ICompileStrategy::type() const noexcept
 bool ICompileStrategy::isMSBuild() const noexcept
 {
 	return m_type == StrategyType::MSBuild;
+}
+
+bool ICompileStrategy::isXcodeBuild() const noexcept
+{
+	return m_type == StrategyType::XcodeBuild;
 }
 
 /*****************************************************************************/

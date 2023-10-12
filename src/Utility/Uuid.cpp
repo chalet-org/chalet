@@ -8,6 +8,7 @@
 #include <sstream>
 
 #include "Libraries/LibUuid.hpp"
+#include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -80,6 +81,20 @@ std::string Uuid::toUpperCase() const
 	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
 		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
 	});
+	return ret;
+}
+
+/*****************************************************************************/
+// This yields 24 character hashes used by xcode projects
+//   not sure what this type of hash is called... so, it's "Apple Hash"
+//
+std::string Uuid::toAppleHash() const
+{
+	std::string ret(m_str.substr(9));
+	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
+		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
+	});
+	String::replaceAll(ret, "-", "");
 	return ret;
 }
 }

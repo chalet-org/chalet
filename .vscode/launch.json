@@ -18,7 +18,7 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../chalet-example-metadata",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
 			"stopOnEntry": false,
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",

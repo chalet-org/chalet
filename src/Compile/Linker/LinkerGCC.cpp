@@ -632,13 +632,13 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
 	{
-		if (m_project.platformIndependentCode())
+		if (m_project.positionIndependentCode())
 		{
 			std::string option{ "-fPIC" };
 			// if (isFlagSupported(option))
 			List::addIfDoesNotExist(outArgList, std::move(option));
 		}
-		else if (m_project.platformIndependentExecutable())
+		else if (m_project.positionIndependentExecutable())
 		{
 			std::string option{ "-fPIE" };
 			// if (isFlagSupported(option))

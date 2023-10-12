@@ -154,8 +154,8 @@ struct SourceTarget final : public IBuildTarget
 	void setWindowsEntryPoint(const WindowsEntryPoint inValue) noexcept;
 	void setWindowsEntryPoint(const std::string& inValue);
 
-	bool platformIndependentCode() const noexcept;
-	bool platformIndependentExecutable() const noexcept;
+	bool positionIndependentCode() const noexcept;
+	bool positionIndependentExecutable() const noexcept;
 	void setPicType(const bool inValue) noexcept;
 	void setPicType(const std::string& inValue);
 

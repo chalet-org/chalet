@@ -424,13 +424,21 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	}
 
-	bool needsCMakeProgram = !usesNinja() && !m_state.environment->isMsvc();
-
+	bool needsCMakeProgram = !m_state.environment->isMsvc();
 	if (needsCMakeProgram && !isDefined["CMAKE_MAKE_PROGRAM"])
 	{
-		const auto& make = m_state.toolchain.make();
-		if (!make.empty())
-			outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
+		if (usesNinja())
+		{
+			const auto& ninja = m_state.toolchain.ninja();
+			if (!ninja.empty())
+				outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(ninja)));
+		}
+		else
+		{
+			const auto& make = m_state.toolchain.make();
+			if (!make.empty())
+				outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(make)));
+		}
 	}
 
 	if (!isDefined["CMAKE_C_COMPILER"])
@@ -701,7 +709,10 @@ bool CmakeBuilder::usesNinja() const
 	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
 	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
 	//
-	if (m_state.toolchain.strategy() == StrategyType::Ninja || m_state.toolchain.strategy() == StrategyType::MSBuild)
+	auto strategy = m_state.toolchain.strategy();
+	if (strategy == StrategyType::Ninja
+		|| strategy == StrategyType::MSBuild
+		|| strategy == StrategyType::XcodeBuild)
 		return true;
 
 	auto& ninjaExec = m_state.toolchain.ninja();

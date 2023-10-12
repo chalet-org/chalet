@@ -138,6 +138,13 @@ bool BuildState::generateProjects()
 		if (!projectExporter->generate(m_impl->centralState, true))
 			return false;
 	}
+#elif defined(CHALET_MACOS)
+	if (toolchain.strategy() == StrategyType::XcodeBuild)
+	{
+		auto projectExporter = IProjectExporter::make(ExportKind::Xcode, inputs);
+		if (!projectExporter->generate(m_impl->centralState, true))
+			return false;
+	}
 #endif
 
 	return true;
@@ -627,6 +634,25 @@ bool BuildState::validateState()
 		}
 #else
 		Diagnostic::error("The 'msbuild' strategy is only available on Windows.");
+		return false;
+#endif
+	}
+	else if (strat == StrategyType::XcodeBuild)
+	{
+#if defined(CHALET_MACOS)
+		if (!environment->isAppleClang())
+		{
+			Diagnostic::error("The 'xcodebuild' strategy is only allowed with the apple-llvm preset.");
+			return false;
+		}
+
+		if (Commands::isUsingAppleCommandLineTools())
+		{
+			Diagnostic::error("The 'xcodebuild' strategy cannot be used with CommandLineTools. Please run 'sudo xcode-select -s /Applications/Xcode.app/Contents/Developer' (or with your chosen path to Xcode)");
+			return false;
+		}
+#else
+		Diagnostic::error("The 'xcodebuild' strategy is only available on macOS.");
 		return false;
 #endif
 	}

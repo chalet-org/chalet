@@ -32,6 +32,7 @@ struct IProjectExporter
 	ExportKind kind() const noexcept;
 
 protected:
+	virtual std::string getMainProjectOutput() = 0;
 	virtual std::string getProjectTypeName() const = 0;
 	virtual bool validate(const BuildState& inState) = 0;
 	virtual bool generateProjectFiles() = 0;

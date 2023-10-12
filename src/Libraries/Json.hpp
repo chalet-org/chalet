@@ -42,6 +42,7 @@ inline nlohmann::ordered_json operator"" _ojson(const char* s, std::size_t n)
 
 namespace chalet
 {
+using UJson = nlohmann::json;
 using Json = nlohmann::ordered_json;
 using JsonDataType = nlohmann::detail::value_t;
 namespace JsonSchema = nlohmann::json_schema;

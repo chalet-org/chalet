@@ -23,6 +23,17 @@ VSJsonProjectExporter::VSJsonProjectExporter(const CommandLineInputs& inInputs) 
 }
 
 /*****************************************************************************/
+std::string VSJsonProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".vsjson"))
+			return std::string();
+	}
+
+	return m_directory;
+}
+/*****************************************************************************/
 std::string VSJsonProjectExporter::getProjectTypeName() const
 {
 	return std::string("Visual Studio JSON");
@@ -35,9 +46,9 @@ bool VSJsonProjectExporter::validate(const BuildState& inState)
 	if (!inState.environment->isMsvc())
 	{
 #if defined(CHALET_WIN32)
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
 #else
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain on Windows.", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain on Windows.", typeName);
 #endif
 		return false;
 	}
@@ -48,7 +59,8 @@ bool VSJsonProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSJsonProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".vsjson"))
+	auto output = getMainProjectOutput();
+	if (output.empty())
 		return false;
 
 	const BuildState* state = getAnyBuildStateButPreferDebug();

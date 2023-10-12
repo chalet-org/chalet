@@ -28,6 +28,18 @@ CodeBlocksProjectExporter::CodeBlocksProjectExporter(const CommandLineInputs& in
 }
 
 /*****************************************************************************/
+std::string CodeBlocksProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".codeblocks"))
+			return std::string();
+	}
+
+	return fmt::format("{}/project.workspace", m_directory);
+}
+
+/*****************************************************************************/
 std::string CodeBlocksProjectExporter::getProjectTypeName() const
 {
 	return std::string("CodeBlocks");
@@ -38,7 +50,7 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 {
 	if (!inState.environment->isGcc())
 	{
-		Diagnostic::error("CodeBlocks project exporter requires a GCC toolchain (set with --toolchain/-t).");
+		Diagnostic::error("CodeBlocks project format requires a GCC toolchain (set with --toolchain/-t).");
 		return false;
 	}
 
@@ -48,7 +60,8 @@ bool CodeBlocksProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool CodeBlocksProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".codeblocks"))
+	auto workspaceFile = getMainProjectOutput();
+	if (workspaceFile.empty())
 		return false;
 
 	auto state = getAnyBuildStateButPreferDebug();
@@ -75,7 +88,6 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 		if (hasSourceTargets)
 		{
 			{
-				auto workspaceFile = fmt::format("{}/project.workspace", m_directory);
 				auto contents = getWorkspaceContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{
@@ -84,7 +96,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 				}
 			}
 			{
-				auto workspaceFile = fmt::format("{}/project.workspace.layout", m_directory);
+				auto workspaceLayoutFile = fmt::format("{}.layout", workspaceFile);
 				auto contents = getWorkspaceLayoutContent(*state);
 				if (!Commands::createFileWithContents(workspaceFile, contents))
 				{

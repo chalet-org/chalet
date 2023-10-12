@@ -20,7 +20,8 @@ namespace chalet
 {
 /*****************************************************************************/
 CompilerCxxClang::CompilerCxxClang(const BuildState& inState, const SourceTarget& inProject) :
-	CompilerCxxGCC(inState, inProject)
+	CompilerCxxGCC(inState, inProject),
+	m_clangAdapter(inState, inProject)
 {
 }
 
@@ -54,33 +55,9 @@ void CompilerCxxClang::addProfileInformation(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addSanitizerOptions(StringList& outArgList, const BuildState& inState)
 {
-	StringList sanitizers;
-	if (inState.configuration.sanitizeAddress())
-	{
-		sanitizers.emplace_back("address");
-	}
-	if (inState.configuration.sanitizeHardwareAddress())
-	{
-		sanitizers.emplace_back("hwaddress");
-	}
-	if (inState.configuration.sanitizeThread())
-	{
-		sanitizers.emplace_back("thread");
-	}
-	if (inState.configuration.sanitizeMemory())
-	{
-		sanitizers.emplace_back("memory");
-	}
-	if (inState.configuration.sanitizeLeaks())
-	{
-		sanitizers.emplace_back("leak");
-	}
-	if (inState.configuration.sanitizeUndefinedBehavior())
-	{
-		sanitizers.emplace_back("undefined");
-		sanitizers.emplace_back("integer");
-	}
-
+	SourceTarget dummyTarget(inState);
+	CommandAdapterClang clangAdapter(inState, dummyTarget);
+	StringList sanitizers = clangAdapter.getSanitizersList();
 	if (!sanitizers.empty())
 	{
 		auto list = String::join(sanitizers, ',');
@@ -104,60 +81,10 @@ void CompilerCxxClang::addLanguageStandard(StringList& outArgList, const SourceT
 	bool validPchType = derivative == SourceType::CxxPrecompiledHeader && (language == CodeLanguage::C || language == CodeLanguage::ObjectiveC);
 	bool useC = validPchType || derivative == SourceType::C || derivative == SourceType::ObjectiveC;
 
-	const auto& langStandard = useC ? m_project.cStandard() : m_project.cppStandard();
-	std::string ret = String::toLowerCase(langStandard);
-
-	bool isClang = m_state.environment->isClang();
-	if (!useC)
+	auto standard = useC ? m_clangAdapter.getLanguageStandardC() : m_clangAdapter.getLanguageStandardCpp();
+	if (!standard.empty())
 	{
-		if (RegexPatterns::matchesGnuCppStandard(ret))
-		{
-			std::string yearOnly = ret;
-			String::replaceAll(yearOnly, "gnu++", "");
-			String::replaceAll(yearOnly, "c++", "");
-
-			if (String::equals("26", yearOnly) && (isClang /* && m_versionMajorMinor < 1700 */))
-			{
-				String::replaceAll(ret, "26", "2c");
-			}
-			else if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1700))
-			{
-				String::replaceAll(ret, "23", "2b");
-			}
-			else if (String::equals("20", yearOnly) && (isClang && m_versionMajorMinor < 1000))
-			{
-				String::replaceAll(ret, "20", "2a");
-			}
-			else if (String::equals("17", yearOnly) && (isClang && m_versionMajorMinor < 500))
-			{
-				String::replaceAll(ret, "17", "1z");
-			}
-			else if (String::equals("14", yearOnly) && (isClang && m_versionMajorMinor < 350))
-			{
-				String::replaceAll(ret, "14", "1y");
-			}
-
-			ret = "-std=" + ret;
-			outArgList.emplace_back(std::move(ret));
-		}
-	}
-	else
-	{
-		if (RegexPatterns::matchesGnuCStandard(ret))
-		{
-			std::string yearOnly = ret;
-			String::replaceAll(yearOnly, "gnu", "");
-			String::replaceAll(yearOnly, "c", "");
-
-			// TODO: determine correct revision where 23 can be used
-			if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1600))
-			{
-				String::replaceAll(ret, "23", "2x");
-			}
-
-			ret = "-std=" + ret;
-			outArgList.emplace_back(std::move(ret));
-		}
+		outArgList.emplace_back(fmt::format("-std={}", standard));
 	}
 }
 
@@ -227,7 +154,7 @@ void CompilerCxxClang::addLinkTimeOptimizations(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
 {
-	if (m_project.cppCoroutines() && m_versionMajorMinor >= 500)
+	if (m_clangAdapter.supportsCppCoroutines())
 	{
 		std::string option{ "-fcoroutines-ts" };
 		// if (isFlagSupported(option))
@@ -238,7 +165,7 @@ void CompilerCxxClang::addCppCoroutines(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxClang::addCppConcepts(StringList& outArgList) const
 {
-	if (m_project.cppConcepts() && m_versionMajorMinor >= 600 && m_versionMajorMinor < 1000)
+	if (m_clangAdapter.supportsCppConcepts())
 	{
 		std::string option{ "-fconcepts-ts" };
 		// if (isFlagSupported(option))

@@ -259,7 +259,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	bool error = false;
 
-	bool buildAll = m_strategy->isMSBuild(); // TODO: XCode projects would use this too
+	bool buildAll = m_strategy->isMSBuild() || m_strategy->isXcodeBuild();
 	bool multiTarget = m_buildTargets.size() > 1;
 	for (auto& target : m_buildTargets)
 	{
@@ -494,6 +494,10 @@ std::string BuildManager::getBuildStrategyName() const
 #if defined(CHALET_WIN32)
 		case StrategyType::MSBuild:
 			ret = "MSBuild";
+			break;
+#elif defined(CHALET_MACOS)
+		case StrategyType::XcodeBuild:
+			ret = "XcodeBuild";
 			break;
 #endif
 

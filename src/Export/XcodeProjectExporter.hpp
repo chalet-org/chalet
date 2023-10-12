@@ -3,17 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_SOLUTION_PROJECT_EXPORTER_HPP
-#define CHALET_VS_SOLUTION_PROJECT_EXPORTER_HPP
+#ifndef CHALET_XCODE_PROJECT_EXPORTER_HPP
+#define CHALET_XCODE_PROJECT_EXPORTER_HPP
 
 #include "Export/IProjectExporter.hpp"
-#include "Utility/Uuid.hpp"
 
 namespace chalet
 {
-struct VSSolutionProjectExporter final : public IProjectExporter
+struct XcodeProjectExporter final : public IProjectExporter
 {
-	explicit VSSolutionProjectExporter(const CommandLineInputs& inInputs);
+	explicit XcodeProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getMainProjectOutput() final;
@@ -22,8 +21,8 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
-	OrderedDictionary<Uuid> getTargetGuids(const std::string& inProjectTypeGUID) const;
+	//
 };
 }
 
-#endif // CHALET_VS_SOLUTION_PROJECT_EXPORTER_HPP
+#endif // CHALET_XCODE_PROJECT_EXPORTER_HPP

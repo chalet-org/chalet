@@ -15,6 +15,7 @@ enum class StrategyType : ushort
 	Ninja,
 	Native,
 	MSBuild,
+	XcodeBuild,
 	Count,
 };
 }

@@ -682,6 +682,9 @@ std::string ArgumentParser::getHelp()
 #if defined(CHALET_WIN32)
 			else if (String::equals("msbuild", preset))
 				return std::string("Build using a Visual Studio solution and MSBuild - requires vs-* toolchain preset");
+#elif defined(CHALET_MACOS)
+			else if (String::equals("xcodebuild", preset))
+				return std::string("Build using an Xcode project and xcodebuild - requires apple-llvm toolchain preset");
 #endif
 
 			return std::string();

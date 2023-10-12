@@ -123,29 +123,6 @@ void AncillaryTools::fetchXcodeVersion()
 }
 
 /*****************************************************************************/
-void AncillaryTools::fetchXcodeGenVersion()
-{
-#if defined(CHALET_MACOS)
-	if (!m_xcodegen.empty() && m_xcodegenVersionMajor == 0 && m_xcodegenVersionMinor == 0)
-	{
-		if (Commands::pathExists(m_xcodegen))
-		{
-			std::string version = Commands::subprocessOutput({ m_xcodegen, "--version" });
-			version = Commands::isolateVersion(version);
-
-			auto vals = String::split(version, '.');
-			if (vals.size() == 3)
-			{
-				m_xcodegenVersionMajor = std::stoi(vals[0]);
-				m_xcodegenVersionMinor = std::stoi(vals[1]);
-				m_xcodegenVersionPatch = std::stoi(vals[2]);
-			}
-		}
-	}
-#endif
-}
-
-/*****************************************************************************/
 const ScriptAdapter& AncillaryTools::scriptAdapter() const
 {
 	return m_scriptAdapter;
@@ -388,28 +365,6 @@ uint AncillaryTools::xcodeVersionMajor() const noexcept
 uint AncillaryTools::xcodeVersionMinor() const noexcept
 {
 	return m_xcodeVersionMinor;
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::xcodegen() const noexcept
-{
-	return m_xcodegen;
-}
-void AncillaryTools::setXcodegen(std::string&& inValue) noexcept
-{
-	m_xcodegen = std::move(inValue);
-}
-uint AncillaryTools::xcodegenVersionMajor() const noexcept
-{
-	return m_xcodegenVersionMajor;
-}
-uint AncillaryTools::xcodegenVersionMinor() const noexcept
-{
-	return m_xcodegenVersionMinor;
-}
-uint AncillaryTools::xcodegenVersionPatch() const noexcept
-{
-	return m_xcodegenVersionPatch;
 }
 
 /*****************************************************************************/

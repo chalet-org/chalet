@@ -1029,12 +1029,12 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 }
 
 /*****************************************************************************/
-bool SourceTarget::platformIndependentCode() const noexcept
+bool SourceTarget::positionIndependentCode() const noexcept
 {
 	return m_picType == PositionIndependentCodeType::Shared;
 }
 
-bool SourceTarget::platformIndependentExecutable() const noexcept
+bool SourceTarget::positionIndependentExecutable() const noexcept
 {
 	return m_picType == PositionIndependentCodeType::Executable;
 }

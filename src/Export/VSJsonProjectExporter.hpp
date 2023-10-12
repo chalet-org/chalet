@@ -10,13 +10,12 @@
 
 namespace chalet
 {
-struct SourceTarget;
-
 struct VSJsonProjectExporter final : public IProjectExporter
 {
 	explicit VSJsonProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
+	virtual std::string getMainProjectOutput() final;
 	virtual std::string getProjectTypeName() const final;
 	virtual bool validate(const BuildState& inState) final;
 	virtual bool generateProjectFiles() final;

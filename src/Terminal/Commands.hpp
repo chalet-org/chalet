@@ -84,6 +84,9 @@ std::string subprocessOutput(const StringList& inCmd, const PipeOption inStdOut 
 std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 
 bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
+#if defined(CHALET_MACOS)
+bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd = std::string());
+#endif
 
 std::string isolateVersion(const std::string& outString);
 std::string which(const std::string& inExecutable);
@@ -93,6 +96,7 @@ const std::string& getCygPath();
 #endif
 #if defined(CHALET_MACOS)
 const std::string& getXcodePath();
+bool isUsingAppleCommandLineTools();
 #endif
 }
 }

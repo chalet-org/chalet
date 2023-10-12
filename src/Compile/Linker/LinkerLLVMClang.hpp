@@ -6,6 +6,7 @@
 #ifndef CHALET_LINKER_LLVM_CLANG_HPP
 #define CHALET_LINKER_LLVM_CLANG_HPP
 
+#include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/Linker/LinkerGCC.hpp"
 
 namespace chalet
@@ -30,6 +31,8 @@ protected:
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;
 	virtual void endStaticLinkGroup(StringList& outArgList) const override;
 	virtual void startExplicitDynamicLinkGroup(StringList& outArgList) const override;
+
+	CommandAdapterClang m_clangAdapter;
 };
 }
 

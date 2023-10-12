@@ -26,6 +26,18 @@ VSSolutionProjectExporter::VSSolutionProjectExporter(const CommandLineInputs& in
 }
 
 /*****************************************************************************/
+std::string VSSolutionProjectExporter::getMainProjectOutput()
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".vssolution"))
+			return std::string();
+	}
+
+	return fmt::format("{}/project.sln", m_directory);
+}
+
+/*****************************************************************************/
 std::string VSSolutionProjectExporter::getProjectTypeName() const
 {
 	return std::string("Visual Studio Solution");
@@ -38,9 +50,9 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 	if (!inState.environment->isMsvc())
 	{
 #if defined(CHALET_WIN32)
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain (set with --toolchain/-t).", typeName);
 #else
-		Diagnostic::error("{} exporter requires the Visual Studio toolchain on Windows.", typeName);
+		Diagnostic::error("{} project format requires the Visual Studio toolchain on Windows.", typeName);
 #endif
 		return false;
 	}
@@ -52,7 +64,8 @@ bool VSSolutionProjectExporter::validate(const BuildState& inState)
 /*****************************************************************************/
 bool VSSolutionProjectExporter::generateProjectFiles()
 {
-	if (!useProjectBuildDirectory(".vssolution"))
+	auto solution = getMainProjectOutput();
+	if (solution.empty())
 		return false;
 
 	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
@@ -64,9 +77,9 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	if (firstState != nullptr)
 	{
 		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
-		if (!slnGen.saveToFile(fmt::format("{}/project.sln", m_directory)))
+		if (!slnGen.saveToFile(solution))
 		{
-			Diagnostic::error("There was a problem saving the workspace.sln file.");
+			Diagnostic::error("There was a problem saving the project.sln file.");
 			return false;
 		}
 	}
