@@ -50,6 +50,9 @@ bool ConfigureFileParser::run()
 
 	std::string suffix(".in");
 	auto& outFolder = m_state.paths.objDir();
+	if (!Commands::pathExists(outFolder))
+		Commands::makeDirectory(outFolder);
+
 	for (const auto& configureFile : configureFiles)
 	{
 		if (!Commands::pathExists(configureFile))
