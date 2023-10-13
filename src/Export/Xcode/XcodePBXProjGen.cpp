@@ -228,6 +228,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		{
 			if (target->isDistributionBundle())
 			{
+#if defined(CHALET_MACOS)
 				auto& bundle = static_cast<const BundleTarget&>(*target);
 				if (bundle.isMacosAppBundle())
 				{
@@ -259,6 +260,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					for (auto& tgt : buildTargets)
 						List::addIfDoesNotExist(groups[name].dependencies, tgt);
 				}
+#endif
 			}
 		}
 	}
