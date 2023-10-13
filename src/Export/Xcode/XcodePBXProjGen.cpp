@@ -17,6 +17,8 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Distribution/BundleTarget.hpp"
+#include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -32,6 +34,7 @@ enum class PBXGroupKind : ushort
 	Source,
 	Script,
 	BuildAll,
+	AppBundle,
 };
 enum class PBXFileEncoding : uint
 {
@@ -99,6 +102,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	const auto& workspaceName = firstState.workspace.metadata().name();
 	const auto& workingDirectory = firstState.inputs.workingDirectory();
 	const auto& inputFile = firstState.inputs.inputFile();
+
+	// const auto& chaletPath = firstState.tools.chalet();
 
 	auto rootBuildFile = fmt::format("{}/{}", workingDirectory, inputFile);
 	if (!Commands::pathExists(rootBuildFile))
@@ -218,6 +223,44 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			lastDependencies.emplace_back(target->name());
 			lastDependencyWasSource = target->isSources();
 		}
+
+		for (auto& target : state->distribution)
+		{
+			if (target->isDistributionBundle())
+			{
+				auto& bundle = static_cast<const BundleTarget&>(*target);
+				if (bundle.isMacosAppBundle())
+				{
+					std::string name("[distribution]");
+					// auto& name = bundle.name();
+					if (groups.find(name) == groups.end())
+					{
+						groups.emplace(name, SourceTargetGroup{});
+						groups[name].kind = PBXGroupKind::AppBundle;
+						groups[name].path = workingDirectory;
+					}
+					groups[name].outputFile = fmt::format("{}/{}.app", state->inputs.distributionDirectory(), target->name());
+
+					auto& icon = bundle.macosBundleIcon();
+					if (!icon.empty())
+						groups[name].children.emplace_back(icon);
+
+					auto& entitlements = bundle.macosBundleEntitlementsPropertyList();
+					if (!entitlements.empty())
+						groups[name].children.emplace_back(entitlements);
+
+					auto& plist = bundle.macosBundleInfoPropertyList();
+					if (!plist.empty())
+						groups[name].children.emplace_back(plist);
+
+					// groups[name].children.emplace_back(fmt::format("{}/{}.app", state->inputs.distributionDirectory(), target->name()));
+
+					auto& buildTargets = bundle.buildTargets();
+					for (auto& tgt : buildTargets)
+						List::addIfDoesNotExist(groups[name].dependencies, tgt);
+				}
+			}
+		}
 	}
 
 	{
@@ -257,9 +300,25 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				index++;
 			}
 
-			auto outPath = fmt::format("{}/scripts/{}.make", m_exportPath, name);
+			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
 			Commands::createFileWithContents(outPath, makefileContents);
 		}
+		// 		else if (group.kind == PBXGroupKind::AppBundle)
+		// 		{
+		// 			std::string makefileContents;
+		// 			for (auto& [configName, _] : configToTargets)
+		// 			{
+		// 				makefileContents += fmt::format(R"shell({configName}:
+		// 	@{chaletPath} -c {configName} bundle
+
+		// )shell",
+		// 					FMT_ARG(configName),
+		// 					FMT_ARG(chaletPath));
+		// 			}
+
+		// 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
+		// 			Commands::createFileWithContents(outPath, makefileContents);
+		// 		}
 	}
 
 	OldPListGenerator pbxproj;
@@ -286,7 +345,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			node[key]["isa"] = section;
 			node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(target, ListType::AggregateTarget));
 			node[key]["buildPhases"] = Json::array();
-			if (pbxGroup.kind == PBXGroupKind::Script)
+			if (pbxGroup.kind == PBXGroupKind::Script || pbxGroup.kind == PBXGroupKind::AppBundle)
 			{
 				auto phase = getHashWithLabel(target);
 				node[key]["buildPhases"].push_back(phase);
@@ -424,6 +483,17 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
+				// if (pbxGroup.kind == PBXGroupKind::AppBundle)
+				// {
+				// 	auto filename = String::getPathFilename(pbxGroup.outputFile);
+				// 	auto key = getHashWithLabel(pbxGroup.outputFile);
+				// 	node[key]["isa"] = section;
+				// 	node[key]["explicitFileType"] = getXcodeFileTypeFromFile(filename);
+				// 	node[key]["includeInIndex"] = 0;
+				// 	node[key]["name"] = filename;
+				// 	node[key]["path"] = pbxGroup.outputFile;
+				// 	node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
+				// }
 				for (auto& file : pbxGroup.children)
 				{
 					auto name = getSourceWithSuffix(file, target);
@@ -486,10 +556,14 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[products]["children"] = Json::array();
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind != PBXGroupKind::Source)
-				continue;
-
-			node[products]["children"].push_back(getHashWithLabel(target));
+			if (pbxGroup.kind == PBXGroupKind::Source)
+			{
+				node[products]["children"].push_back(getHashWithLabel(target));
+			}
+			// else if (pbxGroup.kind == PBXGroupKind::AppBundle)
+			// {
+			// 	node[products]["children"].push_back(getHashWithLabel(pbxGroup.outputFile));
+			// }
 		}
 		node[products]["children"].push_back(getHashWithLabel(getAllTargetName()));
 		node[products]["name"] = "Products";
@@ -601,9 +675,38 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (pbxGroup.kind == PBXGroupKind::Source)
 				continue;
 
+			// 			if (pbxGroup.kind == PBXGroupKind::AppBundle)
+			// 			{
+			// 				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
+			// 				auto shellScript = fmt::format(R"shell(set -e
+			// echo "*== script start ==*"
+			// make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
+			// echo "*== script end ==*"
+			// )shell",
+			// 					makefilePath);
+
+			// 				auto key = getHashWithLabel(target);
+			// 				node[key]["isa"] = section;
+			// 				node[key]["alwaysOutOfDate"] = 1;
+			// 				node[key]["buildActionMask"] = kBuildActionMask;
+			// 				node[key]["files"] = Json::array();
+			// 				// for (auto& filename : pbxGroup.children)
+			// 				// {
+			// 				// 	node[key]["files"].push_back(getHashWithLabel(fmt::format("{} in Resources", filename)));
+			// 				// }
+			// 				node[key]["inputPaths"] = Json::array();
+			// 				node[key]["name"] = target;
+			// 				node[key]["outputPaths"] = Json::array();
+			// 				node[key]["outputPaths"].emplace_back(pbxGroup.outputFile);
+			// 				node[key]["runOnlyForDeploymentPostprocessing"] = 0;
+			// 				node[key]["shellPath"] = "/bin/sh";
+			// 				node[key]["shellScript"] = shellScript;
+			// 				node[key]["showEnvVarsInLog"] = 0;
+			// 			}
+			// 			else
 			if (!pbxGroup.sources.empty())
 			{
-				auto makefilePath = fmt::format("{}/scripts/{}.make", m_exportPath, target);
+				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
 				auto shellScript = fmt::format(R"shell(set -e
 echo "*== script start ==*"
 make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
@@ -964,6 +1067,8 @@ std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile)
 	else if (String::equals("tbd", ext))
 		return "sourcecode.text-based-dylib-definition";
 	// Apple
+	else if (String::equals("app", ext))
+		return "wrapper.application";
 	else if (String::equals("xctest", ext))
 		return "wrapper.cfbundle";
 	else if (String::equals("framework", ext))

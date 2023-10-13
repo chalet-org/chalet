@@ -20,3 +20,6 @@ gmon.out
 
 # Visual Studio
 .vs
+
+# Xcode
+*.pbxproj
