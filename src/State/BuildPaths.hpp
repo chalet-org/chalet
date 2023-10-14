@@ -30,6 +30,7 @@ struct BuildPaths
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
 	std::string intermediateDir(const SourceTarget& inProject) const;
+	std::string bundleObjDir(const std::string& inName) const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
 
 	std::string getExternalDir(const std::string& inName) const;

@@ -84,6 +84,9 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 		return false;
 
 	auto appPath = String::getPathFolder(m_bundlePath);
+	if (appPath.empty())
+		return false;
+
 	auto appName = String::getPathFilename(appPath);
 	auto outputFolder = String::getPathFolder(appPath);
 
@@ -346,7 +349,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	Timer timer;
 
-	auto objDir = fmt::format("{}/dist.{}", m_state.paths.buildOutputDir(), m_bundle.name());
+	auto objDir = m_state.paths.bundleObjDir(m_bundle.name());
 	if (!Commands::pathExists(objDir))
 		Commands::makeDirectory(objDir);
 

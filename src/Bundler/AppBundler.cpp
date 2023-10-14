@@ -97,7 +97,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 			Commands::makeDirectory(distributionDirectory);
 
 #if defined(CHALET_MACOS)
-		if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
+		if (m_state.toolchain.strategy() == StrategyType::XcodeBuild && bundle.isMacosAppBundle())
 		{
 			if (!bundler->quickBundleForPlatform())
 				return false;

@@ -24,6 +24,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
@@ -645,6 +646,21 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 				doCMakeClean(cmakeTarget);
 			else
 				List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
+		}
+	}
+
+	for (const auto& target : m_state.distribution)
+	{
+		if (target->isDistributionBundle())
+		{
+			List::addIfDoesNotExist(buildDirs, m_state.paths.bundleObjDir(target->name()));
+
+#if defined(CHALET_MACOS)
+			if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
+			{
+				List::addIfDoesNotExist(buildDirs, fmt::format("{}/{}.app", buildOutputDir, target->name()));
+			}
+#endif
 		}
 	}
 

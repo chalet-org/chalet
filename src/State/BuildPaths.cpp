@@ -12,6 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/IExternalDependency.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
@@ -155,6 +156,7 @@ const std::string& BuildPaths::asmDir() const
 	return m_asmDir;
 }
 
+/*****************************************************************************/
 std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 {
 	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
@@ -162,13 +164,32 @@ std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
+std::string BuildPaths::bundleObjDir(const std::string& inName) const
+{
+	return fmt::format("{}/dist.{}", buildOutputDir(), inName);
+}
+
+/*****************************************************************************/
 StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 {
 	const auto& buildDir = buildOutputDir();
-	return {
+	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
 	};
+
+#if defined(CHALET_MACOS)
+	if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
+	{
+		ret.emplace_back(fmt::format("{}/obj.{}", buildDir, inProject.name()));
+		ret.emplace_back(fmt::format("{}/obj.{}-normal", buildDir, inProject.name()));
+		ret.emplace_back(fmt::format("{}/EagerLinkingTBDs", buildDir));
+		ret.emplace_back(fmt::format("{}/SharedPrecompiledHeaders", buildDir));
+		ret.emplace_back(fmt::format("{}/XCBuildData", buildDir));
+		// EagerLinkingTBDs
+	}
+#endif
+	return ret;
 }
 
 /*****************************************************************************/

@@ -1246,15 +1246,23 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 
 	const auto& cwd = inState.inputs.workingDirectory();
 	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
+	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
 	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 
 	auto arches = inState.inputs.universalArches();
 	if (arches.empty())
 		ret["ARCHS"] = inState.info.targetArchitectureString();
 
+	ret["BUILD_DIR"] = buildDir;
+	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["DSTROOT"] = distDir;
+	ret["EAGER_LINKING"] = getBoolString(false);
+	ret["OBJROOT"] = buildOutputDir;
 	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
+	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
+
+	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SYMROOT"] = buildOutputDir;
 
 	return ret;
@@ -1273,15 +1281,12 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	// TODO: this is currently just based on a Release mode
 
-	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
-	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
 	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
 	Json ret;
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	ret["BUILD_DIR"] = buildDir;
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
 	ret["CLANG_CXX_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardCpp();
@@ -1333,18 +1338,37 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
 	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
 
-	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
-	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
+
+	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
+
 	if (config.debugSymbols())
 	{
 		ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
 	}
 	ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
-	ret["DSTROOT"] = distDir;
 	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
 
 	// ret["DERIVED_FILE_DIR"] = objectDirectory; // $(CONFIGURATION_TEMP_DIR)/DerivedSources dir
+
+	if (inTarget.objectiveCxx())
+	{
+		ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
+	}
+	ret["ENABLE_TESTABILITY"] = getBoolString(true);
+
+	if (inTarget.isStaticLibrary())
+	{
+		ret["EXECUTABLE_PREFIX"] = "lib";
+		ret["EXECUTABLE_SUFFIX"] = ".a";
+	}
+	else if (inTarget.isSharedLibrary())
+	{
+		ret["EXECUTABLE_PREFIX"] = "lib";
+		ret["EXECUTABLE_SUFFIX"] = ".dylib";
+	}
+
+	ret["FRAMEWORK_FLAG_PREFIX"] = "-framework";
 
 	// include dirs
 	{
@@ -1377,24 +1401,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["HEADER_SEARCH_PATHS"] = std::move(searchPaths);
 	}
 
-	if (inTarget.objectiveCxx())
-	{
-		ret["ENABLE_STRICT_OBJC_MSGSEND"] = getBoolString(true);
-	}
-	ret["ENABLE_TESTABILITY"] = getBoolString(true);
-
-	if (inTarget.isStaticLibrary())
-	{
-		ret["EXECUTABLE_PREFIX"] = "lib";
-		ret["EXECUTABLE_SUFFIX"] = ".a";
-	}
-	else if (inTarget.isSharedLibrary())
-	{
-		ret["EXECUTABLE_PREFIX"] = "lib";
-		ret["EXECUTABLE_SUFFIX"] = ".dylib";
-	}
-
-	ret["FRAMEWORK_FLAG_PREFIX"] = "-framework";
 	ret["LIBRARY_FLAG_PREFIX"] = "-l";
 
 	ret["GENERATE_PROFILING_CODE"] = getBoolString(config.enableProfiling());
@@ -1499,7 +1505,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["MTL_ENABLE_DEBUG_INFO"] = getBoolString(inState.configuration.debugSymbols());
 	ret["MTL_FAST_MATH"] = getBoolString(clangAdapter.supportsFastMath());
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
-	ret["OBJROOT"] = buildOutputDir;
 	ret["ONLY_ACTIVE_ARCH"] = getBoolString(false);
 
 	auto compileOptions = getCompilerOptions(inState, inTarget);
@@ -1525,10 +1530,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	// ret["PRODUCT_BUNDLE_IDENTIFIER"] = "com.developer.application";
 
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
-	ret["PROJECT_RUN_PATH"] = cwd;
-	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
-	// ret["SYMROOT"] = buildOutputDir;
-	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	ret["USE_HEADERMAP"] = getBoolString(false);
 
@@ -1546,28 +1547,18 @@ Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildT
 {
 	const auto& cwd = inState.inputs.workingDirectory();
 
-	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
 	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
+	// auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
+	UNUSED(inTarget);
 	Json ret;
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	// ret["BUILD_DIR"] = buildDir;
 
-	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
-	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
-	ret["DSTROOT"] = distDir;
-	ret["OBJECT_FILE_DIR"] = objectDirectory;
-	ret["OBJROOT"] = buildOutputDir;
-	ret["PROJECT_RUN_PATH"] = cwd;
-	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
-	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
-	ret["TARGET_TEMP_DIR"] = objectDirectory;
-	// ret["SYMROOT"] = buildOutputDir;
-	// ret["USE_HEADERMAP"] = getBoolString(false);
+	ret["CONFIGURATION_TEMP_DIR"] = buildOutputDir;
+	ret["OBJECT_FILE_DIR"] = buildOutputDir;
+	ret["TARGET_TEMP_DIR"] = buildOutputDir;
 
-	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 
 	return ret;
@@ -1578,30 +1569,17 @@ Json XcodePBXProjGen::getExcludedBuildSettings(BuildState& inState, const std::s
 {
 	const auto& cwd = inState.inputs.workingDirectory();
 
-	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
 	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTargetName);
 
 	Json ret;
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
-	// ret["BUILD_DIR"] = buildDir;
 
-	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
-	ret["DSTROOT"] = distDir;
 	ret["EXCLUDED_ARCHS"] = "$(ARCHS)"; // Excludes the target on this arch (and configuration)
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
-	ret["OBJROOT"] = buildOutputDir;
-	ret["PROJECT_RUN_PATH"] = cwd;
-	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
-	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
-	// ret["SYMROOT"] = buildOutputDir;
-	// ret["USE_HEADERMAP"] = getBoolString(false);
-
-	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 
 	return ret;
 }
@@ -1616,10 +1594,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	BinaryDependencyMap dependencyMap(inState);
 	AppBundlerMacOS bundler(inState, inTarget, dependencyMap);
 
-	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
-	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	auto objectDirectory = fmt::format("{}/dist.{}", buildOutputDir, targetName);
-
+	auto objectDirectory = fmt::format("{}/{}", cwd, inState.paths.bundleObjDir(inTarget.name()));
 	auto bundleDirectory = fmt::format("{}/{}", m_exportPath, targetName);
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
@@ -1667,8 +1642,6 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = "AppIcon";
 	// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
 
-	// ret["BUILD_DIR"] = buildDir;
-
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
 #if defined(CHALET_MACOS)
@@ -1679,13 +1652,11 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION"] = getBoolString(true);
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
 	ret["CODE_SIGN_STYLE"] = "Automatic";
-	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	ret["CURRENT_PROJECT_VERSION"] = inState.workspace.metadata().versionString();
 
 	ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
-	ret["DSTROOT"] = distDir;
 	ret["EXECUTABLE_NAME"] = bundler.mainExecutable();
 
 	// always set
@@ -1700,22 +1671,13 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();
 
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
-	ret["OBJROOT"] = buildOutputDir;
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = bundleId;
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
-	ret["PROJECT_RUN_PATH"] = cwd;
 	ret["PROVISIONING_PROFILE_SPECIFIER"] = "";
 
-	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
-	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
-
-	// ret["SYMROOT"] = buildOutputDir;
-	// ret["USE_HEADERMAP"] = getBoolString(false);
-
-	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
-	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
+	ret["USE_HEADERMAP"] = getBoolString(false);
 
 	return ret;
 }

@@ -132,14 +132,14 @@ bool BuildState::initialize()
 bool BuildState::generateProjects()
 {
 #if defined(CHALET_WIN32)
-	if (toolchain.strategy() == StrategyType::MSBuild)
+	if (!inputs.route().isClean() && toolchain.strategy() == StrategyType::MSBuild)
 	{
 		auto projectExporter = IProjectExporter::make(ExportKind::VisualStudioSolution, inputs);
 		if (!projectExporter->generate(m_impl->centralState, true))
 			return false;
 	}
 #elif defined(CHALET_MACOS)
-	if (toolchain.strategy() == StrategyType::XcodeBuild)
+	if (!inputs.route().isClean() && toolchain.strategy() == StrategyType::XcodeBuild)
 	{
 		auto projectExporter = IProjectExporter::make(ExportKind::Xcode, inputs);
 		if (!projectExporter->generate(m_impl->centralState, true))
