@@ -74,7 +74,7 @@ ExportKind IProjectExporter::kind() const noexcept
 /*****************************************************************************/
 std::string IProjectExporter::getAllBuildTargetName() const
 {
-	return std::string("[all_build]");
+	return std::string("all");
 }
 
 /*****************************************************************************/

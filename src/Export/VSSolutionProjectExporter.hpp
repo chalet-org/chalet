@@ -26,7 +26,7 @@ protected:
 private:
 	std::string getProjectName(const BuildState& inState) const;
 
-	OrderedDictionary<Uuid> getTargetGuids(const std::string& inProjectTypeGUID) const;
+	OrderedDictionary<Uuid> getTargetGuids(const std::string& inProjectTypeGUID, const std::string& inAllBuildName) const;
 };
 }
 

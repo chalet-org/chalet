@@ -30,12 +30,14 @@ struct VSVCXProjGen
 
 	bool saveSourceTargetProjectFiles(const std::string& inProjectName);
 	bool saveScriptTargetProjectFiles(const std::string& inProjectName);
+	bool saveAllBuildTargetProjectFiles(const std::string& inProjectName);
 
 private:
 	std::string makeSubDirectoryAndGetProjectFile(const std::string& inName) const;
 
 	bool saveSourceTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
 	bool saveScriptTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
+	bool saveAllTargetProjectFile(const std::string& inName, const std::string& inFilename);
 
 	bool saveFiltersFile(XmlFile& outFile, const BuildTargetType inType);
 	bool saveUserFile(const std::string& inFilename);
@@ -55,7 +57,9 @@ private:
 	void addScriptProperties(XmlElement& outNode) const;
 	void addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
 	void addTargetFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
+	void addAllTargetFiles(XmlElement& outNode) const;
 	void addProjectReferences(XmlElement& outNode, const std::string& inName) const;
+	void addAllProjectReferences(XmlElement& outNode) const;
 	void addImportMsCppTargets(XmlElement& outNode) const;
 	void addExtensionTargets(XmlElement& outNode) const;
 
@@ -64,6 +68,8 @@ private:
 	std::string getWindowsTargetPlatformVersion() const;
 	std::string getVisualStudioVersion() const;
 	std::string getCondition(const std::string& inConfig) const;
+
+	std::string getResolvedInputFile() const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_exportDir;

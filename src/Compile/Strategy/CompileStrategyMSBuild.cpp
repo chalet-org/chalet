@@ -107,7 +107,16 @@ bool CompileStrategyMSBuild::doFullBuild()
 	cmd.emplace_back(fmt::format("-target:{}", target));
 
 	auto project = exporter.getMainProjectOutput(m_state);
-	cmd.emplace_back(project);
+
+	if (m_state.inputs.route().isBundle())
+	{
+		cmd.emplace_back(project);
+	}
+	else
+	{
+		auto folder = String::getPathFolder(project);
+		cmd.emplace_back(fmt::format("{}/vcxproj/all.vcxproj", folder));
+	}
 
 	bool result = Commands::subprocess(cmd);
 	if (result)

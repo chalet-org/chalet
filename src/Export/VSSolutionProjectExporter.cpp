@@ -76,10 +76,12 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	if (solution.empty())
 		return false;
 
+	auto allBuildTargetName = getAllBuildTargetName();
+
 	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
 	//
 	const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
-	auto targetGuids = getTargetGuids(projectTypeGUID);
+	auto targetGuids = getTargetGuids(projectTypeGUID, allBuildTargetName);
 
 	const BuildState* firstState = getAnyBuildStateButPreferDebug();
 	if (firstState != nullptr)
@@ -140,12 +142,21 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 			}
 		}
 	}
+	// all_build
+	{
+		VSVCXProjGen vcxprojGen(m_states, m_directory, projectTypeGUID, targetGuids);
+		if (!vcxprojGen.saveAllBuildTargetProjectFiles(allBuildTargetName))
+		{
+			Diagnostic::error("There was a problem saving the {}.vcxproj file.", allBuildTargetName);
+			return false;
+		}
+	}
 
 	return true;
 }
 
 /*****************************************************************************/
-OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::string& inProjectTypeGUID) const
+OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::string& inProjectTypeGUID, const std::string& inAllBuildName) const
 {
 	OrderedDictionary<Uuid> ret;
 
@@ -160,6 +171,12 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 				ret.emplace(name, Uuid::v5(key, inProjectTypeGUID));
 			}
 		}
+	}
+
+	if (!inAllBuildName.empty())
+	{
+		auto key = fmt::format("{}_{}", std::numeric_limits<int>::max(), inAllBuildName);
+		ret.emplace(inAllBuildName, Uuid::v5(key, inProjectTypeGUID));
 	}
 
 	return ret;
