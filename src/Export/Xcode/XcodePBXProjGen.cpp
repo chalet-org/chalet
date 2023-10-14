@@ -1607,11 +1607,13 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 		bundler.createAssetsXcassets(assetsPath);
 
+#if defined(CHALET_MACOS)
 		if (inTarget.willHaveMacosInfoPlist())
 			bundler.createInfoPropertyListAndReplaceVariables(infoPlist, &infoPlistJson);
 
 		if (inTarget.willHaveMacosEntitlementsPlist())
 			bundler.createEntitlementsPropertyList(entitlementsPlist);
+#endif
 
 		m_generatedBundleFiles[targetName] = true;
 	}
@@ -1637,8 +1639,10 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
+#if defined(CHALET_MACOS)
 	if (inTarget.willHaveMacosEntitlementsPlist())
 		ret["CODE_SIGN_ENTITLEMENTS"] = entitlementsPlist;
+#endif
 
 	ret["CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION"] = getBoolString(true);
 	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";

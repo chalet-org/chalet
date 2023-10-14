@@ -26,12 +26,10 @@ namespace chalet
 [[nodiscard]] Unique<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap)
 {
 #if defined(CHALET_WIN32)
-	UNUSED(inInputFile);
 	return std::make_unique<AppBundlerWindows>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_MACOS)
 	return std::make_unique<AppBundlerMacOS>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_LINUX)
-	UNUSED(inInputFile);
 	return std::make_unique<AppBundlerLinux>(inState, inBundle, inDependencyMap);
 #else
 	Diagnostic::errorAbort("Unimplemented AppBundler requested: ");
