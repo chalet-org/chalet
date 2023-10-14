@@ -221,7 +221,7 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 			auto lastParen = substring.find_last_of('(');
 			if (lastParen != std::string::npos)
 			{
-				size_t lastSpace = 0;
+				size_t lastSpace = std::string::npos;
 				substring = substring.substr(0, lastParen - 1);
 				while (!substring.empty())
 				{
@@ -244,6 +244,7 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 					else
 					{
 						substring = substring.substr(0, lastSpace);
+						lastSpace = std::string::npos;
 					}
 				}
 
