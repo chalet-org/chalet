@@ -18,7 +18,7 @@ class BuildState;
 struct SourceTarget;
 struct IBuildTarget;
 struct ProjectAdapterVCXProj;
-struct TargetAdapterVCXProj;
+struct TargetExportAdapter;
 struct XmlFile;
 class XmlElement;
 
@@ -77,7 +77,7 @@ private:
 	const OrderedDictionary<Uuid>& m_targetGuids;
 
 	HeapDictionary<ProjectAdapterVCXProj> m_adapters;
-	HeapDictionary<TargetAdapterVCXProj> m_targetAdapters;
+	HeapDictionary<TargetExportAdapter> m_targetAdapters;
 	HeapDictionary<SourceOutputs> m_outputs;
 
 	std::string m_currentTarget;

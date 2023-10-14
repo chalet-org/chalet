@@ -8,8 +8,8 @@
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/TargetExportAdapter.hpp"
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
-#include "Export/VisualStudio/TargetAdapterVCXProj.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -113,7 +113,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 		if (target != nullptr)
 		{
 			const auto& config = state->configuration.name();
-			m_targetAdapters.emplace(config, std::make_unique<TargetAdapterVCXProj>(*state, *target));
+			m_targetAdapters.emplace(config, std::make_unique<TargetExportAdapter>(*state, *target));
 		}
 	}
 
@@ -155,7 +155,7 @@ bool VSVCXProjGen::saveAllBuildTargetProjectFiles(const std::string& name)
 	// 	if (target != nullptr)
 	// 	{
 	// 		const auto& config = state->configuration.name();
-	// 		m_targetAdapters.emplace(config, std::make_unique<TargetAdapterVCXProj>(*state, *target));
+	// 		m_targetAdapters.emplace(config, std::make_unique<TargetExportAdapter>(*state, *target));
 	// 	}
 	// }
 

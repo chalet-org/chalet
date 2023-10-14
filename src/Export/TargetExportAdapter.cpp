@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Export/Xcode/TargetAdapterPBXProj.hpp"
+#include "Export/TargetExportAdapter.hpp"
 
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ScriptRunner.hpp"
@@ -23,14 +23,14 @@
 namespace chalet
 {
 /*****************************************************************************/
-TargetAdapterPBXProj::TargetAdapterPBXProj(const BuildState& inState, const IBuildTarget& inTarget) :
+TargetExportAdapter::TargetExportAdapter(const BuildState& inState, const IBuildTarget& inTarget) :
 	m_state(inState),
 	m_target(inTarget)
 {
 }
 
 /*****************************************************************************/
-StringList TargetAdapterPBXProj::getFiles() const
+StringList TargetExportAdapter::getFiles() const
 {
 	StringList ret;
 
@@ -80,10 +80,13 @@ StringList TargetAdapterPBXProj::getFiles() const
 }
 
 /*****************************************************************************/
-std::string TargetAdapterPBXProj::getCommand() const
+std::string TargetExportAdapter::getCommand() const
 {
 	std::string ret;
 
+	auto eol = String::eol();
+
+	const auto& cwd = m_state.inputs.workingDirectory();
 	ScriptType scriptType = ScriptType::None;
 	if (m_target.isScript())
 	{
@@ -115,7 +118,7 @@ std::string TargetAdapterPBXProj::getCommand() const
 	else if (m_target.isCMake())
 	{
 		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
-		bool quotedPaths = false;
+		bool quotedPaths = true;
 		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
 
 		auto genCmd = builder.getGeneratorCommand();
@@ -124,7 +127,7 @@ std::string TargetAdapterPBXProj::getCommand() const
 		auto buildCmd = builder.getBuildCommand();
 		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
 
-		ret = fmt::format("{}\n{}", String::join(genCmd), String::join(buildCmd));
+		ret = fmt::format("{}{}{}{}", String::join(genCmd), eol, String::join(buildCmd), eol);
 	}
 	else if (m_target.isSubChalet())
 	{
@@ -137,7 +140,7 @@ std::string TargetAdapterPBXProj::getCommand() const
 		for (auto& targetName : targetNames)
 		{
 			auto buildCmd = builder.getBuildCommand(targetName, hasSettings);
-			ret += fmt::format("{}\n", String::join(buildCmd));
+			ret += fmt::format("{}{}", String::join(buildCmd), eol);
 		}
 	}
 	else if (m_target.isValidation())
@@ -153,19 +156,18 @@ std::string TargetAdapterPBXProj::getCommand() const
 		{
 			validateCmd.emplace_back(fmt::format("\"{}\"", file));
 		}
-		ret += fmt::format("{}\n", String::join(validateCmd));
+		ret += fmt::format("{}{}", String::join(validateCmd), eol);
 	}
 
 	if (!ret.empty())
 	{
-		const auto& cwd = m_state.inputs.workingDirectory();
 		if (scriptType == ScriptType::Python)
 		{
-			ret = fmt::format("cd {}\nset PYTHONIOENCODING=utf-8\nset PYTHONLEGACYWINDOWSSTDIO=utf-8\n{}", cwd, ret);
+			ret = fmt::format("cd {cwd}{eol}set PYTHONIOENCODING=utf-8{eol}set PYTHONLEGACYWINDOWSSTDIO=utf-8{eol}{ret}", FMT_ARG(cwd), FMT_ARG(eol), FMT_ARG(ret));
 		}
 		else
 		{
-			ret = fmt::format("cd {}\n{}", cwd, ret);
+			ret = fmt::format("cd {}{}{}", cwd, eol, ret);
 		}
 	}
 

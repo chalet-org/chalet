@@ -3,17 +3,17 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TARGET_ADAPTER_PBXPROJ_HPP
-#define CHALET_TARGET_ADAPTER_PBXPROJ_HPP
+#ifndef CHALET_TARGET_EXPORT_ADAPTER_HPP
+#define CHALET_TARGET_EXPORT_ADAPTER_HPP
 
 namespace chalet
 {
 class BuildState;
 struct IBuildTarget;
 
-struct TargetAdapterPBXProj
+struct TargetExportAdapter
 {
-	explicit TargetAdapterPBXProj(const BuildState& inState, const IBuildTarget& inTarget);
+	explicit TargetExportAdapter(const BuildState& inState, const IBuildTarget& inTarget);
 
 	StringList getFiles() const;
 	std::string getCommand() const;
@@ -24,4 +24,4 @@ private:
 };
 }
 
-#endif // CHALET_TARGET_ADAPTER_PBXPROJ_HPP
+#endif // CHALET_TARGET_EXPORT_ADAPTER_HPP

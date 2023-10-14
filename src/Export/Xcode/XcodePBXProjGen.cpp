@@ -11,8 +11,8 @@
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/TargetExportAdapter.hpp"
 #include "Export/Xcode/OldPListGenerator.hpp"
-#include "Export/Xcode/TargetAdapterPBXProj.hpp"
 #include "Libraries/Json.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -216,7 +216,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
-				TargetAdapterPBXProj adapter(*state, *target);
+				TargetExportAdapter adapter(*state, *target);
 				auto command = adapter.getCommand();
 				if (!command.empty())
 				{
