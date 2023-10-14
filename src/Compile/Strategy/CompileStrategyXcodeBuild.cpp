@@ -94,10 +94,15 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	// cmd.emplace_back("-destination");
 	// cmd.emplace_back(fmt::format("platform=OS X,arch={}", m_state.info.targetArchitectureString()));
 
-	cmd.emplace_back("-alltargets");
-
-	// cmd.emplace_back("-target");
-	// cmd.emplace_back("[all_build]");
+	if (m_state.inputs.route().isBundle())
+	{
+		cmd.emplace_back("-alltargets");
+	}
+	else
+	{
+		cmd.emplace_back("-target");
+		cmd.emplace_back("[all_build]");
+	}
 
 	// std::string target;
 	// if (route.isClean())
