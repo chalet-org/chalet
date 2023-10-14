@@ -25,7 +25,7 @@ struct XcodePBXProjGen
 		AggregateTarget,
 	};
 
-	explicit XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates);
+	explicit XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates, const std::string& inAllBuildName);
 
 	bool saveToFile(const std::string& inFilename);
 
@@ -38,7 +38,6 @@ private:
 	std::string getTargetHashWithLabel(const std::string& inTarget) const;
 	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
 	std::string getBuildConfigurationListLabel(const std::string& inName, const ListType inType) const;
-	std::string getAllTargetName() const;
 	std::string getProjectName() const;
 
 	Json getHashedJsonValue(const std::string& inValue) const;
@@ -63,6 +62,7 @@ private:
 	StringList getLinkerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
 
 	std::vector<Unique<BuildState>>& m_states;
+	const std::string& m_allBuildName;
 
 	Uuid m_projectUUID;
 

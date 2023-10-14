@@ -26,7 +26,7 @@ VSSolutionProjectExporter::VSSolutionProjectExporter(const CommandLineInputs& in
 }
 
 /*****************************************************************************/
-std::string VSSolutionProjectExporter::getMainProjectOutput()
+std::string VSSolutionProjectExporter::getMainProjectOutput(const BuildState& inState)
 {
 	if (m_directory.empty())
 	{
@@ -34,7 +34,15 @@ std::string VSSolutionProjectExporter::getMainProjectOutput()
 			return std::string();
 	}
 
-	return fmt::format("{}/project.sln", m_directory);
+	auto project = getProjectName(inState);
+	return fmt::format("{}/{}.sln", m_directory, project);
+}
+
+/*****************************************************************************/
+std::string VSSolutionProjectExporter::getMainProjectOutput()
+{
+	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	return getMainProjectOutput(*m_states.front());
 }
 
 /*****************************************************************************/
@@ -79,7 +87,8 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
 		if (!slnGen.saveToFile(solution))
 		{
-			Diagnostic::error("There was a problem saving the project.sln file.");
+			auto project = getProjectName(*firstState);
+			Diagnostic::error("There was a problem saving the {}.sln file.", project);
 			return false;
 		}
 	}
@@ -155,4 +164,12 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 
 	return ret;
 }
+
+/*****************************************************************************/
+std::string VSSolutionProjectExporter::getProjectName(const BuildState& inState) const
+{
+	const auto& workspaceName = inState.workspace.metadata().name();
+	return !workspaceName.empty() ? workspaceName : std::string("project");
+}
+
 }

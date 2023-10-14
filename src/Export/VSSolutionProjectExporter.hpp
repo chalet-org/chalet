@@ -15,6 +15,8 @@ struct VSSolutionProjectExporter final : public IProjectExporter
 {
 	explicit VSSolutionProjectExporter(const CommandLineInputs& inInputs);
 
+	std::string getMainProjectOutput(const BuildState& inState);
+
 protected:
 	virtual std::string getMainProjectOutput() final;
 	virtual std::string getProjectTypeName() const final;
@@ -22,6 +24,8 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
+	std::string getProjectName(const BuildState& inState) const;
+
 	OrderedDictionary<Uuid> getTargetGuids(const std::string& inProjectTypeGUID) const;
 };
 }

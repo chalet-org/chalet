@@ -99,8 +99,9 @@ constexpr int kMinimumObjectVersion = 46;
 constexpr int kBuildActionMask = 2147483647;
 
 /*****************************************************************************/
-XcodePBXProjGen::XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates) :
+XcodePBXProjGen::XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates, const std::string& inAllBuildName) :
 	m_states(inStates),
+	m_allBuildName(inAllBuildName),
 	// This is an arbitrary namespace guid to use for hashing
 	m_xcodeNamespaceGuid("3C17F435-21B3-4D0A-A482-A276EDE1F0A2")
 {
@@ -323,8 +324,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			buildAllGroup.dependencies.emplace_back(target);
 		}
 
-		auto name = getAllTargetName();
-		groups.emplace(name, std::move(buildAllGroup));
+		groups.emplace(m_allBuildName, std::move(buildAllGroup));
 	}
 
 	for (auto& [name, group] : groups)
@@ -645,7 +645,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				node[products]["children"].push_back(getHashWithLabel(target));
 			}
 		}
-		node[products]["children"].push_back(getHashWithLabel(getAllTargetName()));
+		node[products]["children"].push_back(getHashWithLabel(m_allBuildName));
 		node[products]["name"] = "Products";
 		node[products]["sourceTree"] = group;
 
@@ -1050,12 +1050,6 @@ std::string XcodePBXProjGen::getBuildConfigurationListLabel(const std::string& i
 		type = "PBXProject";
 
 	return fmt::format("Build configuration list for {} \"{}\"", type, inName);
-}
-
-/*****************************************************************************/
-std::string XcodePBXProjGen::getAllTargetName() const
-{
-	return std::string("[all_build]");
 }
 
 /*****************************************************************************/

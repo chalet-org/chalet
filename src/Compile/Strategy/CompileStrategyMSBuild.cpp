@@ -9,7 +9,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Export/IProjectExporter.hpp"
+#include "Export/VSSolutionProjectExporter.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -17,6 +17,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -59,6 +60,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 	// msbuild -nologo -t:Clean,Build -verbosity:m -clp:ForceConsoleColor -property:Configuration=Debug -property:Platform=x64 build/.projects/project.sln
 
 	auto& route = m_state.inputs.route();
+	auto& cwd = m_state.inputs.workingDirectory();
 
 	auto msbuild = Commands::which("msbuild");
 	if (msbuild.empty())
@@ -66,6 +68,8 @@ bool CompileStrategyMSBuild::doFullBuild()
 		Diagnostic::error("MSBuild is required, but was not found in path.");
 		return false;
 	}
+
+	VSSolutionProjectExporter exporter(m_state.inputs);
 
 	// TODO: In a recent version of MSBuild (observed in 17.6.3), there's an extra line break in minimal verbosity mode.
 	//   Unsure if it's intentional, or a bug, but we'll heandle it for now
@@ -102,10 +106,15 @@ bool CompileStrategyMSBuild::doFullBuild()
 
 	cmd.emplace_back(fmt::format("-target:{}", target));
 
-	auto directory = IProjectExporter::getProjectBuildFolder(m_state.inputs);
-	cmd.emplace_back(fmt::format("{}/.vssolution/project.sln", directory));
+	auto project = exporter.getMainProjectOutput(m_state);
+	cmd.emplace_back(project);
 
 	bool result = Commands::subprocess(cmd);
+	if (result)
+	{
+		String::replaceAll(project, fmt::format("{}/", cwd), "");
+		Output::msgAction("Succeeded", project);
+	}
 
 	return result;
 }

@@ -31,6 +31,8 @@ struct IProjectExporter
 
 	ExportKind kind() const noexcept;
 
+	std::string getAllBuildTargetName() const;
+
 protected:
 	virtual std::string getMainProjectOutput() = 0;
 	virtual std::string getProjectTypeName() const = 0;

@@ -101,7 +101,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	else
 	{
 		cmd.emplace_back("-target");
-		cmd.emplace_back("[all_build]");
+		cmd.emplace_back(exporter.getAllBuildTargetName());
 	}
 
 	// std::string target;

@@ -23,6 +23,19 @@ XcodeProjectExporter::XcodeProjectExporter(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
+std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState)
+{
+	if (m_directory.empty())
+	{
+		if (!useProjectBuildDirectory(".xcode"))
+			return std::string();
+	}
+
+	auto project = getProjectName(inState);
+	return fmt::format("{}/{}.xcodeproj", m_directory, project);
+}
+
+/*****************************************************************************/
 std::string XcodeProjectExporter::getMainProjectOutput()
 {
 	chalet_assert(!m_states.empty(), "states were empty getting project name");
@@ -95,7 +108,8 @@ bool XcodeProjectExporter::generateProjectFiles()
 	}
 
 	{
-		XcodePBXProjGen xcodeGen(m_states);
+		auto allBuildTargetName = getAllBuildTargetName();
+		XcodePBXProjGen xcodeGen(m_states, allBuildTargetName);
 		if (!xcodeGen.saveToFile(fmt::format("{}/project.pbxproj", xcodeproj)))
 		{
 			Diagnostic::error("There was a problem saving the project.pbxproj file.");
@@ -104,19 +118,6 @@ bool XcodeProjectExporter::generateProjectFiles()
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState)
-{
-	if (m_directory.empty())
-	{
-		if (!useProjectBuildDirectory(".xcode"))
-			return std::string();
-	}
-
-	auto project = getProjectName(inState);
-	return fmt::format("{}/{}.xcodeproj", m_directory, project);
 }
 
 /*****************************************************************************/
