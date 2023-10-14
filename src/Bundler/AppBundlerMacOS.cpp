@@ -8,6 +8,8 @@
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
 #include "Bundler/MacosCodeSignOptions.hpp"
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
@@ -329,6 +331,15 @@ bool AppBundlerMacOS::createBundleIcon()
 bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 {
 #if defined(CHALET_MACOS)
+	const auto& icon = m_bundle.macosBundleIcon();
+	auto& sourceCache = m_state.cache.file().sources();
+
+	// calls to sips take a significant chunk of time,
+	//   so we only do this if the icon doesn't exist or has changed
+	//
+	if (!sourceCache.fileChangedOrDoesNotExist(icon))
+		return true;
+
 	if (!Commands::pathExists(inOutPath))
 		Commands::makeDirectory(inOutPath);
 
@@ -359,7 +370,6 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 
 	const auto& sips = m_state.tools.sips();
 
-	const auto& icon = m_bundle.macosBundleIcon();
 	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](int scale, int size) {
 		Json out = Json::object();
 

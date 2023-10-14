@@ -232,7 +232,7 @@
 						},
 						"icon": {
 							"type": "string",
-							"description": "The path to a MacOS bundle icon either in PNG or ICNS format.\nIf the file is a .png, it will get converted to .icns during the bundle process.",
+							"description": "The path to a MacOS bundle icon either in PNG or ICNS format (PNG 1024x1024 is recommended).\nIf the file is a .png, it will get converted to .icns during the bundle process.",
 							"minLength": 1,
 							"default": "icon.png"
 						},
