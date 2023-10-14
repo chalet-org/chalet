@@ -7,7 +7,6 @@
 #define CHALET_CODEBLOCKS_PROJECT_EXPORTER_HPP
 
 #include "Export/IProjectExporter.hpp"
-#include "XML/XmlFile.hpp"
 
 namespace chalet
 {
@@ -18,6 +17,8 @@ struct CodeBlocksProjectExporter final : public IProjectExporter
 {
 	explicit CodeBlocksProjectExporter(const CommandLineInputs& inInputs);
 
+	std::string getMainProjectOutput(const BuildState& inState);
+
 protected:
 	virtual std::string getMainProjectOutput() final;
 	virtual std::string getProjectTypeName() const final;
@@ -25,6 +26,8 @@ protected:
 	virtual bool generateProjectFiles() final;
 
 private:
+	std::string getProjectName(const BuildState& inState) const;
+
 	std::string getProjectContent(const std::string& inName) const;
 	std::string getProjectBuildConfiguration(const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
 

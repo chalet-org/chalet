@@ -16,7 +16,12 @@ Xml::Xml(std::string inRootName) :
 /*****************************************************************************/
 std::string Xml::dump(const int inIndent, const char inIndentChar) const
 {
-	std::string ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\"?>", m_version, m_encoding);
+	std::string ret;
+	if (m_standalone)
+		ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" standalone=\"yes\" ?>", m_version, m_encoding);
+	else
+		ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" ?>", m_version, m_encoding);
+
 	if (inIndent >= 0)
 		ret += '\n';
 
@@ -62,6 +67,16 @@ const std::string& Xml::encoding() const noexcept
 void Xml::setEncoding(const std::string& inVersion)
 {
 	m_encoding = inVersion;
+}
+
+/*****************************************************************************/
+bool Xml::standalone() const noexcept
+{
+	return m_standalone;
+}
+void Xml::setStandalone(const bool inValue) noexcept
+{
+	m_standalone = inValue;
 }
 
 /*****************************************************************************/

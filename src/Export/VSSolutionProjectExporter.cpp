@@ -106,18 +106,11 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	{
 		for (auto& target : state->targets)
 		{
+			const auto& name = target->name();
 			if (target->isSources())
-			{
-				const auto& name = target->name();
-				if (!List::contains(allSourceTargets, name))
-					allSourceTargets.emplace_back(name);
-			}
+				List::addIfDoesNotExist(allSourceTargets, name);
 			else
-			{
-				const auto& name = target->name();
-				if (!List::contains(allScriptTargets, name))
-					allScriptTargets.emplace_back(name);
-			}
+				List::addIfDoesNotExist(allScriptTargets, name);
 		}
 	}
 

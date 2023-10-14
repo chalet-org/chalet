@@ -27,6 +27,8 @@ public:
 	const std::string& name() const noexcept;
 	void setName(std::string_view inName);
 
+	XmlElement& getNode(std::string_view inKey);
+
 	bool hasAttributes() const;
 	bool addAttribute(std::string_view inKey, std::string_view inValue);
 	bool clearAttributes();

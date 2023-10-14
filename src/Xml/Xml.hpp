@@ -25,6 +25,9 @@ struct Xml
 	const std::string& encoding() const noexcept;
 	void setEncoding(const std::string& inVersion);
 
+	bool standalone() const noexcept;
+	void setStandalone(const bool inValue) noexcept;
+
 	XmlElement& root();
 
 private:
@@ -34,6 +37,8 @@ private:
 	StringList m_headers;
 
 	XmlElement m_root;
+
+	bool m_standalone = false;
 };
 }
 

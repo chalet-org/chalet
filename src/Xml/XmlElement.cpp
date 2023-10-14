@@ -7,6 +7,8 @@
 
 // https://en.wikipedia.org/wiki/XML
 
+#include "Utility/String.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -89,7 +91,23 @@ const std::string& XmlElement::name() const noexcept
 
 void XmlElement::setName(std::string_view inName)
 {
-	m_name = getValidKey(inName);
+	m_name = XmlElement::getValidKey(inName);
+}
+
+/*****************************************************************************/
+XmlElement& XmlElement::getNode(std::string_view inKey)
+{
+	if (std::holds_alternative<XmlElementList>(*m_child))
+	{
+		auto& nodeList = std::get<XmlElementList>(*m_child);
+		for (auto& node : nodeList)
+		{
+			if (String::equals(inKey, node->name()))
+				return *node;
+		}
+	}
+
+	throw std::runtime_error("XML: invalid key");
 }
 
 /*****************************************************************************/

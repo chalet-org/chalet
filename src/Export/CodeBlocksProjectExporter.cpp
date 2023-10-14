@@ -8,6 +8,7 @@
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/CodeBlocks/CodeBlocksWorkspaceGen.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -28,7 +29,7 @@ CodeBlocksProjectExporter::CodeBlocksProjectExporter(const CommandLineInputs& in
 }
 
 /*****************************************************************************/
-std::string CodeBlocksProjectExporter::getMainProjectOutput()
+std::string CodeBlocksProjectExporter::getMainProjectOutput(const BuildState& inState)
 {
 	if (m_directory.empty())
 	{
@@ -36,7 +37,15 @@ std::string CodeBlocksProjectExporter::getMainProjectOutput()
 			return std::string();
 	}
 
-	return fmt::format("{}/project.workspace", m_directory);
+	auto project = getProjectName(inState);
+	return fmt::format("{}/{}.workspace", m_directory, project);
+}
+
+/*****************************************************************************/
+std::string CodeBlocksProjectExporter::getMainProjectOutput()
+{
+	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	return getMainProjectOutput(*m_states.front());
 }
 
 /*****************************************************************************/
@@ -87,22 +96,12 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 
 		if (hasSourceTargets)
 		{
+			auto allBuildTargetName = getAllBuildTargetName();
+			CodeBlocksWorkspaceGen workspaceGen(m_states, m_debugConfiguration, allBuildTargetName);
+			if (!workspaceGen.saveToFile(workspaceFile))
 			{
-				auto contents = getWorkspaceContent(*state);
-				if (!Commands::createFileWithContents(workspaceFile, contents))
-				{
-					Diagnostic::error("There was a problem creating the CodeBlocks workspace file.");
-					return false;
-				}
-			}
-			{
-				auto workspaceLayoutFile = fmt::format("{}.layout", workspaceFile);
-				auto contents = getWorkspaceLayoutContent(*state);
-				if (!Commands::createFileWithContents(workspaceLayoutFile, contents))
-				{
-					Diagnostic::error("There was a problem creating the CodeBlocks workspace layout file.");
-					return false;
-				}
+				Diagnostic::error("There was a problem creating the CodeBlocks workspace file.");
+				return false;
 			}
 		}
 	}
@@ -437,100 +436,10 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 }
 
 /*****************************************************************************/
-std::string CodeBlocksProjectExporter::getWorkspaceContent(const BuildState& inState) const
+std::string CodeBlocksProjectExporter::getProjectName(const BuildState& inState) const
 {
-	std::string ret;
-
-	int i = 0;
-	std::string projects;
-	for (auto& target : inState.targets)
-	{
-		if (target->isSources())
-		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			projects += getWorkspaceProject(project, i == 0 && project.isExecutable());
-			++i;
-		}
-	}
-
 	const auto& workspaceName = inState.workspace.metadata().name();
-	ret = fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_file>
-	<Workspace title="{workspaceName}">{projects}
-	</Workspace>
-</CodeBlocks_workspace_file>
-)xml",
-		FMT_ARG(workspaceName),
-		FMT_ARG(projects));
-
-	return ret;
+	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 
-/*****************************************************************************/
-std::string CodeBlocksProjectExporter::getWorkspaceProject(const SourceTarget& inTarget, const bool inActive) const
-{
-
-	auto& target = inTarget.name();
-	std::string active = inActive ? " active=\"1\"" : "";
-	StringList dependsList = List::combine(inTarget.projectStaticLinks(), inTarget.projectSharedLinks());
-	if (!dependsList.empty())
-	{
-		std::string depends;
-		for (auto& link : dependsList)
-		{
-			depends += fmt::format(R"xml(
-			<Depends filename="cbp/{link}.cbp" />)xml",
-				FMT_ARG(link));
-		}
-
-		return fmt::format(R"xml(
-		<Project filename="cbp/{target}.cbp"{active}>{depends}
-		</Project>)xml",
-			FMT_ARG(target),
-			FMT_ARG(active),
-			FMT_ARG(depends));
-	}
-	else
-	{
-		return fmt::format(R"xml(
-		<Project filename="cbp/{target}.cbp"{active} />)xml",
-			FMT_ARG(target),
-			FMT_ARG(active));
-	}
-}
-
-/*****************************************************************************/
-std::string CodeBlocksProjectExporter::getWorkspaceLayoutContent(const BuildState& inState) const
-{
-	std::string ret;
-
-	const auto& configuration = m_debugConfiguration;
-
-	std::string activeProject;
-	for (auto& target : inState.targets)
-	{
-		if (target->isSources())
-		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable())
-			{
-				const auto& name = project.name();
-				activeProject = fmt::format(R"xml(
-	<ActiveProject path="cbp/{name}.cbp" />)xml",
-					FMT_ARG(name));
-				break;
-			}
-		}
-	}
-
-	ret = fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_layout_file>{activeProject}
-	<PreferredTarget name="{configuration}" />
-</CodeBlocks_workspace_layout_file>
-)xml",
-		FMT_ARG(activeProject),
-		FMT_ARG(configuration));
-
-	return ret;
-}
 }
