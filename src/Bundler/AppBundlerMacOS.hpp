@@ -45,6 +45,7 @@ private:
 	std::string getEntitlementsFilePath() const;
 
 	bool createBundleIcon();
+	bool createBundleIconFromXcassets();
 	bool setExecutablePaths() const;
 	bool signAppBundle() const;
 

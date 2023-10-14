@@ -135,13 +135,14 @@ bool AppBundlerMacOS::bundleForPlatform()
 	// treat it like linux/windows
 	if (m_bundle.macosBundleType() == MacOSBundleType::None)
 	{
-		return signAppBundle();
+		if (!signAppBundle())
+			return false;
+
+		Output::msgAction("Succeeded", m_outputDirectory);
 	}
 	else
 	{
-		// TODO: Generalized version of this in AppBundler
-
-		if (!createBundleIcon())
+		if (!createBundleIconFromXcassets())
 			return false;
 
 		if (!createInfoPropertyListAndReplaceVariables(m_infoFile))
@@ -159,8 +160,10 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (Commands::pathExists(m_entitlementsFile))
 			Commands::remove(m_entitlementsFile);
 
-		return true;
+		Output::msgAction("Succeeded", String::getPathFolder(m_bundlePath));
 	}
+
+	return true;
 #else
 	return false;
 #endif
@@ -296,36 +299,139 @@ bool AppBundlerMacOS::createBundleIcon()
 #if defined(CHALET_MACOS)
 	const auto& icon = m_bundle.macosBundleIcon();
 
-	if (!icon.empty())
+	if (icon.empty())
+		return true;
+
+	Timer timer;
+	Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
+
+	m_iconBaseName = String::getPathBaseName(icon);
+
+	const auto& sips = m_state.tools.sips();
+	bool sipsFound = !sips.empty();
+
+	if (String::endsWith(".png", icon) && sipsFound)
 	{
-		m_iconBaseName = String::getPathBaseName(icon);
-
-		const auto& sips = m_state.tools.sips();
-		bool sipsFound = !sips.empty();
-
-		if (String::endsWith(".png", icon) && sipsFound)
+		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
+		if (!Commands::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+			return false;
+	}
+	else if (String::endsWith(".icns", icon))
+	{
+		if (!Commands::copy(icon, m_resourcePath))
+			return false;
+	}
+	else
+	{
+		if (!icon.empty() && !sipsFound)
 		{
-			std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-			if (!Commands::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
-				return false;
-		}
-		else if (String::endsWith(".icns", icon))
-		{
-			if (!Commands::copy(icon, m_resourcePath))
-				return false;
-		}
-		else
-		{
-			if (!icon.empty() && !sipsFound)
-			{
-				auto& inputFile = m_state.inputs.inputFile();
-				Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", inputFile, icon);
-			}
+			auto& inputFile = m_state.inputs.inputFile();
+			Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", inputFile, icon);
 		}
 	}
+
+	Diagnostic::printDone(timer.asString());
 #endif
 
 	return true;
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createBundleIconFromXcassets()
+{
+#if defined(CHALET_MACOS)
+	const auto& icon = m_bundle.macosBundleIcon();
+	if (icon.empty())
+		return true;
+
+	Timer timer;
+
+	auto objDir = fmt::format("{}/dist.{}", m_state.paths.buildOutputDir(), m_bundle.name());
+	if (!Commands::pathExists(objDir))
+		Commands::makeDirectory(objDir);
+
+	bool iconIsXcassets = String::endsWith(".xcassets", icon);
+
+	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
+	if (iconIsXcassets)
+		assetsPath = icon;
+
+	auto usingCommandLineTools = Commands::isUsingAppleCommandLineTools();
+
+	auto actool = Commands::which("actool");
+	if (actool.empty() || usingCommandLineTools)
+	{
+		auto& inputFile = m_state.inputs.inputFile();
+		if (iconIsXcassets)
+		{
+			if (usingCommandLineTools)
+				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool from Xcode.", inputFile, icon);
+			else
+				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool.", inputFile, icon);
+			return false;
+		}
+
+		if (!usingCommandLineTools)
+		{
+			Diagnostic::warn("Could not find 'actool' required to create an icns from an asset catalog. Falling back to 'sips' method.");
+		}
+		// If actool is not found or using command line tools, make the bundle icon the old way
+		return createBundleIcon();
+	}
+
+	if (iconIsXcassets)
+		Diagnostic::stepInfoEllipsis("Using the asset catalog: '{}'", icon);
+	else
+		Diagnostic::stepInfoEllipsis("Creating an asset catalog from '{}'", icon);
+
+	if (!createAssetsXcassets(assetsPath))
+	{
+		Diagnostic::error("Could not create '{}' for application icon.", assetsPath);
+		return false;
+	}
+
+	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
+
+	bool result = Commands::subprocessNoOutput({
+		actool,
+		"--output-format",
+		"human-readable-text",
+		"--notices",
+		"--warnings",
+		"--export-dependency-info",
+		fmt::format("{}/assetcatalog_dependencies", objDir),
+		"--output-partial-info-plist",
+		tempPlist,
+		"--app-icon",
+		"AppIcon",
+		"--enable-on-demand-resources",
+		"YES",
+		"--development-region",
+		"en",
+		"--target-device",
+		"mac",
+		"--minimum-deployment-target",
+		m_state.inputs.osTargetVersion(),
+		"--platform",
+		m_state.inputs.osTargetName(),
+		"--compile",
+		m_resourcePath,
+		assetsPath,
+	});
+
+	if (result)
+	{
+		Diagnostic::printDone(timer.asString());
+	}
+	else
+	{
+		Diagnostic::error("There was a problem creating the application bundle icon.", assetsPath);
+	}
+
+	return result;
+#else
+	return true;
+#endif
 }
 
 /*****************************************************************************/

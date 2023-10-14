@@ -109,6 +109,7 @@ struct AncillaryTools
 	bool plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const;
 	bool plistConvertToJson(const std::string& inInput, const std::string& inOutput) const;
 	bool plistConvertToXml(const std::string& inInput, const std::string& inOutput) const;
+	bool plistCreateNew(const std::string& inOutput) const;
 
 	static std::string getPathToGit();
 	static bool gitIsRootPath(std::string& outPath);

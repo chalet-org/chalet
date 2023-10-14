@@ -576,6 +576,17 @@ bool AncillaryTools::plistConvertToXml(const std::string& inInput, const std::st
 }
 
 /*****************************************************************************/
+bool AncillaryTools::plistCreateNew(const std::string& inOutput) const
+{
+#if defined(CHALET_MACOS)
+	return Commands::subprocess({ m_plutil, "-create", "binary1", inOutput });
+#else
+	UNUSED(inOutput);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
 std::string AncillaryTools::getPathToGit()
 {
 	auto git = Commands::which("git");

@@ -80,6 +80,7 @@ void msgModulesCompiling();
 
 // void msgRemoving(const std::string& inPath);
 void msgCopying(const std::string& inFrom, const std::string& inTo);
+void msgAction(const std::string& inLabel, const std::string& inTo);
 }
 }
 
