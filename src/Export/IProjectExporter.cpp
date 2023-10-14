@@ -250,15 +250,6 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		return false;
 	}
 
-	for (auto& target : debugState->targets)
-	{
-		if (target->isSources())
-		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			m_headerFiles.emplace(project.name(), project.getHeaderFiles());
-		}
-	}
-
 	for (auto& state : m_states)
 	{
 		if (!state->tools.isSigningIdentityValid())

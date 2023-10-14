@@ -7,6 +7,7 @@
 #define CHALET_CODEBLOCKS_PROJECT_EXPORTER_HPP
 
 #include "Export/IProjectExporter.hpp"
+#include "XML/XmlFile.hpp"
 
 namespace chalet
 {

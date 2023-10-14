@@ -98,7 +98,7 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 			{
 				auto workspaceLayoutFile = fmt::format("{}.layout", workspaceFile);
 				auto contents = getWorkspaceLayoutContent(*state);
-				if (!Commands::createFileWithContents(workspaceFile, contents))
+				if (!Commands::createFileWithContents(workspaceLayoutFile, contents))
 				{
 					Diagnostic::error("There was a problem creating the CodeBlocks workspace layout file.");
 					return false;
@@ -421,20 +421,16 @@ std::string CodeBlocksProjectExporter::getProjectUnits(const SourceTarget& inTar
 			FMT_ARG(resolved));
 	}
 
-	const auto& name = inTarget.name();
-	if (m_headerFiles.find(name) != m_headerFiles.end())
+	auto headers = inTarget.getHeaderFiles();
+	for (auto& file : headers)
 	{
-		const auto& headers = m_headerFiles.at(name);
-		for (auto& file : headers)
-		{
-			auto resolved = fmt::format("{}/{}", cwd, file);
-			if (!Commands::pathExists(file))
-				resolved = file;
+		auto resolved = fmt::format("{}/{}", cwd, file);
+		if (!Commands::pathExists(file))
+			resolved = file;
 
-			ret += fmt::format(R"xml(
+		ret += fmt::format(R"xml(
 		<Unit filename="{resolved}" />)xml",
-				FMT_ARG(resolved));
-		}
+			FMT_ARG(resolved));
 	}
 
 	return ret;

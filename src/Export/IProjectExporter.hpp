@@ -51,7 +51,6 @@ protected:
 	std::string m_directory;
 	std::string m_debugConfiguration;
 
-	Dictionary<StringList> m_headerFiles;
 	std::vector<Unique<BuildState>> m_states;
 	Dictionary<std::string> m_pathVariables;
 
