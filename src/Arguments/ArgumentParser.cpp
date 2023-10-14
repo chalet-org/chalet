@@ -740,10 +740,15 @@ std::string ArgumentParser::getHelp()
 		auto getExportPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("vscode", preset))
 				return std::string("Visual Studio Code JSON format (launch.json, tasks.json, c_cpp_properties.json)");
+#if defined(CHALET_WIN32)
 			else if (String::equals("vssolution", preset))
 				return std::string("Visual Studio Solution format (*.sln, *.vcxproj)");
 			else if (String::equals("vsjson", preset))
 				return std::string("Visual Studio JSON format (launch.vs.json, tasks.vs.json, CppProperties.json)");
+#elif defined(CHALET_MACOS)
+			else if (String::equals("xcode", preset))
+				return fmt::format("Apple{} Xcode project format (*.xcodeproj)", Unicode::registered());
+#endif
 			else if (String::equals("codeblocks", preset))
 #if defined(CHALET_WIN32)
 				return std::string("Code::Blocks IDE (experimental, MinGW-only)");
@@ -755,11 +760,16 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nExport presets:\n";
-		StringList exportPresets{
+		StringList exportPresets
+		{
 			"vscode",
-			"vssolution",
-			"vsjson",
-			"codeblocks",
+#if defined(CHALET_WIN32)
+				"vssolution",
+				"vsjson",
+#elif defined(CHALET_MACOS)
+				"xcode",
+#endif
+				"codeblocks",
 		};
 
 		for (auto& preset : exportPresets)
