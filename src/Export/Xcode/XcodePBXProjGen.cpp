@@ -134,6 +134,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	std::map<std::string, SourceTargetGroup> groups;
 	std::map<std::string, std::vector<const IBuildTarget*>> configToTargets;
 	// std::map<std::string, std::vector<const IDistTarget*>> configToDistTargets;
+	StringList sourceTargets;
 
 	for (auto& state : m_states)
 	{
@@ -152,6 +153,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			if (target->isSources())
 			{
+				List::addIfDoesNotExist(sourceTargets, target->name());
+
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 				state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
 
@@ -252,7 +255,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (target->isDistributionBundle())
 			{
 #if defined(CHALET_MACOS)
-				auto& bundle = static_cast<const BundleTarget&>(*target);
+				auto& bundle = static_cast<BundleTarget&>(*target);
 				if (bundle.isMacosAppBundle())
 				{
 					auto& name = bundle.name();
@@ -280,9 +283,22 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						if (hasInfo)
 							groups[name].children.emplace_back(fmt::format("{}/Info.plist", bundleDirectory));
 
+						if (bundle.resolveIncludesFromState(*state))
+						{
+							auto& includes = bundle.includes();
+							for (auto& file : includes)
+							{
+								groups[name].children.emplace_back(file);
+								groups[name].resources.emplace_back(file);
+							}
+						}
+
 						auto& buildTargets = bundle.buildTargets();
 						for (auto& tgt : buildTargets)
-							groups[name].dependencies.emplace_back(tgt);
+						{
+							if (List::contains(sourceTargets, tgt))
+								groups[name].dependencies.emplace_back(tgt);
+						}
 					}
 				}
 #endif
@@ -503,7 +519,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
-				if (pbxGroup.kind == PBXGroupKind::AppBundle)
+				bool isBundle = pbxGroup.kind == PBXGroupKind::AppBundle;
+				if (isBundle)
 				{
 					auto filename = String::getPathFilename(pbxGroup.outputFile);
 					auto key = getHashWithLabel(target);
@@ -514,16 +531,30 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					node[key]["path"] = pbxGroup.outputFile;
 					node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
 				}
+
 				for (auto& file : pbxGroup.children)
 				{
+					auto fileType = getXcodeFileTypeFromFile(file);
+					bool isDirectory = String::equals("automatic", fileType) && Commands::pathIsDirectory(file);
+					if (isDirectory)
+						fileType = "folder";
+
 					auto name = getSourceWithSuffix(file, target);
 					auto key = getHashWithLabel(name);
 					node[key]["isa"] = section;
-					node[key]["explicitFileType"] = getXcodeFileTypeFromFile(file);
-					node[key]["includeInIndex"] = 0;
-					node[key]["name"] = String::getPathFilename(file);
+					if (isDirectory)
+					{
+						node[key]["lastKnownFileType"] = fileType;
+					}
+					else
+					{
+						node[key]["explicitFileType"] = fileType;
+						node[key]["includeInIndex"] = 0;
+						node[key]["name"] = String::getPathFilename(file);
+					}
+
 					node[key]["path"] = file;
-					node[key]["sourceTree"] = "SOURCE_ROOT";
+					node[key]["sourceTree"] = isDirectory ? "<group>" : "SOURCE_ROOT";
 				}
 			}
 		}

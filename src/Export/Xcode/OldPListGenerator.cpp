@@ -167,14 +167,13 @@ std::string OldPListGenerator::getNodeAsPListString(const Json& inJson) const
 		}
 	}
 
-	String::replaceAll(str, '"', "\\\"");
-
 	if (!str.empty() && (startsWithHash || str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_/") == std::string::npos))
 	{
 		return str;
 	}
 	else
 	{
+		String::replaceAll(str, '"', "\\\"");
 		return fmt::format("\"{}\"", str);
 	}
 }
