@@ -222,6 +222,20 @@ const std::string& BuildPaths::cxxExtension() const
 }
 
 /*****************************************************************************/
+const StringList& BuildPaths::windowsResourceExtensions() const noexcept
+{
+	return m_resourceExts;
+}
+const StringList& BuildPaths::objectiveCExtensions() const noexcept
+{
+	return m_objectiveCExts;
+}
+const std::string& BuildPaths::objectiveCppExtension() const
+{
+	return m_objectiveCppExt;
+}
+
+/*****************************************************************************/
 void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject)
 {
 	m_objDir = fmt::format("{}/obj.{}", m_buildOutputDir, inProject.buildSuffix());

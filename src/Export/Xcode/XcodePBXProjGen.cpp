@@ -191,7 +191,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				const auto& files = sourceTarget.files();
 				for (auto& file : files)
 				{
-					if (String::endsWith(".rc", file))
+					// Just in case
+					if (String::endsWith({ ".rc", ".RC" }, file))
 						continue;
 
 					List::addIfDoesNotExist(groups[name].sources, file);
@@ -1137,6 +1138,8 @@ std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile)
 	if (ext.empty())
 		return "automatic";
 
+	auto& firstState = *m_states.front();
+
 	if (String::equals("txt", ext))
 		return "text";
 	else if (String::equals("json", ext))
@@ -1148,7 +1151,7 @@ std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile)
 	// Source code (easy)
 	else if (String::equals("c", ext))
 		return "sourcecode.c.c";
-	else if (String::equals("mm", ext))
+	else if (String::equals(firstState.paths.objectiveCppExtension(), ext))
 		return "sourcecode.cpp.objcpp";
 	else if (String::equals("swift", ext))
 		return "sourcecode.swift";
@@ -1185,7 +1188,7 @@ std::string XcodePBXProjGen::getXcodeFileTypeFromFile(const std::string& inFile)
 	else if (String::equals("dylib", ext))
 		return "compiled.mach-o.dylib";
 	// Source code (complex)
-	else if (String::equals({ "m", "M" }, ext))
+	else if (String::equals(firstState.paths.objectiveCExtensions(), ext))
 		return "sourcecode.c.objc";
 	else if (String::equals({ "hpp", "hh", "hxx", "H", "inl", "ii", "ixx", "h++", "ipp", "txx", "tpp", "tpl" }, ext))
 		return "sourcecode.cpp.h";

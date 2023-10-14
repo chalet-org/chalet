@@ -36,6 +36,9 @@ struct BuildPaths
 	std::string getExternalBuildDir(const std::string& inName) const;
 
 	const std::string& cxxExtension() const;
+	const StringList& windowsResourceExtensions() const noexcept;
+	const StringList& objectiveCExtensions() const noexcept;
+	const std::string& objectiveCppExtension() const;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
