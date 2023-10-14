@@ -231,7 +231,7 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 
 					if (substring[lastSpace - 1] == '\\')
 					{
-						lastSpace++;
+						lastSpace--;
 						continue;
 					}
 
