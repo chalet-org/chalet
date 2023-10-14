@@ -31,7 +31,7 @@
 
 namespace chalet
 {
-enum class PBXGroupKind : ushort
+enum class TargetGroupKind : ushort
 {
 	Source,
 	Script,
@@ -71,7 +71,7 @@ enum class DstSubfolderSpec : uint
 	JavaResources = 15,
 	Products = 16,
 };
-struct SourceTargetGroup
+struct TargetGroup
 {
 	std::string path;
 	std::string outputFile;
@@ -81,7 +81,7 @@ struct SourceTargetGroup
 	StringList dependencies;
 	StringList resources;
 	SourceKind sourceKind = SourceKind::None;
-	PBXGroupKind kind = PBXGroupKind::Script;
+	TargetGroupKind kind = TargetGroupKind::Script;
 };
 
 // Corresponds to minimum Xcode version the project format supports
@@ -132,7 +132,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	m_projectUUID = Uuid::v5(fmt::format("{}_PBXPROJ", workspaceName), m_xcodeNamespaceGuid);
 	m_projectGuid = m_projectUUID.str();
 
-	std::map<std::string, SourceTargetGroup> groups;
+	std::map<std::string, TargetGroup> groups;
 	std::map<std::string, std::vector<const IBuildTarget*>> configToTargets;
 	// std::map<std::string, std::vector<const IDistTarget*>> configToDistTargets;
 	StringList sourceTargets;
@@ -164,11 +164,11 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				const auto& name = sourceTarget.name();
 				if (groups.find(name) == groups.end())
 				{
-					groups.emplace(name, SourceTargetGroup{});
+					groups.emplace(name, TargetGroup{});
 					groups[name].path = workingDirectory;
 					groups[name].outputFile = sourceTarget.outputFile();
 					groups[name].sourceKind = sourceTarget.kind();
-					groups[name].kind = PBXGroupKind::Source;
+					groups[name].kind = TargetGroupKind::Source;
 				}
 
 				// auto intDir = state->paths.intermediateDir(sourceTarget);
@@ -223,7 +223,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					auto& name = target->name();
 					if (groups.find(name) == groups.end())
 					{
-						groups.emplace(name, SourceTargetGroup{});
+						groups.emplace(name, TargetGroup{});
 					}
 
 					// Fix an edge case where arches need to be quoted in makefile
@@ -235,7 +235,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						String::replaceAll(command, fmt::format("{}={}", define, archString), fmt::format("{}=\"{}\"", define, archString));
 					}
 
-					groups[name].kind = PBXGroupKind::Script;
+					groups[name].kind = TargetGroupKind::Script;
 					groups[name].sources.push_back(std::move(command));
 					groups[name].children = adapter.getFiles();
 
@@ -268,8 +268,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					{
 						auto bundleDirectory = fmt::format("{}/{}", m_exportPath, name);
 
-						groups.emplace(name, SourceTargetGroup{});
-						groups[name].kind = PBXGroupKind::AppBundle;
+						groups.emplace(name, TargetGroup{});
+						groups[name].kind = TargetGroupKind::AppBundle;
 						groups[name].path = workingDirectory;
 						groups[name].outputFile = fmt::format("{}.app", target->name());
 
@@ -312,13 +312,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	}
 
 	{
-		SourceTargetGroup buildAllGroup;
-		buildAllGroup.kind = PBXGroupKind::BuildAll;
+		TargetGroup buildAllGroup;
+		buildAllGroup.kind = TargetGroupKind::BuildAll;
 		buildAllGroup.path = workingDirectory;
 		buildAllGroup.children.emplace_back(rootBuildFile);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::AppBundle)
+			if (pbxGroup.kind == TargetGroupKind::AppBundle)
 				continue;
 
 			buildAllGroup.dependencies.emplace_back(target);
@@ -329,13 +329,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	for (auto& [name, group] : groups)
 	{
-		if (group.kind == PBXGroupKind::Source)
+		if (group.kind == TargetGroupKind::Source)
 		{
 			std::sort(group.children.begin(), group.children.end());
 			std::sort(group.sources.begin(), group.sources.end());
 			std::sort(group.headers.begin(), group.headers.end());
 		}
-		else if (group.kind == PBXGroupKind::Script)
+		else if (group.kind == TargetGroupKind::Script)
 		{
 			std::string makefileContents;
 			size_t index = 0;
@@ -374,14 +374,14 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::Source || pbxGroup.kind == PBXGroupKind::AppBundle)
+			if (pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle)
 				continue;
 
 			auto key = getTargetHashWithLabel(target);
 			node[key]["isa"] = section;
 			node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(target, ListType::AggregateTarget));
 			node[key]["buildPhases"] = Json::array();
-			if (pbxGroup.kind == PBXGroupKind::Script)
+			if (pbxGroup.kind == TargetGroupKind::Script)
 			{
 				auto phase = getHashWithLabel(target);
 				node[key]["buildPhases"].push_back(phase);
@@ -403,7 +403,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::Source)
+			if (pbxGroup.kind == TargetGroupKind::Source)
 			{
 				for (auto& file : pbxGroup.sources)
 				{
@@ -422,7 +422,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
-				if (pbxGroup.kind == PBXGroupKind::AppBundle)
+				if (pbxGroup.kind == TargetGroupKind::AppBundle)
 				{
 					for (auto& file : pbxGroup.dependencies)
 					{
@@ -472,7 +472,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		std::map<std::string, ProjectFileSet> projectFileList;
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind != PBXGroupKind::Source)
+			if (pbxGroup.kind != TargetGroupKind::Source)
 				continue;
 
 			for (auto& file : pbxGroup.sources)
@@ -485,7 +485,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		}
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind != PBXGroupKind::Source)
+			if (pbxGroup.kind != TargetGroupKind::Source)
 				continue;
 
 			for (auto& file : pbxGroup.headers)
@@ -512,7 +512,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		//<group>
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::Source)
+			if (pbxGroup.kind == TargetGroupKind::Source)
 			{
 				auto key = getHashWithLabel(target);
 				node[key]["isa"] = section;
@@ -523,7 +523,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
-				bool isBundle = pbxGroup.kind == PBXGroupKind::AppBundle;
+				bool isBundle = pbxGroup.kind == TargetGroupKind::AppBundle;
 				if (isBundle)
 				{
 					auto filename = String::getPathFilename(pbxGroup.outputFile);
@@ -588,7 +588,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::AppBundle)
+			if (pbxGroup.kind == TargetGroupKind::AppBundle)
 			{
 				auto key = getSectionKeyForTarget("CopyFiles", target);
 				node[key]["isa"] = section;
@@ -614,7 +614,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		StringList childNodes;
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			auto label = pbxGroup.kind == PBXGroupKind::BuildAll ? "Build" : "Sources";
+			auto label = pbxGroup.kind == TargetGroupKind::BuildAll ? "Build" : "Sources";
 			auto key = getHashWithLabel(fmt::format("{} [{}]", label, target));
 			node[key]["isa"] = section;
 			node[key]["children"] = Json::array();
@@ -636,11 +636,11 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[products]["children"] = Json::array();
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::Source)
+			if (pbxGroup.kind == TargetGroupKind::Source)
 			{
 				node[products]["children"].push_back(getHashWithLabel(target));
 			}
-			else if (pbxGroup.kind == PBXGroupKind::AppBundle)
+			else if (pbxGroup.kind == TargetGroupKind::AppBundle)
 			{
 				node[products]["children"].push_back(getHashWithLabel(target));
 			}
@@ -680,8 +680,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			bool isSource = pbxGroup.kind == PBXGroupKind::Source;
-			bool isAppBundle = pbxGroup.kind == PBXGroupKind::AppBundle;
+			bool isSource = pbxGroup.kind == TargetGroupKind::Source;
+			bool isAppBundle = pbxGroup.kind == TargetGroupKind::AppBundle;
 			if (isSource || isAppBundle)
 			{
 				// TODO: Frameworks
@@ -764,7 +764,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind == PBXGroupKind::Source || pbxGroup.kind == PBXGroupKind::AppBundle)
+			if (pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle)
 			{
 				auto key = getSectionKeyForTarget("Resources", target);
 				node[key]["isa"] = section;
@@ -789,7 +789,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			if (pbxGroup.kind != PBXGroupKind::Script)
+			if (pbxGroup.kind != TargetGroupKind::Script)
 				continue;
 
 			if (!pbxGroup.sources.empty())
@@ -829,8 +829,8 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 		auto& node = objects.at(section);
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			bool isSource = pbxGroup.kind == PBXGroupKind::Source;
-			if (isSource || pbxGroup.kind == PBXGroupKind::AppBundle)
+			bool isSource = pbxGroup.kind == TargetGroupKind::Source;
+			if (isSource || pbxGroup.kind == TargetGroupKind::AppBundle)
 			{
 				auto key = getSectionKeyForTarget("Sources", target);
 				node[key]["isa"] = section;
@@ -890,7 +890,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 
 			for (const auto& [target, pbxGroup] : groups)
 			{
-				if (pbxGroup.kind == PBXGroupKind::Source)
+				if (pbxGroup.kind == TargetGroupKind::Source)
 				{
 					if (List::contains(addedTargets, target))
 						continue;
@@ -953,7 +953,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 				configurations.emplace_back(getHashWithLabel(hash, configName));
 			}
 
-			auto type = pbxGroup.kind == PBXGroupKind::Source || pbxGroup.kind == PBXGroupKind::AppBundle ? ListType::NativeProject : ListType::AggregateTarget;
+			auto type = pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle ? ListType::NativeProject : ListType::AggregateTarget;
 			auto key = getHashWithLabel(getBuildConfigurationListLabel(target, type));
 			node[key]["isa"] = section;
 			node[key]["buildConfigurations"] = std::move(configurations);
