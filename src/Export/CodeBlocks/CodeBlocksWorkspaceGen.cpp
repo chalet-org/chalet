@@ -40,30 +40,6 @@ bool CodeBlocksWorkspaceGen::saveToFile(const std::string& inFilename)
 /*****************************************************************************/
 bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 {
-	/*
-	int i = 0;
-	std::string projects;
-	for (auto& target : inState.targets)
-	{
-		if (target->isSources())
-		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			projects += getWorkspaceProject(project, i == 0 && project.isExecutable());
-			++i;
-		}
-	}
-
-	const auto& workspaceName = inState.workspace.metadata().name();
-	ret = fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<CodeBlocks_workspace_file>
-	<Workspace title="{workspaceName}">{projects}
-	</Workspace>
-</CodeBlocks_workspace_file>
-)xml",
-		FMT_ARG(workspaceName),
-		FMT_ARG(projects));
-	*/
-
 	XmlFile xmlFile(inFilename);
 
 	auto& xml = xmlFile.xml;
@@ -228,23 +204,5 @@ std::string CodeBlocksWorkspaceGen::getRelativeProjectPath(const std::string& in
 {
 	return fmt::format("cbp/{}.cbp", inName);
 }
-
-/*****************************************************************************/
-/*bool CodeBlocksWorkspaceGen::projectWillBuild(const std::string& inName, const std::string& inConfigName) const
-{
-	for (auto& state : m_states)
-	{
-		if (String::equals(inConfigName, state->configuration.name()))
-		{
-			for (auto& target : state->targets)
-			{
-				if (String::equals(inName, target->name()))
-					return true;
-			}
-		}
-	}
-
-	return false;
-}*/
 
 }

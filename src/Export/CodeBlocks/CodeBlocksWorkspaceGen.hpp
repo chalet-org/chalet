@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_SOLUTION_GEN_HPP
-#define CHALET_VS_SOLUTION_GEN_HPP
+#ifndef CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
+#define CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
 
 #include "Utility/Uuid.hpp"
 #include "XML/XmlFile.hpp"
@@ -30,12 +30,10 @@ private:
 
 	std::string getRelativeProjectPath(const std::string& inName) const;
 
-	// bool projectWillBuild(const std::string& inName, const std::string& inConfigName) const;
-
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_debugConfiguration;
 	const std::string& m_allBuildName;
 };
 }
 
-#endif // CHALET_VS_SOLUTION_GEN_HPP
+#endif // CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
