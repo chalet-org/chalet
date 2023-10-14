@@ -49,7 +49,7 @@ Icon=${icon}
 /*****************************************************************************/
 std::string PlatformFileTemplates::macosInfoPlist(const std::string& inOsVersion)
 {
-	auto version = !inOsVersion.empty() ? inOsVersion : "10.8";
+	auto osTargetVersion = !inOsVersion.empty() ? inOsVersion : "10.8";
 	return fmt::format(R"json({{
 	"CFBundleDevelopmentRegion": "en-US",
 	"CFBundleDisplayName": "${{name}}",
@@ -59,13 +59,13 @@ std::string PlatformFileTemplates::macosInfoPlist(const std::string& inOsVersion
 	"CFBundleInfoDictionaryVersion": "6.0",
 	"CFBundleName": "${{bundleName}}",
 	"CFBundlePackageType": "APPL",
-	"CFBundleShortVersionString": "1.0.0",
-	"CFBundleVersion": "1.0.0",
+	"CFBundleShortVersionString": "${{version}}",
+	"CFBundleVersion": "${{version}}",
 	"CFBundleSignature": "????",
-	"LSMinimumSystemVersion": "{version}"
+	"LSMinimumSystemVersion": "{osTargetVersion}"
 }}
 )json",
-		FMT_ARG(version));
+		FMT_ARG(osTargetVersion));
 }
 
 /*****************************************************************************/

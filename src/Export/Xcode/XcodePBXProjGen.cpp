@@ -1628,6 +1628,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 		bundleId = "com.developer.application";
 	}
 
+	//
+
 	Json ret;
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
@@ -1650,6 +1652,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
+	ret["CURRENT_PROJECT_VERSION"] = inState.workspace.metadata().versionString();
 
 	ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
 	ret["DSTROOT"] = distDir;
@@ -1657,6 +1660,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	// always set
 	ret["INFOPLIST_FILE"] = infoPlist;
+
+	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();
 
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
 	ret["OBJROOT"] = buildOutputDir;

@@ -18,6 +18,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
@@ -378,7 +379,7 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 			auto baseName = String::getPathBaseName(icon);
 			auto ext = String::getPathSuffix(icon);
 			int imageSize = scale * size;
-			auto outIcon = fmt::format("{}/{}-{}.{}", appIconPath, baseName, imageSize, ext);
+			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
 			// -Z 32 glfw.icns --out glfw-32.icns
 			if (Commands::subprocessNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
 			{
@@ -426,7 +427,10 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
 		String::replaceAll(outContent, "${icon}", icon);
 		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
-		// String::replaceAll(outContent, "${version}", version);
+		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
+
+		// TODO: This uses the workspace version, but should be the same version as the mainExecutable
+		String::replaceAll(outContent, "${version}", m_state.workspace.metadata().versionString());
 	};
 
 	std::string tmpPlist = fmt::format("{}.json", inOutFile);

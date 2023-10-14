@@ -7,8 +7,8 @@
 	"CFBundleInfoDictionaryVersion": "6.0",
 	"CFBundleName": "${bundleName}",
 	"CFBundlePackageType": "APPL",
-	"CFBundleShortVersionString": "1.0.0",
-	"CFBundleVersion": "1.0.0",
+	"CFBundleShortVersionString": "${version}",
+	"CFBundleVersion": "${version}",
 	"CFBundleSignature": "????",
-	"LSMinimumSystemVersion": "10.8"
+	"LSMinimumSystemVersion": "${osTargetVersion}"
 }
