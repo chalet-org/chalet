@@ -120,6 +120,8 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	auto project = exporter.getMainProjectOutput(m_state);
 	cmd.emplace_back(project);
 
+	cmd.emplace_back("BUILD_FROM_CHALET=1");
+
 	const auto& signingDevelopmentTeam = m_state.tools.signingDevelopmentTeam();
 	if (!signingDevelopmentTeam.empty())
 	{

@@ -335,22 +335,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
 			Commands::createFileWithContents(outPath, makefileContents);
 		}
-		// 		else if (group.kind == PBXGroupKind::AppBundle)
-		// 		{
-		// 			std::string makefileContents;
-		// 			for (auto& [configName, _] : configToTargets)
-		// 			{
-		// 				makefileContents += fmt::format(R"shell({configName}:
-		// 	@{chaletPath} -c {configName} bundle
-
-		// )shell",
-		// 					FMT_ARG(configName),
-		// 					FMT_ARG(chaletPath));
-		// 			}
-
-		// 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
-		// 			Commands::createFileWithContents(outPath, makefileContents);
-		// 		}
 	}
 
 	OldPListGenerator pbxproj;
@@ -564,18 +548,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	// PBXCopyFilesBuildPhase
 	{
-		/*
-			49805BE92AD9FEB200238D1C // CopyFiles // = {
-				isa = PBXCopyFilesBuildPhase;
-				buildActionMask = 2147483647;
-				dstPath = "";
-				dstSubfolderSpec = 6;
-				files = (
-					49805BEA2AD9FEBD00238D1C // glfw-app in CopyFiles //,
-				);
-				runOnlyForDeploymentPostprocessing = 0;
-			};
-		*/
 		const std::string section{ "PBXCopyFilesBuildPhase" };
 		objects[section] = Json::object();
 		auto& node = objects.at(section);
@@ -785,42 +757,13 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (pbxGroup.kind != PBXGroupKind::Script)
 				continue;
 
-			// 			if (pbxGroup.kind == PBXGroupKind::AppBundle)
-			// 			{
-			// 				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
-			// 				auto shellScript = fmt::format(R"shell(set -e
-			// echo "*== script start ==*"
-			// make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
-			// echo "*== script end ==*"
-			// )shell",
-			// 					makefilePath);
-
-			// 				auto key = getHashWithLabel(target);
-			// 				node[key]["isa"] = section;
-			// 				node[key]["alwaysOutOfDate"] = 1;
-			// 				node[key]["buildActionMask"] = kBuildActionMask;
-			// 				node[key]["files"] = Json::array();
-			// 				// for (auto& filename : pbxGroup.children)
-			// 				// {
-			// 				// 	node[key]["files"].push_back(getHashWithLabel(fmt::format("{} in Resources", filename)));
-			// 				// }
-			// 				node[key]["inputPaths"] = Json::array();
-			// 				node[key]["name"] = target;
-			// 				node[key]["outputPaths"] = Json::array();
-			// 				node[key]["outputPaths"].emplace_back(pbxGroup.outputFile);
-			// 				node[key]["runOnlyForDeploymentPostprocessing"] = 0;
-			// 				node[key]["shellPath"] = "/bin/sh";
-			// 				node[key]["shellScript"] = shellScript;
-			// 				node[key]["showEnvVarsInLog"] = 0;
-			// 			}
-			// 			else
 			if (!pbxGroup.sources.empty())
 			{
 				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
 				auto shellScript = fmt::format(R"shell(set -e
-echo "*== script start ==*"
+if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script start ==*"; fi
 make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
-echo "*== script end ==*"
+if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 )shell",
 					makefilePath);
 
