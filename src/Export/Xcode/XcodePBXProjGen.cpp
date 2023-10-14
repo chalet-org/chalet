@@ -191,6 +191,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				const auto& files = sourceTarget.files();
 				for (auto& file : files)
 				{
+					if (String::endsWith(".rc", file))
+						continue;
+
 					List::addIfDoesNotExist(groups[name].sources, file);
 					List::addIfDoesNotExist(groups[name].children, file);
 				}
@@ -863,6 +866,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 		}
 		for (auto& state : m_states)
 		{
+			StringList addedTargets;
 			const auto& configName = state->configuration.name();
 			for (auto& target : state->targets)
 			{
@@ -870,11 +874,33 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 				auto key = getHashWithLabel(hash, configName);
 				node[key]["isa"] = section;
 				if (target->isSources())
+				{
 					node[key]["buildSettings"] = getBuildSettings(*state, static_cast<const SourceTarget&>(*target));
+				}
 				else
+				{
 					node[key]["buildSettings"] = getGenericBuildSettings(*state, *target);
+				}
 				// node[key]["baseConfigurationReference"] = "";
 				node[key]["name"] = configName;
+
+				addedTargets.emplace_back(target->name());
+			}
+
+			for (const auto& [target, pbxGroup] : groups)
+			{
+				if (pbxGroup.kind == PBXGroupKind::Source)
+				{
+					if (List::contains(addedTargets, target))
+						continue;
+
+					auto hash = getTargetConfigurationHash(configName, target);
+					auto key = getHashWithLabel(hash, configName);
+					node[key]["isa"] = section;
+					node[key]["buildSettings"] = getExcludedBuildSettings(*state, target);
+					// node[key]["baseConfigurationReference"] = "";
+					node[key]["name"] = configName;
+				}
 			}
 		}
 		for (auto& state : m_states)
@@ -901,26 +927,26 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 		const std::string section{ "XCConfigurationList" };
 		objects[section] = Json::object();
 
-		StringList configurations;
-		for (auto& [configName, _] : configToTargets)
-		{
-			auto hash = getConfigurationHash(configName);
-			configurations.emplace_back(getHashWithLabel(hash, configName));
-		}
-
 		auto& node = objects.at(section);
 		{
+			StringList configurations;
+			for (auto& [configName, _] : configToTargets)
+			{
+				auto hash = getConfigurationHash(configName);
+				configurations.emplace_back(getHashWithLabel(hash, configName));
+			}
+
 			auto key = getHashWithLabel(getBuildConfigurationListLabel(project, ListType::Project));
 			node[key]["isa"] = section;
-			node[key]["buildConfigurations"] = configurations;
+			node[key]["buildConfigurations"] = std::move(configurations);
 			node[key]["defaultConfigurationIsVisible"] = 0;
 			node[key]["defaultConfigurationName"] = firstState.configuration.name();
 		}
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			configurations.clear();
-			for (auto& [configName, targetPtr] : configToTargets)
+			StringList configurations;
+			for (auto& [configName, _] : configToTargets)
 			{
 				auto hash = getTargetConfigurationHash(configName, target);
 				configurations.emplace_back(getHashWithLabel(hash, configName));
@@ -929,7 +955,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			auto type = pbxGroup.kind == PBXGroupKind::Source || pbxGroup.kind == PBXGroupKind::AppBundle ? ListType::NativeProject : ListType::AggregateTarget;
 			auto key = getHashWithLabel(getBuildConfigurationListLabel(target, type));
 			node[key]["isa"] = section;
-			node[key]["buildConfigurations"] = configurations;
+			node[key]["buildConfigurations"] = std::move(configurations);
 			node[key]["defaultConfigurationIsVisible"] = 0;
 			node[key]["defaultConfigurationName"] = firstState.configuration.name();
 		}
@@ -1255,15 +1281,8 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["BUILD_DIR"] = buildDir;
 	ret["CLANG_ANALYZER_NONNULL"] = getBoolString(true);
 	ret["CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION"] = "YES_AGGRESSIVE";
-
-	auto cStandard = clangAdapter.getLanguageStandardC();
-	auto cppStandard = clangAdapter.getLanguageStandardCpp();
-
-	if (!cppStandard.empty())
-		ret["CLANG_CXX_LANGUAGE_STANDARD"] = std::move(cppStandard);
-
+	ret["CLANG_CXX_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardCpp();
 	ret["CLANG_CXX_LIBRARY"] = clangAdapter.getCxxLibrary();
-
 	ret["CLANG_ENABLE_MODULES"] = getBoolString(inTarget.objectiveCxx());
 
 	if (inTarget.objectiveCxx())
@@ -1383,8 +1402,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(true);
 	}
 
-	if (!cStandard.empty())
-		ret["GCC_C_LANGUAGE_STANDARD"] = std::move(cStandard);
+	ret["GCC_C_LANGUAGE_STANDARD"] = clangAdapter.getLanguageStandardC();
 
 	ret["GCC_ENABLE_CPP_EXCEPTIONS"] = getBoolString(clangAdapter.supportsExceptions());
 	ret["GCC_ENABLE_CPP_RTTI"] = getBoolString(clangAdapter.supportsRunTimeTypeInformation());
@@ -1553,6 +1571,39 @@ Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildT
 }
 
 /*****************************************************************************/
+Json XcodePBXProjGen::getExcludedBuildSettings(BuildState& inState, const std::string& inTargetName) const
+{
+	const auto& cwd = inState.inputs.workingDirectory();
+
+	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
+	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTargetName);
+
+	Json ret;
+
+	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
+	// ret["BUILD_DIR"] = buildDir;
+
+	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
+	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
+	ret["DSTROOT"] = distDir;
+	ret["EXCLUDED_ARCHS"] = "$(ARCHS)"; // Excludes the target on this arch (and configuration)
+	ret["OBJECT_FILE_DIR"] = objectDirectory;
+	ret["OBJROOT"] = buildOutputDir;
+	ret["PROJECT_RUN_PATH"] = cwd;
+	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
+	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
+	ret["TARGET_TEMP_DIR"] = objectDirectory;
+	// ret["SYMROOT"] = buildOutputDir;
+	// ret["USE_HEADERMAP"] = getBoolString(false);
+
+	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
+
+	return ret;
+}
+
+/*****************************************************************************/
 Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const BundleTarget& inTarget) const
 {
 	const auto& cwd = inState.inputs.workingDirectory();
@@ -1570,12 +1621,14 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
 	auto assetsPath = fmt::format("{}/Assets.xcassets", bundleDirectory);
-	Json infoPlistJson;
+
 	if (!Commands::pathExists(bundleDirectory))
 		Commands::makeDirectory(bundleDirectory);
 
 	if (!m_generatedBundleFiles[targetName])
 	{
+		m_infoPlistJson.clear();
+
 		bundler.setOutputDirectory(objectDirectory);
 		bundler.initializeState();
 
@@ -1583,7 +1636,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 #if defined(CHALET_MACOS)
 		if (inTarget.willHaveMacosInfoPlist())
-			bundler.createInfoPropertyListAndReplaceVariables(infoPlist, &infoPlistJson);
+			bundler.createInfoPropertyListAndReplaceVariables(infoPlist, &m_infoPlistJson);
 
 		if (inTarget.willHaveMacosEntitlementsPlist())
 			bundler.createEntitlementsPropertyList(entitlementsPlist);
@@ -1593,9 +1646,9 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	}
 
 	std::string bundleId;
-	if (infoPlistJson.contains("CFBundleIdentifier") && infoPlistJson["CFBundleIdentifier"].is_string())
+	if (m_infoPlistJson.contains("CFBundleIdentifier") && m_infoPlistJson["CFBundleIdentifier"].is_string())
 	{
-		bundleId = infoPlistJson["CFBundleIdentifier"].get<std::string>();
+		bundleId = m_infoPlistJson["CFBundleIdentifier"].get<std::string>();
 	}
 	else
 	{
@@ -1634,6 +1687,12 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	// always set
 	ret["INFOPLIST_FILE"] = infoPlist;
+
+	ret["LD_RUNPATH_SEARCH_PATHS"] = {
+		"@executable_path/../MacOS",
+		"@executable_path/../Frameworks",
+		"@executable_path/../Resources",
+	};
 
 	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();
 
@@ -1764,6 +1823,17 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 	// Static Compiler Libraries
 	if (inTarget.staticRuntimeLibrary() && inState.configuration.sanitizeAddress())
 		List::addIfDoesNotExist(ret, "-static-libsan");
+
+	// rpath / executable_path
+	if (inTarget.isExecutable())
+	{
+		ret.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}", String::getPathBaseName(inTarget.outputFile())));
+		ret.emplace_back("-Wl,-rpath,@executable_path/.");
+	}
+	else if (inTarget.isSharedLibrary())
+	{
+		ret.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}.dylib", String::getPathBaseName(inTarget.outputFile())));
+	}
 
 	const auto& links = inTarget.links();
 	for (auto& link : links)

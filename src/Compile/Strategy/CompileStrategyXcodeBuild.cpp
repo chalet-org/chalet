@@ -221,12 +221,19 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 			auto lastParen = substring.find_last_of('(');
 			if (lastParen != std::string::npos)
 			{
+				size_t lastSpace = 0;
 				substring = substring.substr(0, lastParen - 1);
 				while (!substring.empty())
 				{
-					auto lastSpace = substring.find_last_of(' ');
+					lastSpace = substring.find_last_of(' ', lastSpace);
 					if (lastSpace == std::string::npos)
 						break;
+
+					if (substring[lastSpace - 1] == '\\')
+					{
+						lastSpace++;
+						continue;
+					}
 
 					auto next = substring.substr(lastSpace + 1);
 					if (String::startsWith('/', next))

@@ -56,6 +56,7 @@ private:
 	Json getProductBuildSettings(const BuildState& inState) const;
 	Json getBuildSettings(BuildState& inState, const SourceTarget& inTarget) const;
 	Json getGenericBuildSettings(BuildState& inState, const IBuildTarget& inTarget) const;
+	Json getExcludedBuildSettings(BuildState& inState, const std::string& inTargetName) const;
 	Json getAppBundleBuildSettings(BuildState& inState, const BundleTarget& inTarget) const;
 
 	StringList getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
@@ -64,6 +65,8 @@ private:
 	std::vector<Unique<BuildState>>& m_states;
 
 	Uuid m_projectUUID;
+
+	mutable Json m_infoPlistJson;
 
 	std::string m_exportPath;
 	std::string m_xcodeNamespaceGuid;
