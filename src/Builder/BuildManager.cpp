@@ -696,6 +696,30 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 			Commands::removeRecursively(dir);
 	}
 
+	bool regenConfigureFiles = m_strategy->isXcodeBuild() || m_strategy->isMSBuild();
+	if (regenConfigureFiles)
+	{
+		for (auto& target : m_state.targets)
+		{
+			if (!target->isSources())
+				continue;
+
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.configureFiles().empty())
+				continue;
+
+			auto outFolder = m_state.paths.objDir();
+#if defined(CHALET_MACOS)
+			if (m_strategy->isXcodeBuild())
+			{
+				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
+			}
+#endif
+			ConfigureFileParser confFileParser(m_state, project);
+			confFileParser.run(outFolder); // ignore the result
+		}
+	}
+
 	if (Commands::pathExists(currentBuildDir))
 		Commands::removeRecursively(currentBuildDir);
 
@@ -1217,5 +1241,4 @@ void BuildManager::stopTimerAndShowBenchmark(Timer& outTimer)
 		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
 	}
 }
-
 }
