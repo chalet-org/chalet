@@ -13,7 +13,7 @@ namespace chalet
 namespace PlatformFileTemplates
 {
 std::string linuxDesktopEntry();
-std::string macosInfoPlist();
+std::string macosInfoPlist(const std::string& inOsVersion = "10.8");
 std::string minimumWindowsAppManifest();
 std::string minimumWindowsAppManifestWithCompatibility();
 std::string generalWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu);

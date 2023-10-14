@@ -223,15 +223,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				}
 			]
 		})json"_ojson;
-		macosInfoPropertyList[SKeys::OneOf][1]["default"] = JsonComments::parseLiteral(PlatformFileTemplates::macosInfoPlist());
 
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({
 			"type": "object",
 			"description": "Properties to describe the MacOS bundle.",
 			"additionalProperties": false,
 			"required": [
-				"type",
-				"infoPropertyList"
+				"type"
 			],
 			"properties": {}
 		})json"_ojson;

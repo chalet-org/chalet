@@ -7,6 +7,7 @@
 #define CHALET_MACOS_APP_BUNDLER_HPP
 
 #include "Bundler/IAppBundler.hpp"
+#include "Libraries/Json.hpp"
 
 namespace chalet
 {
@@ -15,10 +16,17 @@ class BuildState;
 class AppBundlerMacOS : public IAppBundler
 {
 public:
-	explicit AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile);
+	explicit AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
+
+	bool initializeState();
+
+	void setOutputDirectory(const std::string& inPath) const;
+
+	const std::string& mainExecutable() const noexcept;
 
 	virtual bool removeOldFiles() final;
 	virtual bool bundleForPlatform() final;
+	virtual bool quickBundleForPlatform() final;
 
 	virtual std::string getBundlePath() const final;
 	virtual std::string getExecutablePath() const final;
@@ -28,16 +36,19 @@ public:
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const;
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
+	bool createAssetsXcassets(const std::string& inOutPath);
+	bool createInfoPropertyListAndReplaceVariables(const std::string& inOutFile, Json* outJson = nullptr) const;
+	bool createEntitlementsPropertyList(const std::string& inOutFile) const;
+
 private:
+	std::string getPlistFile() const;
 	std::string getEntitlementsFilePath() const;
 
 	bool createBundleIcon();
-	bool createInfoPropertyListAndReplaceVariables() const;
-	bool createEntitlementsPropertyList() const;
 	bool setExecutablePaths() const;
 	bool signAppBundle() const;
 
-	const std::string& m_inputFile;
+	mutable std::string m_outputDirectory;
 
 	std::string m_mainExecutable;
 
@@ -49,6 +60,7 @@ private:
 	std::string m_resourcePath;
 	std::string m_iconBaseName;
 
+	std::string m_infoFile;
 	std::string m_entitlementsFile;
 };
 }

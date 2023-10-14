@@ -256,6 +256,9 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 
 	for (auto& state : m_states)
 	{
+		if (!state->tools.isSigningIdentityValid())
+			return false;
+
 		for (auto& target : state->targets)
 		{
 			if (target->isSources())

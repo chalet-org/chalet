@@ -23,13 +23,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-[[nodiscard]] Unique<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile)
+[[nodiscard]] Unique<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inInputFile);
 	return std::make_unique<AppBundlerWindows>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_MACOS)
-	return std::make_unique<AppBundlerMacOS>(inState, inBundle, inDependencyMap, inInputFile);
+	return std::make_unique<AppBundlerMacOS>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_LINUX)
 	UNUSED(inInputFile);
 	return std::make_unique<AppBundlerLinux>(inState, inBundle, inDependencyMap);
@@ -51,6 +51,12 @@ IAppBundler::IAppBundler(BuildState& inState, const BundleTarget& inBundle, Bina
 const BundleTarget& IAppBundler::bundle() const noexcept
 {
 	return m_bundle;
+}
+
+/*****************************************************************************/
+bool IAppBundler::quickBundleForPlatform()
+{
+	return false;
 }
 
 /*****************************************************************************/

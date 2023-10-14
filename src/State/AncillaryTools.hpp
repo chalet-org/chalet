@@ -39,6 +39,7 @@ struct AncillaryTools
 	void setCodesign(std::string&& inValue) noexcept;
 
 	const std::string& signingIdentity() const noexcept;
+	const std::string& signingDevelopmentTeam() const noexcept;
 	void setSigningIdentity(const std::string& inValue) noexcept;
 	bool isSigningIdentityValid() const;
 
@@ -151,6 +152,9 @@ private:
 	std::string m_vsperfcmd;
 
 	std::string m_signingIdentity;
+#if defined(CHALET_MACOS)
+	mutable std::string m_signingDevelopmentTeam;
+#endif
 
 	uint m_xcodeVersionMajor = 0;
 	uint m_xcodeVersionMinor = 0;

@@ -8,6 +8,7 @@
 #include "Builder/BatchValidator.hpp"
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/ScriptRunner.hpp"
+#include "Bundler/AppBundlerMacOS.hpp"
 #include "Bundler/FileArchiver.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
@@ -18,6 +19,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
@@ -62,35 +64,56 @@ bool AppBundler::run(const DistTarget& inTarget)
 		{
 #if defined(CHALET_MACOS)
 			if (bundle.isMacosAppBundle())
+			{
 				Output::msgTargetOfType("Bundle", fmt::format("{}.{}", bundle.name(), bundle.macosBundleExtension()), Output::theme().header);
+			}
 			else
 #elif defined(CHALET_LINUX)
 			if (bundle.hasLinuxDesktopEntry())
+			{
 				Output::msgTargetOfType("Bundle", fmt::format("{}.desktop", bundle.name()), Output::theme().header);
+			}
 			else
 #endif
+			{
 				Output::msgTargetOfType("Bundle", bundle.name(), Output::theme().header);
+			}
 		}
 
 		Output::lineBreak();
 
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
 		m_dependencyMap->setIncludeWinUCRT(bundle.windowsIncludeRuntimeDlls());
-		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap, m_state.inputs.inputFile());
+		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap);
+
 		if (!removeOldFiles(*bundler))
 		{
 			Diagnostic::error("There was an error removing the previous distribution bundle for: {}", inTarget->name());
 			return false;
 		}
 
-		if (!bundle.resolveIncludesFromState(m_state))
-			return false;
+		auto& distributionDirectory = m_state.inputs.distributionDirectory();
+		if (!Commands::pathExists(distributionDirectory))
+			Commands::makeDirectory(distributionDirectory);
 
-		if (!gatherDependencies(bundle))
-			return false;
+#if defined(CHALET_MACOS)
+		if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
+		{
+			if (!bundler->quickBundleForPlatform())
+				return false;
+		}
+		else
+#endif
+		{
+			if (!bundle.resolveIncludesFromState(m_state))
+				return false;
 
-		if (!runBundleTarget(*bundler))
-			return false;
+			if (!gatherDependencies(bundle))
+				return false;
+
+			if (!runBundleTarget(*bundler))
+				return false;
+		}
 	}
 	else
 	{
@@ -484,16 +507,12 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 	if (schema.empty())
 		return false;
 
-	Timer timer;
-
 	displayHeader("Validation", inTarget);
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files(), false);
 	if (!result)
 		Output::lineBreak();
-
-	stopTimerAndShowBenchmark(timer);
 
 	return result;
 }

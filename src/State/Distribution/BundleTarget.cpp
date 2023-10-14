@@ -5,6 +5,7 @@
 
 #include "State/Distribution/BundleTarget.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -124,9 +125,13 @@ bool BundleTarget::validate()
 			}
 			else
 			{
-				std::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist();
+				std::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist(m_state.inputs.osTargetVersion());
 			}
 		}
+	}
+	else if (m_macosBundleInfoPropertyListContent.empty())
+	{
+		m_macosBundleInfoPropertyListContent = PlatformFileTemplates::macosInfoPlist(m_state.inputs.osTargetVersion());
 	}
 
 	if (!m_macosBundleEntitlementsPropertyList.empty())
@@ -138,15 +143,8 @@ bool BundleTarget::validate()
 		}
 		else if (!Commands::pathExists(m_macosBundleEntitlementsPropertyList))
 		{
-			if (String::endsWith(".plist", m_macosBundleEntitlementsPropertyList))
-			{
-				Diagnostic::error("bundle.macosBundle.entitlementsPropertyList '{}' was not found.", m_macosBundleEntitlementsPropertyList);
-				result = false;
-			}
-			else
-			{
-				std::ofstream(m_macosBundleEntitlementsPropertyList) << PlatformFileTemplates::macosInfoPlist();
-			}
+			Diagnostic::error("bundle.macosBundle.entitlementsPropertyList '{}' was not found.", m_macosBundleEntitlementsPropertyList);
+			result = false;
 		}
 	}
 #elif defined(CHALET_LINUX)
@@ -481,6 +479,18 @@ const std::string& BundleTarget::macosBundleEntitlementsPropertyListContent() co
 void BundleTarget::setMacosBundleEntitlementsPropertyListContent(std::string&& inValue)
 {
 	m_macosBundleEntitlementsPropertyListContent = std::move(inValue);
+}
+
+/*****************************************************************************/
+bool BundleTarget::willHaveMacosInfoPlist() const noexcept
+{
+	return !m_macosBundleInfoPropertyList.empty() || !m_macosBundleInfoPropertyListContent.empty();
+}
+
+/*****************************************************************************/
+bool BundleTarget::willHaveMacosEntitlementsPlist() const noexcept
+{
+	return !m_macosBundleEntitlementsPropertyList.empty() || !m_macosBundleEntitlementsPropertyListContent.empty();
 }
 
 #elif defined(CHALET_LINUX)

@@ -24,13 +24,14 @@ struct IAppBundler
 
 	virtual bool removeOldFiles() = 0;
 	virtual bool bundleForPlatform() = 0;
+	virtual bool quickBundleForPlatform();
 
 	virtual std::string getBundlePath() const = 0;
 	virtual std::string getExecutablePath() const = 0;
 	virtual std::string getResourcePath() const = 0;
 	virtual std::string getFrameworksPath() const = 0;
 
-	[[nodiscard]] static Unique<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap, const std::string& inInputFile);
+	[[nodiscard]] static Unique<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
 
 protected:
 	BuildState& m_state;

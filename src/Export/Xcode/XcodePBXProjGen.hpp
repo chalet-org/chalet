@@ -7,6 +7,7 @@
 #define CHALET_XCODE_PBXPROJ_GEN_HPP
 
 #include "Libraries/Json.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 #include "State/SourceType.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/Uuid.hpp"
@@ -52,9 +53,10 @@ private:
 	std::string getNativeProductType(const SourceKind inKind) const;
 	std::string getSourceWithSuffix(const std::string& inFile, const std::string& inSuffix) const;
 
+	Json getProductBuildSettings(const BuildState& inState) const;
 	Json getBuildSettings(BuildState& inState, const SourceTarget& inTarget) const;
 	Json getGenericBuildSettings(BuildState& inState, const IBuildTarget& inTarget) const;
-	Json getProductBuildSettings(const BuildState& inState) const;
+	Json getAppBundleBuildSettings(BuildState& inState, const BundleTarget& inTarget) const;
 
 	StringList getCompilerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
 	StringList getLinkerOptions(const BuildState& inState, const SourceTarget& inTarget) const;
@@ -66,6 +68,8 @@ private:
 	std::string m_exportPath;
 	std::string m_xcodeNamespaceGuid;
 	std::string m_projectGuid;
+
+	mutable std::unordered_map<std::string, bool> m_generatedBundleFiles;
 };
 }
 

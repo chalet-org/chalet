@@ -95,6 +95,10 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	// cmd.emplace_back(fmt::format("platform=OS X,arch={}", m_state.info.targetArchitectureString()));
 
 	cmd.emplace_back("-alltargets");
+
+	// cmd.emplace_back("-target");
+	// cmd.emplace_back("[all_build]");
+
 	// std::string target;
 	// if (route.isClean())
 	// 	target = "Clean";
@@ -116,10 +120,18 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	auto project = exporter.getMainProjectOutput(m_state);
 	cmd.emplace_back(project);
 
-	const auto& signingIdentity = m_state.tools.signingIdentity();
-	if (!signingIdentity.empty())
+	const auto& signingDevelopmentTeam = m_state.tools.signingDevelopmentTeam();
+	if (!signingDevelopmentTeam.empty())
 	{
-		cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingIdentity));
+		cmd.emplace_back(fmt::format("DEVELOPMENT_TEAM={}", signingDevelopmentTeam));
+	}
+	else
+	{
+		const auto& signingIdentity = m_state.tools.signingIdentity();
+		if (!signingIdentity.empty())
+		{
+			cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingIdentity));
+		}
 	}
 
 	bool result = false;

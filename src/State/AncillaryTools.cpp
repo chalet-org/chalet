@@ -178,6 +178,14 @@ const std::string& AncillaryTools::signingIdentity() const noexcept
 {
 	return m_signingIdentity;
 }
+const std::string& AncillaryTools::signingDevelopmentTeam() const noexcept
+{
+#if defined(CHALET_MACOS)
+	return m_signingDevelopmentTeam;
+#else
+	return m_signingIdentity;
+#endif
+}
 void AncillaryTools::setSigningIdentity(const std::string& inValue) noexcept
 {
 	m_signingIdentity = inValue;
@@ -194,8 +202,32 @@ bool AncillaryTools::isSigningIdentityValid() const
 		{
 			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
 			auto identities = Commands::subprocessOutput(cmd);
+			auto split = String::split(identities, '\n');
+			bool found = false;
+			for (auto& line : split)
+			{
+				if (String::contains(m_signingIdentity, line))
+				{
+					auto lastOpenParen = line.find_last_of('(');
+					if (lastOpenParen != std::string::npos)
+					{
+						auto lastCloseParen = line.find_last_of(')');
+						if (lastCloseParen != std::string::npos)
+						{
+							lastOpenParen++;
+							auto length = lastCloseParen - lastOpenParen;
+							if (length == 10)
+							{
+								m_signingDevelopmentTeam = line.substr(lastOpenParen, lastCloseParen - lastOpenParen);
+							}
+						}
+					}
+					found = true;
+					break;
+				}
+			}
 
-			if (!String::contains(m_signingIdentity, identities))
+			if (!found)
 			{
 				Diagnostic::error("signingIdentity '{}' could not be verified with '{}'", m_signingIdentity, String::join(cmd));
 				return false;

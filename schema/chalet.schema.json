@@ -214,8 +214,7 @@
 					"description": "Properties to describe the MacOS bundle.",
 					"additionalProperties": false,
 					"required": [
-						"type",
-						"infoPropertyList"
+						"type"
 					],
 					"properties": {
 						"entitlementsPropertyList": {
