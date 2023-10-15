@@ -128,13 +128,16 @@ bool CodeBlocksCBPGen::initialize()
 				if (!windowsManifest.empty())
 					sources[windowsManifest].push_back(configName);
 
-				auto windowsIconResource = state->paths.getWindowsIconResourceFilename(sourceTarget);
-				if (!windowsIconResource.empty())
-					sources[windowsIconResource].push_back(configName);
+				if (state->environment->isWindowsTarget())
+				{
+					auto windowsIconResource = state->paths.getWindowsIconResourceFilename(sourceTarget);
+					if (!windowsIconResource.empty())
+						sources[windowsIconResource].push_back(configName);
 
-				auto windowsManifestResource = state->paths.getWindowsManifestResourceFilename(sourceTarget);
-				if (!windowsManifestResource.empty())
-					sources[windowsManifestResource].push_back(configName);
+					auto windowsManifestResource = state->paths.getWindowsManifestResourceFilename(sourceTarget);
+					if (!windowsManifestResource.empty())
+						sources[windowsManifestResource].push_back(configName);
+				}
 
 				lastDependencies.clear();
 			}
