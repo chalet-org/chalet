@@ -121,50 +121,10 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 /*****************************************************************************/
 const IBuildTarget* BuildManager::getRunTarget(const CommandRoute& inRoute)
 {
-	const IBuildTarget* runTarget = nullptr;
 	if (inRoute.willRun())
-	{
-		const auto& lastTarget = m_state.inputs.lastTarget();
+		return m_state.getFirstValidRunTarget();
 
-		const bool pickAnyTarget = lastTarget.empty() || String::equals(Values::All, lastTarget);
-		for (auto& target : m_state.targets)
-		{
-			auto& name = target->name();
-			if (!pickAnyTarget && !String::equals(name, lastTarget))
-				continue;
-
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (project.isExecutable())
-				{
-					runTarget = target.get();
-					break;
-				}
-			}
-			else if (target->isCMake())
-			{
-				auto& project = static_cast<const CMakeTarget&>(*target);
-				if (!project.runExecutable().empty())
-				{
-					runTarget = target.get();
-					break;
-				}
-			}
-			else if (target->isScript())
-			{
-				runTarget = target.get();
-				break;
-			}
-			else if (target->isProcess())
-			{
-				runTarget = target.get();
-				break;
-			}
-		}
-	}
-
-	return runTarget;
+	return nullptr;
 }
 
 /*****************************************************************************/

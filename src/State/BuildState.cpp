@@ -23,6 +23,7 @@
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -36,6 +37,7 @@
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -170,6 +172,51 @@ void BuildState::setCacheEnabled(const bool inValue)
 const std::string& BuildState::cachePathId() const noexcept
 {
 	return m_cachePathId;
+}
+
+/*****************************************************************************/
+const CentralState& BuildState::getCentralState() const
+{
+	return m_impl->centralState;
+}
+
+/*****************************************************************************/
+const IBuildTarget* BuildState::getFirstValidRunTarget() const
+{
+	auto lastTarget = inputs.lastTarget();
+	if (String::equals(Values::All, lastTarget) && !targets.empty())
+		lastTarget.clear();
+
+	bool lastTargetWasSet = !lastTarget.empty();
+	for (auto& target : targets)
+	{
+		auto& name = target->name();
+		if (lastTargetWasSet && !String::equals(name, lastTarget))
+			continue;
+
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+			if (project.isExecutable())
+				return target.get();
+		}
+		else if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (!project.runExecutable().empty())
+				return target.get();
+		}
+		else if (target->isScript())
+		{
+			return target.get();
+		}
+		else if (target->isProcess())
+		{
+			return target.get();
+		}
+	}
+
+	return nullptr;
 }
 
 /*****************************************************************************/

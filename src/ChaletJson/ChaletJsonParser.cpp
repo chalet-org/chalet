@@ -156,50 +156,12 @@ bool ChaletJsonParser::validBuildRequested() const
 /*****************************************************************************/
 std::string ChaletJsonParser::getValidRunTargetFromInput() const
 {
-	auto lastTarget = m_state.inputs.lastTarget();
-	if (String::equals(Values::All, lastTarget) && !m_state.targets.empty())
-		lastTarget.clear();
-
-	std::string ret;
-	bool setRunTarget = lastTarget.empty();
-	for (auto& target : m_state.targets)
-	{
-		auto& name = target->name();
-		if (!setRunTarget && name != lastTarget)
-			continue;
-
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable())
-			{
-				ret = name;
-				return ret;
-			}
-		}
-		else if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (!project.runExecutable().empty())
-			{
-				ret = name;
-				return ret;
-			}
-		}
-		else if (target->isScript())
-		{
-			ret = name;
-			return ret;
-		}
-		else if (target->isProcess())
-		{
-			ret = name;
-			return ret;
-		}
-	}
+	auto target = m_state.getFirstValidRunTarget();
+	if (target != nullptr)
+		return target->name();
 
 	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/
