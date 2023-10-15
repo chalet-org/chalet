@@ -95,8 +95,10 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 
 		auto& lastTarget = debugState.inputs.lastTarget();
 
-		for (auto& [name, depends] : dependsList)
+		for (auto& it : dependsList)
 		{
+			auto& name = it.first;
+			auto& depends = it.second;
 			node.addElement("Project", [this, &name, &depends, &lastTarget](XmlElement& node2) {
 				node2.addAttribute("filename", getRelativeProjectPath(name));
 

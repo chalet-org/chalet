@@ -7,7 +7,7 @@
 #define CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
 
 #include "Utility/Uuid.hpp"
-#include "XML/XmlFile.hpp"
+#include "Xml/XmlFile.hpp"
 
 namespace chalet
 {

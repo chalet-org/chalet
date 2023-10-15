@@ -310,7 +310,7 @@ bool CodeBlocksCBPGen::saveSourceTargetProjectFiles(const std::string& inFilenam
 		node.addElement("Option", [](XmlElement& node2) {
 			node2.addAttribute("extended_obj_names", "1");
 		});
-		node.addElement("Build", [this, &inName, &group](XmlElement& node2) {
+		node.addElement("Build", [this, &inName](XmlElement& node2) {
 			// Call function that makes each target
 			StringList configs;
 			for (auto& [config, _] : m_configToTargets)
@@ -321,8 +321,10 @@ bool CodeBlocksCBPGen::saveSourceTargetProjectFiles(const std::string& inFilenam
 				addBuildConfigurationForTarget(node2, inName, config);
 			}
 		});
-		for (auto& [file, configs] : group.sources)
+		for (auto& it : group.sources)
 		{
+			auto& file = it.first;
+			auto& configs = it.second;
 			node.addElement("Unit", [this, &file, &configs, &group](XmlElement& node2) {
 				auto resolved = getResolvedPath(file);
 				node2.addAttribute("filename", resolved);
@@ -375,9 +377,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 		}
 	}
 
-	auto& group = m_groups.at(inName);
-
-	outNode.addElement("Target", [this, &configs, &inName, &inConfigName, &group](XmlElement& node) {
+	outNode.addElement("Target", [this, &configs, &inName, &inConfigName](XmlElement& node) {
 		node.addAttribute("title", inConfigName);
 
 		bool isAllTarget = String::equals(m_allBuildName, inName);
@@ -437,7 +437,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 /*****************************************************************************/
 void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
-	outNode.addElement("Option", [this, &inState, &inTarget](XmlElement& node2) {
+	outNode.addElement("Option", [&inState, &inTarget](XmlElement& node2) {
 		auto outputFile = Commands::getCanonicalPath(inState.paths.getTargetFilename(inTarget));
 		node2.addAttribute("output", outputFile);
 		node2.addAttribute("prefix_auto", "0");
@@ -461,7 +461,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 	outNode.addElement("Option", [this, &inTarget](XmlElement& node) {
 		node.addAttribute("type", getOutputType(inTarget));
 	});
-	outNode.addElement("Option", [this](XmlElement& node) {
+	outNode.addElement("Option", [](XmlElement& node) {
 		node.addAttribute("pch_mode", "1");
 	});
 
@@ -584,7 +584,7 @@ void CodeBlocksCBPGen::addScriptTarget(XmlElement& outNode, const BuildState& in
 	outNode.addElement("Option", [this](XmlElement& node2) {
 		node2.addAttribute("working_dir", m_cwd);
 	});
-	outNode.addElement("Option", [this](XmlElement& node) {
+	outNode.addElement("Option", [](XmlElement& node) {
 		node.addAttribute("type", "4");
 	});
 	outNode.addElement("MakeCommands", [this, &inName](XmlElement& node) {
@@ -635,7 +635,7 @@ void CodeBlocksCBPGen::addAllBuildTarget(XmlElement& outNode, const BuildState& 
 	// 	node2.addAttribute("use_console_runner", "1");
 	// });
 
-	outNode.addElement("Option", [this](XmlElement& node) {
+	outNode.addElement("Option", [](XmlElement& node) {
 		node.addAttribute("type", "4");
 	});
 
