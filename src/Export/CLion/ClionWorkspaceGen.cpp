@@ -26,6 +26,10 @@ namespace chalet
 CLionWorkspaceGen::CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inDebugConfig) :
 	m_states(inStates),
 	m_debugConfiguration(inDebugConfig),
+	m_toolsMap({
+		{ "Build", "build" },
+		{ "Clean", "clean" },
+	}),
 	m_clionNamespaceGuid("86263C98-993E-44F5-9FE0-D9867378467F")
 {
 }
@@ -66,18 +70,21 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	if (!createWorkspaceFile(workspaceFile))
 		return false;
 
-	for (auto& target : debugState.targets)
+	for (auto& state : m_states)
 	{
-		if (target->isSources())
+		for (auto& target : state->targets)
 		{
-			auto& sourceTarget = static_cast<const SourceTarget&>(*target);
-			if (!sourceTarget.isExecutable())
-				continue;
-
-			if (!createRunConfigurationFile(runConfigurationsPath, sourceTarget))
+			if (target->isSources())
 			{
-				Diagnostic::error("There was a problem creating the runConfiguration for: {}", sourceTarget.name());
-				return false;
+				auto& sourceTarget = static_cast<const SourceTarget&>(*target);
+				if (!sourceTarget.isExecutable())
+					continue;
+
+				if (!createRunConfigurationFile(runConfigurationsPath, *state, sourceTarget))
+				{
+					Diagnostic::error("There was a problem creating the runConfiguration for: {}", sourceTarget.name());
+					return false;
+				}
 			}
 		}
 	}
@@ -96,31 +103,33 @@ bool CLionWorkspaceGen::createCustomTargetsFile(const std::string& inFilename)
 	xmlRoot.addAttribute("version", "4");
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "CLionExternalBuildManager");
-		node.addElement("target", [this](XmlElement& node2) {
-			auto name = getTargetName();
-			node2.addAttribute("id", Uuid::v5(fmt::format("{}_{}", node2.name(), name), m_clionNamespaceGuid).str());
-			node2.addAttribute("name", name);
-			node2.addAttribute("defaultType", "TOOL");
-			node2.addElement("configuration", [this, &name](XmlElement& node3) {
-				node3.addAttribute("id", Uuid::v5(fmt::format("{}_{}", node3.name(), name), m_clionNamespaceGuid).str());
-				node3.addAttribute("name", name);
 
-				auto toolsMap = getToolsMap();
+		for (auto& state : m_states)
+		{
+			auto& config = state->configuration.name();
+			node.addElement("target", [this, &config](XmlElement& node2) {
+				node2.addAttribute("id", Uuid::v5(fmt::format("{}_{}", node2.name(), config), m_clionNamespaceGuid).str());
+				node2.addAttribute("name", config);
+				node2.addAttribute("defaultType", "TOOL");
+				node2.addElement("configuration", [this, &config](XmlElement& node3) {
+					node3.addAttribute("id", Uuid::v5(fmt::format("{}_{}", node3.name(), config), m_clionNamespaceGuid).str());
+					node3.addAttribute("name", config);
 
-				for (auto& it : toolsMap)
-				{
-					auto& label = it.first;
-					auto& cmd = it.second;
+					for (auto& it : m_toolsMap)
+					{
+						auto& label = it.first;
+						auto& cmd = it.second;
 
-					node3.addElement(cmd, [&label](XmlElement& node4) {
-						node4.addAttribute("type", "TOOL");
-						node4.addElement("tool", [&label](XmlElement& node5) {
-							node5.addAttribute("actionId", fmt::format("Tool_External Tools_Chalet: {}", label));
+						node3.addElement(cmd, [&label, &config](XmlElement& node4) {
+							node4.addAttribute("type", "TOOL");
+							node4.addElement("tool", [&label, &config](XmlElement& node5) {
+								node5.addAttribute("actionId", fmt::format("Tool_External Tools_Chalet: {} {}", label, config));
+							});
 						});
-					});
-				}
+					}
+				});
 			});
-		});
+		}
 	});
 
 	// xmlFile.dumpToTerminal();
@@ -145,44 +154,46 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 	xmlRoot.setName("toolSet");
 	xmlRoot.addAttribute("name", "External Tools");
 
-	auto toolsMap = getToolsMap();
-	for (auto& it : toolsMap)
+	for (auto& state : m_states)
 	{
-		auto& label = it.first;
-		auto& cmd = it.second;
+		auto& config = state->configuration.name();
+		for (auto& it : m_toolsMap)
+		{
+			auto& label = it.first;
+			auto& cmd = it.second;
 
-		xmlRoot.addElement("tool", [this, &label, &cmd](XmlElement& node) {
-			auto name = getTargetName();
-			node.addAttribute("name", fmt::format("{}: {}", name, label));
-			node.addAttribute("description", label);
-			node.addAttribute("showInMainMenu", getBoolString(false));
-			node.addAttribute("showInEditor", getBoolString(false));
-			node.addAttribute("showInProject", getBoolString(false));
-			node.addAttribute("showInSearchPopup", getBoolString(false));
-			node.addAttribute("disabled", getBoolString(false));
-			node.addAttribute("useConsole", getBoolString(true));
-			node.addAttribute("showConsoleOnStdOut", getBoolString(false));
-			node.addAttribute("showConsoleOnStdErr", getBoolString(true));
-			node.addAttribute("synchronizeAfterRun", getBoolString(true));
+			xmlRoot.addElement("tool", [this, &config, &label, &cmd](XmlElement& node) {
+				node.addAttribute("name", fmt::format("Chalet: {} {}", label, config));
+				node.addAttribute("description", label);
+				node.addAttribute("showInMainMenu", getBoolString(false));
+				node.addAttribute("showInEditor", getBoolString(false));
+				node.addAttribute("showInProject", getBoolString(false));
+				node.addAttribute("showInSearchPopup", getBoolString(false));
+				node.addAttribute("disabled", getBoolString(false));
+				node.addAttribute("useConsole", getBoolString(true));
+				node.addAttribute("showConsoleOnStdOut", getBoolString(false));
+				node.addAttribute("showConsoleOnStdErr", getBoolString(true));
+				node.addAttribute("synchronizeAfterRun", getBoolString(true));
 
-			node.addElement("exec", [this, &cmd](XmlElement& node2) {
-				node2.addElement("option", [this](XmlElement& node3) {
-					auto homeDirectory = Environment::getUserDirectory();
-					auto chaletPath = m_chaletPath;
-					String::replaceAll(chaletPath, m_homeDirectory, "$USER_HOME$");
-					node3.addAttribute("name", "COMMAND");
-					node3.addAttribute("value", chaletPath);
-				});
-				node2.addElement("option", [this, &cmd](XmlElement& node3) {
-					node3.addAttribute("name", "PARAMETERS");
-					node3.addAttribute("value", fmt::format("-c {} {}", m_debugConfiguration, cmd));
-				});
-				node2.addElement("option", [](XmlElement& node3) {
-					node3.addAttribute("name", "WORKING_DIRECTORY");
-					node3.addAttribute("value", "$ProjectFileDir$");
+				node.addElement("exec", [this, &config, &cmd](XmlElement& node2) {
+					node2.addElement("option", [this](XmlElement& node3) {
+						auto homeDirectory = Environment::getUserDirectory();
+						auto chaletPath = m_chaletPath;
+						String::replaceAll(chaletPath, m_homeDirectory, "$USER_HOME$");
+						node3.addAttribute("name", "COMMAND");
+						node3.addAttribute("value", chaletPath);
+					});
+					node2.addElement("option", [this, &config, &cmd](XmlElement& node3) {
+						node3.addAttribute("name", "PARAMETERS");
+						node3.addAttribute("value", fmt::format("-a auto -c {} {}", config, cmd));
+					});
+					node2.addElement("option", [](XmlElement& node3) {
+						node3.addAttribute("name", "WORKING_DIRECTORY");
+						node3.addAttribute("value", "$ProjectFileDir$");
+					});
 				});
 			});
-		});
+		}
 	}
 
 	// xmlFile.dumpToTerminal();
@@ -197,9 +208,11 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const SourceTarget& inTarget)
+bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const BuildState& inState, const SourceTarget& inTarget)
 {
-	auto filename = fmt::format("{}/{}.xml", inPath, inTarget.name());
+	auto& config = inState.configuration.name();
+
+	auto filename = fmt::format("{}/{}.xml", inPath, getTargetName(inTarget, config));
 	XmlFile xmlFile(filename);
 
 	auto& xmlRoot = xmlFile.getRoot();
@@ -208,29 +221,22 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 	xmlRoot.setName("component");
 	xmlRoot.addAttribute("name", "ProjectRunConfigurationManager");
 
-	auto& debugState = getDebugState();
+	auto outputFile = inState.paths.getTargetFilename(inTarget);
 
-	auto outputFile = debugState.paths.getTargetFilename(inTarget);
-	xmlRoot.addElement("configuration", [this, &inTarget, &outputFile](XmlElement& node2) {
-		auto& name = inTarget.name();
-		node2.addAttribute("default", getBoolString(false));
-		node2.addAttribute("name", name);
+	xmlRoot.addElement("configuration", [this, &inTarget, &config, &outputFile](XmlElement& node2) {
+		// node2.addAttribute("default", getBoolString(String::equals(m_debugConfiguration, config)));
+		node2.addAttribute("name", getTargetName(inTarget, config));
 		node2.addAttribute("type", "CLionExternalRunConfiguration");
 		node2.addAttribute("factoryName", "Application");
+		node2.addAttribute("folderName", config);
 		node2.addAttribute("REDIRECT_INPUT", getBoolString(false));
 		node2.addAttribute("ELEVATE", getBoolString(false));
 		node2.addAttribute("USE_EXTERNAL_CONSOLE", getBoolString(false));
 		node2.addAttribute("EMULATE_TERMINAL", getBoolString(false));
 		node2.addAttribute("PASS_PARENT_ENVS_2", getBoolString(true));
 		node2.addAttribute("PROJECT_NAME", m_projectName);
-		node2.addAttribute("TARGET_NAME", getTargetName());
+		node2.addAttribute("TARGET_NAME", config);
 		node2.addAttribute("RUN_PATH", outputFile);
-		node2.addElement("envs", [&name](XmlElement& node3) {
-			node3.addElement("env", [&name](XmlElement& node4) {
-				node4.addAttribute("name", "CLION_CHALET_TARGET");
-				node4.addAttribute("value", name);
-			});
-		});
 		node2.addElement("method", [this](XmlElement& node3) {
 			node3.addAttribute("v", "2");
 			node3.addElement("option", [this](XmlElement& node4) {
@@ -256,88 +262,6 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
-	/*
-	<?xml version="1.0" encoding="UTF-8"?>
-	<project version="4">
-		<component name="CMakeRunConfigurationManager">
-			<generated />
-		</component>
-		<component name="CMakeSettings">
-			<configurations>
-				<configuration PROFILE_NAME="Debug" ENABLED="false" CONFIG_NAME="Debug" />
-			</configurations>
-		</component>
-
-		<component name="ChangeListManager">
-			<list default="true" id="a37c1c0a-61fc-4c5d-bdd8-14122cbefe95" name="Changes" comment="" />
-			<option name="SHOW_DIALOG" value="false" />
-			<option name="HIGHLIGHT_CONFLICTS" value="true" />
-			<option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
-			<option name="LAST_RESOLUTION" value="IGNORE" />
-		</component>
-		<component name="ClangdSettings">
-			<option name="formatViaClangd" value="false" />
-		</component>
-		<component name="ProjectColorInfo"><![CDATA[{
-		"customColor": "",
-		"associatedIndex": 6
-		}]]></component>
-		<component name="ProjectId" id="2WnwGzZ5woZe0F4aLkNaXiztROm" />
-		<component name="ProjectViewState">
-			<option name="hideEmptyMiddlePackages" value="true" />
-			<option name="showLibraryContents" value="true" />
-		</component>
-		<component name="PropertiesComponent"><![CDATA[{
-		"keyToString": {
-			"RunOnceActivity.OpenProjectViewOnStart": "true",
-			"RunOnceActivity.ShowReadmeOnStart": "true",
-			"RunOnceActivity.cidr.known.project.marker": "true",
-			"WebServerToolWindowFactoryState": "false",
-			"cf.first.check.clang-format": "false",
-			"cidr.known.project.marker": "true",
-			"ignore.virus.scanning.warn.message": "true",
-			"node.js.detected.package.eslint": "true",
-			"node.js.detected.package.tslint": "true",
-			"node.js.selected.package.eslint": "(autodetect)",
-			"node.js.selected.package.tslint": "(autodetect)",
-			"settings.editor.selected.configurable": "CLionExternalConfigurable",
-			"settings.editor.splitter.proportion": "0.26069248",
-			"vue.rearranger.settings.migration": "true"
-		}
-		}]]></component>
-		<component name="RunManager">
-			<configuration name="new-project" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="new-project" TARGET_NAME="Chalet" CONFIG_NAME="Chalet" RUN_PATH="build/x86_64-pc-windows-msvc_Release/new-project.exe">
-			<envs>
-				<env name="CLION_CHALET_TARGET" value="new-project" />
-			</envs>
-			<method v="2">
-				<option name="CLION.EXTERNAL.BUILD" enabled="true" />
-			</method>
-			</configuration>
-			<configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-			<method v="2">
-				<option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-			</method>
-			</configuration>
-		</component>
-		<component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
-		<component name="TaskManager">
-			<task active="true" id="Default" summary="Default task">
-			<changelist id="a37c1c0a-61fc-4c5d-bdd8-14122cbefe95" name="Changes" comment="" />
-			<created>1697381560836</created>
-			<option name="number" value="Default" />
-			<option name="presentableId" value="Default" />
-			<updated>1697381560836</updated>
-			<workItem from="1697381562483" duration="1984000" />
-			</task>
-			<servers />
-		</component>
-		<component name="TypeScriptGeneratedFilesManager">
-			<option name="version" value="3" />
-		</component>
-	</project>
-	*/
-
 	auto& xmlRoot = xmlFile.getRoot();
 
 	xmlRoot.setName("project");
@@ -353,47 +277,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 		node.addAttribute("name", "ProjectId");
 		node.addAttribute("id", m_projectId); // TODO: This format maybe - 2WnwGzZ5woZe0F4aLkNaXiztROm
 	});
-	/*
-		<component name="RunManager">
-			<configuration
-				default="true"
-				type="CMakeRunConfiguration"
-				factoryName="Application"
-				REDIRECT_INPUT="false"
-				ELEVATE="false"
-				USE_EXTERNAL_CONSOLE="false"
-				EMULATE_TERMINAL="false"
-				PASS_PARENT_ENVS_2="true"
-			>
-				<method v="2">
-					<option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-				</method>
-			</configuration>
-
-			<configuration
-				name="new-project"
-				type="CLionExternalRunConfiguration"
-				factoryName="Application"
-				REDIRECT_INPUT="false"
-				ELEVATE="false"
-				USE_EXTERNAL_CONSOLE="false"
-				EMULATE_TERMINAL="false"
-				PASS_PARENT_ENVS_2="true"
-				PROJECT_NAME="new-project"
-				TARGET_NAME="Chalet"
-				CONFIG_NAME="Chalet"
-				RUN_PATH="build/x86_64-pc-windows-msvc_Release/new-project.exe"
-			>
-				<envs>
-					<env name="CLION_CHALET_TARGET" value="new-project" />
-				</envs>
-				<method v="2">
-					<option name="CLION.EXTERNAL.BUILD" enabled="true" />
-				</method>
-			</configuration>
-		</component>
-	*/
-	xmlRoot.addElement("component", [this](XmlElement& node) {
+	/*xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "RunManager");
 
 		// For each exectuable target
@@ -419,15 +303,9 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 					node2.addAttribute("EMULATE_TERMINAL", getBoolString(false));
 					node2.addAttribute("PASS_PARENT_ENVS_2", getBoolString(true));
 					node2.addAttribute("PROJECT_NAME", name);
-					node2.addAttribute("TARGET_NAME", getTargetName());
+					node2.addAttribute("TARGET_NAME", m_debugConfiguration);
 					node2.addAttribute("CONFIG_NAME", name);
 					node2.addAttribute("RUN_PATH", outputFile);
-					node2.addElement("envs", [&name](XmlElement& node3) {
-						node3.addElement("env", [&name](XmlElement& node4) {
-							node4.addAttribute("name", "CLION_CHALET_TARGET");
-							node4.addAttribute("value", name);
-						});
-					});
 					node2.addElement("method", [this](XmlElement& node3) {
 						node3.addAttribute("v", "2");
 						node3.addElement("option", [this](XmlElement& node4) {
@@ -438,7 +316,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 				});
 			}
 		}
-	});
+	});*/
 
 	// xmlFile.dumpToTerminal();
 
@@ -464,15 +342,6 @@ BuildState& CLionWorkspaceGen::getDebugState() const
 }
 
 /*****************************************************************************/
-std::map<std::string, std::string> CLionWorkspaceGen::getToolsMap() const
-{
-	return {
-		{ "Build", "build" },
-		{ "Clean", "clean" },
-	};
-}
-
-/*****************************************************************************/
 std::string CLionWorkspaceGen::getResolvedPath(const std::string& inFile) const
 {
 	return Commands::getCanonicalPath(inFile);
@@ -485,8 +354,8 @@ std::string CLionWorkspaceGen::getBoolString(const bool inValue) const
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getTargetName() const
+std::string CLionWorkspaceGen::getTargetName(const IBuildTarget& inTarget, const std::string& inConfig) const
 {
-	return "Chalet";
+	return fmt::format("{} ({})", inTarget.name(), inConfig);
 }
 }

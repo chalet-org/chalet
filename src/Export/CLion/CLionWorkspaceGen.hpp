@@ -24,18 +24,19 @@ struct CLionWorkspaceGen
 private:
 	bool createCustomTargetsFile(const std::string& inFilename);
 	bool createExternalToolsFile(const std::string& inFilename);
-	bool createRunConfigurationFile(const std::string& inPath, const SourceTarget& inTarget);
+	bool createRunConfigurationFile(const std::string& inPath, const BuildState& inState, const SourceTarget& inTarget);
 	bool createWorkspaceFile(const std::string& inFilename);
 
 	BuildState& getDebugState() const;
 
-	std::map<std::string, std::string> getToolsMap() const;
 	std::string getResolvedPath(const std::string& inFile) const;
 	std::string getBoolString(const bool inValue) const;
-	std::string getTargetName() const;
+	std::string getTargetName(const IBuildTarget& inTarget, const std::string& inConfig) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_debugConfiguration;
+
+	std::map<std::string, std::string> m_toolsMap;
 
 	std::string m_clionNamespaceGuid;
 	std::string m_homeDirectory;
