@@ -7,6 +7,7 @@
 
 #include "Builder/ConfigureFileParser.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/CLionProjectExporter.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
@@ -51,6 +52,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<VSJsonProjectExporter>(inInputs);
 		case ExportKind::Xcode:
 			return std::make_unique<XcodeProjectExporter>(inInputs);
+		case ExportKind::CLion:
+			return std::make_unique<CLionProjectExporter>(inInputs);
 		default:
 			break;
 	}
