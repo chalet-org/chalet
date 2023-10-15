@@ -195,8 +195,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFile(const std::string& inName, const 
 {
 	XmlFile xmlFile(inFilename);
 
-	auto& xml = xmlFile.xml;
-	auto& xmlRoot = xml.root();
+	auto& xmlRoot = xmlFile.getRoot();
 
 	addProjectHeader(xmlRoot);
 
@@ -224,8 +223,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFile(const std::string& inName, const 
 {
 	XmlFile xmlFile(inFilename);
 
-	auto& xml = xmlFile.xml;
-	auto& xmlRoot = xml.root();
+	auto& xmlRoot = xmlFile.getRoot();
 
 	addProjectHeader(xmlRoot);
 
@@ -249,8 +247,7 @@ bool VSVCXProjGen::saveAllTargetProjectFile(const std::string& inName, const std
 {
 	XmlFile xmlFile(inFilename);
 
-	auto& xml = xmlFile.xml;
-	auto& xmlRoot = xml.root();
+	auto& xmlRoot = xmlFile.getRoot();
 
 	addProjectHeader(xmlRoot);
 
@@ -272,8 +269,7 @@ bool VSVCXProjGen::saveAllTargetProjectFile(const std::string& inName, const std
 /*****************************************************************************/
 bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inType)
 {
-	auto& xml = outFile.xml;
-	auto& xmlRoot = xml.root();
+	auto& xmlRoot = outFile.getRoot();
 
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "4.0");
@@ -337,8 +333,7 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
-	auto& xml = xmlFile.xml;
-	auto& xmlRoot = xml.root();
+	auto& xmlRoot = xmlFile.getRoot();
 
 	xmlRoot.setName("Project");
 	xmlRoot.addAttribute("ToolsVersion", "Current");
@@ -884,7 +879,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 		}
 	}
 
-	auto& filters = outFiltersFile.xml.root();
+	auto& filters = outFiltersFile.getRoot();
 
 	if (!headers.empty())
 	{
@@ -1103,7 +1098,7 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 		}
 	}
 
-	// auto& filters = outFiltersFile.xml.root();
+	// auto& filters = outFiltersFile.getRoot();
 	UNUSED(outFiltersFile);
 	outNode.addElement("ItemGroup", [&sources](XmlElement& node) {
 		for (auto& it : sources)

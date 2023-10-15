@@ -16,14 +16,25 @@ struct IBuildTarget;
 
 struct CLionWorkspaceGen
 {
-	explicit CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates);
+	explicit CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inDebugConfig);
 
 	bool saveToPath(const std::string& inPath);
 
 private:
+	bool createCustomTargetsFile(const std::string& inFilename);
+	bool createExternalToolsFile(const std::string& inFilename);
 	bool createWorkspaceFile(const std::string& inFilename);
 
+	BuildState& getDebugState() const;
+
+	std::string getResolvedPath(const std::string& inFile) const;
+	std::string getBoolString(const bool inValue) const;
+
 	const std::vector<Unique<BuildState>>& m_states;
+	const std::string& m_debugConfiguration;
+
+	std::string m_clionNamespaceGuid;
+	std::string m_chaletPath;
 };
 }
 

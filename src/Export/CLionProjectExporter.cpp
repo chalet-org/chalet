@@ -55,12 +55,29 @@ bool CLionProjectExporter::generateProjectFiles()
 		return false;
 
 	{
-		CLionWorkspaceGen workspaceGen(m_states);
+		CLionWorkspaceGen workspaceGen(m_states, m_debugConfiguration);
 		if (!workspaceGen.saveToPath(m_directory))
 		{
 			Diagnostic::error("There was a problem creating the CLion workspace files.");
 			return false;
 		}
+	}
+
+	const auto& cwd = workingDirectory();
+	auto ideaDirectory = fmt::format("{}/.idea", cwd);
+	if (!Commands::pathExists(ideaDirectory) && Commands::pathExists(m_directory))
+	{
+		if (!Commands::copySilent(m_directory, cwd))
+		{
+			Diagnostic::error("There was a problem copying the .idea directory to the workspace.");
+			return false;
+		}
+	}
+	else
+	{
+		auto directory = m_directory;
+		String::replaceAll(directory, fmt::format("{}/", cwd), "");
+		Diagnostic::warn("The .idea directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
 	}
 
 	return true;
