@@ -26,8 +26,6 @@ private:
 
 	BuildState& getDebugState() const;
 
-	StringList getBuildTargetNames(BuildState* inState = nullptr) const;
-
 	std::string getRelativeProjectPath(const std::string& inName) const;
 
 	const std::vector<Unique<BuildState>>& m_states;

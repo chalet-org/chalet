@@ -5,6 +5,8 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
+#include "Terminal/Commands.hpp"
+
 namespace chalet
 {
 namespace
@@ -196,6 +198,7 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 //   If the ID parameter is not specified, the default value is 2 if the /DLL option is set; otherwise, the default value is 1.
 std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps)
 {
+	auto file = Commands::getCanonicalPath(inManifestFile);
 	int id = inDllPrivateDeps ? 2 : 1;
 	auto macroName = inDllPrivateDeps ? "ISOLATIONAWARE_MANIFEST_RESOURCE_ID" : "CREATEPROCESS_MANIFEST_RESOURCE_ID";
 	return fmt::format(R"rc(#pragma code_page(65001)
@@ -203,15 +206,16 @@ std::string PlatformFileTemplates::windowsManifestResource(const std::string& in
 )rc",
 		FMT_ARG(id),
 		FMT_ARG(macroName),
-		fmt::arg("manifestFile", inManifestFile));
+		fmt::arg("manifestFile", file));
 }
 
 /*****************************************************************************/
 std::string PlatformFileTemplates::windowsIconResource(const std::string& inIconFile)
 {
+	auto file = Commands::getCanonicalPath(inIconFile);
 	return fmt::format(R"rc(#pragma code_page(65001)
 2 ICON "{iconFile}"
 )rc",
-		fmt::arg("iconFile", inIconFile));
+		fmt::arg("iconFile", file));
 }
 }

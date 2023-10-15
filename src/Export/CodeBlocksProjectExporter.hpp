@@ -27,21 +27,6 @@ protected:
 
 private:
 	std::string getProjectName(const BuildState& inState) const;
-
-	std::string getProjectContent(const std::string& inName) const;
-	std::string getProjectBuildConfiguration(const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
-
-	std::string getProjectCompileOptions(const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
-	std::string getProjectCompileIncludes(const SourceTarget& inTarget) const;
-	std::string getProjectLinkerOptions(const CompileToolchainController& inToolchain) const;
-	std::string getProjectLinkerLibDirs(const BuildState& inState, const SourceTarget& inTarget) const;
-	std::string getProjectLinkerLinks(const SourceTarget& inTarget) const;
-	std::string getProjectUnits(const SourceTarget& inTarget) const;
-
-	std::string getWorkspaceContent(const BuildState& inState) const;
-	std::string getWorkspaceProject(const SourceTarget& inTarget, const bool inActive = false) const;
-
-	std::string getWorkspaceLayoutContent(const BuildState& inState) const;
 };
 }
 

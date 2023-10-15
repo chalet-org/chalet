@@ -79,6 +79,15 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 		}
 	}
 
+	{
+		StringList allDepends;
+		for (auto& [target, _] : dependsList)
+		{
+			allDepends.push_back(target);
+		}
+		dependsList.emplace(m_allBuildName, std::move(allDepends));
+	}
+
 	xmlRoot.setName("CodeBlocks_workspace_file");
 	xmlRoot.addElement("Workspace", [this, &debugState, &dependsList](XmlElement& node) {
 		const auto& workspaceName = debugState.workspace.metadata().name();
@@ -172,31 +181,6 @@ BuildState& CodeBlocksWorkspaceGen::getDebugState() const
 	}
 
 	return *m_states.front();
-}
-
-/*****************************************************************************/
-StringList CodeBlocksWorkspaceGen::getBuildTargetNames(BuildState* inState) const
-{
-	StringList ret;
-	if (inState != nullptr)
-	{
-		for (auto& target : inState->targets)
-		{
-			List::addIfDoesNotExist(ret, target->name());
-		}
-	}
-	else
-	{
-		for (auto& state : m_states)
-		{
-			for (auto& target : state->targets)
-			{
-				List::addIfDoesNotExist(ret, target->name());
-			}
-		}
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
