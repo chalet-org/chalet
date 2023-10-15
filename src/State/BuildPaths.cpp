@@ -176,6 +176,7 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
+		fmt::format("{}/cache", buildDir), // General build cache for edges cases / other stuff
 	};
 
 #if defined(CHALET_MACOS)

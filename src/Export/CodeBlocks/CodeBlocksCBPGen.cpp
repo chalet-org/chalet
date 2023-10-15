@@ -237,7 +237,7 @@ clean:
 					{
 						if (String::equals(config, state->configuration.name()))
 						{
-							dependency = fmt::format("{}/CodeBlocksCache", getResolvedPath(state->paths.buildOutputDir()));
+							dependency = fmt::format("{}/cache", getResolvedPath(state->paths.buildOutputDir()));
 							break;
 						}
 					}
