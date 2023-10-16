@@ -471,7 +471,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 	else
 	{
 		const auto& settingsFile = getSettingsJson();
-		if (!settingsFile.is_null())
+		if (settingsFile.is_object())
 		{
 			if (settingsFile.contains(Keys::Toolchains))
 			{
