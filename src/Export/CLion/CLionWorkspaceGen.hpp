@@ -29,7 +29,7 @@ private:
 		std::string arch;
 		std::string outputFile;
 		std::string args;
-		std::string path;
+		std::map<std::string, std::string> env;
 	};
 	bool createCustomTargetsFile(const std::string& inFilename);
 	bool createExternalToolsFile(const std::string& inFilename);

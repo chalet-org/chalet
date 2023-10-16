@@ -97,18 +97,30 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		const auto& thisArch = state->info.targetArchitectureString();
 		const auto& thisBuildDir = state->paths.buildOutputDir();
 
-		auto gen = DotEnvFileGenerator::make(*state);
+		auto env = DotEnvFileGenerator::make(*state);
 
 		for (auto& arch : m_arches)
 		{
 			auto buildDir = state->paths.buildOutputDir();
 			String::replaceAll(buildDir, thisArch, arch);
 
-			auto path = gen.getRunPaths();
+			auto path = env.getRunPaths();
 			if (!path.empty())
 			{
 				String::replaceAll(path, thisBuildDir, buildDir);
 				path = fmt::format("{}{}${}$", path, Environment::getPathSeparator(), Environment::getPathKey());
+			}
+			auto libraryPath = env.getLibraryPath();
+			if (!libraryPath.empty())
+			{
+				String::replaceAll(libraryPath, thisBuildDir, buildDir);
+				libraryPath = fmt::format("{}{}${}$", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
+			}
+			auto frameworkPath = env.getFrameworkPath();
+			if (!frameworkPath.empty())
+			{
+				String::replaceAll(frameworkPath, thisBuildDir, buildDir);
+				frameworkPath = fmt::format("{}{}${}$", frameworkPath, Environment::getPathSeparator(), env.getFrameworkPathKey());
 			}
 
 			for (auto& target : state->targets)
@@ -133,7 +145,16 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					runConfig.arch = arch;
 					runConfig.outputFile = std::move(outputFile);
 					runConfig.args = arguments;
-					runConfig.path = path;
+
+					if (!path.empty())
+						runConfig.env.emplace(Environment::getPathKey(), path);
+
+					if (!libraryPath.empty())
+						runConfig.env.emplace(env.getLibraryPathKey(), libraryPath);
+
+					if (!frameworkPath.empty())
+						runConfig.env.emplace(env.getFrameworkPathKey(), frameworkPath);
+
 					m_runConfigs.emplace_back(std::move(runConfig));
 				}
 				else if (target->isCMake())
@@ -155,7 +176,16 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					runConfig.arch = arch;
 					runConfig.outputFile = std::move(outputFile);
 					runConfig.args = arguments;
-					runConfig.path = path;
+
+					if (!path.empty())
+						runConfig.env.emplace(Environment::getPathKey(), path);
+
+					if (!libraryPath.empty())
+						runConfig.env.emplace(env.getLibraryPathKey(), libraryPath);
+
+					if (!frameworkPath.empty())
+						runConfig.env.emplace(env.getFrameworkPathKey(), frameworkPath);
+
 					m_runConfigs.emplace_back(std::move(runConfig));
 				}
 			}
@@ -342,13 +372,19 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 		node2.addAttribute("TARGET_NAME", getTargetName(inRunConfig));
 		node2.addAttribute("RUN_PATH", inRunConfig.outputFile);
 		node2.addAttribute("PROGRAM_PARAMS", inRunConfig.args);
-		if (!inRunConfig.path.empty())
+		if (!inRunConfig.env.empty())
 		{
 			node2.addElement("envs", [&inRunConfig](XmlElement& node3) {
-				node3.addElement("env", [&inRunConfig](XmlElement& node4) {
-					node4.addAttribute("name", Environment::getPathKey());
-					node4.addAttribute("value", inRunConfig.path);
-				});
+				for (auto& it : inRunConfig.env)
+				{
+					auto& key = it.first;
+					auto& value = it.second;
+
+					node3.addElement("env", [&key, &value](XmlElement& node4) {
+						node4.addAttribute("name", key);
+						node4.addAttribute("value", value);
+					});
+				}
 			});
 		}
 		node2.addElement("method", [this](XmlElement& node3) {

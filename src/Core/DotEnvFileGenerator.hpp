@@ -21,6 +21,10 @@ struct DotEnvFileGenerator
 
 	std::string get(const std::string& inKey) const;
 	std::string getRunPaths() const;
+	std::string getLibraryPath() const;
+	std::string getFrameworkPath() const;
+	const char* getLibraryPathKey() const;
+	const char* getFrameworkPathKey() const;
 
 	bool save(const std::string& inFilename);
 

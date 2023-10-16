@@ -67,11 +67,11 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 
 #if defined(CHALET_LINUX)
 	// Linux uses LD_LIBRARY_PATH to resolve the correct file dependencies at runtime
-	addEnvironmentPath("LD_LIBRARY_PATH", libDirs);
+	addEnvironmentPath(getLibraryPathKey(), libDirs);
 // addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld
 #elif defined(CHALET_MACOS)
-	addEnvironmentPath("DYLD_FALLBACK_LIBRARY_PATH", libDirs);
-	addEnvironmentPath("DYLD_FALLBACK_FRAMEWORK_PATH", frameworks);
+	addEnvironmentPath(env.getLibraryPathKey(), libDirs);
+	addEnvironmentPath(env.getFrameworkPathKey(), frameworks);
 #endif
 
 	return env;
@@ -100,6 +100,48 @@ std::string DotEnvFileGenerator::get(const std::string& inKey) const
 std::string DotEnvFileGenerator::getRunPaths() const
 {
 	return get("__CHALET_RUN_PATHS");
+}
+
+/*****************************************************************************/
+std::string DotEnvFileGenerator::getLibraryPath() const
+{
+#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
+	return get(getLibraryPathKey());
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
+std::string DotEnvFileGenerator::getFrameworkPath() const
+{
+#if defined(CHALET_MACOS)
+	return get(getFrameworkPathKey());
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
+const char* DotEnvFileGenerator::getLibraryPathKey() const
+{
+#if defined(CHALET_LINUX)
+	return "LD_LIBRARY_PATH";
+#elif defined(CHALET_MACOS)
+	return "DYLD_FALLBACK_LIBRARY_PATH";
+#else
+	return "__CHALET_ERROR_LIBRARY_PATH";
+#endif
+}
+
+/*****************************************************************************/
+const char* DotEnvFileGenerator::getFrameworkPathKey() const
+{
+#if defined(CHALET_MACOS)
+	return "DYLD_FALLBACK_FRAMEWORK_PATH";
+#else
+	return "__CHALET_ERROR_FRAMEWORK_PATH";
+#endif
 }
 
 /*****************************************************************************/
