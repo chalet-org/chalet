@@ -35,6 +35,7 @@ private:
 	bool createExternalToolsFile(const std::string& inFilename);
 	bool createRunConfigurationFile(const std::string& inPath, const RunConfiguration& inRunConfig);
 	bool createWorkspaceFile(const std::string& inFilename);
+	bool createMiscFile(const std::string& inFilename);
 
 	BuildState& getDebugState() const;
 
@@ -59,7 +60,9 @@ private:
 
 	std::string m_clionNamespaceGuid;
 	std::string m_homeDirectory;
+	std::string m_currentDirectory;
 	std::string m_projectName;
+	std::string m_defaultRunTargetName;
 	std::string m_chaletPath;
 	std::string m_projectId;
 	std::string m_toolchain;

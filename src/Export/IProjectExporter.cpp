@@ -90,6 +90,9 @@ const std::string& IProjectExporter::workingDirectory() const noexcept
 /*****************************************************************************/
 bool IProjectExporter::useDirectory(const std::string& inDirectory)
 {
+	if (inDirectory.empty())
+		return false;
+
 	if (!Commands::pathExists(inDirectory))
 	{
 		if (!Commands::makeDirectory(inDirectory))
@@ -100,6 +103,9 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 	}
 
 	m_directory = fmt::format("{}/{}", workingDirectory(), inDirectory);
+
+	cleanExportDirectory();
+
 	return true;
 }
 
@@ -166,6 +172,14 @@ const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inStat
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+void IProjectExporter::cleanExportDirectory()
+{
+	// Wipe the old one
+	if (!m_directory.empty() && Commands::pathExists(m_directory))
+		Commands::removeRecursively(m_directory);
 }
 
 /*****************************************************************************/

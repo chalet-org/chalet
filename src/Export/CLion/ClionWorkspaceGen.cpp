@@ -56,15 +56,23 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 
 	auto nameFile = fmt::format("{}/.name", inPath);
 	auto workspaceFile = fmt::format("{}/workspace.xml", inPath);
+	auto miscFile = fmt::format("{}/misc.xml", inPath);
 	auto customTargetsFile = fmt::format("{}/customTargets.xml", inPath);
 	auto externalToolsFile = fmt::format("{}/External Tools.xml", toolsPath);
 
 	auto& debugState = getDebugState();
 
 	m_homeDirectory = Environment::getUserDirectory();
+	m_currentDirectory = fmt::format("$PROJECT_DIR$/{}", debugState.paths.currentBuildDir());
 	m_projectName = String::getPathBaseName(debugState.inputs.workingDirectory());
 	m_chaletPath = getResolvedPath(debugState.tools.chalet());
 	m_projectId = Uuid::v5(debugState.workspace.metadata().name(), m_clionNamespaceGuid).str();
+
+	auto runTarget = debugState.getFirstValidRunTarget();
+	if (runTarget != nullptr)
+	{
+		m_defaultRunTargetName = runTarget->name();
+	}
 
 	Commands::createFileWithContents(nameFile, m_projectName);
 
@@ -72,29 +80,26 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	m_arches = getArchitectures(m_toolchain);
 
 	m_runConfigs.clear();
-	for (auto& arch : m_arches)
+	for (auto& state : m_states)
 	{
-		for (auto& state : m_states)
-		{
-			const auto& config = state->configuration.name();
-			const auto& runArgumentMap = state->getCentralState().runArgumentMap();
+		const auto& config = state->configuration.name();
+		const auto& runArgumentMap = state->getCentralState().runArgumentMap();
 
-			const auto& thisArch = state->info.targetArchitectureString();
-			const auto& thisBuildDir = state->paths.buildOutputDir();
+		const auto& thisArch = state->info.targetArchitectureString();
+		const auto& thisBuildDir = state->paths.buildOutputDir();
+
+		auto gen = DotEnvFileGenerator::make(*state);
+
+		for (auto& arch : m_arches)
+		{
 			auto buildDir = state->paths.buildOutputDir();
 			String::replaceAll(buildDir, thisArch, arch);
 
-			auto gen = DotEnvFileGenerator::make(*state);
 			auto path = gen.getRunPaths();
-			String::replaceAll(path, thisBuildDir, buildDir);
-			path = fmt::format("{}{}${}$", path, Environment::getPathSeparator(), Environment::getPathKey());
-
+			if (!path.empty())
 			{
-				RunConfiguration runConfig;
-				runConfig.name = m_allBuildName;
-				runConfig.config = config;
-				runConfig.arch = arch;
-				m_runConfigs.emplace_back(std::move(runConfig));
+				String::replaceAll(path, thisBuildDir, buildDir);
+				path = fmt::format("{}{}${}$", path, Environment::getPathSeparator(), Environment::getPathKey());
 			}
 
 			for (auto& target : state->targets)
@@ -139,6 +144,14 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					m_runConfigs.emplace_back(std::move(runConfig));
 				}
 			}
+
+			{
+				RunConfiguration runConfig;
+				runConfig.name = m_allBuildName;
+				runConfig.config = config;
+				runConfig.arch = arch;
+				m_runConfigs.emplace_back(std::move(runConfig));
+			}
 		}
 	}
 
@@ -149,6 +162,9 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		return false;
 
 	if (!createWorkspaceFile(workspaceFile))
+		return false;
+
+	if (!createMiscFile(miscFile))
 		return false;
 
 	for (auto& runConfig : m_runConfigs)
@@ -256,7 +272,7 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 						node3.addAttribute("name", "PARAMETERS");
 
 						auto required = String::equals(m_allBuildName, runConfig.name) ? "--no-only-required" : "--only-required";
-						auto outCommand = fmt::format("-c {} -a {} -t {} {} {}", runConfig.config, runConfig.arch, m_toolchain, required, cmd);
+						auto outCommand = fmt::format("-c {} -a {} -t {} {} --generate-compile-commands {}", runConfig.config, runConfig.arch, m_toolchain, required, cmd);
 						if (String::equals("build", cmd))
 							outCommand += fmt::format(" {}", runConfig.name);
 
@@ -311,12 +327,15 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 		node2.addAttribute("TARGET_NAME", getTargetName(inRunConfig));
 		node2.addAttribute("RUN_PATH", inRunConfig.outputFile);
 		node2.addAttribute("PROGRAM_PARAMS", inRunConfig.args);
-		node2.addElement("envs", [&inRunConfig](XmlElement& node3) {
-			node3.addElement("env", [&inRunConfig](XmlElement& node4) {
-				node4.addAttribute("name", Environment::getPathKey());
-				node4.addAttribute("value", inRunConfig.path);
+		if (!inRunConfig.path.empty())
+		{
+			node2.addElement("envs", [&inRunConfig](XmlElement& node3) {
+				node3.addElement("env", [&inRunConfig](XmlElement& node4) {
+					node4.addAttribute("name", Environment::getPathKey());
+					node4.addAttribute("value", inRunConfig.path);
+				});
 			});
-		});
+		}
 		node2.addElement("method", [this](XmlElement& node3) {
 			node3.addAttribute("v", "2");
 			node3.addElement("option", [this](XmlElement& node4) {
@@ -353,6 +372,68 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			node2.addAttribute("value", "SELECTIVE");
 		});
 	});
+	xmlRoot.addElement("component", [](XmlElement& node) {
+		node.addAttribute("name", "CMakeRunConfigurationManager");
+		node.addElement("generated");
+	});
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "CMakeSettings");
+		node.addElement("configurations", [this](XmlElement& node2) {
+			node2.addElement("configurations", [this](XmlElement& node3) {
+				node3.addAttribute("PROFILE_NAME", m_debugConfiguration);
+				node3.addAttribute("ENABLED", getBoolString(false));
+				node3.addAttribute("CONFIG_NAME", m_debugConfiguration);
+			});
+		});
+	});
+
+	if (!m_defaultRunTargetName.empty())
+	{
+		xmlRoot.addElement("component", [this](XmlElement& node) {
+			node.addAttribute("name", "CompDBLocalSettings");
+			node.addElement("option", [this](XmlElement& node2) {
+				node2.addAttribute("name", "availableProjects");
+				node2.addElement("map", [this](XmlElement& node3) {
+					node3.addElement("entry", [this](XmlElement& node4) {
+						node4.addElement("key", [this](XmlElement& node5) {
+							node5.addElement("ExternalProjectPojo", [this](XmlElement& node6) {
+								node6.addElement("option", [this](XmlElement& node7) {
+									node7.addAttribute("name", "name");
+									node7.addAttribute("value", m_defaultRunTargetName);
+								});
+								node6.addElement("option", [this](XmlElement& node7) {
+									node7.addAttribute("name", "path");
+									node7.addAttribute("value", m_currentDirectory);
+								});
+							});
+						});
+						node4.addElement("value", [this](XmlElement& node5) {
+							node5.addElement("list", [this](XmlElement& node6) {
+								node6.addElement("ExternalProjectPojo", [this](XmlElement& node7) {
+									node7.addElement("option", [this](XmlElement& node8) {
+										node8.addAttribute("name", "name");
+										node8.addAttribute("value", m_defaultRunTargetName);
+									});
+									node7.addElement("option", [this](XmlElement& node8) {
+										node8.addAttribute("name", "path");
+										node8.addAttribute("value", m_currentDirectory);
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+	}
+
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "ExternalProjectsData");
+		node.addElement("projectState", [this](XmlElement& node2) {
+			node2.addAttribute("path", m_currentDirectory);
+			node2.addElement("ProjectState");
+		});
+	});
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "ProjectId");
 		node.addAttribute("id", m_projectId); // TODO: This format maybe - 2WnwGzZ5woZe0F4aLkNaXiztROm
@@ -375,6 +456,57 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 		return false;
 	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool CLionWorkspaceGen::createMiscFile(const std::string& inFilename)
+{
+	XmlFile xmlFile(inFilename);
+
+	auto& xmlRoot = xmlFile.getRoot();
+
+	xmlRoot.setName("project");
+	xmlRoot.addAttribute("version", "4");
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "CompDBSettings");
+		node.addElement("option", [this](XmlElement& node2) {
+			node2.addAttribute("name", "linkedExternalProjectsSettings");
+			node2.addElement("CompDBProjectSettings", [this](XmlElement& node3) {
+				node3.addElement("option", [this](XmlElement& node4) {
+					node4.addAttribute("name", "externalProjectPath");
+					node4.addAttribute("value", m_currentDirectory);
+				});
+				node3.addElement("option", [this](XmlElement& node4) {
+					node4.addAttribute("name", "modules");
+					node4.addElement("set", [this](XmlElement& node5) {
+						node5.addElement("option", [this](XmlElement& node6) {
+							node6.addAttribute("value", m_currentDirectory);
+						});
+					});
+				});
+			});
+		});
+	});
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "CompDBWorkspace");
+		node.addAttribute("PROJECT_DIR", m_currentDirectory);
+		node.addElement("contentRoot", [](XmlElement& node2) {
+			node2.addAttribute("DIR", "$PROJECT_DIR$");
+		});
+	});
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "ExternalStorageConfigurationManager");
+		node.addAttribute("enabled", getBoolString(true));
+	});
+
+	// xmlFile.dumpToTerminal();
+
+	if (!xmlFile.save(2))
+	{
+		Diagnostic::error("There was a problem saving: {}", inFilename);
+		return false;
+	}
 	return true;
 }
 
