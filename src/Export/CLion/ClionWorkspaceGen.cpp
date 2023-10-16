@@ -13,6 +13,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -26,9 +27,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-CLionWorkspaceGen::CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inDebugConfig) :
+CLionWorkspaceGen::CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inDebugConfig, const std::string& inAllBuildName) :
 	m_states(inStates),
 	m_debugConfiguration(inDebugConfig),
+	m_allBuildName(inAllBuildName),
 	m_toolsMap({
 		{ "Build", "build" },
 		{ "Clean", "clean" },
@@ -64,7 +66,60 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 
 	Commands::createFileWithContents(nameFile, m_projectName);
 
-	m_arches = getArchitectures();
+	m_toolchain = getToolchain();
+	m_arches = getArchitectures(m_toolchain);
+
+	m_runConfigs.clear();
+	for (auto& arch : m_arches)
+	{
+		for (auto& state : m_states)
+		{
+			const auto& config = state->configuration.name();
+
+			const auto& thisArch = state->info.targetArchitectureString();
+			auto buildDir = state->paths.buildOutputDir();
+			String::replaceAll(buildDir, thisArch, arch);
+
+			{
+				RunConfiguration runConfig;
+				runConfig.name = m_allBuildName;
+				runConfig.config = config;
+				runConfig.arch = arch;
+				m_runConfigs.emplace_back(std::move(runConfig));
+			}
+
+			for (auto& target : state->targets)
+			{
+				const auto& targetName = target->name();
+				if (target->isSources())
+				{
+					auto& project = static_cast<const SourceTarget&>(*target);
+					if (!project.isExecutable())
+						continue;
+
+					RunConfiguration runConfig;
+					runConfig.name = targetName;
+					runConfig.config = config;
+					runConfig.arch = arch;
+					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.outputFile());
+					m_runConfigs.emplace_back(std::move(runConfig));
+				}
+				else if (target->isCMake())
+				{
+					auto& project = static_cast<const CMakeTarget&>(*target);
+					if (project.runExecutable().empty())
+						continue;
+
+					RunConfiguration runConfig;
+					runConfig.name = targetName;
+					runConfig.config = config;
+					runConfig.arch = arch;
+					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.runExecutable());
+					m_runConfigs.emplace_back(std::move(runConfig));
+				}
+			}
+		}
+	}
 
 	if (!createExternalToolsFile(externalToolsFile))
 		return false;
@@ -75,25 +130,12 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	if (!createWorkspaceFile(workspaceFile))
 		return false;
 
-	for (auto& arch : m_arches)
+	for (auto& runConfig : m_runConfigs)
 	{
-		for (auto& state : m_states)
+		if (!createRunConfigurationFile(runConfigurationsPath, runConfig))
 		{
-			for (auto& target : state->targets)
-			{
-				if (target->isSources())
-				{
-					auto& sourceTarget = static_cast<const SourceTarget&>(*target);
-					if (!sourceTarget.isExecutable())
-						continue;
-
-					if (!createRunConfigurationFile(runConfigurationsPath, *state, sourceTarget, arch))
-					{
-						Diagnostic::error("There was a problem creating the runConfiguration for: {}", sourceTarget.name());
-						return false;
-					}
-				}
-			}
+			Diagnostic::error("There was a problem creating the runConfiguration for: {}", runConfig.name);
+			return false;
 		}
 	}
 
@@ -112,34 +154,30 @@ bool CLionWorkspaceGen::createCustomTargetsFile(const std::string& inFilename)
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "CLionExternalBuildManager");
 
-		for (auto& arch : m_arches)
+		for (auto& runConfig : m_runConfigs)
 		{
-			for (auto& state : m_states)
-			{
-				auto& config = state->configuration.name();
-				node.addElement("target", [this, &arch, &config](XmlElement& node2) {
-					node2.addAttribute("id", Uuid::v5(fmt::format("{}_{}_{}", node2.name(), arch, config), m_clionNamespaceGuid).str());
-					node2.addAttribute("name", getTargetFolderName(arch, config));
-					node2.addAttribute("defaultType", "TOOL");
-					node2.addElement("configuration", [this, &arch, &config](XmlElement& node3) {
-						node3.addAttribute("id", Uuid::v5(fmt::format("{}_{}_{}", node3.name(), arch, config), m_clionNamespaceGuid).str());
-						node3.addAttribute("name", getTargetFolderName(arch, config));
+			node.addElement("target", [this, &runConfig](XmlElement& node2) {
+				node2.addAttribute("id", getNodeIdentifier(node2.name(), runConfig));
+				node2.addAttribute("name", getTargetName(runConfig));
+				node2.addAttribute("defaultType", "TOOL");
+				node2.addElement("configuration", [this, &runConfig](XmlElement& node3) {
+					node3.addAttribute("id", getNodeIdentifier(node3.name(), runConfig));
+					node3.addAttribute("name", getTargetName(runConfig));
 
-						for (auto& it : m_toolsMap)
-						{
-							auto& label = it.first;
-							auto& cmd = it.second;
+					for (auto& it : m_toolsMap)
+					{
+						auto& label = it.first;
+						auto& cmd = it.second;
 
-							node3.addElement(cmd, [this, &label, &arch, &config](XmlElement& node4) {
-								node4.addAttribute("type", "TOOL");
-								node4.addElement("tool", [this, &label, &arch, &config](XmlElement& node5) {
-									node5.addAttribute("actionId", fmt::format("Tool_External Tools_{}", getToolName(label, arch, config)));
-								});
+						node3.addElement(cmd, [this, &label, &runConfig](XmlElement& node4) {
+							node4.addAttribute("type", "TOOL");
+							node4.addElement("tool", [this, &label, &runConfig](XmlElement& node5) {
+								node5.addAttribute("actionId", fmt::format("Tool_External Tools_{}", getToolName(label, runConfig)));
 							});
-						}
-					});
+						});
+					}
 				});
-			}
+			});
 		}
 	});
 
@@ -165,49 +203,50 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 	xmlRoot.setName("toolSet");
 	xmlRoot.addAttribute("name", "External Tools");
 
-	for (auto& arch : m_arches)
+	for (auto& runConfig : m_runConfigs)
 	{
-		for (auto& state : m_states)
+		for (auto& it : m_toolsMap)
 		{
-			auto& config = state->configuration.name();
-			auto& toolchain = state->inputs.toolchainPreferenceName();
-			for (auto& it : m_toolsMap)
-			{
-				auto& label = it.first;
-				auto& cmd = it.second;
+			auto& label = it.first;
+			auto& cmd = it.second;
 
-				xmlRoot.addElement("tool", [this, &arch, &config, &toolchain, &label, &cmd](XmlElement& node) {
-					node.addAttribute("name", getToolName(label, arch, config));
-					node.addAttribute("description", label);
-					node.addAttribute("showInMainMenu", getBoolString(false));
-					node.addAttribute("showInEditor", getBoolString(false));
-					node.addAttribute("showInProject", getBoolString(false));
-					node.addAttribute("showInSearchPopup", getBoolString(false));
-					node.addAttribute("disabled", getBoolString(false));
-					node.addAttribute("useConsole", getBoolString(true));
-					node.addAttribute("showConsoleOnStdOut", getBoolString(false));
-					node.addAttribute("showConsoleOnStdErr", getBoolString(true));
-					node.addAttribute("synchronizeAfterRun", getBoolString(true));
+			xmlRoot.addElement("tool", [this, &runConfig, &label, &cmd](XmlElement& node) {
+				node.addAttribute("name", getToolName(label, runConfig));
+				node.addAttribute("description", label);
+				node.addAttribute("showInMainMenu", getBoolString(false));
+				node.addAttribute("showInEditor", getBoolString(false));
+				node.addAttribute("showInProject", getBoolString(false));
+				node.addAttribute("showInSearchPopup", getBoolString(false));
+				node.addAttribute("disabled", getBoolString(false));
+				node.addAttribute("useConsole", getBoolString(true));
+				node.addAttribute("showConsoleOnStdOut", getBoolString(false));
+				node.addAttribute("showConsoleOnStdErr", getBoolString(true));
+				node.addAttribute("synchronizeAfterRun", getBoolString(true));
 
-					node.addElement("exec", [this, &arch, &config, &toolchain, &cmd](XmlElement& node2) {
-						node2.addElement("option", [this](XmlElement& node3) {
-							auto homeDirectory = Environment::getUserDirectory();
-							auto chaletPath = m_chaletPath;
-							String::replaceAll(chaletPath, m_homeDirectory, "$USER_HOME$");
-							node3.addAttribute("name", "COMMAND");
-							node3.addAttribute("value", chaletPath);
-						});
-						node2.addElement("option", [this, &arch, &config, &toolchain, &cmd](XmlElement& node3) {
-							node3.addAttribute("name", "PARAMETERS");
-							node3.addAttribute("value", fmt::format("-c {} -a {} -t {} {}", config, arch, toolchain, cmd));
-						});
-						node2.addElement("option", [](XmlElement& node3) {
-							node3.addAttribute("name", "WORKING_DIRECTORY");
-							node3.addAttribute("value", "$ProjectFileDir$");
-						});
+				node.addElement("exec", [this, &runConfig, &cmd](XmlElement& node2) {
+					node2.addElement("option", [this](XmlElement& node3) {
+						auto homeDirectory = Environment::getUserDirectory();
+						auto chaletPath = m_chaletPath;
+						String::replaceAll(chaletPath, m_homeDirectory, "$USER_HOME$");
+						node3.addAttribute("name", "COMMAND");
+						node3.addAttribute("value", chaletPath);
+					});
+					node2.addElement("option", [this, &runConfig, &cmd](XmlElement& node3) {
+						node3.addAttribute("name", "PARAMETERS");
+
+						auto required = String::equals(m_allBuildName, runConfig.name) ? "--no-only-required" : "--only-required";
+						auto outCommand = fmt::format("-c {} -a {} -t {} {} {}", runConfig.config, runConfig.arch, m_toolchain, required, cmd);
+						if (String::equals("build", cmd))
+							outCommand += fmt::format(" {}", runConfig.name);
+
+						node3.addAttribute("value", outCommand);
+					});
+					node2.addElement("option", [](XmlElement& node3) {
+						node3.addAttribute("name", "WORKING_DIRECTORY");
+						node3.addAttribute("value", "$ProjectFileDir$");
 					});
 				});
-			}
+			});
 		}
 	}
 
@@ -223,11 +262,10 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const BuildState& inState, const SourceTarget& inTarget, const std::string& inArch)
+bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const RunConfiguration& inRunConfig)
 {
-	auto& config = inState.configuration.name();
+	auto targetName = getTargetName(inRunConfig);
 
-	auto targetName = getTargetName(inTarget.name(), config, inArch);
 	auto filename = fmt::format("{}/{}.xml", inPath, targetName);
 	XmlFile xmlFile(filename);
 
@@ -237,25 +275,20 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 	xmlRoot.setName("component");
 	xmlRoot.addAttribute("name", "ProjectRunConfigurationManager");
 
-	const auto& thisArch = inState.info.targetArchitectureString();
-	auto buildDir = inState.paths.buildOutputDir();
-	String::replaceAll(buildDir, thisArch, inArch);
-	auto outputFile = fmt::format("{}/{}", buildDir, inTarget.outputFile());
-
-	xmlRoot.addElement("configuration", [this, &targetName, &inArch, &config, &outputFile](XmlElement& node2) {
+	xmlRoot.addElement("configuration", [this, &targetName, &inRunConfig](XmlElement& node2) {
 		// node2.addAttribute("default", getBoolString(String::equals(m_debugConfiguration, config)));
 		node2.addAttribute("name", targetName);
 		node2.addAttribute("type", "CLionExternalRunConfiguration");
 		node2.addAttribute("factoryName", "Application");
-		node2.addAttribute("folderName", getTargetFolderName(inArch, config));
+		node2.addAttribute("folderName", getTargetFolderName(inRunConfig));
 		node2.addAttribute("REDIRECT_INPUT", getBoolString(false));
 		node2.addAttribute("ELEVATE", getBoolString(false));
 		node2.addAttribute("USE_EXTERNAL_CONSOLE", getBoolString(false));
 		node2.addAttribute("EMULATE_TERMINAL", getBoolString(false));
 		node2.addAttribute("PASS_PARENT_ENVS_2", getBoolString(true));
 		node2.addAttribute("PROJECT_NAME", m_projectName);
-		node2.addAttribute("TARGET_NAME", getTargetFolderName(inArch, config));
-		node2.addAttribute("RUN_PATH", outputFile);
+		node2.addAttribute("TARGET_NAME", getTargetName(inRunConfig));
+		node2.addAttribute("RUN_PATH", inRunConfig.outputFile);
 		node2.addElement("method", [this](XmlElement& node3) {
 			node3.addAttribute("v", "2");
 			node3.addElement("option", [this](XmlElement& node4) {
@@ -330,10 +363,16 @@ BuildState& CLionWorkspaceGen::getDebugState() const
 }
 
 /*****************************************************************************/
-StringList CLionWorkspaceGen::getArchitectures() const
+const std::string& CLionWorkspaceGen::getToolchain() const
 {
 	auto& debugState = getDebugState();
-	auto& toolchain = debugState.inputs.toolchainPreferenceName();
+	return debugState.inputs.toolchainPreferenceName();
+}
+
+/*****************************************************************************/
+StringList CLionWorkspaceGen::getArchitectures(const std::string& inToolchain) const
+{
+	auto& debugState = getDebugState();
 
 	StringList excludes{ "auto" };
 #if defined(CHALET_WIN32)
@@ -354,7 +393,7 @@ StringList CLionWorkspaceGen::getArchitectures() const
 
 	StringList ret;
 	QueryController query(debugState.getCentralState());
-	auto arches = query.getArchitectures(toolchain);
+	auto arches = query.getArchitectures(inToolchain);
 	for (auto&& arch : arches)
 	{
 		if (String::equals(excludes, arch))
@@ -384,27 +423,33 @@ std::string CLionWorkspaceGen::getBoolString(const bool inValue) const
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getTargetName(const std::string& inName, const std::string& inConfig, const std::string& inArch) const
+std::string CLionWorkspaceGen::getNodeIdentifier(const std::string& inName, const RunConfiguration& inRunConfig) const
 {
-	auto target = getTargetFolderName(inArch, inConfig);
-	return fmt::format("{} - {}", inName, target);
+	return Uuid::v5(fmt::format("{}_{}", inName, getTargetName(inRunConfig)), m_clionNamespaceGuid).str();
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getToolName(const std::string& inLabel, const std::string& inArch, const std::string& inConfig) const
+std::string CLionWorkspaceGen::getTargetName(const RunConfiguration& inRunConfig) const
 {
-	auto target = getTargetFolderName(inArch, inConfig);
-	return fmt::format("Chalet: {} {}", inLabel, target);
+	auto target = getTargetFolderName(inRunConfig);
+	return fmt::format("{} [{}]", inRunConfig.name, target);
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getTargetFolderName(const std::string& inArch, const std::string& inConfig) const
+std::string CLionWorkspaceGen::getToolName(const std::string& inLabel, const RunConfiguration& inRunConfig) const
 {
-	auto arch = inArch;
+	auto target = getTargetFolderName(inRunConfig);
+	return fmt::format("[{}] [{}] {}", inLabel, target, inRunConfig.name);
+}
+
+/*****************************************************************************/
+std::string CLionWorkspaceGen::getTargetFolderName(const RunConfiguration& inRunConfig) const
+{
+	auto arch = inRunConfig.arch;
 	String::replaceAll(arch, "x86_64", "x64");
 	String::replaceAll(arch, "i686", "x86");
 
-	return fmt::format("{} [{}]", arch, inConfig);
+	return fmt::format("{} {}", arch, inRunConfig.config);
 }
 
 /*****************************************************************************/
@@ -415,9 +460,11 @@ std::string CLionWorkspaceGen::getDefaultTargetName() const
 	if (target == nullptr)
 		return std::string();
 
-	auto& config = debugState.configuration.name();
-	auto& arch = debugState.info.hostArchitectureString();
+	RunConfiguration runConfig;
+	runConfig.name = target->name();
+	runConfig.config = debugState.configuration.name();
+	runConfig.arch = debugState.info.hostArchitectureString();
 
-	return getTargetName(target->name(), config, arch);
+	return getTargetName(runConfig);
 }
 }

@@ -24,6 +24,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -77,7 +78,7 @@ ExportKind IProjectExporter::kind() const noexcept
 /*****************************************************************************/
 std::string IProjectExporter::getAllBuildTargetName() const
 {
-	return std::string("all");
+	return std::string(Values::All);
 }
 
 /*****************************************************************************/

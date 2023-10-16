@@ -55,7 +55,8 @@ bool CLionProjectExporter::generateProjectFiles()
 		return false;
 
 	{
-		CLionWorkspaceGen workspaceGen(m_states, m_debugConfiguration);
+		auto allBuildTargetName = getAllBuildTargetName();
+		CLionWorkspaceGen workspaceGen(m_states, m_debugConfiguration, allBuildTargetName);
 		if (!workspaceGen.saveToPath(m_directory))
 		{
 			Diagnostic::error("There was a problem creating the CLion workspace files.");
