@@ -288,7 +288,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		// 	break;
 	}
 
-	if (buildAll)
+	if (buildAll && !runRoute)
 	{
 		error = !runFullBuild();
 		Output::lineBreak();
