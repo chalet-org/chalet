@@ -97,6 +97,12 @@ std::string DotEnvFileGenerator::get(const std::string& inKey) const
 	return std::string();
 }
 
+/*****************************************************************************/
+std::string DotEnvFileGenerator::getPath() const
+{
+	return get("PATH");
+}
+
 std::string DotEnvFileGenerator::getRunPaths() const
 {
 	return get("__CHALET_RUN_PATHS");

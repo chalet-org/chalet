@@ -117,13 +117,13 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 			if (!path.empty())
 			{
 				String::replaceAll(path, thisBuildDir, buildDir);
-				path = fmt::format("{}{}${}$", path, Environment::getPathSeparator(), Environment::getPathKey());
+				path = fmt::format("{}{}{}", path, Environment::getPathSeparator(), env.getPath());
 			}
 			auto libraryPath = env.getLibraryPath();
 			if (!libraryPath.empty())
 			{
 				String::replaceAll(libraryPath, thisBuildDir, buildDir);
-				libraryPath = fmt::format("{}{}${}$", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
+				libraryPath = fmt::format("{}{}{}", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
 			}
 			auto frameworkPath = env.getFrameworkPath();
 			if (!frameworkPath.empty())

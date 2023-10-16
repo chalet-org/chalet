@@ -20,6 +20,7 @@ struct DotEnvFileGenerator
 	void setRunPaths(const std::string& inValue);
 
 	std::string get(const std::string& inKey) const;
+	std::string getPath() const;
 	std::string getRunPaths() const;
 	std::string getLibraryPath() const;
 	std::string getFrameworkPath() const;
