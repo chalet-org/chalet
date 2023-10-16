@@ -272,10 +272,10 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 std::string StarterFileTemplates::getGitIgnore(const std::string& inBuildFolder, const std::string& inSettingsFile)
 {
 	std::string ret = fmt::format(R"(# Chalet
+{build}/
+chalet_external/
+dist/
 {settings}
-{build}
-chalet_external
-dist
 .env*
 
 # Editors
@@ -286,8 +286,8 @@ dist
 # Other
 Thumbs.db
 .DS_Store)",
-		fmt::arg("settings", inSettingsFile),
-		fmt::arg("build", inBuildFolder));
+		fmt::arg("build", inBuildFolder),
+		fmt::arg("settings", inSettingsFile));
 
 	return ret;
 }

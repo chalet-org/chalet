@@ -1,25 +1,20 @@
-# General
-Thumbs.db
-.DS_Store
+# Chalet
+build/
+chalet_external/
+dist/
+.chaletrc
+.env*
+
+# Editors
+.idea/
+.vs/
+.vscode/ipch/
+
+# Project-specific
 *.exe.stackdump
 external/
 *.log
 
-# Chalet
-.chaletrc
-build/
-dist/
-chalet_external/
-.env*
-
-# Profiling
-gmon.out
-
-# VS Code
-.vscode/ipch
-
-# Visual Studio
-.vs
-
-# Xcode
-*.pbxproj
+# General
+Thumbs.db
+.DS_Store
