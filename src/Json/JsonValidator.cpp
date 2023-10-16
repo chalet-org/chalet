@@ -114,7 +114,7 @@ void ErrorHandler::getValueWithTypCheck(std::any& data, std::string& outString) 
 	{
 		outString = "unknown";
 	}
-};
+}
 
 /*****************************************************************************/
 std::string ErrorHandler::parseRawError(JsonValidationError& outError)
