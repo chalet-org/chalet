@@ -124,11 +124,14 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					if (runArgumentMap.find(targetName) != runArgumentMap.end())
 						arguments = runArgumentMap.at(targetName);
 
+					auto outputFile = state->paths.getTargetFilename(project);
+					String::replaceAll(outputFile, thisBuildDir, buildDir);
+
 					RunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
-					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.outputFile());
+					runConfig.outputFile = std::move(outputFile);
 					runConfig.args = arguments;
 					runConfig.path = path;
 					m_runConfigs.emplace_back(std::move(runConfig));
@@ -143,11 +146,14 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					if (runArgumentMap.find(targetName) != runArgumentMap.end())
 						arguments = runArgumentMap.at(targetName);
 
+					auto outputFile = state->paths.getTargetFilename(project);
+					String::replaceAll(outputFile, thisBuildDir, buildDir);
+
 					RunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
-					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.runExecutable());
+					runConfig.outputFile = std::move(outputFile);
 					runConfig.args = arguments;
 					runConfig.path = path;
 					m_runConfigs.emplace_back(std::move(runConfig));

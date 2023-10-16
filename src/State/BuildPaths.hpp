@@ -43,6 +43,7 @@ struct BuildPaths
 	const std::string& objectiveCppExtension() const;
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
+	std::string getTargetFilename(const CMakeTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
 	std::string getExecutableTargetPath(const IBuildTarget& inTarget) const;
 	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject) const;

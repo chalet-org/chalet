@@ -945,8 +945,6 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 {
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-
 	std::string outputFile;
 	if (inTarget.isSources())
 	{
@@ -956,26 +954,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	else if (inTarget.isCMake())
 	{
 		auto& project = static_cast<const CMakeTarget&>(inTarget);
-		outputFile = project.runExecutable();
-
-		auto outputLocation = fmt::format("{}/{}", buildOutputDir, project.targetFolder());
-
-		if (!Commands::pathExists(outputFile))
-		{
-			outputFile = fmt::format("{}/{}", outputLocation, outputFile);
-		}
-#if defined(CHALET_WIN32)
-		if (!Commands::pathExists(outputFile))
-		{
-			outputFile = fmt::format("{}.exe", outputFile);
-		}
-#else
-		if (!Commands::pathExists(outputFile))
-		{
-			if (String::endsWith(".exe", outputFile))
-				outputFile = outputFile.substr(0, outputFile.size() - 4);
-		}
-#endif
+		outputFile = m_state.paths.getTargetFilename(project);
 	}
 
 	if (Commands::pathIsDirectory(outputFile))

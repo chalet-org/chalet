@@ -348,6 +348,31 @@ std::string BuildPaths::getTargetFilename(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
+std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
+{
+	const auto& filename = inProject.runExecutable();
+	if (filename.empty())
+		return std::string();
+
+	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
+	if (m_state.environment->isWindowsTarget())
+	{
+		if (!String::endsWith(".exe", outputPath))
+		{
+			outputPath = String::getPathFolderBaseName(outputPath);
+			outputPath += ".exe";
+		}
+	}
+	else
+	{
+		if (String::endsWith(".exe", outputPath))
+			outputPath = outputPath.substr(0, outputPath.size() - 4);
+	}
+
+	return outputPath;
+}
+
+/*****************************************************************************/
 std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 {
 	const auto& name = inProject.name();
@@ -374,8 +399,7 @@ std::string BuildPaths::getExecutableTargetPath(const IBuildTarget& inTarget) co
 	}
 	else if (inTarget.isCMake())
 	{
-		const auto& cmakeProject = static_cast<const CMakeTarget&>(inTarget);
-		return cmakeProject.runExecutable();
+		return getTargetFilename(static_cast<const CMakeTarget&>(inTarget));
 	}
 
 	return std::string();
