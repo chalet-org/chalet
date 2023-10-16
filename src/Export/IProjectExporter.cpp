@@ -244,6 +244,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 	auto makeState = [this, &inCentralState](const std::string& configName) -> bool {
 		CommandLineInputs inputs = m_inputs;
 		inputs.setBuildConfiguration(std::string(configName));
+		inputs.setRoute(CommandRoute(RouteType::Build));
 
 		auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
 		state->setCacheEnabled(false);
