@@ -8,6 +8,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -109,16 +110,44 @@ bool CompileCommandsGenerator::save() const
 		outJson.push_back(std::move(node));
 	}
 
-	if (!JsonFile::saveToFile(outJson, outputFile))
-	{
-		Diagnostic::error("compile_commands.json could not be saved.");
-		return false;
-	}
+	if (!Commands::pathExists(currentBuildDir))
+		Commands::makeDirectory(currentBuildDir);
 
-	if (!Commands::copySilent(outputFile, currentBuildDir))
+	if (!m_compileCommands.empty())
 	{
-		Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
-		return false;
+		if (!JsonFile::saveToFile(outJson, outputFile))
+		{
+			Diagnostic::error("compile_commands.json could not be saved.");
+			return false;
+		}
+		if (!Commands::copySilent(outputFile, currentBuildDir))
+		{
+			Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
+			return false;
+		}
+	}
+	else
+	{
+		const CMakeTarget* lastTarget = nullptr;
+		for (auto& target : m_state.targets)
+		{
+			if (target->isCMake())
+			{
+				lastTarget = static_cast<const CMakeTarget*>(target.get());
+			}
+		}
+		if (lastTarget != nullptr)
+		{
+			auto lastCompileCommands = fmt::format("{}/{}/compile_commands.json", buildOutputDir, lastTarget->targetFolder());
+			if (Commands::pathExists(lastCompileCommands))
+			{
+				if (!Commands::copySilent(lastCompileCommands, currentBuildDir))
+				{
+					Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
+					return false;
+				}
+			}
+		}
 	}
 
 	return true;
