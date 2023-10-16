@@ -442,7 +442,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 	auto defaultTarget = getDefaultTargetName();
 	if (!defaultTarget.empty())
 	{
-		xmlRoot.addElement("component", [this, &defaultTarget](XmlElement& node) {
+		xmlRoot.addElement("component", [&defaultTarget](XmlElement& node) {
 			node.addAttribute("name", "RunManager");
 			node.addAttribute("selected", fmt::format("Custom Build Application.{}", defaultTarget));
 		});
