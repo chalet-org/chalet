@@ -355,9 +355,10 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 		return std::string();
 
 	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
+	bool endsInExe = String::endsWith(".exe", outputPath);
 	if (m_state.environment->isWindowsTarget())
 	{
-		if (!String::endsWith(".exe", outputPath))
+		if (!endsInExe)
 		{
 			outputPath = String::getPathFolderBaseName(outputPath);
 			outputPath += ".exe";
@@ -365,7 +366,7 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 	}
 	else
 	{
-		if (String::endsWith(".exe", outputPath))
+		if (endsInExe)
 			outputPath = outputPath.substr(0, outputPath.size() - 4);
 	}
 
