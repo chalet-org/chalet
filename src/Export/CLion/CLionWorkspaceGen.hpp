@@ -36,6 +36,7 @@ private:
 	bool createRunConfigurationFile(const std::string& inPath, const RunConfiguration& inRunConfig);
 	bool createWorkspaceFile(const std::string& inFilename);
 	bool createMiscFile(const std::string& inFilename);
+	bool createJsonSchemasFile(const std::string& inFilename);
 
 	BuildState& getDebugState() const;
 
@@ -66,6 +67,9 @@ private:
 	std::string m_chaletPath;
 	std::string m_projectId;
 	std::string m_toolchain;
+
+	std::string m_settingsFile;
+	std::string m_inputFile;
 };
 }
 
