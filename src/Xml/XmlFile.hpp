@@ -26,6 +26,8 @@ struct XmlFile
 
 	const std::string& filename() const noexcept;
 
+	XmlElement& getRoot();
+
 	Xml xml;
 
 private:

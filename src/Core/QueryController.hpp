@@ -20,6 +20,8 @@ struct QueryController
 	bool printListOfRequestedType();
 	StringList getRequestedType(const QueryOption inOption) const;
 
+	StringList getArchitectures(const std::string& inToolchain) const;
+
 private:
 	const Json& getSettingsJson() const;
 
@@ -29,7 +31,6 @@ private:
 	StringList getBuildConfigurationList() const;
 	StringList getUserToolchainList() const;
 	StringList getArchitectures() const;
-	StringList getArchitectures(const std::string& inToolchain) const;
 	StringList getOptions() const;
 	StringList getCurrentArchitecture() const;
 	StringList getCurrentBuildConfiguration() const;

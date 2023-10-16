@@ -156,50 +156,12 @@ bool ChaletJsonParser::validBuildRequested() const
 /*****************************************************************************/
 std::string ChaletJsonParser::getValidRunTargetFromInput() const
 {
-	auto lastTarget = m_state.inputs.lastTarget();
-	if (String::equals(Values::All, lastTarget) && !m_state.targets.empty())
-		lastTarget.clear();
-
-	std::string ret;
-	bool setRunTarget = lastTarget.empty();
-	for (auto& target : m_state.targets)
-	{
-		auto& name = target->name();
-		if (!setRunTarget && name != lastTarget)
-			continue;
-
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable())
-			{
-				ret = name;
-				return ret;
-			}
-		}
-		else if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (!project.runExecutable().empty())
-			{
-				ret = name;
-				return ret;
-			}
-		}
-		else if (target->isScript())
-		{
-			ret = name;
-			return ret;
-		}
-		else if (target->isProcess())
-		{
-			ret = name;
-			return ret;
-		}
-	}
+	auto target = m_state.getFirstValidRunTarget();
+	if (target != nullptr)
+		return target->name();
 
 	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), m_state.inputs.lastTarget());
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -880,22 +842,21 @@ bool ChaletJsonParser::parseValidationTarget(ValidationBuildTarget& outTarget, c
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
 	const auto& lastTarget = m_state.inputs.lastTarget();
+	StringList validNames{
+		outTarget.name(),
+		Values::All,
+	};
+	bool getDefaultRunArguments = m_state.inputs.route().isExport() || String::equals(validNames, lastTarget);
+
 	for (const auto& [key, value] : inNode.items())
 	{
-		StringList validNames{
-			outTarget.name(),
-			Values::All,
-		};
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_array())
 		{
 			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
+			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (String::equals(validNames, lastTarget))
-				{
-					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
-				}
+				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{
@@ -913,12 +874,9 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 		else if (value.is_string())
 		{
 			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
+			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (String::equals(validNames, lastTarget))
-				{
-					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
-				}
+				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{

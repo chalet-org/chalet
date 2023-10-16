@@ -13,6 +13,7 @@ namespace chalet
 struct CompilerTools;
 struct BuildInfo;
 struct SourceTarget;
+struct CMakeTarget;
 struct WorkspaceEnvironment;
 class BuildState;
 struct IBuildTarget;

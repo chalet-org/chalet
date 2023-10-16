@@ -28,6 +28,9 @@ struct Xml
 	bool standalone() const noexcept;
 	void setStandalone(const bool inValue) noexcept;
 
+	bool useHeader() const noexcept;
+	void setUseHeader(const bool inValue) noexcept;
+
 	XmlElement& root();
 
 private:
@@ -38,6 +41,7 @@ private:
 
 	XmlElement m_root;
 
+	bool m_useHeader = true;
 	bool m_standalone = false;
 };
 }

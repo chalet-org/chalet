@@ -76,4 +76,10 @@ const std::string& XmlFile::filename() const noexcept
 {
 	return m_filename;
 }
+
+/*****************************************************************************/
+XmlElement& XmlFile::getRoot()
+{
+	return xml.root();
+}
 }

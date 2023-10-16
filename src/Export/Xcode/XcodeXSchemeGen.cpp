@@ -105,8 +105,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto filename = fmt::format("{}/{}.xcscheme", inSchemePath, target);
 		XmlFile xmlFile(filename);
 
-		auto& xml = xmlFile.xml;
-		auto& xmlRoot = xml.root();
+		auto& xmlRoot = xmlFile.getRoot();
 
 		xmlRoot.setName("Scheme");
 		xmlRoot.addAttribute("LastUpgradeVersion", "1430");

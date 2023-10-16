@@ -37,6 +37,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 #elif defined(CHALET_MACOS)
 			{ "xcode", ExportKind::Xcode },
 #endif
+			{ "clion", ExportKind::CLion },
 			{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

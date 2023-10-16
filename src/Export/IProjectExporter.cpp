@@ -7,6 +7,7 @@
 
 #include "Builder/ConfigureFileParser.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/CLionProjectExporter.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
@@ -23,6 +24,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -51,6 +53,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<VSJsonProjectExporter>(inInputs);
 		case ExportKind::Xcode:
 			return std::make_unique<XcodeProjectExporter>(inInputs);
+		case ExportKind::CLion:
+			return std::make_unique<CLionProjectExporter>(inInputs);
 		default:
 			break;
 	}
@@ -74,7 +78,7 @@ ExportKind IProjectExporter::kind() const noexcept
 /*****************************************************************************/
 std::string IProjectExporter::getAllBuildTargetName() const
 {
-	return std::string("all");
+	return std::string(Values::All);
 }
 
 /*****************************************************************************/
@@ -86,6 +90,9 @@ const std::string& IProjectExporter::workingDirectory() const noexcept
 /*****************************************************************************/
 bool IProjectExporter::useDirectory(const std::string& inDirectory)
 {
+	if (inDirectory.empty())
+		return false;
+
 	if (!Commands::pathExists(inDirectory))
 	{
 		if (!Commands::makeDirectory(inDirectory))
@@ -96,6 +103,9 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 	}
 
 	m_directory = fmt::format("{}/{}", workingDirectory(), inDirectory);
+
+	cleanExportDirectory();
+
 	return true;
 }
 
@@ -162,6 +172,14 @@ const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inStat
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+void IProjectExporter::cleanExportDirectory()
+{
+	// Wipe the old one
+	if (!m_directory.empty() && Commands::pathExists(m_directory))
+		Commands::removeRecursively(m_directory);
 }
 
 /*****************************************************************************/

@@ -46,6 +46,8 @@ protected:
 	const BuildState* getAnyBuildStateButPreferDebug() const;
 	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
+	void cleanExportDirectory();
+
 	const CommandLineInputs& m_inputs;
 
 	std::string m_directory;

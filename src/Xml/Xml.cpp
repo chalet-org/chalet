@@ -17,13 +17,17 @@ Xml::Xml(std::string inRootName) :
 std::string Xml::dump(const int inIndent, const char inIndentChar) const
 {
 	std::string ret;
-	if (m_standalone)
-		ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" standalone=\"yes\" ?>", m_version, m_encoding);
-	else
-		ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" ?>", m_version, m_encoding);
 
-	if (inIndent >= 0)
-		ret += '\n';
+	if (m_useHeader)
+	{
+		if (m_standalone)
+			ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" standalone=\"yes\" ?>", m_version, m_encoding);
+		else
+			ret = fmt::format("<?xml version=\"{}\" encoding=\"{}\" ?>", m_version, m_encoding);
+
+		if (inIndent >= 0)
+			ret += '\n';
+	}
 
 	for (const auto& header : m_headers)
 	{
@@ -77,6 +81,16 @@ bool Xml::standalone() const noexcept
 void Xml::setStandalone(const bool inValue) noexcept
 {
 	m_standalone = inValue;
+}
+
+/*****************************************************************************/
+bool Xml::useHeader() const noexcept
+{
+	return m_useHeader;
+}
+void Xml::setUseHeader(const bool inValue) noexcept
+{
+	m_useHeader = inValue;
 }
 
 /*****************************************************************************/

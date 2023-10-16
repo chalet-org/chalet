@@ -749,11 +749,13 @@ std::string ArgumentParser::getHelp()
 			else if (String::equals("xcode", preset))
 				return fmt::format("Apple{} Xcode project format (*.xcodeproj)", Unicode::registered());
 #endif
+			else if (String::equals("clion", preset))
+				return std::string("Jetbrains CLion (.idea)");
 			else if (String::equals("codeblocks", preset))
 #if defined(CHALET_WIN32)
-				return std::string("Code::Blocks IDE (experimental, MinGW-only)");
+				return std::string("Code::Blocks IDE (MinGW-only)");
 #else
-				return std::string("Code::Blocks IDE (experimental, GCC-only)");
+				return std::string("Code::Blocks IDE (GCC-only)");
 #endif
 
 			return std::string();
@@ -769,6 +771,7 @@ std::string ArgumentParser::getHelp()
 #elif defined(CHALET_MACOS)
 				"xcode",
 #endif
+				"clion",
 				"codeblocks",
 		};
 

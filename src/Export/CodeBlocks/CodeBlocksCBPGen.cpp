@@ -237,7 +237,7 @@ clean:
 					{
 						if (String::equals(config, state->configuration.name()))
 						{
-							dependency = fmt::format("{}/CodeBlocksCache", getResolvedPath(state->paths.buildOutputDir()));
+							dependency = fmt::format("{}/cache", getResolvedPath(state->paths.buildOutputDir()));
 							break;
 						}
 					}
@@ -689,29 +689,18 @@ std::string CodeBlocksCBPGen::getOutputType(const SourceTarget& inTarget) const
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedPath(const std::string& inFile) const
 {
-	// auto resolved = fmt::format("{}/{}", m_cwd, inFile);
-	// if (Commands::pathExists(resolved))
-	// 	return resolved;
-
-	// return inFile;
 	return Commands::getCanonicalPath(inFile);
 }
 
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedLibraryPath(const std::string& inFile) const
 {
-	// auto resolved = fmt::format("{}/{}", m_cwd, inFile);
-	// if (!Commands::pathExists(inFile))
-	// 	return inFile;
-
-	// return resolved;
 	return Commands::getCanonicalPath(inFile);
 }
 
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedObjDir(const BuildState& inState) const
 {
-	// return fmt::format("{}/{}", m_cwd, inState.paths.objDir());
 	return Commands::getCanonicalPath(inState.paths.objDir());
 }
 
