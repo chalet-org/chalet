@@ -5,10 +5,12 @@
 
 #include "Export/CLion/CLionWorkspaceGen.hpp"
 
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/DotEnvFileGenerator.hpp"
 #include "Core/QueryController.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -50,6 +52,10 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	if (!Commands::pathExists(toolsPath))
 		Commands::makeDirectory(toolsPath);
 
+	auto schemaPath = fmt::format("{}/schema", inPath);
+	if (!Commands::pathExists(schemaPath))
+		Commands::makeDirectory(schemaPath);
+
 	auto runConfigurationsPath = fmt::format("{}/runConfigurations", inPath);
 	if (!Commands::pathExists(runConfigurationsPath))
 		Commands::makeDirectory(runConfigurationsPath);
@@ -59,6 +65,7 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	auto miscFile = fmt::format("{}/misc.xml", inPath);
 	auto customTargetsFile = fmt::format("{}/customTargets.xml", inPath);
 	auto externalToolsFile = fmt::format("{}/External Tools.xml", toolsPath);
+	auto jsonSchemasFile = fmt::format("{}/jsonSchemas.xml", inPath);
 
 	auto& debugState = getDebugState();
 	auto& currentBuildDir = debugState.paths.currentBuildDir();
@@ -76,6 +83,8 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	m_projectName = String::getPathBaseName(debugState.inputs.workingDirectory());
 	m_chaletPath = getResolvedPath(debugState.tools.chalet());
 	m_projectId = Uuid::v5(debugState.workspace.metadata().name(), m_clionNamespaceGuid).str();
+	m_settingsFile = debugState.inputs.settingsFile();
+	m_inputFile = debugState.inputs.inputFile();
 
 	auto runTarget = debugState.getFirstValidRunTarget();
 	if (runTarget != nullptr)
@@ -170,6 +179,21 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		}
 	}
 
+	// Generate schemas
+	{
+		ChaletJsonSchema schemaBuilder;
+		Json schema = schemaBuilder.get();
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", schemaPath), 0))
+			return false;
+	}
+	{
+		SettingsJsonSchema schemaBuilder;
+		Json schema = schemaBuilder.get();
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", schemaPath), 0))
+			return false;
+	}
+
+	// Generate CLion files
 	if (!createExternalToolsFile(externalToolsFile))
 		return false;
 
@@ -180,6 +204,9 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		return false;
 
 	if (!createMiscFile(miscFile))
+		return false;
+
+	if (!createJsonSchemasFile(jsonSchemasFile))
 		return false;
 
 	for (auto& runConfig : m_runConfigs)
@@ -449,6 +476,19 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			node2.addElement("ProjectState");
 		});
 	});
+	/*
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/.chaletrc" root0="FORCE_HIGHLIGHTING" />
+  </component>
+	*/
+	xmlRoot.addElement("component", [this](XmlElement& node) {
+		node.addAttribute("name", "HighlightingSettingsPerFile");
+		node.addElement("setting", [this](XmlElement& node2) {
+			node2.addAttribute("file", fmt::format("file://$PROJECT_DIR$/{}", m_settingsFile));
+			node2.addAttribute("root0", "FORCE_HIGHLIGHTING");
+		});
+	});
+
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "ProjectId");
 		node.addAttribute("id", m_projectId); // TODO: This format maybe - 2WnwGzZ5woZe0F4aLkNaXiztROm
@@ -522,6 +562,95 @@ bool CLionWorkspaceGen::createMiscFile(const std::string& inFilename)
 		Diagnostic::error("There was a problem saving: {}", inFilename);
 		return false;
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
+{
+	XmlFile xmlFile(inFilename);
+
+	auto& xmlRoot = xmlFile.getRoot();
+
+	xmlRoot.setName("project");
+	xmlRoot.addAttribute("version", "4");
+	xmlRoot.addElement("component", [](XmlElement& node) {
+		node.addAttribute("name", "JsonSchemaMappingsProjectConfiguration");
+		node.addElement("state", [](XmlElement& node2) {
+			node2.addElement("map", [](XmlElement& node3) {
+				node3.addElement("entry", [](XmlElement& node4) {
+					node4.addAttribute("key", "chalet.schema");
+					node4.addElement("value", [](XmlElement& node5) {
+						node5.addElement("SchemaInfo", [](XmlElement& node6) {
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "generatedName");
+								node7.addAttribute("value", "New Schema");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "name");
+								node7.addAttribute("value", "chalet.schema");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "relativePathToSchema");
+								node7.addAttribute("value", "$PROJECT_DIR$/.idea/schema/chalet.schema.json");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "patterns");
+								node7.addElement("list", [](XmlElement& node8) {
+									node8.addElement("Item", [](XmlElement& node9) {
+										node9.addElement("option", [](XmlElement& node10) {
+											node10.addAttribute("name", "path");
+											node10.addAttribute("value", "chalet.json");
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+				node3.addElement("entry", [](XmlElement& node4) {
+					node4.addAttribute("key", "chalet.settings.schema");
+					node4.addElement("value", [](XmlElement& node5) {
+						node5.addElement("SchemaInfo", [](XmlElement& node6) {
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "generatedName");
+								node7.addAttribute("value", "New Schema");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "name");
+								node7.addAttribute("value", "chalet.settings.schema");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "relativePathToSchema");
+								node7.addAttribute("value", "$PROJECT_DIR$/.idea/schema/chalet-settings.schema.json");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "patterns");
+								node7.addElement("list", [](XmlElement& node8) {
+									node8.addElement("Item", [](XmlElement& node9) {
+										node9.addElement("option", [](XmlElement& node10) {
+											node10.addAttribute("name", "path");
+											node10.addAttribute("value", ".chaletrc");
+										});
+									});
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+	});
+
+	// xmlFile.dumpToTerminal();
+
+	if (!xmlFile.save(2))
+	{
+		Diagnostic::error("There was a problem saving: {}", inFilename);
+		return false;
+	}
+
 	return true;
 }
 
