@@ -278,6 +278,11 @@ chalet_external
 dist
 .env*
 
+# Editors
+.idea/
+.vs/
+.vscode/
+
 # Other
 Thumbs.db
 .DS_Store)",

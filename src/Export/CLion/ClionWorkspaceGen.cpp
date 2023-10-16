@@ -61,6 +61,15 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	auto externalToolsFile = fmt::format("{}/External Tools.xml", toolsPath);
 
 	auto& debugState = getDebugState();
+	auto& currentBuildDir = debugState.paths.currentBuildDir();
+	if (!Commands::pathExists(currentBuildDir))
+		Commands::makeDirectory(currentBuildDir);
+
+	auto ccmdsJson = fmt::format("{}/compile_commands.json", currentBuildDir);
+	if (!Commands::pathExists(ccmdsJson))
+	{
+		Commands::createFileWithContents(ccmdsJson, "[]");
+	}
 
 	m_homeDirectory = Environment::getUserDirectory();
 	m_currentDirectory = fmt::format("$PROJECT_DIR$/{}", debugState.paths.currentBuildDir());
