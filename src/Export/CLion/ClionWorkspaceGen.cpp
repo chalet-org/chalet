@@ -596,6 +596,10 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 								node7.addAttribute("value", "$PROJECT_DIR$/.idea/schema/chalet.schema.json");
 							});
 							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "schemaVersion");
+								node7.addAttribute("value", "JSON Schema version 7");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
 								node7.addAttribute("name", "patterns");
 								node7.addElement("list", [](XmlElement& node8) {
 									node8.addElement("Item", [](XmlElement& node9) {
@@ -624,6 +628,10 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 							node6.addElement("option", [](XmlElement& node7) {
 								node7.addAttribute("name", "relativePathToSchema");
 								node7.addAttribute("value", "$PROJECT_DIR$/.idea/schema/chalet-settings.schema.json");
+							});
+							node6.addElement("option", [](XmlElement& node7) {
+								node7.addAttribute("name", "schemaVersion");
+								node7.addAttribute("value", "JSON Schema version 7");
 							});
 							node6.addElement("option", [](XmlElement& node7) {
 								node7.addAttribute("name", "patterns");
