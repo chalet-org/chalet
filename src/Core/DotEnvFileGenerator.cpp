@@ -67,7 +67,7 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 
 #if defined(CHALET_LINUX)
 	// Linux uses LD_LIBRARY_PATH to resolve the correct file dependencies at runtime
-	addEnvironmentPath(getLibraryPathKey(), libDirs);
+	addEnvironmentPath(env.getLibraryPathKey(), libDirs);
 // addEnvironmentPath("LIBRARY_PATH"); // only used by gcc / ld
 #elif defined(CHALET_MACOS)
 	addEnvironmentPath(env.getLibraryPathKey(), libDirs);
