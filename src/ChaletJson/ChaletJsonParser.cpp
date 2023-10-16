@@ -842,22 +842,21 @@ bool ChaletJsonParser::parseValidationTarget(ValidationBuildTarget& outTarget, c
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
 	const auto& lastTarget = m_state.inputs.lastTarget();
+	StringList validNames{
+		outTarget.name(),
+		Values::All,
+	};
+	bool getDefaultRunArguments = m_state.inputs.route().isExport() || String::equals(validNames, lastTarget);
+
 	for (const auto& [key, value] : inNode.items())
 	{
-		StringList validNames{
-			outTarget.name(),
-			Values::All,
-		};
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_array())
 		{
 			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
+			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (String::equals(validNames, lastTarget))
-				{
-					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
-				}
+				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{
@@ -875,12 +874,9 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 		else if (value.is_string())
 		{
 			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
+			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				if (String::equals(validNames, lastTarget))
-				{
-					m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
-				}
+				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{

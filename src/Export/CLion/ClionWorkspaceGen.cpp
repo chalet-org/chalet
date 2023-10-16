@@ -7,12 +7,14 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Core/DotEnvFileGenerator.hpp"
 #include "Core/QueryController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -75,10 +77,17 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		for (auto& state : m_states)
 		{
 			const auto& config = state->configuration.name();
+			const auto& runArgumentMap = state->getCentralState().runArgumentMap();
 
 			const auto& thisArch = state->info.targetArchitectureString();
+			const auto& thisBuildDir = state->paths.buildOutputDir();
 			auto buildDir = state->paths.buildOutputDir();
 			String::replaceAll(buildDir, thisArch, arch);
+
+			auto gen = DotEnvFileGenerator::make(*state);
+			auto path = gen.getRunPaths();
+			String::replaceAll(path, thisBuildDir, buildDir);
+			path = fmt::format("{}{}${}$", path, Environment::getPathSeparator(), Environment::getPathKey());
 
 			{
 				RunConfiguration runConfig;
@@ -97,11 +106,17 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					if (!project.isExecutable())
 						continue;
 
+					std::string arguments;
+					if (runArgumentMap.find(targetName) != runArgumentMap.end())
+						arguments = runArgumentMap.at(targetName);
+
 					RunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
 					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.outputFile());
+					runConfig.args = arguments;
+					runConfig.path = path;
 					m_runConfigs.emplace_back(std::move(runConfig));
 				}
 				else if (target->isCMake())
@@ -110,11 +125,17 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 					if (project.runExecutable().empty())
 						continue;
 
+					std::string arguments;
+					if (runArgumentMap.find(targetName) != runArgumentMap.end())
+						arguments = runArgumentMap.at(targetName);
+
 					RunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
 					runConfig.outputFile = fmt::format("{}/{}", buildDir, project.runExecutable());
+					runConfig.args = arguments;
+					runConfig.path = path;
 					m_runConfigs.emplace_back(std::move(runConfig));
 				}
 			}
@@ -289,6 +310,13 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 		node2.addAttribute("PROJECT_NAME", m_projectName);
 		node2.addAttribute("TARGET_NAME", getTargetName(inRunConfig));
 		node2.addAttribute("RUN_PATH", inRunConfig.outputFile);
+		node2.addAttribute("PROGRAM_PARAMS", inRunConfig.args);
+		node2.addElement("envs", [&inRunConfig](XmlElement& node3) {
+			node3.addElement("env", [&inRunConfig](XmlElement& node4) {
+				node4.addAttribute("name", Environment::getPathKey());
+				node4.addAttribute("value", inRunConfig.path);
+			});
+		});
 		node2.addElement("method", [this](XmlElement& node3) {
 			node3.addAttribute("v", "2");
 			node3.addElement("option", [this](XmlElement& node4) {

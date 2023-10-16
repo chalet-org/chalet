@@ -173,6 +173,11 @@ const std::string& BuildState::cachePathId() const noexcept
 {
 	return m_cachePathId;
 }
+/*****************************************************************************/
+CentralState& BuildState::getCentralState()
+{
+	return m_impl->centralState;
+}
 
 /*****************************************************************************/
 const CentralState& BuildState::getCentralState() const
@@ -415,7 +420,8 @@ bool BuildState::initializeBuild()
 		return false;
 
 	// No longer needed
-	m_impl->centralState.clearRunArgumentMap();
+	if (!inputs.route().isExport())
+		m_impl->centralState.clearRunArgumentMap();
 
 	// These should only be relevant if cross-compiling (so far)
 	//

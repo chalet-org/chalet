@@ -25,9 +25,11 @@ private:
 	struct RunConfiguration
 	{
 		std::string name;
-		std::string outputFile;
 		std::string config;
 		std::string arch;
+		std::string outputFile;
+		std::string args;
+		std::string path;
 	};
 	bool createCustomTargetsFile(const std::string& inFilename);
 	bool createExternalToolsFile(const std::string& inFilename);
