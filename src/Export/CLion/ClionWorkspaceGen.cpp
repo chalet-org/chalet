@@ -183,13 +183,13 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	{
 		ChaletJsonSchema schemaBuilder;
 		Json schema = schemaBuilder.get();
-		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", schemaPath), 0))
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", schemaPath), -1))
 			return false;
 	}
 	{
 		SettingsJsonSchema schemaBuilder;
 		Json schema = schemaBuilder.get();
-		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", schemaPath), 0))
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", schemaPath), -1))
 			return false;
 	}
 
