@@ -39,6 +39,8 @@ protected:
 	virtual bool validate(const BuildState& inState) = 0;
 	virtual bool generateProjectFiles() = 0;
 
+	virtual bool shouldCleanOnReExport() const;
+
 	const std::string& workingDirectory() const noexcept;
 
 	bool useDirectory(const std::string& inDirectory);

@@ -82,6 +82,12 @@ std::string IProjectExporter::getAllBuildTargetName() const
 }
 
 /*****************************************************************************/
+bool IProjectExporter::shouldCleanOnReExport() const
+{
+	return true;
+}
+
+/*****************************************************************************/
 const std::string& IProjectExporter::workingDirectory() const noexcept
 {
 	return m_inputs.workingDirectory();
@@ -104,7 +110,12 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 
 	m_directory = fmt::format("{}/{}", workingDirectory(), inDirectory);
 
-	cleanExportDirectory();
+	// Note: Exported projects should be cleaned if they don't have a build strategy
+	//
+	if (shouldCleanOnReExport())
+	{
+		cleanExportDirectory();
+	}
 
 	return true;
 }

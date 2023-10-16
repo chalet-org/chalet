@@ -182,4 +182,9 @@ std::string VSSolutionProjectExporter::getProjectName(const BuildState& inState)
 	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 
+/*****************************************************************************/
+bool VSSolutionProjectExporter::shouldCleanOnReExport() const
+{
+	return false;
+}
 }

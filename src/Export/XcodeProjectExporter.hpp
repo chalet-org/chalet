@@ -21,6 +21,7 @@ protected:
 	virtual std::string getProjectTypeName() const final;
 	virtual bool validate(const BuildState& inState) final;
 	virtual bool generateProjectFiles() final;
+	virtual bool shouldCleanOnReExport() const final;
 
 private:
 	std::string getProjectName(const BuildState& inState) const;

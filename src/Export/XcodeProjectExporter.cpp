@@ -127,4 +127,9 @@ std::string XcodeProjectExporter::getProjectName(const BuildState& inState) cons
 	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 
+/*****************************************************************************/
+bool XcodeProjectExporter::shouldCleanOnReExport() const
+{
+	return false;
+}
 }
