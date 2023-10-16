@@ -285,7 +285,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 	{
 #if defined(CHALET_LINUX)
 		if (m_state.toolchain.strategy() == StrategyType::Native)
-			outArgList.emplace_back("-Wl,-rpath=$ORIGIN");	  // Note: Single quotes are required!
+			outArgList.emplace_back("-Wl,-rpath=$ORIGIN"); // Note: Single quotes are required!
 		else
 			outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #elif defined(CHALET_MACOS)
@@ -490,7 +490,7 @@ void LinkerGCC::addCppFilesystem(StringList& outArgList) const
 {
 	if (m_project.cppFilesystem() && m_versionMajorMinor >= 701 && m_versionMajorMinor < 901)
 	{
-		std::string option{ "-lstdc++-fs" };
+		std::string option{ "-lstdc++fs" };
 		// if (isFlagSupported(option))
 		List::addIfDoesNotExist(outArgList, std::move(option));
 	}
