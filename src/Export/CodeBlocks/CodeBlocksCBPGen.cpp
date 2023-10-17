@@ -13,6 +13,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -464,6 +465,16 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 	outNode.addElement("Option", [this, &inTarget](XmlElement& node) {
 		node.addAttribute("type", getOutputType(inTarget));
 	});
+
+	const auto& runArgumentMap = inState.getCentralState().runArgumentMap();
+	if (runArgumentMap.find(inTarget.name()) != runArgumentMap.end())
+	{
+		auto& args = runArgumentMap.at(inTarget.name());
+		outNode.addElement("Option", [&args](XmlElement& node) {
+			node.addAttribute("parameters", args);
+		});
+	}
+
 	outNode.addElement("Option", [](XmlElement& node) {
 		node.addAttribute("pch_mode", "1");
 	});
