@@ -134,7 +134,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	std::map<std::string, TargetGroup> groups;
 	std::map<std::string, std::vector<const IBuildTarget*>> configToTargets;
-	// std::map<std::string, std::vector<const IDistTarget*>> configToDistTargets;
 	StringList sourceTargets;
 
 	for (auto& state : m_states)
@@ -143,11 +142,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		if (configToTargets.find(configName) == configToTargets.end())
 			configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
-		// if (configToDistTargets.find(configName) == configToDistTargets.end())
-		// 	configToDistTargets.emplace(configName, std::vector<const IDistTarget*>{});
-
 		StringList lastDependencies;
-		bool lastDependencyWasSource = false;
 		for (auto& target : state->targets)
 		{
 			configToTargets[configName].push_back(target.get());
@@ -175,10 +170,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 				auto& pch = sourceTarget.precompiledHeader();
 
-				if (!lastDependencyWasSource && !lastDependencies.empty())
+				if (!lastDependencies.empty())
 				{
 					for (auto& dep : lastDependencies)
 						List::addIfDoesNotExist(groups[name].dependencies, dep);
+
+					lastDependencies.clear();
 				}
 
 				auto& sharedLinks = sourceTarget.projectSharedLinks();
@@ -211,8 +208,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					List::addIfDoesNotExist(groups[name].headers, file);
 					List::addIfDoesNotExist(groups[name].children, file);
 				}
-
-				lastDependencies.clear();
 			}
 			else
 			{
@@ -250,13 +245,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 
 			lastDependencies.emplace_back(target->name());
-			lastDependencyWasSource = target->isSources();
 		}
 
 		for (auto& target : state->distribution)
 		{
-			// configToDistTargets[configName].push_back(target.get());
-
 			if (target->isDistributionBundle())
 			{
 #if defined(CHALET_MACOS)

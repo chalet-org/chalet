@@ -6,6 +6,7 @@
 #include "Export/Xcode/XcodeXSchemeGen.hpp"
 
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -81,9 +82,10 @@ namespace chalet
 </Scheme>
 */
 /*****************************************************************************/
-XcodeXSchemeGen::XcodeXSchemeGen(std::vector<Unique<BuildState>>& inStates, const std::string& inXcodeProj) :
+XcodeXSchemeGen::XcodeXSchemeGen(std::vector<Unique<BuildState>>& inStates, const std::string& inXcodeProj, const std::string& inDebugConfig) :
 	m_states(inStates),
 	m_xcodeProj(inXcodeProj),
+	m_debugConfiguration(inDebugConfig),
 	m_xcodeNamespaceGuid("3C17F435-21B3-4D0A-A482-A276EDE1F0A2")
 {
 }
@@ -92,13 +94,50 @@ XcodeXSchemeGen::XcodeXSchemeGen(std::vector<Unique<BuildState>>& inStates, cons
 bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 {
 	StringList targetNames;
+
+	std::string profileConfig;
+	std::string releaseConfig{ "Release" };
+	std::string otherRelease;
+	std::unordered_map<std::string, std::string> configs;
+
+	bool foundRelease = false;
 	for (auto& state : m_states)
 	{
+		auto& config = state->configuration;
+		auto& configName = config.name();
+		if (config.enableProfiling())
+			profileConfig = configName;
+
+		if (!config.debugSymbols() && !config.enableProfiling() && !config.enableSanitizers())
+			otherRelease = configName;
+
+		bool isRelease = String::equals(releaseConfig, configName);
+		if (isRelease)
+			foundRelease = true;
+
 		for (auto& target : state->targets)
 		{
-			List::addIfDoesNotExist(targetNames, target->name());
+			auto& targetName = target->name();
+			if (List::addIfDoesNotExist(targetNames, targetName))
+			{
+				if (!String::equals(m_debugConfiguration, configName))
+					configs[targetName] = configName;
+			}
+
+			if (configs.find(targetName) != configs.end() && isRelease)
+				configs[targetName] = configName;
 		}
 	}
+
+	if (!foundRelease && !otherRelease.empty())
+		releaseConfig = otherRelease;
+
+	const auto& firstState = *m_states.front();
+	const auto& runArgumentMap = firstState.getCentralState().runArgumentMap();
+
+	// std::string arguments;
+	// if (runArgumentMap.find(targetName) != runArgumentMap.end())
+	// 	arguments = runArgumentMap.at(targetName);
 
 	for (auto& target : targetNames)
 	{
@@ -106,6 +145,11 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		XmlFile xmlFile(filename);
 
 		auto& xmlRoot = xmlFile.getRoot();
+		bool hasConfig = configs.find(target) != configs.end();
+		auto& testConfig = m_debugConfiguration;
+		auto& launchConfig = hasConfig ? configs.at(target) : m_debugConfiguration;
+		auto& analyzeConfig = m_debugConfiguration;
+		auto& archiveConfig = releaseConfig;
 
 		xmlRoot.setName("Scheme");
 		xmlRoot.addAttribute("LastUpgradeVersion", "1430");
@@ -115,15 +159,15 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("parallelizeBuildables", getBoolString(true));
 			node.addAttribute("buildImplicitDependencies", getBoolString(true));
 		});
-		xmlRoot.addElement("TestAction", [this](XmlElement& node) {
-			node.addAttribute("buildConfiguration", "Debug");
+		xmlRoot.addElement("TestAction", [this, &testConfig](XmlElement& node) {
+			node.addAttribute("buildConfiguration", testConfig);
 			node.addAttribute("selectedDebuggerIdentifier", "Xcode.DebuggerFoundation.Debugger.LLDB");
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("shouldAutocreateTestPlan", getBoolString(true));
 		});
-		xmlRoot.addElement("LaunchAction", [this, &target](XmlElement& node) {
-			node.addAttribute("buildConfiguration", "Debug");
+		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &target](XmlElement& node) {
+			node.addAttribute("buildConfiguration", launchConfig);
 			node.addAttribute("selectedDebuggerIdentifier", "Xcode.DebuggerFoundation.Debugger.LLDB");
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
 			node.addAttribute("launchStyle", "0");
@@ -144,9 +188,22 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 					node3.addAttribute("ReferencedContainer", fmt::format("container:{}", m_xcodeProj));
 				});
 			});
+			if (runArgumentMap.find(target) != runArgumentMap.end())
+			{
+				auto arguments = String::split(runArgumentMap.at(target));
+				node.addElement("CommandLineArguments", [&arguments](XmlElement& node2) {
+					for (auto& arg : arguments)
+					{
+						node2.addElement("CommandLineArgument", [&arg](XmlElement& node3) {
+							node3.addAttribute("argument", arg);
+							node3.addAttribute("isEnabled", "YES");
+						});
+					}
+				});
+			}
 		});
-		xmlRoot.addElement("ProfileAction", [this, &target](XmlElement& node) {
-			node.addAttribute("buildConfiguration", "Release");
+		xmlRoot.addElement("ProfileAction", [this, &profileConfig, &target](XmlElement& node) {
+			node.addAttribute("buildConfiguration", profileConfig);
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("savedToolIdentifier", "");
 			node.addAttribute("useCustomWorkingDirectory", getBoolString(true));
@@ -163,11 +220,11 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 				});
 			});
 		});
-		xmlRoot.addElement("AnalyzeAction", [](XmlElement& node) {
-			node.addAttribute("buildConfiguration", "Debug");
+		xmlRoot.addElement("AnalyzeAction", [&analyzeConfig](XmlElement& node) {
+			node.addAttribute("buildConfiguration", analyzeConfig);
 		});
-		xmlRoot.addElement("ArchiveAction", [this](XmlElement& node) {
-			node.addAttribute("buildConfiguration", "Release");
+		xmlRoot.addElement("ArchiveAction", [this, &archiveConfig](XmlElement& node) {
+			node.addAttribute("buildConfiguration", archiveConfig);
 			node.addAttribute("revealArchiveInOrganizer", getBoolString(true));
 		});
 

@@ -99,7 +99,7 @@ bool XcodeProjectExporter::generateProjectFiles()
 		Commands::makeDirectory(xcschemes);
 
 	{
-		XcodeXSchemeGen schemaGen(m_states, xcodeproj);
+		XcodeXSchemeGen schemaGen(m_states, xcodeproj, m_debugConfiguration);
 		if (!schemaGen.createSchemes(xcschemes))
 		{
 			Diagnostic::error("There was a problem creating the xcschemes files.");
