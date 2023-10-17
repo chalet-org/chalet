@@ -51,7 +51,6 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 	for (auto& state : m_states)
 	{
 		StringList lastDependencies;
-		bool lastDependencyWasSource = false;
 		for (auto& target : state->targets)
 		{
 			const auto& name = target->name();
@@ -61,7 +60,7 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
-				if (!lastDependencyWasSource && !lastDependencies.empty())
+				if (!lastDependencies.empty())
 				{
 					for (auto& dep : lastDependencies)
 						List::addIfDoesNotExist(dependsList[name], dep);
@@ -75,7 +74,6 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			}
 
 			lastDependencies.emplace_back(target->name());
-			lastDependencyWasSource = target->isSources();
 		}
 	}
 
