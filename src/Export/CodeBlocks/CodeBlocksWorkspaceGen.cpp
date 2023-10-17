@@ -57,14 +57,17 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			if (dependsList.find(name) == dependsList.end())
 				dependsList.emplace(name, StringList{});
 
+			if (!lastDependencies.empty())
+			{
+				for (auto& dep : lastDependencies)
+					List::addIfDoesNotExist(dependsList[name], dep);
+
+				lastDependencies.clear();
+			}
+
 			if (target->isSources())
 			{
 				auto& project = static_cast<const SourceTarget&>(*target);
-				if (!lastDependencies.empty())
-				{
-					for (auto& dep : lastDependencies)
-						List::addIfDoesNotExist(dependsList[name], dep);
-				}
 
 				auto projectDepends = List::combine(project.projectStaticLinks(), project.projectSharedLinks());
 				for (auto& link : projectDepends)
