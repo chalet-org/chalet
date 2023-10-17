@@ -79,7 +79,6 @@ bool CodeBlocksCBPGen::initialize()
 			m_configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
 		StringList lastDependencies;
-		bool lastDependencyWasSource = false;
 		for (auto& target : state->targets)
 		{
 			m_configToTargets[configName].push_back(target.get());
@@ -98,10 +97,12 @@ bool CodeBlocksCBPGen::initialize()
 					groups[name].kind = TargetGroupKind::Source;
 				}
 
-				if (!lastDependencyWasSource && !lastDependencies.empty())
+				if (!lastDependencies.empty())
 				{
 					for (auto& dep : lastDependencies)
 						List::addIfDoesNotExist(m_groups[name].dependencies, dep);
+
+					lastDependencies.clear();
 				}
 
 				auto& sharedLinks = sourceTarget.projectSharedLinks();
@@ -139,8 +140,6 @@ bool CodeBlocksCBPGen::initialize()
 					if (!windowsManifestResource.empty())
 						sources[windowsManifestResource].push_back(configName);
 				}
-
-				lastDependencies.clear();
 			}
 			else
 			{
@@ -192,7 +191,6 @@ bool CodeBlocksCBPGen::initialize()
 			}
 
 			lastDependencies.emplace_back(target->name());
-			lastDependencyWasSource = target->isSources();
 		}
 	}
 

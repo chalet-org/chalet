@@ -87,7 +87,7 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	if (!saveSourceTargetProjectFile(name, projectFile, filtersFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile)))
+	if (!saveUserFile(fmt::format("{}.user", projectFile), name))
 		return false;
 
 	if (!filtersFile.save())
@@ -129,7 +129,7 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	if (!saveScriptTargetProjectFile(name, projectFile, filtersFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile)))
+	if (!saveUserFile(fmt::format("{}.user", projectFile), name))
 		return false;
 
 	if (!filtersFile.save())
@@ -171,7 +171,7 @@ bool VSVCXProjGen::saveAllBuildTargetProjectFiles(const std::string& name)
 	if (!saveAllTargetProjectFile(name, projectFile))
 		return false;
 
-	if (!saveUserFile(fmt::format("{}.user", projectFile)))
+	if (!saveUserFile(fmt::format("{}.user", projectFile), name))
 		return false;
 
 	if (!filtersFile.save())
@@ -329,7 +329,7 @@ bool VSVCXProjGen::saveFiltersFile(XmlFile& outFile, const BuildTargetType inTyp
 }
 
 /*****************************************************************************/
-bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
+bool VSVCXProjGen::saveUserFile(const std::string& inFilename, const std::string& name)
 {
 	XmlFile xmlFile(inFilename);
 
@@ -339,7 +339,21 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename)
 	xmlRoot.addAttribute("ToolsVersion", "Current");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
-	xmlRoot.addElement("PropertyGroup");
+	auto& firstState = *m_states.front();
+	auto& runArgumentMap = firstState.getCentralState().runArgumentMap();
+
+	if (runArgumentMap.find(name) != runArgumentMap.end())
+	{
+		auto& args = runArgumentMap.at(name);
+		xmlRoot.addElement("PropertyGroup", [&args](XmlElement& node2) {
+			node2.addElementWithText("LocalDebuggerCommandArguments", args);
+			node2.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
+		});
+	}
+	else
+	{
+		xmlRoot.addElement("PropertyGroup");
+	}
 
 	return xmlFile.save();
 }
@@ -1146,55 +1160,113 @@ void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& 
 {
 	for (auto& state : m_states)
 	{
-		auto target = getTargetFromStateContext(*state, inName);
-		if (target != nullptr)
+		StringList dependsList;
 		{
-			StringList list;
-			for (auto& tgt : state->targets)
+			StringList lastDependencies;
+			for (auto& target : state->targets)
 			{
-				if (String::equals(inName, tgt->name()))
+				const auto& name = target->name();
+				if (String::equals(inName, name))
 					break;
 
-				list.emplace_back(tgt->name());
-			}
-
-			if (target->isSources())
-			{
-				const auto& project = static_cast<const SourceTarget&>(*target);
-				for (auto& link : project.projectStaticLinks())
+				if (!lastDependencies.empty())
 				{
-					List::addIfDoesNotExist(list, link);
+					for (auto& dep : lastDependencies)
+						List::addIfDoesNotExist(dependsList, dep);
+
+					lastDependencies.clear();
 				}
-				for (auto& link : project.projectSharedLinks())
+
+				if (target->isSources())
 				{
-					List::addIfDoesNotExist(list, link);
-				}
-			}
+					auto& project = static_cast<const SourceTarget&>(*target);
 
-			if (!list.empty())
-			{
-				const auto& config = state->configuration.name();
-				auto condition = getCondition(config);
-
-				outNode.addElement("ItemGroup", [this, &list, &condition](XmlElement& node) {
-					node.addAttribute("Condition", condition);
-
-					for (auto& tgt : list)
+					auto projectDepends = List::combine(project.projectStaticLinks(), project.projectSharedLinks());
+					for (auto& link : projectDepends)
 					{
-						if (m_targetGuids.find(tgt) == m_targetGuids.end())
-							continue;
-
-						node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
-							auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
-							node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));
-							node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
-							node2.addElementWithText("Name", tgt);
-						});
+						List::addIfDoesNotExist(dependsList, std::move(link));
 					}
-				});
+				}
+
+				lastDependencies.emplace_back(name);
 			}
 		}
+
+		if (!dependsList.empty())
+		{
+			const auto& config = state->configuration.name();
+			auto condition = getCondition(config);
+
+			outNode.addElement("ItemGroup", [this, &dependsList, &condition](XmlElement& node) {
+				node.addAttribute("Condition", condition);
+
+				for (auto& tgt : dependsList)
+				{
+					if (m_targetGuids.find(tgt) == m_targetGuids.end())
+						continue;
+
+					node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
+						auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
+						node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));
+						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
+						node2.addElementWithText("Name", tgt);
+					});
+				}
+			});
+		}
 	}
+
+	// for (auto& state : m_states)
+	// {
+	// 	auto target = getTargetFromStateContext(*state, inName);
+	// 	if (target != nullptr)
+	// 	{
+	// 		StringList list;
+	// 		for (auto& tgt : state->targets)
+	// 		{
+	// 			if (String::equals(inName, tgt->name()))
+	// 				break;
+
+	// 			list.emplace_back(tgt->name());
+	// 		}
+
+	// 		if (target->isSources())
+	// 		{
+	// 			const auto& project = static_cast<const SourceTarget&>(*target);
+	// 			for (auto& link : project.projectStaticLinks())
+	// 			{
+	// 				List::addIfDoesNotExist(list, link);
+	// 			}
+	// 			for (auto& link : project.projectSharedLinks())
+	// 			{
+	// 				List::addIfDoesNotExist(list, link);
+	// 			}
+	// 		}
+
+	// 		if (!list.empty())
+	// 		{
+	// 			const auto& config = state->configuration.name();
+	// 			auto condition = getCondition(config);
+
+	// 			outNode.addElement("ItemGroup", [this, &list, &condition](XmlElement& node) {
+	// 				node.addAttribute("Condition", condition);
+
+	// 				for (auto& tgt : list)
+	// 				{
+	// 					if (m_targetGuids.find(tgt) == m_targetGuids.end())
+	// 						continue;
+
+	// 					node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
+	// 						auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
+	// 						node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));
+	// 						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
+	// 						node2.addElementWithText("Name", tgt);
+	// 					});
+	// 				}
+	// 			});
+	// 		}
+	// 	}
+	// }
 }
 
 /*****************************************************************************/
