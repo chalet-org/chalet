@@ -66,31 +66,6 @@ BuildManager::BuildManager(BuildState& inState) :
 BuildManager::~BuildManager() = default;
 
 /*****************************************************************************/
-void BuildManager::getTargetDependencies(const std::string& inTargetName, StringList& outList)
-{
-	for (auto& target : m_state.targets)
-	{
-		if (target->isSources() && String::equals(inTargetName, target->name()))
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			for (auto& link : project.projectSharedLinks())
-			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(link, outList);
-			}
-
-			for (auto& link : project.projectStaticLinks())
-			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(link, outList);
-			}
-			break;
-		}
-	}
-	List::addIfDoesNotExist(outList, inTargetName);
-}
-
-/*****************************************************************************/
 void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 {
 	UNUSED(inRoute);
@@ -102,7 +77,7 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	StringList requiredTargets;
 	if (!addAllTargets)
 	{
-		getTargetDependencies(lastTarget, requiredTargets);
+		m_state.getTargetDependencies(requiredTargets, lastTarget, true);
 	}
 
 	for (auto& target : m_state.targets)

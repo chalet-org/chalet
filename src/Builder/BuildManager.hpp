@@ -35,7 +35,6 @@ public:
 	bool run(const CommandRoute& inRoute, const bool inShowSuccess = true);
 
 private:
-	void getTargetDependencies(const std::string& inTargetName, StringList& outList);
 	void populateBuildTargets(const CommandRoute& inRoute);
 	const IBuildTarget* getRunTarget(const CommandRoute& inRoute);
 

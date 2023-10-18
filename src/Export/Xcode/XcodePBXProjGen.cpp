@@ -142,7 +142,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		if (configToTargets.find(configName) == configToTargets.end())
 			configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
-		StringList lastDependencies;
 		for (auto& target : state->targets)
 		{
 			configToTargets[configName].push_back(target.get());
@@ -170,21 +169,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 				auto& pch = sourceTarget.precompiledHeader();
 
-				if (!lastDependencies.empty())
-				{
-					for (auto& dep : lastDependencies)
-						List::addIfDoesNotExist(groups[name].dependencies, dep);
-
-					lastDependencies.clear();
-				}
-
-				auto& sharedLinks = sourceTarget.projectSharedLinks();
-				for (auto& link : sharedLinks)
-					List::addIfDoesNotExist(groups[name].dependencies, link);
-
-				auto& staticLinks = sourceTarget.projectStaticLinks();
-				for (auto& link : staticLinks)
-					List::addIfDoesNotExist(groups[name].dependencies, link);
+				state->getTargetDependencies(groups[name].dependencies, name, false);
 
 				const auto& files = sourceTarget.files();
 				for (auto& file : files)
@@ -230,21 +215,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						String::replaceAll(command, fmt::format("{}={}", define, archString), fmt::format("{}=\"{}\"", define, archString));
 					}
 
+					state->getTargetDependencies(groups[name].dependencies, name, false);
 					groups[name].kind = TargetGroupKind::Script;
 					groups[name].sources.push_back(std::move(command));
 					groups[name].children = adapter.getFiles();
-
-					if (!lastDependencies.empty())
-					{
-						for (auto& dep : lastDependencies)
-							List::addIfDoesNotExist(groups[name].dependencies, dep);
-
-						lastDependencies.clear();
-					}
 				}
 			}
-
-			lastDependencies.emplace_back(target->name());
 		}
 
 		for (auto& target : state->distribution)

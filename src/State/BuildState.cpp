@@ -173,6 +173,7 @@ const std::string& BuildState::cachePathId() const noexcept
 {
 	return m_cachePathId;
 }
+
 /*****************************************************************************/
 CentralState& BuildState::getCentralState()
 {
@@ -183,6 +184,41 @@ CentralState& BuildState::getCentralState()
 const CentralState& BuildState::getCentralState() const
 {
 	return m_impl->centralState;
+}
+
+/*****************************************************************************/
+void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
+{
+	for (auto& target : targets)
+	{
+		if (String::equals(inTargetName, target->name()))
+			break;
+
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+			for (auto& link : project.projectSharedLinks())
+			{
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(outList, link, true);
+			}
+
+			for (auto& link : project.projectStaticLinks())
+			{
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(outList, link, true);
+			}
+		}
+		else if (!inWithSelf)
+		{
+			List::addIfDoesNotExist(outList, target->name());
+		}
+	}
+
+	if (inWithSelf)
+	{
+		List::addIfDoesNotExist(outList, inTargetName);
+	}
 }
 
 /*****************************************************************************/

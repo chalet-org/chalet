@@ -46,6 +46,8 @@ public:
 	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	const std::string& cachePathId() const noexcept;
 
+	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;
+
 	CentralState& getCentralState();
 	const CentralState& getCentralState() const;
 	const IBuildTarget* getFirstValidRunTarget() const;
