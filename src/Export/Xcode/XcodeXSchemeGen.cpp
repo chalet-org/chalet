@@ -5,8 +5,11 @@
 
 #include "Export/Xcode/XcodeXSchemeGen.hpp"
 
+#include "Builder/BinaryDependencyMap.hpp"
+#include "Bundler/AppBundlerMacOS.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -100,6 +103,9 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 	std::string otherRelease;
 	std::unordered_map<std::string, std::string> configs;
 
+	auto& firstState = *m_states.front();
+	auto runArgumentMap = firstState.getCentralState().runArgumentMap();
+
 	bool foundRelease = false;
 	for (auto& state : m_states)
 	{
@@ -129,11 +135,41 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		}
 	}
 
+	for (auto& target : firstState.distribution)
+	{
+		if (!target->isDistributionBundle())
+			continue;
+
+#if defined(CHALET_MACOS)
+		auto& bundle = static_cast<BundleTarget&>(*target);
+		if (bundle.isMacosAppBundle())
+		{
+			auto& name = bundle.name();
+			if (runArgumentMap.find(name) != runArgumentMap.end())
+				continue;
+
+			BinaryDependencyMap dependencyMap(firstState);
+			AppBundlerMacOS bundler(firstState, bundle, dependencyMap);
+			if (bundler.initializeState())
+			{
+				auto& mainExecutable = bundler.mainExecutable();
+				if (!mainExecutable.empty())
+				{
+					if (runArgumentMap.find(mainExecutable) != runArgumentMap.end())
+					{
+						if (List::addIfDoesNotExist(targetNames, name))
+						{
+							runArgumentMap[name] = runArgumentMap.at(mainExecutable);
+						}
+					}
+				}
+			}
+		}
+#endif
+	}
+
 	if (!foundRelease && !otherRelease.empty())
 		releaseConfig = otherRelease;
-
-	const auto& firstState = *m_states.front();
-	const auto& runArgumentMap = firstState.getCentralState().runArgumentMap();
 
 	// std::string arguments;
 	// if (runArgumentMap.find(targetName) != runArgumentMap.end())

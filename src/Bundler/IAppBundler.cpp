@@ -58,6 +58,8 @@ bool IAppBundler::quickBundleForPlatform()
 }
 
 /*****************************************************************************/
+// TODO: Move this to BundleTarget
+//
 bool IAppBundler::getMainExecutable(std::string& outMainExecutable)
 {
 	auto& buildTargets = m_bundle.buildTargets();
