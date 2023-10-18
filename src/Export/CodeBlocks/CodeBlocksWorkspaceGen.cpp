@@ -50,33 +50,13 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 	std::map<std::string, StringList> dependsList;
 	for (auto& state : m_states)
 	{
-		StringList lastDependencies;
 		for (auto& target : state->targets)
 		{
 			const auto& name = target->name();
 			if (dependsList.find(name) == dependsList.end())
 				dependsList.emplace(name, StringList{});
 
-			if (!lastDependencies.empty())
-			{
-				for (auto& dep : lastDependencies)
-					List::addIfDoesNotExist(dependsList[name], dep);
-
-				lastDependencies.clear();
-			}
-
-			if (target->isSources())
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-
-				auto projectDepends = List::combine(project.projectStaticLinks(), project.projectSharedLinks());
-				for (auto& link : projectDepends)
-				{
-					List::addIfDoesNotExist(dependsList[name], std::move(link));
-				}
-			}
-
-			lastDependencies.emplace_back(target->name());
+			state->getTargetDependencies(dependsList[name], name, false);
 		}
 	}
 

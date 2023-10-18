@@ -78,7 +78,6 @@ bool CodeBlocksCBPGen::initialize()
 		if (m_configToTargets.find(configName) == m_configToTargets.end())
 			m_configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
 
-		StringList lastDependencies;
 		for (auto& target : state->targets)
 		{
 			m_configToTargets[configName].push_back(target.get());
@@ -97,13 +96,7 @@ bool CodeBlocksCBPGen::initialize()
 					groups[name].kind = TargetGroupKind::Source;
 				}
 
-				if (!lastDependencies.empty())
-				{
-					for (auto& dep : lastDependencies)
-						List::addIfDoesNotExist(m_groups[name].dependencies, dep);
-
-					lastDependencies.clear();
-				}
+				state->getTargetDependencies(m_groups[name].dependencies, name, false);
 
 				auto& sharedLinks = sourceTarget.projectSharedLinks();
 				for (auto& link : sharedLinks)
@@ -172,13 +165,7 @@ bool CodeBlocksCBPGen::initialize()
 						sources[file].push_back(configName);
 					}
 
-					if (!lastDependencies.empty())
-					{
-						for (auto& dep : lastDependencies)
-							List::addIfDoesNotExist(groups[name].dependencies, dep);
-
-						lastDependencies.clear();
-					}
+					state->getTargetDependencies(m_groups[name].dependencies, name, false);
 				}
 			}
 
@@ -189,8 +176,6 @@ bool CodeBlocksCBPGen::initialize()
 				else
 					m_compiler = "gcc";
 			}
-
-			lastDependencies.emplace_back(target->name());
 		}
 	}
 
