@@ -152,6 +152,18 @@ std::string ProcessController::getSystemMessage(const int inExitCode)
 }
 
 /*****************************************************************************/
+std::string ProcessController::getSignalRaisedMessage(const int inExitCode)
+{
+	return Process::getErrorMessageFromSignalRaised(inExitCode < 0 ? inExitCode * -1 : inExitCode);
+}
+
+/*****************************************************************************/
+std::string ProcessController::getSignalNameFromCode(const int inExitCode)
+{
+	return Process::getSignalNameFromCode(inExitCode);
+}
+
+/*****************************************************************************/
 void ProcessController::haltAll(const SigNum inSignal)
 {
 	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));

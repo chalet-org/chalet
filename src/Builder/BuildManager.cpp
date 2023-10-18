@@ -1024,6 +1024,18 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	m_state.inputs.clearWorkingDirectory(outputFile);
 
 	int lastExitCode = ProcessController::getLastExitCode();
+	int signalRaised = 0;
+
+	std::string signalRaisedMessage;
+	if (lastExitCode < 0)
+	{
+		signalRaisedMessage = ProcessController::getSignalRaisedMessage(lastExitCode);
+		if (!signalRaisedMessage.empty())
+		{
+			signalRaised = lastExitCode * -1;
+			lastExitCode = 1;
+		}
+	}
 
 	if (lastExitCode != 0 || inFromDist)
 	{
@@ -1035,7 +1047,11 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 	}
 
-	auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+	std::string lastSystemMessage;
+	if (signalRaised == 0)
+	{
+		lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+	}
 	if (!lastSystemMessage.empty())
 	{
 #if defined(CHALET_WIN32)
@@ -1043,7 +1059,12 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 #endif
 		Output::print(Output::theme().info, fmt::format("Error: {}", lastSystemMessage));
 	}
-	else if (lastExitCode < 0)
+	else if (!signalRaisedMessage.empty())
+	{
+		auto signalName = ProcessController::getSignalNameFromCode(signalRaised);
+		Output::print(Output::theme().info, fmt::format("Error: {} [{}] - {}", signalName, signalRaised, signalRaisedMessage));
+	}
+	else
 	{
 		BinaryDependencyMap tmpMap(m_state);
 		StringList dependencies;

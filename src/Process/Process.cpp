@@ -11,6 +11,7 @@
 	#include <unistd.h>
 	#include <string.h>
 	#include <array>
+	#include <signal.h>
 #endif
 
 #include "Utility/String.hpp"
@@ -156,10 +157,11 @@ int Process::waitForResult()
 /*****************************************************************************/
 int Process::getReturnCode(const int inExitCode)
 {
+	// Note, we return signals as a negative value to differentiate them later
 	if (WIFEXITED(inExitCode))
-		return WEXITSTATUS(inExitCode);
+		return WEXITSTATUS(inExitCode); // system messages
 	else if (WIFSIGNALED(inExitCode))
-		return -WTERMSIG(inExitCode);
+		return -WTERMSIG(inExitCode); // signals
 	else
 		return 1;
 }
@@ -194,6 +196,226 @@ Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
 }
 
 #endif
+
+/*****************************************************************************/
+std::string Process::getErrorMessageFromSignalRaised(const int inCode)
+{
+	switch (inCode)
+	{
+#if defined(SIGHUP)
+		case SIGHUP: return "Hangup";
+#endif
+#if defined(SIGINT)
+		case SIGINT: return "Interrupt";
+#endif
+#if defined(SIGQUIT)
+		case SIGQUIT: return "Quit";
+#endif
+#if defined(SIGILL)
+		case SIGILL: return "Illegal hardware instruction";
+#endif
+#if defined(SIGTRAP)
+		case SIGTRAP: return "Trace trap";
+#endif
+#if defined(SIGABRT)
+		case SIGABRT: return "Abort";
+#endif
+#if defined(SIGPOLL)
+		case SIGPOLL: return "Pollable event occurred";
+#endif
+#if defined(SIGEMT)
+		case SIGEMT: return "EMT instruction";
+#endif
+#if defined(SIGFPE)
+		case SIGFPE: return "Floating point exception";
+#endif
+#if defined(SIGKILL)
+		case SIGKILL: return "Killed";
+#endif
+#if defined(SIGBUS)
+		case SIGBUS: return "Bus error";
+#endif
+#if defined(SIGSEGV)
+		case SIGSEGV: return "Segmentation fault";
+#endif
+#if defined(SIGSYS)
+		case SIGSYS: return "Invalid system call";
+#endif
+#if defined(SIGPIPE)
+		case SIGPIPE: return "Broken pipe";
+#endif
+#if defined(SIGALRM)
+		case SIGALRM: return "Alarm";
+#endif
+#if defined(SIGTERM)
+		case SIGTERM: return "Terminated";
+#endif
+#if defined(SIGURG)
+		case SIGURG: return "Urgent condition";
+#endif
+#if defined(SIGSTOP)
+		case SIGSTOP: return "Stop";
+#endif
+#if defined(SIGTSTP)
+		case SIGTSTP: return "Stop (tty)";
+#endif
+#if defined(SIGCONT)
+		case SIGCONT: return "Continued stopped process";
+#endif
+#if defined(SIGCHLD)
+		case SIGCHLD: return "Death of child process";
+#endif
+#if defined(SIGCLD)
+		case SIGCLD: return "Death of child process";
+#endif
+#if defined(SIGTTIN)
+		case SIGTTIN: return "Unknown (tty input)";
+#endif
+#if defined(SIGTTOU)
+		case SIGTTOU: return "Unknown (tty output)";
+#endif
+#if defined(SIGIO)
+		case SIGIO: return "I/O ready";
+#endif
+#if defined(SIGXCPU)
+		case SIGXCPU: return "CPU limit exceeded";
+#endif
+#if defined(SIGXFSZ)
+		case SIGXFSZ: return "File size limit exceeded";
+#endif
+#if defined(SIGVTALRM)
+		case SIGVTALRM: return "Virtual time alarm";
+#endif
+#if defined(SIGPROF)
+		case SIGPROF: return "Profiling time alarm";
+#endif
+#if defined(SIGWINCH)
+		case SIGWINCH: return "Window size changed";
+#endif
+#if defined(SIGINFO)
+		case SIGINFO: return "Status request from keyboard";
+#endif
+#if defined(SIGUSR1)
+		case SIGUSR1: return "User-defined signal 1";
+#endif
+#if defined(SIGUSR2)
+		case SIGUSR2: return "User-defined signal 2";
+#endif
+		default: break;
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string Process::getSignalNameFromCode(int inCode)
+{
+	if (inCode < 0)
+		inCode *= -1;
+
+	switch (inCode)
+	{
+#if defined(SIGHUP)
+		case SIGHUP: return "SIGHUP";
+#endif
+#if defined(SIGINT)
+		case SIGINT: return "SIGINT";
+#endif
+#if defined(SIGQUIT)
+		case SIGQUIT: return "SIGQUIT";
+#endif
+#if defined(SIGILL)
+		case SIGILL: return "SIGILL";
+#endif
+#if defined(SIGTRAP)
+		case SIGTRAP: return "SIGTRAP";
+#endif
+#if defined(SIGABRT)
+		case SIGABRT: return "SIGABRT";
+#endif
+#if defined(SIGPOLL)
+		case SIGPOLL: return "SIGPOLL";
+#endif
+#if defined(SIGEMT)
+		case SIGEMT: return "SIGEMT";
+#endif
+#if defined(SIGFPE)
+		case SIGFPE: return "SIGFPE";
+#endif
+#if defined(SIGKILL)
+		case SIGKILL: return "SIGKILL";
+#endif
+#if defined(SIGBUS)
+		case SIGBUS: return "SIGBUS";
+#endif
+#if defined(SIGSEGV)
+		case SIGSEGV: return "SIGSEGV";
+#endif
+#if defined(SIGSYS)
+		case SIGSYS: return "SIGSYS";
+#endif
+#if defined(SIGPIPE)
+		case SIGPIPE: return "SIGPIPE";
+#endif
+#if defined(SIGALRM)
+		case SIGALRM: return "SIGALRM";
+#endif
+#if defined(SIGTERM)
+		case SIGTERM: return "SIGTERM";
+#endif
+#if defined(SIGURG)
+		case SIGURG: return "SIGURG";
+#endif
+#if defined(SIGSTOP)
+		case SIGSTOP: return "SIGSTOP";
+#endif
+#if defined(SIGTSTP)
+		case SIGTSTP: return "SIGTSTP";
+#endif
+#if defined(SIGCONT)
+		case SIGCONT: return "SIGCONT";
+#endif
+#if defined(SIGCHLD)
+		case SIGCHLD: return "SIGCHLD";
+#endif
+#if defined(SIGTTIN)
+		case SIGTTIN: return "SIGTTIN";
+#endif
+#if defined(SIGTTOU)
+		case SIGTTOU: return "SIGTTOU";
+#endif
+#if defined(SIGIO)
+		case SIGIO: return "SIGIO";
+#endif
+#if defined(SIGXCPU)
+		case SIGXCPU: return "SIGXCPU";
+#endif
+#if defined(SIGXFSZ)
+		case SIGXFSZ: return "SIGXFSZ";
+#endif
+#if defined(SIGVTALRM)
+		case SIGVTALRM: return "SIGVTALRM";
+#endif
+#if defined(SIGPROF)
+		case SIGPROF: return "SIGPROF";
+#endif
+#if defined(SIGWINCH)
+		case SIGWINCH: return "SIGWINCH";
+#endif
+#if defined(SIGINFO)
+		case SIGINFO: return "SIGINFO";
+#endif
+#if defined(SIGUSR1)
+		case SIGUSR1: return "SIGUSR1";
+#endif
+#if defined(SIGUSR2)
+		case SIGUSR2: return "SIGUSR2";
+#endif
+		default: break;
+	}
+
+	return std::string();
+}
 
 /*****************************************************************************/
 ProcessPipe& Process::getFilePipe(const HandleInput inFileNo)

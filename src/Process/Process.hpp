@@ -29,6 +29,8 @@ public:
 	bool operator==(const Process& rhs);
 
 	static std::string getErrorMessageFromCode(const int inCode);
+	static std::string getErrorMessageFromSignalRaised(const int inCode);
+	static std::string getSignalNameFromCode(int inCode);
 
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 	void close();
