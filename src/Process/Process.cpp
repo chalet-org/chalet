@@ -265,7 +265,7 @@ std::string Process::getErrorMessageFromSignalRaised(const int inCode)
 #if defined(SIGCHLD)
 		case SIGCHLD: return "Death of child process";
 #endif
-#if defined(SIGCLD)
+#if defined(SIGCLD) && SIGCLD != SIGCHLD
 		case SIGCLD: return "Death of child process";
 #endif
 #if defined(SIGTTIN)
@@ -274,8 +274,11 @@ std::string Process::getErrorMessageFromSignalRaised(const int inCode)
 #if defined(SIGTTOU)
 		case SIGTTOU: return "Unknown (tty output)";
 #endif
-#if defined(SIGIO)
+#if defined(SIGIO) && SIGIO != SIGPOLL
 		case SIGIO: return "I/O ready";
+#endif
+#if defined(SIGIOT) && SIGIOT != SIGABRT
+		case SIGIOT: return "IOT instruction";
 #endif
 #if defined(SIGXCPU)
 		case SIGXCPU: return "CPU limit exceeded";
@@ -378,14 +381,20 @@ std::string Process::getSignalNameFromCode(int inCode)
 #if defined(SIGCHLD)
 		case SIGCHLD: return "SIGCHLD";
 #endif
+#if defined(SIGCLD) && SIGCLD != SIGCHLD
+		case SIGCLD: return "SIGCHLD";
+#endif
 #if defined(SIGTTIN)
 		case SIGTTIN: return "SIGTTIN";
 #endif
 #if defined(SIGTTOU)
 		case SIGTTOU: return "SIGTTOU";
 #endif
-#if defined(SIGIO)
+#if defined(SIGIO) && SIGIO != SIGPOLL
 		case SIGIO: return "SIGIO";
+#endif
+#if defined(SIGIOT) && SIGIOT != SIGABRT
+		case SIGIOT: return "SIGIOT";
 #endif
 #if defined(SIGXCPU)
 		case SIGXCPU: return "SIGXCPU";

@@ -1064,7 +1064,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 		auto signalName = ProcessController::getSignalNameFromCode(signalRaised);
 		Output::print(Output::theme().info, fmt::format("Error: {} [{}] - {}", signalName, signalRaised, signalRaisedMessage));
 	}
-	else
+	else if (lastExitCode != 0)
 	{
 		BinaryDependencyMap tmpMap(m_state);
 		StringList dependencies;
