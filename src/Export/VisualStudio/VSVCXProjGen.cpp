@@ -636,7 +636,7 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 					node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 					node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
 					node2.addElementWithTextIfNotEmpty("LanguageStandard_C", vcxprojAdapter.getLanguageStandardC());
-					// node2.addElementWithTextIfNotEmpty("MultiProcessorCompilation", "true"); // /MP
+					node2.addElementWithTextIfNotEmpty("MultiProcessorCompilation", "true"); // /MP
 
 					// C/C++ Settings
 					node2.addElementWithTextIfNotEmpty("AdditionalIncludeDirectories", vcxprojAdapter.getAdditionalIncludeDirectories());
