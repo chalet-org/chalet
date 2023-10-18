@@ -1161,36 +1161,7 @@ void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& 
 	for (auto& state : m_states)
 	{
 		StringList dependsList;
-		{
-			StringList lastDependencies;
-			for (auto& target : state->targets)
-			{
-				const auto& name = target->name();
-				if (String::equals(inName, name))
-					break;
-
-				if (!lastDependencies.empty())
-				{
-					for (auto& dep : lastDependencies)
-						List::addIfDoesNotExist(dependsList, dep);
-
-					lastDependencies.clear();
-				}
-
-				if (target->isSources())
-				{
-					auto& project = static_cast<const SourceTarget&>(*target);
-
-					auto projectDepends = List::combine(project.projectStaticLinks(), project.projectSharedLinks());
-					for (auto& link : projectDepends)
-					{
-						List::addIfDoesNotExist(dependsList, std::move(link));
-					}
-				}
-
-				lastDependencies.emplace_back(name);
-			}
-		}
+		state->getTargetDependencies(dependsList, inName, false);
 
 		if (!dependsList.empty())
 		{
@@ -1215,58 +1186,6 @@ void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& 
 			});
 		}
 	}
-
-	// for (auto& state : m_states)
-	// {
-	// 	auto target = getTargetFromStateContext(*state, inName);
-	// 	if (target != nullptr)
-	// 	{
-	// 		StringList list;
-	// 		for (auto& tgt : state->targets)
-	// 		{
-	// 			if (String::equals(inName, tgt->name()))
-	// 				break;
-
-	// 			list.emplace_back(tgt->name());
-	// 		}
-
-	// 		if (target->isSources())
-	// 		{
-	// 			const auto& project = static_cast<const SourceTarget&>(*target);
-	// 			for (auto& link : project.projectStaticLinks())
-	// 			{
-	// 				List::addIfDoesNotExist(list, link);
-	// 			}
-	// 			for (auto& link : project.projectSharedLinks())
-	// 			{
-	// 				List::addIfDoesNotExist(list, link);
-	// 			}
-	// 		}
-
-	// 		if (!list.empty())
-	// 		{
-	// 			const auto& config = state->configuration.name();
-	// 			auto condition = getCondition(config);
-
-	// 			outNode.addElement("ItemGroup", [this, &list, &condition](XmlElement& node) {
-	// 				node.addAttribute("Condition", condition);
-
-	// 				for (auto& tgt : list)
-	// 				{
-	// 					if (m_targetGuids.find(tgt) == m_targetGuids.end())
-	// 						continue;
-
-	// 					node.addElement("ProjectReference", [this, &tgt](XmlElement& node2) {
-	// 						auto uuid = String::toUpperCase(m_targetGuids.at(tgt).str());
-	// 						node2.addAttribute("Include", fmt::format("{}.vcxproj", tgt));
-	// 						node2.addElementWithText("Project", fmt::format("{{{}}}", uuid));
-	// 						node2.addElementWithText("Name", tgt);
-	// 					});
-	// 				}
-	// 			});
-	// 		}
-	// 	}
-	// }
 }
 
 /*****************************************************************************/
