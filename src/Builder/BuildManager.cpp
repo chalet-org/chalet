@@ -1073,8 +1073,10 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 		tmpMap.setIncludeWinUCRT(true);
 		if (tmpMap.getExecutableDependencies(outputFile, dependencies, &dependenciesNotFound) && !dependenciesNotFound.empty())
 		{
-			const auto& unknownDep = dependenciesNotFound.front();
-			Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", unknownDep));
+			for (auto& dep : dependenciesNotFound)
+			{
+				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", dep));
+			}
 		}
 	}
 
