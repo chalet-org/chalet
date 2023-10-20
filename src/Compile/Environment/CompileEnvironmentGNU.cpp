@@ -33,7 +33,18 @@ StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecuta
 /*****************************************************************************/
 std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
-	if (m_type == ToolchainType::MingwGNU)
+	if (m_state.toolchain.treatAs() != CustomToolchainTreatAs::None)
+	{
+		auto name = String::getPathBaseName(inPath);
+		if (!name.empty())
+		{
+			name[0] = static_cast<char>(::toupper(static_cast<uchar>(name[0])));
+			String::replaceAll(name, '+', "");
+		}
+
+		return fmt::format("{} version {} (Based on GCC)", name, inVersion);
+	}
+	else if (m_type == ToolchainType::MingwGNU)
 	{
 		// Get the MSYSTEM from the executable path (expects MSYSTEM/bin)
 		//

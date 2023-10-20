@@ -169,7 +169,22 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 /*****************************************************************************/
 [[nodiscard]] Unique<ICompileEnvironment> ICompileEnvironment::make(ToolchainType type, BuildState& inState)
 {
-	if (type == ToolchainType::Unknown)
+	CustomToolchainTreatAs treatAs = inState.toolchain.treatAs();
+	if (treatAs != CustomToolchainTreatAs::None)
+	{
+		switch (treatAs)
+		{
+			case CustomToolchainTreatAs::LLVM:
+				type = ToolchainType::LLVM;
+				break;
+			case CustomToolchainTreatAs::GCC:
+				type = ToolchainType::GNU;
+				break;
+			default:
+				return nullptr;
+		}
+	}
+	else if (type == ToolchainType::Unknown)
 	{
 		auto& compiler = inState.toolchain.compilerCxxAny().path;
 		type = ICompileEnvironment::detectToolchainTypeFromPath(compiler);

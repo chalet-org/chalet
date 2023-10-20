@@ -43,6 +43,7 @@ enum class Defs : ushort
 	Version,
 	ToolchainBuildStrategy,
 	ToolchainBuildPathStyle,
+	ToolchainTreatAs,
 	CompilerCpp,
 	CompilerC,
 	CompilerWindowsResource,
@@ -238,6 +239,13 @@ Json SettingsJsonSchema::get()
 		"default": "target-triple"
 	})json"_ojson;
 	defs[Defs::ToolchainBuildPathStyle][SKeys::Enum] = CompilerTools::getToolchainBuildPathStyles();
+
+	defs[Defs::ToolchainTreatAs] = R"json({
+		"type": "string",
+		"description": "If using a custom toolchain, treat its paths as a known toolchain - ie. if the custom toolchain is based on LLVM, but uses different compiler names, set this to 'llvm'",
+		"enum": []
+	})json"_ojson;
+	defs[Defs::ToolchainTreatAs][SKeys::Enum] = CompilerTools::getToolchainTreatAsForSchema();
 
 	// libtool (macOS), ar (Linux / macOS / MinGW), lib.exe (Win)
 	defs[Defs::Archiver] = R"json({
@@ -490,6 +498,7 @@ Json SettingsJsonSchema::get()
 	toolchain[SKeys::Properties] = Json::object();
 	toolchain[SKeys::Properties][Keys::ToolchainArchiver] = defs[Defs::Archiver];
 	toolchain[SKeys::Properties][Keys::ToolchainBuildPathStyle] = defs[Defs::ToolchainBuildPathStyle];
+	toolchain[SKeys::Properties][Keys::ToolchainTreatAs] = defs[Defs::ToolchainTreatAs];
 	toolchain[SKeys::Properties][Keys::ToolchainCMake] = defs[Defs::CMake];
 	toolchain[SKeys::Properties][Keys::ToolchainCompilerC] = defs[Defs::CompilerC];
 	toolchain[SKeys::Properties][Keys::ToolchainCompilerCpp] = defs[Defs::CompilerCpp];

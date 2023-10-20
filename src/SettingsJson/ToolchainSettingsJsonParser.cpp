@@ -57,6 +57,7 @@ bool ToolchainSettingsJsonParser::serialize()
 		Keys::ToolchainDisassembler,
 		Keys::ToolchainBuildStrategy,
 		Keys::ToolchainBuildPathStyle,
+		Keys::ToolchainTreatAs,
 		Keys::ToolchainCMake,
 		Keys::ToolchainMake,
 		Keys::ToolchainNinja,
@@ -556,6 +557,8 @@ bool ToolchainSettingsJsonParser::parseToolchain(Json& inNode)
 				m_state.toolchain.setStrategy(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainBuildPathStyle, key))
 				m_state.toolchain.setBuildPathStyle(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainTreatAs, key))
+				m_state.toolchain.setTreatAs(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainVersion, key))
 				m_state.toolchain.setVersion(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainArchiver, key))
