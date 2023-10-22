@@ -39,6 +39,8 @@ struct CentralState
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 
 	void setRunArgumentMap(Dictionary<std::string>&& inMap);
+	void setRunArguments(const std::string& inKey, std::string&& inValue);
+	void setRunArguments(const std::string& inKey, StringList&& inValue);
 	void addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue);
 	void addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue);
 	const Dictionary<std::string>& runArgumentMap() const noexcept;
