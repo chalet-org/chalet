@@ -255,22 +255,30 @@ void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
 }
 
 /*****************************************************************************/
+void CentralState::setRunArguments(const std::string& inKey, std::string&& inValue)
+{
+	m_runArgumentMap[inKey] = std::move(inValue);
+}
+
+/*****************************************************************************/
+void CentralState::setRunArguments(const std::string& inKey, StringList&& inValue)
+{
+	// TODO: probably a bad idea to join the arguments like this here... rework later
+	m_runArgumentMap[inKey] = String::join(inValue);
+}
+
+/*****************************************************************************/
 void CentralState::addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue)
 {
 	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
-	{
-		m_runArgumentMap[inKey] = std::move(inValue);
-	}
+		setRunArguments(inKey, std::move(inValue));
 }
 
 /*****************************************************************************/
 void CentralState::addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue)
 {
 	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
-	{
-		// TODO: probably a bad idea to join the arguments like this here... rework later
-		m_runArgumentMap[inKey] = String::join(inValue);
-	}
+		setRunArguments(inKey, std::move(inValue));
 }
 
 /*****************************************************************************/

@@ -988,6 +988,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	{
 		for (auto& arg : *runArguments)
 		{
+			LOG(arg);
 			cmd.push_back(arg);
 		}
 	}

@@ -102,8 +102,14 @@ bool ChaletJsonParser::serialize()
 
 		// do after run target is validated
 		auto& runArguments = m_centralState.getRunTargetArguments(runTarget);
-		if (runArguments.has_value())
+		bool hasRunTargetsFromInput = m_state.inputs.runArguments().has_value();
+		if (runArguments.has_value() && !hasRunTargetsFromInput)
 			m_state.inputs.setRunArguments(*runArguments);
+
+		if (hasRunTargetsFromInput)
+		{
+			m_centralState.setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
+		}
 	}
 
 	// Diagnostic::printDone(timer.asString());
