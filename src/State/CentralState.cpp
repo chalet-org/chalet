@@ -495,6 +495,27 @@ void CentralState::addBuildConfiguration(const std::string& inName, BuildConfigu
 }
 
 /*****************************************************************************/
+bool CentralState::isAllowedArchitecture(const std::string& inArch) const
+{
+	if (m_allowedArchitectures.empty())
+		return true;
+
+	if (!List::contains(m_allowedArchitectures, inArch))
+	{
+		Diagnostic::error("{}: Architecture '{}' is not supported by this project.", m_filename, inArch);
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void CentralState::addAllowedArchitecture(std::string&& inArch)
+{
+	m_allowedArchitectures.emplace_back(std::move(inArch));
+}
+
+/*****************************************************************************/
 bool CentralState::shouldPerformUpdateCheck() const
 {
 	return m_shouldPerformUpdateCheck;

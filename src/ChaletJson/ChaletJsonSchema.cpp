@@ -2248,6 +2248,24 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
 	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
 
+	ret[SKeys::Properties]["allowedArchitectures"] = R"json({
+		"type": "array",
+		"description": "An array of allowed target architecture triples supported by the project. Use this to limit which ones can be used to build the project.",
+		"uniqueItems": true,
+		"default": [],
+		"items": {
+			"type": "string",
+			"minLength": 1
+		}
+	})json"_ojson;
+
+	ret[SKeys::Properties]["configurations"] = R"json({
+		"type": "object",
+		"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
+		"additionalProperties": false
+	})json"_ojson;
+	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
+
 	ret[SKeys::Properties]["defaultConfigurations"] = R"json({
 		"type": "array",
 		"description": "An array of allowed default build configuration names.",
@@ -2260,13 +2278,6 @@ Json ChaletJsonSchema::get()
 	})json"_ojson;
 	ret[SKeys::Properties]["defaultConfigurations"][SKeys::Default] = BuildConfiguration::getDefaultBuildConfigurationNames();
 	ret[SKeys::Properties]["defaultConfigurations"][SKeys::Items][SKeys::Enum] = BuildConfiguration::getDefaultBuildConfigurationNames();
-
-	ret[SKeys::Properties]["configurations"] = R"json({
-		"type": "object",
-		"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
-		"additionalProperties": false
-	})json"_ojson;
-	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
 
 	const auto distribution = "distribution";
 	ret[SKeys::Properties][distribution] = R"json({

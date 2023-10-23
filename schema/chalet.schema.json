@@ -2906,6 +2906,26 @@
 				}
 			}
 		},
+		"allowedArchitectures": {
+			"type": "array",
+			"description": "An array of allowed architecture triples.",
+			"uniqueItems": true,
+			"default": [],
+			"items": {
+				"type": "string",
+				"minLength": 1
+			}
+		},
+		"configurations": {
+			"type": "object",
+			"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
+			"additionalProperties": false,
+			"patternProperties": {
+				"^[A-Za-z]{3,}$": {
+					"$ref": "#/definitions/configuration"
+				}
+			}
+		},
 		"defaultConfigurations": {
 			"type": "array",
 			"description": "An array of allowed default build configuration names.",
@@ -2945,16 +2965,6 @@
 					"DebugSanitizeHW",
 					"DebugSanitizeHWAddress"
 				]
-			}
-		},
-		"configurations": {
-			"type": "object",
-			"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
-			"additionalProperties": false,
-			"patternProperties": {
-				"^[A-Za-z]{3,}$": {
-					"$ref": "#/definitions/configuration"
-				}
 			}
 		},
 		"distribution": {
