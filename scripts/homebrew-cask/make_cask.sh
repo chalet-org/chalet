@@ -8,8 +8,6 @@ fi
 VERSION=$1
 CWD="$PWD"
 
-echo "'$VERSION'"
-
 if [[ $VERSION == '' ]]; then
 	echo 'Error: please provide a version # (ie. 0.0.1)'
 	exit 1
@@ -30,6 +28,8 @@ _get_file_from_github() {
 		exit 1
 	fi
 }
+
+echo "'$VERSION'"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "$SCRIPT_DIR"
