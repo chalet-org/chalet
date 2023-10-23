@@ -24,6 +24,7 @@ CH_STR(Targets) = "targets";
 CH_STR(SettingsCxx) = "settings:Cxx";
 CH_STR(Distribution) = "distribution";
 CH_STR(Configurations) = "configurations";
+CH_STR(AllowedArchitectures) = "allowedArchitectures";
 CH_STR(DefaultConfigurations) = "defaultConfigurations";
 CH_STR(ExternalDependencies) = "externalDependencies";
 CH_STR(SearchPaths) = "searchPaths";

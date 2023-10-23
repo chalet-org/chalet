@@ -40,6 +40,7 @@ private:
 	bool parseMetadata(const Json& inNode) const;
 
 	bool parseVariables(const Json& inNode) const;
+	bool parseAllowedArchitectures(const Json& inNode) const;
 	bool parseDefaultConfigurations(const Json& inNode) const;
 	bool parseConfigurations(const Json& inNode) const;
 

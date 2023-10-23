@@ -987,10 +987,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	if (runArguments.has_value())
 	{
 		for (auto& arg : *runArguments)
-		{
-			LOG(arg);
 			cmd.push_back(arg);
-		}
 	}
 
 	if (inTarget.isSources() && m_state.configuration.enableProfiling())

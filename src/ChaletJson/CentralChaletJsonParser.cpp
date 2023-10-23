@@ -79,6 +79,9 @@ bool CentralChaletJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) 
 	if (!parseMetadata(inNode))
 		return false;
 
+	if (!parseAllowedArchitectures(inNode))
+		return false;
+
 	if (!parseDefaultConfigurations(inNode))
 		return false;
 
@@ -154,6 +157,34 @@ bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
 					{
 						Diagnostic::warn("Variable not set because it already exists: {}", key);
 					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseAllowedArchitectures(const Json& inNode) const
+{
+	if (inNode.contains(Keys::AllowedArchitectures))
+	{
+		const Json& allowedArchitectures = inNode.at(Keys::AllowedArchitectures);
+		if (allowedArchitectures.is_array())
+		{
+			for (auto& archJson : allowedArchitectures)
+			{
+				if (archJson.is_string())
+				{
+					auto name = archJson.get<std::string>();
+					if (name.empty())
+					{
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
+						return false;
+					}
+
+					m_centralState.addAllowedArchitecture(std::move(name));
 				}
 			}
 		}

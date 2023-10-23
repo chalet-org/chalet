@@ -49,6 +49,8 @@ struct CentralState
 
 	bool shouldPerformUpdateCheck() const;
 
+	bool isAllowedArchitecture(const std::string& inArch) const;
+
 	bool replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 
 	WorkspaceEnvironment workspace;
@@ -77,6 +79,8 @@ private:
 	bool makeDefaultBuildConfigurations();
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
 
+	void addAllowedArchitecture(std::string&& inArch);
+
 	void shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent);
 
 	CommandLineInputs& m_inputs;
@@ -85,6 +89,7 @@ private:
 
 	Dictionary<std::string> m_runArgumentMap;
 
+	StringList m_allowedArchitectures;
 	StringList m_requiredBuildConfigurations;
 
 	std::string m_filename;
