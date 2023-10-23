@@ -15,7 +15,7 @@ if [[ $VERSION == '' ]]; then
 	exit 1
 fi
 
-if [[ "$VERSION" =~ ^[0-9]\.[0-9]\.[0-9]$ ]]; then
+if [[ "$VERSION" =~ ^[0-9]\.[0-9]\.[0-9]{1,2}$ ]]; then
 	echo -n ""
 else
 	echo 'Error: please provide a version # in the following format: #.#.#'
@@ -53,39 +53,9 @@ echo "'$SHA_X86'"
 
 cd "$SCRIPT_DIR"
 
-rm -rf "$VERSION"
-mkdir "$VERSION"
-
-cat > "$VERSION/chalet.rb" << END
-# Chalet Homebrew Cask (WIP)
-#
-cask "chalet" do
-	version "$VERSION"
-	sha256 arm: "$SHA_ARM64",
-		   intel: "$SHA_X86"
-	arch arm: "arm64",
-		 intel: "x86_64"
-
-	url "https://github.com/chalet-org/chalet/releases/download/v#{version}/chalet-#{arch}-apple-darwin.zip"
-	name "Chalet"
-	desc "A cross-platform project format & build tool for C/C++"
-	homepage "https://www.chalet-work.space"
-
-	livecheck do
-		url :stable
-		regex(/^v?(\d+(?:\.\d+)+)$/i)
-	end
-
-	auto_updates true
-	depends_on macos: ">= :big_sur"
-
-	binary "chalet"
-end
-END
-
 cat > "$VERSION.csv" << END
-arm,$SHA_ARM64
-intel,$SHA_X86
+arm64,$SHA_ARM64
+x86_64,$SHA_X86
 END
 
 rm -rf "$TMP_DIR"
