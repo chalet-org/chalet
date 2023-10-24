@@ -434,8 +434,8 @@ void LinkerGCC::addStaticCompilerLibraries(StringList& outArgList) const
 
 		if (m_project.language() == CodeLanguage::CPlusPlus)
 			addFlag("-static-libstdc++");
-		else
-			addFlag("-static-libgcc");
+
+		addFlag("-static-libgcc");
 	}
 }
 
