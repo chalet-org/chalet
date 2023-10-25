@@ -6,6 +6,7 @@
 #include "Export/IProjectExporter.hpp"
 
 #include "Builder/ConfigureFileParser.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CLionProjectExporter.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
@@ -13,6 +14,7 @@
 #include "Export/VSJsonProjectExporter.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"
+#include "SettingsJson/SettingsJsonSchema.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -91,6 +93,29 @@ bool IProjectExporter::shouldCleanOnReExport() const
 const std::string& IProjectExporter::workingDirectory() const noexcept
 {
 	return m_inputs.workingDirectory();
+}
+
+/*****************************************************************************/
+bool IProjectExporter::saveSchemasToDirectory(const std::string& inDirectory) const
+{
+	if (!Commands::pathExists(inDirectory))
+		Commands::makeDirectory(inDirectory);
+
+	// Generate schemas
+	{
+		ChaletJsonSchema schemaBuilder;
+		Json schema = schemaBuilder.get();
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", inDirectory), -1))
+			return false;
+	}
+	{
+		SettingsJsonSchema schemaBuilder;
+		Json schema = schemaBuilder.get();
+		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", inDirectory), -1))
+			return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
