@@ -44,6 +44,11 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 
 		return fmt::format("{} version {} (Based on LLVM Clang)", name, inVersion);
 	}
+	else if (m_type == ToolchainType::MingwLLVM)
+	{
+		auto flavor = getCompilerFlavor(inPath);
+		return fmt::format("LLVM Clang version {}{}", inVersion, flavor);
+	}
 	else
 	{
 		return fmt::format("LLVM Clang version {}", inVersion);

@@ -3,13 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Export/VisualStudio/VSLaunchGen.hpp"
+#include "Export/VisualStudioJson/VSLaunchGen.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -76,20 +77,25 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 /*****************************************************************************/
 Json VSLaunchGen::getConfiguration(const BuildState& inState, const IBuildTarget& inTarget) const
 {
+	const auto& targetName = inTarget.name();
+	const auto& runArgumentMap = inState.getCentralState().runArgumentMap();
+
+	StringList arguments;
+	if (runArgumentMap.find(targetName) != runArgumentMap.end())
+	{
+		arguments = String::split(runArgumentMap.at(targetName), ' ');
+	}
+
 	Json ret = Json::object();
 
 	auto program = inState.paths.getExecutableTargetPath(inTarget);
+	// String::replaceAll(program, inState.configuration.name(), "${env.CHALET_CONFIG}");
+
 	auto filename = String::getPathFilename(program);
 	ret["name"] = filename;
 	// ret["project"] = fmt::format("${{chalet.buildDir}}/{}", filename);
-	ret["project"] = program;
-	/*ret["args"] = {
-		"${env.PROG_ARGS}",
-	};*/
-	if (inState.inputs.runArguments().has_value())
-		ret["args"] = *inState.inputs.runArguments();
-	else
-		ret["args"] = Json::array();
+	ret["project"] = Commands::getCanonicalPath(program);
+	ret["args"] = arguments;
 
 	ret["currentDir"] = "${workspaceRoot}";
 	ret["debugType"] = "native";
@@ -108,6 +114,7 @@ Json VSLaunchGen::getEnvironment(const IBuildTarget& inTarget) const
 {
 	Json ret = Json::object();
 	ret["Path"] = "${chalet.runEnvironment};${env.Path}";
+	// ret["CHALET_CONFIG"] = "${chalet.configuration}";
 
 	UNUSED(inTarget);
 

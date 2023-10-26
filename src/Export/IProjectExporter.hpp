@@ -43,6 +43,8 @@ protected:
 
 	const std::string& workingDirectory() const noexcept;
 
+	bool saveSchemasToDirectory(const std::string& inDirectory) const;
+
 	bool useDirectory(const std::string& inDirectory);
 	bool useProjectBuildDirectory(const std::string& inSubDirectory);
 	const BuildState* getAnyBuildStateButPreferDebug() const;

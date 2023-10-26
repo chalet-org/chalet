@@ -19,6 +19,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -70,6 +71,13 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		return false;
 	}
 
+	auto platform = getPlatformName();
+	if (platform.empty())
+	{
+		Diagnostic::error("OS Target is not supported by xcodebuild: {}", m_state.inputs.osTargetName());
+		return false;
+	}
+
 	XcodeProjectExporter exporter(m_state.inputs);
 
 	StringList cmd{
@@ -84,24 +92,25 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-configuration");
 	cmd.emplace_back(m_state.configuration.name());
 
-	auto& arches = m_state.inputs.universalArches();
-	if (arches.empty())
-	{
-		cmd.emplace_back("-arch");
-		cmd.emplace_back(m_state.info.targetArchitectureString());
-	}
-
-	// cmd.emplace_back("-destination");
-	// cmd.emplace_back(fmt::format("platform=OS X,arch={}", m_state.info.targetArchitectureString()));
+	cmd.emplace_back("-destination");
+	cmd.emplace_back(fmt::format("platform={},arch={}", platform, m_state.info.targetArchitectureString()));
 
 	if (m_state.inputs.route().isBundle())
 	{
+		// All targets, including bundles
 		cmd.emplace_back("-alltargets");
 	}
 	else
 	{
-		cmd.emplace_back("-target");
-		cmd.emplace_back(exporter.getAllBuildTargetName());
+		auto& lastTarget = m_state.inputs.lastTarget();
+		if (!lastTarget.empty())
+		{
+			cmd.emplace_back("-scheme");
+			cmd.emplace_back(lastTarget);
+		}
+
+		// cmd.emplace_back("-target");
+		// cmd.emplace_back(exporter.getAllBuildTargetName());
 	}
 
 	// std::string target;
@@ -120,26 +129,20 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	cmd.emplace_back("-parallelizeTargets");
 
 	cmd.emplace_back("-project");
-	// cmd.emplace_back("project");
 
 	auto project = exporter.getMainProjectOutput(m_state);
 	cmd.emplace_back(project);
 
-	cmd.emplace_back("BUILD_FROM_CHALET=1");
+	if (!Output::showCommands())
+		cmd.emplace_back("BUILD_FROM_CHALET=1");
 
 	const auto& signingDevelopmentTeam = m_state.tools.signingDevelopmentTeam();
 	if (!signingDevelopmentTeam.empty())
-	{
 		cmd.emplace_back(fmt::format("DEVELOPMENT_TEAM={}", signingDevelopmentTeam));
-	}
-	else
-	{
-		const auto& signingIdentity = m_state.tools.signingIdentity();
-		if (!signingIdentity.empty())
-		{
-			cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingIdentity));
-		}
-	}
+
+	auto& signingCertificate = m_state.tools.signingCertificate();
+	if (!signingCertificate.empty())
+		cmd.emplace_back(fmt::format("CODE_SIGN_IDENTITY={}", signingCertificate));
 
 	bool result = false;
 	if (Output::showCommands())
@@ -463,5 +466,31 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 	}
 
 	return result == EXIT_SUCCESS;
+}
+
+/*****************************************************************************/
+std::string CompileStrategyXcodeBuild::getPlatformName() const
+{
+	auto& osTargetName = m_state.inputs.osTargetName();
+	if (String::equals("macosx", osTargetName))
+		return "OS X";
+	else if (String::equals("iphoneos", osTargetName))
+		return "iOS";
+	else if (String::equals("iphonesimulator", osTargetName))
+		return "iOS Simulator";
+	else if (String::equals("watchos", osTargetName))
+		return "watchOS";
+	else if (String::equals("watchsimulator", osTargetName))
+		return "watchOS Simulator";
+	else if (String::equals("appletvos", osTargetName))
+		return "tvOS";
+	else if (String::equals("appletvsimulator", osTargetName))
+		return "tvOS Simulator";
+	else if (String::equals("xros", osTargetName))
+		return "visionOS";
+	else if (String::equals("xrsimulator", osTargetName))
+		return "visionOS Simulator";
+
+	return std::string();
 }
 }

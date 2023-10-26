@@ -1295,20 +1295,34 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["CLANG_WARN__DUPLICATE_METHOD_MATCH"] = getBoolString(true);
 	ret["COMBINE_HIDPI_IMAGES"] = getBoolString(true);
 
-	// auto& signingIdentity = inState.tools.signingIdentity();
-	std::string signingIdentity;
-	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
-	ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
+	auto& sdk = inState.inputs.osTargetName();
+	auto& signingCertificate = inState.tools.signingCertificate();
+	if (!sdk.empty())
+	{
+		ret[fmt::format("CODE_SIGN_IDENTITY[sdk={}*]", sdk)] = !signingCertificate.empty() ? signingCertificate : "-";
+		ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
+	}
+	else
+	{
+		ret["CODE_SIGN_IDENTITY"] = !signingCertificate.empty() ? signingCertificate : "-";
+		ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
+	}
 
-	ret["COPY_PHASE_STRIP"] = getBoolString(false);
+	ret["CODE_SIGN_STYLE"] = "Manual";
 
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
+
+	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 
 	if (config.debugSymbols())
 	{
 		ret["DEBUG_INFORMATION_FORMAT"] = "dwarf-with-dsym";
 	}
-	ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
+	if (!sdk.empty())
+		ret[fmt::format("DEVELOPMENT_TEAM[sdk={}*]", sdk)] = inState.tools.signingDevelopmentTeam();
+	else
+		ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
+
 	// ret["ENABLE_NS_ASSERTIONS"] = getBoolString(false);
 
 	// ret["DERIVED_FILE_DIR"] = objectDirectory; // $(CONFIGURATION_TEMP_DIR)/DerivedSources dir
@@ -1492,14 +1506,17 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	// ret["PRODUCT_BUNDLE_IDENTIFIER"] = "com.developer.application";
 
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
+
+	// if (!sdk.empty())
+	// 	ret[fmt::format("PROVISIONING_PROFILE_SPECIFIER[sdk={}*]", sdk)] = "";
+	// else
+	// 	ret["PROVISIONING_PROFILE_SPECIFIER"] = "";
+
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	ret["USE_HEADERMAP"] = getBoolString(false);
 
 	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
-
-	// Code signing
-	// ret["CODE_SIGN_STYLE"] = "Automatic";
 
 	return ret;
 }
@@ -1612,13 +1629,31 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 #endif
 
 	ret["CODE_SIGN_ALLOW_ENTITLEMENTS_MODIFICATION"] = getBoolString(true);
-	ret["CODE_SIGN_IDENTITY"] = !signingIdentity.empty() ? signingIdentity : "-";
-	ret["CODE_SIGN_STYLE"] = "Automatic";
+
+	auto& sdk = inState.inputs.osTargetName();
+	auto& signingCertificate = inState.tools.signingCertificate();
+	if (!sdk.empty())
+	{
+		ret[fmt::format("CODE_SIGN_IDENTITY[sdk={}*]", sdk)] = !signingCertificate.empty() ? signingCertificate : "-";
+		ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
+	}
+	else
+	{
+		ret["CODE_SIGN_IDENTITY"] = !signingCertificate.empty() ? signingCertificate : "-";
+		ret["CODE_SIGN_INJECT_BASE_ENTITLEMENTS"] = getBoolString(false);
+	}
+
+	ret["CODE_SIGN_STYLE"] = "Manual";
+
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	ret["CURRENT_PROJECT_VERSION"] = inState.workspace.metadata().versionString();
 
-	ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
+	if (!sdk.empty())
+		ret[fmt::format("DEVELOPMENT_TEAM[sdk={}*]", sdk)] = inState.tools.signingDevelopmentTeam();
+	else
+		ret["DEVELOPMENT_TEAM"] = inState.tools.signingDevelopmentTeam();
+
 	ret["EXECUTABLE_NAME"] = bundler.mainExecutable();
 
 	// always set
@@ -1636,7 +1671,11 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	ret["PRODUCT_BUNDLE_IDENTIFIER"] = bundleId;
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";
-	ret["PROVISIONING_PROFILE_SPECIFIER"] = "";
+
+	if (!sdk.empty())
+		ret[fmt::format("PROVISIONING_PROFILE_SPECIFIER[sdk={}*]", sdk)] = "";
+	else
+		ret["PROVISIONING_PROFILE_SPECIFIER"] = "";
 
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	ret["USE_HEADERMAP"] = getBoolString(false);

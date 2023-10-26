@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Export/VisualStudio/VSCppPropertiesGen.hpp"
+#include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"

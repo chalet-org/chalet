@@ -7,12 +7,14 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Export/VisualStudio/VSCppPropertiesGen.hpp"
-#include "Export/VisualStudio/VSLaunchGen.hpp"
-#include "Export/VisualStudio/VSTasksGen.hpp"
+#include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
+#include "Export/VisualStudioJson/VSLaunchGen.hpp"
+#include "Export/VisualStudioJson/VSTasksGen.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "Terminal/Commands.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -27,7 +29,7 @@ std::string VSJsonProjectExporter::getMainProjectOutput()
 {
 	if (m_directory.empty())
 	{
-		if (!useProjectBuildDirectory(".vsjson"))
+		if (!useProjectBuildDirectory(".vs"))
 			return std::string();
 	}
 
@@ -63,6 +65,9 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	if (output.empty())
 		return false;
 
+	// if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
+	// 	return false;
+
 	const BuildState* state = getAnyBuildStateButPreferDebug();
 	chalet_assert(state != nullptr, "");
 	if (state != nullptr)
@@ -92,6 +97,23 @@ bool VSJsonProjectExporter::generateProjectFiles()
 				return false;
 			}
 		}
+	}
+
+	const auto& cwd = workingDirectory();
+	auto vsDirectory = fmt::format("{}/.vs", cwd);
+	if (!Commands::pathExists(vsDirectory) && Commands::pathExists(m_directory))
+	{
+		if (!Commands::copySilent(m_directory, cwd))
+		{
+			Diagnostic::error("There was a problem copying the .vs directory to the workspace.");
+			return false;
+		}
+	}
+	else
+	{
+		auto directory = m_directory;
+		String::replaceAll(directory, fmt::format("{}/", cwd), "");
+		Diagnostic::warn("The .vs directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
 	}
 
 	return true;
