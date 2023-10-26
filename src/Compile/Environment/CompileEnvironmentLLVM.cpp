@@ -33,8 +33,15 @@ StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecut
 /*****************************************************************************/
 std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
-	UNUSED(inPath);
-	return fmt::format("LLVM Clang version {}", inVersion);
+	if (m_type == ToolchainType::MingwLLVM)
+	{
+		auto flavor = getCompilerFlavor(inPath);
+		return fmt::format("LLVM Clang version {}{}", inVersion, flavor);
+	}
+	else
+	{
+		return fmt::format("LLVM Clang version {}", inVersion);
+	}
 }
 
 /*****************************************************************************/
