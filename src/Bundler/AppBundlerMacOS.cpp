@@ -26,6 +26,7 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Utility/Version.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -395,6 +396,8 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
 
+	auto deploymentVersion = Version::fromString(m_state.inputs.osTargetVersion());
+
 	bool result = Commands::subprocessNoOutput({
 		actool,
 		"--output-format",
@@ -414,7 +417,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 		"--target-device",
 		"mac",
 		"--minimum-deployment-target",
-		m_state.inputs.osTargetVersion(),
+		deploymentVersion.majorMinor(),
 		"--platform",
 		m_state.inputs.osTargetName(),
 		"--compile",

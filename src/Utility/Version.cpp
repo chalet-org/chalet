@@ -110,6 +110,18 @@ std::string Version::asString() const
 }
 
 /*****************************************************************************/
+std::string Version::majorMinor() const
+{
+	return fmt::format("{}.{}", m_major, m_minor);
+}
+
+/*****************************************************************************/
+std::string Version::majorMinorPatch() const
+{
+	return fmt::format("{}.{}.{}", m_major, m_minor, m_patch);
+}
+
+/*****************************************************************************/
 bool Version::operator<(const Version& rhs) const noexcept
 {
 	bool res = false;
