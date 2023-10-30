@@ -93,7 +93,7 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			break;
 
 		case QueryOption::ThemeNames:
-			ret = ColorTheme::presets();
+			ret = ColorTheme::getPresetNames();
 			break;
 
 		case QueryOption::Architecture:

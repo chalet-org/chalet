@@ -123,7 +123,7 @@ void GlobalSettingsJsonParser::initializeTheme()
 		auto preset = themeJson.get<std::string>();
 		if (!ColorTheme::isValidPreset(preset))
 		{
-			m_jsonFile.json[Keys::Theme] = ColorTheme::defaultPresetName();
+			m_jsonFile.json[Keys::Theme] = ColorTheme::getDefaultPresetName();
 		}
 	}
 	else if (themeJson.is_object())

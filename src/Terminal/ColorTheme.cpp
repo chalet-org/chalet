@@ -91,22 +91,22 @@ static struct
 		{ "brightWhiteInverted", Color::BrightWhiteInverted },
 	};
 
-	const StringList presetNames{
-		"default",
-		"none",
-		"palapa",
-		"highrise",
-		"teahouse",
-		"skilodge",
-		"temple",
-		"bungalow",
-		"cottage",
-		"monastery",
-		"longhouse",
-		"greenhouse",
-		"observatory",
-		"yurt",
-		"sealab",
+	const OrderedDictionary<std::string> presets{
+		{ "default", "1397d53b" },
+		{ "none", "00000000" },
+		{ "palapa", "9db27428" },
+		{ "highrise", "197b3527" },
+		{ "teahouse", "22dac423" },
+		{ "skilodge", "9fb93521" },
+		{ "temple", "7b532537" },
+		{ "bungalow", "12a5d53b" },
+		{ "cottage", "153fd739" },
+		{ "monastery", "a3f1d529" },
+		{ "longhouse", "1e1cd429" },
+		{ "greenhouse", "17dcd539" },
+		{ "observatory", "1798f53b" },
+		{ "yurt", "1f27d539" },
+		{ "sealab", "89b8d539" },
 	};
 } state;
 }
@@ -193,6 +193,12 @@ ColorTheme ColorTheme::fromHex(const std::string& digits, const std::string name
 
 	theme.info = Color::Reset;
 
+	if (String::equals("00000000", digits))
+	{
+		theme.reset = Color::None;
+		theme.info = Color::None;
+	}
+
 	return theme;
 }
 
@@ -246,19 +252,18 @@ StringList ColorTheme::getKeys()
 }
 
 /*****************************************************************************/
-const std::string& ColorTheme::defaultPresetName()
+std::string ColorTheme::getDefaultPresetName()
 {
-	return state.presetNames.front();
+	return "default";
 }
 
-const std::string& ColorTheme::lastPresetName()
+StringList ColorTheme::getPresetNames()
 {
-	return state.presetNames.back();
-}
+	StringList ret;
+	for (auto& [preset, _] : state.presets)
+		ret.emplace_back(preset);
 
-const StringList& ColorTheme::presets()
-{
-	return state.presetNames;
+	return ret;
 }
 
 /*****************************************************************************/
@@ -267,7 +272,7 @@ bool ColorTheme::isValidPreset(const std::string& inPresetName)
 	if (inPresetName.empty())
 		return false;
 
-	return List::contains(state.presetNames, inPresetName);
+	return state.presets.find(inPresetName) != state.presets.end();
 }
 
 /*****************************************************************************/
@@ -275,7 +280,7 @@ std::vector<ColorTheme> ColorTheme::getAllThemes()
 {
 	std::vector<ColorTheme> ret;
 
-	for (auto& preset : state.presetNames)
+	for (auto& [preset, _] : state.presets)
 	{
 		ret.emplace_back(preset);
 	}
@@ -406,12 +411,12 @@ void ColorTheme::setPreset(const std::string& inValue)
 		return;
 	}
 
-	if (!List::contains(state.presetNames, inValue))
+	if (state.presets.find(inValue) == state.presets.end())
 	{
 		if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 			m_preset = inValue;
 		else
-			m_preset = state.presetNames.at(0);
+			m_preset = state.presets.begin()->first;
 	}
 	else
 	{
@@ -435,88 +440,16 @@ void ColorTheme::makePreset(std::string inValue)
 			Color::Magenta & variations - Won't show in Powershell default - same color as bg
 
 		... avoid them in theme presets
+
+		Also note that Windows Terminal does not differentiate between Normal/Bright bold - only Bright
 	*/
 
 	info = Color::Reset;
 	reset = Color::Reset;
 
-	// default
-	std::size_t i = 0;
-	if (String::equals(state.presetNames.at(i), inValue))
+	if (state.presets.find(inValue) != state.presets.end())
 	{
-		*this = ColorTheme::fromHex("1397d53b", inValue);
-	}
-	// none
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("00000000", inValue);
-		info = Color::None;
-		reset = Color::None;
-	}
-	// palapa
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("9db27428", inValue);
-	}
-	// highrise
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("197b3527", inValue);
-	}
-	// teahouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("22dac423", inValue);
-	}
-	// skilodge
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("9fb93521", inValue);
-	}
-	// temple
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("7b532537", inValue);
-	}
-	// bungalow
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("12a5d53b", inValue);
-	}
-	// cottage
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("153fd739", inValue);
-	}
-	// monastery
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("a3f1d529", inValue);
-	}
-	// longhouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("1e1cd429", inValue);
-	}
-	// greenhouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("17dcd539", inValue);
-	}
-	// observatory
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("1798f53b", inValue);
-	}
-	// yurt
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("1f27d539", inValue);
-	}
-	// sealab
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		*this = ColorTheme::fromHex("89b8d539", inValue);
+		*this = ColorTheme::fromHex(state.presets.at(inValue), inValue);
 	}
 	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 	{
