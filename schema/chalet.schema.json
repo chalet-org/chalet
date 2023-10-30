@@ -2944,7 +2944,8 @@
 				"DebugSanitizeLeak",
 				"DebugSanitizeUndefined",
 				"DebugSanitizeHW",
-				"DebugSanitizeHWAddress"
+				"DebugSanitizeHWAddress",
+				"ReleaseSanitizeUndefined"
 			],
 			"items": {
 				"type": "string",
@@ -2963,7 +2964,8 @@
 					"DebugSanitizeLeak",
 					"DebugSanitizeUndefined",
 					"DebugSanitizeHW",
-					"DebugSanitizeHWAddress"
+					"DebugSanitizeHWAddress",
+					"ReleaseSanitizeUndefined"
 				]
 			}
 		},
