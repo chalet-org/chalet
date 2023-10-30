@@ -112,7 +112,7 @@ static struct
 }
 
 /*****************************************************************************/
-Color getColorFromDigit(char value)
+Color ColorTheme::getColorFromDigit(char value)
 {
 	if (value >= 97)
 		value -= 87;
@@ -142,7 +142,7 @@ Color getColorFromDigit(char value)
 			return Color::Reset;
 	}
 }
-Color getColorFromDigit(const char inValue, const int inOffset)
+Color ColorTheme::getColorFromDigit(const char inValue, const int inOffset)
 {
 	auto color = getColorFromDigit(inValue);
 	if (color == Color::Black || color == Color::Reset)

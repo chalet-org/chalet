@@ -49,6 +49,8 @@ struct ColorTheme
 	bool isPreset() const noexcept;
 
 private:
+	static Color getColorFromDigit(char value);
+	static Color getColorFromDigit(const char inValue, const int inOffset);
 	static Color getColorFromKey(const std::string& inString);
 
 	void makePreset(std::string inValue);

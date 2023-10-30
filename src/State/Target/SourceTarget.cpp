@@ -131,7 +131,7 @@ bool SourceTarget::initialize()
 	{
 		if (m_state.environment->isWindowsClang() && !m_staticRuntimeLibrary)
 		{
-			Diagnostic::warn("Enabled 'staticRuntimeLibrary' in order to use the Undefined Behavior sanitizer.");
+			Diagnostic::warn("'staticRuntimeLibrary' was enabled in order to use the Undefined Behavior sanitizer.");
 			m_staticRuntimeLibrary = true;
 		}
 	}
