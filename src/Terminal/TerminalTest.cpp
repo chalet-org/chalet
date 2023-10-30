@@ -157,23 +157,6 @@ void TerminalTest::printChaletColorThemes(const bool inSimple)
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
-	{
-		bool found = false;
-		auto& themeFromOutput = Output::theme();
-		for (auto& theme : themes)
-		{
-			if (String::equals(themeFromOutput.preset(), theme.preset()))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			themes.push_back(themeFromOutput);
-		}
-	}
-
 	printBanner("Chalet Color Themes");
 
 	bool printName = true;
@@ -192,6 +175,12 @@ void TerminalTest::printChaletColorThemes(const bool inSimple)
 
 	std::cout.write(m_separator.data(), m_separator.size());
 	std::cout.write(total.data(), total.size());
+
+	auto& themeFromOutput = Output::theme();
+	if (themeFromOutput.preset().empty())
+	{
+		printTheme(themeFromOutput, printName);
+	}
 }
 
 /*****************************************************************************/

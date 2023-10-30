@@ -428,7 +428,7 @@ void ColorTheme::setPreset(const std::string& inValue)
 
 bool ColorTheme::isPreset() const noexcept
 {
-	return !m_preset.empty() && !String::equals("custom", m_preset);
+	return !m_preset.empty();
 }
 
 /*****************************************************************************/
@@ -453,7 +453,7 @@ void ColorTheme::makePreset(std::string inValue)
 	}
 	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 	{
-		*this = ColorTheme::fromHex(inValue, "custom");
+		*this = ColorTheme::fromHex(inValue);
 	}
 }
 
