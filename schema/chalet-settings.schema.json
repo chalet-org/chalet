@@ -411,7 +411,8 @@
 						"longhouse",
 						"greenhouse",
 						"observatory",
-						"yurt"
+						"yurt",
+						"sealab"
 					],
 					"default": "default"
 				},

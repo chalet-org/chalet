@@ -248,12 +248,15 @@ void TerminalTest::printTheme(const ColorTheme& theme, const bool inWithName)
 	if (inWithName)
 	{
 		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
-		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
+		auto hex = theme.asHexString();
+		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}:: {hex}{m_reset}\n\n",
 			FMT_ARG(m_gray),
 			FMT_ARG(m_white),
 			FMT_ARG(name),
+			FMT_ARG(hex),
 			FMT_ARG(m_reset));
 	}
+
 	output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
 		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 		fmt::arg("info", Output::getAnsiStyle(theme.info)),

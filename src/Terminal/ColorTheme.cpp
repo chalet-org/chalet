@@ -105,7 +105,8 @@ static struct
 		"longhouse",
 		"greenhouse",
 		"observatory",
-		"yurt"
+		"yurt",
+		"sealab",
 	};
 } state;
 }
@@ -151,9 +152,10 @@ Color getColorFromDigit(const char inValue, const int inOffset)
 }
 
 /*****************************************************************************/
-ColorTheme ColorTheme::fromHex(const std::string& digits)
+ColorTheme ColorTheme::fromHex(const std::string& digits, const std::string name)
 {
 	ColorTheme theme;
+	theme.m_preset = name;
 
 	auto size = digits.size();
 	if (size >= 1)
@@ -331,6 +333,45 @@ std::string ColorTheme::asString() const
 }
 
 /*****************************************************************************/
+std::string ColorTheme::asHexString() const
+{
+	auto colorToHexValue = [](const Color& inColor) -> char {
+		auto color = static_cast<int>(inColor);
+		if (color > 200)
+			color -= 200;
+		if (color > 100)
+			color -= 100;
+
+		for (char i = 0; i < 16; ++i)
+		{
+			auto col = getColorFromDigit(i);
+			if (col == static_cast<Color>(color))
+			{
+				if (i < 10)
+					return i + 48;
+
+				i -= 10;
+				return i + 97;
+			}
+		}
+		return '0';
+	};
+
+	std::string ret;
+
+	ret += colorToHexValue(this->flair);
+	ret += colorToHexValue(this->header);
+	ret += colorToHexValue(this->build);
+	ret += colorToHexValue(this->assembly);
+	ret += colorToHexValue(this->success);
+	ret += colorToHexValue(this->error);
+	ret += colorToHexValue(this->warning);
+	ret += colorToHexValue(this->note);
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool ColorTheme::operator==(const ColorTheme& rhs) const
 {
 	return info == rhs.info
@@ -382,11 +423,11 @@ void ColorTheme::setPreset(const std::string& inValue)
 
 bool ColorTheme::isPreset() const noexcept
 {
-	return !m_preset.empty();
+	return !m_preset.empty() && !String::equals("custom", m_preset);
 }
 
 /*****************************************************************************/
-void ColorTheme::makePreset(const std::string& inValue)
+void ColorTheme::makePreset(std::string inValue)
 {
 	/*
 		Known "bad" colors:
@@ -396,197 +437,90 @@ void ColorTheme::makePreset(const std::string& inValue)
 		... avoid them in theme presets
 	*/
 
+	info = Color::Reset;
 	reset = Color::Reset;
 
 	// default
 	std::size_t i = 0;
 	if (String::equals(state.presetNames.at(i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightYellowBold;
-		build = Color::BrightBlue;
-		assembly = Color::BrightMagenta;
+		*this = ColorTheme::fromHex("1397d53b", inValue);
 	}
 	// none
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		reset = Color::None;
-		//
+		*this = ColorTheme::fromHex("00000000", inValue);
 		info = Color::None;
-		error = Color::None;
-		warning = Color::None;
-		success = Color::None;
-		note = Color::None;
-		flair = Color::None;
-		header = Color::None;
-		build = Color::None;
-		assembly = Color::None;
+		reset = Color::None;
 	}
 	// palapa
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightMagentaBold;
-		note = Color::BlueBold;
-		flair = Color::BrightBlueDim;
-		header = Color::BrightGreenBold;
-		build = Color::BrightCyan;
-		assembly = Color::Yellow;
+		*this = ColorTheme::fromHex("9db27428", inValue);
 	}
 	// highrise
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightYellowBold;
-		note = Color::BrightMagentaBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightBlueBold;
-		build = Color::BrightMagenta;
-		assembly = Color::BrightCyan;
+		*this = ColorTheme::fromHex("197b3527", inValue);
 	}
 	// teahouse
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::GreenBold;
-		note = Color::BrightYellowBold;
-		flair = Color::YellowDim;
-		header = Color::YellowBold;
-		build = Color::BrightGreen;
-		assembly = Color::Cyan;
+		*this = ColorTheme::fromHex("22dac423", inValue);
 	}
 	// skilodge
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightYellowBold;
-		note = Color::BrightBlackBold;
-		flair = Color::BrightBlueDim;
-		header = Color::BrightWhiteBold;
-		build = Color::BrightCyan;
-		assembly = Color::BrightBlue;
+		*this = ColorTheme::fromHex("9fb93521", inValue);
 	}
 	// temple
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::YellowBold;
-		note = Color::BrightMagentaBold;
-		flair = Color::BrightMagentaDim;
-		header = Color::BrightCyanBold;
-		build = Color::BrightRed;
-		assembly = Color::BrightYellow;
+		*this = ColorTheme::fromHex("7b532537", inValue);
 	}
 	// bungalow
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::YellowBold;
-		build = Color::Cyan;
-		assembly = Color::BrightRed;
+		*this = ColorTheme::fromHex("12a5d53b", inValue);
 	}
 	// cottage
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightMagentaBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightRedBold;
-		build = Color::BrightYellow;
-		assembly = Color::BrightWhite;
+		*this = ColorTheme::fromHex("153fd739", inValue);
 	}
 	// monastery
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::CyanDim;
-		header = Color::BrightYellowBold;
-		build = Color::BrightWhite;
-		assembly = Color::BrightBlack;
+		*this = ColorTheme::fromHex("a3f1d529", inValue);
 	}
 	// longhouse
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::WhiteBold;
-		build = Color::BrightBlack;
-		assembly = Color::Green;
+		*this = ColorTheme::fromHex("1e1cd429", inValue);
 	}
 	// greenhouse
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightMagentaBold;
-		build = Color::BrightGreen;
-		assembly = Color::Green;
+		*this = ColorTheme::fromHex("17dcd539", inValue);
 	}
 	// observatory
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightWhiteBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightMagentaBold;
-		build = Color::BrightBlue;
-		assembly = Color::Blue;
+		*this = ColorTheme::fromHex("1798f53b", inValue);
 	}
 	// yurt
 	else if (String::equals(state.presetNames.at(++i), inValue))
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightWhiteBold;
-		build = Color::Yellow;
-		assembly = Color::BrightMagenta;
+		*this = ColorTheme::fromHex("1f27d539", inValue);
+	}
+	// sealab
+	else if (String::equals(state.presetNames.at(++i), inValue))
+	{
+		*this = ColorTheme::fromHex("89b8d539", inValue);
 	}
 	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 	{
-		*this = ColorTheme::fromHex(inValue);
-		m_preset = "custom";
+		*this = ColorTheme::fromHex(inValue, "custom");
 	}
 }
 
