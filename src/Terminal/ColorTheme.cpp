@@ -113,11 +113,11 @@ static struct
 /*****************************************************************************/
 Color getColorFromDigit(char value)
 {
-	if (value > 97)
+	if (value >= 97)
 		value -= 87;
-	else if (value > 65)
+	else if (value >= 65)
 		value -= 55;
-	else if (value > 48)
+	else if (value >= 48)
 		value -= 48;
 
 	switch (value)
