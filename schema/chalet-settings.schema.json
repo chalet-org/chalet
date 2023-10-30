@@ -398,9 +398,12 @@
 					"type": "string",
 					"minLength": 1,
 					"enum": [
+						"blacklodge",
 						"bungalow",
 						"cottage",
 						"default",
+						"farmhouse",
+						"gallery",
 						"greenhouse",
 						"highrise",
 						"longhouse",

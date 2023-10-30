@@ -107,6 +107,9 @@ static struct
 		{ "observatory", "1798f53b" },
 		{ "yurt", "1f27d539" },
 		{ "sealab", "89b8d539" },
+		{ "blacklodge", "556f3579" },
+		{ "farmhouse", "1bd33729" },
+		{ "gallery", "1ff0f539" }
 	};
 } state;
 }
