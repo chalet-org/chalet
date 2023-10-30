@@ -24,6 +24,7 @@ struct ColorTheme
 	Color build = Color::None;
 	Color assembly = Color::None;
 
+	static ColorTheme fromHex(uint inHex);
 	static std::string getStringFromColor(const Color inColor);
 	static StringList getJsonColors();
 	static StringList getKeys();

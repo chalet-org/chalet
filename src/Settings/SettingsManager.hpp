@@ -36,6 +36,7 @@ private:
 	StringList parseKey() const;
 
 	JsonFile& getSettings();
+	void doSettingsCorrections(Json& node);
 
 	const CommandLineInputs& m_inputs;
 

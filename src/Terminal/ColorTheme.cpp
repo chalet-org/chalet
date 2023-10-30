@@ -111,6 +111,100 @@ static struct
 }
 
 /*****************************************************************************/
+Color getColorFromDigit(const uint inValue)
+{
+	switch (inValue)
+	{
+		case 1: return Color::BrightBlack;
+		case 2: return Color::Yellow;
+		case 3: return Color::BrightYellow;
+		case 4: return Color::Red;
+		case 5: return Color::BrightRed;
+		case 6: return Color::Magenta;
+		case 7: return Color::BrightMagenta;
+		case 8: return Color::Blue;
+		case 9: return Color::BrightBlue;
+		case 10: return Color::Cyan;
+		case 11: return Color::BrightCyan;
+		case 12: return Color::Green;
+		case 13: return Color::BrightGreen;
+		case 14: return Color::White;
+		case 15: return Color::BrightWhite;
+		default:
+			return Color::Reset;
+	}
+}
+Color getColorFromDigit(const uint inValue, const int inOffset)
+{
+	auto color = getColorFromDigit(inValue);
+	if (color == Color::Black
+		|| color == Color::BrightBlack
+		|| color == Color::Reset)
+		return color;
+
+	return static_cast<Color>(inOffset + static_cast<int>(color));
+}
+
+void processDigits(uint x, std::vector<int>& digits)
+{
+	constexpr uint radix = 16;
+	if (x <= 0)
+		return;
+
+	if (x >= radix)
+		processDigits(x / radix, digits);
+
+	digits.emplace_back(static_cast<int>(x % radix));
+};
+
+/*****************************************************************************/
+ColorTheme ColorTheme::fromHex(uint inHex)
+{
+	ColorTheme theme;
+
+	std::vector<int> digits;
+	processDigits(inHex, digits);
+
+	auto size = digits.size();
+	if (size >= 1)
+	{
+		theme.reset = Color::Reset;
+		theme.flair = getColorFromDigit(digits[0], 200);
+
+		if (theme.flair == Color::WhiteDim || theme.flair == Color::BrightWhiteDim)
+			theme.flair = Color::BrightBlack;
+	}
+
+	if (size >= 2)
+		theme.header = getColorFromDigit(digits[1], 100);
+
+	if (size >= 3)
+		theme.build = getColorFromDigit(digits[2]);
+
+	if (size >= 4)
+		theme.success = getColorFromDigit(digits[3], 100);
+
+	if (size >= 5)
+		theme.error = getColorFromDigit(digits[4], 100);
+
+	if (size >= 6)
+		theme.warning = getColorFromDigit(digits[5], 100);
+
+	if (size >= 7)
+		theme.note = getColorFromDigit(digits[6], 100);
+
+	if (size >= 8)
+		theme.assembly = getColorFromDigit(digits[7]);
+
+	// if (size >= 9)
+	// 	theme.info = getColorFromDigit(digits[8]);
+
+	theme.info = Color::Reset;
+
+	return theme;
+}
+
+/*****************************************************************************/
 Color ColorTheme::getColorFromKey(const std::string& inString)
 {
 	if (state.themeMap.find(inString) != state.themeMap.end())
@@ -282,9 +376,16 @@ void ColorTheme::setPreset(const std::string& inValue)
 	}
 
 	if (!List::contains(state.presetNames, inValue))
-		m_preset = state.presetNames.at(0);
+	{
+		if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
+			m_preset = inValue;
+		else
+			m_preset = state.presetNames.at(0);
+	}
 	else
+	{
 		m_preset = inValue;
+	}
 
 	makePreset(m_preset);
 }
@@ -491,6 +592,16 @@ void ColorTheme::makePreset(const std::string& inValue)
 		header = Color::BrightWhiteBold;
 		build = Color::Yellow;
 		assembly = Color::BrightMagenta;
+	}
+	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
+	{
+		uint hex = 0;
+		std::stringstream ss;
+		ss << std::hex << inValue;
+		ss >> hex;
+
+		*this = ColorTheme::fromHex(hex);
+		m_preset = "custom";
 	}
 }
 

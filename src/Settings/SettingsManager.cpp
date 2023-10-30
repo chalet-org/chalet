@@ -10,6 +10,7 @@
 #include "SettingsJson/SettingsJsonSchema.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -303,7 +304,11 @@ bool SettingsManager::runSettingsSet(Json& node)
 
 	if (validate)
 	{
-		if (String::endsWith(settings.filename(), ".chaletrc"))
+		if (String::endsWith(m_inputs.globalSettingsFile(), settings.filename()))
+		{
+			doSettingsCorrections(settings.json);
+		}
+		else if (String::endsWith(".chaletrc", settings.filename()))
 		{
 			SettingsJsonSchema schemaBuilder;
 			Json schema = schemaBuilder.get();
@@ -313,7 +318,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 				return false;
 			}
 		}
-		else if (String::endsWith(settings.filename(), m_inputs.inputFile()))
+		else if (String::endsWith(m_inputs.inputFile(), settings.filename()))
 		{
 			// note: settings, but not settings (chalet.json)
 			ChaletJsonSchema schemaBuilder;
@@ -554,6 +559,23 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 JsonFile& SettingsManager::getSettings()
 {
 	return m_cache.getSettings(m_type);
+}
+
+/*****************************************************************************/
+void SettingsManager::doSettingsCorrections(Json& node)
+{
+	// Note: "theme" takes a string or a set of digits
+	//   If digits, we have to save them as a string
+	//
+	bool isTheme = String::equals(Keys::Theme, m_key);
+	if (isTheme && node.contains(Keys::Theme))
+	{
+		auto& theme = node.at(Keys::Theme);
+		if (theme.is_number_integer())
+		{
+			theme = m_value;
+		}
+	}
 }
 
 /*****************************************************************************/

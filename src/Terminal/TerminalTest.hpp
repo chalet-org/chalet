@@ -19,12 +19,12 @@ struct TerminalTest
 private:
 	void printTerminalCapabilities();
 	void printUnicodeCharacters();
-	void printChaletColorThemes();
+	void printChaletColorThemes(const bool inSimple = false);
 	void printColorCombinations();
 
 	void printBanner(const std::string& inText);
-	void printTheme(const ColorTheme& inTheme);
-	void printThemeSimple(const ColorTheme& inTheme);
+	void printTheme(const ColorTheme& inTheme, const bool inWithName = false);
+	void printThemeSimple(const ColorTheme& inTheme, const bool inWithName = false);
 
 	const char kEsc;
 	const std::size_t kWidth;
