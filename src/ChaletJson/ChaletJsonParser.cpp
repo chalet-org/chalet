@@ -1757,8 +1757,8 @@ ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inSt
 {
 	// LOG("  ", key, value, negate);
 
-	constexpr auto conditionHasFailed = [](const bool& negate, const bool& condition) {
-		return (negate && condition) || (!negate && !condition);
+	constexpr auto conditionHasFailed = [](const bool& neg, const bool& condition) {
+		return (neg && condition) || (!neg && !condition);
 	};
 
 	if (key.empty())
