@@ -157,6 +157,23 @@ void TerminalTest::printChaletColorThemes(const bool inSimple)
 	if (currentTheme.preset().empty())
 		themes.push_back(std::move(currentTheme));
 
+	{
+		bool found = false;
+		auto& themeFromOutput = Output::theme();
+		for (auto& theme : themes)
+		{
+			if (String::equals(themeFromOutput.preset(), theme.preset()))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			themes.push_back(themeFromOutput);
+		}
+	}
+
 	printBanner("Chalet Color Themes");
 
 	bool printName = true;
