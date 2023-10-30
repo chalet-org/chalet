@@ -623,7 +623,7 @@ bool BuildState::validateState()
 		if (toolchain.strategy() != StrategyType::MSBuild)
 #endif
 		{
-			Diagnostic::error("Enabling 'dumpAssembly' with the configuration '{}' is not possible because it uses interprocedural optimizations.", configuration.name());
+			Diagnostic::error("Enabling 'dumpAssembly' with the configuration '{}' is not possible due to interprocedural optimizations.", configuration.name());
 			return false;
 		}
 	}
