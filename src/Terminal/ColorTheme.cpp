@@ -182,19 +182,19 @@ ColorTheme ColorTheme::fromHex(uint inHex)
 		theme.build = getColorFromDigit(digits[2]);
 
 	if (size >= 4)
-		theme.success = getColorFromDigit(digits[3], 100);
+		theme.assembly = getColorFromDigit(digits[3]);
 
 	if (size >= 5)
-		theme.error = getColorFromDigit(digits[4], 100);
+		theme.success = getColorFromDigit(digits[4], 100);
 
 	if (size >= 6)
-		theme.warning = getColorFromDigit(digits[5], 100);
+		theme.error = getColorFromDigit(digits[5], 100);
 
 	if (size >= 7)
-		theme.note = getColorFromDigit(digits[6], 100);
+		theme.warning = getColorFromDigit(digits[6], 100);
 
 	if (size >= 8)
-		theme.assembly = getColorFromDigit(digits[7]);
+		theme.note = getColorFromDigit(digits[7], 100);
 
 	// if (size >= 9)
 	// 	theme.info = getColorFromDigit(digits[8]);
