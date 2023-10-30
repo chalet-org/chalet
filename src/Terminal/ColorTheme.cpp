@@ -137,9 +137,7 @@ Color getColorFromDigit(const uint inValue)
 Color getColorFromDigit(const uint inValue, const int inOffset)
 {
 	auto color = getColorFromDigit(inValue);
-	if (color == Color::Black
-		|| color == Color::BrightBlack
-		|| color == Color::Reset)
+	if (color == Color::Black || color == Color::Reset)
 		return color;
 
 	return static_cast<Color>(inOffset + static_cast<int>(color));
@@ -171,7 +169,7 @@ ColorTheme ColorTheme::fromHex(uint inHex)
 		theme.reset = Color::Reset;
 		theme.flair = getColorFromDigit(digits[0], 200);
 
-		if (theme.flair == Color::WhiteDim || theme.flair == Color::BrightWhiteDim)
+		if (theme.flair == Color::BrightBlackDim || theme.flair == Color::WhiteDim || theme.flair == Color::BrightWhiteDim)
 			theme.flair = Color::BrightBlack;
 	}
 
