@@ -111,9 +111,16 @@ static struct
 }
 
 /*****************************************************************************/
-Color getColorFromDigit(const uint inValue)
+Color getColorFromDigit(char value)
 {
-	switch (inValue)
+	if (value > 97)
+		value -= 87;
+	else if (value > 65)
+		value -= 55;
+	else if (value > 48)
+		value -= 48;
+
+	switch (value)
 	{
 		case 1: return Color::BrightBlack;
 		case 2: return Color::Yellow;
@@ -134,7 +141,7 @@ Color getColorFromDigit(const uint inValue)
 			return Color::Reset;
 	}
 }
-Color getColorFromDigit(const uint inValue, const int inOffset)
+Color getColorFromDigit(const char inValue, const int inOffset)
 {
 	auto color = getColorFromDigit(inValue);
 	if (color == Color::Black || color == Color::Reset)
@@ -143,25 +150,10 @@ Color getColorFromDigit(const uint inValue, const int inOffset)
 	return static_cast<Color>(inOffset + static_cast<int>(color));
 }
 
-void processDigits(uint x, std::vector<int>& digits)
-{
-	constexpr uint radix = 16;
-	if (x <= 0)
-		return;
-
-	if (x >= radix)
-		processDigits(x / radix, digits);
-
-	digits.emplace_back(static_cast<int>(x % radix));
-};
-
 /*****************************************************************************/
-ColorTheme ColorTheme::fromHex(uint inHex)
+ColorTheme ColorTheme::fromHex(const std::string& digits)
 {
 	ColorTheme theme;
-
-	std::vector<int> digits;
-	processDigits(inHex, digits);
 
 	auto size = digits.size();
 	if (size >= 1)
@@ -593,12 +585,7 @@ void ColorTheme::makePreset(const std::string& inValue)
 	}
 	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 	{
-		uint hex = 0;
-		std::stringstream ss;
-		ss << std::hex << inValue;
-		ss >> hex;
-
-		*this = ColorTheme::fromHex(hex);
+		*this = ColorTheme::fromHex(inValue);
 		m_preset = "custom";
 	}
 }
