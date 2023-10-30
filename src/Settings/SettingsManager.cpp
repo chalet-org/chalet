@@ -308,7 +308,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		{
 			doSettingsCorrections(settings.json);
 		}
-		else if (String::endsWith(".chaletrc", settings.filename()))
+		else if (String::endsWith(m_inputs.defaultSettingsFile(), settings.filename()))
 		{
 			SettingsJsonSchema schemaBuilder;
 			Json schema = schemaBuilder.get();
@@ -318,7 +318,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 				return false;
 			}
 		}
-		else if (String::endsWith(m_inputs.inputFile(), settings.filename()))
+		else if (String::endsWith(m_inputs.defaultInputFile(), settings.filename()))
 		{
 			// note: settings, but not settings (chalet.json)
 			ChaletJsonSchema schemaBuilder;

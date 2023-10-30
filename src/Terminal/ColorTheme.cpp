@@ -341,12 +341,7 @@ std::string ColorTheme::asString() const
 std::string ColorTheme::asHexString() const
 {
 	auto colorToHexValue = [](const Color& inColor) -> char {
-		auto color = static_cast<int>(inColor);
-		if (color > 200)
-			color -= 200;
-		if (color > 100)
-			color -= 100;
-
+		int color = static_cast<int>(inColor) % 100;
 		for (char i = 0; i < 16; ++i)
 		{
 			auto col = getColorFromDigit(i);

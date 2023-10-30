@@ -151,11 +151,8 @@ void TerminalTest::printUnicodeCharacters()
 /*****************************************************************************/
 void TerminalTest::printChaletColorThemes(const bool inSimple)
 {
-	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
 	std::size_t totalThemes = themes.size();
-	if (currentTheme.preset().empty())
-		themes.push_back(std::move(currentTheme));
 
 	printBanner("Chalet Color Themes");
 
@@ -176,10 +173,10 @@ void TerminalTest::printChaletColorThemes(const bool inSimple)
 	std::cout.write(m_separator.data(), m_separator.size());
 	std::cout.write(total.data(), total.size());
 
-	auto& themeFromOutput = Output::theme();
-	if (themeFromOutput.preset().empty())
+	auto& currentTheme = Output::theme();
+	if (currentTheme.preset().empty())
 	{
-		printTheme(themeFromOutput, printName);
+		printTheme(currentTheme, printName);
 	}
 }
 
