@@ -352,13 +352,9 @@ CustomToolchainTreatAs CompilerTools::treatAs() const noexcept
 {
 	return m_treatAs;
 }
-void CompilerTools::setTreatAs(const std::string& inValue) noexcept
+void CompilerTools::setTreatAs(const CustomToolchainTreatAs inValue) noexcept
 {
-	auto kinds = getToolchainTreatAs();
-	if (kinds.find(inValue) != kinds.end())
-		m_treatAs = kinds.at(inValue);
-	else
-		m_treatAs = CustomToolchainTreatAs::None;
+	m_treatAs = inValue;
 }
 
 /*****************************************************************************/

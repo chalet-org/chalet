@@ -330,7 +330,7 @@ bool VisualStudioEnvironmentScript::saveEnvironmentFromScript()
 	}
 
 	cmd.emplace_back(">");
-	cmd.emplace_back("nul");
+	cmd.emplace_back(Environment::getNull());
 	cmd.emplace_back("&&");
 	cmd.emplace_back("SET");
 	cmd.emplace_back(">");

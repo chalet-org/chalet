@@ -95,14 +95,6 @@
 					],
 					"default": "target-triple"
 				},
-				"treatAs": {
-					"type": "string",
-					"description": "If using a custom toolchain, treat its paths as a known toolchain - ie. if the custom toolchain is based on LLVM, but uses different compiler names, set this to 'llvm'",
-					"enum": [
-						"llvm",
-						"gcc"
-					]
-				},
 				"cmake": {
 					"type": "string",
 					"description": "The executable path to CMake.",

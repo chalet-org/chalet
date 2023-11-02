@@ -78,7 +78,6 @@ CH_STR(Toolchains) = "toolchains";
 CH_STR(ToolchainVersion) = "version";
 CH_STR(ToolchainBuildStrategy) = "strategy";
 CH_STR(ToolchainBuildPathStyle) = "buildPathStyle";
-CH_STR(ToolchainTreatAs) = "treatAs";
 CH_STR(ToolchainArchiver) = "archiver";
 CH_STR(ToolchainCompilerCpp) = "compilerCpp";
 CH_STR(ToolchainCompilerC) = "compilerC";

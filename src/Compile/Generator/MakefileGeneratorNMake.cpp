@@ -325,17 +325,20 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 			configureFilesDeps = fmt::format(" {}", deps);
 		}
 
+		auto nul = Environment::getNull();
+
 		ret = fmt::format(R"makefile(
 {object}: {source}{configureFilesDeps}
 	{compilerEcho}
-	{quietFlag}{rcCompile} 1>nul
+	{quietFlag}{rcCompile} 1>{nul}
 )makefile",
 			FMT_ARG(object),
 			FMT_ARG(source),
 			FMT_ARG(configureFilesDeps),
 			FMT_ARG(compilerEcho),
 			FMT_ARG(quietFlag),
-			FMT_ARG(rcCompile));
+			FMT_ARG(rcCompile),
+			FMT_ARG(nul));
 	}
 
 	return ret;

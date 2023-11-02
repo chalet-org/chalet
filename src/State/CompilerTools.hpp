@@ -41,7 +41,7 @@ struct CompilerTools
 	bool buildPathStyleIsValid(const std::string& inValue) const;
 
 	CustomToolchainTreatAs treatAs() const noexcept;
-	void setTreatAs(const std::string& inValue) noexcept;
+	void setTreatAs(const CustomToolchainTreatAs inValue) noexcept;
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;

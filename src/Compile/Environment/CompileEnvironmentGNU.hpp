@@ -17,6 +17,8 @@ struct CompileEnvironmentGNU : ICompileEnvironment
 
 	virtual void generateTargetSystemPaths() override;
 
+	static std::string getCompilerMacros(const std::string& inCompilerExec, BuildState& inState, const PipeOption inStdError = PipeOption::Close);
+
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;
@@ -36,9 +38,6 @@ protected:
 	virtual bool verifyCompilerExecutable(const std::string& inCompilerExec);
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const;
 	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand);
-
-private:
-	std::string getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError = PipeOption::Close);
 
 	// bool m_genericGcc = false;
 };

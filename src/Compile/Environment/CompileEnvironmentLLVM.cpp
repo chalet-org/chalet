@@ -33,7 +33,7 @@ StringList CompileEnvironmentLLVM::getVersionCommand(const std::string& inExecut
 /*****************************************************************************/
 std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
-	if (m_state.toolchain.treatAs() != CustomToolchainTreatAs::None)
+	if (m_state.toolchain.treatAs() == CustomToolchainTreatAs::LLVM)
 	{
 		auto name = String::getPathBaseName(inPath);
 		if (!name.empty())

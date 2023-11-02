@@ -63,7 +63,7 @@ protected:
 	explicit ICompileEnvironment(const ToolchainType inType, BuildState& inState);
 
 	[[nodiscard]] static Unique<ICompileEnvironment> make(ToolchainType type, BuildState& inState);
-	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable);
+	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable, BuildState& inState);
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const = 0;

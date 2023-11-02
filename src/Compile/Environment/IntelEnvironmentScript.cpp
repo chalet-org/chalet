@@ -140,7 +140,7 @@ bool IntelEnvironmentScript::saveEnvironmentFromScript()
 		cmd.emplace_back("vs2017");
 
 	cmd.emplace_back(">");
-	cmd.emplace_back("nul");
+	cmd.emplace_back(Environment::getNull());
 	cmd.emplace_back("&&");
 	cmd.emplace_back("SET");
 	cmd.emplace_back(">");
@@ -151,7 +151,7 @@ bool IntelEnvironmentScript::saveEnvironmentFromScript()
 	shellCmd.push_back(m_intelSetVars);
 	shellCmd.emplace_back("--force");
 	shellCmd.emplace_back(">");
-	shellCmd.emplace_back("/dev/null");
+	shellCmd.emplace_back(Environment::getNull());
 	shellCmd.emplace_back("&&");
 	shellCmd.emplace_back("printenv");
 	shellCmd.emplace_back(">");

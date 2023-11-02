@@ -23,7 +23,8 @@ struct ToolchainSettingsJsonParser
 
 private:
 	bool serialize(Json& inNode);
-	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
+	bool makeToolchain(Json& toolchain, const ToolchainPreference& preference);
+	bool makeToolchainFromEnvironment(Json& toolchain);
 	bool parseToolchain(Json& inNode);
 
 	BuildState& m_state;
