@@ -172,7 +172,7 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 	if (type == ToolchainType::Unknown)
 	{
 		auto& compiler = inState.toolchain.compilerCxxAny().path;
-		type = ICompileEnvironment::detectToolchainTypeFromPath(compiler);
+		type = ICompileEnvironment::detectToolchainTypeFromPath(compiler, inState);
 		if (type == ToolchainType::Unknown)
 		{
 			// Diagnostic::error("Toolchain was not recognized from compiler path: '{}'", compiler);
@@ -446,7 +446,7 @@ std::string ICompileEnvironment::getVarsPath(const std::string& inUniqueId) cons
 }
 
 /*****************************************************************************/
-ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string& inExecutable)
+ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string& inExecutable, BuildState& inState)
 {
 	if (inExecutable.empty())
 		return ToolchainType::Unknown;
@@ -518,7 +518,33 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 #endif
 	}
 
+	// We may have a toolchain based on LLVM or GCC
+	{
+		auto defines = CompileEnvironmentGNU::getCompilerMacros(executable, inState);
+		if (!defines.empty())
+		{
+			bool mingw = String::contains({ "__MINGW32__", "__MINGW64__" }, defines);
+			if (String::contains("__clang__", defines))
+			{
+				inState.toolchain.setTreatAs(CustomToolchainTreatAs::LLVM);
+				if (mingw)
+					return ToolchainType::MingwLLVM;
+				else
+					return ToolchainType::LLVM;
+			}
+			else if (mingw)
+			{
+				inState.toolchain.setTreatAs(CustomToolchainTreatAs::GCC);
+				return ToolchainType::MingwGNU;
+			}
+			else if (String::contains("__GNUC__", defines))
+			{
+				inState.toolchain.setTreatAs(CustomToolchainTreatAs::GCC);
+				return ToolchainType::GNU;
+			}
+		}
+	}
+
 	return ToolchainType::Unknown;
 }
-
 }

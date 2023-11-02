@@ -35,6 +35,7 @@ constexpr char getPathSeparator();
 std::string getUserDirectory();
 std::string getShell();
 std::string getComSpec();
+std::string getNull();
 
 bool saveToEnvFile(const std::string& inOutputFile);
 void createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAfterFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);

@@ -51,7 +51,18 @@ std::string CompileEnvironmentGNU::getCompilerFlavor(const std::string& inPath) 
 /*****************************************************************************/
 std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
-	if (m_type == ToolchainType::MingwGNU)
+	if (m_state.toolchain.treatAs() == CustomToolchainTreatAs::GCC)
+	{
+		auto name = String::getPathBaseName(inPath);
+		if (!name.empty())
+		{
+			name[0] = static_cast<char>(::toupper(static_cast<uchar>(name[0])));
+			String::replaceAll(name, '+', "");
+		}
+
+		return fmt::format("{} version {} (Based on GCC)", name, inVersion);
+	}
+	else if (m_type == ToolchainType::MingwGNU)
 	{
 		auto flavor = getCompilerFlavor(inPath);
 		return fmt::format("Minimalist GNU Compiler Collection for Windows version {}{}", inVersion, flavor);
@@ -204,14 +215,14 @@ bool CompileEnvironmentGNU::supportsFlagFile()
 /*****************************************************************************/
 bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompilerExec)
 {
-	const std::string macroResult = getCompilerMacros(inCompilerExec);
+	const std::string macroResult = getCompilerMacros(inCompilerExec, m_state);
 	// LOG(macroResult);
 	// LOG(inCompilerExec);
 	// String::replaceAll(macroResult, '\n', ' ');
 	// String::replaceAll(macroResult, "#include ", "");
 	if (macroResult.empty())
 	{
-		auto output = getCompilerMacros(inCompilerExec, PipeOption::Pipe);
+		auto output = getCompilerMacros(inCompilerExec, m_state, PipeOption::Pipe);
 		Output::print(Color::Reset, output);
 		Diagnostic::error("Failed to query compiler for details. See above output.");
 		return false;
@@ -364,29 +375,23 @@ ToolchainType CompileEnvironmentGNU::getToolchainTypeFromMacros(const std::strin
 }
 
 /*****************************************************************************/
-std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec, const PipeOption inStdError)
+std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompilerExec, BuildState& inState, const PipeOption inStdError)
 {
 	if (inCompilerExec.empty())
 		return std::string();
 
-	std::string macrosFile = m_state.cache.getHashPath(fmt::format("macros_{}.env", inCompilerExec), CacheType::Local);
-	m_state.cache.file().addExtraHash(String::getPathFilename(macrosFile));
+	std::string macrosFile = inState.cache.getHashPath(fmt::format("macros_{}.env", inCompilerExec), CacheType::Local);
+	inState.cache.file().addExtraHash(String::getPathFilename(macrosFile));
 
 	std::string result;
 	if (!Commands::pathExists(macrosFile))
 	{
-#if defined(CHALET_WIN32)
-		std::string null = "nul";
-#else
-		std::string null = "/dev/null";
-#endif
-
 		// Clang/GCC only
 		// This command must be run from the bin directory in order to work
 		//   (or added to path before-hand, but we manipulate the path later)
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
-		StringList command = { inCompilerExec, "-x", "c", std::move(null), "-dM", "-E" };
+		StringList command = { inCompilerExec, "-x", "c", Environment::getNull(), "-dM", "-E" };
 		result = Commands::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
 		if (!result.empty())

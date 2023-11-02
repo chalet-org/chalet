@@ -23,11 +23,13 @@ struct ToolchainSettingsJsonParser
 
 private:
 	bool serialize(Json& inNode);
-	bool makeToolchain(Json& toolchains, const ToolchainPreference& toolchain);
+	bool makeToolchain(Json& toolchain, const ToolchainPreference& preference);
 	bool parseToolchain(Json& inNode);
 
 	BuildState& m_state;
 	JsonFile& m_jsonFile;
+
+	bool m_isCustomToolchain = false;
 };
 }
 

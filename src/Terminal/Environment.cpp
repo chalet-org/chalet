@@ -661,6 +661,16 @@ std::string Environment::getComSpec()
 }
 
 /*****************************************************************************/
+std::string Environment::getNull()
+{
+#if defined(CHALET_WIN32)
+	return "nul";
+#else
+	return "/dev/null";
+#endif
+}
+
+/*****************************************************************************/
 bool Environment::saveToEnvFile(const std::string& inOutputFile)
 {
 #if defined(CHALET_WIN32)

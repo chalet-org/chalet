@@ -10,6 +10,7 @@
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/CompilerInfo.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
+#include "State/CustomToolchainTreatAs.hpp"
 
 namespace chalet
 {
@@ -19,6 +20,7 @@ struct SourceCache;
 struct CompilerTools
 {
 	static StringList getToolchainStrategiesForSchema();
+	static StringList getToolchainTreatAsForSchema();
 	static StringList getToolchainStrategies();
 	static StringList getToolchainBuildPathStyles();
 
@@ -37,6 +39,9 @@ struct CompilerTools
 	BuildPathStyle buildPathStyle() const noexcept;
 	void setBuildPathStyle(const std::string& inValue) noexcept;
 	bool buildPathStyleIsValid(const std::string& inValue) const;
+
+	CustomToolchainTreatAs treatAs() const noexcept;
+	void setTreatAs(const CustomToolchainTreatAs inValue) noexcept;
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
@@ -128,6 +133,7 @@ private:
 
 	StrategyType m_strategy = StrategyType::None;
 	BuildPathStyle m_buildPathStyle = BuildPathStyle::None;
+	CustomToolchainTreatAs m_treatAs = CustomToolchainTreatAs::None;
 
 	bool m_isProfilerGprof = false;
 	bool m_isProfilerVSInstruments = false;

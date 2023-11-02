@@ -44,6 +44,15 @@ Dictionary<StrategyType> getStrategyTypes()
 
 	return ret;
 }
+Dictionary<CustomToolchainTreatAs> getToolchainTreatAs()
+{
+	Dictionary<CustomToolchainTreatAs> ret{
+		{ "llvm", CustomToolchainTreatAs::LLVM },
+		{ "gcc", CustomToolchainTreatAs::GCC },
+	};
+
+	return ret;
+}
 }
 
 /*****************************************************************************/
@@ -55,6 +64,17 @@ StringList CompilerTools::getToolchainStrategiesForSchema()
 		"native-experimental",
 		"msbuild",
 		"xcodebuild",
+	};
+
+	return ret;
+}
+
+/*****************************************************************************/
+StringList CompilerTools::getToolchainTreatAsForSchema()
+{
+	StringList ret{
+		"llvm",
+		"gcc",
 	};
 
 	return ret;
@@ -325,6 +345,16 @@ bool CompilerTools::buildPathStyleIsValid(const std::string& inValue) const
 {
 	auto styles = getBuildPathStyleTypes();
 	return styles.find(inValue) != styles.end();
+}
+
+/*****************************************************************************/
+CustomToolchainTreatAs CompilerTools::treatAs() const noexcept
+{
+	return m_treatAs;
+}
+void CompilerTools::setTreatAs(const CustomToolchainTreatAs inValue) noexcept
+{
+	m_treatAs = inValue;
 }
 
 /*****************************************************************************/
