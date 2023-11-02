@@ -658,7 +658,7 @@ std::string CommandLineInputs::platformEnv() const noexcept
 /*****************************************************************************/
 void CommandLineInputs::resolveEnvFile()
 {
-	auto searchDotEnv = [this](const std::string& inRelativeEnv, const std::string& inEnv) {
+	auto searchDotEnv = [](const std::string& inRelativeEnv, const std::string& inEnv) {
 		if (String::endsWith(kDefaultEnvFile, inRelativeEnv))
 		{
 			auto toSearch = String::getPathFolder(inRelativeEnv);
