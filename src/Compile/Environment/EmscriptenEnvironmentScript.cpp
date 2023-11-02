@@ -117,7 +117,10 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	if (!nodePath.empty())
 	{
 		Path::sanitize(nodePath);
-		nodePath += "/bin/node.exe";
+		nodePath += "/bin/node";
+#if defined(CHALET_WIN32)
+		pythonPath += ".exe";
+#endif
 
 		fileContents += fmt::format("EMSDK_NODE={}\n", nodePath);
 	}
@@ -126,7 +129,12 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	if (!pythonPath.empty())
 	{
 		Path::sanitize(pythonPath);
+
+#if defined(CHALET_WIN32)
 		pythonPath += "/python.exe";
+#else
+		pythonPath += "/bin/python3";
+#endif
 
 		fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
 	}
