@@ -1425,14 +1425,6 @@ bool CommandLineInputs::makeCustomToolchainFromEnvironment() const
 	if (pref.type != ToolchainType::Unknown)
 		return false;
 
-	auto useEnvVar = [](const char* inName, const char* inFallback) -> std::string {
-		auto var = Environment::getString(inName);
-		if (!var.empty())
-			return var;
-
-		return std::string(inFallback);
-	};
-
 	m_isToolchainPreset = true;
 
 	pref.cpp = Environment::getString("CHALET_TOOLCHAIN_COMPILER_CPP");
