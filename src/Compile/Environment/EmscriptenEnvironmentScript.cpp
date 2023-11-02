@@ -135,9 +135,13 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 #else
 		pythonPath += "/bin/python3";
 #endif
-
-		fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
 	}
+	else
+	{
+		pythonPath = Commands::which("python3");
+	}
+
+	fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
 
 	auto javaPath = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
 	if (!javaPath.empty())

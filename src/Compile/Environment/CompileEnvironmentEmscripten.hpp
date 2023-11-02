@@ -35,6 +35,7 @@ private:
 	Unique<EmscriptenEnvironmentScript> m_config;
 
 	std::string m_emsdkRoot;
+	std::string m_python;
 	mutable std::string m_llvmVersion;
 };
 }
