@@ -318,10 +318,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			link = Commands::which(search);
 			if (!link.empty())
-			{
-				LOG("linker:", link);
 				break;
-			}
 		}
 
 #if defined(CHALET_WIN32)
