@@ -138,7 +138,9 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		fileContents += fmt::format("JAVA_HOME={}\n", javaPath);
 	}
 
-	m_envVarsFileAfter;
+	// TODO: .emscripten file?
+	//   https://emscripten.org/docs/tools_reference/emsdk.html#emscripten-compiler-configuration-file-emscripten
+	//   Would set EM_CONFIG
 
 	fileContents.pop_back();
 	return Commands::createFileWithContents(m_envVarsFileDelta, fileContents);
