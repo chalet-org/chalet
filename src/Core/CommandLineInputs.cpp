@@ -1411,10 +1411,38 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 	else
 	{
+		m_toolchainPreferenceName = inValue;
 		ret.type = ToolchainType::Unknown;
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool CommandLineInputs::makeCustomToolchainFromEnvironment() const
+{
+	auto& pref = m_toolchainPreference;
+	if (pref.type != ToolchainType::Unknown)
+		return false;
+
+	auto useEnvVar = [](const char* inName, const char* inFallback) -> std::string {
+		auto var = Environment::getString(inName);
+		if (!var.empty())
+			return var;
+
+		return std::string(inFallback);
+	};
+
+	m_isToolchainPreset = true;
+
+	pref.cpp = Environment::getString("CHALET_TOOLCHAIN_COMPILER_CPP");
+	pref.cc = Environment::getString("CHALET_TOOLCHAIN_COMPILER_C");
+	pref.rc = Environment::getString("CHALET_TOOLCHAIN_COMPILER_RC");
+	pref.linker = Environment::getString("CHALET_TOOLCHAIN_LINKER");
+	pref.archiver = Environment::getString("CHALET_TOOLCHAIN_ARCHIVER");
+	pref.profiler = Environment::getString("CHALET_TOOLCHAIN_PROFILER");
+	pref.disassembler = Environment::getString("CHALET_TOOLCHAIN_DISASSEMBLER");
+	return true;
 }
 
 /*****************************************************************************/

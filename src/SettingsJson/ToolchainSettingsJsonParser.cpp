@@ -37,14 +37,27 @@ bool ToolchainSettingsJsonParser::serialize()
 
 	auto& toolchains = rootNode[Keys::Toolchains];
 
-	bool containsPref = toolchains.contains(preferenceName);
-	if (!containsPref && !m_state.inputs.isToolchainPreset())
+	auto envToolchainName = Environment::getString("CHALET_TOOLCHAIN_NAME");
+	m_isCustomToolchain = !envToolchainName.empty() && String::equals(preferenceName, envToolchainName);
+	if (m_isCustomToolchain)
 	{
-		Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
-		return false;
+		if (!m_state.inputs.makeCustomToolchainFromEnvironment())
+		{
+			Diagnostic::error("{}: The requested toolchain of '{}' could not be detected due to an internal error.", m_jsonFile.filename(), preferenceName);
+			return false;
+		}
+	}
+	else
+	{
+		bool containsPref = toolchains.contains(preferenceName);
+		if (!containsPref && !m_state.inputs.isToolchainPreset())
+		{
+			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
+			return false;
+		}
 	}
 
-	if (!containsPref)
+	if (!toolchains.contains(preferenceName))
 		toolchains[preferenceName] = Json::object();
 
 	auto& node = toolchains.at(preferenceName);
@@ -226,8 +239,18 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		searches.push_back(preference.rc);
 
-		if (isGNU)
+		if (m_isCustomToolchain)
+		{
+#if defined(CHALET_LINUX)
+			searches.push_back("llvm-windres");
+#endif
+			// Note: don't check for llvm-rc
 			searches.push_back("windres");
+		}
+		else if (isGNU)
+		{
+			searches.push_back("windres");
+		}
 
 		for (const auto& search : searches)
 		{
@@ -244,7 +267,16 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string link;
 		StringList searches;
-		if (isLLVM)
+		if (m_isCustomToolchain)
+		{
+			searches.push_back(preference.linker);
+			searches.push_back("lld");
+			searches.push_back("lld-link");
+			searches.push_back("llvm-link");
+			searches.push_back("llvm-ld");
+			searches.push_back("ld");
+		}
+		else if (isLLVM)
 		{
 			std::string suffix;
 			if (String::contains('-', preference.cc))
@@ -252,7 +284,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 			searches.push_back(preference.linker); // lld
 			searches.emplace_back("lld-link");
-			searches.emplace_back(fmt::format("llvm-ld", suffix));
+			searches.emplace_back(fmt::format("llvm-ld{}", suffix));
 			searches.emplace_back("ld");
 		}
 		else if (isGNU)
@@ -296,7 +328,13 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string ar;
 		StringList searches;
-		if (isLLVM)
+		if (m_isCustomToolchain)
+		{
+			searches.push_back(preference.archiver);
+			searches.push_back("llvm-ar");
+			searches.push_back("ar");
+		}
+		else if (isLLVM)
 		{
 			std::string suffix;
 			if (String::contains('-', preference.cc))
@@ -313,7 +351,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		}
 
 #if defined(CHALET_MACOS)
-		if (isLLVM || isGNU)
+		if (m_isCustomToolchain || isLLVM || isGNU)
 			searches.emplace_back("libtool");
 #endif
 
@@ -335,15 +373,11 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string prof;
 		StringList searches;
+		searches.push_back(preference.profiler);
 
-		if (isGNU)
+		if (m_isCustomToolchain || isGNU)
 		{
-			searches.push_back(preference.profiler);
 			searches.push_back("gprof");
-		}
-		else
-		{
-			searches.push_back(preference.profiler);
 		}
 
 		for (const auto& search : searches)
@@ -361,7 +395,18 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string disasm;
 		StringList searches;
-		if (isLLVM)
+		if (m_isCustomToolchain)
+		{
+			searches.push_back(preference.disassembler);
+			searches.push_back("llvm-objdump");
+#if defined(CHALET_WIN32)
+			searches.push_back("dumpbin");
+#elif defined(CHALET_MACOS)
+			searches.push_back("otool");
+#endif
+			searches.push_back("objdump");
+		}
+		else if (isLLVM)
 		{
 			std::string suffix;
 			if (String::contains('-', preference.cc))
@@ -540,17 +585,6 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		toolchain[Keys::ToolchainVersion] = std::string();
 	}
-
-	return true;
-}
-
-/*****************************************************************************/
-// Populate the toolchain from the environment, if available
-bool ToolchainSettingsJsonParser::makeToolchainFromEnvironment(Json& toolchain)
-{
-	auto kEnvironmentPrefix = "CHALET_";
-
-	UNUSED(toolchain, kEnvironmentPrefix);
 
 	return true;
 }

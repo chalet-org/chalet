@@ -84,6 +84,7 @@ struct CommandLineInputs
 	void setToolchainPreferenceType(const ToolchainType inValue) const noexcept;
 	const std::string& toolchainPreferenceName() const noexcept;
 	void setToolchainPreferenceName(std::string&& inValue) const noexcept;
+	bool makeCustomToolchainFromEnvironment() const;
 
 	const std::string& buildStrategyPreference() const noexcept;
 	void setBuildStrategyPreference(std::string&& inValue);
