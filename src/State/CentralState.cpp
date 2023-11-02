@@ -167,12 +167,14 @@ bool CentralState::initialize()
 }
 
 /*****************************************************************************/
-bool CentralState::initializeForList()
+bool CentralState::initializeForQuery()
 {
 	const auto& route = m_inputs.route();
 	chalet_assert(route.isQuery(), "");
 	if (!route.isQuery())
 		return false;
+
+	m_inputs.resolveEnvFile();
 
 	UNUSED(cache.initializeSettings(m_inputs));
 
@@ -186,6 +188,7 @@ bool CentralState::initializeForList()
 		return true;
 
 	UNUSED(m_chaletJson.load(m_filename));
+
 	Diagnostic::clearErrors();
 
 	return true;

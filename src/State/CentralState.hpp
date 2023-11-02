@@ -29,7 +29,7 @@ struct CentralState
 	bool validate();
 	void saveCaches();
 
-	bool initializeForList();
+	bool initializeForQuery();
 
 	const CommandLineInputs& inputs() const noexcept;
 	JsonFile& chaletJson() noexcept;

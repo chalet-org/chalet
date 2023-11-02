@@ -9,12 +9,14 @@
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Core/DotEnvFileParser.hpp"
 #include "Settings/SettingsManager.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/DefinesVersion.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -258,6 +260,21 @@ StringList QueryController::getUserToolchainList() const
 			for (auto& [key, _] : toolchains.items())
 			{
 				ret.emplace_back(key);
+			}
+		}
+	}
+
+	const auto& inputs = m_centralState.inputs();
+	const auto& envFile = inputs.envFile();
+	if (!envFile.empty() && Commands::pathExists(envFile))
+	{
+		DotEnvFileParser envParser(inputs);
+		if (envParser.readVariablesFromFile(envFile))
+		{
+			auto toolchainNameFromEnv = Environment::getString("CHALET_TOOLCHAIN_NAME");
+			if (!toolchainNameFromEnv.empty())
+			{
+				ret.emplace_back(std::move(toolchainNameFromEnv));
 			}
 		}
 	}

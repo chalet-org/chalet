@@ -284,7 +284,7 @@ bool Router::routeValidate()
 bool Router::routeQuery()
 {
 	CentralState centralState(m_inputs);
-	if (!centralState.initializeForList())
+	if (!centralState.initializeForQuery())
 		return false;
 
 	QueryController query(centralState);
