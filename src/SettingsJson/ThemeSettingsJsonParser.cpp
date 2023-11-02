@@ -47,12 +47,9 @@ bool ThemeSettingsJsonParser::serialize()
 
 	if (!m_updateTheme)
 	{
-		theme.setPreset(ColorTheme::defaultPresetName());
+		theme.setPreset(ColorTheme::getDefaultPresetName());
 	}
 
-#if 0
-	theme.setPreset(ColorTheme::lastPresetName());
-#endif
 	Output::setTheme(theme);
 
 	return true;
@@ -74,7 +71,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 		{
 			if (themeJson.empty() && inGlobal)
 			{
-				outTheme.setPreset(ColorTheme::defaultPresetName());
+				outTheme.setPreset(ColorTheme::getDefaultPresetName());
 				outTheme.setPreset(std::string());
 			}
 

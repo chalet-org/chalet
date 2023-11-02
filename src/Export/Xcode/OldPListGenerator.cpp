@@ -98,7 +98,12 @@ std::string OldPListGenerator::getNodeAsPListFormat(const Json& inJson, const si
 				continue;
 
 			ret += std::string(indent + 1, '\t');
-			ret += key;
+
+			if (String::contains('[', key))
+				ret += fmt::format("\"{}\"", key);
+			else
+				ret += key;
+
 			ret += " = ";
 			ret += getNodeAsPListFormat(value, indent + 1);
 			ret += ";\n";

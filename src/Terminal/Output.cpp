@@ -314,10 +314,8 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 	{
 		const auto color = getAnsiStyle(inColor);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto message = fmt::format("{}{}  {}", color, inSymbol, inMessage);
+		auto message = fmt::format("{}{}  {}{}\n", color, inSymbol, inMessage, reset);
 		std::cout.write(message.data(), message.size());
-		std::cout.write(reset.data(), reset.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }

@@ -25,6 +25,8 @@ struct CompileStrategyXcodeBuild final : ICompileStrategy
 private:
 	bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd);
 
+	std::string getPlatformName() const;
+
 	bool m_initialized = false;
 };
 }

@@ -91,23 +91,118 @@ static struct
 		{ "brightWhiteInverted", Color::BrightWhiteInverted },
 	};
 
-	const StringList presetNames{
-		"default",
-		"none",
-		"palapa",
-		"highrise",
-		"teahouse",
-		"skilodge",
-		"temple",
-		"bungalow",
-		"cottage",
-		"monastery",
-		"longhouse",
-		"greenhouse",
-		"observatory",
-		"yurt"
+	const OrderedDictionary<std::string> presets{
+		{ "default", "1397d53b" },
+		{ "none", "00000000" },
+		{ "palapa", "9db27428" },
+		{ "highrise", "197b3527" },
+		{ "teahouse", "22dac423" },
+		{ "skilodge", "9fb93521" },
+		{ "temple", "7b532537" },
+		{ "bungalow", "12a5d53b" },
+		{ "cottage", "153fd739" },
+		{ "monastery", "a3f1d529" },
+		{ "longhouse", "1e1cd429" },
+		{ "greenhouse", "17dcd539" },
+		{ "observatory", "1798f53b" },
+		{ "yurt", "1f27d539" },
+		{ "sealab", "89b8d539" },
+		{ "blacklodge", "556f3579" },
+		{ "farmhouse", "1bd33729" },
+		{ "gallery", "1ff0f539" }
 	};
 } state;
+}
+
+/*****************************************************************************/
+Color ColorTheme::getColorFromDigit(char value)
+{
+	if (value >= 97)
+		value -= 87;
+	else if (value >= 65)
+		value -= 55;
+	else if (value >= 48)
+		value -= 48;
+
+	switch (value)
+	{
+		case 1: return Color::BrightBlack;
+		case 2: return Color::Yellow;
+		case 3: return Color::BrightYellow;
+		case 4: return Color::Red;
+		case 5: return Color::BrightRed;
+		case 6: return Color::Magenta;
+		case 7: return Color::BrightMagenta;
+		case 8: return Color::Blue;
+		case 9: return Color::BrightBlue;
+		case 10: return Color::Cyan;
+		case 11: return Color::BrightCyan;
+		case 12: return Color::Green;
+		case 13: return Color::BrightGreen;
+		case 14: return Color::White;
+		case 15: return Color::BrightWhite;
+		default:
+			return Color::Reset;
+	}
+}
+Color ColorTheme::getColorFromDigit(const char inValue, const int inOffset)
+{
+	auto color = getColorFromDigit(inValue);
+	if (color == Color::Black || color == Color::Reset)
+		return color;
+
+	return static_cast<Color>(inOffset + static_cast<int>(color));
+}
+
+/*****************************************************************************/
+ColorTheme ColorTheme::fromHex(const std::string& digits, const std::string name)
+{
+	ColorTheme theme;
+	theme.m_preset = name;
+
+	auto size = digits.size();
+	if (size >= 1)
+	{
+		theme.reset = Color::Reset;
+		theme.flair = getColorFromDigit(digits[0], 200);
+
+		if (theme.flair == Color::BrightBlackDim || theme.flair == Color::WhiteDim || theme.flair == Color::BrightWhiteDim)
+			theme.flair = Color::BrightBlack;
+	}
+
+	if (size >= 2)
+		theme.header = getColorFromDigit(digits[1], 100);
+
+	if (size >= 3)
+		theme.build = getColorFromDigit(digits[2]);
+
+	if (size >= 4)
+		theme.assembly = getColorFromDigit(digits[3]);
+
+	if (size >= 5)
+		theme.success = getColorFromDigit(digits[4], 100);
+
+	if (size >= 6)
+		theme.error = getColorFromDigit(digits[5], 100);
+
+	if (size >= 7)
+		theme.warning = getColorFromDigit(digits[6], 100);
+
+	if (size >= 8)
+		theme.note = getColorFromDigit(digits[7], 100);
+
+	// if (size >= 9)
+	// 	theme.info = getColorFromDigit(digits[8]);
+
+	theme.info = Color::Reset;
+
+	if (String::equals("00000000", digits))
+	{
+		theme.reset = Color::None;
+		theme.info = Color::None;
+	}
+
+	return theme;
 }
 
 /*****************************************************************************/
@@ -160,19 +255,18 @@ StringList ColorTheme::getKeys()
 }
 
 /*****************************************************************************/
-const std::string& ColorTheme::defaultPresetName()
+std::string ColorTheme::getDefaultPresetName()
 {
-	return state.presetNames.front();
+	return "default";
 }
 
-const std::string& ColorTheme::lastPresetName()
+StringList ColorTheme::getPresetNames()
 {
-	return state.presetNames.back();
-}
+	StringList ret;
+	for (auto& [preset, _] : state.presets)
+		ret.emplace_back(preset);
 
-const StringList& ColorTheme::presets()
-{
-	return state.presetNames;
+	return ret;
 }
 
 /*****************************************************************************/
@@ -181,7 +275,7 @@ bool ColorTheme::isValidPreset(const std::string& inPresetName)
 	if (inPresetName.empty())
 		return false;
 
-	return List::contains(state.presetNames, inPresetName);
+	return state.presets.find(inPresetName) != state.presets.end();
 }
 
 /*****************************************************************************/
@@ -189,7 +283,7 @@ std::vector<ColorTheme> ColorTheme::getAllThemes()
 {
 	std::vector<ColorTheme> ret;
 
-	for (auto& preset : state.presetNames)
+	for (auto& [preset, _] : state.presets)
 	{
 		ret.emplace_back(preset);
 	}
@@ -247,6 +341,40 @@ std::string ColorTheme::asString() const
 }
 
 /*****************************************************************************/
+std::string ColorTheme::asHexString() const
+{
+	auto colorToHexValue = [](const Color& inColor) -> char {
+		int color = static_cast<int>(inColor) % 100;
+		for (char i = 0; i < 16; ++i)
+		{
+			auto col = getColorFromDigit(i);
+			if (col == static_cast<Color>(color))
+			{
+				if (i < 10)
+					return i + 48;
+
+				i -= 10;
+				return i + 97;
+			}
+		}
+		return '0';
+	};
+
+	std::string ret;
+
+	ret += colorToHexValue(this->flair);
+	ret += colorToHexValue(this->header);
+	ret += colorToHexValue(this->build);
+	ret += colorToHexValue(this->assembly);
+	ret += colorToHexValue(this->success);
+	ret += colorToHexValue(this->error);
+	ret += colorToHexValue(this->warning);
+	ret += colorToHexValue(this->note);
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool ColorTheme::operator==(const ColorTheme& rhs) const
 {
 	return info == rhs.info
@@ -281,10 +409,17 @@ void ColorTheme::setPreset(const std::string& inValue)
 		return;
 	}
 
-	if (!List::contains(state.presetNames, inValue))
-		m_preset = state.presetNames.at(0);
+	if (state.presets.find(inValue) == state.presets.end())
+	{
+		if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
+			m_preset = inValue;
+		else
+			m_preset = state.presets.begin()->first;
+	}
 	else
+	{
 		m_preset = inValue;
+	}
 
 	makePreset(m_preset);
 }
@@ -295,7 +430,7 @@ bool ColorTheme::isPreset() const noexcept
 }
 
 /*****************************************************************************/
-void ColorTheme::makePreset(const std::string& inValue)
+void ColorTheme::makePreset(std::string inValue)
 {
 	/*
 		Known "bad" colors:
@@ -303,194 +438,20 @@ void ColorTheme::makePreset(const std::string& inValue)
 			Color::Magenta & variations - Won't show in Powershell default - same color as bg
 
 		... avoid them in theme presets
+
+		Also note that Windows Terminal does not differentiate between Normal/Bright bold - only Bright
 	*/
 
+	info = Color::Reset;
 	reset = Color::Reset;
 
-	// default
-	std::size_t i = 0;
-	if (String::equals(state.presetNames.at(i), inValue))
+	if (state.presets.find(inValue) != state.presets.end())
 	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightYellowBold;
-		build = Color::BrightBlue;
-		assembly = Color::BrightMagenta;
+		*this = ColorTheme::fromHex(state.presets.at(inValue), inValue);
 	}
-	// none
-	else if (String::equals(state.presetNames.at(++i), inValue))
+	else if (inValue.find_first_not_of("01234567890ABCDEFabcdef") == std::string::npos)
 	{
-		reset = Color::None;
-		//
-		info = Color::None;
-		error = Color::None;
-		warning = Color::None;
-		success = Color::None;
-		note = Color::None;
-		flair = Color::None;
-		header = Color::None;
-		build = Color::None;
-		assembly = Color::None;
-	}
-	// palapa
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightMagentaBold;
-		note = Color::BlueBold;
-		flair = Color::BrightBlueDim;
-		header = Color::BrightGreenBold;
-		build = Color::BrightCyan;
-		assembly = Color::Yellow;
-	}
-	// highrise
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightYellowBold;
-		note = Color::BrightMagentaBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightBlueBold;
-		build = Color::BrightMagenta;
-		assembly = Color::BrightCyan;
-	}
-	// teahouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::GreenBold;
-		note = Color::BrightYellowBold;
-		flair = Color::YellowDim;
-		header = Color::YellowBold;
-		build = Color::BrightGreen;
-		assembly = Color::Cyan;
-	}
-	// skilodge
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightYellowBold;
-		note = Color::BrightBlackBold;
-		flair = Color::BrightBlueDim;
-		header = Color::BrightWhiteBold;
-		build = Color::BrightCyan;
-		assembly = Color::BrightBlue;
-	}
-	// temple
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::YellowBold;
-		note = Color::BrightMagentaBold;
-		flair = Color::BrightMagentaDim;
-		header = Color::BrightCyanBold;
-		build = Color::BrightRed;
-		assembly = Color::BrightYellow;
-	}
-	// bungalow
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::YellowBold;
-		build = Color::Cyan;
-		assembly = Color::BrightRed;
-	}
-	// cottage
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightMagentaBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightRedBold;
-		build = Color::BrightYellow;
-		assembly = Color::BrightWhite;
-	}
-	// monastery
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::CyanDim;
-		header = Color::BrightYellowBold;
-		build = Color::BrightWhite;
-		assembly = Color::BrightBlack;
-	}
-	// longhouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::RedBold;
-		warning = Color::YellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::WhiteBold;
-		build = Color::BrightBlack;
-		assembly = Color::Green;
-	}
-	// greenhouse
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightMagentaBold;
-		build = Color::BrightGreen;
-		assembly = Color::Green;
-	}
-	// observatory
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightWhiteBold;
-		note = Color::BrightCyanBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightMagentaBold;
-		build = Color::BrightBlue;
-		assembly = Color::Blue;
-	}
-	// yurt
-	else if (String::equals(state.presetNames.at(++i), inValue))
-	{
-		info = Color::Reset;
-		error = Color::BrightRedBold;
-		warning = Color::BrightYellowBold;
-		success = Color::BrightGreenBold;
-		note = Color::BrightBlueBold;
-		flair = Color::BrightBlack;
-		header = Color::BrightWhiteBold;
-		build = Color::Yellow;
-		assembly = Color::BrightMagenta;
+		*this = ColorTheme::fromHex(inValue);
 	}
 }
 

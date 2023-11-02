@@ -2908,7 +2908,7 @@
 		},
 		"allowedArchitectures": {
 			"type": "array",
-			"description": "An array of allowed architecture triples.",
+			"description": "An array of allowed target architecture triples supported by the project. Use this to limit which ones can be used to build the project.",
 			"uniqueItems": true,
 			"default": [],
 			"items": {
@@ -2944,7 +2944,8 @@
 				"DebugSanitizeLeak",
 				"DebugSanitizeUndefined",
 				"DebugSanitizeHW",
-				"DebugSanitizeHWAddress"
+				"DebugSanitizeHWAddress",
+				"ReleaseSanitizeUndefined"
 			],
 			"items": {
 				"type": "string",
@@ -2963,7 +2964,8 @@
 					"DebugSanitizeLeak",
 					"DebugSanitizeUndefined",
 					"DebugSanitizeHW",
-					"DebugSanitizeHWAddress"
+					"DebugSanitizeHWAddress",
+					"ReleaseSanitizeUndefined"
 				]
 			}
 		},

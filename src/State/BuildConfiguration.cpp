@@ -34,6 +34,7 @@ StringList BuildConfiguration::getDefaultBuildConfigurationNames()
 		"DebugSanitizeUndefined",
 		"DebugSanitizeHW",
 		"DebugSanitizeHWAddress",
+		"ReleaseSanitizeUndefined"
 	};
 }
 
@@ -55,12 +56,16 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		config.setEnableProfiling(false);
 	};
 
+	auto makeRelease = [](BuildConfiguration& config) {
+		config.setOptimizationLevel("2");
+		config.setDebugSymbols(false);
+		config.setInterproceduralOptimization(false);
+		config.setEnableProfiling(false);
+	};
+
 	if (String::equals("Release", inName))
 	{
-		outConfig.setOptimizationLevel("2");
-		outConfig.setDebugSymbols(false);
-		outConfig.setInterproceduralOptimization(false);
-		outConfig.setEnableProfiling(false);
+		makeRelease(outConfig);
 	}
 	else if (String::equals("Debug", inName))
 	{
@@ -127,6 +132,11 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 	else if (String::equals("DebugSanitizeUndefined", inName))
 	{
 		makeDebug(outConfig);
+		outConfig.addSanitizeOption("undefined");
+	}
+	else if (String::equals("ReleaseSanitizeUndefined", inName))
+	{
+		makeRelease(outConfig);
 		outConfig.addSanitizeOption("undefined");
 	}
 	else if (String::equals("DebugSanitizeHW", inName))
@@ -205,9 +215,9 @@ bool BuildConfiguration::validate(const BuildState& inState)
 		}
 		else if (inState.environment->isMsvcClang())
 		{
-			if (!sanitizeAddress())
+			if (!sanitizeAddress() && !sanitizeUndefinedBehavior())
 			{
-				Diagnostic::error("Only the 'address' sanitizer is supported on Windows clang.");
+				Diagnostic::error("Only the 'address' and 'undefined' sanitizers are supported on Windows clang.");
 				result = false;
 			}
 		}

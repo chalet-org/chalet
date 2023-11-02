@@ -358,7 +358,8 @@ bool JsonValidator::printErrors(JsonValidationErrors& errors)
 		// Pass them to the primary error handler
 		String::replaceAll(error.message, '{', "{{");
 		String::replaceAll(error.message, '}', "}}");
-		Diagnostic::error(fmt::format("   {}", error.message));
+		Diagnostic::error(error.message);
+		// Diagnostic::error(fmt::format("   {}", error.message));
 	}
 
 	return false;

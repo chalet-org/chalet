@@ -462,24 +462,25 @@ Json SettingsJsonSchema::get()
 				"default": "default"
 			},
 			{
+				"type": "string",
+				"minLength": 1,
+				"pattern": "^[0-9a-fA-F]{1,8}$",
+				"default": "default"
+			},
+			{
 				"type": "object",
 				"additionalProperties": false
 			}
 		]
 	})json"_ojson;
-	defs[Defs::Theme][SKeys::OneOf][0][SKeys::Enum] = ColorTheme::presets();
-	defs[Defs::Theme][SKeys::OneOf][1][SKeys::Properties] = Json::object();
-
-	defs[Defs::LastUpdateCheck] = R"json({
-		"type": "number",
-		"description": "The time of the last Chalet update check."
-	})json"_ojson;
+	defs[Defs::Theme][SKeys::OneOf][0][SKeys::Enum] = ColorTheme::getPresetNames();
+	defs[Defs::Theme][SKeys::OneOf][2][SKeys::Properties] = Json::object();
 
 	Json themeRef = Json::object();
 	themeRef["$ref"] = std::string("#/definitions/theme-color");
 	for (const auto& key : ColorTheme::getKeys())
 	{
-		defs[Defs::Theme][SKeys::OneOf][1][SKeys::Properties][key] = themeRef;
+		defs[Defs::Theme][SKeys::OneOf][2][SKeys::Properties][key] = themeRef;
 	}
 
 	defs[Defs::ThemeColor] = R"json({
@@ -487,6 +488,11 @@ Json SettingsJsonSchema::get()
 		"description": "An ANSI color to apply."
 	})json"_ojson;
 	defs[Defs::ThemeColor][SKeys::Enum] = ColorTheme::getJsonColors();
+
+	defs[Defs::LastUpdateCheck] = R"json({
+		"type": "number",
+		"description": "The time of the last Chalet update check."
+	})json"_ojson;
 
 	//
 

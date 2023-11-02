@@ -307,9 +307,8 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 
 	StringList ret{ getQuotedPath(cmake), "-G", getQuotedPath(generator) };
 
-#if !defined(CHALET_DEBUG)
-	ret.emplace_back("--no-warn-unused-cli");
-#endif
+	if (!Output::showCommands())
+		ret.emplace_back("--no-warn-unused-cli");
 
 	std::string arch = getArchitecture();
 	if (!arch.empty())
@@ -352,7 +351,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 /*****************************************************************************/
 void CmakeBuilder::addCmakeDefines(StringList& outList) const
 {
-	struct charCompare
+	struct CharMapCompare
 	{
 		bool operator()(const char* inA, const char* inB) const
 		{
@@ -362,7 +361,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	StringList checkVariables
 	{
-		"CMAKE_EXPORT_COMPILE_COMMANDS",
+		"CMAKE_WARN_DEPRECATED",
+			"CMAKE_EXPORT_COMPILE_COMMANDS",
 			"CMAKE_SYSTEM_NAME",
 			"CMAKE_SYSTEM_PROCESSOR",
 			"CMAKE_CXX_COMPILER",
@@ -386,7 +386,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_OSX_ARCHITECTURES",
 #endif
 	};
-	std::map<const char*, bool, charCompare> isDefined;
+	std::map<const char*, bool, CharMapCompare> isDefined;
 	for (auto& define : m_target.defines())
 	{
 		outList.emplace_back("-D" + define);
@@ -396,6 +396,11 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			if (String::contains(var.c_str(), define))
 				isDefined[var.c_str()] = true;
 		}
+	}
+
+	if (!Output::showCommands() && !isDefined["CMAKE_WARN_DEPRECATED"])
+	{
+		outList.emplace_back("-DCMAKE_WARN_DEPRECATED=OFF");
 	}
 
 	const auto& hostTriple = m_state.info.hostArchitectureTriple();

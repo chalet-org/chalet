@@ -5,12 +5,10 @@
 
 #include "Export/CLion/CLionWorkspaceGen.hpp"
 
-#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Core/DotEnvFileGenerator.hpp"
 #include "Core/QueryController.hpp"
-#include "SettingsJson/SettingsJsonSchema.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -51,10 +49,6 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	auto toolsPath = fmt::format("{}/tools", inPath);
 	if (!Commands::pathExists(toolsPath))
 		Commands::makeDirectory(toolsPath);
-
-	auto schemaPath = fmt::format("{}/schema", inPath);
-	if (!Commands::pathExists(schemaPath))
-		Commands::makeDirectory(schemaPath);
 
 	auto runConfigurationsPath = fmt::format("{}/runConfigurations", inPath);
 	if (!Commands::pathExists(runConfigurationsPath))
@@ -207,20 +201,6 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 				m_runConfigs.emplace_back(std::move(runConfig));
 			}
 		}
-	}
-
-	// Generate schemas
-	{
-		ChaletJsonSchema schemaBuilder;
-		Json schema = schemaBuilder.get();
-		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", schemaPath), -1))
-			return false;
-	}
-	{
-		SettingsJsonSchema schemaBuilder;
-		Json schema = schemaBuilder.get();
-		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", schemaPath), -1))
-			return false;
 	}
 
 	// Generate CLion files

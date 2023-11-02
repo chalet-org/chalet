@@ -27,6 +27,8 @@ struct Version
 	uint tweak() const noexcept;
 
 	std::string asString() const;
+	std::string majorMinor() const;
+	std::string majorMinorPatch() const;
 
 	bool operator<(const Version& rhs) const noexcept;
 

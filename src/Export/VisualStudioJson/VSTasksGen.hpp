@@ -19,7 +19,12 @@ struct VSTasksGen
 	bool saveToFile(const std::string& inFilename);
 
 private:
+	const std::string& getToolchain() const;
+
 	const BuildState& m_state;
+
+	std::string m_toolchain;
+	std::string m_architecture;
 };
 }
 

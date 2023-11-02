@@ -186,6 +186,14 @@ const std::string& AncillaryTools::signingDevelopmentTeam() const noexcept
 	return m_signingIdentity;
 #endif
 }
+const std::string& AncillaryTools::signingCertificate() const noexcept
+{
+#if defined(CHALET_MACOS)
+	return m_signingCertificate;
+#else
+	return m_signingIdentity;
+#endif
+}
 void AncillaryTools::setSigningIdentity(const std::string& inValue) noexcept
 {
 	m_signingIdentity = inValue;
@@ -208,6 +216,21 @@ bool AncillaryTools::isSigningIdentityValid() const
 			{
 				if (String::contains(m_signingIdentity, line))
 				{
+					auto firstQuote = line.find('"');
+					if (firstQuote != std::string::npos)
+					{
+						auto firstColon = line.find(':', firstQuote);
+						if (firstColon != std::string::npos)
+						{
+							firstQuote++;
+							auto length = firstColon - firstQuote;
+							if (length > 0)
+							{
+								m_signingCertificate = line.substr(firstQuote, length);
+							}
+						}
+					}
+
 					auto lastOpenParen = line.find_last_of('(');
 					if (lastOpenParen != std::string::npos)
 					{
@@ -218,7 +241,7 @@ bool AncillaryTools::isSigningIdentityValid() const
 							auto length = lastCloseParen - lastOpenParen;
 							if (length == 10)
 							{
-								m_signingDevelopmentTeam = line.substr(lastOpenParen, lastCloseParen - lastOpenParen);
+								m_signingDevelopmentTeam = line.substr(lastOpenParen, length);
 							}
 						}
 					}

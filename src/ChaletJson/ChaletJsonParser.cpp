@@ -1757,21 +1757,28 @@ ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inSt
 {
 	// LOG("  ", key, value, negate);
 
+	constexpr auto conditionHasFailed = [](const bool& neg, const bool& condition) {
+		return (neg && condition) || (!neg && !condition);
+	};
+
 	if (key.empty())
 	{
 		// :value or :{value} syntax
 		if (String::equals("debug", value))
 		{
-			if (negate)
-			{
-				if (m_state.configuration.debugSymbols())
-					return ConditionResult::Fail;
-			}
-			else
-			{
-				if (!m_state.configuration.debugSymbols())
-					return ConditionResult::Fail;
-			}
+			if (conditionHasFailed(negate, m_state.configuration.debugSymbols()))
+				return ConditionResult::Fail;
+
+			// if (negate)
+			// {
+			// 	if (m_state.configuration.debugSymbols())
+			// 		return ConditionResult::Fail;
+			// }
+			// else
+			// {
+			// 	if (!m_state.configuration.debugSymbols())
+			// 		return ConditionResult::Fail;
+			// }
 		}
 		else if (String::equals(kValidPlatforms, value))
 		{
@@ -1830,57 +1837,25 @@ ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inSt
 	else if (String::equals("architecture", key))
 	{
 		const auto& arch = m_state.info.targetArchitectureString();
-		if (negate)
-		{
-			if (String::equals(value, arch))
-				return ConditionResult::Fail;
-		}
-		else
-		{
-			if (!String::equals(value, arch))
-				return ConditionResult::Fail;
-		}
+		if (conditionHasFailed(negate, String::equals(value, arch)))
+			return ConditionResult::Fail;
 	}
 	else if (String::equals("configuration", key))
 	{
 		if (String::equals("debugSymbols", value))
 		{
-			if (negate)
-			{
-				if (m_state.configuration.debugSymbols())
-					return ConditionResult::Fail;
-			}
-			else
-			{
-				if (!m_state.configuration.debugSymbols())
-					return ConditionResult::Fail;
-			}
+			if (conditionHasFailed(negate, m_state.configuration.debugSymbols()))
+				return ConditionResult::Fail;
 		}
 		else if (String::equals("enableProfiling", value))
 		{
-			if (negate)
-			{
-				if (m_state.configuration.enableProfiling())
-					return ConditionResult::Fail;
-			}
-			else
-			{
-				if (!m_state.configuration.enableProfiling())
-					return ConditionResult::Fail;
-			}
+			if (conditionHasFailed(negate, m_state.configuration.enableProfiling()))
+				return ConditionResult::Fail;
 		}
 		else if (String::equals("interproceduralOptimization", value))
 		{
-			if (negate)
-			{
-				if (m_state.configuration.interproceduralOptimization())
-					return ConditionResult::Fail;
-			}
-			else
-			{
-				if (!m_state.configuration.interproceduralOptimization())
-					return ConditionResult::Fail;
-			}
+			if (conditionHasFailed(negate, m_state.configuration.interproceduralOptimization()))
+				return ConditionResult::Fail;
 		}
 		else
 		{
@@ -1888,19 +1863,55 @@ ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inSt
 			return ConditionResult::Invalid;
 		}
 	}
+	else if (String::equals("sanitize", key))
+	{
+		if (String::equals("address", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeAddress()))
+				return ConditionResult::Fail;
+		}
+		else if (String::equals("hwaddress", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeHardwareAddress()))
+				return ConditionResult::Fail;
+		}
+		else if (String::equals("memory", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeMemory()))
+				return ConditionResult::Fail;
+		}
+		else if (String::equals("thread", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeThread()))
+				return ConditionResult::Fail;
+		}
+		else if (String::equals("leak", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeLeaks()))
+				return ConditionResult::Fail;
+		}
+		else if (String::equals("undefined", value))
+		{
+			if (conditionHasFailed(negate, m_state.configuration.sanitizeUndefinedBehavior()))
+				return ConditionResult::Fail;
+		}
+	}
 	else if (String::equals("env", key))
 	{
 		auto res = Environment::get(value.c_str());
-		if (negate)
-		{
-			if (res != nullptr)
-				return ConditionResult::Fail;
-		}
-		else
-		{
-			if (res == nullptr)
-				return ConditionResult::Fail;
-		}
+		if (conditionHasFailed(negate, res != nullptr))
+			return ConditionResult::Fail;
+
+		// if (negate)
+		// {
+		// 	if (res != nullptr)
+		// 		return ConditionResult::Fail;
+		// }
+		// else
+		// {
+		// 	if (res == nullptr)
+		// 		return ConditionResult::Fail;
+		// }
 	}
 	else
 	{

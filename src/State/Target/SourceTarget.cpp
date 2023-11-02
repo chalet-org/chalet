@@ -6,6 +6,7 @@
 #include "State/Target/SourceTarget.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -123,6 +124,16 @@ bool SourceTarget::initialize()
 	{
 		if (!m_metadata->initialize(m_state, this))
 			return false;
+	}
+
+	auto& config = m_state.configuration;
+	if (config.sanitizeUndefinedBehavior())
+	{
+		if (m_state.environment->isWindowsClang() && !m_staticRuntimeLibrary)
+		{
+			Diagnostic::warn("'staticRuntimeLibrary' was enabled in order to use the Undefined Behavior sanitizer.");
+			m_staticRuntimeLibrary = true;
+		}
 	}
 
 	return true;

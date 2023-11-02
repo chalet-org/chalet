@@ -36,11 +36,13 @@ bool TerminalTest::run()
 	std::cout.write(output.data(), output.size());
 	std::cout.flush();
 
-	// #if defined(CHALET_DEBUG)
-	// 	printColorCombinations();
-	// #endif
+#if defined(CHALET_DEBUG)
+	// printColorCombinations();
+	printChaletColorThemes(false);
+#else
+	printChaletColorThemes(false);
+#endif
 
-	printChaletColorThemes();
 	printUnicodeCharacters();
 	printTerminalCapabilities();
 
@@ -147,25 +149,35 @@ void TerminalTest::printUnicodeCharacters()
 }
 
 /*****************************************************************************/
-void TerminalTest::printChaletColorThemes()
+void TerminalTest::printChaletColorThemes(const bool inSimple)
 {
-	auto currentTheme = Output::theme();
 	auto themes = ColorTheme::getAllThemes();
 	std::size_t totalThemes = themes.size();
-	if (currentTheme.preset().empty())
-		themes.push_back(std::move(currentTheme));
 
 	printBanner("Chalet Color Themes");
 
-	for (const auto& theme : themes)
+	bool printName = true;
+	if (inSimple)
 	{
-		printTheme(theme);
+		for (const auto& theme : themes)
+			printThemeSimple(theme, printName);
+	}
+	else
+	{
+		for (const auto& theme : themes)
+			printTheme(theme, printName);
 	}
 
 	auto total = fmt::format("Total built-in themes: {}\n", totalThemes);
 
 	std::cout.write(m_separator.data(), m_separator.size());
 	std::cout.write(total.data(), total.size());
+
+	auto& currentTheme = Output::theme();
+	if (currentTheme.preset().empty())
+	{
+		printTheme(currentTheme, printName);
+	}
 }
 
 /*****************************************************************************/
@@ -176,24 +188,26 @@ void TerminalTest::printColorCombinations()
 
 	std::vector<int> headers{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
 	std::vector<int> colors{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
+	// std::vector<int> flairs{ 90, 233, 293, 231, 291, 235, 295, 234, 294, 236, 296, 232, 292 };
 	int flair = 90;
 	int assembly = 90;
-	// for (int flair : colors)
-	for (int header : headers)
-		for (int build : colors)
-			// for (int assembly : colors)
-			for (int success : colors)
-			{
-				// printColored("doot", clfg, attr);
-				ColorTheme theme;
-				theme.info = Color::Reset;
-				theme.flair = static_cast<Color>(200 + flair);
-				theme.header = static_cast<Color>(100 + header);
-				theme.build = static_cast<Color>(build);
-				theme.assembly = static_cast<Color>(assembly);
-				theme.success = static_cast<Color>(100 + success);
-				printThemeSimple(theme);
-			}
+	int success = 92;
+	// for (int flair : flairs)
+	for (int build : colors)
+		for (int header : headers)
+		// for (int assembly : colors)
+		// for (int success : colors)
+		{
+			// printColored("doot", clfg, attr);
+			ColorTheme theme;
+			theme.info = Color::Reset;
+			theme.flair = static_cast<Color>(flair);
+			theme.header = static_cast<Color>(100 + header);
+			theme.build = static_cast<Color>(build);
+			theme.assembly = static_cast<Color>(assembly);
+			theme.success = static_cast<Color>(100 + success);
+			printThemeSimple(theme);
+		}
 
 	std::cout.write(m_reset.data(), m_reset.size());
 	std::cout.put('\n');
@@ -214,15 +228,21 @@ void TerminalTest::printBanner(const std::string& inText)
 }
 
 /*****************************************************************************/
-void TerminalTest::printTheme(const ColorTheme& theme)
+void TerminalTest::printTheme(const ColorTheme& theme, const bool inWithName)
 {
 	std::string output = m_separator;
-	std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
-	output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
-		FMT_ARG(m_gray),
-		FMT_ARG(m_white),
-		FMT_ARG(name),
-		FMT_ARG(m_reset));
+	if (inWithName)
+	{
+		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
+		auto hex = theme.asHexString();
+		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}:: {hex}{m_reset}\n\n",
+			FMT_ARG(m_gray),
+			FMT_ARG(m_white),
+			FMT_ARG(name),
+			FMT_ARG(hex),
+			FMT_ARG(m_reset));
+	}
+
 	output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
 		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 		fmt::arg("info", Output::getAnsiStyle(theme.info)),
@@ -239,23 +259,35 @@ void TerminalTest::printTheme(const ColorTheme& theme)
 }
 
 /*****************************************************************************/
-void TerminalTest::printThemeSimple(const ColorTheme& theme)
+void TerminalTest::printThemeSimple(const ColorTheme& theme, const bool inWithName)
 {
+	auto makeString = [](const Color& color) {
+		auto value = std::to_string(static_cast<int>(color));
+		while (value.size() < 3)
+			value += ' ';
+
+		return value;
+	};
+
 	std::string output = m_separator;
-	// std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
-	// output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n\n",
-	// 	FMT_ARG(m_gray),
-	// 	FMT_ARG(m_white),
-	// 	FMT_ARG(name),
-	// 	FMT_ARG(m_reset));
-	output += fmt::format("{flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
+	if (inWithName)
+	{
+		std::string name = theme.preset().empty() ? "(custom)" : theme.preset();
+		output += fmt::format("{m_gray}:: {m_white}{name} {m_gray}::{m_reset}\n",
+			FMT_ARG(m_gray),
+			FMT_ARG(m_white),
+			FMT_ARG(name),
+			FMT_ARG(m_reset));
+	}
+	output += fmt::format("{id} | {flair}>  {info}theme.info{flair} ... theme.flair (1ms){m_reset}\n",
+		fmt::arg("id", makeString(theme.flair)),
 		fmt::arg("flair", Output::getAnsiStyle(theme.flair)),
 		fmt::arg("info", Output::getAnsiStyle(theme.info)),
 		FMT_ARG(m_reset));
-	output += fmt::format("{}  | {}{}  theme.header{}\n", static_cast<int>(theme.header), Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
-	output += fmt::format("{}   |    [1/1] {}theme.build{}\n", static_cast<int>(theme.build), Output::getAnsiStyle(theme.build), m_reset);
+	output += fmt::format("{} | {}{}  theme.header{}\n", makeString(theme.header), Output::getAnsiStyle(theme.header), Unicode::triangle(), m_reset);
+	output += fmt::format("{} |    [1/1] {}theme.build{}\n", makeString(theme.build), Output::getAnsiStyle(theme.build), m_reset);
 	// output += fmt::format("   [1/1] {}theme.assembly{}\n", Output::getAnsiStyle(theme.assembly), m_reset);
-	output += fmt::format("{}  | {}{}  theme.success{}\n", static_cast<int>(theme.success), Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
+	output += fmt::format("{} | {}{}  theme.success{}\n", makeString(theme.success), Output::getAnsiStyle(theme.success), Unicode::checkmark(), m_reset);
 	// output += fmt::format("{}{}  theme.error{}\n", Output::getAnsiStyle(theme.error), Unicode::heavyBallotX(), m_reset);
 	// output += fmt::format("{}{}  theme.warning{}\n", Output::getAnsiStyle(theme.warning), Unicode::warning(), m_reset);
 	// output += fmt::format("{}{}  theme.note{}\n", Output::getAnsiStyle(theme.note), Unicode::diamond(), m_reset);

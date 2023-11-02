@@ -40,6 +40,7 @@ struct AncillaryTools
 
 	const std::string& signingIdentity() const noexcept;
 	const std::string& signingDevelopmentTeam() const noexcept;
+	const std::string& signingCertificate() const noexcept;
 	void setSigningIdentity(const std::string& inValue) noexcept;
 	bool isSigningIdentityValid() const;
 
@@ -155,6 +156,7 @@ private:
 	std::string m_signingIdentity;
 #if defined(CHALET_MACOS)
 	mutable std::string m_signingDevelopmentTeam;
+	mutable std::string m_signingCertificate;
 #endif
 
 	uint m_xcodeVersionMajor = 0;

@@ -31,6 +31,24 @@ StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecuta
 }
 
 /*****************************************************************************/
+std::string CompileEnvironmentGNU::getCompilerFlavor(const std::string& inPath) const
+{
+	// Get the MSYSTEM from the executable path (expects MSYSTEM/bin)
+	//
+	auto flavor = String::getPathFilename(String::getPathFolder(String::getPathFolder(inPath)));
+	if (!flavor.empty() && (String::endsWith("64", flavor) || String::endsWith("32", flavor)))
+	{
+		flavor = String::toUpperCase(flavor);
+		flavor = fmt::format(" ({})", flavor);
+	}
+	else
+	{
+		flavor.clear();
+	}
+	return flavor;
+}
+
+/*****************************************************************************/
 std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
 	if (m_state.toolchain.treatAs() != CustomToolchainTreatAs::None)
@@ -46,14 +64,7 @@ std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& i
 	}
 	else if (m_type == ToolchainType::MingwGNU)
 	{
-		// Get the MSYSTEM from the executable path (expects MSYSTEM/bin)
-		//
-		auto flavor = String::getPathFilename(String::getPathFolder(String::getPathFolder(inPath)));
-		if (!flavor.empty() && (String::endsWith("64", flavor) || String::endsWith("32", flavor)))
-		{
-			flavor = String::toUpperCase(flavor);
-			flavor = fmt::format(" ({})", flavor);
-		}
+		auto flavor = getCompilerFlavor(inPath);
 		return fmt::format("Minimalist GNU Compiler Collection for Windows version {}{}", inVersion, flavor);
 	}
 	else

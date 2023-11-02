@@ -54,6 +54,9 @@ bool CLionProjectExporter::generateProjectFiles()
 	if (output.empty())
 		return false;
 
+	if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
+		return false;
+
 	{
 		auto allBuildTargetName = getAllBuildTargetName();
 		CLionWorkspaceGen workspaceGen(m_states, m_debugConfiguration, allBuildTargetName);

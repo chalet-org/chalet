@@ -167,25 +167,20 @@ void CompilerCxxAppleClang::addSanitizerOptions(StringList& outArgList, const Bu
 
 	StringList sanitizers;
 	if (inState.configuration.sanitizeAddress())
-	{
 		sanitizers.emplace_back("address");
-	}
-	if (inState.configuration.sanitizeHardwareAddress())
-	{
-		sanitizers.emplace_back("hwaddress");
-	}
+
+	// if (inState.configuration.sanitizeHardwareAddress())
+	// 	sanitizers.emplace_back("hwaddress");
+
 	if (inState.configuration.sanitizeThread())
-	{
 		sanitizers.emplace_back("thread");
-	}
-	/*if (inState.configuration.sanitizeMemory())
-	{
-		sanitizers.emplace_back("memory");
-	}
-	if (inState.configuration.sanitizeLeaks())
-	{
-		sanitizers.emplace_back("leak");
-	}*/
+
+	// if (inState.configuration.sanitizeMemory())
+	// 	sanitizers.emplace_back("memory");
+
+	// if (inState.configuration.sanitizeLeaks())
+	// 	sanitizers.emplace_back("leak");
+
 	if (inState.configuration.sanitizeUndefinedBehavior())
 	{
 		sanitizers.emplace_back("undefined");
