@@ -244,8 +244,8 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 #if defined(CHALET_LINUX)
 			searches.push_back("llvm-windres");
 #endif
-			// Note: don't check for llvm-rc
 			searches.push_back("windres");
+			searches.push_back("llvm-rc"); // check this after windres
 		}
 		else if (isGNU)
 		{
