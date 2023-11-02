@@ -119,7 +119,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		Path::sanitize(nodePath);
 		nodePath += "/bin/node";
 #if defined(CHALET_WIN32)
-		pythonPath += ".exe";
+		nodePath += ".exe";
 #endif
 
 		fileContents += fmt::format("EMSDK_NODE={}\n", nodePath);
