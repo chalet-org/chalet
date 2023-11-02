@@ -20,7 +20,6 @@ struct SourceCache;
 struct CompilerTools
 {
 	static StringList getToolchainStrategiesForSchema();
-	static StringList getToolchainTreatAsForSchema();
 	static StringList getToolchainStrategies();
 	static StringList getToolchainBuildPathStyles();
 

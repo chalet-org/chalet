@@ -44,15 +44,6 @@ Dictionary<StrategyType> getStrategyTypes()
 
 	return ret;
 }
-Dictionary<CustomToolchainTreatAs> getToolchainTreatAs()
-{
-	Dictionary<CustomToolchainTreatAs> ret{
-		{ "llvm", CustomToolchainTreatAs::LLVM },
-		{ "gcc", CustomToolchainTreatAs::GCC },
-	};
-
-	return ret;
-}
 }
 
 /*****************************************************************************/
@@ -64,17 +55,6 @@ StringList CompilerTools::getToolchainStrategiesForSchema()
 		"native-experimental",
 		"msbuild",
 		"xcodebuild",
-	};
-
-	return ret;
-}
-
-/*****************************************************************************/
-StringList CompilerTools::getToolchainTreatAsForSchema()
-{
-	StringList ret{
-		"llvm",
-		"gcc",
 	};
 
 	return ret;
