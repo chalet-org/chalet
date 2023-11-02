@@ -237,19 +237,30 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string rc;
 		StringList searches;
-		searches.push_back(preference.rc);
 
 		if (m_isCustomToolchain)
 		{
+			if (!preference.rc.empty())
+			{
+				searches.push_back(preference.rc);
+			}
+			else
+			{
 #if defined(CHALET_LINUX)
-			searches.push_back("llvm-windres");
+				searches.push_back("llvm-windres");
 #endif
-			searches.push_back("windres");
-			searches.push_back("llvm-rc"); // check this after windres
+				searches.push_back("windres");
+				searches.push_back("llvm-rc"); // check this after windres
+			}
 		}
 		else if (isGNU)
 		{
+			searches.push_back(preference.rc);
 			searches.push_back("windres");
+		}
+		else
+		{
+			searches.push_back(preference.rc);
 		}
 
 		for (const auto& search : searches)
@@ -269,12 +280,18 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (m_isCustomToolchain)
 		{
-			searches.push_back(preference.linker);
-			searches.push_back("lld");
-			searches.push_back("lld-link");
-			searches.push_back("llvm-link");
-			searches.push_back("llvm-ld");
-			searches.push_back("ld");
+			if (!preference.linker.empty())
+			{
+				searches.push_back(preference.linker);
+			}
+			else
+			{
+				searches.push_back("lld");
+				searches.push_back("lld-link");
+				searches.push_back("llvm-link");
+				searches.push_back("llvm-ld");
+				searches.push_back("ld");
+			}
 		}
 		else if (isLLVM)
 		{
@@ -301,7 +318,10 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			link = Commands::which(search);
 			if (!link.empty())
+			{
+				LOG("linker:", link);
 				break;
+			}
 		}
 
 #if defined(CHALET_WIN32)
@@ -330,9 +350,15 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (m_isCustomToolchain)
 		{
-			searches.push_back(preference.archiver);
-			searches.push_back("llvm-ar");
-			searches.push_back("ar");
+			if (!preference.archiver.empty())
+			{
+				searches.push_back(preference.archiver);
+			}
+			else
+			{
+				searches.push_back("llvm-ar");
+				searches.push_back("ar");
+			}
 		}
 		else if (isLLVM)
 		{
@@ -374,10 +400,25 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		std::string prof;
 		StringList searches;
 		searches.push_back(preference.profiler);
-
-		if (m_isCustomToolchain || isGNU)
+		if (m_isCustomToolchain)
 		{
+			if (!preference.profiler.empty())
+			{
+				searches.push_back(preference.profiler);
+			}
+			else
+			{
+				searches.push_back("gprof");
+			}
+		}
+		else if (isGNU)
+		{
+			searches.push_back(preference.profiler);
 			searches.push_back("gprof");
+		}
+		else
+		{
+			searches.push_back(preference.profiler);
 		}
 
 		for (const auto& search : searches)
@@ -397,14 +438,20 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		StringList searches;
 		if (m_isCustomToolchain)
 		{
-			searches.push_back(preference.disassembler);
-			searches.push_back("llvm-objdump");
+			if (!preference.disassembler.empty())
+			{
+				searches.push_back(preference.disassembler);
+			}
+			else
+			{
+				searches.push_back("llvm-objdump");
 #if defined(CHALET_WIN32)
-			searches.push_back("dumpbin");
+				searches.push_back("dumpbin");
 #elif defined(CHALET_MACOS)
-			searches.push_back("otool");
+				searches.push_back("otool");
 #endif
-			searches.push_back("objdump");
+				searches.push_back("objdump");
+			}
 		}
 		else if (isLLVM)
 		{
