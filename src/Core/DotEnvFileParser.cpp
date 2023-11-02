@@ -117,7 +117,7 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 #else
 		for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
 		{
-			std::size_t end = value.find_first_of(':', beg);
+			std::size_t end = value.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", beg + 1);
 			if (end == std::string::npos)
 				end = value.size();
 
