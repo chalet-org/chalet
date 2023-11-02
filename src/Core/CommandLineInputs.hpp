@@ -204,36 +204,6 @@ private:
 	mutable StringList m_universalArches;
 	mutable StringList m_archOptions;
 
-	const std::string kDefaultInputFile;
-	const std::string kDefaultSettingsFile;
-	const std::string kDefaultEnvFile;
-	const std::string kDefaultOutputDirectory;
-	const std::string kDefaultExternalDirectory;
-	const std::string kDefaultDistributionDirectory;
-
-	const std::string kGlobalSettingsFile;
-
-	const std::string kArchPresetAuto;
-	const std::string kToolchainPresetGCC;
-	const std::string kToolchainPresetLLVM;
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
-	const std::string kToolchainPresetICC;
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	#if !defined(CHALET_WIN32)
-	const std::string kToolchainPresetICX;
-	#endif
-#endif
-#if defined(CHALET_WIN32)
-	const std::string kToolchainPresetVisualStudioStable;
-#elif defined(CHALET_MACOS)
-	const std::string kToolchainPresetAppleLLVM;
-#endif
-	const std::string kBuildStrategyNinja;
-#if defined(CHALET_MACOS)
-	mutable std::string kDefaultOsTarget;
-#endif
-
 	std::string m_inputFile;
 	std::string m_settingsFile;
 	std::string m_rootDirectory;

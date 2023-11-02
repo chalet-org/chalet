@@ -53,6 +53,9 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 		if (lld && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<LinkerIntelClang>(inState, inProject);
 
+	if (inType == ToolchainType::Emscripten)
+		return std::make_unique<LinkerLLVMClang>(inState, inProject);
+
 #if defined(CHALET_WIN32)
 	if (lld && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
 		return std::make_unique<LinkerVisualStudioClang>(inState, inProject);

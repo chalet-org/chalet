@@ -485,6 +485,10 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		ret.emplace_back("i686");
 	}
 #endif
+	else if (String::equals("emscripten", inToolchain))
+	{
+		ret.emplace_back("wasm32");
+	}
 	else
 	{
 		const auto& settingsFile = getSettingsJson();

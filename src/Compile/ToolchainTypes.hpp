@@ -13,7 +13,6 @@ namespace chalet
 namespace ToolchainTypes
 {
 std::string getTypeName(const ToolchainType inType) noexcept;
-StringList getNotTypes(const std::string& inType) noexcept;
 }
 }
 

@@ -63,6 +63,9 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 		return std::make_unique<CompilerCxxClang>(inState, inProject);
 #endif
 
+	if (inType == ToolchainType::Emscripten)
+		return std::make_unique<CompilerCxxClang>(inState, inProject);
+
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }
 

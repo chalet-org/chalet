@@ -38,6 +38,7 @@ struct ICompileEnvironment
 	bool isMingwClang() const noexcept;
 	bool isMsvc() const noexcept;
 	bool isClangOrMsvc() const noexcept;
+	bool isEmscripten() const noexcept;
 
 	const std::string& detectedVersion() const;
 	std::string getMajorVersion() const;

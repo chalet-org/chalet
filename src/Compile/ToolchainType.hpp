@@ -20,7 +20,7 @@ enum class ToolchainType : ushort
 	MingwLLVM,
 	IntelClassic,
 	IntelLLVM,
-	EmScripten
+	Emscripten
 	// NVCC / CUDA ?
 };
 }

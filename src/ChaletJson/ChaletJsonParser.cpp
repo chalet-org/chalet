@@ -77,9 +77,6 @@ bool ChaletJsonParser::serialize()
 	// Timer timer;
 	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_chaletJson.filename());
 
-	// m_toolchain = m_state.environment->identifier();
-	// m_notToolchains = ToolchainTypes::getNotTypes(m_toolchain);
-
 	const Json& jRoot = m_chaletJson.json;
 	if (!serializeFromJsonRoot(jRoot))
 	{

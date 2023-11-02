@@ -11,6 +11,8 @@
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
+				"-t",
+				"emscripten",
 				"build"
 			]
 		},
@@ -23,7 +25,9 @@
 			"stopOnEntry": false,
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"run"
+				"-t",
+				"emscripten",
+				"build"
 			],
 		},
 		{

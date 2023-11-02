@@ -115,6 +115,8 @@ bool ToolchainSettingsJsonParser::serialize(Json& inNode)
 	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference()))
 		return false;
 
+	// LOG(inNode.dump(1, '\t'));
+
 	if (!parseToolchain(inNode))
 		return false;
 
@@ -168,13 +170,16 @@ bool ToolchainSettingsJsonParser::validatePaths()
 	}
 
 #if defined(CHALET_WIN32)
-	const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
-	if (compilerWindowsResource.empty() || !Commands::pathExists(compilerWindowsResource))
+	if (m_state.environment != nullptr && !m_state.environment->isEmscripten())
 	{
+		const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
+		if (compilerWindowsResource.empty() || !Commands::pathExists(compilerWindowsResource))
+		{
 	#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
+			m_jsonFile.dumpToTerminal();
 	#endif
-		Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
+			Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
+		}
 	}
 #endif
 	if (!result)

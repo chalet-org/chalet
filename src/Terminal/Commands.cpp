@@ -945,6 +945,29 @@ std::string Commands::getFileContents(const std::string& inFile)
 }
 
 /*****************************************************************************/
+std::string Commands::getFirstChildDirectory(const std::string& inPath)
+{
+	std::error_code ec;
+	fs::path path(inPath);
+	if (fs::exists(path, ec))
+	{
+		ec = std::error_code();
+
+		auto dirEnd = fs::directory_iterator();
+		for (auto it = fs::directory_iterator(inPath, ec); it != dirEnd; ++it)
+		{
+			auto item = *it;
+			if (item.is_directory())
+			{
+				return item.path().string();
+			}
+		}
+	}
+
+	return std::string();
+}
+
+/*****************************************************************************/
 bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
