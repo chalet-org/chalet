@@ -145,11 +145,7 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	std::string cachedVersion;
 	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
 	{
-		auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
-		if (!Commands::pathExists(configFile))
-		{
-			Commands::subprocessNoOutput({ m_python, m_emcc, "--generate-config" });
-		}
+		Commands::subprocess({ m_python, m_emcc, "--generate-config" }, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)
