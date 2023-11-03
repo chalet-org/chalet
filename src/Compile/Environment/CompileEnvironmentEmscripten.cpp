@@ -145,7 +145,33 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	std::string cachedVersion;
 	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
 	{
+#if !defined(CHALET_LINUX)
 		Commands::subprocess({ m_python, m_emcc, "--generate-config" }, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
+#else
+		{
+			auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
+			// if (!Commands::pathExists(configFile))
+			{
+				auto upstreamBin = Environment::getString("EMSDK_UPSTREAM_BIN");
+				auto upstream = String::getPathFolder(upstreamBin);
+				auto nodePath = Environment::getString("EMSDK_NODE");
+				auto pythonPath = Environment::getString("EMSDK_PYTHON");
+				auto javaPath = Environment::getString("EMSDK_JAVA");
+				std::string configContents;
+				configContents += fmt::format("NODE_JS = '{}'\n", nodePath);
+				configContents += fmt::format("PYTHON = '{}'\n", pythonPath);
+				configContents += fmt::format("JAVA = '{}'\n", javaPath);
+				configContents += fmt::format("LLVM_ROOT = '{}'\n", upstreamBin);
+				configContents += fmt::format("BINARYEN_ROOT = '{}'\n", upstream);
+				configContents += fmt::format("EMSCRIPTEN_ROOT = '{}'\n", m_emsdkUpstream);
+				configContents += "COMPILER_ENGINE = NODE_JS\n";
+				configContents += "JS_ENGINES = [NODE_JS]";
+
+				if (!Commands::createFileWithContents(configFile, configContents))
+					return false;
+			}
+		}
+#endif
 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)

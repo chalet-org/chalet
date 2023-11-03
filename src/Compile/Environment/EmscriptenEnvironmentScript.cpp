@@ -96,6 +96,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto emsdkRoot = Environment::getString("EMSDK");
 	auto upstream = fmt::format("{}/upstream/emscripten", emsdkRoot);
 	auto upstreamBin = fmt::format("{}/upstream/bin", emsdkRoot);
+
 #if defined(CHALET_WIN32)
 	Path::sanitizeForWindows(emsdkRoot);
 	Path::sanitizeForWindows(upstream);
@@ -106,20 +107,6 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	Path::sanitize(upstreamBin);
 #endif
 
-	fileContents += fmt::format("{pathKey}={emsdkRoot}{sep}{upstream}{sep}{upstreamBin}\n",
-		FMT_ARG(pathKey),
-		FMT_ARG(sep),
-		FMT_ARG(emsdkRoot),
-		FMT_ARG(upstream),
-		FMT_ARG(upstreamBin));
-
-#if defined(CHALET_WIN32)
-	Path::sanitize(upstream);
-	Path::sanitize(upstreamBin);
-#endif
-	fileContents += fmt::format("EMSDK_UPSTREAM_EMSCRIPTEN={}\n", upstream);
-	fileContents += fmt::format("EMSDK_UPSTREAM_BIN={}\n", upstreamBin);
-
 	auto nodePath = Commands::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{
@@ -128,8 +115,15 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 #if defined(CHALET_WIN32)
 		nodePath += ".exe";
 #endif
-
-		fileContents += fmt::format("EMSDK_NODE={}\n", nodePath);
+	}
+	else
+	{
+		nodePath = Commands::which("node");
+		if (nodePath.empty())
+		{
+			Diagnostic::error("node could not be found.");
+			return false;
+		}
 	}
 
 	auto pythonPath = Commands::getFirstChildDirectory(fmt::format("{}/python", emsdkRoot));
@@ -146,16 +140,54 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	else
 	{
 		pythonPath = Commands::which("python3");
+		if (pythonPath.empty())
+		{
+			Diagnostic::error("python could not be found.");
+			return false;
+		}
 	}
 
-	fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
-
-	auto javaPath = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
-	if (!javaPath.empty())
+	std::string javaPath;
+	auto javaHome = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
+	if (!javaHome.empty())
 	{
-		Path::sanitize(javaPath);
-		fileContents += fmt::format("JAVA_HOME={}\n", javaPath);
+		Path::sanitize(javaHome);
+
+		javaPath += "/bin/java";
+#if defined(CHALET_WIN32)
+		javaPath += ".exe";
+#endif
 	}
+	else
+	{
+		javaPath = Commands::which("java");
+		if (javaPath.empty())
+			javaPath = "java";
+	}
+
+	Path::sanitize(nodePath);
+	Path::sanitize(pythonPath);
+	Path::sanitize(javaPath);
+
+	fileContents += fmt::format("{pathKey}={emsdkRoot}{sep}{upstream}{sep}{upstreamBin}\n",
+		FMT_ARG(pathKey),
+		FMT_ARG(sep),
+		FMT_ARG(emsdkRoot),
+		FMT_ARG(upstream),
+		FMT_ARG(upstreamBin));
+
+#if defined(CHALET_WIN32)
+	Path::sanitize(upstream);
+	Path::sanitize(upstreamBin);
+#endif
+
+	fileContents += fmt::format("EMSDK_UPSTREAM_EMSCRIPTEN={}\n", upstream);
+	fileContents += fmt::format("EMSDK_UPSTREAM_BIN={}\n", upstreamBin);
+
+	fileContents += fmt::format("EMSDK_NODE={}\n", nodePath);
+	fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
+	fileContents += fmt::format("JAVA_HOME={}\n", javaHome);
+	fileContents += fmt::format("EMSDK_JAVA={}\n", javaPath);
 
 	// TODO: .emscripten file?
 	//   https://emscripten.org/docs/tools_reference/emsdk.html#emscripten-compiler-configuration-file-emscripten
