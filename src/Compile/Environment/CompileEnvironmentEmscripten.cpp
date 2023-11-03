@@ -145,9 +145,6 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	std::string cachedVersion;
 	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
 	{
-#if defined(CHALET_MACOS)
-		Commands::subprocess({ m_python, m_emcc, "--generate-config" }, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
-#else
 		{
 			//
 			auto userPath = Environment::getUserDirectory();
@@ -176,7 +173,6 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 					return false;
 			}
 		}
-#endif
 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)
