@@ -145,11 +145,15 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	std::string cachedVersion;
 	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
 	{
-#if !defined(CHALET_LINUX)
+#if defined(CHALET_MACOS)
 		Commands::subprocess({ m_python, m_emcc, "--generate-config" }, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
 #else
 		{
-			auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
+			//
+			auto userPath = Environment::getUserDirectory();
+			auto configFile = fmt::format("{}/.emscripten", userPath);
+			// auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
+
 			// if (!Commands::pathExists(configFile))
 			{
 				auto upstreamBin = Environment::getString("EMSDK_UPSTREAM_BIN");
@@ -158,6 +162,7 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 				auto pythonPath = Environment::getString("EMSDK_PYTHON");
 				auto javaPath = Environment::getString("EMSDK_JAVA");
 				std::string configContents;
+				auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
 				configContents += fmt::format("NODE_JS = '{}'\n", nodePath);
 				configContents += fmt::format("PYTHON = '{}'\n", pythonPath);
 				configContents += fmt::format("JAVA = '{}'\n", javaPath);
