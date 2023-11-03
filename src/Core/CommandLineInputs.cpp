@@ -1426,6 +1426,8 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		m_isToolchainPreset = true;
 		ret.cpp = "wasm32-clang++";
 		ret.cc = "wasm32-clang";
+		// ret.cpp = "em++";
+		// ret.cc = "em";
 		// ret.rc = "";
 		ret.linker = "wasm-ld";
 		ret.archiver = "llvm-ar";
