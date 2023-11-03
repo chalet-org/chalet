@@ -77,6 +77,7 @@ bool CompileEnvironmentEmscripten::createFromVersion(const std::string& inVersio
 
 	m_emsdkRoot = Environment::getString("EMSDK");
 	m_python = Environment::getString("EMSDK_PYTHON");
+	m_emsdkUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
 
 	Diagnostic::printDone(timer.asString());
 
@@ -138,22 +139,22 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 
 	m_llvmVersion = info.version;
 
-	auto emscriptenPath = fmt::format("{}/upstream/emscripten", m_emsdkRoot);
-	auto emcc = fmt::format("{}/emcc.py", emscriptenPath);
+	m_emcc = fmt::format("{}/emcc.py", m_emsdkUpstream);
+
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(emcc, cachedVersion))
+	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
 	{
-		auto configFile = fmt::format("{}/.emscripten", emscriptenPath);
+		auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
 		if (!Commands::pathExists(configFile))
 		{
-			Commands::subprocessNoOutput({ m_python, emcc, "--generate-config" });
+			Commands::subprocessNoOutput({ m_python, m_emcc, "--generate-config" });
 		}
 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)
 
-		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(emcc));
+		auto rawOutput = Commands::subprocessOutput(getVersionCommand(m_emcc));
 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');
@@ -181,9 +182,9 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	{
 		outInfo.version = std::move(cachedVersion);
 
-		sourceCache.addVersion(emcc, outInfo.version);
+		sourceCache.addVersion(m_emcc, outInfo.version);
 
-		outInfo.description = getFullCxxCompilerString(emcc, outInfo.version);
+		outInfo.description = getFullCxxCompilerString(m_emcc, outInfo.version);
 		return true;
 	}
 	else

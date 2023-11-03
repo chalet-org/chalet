@@ -113,6 +113,13 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		FMT_ARG(upstream),
 		FMT_ARG(upstreamBin));
 
+#if defined(CHALET_WIN32)
+	Path::sanitize(upstream);
+	Path::sanitize(upstreamBin);
+#endif
+	fileContents += fmt::format("EMSDK_UPSTREAM_EMSCRIPTEN={}\n", upstream);
+	fileContents += fmt::format("EMSDK_UPSTREAM_BIN={}\n", upstreamBin);
+
 	auto nodePath = Commands::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{

@@ -487,7 +487,7 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::IntelLLVM;
 #endif
 
-	if (String::contains({ "wasm32-clang", "/emsdk/upstream/bin" }, executable))
+	if (String::contains({ "wasm32-clang", "wasm" }, executable))
 	{
 		return ToolchainType::Emscripten;
 	}
