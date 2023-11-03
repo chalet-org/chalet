@@ -161,8 +161,8 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 				auto nodePath = Environment::getString("EMSDK_NODE");
 				auto pythonPath = Environment::getString("EMSDK_PYTHON");
 				auto javaPath = Environment::getString("EMSDK_JAVA");
+
 				std::string configContents;
-				auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
 				configContents += fmt::format("NODE_JS = '{}'\n", nodePath);
 				configContents += fmt::format("PYTHON = '{}'\n", pythonPath);
 				configContents += fmt::format("JAVA = '{}'\n", javaPath);
