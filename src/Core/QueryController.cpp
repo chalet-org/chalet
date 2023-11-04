@@ -125,7 +125,7 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 		case QueryOption::AllToolchains: {
 			StringList presets = m_centralState.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
-			ret = List::combine(std::move(userToolchains), std::move(presets));
+			ret = List::combineRemoveDuplicates(std::move(userToolchains), std::move(presets));
 			break;
 		}
 
@@ -797,7 +797,7 @@ StringList QueryController::getSettingsJsonState() const
 	Json output = Json::object();
 	auto toolchainPresets = m_centralState.inputs().getToolchainPresets();
 	auto userToolchains = getUserToolchainList();
-	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
+	output["allToolchains"] = List::combineRemoveDuplicates(userToolchains, toolchainPresets);
 	auto archRes = getCurrentArchitecture();
 	if (!archRes.empty())
 		output["architecture"] = std::move(archRes.front());

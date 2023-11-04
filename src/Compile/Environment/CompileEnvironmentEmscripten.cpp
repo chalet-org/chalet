@@ -34,7 +34,7 @@ StringList CompileEnvironmentEmscripten::getVersionCommand(const std::string& in
 {
 	if (String::endsWith("emcc.py", inExecutable))
 	{
-		return StringList{ m_python, inExecutable, "--version" };
+		return StringList{ m_commandInvoker, inExecutable, "--version" };
 	}
 	else
 	{
@@ -77,7 +77,7 @@ bool CompileEnvironmentEmscripten::createFromVersion(const std::string& inVersio
 	m_config.reset(); // No longer needed
 
 	m_emsdkRoot = Environment::getString("EMSDK");
-	m_python = Environment::getString("EMSDK_PYTHON");
+	m_commandInvoker = Environment::getString("EMSDK_PYTHON");
 	m_emsdkUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
 
 	Diagnostic::printDone(timer.asString());
@@ -204,14 +204,7 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 
 	if (!cachedVersion.empty())
 	{
-		outInfo.path = fmt::format("{}/emcc", m_emsdkUpstream);
-#if defined(CHALET_WIN32)
-		outInfo.path += ".bat";
-		if (m_state.toolchain.strategy() == StrategyType::Native)
-		{
-			Path::sanitizeForWindows(outInfo.path);
-		}
-#endif
+		outInfo.path = fmt::format("{}/emcc.py", m_emsdkUpstream);
 		m_emccVersion = std::move(cachedVersion);
 
 		sourceCache.addVersion(m_emcc, m_emccVersion);

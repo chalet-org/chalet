@@ -35,8 +35,6 @@ private:
 	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
-	StringList getCommandWithShell(StringList&& inCmd) const;
-
 	mutable Unique<CommandPool> m_commandPool;
 
 	StringList m_fileCache;
@@ -49,7 +47,6 @@ private:
 	bool m_generateDependencies = false;
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
-	bool m_runThroughShell = false;
 	bool m_initialized = false;
 };
 }

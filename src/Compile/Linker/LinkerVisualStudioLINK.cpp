@@ -123,6 +123,17 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 }
 
 /*****************************************************************************/
+bool LinkerVisualStudioLINK::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.linker();
+	if (executable.empty())
+		return false;
+
+	outArgList.emplace_back(getQuotedPath(executable));
+	return true;
+}
+
+/*****************************************************************************/
 void LinkerVisualStudioLINK::addLibDirs(StringList& outArgList) const
 {
 	std::string option{ "/libpath:" };

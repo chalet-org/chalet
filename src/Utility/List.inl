@@ -48,7 +48,7 @@ namespace priv
 {
 /*****************************************************************************/
 template <typename T>
-void addArg(StringList& outList, const T& inArg)
+void addArgRemoveDuplicates(StringList& outList, const T& inArg)
 {
 	using Type = std::decay_t<T>;
 	if constexpr (std::is_same_v<StringList, Type>)
@@ -68,11 +68,44 @@ void addArg(StringList& outList, const T& inArg)
 		if (inArg.empty())
 			return;
 
-		std::string value(inArg);
-		if (std::find(outList.begin(), outList.end(), value) == outList.end())
-			outList.emplace_back(std::move(value));
+		if (std::find(outList.begin(), outList.end(), inArg) == outList.end())
+			outList.emplace_back(inArg);
 	}
 }
+/*****************************************************************************/
+template <typename T>
+void addArg(StringList& outList, const T& inArg)
+{
+	using Type = std::decay_t<T>;
+	if constexpr (std::is_same_v<StringList, Type>)
+	{
+		for (const auto& item : inArg)
+		{
+			if (item.empty())
+				continue;
+
+			outList.emplace_back(item);
+		}
+	}
+	else
+	{
+		static_assert((std::is_constructible_v<std::string, const T&>));
+		if (inArg.empty())
+			return;
+
+		outList.emplace_back(inArg);
+	}
+}
+}
+
+template <typename... Args>
+StringList List::combineRemoveDuplicates(Args&&... args)
+{
+	StringList ret;
+
+	(priv::addArgRemoveDuplicates<Args>(ret, std::forward<Args>(args)), ...);
+
+	return ret;
 }
 
 template <typename... Args>
@@ -80,7 +113,7 @@ StringList List::combine(Args&&... args)
 {
 	StringList ret;
 
-	((priv::addArg<Args>(ret, std::forward<Args>(args))), ...);
+	(priv::addArg<Args>(ret, std::forward<Args>(args)), ...);
 
 	return ret;
 }

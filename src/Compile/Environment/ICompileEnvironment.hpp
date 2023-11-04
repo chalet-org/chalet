@@ -56,6 +56,8 @@ struct ICompileEnvironment
 	const std::string& targetSystemVersion() const noexcept;
 	const StringList& targetSystemPaths() const noexcept;
 
+	const std::string& commandInvoker() const;
+
 protected:
 	friend class BuildState;
 	friend struct CompilerTools;
@@ -96,6 +98,7 @@ protected:
 	Dictionary<bool> m_supportedFlags;
 
 	std::string m_detectedVersion;
+	std::string m_commandInvoker;
 
 	mutable ToolchainType m_type;
 

@@ -343,7 +343,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		settings.startIndex = 1;
 		settings.total = 0;
 
-		StringList links = List::combine(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		StringList links = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
 
 		{
 			auto job = std::make_unique<CommandPool::Job>();

@@ -312,6 +312,12 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 }
 
 /*****************************************************************************/
+const std::string& ICompileEnvironment::commandInvoker() const
+{
+	return m_commandInvoker;
+}
+
+/*****************************************************************************/
 void ICompileEnvironment::generateTargetSystemPaths()
 {
 }

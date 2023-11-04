@@ -36,7 +36,6 @@ private:
 
 	std::string m_emsdkRoot;
 	std::string m_emsdkUpstream;
-	std::string m_python;
 	mutable std::string m_emcc;
 	mutable std::string m_emccVersion;
 };

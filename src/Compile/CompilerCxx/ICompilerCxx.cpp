@@ -78,6 +78,17 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 }
 
 /*****************************************************************************/
+bool ICompilerCxx::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	outArgList.emplace_back(getQuotedPath(executable));
+	return true;
+}
+
+/*****************************************************************************/
 bool ICompilerCxx::precompiledHeaderAllowedForSourceType(const SourceType derivative) const
 {
 	if (!m_project.usesPrecompiledHeader())

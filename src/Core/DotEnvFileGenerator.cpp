@@ -60,7 +60,7 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 	}
 #endif
 
-	StringList allPaths = List::combine(libDirs, frameworks, rootPath);
+	StringList allPaths = List::combineRemoveDuplicates(libDirs, frameworks, rootPath);
 	addEnvironmentPath("PATH", allPaths);
 
 	env.setRunPaths(inState.workspace.makePathVariable(std::string(), allPaths));

@@ -26,6 +26,8 @@ protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) = 0;
 
+	virtual bool addExecutable(StringList& outArgList) const = 0;
+
 	virtual void addLibDirs(StringList& outArgList) const;
 	virtual void addLinks(StringList& outArgList) const;
 	virtual void addRunPath(StringList& outArgList) const;

@@ -195,12 +195,8 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 
 	UNUSED(arch);
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
-
-	ret.emplace_back(getQuotedPath(executable));
 
 	if (generateDependency)
 	{
@@ -256,12 +252,8 @@ StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::s
 {
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
-
-	ret.emplace_back(getQuotedPath(executable));
 
 	if (generateDependency)
 	{

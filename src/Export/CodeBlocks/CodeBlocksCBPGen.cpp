@@ -557,7 +557,7 @@ void CodeBlocksCBPGen::addSourceLinkerOptions(XmlElement& outNode, const BuildSt
 
 	// Links
 	{
-		auto links = List::combine(inTarget.links(), inTarget.staticLinks());
+		auto links = List::combineRemoveDuplicates(inTarget.links(), inTarget.staticLinks());
 		if (inState.environment->isMingwGcc() || inState.environment->isMingwClang())
 		{
 			auto win32Links = ILinker::getWin32CoreLibraryLinks(inState, inTarget);

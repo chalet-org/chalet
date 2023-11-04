@@ -15,6 +15,8 @@ struct LinkerEmscripten final : public LinkerLLVMClang
 	explicit LinkerEmscripten(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
+	virtual bool addExecutable(StringList& outArgList) const final;
+
 	virtual void addLinks(StringList& outArgList) const final;
 	virtual void addRunPath(StringList& outArgList) const final;
 	virtual void addThreadModelLinks(StringList& outArgList) const final;

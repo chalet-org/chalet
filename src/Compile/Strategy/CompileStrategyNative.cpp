@@ -30,7 +30,6 @@ namespace chalet
 CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 	ICompileStrategy(StrategyType::Native, inState)
 {
-	m_runThroughShell = m_state.environment->isEmscripten();
 }
 
 /*****************************************************************************/
@@ -209,8 +208,6 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
 						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch);
-						if (m_runThroughShell)
-							out.command = getCommandWithShell(std::move(out.command));
 
 						ret.emplace_back(std::move(out));
 					}
@@ -234,8 +231,6 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					CommandPool::Cmd out;
 					out.output = source;
 					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
-					if (m_runThroughShell)
-						out.command = getCommandWithShell(std::move(out.command));
 
 					const auto& cxxExt = m_state.paths.cxxExtension();
 					if (!cxxExt.empty())
@@ -345,8 +340,6 @@ CommandPool::CmdList CompileStrategyNative::getLinkCommand(const std::string& in
 	{
 		CommandPool::Cmd out;
 		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects, targetBasename);
-		if (m_runThroughShell)
-			out.command = getCommandWithShell(std::move(out.command));
 
 		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);
@@ -368,8 +361,6 @@ StringList CompileStrategyNative::getCxxCompile(const std::string& source, const
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
 	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, derivative);
-	if (m_runThroughShell)
-		ret = getCommandWithShell(std::move(ret));
 
 	return ret;
 }
@@ -385,21 +376,8 @@ StringList CompileStrategyNative::getRcCompile(const std::string& source, const 
 	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
 
 	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
-	if (m_runThroughShell)
-		ret = getCommandWithShell(std::move(ret));
 
 	return ret;
-}
-
-/*****************************************************************************/
-StringList CompileStrategyNative::getCommandWithShell(StringList&& inCmd) const
-{
-#if defined(CHALET_WIN32)
-	// return List::combine(StringList{ m_state.tools.powershell() }, std::move(inCmd));
-	return StringList{ m_state.tools.commandPrompt(), "/c", String::join(std::move(inCmd)) };
-#else
-	return std::move(inCmd);
-#endif
 }
 
 }

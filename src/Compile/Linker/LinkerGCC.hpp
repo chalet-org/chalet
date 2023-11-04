@@ -23,6 +23,7 @@ protected:
 	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
 
+	virtual bool addExecutable(StringList& outArgList) const override;
 	virtual void addLibDirs(StringList& outArgList) const override;
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addRunPath(StringList& outArgList) const override;

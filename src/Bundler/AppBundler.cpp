@@ -397,7 +397,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 	if (!m_dependencyMap->gatherFromList(allDependencies, levels))
 		return false;
 
-	m_notCopied = List::combine(m_notCopied, m_dependencyMap->notCopied());
+	m_notCopied = List::combineRemoveDuplicates(m_notCopied, m_dependencyMap->notCopied());
 	// m_dependencyMap->log();
 
 	return true;

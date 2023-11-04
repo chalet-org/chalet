@@ -72,12 +72,8 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 
 	m_outputFileBase = outputFileBase;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
-
-	ret.emplace_back(getQuotedPath(executable));
 
 	addSharedOption(ret);
 
@@ -132,12 +128,8 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
-
-	ret.emplace_back(getQuotedPath(executable));
 
 	addExecutableOption(ret);
 	addPositionIndependentCodeOption(ret);
@@ -170,6 +162,17 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addObjectiveCxxLink(ret);
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool LinkerGCC::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	outArgList.emplace_back(getQuotedPath(executable));
+	return true;
 }
 
 /*****************************************************************************/

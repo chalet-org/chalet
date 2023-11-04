@@ -5,8 +5,11 @@
 
 #include "Compile/CompilerCxx/CompilerCxxEmscripten.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
@@ -25,6 +28,21 @@ bool CompilerCxxEmscripten::initialize()
 {
 	if (!CompilerCxxClang::initialize())
 		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompilerCxxEmscripten::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	auto& python = m_state.environment->commandInvoker();
+
+	outArgList.emplace_back(getQuotedPath(python));
+	outArgList.emplace_back(getQuotedPath(executable));
 
 	return true;
 }

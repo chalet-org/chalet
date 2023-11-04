@@ -5,8 +5,10 @@
 
 #include "Compile/Linker/LinkerEmscripten.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
 
@@ -16,6 +18,21 @@ namespace chalet
 LinkerEmscripten::LinkerEmscripten(const BuildState& inState, const SourceTarget& inProject) :
 	LinkerLLVMClang(inState, inProject)
 {
+}
+
+/*****************************************************************************/
+bool LinkerEmscripten::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	auto& python = m_state.environment->commandInvoker();
+
+	outArgList.emplace_back(getQuotedPath(python));
+	outArgList.emplace_back(getQuotedPath(executable));
+
+	return true;
 }
 
 /*****************************************************************************/
