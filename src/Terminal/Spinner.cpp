@@ -9,6 +9,7 @@
 
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/SignalHandler.hpp"
 
 namespace chalet
 {
@@ -34,8 +35,6 @@ void signalHandler(int inSignal)
 	std::string output{ "\b\b  \b\b" };
 	output += Output::getAnsiStyle(Output::theme().reset);
 	std::cout.write(output.data(), output.size());
-
-	std::exit(1);
 }
 }
 
@@ -48,9 +47,9 @@ Spinner::~Spinner()
 /*****************************************************************************/
 void Spinner::start()
 {
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
+	SignalHandler::add(SIGINT, signalHandler);
+	SignalHandler::add(SIGTERM, signalHandler);
+	SignalHandler::add(SIGABRT, signalHandler);
 
 	destroy();
 

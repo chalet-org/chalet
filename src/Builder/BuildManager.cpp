@@ -983,7 +983,28 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	else
 		Output::msgRun(outputFile);
 
-	StringList cmd = { file };
+	StringList cmd;
+	if (m_state.environment->isEmscripten())
+	{
+		auto outputHtml = outputFile;
+		outputFile = fmt::format("{}/index.html", String::getPathFolder(outputFile));
+		Commands::copyRename(outputHtml, outputFile, true);
+
+		auto upstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
+		auto emrun = fmt::format("{}/emrun", upstream);
+		cmd.emplace_back(std::move(emrun));
+		cmd.emplace_back("--no_browser");
+		cmd.emplace_back("--hostname");
+		cmd.emplace_back("localhost");
+		cmd.emplace_back("--port");
+		cmd.emplace_back("3000");
+		cmd.emplace_back(file);
+		cmd.emplace_back("--");
+	}
+	else
+	{
+		cmd.emplace_back(file);
+	}
 	if (runArguments.has_value())
 	{
 		for (auto& arg : *runArguments)

@@ -17,13 +17,14 @@
 
 // Reference: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
 
-namespace chalet::priv
+namespace chalet
 {
 namespace
 {
-static struct
+struct
 {
 	SignalHandler::Callback onErrorCallback = nullptr;
+	std::unordered_map<int, std::vector<SignalHandler::SignalFunc>> signalHandlers;
 } state;
 
 void printError(const std::string& inType, const std::string& inDescription)
@@ -35,18 +36,64 @@ void printError(const std::string& inType, const std::string& inDescription)
 	Output::getErrStream().write(output.data(), output.size());
 }
 
+void signalHandlerInternal(int inSignal)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		auto& vect = state.signalHandlers.at(inSignal);
+		for (auto& listener : vect)
+			listener(inSignal);
+	}
 }
+}
+
+/*****************************************************************************/
+void SignalHandler::add(int inSignal, SignalFunc inListener)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		auto& vect = state.signalHandlers.at(inSignal);
+		for (auto& listener : vect)
+		{
+			if (listener == inListener)
+				return;
+		}
+		vect.emplace_back(inListener);
+	}
+	else
+	{
+		std::vector<SignalHandler::SignalFunc> vect;
+		vect.emplace_back(inListener);
+		state.signalHandlers.emplace(inSignal, std::move(vect));
+	}
+}
+
+/*****************************************************************************/
+void SignalHandler::cleanup()
+{
+	state.signalHandlers.clear();
+}
+
 /*****************************************************************************/
 void SignalHandler::start(Callback inOnError)
 {
 	state.onErrorCallback = inOnError;
 
-	::signal(SIGABRT, SignalHandler::handler);
-	::signal(SIGFPE, SignalHandler::handler);
-	::signal(SIGILL, SignalHandler::handler);
-	::signal(SIGINT, SignalHandler::handler);
-	::signal(SIGSEGV, SignalHandler::handler);
-	::signal(SIGTERM, SignalHandler::handler);
+#if defined(CHALET_DEBUG)
+	SignalHandler::add(SIGABRT, SignalHandler::handler);
+	SignalHandler::add(SIGFPE, SignalHandler::handler);
+	SignalHandler::add(SIGILL, SignalHandler::handler);
+	SignalHandler::add(SIGINT, SignalHandler::handler);
+	SignalHandler::add(SIGSEGV, SignalHandler::handler);
+	SignalHandler::add(SIGTERM, SignalHandler::handler);
+#endif
+
+	::signal(SIGABRT, signalHandlerInternal);
+	::signal(SIGFPE, signalHandlerInternal);
+	::signal(SIGILL, signalHandlerInternal);
+	::signal(SIGINT, signalHandlerInternal);
+	::signal(SIGSEGV, signalHandlerInternal);
+	::signal(SIGTERM, signalHandlerInternal);
 }
 
 /*****************************************************************************/

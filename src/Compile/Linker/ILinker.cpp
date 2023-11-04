@@ -12,6 +12,7 @@
 #include "Utility/String.hpp"
 
 #include "Compile/Linker/LinkerAppleClang.hpp"
+#include "Compile/Linker/LinkerEmscripten.hpp"
 #include "Compile/Linker/LinkerGCC.hpp"
 #include "Compile/Linker/LinkerIntelClang.hpp"
 #include "Compile/Linker/LinkerIntelClassicGCC.hpp"
@@ -53,9 +54,6 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 		if (lld && inType == ToolchainType::IntelLLVM)
 		return std::make_unique<LinkerIntelClang>(inState, inProject);
 
-	if (inType == ToolchainType::Emscripten)
-		return std::make_unique<LinkerLLVMClang>(inState, inProject);
-
 #if defined(CHALET_WIN32)
 	if (lld && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
 		return std::make_unique<LinkerVisualStudioClang>(inState, inProject);
@@ -66,6 +64,9 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	if (lld || inType == ToolchainType::LLVM)
 		return std::make_unique<LinkerLLVMClang>(inState, inProject);
 #endif
+
+	if (inType == ToolchainType::Emscripten)
+		return std::make_unique<LinkerEmscripten>(inState, inProject);
 
 	return std::make_unique<LinkerGCC>(inState, inProject);
 }

@@ -12,6 +12,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
+#include "Compile/CompilerCxx/CompilerCxxEmscripten.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicCL.hpp"
@@ -64,7 +65,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 #endif
 
 	if (inType == ToolchainType::Emscripten)
-		return std::make_unique<CompilerCxxClang>(inState, inProject);
+		return std::make_unique<CompilerCxxEmscripten>(inState, inProject);
 
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }

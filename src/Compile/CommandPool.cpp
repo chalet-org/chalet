@@ -12,6 +12,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
+#include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -243,9 +244,9 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 	if (refCount < std::numeric_limits<std::size_t>::max())
 		refCount++;
 
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
+	SignalHandler::add(SIGINT, signalHandler);
+	SignalHandler::add(SIGTERM, signalHandler);
+	SignalHandler::add(SIGABRT, signalHandler);
 }
 
 /*****************************************************************************/

@@ -423,10 +423,7 @@ bool BuildState::initializeToolchain()
 		{
 			Output::lineBreak();
 			auto& toolchainName = inputs.toolchainPreferenceName();
-			if (inputs.isToolchainPreset())
-				Diagnostic::error("Architecture '{}' is not supported by the detected '{}' toolchain.", targetArch, toolchainName);
-			else
-				Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
+			Diagnostic::error("Architecture '{}' is not supported by the '{}' toolchain.", targetArch, toolchainName);
 		}
 		return false;
 	};
@@ -615,6 +612,28 @@ bool BuildState::validateState()
 
 	if (!toolchain.validate())
 		return false;
+
+	if (environment->isEmscripten())
+	{
+#if defined(CHALET_WIN32)
+		if (toolchain.strategy() == StrategyType::MSBuild)
+		{
+			Diagnostic::error("Emscripten cannot be compiled with msbuild");
+			return false;
+		}
+#elif defined(CHALET_MACOS)
+		if (toolchain.strategy() == StrategyType::XcodeBuild)
+		{
+			Diagnostic::error("Emscripten cannot be compiled with xcodebuild");
+			return false;
+		}
+#endif
+		if (configuration.enableProfiling())
+		{
+			Diagnostic::error("Profiling is not available with Emscripten");
+			return false;
+		}
+	}
 
 	const bool lto = configuration.interproceduralOptimization();
 	if (lto && info.dumpAssembly() && !environment->isClang())

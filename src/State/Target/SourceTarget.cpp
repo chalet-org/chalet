@@ -1287,7 +1287,12 @@ void SourceTarget::parseOutputFilename() noexcept
 	std::string executableExtension;
 	std::string libraryExtension{ ".so" };
 #endif
-	if (executableExtension.empty() && (m_state.environment->isMingw() || m_state.environment->isWindowsTarget()))
+	if (m_state.environment->isEmscripten())
+	{
+		executableExtension = ".html";
+		libraryExtension = ".js";
+	}
+	else if (executableExtension.empty() && (m_state.environment->isMingw() || m_state.environment->isWindowsTarget()))
 	{
 		executableExtension = ".exe";
 		libraryExtension = ".dll";

@@ -45,7 +45,7 @@ StringList CompileEnvironmentEmscripten::getVersionCommand(const std::string& in
 std::string CompileEnvironmentEmscripten::getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const
 {
 	UNUSED(inPath);
-	return fmt::format("Emscripten version {} (Based on LLVM Clang {})", inVersion, m_llvmVersion);
+	return fmt::format("Emscripten version {} (Based on LLVM Clang {})", m_emccVersion, inVersion);
 }
 
 /*****************************************************************************/
@@ -137,7 +137,7 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	if (!result)
 		return false;
 
-	m_llvmVersion = info.version;
+	outInfo.version = info.version;
 
 	m_emcc = fmt::format("{}/emcc.py", m_emsdkUpstream);
 
@@ -203,9 +203,10 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 
 	if (!cachedVersion.empty())
 	{
-		outInfo.version = std::move(cachedVersion);
+		outInfo.path = fmt::format("{}/emcc", m_emsdkUpstream);
+		m_emccVersion = std::move(cachedVersion);
 
-		sourceCache.addVersion(m_emcc, outInfo.version);
+		sourceCache.addVersion(m_emcc, m_emccVersion);
 
 		outInfo.description = getFullCxxCompilerString(m_emcc, outInfo.version);
 		return true;

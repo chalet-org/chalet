@@ -268,7 +268,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 
 	state.exceptionThrown = true;
 
-	priv::SignalHandler::handler(SIGABRT);
+	SignalHandler::handler(SIGABRT);
 }
 
 /*****************************************************************************/
@@ -310,7 +310,7 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 
 	state.assertionFailure = true;
 
-	priv::SignalHandler::handler(SIGABRT);
+	SignalHandler::handler(SIGABRT);
 }
 
 /*****************************************************************************/

@@ -13,6 +13,7 @@
 #include "Process/ProcessPipe.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/SignalHandler.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Terminal/WindowsTerminal.hpp"
@@ -87,9 +88,9 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 	{
 		if (!state.initialized)
 		{
-			::signal(SIGINT, subProcessSignalHandler);
-			::signal(SIGTERM, subProcessSignalHandler);
-			::signal(SIGABRT, subProcessSignalHandler);
+			SignalHandler::add(SIGINT, subProcessSignalHandler);
+			SignalHandler::add(SIGTERM, subProcessSignalHandler);
+			SignalHandler::add(SIGABRT, subProcessSignalHandler);
 			state.initialized = true;
 		}
 
