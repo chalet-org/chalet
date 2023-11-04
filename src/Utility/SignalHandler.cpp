@@ -25,6 +25,7 @@ struct
 {
 	SignalHandler::Callback onErrorCallback = nullptr;
 	std::unordered_map<int, std::vector<SignalHandler::SignalFunc>> signalHandlers;
+	bool exitCalled = false;
 } state;
 
 void printError(const std::string& inType, const std::string& inDescription)
@@ -40,9 +41,25 @@ void signalHandlerInternal(int inSignal)
 {
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
+		bool exitHandlerCalled = false;
+
 		auto& vect = state.signalHandlers.at(inSignal);
 		for (auto& listener : vect)
+		{
+			if (listener == SignalHandler::exitHandler)
+			{
+				// We want to call this last, so skip it in this loop
+				exitHandlerCalled = true;
+				break;
+			}
 			listener(inSignal);
+		}
+
+		if (exitHandlerCalled)
+		{
+			SignalHandler::exitHandler(inSignal);
+			::exit(1);
+		}
 	}
 }
 }
@@ -80,12 +97,12 @@ void SignalHandler::start(Callback inOnError)
 	state.onErrorCallback = inOnError;
 
 #if defined(CHALET_DEBUG)
-	SignalHandler::add(SIGABRT, SignalHandler::handler);
-	SignalHandler::add(SIGFPE, SignalHandler::handler);
-	SignalHandler::add(SIGILL, SignalHandler::handler);
-	SignalHandler::add(SIGINT, SignalHandler::handler);
-	SignalHandler::add(SIGSEGV, SignalHandler::handler);
-	SignalHandler::add(SIGTERM, SignalHandler::handler);
+	SignalHandler::add(SIGABRT, SignalHandler::exitHandler);
+	SignalHandler::add(SIGFPE, SignalHandler::exitHandler);
+	SignalHandler::add(SIGILL, SignalHandler::exitHandler);
+	SignalHandler::add(SIGINT, SignalHandler::exitHandler);
+	SignalHandler::add(SIGSEGV, SignalHandler::exitHandler);
+	SignalHandler::add(SIGTERM, SignalHandler::exitHandler);
 #endif
 
 	::signal(SIGABRT, signalHandlerInternal);
@@ -97,7 +114,7 @@ void SignalHandler::start(Callback inOnError)
 }
 
 /*****************************************************************************/
-void SignalHandler::handler(const int inSignal)
+void SignalHandler::exitHandler(const int inSignal)
 {
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
@@ -157,6 +174,6 @@ void SignalHandler::handler(const int inSignal)
 	errStream.write("\n", 1);
 	errStream.flush();
 
-	::exit(1);
+	state.exitCalled = true;
 }
 }

@@ -17,7 +17,7 @@ void add(int inSignal, SignalFunc inListener);
 void cleanup();
 
 void start(Callback inOnError = nullptr);
-void handler(const int inSignal);
+void exitHandler(const int inSignal);
 }
 }
 
