@@ -204,6 +204,9 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 	if (!cachedVersion.empty())
 	{
 		outInfo.path = fmt::format("{}/emcc", m_emsdkUpstream);
+#if defined(CHALET_WIN32)
+		outInfo.path += ".bat";
+#endif
 		m_emccVersion = std::move(cachedVersion);
 
 		sourceCache.addVersion(m_emcc, m_emccVersion);
