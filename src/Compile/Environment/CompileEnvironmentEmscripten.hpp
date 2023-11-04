@@ -18,6 +18,8 @@ struct CompileEnvironmentEmscripten final : CompileEnvironmentLLVM
 	CHALET_DISALLOW_COPY_MOVE(CompileEnvironmentEmscripten);
 	~CompileEnvironmentEmscripten();
 
+	virtual std::string getAssemblyFile(const std::string& inSource) const final;
+
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;

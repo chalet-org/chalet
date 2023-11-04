@@ -10,6 +10,7 @@
 #include "Compile/Environment/EmscriptenEnvironmentScript.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
@@ -79,6 +80,7 @@ bool CompileEnvironmentEmscripten::createFromVersion(const std::string& inVersio
 	m_emsdkRoot = Environment::getString("EMSDK");
 	m_commandInvoker = Environment::getString("EMSDK_PYTHON");
 	m_emsdkUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
+	m_emcc = fmt::format("{}/emcc.py", m_emsdkUpstream);
 
 	Diagnostic::printDone(timer.asString());
 
@@ -139,8 +141,6 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 		return false;
 
 	outInfo.version = info.version;
-
-	m_emcc = fmt::format("{}/emcc.py", m_emsdkUpstream);
 
 	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
@@ -204,7 +204,7 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 
 	if (!cachedVersion.empty())
 	{
-		outInfo.path = fmt::format("{}/emcc.py", m_emsdkUpstream);
+		outInfo.path = m_emcc;
 		m_emccVersion = std::move(cachedVersion);
 
 		sourceCache.addVersion(m_emcc, m_emccVersion);
@@ -248,6 +248,12 @@ ToolchainType CompileEnvironmentEmscripten::getToolchainTypeFromMacros(const std
 std::string CompileEnvironmentEmscripten::getToolchainTriple(const std::string& inArch) const
 {
 	return fmt::format("{}-unknown-emscripten", inArch);
+}
+
+/*****************************************************************************/
+std::string CompileEnvironmentEmscripten::getAssemblyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.o.wat", m_state.paths.asmDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 }

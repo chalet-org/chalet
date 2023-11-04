@@ -559,29 +559,49 @@ const std::string& CompilerTools::disassembler() const noexcept
 void CompilerTools::setDisassembler(std::string&& inValue) noexcept
 {
 	m_disassembler = std::move(inValue);
-
-	auto lower = String::toLowerCase(m_disassembler);
-#if defined(CHALET_MACOS)
-	m_isDisassemblerOtool = String::endsWith("otool", lower);
-#elif defined(CHALET_WIN32)
-	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump.exe", lower);
-	m_isDisassemblerDumpBin = String::endsWith("dumpbin.exe", lower);
-#else
-	m_isDisassemblerLLVMObjDump = String::endsWith("llvm-objdump", lower);
-	m_isDisassemblerDumpBin = false;
-#endif
 }
+
+/*****************************************************************************/
 bool CompilerTools::isDisassemblerDumpBin() const noexcept
 {
-	return m_isDisassemblerDumpBin;
+#if defined(CHALET_WIN32)
+	auto lower = String::toLowerCase(m_disassembler);
+	return String::endsWith("dumpbin.exe", lower);
+#else
+	return false;
+#endif
 }
+
+/*****************************************************************************/
 bool CompilerTools::isDisassemblerOtool() const noexcept
 {
-	return m_isDisassemblerOtool;
+#if defined(CHALET_MACOS)
+	auto lower = String::toLowerCase(m_disassembler);
+	return String::endsWith("otool", lower);
+#else
+	return false;
+#endif
 }
+/*****************************************************************************/
 bool CompilerTools::isDisassemblerLLVMObjDump() const noexcept
 {
-	return m_isDisassemblerLLVMObjDump;
+	auto lower = String::toLowerCase(m_disassembler);
+#if defined(CHALET_WIN32)
+	return String::endsWith("llvm-objdump.exe", lower);
+#else
+	return String::endsWith("llvm-objdump", lower);
+#endif
+}
+
+/*****************************************************************************/
+bool CompilerTools::isDisassemblerWasm2Wat() const noexcept
+{
+	auto lower = String::toLowerCase(m_disassembler);
+#if defined(CHALET_WIN32)
+	return String::endsWith("wasm2wat.exe", lower);
+#else
+	return String::endsWith("wasm2wat", lower);
+#endif
 }
 
 /*****************************************************************************/

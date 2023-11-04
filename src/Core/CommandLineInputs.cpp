@@ -1427,12 +1427,12 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.cpp = "wasm32-clang++";
 		ret.cc = "wasm32-clang";
 		// ret.cpp = "em++";
-		// ret.cc = "em";
+		// ret.cc = "emcc";
 		// ret.rc = "";
 		ret.linker = "wasm-ld";
 		ret.archiver = "llvm-ar";
 		ret.profiler = "";
-		ret.disassembler = "";
+		ret.disassembler = "wasm2wat";
 		ret.type = ToolchainType::Emscripten;
 	}
 	else
