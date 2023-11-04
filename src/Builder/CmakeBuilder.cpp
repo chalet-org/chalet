@@ -383,6 +383,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_CXX_COMPILER_TARGET",
 			"CMAKE_TOOLCHAIN_FILE",
 			"CMAKE_CROSSCOMPILING_EMULATOR",
+			"CMAKE_EXECUTABLE_SUFFIX",
 #if defined(CHALET_WIN32)
 		// "CMAKE_SH",
 #elif defined(CHALET_MACOS)
@@ -599,39 +600,39 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (usingToolchainFile)
 	{
-		if (!isDefined["CMAKE_TOOLCHAIN_FILE"])
+		/*if (isEmscripten && !isDefined["CMAKE_EXECUTABLE_SUFFIX"])
 		{
-			if (isEmscripten)
-			{
-				auto emUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
-				chalet_assert(!emUpstream.empty(), "'EMSDK_UPSTREAM_EMSCRIPTEN' was not set");
+			outList.emplace_back("-DCMAKE_EXECUTABLE_SUFFIX=.html");
+		}*/
 
-				auto toolchainFile = fmt::format("{}/cmake/Modules/Platform/Emscripten.cmake", emUpstream);
-				outList.emplace_back("-DCMAKE_TOOLCHAIN_FILE=" + std::move(toolchainFile));
-			}
+		if (isEmscripten && !isDefined["CMAKE_TOOLCHAIN_FILE"])
+		{
+			auto emUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
+			chalet_assert(!emUpstream.empty(), "'EMSDK_UPSTREAM_EMSCRIPTEN' was not set");
+
+			auto toolchainFile = fmt::format("{}/cmake/Modules/Platform/Emscripten.cmake", emUpstream);
+			outList.emplace_back("-DCMAKE_TOOLCHAIN_FILE=" + std::move(toolchainFile));
 		}
+
 		if (isEmscripten && !isDefined["CMAKE_CROSSCOMPILING_EMULATOR"])
 		{
-			if (isEmscripten)
+			auto nodePath = Environment::getString("EMSDK_NODE");
+			chalet_assert(!nodePath.empty(), "'EMSDK_NODE' was not set");
+
+			auto versionOutput = Commands::subprocessOutput({ nodePath, "--version" });
+			if (String::startsWith('v', versionOutput))
+				versionOutput = versionOutput.substr(1);
+
+			auto version = Version::fromString(versionOutput);
+			uint versionMajor = version.major();
+
+			StringList nodeArgs{ nodePath };
+			if (versionMajor > 0 && versionMajor < 16)
 			{
-				auto nodePath = Environment::getString("EMSDK_NODE");
-				chalet_assert(!nodePath.empty(), "'EMSDK_NODE' was not set");
-
-				auto versionOutput = Commands::subprocessOutput({ nodePath, "--version" });
-				if (String::startsWith('v', versionOutput))
-					versionOutput = versionOutput.substr(1);
-
-				auto version = Version::fromString(versionOutput);
-				uint versionMajor = version.major();
-
-				StringList nodeArgs{ nodePath };
-				if (versionMajor > 0 && versionMajor < 16)
-				{
-					nodeArgs.emplace_back("--experimental-wasm-bulk-memory");
-					nodeArgs.emplace_back("--experimental-wasm-threads");
-				}
-				outList.emplace_back("-DCMAKE_CROSSCOMPILING_EMULATOR=" + String::join(nodeArgs, ';'));
+				nodeArgs.emplace_back("--experimental-wasm-bulk-memory");
+				nodeArgs.emplace_back("--experimental-wasm-threads");
 			}
+			outList.emplace_back("-DCMAKE_CROSSCOMPILING_EMULATOR=" + String::join(nodeArgs, ';'));
 		}
 	}
 }

@@ -442,6 +442,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set({standard})
 set({standardRequired} ON){extraSettings}
 
+if (DEFINED EMSCRIPTEN)
+	set(CMAKE_EXECUTABLE_SUFFIX ".html")
+endif()
+
 set(TARGET_NAME {projectName})
 {sources}
 
