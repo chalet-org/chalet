@@ -22,6 +22,9 @@ struct IAppBundler
 	bool getMainExecutable(std::string& outMainExecutable);
 	StringList getAllExecutables() const;
 
+	bool copyIncludedPath(const std::string& inDep, const std::string& inOutPath);
+	const std::string& workingDirectoryWithTrailingPathSeparator();
+
 	virtual bool removeOldFiles() = 0;
 	virtual bool bundleForPlatform() = 0;
 	virtual bool quickBundleForPlatform();
@@ -37,6 +40,9 @@ protected:
 	BuildState& m_state;
 	const BundleTarget& m_bundle;
 	BinaryDependencyMap& m_dependencyMap;
+
+private:
+	std::string m_cwd;
 };
 }
 
