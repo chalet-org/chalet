@@ -14,6 +14,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Environment.hpp"
+#include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -206,6 +207,10 @@ bool CompileEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo
 		outInfo.path = fmt::format("{}/emcc", m_emsdkUpstream);
 #if defined(CHALET_WIN32)
 		outInfo.path += ".bat";
+		if (m_state.toolchain.strategy() == StrategyType::Native)
+		{
+			Path::sanitizeForWindows(outInfo.path);
+		}
 #endif
 		m_emccVersion = std::move(cachedVersion);
 

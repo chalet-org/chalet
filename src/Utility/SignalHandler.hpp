@@ -14,6 +14,7 @@ using Callback = std::function<void()>;
 using SignalFunc = void (*)(int);
 
 void add(int inSignal, SignalFunc inListener);
+void remove(int inSignal, SignalFunc inListener);
 void cleanup();
 
 void start(Callback inOnError = nullptr);

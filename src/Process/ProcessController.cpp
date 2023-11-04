@@ -76,7 +76,8 @@ void subProcessSignalHandler(int inSignal)
 	}
 
 #if defined(CHALET_WIN32)
-	WindowsTerminal::reset();
+	if (state.procesess.empty())
+		WindowsTerminal::reset();
 #endif
 }
 }
@@ -88,9 +89,12 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 	{
 		if (!state.initialized)
 		{
+			std::lock_guard<std::mutex> lock(s_mutex);
+
 			SignalHandler::add(SIGINT, subProcessSignalHandler);
 			SignalHandler::add(SIGTERM, subProcessSignalHandler);
 			SignalHandler::add(SIGABRT, subProcessSignalHandler);
+
 			state.initialized = true;
 		}
 

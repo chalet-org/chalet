@@ -86,6 +86,25 @@ void SignalHandler::add(int inSignal, SignalFunc inListener)
 }
 
 /*****************************************************************************/
+void SignalHandler::remove(int inSignal, SignalFunc inListener)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		auto& vect = state.signalHandlers.at(inSignal);
+		auto it = vect.end();
+		while (it != vect.begin())
+		{
+			--it;
+			SignalFunc func = (*it);
+			if (func == inListener)
+			{
+				it = vect.erase(it);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
 void SignalHandler::cleanup()
 {
 	state.signalHandlers.clear();
