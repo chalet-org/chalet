@@ -16,6 +16,9 @@ struct CompilerCxxEmscripten : public CompilerCxxClang
 
 	virtual bool initialize() final;
 
+protected:
+	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
+
 private:
 	// std::string m_pchSource;
 };

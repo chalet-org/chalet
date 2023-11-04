@@ -9,6 +9,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -28,4 +29,9 @@ bool CompilerCxxEmscripten::initialize()
 	return true;
 }
 
+/*****************************************************************************/
+void CompilerCxxEmscripten::addPositionIndependentCodeOption(StringList& outArgList) const
+{
+	List::addIfDoesNotExist(outArgList, "-fPIC");
+}
 }

@@ -1037,7 +1037,15 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist)
 {
 	if (inFromDist)
+	{
 		Output::printSeparator();
+
+		if (m_state.environment->isEmscripten())
+		{
+			auto cancelCmd = "CTRL+C";
+			Output::print(Output::theme().flair, fmt::format("(Press {} to exit the server)", cancelCmd));
+		}
+	}
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::cleanup();

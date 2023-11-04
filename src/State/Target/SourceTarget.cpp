@@ -1290,7 +1290,7 @@ void SourceTarget::parseOutputFilename() noexcept
 	if (m_state.environment->isEmscripten())
 	{
 		executableExtension = ".html";
-		libraryExtension = ".js";
+		libraryExtension = ".wasm";
 	}
 	else if (executableExtension.empty() && (m_state.environment->isMingw() || m_state.environment->isWindowsTarget()))
 	{
