@@ -120,7 +120,6 @@ bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, con
 			// if (inVersionMajorMinor >= 1400)
 			if (String::startsWith("xr", osTargetName))
 			{
-
 				outArgList.emplace_back(fmt::format("-mtargetos={}{}", outputTargetName, osTargetVersion));
 			}
 			else
