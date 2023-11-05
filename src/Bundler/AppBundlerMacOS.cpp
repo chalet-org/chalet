@@ -396,8 +396,6 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
 
-	auto deploymentVersion = Version::fromString(m_state.inputs.osTargetVersion());
-
 	bool result = Commands::subprocessNoOutput({
 		actool,
 		"--output-format",
@@ -417,7 +415,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 		"--target-device",
 		"mac",
 		"--minimum-deployment-target",
-		deploymentVersion.majorMinor(),
+		m_state.inputs.osTargetVersion(),
 		"--platform",
 		m_state.inputs.osTargetName(),
 		"--compile",

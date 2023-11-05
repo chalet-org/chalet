@@ -13,6 +13,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Version.hpp"
 #include "Json/JsonValues.hpp"
 
 namespace chalet
@@ -821,7 +822,8 @@ const std::string& CommandLineInputs::osTargetVersion() const noexcept
 }
 void CommandLineInputs::setOsTargetVersion(std::string&& inValue) noexcept
 {
-	m_osTargetVersion = std::move(inValue);
+	auto version = Version::fromString(inValue);
+	m_osTargetVersion = version.majorMinor();
 }
 std::string CommandLineInputs::getDefaultOsTargetVersion() const
 {
