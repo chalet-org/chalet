@@ -25,10 +25,9 @@ namespace chalet
 CentralChaletJsonParser::CentralChaletJsonParser(CentralState& inCentralState) :
 	m_centralState(inCentralState),
 	m_chaletJson(inCentralState.chaletJson()),
-	kValidPlatforms(Platform::validPlatforms()),
-	m_notPlatforms(Platform::notPlatforms()),
-	m_platform(Platform::platform())
+	kValidPlatforms(Platform::validPlatforms())
 {
+	Platform::assignPlatform(m_centralState.inputs(), m_platform, m_notPlatforms);
 }
 
 /*****************************************************************************/

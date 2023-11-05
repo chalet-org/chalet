@@ -228,7 +228,7 @@ std::vector<CompilerPathStructure> CompileEnvironmentEmscripten::getValidCompile
 
 	if (arch == Arch::Cpu::WASM32)
 	{
-		ret.push_back({ "/bin", "/lib", "/emscripten/system/include" });
+		ret.push_back({ "/bin", "/lib", "/emscripten/cache/sysroot/include" });
 	}
 
 	return ret;

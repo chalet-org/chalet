@@ -62,10 +62,9 @@ ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inS
 	m_chaletJson(inCentralState.chaletJson()),
 	m_centralState(inCentralState),
 	m_state(inState),
-	kValidPlatforms(Platform::validPlatforms()),
-	m_notPlatforms(Platform::notPlatforms()),
-	m_platform(Platform::platform())
+	kValidPlatforms(Platform::validPlatforms())
 {
+	Platform::assignPlatform(m_centralState.inputs(), m_platform, m_notPlatforms);
 }
 
 /*****************************************************************************/
