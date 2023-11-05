@@ -31,7 +31,6 @@ enum class CommandPoolErrorCode : ushort
 struct PoolState
 {
 	size_t refCount = 0;
-
 	uint index = 0;
 	// uint threads = 0;
 
@@ -220,6 +219,9 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
+	if (state == nullptr)
+		return;
+
 	if (inSignal != SIGTERM)
 		state->errorCode = CommandPoolErrorCode::Aborted;
 
