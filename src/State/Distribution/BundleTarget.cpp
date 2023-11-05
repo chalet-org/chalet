@@ -125,13 +125,13 @@ bool BundleTarget::validate()
 			}
 			else
 			{
-				std::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist(m_state.inputs.osTargetVersion());
+				std::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist();
 			}
 		}
 	}
 	else if (m_macosBundleInfoPropertyListContent.empty())
 	{
-		m_macosBundleInfoPropertyListContent = PlatformFileTemplates::macosInfoPlist(m_state.inputs.osTargetVersion());
+		m_macosBundleInfoPropertyListContent = PlatformFileTemplates::macosInfoPlist();
 	}
 
 	if (!m_macosBundleEntitlementsPropertyList.empty())
