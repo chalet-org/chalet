@@ -1275,8 +1275,19 @@ void ArgumentParser::populateInitArguments()
 /*****************************************************************************/
 void ArgumentParser::populateExportArguments()
 {
+	addInputFileArg();
+	addSettingsFileArg();
+	addRootDirArg();
+	addExternalDirArg();
+	addOutputDirArg();
+	addDistributionDirArg();
 	addToolchainArg();
 	addArchArg();
+	addBuildPathStyleArg();
+	addEnvFileArg();
+	addOsTargetNameArg();
+	addOsTargetVersionArg();
+	addSigningIdentityArg();
 
 	const auto kinds = m_inputs.getExportKindPresets();
 	addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind)
