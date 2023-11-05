@@ -96,6 +96,8 @@ private:
 
 	StringList m_notPlatforms;
 	std::string m_platform;
+
+	bool m_isWebPlatform = false;
 };
 }
 

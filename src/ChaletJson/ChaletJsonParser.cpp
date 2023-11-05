@@ -65,6 +65,7 @@ ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inS
 	kValidPlatforms(Platform::validPlatforms())
 {
 	Platform::assignPlatform(m_centralState.inputs(), m_platform, m_notPlatforms);
+	m_isWebPlatform = String::equals("web", m_platform);
 }
 
 /*****************************************************************************/
@@ -949,13 +950,13 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outTarget.addIncludeDir(std::move(val));
 #if defined(CHALET_MACOS)
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outTarget.addAppleFrameworkPath(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
 				outTarget.addAppleFramework(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
 				outTarget.addAppleFrameworkPath(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
 				outTarget.addAppleFramework(std::move(val));
 #endif
 			else if (isInvalid(status))
@@ -1019,15 +1020,15 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outTarget.addLinkerOptions(std::move(val));
 #if defined(CHALET_MACOS)
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outTarget.addAppleFrameworkPaths(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
 				outTarget.addAppleFrameworks(std::move(val));
 
 			// deprecated
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworkPaths", status))
 				outTarget.addAppleFrameworkPaths(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosFrameworks", status))
 				outTarget.addAppleFrameworks(std::move(val));
 #endif
 			else if (isInvalid(status))
