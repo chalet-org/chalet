@@ -219,6 +219,9 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
+	if (state == nullptr)
+		return;
+
 	if (inSignal != SIGTERM)
 		state->errorCode = CommandPoolErrorCode::Aborted;
 

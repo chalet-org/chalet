@@ -15,47 +15,49 @@ namespace chalet
 {
 namespace
 {
-static struct
+struct
 {
 	std::mutex mutex;
 	Spinner* spinner = nullptr;
+	bool initialized = false;
 } state;
 
 /*****************************************************************************/
 void signalHandler(int inSignal)
 {
+	std::lock_guard<std::mutex> lock(state.mutex);
+
 	if (state.spinner)
 	{
 		state.spinner->stop();
+
+		UNUSED(inSignal);
+		std::string output{ "\b\b  \b\b" };
+		output += Output::getAnsiStyle(Output::theme().reset);
+		std::cout.write(output.data(), output.size());
+
+		// std::exit(1);
 	}
-
-	std::lock_guard<std::mutex> lock(state.mutex);
-
-	UNUSED(inSignal);
-	std::string output{ "\b\b  \b\b" };
-	output += Output::getAnsiStyle(Output::theme().reset);
-	std::cout.write(output.data(), output.size());
-
-	std::exit(1);
 }
 }
 
 /*****************************************************************************/
 Spinner::~Spinner()
 {
-	SignalHandler::remove(SIGINT, signalHandler);
-	SignalHandler::remove(SIGTERM, signalHandler);
-	SignalHandler::remove(SIGABRT, signalHandler);
-
 	destroy();
 }
 
 /*****************************************************************************/
 void Spinner::start()
 {
-	SignalHandler::add(SIGINT, signalHandler);
-	SignalHandler::add(SIGTERM, signalHandler);
-	SignalHandler::add(SIGABRT, signalHandler);
+	if (!state.initialized)
+	{
+		SignalHandler::add(SIGINT, signalHandler);
+		SignalHandler::add(SIGTERM, signalHandler);
+		SignalHandler::add(SIGABRT, signalHandler);
+
+		state.initialized = true;
+	}
 
 	destroy();
 
