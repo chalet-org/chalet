@@ -28,8 +28,7 @@ namespace chalet
 {
 /*****************************************************************************/
 CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
-	ICompileStrategy(StrategyType::Native, inState),
-	m_commandPool(m_state.info.maxJobs())
+	ICompileStrategy(StrategyType::Native, inState)
 {
 }
 
@@ -127,12 +126,16 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyNative::doPreBuild()
 {
+	m_commandPool = std::make_unique<CommandPool>(m_state.info.maxJobs());
+
 	return ICompileStrategy::doPreBuild();
 }
 
 /*****************************************************************************/
 bool CompileStrategyNative::doPostBuild() const
 {
+	m_commandPool.reset();
+
 	return ICompileStrategy::doPostBuild();
 }
 
@@ -153,7 +156,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 		settings.showCommands = Output::showCommands();
 		settings.quiet = Output::quietNonBuild();
 
-		if (!m_commandPool.runAll(m_targets.at(inProject.name()), settings))
+		if (!m_commandPool->runAll(m_targets.at(inProject.name()), settings))
 		{
 			m_state.cache.file().setDisallowSave(true);
 

@@ -71,12 +71,10 @@ void Application::initializeTerminal()
 	std::ios::sync_with_stdio(false);
 	// std::cin.tie(nullptr);
 
-#if defined(CHALET_DEBUG)
-	priv::SignalHandler::start([this]() noexcept {
+	SignalHandler::start([this]() noexcept {
 		Diagnostic::printErrors();
 		this->cleanup();
 	});
-#endif
 }
 
 /*****************************************************************************/
@@ -102,6 +100,8 @@ int Application::onExit(const Status inStatus)
 /*****************************************************************************/
 void Application::cleanup()
 {
+	SignalHandler::cleanup();
+
 #if defined(CHALET_WIN32)
 	WindowsTerminal::cleanup();
 #endif

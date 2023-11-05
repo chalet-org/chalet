@@ -204,7 +204,7 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 			break;
 	}
 
-	Diagnostic::error("Unimplemented ToolchainType requested: ", static_cast<int>(type));
+	Diagnostic::error("Unimplemented ToolchainType requested: {}", static_cast<int>(type));
 	return nullptr;
 }
 

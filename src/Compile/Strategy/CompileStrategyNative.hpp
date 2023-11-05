@@ -35,7 +35,7 @@ private:
 	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
-	CommandPool m_commandPool;
+	mutable Unique<CommandPool> m_commandPool;
 
 	StringList m_fileCache;
 

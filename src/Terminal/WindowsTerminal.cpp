@@ -21,13 +21,21 @@ namespace chalet
 namespace
 {
 #if defined(CHALET_WIN32)
-static struct
+struct
 {
 	DWORD consoleMode = 0;
 	uint consoleCp = 0;
 	uint consoleOutputCp = 0;
 	bool firstCall = false;
 } state;
+
+BOOL WINAPI ConsoleHandlerRoutine(DWORD dwCtrlType)
+{
+	if (dwCtrlType == CTRL_C_EVENT)
+		return TRUE;
+
+	return FALSE;
+}
 #endif
 }
 
@@ -75,6 +83,9 @@ void WindowsTerminal::initialize()
 		_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
 	}
 	#endif
+
+	::SetConsoleCtrlHandler(ConsoleHandlerRoutine, TRUE);
+
 	state.firstCall = true;
 #endif
 }

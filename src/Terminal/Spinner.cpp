@@ -9,6 +9,7 @@
 
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/SignalHandler.hpp"
 
 namespace chalet
 {
@@ -42,15 +43,19 @@ void signalHandler(int inSignal)
 /*****************************************************************************/
 Spinner::~Spinner()
 {
+	SignalHandler::remove(SIGINT, signalHandler);
+	SignalHandler::remove(SIGTERM, signalHandler);
+	SignalHandler::remove(SIGABRT, signalHandler);
+
 	destroy();
 }
 
 /*****************************************************************************/
 void Spinner::start()
 {
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
+	SignalHandler::add(SIGINT, signalHandler);
+	SignalHandler::add(SIGTERM, signalHandler);
+	SignalHandler::add(SIGABRT, signalHandler);
 
 	destroy();
 

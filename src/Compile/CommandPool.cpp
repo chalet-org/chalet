@@ -12,6 +12,7 @@
 #include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
+#include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -29,6 +30,7 @@ enum class CommandPoolErrorCode : ushort
 
 struct PoolState
 {
+	size_t refCount = 0;
 	uint index = 0;
 	// uint threads = 0;
 
@@ -41,7 +43,6 @@ struct PoolState
 };
 
 static PoolState* state = nullptr;
-static std::size_t refCount = 0;
 
 /*****************************************************************************/
 bool printCommand(std::string inText)
@@ -239,25 +240,33 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 	if (state == nullptr)
 	{
 		state = new PoolState();
-	}
-	if (refCount < std::numeric_limits<std::size_t>::max())
-		refCount++;
 
-	::signal(SIGINT, signalHandler);
-	::signal(SIGTERM, signalHandler);
-	::signal(SIGABRT, signalHandler);
+		SignalHandler::add(SIGINT, signalHandler);
+		SignalHandler::add(SIGTERM, signalHandler);
+		SignalHandler::add(SIGABRT, signalHandler);
+	}
+
+	if (state->refCount < std::numeric_limits<std::size_t>::max())
+		state->refCount++;
 }
 
 /*****************************************************************************/
 CommandPool::~CommandPool()
 {
-	if (refCount > 0)
-		refCount--;
-
-	if (state != nullptr && refCount == 0)
+	if (state != nullptr)
 	{
-		delete state;
-		state = nullptr;
+		if (state->refCount > 0)
+			state->refCount--;
+
+		if (state->refCount == 0)
+		{
+			SignalHandler::remove(SIGINT, signalHandler);
+			SignalHandler::remove(SIGTERM, signalHandler);
+			SignalHandler::remove(SIGABRT, signalHandler);
+
+			delete state;
+			state = nullptr;
+		}
 	}
 }
 

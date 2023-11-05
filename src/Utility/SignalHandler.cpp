@@ -17,13 +17,15 @@
 
 // Reference: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/
 
-namespace chalet::priv
+namespace chalet
 {
 namespace
 {
-static struct
+struct
 {
 	SignalHandler::Callback onErrorCallback = nullptr;
+	std::unordered_map<int, std::vector<SignalHandler::SignalFunc>> signalHandlers;
+	bool exitCalled = false;
 } state;
 
 void printError(const std::string& inType, const std::string& inDescription)
@@ -35,22 +37,103 @@ void printError(const std::string& inType, const std::string& inDescription)
 	Output::getErrStream().write(output.data(), output.size());
 }
 
+void signalHandlerInternal(int inSignal)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		bool exitHandlerCalled = false;
+
+		auto& vect = state.signalHandlers.at(inSignal);
+		for (auto& listener : vect)
+		{
+			if (listener == SignalHandler::exitHandler)
+			{
+				// We want to call this last, so skip it in this loop
+				exitHandlerCalled = true;
+				break;
+			}
+			listener(inSignal);
+		}
+
+		if (exitHandlerCalled)
+		{
+			SignalHandler::exitHandler(inSignal);
+			::exit(1);
+		}
+	}
 }
+}
+
+/*****************************************************************************/
+void SignalHandler::add(int inSignal, SignalFunc inListener)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		auto& vect = state.signalHandlers.at(inSignal);
+		for (auto& listener : vect)
+		{
+			if (listener == inListener)
+				return;
+		}
+		vect.emplace_back(inListener);
+	}
+	else
+	{
+		std::vector<SignalHandler::SignalFunc> vect;
+		vect.emplace_back(inListener);
+		state.signalHandlers.emplace(inSignal, std::move(vect));
+	}
+}
+
+/*****************************************************************************/
+void SignalHandler::remove(int inSignal, SignalFunc inListener)
+{
+	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
+	{
+		auto& vect = state.signalHandlers.at(inSignal);
+		auto it = vect.end();
+		while (it != vect.begin())
+		{
+			--it;
+			SignalFunc func = (*it);
+			if (func == inListener)
+			{
+				it = vect.erase(it);
+			}
+		}
+	}
+}
+
+/*****************************************************************************/
+void SignalHandler::cleanup()
+{
+	state.signalHandlers.clear();
+}
+
 /*****************************************************************************/
 void SignalHandler::start(Callback inOnError)
 {
 	state.onErrorCallback = inOnError;
 
-	::signal(SIGABRT, SignalHandler::handler);
-	::signal(SIGFPE, SignalHandler::handler);
-	::signal(SIGILL, SignalHandler::handler);
-	::signal(SIGINT, SignalHandler::handler);
-	::signal(SIGSEGV, SignalHandler::handler);
-	::signal(SIGTERM, SignalHandler::handler);
+#if defined(CHALET_DEBUG)
+	SignalHandler::add(SIGABRT, SignalHandler::exitHandler);
+	SignalHandler::add(SIGFPE, SignalHandler::exitHandler);
+	SignalHandler::add(SIGILL, SignalHandler::exitHandler);
+	SignalHandler::add(SIGINT, SignalHandler::exitHandler);
+	SignalHandler::add(SIGSEGV, SignalHandler::exitHandler);
+	SignalHandler::add(SIGTERM, SignalHandler::exitHandler);
+#endif
+
+	::signal(SIGABRT, signalHandlerInternal);
+	::signal(SIGFPE, signalHandlerInternal);
+	::signal(SIGILL, signalHandlerInternal);
+	::signal(SIGINT, signalHandlerInternal);
+	::signal(SIGSEGV, signalHandlerInternal);
+	::signal(SIGTERM, signalHandlerInternal);
 }
 
 /*****************************************************************************/
-void SignalHandler::handler(const int inSignal)
+void SignalHandler::exitHandler(const int inSignal)
 {
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
@@ -110,6 +193,6 @@ void SignalHandler::handler(const int inSignal)
 	errStream.write("\n", 1);
 	errStream.flush();
 
-	::exit(1);
+	state.exitCalled = true;
 }
 }
