@@ -76,13 +76,20 @@ jobs:
       run:
         shell: bash
     env:
+      MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+      MACOS_APPLE_ID: ${{ secrets.MACOS_APPLE_ID }}
+      MACOS_CHALET_APP_PWD: ${{ secrets.MACOS_CHALET_APP_PWD }}
       MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
     steps:
       - name: "Prepare Environment for Signing"
         uses: apple-actions/import-codesign-certs@v1
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      - name: "Create Keychain profile"
+        run: xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
@@ -92,11 +99,14 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Configure Chalet"
-        run: build/Debug/chalet-debug configure --os-target-version 11.0 --signing-identity $MACOS_SIGNING_IDENTITY
+        run: build/Debug/chalet-debug configure --os-target-version 11.0 --signing-identity "$MACOS_SIGNING_IDENTITY"
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -a x86_64 -b native-experimental bundle
+      - name: "Notarize (x86_64)"
+        run: |
+          xcrun notarytool submit ./dist/chalet-x86_64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
         with:
@@ -106,6 +116,9 @@ jobs:
           prerelease: false
       - name: "Build: Release (arm64)"
         run: build/Debug/chalet-debug -c Release -a arm64 -b native-experimental bundle
+      - name: "Notarize (arm64)"
+        run: |
+          xcrun notarytool submit ./dist/chalet-arm64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (arm64)"
         uses: softprops/action-gh-release@v1
         with:
@@ -115,6 +128,9 @@ jobs:
           prerelease: false
       - name: "Build: Release (universal)"
         run: build/Debug/chalet-debug -c Release -a universal -b native-experimental bundle
+      - name: "Notarize (universal)"
+        run: |
+          xcrun notarytool submit ./dist/chalet-universal-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (universal)"
         uses: softprops/action-gh-release@v1
         with:

@@ -210,7 +210,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), inState.osTargetName);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
 
-	m_jsonFile.assignNodeWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
 
 	// if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
 	// {
