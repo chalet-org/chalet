@@ -169,6 +169,12 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	Path::sanitize(pythonPath);
 	Path::sanitize(javaPath);
 
+	auto emrunPort = Environment::getString("EMRUN_PORT");
+	if (emrunPort.empty())
+	{
+		emrunPort = "6931"; // default
+	}
+
 	fileContents += fmt::format("{pathKey}={emsdkRoot}{sep}{upstream}{sep}{upstreamBin}\n",
 		FMT_ARG(pathKey),
 		FMT_ARG(sep),
@@ -188,6 +194,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	fileContents += fmt::format("EMSDK_PYTHON={}\n", pythonPath);
 	fileContents += fmt::format("JAVA_HOME={}\n", javaHome);
 	fileContents += fmt::format("EMSDK_JAVA={}\n", javaPath);
+	fileContents += fmt::format("EMRUN_PORT={}\n", emrunPort);
 
 	// TODO: .emscripten file?
 	//   https://emscripten.org/docs/tools_reference/emsdk.html#emscripten-compiler-configuration-file-emscripten

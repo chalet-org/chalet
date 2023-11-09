@@ -547,25 +547,18 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, co
 /*****************************************************************************/
 bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent)
 {
-	CHALET_TRY
+	if (!inSilent)
 	{
-		if (!inSilent)
-		{
-			if (Output::showCommands())
-				Output::printCommand(fmt::format("copy: {} -> {}", inFrom, inTo));
-			else
-				Output::msgCopying(inFrom, inTo);
-		}
-
-		fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing);
-
-		return true;
+		if (Output::showCommands())
+			Output::printCommand(fmt::format("copy: {} -> {}", inFrom, inTo));
+		else
+			Output::msgCopying(inFrom, inTo);
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+
+	std::error_code ec;
+	fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing, ec);
+
+	return !ec.operator bool();
 }
 
 /*****************************************************************************/

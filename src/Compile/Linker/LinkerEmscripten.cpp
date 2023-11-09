@@ -6,6 +6,8 @@
 #include "Compile/Linker/LinkerEmscripten.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -61,6 +63,29 @@ void LinkerEmscripten::addLinks(StringList& outArgList) const
 void LinkerEmscripten::addRunPath(StringList& outArgList) const
 {
 	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void LinkerEmscripten::addLinkerOptions(StringList& outArgList) const
+{
+	LinkerLLVMClang::addLinkerOptions(outArgList);
+
+	if (m_state.configuration.debugSymbols())
+	{
+		List::addIfDoesNotExist(outArgList, "-gsource-map");
+		// List::addIfDoesNotExist(outArgList, "-gseparate-dwarf");
+		// List::addIfDoesNotExist(outArgList, "-gsplit-dwarf");
+
+		// std::string sourceMapBase("--source-map-base");
+		// if (!List::contains(outArgList, sourceMapBase))
+		// {
+		// 	outArgList.emplace_back(sourceMapBase);
+		// 	outArgList.emplace_back("http://127.0.0.1:6931/");
+		// }
+	}
+
+	List::addIfDoesNotExist(outArgList, "--emit-symbol-map");
+	// List::addIfDoesNotExist(outArgList, "--emrun");
 }
 
 /*****************************************************************************/

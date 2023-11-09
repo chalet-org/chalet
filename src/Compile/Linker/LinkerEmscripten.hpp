@@ -19,6 +19,7 @@ protected:
 
 	virtual void addLinks(StringList& outArgList) const final;
 	virtual void addRunPath(StringList& outArgList) const final;
+	virtual void addLinkerOptions(StringList& outArgList) const final;
 	virtual void addThreadModelLinks(StringList& outArgList) const final;
 
 	// Linking (Misc)
