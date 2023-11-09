@@ -86,7 +86,7 @@ jobs:
     steps:
       - name: "Prepare Environment for Signing"
         run: |
-          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
           security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
@@ -94,7 +94,7 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
       - name: "Create Keychain profile"
         run: |
-          xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PASSWORD" --team-id "$MACOS_TEAM_ID"
+          xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
