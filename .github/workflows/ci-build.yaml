@@ -80,10 +80,19 @@ jobs:
       MACOS_APPLE_ID: ${{ secrets.MACOS_APPLE_ID }}
       MACOS_CHALET_APP_PWD: ${{ secrets.MACOS_CHALET_APP_PWD }}
       MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
-      MACOS_CERTIFICATE_NAME: ${{ secrets.MACOS_CERTIFICATE_NAME }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
       MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       MACOS_CI_KEYCHAIN_PWD: ${{ secrets.MACOS_CI_KEYCHAIN_PWD }}
     steps:
+      - name: "Validate Environment"
+        run: |
+          if [[ "$MACOS_TEAM_ID" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_APPLE_ID" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_CHALET_APP_PWD" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_CERTIFICATE" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_SIGNING_IDENTITY" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_CERTIFICATE_PWD" == "" ]]; then return 1; else return 0; fi
+          if [[ "$MACOS_CI_KEYCHAIN_PWD" == "" ]]; then return 1; else return 0; fi
       - name: "Prepare Environment for Signing"
         run: |
           echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
@@ -93,8 +102,7 @@ jobs:
           security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
       - name: "Create Keychain profile"
-        run: |
-          xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
+        run: xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
@@ -104,7 +112,7 @@ jobs:
       - name: "Build: Debug"
         run: bash ./build.sh Debug
       - name: "Configure Chalet"
-        run: build/Debug/chalet-debug configure --os-target-version 11.0 --signing-identity "$MACOS_CERTIFICATE_NAME"
+        run: build/Debug/chalet-debug configure --os-target-version 11.0 --signing-identity "$MACOS_SIGNING_IDENTITY"
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"
