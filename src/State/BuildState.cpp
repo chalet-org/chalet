@@ -615,22 +615,28 @@ bool BuildState::validateState()
 
 	if (environment->isEmscripten())
 	{
+		if (inputs.route().isExport())
+		{
+			Diagnostic::error("The '{}' toolchain cannot be exported to another project type.", inputs.toolchainPreferenceName());
+			return false;
+		}
+
 #if defined(CHALET_WIN32)
 		if (toolchain.strategy() == StrategyType::MSBuild)
 		{
-			Diagnostic::error("Emscripten cannot be compiled with msbuild");
+			Diagnostic::error("The '{}' toolchain cannot be compiled with msbuild.", inputs.toolchainPreferenceName());
 			return false;
 		}
 #elif defined(CHALET_MACOS)
 		if (toolchain.strategy() == StrategyType::XcodeBuild)
 		{
-			Diagnostic::error("Emscripten cannot be compiled with xcodebuild");
+			Diagnostic::error("The '{}' toolchain cannot be compiled with xcodebuild.", inputs.toolchainPreferenceName());
 			return false;
 		}
 #endif
 		if (configuration.enableProfiling())
 		{
-			Diagnostic::error("Profiling is not available with Emscripten");
+			Diagnostic::error("The '{}' toolchain does not support profiling.");
 			return false;
 		}
 	}
