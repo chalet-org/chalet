@@ -84,15 +84,6 @@ jobs:
       MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
       MACOS_CI_KEYCHAIN_PWD: ${{ secrets.MACOS_CI_KEYCHAIN_PWD }}
     steps:
-      - name: "Validate Environment"
-        run: |
-          if [[ "$MACOS_TEAM_ID" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_APPLE_ID" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_CHALET_APP_PWD" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_CERTIFICATE" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_SIGNING_IDENTITY" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_CERTIFICATE_PWD" == "" ]]; then return 1; else return 0; fi
-          if [[ "$MACOS_CI_KEYCHAIN_PWD" == "" ]]; then return 1; else return 0; fi
       - name: "Prepare Environment for Signing"
         run: |
           echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
