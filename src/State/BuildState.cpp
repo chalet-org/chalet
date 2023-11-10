@@ -354,7 +354,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		{
 			details = "An installation of MinGW was expected to be present in the 'Path' environment variable - set directly or via a '.env' file.";
 		}
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 		else if (preference.type == ToolchainType::IntelLLVM)
 		{
 			details = "The 'intel-llvm-*' preset requires oneAPI DPC++/C++ compiler to be installed, and the 'ONEAPI_ROOT' environment variable to be set.";

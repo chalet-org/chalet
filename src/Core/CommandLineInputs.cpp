@@ -98,7 +98,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
 }
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 {
 	return {
@@ -108,7 +108,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 	};
 }
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 {
 	return {
@@ -133,10 +133,10 @@ const std::string kArchPresetAuto(Values::Auto);
 const std::string kToolchainPresetGCC("gcc");
 const std::string kToolchainPresetLLVM("llvm");
 const std::string kToolchainPresetEmscripten("emscripten");
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
+#if CHALET_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
 const std::string kToolchainPresetICC("intel-classic");
 #endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	#if !defined(CHALET_WIN32)
 const std::string kToolchainPresetICX("intel-llvm");
 	#endif
@@ -1119,7 +1119,7 @@ StringList CommandLineInputs::getToolchainPresets() const
 	ret.emplace_back(kToolchainPresetEmscripten);
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
 	auto intelClangPresets = getIntelClangVSPresets();
 	for (auto it = intelClangPresets.rbegin(); it != intelClangPresets.rend(); ++it)
@@ -1132,7 +1132,7 @@ StringList CommandLineInputs::getToolchainPresets() const
 	#endif
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	for (auto it = intelClassicPresets.rbegin(); it != intelClassicPresets.rend(); ++it)
@@ -1211,10 +1211,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	auto visualStudioPresets = getVisualStudioPresets();
 	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 	auto intelClangPresets = getIntelClangVSPresets();
 	#endif
 
@@ -1366,7 +1366,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.type = ToolchainType::GNU;
 #endif
 	}
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
 	else if (intelClangPresets.find(inValue) != intelClangPresets.end())
 	#else
@@ -1390,7 +1390,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "dumpbin";
 	}
 #endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	else if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
 	#else
@@ -1501,12 +1501,12 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);
 
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 	presets = getIntelClassicVSPresets();
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 	presets = getIntelClangVSPresets();
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);

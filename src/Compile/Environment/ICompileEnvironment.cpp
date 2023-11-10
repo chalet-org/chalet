@@ -205,7 +205,7 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 			return std::make_unique<CompileEnvironmentEmscripten>(type, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICC || CHALET_ENABLE_INTEL_ICX
 			return std::make_unique<CompileEnvironmentIntel>(type, inState);
 #endif
 		case ToolchainType::Unknown:
@@ -473,7 +473,7 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::VisualStudio;
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	if (String::endsWith("/icl.exe", inExecutable))
 	#else
@@ -482,7 +482,7 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		return ToolchainType::IntelClassic;
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	if (
 	#if defined(CHALET_WIN32)
 		String::endsWith("/icx.exe", executable)

@@ -613,7 +613,7 @@ std::string ArgumentParser::getHelp()
 #if defined(CHALET_MACOS)
 			else if (String::equals("apple-llvm", preset))
 				return fmt::format("Apple{} LLVM (Requires Xcode or \"Command Line Tools for Xcode\")", Unicode::registered());
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 			else if (String::equals("intel-classic", preset))
 				return fmt::format("Intel{} C++ Compiler Classic (for x86_64 processors)", Unicode::registered());
 	#endif
@@ -636,7 +636,7 @@ std::string ArgumentParser::getHelp()
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2022", Unicode::registered());
 			else if (String::equals("llvm-vs-2019", preset))
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2019", Unicode::registered());
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 			else if (String::equals("intel-llvm-vs-2022", preset))
 				return fmt::format("Intel{} oneAPI DPC++/C++ Compiler with Visual Studio 2022 environment", Unicode::registered());
 			else if (String::equals("intel-llvm-vs-2019", preset))

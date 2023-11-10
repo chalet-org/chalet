@@ -469,7 +469,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		}
 	}
 #endif
-#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC)
+#if defined(CHALET_ENABLE_INTEL_ICC)
 	else if (String::startsWith("intel-classic", inToolchain))
 	{
 		ret.emplace_back("x86_64");
@@ -478,7 +478,7 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 	#endif
 	}
 #endif
-#if defined(CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX)
+#if defined(CHALET_ENABLE_INTEL_ICX)
 	else if (String::startsWith("intel-llvm", inToolchain))
 	{
 		ret.emplace_back("x86_64");
