@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
-#define CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -17,5 +16,3 @@ enum class ExternalDependencyType : ushort
 	Script,
 };
 }
-
-#endif // CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP

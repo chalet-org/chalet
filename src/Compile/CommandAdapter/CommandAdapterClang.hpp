@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_ADAPTER_CLANG_HPP
-#define CHALET_COMMAND_ADAPTER_CLANG_HPP
+#pragma once
 
 namespace chalet
 {
@@ -54,5 +53,3 @@ private:
 	uint m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_COMMAND_ADAPTER_CLANG_HPP

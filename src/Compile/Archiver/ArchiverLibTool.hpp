@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARCHIVER_LIB_TOOL_HPP
-#define CHALET_ARCHIVER_LIB_TOOL_HPP
+#pragma once
 
 #include "Compile/Archiver/IArchiver.hpp"
 
@@ -17,5 +16,3 @@ struct ArchiverLibTool final : public IArchiver
 	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const final;
 };
 }
-
-#endif // CHALET_ARCHIVER_LIB_TOOL_HPP

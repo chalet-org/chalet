@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEPENDENCY_MANAGER_HPP
-#define CHALET_DEPENDENCY_MANAGER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -29,5 +28,3 @@ private:
 	CentralState& m_centralState;
 };
 }
-
-#endif // CHALET_DEPENDENCY_MANAGER_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_QUERY_OPTION_HPP
-#define CHALET_QUERY_OPTION_HPP
+#pragma once
 
 namespace chalet
 {
@@ -44,5 +43,3 @@ enum class QueryOption : ushort
 	SettingsSchema,
 };
 }
-
-#endif // CHALET_QUERY_OPTION_HPP

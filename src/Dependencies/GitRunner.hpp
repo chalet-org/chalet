@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_GIT_RUNNER_HPP
-#define CHALET_GIT_RUNNER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -51,5 +50,3 @@ private:
 	const std::string m_git;
 };
 }
-
-#endif // CHALET_GIT_RUNNER_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_KEYS_HPP
-#define CHALET_JSON_KEYS_HPP
+#pragma once
 
 #define CH_STR(x) static constexpr const char x[]
 
@@ -171,5 +170,3 @@ CH_STR(BMI) = "BMI";
 }
 
 #undef CH_STR
-
-#endif // CHALET_JSON_KEYS_HPP

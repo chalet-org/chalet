@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_VISUAL_STUDIO_CLANG_HPP
-#define CHALET_COMPILER_CXX_VISUAL_STUDIO_CLANG_HPP
+#pragma once
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
@@ -22,5 +21,3 @@ private:
 	CommandAdapterMSVC m_msvcAdapter;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_VISUAL_STUDIO_CLANG_HPP

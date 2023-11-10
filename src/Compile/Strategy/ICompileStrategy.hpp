@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ICOMPILE_STRATEGY_HPP
-#define CHALET_ICOMPILE_STRATEGY_HPP
+#pragma once
 
 #include "Compile/CompileCommandsGenerator.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
@@ -60,5 +59,3 @@ private:
 };
 
 }
-
-#endif // CHALET_ICOMPILE_STRATEGY_HPP

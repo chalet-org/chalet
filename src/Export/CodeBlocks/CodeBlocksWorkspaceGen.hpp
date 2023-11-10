@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
-#define CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP
+#pragma once
 
 #include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
@@ -33,5 +32,3 @@ private:
 	const std::string& m_allBuildName;
 };
 }
-
-#endif // CHALET_CODEBLOCKS_WORKSPACE_GEN_HPP

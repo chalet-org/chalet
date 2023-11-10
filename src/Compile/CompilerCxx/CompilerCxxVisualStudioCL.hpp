@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
-#define CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP
+#pragma once
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
@@ -73,5 +72,3 @@ private:
 	std::string m_warningFlag;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_VISUAL_STUDIO_CL_HPP

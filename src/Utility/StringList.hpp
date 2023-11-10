@@ -3,12 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_STRING_LIST_HPP
-#define CHALET_STRING_LIST_HPP
+#pragma once
 
 namespace chalet
 {
 using StringList = std::vector<std::string>;
 }
-
-#endif // CHALET_STRING_LIST_HPP

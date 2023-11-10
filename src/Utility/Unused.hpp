@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_UNUSED_HPP
-#define CHALET_UNUSED_HPP
+#pragma once
 
 #define UNUSED(...) chalet::priv::unused(__VA_ARGS__)
 
@@ -16,5 +15,3 @@ constexpr void unused(Args&&... args)
 	(static_cast<void>(std::forward<Args>(args)), ...);
 }
 }
-
-#endif // CHALET_UNUSED_HPP

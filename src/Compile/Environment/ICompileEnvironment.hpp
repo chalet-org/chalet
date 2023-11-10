@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_ENVIRONMENT_HPP
-#define CHALET_COMPILER_ENVIRONMENT_HPP
+#pragma once
 
 #include "Compile/CompilerInfo.hpp"
 #include "Compile/CompilerPathStructure.hpp"
@@ -111,5 +110,3 @@ private:
 	bool m_initialized = false;
 };
 }
-
-#endif // CHALET_COMPILER_ENVIRONMENT_HPP

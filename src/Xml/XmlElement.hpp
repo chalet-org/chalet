@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_ELEMENT_HPP
-#define CHALET_XML_ELEMENT_HPP
+#pragma once
 
 #include <variant>
 
@@ -58,5 +57,3 @@ private:
 	bool m_commented = false;
 };
 }
-
-#endif // CHALET_XML_ELEMENT_HPP

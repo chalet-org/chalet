@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ICOMPILER_WIN_RESOURCE_HPP
-#define CHALET_ICOMPILER_WIN_RESOURCE_HPP
+#pragma once
 
 #include "Compile/IToolchainExecutableBase.hpp"
 
@@ -25,5 +24,3 @@ protected:
 	virtual void addDefines(StringList& outArgList) const;
 };
 }
-
-#endif // CHALET_ICOMPILER_WINDOWS_RESOURCE_HPP

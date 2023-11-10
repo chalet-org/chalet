@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMANDS_HPP
-#define CHALET_COMMANDS_HPP
+#pragma once
 
 #include "Process/PipeOption.hpp"
 #include "Utility/GlobMatch.hpp"
@@ -101,5 +100,3 @@ bool isUsingAppleCommandLineTools();
 }
 
 #include "Terminal/Commands.inl"
-
-#endif // CHALET_COMMANDS_HPP

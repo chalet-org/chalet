@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_DISK_IMAGE_TARGET_HPP
-#define CHALET_MACOS_DISK_IMAGE_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "Utility/Position.hpp"
@@ -57,5 +56,3 @@ private:
 	bool m_includeApplicationsSymlink = false;
 };
 }
-
-#endif // CHALET_MACOS_DISK_IMAGE_TARGET_HPP

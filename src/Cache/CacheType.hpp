@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CACHE_TYPE_HPP
-#define CHALET_CACHE_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -14,5 +13,3 @@ enum class CacheType : ushort
 	Local,
 };
 }
-
-#endif // CHALET_CACHE_TYPE_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IEXTERNAL_DEPENDENCY_HPP
-#define CHALET_IEXTERNAL_DEPENDENCY_HPP
+#pragma once
 
 #include "State/Dependency/ExternalDependencyType.hpp"
 
@@ -45,5 +44,3 @@ private:
 
 using ExternalDependencyList = std::vector<ExternalDependency>;
 }
-
-#endif // CHALET_IEXTERNAL_DEPENDENCY_HPP

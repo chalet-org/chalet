@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ENVIRONMENT_HPP
-#define CHALET_ENVIRONMENT_HPP
+#pragma once
 
 namespace chalet
 {
@@ -33,5 +32,3 @@ void readEnvFileToDictionary(const std::string& inDeltaFile, Dictionary<std::str
 }
 
 #include "Process/Environment.inl"
-
-#endif // CHALET_ENVIRONMENT_HPP

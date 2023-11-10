@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BASE_ARGUMENT_PARSER_HPP
-#define CHALET_BASE_ARGUMENT_PARSER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -32,5 +31,3 @@ private:
 	bool optionExists(const char** inBegin, const char** inEnd, const std::string& inOption);
 };
 }
-
-#endif // CHALET_BASE_ARGUMENT_PARSER_HPP

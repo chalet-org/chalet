@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_LLVM_CLANG_HPP
-#define CHALET_LINKER_LLVM_CLANG_HPP
+#pragma once
 
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/Linker/LinkerGCC.hpp"
@@ -35,5 +34,3 @@ protected:
 	CommandAdapterClang m_clangAdapter;
 };
 }
-
-#endif // CHALET_LINKER_LLVM_CLANG_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_LAUNCH_GEN_HPP
-#define CHALET_VS_LAUNCH_GEN_HPP
+#pragma once
 
 #include "Core/Arch.hpp"
 #include "Json/JsonFile.hpp"
@@ -29,5 +28,3 @@ private:
 	std::vector<const IBuildTarget*> m_executableTargets;
 };
 }
-
-#endif // CHALET_VS_LAUNCH_GEN_HPP

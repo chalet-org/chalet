@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_HOST_PLATFORM_HPP
-#define CHALET_HOST_PLATFORM_HPP
+#pragma once
 
 namespace chalet
 {
@@ -16,5 +15,3 @@ enum class HostPlatform : ushort
 	Linux
 };
 }
-
-#endif // CHALET_HOST_PLATFORM_HPP

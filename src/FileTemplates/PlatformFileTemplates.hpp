@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PLATFORM_FILE_TEMPLATES_HPP
-#define CHALET_PLATFORM_FILE_TEMPLATES_HPP
+#pragma once
 
 #include "Core/Arch.hpp"
 
@@ -22,5 +21,3 @@ std::string windowsManifestResource(const std::string& inManifestFile, const boo
 std::string windowsIconResource(const std::string& inIconFile);
 }
 }
-
-#endif // CHALET_PLATFORM_FILE_TEMPLATES_HPP

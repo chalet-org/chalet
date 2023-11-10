@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_CONFIGURATION_HPP
-#define CHALET_BUILD_CONFIGURATION_HPP
+#pragma once
 
 #include "State/OptimizationLevel.hpp"
 #include "State/SanitizeOptions.hpp"
@@ -69,5 +68,3 @@ private:
 
 using BuildConfigurationMap = OrderedDictionary<BuildConfiguration>;
 }
-
-#endif // CHALET_BUILD_CONFIGURATION_HPP

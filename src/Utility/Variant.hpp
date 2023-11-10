@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARGUMENT_HPP
-#define CHALET_ARGUMENT_HPP
+#pragma once
 
 #include <any>
 
@@ -66,5 +65,3 @@ private:
 #else
 	#pragma GCC diagnostic pop
 #endif
-
-#endif // CHALET_ARGUMENT_HPP

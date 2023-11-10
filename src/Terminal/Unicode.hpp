@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_UNICODE_HPP
-#define CHALET_UNICODE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ const char* heavyCurvedDownRightArrow();
 const char* registered();
 }
 }
-
-#endif // CHALET_UNICODE_HPP

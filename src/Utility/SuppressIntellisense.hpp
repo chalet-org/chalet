@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUPPRESS_INTELLISENSE_HPP
-#define CHALET_SUPPRESS_INTELLISENSE_HPP
+#pragma once
 
 #ifndef __INTELLISENSE__
 	#define __INTELLISENSE__ 0
@@ -15,5 +14,3 @@
 #if __INTELLISENSE__
 	#pragma diag_suppress 2486
 #endif
-
-#endif // CHALET_SUPPRESS_INTELLISENSE_HPP

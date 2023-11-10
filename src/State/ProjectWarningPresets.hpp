@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_WARNING_PRESETS_HPP
-#define CHALET_PROJECT_WARNING_PRESETS_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ enum class ProjectWarningPresets : ushort
 	VeryStrict
 };
 }
-
-#endif // CHALET_PROJECT_WARNING_PRESETS_HPP

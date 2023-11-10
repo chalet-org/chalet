@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IPROJECT_EXPORTER_HPP
-#define CHALET_IPROJECT_EXPORTER_HPP
+#pragma once
 
 #include "Export/ExportKind.hpp"
 
@@ -67,5 +66,3 @@ private:
 	ExportKind m_kind;
 };
 }
-
-#endif // CHALET_IPROJECT_EXPORTER_HPP

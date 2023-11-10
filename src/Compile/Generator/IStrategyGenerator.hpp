@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ISTRATEGY_GENERATOR_HPP
-#define CHALET_ISTRATEGY_GENERATOR_HPP
+#pragma once
 
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -44,5 +43,3 @@ protected:
 };
 
 }
-
-#endif // CHALET_ISTRATEGY_GENERATOR_HPP

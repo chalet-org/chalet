@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ILINKER_HPP
-#define CHALET_ILINKER_HPP
+#pragma once
 
 #include "Compile/IToolchainExecutableBase.hpp"
 
@@ -52,5 +51,3 @@ protected:
 	uint m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_ILINKER_HPP

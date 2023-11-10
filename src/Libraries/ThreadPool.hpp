@@ -26,8 +26,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_THREAD_POOL_HPP
-#define CHALET_THREAD_POOL_HPP
+#pragma once
 
 #include <atomic>
 #include <condition_variable>
@@ -67,5 +66,3 @@ private:
 }
 
 #include "Libraries/ThreadPool.inl"
-
-#endif // CHALET_THREAD_POOL_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_NODE_READ_STATUS_HPP
-#define CHALET_JSON_NODE_READ_STATUS_HPP
+#pragma once
 
 namespace chalet
 {
@@ -16,5 +15,3 @@ enum class JsonNodeReadStatus
 	ValidKeyReadValue,
 };
 }
-
-#endif // CHALET_JSON_NODE_READ_STATUS_HPP

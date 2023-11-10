@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_UPDATE_NOTIFIER_HPP
-#define CHALET_UPDATE_NOTIFIER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -22,5 +21,3 @@ private:
 	const CentralState& m_centralState;
 };
 }
-
-#endif // CHALET_UPDATE_NOTIFIER_HPP

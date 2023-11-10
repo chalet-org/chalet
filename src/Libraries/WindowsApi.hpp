@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_API_HPP
-#define CHALET_WINDOWS_API_HPP
+#pragma once
 
 // Windows
 #if defined(_WIN32) && !defined(RC_INVOKED)
@@ -29,4 +28,3 @@
 	#endif
 #endif
 
-#endif // CHALET_WINDOWS_API_HPP

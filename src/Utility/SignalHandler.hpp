@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SIGNAL_HANDLER_HPP
-#define CHALET_SIGNAL_HANDLER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -21,5 +20,3 @@ void start(Callback inOnError = nullptr);
 void exitHandler(const int inSignal);
 }
 }
-
-#endif // CHALET_SIGNAL_HANDLER_HPP

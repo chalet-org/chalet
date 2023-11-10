@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_HPP
-#define CHALET_APP_BUNDLER_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "Utility/Timer.hpp"
@@ -62,5 +61,3 @@ private:
 	std::string m_detectedArch;
 };
 }
-
-#endif // CHALET_APP_BUNDLER_HPP

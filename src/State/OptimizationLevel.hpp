@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_OPTIMIZATION_LEVEL_HPP
-#define CHALET_OPTIMIZATION_LEVEL_HPP
+#pragma once
 
 namespace chalet
 {
@@ -20,5 +19,3 @@ enum class OptimizationLevel : ushort
 	Fast
 };
 }
-
-#endif // CHALET_OPTIMIZATION_LEVEL_HPP

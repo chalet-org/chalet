@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_JSON_PARSER_HPP
-#define CHALET_SETTINGS_JSON_PARSER_HPP
+#pragma once
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
@@ -41,5 +40,3 @@ private:
 	JsonFile& m_jsonFile;
 };
 }
-
-#endif // CHALET_SETTINGS_JSON_PARSER_HPP

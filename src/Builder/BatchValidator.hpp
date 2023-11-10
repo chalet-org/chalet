@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BATCH_VALIDATOR_HPP
-#define CHALET_BATCH_VALIDATOR_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 #include "State/ScriptType.hpp"
@@ -27,5 +26,3 @@ private:
 	const std::string& m_schemaFile;
 };
 }
-
-#endif // CHALET_BATCH_VALIDATOR_HPP

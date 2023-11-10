@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_PIPE_OPTION_HPP
-#define CHALET_PROCESS_PIPE_OPTION_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ enum class PipeOption : char
 };
 
 }
-
-#endif // CHALET_PROCESS_PIPE_OPTION_HPP

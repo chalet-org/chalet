@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_THEME_SETTINGS_JSON_PARSER_HPP
-#define CHALET_THEME_SETTINGS_JSON_PARSER_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -27,5 +26,3 @@ private:
 	bool m_updateTheme = false;
 };
 }
-
-#endif // CHALET_THEME_JSON_PARSER_HPP

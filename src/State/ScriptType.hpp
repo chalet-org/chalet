@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_TYPE_HPP
-#define CHALET_SCRIPT_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -22,5 +21,3 @@ enum class ScriptType
 	WindowsCommand,
 };
 }
-
-#endif // CHALET_SCRIPT_TYPE_HPP

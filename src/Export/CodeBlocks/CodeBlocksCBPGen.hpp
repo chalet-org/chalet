@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CODEBLOCKS_CBP_GEN_HPP
-#define CHALET_CODEBLOCKS_CBP_GEN_HPP
+#pragma once
 
 #include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
@@ -71,5 +70,3 @@ private:
 	std::string m_exportPath;
 };
 }
-
-#endif // CHALET_CODEBLOCKS_CBP_GEN_HPP

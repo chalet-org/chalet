@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_LINUX_HPP
-#define CHALET_APP_BUNDLER_LINUX_HPP
+#pragma once
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/FileSystem.hpp"
@@ -32,5 +31,3 @@ private:
 	std::string m_mainExecutable;
 };
 }
-
-#endif // CHALET_APP_BUNDLER_LINUX_HPP

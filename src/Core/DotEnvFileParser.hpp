@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DOT_ENV_FILE_PARSER_HPP
-#define CHALET_DOT_ENV_FILE_PARSER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -21,5 +20,3 @@ private:
 	const CommandLineInputs& m_inputs;
 };
 }
-
-#endif // CHALET_DOT_ENV_FILE_PARSER_HPP

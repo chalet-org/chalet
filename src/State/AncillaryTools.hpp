@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ANCILLARY_TOOLS_HPP
-#define CHALET_ANCILLARY_TOOLS_HPP
+#pragma once
 
 #include "State/ScriptAdapter.hpp"
 #include "State/VariableAdapter.hpp"
@@ -165,5 +164,3 @@ private:
 	bool m_bashAvailable = false;
 };
 }
-
-#endif // CHALET_ANCILLARY_TOOLS_HPP

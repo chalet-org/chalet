@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_HPP
-#define CHALET_XML_HPP
+#pragma once
 
 #include "Xml/XmlElement.hpp"
 
@@ -45,5 +44,3 @@ private:
 	bool m_standalone = false;
 };
 }
-
-#endif // CHALET_XML_HPP

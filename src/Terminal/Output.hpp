@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_OUTPUT_HPP
-#define CHALET_OUTPUT_HPP
+#pragma once
 
 #include "Terminal/Color.hpp"
 #include "Terminal/ColorTheme.hpp"
@@ -83,5 +82,3 @@ void msgCopying(const std::string& inFrom, const std::string& inTo);
 void msgAction(const std::string& inLabel, const std::string& inTo);
 }
 }
-
-#endif // CHALET_OUTPUT_HPP

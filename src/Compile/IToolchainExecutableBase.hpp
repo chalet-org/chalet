@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ITOOLCHAIN_EXECUTABLE_BASE_HPP
-#define CHALET_ITOOLCHAIN_EXECUTABLE_BASE_HPP
+#pragma once
 
 #include "Compile/ToolchainType.hpp"
 
@@ -34,5 +33,3 @@ private:
 	bool isNative() const noexcept;
 };
 }
-
-#endif // CHALET_ITOOLCHAIN_EXECUTABLE_BASE_HPP

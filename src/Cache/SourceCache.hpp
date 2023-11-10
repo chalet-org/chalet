@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_CACHE_HPP
-#define CHALET_SOURCE_CACHE_HPP
+#pragma once
 
 #include "Cache/LastWrite.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -66,5 +65,3 @@ private:
 	mutable bool m_dirty = false;
 };
 }
-
-#endif // CHALET_SOURCE_FILE_CACHE_HPP

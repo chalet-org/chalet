@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_INTEL_CLASSIC_LINK_HPP
-#define CHALET_LINKER_INTEL_CLASSIC_LINK_HPP
+#pragma once
 
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
 
@@ -15,5 +14,3 @@ struct LinkerIntelClassicLINK : public LinkerVisualStudioLINK
 	explicit LinkerIntelClassicLINK(const BuildState& inState, const SourceTarget& inProject);
 };
 }
-
-#endif // CHALET_LINKER_INTEL_CLASSIC_LINK_HPP

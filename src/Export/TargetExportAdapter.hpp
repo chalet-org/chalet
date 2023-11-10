@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TARGET_EXPORT_ADAPTER_HPP
-#define CHALET_TARGET_EXPORT_ADAPTER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,5 +22,3 @@ private:
 	const IBuildTarget& m_target;
 };
 }
-
-#endif // CHALET_TARGET_EXPORT_ADAPTER_HPP

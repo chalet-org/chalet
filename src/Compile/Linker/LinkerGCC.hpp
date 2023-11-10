@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_GCC_HPP
-#define CHALET_LINKER_GCC_HPP
+#pragma once
 
 #include "Compile/Linker/ILinker.hpp"
 
@@ -68,5 +67,3 @@ private:
 	Dictionary<bool> m_supportedLinks;
 };
 }
-
-#endif // CHALET_LINKER_GCC_HPP

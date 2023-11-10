@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_STRING_HPP
-#define CHALET_STRING_HPP
+#pragma once
 
 namespace chalet
 {
@@ -56,5 +55,3 @@ std::string eol();
 
 }
 }
-
-#endif // CHALET_STRING_HPP

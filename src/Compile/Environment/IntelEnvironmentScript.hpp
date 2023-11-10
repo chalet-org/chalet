@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_INTEL_ENVIRONMENT_SCRIPT_HPP
-#define CHALET_INTEL_ENVIRONMENT_SCRIPT_HPP
+#pragma once
 
 #include "Compile/Environment/IEnvironmentScript.hpp"
 #include "Core/VisualStudioVersion.hpp"
@@ -34,5 +33,3 @@ private:
 	VisualStudioVersion m_vsVersion = VisualStudioVersion::None;
 };
 }
-
-#endif // CHALET_INTEL_ENVIRONMENT_SCRIPT_HPP

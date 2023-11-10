@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_UTIL_VERSION_HPP
-#define CHALET_UTIL_VERSION_HPP
+#pragma once
 
 namespace chalet
 {
@@ -41,5 +40,3 @@ private:
 	uint m_tweak = 0;
 };
 }
-
-#endif // CHALET_UTIL_VERSION_HPP

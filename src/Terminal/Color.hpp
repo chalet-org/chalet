@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COLOR_HPP
-#define CHALET_COLOR_HPP
+#pragma once
 
 namespace chalet
 {
@@ -87,5 +86,3 @@ enum class Color : ushort
 
 };
 }
-
-#endif // CHALET_COLOR_HPP

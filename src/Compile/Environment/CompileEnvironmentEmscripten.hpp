@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_EMSCRIPTEN_HPP
-#define CHALET_COMPILE_ENVIRONMENT_EMSCRIPTEN_HPP
+#pragma once
 
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
@@ -42,5 +41,3 @@ private:
 	mutable std::string m_emccVersion;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_EMSCRIPTEN_HPP

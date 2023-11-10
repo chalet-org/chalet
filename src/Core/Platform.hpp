@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PLATFORM_HPP
-#define CHALET_PLATFORM_HPP
+#pragma once
 
 namespace chalet
 {
@@ -18,5 +17,3 @@ StringList notPlatforms() noexcept;
 void assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform, StringList& outNotPlatforms);
 }
 }
-
-#endif // CHALET_PLATFORM_HPP

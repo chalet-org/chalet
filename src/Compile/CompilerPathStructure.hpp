@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_PATH_STRUCTURE_HPP
-#define CHALET_COMPILER_PATH_STRUCTURE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -15,5 +14,3 @@ struct CompilerPathStructure
 	std::string includeDir;
 };
 }
-
-#endif // CHALET_COMPILER_PATH_STRUCTURE_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_HPP
-#define CHALET_PROCESS_HPP
+#pragma once
 
 #include "Process/ProcessOptions.hpp"
 #include "Process/ProcessPipe.hpp"
@@ -67,5 +66,3 @@ private:
 }
 
 #include "Process/Process.inl"
-
-#endif // CHALET_PROCESS_HPP

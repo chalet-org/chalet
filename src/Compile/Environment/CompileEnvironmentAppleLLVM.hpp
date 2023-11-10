@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_APPLE_LLVM_HPP
-#define CHALET_COMPILE_ENVIRONMENT_APPLE_LLVM_HPP
+#pragma once
 
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
@@ -19,5 +18,3 @@ protected:
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_APPLE_LLVM_HPP

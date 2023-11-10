@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SHELL_HPP
-#define CHALET_SHELL_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,5 +22,3 @@ bool isJetBrainsOutput();
 std::string getNull();
 }
 }
-
-#endif // CHALET_SHELL_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ROUTER_HPP
-#define CHALET_ROUTER_HPP
+#pragma once
 
 #include "Export/ExportKind.hpp"
 
@@ -44,5 +43,3 @@ private:
 	CommandLineInputs& m_inputs;
 };
 }
-
-#endif // CHALET_ROUTER_HPP

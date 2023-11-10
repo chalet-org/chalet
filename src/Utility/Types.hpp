@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_UTIL_TYPES_HPP
-#define CHALET_UTIL_TYPES_HPP
+#pragma once
 
 #include <cstdint>
 
@@ -34,5 +33,3 @@ using Dictionary = std::unordered_map<std::string, MapType>;
 template <typename MapType>
 using HeapDictionary = std::unordered_map<std::string, Unique<MapType>>;
 }
-
-#endif // CHALET_UTIL_TYPES_HPP

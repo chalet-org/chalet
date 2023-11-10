@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_ADAPTER_VCXPROJ_HPP
-#define CHALET_PROJECT_ADAPTER_VCXPROJ_HPP
+#pragma once
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
@@ -118,5 +117,3 @@ private:
 	uint m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_PROJECT_ADAPTER_VCXPROJ_HPP

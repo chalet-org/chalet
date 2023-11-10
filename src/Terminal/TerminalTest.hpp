@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TERMINAL_TEST_HPP
-#define CHALET_TERMINAL_TEST_HPP
+#pragma once
 
 #include "Terminal/ColorTheme.hpp"
 
@@ -37,5 +36,3 @@ private:
 	std::string m_separator;
 };
 }
-
-#endif // CHALET_TERMINAL_TEST_HPP

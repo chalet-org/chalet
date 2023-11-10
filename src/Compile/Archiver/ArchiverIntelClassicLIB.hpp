@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARCHIVER_INTEL_CLASSIC_LIB_HPP
-#define CHALET_ARCHIVER_INTEL_CLASSIC_LIB_HPP
+#pragma once
 
 #include "Compile/Archiver/ArchiverVisualStudioLIB.hpp"
 
@@ -15,5 +14,3 @@ struct ArchiverIntelClassicLIB : public ArchiverVisualStudioLIB
 	explicit ArchiverIntelClassicLIB(const BuildState& inState, const SourceTarget& inProject);
 };
 }
-
-#endif // CHALET_ARCHIVER_INTEL_CLASSIC_LIB_HPP

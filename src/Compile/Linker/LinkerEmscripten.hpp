@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_EMSCRIPTEN_HPP
-#define CHALET_LINKER_EMSCRIPTEN_HPP
+#pragma once
 
 #include "Compile/Linker/LinkerLLVMClang.hpp"
 
@@ -28,5 +27,3 @@ protected:
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const final;
 };
 }
-
-#endif // CHALET_LINKER_EMSCRIPTEN_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_VALIDATION_ERROR_HPP
-#define CHALET_JSON_VALIDATION_ERROR_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -25,5 +24,3 @@ struct JsonValidationError
 };
 using JsonValidationErrors = std::vector<JsonValidationError>;
 }
-
-#endif // CHALET_JSON_VALIDATION_ERROR_HPP

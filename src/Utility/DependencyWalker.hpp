@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEPENDENCY_WALKER_HPP
-#define CHALET_DEPENDENCY_WALKER_HPP
+#pragma once
 
 // https://stackoverflow.com/questions/43670731/programmatically-get-list-of-dlls-used-to-build-a-process-or-library-in-a-non-de
 
@@ -22,5 +21,3 @@ private:
 	std::vector<char> readAllBytes(const std::string& inFile);
 };
 }
-
-#endif // CHALET_DEPENDENCY_WALKER_HPP

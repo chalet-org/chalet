@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP
-#define CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP
+#pragma once
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/VisualStudioVersion.hpp"
@@ -45,5 +44,3 @@ private:
 	Unique<VisualStudioEnvironmentScript> m_config;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_VISUAL_STUDIO_HPP

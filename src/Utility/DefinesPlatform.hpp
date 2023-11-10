@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEFINES_PLATFORM_HPP
-#define CHALET_DEFINES_PLATFORM_HPP
+#pragma once
 
 #if defined(_DEBUG) || defined(DEBUG)
 	#ifndef CHALET_DEBUG
@@ -27,5 +26,3 @@
 #else
 	#error "Unknown platform";
 #endif
-
-#endif // CHALET_DEFINES_PLATFORM_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_POSITION_HPP
-#define CHALET_POSITION_HPP
+#pragma once
 
 namespace chalet
 {
@@ -25,5 +24,3 @@ namespace chalet
 {
 extern template struct Position<short>;
 }
-
-#endif // CHALET_POSITION_HPP

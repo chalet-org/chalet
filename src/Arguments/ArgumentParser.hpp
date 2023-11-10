@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARGUMENT_PARSER_HPP
-#define CHALET_ARGUMENT_PARSER_HPP
+#pragma once
 
 #include "Arguments/ArgumentIdentifier.hpp"
 #include "Arguments/BaseArgumentParser.hpp"
@@ -130,5 +129,3 @@ private:
 	bool m_hasRemaining = false;
 };
 }
-
-#endif // CHALET_ARGUMENT_PARSER_HPP

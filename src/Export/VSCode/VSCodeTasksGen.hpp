@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VSCODE_TASKS_GEN_HPP
-#define CHALET_VSCODE_TASKS_GEN_HPP
+#pragma once
 
 #include "Json/JsonFile.hpp"
 
@@ -29,5 +28,3 @@ private:
 	const BuildState& m_state;
 };
 }
-
-#endif // CHALET_VSCODE_LAUNCH_GEN_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_TARGET_TYPE_HPP
-#define CHALET_BUILD_TARGET_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ enum class BuildTargetType
 	Validation,
 };
 }
-
-#endif // CHALET_BUILD_TARGET_TYPE_HPP

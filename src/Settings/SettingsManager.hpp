@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_MANAGER_HPP
-#define CHALET_SETTINGS_MANAGER_HPP
+#pragma once
 
 #include "Cache/WorkspaceCache.hpp"
 #include "Settings/SettingsAction.hpp"
@@ -51,5 +50,3 @@ private:
 	bool m_initialized = false;
 };
 }
-
-#endif // CHALET_SETTINGS_MANAGER_HPP

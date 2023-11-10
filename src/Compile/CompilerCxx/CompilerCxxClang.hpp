@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_CLANG_HPP
-#define CHALET_COMPILER_CXX_CLANG_HPP
+#pragma once
 
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
@@ -39,5 +38,3 @@ protected:
 	CommandAdapterClang m_clangAdapter;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_CLANG_HPP

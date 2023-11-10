@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_CONTROLLER_HPP
-#define CHALET_PROCESS_CONTROLLER_HPP
+#pragma once
 
 #include "Process/ProcessOptions.hpp"
 #include "Process/SigNum.hpp"
@@ -21,5 +20,3 @@ std::string getSignalNameFromCode(const int inExitCode);
 void haltAll(const SigNum inSignal = SigNum::Terminate);
 }
 }
-
-#endif // CHALET_PROCESS_CONTROLLER_HPP

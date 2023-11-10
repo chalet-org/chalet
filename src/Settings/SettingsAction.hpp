@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_ACTION_HPP
-#define CHALET_SETTINGS_ACTION_HPP
+#pragma once
 
 #include "Router/RouteType.hpp"
 
@@ -18,5 +17,3 @@ enum class SettingsAction : std::underlying_type_t<RouteType>
 	QueryKeys = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsGetKeys),
 };
 }
-
-#endif // CHALET_SETTINGS_ACTION_HPP

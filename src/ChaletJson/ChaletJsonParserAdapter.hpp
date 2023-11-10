@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CHALET_JSON_PARSER_ADAPTER_HPP
-#define CHALET_CHALET_JSON_PARSER_ADAPTER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -28,5 +27,3 @@ struct ChaletJsonParserAdapter
 	mutable ConditionOp lastOp = ConditionOp::And;
 };
 }
-
-#endif // CHALET_CHALET_JSON_PARSER_ADAPTER_HPP

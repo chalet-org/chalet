@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IENVIRONMENT_SCRIPT_HPP
-#define CHALET_IENVIRONMENT_SCRIPT_HPP
+#pragma once
 
 namespace chalet
 {
@@ -36,5 +35,3 @@ protected:
 	bool m_envVarsFileDeltaExists = false;
 };
 }
-
-#endif // CHALET_IENVIRONMENT_SCRIPT_HPP

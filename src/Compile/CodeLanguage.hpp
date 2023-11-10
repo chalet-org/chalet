@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CODE_LANGUAGE_HPP
-#define CHALET_CODE_LANGUAGE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -17,5 +16,3 @@ enum class CodeLanguage : ushort
 	ObjectiveCPlusPlus
 };
 }
-
-#endif // CHALET_CODE_LANGUAGE_HPP

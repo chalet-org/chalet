@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_MACOS_HPP
-#define CHALET_APP_BUNDLER_MACOS_HPP
+#pragma once
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/Json.hpp"
@@ -65,5 +64,3 @@ private:
 	std::string m_entitlementsFile;
 };
 }
-
-#endif // CHALET_APP_BUNDLER_MACOS_HPP

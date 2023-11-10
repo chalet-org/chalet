@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_CODE_SIGN_OPTIONS_HPP
-#define CHALET_MACOS_CODE_SIGN_OPTIONS_HPP
+#pragma once
 
 namespace chalet
 {
@@ -18,5 +17,3 @@ struct MacosCodeSignOptions
 	bool force = true;
 };
 }
-
-#endif // CHALET_MACOS_CODE_SIGN_OPTIONS_HPP

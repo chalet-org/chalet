@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LOGGER_HPP
-#define CHALET_LOGGER_HPP
+#pragma once
 
 // #ifdef _DEBUG
 #define LOG(...) priv::Logger(__FILE__, __FUNCTION__, __VA_ARGS__)
@@ -48,5 +47,3 @@ private:
 #include "Utility/Logger.inl"
 
 // #endif
-
-#endif // CHALET_LOGGER_HPP

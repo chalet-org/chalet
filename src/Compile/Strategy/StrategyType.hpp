@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_STRATEGY_TYPE_HPP
-#define CHALET_COMPILE_STRATEGY_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ enum class StrategyType : ushort
 	Count,
 };
 }
-
-#endif // CHALET_COMPILE_STRATEGY_TYPE_HPP

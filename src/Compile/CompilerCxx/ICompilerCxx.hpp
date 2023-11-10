@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ICOMPILER_EXECUTABLE_CXX_HPP
-#define CHALET_ICOMPILER_EXECUTABLE_CXX_HPP
+#pragma once
 
 #include "Compile/IToolchainExecutableBase.hpp"
 #include "Compile/ModuleFileType.hpp"
@@ -56,5 +55,3 @@ protected:
 	uint m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_ICOMPILER_EXECUTABLE_CXX_HPP

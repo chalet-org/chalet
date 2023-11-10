@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_STRATEGY_MAKEFILE_HPP
-#define CHALET_COMPILE_STRATEGY_MAKEFILE_HPP
+#pragma once
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
@@ -40,5 +39,3 @@ private:
 	bool m_cacheNeedsUpdate = false;
 };
 }
-
-#endif // CHALET_COMPILE_STRATEGY_MAKEFILE_HPP

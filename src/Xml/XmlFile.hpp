@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_FILE_HPP
-#define CHALET_XML_FILE_HPP
+#pragma once
 
 #include "Xml/Xml.hpp"
 
@@ -34,5 +33,3 @@ private:
 	std::string m_filename;
 };
 }
-
-#endif // CHALET_XML_FILE_HPP

@@ -3,15 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CHALET_JSON_PARSER_HPP
-#define CHALET_CHALET_JSON_PARSER_HPP
+#pragma once
 
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
-#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -102,5 +101,3 @@ private:
 }
 
 #include "ChaletJson/ChaletJsonParser.inl"
-
-#endif // CHALET_CHALET_JSON_PARSER_HPP

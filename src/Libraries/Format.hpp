@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_FORMAT_HPP
-#define CHALET_FORMAT_HPP
+#pragma once
 
 #ifndef FMT_HEADER_ONLY
 	#define FMT_HEADER_ONLY
@@ -34,5 +33,3 @@
 #endif
 
 #define FMT_ARG(x) fmt::arg(#x, x)
-
-#endif // CHALET_FORMAT_HPP

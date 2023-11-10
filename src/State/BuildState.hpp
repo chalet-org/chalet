@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_STATE_HPP
-#define CHALET_BUILD_STATE_HPP
+#pragma once
 
 #include "Router/CommandRoute.hpp"
 
@@ -91,5 +90,3 @@ private:
 	bool m_cacheEnabled = true;
 };
 }
-
-#endif // CHALET_BUILD_STATE_HPP

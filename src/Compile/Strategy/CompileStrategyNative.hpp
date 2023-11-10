@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_STRATEGY_NATIVE_HPP
-#define CHALET_COMPILE_STRATEGY_NATIVE_HPP
+#pragma once
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
@@ -50,5 +49,3 @@ private:
 	bool m_initialized = false;
 };
 }
-
-#endif // CHALET_COMPILE_STRATEGY_NATIVE_HPP

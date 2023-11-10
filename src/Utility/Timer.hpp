@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TIMER_HPP
-#define CHALET_TIMER_HPP
+#pragma once
 
 #include <chrono>
 
@@ -26,5 +25,3 @@ private:
 	clock::time_point m_end;
 };
 }
-
-#endif // CHALET_IMMEDIATE_TIMER_HPP

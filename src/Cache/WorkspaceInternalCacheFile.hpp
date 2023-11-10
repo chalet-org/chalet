@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
-#define CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP
+#pragma once
 
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -94,5 +93,3 @@ private:
 	bool m_dirty = false;
 };
 }
-
-#endif // CHALET_WORKSPACE_SOURCE_CACHE_FILE_HPP

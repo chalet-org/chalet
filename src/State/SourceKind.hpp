@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_KIND_HPP
-#define CHALET_SOURCE_KIND_HPP
+#pragma once
 
 namespace chalet
 {
@@ -16,5 +15,3 @@ enum class SourceKind : ushort
 	Executable
 };
 }
-
-#endif // CHALET_SOURCE_KIND_HPP

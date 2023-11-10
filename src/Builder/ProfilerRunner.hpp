@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROFILER_RUNNER_HPP
-#define CHALET_PROFILER_RUNNER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -33,5 +32,3 @@ private:
 	const SourceTarget& m_project;
 };
 }
-
-#endif // CHALET_PROFILER_RUNNER_HPP

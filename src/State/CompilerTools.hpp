@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_TOOLS_HPP
-#define CHALET_COMPILER_TOOLS_HPP
+#pragma once
 
 #include "Compile/BuildPathStyle.hpp"
 #include "Compile/CodeLanguage.hpp"
@@ -146,5 +145,3 @@ private:
 	bool m_makeIsJom = false;
 };
 }
-
-#endif // CHALET_COMPILER_TOOLS_HPP

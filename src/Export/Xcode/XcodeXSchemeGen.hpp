@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XCODE_XSCHEME_GEN_HPP
-#define CHALET_XCODE_XSCHEME_GEN_HPP
+#pragma once
 
 namespace chalet
 {
@@ -26,5 +25,3 @@ private:
 	std::string m_xcodeNamespaceGuid;
 };
 }
-
-#endif // CHALET_XCODE_XSCHEME_GEN_HPP

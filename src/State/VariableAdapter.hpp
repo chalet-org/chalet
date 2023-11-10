@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VARIABLE_ADAPTER_HPP
-#define CHALET_VARIABLE_ADAPTER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -24,5 +23,3 @@ private:
 	Dictionary<std::string> m_variables;
 };
 }
-
-#endif // CHALET_VARIABLE_ADAPTER_HPP

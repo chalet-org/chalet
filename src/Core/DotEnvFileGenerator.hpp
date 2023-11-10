@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DOT_ENV_FILE_GENERATOR_HPP
-#define CHALET_DOT_ENV_FILE_GENERATOR_HPP
+#pragma once
 
 namespace chalet
 {
@@ -33,5 +32,3 @@ private:
 	Dictionary<std::string> m_variables;
 };
 }
-
-#endif // CHALET_DOT_ENV_FILE_GENERATOR_HPP

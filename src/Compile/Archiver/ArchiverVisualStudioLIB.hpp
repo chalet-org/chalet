@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARCHIVER_VISUAL_STUDIO_LIB_HPP
-#define CHALET_ARCHIVER_VISUAL_STUDIO_LIB_HPP
+#pragma once
 
 #include "Compile/Archiver/IArchiver.hpp"
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
@@ -26,5 +25,3 @@ protected:
 	CommandAdapterMSVC m_msvcAdapter;
 };
 }
-
-#endif // CHALET_ARCHIVER_VISUAL_STUDIO_LIB_HPP

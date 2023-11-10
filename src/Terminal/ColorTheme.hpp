@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COLOR_THEME_HPP
-#define CHALET_COLOR_THEME_HPP
+#pragma once
 
 #include "Terminal/Color.hpp"
 
@@ -61,5 +60,3 @@ private:
 	std::string m_preset;
 };
 }
-
-#endif // CHALET_COLOR_THEME_HPP

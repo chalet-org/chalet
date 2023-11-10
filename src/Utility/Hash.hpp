@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_HASH_HPP
-#define CHALET_HASH_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ std::string getHashableString(Args&&... args);
 }
 
 #include "Utility/Hash.inl"
-
-#endif // CHALET_HASH_HPP

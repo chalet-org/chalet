@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_ADAPTER_MSVC_HPP
-#define CHALET_COMMAND_ADAPTER_MSVC_HPP
+#pragma once
 
 #include "State/MSVCWarningLevel.hpp"
 #include "State/WindowsCallingConvention.hpp"
@@ -92,5 +91,3 @@ private:
 	uint m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_COMMAND_ADAPTER_MSVC_HPP

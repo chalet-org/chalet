@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
-#define CHALET_COMPILE_ENVIRONMENT_INTEL_HPP
+#pragma once
 
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
 
@@ -37,5 +36,3 @@ private:
 	Unique<IntelEnvironmentScript> m_config;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_INTEL_HPP

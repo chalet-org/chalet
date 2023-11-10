@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_INFO_HPP
-#define CHALET_BUILD_INFO_HPP
+#pragma once
 
 #include "Core/Arch.hpp"
 
@@ -70,5 +69,3 @@ private:
 	bool m_onlyRequired = false;
 };
 }
-
-#endif // CHALET_BUILD_INFO_HPP

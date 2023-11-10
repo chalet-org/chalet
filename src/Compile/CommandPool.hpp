@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_POOL_HPP
-#define CHALET_COMMAND_POOL_HPP
+#pragma once
 
 #include "Libraries/ThreadPool.hpp"
 #include "Terminal/Color.hpp"
@@ -62,5 +61,3 @@ private:
 	bool m_quiet = false;
 };
 }
-
-#endif // CHALET_COMMAND_POOL_HPP

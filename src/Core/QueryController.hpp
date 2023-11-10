@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_QUERY_CONTROLLER_HPP
-#define CHALET_QUERY_CONTROLLER_HPP
+#pragma once
 
 #include "Core/QueryOption.hpp"
 #include "Libraries/Json.hpp"
@@ -52,5 +51,3 @@ private:
 	const Json kEmptyJson;
 };
 }
-
-#endif // CHALET_QUERY_CONTROLLER_HPP

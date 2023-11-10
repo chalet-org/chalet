@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACROS_HPP
-#define CHALET_MACROS_HPP
+#pragma once
 
 #define CHALET_DISALLOW_COPY_MOVE(ClassName)         \
 	ClassName(const ClassName&) = delete;            \
@@ -33,5 +32,3 @@
 #define CHALET_DEFAULT_MOVE(ClassName)         \
 	ClassName(ClassName&&) noexcept = default; \
 	ClassName& operator=(ClassName&&) noexcept = default
-
-#endif // CHALET_MACROS_HPP

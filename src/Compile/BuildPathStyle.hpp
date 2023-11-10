@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_PATH_STYLE_HPP
-#define CHALET_BUILD_PATH_STYLE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -17,5 +16,3 @@ enum class BuildPathStyle : ushort
 	ToolchainName,
 };
 }
-
-#endif // CHALET_BUILD_PATH_STYLE_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_GNU_HPP
-#define CHALET_COMPILE_ENVIRONMENT_GNU_HPP
+#pragma once
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Process/PipeOption.hpp"
@@ -42,5 +41,3 @@ protected:
 	// bool m_genericGcc = false;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_GNU_HPP

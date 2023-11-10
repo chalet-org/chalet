@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VISUAL_STUDIO_VERSION_HPP
-#define CHALET_VISUAL_STUDIO_VERSION_HPP
+#pragma once
 
 namespace chalet
 {
@@ -22,5 +21,3 @@ enum class VisualStudioVersion : ushort
 	VisualStudio2022 = 17,
 };
 }
-
-#endif // CHALET_VISUAL_STUDIO_VERSION_HPP

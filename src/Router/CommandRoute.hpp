@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_ROUTE_HPP
-#define CHALET_COMMAND_ROUTE_HPP
+#pragma once
 
 #include "Router/RouteType.hpp"
 
@@ -38,5 +37,3 @@ private:
 }
 
 #include "Router/CommandRoute.inl"
-
-#endif // CHALET_COMMAND_ROUTE_HPP

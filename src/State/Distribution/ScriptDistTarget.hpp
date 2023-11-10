@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_DIST_TARGET_HPP
-#define CHALET_SCRIPT_DIST_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/ScriptType.hpp"
@@ -40,5 +39,3 @@ private:
 	ScriptType m_scriptType = ScriptType::None;
 };
 }
-
-#endif // CHALET_SCRIPT_DIST_TARGET_HPP

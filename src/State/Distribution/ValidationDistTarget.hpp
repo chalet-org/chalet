@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VALIDATION_DIST_TARGET_HPP
-#define CHALET_VALIDATION_DIST_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/ScriptType.hpp"
@@ -30,5 +29,3 @@ private:
 	StringList m_files;
 };
 }
-
-#endif // CHALET_VALIDATION_DIST_TARGET_HPP

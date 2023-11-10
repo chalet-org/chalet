@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XCODE_PROJECT_EXPORTER_HPP
-#define CHALET_XCODE_PROJECT_EXPORTER_HPP
+#pragma once
 
 #include "Export/IProjectExporter.hpp"
 
@@ -27,5 +26,3 @@ private:
 	std::string getProjectName(const BuildState& inState) const;
 };
 }
-
-#endif // CHALET_XCODE_PROJECT_EXPORTER_HPP

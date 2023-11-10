@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_STARTER_FILE_TEMPLATES_HPP
-#define CHALET_STARTER_FILE_TEMPLATES_HPP
+#pragma once
 
 #include "Init/ChaletJsonProps.hpp"
 #include "Libraries/Json.hpp"
@@ -23,5 +22,3 @@ Json getCMakeStarterChaletJson(const ChaletJsonProps& inProps);
 std::string getCMakeStarter(const ChaletJsonProps& inProps);
 }
 }
-
-#endif // CHALET_STARTER_FILE_TEMPLATES_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MSVC_WARNING_LEVEL_HPP
-#define CHALET_MSVC_WARNING_LEVEL_HPP
+#pragma once
 
 namespace chalet
 {
@@ -18,5 +17,3 @@ enum class MSVCWarningLevel
 	LevelAll
 };
 }
-
-#endif // CHALET_MSVC_WARNING_LEVEL_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_ENVIRONMENT_LLVM_HPP
-#define CHALET_COMPILE_ENVIRONMENT_LLVM_HPP
+#pragma once
 
 #include "Compile/Environment/CompileEnvironmentGNU.hpp"
 
@@ -25,5 +24,3 @@ protected:
 	virtual void parseSupportedFlagsFromHelpList(const StringList& inCommand) override;
 };
 }
-
-#endif // CHALET_COMPILE_ENVIRONMENT_LLVM_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SIG_NUM_HPP
-#define CHALET_SIG_NUM_HPP
+#pragma once
 
 #include <signal.h>
 
@@ -30,5 +29,3 @@ enum class SigNum : int
 	Terminate = SIGTERM,
 };
 }
-
-#endif // CHALET_SIG_NUM_HPP

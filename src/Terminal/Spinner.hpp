@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SPINNER_HPP
-#define CHALET_SPINNER_HPP
+#pragma once
 
 #include <atomic>
 #include <mutex>
@@ -34,5 +33,3 @@ private:
 	std::mutex m_mutex;
 };
 }
-
-#endif // CHALET_SPINNER_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_EMSCRIPTEN_ENVIRONMENT_SCRIPT_HPP
-#define CHALET_EMSCRIPTEN_ENVIRONMENT_SCRIPT_HPP
+#pragma once
 
 #include "Compile/Environment/IEnvironmentScript.hpp"
 
@@ -28,5 +27,3 @@ private:
 	std::string m_emsdkEnv;
 };
 }
-
-#endif // CHALET_EMSCRIPTEN_ENVIRONMENT_SCRIPT_HPP

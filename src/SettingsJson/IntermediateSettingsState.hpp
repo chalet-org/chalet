@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_INTERMEDIATE_SETTINGS_STATE_HPP
-#define CHALET_INTERMEDIATE_SETTINGS_STATE_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -41,5 +40,3 @@ struct IntermediateSettingsState
 	bool onlyRequired = false;
 };
 }
-
-#endif // CHALET_INTERMEDIATE_SETTINGS_STATE_HPP

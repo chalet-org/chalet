@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MAPPED_ARGUMENT_HPP
-#define CHALET_MAPPED_ARGUMENT_HPP
+#pragma once
 
 #include "Arguments/ArgumentIdentifier.hpp"
 #include "Utility/Variant.hpp"
@@ -50,5 +49,3 @@ private:
 }
 
 #include "Arguments/MappedArgument.inl"
-
-#endif // CHALET_MAPPED_ARGUMENT_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VSCODE_LAUNCH_GEN_HPP
-#define CHALET_VSCODE_LAUNCH_GEN_HPP
+#pragma once
 
 #include "Json/JsonFile.hpp"
 
@@ -37,5 +36,3 @@ private:
 	const IBuildTarget& m_target;
 };
 }
-
-#endif // CHALET_VSCODE_LAUNCH_GEN_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_HPP
-#define CHALET_JSON_HPP
+#pragma once
 
 // Exceptions will throw during schema construction otherwise
 #if !defined(CHALET_EXCEPTIONS)
@@ -48,5 +47,3 @@ using JsonDataType = nlohmann::detail::value_t;
 namespace JsonSchema = nlohmann::json_schema;
 using JsonSchemaError = JsonSchema::error_descriptor;
 }
-
-#endif // CHALET_JSON_HPP

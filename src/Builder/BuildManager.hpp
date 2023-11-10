@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MAKEFILE_RUNNER_HPP
-#define CHALET_MAKEFILE_RUNNER_HPP
+#pragma once
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Router/CommandRoute.hpp"
@@ -87,5 +86,3 @@ private:
 	bool m_directoriesMade = false;
 };
 }
-
-#endif // CHALET_MAKEFILE_RUNNER_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_LINE_INPUTS_HPP
-#define CHALET_COMMAND_LINE_INPUTS_HPP
+#pragma once
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Core/QueryOption.hpp"
@@ -257,5 +256,3 @@ private:
 	bool m_saveUserToolchainGlobally = false;
 };
 }
-
-#endif // CHALET_COMMAND_LINE_INPUTS_HPP

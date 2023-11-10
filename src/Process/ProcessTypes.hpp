@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_TYPES_HPP
-#define CHALET_PROCESS_TYPES_HPP
+#pragma once
 
 #if defined(CHALET_WIN32)
 	#include "Libraries/WindowsApi.hpp"
@@ -39,5 +38,3 @@ typedef ::pid_t ProcessID;
 constexpr PipeHandle kInvalidPipe = -1;
 #endif
 }
-
-#endif // CHALET_PROCESS_TYPES_HPP

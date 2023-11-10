@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PATH_HPP
-#define CHALET_PATH_HPP
+#pragma once
 
 namespace chalet
 {
@@ -14,5 +13,3 @@ void sanitize(std::string& outValue, const bool inRemoveNewLine = false);
 void sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine = false);
 }
 }
-
-#endif // CHALET_PATHS_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_LINE_HPP
-#define CHALET_COMMAND_LINE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -15,5 +14,3 @@ namespace CommandLine
 Unique<CommandLineInputs> read(const int argc, const char* argv[], bool& outResult);
 }
 }
-
-#endif // CHALET_ARGUMENT_READER_HPP

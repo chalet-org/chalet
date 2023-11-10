@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DIAGNOSTIC_HPP
-#define CHALET_DIAGNOSTIC_HPP
+#pragma once
 
 #include "Utility/Types.hpp"
 
@@ -80,5 +79,3 @@ private:
 #else
 	#define chalet_assert(expr, message) static_cast<void>((expr) || (chalet::Diagnostic::customAssertion(#expr, message, __FILE__, __LINE__), 0))
 #endif
-
-#endif // CHALET_DIAGNOSTIC_HPP

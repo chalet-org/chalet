@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_OPTIONS_HPP
-#define CHALET_PROCESS_OPTIONS_HPP
+#pragma once
 
 #include "Process/PipeOption.hpp"
 
@@ -25,5 +24,3 @@ struct ProcessOptions
 	PipeOption stderrOption = PipeOption::Close;
 };
 }
-
-#endif // CHALET_PROCESS_OPTIONS_HPP

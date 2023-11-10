@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IBUILD_TARGET_HPP
-#define CHALET_IBUILD_TARGET_HPP
+#pragma once
 
 #include "State/Target/BuildTargetType.hpp"
 
@@ -58,5 +57,3 @@ private:
 	bool m_includeInBuild = true;
 };
 }
-
-#endif // CHALET_IBUILD_TARGET_HPP

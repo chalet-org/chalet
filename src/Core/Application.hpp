@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APPLICATION_HPP
-#define CHALET_APPLICATION_HPP
+#pragma once
 
 #include "Core/CommandLineInputs.hpp"
 
@@ -34,5 +33,3 @@ private:
 	Unique<CommandLineInputs> m_inputs;
 };
 }
-
-#endif // CHALET_APPLICATION_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_FILE_HPP
-#define CHALET_JSON_FILE_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -63,5 +62,3 @@ private:
 }
 
 #include "Json/JsonFile.inl"
-
-#endif // CHALET_JSON_FILE_HPP

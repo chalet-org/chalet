@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LOCAL_DEPENDENCY_HPP
-#define CHALET_LOCAL_DEPENDENCY_HPP
+#pragma once
 
 #include "State/Dependency/IExternalDependency.hpp"
 
@@ -29,5 +28,3 @@ private:
 	bool m_needsUpdate = false;
 };
 }
-
-#endif // CHALET_LOCAL_DEPENDENCY_HPP

@@ -1,5 +1,4 @@
-#ifndef CHALET_ARCH_HPP
-#define CHALET_ARCH_HPP
+#pragma once
 
 namespace chalet
 {
@@ -36,5 +35,3 @@ struct Arch
 	std::string toVSArch2() const;
 };
 }
-
-#endif // CHALET_ARCH_HPP

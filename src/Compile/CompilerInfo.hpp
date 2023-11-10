@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_INFO_HPP
-#define CHALET_COMPILER_INFO_HPP
+#pragma once
 
 namespace chalet
 {
@@ -22,5 +21,3 @@ struct CompilerInfo
 	uint versionPatch;
 };
 }
-
-#endif // CHALET_COMPILER_INFO_HPP

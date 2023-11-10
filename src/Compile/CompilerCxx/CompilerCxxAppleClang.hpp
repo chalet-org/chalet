@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_APPLE_CLANG_HPP
-#define CHALET_COMPILER_CXX_APPLE_CLANG_HPP
+#pragma once
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
@@ -38,5 +37,3 @@ protected:
 private:
 };
 }
-
-#endif // CHALET_COMPILER_CXX_APPLE_CLANG_HPP

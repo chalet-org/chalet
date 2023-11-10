@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_FORMATTING_HPP
-#define CHALET_FORMATTING_HPP
+#pragma once
 
 #include "Terminal/Color.hpp"
 
@@ -18,5 +17,3 @@ enum class Formatting : std::underlying_type_t<Color>
 	Inverted = 700,
 };
 }
-
-#endif // CHALET_FORMATTING_HPP

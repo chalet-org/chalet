@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ENUM_ITERATOR_HPP
-#define CHALET_ENUM_ITERATOR_HPP
+#pragma once
 
 #include <type_traits>
 
@@ -32,5 +31,3 @@ public:
 }
 
 #include "Utility/EnumIterator.inl"
-
-#endif // CHALET_ENUM_ITERATOR_HPP

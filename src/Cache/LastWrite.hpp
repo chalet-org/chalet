@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LAST_WRITE_HPP
-#define CHALET_LAST_WRITE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -14,5 +13,3 @@ struct LastWrite
 	bool needsUpdate = true;
 };
 }
-
-#endif // CHALET_LAST_WRITE_HPP

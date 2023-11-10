@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_SUBSYSTEM_HPP
-#define CHALET_WINDOWS_SUBSYSTEM_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,5 +22,3 @@ enum class WindowsSubSystem : ushort
 	EfiRuntimeDriver,
 };
 }
-
-#endif // CHALET_WINDOWS_SUBSYSTEM_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP
-#define CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP
+#pragma once
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
@@ -32,5 +31,3 @@ private:
 	bool m_isCustomToolchain = false;
 };
 }
-
-#endif // CHALET_TOOLCHAIN_SETTINGS_JSON_PARSER_HPP

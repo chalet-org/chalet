@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_POSITION_INDEPENDENT_CODE_TYPE_HPP
-#define CHALET_POSITION_INDEPENDENT_CODE_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -16,5 +15,3 @@ enum class PositionIndependentCodeType : ushort
 	Executable,
 };
 }
-
-#endif // CHALET_POSITION_INDEPENDENT_CODE_TYPE_HPP

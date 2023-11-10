@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CHALET_JSON_PROPS_HPP
-#define CHALET_CHALET_JSON_PROPS_HPP
+#pragma once
 
 #include "Compile/CodeLanguage.hpp"
 
@@ -27,5 +26,3 @@ struct ChaletJsonProps
 	bool envFile = true;
 };
 }
-
-#endif // CHALET_CHALET_JSON_PROPS_HPP

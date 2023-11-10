@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LINKER_INTEL_CLASIC_GCC_HPP
-#define CHALET_LINKER_INTEL_CLASIC_GCC_HPP
+#pragma once
 
 #include "Compile/Linker/LinkerGCC.hpp"
 
@@ -15,5 +14,3 @@ struct LinkerIntelClassicGCC final : public LinkerGCC
 	explicit LinkerIntelClassicGCC(const BuildState& inState, const SourceTarget& inProject);
 };
 }
-
-#endif // CHALET_LINKER_INTEL_CLASIC_GCC_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BINARY_DEPENDENCY_MAP_HPP
-#define CHALET_BINARY_DEPENDENCY_MAP_HPP
+#pragma once
 
 namespace chalet
 {
@@ -53,5 +52,3 @@ private:
 	bool m_includeWinUCRT = true;
 };
 }
-
-#endif // CHALET_BINARY_DEPENDENCY_MAP_HPP

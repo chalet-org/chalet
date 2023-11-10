@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DEFINES_EXCEPTIONS_HPP
-#define CHALET_DEFINES_EXCEPTIONS_HPP
+#pragma once
 
 #if (defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND))
 	#ifndef CHALET_EXCEPTIONS
@@ -22,5 +21,3 @@
 	#define CHALET_CATCH(exception) if (false)
 	#define CHALET_EXCEPT_ERROR(what)
 #endif
-
-#endif // CHALET_DEFINES_EXCEPTIONS_HPP

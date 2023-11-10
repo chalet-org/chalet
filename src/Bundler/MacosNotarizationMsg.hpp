@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_NOTARIZATION_MSG_HPP
-#define CHALET_MACOS_NOTARIZATION_MSG_HPP
+#pragma once
 
 namespace chalet
 {
@@ -20,5 +19,3 @@ private:
 	const BuildState& m_state;
 };
 }
-
-#endif // CHALET_MACOS_NOTARIZATION_MSG_HPP
