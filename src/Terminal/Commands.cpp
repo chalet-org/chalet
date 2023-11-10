@@ -158,90 +158,62 @@ i64 Commands::getLastWriteTime(const std::string& inFile)
 /*****************************************************************************/
 std::string Commands::getWorkingDirectory()
 {
-	CHALET_TRY
-	{
-		auto cwd = fs::current_path();
+	std::error_code error;
+	auto cwd = fs::current_path(error);
+
+	if (!error)
 		return cwd.string();
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
+	else
 		return std::string();
-	}
 }
 
 /*****************************************************************************/
 bool Commands::changeWorkingDirectory(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		std::error_code errorCode;
-		fs::current_path(inPath, errorCode);
-		return !errorCode.operator bool();
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	fs::current_path(inPath, error);
+	return !error;
 }
 
 /*****************************************************************************/
 bool Commands::pathIsFile(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		return fs::is_regular_file(inPath);
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	bool result = fs::is_regular_file(inPath, error);
+	return !error && result;
 }
 
 /*****************************************************************************/
 bool Commands::pathIsDirectory(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		return fs::is_directory(inPath);
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	bool result = fs::is_directory(inPath, error);
+	return !error && result;
 }
 
 /*****************************************************************************/
 bool Commands::pathIsSymLink(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		return fs::is_symlink(inPath);
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	bool result = fs::is_symlink(inPath, error);
+	return !error && result;
 }
 
 /*****************************************************************************/
 std::string Commands::getCanonicalPath(const std::string& inPath)
 {
-	CHALET_TRY
+	// This method doesn't care if the path is real or not, so weakly_canonical is used
+	std::error_code error;
+	auto path = fs::weakly_canonical(inPath, error);
+	if (!error)
 	{
-		// This method doesn't care if the path is real or not, so weakly_canonical is used
-		auto path = fs::weakly_canonical(inPath);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	else
 	{
-		CHALET_EXCEPT_ERROR(err.what())
+		Diagnostic::error(error.message());
 		return inPath;
 	}
 }
@@ -249,16 +221,17 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 /*****************************************************************************/
 std::string Commands::getAbsolutePath(const std::string& inPath)
 {
-	CHALET_TRY
+	std::error_code error;
+	auto path = fs::absolute(inPath, error);
+	if (!error)
 	{
-		auto path = fs::absolute(inPath);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	else
 	{
-		CHALET_EXCEPT_ERROR(err.what())
+		Diagnostic::error(error.message());
 		return inPath;
 	}
 }
@@ -266,16 +239,17 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 /*****************************************************************************/
 std::string Commands::getProximatePath(const std::string& inPath, const std::string& inBase)
 {
-	CHALET_TRY
+	std::error_code error;
+	auto path = fs::proximate(inPath, inBase, error);
+	if (!error)
 	{
-		auto path = fs::proximate(inPath, inBase);
 		std::string ret = path.string();
 		Path::sanitize(ret);
 		return ret;
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	else
 	{
-		CHALET_EXCEPT_ERROR(err.what())
+		Diagnostic::error(error.message());
 		return inPath;
 	}
 }
@@ -283,15 +257,15 @@ std::string Commands::getProximatePath(const std::string& inPath, const std::str
 /*****************************************************************************/
 std::string Commands::resolveSymlink(const std::string& inPath)
 {
-	CHALET_TRY
+	std::error_code error;
+	auto path = fs::read_symlink(inPath, error);
+	if (!error)
 	{
-		auto path = fs::read_symlink(inPath);
-		auto out = path.string();
-		return out;
+		return path.string();
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
+	else
 	{
-		CHALET_EXCEPT_ERROR(err.what())
+		Diagnostic::error(error.message());
 		return inPath;
 	}
 }
@@ -336,21 +310,17 @@ uintmax_t Commands::getPathSize(const std::string& inPath)
 /*****************************************************************************/
 bool Commands::makeDirectory(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("make directory: {}", inPath));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("make directory: {}", inPath));
 
-		if (!fs::create_directories(inPath))
-			return false;
-
-		return true;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
+	std::error_code error;
+	if (!fs::create_directories(inPath, error))
 		return false;
-	}
+
+	if (error)
+		Diagnostic::error(error.message());
+
+	return !error;
 }
 
 /*****************************************************************************/
@@ -373,40 +343,32 @@ bool Commands::makeDirectories(const StringList& inPaths, bool& outDirectoriesMa
 /*****************************************************************************/
 bool Commands::remove(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		if (!Commands::pathExists(inPath))
-			return true;
+	if (!Commands::pathExists(inPath))
+		return true;
 
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("remove path: {}", inPath));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("remove path: {}", inPath));
 
-		bool result = fs::remove(inPath);
-		return result;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	bool result = fs::remove(inPath, error);
+	if (error)
+		Diagnostic::error(error.message());
+
+	return !error && result;
 }
 
 /*****************************************************************************/
 bool Commands::removeRecursively(const std::string& inPath)
 {
-	CHALET_TRY
-	{
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("remove recursively: {}", inPath));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("remove recursively: {}", inPath));
 
-		bool result = fs::remove_all(inPath) > 0;
-		return result;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	std::error_code error;
+	bool result = fs::remove_all(inPath, error) > 0;
+	if (error)
+		Diagnostic::error(error.message());
+
+	return !error && result;
 }
 
 /*****************************************************************************/
@@ -416,31 +378,22 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 	UNUSED(inPath);
 	return true;
 #else
-	CHALET_TRY
-	{
-		// if (inPath.front() == '/')
-		// 	return false;
+	// if (inPath.front() == '/')
+	// 	return false;
 
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("set executable permission: {}", inPath));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("set executable permission: {}", inPath));
 
-		std::error_code ec;
-		fs::permissions(inPath,
-			fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
-			fs::perm_options::add,
-			ec);
+	std::error_code error;
+	fs::permissions(inPath,
+		fs::perms::owner_exec | fs::perms::group_exec | fs::perms::others_exec,
+		fs::perm_options::add,
+		error);
 
-		return true;
-	}
-	CHALET_CATCH(const fs::filesystem_error&)
-	{
-		// std::string error(err.what());
+	if (error)
+		Diagnostic::error(error.message());
 
-		// std::cout.write(error.data(), error.size());
-		// std::cout.put('\n');
-		// std::cout.flush();
-		return false;
-	}
+	return !error;
 #endif
 }
 
@@ -451,20 +404,15 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 	UNUSED(inFrom, inTo);
 	return true;
 #else
-	CHALET_TRY
-	{
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("create directory symlink: {} -> {}", inFrom, inTo));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("create directory symlink: {} -> {}", inFrom, inTo));
 
-		fs::create_directory_symlink(inFrom, inTo);
+	std::error_code error;
+	fs::create_directory_symlink(inFrom, inTo, error);
+	if (error)
+		Diagnostic::error(error.message());
 
-		return true;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	return !error;
 #endif
 }
 
@@ -475,20 +423,15 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 	UNUSED(inFrom, inTo);
 	return true;
 #else
-	CHALET_TRY
-	{
-		if (Output::showCommands())
-			Output::printCommand(fmt::format("create symlink: {} -> {}", inFrom, inTo));
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("create symlink: {} -> {}", inFrom, inTo));
 
-		fs::create_symlink(inFrom, inTo);
+	std::error_code error;
+	fs::create_symlink(inFrom, inTo, error);
+	if (error)
+		Diagnostic::error(error.message());
 
-		return true;
-	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+	return !error;
 #endif
 }
 
@@ -555,10 +498,12 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 			Output::msgCopying(inFrom, inTo);
 	}
 
-	std::error_code ec;
-	fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing, ec);
+	std::error_code error;
+	fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing, error);
+	if (error)
+		Diagnostic::error(error.message());
 
-	return !ec.operator bool();
+	return !error;
 }
 
 /*****************************************************************************/
