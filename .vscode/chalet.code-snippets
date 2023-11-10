@@ -9,8 +9,7 @@
 			"\tSee accompanying file LICENSE.txt for details.",
 			"*/",
 			"",
-			"#ifndef CHALET_${2:HEADER_GUARD}_HPP",
-			"#define CHALET_${2:HEADER_GUARD}_HPP",
+			"#pragma once",
 			"",
 			"namespace chalet",
 			"{",
@@ -21,8 +20,6 @@
 			"",
 			"};",
 			"}",
-			"",
-			"#endif // CHALET_${2:HEADER_GUARD}_HPP",
 			""
 		],
 	},
