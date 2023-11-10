@@ -7,6 +7,8 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
+#include "Terminal/Commands.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_WIN32)
