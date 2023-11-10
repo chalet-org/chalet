@@ -5,7 +5,6 @@
 
 #include "Process/Environment.hpp"
 
-#include "Libraries/WindowsApi.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
