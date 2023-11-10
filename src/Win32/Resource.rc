@@ -6,7 +6,7 @@
 #ifdef _WIN32
 
 #include "Libraries/WindowsApi.hpp"
-#include "Utility/DefinesVersion.hpp"
+#include "System/DefinesVersion.hpp"
 
 /*****************************************************************************/
 // Defines
