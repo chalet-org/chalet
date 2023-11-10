@@ -19,32 +19,28 @@
 
 namespace chalet
 {
-#define CH_STR(x) static constexpr const char x[]
-
 namespace Arg
 {
-CH_STR(BuildTarget) = "[<target>]";
-CH_STR(RemainingArguments) = "[ARG...]";
-// CH_STR(InitName) = "<name>";
-CH_STR(InitPath) = "<path>";
-CH_STR(ExportKind) = "<kind>";
-CH_STR(SettingsKey) = "<key>";
-CH_STR(SettingsKeyQuery) = "<query>";
-CH_STR(SettingsValue) = "<value>";
-CH_STR(ValidateSchema) = "<schema>";
-CH_STR(QueryType) = "<type>";
-// CH_STR(QueryData) = "<data>";
+CHALET_CONSTANT(BuildTarget) = "[<target>]";
+CHALET_CONSTANT(RemainingArguments) = "[ARG...]";
+// CHALET_CONSTANT(InitName) = "<name>";
+CHALET_CONSTANT(InitPath) = "<path>";
+CHALET_CONSTANT(ExportKind) = "<kind>";
+CHALET_CONSTANT(SettingsKey) = "<key>";
+CHALET_CONSTANT(SettingsKeyQuery) = "<query>";
+CHALET_CONSTANT(SettingsValue) = "<value>";
+CHALET_CONSTANT(ValidateSchema) = "<schema>";
+CHALET_CONSTANT(QueryType) = "<type>";
+// CHALET_CONSTANT(QueryData) = "<data>";
 }
 
 namespace Positional
 {
-CH_STR(ProgramArgument) = "@0";
-CH_STR(Argument1) = "@1";
-CH_STR(Argument2) = "@2";
-CH_STR(RemainingArguments) = "...";
+CHALET_CONSTANT(ProgramArgument) = "@0";
+CHALET_CONSTANT(Argument1) = "@1";
+CHALET_CONSTANT(Argument2) = "@2";
+CHALET_CONSTANT(RemainingArguments) = "...";
 }
-
-#undef CH_STR
 
 namespace
 {

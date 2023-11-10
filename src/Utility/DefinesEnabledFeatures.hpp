@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "Utility/DefinesPlatform.hpp"
+
 #if defined(CHALET_WIN32)
 	#define CHALET_ENABLE_INTEL_ICC 0
 	#define CHALET_ENABLE_INTEL_ICX 1

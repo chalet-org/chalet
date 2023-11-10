@@ -5,168 +5,164 @@
 
 #pragma once
 
-#define CH_STR(x) static constexpr const char x[]
-
 namespace chalet
 {
 namespace Keys
 {
 //
 // chalet.json
-CH_STR(WorkspaceName) = "name";
-CH_STR(WorkspaceVersion) = "version";
-CH_STR(PlatformRequires) = "platformRequires";
-CH_STR(Variables) = "variables";
-CH_STR(Abstracts) = "abstracts";
-CH_STR(AbstractsAll) = "abstracts:*";
-CH_STR(Targets) = "targets";
-CH_STR(SettingsCxx) = "settings:Cxx";
-CH_STR(Distribution) = "distribution";
-CH_STR(Configurations) = "configurations";
-CH_STR(AllowedArchitectures) = "allowedArchitectures";
-CH_STR(DefaultConfigurations) = "defaultConfigurations";
-CH_STR(ExternalDependencies) = "externalDependencies";
-CH_STR(SearchPaths) = "searchPaths";
+CHALET_CONSTANT(WorkspaceName) = "name";
+CHALET_CONSTANT(WorkspaceVersion) = "version";
+CHALET_CONSTANT(PlatformRequires) = "platformRequires";
+CHALET_CONSTANT(Variables) = "variables";
+CHALET_CONSTANT(Abstracts) = "abstracts";
+CHALET_CONSTANT(AbstractsAll) = "abstracts:*";
+CHALET_CONSTANT(Targets) = "targets";
+CHALET_CONSTANT(SettingsCxx) = "settings:Cxx";
+CHALET_CONSTANT(Distribution) = "distribution";
+CHALET_CONSTANT(Configurations) = "configurations";
+CHALET_CONSTANT(AllowedArchitectures) = "allowedArchitectures";
+CHALET_CONSTANT(DefaultConfigurations) = "defaultConfigurations";
+CHALET_CONSTANT(ExternalDependencies) = "externalDependencies";
+CHALET_CONSTANT(SearchPaths) = "searchPaths";
 
 //
-CH_STR(Kind) = "kind";
-CH_STR(RunExecutable) = "runExecutable";
+CHALET_CONSTANT(Kind) = "kind";
+CHALET_CONSTANT(RunExecutable) = "runExecutable";
 
 //
 #if defined(CHALET_WIN32)
-CH_STR(ReqWindowsMSYS2) = "windows.msys2";
+CHALET_CONSTANT(ReqWindowsMSYS2) = "windows.msys2";
 #elif defined(CHALET_MACOS)
-CH_STR(ReqMacOSMacPorts) = "macos.macports";
-CH_STR(ReqMacOSHomebrew) = "macos.homebrew";
+CHALET_CONSTANT(ReqMacOSMacPorts) = "macos.macports";
+CHALET_CONSTANT(ReqMacOSHomebrew) = "macos.homebrew";
 #else
-CH_STR(ReqUbuntuSystem) = "ubuntu.system";
-CH_STR(ReqDebianSystem) = "debian.system";
-CH_STR(ReqArchLinuxSystem) = "archlinux.system";
-CH_STR(ReqManjaroSystem) = "manjaro.system";
-CH_STR(ReqFedoraSystem) = "fedora.system";
-CH_STR(ReqRedHatSystem) = "redhat.system";
+CHALET_CONSTANT(ReqUbuntuSystem) = "ubuntu.system";
+CHALET_CONSTANT(ReqDebianSystem) = "debian.system";
+CHALET_CONSTANT(ReqArchLinuxSystem) = "archlinux.system";
+CHALET_CONSTANT(ReqManjaroSystem) = "manjaro.system";
+CHALET_CONSTANT(ReqFedoraSystem) = "fedora.system";
+CHALET_CONSTANT(ReqRedHatSystem) = "redhat.system";
 #endif
 
 //
 // .chaletrc
-CH_STR(Options) = "options";
-CH_STR(OptionsToolchain) = "toolchain";
-CH_STR(OptionsArchitecture) = "architecture";
-CH_STR(OptionsBuildConfiguration) = "configuration";
-CH_STR(OptionsDumpAssembly) = "dumpAssembly";
-CH_STR(OptionsGenerateCompileCommands) = "generateCompileCommands";
-CH_STR(OptionsOnlyRequired) = "onlyRequired";
-CH_STR(OptionsMaxJobs) = "maxJobs";
-CH_STR(OptionsShowCommands) = "showCommands";
-CH_STR(OptionsBenchmark) = "benchmark";
-CH_STR(OptionsLaunchProfiler) = "launchProfiler";
-CH_STR(OptionsKeepGoing) = "keepGoing";
-CH_STR(OptionsSigningIdentity) = "signingIdentity";
-CH_STR(OptionsOsTargetName) = "osTargetName";
-CH_STR(OptionsOsTargetVersion) = "osTargetVersion";
-CH_STR(OptionsInputFile) = "inputFile";
-CH_STR(OptionsEnvFile) = "envFile";
-CH_STR(OptionsRootDirectory) = "rootDir";
-CH_STR(OptionsOutputDirectory) = "outputDir";
-CH_STR(OptionsExternalDirectory) = "externalDir";
-CH_STR(OptionsDistributionDirectory) = "distributionDir";
-CH_STR(OptionsLastTarget) = "lastTarget";
-CH_STR(OptionsRunArguments) = "runArguments";
+CHALET_CONSTANT(Options) = "options";
+CHALET_CONSTANT(OptionsToolchain) = "toolchain";
+CHALET_CONSTANT(OptionsArchitecture) = "architecture";
+CHALET_CONSTANT(OptionsBuildConfiguration) = "configuration";
+CHALET_CONSTANT(OptionsDumpAssembly) = "dumpAssembly";
+CHALET_CONSTANT(OptionsGenerateCompileCommands) = "generateCompileCommands";
+CHALET_CONSTANT(OptionsOnlyRequired) = "onlyRequired";
+CHALET_CONSTANT(OptionsMaxJobs) = "maxJobs";
+CHALET_CONSTANT(OptionsShowCommands) = "showCommands";
+CHALET_CONSTANT(OptionsBenchmark) = "benchmark";
+CHALET_CONSTANT(OptionsLaunchProfiler) = "launchProfiler";
+CHALET_CONSTANT(OptionsKeepGoing) = "keepGoing";
+CHALET_CONSTANT(OptionsSigningIdentity) = "signingIdentity";
+CHALET_CONSTANT(OptionsOsTargetName) = "osTargetName";
+CHALET_CONSTANT(OptionsOsTargetVersion) = "osTargetVersion";
+CHALET_CONSTANT(OptionsInputFile) = "inputFile";
+CHALET_CONSTANT(OptionsEnvFile) = "envFile";
+CHALET_CONSTANT(OptionsRootDirectory) = "rootDir";
+CHALET_CONSTANT(OptionsOutputDirectory) = "outputDir";
+CHALET_CONSTANT(OptionsExternalDirectory) = "externalDir";
+CHALET_CONSTANT(OptionsDistributionDirectory) = "distributionDir";
+CHALET_CONSTANT(OptionsLastTarget) = "lastTarget";
+CHALET_CONSTANT(OptionsRunArguments) = "runArguments";
 //
-CH_STR(Toolchains) = "toolchains";
-CH_STR(ToolchainVersion) = "version";
-CH_STR(ToolchainBuildStrategy) = "strategy";
-CH_STR(ToolchainBuildPathStyle) = "buildPathStyle";
-CH_STR(ToolchainArchiver) = "archiver";
-CH_STR(ToolchainCompilerCpp) = "compilerCpp";
-CH_STR(ToolchainCompilerC) = "compilerC";
-CH_STR(ToolchainCompilerWindowsResource) = "compilerWindowsResource";
-CH_STR(ToolchainLinker) = "linker";
-CH_STR(ToolchainProfiler) = "profiler";
-CH_STR(ToolchainDisassembler) = "disassembler";
-CH_STR(ToolchainCMake) = "cmake";
-CH_STR(ToolchainMake) = "make";
-CH_STR(ToolchainNinja) = "ninja";
+CHALET_CONSTANT(Toolchains) = "toolchains";
+CHALET_CONSTANT(ToolchainVersion) = "version";
+CHALET_CONSTANT(ToolchainBuildStrategy) = "strategy";
+CHALET_CONSTANT(ToolchainBuildPathStyle) = "buildPathStyle";
+CHALET_CONSTANT(ToolchainArchiver) = "archiver";
+CHALET_CONSTANT(ToolchainCompilerCpp) = "compilerCpp";
+CHALET_CONSTANT(ToolchainCompilerC) = "compilerC";
+CHALET_CONSTANT(ToolchainCompilerWindowsResource) = "compilerWindowsResource";
+CHALET_CONSTANT(ToolchainLinker) = "linker";
+CHALET_CONSTANT(ToolchainProfiler) = "profiler";
+CHALET_CONSTANT(ToolchainDisassembler) = "disassembler";
+CHALET_CONSTANT(ToolchainCMake) = "cmake";
+CHALET_CONSTANT(ToolchainMake) = "make";
+CHALET_CONSTANT(ToolchainNinja) = "ninja";
 //
-CH_STR(Tools) = "tools";
-CH_STR(ToolsBash) = "bash";
-CH_STR(ToolsCodesign) = "codesign";
-CH_STR(ToolsCommandPrompt) = "command_prompt";
-CH_STR(ToolsGit) = "git";
-CH_STR(ToolsHdiutil) = "hdiutil";
-CH_STR(ToolsInstallNameTool) = "install_name_tool";
-CH_STR(ToolsInstruments) = "instruments";
-CH_STR(ToolsLdd) = "ldd";
-CH_STR(ToolsOsascript) = "osascript";
-CH_STR(ToolsOtool) = "otool";
-CH_STR(ToolsPlutil) = "plutil";
-CH_STR(ToolsPowershell) = "powershell";
-CH_STR(ToolsSample) = "sample";
-CH_STR(ToolsSips) = "sips";
-CH_STR(ToolsTar) = "tar";
-CH_STR(ToolsTiffutil) = "tiffutil";
-CH_STR(ToolsXcodebuild) = "xcodebuild";
-CH_STR(ToolsXcrun) = "xcrun";
-CH_STR(ToolsZip) = "zip";
+CHALET_CONSTANT(Tools) = "tools";
+CHALET_CONSTANT(ToolsBash) = "bash";
+CHALET_CONSTANT(ToolsCodesign) = "codesign";
+CHALET_CONSTANT(ToolsCommandPrompt) = "command_prompt";
+CHALET_CONSTANT(ToolsGit) = "git";
+CHALET_CONSTANT(ToolsHdiutil) = "hdiutil";
+CHALET_CONSTANT(ToolsInstallNameTool) = "install_name_tool";
+CHALET_CONSTANT(ToolsInstruments) = "instruments";
+CHALET_CONSTANT(ToolsLdd) = "ldd";
+CHALET_CONSTANT(ToolsOsascript) = "osascript";
+CHALET_CONSTANT(ToolsOtool) = "otool";
+CHALET_CONSTANT(ToolsPlutil) = "plutil";
+CHALET_CONSTANT(ToolsPowershell) = "powershell";
+CHALET_CONSTANT(ToolsSample) = "sample";
+CHALET_CONSTANT(ToolsSips) = "sips";
+CHALET_CONSTANT(ToolsTar) = "tar";
+CHALET_CONSTANT(ToolsTiffutil) = "tiffutil";
+CHALET_CONSTANT(ToolsXcodebuild) = "xcodebuild";
+CHALET_CONSTANT(ToolsXcrun) = "xcrun";
+CHALET_CONSTANT(ToolsZip) = "zip";
 //
-CH_STR(AppleSdks) = "appleSdks";
-CH_STR(Theme) = "theme";
-CH_STR(LastUpdateCheck) = "lastUpdateCheck";
+CHALET_CONSTANT(AppleSdks) = "appleSdks";
+CHALET_CONSTANT(Theme) = "theme";
+CHALET_CONSTANT(LastUpdateCheck) = "lastUpdateCheck";
 }
 
 namespace SKeys
 {
 // Note: dont' use if/else - less supported (looking at you, IntelliJ/CLion)
 //
-CH_STR(Definitions) = "definitions";
-CH_STR(Items) = "items";
-CH_STR(UniqueItems) = "uniqueItems";
-CH_STR(Properties) = "properties";
-CH_STR(AdditionalProperties) = "additionalProperties";
-CH_STR(Pattern) = "pattern";
-CH_STR(PatternProperties) = "patternProperties";
-CH_STR(Description) = "description";
-CH_STR(Default) = "default";
-CH_STR(Enum) = "enum";
-CH_STR(Const) = "const";
-CH_STR(Examples) = "examples";
-CH_STR(AnyOf) = "anyOf";
-CH_STR(AllOf) = "allOf";
-CH_STR(OneOf) = "oneOf";
+CHALET_CONSTANT(Definitions) = "definitions";
+CHALET_CONSTANT(Items) = "items";
+CHALET_CONSTANT(UniqueItems) = "uniqueItems";
+CHALET_CONSTANT(Properties) = "properties";
+CHALET_CONSTANT(AdditionalProperties) = "additionalProperties";
+CHALET_CONSTANT(Pattern) = "pattern";
+CHALET_CONSTANT(PatternProperties) = "patternProperties";
+CHALET_CONSTANT(Description) = "description";
+CHALET_CONSTANT(Default) = "default";
+CHALET_CONSTANT(Enum) = "enum";
+CHALET_CONSTANT(Const) = "const";
+CHALET_CONSTANT(Examples) = "examples";
+CHALET_CONSTANT(AnyOf) = "anyOf";
+CHALET_CONSTANT(AllOf) = "allOf";
+CHALET_CONSTANT(OneOf) = "oneOf";
 }
 
 namespace CacheKeys
 {
-CH_STR(DataVersion) = "v";
-CH_STR(DataArch) = "a";
-CH_STR(DataExternalRebuild) = "e";
-CH_STR(Hashes) = "h";
-CH_STR(HashBuild) = "b";
-CH_STR(HashTheme) = "t";
-CH_STR(HashVersionDebug) = "vd";
-CH_STR(HashVersionRelease) = "vr";
-CH_STR(HashMetadata) = "wm";
-CH_STR(HashExtra) = "e";
-CH_STR(LastChaletJsonWriteTime) = "c";
-CH_STR(Builds) = "d";
-CH_STR(BuildLastBuilt) = "l";
-CH_STR(BuildLastBuildStrategy) = "s";
-CH_STR(BuildFiles) = "f";
-CH_STR(DataCache) = "x";
+CHALET_CONSTANT(DataVersion) = "v";
+CHALET_CONSTANT(DataArch) = "a";
+CHALET_CONSTANT(DataExternalRebuild) = "e";
+CHALET_CONSTANT(Hashes) = "h";
+CHALET_CONSTANT(HashBuild) = "b";
+CHALET_CONSTANT(HashTheme) = "t";
+CHALET_CONSTANT(HashVersionDebug) = "vd";
+CHALET_CONSTANT(HashVersionRelease) = "vr";
+CHALET_CONSTANT(HashMetadata) = "wm";
+CHALET_CONSTANT(HashExtra) = "e";
+CHALET_CONSTANT(LastChaletJsonWriteTime) = "c";
+CHALET_CONSTANT(Builds) = "d";
+CHALET_CONSTANT(BuildLastBuilt) = "l";
+CHALET_CONSTANT(BuildLastBuildStrategy) = "s";
+CHALET_CONSTANT(BuildFiles) = "f";
+CHALET_CONSTANT(DataCache) = "x";
 }
 
 namespace MSVCKeys
 {
 // Version 1.1
-CH_STR(Version) = "Version";
-CH_STR(Data) = "Data";
-CH_STR(ProvidedModule) = "ProvidedModule";
-CH_STR(ImportedModules) = "ImportedModules";
-CH_STR(ImportedHeaderUnits) = "ImportedHeaderUnits";
-CH_STR(Includes) = "Includes";
-CH_STR(Header) = "Header";
-CH_STR(BMI) = "BMI";
+CHALET_CONSTANT(Version) = "Version";
+CHALET_CONSTANT(Data) = "Data";
+CHALET_CONSTANT(ProvidedModule) = "ProvidedModule";
+CHALET_CONSTANT(ImportedModules) = "ImportedModules";
+CHALET_CONSTANT(ImportedHeaderUnits) = "ImportedHeaderUnits";
+CHALET_CONSTANT(Includes) = "Includes";
+CHALET_CONSTANT(Header) = "Header";
+CHALET_CONSTANT(BMI) = "BMI";
 }
 }
-
-#undef CH_STR

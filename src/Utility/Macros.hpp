@@ -32,3 +32,5 @@
 #define CHALET_DEFAULT_MOVE(ClassName)         \
 	ClassName(ClassName&&) noexcept = default; \
 	ClassName& operator=(ClassName&&) noexcept = default
+
+#define CHALET_CONSTANT(x) static constexpr const char x[]

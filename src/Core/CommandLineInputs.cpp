@@ -136,10 +136,8 @@ const std::string kToolchainPresetEmscripten("emscripten");
 #if CHALET_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
 const std::string kToolchainPresetICC("intel-classic");
 #endif
-#if CHALET_ENABLE_INTEL_ICX
-	#if !defined(CHALET_WIN32)
+#if CHALET_ENABLE_INTEL_ICX && !defined(CHALET_WIN32)
 const std::string kToolchainPresetICX("intel-llvm");
-	#endif
 #endif
 #if defined(CHALET_WIN32)
 const std::string kToolchainPresetVisualStudioStable("vs-stable");
