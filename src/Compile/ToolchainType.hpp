@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ToolchainType : ushort
+enum class ToolchainType : u16
 {
 	Unknown,
 	GNU,

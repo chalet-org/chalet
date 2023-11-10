@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class QueryOption : ushort
+enum class QueryOption : u16
 {
 	None,
 	QueryNames,

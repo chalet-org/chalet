@@ -49,7 +49,7 @@ struct ColorTheme
 
 private:
 	static Color getColorFromDigit(char value);
-	static Color getColorFromDigit(const char inValue, const int inOffset);
+	static Color getColorFromDigit(const char inValue, const i32 inOffset);
 	static Color getColorFromKey(const std::string& inString);
 
 	void makePreset(std::string inValue);

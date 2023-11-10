@@ -9,7 +9,7 @@ namespace chalet
 {
 namespace TestState
 {
-bool setChaletPath(const int argc, const char* const argv[]);
+bool setChaletPath(const i32 argc, const char* const argv[]);
 const std::string& chaletExec();
 }
 }

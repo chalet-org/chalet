@@ -692,10 +692,10 @@ StringList CommandAdapterMSVC::getAdditionalLinkerOptions() const
 	}
 
 	// Code Generation Threads
-	/*uint maxJobs = m_state.info.maxJobs();
+	/*u32 maxJobs = m_state.info.maxJobs();
 	if (maxJobs > 4)
 	{
-		maxJobs = std::min<uint>(maxJobs, 8);
+		maxJobs = std::min<u32>(maxJobs, 8);
 		List::addIfDoesNotExist(ret, fmt::format("/cgthreads:{}", maxJobs));
 	}*/
 

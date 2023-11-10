@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class SourceKind : ushort
+enum class SourceKind : u16
 {
 	None,
 	StaticLibrary,

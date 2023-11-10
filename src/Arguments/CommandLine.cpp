@@ -15,7 +15,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], bool& outResult)
+Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], bool& outResult)
 {
 	Unique<CommandLineInputs> inputs = std::make_unique<CommandLineInputs>();
 
@@ -195,11 +195,11 @@ Unique<CommandLineInputs> CommandLine::read(const int argc, const char* argv[], 
 				if (!rawValue.has_value())
 					break;
 
-				int value = *rawValue;
+				i32 value = *rawValue;
 
 				if (id == ArgumentIdentifier::MaxJobs)
 				{
-					inputs->setMaxJobs(static_cast<uint>(value));
+					inputs->setMaxJobs(static_cast<u32>(value));
 				}
 				break;
 			}

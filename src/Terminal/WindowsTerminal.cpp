@@ -24,8 +24,8 @@ namespace
 struct
 {
 	DWORD consoleMode = 0;
-	uint consoleCp = 0;
-	uint consoleOutputCp = 0;
+	u32 consoleCp = 0;
+	u32 consoleOutputCp = 0;
 	bool firstCall = false;
 } state;
 

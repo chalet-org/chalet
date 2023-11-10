@@ -56,8 +56,8 @@ enum class ShellType
 struct
 {
 	ShellType terminalType = ShellType::Unset;
-	short hasTerm = -1;
-	short isContinuousIntegrationServer = -1;
+	i16 hasTerm = -1;
+	i16 isContinuousIntegrationServer = -1;
 } state;
 
 #if defined(CHALET_WIN32)
@@ -148,7 +148,7 @@ std::string getParentProcessPath()
 			name = std::string(pathBuffer.data());
 		}
 	#else
-		std::string procLoc = "/proc/" + std::to_string(static_cast<int>(pid)) + "/exe";
+		std::string procLoc = "/proc/" + std::to_string(static_cast<i32>(pid)) + "/exe";
 		name = Commands::subprocessOutput({ "/usr/bin/ls", "-lt", procLoc });
 		auto list = String::split(name, " -> ");
 		name = list.back();

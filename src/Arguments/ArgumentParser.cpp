@@ -44,7 +44,7 @@ CHALET_CONSTANT(RemainingArguments) = "...";
 
 namespace
 {
-constexpr std::size_t kColumnSize = 32;
+constexpr size_t kColumnSize = 32;
 }
 
 /*****************************************************************************/
@@ -144,9 +144,9 @@ StringList ArgumentParser::getTruthyArguments() const
 }
 
 /*****************************************************************************/
-bool ArgumentParser::resolveFromArguments(const int argc, const char* argv[])
+bool ArgumentParser::resolveFromArguments(const i32 argc, const char* argv[])
 {
-	int maxPositionalArgs = 2;
+	i32 maxPositionalArgs = 2;
 	if (!parse(argc, argv, maxPositionalArgs))
 	{
 		Diagnostic::error("Bad argument parse");
@@ -413,7 +413,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 
 	bool allowsRemaining = false;
 
-	int maxPositionalArgs = 0;
+	i32 maxPositionalArgs = 0;
 
 	// TODO: Check invalid
 	for (auto& mapped : m_argumentList)
@@ -458,13 +458,13 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 			}
 
 			case Variant::Kind::Integer:
-				mapped.setValue<int>(atoi(value.c_str()));
+				mapped.setValue<i32>(atoi(value.c_str()));
 				break;
 
 			case Variant::Kind::OptionalInteger: {
 				if (!value.empty())
 				{
-					mapped.setValue(std::optional<int>(atoi(value.c_str())));
+					mapped.setValue(std::optional<i32>(atoi(value.c_str())));
 				}
 				break;
 			}
@@ -480,7 +480,7 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 		}
 	}
 
-	int positionalArgs = 0;
+	i32 positionalArgs = 0;
 	for (auto& [key, _] : m_rawArguments)
 	{
 		if (String::equals(Positional::ProgramArgument, key))
@@ -789,7 +789,7 @@ std::string ArgumentParser::getHelp()
 		fmt::format("~/{}", m_inputs.globalSettingsFile()),
 	};
 	{
-		uint i = 0;
+		u32 i = 0;
 		for (auto& preset : applicationPaths)
 		{
 			std::string line = preset;
@@ -913,7 +913,7 @@ void ArgumentParser::populateMainArguments()
 	std::string help;
 	if (subcommands.size() == descriptions.size())
 	{
-		for (std::size_t i = 0; i < subcommands.size(); ++i)
+		for (size_t i = 0; i < subcommands.size(); ++i)
 		{
 			std::string line = subcommands.at(i);
 			while (line.size() < kColumnSize)

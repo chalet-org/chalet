@@ -11,7 +11,7 @@ namespace chalet
 {
 struct Diagnostic
 {
-	enum class Type : ushort
+	enum class Type : u16
 	{
 		Warning,
 		Error,
@@ -53,7 +53,7 @@ struct Diagnostic
 
 	static void fatalErrorFromException(const char* inError);
 
-	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber);
+	static void customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const u32 inLineNumber);
 	static bool assertionFailure() noexcept;
 
 	static void printErrors(const bool inForceStdOut = false);

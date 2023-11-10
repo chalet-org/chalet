@@ -37,7 +37,7 @@ IExternalDependency::IExternalDependency(const CentralState& inCentralState, con
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

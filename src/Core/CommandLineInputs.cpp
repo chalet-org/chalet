@@ -976,22 +976,18 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 	String::replaceAll(outValue, cwd, "");
 
 #if defined(CHALET_WIN32)
-	if (::isalpha(cwd.front()) > 0)
-	{
-		cwd[0] = static_cast<char>(::tolower(static_cast<uchar>(cwd.front())));
-	}
-
+	String::capitalize(cwd);
 	String::replaceAll(outValue, cwd, "");
 #endif
 }
 
 /*****************************************************************************/
-const std::optional<uint>& CommandLineInputs::maxJobs() const noexcept
+const std::optional<u32>& CommandLineInputs::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }
 
-void CommandLineInputs::setMaxJobs(const uint inValue) noexcept
+void CommandLineInputs::setMaxJobs(const u32 inValue) noexcept
 {
 	m_maxJobs = std::max(inValue, 1U);
 }

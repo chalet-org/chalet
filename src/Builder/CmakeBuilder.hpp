@@ -45,7 +45,7 @@ private:
 
 	std::string m_outputLocation;
 
-	uint m_cmakeVersionMajorMinor = 0;
+	u32 m_cmakeVersionMajorMinor = 0;
 
 	bool m_quotedPaths = false;
 };

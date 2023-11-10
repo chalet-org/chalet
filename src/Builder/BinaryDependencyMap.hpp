@@ -31,12 +31,12 @@ public:
 	void log() const;
 
 	void populateToList(StringList& outList, const StringList& inExclusions) const;
-	bool gatherFromList(const StringList& inList, int levels = 2);
+	bool gatherFromList(const StringList& inList, i32 levels = 2);
 
 	const StringList& notCopied() const noexcept;
 
 private:
-	bool gatherDependenciesOf(const std::string& inPath, int levels);
+	bool gatherDependenciesOf(const std::string& inPath, i32 levels);
 	bool resolveDependencyPath(std::string& outDep);
 
 	const BuildState& m_state;

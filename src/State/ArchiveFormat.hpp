@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ArchiveFormat : ushort
+enum class ArchiveFormat : u16
 {
 	Zip,
 	Tar,

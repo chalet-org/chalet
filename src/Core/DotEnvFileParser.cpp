@@ -7,8 +7,8 @@
 
 #include "Compile/Environment/VisualStudioEnvironmentScript.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_DEBUG)
@@ -75,7 +75,7 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 		auto& key = splitVar.front();
 		if (String::startsWith(' ', key))
 		{
-			std::size_t afterSpaces = key.find_first_not_of(' ');
+			size_t afterSpaces = key.find_first_not_of(' ');
 			key = key.substr(afterSpaces);
 		}
 
@@ -85,13 +85,13 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 
 #if defined(CHALET_WIN32)
 		const bool isPath = String::equals(pathKey, key);
-		for (std::size_t end = value.find_last_of('%'); end != std::string::npos;)
+		for (size_t end = value.find_last_of('%'); end != std::string::npos;)
 		{
-			std::size_t beg = value.substr(0, end).find_last_of('%');
+			size_t beg = value.substr(0, end).find_last_of('%');
 			if (beg == std::string::npos)
 				break;
 
-			std::size_t length = (end + 1) - beg;
+			size_t length = (end + 1) - beg;
 
 			std::string capture = value.substr(beg, length);
 			std::string replaceKey = value.substr(beg + 1, length - 2);
@@ -115,13 +115,13 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 			end = value.find_last_of("%");
 		}
 #else
-		for (std::size_t beg = value.find_last_of('$'); beg != std::string::npos;)
+		for (size_t beg = value.find_last_of('$'); beg != std::string::npos;)
 		{
-			std::size_t end = value.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", beg + 1);
+			size_t end = value.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", beg + 1);
 			if (end == std::string::npos)
 				end = value.size();
 
-			std::size_t length = end - beg;
+			size_t length = end - beg;
 
 			std::string capture = value.substr(beg, length);
 			std::string replaceKey = value.substr(beg + 1, length - 1);

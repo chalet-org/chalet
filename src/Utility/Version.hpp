@@ -14,16 +14,16 @@ struct Version
 	bool setFromString(const std::string& inVersion);
 
 	bool hasMajor() const noexcept;
-	uint major() const noexcept;
+	u32 major() const noexcept;
 
 	bool hasMinor() const noexcept;
-	uint minor() const noexcept;
+	u32 minor() const noexcept;
 
 	bool hasPatch() const noexcept;
-	uint patch() const noexcept;
+	u32 patch() const noexcept;
 
 	bool hasTweak() const noexcept;
-	uint tweak() const noexcept;
+	u32 tweak() const noexcept;
 
 	std::string asString() const;
 	std::string majorMinor() const;
@@ -32,11 +32,11 @@ struct Version
 	bool operator<(const Version& rhs) const noexcept;
 
 private:
-	uint m_segments = 0;
+	u32 m_segments = 0;
 
-	uint m_major = 0;
-	uint m_minor = 0;
-	uint m_patch = 0;
-	uint m_tweak = 0;
+	u32 m_major = 0;
+	u32 m_minor = 0;
+	u32 m_patch = 0;
+	u32 m_tweak = 0;
 };
 }

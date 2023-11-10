@@ -6,11 +6,11 @@
 #include "Builder/BinaryDependencyMap.hpp"
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"
@@ -102,7 +102,7 @@ void BinaryDependencyMap::populateToList(StringList& outList, const StringList& 
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::gatherFromList(const StringList& inList, int levels)
+bool BinaryDependencyMap::gatherFromList(const StringList& inList, i32 levels)
 {
 	m_map.clear();
 	m_list.clear();
@@ -142,7 +142,7 @@ const StringList& BinaryDependencyMap::notCopied() const noexcept
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, int levels)
+bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 levels)
 {
 #if defined(CHALET_MACOS)
 	if (String::endsWith(".framework", inPath) || String::startsWith("/usr/lib/", inPath))
@@ -303,7 +303,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 
 		while (std::getline(stream, line))
 		{
-			std::size_t beg = 0;
+			size_t beg = 0;
 
 			if (String::startsWith("Archive", line))
 				break;
@@ -315,7 +315,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				beg++;
 
 #if defined(CHALET_MACOS)
-			std::size_t end = line.find(".dylib");
+			size_t end = line.find(".dylib");
 			if (end == std::string::npos)
 			{
 				end = line.find(".framework");
@@ -329,7 +329,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				end += 6;
 			}
 #else
-			std::size_t end = line.find("=>");
+			size_t end = line.find("=>");
 			if (end != std::string::npos && end > 0)
 				end--;
 #endif

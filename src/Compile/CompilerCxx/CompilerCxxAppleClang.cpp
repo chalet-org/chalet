@@ -103,7 +103,7 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 }
 
 /*****************************************************************************/
-bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const uint inVersionMajorMinor)
+bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const u32 inVersionMajorMinor)
 {
 	const auto& osTargetName = inState.inputs.osTargetName();
 	const auto& osTargetVersion = inState.inputs.osTargetVersion();

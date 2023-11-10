@@ -52,7 +52,7 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented StrategyType requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented StrategyType requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

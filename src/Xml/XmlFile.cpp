@@ -17,7 +17,7 @@ XmlFile::XmlFile(std::string inFilename) :
 }
 
 /*****************************************************************************/
-bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const int inIndent)
+bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const i32 inIndent)
 {
 	if (outFilename.empty())
 		return false;
@@ -38,7 +38,7 @@ bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const
 }
 
 /*****************************************************************************/
-bool XmlFile::save(const int inIndent)
+bool XmlFile::save(const i32 inIndent)
 {
 	if (!m_filename.empty())
 	{

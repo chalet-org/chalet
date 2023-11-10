@@ -71,16 +71,16 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		}
 	}
 
-	std::uintmax_t appSize = 0;
+	uintmax_t appSize = 0;
 	for (auto& [_, path] : m_includedPaths)
 	{
 		appSize += Commands::getPathSize(path);
 	}
-	std::uintmax_t mb = 1000000;
-	std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
+	uintmax_t mb = 1000000;
+	uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
 	// if (dmgSize > 10)
 	{
-		std::uintmax_t temp = 16;
+		uintmax_t temp = 16;
 		while (temp < dmgSize)
 		{
 			temp += temp;
@@ -196,14 +196,14 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 {
 	std::string pathbar = inDiskImage.pathbarVisible() ? "true" : "false";
 
-	ushort iconSize = inDiskImage.iconSize();
-	ushort textSize = inDiskImage.textSize();
+	u16 iconSize = inDiskImage.iconSize();
+	u16 textSize = inDiskImage.textSize();
 
-	ushort width = inDiskImage.size().width;
-	ushort height = inDiskImage.size().height;
+	u16 width = inDiskImage.size().width;
+	u16 height = inDiskImage.size().height;
 
-	ushort leftMost = std::numeric_limits<ushort>::max();
-	ushort bottomMost = height + (iconSize / static_cast<ushort>(2)) + 16;
+	u16 leftMost = std::numeric_limits<u16>::max();
+	u16 bottomMost = height + (iconSize / static_cast<u16>(2)) + 16;
 
 	std::string positions;
 	for (auto& [path, pos] : inDiskImage.positions())
@@ -223,7 +223,7 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 
 		if (pos.x > 0 && pos.x < leftMost)
 		{
-			leftMost = static_cast<ushort>(pos.x);
+			leftMost = static_cast<u16>(pos.x);
 		}
 
 		positions += fmt::format(R"applescript(

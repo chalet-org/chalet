@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"
@@ -24,7 +24,7 @@ namespace
 struct
 {
 	SignalHandler::Callback onErrorCallback = nullptr;
-	std::unordered_map<int, std::vector<SignalHandler::SignalFunc>> signalHandlers;
+	std::unordered_map<i32, std::vector<SignalHandler::SignalFunc>> signalHandlers;
 	bool exitCalled = false;
 } state;
 
@@ -37,7 +37,7 @@ void printError(const std::string& inType, const std::string& inDescription)
 	Output::getErrStream().write(output.data(), output.size());
 }
 
-void signalHandlerInternal(int inSignal)
+void signalHandlerInternal(i32 inSignal)
 {
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
@@ -65,7 +65,7 @@ void signalHandlerInternal(int inSignal)
 }
 
 /*****************************************************************************/
-void SignalHandler::add(int inSignal, SignalFunc inListener)
+void SignalHandler::add(i32 inSignal, SignalFunc inListener)
 {
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
@@ -86,7 +86,7 @@ void SignalHandler::add(int inSignal, SignalFunc inListener)
 }
 
 /*****************************************************************************/
-void SignalHandler::remove(int inSignal, SignalFunc inListener)
+void SignalHandler::remove(i32 inSignal, SignalFunc inListener)
 {
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
@@ -133,7 +133,7 @@ void SignalHandler::start(Callback inOnError)
 }
 
 /*****************************************************************************/
-void SignalHandler::exitHandler(const int inSignal)
+void SignalHandler::exitHandler(const i32 inSignal)
 {
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();

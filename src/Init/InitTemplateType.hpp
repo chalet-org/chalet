@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class InitTemplateType : ushort
+enum class InitTemplateType : u16
 {
 	None,
 	CMake,

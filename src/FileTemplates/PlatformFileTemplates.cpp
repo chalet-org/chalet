@@ -197,7 +197,7 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 std::string PlatformFileTemplates::windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps)
 {
 	auto file = Commands::getCanonicalPath(inManifestFile);
-	int id = inDllPrivateDeps ? 2 : 1;
+	i32 id = inDllPrivateDeps ? 2 : 1;
 	auto macroName = inDllPrivateDeps ? "ISOLATIONAWARE_MANIFEST_RESOURCE_ID" : "CREATEPROCESS_MANIFEST_RESOURCE_ID";
 	return fmt::format(R"rc(#pragma code_page(65001)
 {id} /* {macroName} */ 24 /* RT_MANIFEST */ "{manifestFile}"

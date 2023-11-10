@@ -31,14 +31,14 @@
 
 namespace chalet
 {
-enum class TargetGroupKind : ushort
+enum class TargetGroupKind : u16
 {
 	Source,
 	Script,
 	BuildAll,
 	AppBundle,
 };
-enum class PBXFileEncoding : uint
+enum class PBXFileEncoding : u32
 {
 	Default = 0,
 	UTF8 = 4,
@@ -58,7 +58,7 @@ enum class PBXFileEncoding : uint
 	Turkish = 2147483683,
 	Icelandic = 2147483685,
 };
-enum class DstSubfolderSpec : uint
+enum class DstSubfolderSpec : u32
 {
 	AbsolutePath = 0,
 	Wrapper = 1,
@@ -95,8 +95,8 @@ struct TargetGroup
 	Xcode_X_X = 50,
 	Xcode_X_X = 51,
 };*/
-constexpr int kMinimumObjectVersion = 46;
-constexpr int kBuildActionMask = 2147483647;
+constexpr i32 kMinimumObjectVersion = 46;
+constexpr i32 kBuildActionMask = 2147483647;
 
 /*****************************************************************************/
 XcodePBXProjGen::XcodePBXProjGen(std::vector<Unique<BuildState>>& inStates, const std::string& inAllBuildName) :

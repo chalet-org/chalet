@@ -11,7 +11,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool BaseArgumentParser::parse(const int argc, const char* argv[], const int inPositionalArgs)
+bool BaseArgumentParser::parse(const i32 argc, const char* argv[], const i32 inPositionalArgs)
 {
 	m_rawArguments.clear();
 
@@ -19,8 +19,8 @@ bool BaseArgumentParser::parse(const int argc, const char* argv[], const int inP
 
 	auto truthyArguments = getTruthyArguments();
 
-	int j = 0;
-	for (int i = 1; i < argc; ++i)
+	i32 j = 0;
+	for (i32 i = 1; i < argc; ++i)
 	{
 		auto arg = std::string(argv[i]);
 		if (arg[0] == '-')

@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class CustomToolchainTreatAs : ushort
+enum class CustomToolchainTreatAs : u16
 {
 	None,
 	LLVM,

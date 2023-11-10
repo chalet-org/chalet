@@ -12,7 +12,7 @@ namespace chalet
 //   It can be anything that describes the source file other than what's in SourceType
 //   At the moment, it's just internally used for optimizations
 //
-enum class SourceDataType : ushort
+enum class SourceDataType : u16
 {
 	None,
 	UserHeaderUnit,

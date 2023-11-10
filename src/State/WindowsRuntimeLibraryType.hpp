@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class WindowsRuntimeLibraryType : ushort
+enum class WindowsRuntimeLibraryType : u16
 {
 	MultiThreaded,
 	MultiThreadedDebug,

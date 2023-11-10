@@ -14,7 +14,7 @@ struct Xml
 	Xml() = default;
 	explicit Xml(std::string inRootName);
 
-	std::string dump(const int inIndent = -1, const char inIndentChar = ' ') const;
+	std::string dump(const i32 inIndent = -1, const char inIndentChar = ' ') const;
 
 	void addRawHeader(std::string inHeader);
 

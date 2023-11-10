@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class OptimizationLevel : ushort
+enum class OptimizationLevel : u16
 {
 	CompilerDefault,
 	None,

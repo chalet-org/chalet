@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ProjectWarningPresets : ushort
+enum class ProjectWarningPresets : u16
 {
 	None,
 	Minimal,

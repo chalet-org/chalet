@@ -10,6 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"
+#include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"
 #include "Process/ProcessOptions.hpp"
 #include "State/AncillaryTools.hpp"
@@ -19,7 +20,6 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -435,7 +435,7 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 		}
 	};
 
-	int result = ProcessController::run(inCmd, options);
+	i32 result = ProcessController::run(inCmd, options);
 
 	if (!errors.empty())
 	{

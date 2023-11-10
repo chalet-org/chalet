@@ -38,7 +38,7 @@ std::string CompileEnvironmentLLVM::getFullCxxCompilerString(const std::string& 
 		auto name = String::getPathBaseName(inPath);
 		if (!name.empty())
 		{
-			name[0] = static_cast<char>(::toupper(static_cast<uchar>(name[0])));
+			String::capitalize(name);
 			String::replaceAll(name, '+', "");
 		}
 

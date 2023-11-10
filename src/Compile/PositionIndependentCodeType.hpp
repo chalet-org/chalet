@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class PositionIndependentCodeType : ushort
+enum class PositionIndependentCodeType : u16
 {
 	None,
 	Auto,

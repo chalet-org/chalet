@@ -11,7 +11,7 @@ namespace chalet
 {
 class ChaletJsonSchema
 {
-	enum class Defs : ushort
+	enum class Defs : u16
 	{
 		WorkspaceName,
 		WorkspaceVersion,

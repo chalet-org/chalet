@@ -10,13 +10,13 @@ namespace chalet
 namespace SignalHandler
 {
 using Callback = std::function<void()>;
-using SignalFunc = void (*)(int);
+using SignalFunc = void (*)(i32);
 
-void add(int inSignal, SignalFunc inListener);
-void remove(int inSignal, SignalFunc inListener);
+void add(i32 inSignal, SignalFunc inListener);
+void remove(i32 inSignal, SignalFunc inListener);
 void cleanup();
 
 void start(Callback inOnError = nullptr);
-void exitHandler(const int inSignal);
+void exitHandler(const i32 inSignal);
 }
 }

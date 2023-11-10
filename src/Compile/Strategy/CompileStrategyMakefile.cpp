@@ -6,6 +6,7 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -13,7 +14,6 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -289,10 +289,10 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 #endif
 
-	int result = ProcessController::run(inCmd, options);
+	i32 result = ProcessController::run(inCmd, options);
 	if (!errorOutput.empty())
 	{
-		std::size_t cutoff = std::string::npos;
+		size_t cutoff = std::string::npos;
 		const auto make = String::getPathBaseName(m_state.toolchain.make());
 
 #if defined(CHALET_WIN32)

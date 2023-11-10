@@ -26,7 +26,7 @@ private:
 	void printThemeSimple(const ColorTheme& inTheme, const bool inWithName = false);
 
 	const char kEsc;
-	const std::size_t kWidth;
+	const size_t kWidth;
 
 	const std::string kSeparator;
 

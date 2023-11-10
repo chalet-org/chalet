@@ -17,8 +17,8 @@
 	#include <winuser.h>
 #endif
 
-#include "Process/ProcessController.hpp"
 #include "Process/Environment.hpp"
+#include "Process/ProcessController.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -143,9 +143,9 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 }
 
 /*****************************************************************************/
-std::int64_t Commands::getLastWriteTime(const std::string& inFile)
+i64 Commands::getLastWriteTime(const std::string& inFile)
 {
-	if (stat(inFile.c_str(), &statBuffer) == 0)
+	if (::stat(inFile.c_str(), &statBuffer) == 0)
 	{
 		return statBuffer.st_mtime;
 	}
@@ -297,7 +297,7 @@ std::string Commands::resolveSymlink(const std::string& inPath)
 }
 
 /*****************************************************************************/
-std::uintmax_t Commands::getPathSize(const std::string& inPath)
+uintmax_t Commands::getPathSize(const std::string& inPath)
 {
 	CHALET_TRY
 	{
@@ -305,7 +305,7 @@ std::uintmax_t Commands::getPathSize(const std::string& inPath)
 			Output::printCommand(fmt::format("get directory size: {}", inPath));
 
 		const auto path = fs::path{ inPath };
-		std::uintmax_t ret = 0;
+		uintmax_t ret = 0;
 		if (fs::is_directory(path))
 		{
 			for (const auto& entry : fs::recursive_directory_iterator(path))
@@ -709,7 +709,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	String::replaceAll(pattern, '(', "\\(");
 	String::replaceAll(pattern, ')', "\\)");
 
-	std::size_t start = 0;
+	size_t start = 0;
 	start = pattern.find("{", start);
 	while (start != std::string::npos)
 	{
@@ -901,9 +901,9 @@ std::string Commands::readShebangFromFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
-void Commands::sleep(const double inSeconds)
+void Commands::sleep(const f64 inSeconds)
 {
-	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(inSeconds * 1000.0)));
+	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<i32>(inSeconds * 1000.0)));
 }
 
 /*****************************************************************************/
@@ -1145,7 +1145,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 		}
 	};
 
-	int result = ProcessController::run(inCmd, options);
+	i32 result = ProcessController::run(inCmd, options);
 
 	if (!capData.empty())
 	{
@@ -1211,7 +1211,7 @@ std::string Commands::which(const std::string& inExecutable)
 		{
 			auto path = Environment::getPath();
 			auto home = Environment::getUserDirectory();
-			std::size_t start = 0;
+			size_t start = 0;
 			while (start != std::string::npos)
 			{
 				auto end = path.find(':', start);

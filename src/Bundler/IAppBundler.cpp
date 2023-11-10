@@ -166,7 +166,7 @@ const std::string& IAppBundler::workingDirectoryWithTrailingPathSeparator()
 	{
 		m_cwd = m_state.inputs.workingDirectory() + '/';
 #if defined(CHALET_WIN32)
-		m_cwd[0] = static_cast<char>(::toupper(static_cast<uchar>(m_cwd[0])));
+		String::capitalize(m_cwd);
 #endif
 	}
 	return m_cwd;

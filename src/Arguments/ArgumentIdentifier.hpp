@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ArgumentIdentifier : ushort
+enum class ArgumentIdentifier : u16
 {
 	None,
 	//

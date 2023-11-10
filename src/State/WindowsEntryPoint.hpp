@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class WindowsEntryPoint : ushort
+enum class WindowsEntryPoint : u16
 {
 	None,
 	Main,

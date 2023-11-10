@@ -9,14 +9,26 @@
 
 namespace chalet
 {
-typedef std::int64_t llong;
+using i8 = std::int8_t; // Note: signed char, NOT char
+using i16 = std::int16_t;
+using i32 = std::int32_t;
+using i64 = std::int64_t;
 
-typedef std::uint8_t uchar;
-typedef std::uint16_t ushort;
-typedef std::uint32_t uint;
-typedef std::uint64_t ullong;
+using u8 = std::uint8_t;
+using u16 = std::uint16_t;
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
 
-typedef long double ldouble;
+using f32 = float;
+using f64 = double;
+
+
+// use when representing unsigned in char arrays
+using uchar = unsigned char;
+
+using size_t = std::size_t;
+using ptrdiff_t = std::ptrdiff_t;
+using uintmax_t = std::uintmax_t;
 
 template <typename PtrType>
 using Unique = std::unique_ptr<PtrType>;

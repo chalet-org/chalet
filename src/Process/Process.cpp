@@ -49,7 +49,7 @@ std::string escapeShellArgument(const std::string& inArg)
 std::string getWindowsArguments(const StringList& inCmd)
 {
 	std::string args;
-	for (std::size_t i = 0; i < inCmd.size(); ++i)
+	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
 		if (i > 0)
 			args += ' ';
@@ -62,12 +62,12 @@ std::string getWindowsArguments(const StringList& inCmd)
 }
 
 /*****************************************************************************/
-int Process::waitForResult()
+i32 Process::waitForResult()
 {
 	if (m_pid == 0)
 	{
 		DWORD error = ::GetLastError();
-		return static_cast<int>(error);
+		return static_cast<i32>(error);
 	}
 
 	DWORD waitMs = INFINITE;
@@ -108,11 +108,11 @@ int Process::waitForResult()
 	}
 
 	close();
-	return static_cast<int>(exitCode);
+	return static_cast<i32>(exitCode);
 }
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromCode(const int inCode)
+std::string Process::getErrorMessageFromCode(const i32 inCode)
 {
 	DWORD messageId = static_cast<DWORD>(inCode);
 	if (messageId == 0)
@@ -128,7 +128,7 @@ std::string Process::getErrorMessageFromCode(const int inCode)
 		0,
 		NULL);
 
-	std::string message(messageBuffer, static_cast<std::size_t>(size));
+	std::string message(messageBuffer, static_cast<size_t>(size));
 
 	LocalFree(messageBuffer);
 
@@ -136,9 +136,9 @@ std::string Process::getErrorMessageFromCode(const int inCode)
 }
 #else
 /*****************************************************************************/
-int Process::waitForResult()
+i32 Process::waitForResult()
 {
-	int exitCode;
+	i32 exitCode;
 	while (true)
 	{
 		ProcessID child = ::waitpid(m_pid, &exitCode, 0);
@@ -148,14 +148,14 @@ int Process::waitForResult()
 		break;
 	}
 
-	int result = getReturnCode(exitCode);
+	i32 result = getReturnCode(exitCode);
 
 	close();
 	return result;
 }
 
 /*****************************************************************************/
-int Process::getReturnCode(const int inExitCode)
+i32 Process::getReturnCode(const i32 inExitCode)
 {
 	// Note, we return signals as a negative value to differentiate them later
 	if (WIFEXITED(inExitCode))
@@ -167,7 +167,7 @@ int Process::getReturnCode(const int inExitCode)
 }
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromCode(const int inCode)
+std::string Process::getErrorMessageFromCode(const i32 inCode)
 {
 	#if defined(CHALET_MACOS)
 	std::array<char, 256> buffer;
@@ -186,7 +186,7 @@ Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
 	CmdPtrArray cmd;
 
 	cmd.reserve(inCmd.size() + 1);
-	for (std::size_t i = 0; i < inCmd.size(); ++i)
+	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
 		cmd.emplace_back(const_cast<char*>(inCmd.at(i).data()));
 	}
@@ -198,7 +198,7 @@ Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
 #endif
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromSignalRaised(const int inCode)
+std::string Process::getErrorMessageFromSignalRaised(const i32 inCode)
 {
 	switch (inCode)
 	{
@@ -311,7 +311,7 @@ std::string Process::getErrorMessageFromSignalRaised(const int inCode)
 }
 
 /*****************************************************************************/
-std::string Process::getSignalNameFromCode(int inCode)
+std::string Process::getSignalNameFromCode(i32 inCode)
 {
 	if (inCode < 0)
 		inCode *= -1;
@@ -604,7 +604,7 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 		}
 
 		CmdPtrArray cmd = getCmdVector(inCmd);
-		int result = execve(inCmd.front().c_str(), cmd.data(), environ);
+		i32 result = execve(inCmd.front().c_str(), cmd.data(), environ);
 		_exit(result == EXIT_SUCCESS ? 0 : errno);
 	}
 
@@ -621,7 +621,7 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 
 	if (inOptions.onCreate != nullptr)
 	{
-		inOptions.onCreate(static_cast<int>(m_pid));
+		inOptions.onCreate(static_cast<i32>(m_pid));
 	}
 
 	return true;
@@ -683,7 +683,7 @@ bool Process::sendSignal(const SigNum inSignal)
 
 	m_killed = true;
 
-	if (::kill(m_pid, static_cast<int>(inSignal)) != 0)
+	if (::kill(m_pid, static_cast<i32>(inSignal)) != 0)
 	{
 		Diagnostic::error("Error shutting down process: {}", m_pid);
 		return false;

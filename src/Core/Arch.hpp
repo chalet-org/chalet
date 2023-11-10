@@ -4,7 +4,7 @@ namespace chalet
 {
 struct Arch
 {
-	enum class Cpu : ushort
+	enum class Cpu : u16
 	{
 		Unknown,
 		X64,

@@ -19,7 +19,7 @@ std::string Hash::string(const std::string& inValue)
 }
 
 /*****************************************************************************/
-std::size_t Hash::uint64(const std::string& inValue)
+size_t Hash::uint64(const std::string& inValue)
 {
 	std::hash<std::string> hash;
 	return hash(inValue);

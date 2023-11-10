@@ -19,7 +19,7 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 	if (lastSquareBrace != std::string::npos)
 	{
 		error = error.substr(lastSquareBrace + 2);
-		error[0] = static_cast<char>(::toupper(static_cast<uchar>(error[0])));
+		String::capitalize(error);
 	}
 
 	auto start = error.find("at line ");
@@ -47,8 +47,8 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 	if (lineRaw.empty() || columnRaw.empty())
 		return false;
 
-	int lineNo = 0;
-	int columnNo = 0;
+	i32 lineNo = 0;
+	i32 columnNo = 0;
 	CHALET_TRY
 	{
 		lineNo = std::stoi(lineRaw);
@@ -65,7 +65,7 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 	auto colorError = Output::getAnsiStyle(Output::theme().error);
 	auto colorReset = Output::getAnsiStyle(Output::theme().reset);
 
-	int i = 0;
+	i32 i = 0;
 	for (std::string line; std::getline(inContents, line); ++i)
 	{
 		if (i >= lineNo - 4 && i <= lineNo + 2)
@@ -78,8 +78,8 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 			std::string outLine;
 			if (current)
 			{
-				std::size_t columnIndex = static_cast<std::size_t>(columnNo - 1);
-				for (std::size_t j = 0; j < line.size(); ++j)
+				size_t columnIndex = static_cast<size_t>(columnNo - 1);
+				for (size_t j = 0; j < line.size(); ++j)
 				{
 					if (j == columnIndex)
 						outLine += fmt::format("{}{}{}", colorError, line[j], colorReset);

@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class CodeLanguage : ushort
+enum class CodeLanguage : u16
 {
 	None,
 	C,

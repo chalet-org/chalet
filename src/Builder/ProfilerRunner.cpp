@@ -7,6 +7,7 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -15,7 +16,6 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/WindowsTerminal.hpp"
@@ -415,9 +415,9 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 	auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 
 	bool sampleResult = true;
-	auto onCreate = [&](int pid) -> void {
-		uint sampleDuration = 300;
-		uint samplingInterval = 1;
+	auto onCreate = [&](i32 pid) -> void {
+		u32 sampleDuration = 300;
+		u32 samplingInterval = 1;
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
 		Output::lineBreak();
 

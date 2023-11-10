@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class StrategyType : ushort
+enum class StrategyType : u16
 {
 	None,
 	Makefile,

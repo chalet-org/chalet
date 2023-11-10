@@ -87,7 +87,7 @@ private:
 	std::string m_pchTarget;
 	std::string m_pchMinusLocation;
 
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
+	u32 m_versionMajorMinor = 0;
+	u32 m_versionPatch = 0;
 };
 }

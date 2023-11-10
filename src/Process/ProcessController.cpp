@@ -27,7 +27,7 @@ static std::mutex s_mutex;
 static struct
 {
 	std::vector<Process*> procesess;
-	int lastErrorCode = 0;
+	i32 lastErrorCode = 0;
 	bool initialized = false;
 } state;
 
@@ -61,7 +61,7 @@ void removeProcess(const Process& inProcess)
 }
 
 /*****************************************************************************/
-void subProcessSignalHandler(int inSignal)
+void subProcessSignalHandler(i32 inSignal)
 {
 	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
@@ -83,7 +83,7 @@ void subProcessSignalHandler(int inSignal)
 }
 
 /*****************************************************************************/
-int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize)
+i32 ProcessController::run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize)
 {
 	CHALET_TRY
 	{
@@ -142,13 +142,13 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 }
 
 /*****************************************************************************/
-int ProcessController::getLastExitCode()
+i32 ProcessController::getLastExitCode()
 {
 	return state.lastErrorCode;
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSystemMessage(const int inExitCode)
+std::string ProcessController::getSystemMessage(const i32 inExitCode)
 {
 	if (inExitCode == 0)
 		return std::string();
@@ -157,13 +157,13 @@ std::string ProcessController::getSystemMessage(const int inExitCode)
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSignalRaisedMessage(const int inExitCode)
+std::string ProcessController::getSignalRaisedMessage(const i32 inExitCode)
 {
 	return Process::getErrorMessageFromSignalRaised(inExitCode < 0 ? inExitCode * -1 : inExitCode);
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSignalNameFromCode(const int inExitCode)
+std::string ProcessController::getSignalNameFromCode(const i32 inExitCode)
 {
 	return Process::getSignalNameFromCode(inExitCode);
 }

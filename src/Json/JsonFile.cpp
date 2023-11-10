@@ -21,7 +21,7 @@ JsonFile::JsonFile(std::string inFilename) :
 }
 
 /*****************************************************************************/
-bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent)
+bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const i32 inIndent)
 {
 	if (outFilename.empty())
 		return false;
@@ -57,7 +57,7 @@ bool JsonFile::load(std::string inFilename, const bool inError)
 }
 
 /*****************************************************************************/
-bool JsonFile::save(const int inIndent)
+bool JsonFile::save(const i32 inIndent)
 {
 	if (!m_filename.empty() && m_dirty)
 	{

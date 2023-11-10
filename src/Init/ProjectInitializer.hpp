@@ -62,6 +62,6 @@ private:
 
 	std::string m_rootPath;
 
-	double m_stepTime = 0.0;
+	f64 m_stepTime = 0.0;
 };
 }

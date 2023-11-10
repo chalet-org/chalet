@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class SourceType : ushort
+enum class SourceType : u16
 {
 	Unknown,
 	C,

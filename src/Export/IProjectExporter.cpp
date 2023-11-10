@@ -61,7 +61,7 @@ IProjectExporter::~IProjectExporter() = default;
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ProjectExporter requested: {}", static_cast<int>(inKind));
+	Diagnostic::errorAbort("Unimplemented ProjectExporter requested: {}", static_cast<i32>(inKind));
 	return nullptr;
 }
 

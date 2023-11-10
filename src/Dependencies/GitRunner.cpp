@@ -138,7 +138,7 @@ StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
 
 	if (submodules)
 	{
-		uint maxJobs = 0;
+		u32 maxJobs = 0;
 		if (m_centralState.inputs().maxJobs().has_value())
 			maxJobs = *m_centralState.inputs().maxJobs();
 		else
@@ -370,14 +370,14 @@ std::string GitRunner::getCleanGitPath(const std::string& inPath) const
 	if (String::contains(':', ret))
 		searchChar = ':';
 
-	std::size_t beg = ret.find_first_of(searchChar);
+	size_t beg = ret.find_first_of(searchChar);
 	if (beg != std::string::npos)
 	{
 		ret = ret.substr(beg + 1);
 	}
 
 	// strip .git
-	std::size_t end = ret.find_last_of('.');
+	size_t end = ret.find_last_of('.');
 	if (end != std::string::npos)
 	{
 		ret = ret.substr(0, end);

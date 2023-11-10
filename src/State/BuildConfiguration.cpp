@@ -206,7 +206,7 @@ bool BuildConfiguration::validate(const BuildState& inState)
 				result = false;
 			}
 
-			uint versionMajorMinor = inState.toolchain.compilerCxxAny().versionMajorMinor;
+			u32 versionMajorMinor = inState.toolchain.compilerCxxAny().versionMajorMinor;
 			if (versionMajorMinor < 1928)
 			{
 				Diagnostic::error("The 'address' sanitizer is only supported in MSVC >= 19.28 (found {})", inState.toolchain.compilerCxxAny().version);

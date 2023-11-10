@@ -45,7 +45,7 @@ void ProcessPipe::setInheritable(PipeHandle inHandle, const bool inInherits)
 		Diagnostic::error("Error calling SetHandleInformation");
 	}
 #else
-	int flags = ::fcntl(inHandle, F_GETFD);
+	i32 flags = ::fcntl(inHandle, F_GETFD);
 	if (flags < 0)
 	{
 		Diagnostic::error("Error calling fcntl");
@@ -57,7 +57,7 @@ void ProcessPipe::setInheritable(PipeHandle inHandle, const bool inInherits)
 	else
 		flags |= FD_CLOEXEC;
 
-	int result = ::fcntl(inHandle, F_SETFD, flags);
+	i32 result = ::fcntl(inHandle, F_SETFD, flags);
 	if (result < -1)
 	{
 		Diagnostic::error("Error calling fcntl");
@@ -101,7 +101,7 @@ void ProcessPipe::create(const bool inInheritable)
 		Diagnostic::error("Error opening pipe");
 	}
 #else
-	if (::pipe(reinterpret_cast<int*>(this)) != 0)
+	if (::pipe(reinterpret_cast<i32*>(this)) != 0)
 	{
 		Diagnostic::error("Error opening pipe");
 		return;

@@ -47,7 +47,7 @@ protected:
 
 	StringList getWin32CoreLibraryLinks() const;
 
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
+	u32 m_versionMajorMinor = 0;
+	u32 m_versionPatch = 0;
 };
 }

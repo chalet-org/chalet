@@ -171,7 +171,7 @@ bool BuildInfo::targettingMinGW() const
 }
 
 /*****************************************************************************/
-uint BuildInfo::maxJobs() const noexcept
+u32 BuildInfo::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }

@@ -624,7 +624,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 				versionOutput = versionOutput.substr(1);
 
 			auto version = Version::fromString(versionOutput);
-			uint versionMajor = version.major();
+			u32 versionMajor = version.major();
 
 			StringList nodeArgs{ nodePath };
 			if (versionMajor > 0 && versionMajor < 16)

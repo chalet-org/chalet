@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class WindowsCallingConvention : ushort
+enum class WindowsCallingConvention : u16
 {
 	Cdecl,
 	FastCall,

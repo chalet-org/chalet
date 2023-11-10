@@ -17,9 +17,9 @@
 // This is so MinGW on Linux can read the dependencies of the compiled binary
 namespace
 {
-using DWORD = std::uint32_t;
-using WORD = std::uint16_t;
-using BYTE = std::uint8_t;
+using DWORD = chalet::u32;
+using WORD = chalet::u16;
+using BYTE = chalet::u8;
 
 typedef struct
 {
@@ -119,21 +119,21 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 		ignoreList.emplace_back("ucrtbase");
 	}
 
-	constexpr auto MAGIC_NUM_32BIT = static_cast<WORD>(0x10b);		// 267
-	constexpr auto MAGIC_NUM_64BIT = static_cast<WORD>(0x20b);		// 523
-	constexpr auto IMG_SIGNATURE_OFFSET = static_cast<int>(0x3c);	// 60
-	constexpr auto IMPORT_TABLE_OFFSET_32 = static_cast<int>(0x68); // 104
-	constexpr auto IMPORT_TABLE_OFFSET_64 = static_cast<int>(0x78); // 120
-	constexpr auto IMG_SIGNATURE_SIZE = static_cast<int>(0x4);		// 4
-	// constexpr auto OPT_HEADER_OFFSET_32 = static_cast<int>(0x1c);	// 28
-	// constexpr auto OPT_HEADER_OFFSET_64 = static_cast<int>(0x18);	// 24
-	// constexpr auto DATA_DIR_OFFSET_32 = static_cast<int>(0x60);		// 96
-	// constexpr auto DATA_DIR_OFFSET_64 = static_cast<int>(0x70);		// 112
-	// constexpr auto DATA_IAT_OFFSET_64 = static_cast<int>(0xD0);		// 208
-	// constexpr auto DATA_IAT_OFFSET_32 = static_cast<int>(0xC0);		// 192
-	// constexpr auto SZ_OPT_HEADER_OFFSET = static_cast<int>(0x10); // 16
-	// constexpr auto RVA_AMOUNT_OFFSET_64 = static_cast<int>(0x6c);	// 108
-	// constexpr auto RVA_AMOUNT_OFFSET_32 = static_cast<int>(0x5c);	// 92
+	constexpr auto MAGIC_NUM_32BIT = static_cast<WORD>(0x10b);		  // 267
+	constexpr auto MAGIC_NUM_64BIT = static_cast<WORD>(0x20b);		  // 523
+	constexpr auto IMG_SIGNATURE_OFFSET = static_cast<DWORD>(0x3c);	  // 60
+	constexpr auto IMPORT_TABLE_OFFSET_32 = static_cast<DWORD>(0x68); // 104
+	constexpr auto IMPORT_TABLE_OFFSET_64 = static_cast<DWORD>(0x78); // 120
+	constexpr auto IMG_SIGNATURE_SIZE = static_cast<DWORD>(0x4);	  // 4
+	// constexpr auto OPT_HEADER_OFFSET_32 = static_cast<DWORD>(0x1c);	// 28
+	// constexpr auto OPT_HEADER_OFFSET_64 = static_cast<DWORD>(0x18);	// 24
+	// constexpr auto DATA_DIR_OFFSET_32 = static_cast<DWORD>(0x60);		// 96
+	// constexpr auto DATA_DIR_OFFSET_64 = static_cast<DWORD>(0x70);		// 112
+	// constexpr auto DATA_IAT_OFFSET_64 = static_cast<DWORD>(0xD0);		// 208
+	// constexpr auto DATA_IAT_OFFSET_32 = static_cast<DWORD>(0xC0);		// 192
+	// constexpr auto SZ_OPT_HEADER_OFFSET = static_cast<DWORD>(0x10); // 16
+	// constexpr auto RVA_AMOUNT_OFFSET_64 = static_cast<DWORD>(0x6c);	// 108
+	// constexpr auto RVA_AMOUNT_OFFSET_32 = static_cast<DWORD>(0x5c);	// 92
 
 	const char* KNOWN_IMG_SIGNATURE = static_cast<const char*>("PE\0\0");
 
@@ -178,7 +178,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 
 		DWORD imageSectionHeaderOffset = optionalFileHeaderOffset + coffFileHeader->SizeOfOptionalHeader;
 
-		for (int i = 0; i < coffFileHeader->NumberOfSections; i++)
+		for (WORD i = 0; i < coffFileHeader->NumberOfSections; i++)
 		{
 			auto queriedSectionHeader = (IMAGE_SECTION_HEADER*)&bytes[imageSectionHeaderOffset];
 			if (*importTableAddress >= queriedSectionHeader->VirtualAddress && (*importTableAddress < (queriedSectionHeader->VirtualAddress + queriedSectionHeader->SizeOfRawData)))
@@ -230,7 +230,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 
 		DWORD imageSectionHeaderOffset = optionalFileHeaderOffset + coffFileHeader->SizeOfOptionalHeader;
 
-		for (int i = 0; i < coffFileHeader->NumberOfSections; i++)
+		for (WORD i = 0; i < coffFileHeader->NumberOfSections; i++)
 		{
 			auto queriedSectionHeader = (IMAGE_SECTION_HEADER*)&bytes[imageSectionHeaderOffset];
 			if (*importTableAddress >= queriedSectionHeader->VirtualAddress && (*importTableAddress < (queriedSectionHeader->VirtualAddress + queriedSectionHeader->SizeOfRawData)))
@@ -283,7 +283,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 std::vector<char> DependencyWalker::readAllBytes(const std::string& inFile)
 {
 	std::ifstream ifs(inFile, std::ios::binary | std::ios::ate);
-	std::size_t length = ifs.tellg();
+	size_t length = ifs.tellg();
 
 	std::vector<char> buffer(length);
 	ifs.seekg(0, std::ios::beg);

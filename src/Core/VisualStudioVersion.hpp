@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class VisualStudioVersion : ushort
+enum class VisualStudioVersion : u16
 {
 	None,
 	Stable = 1,

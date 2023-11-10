@@ -17,7 +17,7 @@ public:
 	virtual ~BaseArgumentParser() = default;
 
 protected:
-	bool parse(const int argc, const char* argv[], const int inPositionalArgs = 0);
+	bool parse(const i32 argc, const char* argv[], const i32 inPositionalArgs = 0);
 
 	virtual StringList getTruthyArguments() const = 0;
 

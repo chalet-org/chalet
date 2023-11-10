@@ -12,11 +12,11 @@ namespace chalet
 {
 namespace ProcessController
 {
-int run(const StringList& inCmd, const ProcessOptions& inOptions, const std::uint8_t inBufferSize = 0);
-int getLastExitCode();
-std::string getSystemMessage(const int inExitCode);
-std::string getSignalRaisedMessage(const int inExitCode);
-std::string getSignalNameFromCode(const int inExitCode);
+i32 run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize = 0);
+i32 getLastExitCode();
+std::string getSystemMessage(const i32 inExitCode);
+std::string getSignalRaisedMessage(const i32 inExitCode);
+std::string getSignalNameFromCode(const i32 inExitCode);
 void haltAll(const SigNum inSignal = SigNum::Terminate);
 }
 }

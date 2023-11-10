@@ -39,7 +39,7 @@ struct Logger
 
 private:
 	std::stringstream stream;
-	int uncaught = std::uncaught_exceptions();
+	i32 uncaught = std::uncaught_exceptions();
 };
 } // namespace priv
 }

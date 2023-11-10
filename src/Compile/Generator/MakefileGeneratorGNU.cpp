@@ -427,7 +427,7 @@ std::string MakefileGeneratorGNU::getLinkerPreReqs(const StringList& objects) co
 
 	std::string ret = String::join(objects);
 
-	uint count = 0;
+	u32 count = 0;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())

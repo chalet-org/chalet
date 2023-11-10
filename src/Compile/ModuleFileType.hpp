@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ModuleFileType : ushort
+enum class ModuleFileType : u16
 {
 	ModuleDependency,
 	HeaderUnitDependency,

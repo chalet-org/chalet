@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class RouteType : ushort
+enum class RouteType : u16
 {
 	Unknown,
 	Help,

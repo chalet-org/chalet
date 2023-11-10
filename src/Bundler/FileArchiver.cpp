@@ -65,7 +65,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 
 	if (cmd.empty())
 	{
-		Diagnostic::error("Invalid archive format requested: {}.", static_cast<int>(m_format));
+		Diagnostic::error("Invalid archive format requested: {}.", static_cast<i32>(m_format));
 		return false;
 	}
 

@@ -56,7 +56,7 @@ std::string CompileEnvironmentGNU::getFullCxxCompilerString(const std::string& i
 		auto name = String::getPathBaseName(inPath);
 		if (!name.empty())
 		{
-			name[0] = static_cast<char>(::toupper(static_cast<uchar>(name[0])));
+			String::capitalize(name);
 			String::replaceAll(name, '+', "");
 		}
 
@@ -232,7 +232,7 @@ bool CompileEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompil
 	// Intel will have __INTEL_COMPILER (or at the very least __INTEL_COMPILER_BUILD_DATE) & __GNUC__ (Also GCC-based as far as I know)
 
 	ToolchainType detectedType = getToolchainTypeFromMacros(macroResult);
-	// LOG("types:", static_cast<int>(detectedType), static_cast<int>(m_type));
+	// LOG("types:", static_cast<i32>(detectedType), static_cast<i32>(m_type));
 	if (detectedType != m_type)
 	{
 		Diagnostic::error("No compiler executable was found");

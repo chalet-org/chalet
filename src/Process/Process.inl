@@ -8,8 +8,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-template <std::size_t Size>
-void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
+template <size_t Size>
+void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const u8 inBufferSize, const ProcessOptions::PipeFunc& onRead)
 {
 	auto& pipe = getFilePipe(inFileNo);
 #if defined(CHALET_WIN32)
@@ -17,7 +17,7 @@ void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const
 #else
 	ssize_t bytesRead = 0;
 #endif
-	std::size_t bufferSize = inBufferSize > 0 ? static_cast<std::size_t>(inBufferSize) : inBuffer.size();
+	size_t bufferSize = inBufferSize > 0 ? static_cast<size_t>(inBufferSize) : inBuffer.size();
 	while (true)
 	{
 		if (m_killed)

@@ -43,8 +43,8 @@ struct CompilerTools
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
-	uint versionMajorMinor() const noexcept;
-	uint versionPatch() const noexcept;
+	u32 versionMajorMinor() const noexcept;
+	u32 versionPatch() const noexcept;
 
 	const std::string& archiver() const noexcept;
 	void setArchiver(std::string&& inValue) noexcept;
@@ -65,9 +65,9 @@ struct CompilerTools
 
 	const std::string& cmake() const noexcept;
 	void setCmake(std::string&& inValue) noexcept;
-	uint cmakeVersionMajor() const noexcept;
-	uint cmakeVersionMinor() const noexcept;
-	uint cmakeVersionPatch() const noexcept;
+	u32 cmakeVersionMajor() const noexcept;
+	u32 cmakeVersionMinor() const noexcept;
+	u32 cmakeVersionPatch() const noexcept;
 	bool cmakeAvailable() const noexcept;
 
 	const std::string& linker() const noexcept;
@@ -75,8 +75,8 @@ struct CompilerTools
 
 	const std::string& make() const noexcept;
 	void setMake(std::string&& inValue) noexcept;
-	uint makeVersionMajor() const noexcept;
-	uint makeVersionMinor() const noexcept;
+	u32 makeVersionMajor() const noexcept;
+	u32 makeVersionMinor() const noexcept;
 	bool makeIsNMake() const noexcept;
 	bool makeIsJom() const noexcept;
 
@@ -94,9 +94,9 @@ struct CompilerTools
 
 	const std::string& ninja() const noexcept;
 	void setNinja(std::string&& inValue) noexcept;
-	uint ninjaVersionMajor() const noexcept;
-	uint ninjaVersionMinor() const noexcept;
-	uint ninjaVersionPatch() const noexcept;
+	u32 ninjaVersionMajor() const noexcept;
+	u32 ninjaVersionMinor() const noexcept;
+	u32 ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
 private:
@@ -116,19 +116,19 @@ private:
 
 	std::string m_version;
 
-	uint m_toolchainVersionMajorMinor = 0;
-	uint m_toolchainVersionPatch = 0;
+	u32 m_toolchainVersionMajorMinor = 0;
+	u32 m_toolchainVersionPatch = 0;
 
-	uint m_cmakeVersionMajor = 0;
-	uint m_cmakeVersionMinor = 0;
-	uint m_cmakeVersionPatch = 0;
+	u32 m_cmakeVersionMajor = 0;
+	u32 m_cmakeVersionMinor = 0;
+	u32 m_cmakeVersionPatch = 0;
 
-	uint m_makeVersionMajor = 0;
-	uint m_makeVersionMinor = 0;
+	u32 m_makeVersionMajor = 0;
+	u32 m_makeVersionMinor = 0;
 
-	uint m_ninjaVersionMajor = 0;
-	uint m_ninjaVersionMinor = 0;
-	uint m_ninjaVersionPatch = 0;
+	u32 m_ninjaVersionMajor = 0;
+	u32 m_ninjaVersionMinor = 0;
+	u32 m_ninjaVersionPatch = 0;
 
 	StrategyType m_strategy = StrategyType::None;
 	BuildPathStyle m_buildPathStyle = BuildPathStyle::None;

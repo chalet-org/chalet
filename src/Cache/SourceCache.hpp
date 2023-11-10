@@ -18,7 +18,7 @@ struct SourceCache
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
 	void setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges = false) noexcept;
-	void setLastBuildStrategy(const int inValue, const bool inCheckChanges = false) noexcept;
+	void setLastBuildStrategy(const i32 inValue, const bool inCheckChanges = false) noexcept;
 	bool buildStrategyChanged() const noexcept;
 	bool canRemoveCachedFolder() const noexcept;
 

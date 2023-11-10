@@ -154,8 +154,8 @@ struct CommandLineInputs
 
 	void clearWorkingDirectory(std::string& outValue) const;
 
-	const std::optional<uint>& maxJobs() const noexcept;
-	void setMaxJobs(const uint inValue) noexcept;
+	const std::optional<u32>& maxJobs() const noexcept;
+	void setMaxJobs(const u32 inValue) noexcept;
 
 	const std::optional<bool>& dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
@@ -231,7 +231,7 @@ private:
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 
-	std::optional<uint> m_maxJobs;
+	std::optional<u32> m_maxJobs;
 	std::optional<bool> m_dumpAssembly;
 	std::optional<bool> m_showCommands;
 	std::optional<bool> m_benchmark;

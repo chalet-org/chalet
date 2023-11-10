@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class ExportKind : ushort
+enum class ExportKind : u16
 {
 	None,
 	VisualStudioCodeJSON,

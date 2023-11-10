@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class Color : ushort
+enum class Color : u16
 {
 	Reset = 0,
 	None = 1, // explicit none

@@ -50,9 +50,9 @@ void Environment::set(const char* inName, const std::string& inValue)
 #if defined(CHALET_WIN32)
 	std::string outValue = fmt::format("{}={}", inName, inValue);
 	// LOG(outValue);
-	int result = putenv(outValue.c_str());
+	i32 result = putenv(outValue.c_str());
 #else
-	int result = 0;
+	i32 result = 0;
 	if (!inValue.empty())
 		result = setenv(inName, inValue.c_str(), true);
 	else

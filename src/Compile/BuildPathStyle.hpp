@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class BuildPathStyle : ushort
+enum class BuildPathStyle : u16
 {
 	None,
 	Configuration,

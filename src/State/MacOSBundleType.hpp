@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class MacOSBundleType : ushort
+enum class MacOSBundleType : u16
 {
 	None,
 	Application,

@@ -23,7 +23,7 @@ struct
 } state;
 
 /*****************************************************************************/
-void signalHandler(int inSignal)
+void signalHandler(i32 inSignal)
 {
 	std::lock_guard<std::mutex> lock(state.mutex);
 
@@ -132,7 +132,7 @@ void Spinner::doRegularEllipsis()
 
 	m_running = true;
 
-	uint i = 0;
+	u32 i = 0;
 	while (m_running)
 	{
 		std::string output;

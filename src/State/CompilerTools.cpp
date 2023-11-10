@@ -371,12 +371,12 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-uint CompilerTools::versionMajorMinor() const noexcept
+u32 CompilerTools::versionMajorMinor() const noexcept
 {
 	return m_toolchainVersionMajorMinor;
 }
 
-uint CompilerTools::versionPatch() const noexcept
+u32 CompilerTools::versionPatch() const noexcept
 {
 	return m_toolchainVersionPatch;
 }
@@ -438,15 +438,15 @@ void CompilerTools::setCmake(std::string&& inValue) noexcept
 {
 	m_cmake = std::move(inValue);
 }
-uint CompilerTools::cmakeVersionMajor() const noexcept
+u32 CompilerTools::cmakeVersionMajor() const noexcept
 {
 	return m_cmakeVersionMajor;
 }
-uint CompilerTools::cmakeVersionMinor() const noexcept
+u32 CompilerTools::cmakeVersionMinor() const noexcept
 {
 	return m_cmakeVersionMinor;
 }
-uint CompilerTools::cmakeVersionPatch() const noexcept
+u32 CompilerTools::cmakeVersionPatch() const noexcept
 {
 	return m_cmakeVersionPatch;
 }
@@ -479,11 +479,11 @@ void CompilerTools::setMake(std::string&& inValue) noexcept
 	m_makeIsNMake = String::endsWith("nmake.exe", lower) || m_makeIsJom;
 }
 
-uint CompilerTools::makeVersionMajor() const noexcept
+u32 CompilerTools::makeVersionMajor() const noexcept
 {
 	return m_makeVersionMajor;
 }
-uint CompilerTools::makeVersionMinor() const noexcept
+u32 CompilerTools::makeVersionMinor() const noexcept
 {
 	return m_makeVersionMinor;
 }
@@ -507,15 +507,15 @@ void CompilerTools::setNinja(std::string&& inValue) noexcept
 {
 	m_ninja = std::move(inValue);
 }
-uint CompilerTools::ninjaVersionMajor() const noexcept
+u32 CompilerTools::ninjaVersionMajor() const noexcept
 {
 	return m_ninjaVersionMajor;
 }
-uint CompilerTools::ninjaVersionMinor() const noexcept
+u32 CompilerTools::ninjaVersionMinor() const noexcept
 {
 	return m_ninjaVersionMinor;
 }
-uint CompilerTools::ninjaVersionPatch() const noexcept
+u32 CompilerTools::ninjaVersionPatch() const noexcept
 {
 	return m_ninjaVersionPatch;
 }

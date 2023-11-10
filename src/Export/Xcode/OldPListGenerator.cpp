@@ -24,8 +24,8 @@ void OldPListGenerator::dumpToTerminal()
 //
 std::string OldPListGenerator::getContents(const StringList& inSingleLineSections) const
 {
-	int archiveVersion = m_json["archiveVersion"].get<int>();
-	int objectVersion = m_json["objectVersion"].get<int>();
+	auto archiveVersion = m_json["archiveVersion"].get<i32>();
+	auto objectVersion = m_json["objectVersion"].get<i32>();
 	auto rootObject = m_json["rootObject"].get<std::string>();
 
 	std::string sections;
@@ -36,7 +36,7 @@ std::string OldPListGenerator::getContents(const StringList& inSingleLineSection
 		if (!value.is_object())
 			continue;
 
-		int indent = 2;
+		i32 indent = 2;
 		if (String::equals(inSingleLineSections, section))
 			indent = 0;
 
@@ -135,15 +135,15 @@ std::string OldPListGenerator::getNodeAsPListFormat(const Json& inJson, const si
 	}
 	else if (inJson.is_number_float())
 	{
-		ret += std::to_string(inJson.get<float>());
+		ret += std::to_string(inJson.get<f32>());
 	}
 	else if (inJson.is_number_integer())
 	{
-		ret += std::to_string(inJson.get<std::int64_t>());
+		ret += std::to_string(inJson.get<i64>());
 	}
 	else if (inJson.is_number_unsigned())
 	{
-		ret += std::to_string(inJson.get<std::uint64_t>());
+		ret += std::to_string(inJson.get<u64>());
 	}
 
 	if (indent == 0)

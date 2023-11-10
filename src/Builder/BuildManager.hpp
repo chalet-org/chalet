@@ -40,7 +40,7 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool copyRunDependencies(const IBuildTarget& inProject, uint& outCopied);
+	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
 	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false, const bool inForceCleanExternals = false);

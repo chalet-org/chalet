@@ -27,7 +27,7 @@ struct Error
 };
 
 /*****************************************************************************/
-static struct : std::exception
+struct : std::exception
 {
 	const char* what() const throw() final
 	{
@@ -36,7 +36,7 @@ static struct : std::exception
 } kCriticalError;
 
 /*****************************************************************************/
-static struct
+struct
 {
 	std::vector<Error> errorList;
 	Unique<Spinner> spinnerThread;
@@ -278,7 +278,7 @@ void Diagnostic::fatalErrorFromException(const char* inError)
 }
 
 /*****************************************************************************/
-void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
+void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const u32 inLineNumber)
 {
 	auto& errStream = Output::getErrStream();
 	if (state.spinnerThread != nullptr)

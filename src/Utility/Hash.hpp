@@ -10,7 +10,7 @@ namespace chalet
 namespace Hash
 {
 std::string string(const std::string& inValue);
-std::size_t uint64(const std::string& inValue);
+size_t uint64(const std::string& inValue);
 
 template <typename... Args>
 std::string getHashableString(Args&&... args);

@@ -51,7 +51,7 @@ protected:
 	virtual void addThreadModelCompileOption(StringList& outArgList) const;
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const;
 
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
+	u32 m_versionMajorMinor = 0;
+	u32 m_versionPatch = 0;
 };
 }

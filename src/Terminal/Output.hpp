@@ -66,7 +66,7 @@ void msgBuildFail();
 void msgCleaning();
 void msgNothingToClean();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
-void msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval);
+void msgProfilerStartedSample(const std::string& inExecutable, const u32 inDuration, const u32 inSamplingInterval);
 void msgProfilerDone(const std::string& inProfileAnalysis);
 void msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std::string& inApplication);
 void msgClean(const std::string& inBuildConfiguration);

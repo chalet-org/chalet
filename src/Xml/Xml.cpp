@@ -14,7 +14,7 @@ Xml::Xml(std::string inRootName) :
 }
 
 /*****************************************************************************/
-std::string Xml::dump(const int inIndent, const char inIndentChar) const
+std::string Xml::dump(const i32 inIndent, const char inIndentChar) const
 {
 	std::string ret;
 

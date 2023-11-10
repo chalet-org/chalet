@@ -21,7 +21,7 @@ public:
 	XmlElement() = default;
 	explicit XmlElement(std::string_view inName);
 
-	std::string dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const;
+	std::string dump(const u32 inIndent, const i32 inIndentSize, const char inIndentChar) const;
 
 	const std::string& name() const noexcept;
 	void setName(std::string_view inName);

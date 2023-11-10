@@ -17,12 +17,12 @@
 #include "Core/Arch.hpp"
 #include "Core/DotEnvFileParser.hpp"
 #include "Core/QueryController.hpp"
+#include "Process/Environment.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
@@ -580,7 +580,7 @@ bool CentralState::replaceVariablesInString(std::string& outString, const IExter
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);

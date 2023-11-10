@@ -22,5 +22,5 @@ struct Size
 
 namespace chalet
 {
-extern template struct Size<ushort>;
+extern template struct Size<u16>;
 }

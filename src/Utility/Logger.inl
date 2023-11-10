@@ -16,7 +16,7 @@ template <typename... Args>
 Logger::Logger(const char* const inFile, const std::string& inFunction, Args&&... args) :
 	Logger(inFile, inFunction)
 {
-	stream.precision(std::numeric_limits<double>::digits);
+	stream.precision(std::numeric_limits<f64>::digits);
 	((stream << std::forward<Args>(args) << ' '), ...);
 }
 }

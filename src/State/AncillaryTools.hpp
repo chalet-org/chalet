@@ -87,8 +87,8 @@ struct AncillaryTools
 
 	const std::string& xcodebuild() const noexcept;
 	void setXcodebuild(std::string&& inValue) noexcept;
-	uint xcodeVersionMajor() const noexcept;
-	uint xcodeVersionMinor() const noexcept;
+	u32 xcodeVersionMajor() const noexcept;
+	u32 xcodeVersionMinor() const noexcept;
 
 	const std::string& xcrun() const noexcept;
 	void setXcrun(std::string&& inValue) noexcept;
@@ -158,8 +158,8 @@ private:
 	mutable std::string m_signingCertificate;
 #endif
 
-	uint m_xcodeVersionMajor = 0;
-	uint m_xcodeVersionMinor = 0;
+	u32 m_xcodeVersionMajor = 0;
+	u32 m_xcodeVersionMinor = 0;
 
 	bool m_bashAvailable = false;
 };

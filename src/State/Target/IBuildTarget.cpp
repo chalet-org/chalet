@@ -48,7 +48,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

@@ -41,7 +41,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

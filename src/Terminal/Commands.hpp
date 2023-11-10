@@ -12,7 +12,7 @@ namespace chalet
 {
 namespace Commands
 {
-using CreateSubprocessFunc = std::function<void(int /* pid */)>;
+using CreateSubprocessFunc = std::function<void(i32 /* pid */)>;
 
 std::string getWorkingDirectory();
 bool changeWorkingDirectory(const std::string& inPath);
@@ -26,8 +26,8 @@ std::string getAbsolutePath(const std::string& inPath);
 std::string getProximatePath(const std::string& inPath, const std::string& inBase);
 std::string resolveSymlink(const std::string& inPath);
 
-std::uintmax_t getPathSize(const std::string& inPath);
-std::int64_t getLastWriteTime(const std::string& inFile);
+uintmax_t getPathSize(const std::string& inPath);
+i64 getLastWriteTime(const std::string& inFile);
 
 bool makeDirectory(const std::string& inPath);
 bool makeDirectories(const StringList& inPaths, bool& outDirectoriesMade);
@@ -54,7 +54,7 @@ bool addPathToListWithGlob(std::string&& inValue, StringList& outList, const Glo
 
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 std::string readShebangFromFile(const std::string& inFile);
-void sleep(const double inSeconds);
+void sleep(const f64 inSeconds);
 
 bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions = {});

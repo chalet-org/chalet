@@ -27,24 +27,24 @@ public:
 	~Process();
 	bool operator==(const Process& rhs);
 
-	static std::string getErrorMessageFromCode(const int inCode);
-	static std::string getErrorMessageFromSignalRaised(const int inCode);
-	static std::string getSignalNameFromCode(int inCode);
+	static std::string getErrorMessageFromCode(const i32 inCode);
+	static std::string getErrorMessageFromSignalRaised(const i32 inCode);
+	static std::string getSignalNameFromCode(i32 inCode);
 
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 	void close();
 
-	int waitForResult();
+	i32 waitForResult();
 	bool sendSignal(const SigNum inSignal);
 	bool terminate();
 	bool kill();
 
-	template <std::size_t Size>
-	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
+	template <size_t Size>
+	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const u8 inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	int getReturnCode(const int inExitCode);
+	i32 getReturnCode(const i32 inExitCode);
 	CmdPtrArray getCmdVector(const StringList& inCmd);
 #endif
 	ProcessPipe& getFilePipe(const HandleInput inFileNo);

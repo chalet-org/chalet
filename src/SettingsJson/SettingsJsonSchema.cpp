@@ -16,7 +16,7 @@ namespace chalet
 {
 namespace
 {
-enum class Defs : ushort
+enum class Defs : u16
 {
 	/* Tools */
 	Bash,

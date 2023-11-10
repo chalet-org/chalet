@@ -495,7 +495,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCopied)
+bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, u32& outCopied)
 {
 	bool result = true;
 
@@ -953,7 +953,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		return false;
 	}
 
-	uint copied = 0;
+	u32 copied = 0;
 	for (const auto& target : m_buildTargets)
 	{
 		if (target->isSources())
@@ -1075,8 +1075,8 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 
-	int lastExitCode = ProcessController::getLastExitCode();
-	int signalRaised = 0;
+	i32 lastExitCode = ProcessController::getLastExitCode();
+	i32 signalRaised = 0;
 
 	std::string signalRaisedMessage;
 	if (lastExitCode < 0)

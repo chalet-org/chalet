@@ -185,7 +185,7 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 
 		if (ptr->is_array() && !idxRaw.empty())
 		{
-			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			size_t val = static_cast<size_t>(std::stoi(idxRaw));
 			if (val < ptr->size())
 			{
 				ptr = &(*ptr)[val];
@@ -262,7 +262,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 			Diagnostic::error("'{}' expects a signed integer, but found value of '{}'", m_key, m_value);
 			return false;
 		}
-		int value = std::stoi(m_value);
+		i32 value = std::stoi(m_value);
 		*ptr = value;
 		set = true;
 	}
@@ -273,7 +273,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 			Diagnostic::error("'{}' expects a float, but found value of '{}'", m_key, m_value);
 			return false;
 		}
-		float value = std::stof(m_value);
+		f32 value = std::stof(m_value);
 		*ptr = value;
 		set = true;
 	}
@@ -352,8 +352,8 @@ bool SettingsManager::runSettingsUnset(Json& node)
 	StringList subKeys = parseKey();
 	for (auto& subKey : subKeys)
 	{
-		std::ptrdiff_t i = &subKey - &subKeys.front();
-		bool notLast = i < static_cast<std::ptrdiff_t>(subKeys.size() - 1);
+		ptrdiff_t i = &subKey - &subKeys.front();
+		bool notLast = i < static_cast<ptrdiff_t>(subKeys.size() - 1);
 		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
 
 		if (!ptr->contains(subKey) && notLast)
@@ -366,7 +366,7 @@ bool SettingsManager::runSettingsUnset(Json& node)
 		if (!idxRaw.empty())
 		{
 			ptr = &ptr->at(subKey);
-			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			size_t val = static_cast<size_t>(std::stoi(idxRaw));
 			if (val >= ptr->size())
 			{
 				auto loc = m_key.find(subKey);
@@ -392,7 +392,7 @@ bool SettingsManager::runSettingsUnset(Json& node)
 	auto& settings = getSettings();
 	if (ptr->is_array())
 	{
-		std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+		size_t val = static_cast<size_t>(std::stoi(idxRaw));
 		ptr->erase(val);
 	}
 	else
@@ -450,7 +450,7 @@ bool SettingsManager::findRequestedNode(Json& inNode, std::string& outLastKey, J
 
 			if (outNode->is_array() && !idxRaw.empty())
 			{
-				std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+				size_t val = static_cast<size_t>(std::stoi(idxRaw));
 				if (val < outNode->size())
 				{
 					outNode = &(*outNode)[val];
@@ -481,8 +481,8 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 	StringList subKeys = parseKey();
 	for (auto& subKey : subKeys)
 	{
-		std::ptrdiff_t i = &subKey - &subKeys.front();
-		bool notLast = i < static_cast<std::ptrdiff_t>(subKeys.size() - 1);
+		ptrdiff_t i = &subKey - &subKeys.front();
+		bool notLast = i < static_cast<ptrdiff_t>(subKeys.size() - 1);
 		getArrayKeyWithIndex(subKey, subKeyRaw, idxRaw);
 
 		if (!outNode->contains(subKey) && notLast)
@@ -494,7 +494,7 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 		{
 			outNode = &outNode->at(subKey);
 
-			std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+			size_t val = static_cast<size_t>(std::stoi(idxRaw));
 			while (val >= outNode->size())
 			{
 				outNode->push_back(nullptr);
@@ -539,7 +539,7 @@ bool SettingsManager::makeSetting(Json& inNode, Json*& outNode)
 
 	if (outNode->is_array())
 	{
-		std::size_t val = static_cast<std::size_t>(std::stoi(idxRaw));
+		size_t val = static_cast<size_t>(std::stoi(idxRaw));
 		if (val < outNode->size())
 		{
 			(*outNode)[val] = std::move(value);

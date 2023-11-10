@@ -413,11 +413,11 @@ void AncillaryTools::setXcodebuild(std::string&& inValue) noexcept
 {
 	m_xcodebuild = std::move(inValue);
 }
-uint AncillaryTools::xcodeVersionMajor() const noexcept
+u32 AncillaryTools::xcodeVersionMajor() const noexcept
 {
 	return m_xcodeVersionMajor;
 }
-uint AncillaryTools::xcodeVersionMinor() const noexcept
+u32 AncillaryTools::xcodeVersionMinor() const noexcept
 {
 	return m_xcodeVersionMinor;
 }

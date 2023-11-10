@@ -14,6 +14,7 @@
 #include "Bundler/MacosDiskImageCreator.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -28,7 +29,6 @@
 #include "State/Distribution/ValidationDistTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -374,7 +374,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 		}
 	}
 
-	int levels = 2;
+	i32 levels = 2;
 	if (!m_dependencyMap->gatherFromList(allDependencies, levels))
 		return false;
 
@@ -508,7 +508,7 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 
-	int lastExitCode = ProcessController::getLastExitCode();
+	i32 lastExitCode = ProcessController::getLastExitCode();
 	if (lastExitCode != 0)
 	{
 		auto message = fmt::format("{} exited with code: {}", outputFile, lastExitCode);

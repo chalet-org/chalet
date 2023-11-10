@@ -22,7 +22,7 @@ namespace
 {
 static struct
 {
-	short exists = -1;
+	i16 exists = -1;
 	std::string vswhere;
 } state;
 }
@@ -281,8 +281,8 @@ StringList VisualStudioEnvironmentScript::getStartOfVsWhereCommand(const VisualS
 	}
 	else
 	{
-		ushort ver = static_cast<ushort>(inVersion);
-		ushort next = ver + 1;
+		u16 ver = static_cast<u16>(inVersion);
+		u16 next = ver + 1;
 		cmd.emplace_back("-version");
 		cmd.emplace_back(fmt::format("[{},{})", ver, next));
 	}

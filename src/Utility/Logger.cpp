@@ -63,8 +63,8 @@ Logger::~Logger()
 //
 std::string Logger::classMethod(const std::string& inFile, const std::string& inFunction)
 {
-	std::size_t lastSlash = inFile.find_last_of("/\\") + 1;
-	std::size_t period = inFile.find_last_of('.');
+	size_t lastSlash = inFile.find_last_of("/\\") + 1;
+	size_t period = inFile.find_last_of('.');
 
 	return inFile.substr(lastSlash, period - lastSlash) + "::" + inFunction + "()";
 }

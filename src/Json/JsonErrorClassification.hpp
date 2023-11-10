@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class JsonErrorClassification : ushort
+enum class JsonErrorClassification : u16
 {
 	None,
 	Fatal,

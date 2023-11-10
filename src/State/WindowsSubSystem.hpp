@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class WindowsSubSystem : ushort
+enum class WindowsSubSystem : u16
 {
 	None,
 	BootApplication,

@@ -17,7 +17,7 @@ struct CompilerInfo
 	std::string libDir;
 	std::string includeDir;
 
-	uint versionMajorMinor;
-	uint versionPatch;
+	u32 versionMajorMinor;
+	u32 versionPatch;
 };
 }

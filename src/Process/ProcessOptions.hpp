@@ -12,7 +12,7 @@ namespace chalet
 struct ProcessOptions
 {
 	using PipeFunc = std::function<void(std::string /* output */)>;
-	using CreateFunc = std::function<void(int /* pid */)>;
+	using CreateFunc = std::function<void(i32 /* pid */)>;
 
 	std::string cwd;
 	PipeFunc onStdOut = nullptr;

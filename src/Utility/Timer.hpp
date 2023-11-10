@@ -17,7 +17,7 @@ public:
 	Timer();
 
 	void restart();
-	std::int64_t stop();
+	i64 stop();
 	std::string asString(const bool inRestart = false);
 
 private:

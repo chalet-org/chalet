@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class HostPlatform : ushort
+enum class HostPlatform : u16
 {
 	Any,
 	Windows,

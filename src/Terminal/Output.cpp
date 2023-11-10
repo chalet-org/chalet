@@ -27,7 +27,7 @@ static struct
 	bool allowCommandsToShow = true;
 	bool showBenchamrks = true;
 #if defined(CHALET_WIN32)
-	std::int64_t commandPromptVersion = -1;
+	i64 commandPromptVersion = -1;
 #endif
 } state;
 
@@ -581,7 +581,7 @@ void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 }
 
 /*****************************************************************************/
-void Output::msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval)
+void Output::msgProfilerStartedSample(const std::string& inExecutable, const u32 inDuration, const u32 inSamplingInterval)
 {
 	Diagnostic::info("Sampling {} for {} seconds with {} millisecond of run time between samples", inExecutable, inDuration, inSamplingInterval);
 }

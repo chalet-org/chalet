@@ -22,5 +22,5 @@ struct Position
 
 namespace chalet
 {
-extern template struct Position<short>;
+extern template struct Position<i16>;
 }

@@ -14,7 +14,7 @@ namespace
 static std::string g_chalet;
 }
 
-bool TestState::setChaletPath(const int argc, const char* const argv[])
+bool TestState::setChaletPath(const i32 argc, const char* const argv[])
 {
 	if (argc == 0)
 		return false;

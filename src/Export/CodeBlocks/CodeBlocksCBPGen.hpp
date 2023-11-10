@@ -22,7 +22,7 @@ struct CodeBlocksCBPGen
 	bool saveProjectFiles(const std::string& inDirectory);
 
 private:
-	enum class TargetGroupKind : ushort
+	enum class TargetGroupKind : u16
 	{
 		Source,
 		Script,

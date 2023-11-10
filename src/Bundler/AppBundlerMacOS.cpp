@@ -11,6 +11,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -21,7 +22,6 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -481,14 +481,14 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 
 	const auto& sips = m_state.tools.sips();
 
-	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](int scale, int size) {
+	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](i32 scale, i32 size) {
 		Json out = Json::object();
 
 		if (!icon.empty() && !sips.empty())
 		{
 			auto baseName = String::getPathBaseName(icon);
 			auto ext = String::getPathSuffix(icon);
-			int imageSize = scale * size;
+			i32 imageSize = scale * size;
 			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
 			// -Z 32 glfw.icns --out glfw-32.icns
 			if (Commands::subprocessNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
@@ -503,8 +503,8 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 		appIconJson["images"].emplace_back(std::move(out));
 	};
 
-	std::vector<int> sizes{ 16, 32, 128, 256, 512 };
-	for (int size : sizes)
+	std::vector<i32> sizes{ 16, 32, 128, 256, 512 };
+	for (i32 size : sizes)
 	{
 		addIdiom(1, size);
 		addIdiom(2, size);
@@ -780,8 +780,8 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
-		uint signingAttempts = 3;
-		for (uint i = 0; i < signingAttempts; ++i)
+		u32 signingAttempts = 3;
+		for (u32 i = 0; i < signingAttempts; ++i)
 		{
 			auto it = signLater.end();
 			while (it != signLater.begin())

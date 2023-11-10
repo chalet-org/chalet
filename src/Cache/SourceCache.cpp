@@ -29,9 +29,9 @@ void SourceCache::setLastBuildStrategy(const StrategyType inValue, const bool in
 	m_lastBuildStrategy = inValue;
 }
 
-void SourceCache::setLastBuildStrategy(const int inValue, const bool inCheckChanges) noexcept
+void SourceCache::setLastBuildStrategy(const i32 inValue, const bool inCheckChanges) noexcept
 {
-	if (inValue < static_cast<int>(StrategyType::None) || inValue >= static_cast<int>(StrategyType::Count))
+	if (inValue < static_cast<i32>(StrategyType::None) || inValue >= static_cast<i32>(StrategyType::Count))
 		return;
 
 	if (inCheckChanges && !m_buildStrategyChanged)
@@ -108,7 +108,7 @@ Json SourceCache::asJson() const
 	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
 	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
-	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<int>(m_lastBuildStrategy);
+	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<i32>(m_lastBuildStrategy);
 
 	if (!m_dataCache.empty())
 	{

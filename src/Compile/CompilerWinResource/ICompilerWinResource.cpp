@@ -28,7 +28,7 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 	UNUSED(inType);
 
 	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("ICompilerWinResource:", static_cast<int>(inType), executable);
+	// LOG("ICompilerWinResource:", static_cast<i32>(inType), executable);
 
 	if (String::equals("rc", executable))
 		return std::make_unique<CompilerWinResourceVisualStudioRC>(inState, inProject);

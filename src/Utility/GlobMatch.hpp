@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class GlobMatch : uchar
+enum class GlobMatch : u8
 {
 	Files,
 	Folders,

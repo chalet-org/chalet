@@ -26,7 +26,7 @@ class ArgumentParser final : public BaseArgumentParser
 public:
 	ArgumentParser(const CommandLineInputs& inInputs);
 
-	bool resolveFromArguments(const int argc, const char* argv[]);
+	bool resolveFromArguments(const i32 argc, const char* argv[]);
 	const ArgumentList& arguments() const noexcept;
 
 	CommandRoute getRoute() const noexcept;

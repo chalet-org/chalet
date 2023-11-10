@@ -30,7 +30,7 @@ struct IntermediateSettingsState
 	std::string osTargetVersion;
 	std::string lastTarget;
 
-	uint maxJobs = 0;
+	u32 maxJobs = 0;
 	bool benchmark = false;
 	bool launchProfiler = false;
 	bool keepGoing = false;

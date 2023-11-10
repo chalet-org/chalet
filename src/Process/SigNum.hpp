@@ -9,7 +9,7 @@
 
 namespace chalet
 {
-enum class SigNum : int
+enum class SigNum : i32
 {
 	HangUp = 1,
 	Interrupt = SIGINT,

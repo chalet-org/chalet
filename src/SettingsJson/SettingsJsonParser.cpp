@@ -564,7 +564,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			if (String::equals(Keys::OptionsMaxJobs, key))
 			{
 				if (!m_inputs.maxJobs().has_value())
-					m_inputs.setMaxJobs(static_cast<uint>(value.get<int>()));
+					m_inputs.setMaxJobs(static_cast<u32>(value.get<i32>()));
 			}
 			else
 				removeKeys.push_back(key);

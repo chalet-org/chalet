@@ -58,7 +58,7 @@ void TerminalTest::printTerminalCapabilities()
 	printBanner("Terminal Capabilities");
 	std::cout.write(m_separator.data(), m_separator.size());
 
-	std::unordered_map<int, std::string> descriptions{
+	std::unordered_map<i32, std::string> descriptions{
 		{ 0, "normal" },
 		{ 1, "bold" },
 		{ 2, "dim" },
@@ -69,9 +69,9 @@ void TerminalTest::printTerminalCapabilities()
 		{ 9, "strikethrough" },
 	};
 
-	for (int attr : { 7, 1, 0, 2, 3, 4, 9, 5 })
+	for (i32 attr : { 7, 1, 0, 2, 3, 4, 9, 5 })
 	{
-		for (int clfg : { 30, 90, 37, 97, 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 })
+		for (i32 clfg : { 30, 90, 37, 97, 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 })
 		{
 			auto output = fmt::format("{esc}[{attr};{clfg}m {clfg} {esc}[0m",
 				fmt::arg("esc", kEsc),
@@ -96,8 +96,8 @@ void TerminalTest::printTerminalCapabilities()
 
 	{
 		std::string label;
-		int attr = 7;
-		for (int clfg : { 30, 37, 33, 31, 35, 34, 36, 32 })
+		i32 attr = 7;
+		for (i32 clfg : { 30, 37, 33, 31, 35, 34, 36, 32 })
 		{
 			auto output = fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
 				fmt::arg("esc", kEsc),
@@ -110,7 +110,7 @@ void TerminalTest::printTerminalCapabilities()
 		label = fmt::format("{} - {}(3x) normal\n", m_gray, m_reset);
 		std::cout.write(label.data(), label.size());
 
-		for (int clfg : { 90, 97, 93, 91, 95, 94, 96, 92 })
+		for (i32 clfg : { 90, 97, 93, 91, 95, 94, 96, 92 })
 		{
 			auto output = fmt::format("{esc}[{attr};{clfg}m        {esc}[0m",
 				fmt::arg("esc", kEsc),
@@ -152,7 +152,7 @@ void TerminalTest::printUnicodeCharacters()
 void TerminalTest::printChaletColorThemes(const bool inSimple)
 {
 	auto themes = ColorTheme::getAllThemes();
-	std::size_t totalThemes = themes.size();
+	size_t totalThemes = themes.size();
 
 	printBanner("Chalet Color Themes");
 
@@ -186,17 +186,17 @@ void TerminalTest::printColorCombinations()
 	printBanner("Color Combinations");
 	std::cout.write(m_separator.data(), m_separator.size());
 
-	std::vector<int> headers{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
-	std::vector<int> colors{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
-	// std::vector<int> flairs{ 90, 233, 293, 231, 291, 235, 295, 234, 294, 236, 296, 232, 292 };
-	int flair = 90;
-	int assembly = 90;
-	int success = 92;
-	// for (int flair : flairs)
-	for (int build : colors)
-		for (int header : headers)
-		// for (int assembly : colors)
-		// for (int success : colors)
+	std::vector<i32> headers{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
+	std::vector<i32> colors{ 33, 93, 31, 91, 35, 95, 34, 94, 36, 96, 32, 92 };
+	// std::vector<i32> flairs{ 90, 233, 293, 231, 291, 235, 295, 234, 294, 236, 296, 232, 292 };
+	i32 flair = 90;
+	i32 assembly = 90;
+	i32 success = 92;
+	// for (i32 flair : flairs)
+	for (i32 build : colors)
+		for (i32 header : headers)
+		// for (i32 assembly : colors)
+		// for (i32 success : colors)
 		{
 			// printColored("doot", clfg, attr);
 			ColorTheme theme;
@@ -218,8 +218,8 @@ void TerminalTest::printColorCombinations()
 /*****************************************************************************/
 void TerminalTest::printBanner(const std::string& inText)
 {
-	auto middle = static_cast<std::size_t>(static_cast<double>(kWidth) * 0.5);
-	auto textMiddle = static_cast<std::size_t>(static_cast<double>(inText.size()) * 0.5);
+	auto middle = static_cast<size_t>(static_cast<f64>(kWidth) * 0.5);
+	auto textMiddle = static_cast<size_t>(static_cast<f64>(inText.size()) * 0.5);
 	std::string padding(middle - textMiddle, ' ');
 
 	auto output = fmt::format("{}{}{}\n", m_separator, padding, inText);
@@ -262,7 +262,7 @@ void TerminalTest::printTheme(const ColorTheme& theme, const bool inWithName)
 void TerminalTest::printThemeSimple(const ColorTheme& theme, const bool inWithName)
 {
 	auto makeString = [](const Color& color) {
-		auto value = std::to_string(static_cast<int>(color));
+		auto value = std::to_string(static_cast<i32>(color));
 		while (value.size() < 3)
 			value += ' ';
 

@@ -13,6 +13,7 @@
 #include "Core/DotEnvFileGenerator.hpp"
 #include "Core/DotEnvFileParser.hpp"
 #include "Export/IProjectExporter.hpp"
+#include "Process/Environment.hpp"
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -29,7 +30,6 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/Hash.hpp"
@@ -672,7 +672,7 @@ bool BuildState::validateState()
 					return false;
 				}
 
-				uint versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
+				u32 versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
 				if (versionMajorMinor < 1928)
 				{
 					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
@@ -1300,7 +1300,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);
@@ -1441,7 +1441,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);

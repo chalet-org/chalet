@@ -21,13 +21,13 @@ class Application
 public:
 	Application() = default;
 
-	int run(const int argc = 0, const char* argv[] = nullptr);
+	i32 run(const i32 argc = 0, const char* argv[] = nullptr);
 
 private:
 	void initializeTerminal();
 	bool handleRoute();
 
-	int onExit(const Status inStatus);
+	i32 onExit(const Status inStatus);
 	void cleanup();
 
 	Unique<CommandLineInputs> m_inputs;

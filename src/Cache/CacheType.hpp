@@ -7,7 +7,7 @@
 
 namespace chalet
 {
-enum class CacheType : ushort
+enum class CacheType : u16
 {
 	Global,
 	Local,
