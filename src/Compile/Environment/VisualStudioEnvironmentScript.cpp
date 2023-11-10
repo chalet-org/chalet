@@ -7,11 +7,12 @@
 
 #include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
@@ -330,7 +331,7 @@ bool VisualStudioEnvironmentScript::saveEnvironmentFromScript()
 	}
 
 	cmd.emplace_back(">");
-	cmd.emplace_back(Environment::getNull());
+	cmd.emplace_back(Shell::getNull());
 	cmd.emplace_back("&&");
 	cmd.emplace_back("SET");
 	cmd.emplace_back(">");

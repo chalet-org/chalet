@@ -9,8 +9,8 @@
 
 #include "Process/ProcessController.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
 #include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
@@ -328,7 +328,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 	Output::setQuietNonBuild(false);
 
-	auto& executeCommandFunc = Environment::isMicrosoftTerminalOrWindowsBash() ? executeCommandCarriageReturn : executeCommand;
+	auto& executeCommandFunc = Shell::isMicrosoftTerminalOrWindowsBash() ? executeCommandCarriageReturn : executeCommand;
 
 	state->index = startIndex > 0 ? startIndex : 1;
 	uint totalCompiles = total;

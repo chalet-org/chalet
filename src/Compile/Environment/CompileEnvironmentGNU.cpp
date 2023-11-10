@@ -12,8 +12,8 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -104,7 +104,7 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 			}
 
 #if defined(CHALET_LINUX)
-			if (Environment::isWindowsSubsystemForLinux())
+			if (Shell::isWindowsSubsystemForLinux())
 			{
 				if (String::contains({ "(GCC)", "-win32 " }, version))
 					version = version.substr(0, version.find(" ("));
@@ -384,7 +384,7 @@ std::string CompileEnvironmentGNU::getCompilerMacros(const std::string& inCompil
 		//   (or added to path before-hand, but we manipulate the path later)
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
-		StringList command = { inCompilerExec, "-x", "c", Environment::getNull(), "-dM", "-E" };
+		StringList command = { inCompilerExec, "-x", "c", Shell::getNull(), "-dM", "-E" };
 		result = Commands::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
 		if (!result.empty())

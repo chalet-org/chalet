@@ -9,7 +9,7 @@
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
 #include "Core/Platform.hpp"
 #include "Libraries/Json.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"

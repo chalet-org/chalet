@@ -8,8 +8,8 @@
 #include <csignal>
 #include <exception>
 
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Spinner.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/SignalHandler.hpp"
@@ -260,7 +260,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 	Diagnostic::addError(Type::Error, std::move(inMessage));
 	Diagnostic::printErrors();
 
-	if (Environment::isBashGenericColorTermOrWindowsTerminal())
+	if (Shell::isBashGenericColorTermOrWindowsTerminal())
 	{
 		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
 		Output::getErrStream().write(boldBlack.data(), boldBlack.size());
@@ -362,7 +362,7 @@ void Diagnostic::printErrors(const bool inForceStdOut)
 
 	if (state.spinnerThread != nullptr && !destroySpinnerThread())
 	{
-		if (!Environment::isSubprocess())
+		if (!Shell::isSubprocess())
 		{
 			std::cout.put('\n');
 			std::cout.flush();

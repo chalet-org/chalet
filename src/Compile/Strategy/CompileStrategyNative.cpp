@@ -16,8 +16,8 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -70,7 +70,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = m_outputs.at(name);
 
-	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
+	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	bool targetExists = Commands::pathExists(outputs->target);
 
 	{

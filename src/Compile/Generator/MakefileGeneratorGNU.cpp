@@ -12,8 +12,8 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+// #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -24,7 +24,7 @@ namespace chalet
 MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	// m_generateDependencies = inToolchain->type() != ToolchainType::VisualStudio && !Environment::isContinuousIntegrationServer();
+	// m_generateDependencies = inToolchain->type() != ToolchainType::VisualStudio && !Shell::isContinuousIntegrationServer();
 	m_generateDependencies = true;
 }
 

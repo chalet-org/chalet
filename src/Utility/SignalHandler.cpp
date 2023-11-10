@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"

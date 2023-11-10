@@ -11,9 +11,9 @@
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
+#include "Process/Environment.hpp"
 #include "State/CentralState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/String.hpp"

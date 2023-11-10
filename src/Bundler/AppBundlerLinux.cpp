@@ -11,8 +11,8 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+// #include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -113,7 +113,7 @@ bool AppBundlerLinux::bundleForPlatform()
 		return false;
 
 	// TODO: Flag for this?
-	/*if (!Environment::isContinuousIntegrationServer())
+	/*if (!Shell::isContinuousIntegrationServer())
 	{
 		Commands::copy(desktopEntryFile, m_applicationsPath);
 	}*/

@@ -14,7 +14,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"

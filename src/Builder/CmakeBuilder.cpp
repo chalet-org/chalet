@@ -10,6 +10,7 @@
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -20,7 +21,6 @@
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
@@ -109,7 +109,7 @@ bool CmakeBuilder::run()
 
 	const bool isNinja = usesNinja();
 
-	static const char* kNinjaStatus = "NINJA_STATUS";
+	static const char kNinjaStatus[] = "NINJA_STATUS";
 	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
 
 	auto onRunFailure = [this, &oldNinjaStatus, &isNinja](const bool inRemoveDir = true) -> bool {

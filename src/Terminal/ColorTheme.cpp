@@ -5,7 +5,7 @@
 
 #include "Terminal/ColorTheme.hpp"
 
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

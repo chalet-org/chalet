@@ -10,8 +10,8 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -22,7 +22,7 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
+	// m_generateDependencies = !Shell::isContinuousIntegrationServer();
 	m_generateDependencies = false;
 }
 
@@ -325,7 +325,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 			configureFilesDeps = fmt::format(" {}", deps);
 		}
 
-		auto nul = Environment::getNull();
+		auto nul = Shell::getNull();
 
 		ret = fmt::format(R"makefile(
 {object}: {source}{configureFilesDeps}

@@ -10,7 +10,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/DependencyWalker.hpp"
 #include "Utility/List.hpp"

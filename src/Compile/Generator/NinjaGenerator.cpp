@@ -7,12 +7,12 @@
 
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -30,7 +30,7 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 		{ SourceType::ObjectiveC, &NinjaGenerator::getObjcRule },
 		{ SourceType::WindowsResource, &NinjaGenerator::getRcRule },
 	};
-	// m_generateDependencies = !Environment::isContinuousIntegrationServer();
+	// m_generateDependencies = !Shell::isContinuousIntegrationServer();
 	m_generateDependencies = true;
 }
 

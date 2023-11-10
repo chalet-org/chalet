@@ -7,8 +7,8 @@
 
 #include <signal.h>
 
-#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/SignalHandler.hpp"
 
 namespace chalet
@@ -121,7 +121,7 @@ void Spinner::doRegularEllipsis()
 		std::cout.flush();
 	}
 
-	if (Environment::isContinuousIntegrationServer())
+	if (Shell::isContinuousIntegrationServer())
 		return;
 
 	constexpr auto frameTime = std::chrono::milliseconds(333);

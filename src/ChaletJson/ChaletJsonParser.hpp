@@ -11,7 +11,7 @@
 #include "Libraries/Json.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"

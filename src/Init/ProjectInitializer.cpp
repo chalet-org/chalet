@@ -12,7 +12,7 @@
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Diagnostic.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"

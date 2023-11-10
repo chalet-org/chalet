@@ -16,7 +16,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/DefinesVersion.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

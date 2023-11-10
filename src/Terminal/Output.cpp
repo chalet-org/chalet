@@ -7,8 +7,8 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
 #include "Terminal/Path.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 
@@ -118,7 +118,7 @@ void Output::setShowBenchmarks(const bool inValue)
 std::ostream& Output::getErrStream()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::cout;
 #endif
 
@@ -223,7 +223,7 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 std::string Output::getAnsiStyle(const Color inColor)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::string();
 #endif
 
@@ -231,7 +231,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
 	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
@@ -258,7 +258,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 std::string Output::getAnsiStyleRaw(const Color inColor)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::string();
 #endif
 
@@ -266,7 +266,7 @@ std::string Output::getAnsiStyleRaw(const Color inColor)
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
 	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
@@ -351,7 +351,7 @@ void Output::previousLine(const bool inForce)
 	if ((!state.quietNonBuild || inForce))
 	{
 #if defined(CHALET_WIN32)
-		if (!Environment::isVisualStudioOutput())
+		if (!Shell::isVisualStudioOutput())
 #endif
 		{
 			std::string eraser(80, ' ');

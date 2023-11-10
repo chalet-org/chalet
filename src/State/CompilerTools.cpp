@@ -11,7 +11,7 @@
 #include "Compile/Environment/ICompileEnvironment.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"

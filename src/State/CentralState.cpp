@@ -22,7 +22,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"

@@ -5,7 +5,7 @@
 
 #include "Utility/String.hpp"
 
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet

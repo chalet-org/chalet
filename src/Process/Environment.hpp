@@ -10,16 +10,6 @@ namespace chalet
 {
 namespace Environment
 {
-bool isSubprocess();
-bool isBash();
-bool isBashGenericColorTermOrWindowsTerminal();
-bool isMicrosoftTerminalOrWindowsBash();
-bool isWindowsSubsystemForLinux();
-bool isCommandPromptOrPowerShell();
-bool isContinuousIntegrationServer();
-bool isVisualStudioOutput();
-bool isJetBrainsOutput();
-
 const char* get(const char* inName);
 std::string getString(const char* inName);
 std::string getString(const char* inName, const std::string& inFallback);
@@ -35,7 +25,6 @@ constexpr char getPathSeparator();
 std::string getUserDirectory();
 std::string getShell();
 std::string getComSpec();
-std::string getNull();
 
 bool saveToEnvFile(const std::string& inOutputFile);
 void createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAfterFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);
@@ -43,6 +32,6 @@ void readEnvFileToDictionary(const std::string& inDeltaFile, Dictionary<std::str
 }
 }
 
-#include "Terminal/Environment.inl"
+#include "Process/Environment.inl"
 
 #endif // CHALET_ENVIRONMENT_HPP

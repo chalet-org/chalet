@@ -8,7 +8,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

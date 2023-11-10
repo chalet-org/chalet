@@ -21,7 +21,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Uuid.hpp"
