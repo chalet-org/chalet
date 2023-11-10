@@ -227,16 +227,6 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	chalet_assert(!outputFile.empty(), "");
 
 	StringList ret;
-	/*
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-	if (executable.empty() || dependencyFile.empty() || interfaceFile.empty())
-		return ret;
-
-	bool isDependency = inType == ModuleFileType::ModuleDependency || inType == ModuleFileType::HeaderUnitDependency;
-	bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::HeaderUnitDependency;
-
-	ret.emplace_back(executable);
-	*/
 
 	if (dependencyFile.empty() || interfaceFile.empty())
 		return ret;
