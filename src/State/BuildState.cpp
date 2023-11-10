@@ -5,13 +5,13 @@
 
 #include "State/BuildState.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BuildManager.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "ChaletJson/ChaletJsonParser.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/DotEnvFileGenerator.hpp"
-#include "Core/DotEnvFileParser.hpp"
+#include "DotEnv/DotEnvFileGenerator.hpp"
+#include "DotEnv/DotEnvFileParser.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
@@ -54,7 +54,7 @@ struct BuildState::Impl
 	std::vector<BuildTarget> targets;
 	std::vector<DistTarget> distribution;
 
-	Unique<ICompileEnvironment> environment;
+	Unique<IBuildEnvironment> environment;
 
 	bool checkForEnvironment = false;
 
@@ -303,7 +303,7 @@ bool BuildState::initializeBuildConfiguration()
 bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto createEnvironment = [this]() {
-		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
+		m_impl->environment = IBuildEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
 			const auto& toolchainName = inputs.toolchainPreferenceName();
@@ -338,7 +338,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.serialize())
 		return false;
 
-	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
+	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered

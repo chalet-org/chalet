@@ -5,10 +5,11 @@
 
 #include "Export/CLion/CLionWorkspaceGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/DotEnvFileGenerator.hpp"
-#include "Core/QueryController.hpp"
+#include "DotEnv/DotEnvFileGenerator.hpp"
+#include "Process/Environment.hpp"
+#include "Query/QueryController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -21,7 +22,6 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Uuid.hpp"

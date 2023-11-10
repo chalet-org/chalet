@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Router/CommandRoute.hpp"
+#include "Core/Router/CommandRoute.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet

@@ -5,7 +5,7 @@
 
 #include "Dependencies/PlatformDependencyManager.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"

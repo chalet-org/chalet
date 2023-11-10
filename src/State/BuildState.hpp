@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Router/CommandRoute.hpp"
+#include "Core/Router/CommandRoute.hpp"
 
 namespace chalet
 {
@@ -18,10 +18,10 @@ struct CommandLineInputs;
 struct CentralState;
 struct WorkspaceCache;
 struct WorkspaceEnvironment;
-struct ICompileEnvironment;
+struct IBuildEnvironment;
 struct IBuildTarget;
 struct IExternalDependency;
-struct ICompileEnvironment;
+struct IBuildEnvironment;
 struct IDistTarget;
 
 class BuildState
@@ -63,7 +63,7 @@ public:
 	std::vector<Unique<IDistTarget>>& distribution;
 	const CommandLineInputs& inputs;
 	const std::vector<Unique<IExternalDependency>>& externalDependencies;
-	ICompileEnvironment* environment = nullptr;
+	IBuildEnvironment* environment = nullptr;
 
 private:
 	bool initializeBuildConfiguration();

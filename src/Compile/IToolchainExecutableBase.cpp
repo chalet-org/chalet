@@ -5,7 +5,7 @@
 
 #include "Compile/IToolchainExecutableBase.hpp"
 
-#include "Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"

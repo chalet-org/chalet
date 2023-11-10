@@ -7,7 +7,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"

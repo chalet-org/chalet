@@ -5,7 +5,7 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"

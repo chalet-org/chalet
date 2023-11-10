@@ -5,7 +5,7 @@
 
 #include "Bundler/IAppBundler.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"

@@ -5,10 +5,10 @@
 
 #include "State/CompilerTools.hpp"
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 
 #include "Cache/SourceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
@@ -87,7 +87,7 @@ StringList CompilerTools::getToolchainBuildPathStyles()
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
+bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 {
 	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())

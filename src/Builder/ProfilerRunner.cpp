@@ -5,7 +5,7 @@
 
 #include "Builder/ProfilerRunner.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"

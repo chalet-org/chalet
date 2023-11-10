@@ -11,9 +11,9 @@
 
 #include "Process/Process.hpp"
 #include "Process/ProcessPipe.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/SignalHandler.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Terminal/WindowsTerminal.hpp"

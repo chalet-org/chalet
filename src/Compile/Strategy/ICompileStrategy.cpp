@@ -5,7 +5,7 @@
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
 #include "State/BuildInfo.hpp"

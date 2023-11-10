@@ -5,7 +5,7 @@
 
 #include "Cache/WorkspaceCache.hpp"
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildPaths.hpp"

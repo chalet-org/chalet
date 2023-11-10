@@ -5,7 +5,7 @@
 
 #include "Export/VisualStudio/VSSolutionGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"

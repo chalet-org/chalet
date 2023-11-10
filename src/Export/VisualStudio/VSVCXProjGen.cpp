@@ -6,7 +6,7 @@
 #include "Export/VisualStudio/VSVCXProjGen.hpp"
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/TargetExportAdapter.hpp"
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"

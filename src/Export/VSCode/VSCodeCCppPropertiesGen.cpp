@@ -5,7 +5,7 @@
 
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"

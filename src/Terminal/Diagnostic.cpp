@@ -8,11 +8,11 @@
 #include <csignal>
 #include <exception>
 
+#include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Terminal/Spinner.hpp"
 #include "Terminal/Unicode.hpp"
-#include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

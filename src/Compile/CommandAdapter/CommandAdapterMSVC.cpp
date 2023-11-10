@@ -6,7 +6,7 @@
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"

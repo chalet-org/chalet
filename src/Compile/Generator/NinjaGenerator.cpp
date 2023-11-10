@@ -5,7 +5,7 @@
 
 #include "Compile/Generator/NinjaGenerator.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"

@@ -6,7 +6,7 @@
 #include "Compile/Strategy/CompileStrategyXcodeBuild.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"

@@ -6,9 +6,9 @@
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
 #include "State/CompilerTools.hpp"
+#include "System/SuppressIntellisense.hpp"
 #include "Terminal/ColorTheme.hpp"
 #include "Utility/String.hpp"
-#include "Utility/SuppressIntellisense.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonKeys.hpp"
 

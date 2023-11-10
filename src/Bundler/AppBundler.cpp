@@ -5,14 +5,14 @@
 
 #include "Bundler/AppBundler.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
-#include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Bundler/AppBundlerMacOS.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "Bundler/FileArchiver.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/ProcessController.hpp"

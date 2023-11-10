@@ -5,7 +5,7 @@
 
 #include "Compile/Generator/MakefileGeneratorNMake.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"

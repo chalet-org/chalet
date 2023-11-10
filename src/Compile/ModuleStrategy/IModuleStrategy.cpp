@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"

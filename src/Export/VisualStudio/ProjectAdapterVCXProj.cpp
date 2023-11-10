@@ -6,9 +6,9 @@
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
 
 #include "Compile/CommandAdapter/CommandAdapterWinResource.hpp"
-#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/DotEnvFileGenerator.hpp"
+#include "DotEnv/DotEnvFileGenerator.hpp"
+#include "Platform/Arch.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"

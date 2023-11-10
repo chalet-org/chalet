@@ -5,8 +5,8 @@
 
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
-#include "Core/Arch.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildState.hpp"

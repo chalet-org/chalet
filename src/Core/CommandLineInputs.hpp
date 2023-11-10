@@ -5,12 +5,12 @@
 
 #pragma once
 
+#include "BuildEnvironment/VisualStudioVersion.hpp"
 #include "Compile/ToolchainPreference.hpp"
-#include "Core/QueryOption.hpp"
-#include "Core/VisualStudioVersion.hpp"
+#include "Core/Router/CommandRoute.hpp"
 #include "Export/ExportKind.hpp"
 #include "Init/InitTemplateType.hpp"
-#include "Router/CommandRoute.hpp"
+#include "Query/QueryOption.hpp"
 #include "Settings/SettingsType.hpp"
 
 namespace chalet

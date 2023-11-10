@@ -5,7 +5,7 @@
 
 #include "State/Target/SourceTarget.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"

@@ -5,7 +5,7 @@
 
 #include "Export/XcodeProjectExporter.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 #include "Export/Xcode/XcodeXSchemeGen.hpp"

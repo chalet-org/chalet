@@ -9,10 +9,10 @@
 //
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/Platform.hpp"
+#include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/CentralState.hpp"

@@ -35,23 +35,22 @@
 	#include <optional>
 
 	// Defines
-	#include "Utility/DefinesCompiler.hpp"
-	#include "Utility/DefinesPlatform.hpp"
-	#include "Utility/DefinesEnabledFeatures.hpp"
+	#include "System/DefinesCompiler.hpp"
+	#include "System/DefinesPlatform.hpp"
+	#include "System/DefinesEnabledFeatures.hpp"
 	//
-	#include "Utility/DefinesExceptions.hpp"
+	#include "System/DefinesExceptions.hpp"
 
 	// Utils
-	#include "Utility/Types.hpp"
+	#include "System/Types.hpp"
 
 	#include "Libraries/FileSystem.hpp"
 	#include "Libraries/Format.hpp"
 
 	#include "Terminal/Diagnostic.hpp"
-	#include "Utility/Logger.hpp"
-	#include "Utility/Macros.hpp"
-	#include "Utility/StringList.hpp"
-	#include "Utility/Unused.hpp"
+	#include "System/Logger.hpp"
+	#include "System/Macros.hpp"
+	#include "System/Unused.hpp"
 
 #endif // __cplusplus
 

@@ -5,11 +5,11 @@
 
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 
-#include "Builder/BinaryDependencyMap.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Bundler/AppBundlerMacOS.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/TargetExportAdapter.hpp"
 #include "Export/Xcode/OldPListGenerator.hpp"

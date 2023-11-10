@@ -14,10 +14,10 @@
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 #include "SettingsJson/SettingsJsonParser.hpp"
 
-#include "Core/Arch.hpp"
-#include "Core/DotEnvFileParser.hpp"
-#include "Core/QueryController.hpp"
+#include "DotEnv/DotEnvFileParser.hpp"
+#include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
+#include "Query/QueryController.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"

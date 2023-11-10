@@ -13,7 +13,7 @@
 
 namespace chalet
 {
-struct ICompileEnvironment;
+struct IBuildEnvironment;
 struct SourceCache;
 
 struct CompilerTools
@@ -22,7 +22,7 @@ struct CompilerTools
 	static StringList getToolchainStrategies();
 	static StringList getToolchainBuildPathStyles();
 
-	bool initialize(ICompileEnvironment& inEnvironment);
+	bool initialize(IBuildEnvironment& inEnvironment);
 	bool validate();
 
 	void fetchMakeVersion(SourceCache& inCache);

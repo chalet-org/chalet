@@ -5,7 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxEmscripten.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"

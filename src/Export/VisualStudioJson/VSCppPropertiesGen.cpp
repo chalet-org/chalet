@@ -6,7 +6,7 @@
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"

@@ -5,8 +5,8 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Core/Arch.hpp"
-#include "Core/Platform.hpp"
+#include "Platform/Arch.hpp"
+#include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"

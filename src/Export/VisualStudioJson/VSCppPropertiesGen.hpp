@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet

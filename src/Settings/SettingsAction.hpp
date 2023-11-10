@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Router/RouteType.hpp"
+#include "Core/Router/RouteType.hpp"
 
 namespace chalet
 {

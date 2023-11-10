@@ -7,7 +7,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp" // getAllowedSDKTargets
 #include "Core/CommandLineInputs.hpp"
-#include "Core/HostPlatform.hpp"
+#include "Platform/HostPlatform.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 

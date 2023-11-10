@@ -8,11 +8,11 @@
 #include <csignal>
 
 #include "Process/ProcessController.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
-#include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

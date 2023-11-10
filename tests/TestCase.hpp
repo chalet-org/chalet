@@ -3,7 +3,7 @@
 
 #include <catch2/catch.hpp>
 
-#include "Utility/SuppressIntellisense.hpp"
+#include "System/SuppressIntellisense.hpp"
 
 #include "State/TestState.hpp"
 

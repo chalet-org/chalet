@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Builder/BinaryDependencyMap.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 
 namespace chalet
 {

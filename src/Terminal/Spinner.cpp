@@ -7,9 +7,9 @@
 
 #include <signal.h>
 
+#include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
-#include "Utility/SignalHandler.hpp"
 
 namespace chalet
 {

@@ -5,13 +5,13 @@
 
 #include "Core/Application.hpp"
 
-#include "Router/Router.hpp"
+#include "Core/Router/Router.hpp"
 
-#include "Arguments/CommandLine.hpp"
+#include "Core/Arguments/CommandLine.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/SignalHandler.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Terminal/WindowsTerminal.hpp"

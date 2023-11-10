@@ -6,8 +6,8 @@
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
-#include "Core/Arch.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
 #include "State/BuildConfiguration.hpp"

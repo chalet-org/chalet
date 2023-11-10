@@ -5,7 +5,7 @@
 
 #include "Export/VSJsonProjectExporter.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"

@@ -5,7 +5,7 @@
 
 #include "Export/VSSolutionProjectExporter.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudio/VSSolutionGen.hpp"
 #include "Export/VisualStudio/VSVCXProjGen.hpp"

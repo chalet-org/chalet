@@ -6,7 +6,7 @@
 #pragma once
 
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
-#include "Core/Platform.hpp"
+#include "Platform/Platform.hpp"
 #include "Libraries/Json.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"

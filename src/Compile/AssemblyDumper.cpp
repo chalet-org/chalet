@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
