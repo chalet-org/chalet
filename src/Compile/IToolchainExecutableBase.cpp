@@ -18,7 +18,6 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 	m_state(inState),
 	m_project(inProject)
 {
-	m_quotedPaths = inState.toolchain.strategy() == StrategyType::Native;
 }
 
 /*****************************************************************************/
@@ -33,7 +32,7 @@ std::string IToolchainExecutableBase::getQuotedPath(const BuildState& inState, c
 /*****************************************************************************/
 std::string IToolchainExecutableBase::getQuotedPath(const std::string& inPath) const
 {
-	if (m_quotedPaths)
+	if (isNative())
 		return inPath;
 	else
 		return fmt::format("\"{}\"", inPath);
@@ -42,7 +41,7 @@ std::string IToolchainExecutableBase::getQuotedPath(const std::string& inPath) c
 /*****************************************************************************/
 std::string IToolchainExecutableBase::getPathCommand(std::string_view inCmd, const std::string& inPath) const
 {
-	if (m_quotedPaths)
+	if (isNative())
 		return fmt::format("{}{}", inCmd, inPath);
 	else
 		return fmt::format("{}\"{}\"", inCmd, inPath);
@@ -51,10 +50,11 @@ std::string IToolchainExecutableBase::getPathCommand(std::string_view inCmd, con
 /*****************************************************************************/
 void IToolchainExecutableBase::addDefinesToList(StringList& outArgList, const std::string& inPrefix) const
 {
+	bool isNative = this->isNative();
 	for (auto& define : m_project.defines())
 	{
 		auto pos = define.find("=\"");
-		if (!m_quotedPaths && pos != std::string::npos && define.back() == '\"')
+		if (!isNative && pos != std::string::npos && define.back() == '\"')
 		{
 			std::string key = define.substr(0, pos);
 			std::string value = define.substr(pos + 2, define.size() - (key.size() + 3));
@@ -68,4 +68,10 @@ void IToolchainExecutableBase::addDefinesToList(StringList& outArgList, const st
 	}
 }
 
+/*****************************************************************************/
+// Note: this could change in modulestrategy, so we check it from a function
+bool IToolchainExecutableBase::isNative() const noexcept
+{
+	return m_state.toolchain.strategy() == StrategyType::Native;
+}
 }

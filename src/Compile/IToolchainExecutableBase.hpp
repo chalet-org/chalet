@@ -31,7 +31,7 @@ protected:
 	const SourceTarget& m_project;
 
 private:
-	bool m_quotedPaths = true;
+	bool isNative() const noexcept;
 };
 }
 
