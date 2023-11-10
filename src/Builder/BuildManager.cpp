@@ -983,7 +983,47 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	else
 		Output::msgRun(outputFile);
 
-	StringList cmd = { file };
+	StringList cmd;
+	if (m_state.environment->isEmscripten())
+	{
+		auto outputHtml = outputFile;
+		outputFile = fmt::format("{}/index.html", String::getPathFolder(outputFile));
+		Commands::copyRename(outputHtml, outputFile, true);
+
+		auto pythonPath = Environment::getString("EMSDK_PYTHON");
+		auto upstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
+		auto port = Environment::getString("EMRUN_PORT");
+		auto emrun = fmt::format("{}/emrun.py", upstream);
+
+		cmd.emplace_back(std::move(pythonPath));
+		cmd.emplace_back(std::move(emrun));
+
+		cmd.emplace_back("--no_browser");
+		cmd.emplace_back("--serve_after_close");
+		cmd.emplace_back("--serve_after_exit");
+		cmd.emplace_back("--no_emrun_detect");
+
+		if (Output::showCommands())
+			cmd.emplace_back("--verbose");
+
+		cmd.emplace_back("--hostname");
+		cmd.emplace_back("localhost");
+		cmd.emplace_back("--port");
+		cmd.emplace_back(port);
+
+		if (m_state.configuration.debugSymbols())
+			cmd.emplace_back(m_state.inputs.workingDirectory());
+		else
+			cmd.emplace_back(file);
+
+		if (runArguments.has_value() && !runArguments->empty())
+			cmd.emplace_back("--");
+	}
+	else
+	{
+		cmd.emplace_back(file);
+	}
+
 	if (runArguments.has_value())
 	{
 		for (auto& arg : *runArguments)
@@ -1007,7 +1047,21 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist)
 {
 	if (inFromDist)
+	{
 		Output::printSeparator();
+
+		if (m_state.environment->isEmscripten())
+		{
+			auto cancelCmd = "CTRL+C";
+			Output::print(Output::theme().flair, fmt::format("(Press {} to exit the server)", cancelCmd));
+
+			auto port = Environment::getString("EMRUN_PORT");
+			if (m_state.configuration.debugSymbols())
+				Output::print(Output::theme().info, fmt::format("Nagivate to: http://localhost:{}/{}\n", port, m_state.paths.buildOutputDir()));
+			else
+				Output::print(Output::theme().info, fmt::format("Nagivate to: http://localhost:{}\n", port));
+		}
+	}
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::cleanup();

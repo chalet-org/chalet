@@ -27,7 +27,7 @@ protected:
 
 	virtual bool readArchitectureTripleFromCompiler() override;
 	virtual bool validateArchitectureFromInput() override;
-	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const override;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const override;
 	virtual bool populateSupportedFlags(const std::string& inExecutable) override;
 	virtual std::string getCompilerFlavor(const std::string& inPath) const final;

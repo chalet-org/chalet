@@ -19,6 +19,7 @@
 #include "Utility/String.hpp"
 
 #include "Compile/Environment/CompileEnvironmentAppleLLVM.hpp"
+#include "Compile/Environment/CompileEnvironmentEmscripten.hpp"
 #include "Compile/Environment/CompileEnvironmentGNU.hpp"
 #include "Compile/Environment/CompileEnvironmentIntel.hpp"
 #include "Compile/Environment/CompileEnvironmentLLVM.hpp"
@@ -75,7 +76,7 @@ bool ICompileEnvironment::isClang() const noexcept
 		|| m_type == ToolchainType::VisualStudioLLVM
 		|| m_type == ToolchainType::IntelLLVM
 		|| m_type == ToolchainType::MingwLLVM
-		|| m_type == ToolchainType::EmScripten;
+		|| m_type == ToolchainType::Emscripten;
 }
 
 /*****************************************************************************/
@@ -128,6 +129,12 @@ bool ICompileEnvironment::isMsvc() const noexcept
 bool ICompileEnvironment::isClangOrMsvc() const noexcept
 {
 	return isClang() || isMsvc();
+}
+
+/*****************************************************************************/
+bool ICompileEnvironment::isEmscripten() const noexcept
+{
+	return m_type == ToolchainType::Emscripten;
 }
 
 /*****************************************************************************/
@@ -194,6 +201,8 @@ ICompileEnvironment::ICompileEnvironment(const ToolchainType inType, BuildState&
 			return std::make_unique<CompileEnvironmentGNU>(type, inState);
 		case ToolchainType::VisualStudioLLVM:
 			return std::make_unique<CompileEnvironmentVisualStudioLLVM>(type, inState);
+		case ToolchainType::Emscripten:
+			return std::make_unique<CompileEnvironmentEmscripten>(type, inState);
 		case ToolchainType::IntelClassic:
 		case ToolchainType::IntelLLVM:
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC || CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -300,6 +309,12 @@ bool ICompileEnvironment::populateSupportedFlags(const std::string& inExecutable
 {
 	UNUSED(inExecutable);
 	return true;
+}
+
+/*****************************************************************************/
+const std::string& ICompileEnvironment::commandInvoker() const
+{
+	return m_commandInvoker;
 }
 
 /*****************************************************************************/
@@ -477,6 +492,11 @@ ToolchainType ICompileEnvironment::detectToolchainTypeFromPath(const std::string
 		|| String::contains(StringList{ "onepi", "intel" }, executable))
 		return ToolchainType::IntelLLVM;
 #endif
+
+	if (String::contains({ "emcc", "em++", "wasm32-clang" }, executable))
+	{
+		return ToolchainType::Emscripten;
+	}
 
 	if (String::contains("clang", executable))
 	{

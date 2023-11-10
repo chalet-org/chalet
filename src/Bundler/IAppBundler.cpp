@@ -5,10 +5,13 @@
 
 #include "Bundler/IAppBundler.hpp"
 
+#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -19,12 +22,17 @@
 #elif defined(CHALET_LINUX)
 	#include "Bundler/AppBundlerLinux.hpp"
 #endif
+#include "Bundler/AppBundlerWeb.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
 [[nodiscard]] Unique<IAppBundler> IAppBundler::make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap)
 {
+	if (inState.environment->isEmscripten())
+	{
+		return std::make_unique<AppBundlerWeb>(inState, inBundle, inDependencyMap);
+	}
 #if defined(CHALET_WIN32)
 	return std::make_unique<AppBundlerWindows>(inState, inBundle, inDependencyMap);
 #elif defined(CHALET_MACOS)
@@ -123,5 +131,44 @@ StringList IAppBundler::getAllExecutables() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+bool IAppBundler::copyIncludedPath(const std::string& inDep, const std::string& inOutPath)
+{
+	if (Commands::pathExists(inDep))
+	{
+		const auto filename = String::getPathFilename(inDep);
+		if (!filename.empty())
+		{
+			auto outputFile = fmt::format("{}/{}", inOutPath, filename);
+			if (Commands::pathExists(outputFile))
+				return true; // Already copied - duplicate dependency
+		}
+
+		auto dep = inDep;
+		auto& cwd = workingDirectoryWithTrailingPathSeparator();
+		String::replaceAll(dep, cwd, "");
+
+		if (!Commands::copy(dep, inOutPath))
+		{
+			Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inOutPath);
+			return false;
+		}
+	}
+	return true;
+}
+
+/*****************************************************************************/
+const std::string& IAppBundler::workingDirectoryWithTrailingPathSeparator()
+{
+	if (m_cwd.empty())
+	{
+		m_cwd = m_state.inputs.workingDirectory() + '/';
+#if defined(CHALET_WIN32)
+		m_cwd[0] = static_cast<char>(::toupper(static_cast<uchar>(m_cwd[0])));
+#endif
+	}
+	return m_cwd;
 }
 }

@@ -5,6 +5,8 @@
 
 #include "Core/Platform.hpp"
 
+#include "Core/CommandLineInputs.hpp"
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -14,6 +16,7 @@ StringList Platform::validPlatforms() noexcept
 		"windows",
 		"macos",
 		"linux",
+		"web"
 	};
 }
 
@@ -46,5 +49,23 @@ StringList Platform::notPlatforms() noexcept
 			"linux",
 #endif
 	};
+}
+
+/*****************************************************************************/
+void Platform::assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform, StringList& outNotPlatforms)
+{
+	outNotPlatforms = Platform::notPlatforms();
+
+	bool isWeb = inInputs.toolchainPreference().type == ToolchainType::Emscripten;
+	if (isWeb)
+	{
+		outPlatform = "web";
+		outNotPlatforms.push_back(Platform::platform());
+	}
+	else
+	{
+		outPlatform = Platform::platform();
+		outNotPlatforms.push_back("web");
+	}
 }
 }

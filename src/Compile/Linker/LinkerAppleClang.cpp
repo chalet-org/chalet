@@ -31,12 +31,8 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 
 	m_outputFileBase = outputFileBase;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
-
-	ret.emplace_back(getQuotedPath(executable));
 
 	ret.emplace_back("-dynamiclib");
 	// ret.emplace_back("-flat_namespace");

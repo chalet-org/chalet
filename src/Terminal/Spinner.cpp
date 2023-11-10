@@ -44,6 +44,10 @@ void signalHandler(int inSignal)
 /*****************************************************************************/
 Spinner::~Spinner()
 {
+	SignalHandler::remove(SIGINT, signalHandler);
+	SignalHandler::remove(SIGTERM, signalHandler);
+	SignalHandler::remove(SIGABRT, signalHandler);
+
 	destroy();
 }
 

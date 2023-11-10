@@ -8,11 +8,14 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
+
 namespace Platform
 {
 StringList validPlatforms() noexcept;
 std::string platform() noexcept;
 StringList notPlatforms() noexcept;
+void assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform, StringList& outNotPlatforms);
 }
 }
 

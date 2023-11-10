@@ -190,6 +190,10 @@ void Arch::set(const std::string& inValue)
 		val = Arch::Cpu::ARMHF;
 	}
 #endif
+	else if (String::equals("wasm32", str))
+	{
+		val = Arch::Cpu::WASM32;
+	}
 	else
 	{
 		val = Arch::Cpu::Unknown;

@@ -12,6 +12,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
+#include "Compile/CompilerCxx/CompilerCxxEmscripten.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicCL.hpp"
@@ -63,6 +64,9 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 		return std::make_unique<CompilerCxxClang>(inState, inProject);
 #endif
 
+	if (inType == ToolchainType::Emscripten)
+		return std::make_unique<CompilerCxxEmscripten>(inState, inProject);
+
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }
 
@@ -71,6 +75,17 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 {
 	UNUSED(inputFile, outputFile, dependencyFile, interfaceFile, inModuleReferences, inHeaderUnits, inType);
 	return StringList();
+}
+
+/*****************************************************************************/
+bool ICompilerCxx::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	outArgList.emplace_back(getQuotedPath(executable));
+	return true;
 }
 
 /*****************************************************************************/

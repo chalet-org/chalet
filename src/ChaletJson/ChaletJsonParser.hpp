@@ -95,9 +95,9 @@ private:
 	const StringList kValidPlatforms;
 
 	StringList m_notPlatforms;
-	// StringList m_notToolchains;
 	std::string m_platform;
-	// std::string m_toolchain;
+
+	bool m_isWebPlatform = false;
 };
 }
 

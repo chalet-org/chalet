@@ -355,19 +355,31 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 		return std::string();
 
 	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
-	bool endsInExe = String::endsWith(".exe", outputPath);
-	if (m_state.environment->isWindowsTarget())
+	if (m_state.environment->isEmscripten())
 	{
+		bool endsInExe = String::endsWith(".html", outputPath);
 		if (!endsInExe)
 		{
 			outputPath = String::getPathFolderBaseName(outputPath);
-			outputPath += ".exe";
+			outputPath += ".html";
 		}
 	}
 	else
 	{
-		if (endsInExe)
-			outputPath = outputPath.substr(0, outputPath.size() - 4);
+		bool endsInExe = String::endsWith(".exe", outputPath);
+		if (m_state.environment->isWindowsTarget())
+		{
+			if (!endsInExe)
+			{
+				outputPath = String::getPathFolderBaseName(outputPath);
+				outputPath += ".exe";
+			}
+		}
+		else
+		{
+			if (endsInExe)
+				outputPath = outputPath.substr(0, outputPath.size() - 4);
+		}
 	}
 
 	return outputPath;

@@ -119,34 +119,42 @@ OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 }
 	#endif
 #endif
+
+const std::string kDefaultInputFile("chalet.json");
+const std::string kDefaultSettingsFile(".chaletrc");
+const std::string kDefaultEnvFile(".env");
+const std::string kDefaultOutputDirectory("build");
+const std::string kDefaultExternalDirectory("chalet_external");
+const std::string kDefaultDistributionDirectory("dist");
+
+const std::string kGlobalSettingsFile(".chalet/config.json");
+
+const std::string kArchPresetAuto(Values::Auto);
+const std::string kToolchainPresetGCC("gcc");
+const std::string kToolchainPresetLLVM("llvm");
+const std::string kToolchainPresetEmscripten("emscripten");
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
+const std::string kToolchainPresetICC("intel-classic");
+#endif
+#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if !defined(CHALET_WIN32)
+const std::string kToolchainPresetICX("intel-llvm");
+	#endif
+#endif
+#if defined(CHALET_WIN32)
+const std::string kToolchainPresetVisualStudioStable("vs-stable");
+#elif defined(CHALET_MACOS)
+const std::string kToolchainPresetAppleLLVM("apple-llvm");
+#endif
+const std::string kBuildStrategyNinja("ninja");
+#if defined(CHALET_MACOS)
+std::string kDefaultOsTarget;
+#endif
+
 }
 
 /*****************************************************************************/
 CommandLineInputs::CommandLineInputs() :
-	kDefaultInputFile("chalet.json"),
-	kDefaultSettingsFile(".chaletrc"),
-	kDefaultEnvFile(".env"),
-	kDefaultOutputDirectory("build"),
-	kDefaultExternalDirectory("chalet_external"),
-	kDefaultDistributionDirectory("dist"),
-	kGlobalSettingsFile(".chalet/config.json"),
-	kArchPresetAuto(Values::Auto),
-	kToolchainPresetGCC("gcc"),
-	kToolchainPresetLLVM("llvm"),
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
-	kToolchainPresetICC("intel-classic"),
-#endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	#if !defined(CHALET_WIN32)
-	kToolchainPresetICX("intel-llvm"),
-	#endif
-#endif
-#if defined(CHALET_WIN32)
-	kToolchainPresetVisualStudioStable("vs-stable"),
-#elif defined(CHALET_MACOS)
-	kToolchainPresetAppleLLVM("apple-llvm"),
-#endif
-	kBuildStrategyNinja("ninja"),
 	m_settingsFile(kDefaultSettingsFile),
 	m_hostArchitecture(Arch::getHostCpuArchitecture())
 {
@@ -651,7 +659,7 @@ std::string CommandLineInputs::platformEnv() const noexcept
 /*****************************************************************************/
 void CommandLineInputs::resolveEnvFile()
 {
-	auto searchDotEnv = [this](const std::string& inRelativeEnv, const std::string& inEnv) {
+	auto searchDotEnv = [](const std::string& inRelativeEnv, const std::string& inEnv) {
 		if (String::endsWith(kDefaultEnvFile, inRelativeEnv))
 		{
 			auto toSearch = String::getPathFolder(inRelativeEnv);
@@ -1099,13 +1107,16 @@ StringList CommandLineInputs::getToolchainPresets() const
 
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
+	ret.emplace_back(kToolchainPresetEmscripten);
 #elif defined(CHALET_MACOS)
 	ret.emplace_back(kToolchainPresetAppleLLVM);
 	ret.emplace_back(kToolchainPresetLLVM);
 	ret.emplace_back(kToolchainPresetGCC);
+	ret.emplace_back(kToolchainPresetEmscripten);
 #else
 	ret.emplace_back(kToolchainPresetGCC);
 	ret.emplace_back(kToolchainPresetLLVM);
+	ret.emplace_back(kToolchainPresetEmscripten);
 #endif
 
 #if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
@@ -1411,6 +1422,21 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 	#endif
 	}
 #endif
+	else if (String::equals(kToolchainPresetEmscripten, inValue))
+	{
+		m_toolchainPreferenceName = inValue;
+		m_isToolchainPreset = true;
+		ret.cpp = "wasm32-clang++";
+		ret.cc = "wasm32-clang";
+		// ret.cpp = "em++";
+		// ret.cc = "emcc";
+		// ret.rc = "";
+		ret.linker = "wasm-ld";
+		ret.archiver = "llvm-ar";
+		ret.profiler = "";
+		ret.disassembler = "wasm2wat";
+		ret.type = ToolchainType::Emscripten;
+	}
 	else
 	{
 		m_toolchainPreferenceName = inValue;

@@ -72,14 +72,11 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 
 	m_outputFileBase = outputFileBase;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
 
-	ret.emplace_back(getQuotedPath(executable));
+	addSharedOption(ret);
 
-	ret.emplace_back("-shared");
 	if (m_state.environment->isMingw())
 	{
 		std::string mingwLinkerOptions;
@@ -131,13 +128,10 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
 
-	ret.emplace_back(getQuotedPath(executable));
-
+	addExecutableOption(ret);
 	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
 	addLinkerOptions(ret);
@@ -171,6 +165,17 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 }
 
 /*****************************************************************************/
+bool LinkerGCC::addExecutable(StringList& outArgList) const
+{
+	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
+	if (executable.empty())
+		return false;
+
+	outArgList.emplace_back(getQuotedPath(executable));
+	return true;
+}
+
+/*****************************************************************************/
 void LinkerGCC::addLibDirs(StringList& outArgList) const
 {
 	const std::string prefix{ "-L" };
@@ -187,7 +192,10 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 {
 	const std::string prefix{ "-l" };
 	const auto& staticLinks = m_project.staticLinks();
-	const auto& dynamicLinks = m_project.links();
+	const auto& sharedLinks = m_project.links();
+	const auto& projectSharedLinks = m_project.projectSharedLinks();
+
+	const bool isEmscripten = m_state.environment->isEmscripten();
 
 	if (!staticLinks.empty())
 	{
@@ -231,10 +239,10 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 		startExplicitDynamicLinkGroup(outArgList);
 	}
 
-	if (!dynamicLinks.empty())
+	if (!sharedLinks.empty())
 	{
 		std::string search(".a");
-		for (auto& link : dynamicLinks)
+		for (auto& link : sharedLinks)
 		{
 			if (isLinkSupported(link))
 			{
@@ -263,7 +271,12 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				}
 
 				if (!resolved)
+				{
+					if (isEmscripten && List::contains(projectSharedLinks, link))
+						continue;
+
 					outArgList.emplace_back(prefix + link);
+				}
 			}
 		}
 	}
@@ -625,6 +638,17 @@ bool LinkerGCC::addSystemLibDirs(StringList& outArgList) const
 	UNUSED(outArgList);
 	return true;
 #endif
+}
+
+/*****************************************************************************/
+void LinkerGCC::addSharedOption(StringList& outArgList) const
+{
+	outArgList.emplace_back("-shared");
+}
+
+void LinkerGCC::addExecutableOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
 }
 
 /*****************************************************************************/

@@ -179,7 +179,7 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 	if (m_project->usesPrecompiledHeader())
 	{
 		auto& sourceCache = m_state.cache.file().sources();
-		std::string source = m_project->precompiledHeader();
+		const auto& source = m_project->precompiledHeader();
 		const auto& depDir = m_state.paths.depDir();
 		const auto& objDir = m_state.paths.objDir();
 
@@ -204,11 +204,11 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 						m_fileCache.emplace_back(std::move(pchCache));
 
 						const auto dependency = fmt::format("{}/{}.d", depDir, source);
-						auto command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch);
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
-						out.command = std::move(command);
+						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch);
+
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -227,11 +227,10 @@ CommandPool::CmdList CompileStrategyNative::getPchCommands(const std::string& pc
 					m_fileCache.emplace_back(std::move(pchCache));
 
 					const auto dependency = fmt::format("{}/{}.d", depDir, source);
-					auto command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
 
 					CommandPool::Cmd out;
-					out.output = std::move(source);
-					out.command = std::move(command);
+					out.output = source;
+					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
 
 					const auto& cxxExt = m_state.paths.cxxExtension();
 					if (!cxxExt.empty())

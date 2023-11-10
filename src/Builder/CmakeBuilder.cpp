@@ -25,6 +25,7 @@
 #include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Version.hpp"
 
 namespace chalet
 {
@@ -380,6 +381,9 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_FIND_ROOT_PATH_MODE_PACKAGE",
 			"CMAKE_C_COMPILER_TARGET",
 			"CMAKE_CXX_COMPILER_TARGET",
+			"CMAKE_TOOLCHAIN_FILE",
+			"CMAKE_CROSSCOMPILING_EMULATOR",
+			"CMAKE_EXECUTABLE_SUFFIX",
 #if defined(CHALET_WIN32)
 		// "CMAKE_SH",
 #elif defined(CHALET_MACOS)
@@ -405,8 +409,12 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	const auto& hostTriple = m_state.info.hostArchitectureTriple();
 	const auto& targetTriple = m_state.info.targetArchitectureTriple();
-	const bool crossCompile = !hostTriple.empty() && !String::startsWith(hostTriple, targetTriple);
-	if (m_state.info.generateCompileCommands())
+
+	const bool isEmscripten = m_state.environment->isEmscripten();
+	const bool usingToolchainFile = isEmscripten;
+	const bool crossCompile = !hostTriple.empty() && !String::startsWith(hostTriple, targetTriple) && !usingToolchainFile;
+
+	if (!usingToolchainFile && m_state.info.generateCompileCommands())
 	{
 		if (!isDefined["EXPORT_COMPILE_COMMANDS"])
 		{
@@ -446,39 +454,39 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	}
 
-	if (!isDefined["CMAKE_C_COMPILER"])
+	if (!usingToolchainFile && !isDefined["CMAKE_C_COMPILER"])
 	{
 		const auto& compiler = m_state.toolchain.compilerC().path;
 		if (!compiler.empty())
 			outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER={}", getQuotedPath(compiler)));
 	}
 
-	if (!isDefined["CMAKE_CXX_COMPILER"])
+	if (!usingToolchainFile && !isDefined["CMAKE_CXX_COMPILER"])
 	{
 		const auto& compiler = m_state.toolchain.compilerCpp().path;
 		if (!compiler.empty())
 			outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER={}", getQuotedPath(compiler)));
 	}
 
-	if (m_state.environment->isWindowsTarget() && !isDefined["CMAKE_RC_COMPILER"])
+	if (m_state.environment->isWindowsTarget() && !usingToolchainFile && !isDefined["CMAKE_RC_COMPILER"])
 	{
 		const auto& compiler = m_state.toolchain.compilerWindowsResource();
 		if (!compiler.empty())
 			outList.emplace_back(fmt::format("-DCMAKE_RC_COMPILER={}", getQuotedPath(compiler)));
 	}
 
-	if (!isDefined["CMAKE_BUILD_TYPE"])
+	if (!usingToolchainFile && !isDefined["CMAKE_BUILD_TYPE"])
 	{
 		auto buildConfiguration = getCMakeCompatibleBuildConfiguration();
 		outList.emplace_back("-DCMAKE_BUILD_TYPE=" + std::move(buildConfiguration));
 	}
 
-	if (!isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
+	if (!usingToolchainFile && !isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
 	{
 		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", targetTriple));
 	}
 
-	if (!isDefined["CMAKE_BUILD_WITH_INSTALL_RPATH"])
+	if (!usingToolchainFile && !isDefined["CMAKE_BUILD_WITH_INSTALL_RPATH"])
 	{
 		outList.emplace_back("-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON");
 	}
@@ -510,10 +518,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			if (!paths.empty())
 				outList.emplace_back("-DCMAKE_INCLUDE_PATH=" + getQuotedPath(String::join(paths, ';')));
 		}
-	}
 
-	if (crossCompile)
-	{
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
 		{
 			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER");
@@ -545,13 +550,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	}
 
 #if defined(CHALET_WIN32)
-	/*if (!isDefined["CMAKE_SH"])
+	/*if (!usingToolchainFile && !isDefined["CMAKE_SH"])
 	{
 		if (Commands::which("sh").empty())
 			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
 	}*/
 #elif defined(CHALET_MACOS)
-	if (m_state.environment->isAppleClang())
+	if (!!usingToolchainFile && m_state.environment->isAppleClang())
 	{
 		if (!isDefined["CMAKE_OSX_SYSROOT"])
 		{
@@ -592,6 +597,44 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 	}
 #endif
+
+	if (usingToolchainFile)
+	{
+		/*if (isEmscripten && !isDefined["CMAKE_EXECUTABLE_SUFFIX"])
+		{
+			outList.emplace_back("-DCMAKE_EXECUTABLE_SUFFIX=.html");
+		}*/
+
+		if (isEmscripten && !isDefined["CMAKE_TOOLCHAIN_FILE"])
+		{
+			auto emUpstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
+			chalet_assert(!emUpstream.empty(), "'EMSDK_UPSTREAM_EMSCRIPTEN' was not set");
+
+			auto toolchainFile = fmt::format("{}/cmake/Modules/Platform/Emscripten.cmake", emUpstream);
+			outList.emplace_back("-DCMAKE_TOOLCHAIN_FILE=" + std::move(toolchainFile));
+		}
+
+		if (isEmscripten && !isDefined["CMAKE_CROSSCOMPILING_EMULATOR"])
+		{
+			auto nodePath = Environment::getString("EMSDK_NODE");
+			chalet_assert(!nodePath.empty(), "'EMSDK_NODE' was not set");
+
+			auto versionOutput = Commands::subprocessOutput({ nodePath, "--version" });
+			if (String::startsWith('v', versionOutput))
+				versionOutput = versionOutput.substr(1);
+
+			auto version = Version::fromString(versionOutput);
+			uint versionMajor = version.major();
+
+			StringList nodeArgs{ nodePath };
+			if (versionMajor > 0 && versionMajor < 16)
+			{
+				nodeArgs.emplace_back("--experimental-wasm-bulk-memory");
+				nodeArgs.emplace_back("--experimental-wasm-threads");
+			}
+			outList.emplace_back("-DCMAKE_CROSSCOMPILING_EMULATOR=" + String::join(nodeArgs, ';'));
+		}
+	}
 }
 
 /*****************************************************************************/

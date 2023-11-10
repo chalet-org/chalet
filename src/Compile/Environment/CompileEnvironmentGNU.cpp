@@ -27,7 +27,7 @@ CompileEnvironmentGNU::CompileEnvironmentGNU(const ToolchainType inType, BuildSt
 /*****************************************************************************/
 StringList CompileEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
-	return { inExecutable, "-v" };
+	return StringList{ inExecutable, "-v" };
 }
 
 /*****************************************************************************/
@@ -89,14 +89,7 @@ bool CompileEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outIn
 		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(outInfo.path));
 
 		StringList splitOutput;
-#if defined(CHALET_WIN32)
-		if (rawOutput.find('\r') != std::string::npos)
-			splitOutput = String::split(rawOutput, "\r\n");
-		else
-			splitOutput = String::split(rawOutput, '\n');
-#else
 		splitOutput = String::split(rawOutput, '\n');
-#endif
 
 		if (splitOutput.size() >= 2)
 		{

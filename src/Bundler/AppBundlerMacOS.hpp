@@ -3,8 +3,8 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_APP_BUNDLER_HPP
-#define CHALET_MACOS_APP_BUNDLER_HPP
+#ifndef CHALET_APP_BUNDLER_MACOS_HPP
+#define CHALET_APP_BUNDLER_MACOS_HPP
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/Json.hpp"
@@ -66,4 +66,4 @@ private:
 };
 }
 
-#endif // CHALET_MACOS_APP_BUNDLER_HPP
+#endif // CHALET_APP_BUNDLER_MACOS_HPP

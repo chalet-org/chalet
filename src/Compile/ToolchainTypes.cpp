@@ -31,21 +31,11 @@ std::string ToolchainTypes::getTypeName(const ToolchainType inType) noexcept
 			return std::string("intel-classic");
 		case ToolchainType::IntelLLVM:
 			return std::string("intel-llvm");
-		case ToolchainType::EmScripten:
+		case ToolchainType::Emscripten:
+			return std::string("emscripten");
 		case ToolchainType::Unknown:
 		default:
 			return std::string("unknown");
 	}
-}
-
-/*****************************************************************************/
-StringList ToolchainTypes::getNotTypes(const std::string& inType) noexcept
-{
-	StringList ret{ "gnu", "llvm", "apple-llvm", "msvc", "vs-llvm", "mingw", "intel-classic", "intel-llvm" };
-	ret.erase(std::remove_if(ret.begin(), ret.end(), [&inType](const std::string& val) {
-		return String::equals(inType, val);
-	}));
-
-	return ret;
 }
 }

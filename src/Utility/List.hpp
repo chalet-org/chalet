@@ -30,6 +30,9 @@ bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);
 void removeDuplicates(std::vector<std::string>& outList);
 
 template <typename... Args>
+StringList combineRemoveDuplicates(Args&&... args);
+
+template <typename... Args>
 StringList combine(Args&&... args);
 }
 }

@@ -91,6 +91,7 @@ struct CompilerTools
 	bool isDisassemblerDumpBin() const noexcept;
 	bool isDisassemblerOtool() const noexcept;
 	bool isDisassemblerLLVMObjDump() const noexcept;
+	bool isDisassemblerWasm2Wat() const noexcept;
 
 	const std::string& ninja() const noexcept;
 	void setNinja(std::string&& inValue) noexcept;
@@ -137,9 +138,6 @@ private:
 	bool m_isProfilerGprof = false;
 	bool m_isProfilerVSInstruments = false;
 
-	bool m_isDisassemblerDumpBin = false;
-	bool m_isDisassemblerOtool = false;
-	bool m_isDisassemblerLLVMObjDump = false;
 	bool m_isWindowsTarget = false;
 	bool m_isCompilerWindowsResourceLLVMRC = false;
 	bool m_cmakeAvailable = false;

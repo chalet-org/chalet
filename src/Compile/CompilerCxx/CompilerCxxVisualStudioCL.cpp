@@ -91,14 +91,11 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
 
 	auto pchObject = m_state.paths.getPrecompiledHeaderObject(outputFile);
 
-	ret.emplace_back(getQuotedPath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
@@ -165,12 +162,9 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty())
+	if (!addExecutable(ret))
 		return ret;
 
-	ret.emplace_back(getQuotedPath(executable));
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
@@ -234,15 +228,15 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 
 	StringList ret;
 
-	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
-
-	if (executable.empty() || dependencyFile.empty() || interfaceFile.empty())
+	if (dependencyFile.empty() || interfaceFile.empty())
 		return ret;
 
 	bool isDependency = inType == ModuleFileType::ModuleDependency || inType == ModuleFileType::HeaderUnitDependency;
 	bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::HeaderUnitDependency;
 
-	ret.emplace_back(executable);
+	if (!addExecutable(ret))
+		return ret;
+
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);

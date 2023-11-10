@@ -547,25 +547,18 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, co
 /*****************************************************************************/
 bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent)
 {
-	CHALET_TRY
+	if (!inSilent)
 	{
-		if (!inSilent)
-		{
-			if (Output::showCommands())
-				Output::printCommand(fmt::format("copy: {} -> {}", inFrom, inTo));
-			else
-				Output::msgCopying(inFrom, inTo);
-		}
-
-		fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing);
-
-		return true;
+		if (Output::showCommands())
+			Output::printCommand(fmt::format("copy: {} -> {}", inFrom, inTo));
+		else
+			Output::msgCopying(inFrom, inTo);
 	}
-	CHALET_CATCH(const fs::filesystem_error& err)
-	{
-		CHALET_EXCEPT_ERROR(err.what())
-		return false;
-	}
+
+	std::error_code ec;
+	fs::copy(inFrom, inTo, fs::copy_options::overwrite_existing, ec);
+
+	return !ec.operator bool();
 }
 
 /*****************************************************************************/
@@ -942,6 +935,29 @@ std::string Commands::getFileContents(const std::string& inFile)
 	buffer << file.rdbuf();
 
 	return buffer.str();
+}
+
+/*****************************************************************************/
+std::string Commands::getFirstChildDirectory(const std::string& inPath)
+{
+	std::error_code ec;
+	fs::path path(inPath);
+	if (fs::exists(path, ec))
+	{
+		ec = std::error_code();
+
+		auto dirEnd = fs::directory_iterator();
+		for (auto it = fs::directory_iterator(inPath, ec); it != dirEnd; ++it)
+		{
+			auto item = *it;
+			if (item.is_directory())
+			{
+				return item.path().string();
+			}
+		}
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

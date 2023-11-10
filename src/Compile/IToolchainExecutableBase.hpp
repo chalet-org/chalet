@@ -29,6 +29,9 @@ protected:
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;
+
+private:
+	bool m_quotedPaths = true;
 };
 }
 

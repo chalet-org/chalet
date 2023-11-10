@@ -125,7 +125,7 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 		case QueryOption::AllToolchains: {
 			StringList presets = m_centralState.inputs().getToolchainPresets();
 			StringList userToolchains = getUserToolchainList();
-			ret = List::combine(std::move(userToolchains), std::move(presets));
+			ret = List::combineRemoveDuplicates(std::move(userToolchains), std::move(presets));
 			break;
 		}
 
@@ -485,6 +485,10 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		ret.emplace_back("i686");
 	}
 #endif
+	else if (String::equals("emscripten", inToolchain))
+	{
+		ret.emplace_back("wasm32");
+	}
 	else
 	{
 		const auto& settingsFile = getSettingsJson();
@@ -793,7 +797,7 @@ StringList QueryController::getSettingsJsonState() const
 	Json output = Json::object();
 	auto toolchainPresets = m_centralState.inputs().getToolchainPresets();
 	auto userToolchains = getUserToolchainList();
-	output["allToolchains"] = List::combine(userToolchains, toolchainPresets);
+	output["allToolchains"] = List::combineRemoveDuplicates(userToolchains, toolchainPresets);
 	auto archRes = getCurrentArchitecture();
 	if (!archRes.empty())
 		output["architecture"] = std::move(archRes.front());

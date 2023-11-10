@@ -14,8 +14,9 @@ struct Arch
 		ARMHF,
 		ARM64,
 #if defined(CHALET_MACOS)
-		UniversalMacOS
+		UniversalMacOS,
 #endif
+		WASM32,
 	};
 
 	std::string triple;

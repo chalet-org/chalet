@@ -319,7 +319,7 @@ std::string ProjectAdapterVCXProj::getDebugInformationFormat() const
 	if (m_msvcAdapter.supportsEditAndContinue())
 		return "EditAndContinue"; // ZI
 
-	return "ProgramDatabase";	  // Zi
+	return "ProgramDatabase"; // Zi
 }
 
 /*****************************************************************************/
@@ -620,7 +620,7 @@ std::string ProjectAdapterVCXProj::getAdditionalIncludeDirectories(const bool in
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getAdditionalCompilerOptions() const
 {
-	StringList options = List::combine(m_project.compileOptions(), m_msvcAdapter.getAdditionalCompilerOptions(true));
+	StringList options = List::combineRemoveDuplicates(m_project.compileOptions(), m_msvcAdapter.getAdditionalCompilerOptions(true));
 	auto ret = String::join(options, ' ');
 	if (!ret.empty())
 		ret += ' ';

@@ -31,6 +31,11 @@ private:
 
 	CommandPool m_commandPool;
 	StringList m_cache;
+
+	bool m_isDisassemblerDumpBin = false;
+	bool m_isDisassemblerOtool = false;
+	bool m_isDisassemblerLLVMObjDump = false;
+	bool m_isDisassemblerWasm2Wat = false;
 };
 }
 

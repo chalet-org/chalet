@@ -38,6 +38,7 @@ struct ICompileEnvironment
 	bool isMingwClang() const noexcept;
 	bool isMsvc() const noexcept;
 	bool isClangOrMsvc() const noexcept;
+	bool isEmscripten() const noexcept;
 
 	const std::string& detectedVersion() const;
 	std::string getMajorVersion() const;
@@ -54,6 +55,8 @@ struct ICompileEnvironment
 	const std::string& sysroot() const noexcept;
 	const std::string& targetSystemVersion() const noexcept;
 	const StringList& targetSystemPaths() const noexcept;
+
+	const std::string& commandInvoker() const;
 
 protected:
 	friend class BuildState;
@@ -95,6 +98,7 @@ protected:
 	Dictionary<bool> m_supportedFlags;
 
 	std::string m_detectedVersion;
+	std::string m_commandInvoker;
 
 	mutable ToolchainType m_type;
 

@@ -7,6 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -15,6 +16,7 @@
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
+#include "Terminal/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -26,33 +28,54 @@ AssemblyDumper::AssemblyDumper(BuildState& inState) :
 	m_state(inState),
 	m_commandPool(m_state.info.maxJobs())
 {
+	m_isDisassemblerDumpBin = m_state.toolchain.isDisassemblerDumpBin();
+	m_isDisassemblerOtool = m_state.toolchain.isDisassemblerOtool();
+	m_isDisassemblerLLVMObjDump = m_state.toolchain.isDisassemblerLLVMObjDump();
+	m_isDisassemblerWasm2Wat = m_state.environment->isEmscripten() && m_state.toolchain.isDisassemblerWasm2Wat();
 }
 
 /*****************************************************************************/
 bool AssemblyDumper::validate() const
 {
+	auto& settings = m_state.inputs.settingsFile();
+	auto dumpText = "The assembly dump feature";
 	if (m_state.toolchain.disassembler().empty())
 	{
+		if (m_state.environment->isEmscripten())
+		{
+			auto pathKey = Environment::getPathKey();
+			auto message = fmt::format("{}: {} requires 'wasm2wat' in {}. It's part of the  WebAssembly Binary Toolkit", settings, dumpText, pathKey);
 #if defined(CHALET_WIN32)
-		Diagnostic::error("{}: dumpAssembly feature requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.", m_state.inputs.settingsFile());
+			Diagnostic::error("{}, found here: https://github.com/WebAssembly/wabt/releases", message);
 #elif defined(CHALET_MACOS)
-		Diagnostic::error("{}: dumpAssembly feature requires otool or objdump as the disassembler, which is blank in the toolchain settings.", m_state.inputs.settingsFile());
+			Diagnostic::error("{}. It can be installed from brew via 'wabt' or found here: https://github.com/WebAssembly/wabt/releases", message);
 #else
-		Diagnostic::error("{}: dumpAssembly feature requires objdump as the disassembler, which is blank in the toolchain settings.", m_state.inputs.settingsFile());
+			Diagnostic::error("{}, It can be installed from your package manager (if available) or found here: https://github.com/WebAssembly/wabt/releases", message);
 #endif
+		}
+		else
+		{
+#if defined(CHALET_WIN32)
+			Diagnostic::error("{}: {} requires dumpbin (if MSVC) or objdump (if MinGW), which is blank in the toolchain settings.", settings, dumpText);
+#elif defined(CHALET_MACOS)
+			Diagnostic::error("{}: {} requires otool or objdump as the disassembler, which is blank in the toolchain settings.", settings, dumpText);
+#else
+			Diagnostic::error("{}: {} requires objdump as the disassembler, which is blank in the toolchain settings.", settings, dumpText);
+#endif
+		}
 		return false;
 	}
 
 	if (
 #if defined(CHALET_WIN32)
-		!m_state.toolchain.isDisassemblerDumpBin() &&
+		!m_isDisassemblerDumpBin &&
 #endif
 		!m_state.tools.bashAvailable())
 	{
 #if defined(CHALET_MACOS)
-		Diagnostic::error("{}: dumpAssembly feature for otool and objdump require bash, but what not detected or blank in tools.", m_state.inputs.settingsFile());
+		Diagnostic::error("{}: {} for otool and objdump require bash, but what not detected or blank in tools.", settings, dumpText);
 #else
-		Diagnostic::error("{}: dumpAssembly feature for objdump require bash, but what not detected or blank in tools.", m_state.inputs.settingsFile());
+		Diagnostic::error("{}: {} for objdump require bash, but what not detected or blank in tools.", settings, dumpText);
 #endif
 		return false;
 	}
@@ -128,11 +151,19 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 	StringList ret;
 
 	const auto& disassembler = m_state.toolchain.disassembler();
+	if (m_isDisassemblerWasm2Wat)
+	{
+		ret.push_back(disassembler);
+		ret.push_back(object);
+		ret.emplace_back("-o");
+		ret.push_back(target);
+		return ret;
+	}
 
 #if defined(CHALET_WIN32)
 	// dumpbin
 	// https://docs.microsoft.com/en-us/cpp/build/reference/dumpbin-options?view=msvc-160
-	if (m_state.toolchain.isDisassemblerDumpBin())
+	if (m_isDisassemblerDumpBin)
 	{
 		ret.push_back(disassembler);
 		ret.emplace_back("/nologo");
@@ -151,7 +182,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 
 #if defined(CHALET_MACOS)
 		// otool
-		if (m_state.toolchain.isDisassemblerOtool())
+		if (m_isDisassemblerOtool)
 		{
 			StringList cmd{ disassembler };
 			cmd.emplace_back("-tvV");
@@ -171,7 +202,7 @@ StringList AssemblyDumper::getAsmGenerate(const std::string& object, const std::
 			cmd.emplace_back("-C");
 
 #if defined(CHALET_WIN32) || defined(CHALET_LINUX)
-			if (!m_state.toolchain.isDisassemblerLLVMObjDump())
+			if (!m_isDisassemblerLLVMObjDump)
 			{
 				Arch::Cpu arch = m_state.info.targetArchitecture();
 	#if defined(CHALET_LINUX)

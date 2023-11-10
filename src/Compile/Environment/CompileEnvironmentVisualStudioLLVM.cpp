@@ -45,6 +45,7 @@ bool CompileEnvironmentVisualStudioLLVM::validateArchitectureFromInput()
 
 	return CompileEnvironmentLLVM::validateArchitectureFromInput();
 }
+
 /*****************************************************************************/
 bool CompileEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVersion)
 {
