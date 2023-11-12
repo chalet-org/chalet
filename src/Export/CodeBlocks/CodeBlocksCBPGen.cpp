@@ -20,7 +20,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -235,7 +235,7 @@ clean:
 					split.emplace_back(fmt::format("echo Generated > {}", dependency));
 #if defined(CHALET_WIN32)
 					std::string removeFile{ "del" };
-					Path::sanitizeForWindows(dependency);
+					Path::windows(dependency);
 #else
 					std::string removeFile{ "rm -f" };
 #endif

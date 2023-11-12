@@ -6,7 +6,7 @@
 #include "Process/Environment.hpp"
 
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_MSVC)
@@ -72,7 +72,7 @@ void Environment::replaceCommonVariables(std::string& outString, const std::stri
 		if (String::startsWith("~/", outString))
 		{
 			outString = fmt::format("{}{}", inHomeDirectory, outString.substr(1));
-			Path::sanitize(outString);
+			Path::unix(outString);
 		}
 	}
 }

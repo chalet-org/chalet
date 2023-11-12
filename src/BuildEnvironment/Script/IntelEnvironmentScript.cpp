@@ -10,7 +10,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/String.hpp"
 
@@ -42,7 +42,7 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 			oneApiRoot.pop_back();
 
 		m_intelSetVars = fmt::format("{}/setvars.bat", oneApiRoot);
-		Path::sanitize(m_intelSetVars);
+		Path::unix(m_intelSetVars);
 #else
 		const auto& home = m_inputs.homeDirectory();
 		m_intelSetVars = fmt::format("{}/intel/oneapi/setvars.sh", home);

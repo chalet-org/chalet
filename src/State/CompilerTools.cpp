@@ -12,7 +12,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

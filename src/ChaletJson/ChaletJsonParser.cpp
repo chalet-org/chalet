@@ -20,7 +20,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"

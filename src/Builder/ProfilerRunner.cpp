@@ -17,7 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/String.hpp"
 
@@ -155,7 +155,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		Commands::sleep(1.0);
 
 		auto statsFileForType = profStatsFile;
-		Path::sanitizeForWindows(statsFileForType);
+		Path::windows(statsFileForType);
 		StringList cmd{ "type", statsFileForType };
 		Commands::subprocessWithInput({ m_state.tools.commandPrompt(), "/c", String::join(cmd) });
 	}

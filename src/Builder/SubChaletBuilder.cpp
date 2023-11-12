@@ -19,7 +19,7 @@
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -37,7 +37,7 @@ std::string SubChaletBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
 	auto ret = Commands::getAbsolutePath(rawLocation);
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }
@@ -49,7 +49,7 @@ std::string SubChaletBuilder::getOutputLocation() const
 	auto location = getLocation();
 
 	auto ret = fmt::format("{}/{}", location, buildOutputDir);
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }

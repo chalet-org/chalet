@@ -12,7 +12,7 @@
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -109,7 +109,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }
@@ -152,7 +152,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }

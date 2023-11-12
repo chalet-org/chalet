@@ -14,7 +14,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -39,7 +39,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 	if (m_project.cppModules())
 	{
 		auto toolsDir = Environment::getString("VCToolsInstallDir");
-		Path::sanitize(toolsDir);
+		Path::unix(toolsDir);
 
 		std::string arch{ "x64" };
 		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)

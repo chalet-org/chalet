@@ -10,7 +10,7 @@
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -95,7 +95,7 @@ bool CompileCommandsGenerator::save() const
 	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
 	auto cwd = Commands::getWorkingDirectory();
-	Path::sanitize(cwd);
+	Path::unix(cwd);
 
 	Json outJson = Json::array();
 

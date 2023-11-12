@@ -9,7 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -24,7 +24,7 @@ ValidationDistTarget::ValidationDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ValidationDistTarget::initialize()
 {
-	Path::sanitize(m_schema);
+	Path::unix(m_schema);
 
 	if (!m_state.replaceVariablesInString(m_schema, this))
 		return false;

@@ -9,7 +9,7 @@
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
@@ -270,7 +270,7 @@ const std::string& AncillaryTools::commandPrompt() const noexcept
 void AncillaryTools::setCommandPrompt(std::string&& inValue) noexcept
 {
 	m_commandPrompt = std::move(inValue);
-	Path::sanitizeForWindows(m_commandPrompt);
+	Path::windows(m_commandPrompt);
 }
 
 /*****************************************************************************/
@@ -620,7 +620,7 @@ std::string AncillaryTools::getPathToGit()
 		if (!programs.empty())
 		{
 			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);
-			Path::sanitize(gitPath);
+			Path::unix(gitPath);
 			if (Commands::pathExists(gitPath))
 			{
 				git = std::move(gitPath);

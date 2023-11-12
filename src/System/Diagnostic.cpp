@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Diagnostic.hpp"
+#include "System/Diagnostic.hpp"
 
 #include <csignal>
 #include <exception>

@@ -9,13 +9,12 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ChaletJsonProps.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Diagnostic.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -56,7 +55,7 @@ bool ProjectInitializer::run()
 		return false;
 	}
 
-	Path::sanitize(m_rootPath);
+	Path::unix(m_rootPath);
 
 	auto initTemplate = m_inputs.initTemplate();
 	if (initTemplate == InitTemplateType::Unknown)

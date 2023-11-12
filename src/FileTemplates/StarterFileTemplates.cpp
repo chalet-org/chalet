@@ -9,7 +9,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -305,9 +305,9 @@ std::string StarterFileTemplates::getDotEnv()
 	if (gitExists && !List::contains(paths, gitPath))
 	{
 		auto programFiles = Environment::getString("ProgramFiles");
-		Path::sanitize(programFiles);
+		Path::unix(programFiles);
 		String::replaceAll(gitPath, programFiles, "%ProgramFiles%");
-		Path::sanitizeForWindows(gitPath);
+		Path::windows(gitPath);
 		ret = fmt::format(R"path(Path={};%Path%)path", gitPath);
 	}
 	else

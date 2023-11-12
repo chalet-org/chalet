@@ -22,7 +22,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Version.hpp"
@@ -45,7 +45,7 @@ std::string CmakeBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
 	auto ret = Commands::getAbsolutePath(rawLocation);
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }
@@ -56,7 +56,7 @@ std::string CmakeBuilder::getOutputLocation() const
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	auto ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
-	Path::sanitize(ret);
+	Path::unix(ret);
 
 	return ret;
 }

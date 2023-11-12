@@ -5,7 +5,6 @@
 
 #include "Terminal/TerminalTest.hpp"
 
-#include "Terminal/Diagnostic.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"

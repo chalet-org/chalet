@@ -12,7 +12,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -207,7 +207,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 				ucrtDir.pop_back();
 
 			auto res = fmt::format("{}/Redist/{}/ucrt/DLLs/{}/{}", ucrtDir, ucrtVersion, arch, filename);
-			Path::sanitize(res);
+			Path::unix(res);
 			if (!ucrtVersion.empty() && Commands::pathExists(res))
 			{
 				outDep = std::move(res);
@@ -216,7 +216,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 			else
 			{
 				res = fmt::format("{}/Redist/ucrt/DLLs/{}/{}", ucrtDir, arch, filename);
-				Path::sanitize(res);
+				Path::unix(res);
 				if (Commands::pathExists(res))
 				{
 					outDep = std::move(res);

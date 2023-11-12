@@ -3,16 +3,16 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 
-#include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
+void Path::unix(std::string& outValue, const bool inRemoveNewLine)
 {
 	if (outValue.empty())
 		return;
@@ -42,7 +42,7 @@ void Path::sanitize(std::string& outValue, const bool inRemoveNewLine)
 }
 
 /*****************************************************************************/
-void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
+void Path::windows(std::string& outValue, const bool inRemoveNewLine)
 {
 #if defined(CHALET_WIN32)
 	if (outValue.empty())
@@ -60,7 +60,7 @@ void Path::sanitizeForWindows(std::string& outValue, const bool inRemoveNewLine)
 	if (outValue.back() == ' ')
 		outValue.pop_back();
 #else
-	sanitize(outValue, inRemoveNewLine);
+	Path::unix(outValue, inRemoveNewLine);
 #endif
 }
 }

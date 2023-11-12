@@ -8,7 +8,7 @@
 #include "State/AncillaryTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -324,7 +324,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		const bool isBatchScript = String::endsWith(StringList{ ".bat", ".cmd" }, outScriptPath);
 		if (isBatchScript || isPowershellScript)
 		{
-			Path::sanitizeForWindows(outScriptPath);
+			Path::windows(outScriptPath);
 
 			const auto& powershell = m_tools.powershell();
 			const auto& cmd = m_tools.commandPrompt();

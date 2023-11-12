@@ -7,7 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -22,7 +22,7 @@ ProcessDistTarget::ProcessDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
-	Path::sanitize(m_path);
+	Path::unix(m_path);
 
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;

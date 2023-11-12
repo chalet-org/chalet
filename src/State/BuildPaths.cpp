@@ -17,7 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -552,7 +552,7 @@ std::string BuildPaths::getNormalizedOutputPath(const std::string& inPath) const
 std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) const
 {
 	std::string ret = String::getPathFolder(inPath);
-	Path::sanitize(ret, true);
+	Path::unix(ret, true);
 
 	normalizedPath(ret);
 

@@ -15,7 +15,7 @@
 #include "State/CompilerTools.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -130,7 +130,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	{
 		auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
-		Path::sanitize(cwd);
+		Path::unix(cwd);
 		if (cwd.back() != '/')
 			cwd += '/';
 

@@ -9,7 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -28,7 +28,7 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::sanitize(m_file);
+	Path::unix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;

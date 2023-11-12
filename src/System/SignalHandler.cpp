@@ -12,7 +12,7 @@
 #include "Process/Environment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 // Reference: https://spin.atomicobject.com/2013/01/13/exceptions-stack-traces-c/

@@ -8,7 +8,7 @@
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"

@@ -31,7 +31,7 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -596,7 +596,7 @@ void BuildState::initializeCache()
 bool BuildState::validateState()
 {
 	auto workingDirectory = Commands::getWorkingDirectory();
-	Path::sanitize(workingDirectory, true);
+	Path::unix(workingDirectory, true);
 
 	if (String::toLowerCase(inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 	{
@@ -937,7 +937,7 @@ bool BuildState::validateDistribution()
 void BuildState::makePathVariable()
 {
 	auto originalPath = Environment::getPath();
-	Path::sanitize(originalPath);
+	Path::unix(originalPath);
 
 	char separator = Environment::getPathSeparator();
 	auto pathList = String::split(originalPath, separator);
@@ -988,7 +988,7 @@ void BuildState::makePathVariable()
 	}
 
 	std::string rootPath = String::join(std::move(outList), separator);
-	Path::sanitize(rootPath);
+	Path::unix(rootPath);
 
 	auto pathVariable = workspace.makePathVariable(rootPath);
 	enforceArchitectureInPath(pathVariable);
@@ -1084,7 +1084,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto oneApi = Environment::getString("ONEAPI_ROOT");
 		if (!oneApi.empty())
 		{
-			Path::sanitizeForWindows(oneApi);
+			Path::windows(oneApi);
 			oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
 			std::string lowerOneApi = String::toLowerCase(oneApi);
 			if (!String::contains(lowerOneApi, lower))

@@ -7,7 +7,7 @@
 
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -26,7 +26,7 @@ bool ProcessBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::sanitize(m_path);
+	Path::unix(m_path);
 
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;

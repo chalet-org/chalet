@@ -28,7 +28,7 @@
 #include "System/UpdateNotifier.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Terminal/TerminalTest.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"

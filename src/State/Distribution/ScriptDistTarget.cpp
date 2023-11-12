@@ -9,7 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -24,7 +24,7 @@ ScriptDistTarget::ScriptDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
-	Path::sanitize(m_file);
+	Path::unix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;

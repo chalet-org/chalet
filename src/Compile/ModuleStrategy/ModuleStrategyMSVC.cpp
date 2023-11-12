@@ -9,7 +9,7 @@
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -29,7 +29,7 @@ bool ModuleStrategyMSVC::initialize()
 	if (m_msvcToolsDirectory.empty())
 	{
 		m_msvcToolsDirectory = Environment::getString("VCToolsInstallDir");
-		Path::sanitize(m_msvcToolsDirectory);
+		Path::unix(m_msvcToolsDirectory);
 	}
 
 	return true;
@@ -140,7 +140,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			}
 
 			auto outHeader = file.get<std::string>();
-			Path::sanitize(outHeader);
+			Path::unix(outHeader);
 
 			List::addIfDoesNotExist(outModules[name].importedHeaderUnits, std::move(outHeader));
 		}
@@ -220,7 +220,7 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 		}
 
 		auto outInclude = include.get<std::string>();
-		Path::sanitize(outInclude);
+		Path::unix(outInclude);
 
 		outList.emplace_back(std::move(outInclude));
 	}

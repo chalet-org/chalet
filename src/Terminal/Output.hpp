@@ -7,7 +7,6 @@
 
 #include "Terminal/Color.hpp"
 #include "Terminal/ColorTheme.hpp"
-#include "Terminal/Formatting.hpp"
 
 namespace chalet
 {

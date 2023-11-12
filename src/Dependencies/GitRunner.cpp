@@ -14,7 +14,7 @@
 #include "State/Dependency/GitDependency.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -272,7 +272,7 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 #if defined(CHALET_WIN32)
 			if (String::equals(".git", path))
 			{
-				Path::sanitizeForWindows(outPath);
+				Path::windows(outPath);
 				if (!Commands::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}

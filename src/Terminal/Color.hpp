@@ -84,4 +84,11 @@ enum class Color : u16
 	BrightCyanInverted = 796,
 	BrightWhiteInverted = 797,
 };
+enum class Formatting : std::underlying_type_t<Color>
+{
+	None = 0,
+	Bold = 100,
+	Dim = 200,
+	Inverted = 700,
+};
 }

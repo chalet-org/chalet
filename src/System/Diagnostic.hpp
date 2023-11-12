@@ -73,7 +73,7 @@ private:
 };
 }
 
-#include "Terminal/Diagnostic.inl"
+#include "System/Diagnostic.inl"
 
 #ifdef NDEBUG
 	#define chalet_assert(expr, message)

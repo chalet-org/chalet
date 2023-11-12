@@ -10,7 +10,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -44,7 +44,7 @@ bool EmscriptenEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 #if defined(CHALET_WIN32)
 		m_emsdkEnv = fmt::format("{}/emsdk_env.bat", emsdkRoot);
-		Path::sanitize(m_emsdkEnv);
+		Path::unix(m_emsdkEnv);
 #else
 		m_emsdkEnv = fmt::format("{}/emsdk_env.sh", emsdkRoot);
 #endif
@@ -98,19 +98,19 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto upstreamBin = fmt::format("{}/upstream/bin", emsdkRoot);
 
 #if defined(CHALET_WIN32)
-	Path::sanitizeForWindows(emsdkRoot);
-	Path::sanitizeForWindows(upstream);
-	Path::sanitizeForWindows(upstreamBin);
+	Path::windows(emsdkRoot);
+	Path::windows(upstream);
+	Path::windows(upstreamBin);
 #else
-	Path::sanitize(emsdkRoot);
-	Path::sanitize(upstream);
-	Path::sanitize(upstreamBin);
+	Path::unix(emsdkRoot);
+	Path::unix(upstream);
+	Path::unix(upstreamBin);
 #endif
 
 	auto nodePath = Commands::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{
-		Path::sanitize(nodePath);
+		Path::unix(nodePath);
 		nodePath += "/bin/node";
 #if defined(CHALET_WIN32)
 		nodePath += ".exe";
@@ -129,7 +129,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto pythonPath = Commands::getFirstChildDirectory(fmt::format("{}/python", emsdkRoot));
 	if (!pythonPath.empty())
 	{
-		Path::sanitize(pythonPath);
+		Path::unix(pythonPath);
 
 #if defined(CHALET_WIN32)
 		pythonPath += "/python.exe";
@@ -151,7 +151,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto javaHome = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
 	if (!javaHome.empty())
 	{
-		Path::sanitize(javaHome);
+		Path::unix(javaHome);
 
 		javaPath += "/bin/java";
 #if defined(CHALET_WIN32)
@@ -165,9 +165,9 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 			javaPath = "java";
 	}
 
-	Path::sanitize(nodePath);
-	Path::sanitize(pythonPath);
-	Path::sanitize(javaPath);
+	Path::unix(nodePath);
+	Path::unix(pythonPath);
+	Path::unix(javaPath);
 
 	auto emrunPort = Environment::getString("EMRUN_PORT");
 	if (emrunPort.empty())
@@ -183,8 +183,8 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		FMT_ARG(upstreamBin));
 
 #if defined(CHALET_WIN32)
-	Path::sanitize(upstream);
-	Path::sanitize(upstreamBin);
+	Path::unix(upstream);
+	Path::unix(upstreamBin);
 #endif
 
 	fileContents += fmt::format("EMSDK_UPSTREAM_EMSCRIPTEN={}\n", upstream);
