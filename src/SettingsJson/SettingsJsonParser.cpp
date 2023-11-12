@@ -12,6 +12,7 @@
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/CentralState.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
@@ -705,7 +706,7 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
-			std::string sdkPath = Files::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
+			std::string sdkPath = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
 
 			appleSkdsJson[sdk] = std::move(sdkPath);
 			m_jsonFile.setDirty(true);

@@ -5,9 +5,10 @@
 
 #include "Compile/Linker/LinkerGCC.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
+// #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
@@ -684,7 +685,7 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 		}
 		cmd.emplace_back(fmt::format("-print-file-name={}", file));
 
-		auto raw = Files::subprocessOutput(cmd);
+		auto raw = Process::runOutput(cmd);
 		// auto split = String::split(raw, '\n');
 
 		return !String::equals(file, raw);

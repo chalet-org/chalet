@@ -10,6 +10,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -108,7 +109,7 @@ bool BuildEnvironmentEmscripten::readArchitectureTripleFromCompiler()
 		auto& targetArch = m_state.inputs.targetArchitecture();
 		if (targetArch.empty())
 		{
-			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
 			if (!String::equals("wasm32", cachedArch))
 				return false;
 
@@ -178,7 +179,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)
 
-		auto rawOutput = Files::subprocessOutput(getVersionCommand(m_emcc));
+		auto rawOutput = Process::runOutput(getVersionCommand(m_emcc));
 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');

@@ -11,6 +11,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "Process/Process.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -133,7 +134,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	if (!m_envVarsFileDeltaExists)
 	{
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
-			auto temp = Files::subprocessOutput(inCmd);
+			auto temp = Process::runOutput(inCmd);
 			auto split = String::split(temp, "\n");
 			return split.front();
 		};
@@ -306,7 +307,7 @@ std::string VisualStudioEnvironmentScript::getVisualStudioVersion(const VisualSt
 	addProductOptions(vswhereCmd);
 	vswhereCmd.emplace_back("-property");
 	vswhereCmd.emplace_back("installationVersion");
-	return Files::subprocessOutput(vswhereCmd);
+	return Process::runOutput(vswhereCmd);
 }
 
 /*****************************************************************************/

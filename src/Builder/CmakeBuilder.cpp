@@ -5,12 +5,13 @@
 
 #include "Builder/CmakeBuilder.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -22,8 +23,8 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Version.hpp"
 
@@ -155,7 +156,7 @@ bool CmakeBuilder::run()
 
 		{
 			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : m_outputLocation;
-			if (!Files::subprocess(command, cwd))
+			if (!Process::run(command, cwd))
 				return onRunFailure();
 		}
 
@@ -164,7 +165,7 @@ bool CmakeBuilder::run()
 		command = getBuildCommand(m_outputLocation);
 
 		// this will control ninja output, and other build outputs should be unaffected
-		bool result = Files::subprocessNinjaBuild(command);
+		bool result = Process::runNinjaBuild(command);
 		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 		if (!result)
 			return onRunFailure(false);
@@ -619,7 +620,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			auto nodePath = Environment::getString("EMSDK_NODE");
 			chalet_assert(!nodePath.empty(), "'EMSDK_NODE' was not set");
 
-			auto versionOutput = Files::subprocessOutput({ nodePath, "--version" });
+			auto versionOutput = Process::runOutput({ nodePath, "--version" });
 			if (String::startsWith('v', versionOutput))
 				versionOutput = versionOutput.substr(1);
 

@@ -7,6 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
@@ -149,7 +150,7 @@ std::string getParentProcessPath()
 		}
 	#else
 		std::string procLoc = "/proc/" + std::to_string(static_cast<i32>(pid)) + "/exe";
-		name = Files::subprocessOutput({ "/usr/bin/ls", "-lt", procLoc });
+		name = Process::runOutput({ "/usr/bin/ls", "-lt", procLoc });
 		auto list = String::split(name, " -> ");
 		name = list.back();
 	#endif
@@ -168,7 +169,7 @@ bool isRunningWindowsSubsystemForLinux()
 		return false;
 
 	Output::setShowCommandOverride(false);
-	auto result = Files::subprocessOutput({ uname, "-a" });
+	auto result = Process::runOutput({ uname, "-a" });
 	Output::setShowCommandOverride(true);
 	if (result.empty())
 		return false;

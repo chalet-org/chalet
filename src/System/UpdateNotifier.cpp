@@ -7,6 +7,7 @@
 
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Process.hpp"
 #include "State/CentralState.hpp"
 #include "System/DefinesVersion.hpp"
 #include "System/Files.hpp"
@@ -40,7 +41,7 @@ void UpdateNotifier::notifyForUpdates()
 			"--tags",
 			"https://github.com/chalet-org/chalet",
 		};
-		auto output = Files::subprocessOutput(cmd);
+		auto output = Process::runOutput(cmd);
 		if (output.empty())
 			return;
 

@@ -6,6 +6,8 @@
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -13,7 +15,6 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -137,7 +138,7 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 
 	command.emplace_back(fmt::format("build_{}", hash));
-	bool result = Files::subprocessNinjaBuild(command);
+	bool result = Process::runNinjaBuild(command);
 
 	Environment::set(kNinjaStatus, oldNinjaStatus);
 

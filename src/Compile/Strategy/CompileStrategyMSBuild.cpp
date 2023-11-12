@@ -5,11 +5,12 @@
 
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 
-#include "Cache/WorkspaceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Platform/Arch.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
+#include "Platform/Arch.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -118,7 +119,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 		cmd.emplace_back(fmt::format("{}/vcxproj/all.vcxproj", folder));
 	}
 
-	bool result = Files::subprocess(cmd);
+	bool result = Process::run(cmd);
 	if (result)
 	{
 		String::replaceAll(project, fmt::format("{}/", cwd), "");

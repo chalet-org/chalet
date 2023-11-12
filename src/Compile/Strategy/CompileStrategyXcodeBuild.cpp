@@ -6,13 +6,14 @@
 #include "Compile/Strategy/CompileStrategyXcodeBuild.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"
+#include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
-#include "Process/SubProcessController.hpp"
+#include "Process/Process.hpp"
 #include "Process/ProcessOptions.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -147,7 +148,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	bool result = false;
 	if (Output::showCommands())
 	{
-		result = Files::subprocess(cmd);
+		result = Process::run(cmd);
 	}
 	else
 	{

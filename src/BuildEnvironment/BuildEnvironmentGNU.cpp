@@ -8,6 +8,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -86,7 +87,7 @@ bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo
 		// Apple clang version 12.0.5 (clang-1205.0.22.9)
 
 		const auto exec = String::getPathBaseName(outInfo.path);
-		std::string rawOutput = Files::subprocessOutput(getVersionCommand(outInfo.path));
+		std::string rawOutput = Process::runOutput(getVersionCommand(outInfo.path));
 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');
@@ -286,7 +287,7 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 		std::string cachedArch;
 		if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 		{
-			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
 
 			// Make our corrections here
 			//
@@ -385,7 +386,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
 		StringList command = { inCompilerExec, "-x", "c", Shell::getNull(), "-dM", "-E" };
-		result = Files::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
+		result = Process::runOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
 		if (!result.empty())
 		{
@@ -405,7 +406,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 void BuildEnvironmentGNU::parseSupportedFlagsFromHelpList(const StringList& inCommand)
 {
 	auto path = String::getPathFolder(inCommand.front());
-	std::string raw = Files::subprocessOutput(inCommand, std::move(path));
+	std::string raw = Process::runOutput(inCommand, std::move(path));
 	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)
@@ -500,7 +501,7 @@ void BuildEnvironmentGNU::generateTargetSystemPaths()
 	auto otherCompiler = fmt::format("{}/bin/{}-gcc", basePath, targetArch);
 	if (Files::pathExists(otherCompiler))
 	{
-		auto version = Files::subprocessOutput({ otherCompiler, "-dumpfullversion" });
+		auto version = Process::runOutput({ otherCompiler, "-dumpfullversion" });
 		if (!version.empty())
 		{
 			version = version.substr(0, version.find_first_not_of("0123456789."));

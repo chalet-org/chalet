@@ -5,6 +5,7 @@
 
 #include "Process/Environment.hpp"
 
+#include "Process/Process.hpp"
 #include "System/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -173,7 +174,7 @@ bool Environment::saveToEnvFile(const std::string& inOutputFile)
 	cmd.emplace_back("-c");
 	cmd.emplace_back("printenv");
 #endif
-	bool result = Files::subprocessOutputToFile(cmd, inOutputFile);
+	bool result = Process::runOutputToFile(cmd, inOutputFile);
 	return result;
 }
 

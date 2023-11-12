@@ -8,12 +8,13 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Bundler/BinaryDependency/DependencyWalker.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -296,7 +297,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 		//   but works fine w/ MSYS2
 		cmd = { ldd, inPath };
 #endif
-		std::string targetDeps = Files::subprocessOutput(cmd);
+		std::string targetDeps = Process::runOutput(cmd);
 
 		std::string line;
 		std::istringstream stream(targetDeps);

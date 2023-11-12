@@ -6,6 +6,7 @@
 #include "Dependencies/PlatformDependencyManager.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -147,7 +148,7 @@ bool PlatformDependencyManager::hasRequired()
 				cmd.emplace_back(fmt::format("mingw-w64-{}-{}", arch, item));
 			}
 
-			auto installed = Files::subprocessOutput(cmd);
+			auto installed = Process::runOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -231,7 +232,7 @@ bool PlatformDependencyManager::hasRequired()
 
 			Timer timer;
 			Diagnostic::infoEllipsis("{}MacPorts{}", prefix, suffix);
-			auto installed = Files::subprocessOutput({ port, "installed" });
+			auto installed = Process::runOutput({ port, "installed" });
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -276,7 +277,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Files::subprocessOutput(cmd);
+			auto installed = Process::runOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -320,7 +321,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Files::subprocessOutput(cmd);
+			auto installed = Process::runOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -377,7 +378,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Files::subprocessOutput(cmd);
+			auto installed = Process::runOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())

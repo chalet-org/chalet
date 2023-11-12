@@ -15,6 +15,7 @@
 #include "Bundler/MacosDiskImageCreator.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -504,7 +505,7 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
-	bool result = Files::subprocessWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd);
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 

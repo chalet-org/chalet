@@ -8,6 +8,7 @@
 #include "Platform/Arch.hpp"
 #include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -833,7 +834,7 @@ std::string CommandLineInputs::getDefaultOsTargetVersion() const
 		auto swVers = Files::which("sw_vers");
 		if (!swVers.empty())
 		{
-			auto result = Files::subprocessOutput({ swVers });
+			auto result = Process::runOutput({ swVers });
 			if (!result.empty())
 			{
 				auto split = String::split(result, '\n');
@@ -1539,7 +1540,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 		auto gcc = Files::which("gcc");
 		if (!gcc.empty())
 		{
-			auto cachedArch = Files::subprocessOutput({ gcc, "-dumpmachine" });
+			auto cachedArch = Process::runOutput({ gcc, "-dumpmachine" });
 			firstDash = cachedArch.find_first_of('-');
 
 			bool valid = !cachedArch.empty() && firstDash != std::string::npos;

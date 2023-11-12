@@ -7,9 +7,9 @@
 
 #include "Core/CommandLineInputs.hpp"
 
+#include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
-#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -31,7 +31,7 @@ bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, con
 	if (command.empty())
 		return false;
 
-	bool result = Files::subprocess(command);
+	bool result = Process::run(command);
 	auto exitCode = SubProcessController::getLastExitCode();
 
 	// std::string script = inScript;

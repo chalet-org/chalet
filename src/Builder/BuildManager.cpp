@@ -18,6 +18,7 @@
 #include "Compile/CompileToolchainController.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -36,10 +37,10 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonKeys.hpp"
@@ -1067,7 +1068,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	WindowsTerminal::cleanup();
 #endif
 
-	bool result = Files::subprocessWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd);
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();

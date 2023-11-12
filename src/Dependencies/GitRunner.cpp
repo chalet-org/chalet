@@ -10,6 +10,7 @@
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Libraries/Json.hpp"
+#include "Process/Process.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "System/Files.hpp"
@@ -89,7 +90,7 @@ bool GitRunner::fetchDependency(const GitDependency& inDependency, const bool in
 	displayFetchingMessageStart(inDependency);
 
 	StringList cmd = getCloneCommand(inDependency);
-	if (!Files::subprocess(cmd))
+	if (!Process::run(cmd))
 		return false;
 
 	const auto& commit = inDependency.commit();
@@ -273,7 +274,7 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 			if (String::equals(".git", path))
 			{
 				Path::toWindows(outPath);
-				if (!Files::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
+				if (!Process::run({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}
 			else
@@ -300,34 +301,34 @@ const std::string& GitRunner::getCheckoutTo(const GitDependency& inDependency)
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
 {
-	std::string branch = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
+	std::string branch = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
 	return branch;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
 {
-	std::string tag = Files::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
+	std::string tag = Process::runOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
 	return tag;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
 {
-	std::string hash = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
+	std::string hash = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
 	return hash;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
 {
-	std::string originHash = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
+	std::string originHash = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
 	return originHash;
 }
 
 std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
 {
-	std::string result = Files::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
+	std::string result = Process::runOutput({ m_git, "ls-remote", inRepoPath, inBranch });
 	if (result.empty())
 		return result;
 
@@ -342,13 +343,13 @@ std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string&
 /*****************************************************************************/
 bool GitRunner::updateGitRepositoryShallow(const std::string& inRepoPath) const
 {
-	return Files::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
+	return Process::run({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
 }
 
 /*****************************************************************************/
 bool GitRunner::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
-	return Files::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
+	return Process::run({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
 }
 
 /*****************************************************************************/

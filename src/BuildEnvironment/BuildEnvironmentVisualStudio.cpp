@@ -11,6 +11,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -133,7 +134,7 @@ bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo
 	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
 	{
 		// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-		std::string rawOutput = Files::subprocessOutput(getVersionCommand(outInfo.path));
+		std::string rawOutput = Process::runOutput(getVersionCommand(outInfo.path));
 
 		auto splitOutput = String::split(rawOutput, '\n');
 		if (splitOutput.size() >= 2)

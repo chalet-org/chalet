@@ -10,6 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ChaletJsonProps.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
@@ -271,9 +272,9 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 			auto git = AncillaryTools::getPathToGit();
 			if (!git.empty())
 			{
-				if (!Files::subprocess({ git, "-C", m_rootPath, "init", "--quiet" }))
+				if (!Process::run({ git, "-C", m_rootPath, "init", "--quiet" }))
 					result = false;
-				else if (!Files::subprocess({ git, "-C", m_rootPath, "checkout", "-b", "main", "--quiet" }))
+				else if (!Process::run({ git, "-C", m_rootPath, "checkout", "-b", "main", "--quiet" }))
 					result = false;
 			}
 			else
@@ -290,7 +291,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 
 		if (Output::getUserInputYesNo("Run 'chalet configure'?", true))
 		{
-			if (!Files::subprocess({ m_inputs.appPath(), "configure" }, m_rootPath))
+			if (!Process::run({ m_inputs.appPath(), "configure" }, m_rootPath))
 				return false;
 		}
 		else

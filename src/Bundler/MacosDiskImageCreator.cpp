@@ -9,6 +9,7 @@
 #include "Bundler/MacosNotarizationMsg.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
@@ -37,7 +38,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
 
-	Files::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
+	Process::runNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
 	Timer timer;
 
@@ -88,10 +89,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		dmgSize = temp + 16;
 	}
 
-	if (!Files::subprocessMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+	if (!Process::runMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
 		return false;
 
-	if (!Files::subprocessMinimalOutput({ hdiutil, "attach", tmpDmg }))
+	if (!Process::runMinimalOutput({ hdiutil, "attach", tmpDmg }))
 		return false;
 
 	const auto& background1x = inDiskImage.background1x();
@@ -121,7 +122,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 			cmd.emplace_back("-out");
 			cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
 
-			if (!Files::subprocessNoOutput(cmd))
+			if (!Process::runNoOutput(cmd))
 				return false;
 		}
 	}
@@ -140,16 +141,16 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 
 	const auto applescriptText = getDmgApplescript(inDiskImage);
 
-	if (!Files::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
+	if (!Process::run({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
 
 	Files::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
 
-	if (!Files::subprocessMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
+	if (!Process::runMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
 	std::string outDmgPath = fmt::format("{}/{}.dmg", distributionDirectory, m_diskName);
-	if (!Files::subprocessMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
+	if (!Process::runMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 
 	if (!Files::removeRecursively(tmpDmg))

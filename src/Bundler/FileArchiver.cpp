@@ -6,6 +6,7 @@
 #include "Bundler/FileArchiver.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
@@ -69,7 +70,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		return false;
 	}
 
-	bool result = Files::subprocessMinimalOutput(cmd, m_tmpDirectory);
+	bool result = Process::runMinimalOutput(cmd, m_tmpDirectory);
 	Files::removeRecursively(m_tmpDirectory);
 	if (!result)
 	{

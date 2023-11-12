@@ -9,6 +9,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/PlatformDependencyManager.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Utility/Path.hpp"
@@ -56,7 +57,7 @@ bool BuildInfo::initialize()
 
 	if (!mainCompiler.empty())
 	{
-		auto tripleResult = Files::subprocessOutput({ mainCompiler, "-dumpmachine" });
+		auto tripleResult = Process::runOutput({ mainCompiler, "-dumpmachine" });
 		if (!tripleResult.empty())
 		{
 			m_hostArchTriple = tripleResult.substr(0, tripleResult.find('\n'));

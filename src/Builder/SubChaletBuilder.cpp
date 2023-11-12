@@ -10,6 +10,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -133,7 +134,7 @@ bool SubChaletBuilder::run()
 		for (auto& targetName : m_target.targets())
 		{
 			auto cmd = getBuildCommand(targetName);
-			result = Files::subprocess(cmd);
+			result = Process::run(cmd);
 			if (!result)
 				return onRunFailure();
 		}

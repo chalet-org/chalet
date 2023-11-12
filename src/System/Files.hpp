@@ -5,15 +5,12 @@
 
 #pragma once
 
-#include "Process/PipeOption.hpp"
 #include "Utility/GlobMatch.hpp"
 
 namespace chalet
 {
 namespace Files
 {
-using CreateSubprocessFunc = std::function<void(i32 /* pid */)>;
-
 std::string getWorkingDirectory();
 bool changeWorkingDirectory(const std::string& inPath);
 
@@ -64,28 +61,6 @@ std::string getFileContents(const std::string& inFile);
 
 std::string getFirstChildDirectory(const std::string& inPath);
 
-inline bool subprocess(const StringList& inCmd);
-inline bool subprocess(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
-inline bool subprocess(const StringList& inCmd, std::string inCwd);
-inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr);
-inline bool subprocess(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr);
-inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut);
-inline bool subprocess(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr);
-inline bool subprocessWithInput(const StringList& inCmd);
-inline bool subprocessWithInput(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
-inline bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
-
-bool subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
-bool subprocessWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
-bool subprocessNoOutput(const StringList& inCmd);
-bool subprocessMinimalOutput(const StringList& inCmd);
-bool subprocessMinimalOutput(const StringList& inCmd, std::string inCwd);
-bool subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
-std::string subprocessOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
-std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
-
-bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
-
 std::string isolateVersion(const std::string& outString);
 std::string which(const std::string& inExecutable, const bool inOutput = true);
 
@@ -98,5 +73,3 @@ bool isUsingAppleCommandLineTools();
 #endif
 }
 }
-
-#include "System/Files.inl"

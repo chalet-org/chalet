@@ -8,6 +8,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -100,7 +101,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
 		if (emptyInputArch || !String::contains('-', targetArch))
 		{
-			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
 
 			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
@@ -186,7 +187,7 @@ bool BuildEnvironmentLLVM::populateSupportedFlags(const std::string& inExecutabl
 /*****************************************************************************/
 void BuildEnvironmentLLVM::parseSupportedFlagsFromHelpList(const StringList& inCommand)
 {
-	std::string raw = Files::subprocessOutput(inCommand);
+	std::string raw = Process::runOutput(inCommand);
 	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)

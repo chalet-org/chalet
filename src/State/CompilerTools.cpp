@@ -7,14 +7,15 @@
 
 #include "Platform/Arch.hpp"
 
-#include "Cache/SourceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Cache/SourceCache.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -196,7 +197,7 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_make, version))
 		{
-			version = Files::subprocessOutput({ m_make, "--version" });
+			version = Process::runOutput({ m_make, "--version" });
 			version = Files::isolateVersion(version);
 		}
 
@@ -223,7 +224,7 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_cmake, version))
 		{
-			version = Files::subprocessOutput({ m_cmake, "--version" });
+			version = Process::runOutput({ m_cmake, "--version" });
 			version = Files::isolateVersion(version);
 		}
 
@@ -254,7 +255,7 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_ninja, version))
 		{
-			version = Files::subprocessOutput({ m_ninja, "--version" });
+			version = Process::runOutput({ m_ninja, "--version" });
 			version = Files::isolateVersion(version);
 		}
 
