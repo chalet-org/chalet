@@ -183,7 +183,7 @@ bool BundleTarget::validate()
 bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 {
 	const auto add = [this](std::string in) {
-		Path::unix(in);
+		Path::toUnix(in);
 		List::addIfDoesNotExist(m_includes, std::move(in));
 	};
 
@@ -282,7 +282,7 @@ const std::string& BundleTarget::subdirectory() const noexcept
 void BundleTarget::setSubdirectory(std::string&& inValue)
 {
 	m_subdirectory = std::move(inValue);
-	Path::unix(m_subdirectory);
+	Path::toUnix(m_subdirectory);
 }
 
 /*****************************************************************************/
@@ -326,7 +326,7 @@ void BundleTarget::addBuildTarget(std::string&& inValue)
 	}
 	else
 	{
-		Path::unix(inValue);
+		Path::toUnix(inValue);
 		List::addIfDoesNotExist(m_buildTargets, std::move(inValue));
 	}
 }
@@ -350,7 +350,7 @@ void BundleTarget::addExcludes(StringList&& inList)
 
 void BundleTarget::addExclude(std::string&& inValue)
 {
-	Path::unix(inValue);
+	Path::toUnix(inValue);
 	List::addIfDoesNotExist(m_excludes, std::move(inValue));
 }
 
@@ -368,7 +368,7 @@ void BundleTarget::addIncludes(StringList&& inList)
 
 void BundleTarget::addInclude(std::string&& inValue)
 {
-	Path::unix(inValue);
+	Path::toUnix(inValue);
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 

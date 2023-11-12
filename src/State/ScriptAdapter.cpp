@@ -324,7 +324,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		const bool isBatchScript = String::endsWith(StringList{ ".bat", ".cmd" }, outScriptPath);
 		if (isBatchScript || isPowershellScript)
 		{
-			Path::windows(outScriptPath);
+			Path::toWindows(outScriptPath);
 
 			const auto& powershell = m_tools.powershell();
 			const auto& cmd = m_tools.commandPrompt();

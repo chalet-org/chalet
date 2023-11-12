@@ -199,7 +199,7 @@ const std::string& CommandLineInputs::workingDirectory() const noexcept
 	if (m_workingDirectory.empty())
 	{
 		m_workingDirectory = Commands::getWorkingDirectory();
-		Path::unix(m_workingDirectory, true);
+		Path::toUnix(m_workingDirectory, true);
 	}
 	return m_workingDirectory;
 }
@@ -210,7 +210,7 @@ const std::string& CommandLineInputs::homeDirectory() const noexcept
 	if (m_homeDirectory.empty())
 	{
 		m_homeDirectory = Environment::getUserDirectory();
-		Path::unix(m_homeDirectory, true);
+		Path::toUnix(m_homeDirectory, true);
 	}
 	return m_homeDirectory;
 }
@@ -233,7 +233,7 @@ void CommandLineInputs::setInputFile(std::string&& inValue) noexcept
 
 	m_inputFile = std::move(inValue);
 
-	Path::unix(m_inputFile);
+	Path::toUnix(m_inputFile);
 	// clearWorkingDirectory(m_inputFile);
 }
 
@@ -249,7 +249,7 @@ void CommandLineInputs::setSettingsFile(std::string&& inValue) noexcept
 
 	m_settingsFile = std::move(inValue);
 
-	Path::unix(m_settingsFile);
+	Path::toUnix(m_settingsFile);
 	// clearWorkingDirectory(m_settingsFile);
 }
 
@@ -275,7 +275,7 @@ void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
 		return;
 
 	m_rootDirectory = std::move(inValue);
-	Path::unix(m_rootDirectory);
+	Path::toUnix(m_rootDirectory);
 
 	if (Commands::pathExists(m_rootDirectory))
 	{
@@ -297,7 +297,7 @@ void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 
 	m_outputDirectory = std::move(inValue);
 
-	Path::unix(m_outputDirectory);
+	Path::toUnix(m_outputDirectory);
 	// clearWorkingDirectory(m_outputDirectory);
 }
 
@@ -314,7 +314,7 @@ void CommandLineInputs::setExternalDirectory(std::string&& inValue) noexcept
 
 	m_externalDirectory = std::move(inValue);
 
-	Path::unix(m_externalDirectory);
+	Path::toUnix(m_externalDirectory);
 	// clearWorkingDirectory(m_externalDirectory);
 }
 
@@ -331,7 +331,7 @@ void CommandLineInputs::setDistributionDirectory(std::string&& inValue) noexcept
 
 	m_distributionDirectory = std::move(inValue);
 
-	Path::unix(m_distributionDirectory);
+	Path::toUnix(m_distributionDirectory);
 	// clearWorkingDirectory(m_distributionDirectory);
 }
 /*****************************************************************************/
@@ -645,7 +645,7 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 
 	m_envFile = std::move(inValue);
 
-	Path::unix(m_envFile);
+	Path::toUnix(m_envFile);
 	// clearWorkingDirectory(m_envFile);
 }
 

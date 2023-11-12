@@ -207,7 +207,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 				ucrtDir.pop_back();
 
 			auto res = fmt::format("{}/Redist/{}/ucrt/DLLs/{}/{}", ucrtDir, ucrtVersion, arch, filename);
-			Path::unix(res);
+			Path::toUnix(res);
 			if (!ucrtVersion.empty() && Commands::pathExists(res))
 			{
 				outDep = std::move(res);
@@ -216,7 +216,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 			else
 			{
 				res = fmt::format("{}/Redist/ucrt/DLLs/{}/{}", ucrtDir, arch, filename);
-				Path::unix(res);
+				Path::toUnix(res);
 				if (Commands::pathExists(res))
 				{
 					outDep = std::move(res);

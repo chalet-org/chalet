@@ -55,7 +55,7 @@ bool ProjectInitializer::run()
 		return false;
 	}
 
-	Path::unix(m_rootPath);
+	Path::toUnix(m_rootPath);
 
 	auto initTemplate = m_inputs.initTemplate();
 	if (initTemplate == InitTemplateType::Unknown)

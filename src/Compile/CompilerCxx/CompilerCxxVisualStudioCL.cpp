@@ -39,7 +39,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 	if (m_project.cppModules())
 	{
 		auto toolsDir = Environment::getString("VCToolsInstallDir");
-		Path::unix(toolsDir);
+		Path::toUnix(toolsDir);
 
 		std::string arch{ "x64" };
 		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)

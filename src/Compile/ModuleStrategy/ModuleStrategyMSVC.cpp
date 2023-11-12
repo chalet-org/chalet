@@ -29,7 +29,7 @@ bool ModuleStrategyMSVC::initialize()
 	if (m_msvcToolsDirectory.empty())
 	{
 		m_msvcToolsDirectory = Environment::getString("VCToolsInstallDir");
-		Path::unix(m_msvcToolsDirectory);
+		Path::toUnix(m_msvcToolsDirectory);
 	}
 
 	return true;
@@ -140,7 +140,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			}
 
 			auto outHeader = file.get<std::string>();
-			Path::unix(outHeader);
+			Path::toUnix(outHeader);
 
 			List::addIfDoesNotExist(outModules[name].importedHeaderUnits, std::move(outHeader));
 		}
@@ -220,7 +220,7 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 		}
 
 		auto outInclude = include.get<std::string>();
-		Path::unix(outInclude);
+		Path::toUnix(outInclude);
 
 		outList.emplace_back(std::move(outInclude));
 	}

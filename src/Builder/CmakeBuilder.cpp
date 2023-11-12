@@ -45,7 +45,7 @@ std::string CmakeBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
 	auto ret = Commands::getAbsolutePath(rawLocation);
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }
@@ -56,7 +56,7 @@ std::string CmakeBuilder::getOutputLocation() const
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
 	auto ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }

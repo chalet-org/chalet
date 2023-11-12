@@ -208,7 +208,7 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 	if (!error)
 	{
 		std::string ret = path.string();
-		Path::unix(ret);
+		Path::toUnix(ret);
 		return ret;
 	}
 	else
@@ -226,7 +226,7 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 	if (!error)
 	{
 		std::string ret = path.string();
-		Path::unix(ret);
+		Path::toUnix(ret);
 		return ret;
 	}
 	else
@@ -244,7 +244,7 @@ std::string Commands::getProximatePath(const std::string& inPath, const std::str
 	if (!error)
 	{
 		std::string ret = path.string();
-		Path::unix(ret);
+		Path::toUnix(ret);
 		return ret;
 	}
 	else
@@ -644,7 +644,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 	if (basePath.empty())
 	{
 		basePath = Commands::getWorkingDirectory();
-		Path::unix(basePath);
+		Path::toUnix(basePath);
 	}
 
 	if (!Commands::pathIsDirectory(basePath))
@@ -672,7 +672,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 		start = pattern.find('{', start);
 	}
 
-	Path::unix(pattern);
+	Path::toUnix(pattern);
 	String::replaceAll(pattern, '{', "\\{");
 	String::replaceAll(pattern, '}', "\\}");
 	String::replaceAll(pattern, '[', "\\[");
@@ -714,7 +714,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			if (matchIsValid(fsPath))
 			{
 				auto p = fsPath.string();
-				Path::unix(p);
+				Path::toUnix(p);
 				if (std::regex_match(p, re, std::regex_constants::match_default))
 					onFound(std::move(p));
 			}
@@ -729,7 +729,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 			if (matchIsValid(fsPath))
 			{
 				auto p = fsPath.string();
-				Path::unix(p);
+				Path::toUnix(p);
 				if (std::regex_search(p, re, std::regex_constants::match_default))
 					onFound(std::move(p));
 			}
@@ -1217,7 +1217,7 @@ const std::string& Commands::getCygPath()
 	{
 		auto cygPath = Commands::which("cygpath");
 		state.cygPath = Commands::subprocessOutput({ std::move(cygPath), "-m", "/" });
-		Path::unix(state.cygPath, true);
+		Path::toUnix(state.cygPath, true);
 		state.cygPath.pop_back();
 	}
 

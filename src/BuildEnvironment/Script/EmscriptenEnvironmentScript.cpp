@@ -44,7 +44,7 @@ bool EmscriptenEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 #if defined(CHALET_WIN32)
 		m_emsdkEnv = fmt::format("{}/emsdk_env.bat", emsdkRoot);
-		Path::unix(m_emsdkEnv);
+		Path::toUnix(m_emsdkEnv);
 #else
 		m_emsdkEnv = fmt::format("{}/emsdk_env.sh", emsdkRoot);
 #endif
@@ -98,19 +98,19 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto upstreamBin = fmt::format("{}/upstream/bin", emsdkRoot);
 
 #if defined(CHALET_WIN32)
-	Path::windows(emsdkRoot);
-	Path::windows(upstream);
-	Path::windows(upstreamBin);
+	Path::toWindows(emsdkRoot);
+	Path::toWindows(upstream);
+	Path::toWindows(upstreamBin);
 #else
-	Path::unix(emsdkRoot);
-	Path::unix(upstream);
-	Path::unix(upstreamBin);
+	Path::toUnix(emsdkRoot);
+	Path::toUnix(upstream);
+	Path::toUnix(upstreamBin);
 #endif
 
 	auto nodePath = Commands::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{
-		Path::unix(nodePath);
+		Path::toUnix(nodePath);
 		nodePath += "/bin/node";
 #if defined(CHALET_WIN32)
 		nodePath += ".exe";
@@ -129,7 +129,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto pythonPath = Commands::getFirstChildDirectory(fmt::format("{}/python", emsdkRoot));
 	if (!pythonPath.empty())
 	{
-		Path::unix(pythonPath);
+		Path::toUnix(pythonPath);
 
 #if defined(CHALET_WIN32)
 		pythonPath += "/python.exe";
@@ -151,7 +151,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto javaHome = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
 	if (!javaHome.empty())
 	{
-		Path::unix(javaHome);
+		Path::toUnix(javaHome);
 
 		javaPath += "/bin/java";
 #if defined(CHALET_WIN32)
@@ -165,9 +165,9 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 			javaPath = "java";
 	}
 
-	Path::unix(nodePath);
-	Path::unix(pythonPath);
-	Path::unix(javaPath);
+	Path::toUnix(nodePath);
+	Path::toUnix(pythonPath);
+	Path::toUnix(javaPath);
 
 	auto emrunPort = Environment::getString("EMRUN_PORT");
 	if (emrunPort.empty())
@@ -183,8 +183,8 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		FMT_ARG(upstreamBin));
 
 #if defined(CHALET_WIN32)
-	Path::unix(upstream);
-	Path::unix(upstreamBin);
+	Path::toUnix(upstream);
+	Path::toUnix(upstreamBin);
 #endif
 
 	fileContents += fmt::format("EMSDK_UPSTREAM_EMSCRIPTEN={}\n", upstream);

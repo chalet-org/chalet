@@ -609,7 +609,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		std::error_code ec;
 		const auto& path = it->path();
 		auto shortPath = path.string();
-		Path::unix(shortPath);
+		Path::toUnix(shortPath);
 		String::replaceAll(shortPath, buildOutputDir, "");
 
 		if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
@@ -677,7 +677,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 {
 	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
-	Path::unix(outputLocation);
+	Path::toUnix(outputLocation);
 
 	bool rebuild = true;
 	if (m_state.inputs.route().isRebuild())
@@ -700,7 +700,7 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
-	Path::unix(outputLocation);
+	Path::toUnix(outputLocation);
 
 	bool rebuild = true;
 	if (m_state.inputs.route().isRebuild())

@@ -26,7 +26,7 @@ bool ValidationBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::unix(m_schema);
+	Path::toUnix(m_schema);
 
 	if (!m_state.replaceVariablesInString(m_schema, this))
 		return false;

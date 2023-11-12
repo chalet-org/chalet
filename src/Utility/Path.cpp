@@ -12,7 +12,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-void Path::unix(std::string& outValue, const bool inRemoveNewLine)
+void Path::toUnix(std::string& outValue, const bool inRemoveNewLine)
 {
 	if (outValue.empty())
 		return;
@@ -42,7 +42,7 @@ void Path::unix(std::string& outValue, const bool inRemoveNewLine)
 }
 
 /*****************************************************************************/
-void Path::windows(std::string& outValue, const bool inRemoveNewLine)
+void Path::toWindows(std::string& outValue, const bool inRemoveNewLine)
 {
 #if defined(CHALET_WIN32)
 	if (outValue.empty())
@@ -60,7 +60,7 @@ void Path::windows(std::string& outValue, const bool inRemoveNewLine)
 	if (outValue.back() == ' ')
 		outValue.pop_back();
 #else
-	Path::unix(outValue, inRemoveNewLine);
+	Path::toUnix(outValue, inRemoveNewLine);
 #endif
 }
 }

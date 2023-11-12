@@ -246,7 +246,7 @@ const std::string& AncillaryTools::commandPrompt() const noexcept
 void AncillaryTools::setCommandPrompt(std::string&& inValue) noexcept
 {
 	m_commandPrompt = std::move(inValue);
-	Path::windows(m_commandPrompt);
+	Path::toWindows(m_commandPrompt);
 }
 
 /*****************************************************************************/
@@ -596,7 +596,7 @@ std::string AncillaryTools::getPathToGit()
 		if (!programs.empty())
 		{
 			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);
-			Path::unix(gitPath);
+			Path::toUnix(gitPath);
 			if (Commands::pathExists(gitPath))
 			{
 				git = std::move(gitPath);

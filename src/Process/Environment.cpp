@@ -72,7 +72,7 @@ void Environment::replaceCommonVariables(std::string& outString, const std::stri
 		if (String::startsWith("~/", outString))
 		{
 			outString = fmt::format("{}{}", inHomeDirectory, outString.substr(1));
-			Path::unix(outString);
+			Path::toUnix(outString);
 		}
 	}
 }

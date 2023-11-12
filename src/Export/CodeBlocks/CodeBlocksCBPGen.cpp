@@ -235,7 +235,7 @@ clean:
 					split.emplace_back(fmt::format("echo Generated > {}", dependency));
 #if defined(CHALET_WIN32)
 					std::string removeFile{ "del" };
-					Path::windows(dependency);
+					Path::toWindows(dependency);
 #else
 					std::string removeFile{ "rm -f" };
 #endif

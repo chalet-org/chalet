@@ -109,7 +109,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }
@@ -152,7 +152,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 	}
 
 	std::string ret = String::join(std::move(outList), separator);
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }

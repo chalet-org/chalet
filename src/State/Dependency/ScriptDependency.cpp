@@ -23,7 +23,7 @@ ScriptDependency::ScriptDependency(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool ScriptDependency::initialize()
 {
-	Path::unix(m_file);
+	Path::toUnix(m_file);
 
 	if (!m_centralState.replaceVariablesInString(m_file, this))
 		return false;

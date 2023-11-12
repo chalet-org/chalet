@@ -26,7 +26,7 @@ bool ProcessBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::unix(m_path);
+	Path::toUnix(m_path);
 
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;

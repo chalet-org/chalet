@@ -95,7 +95,7 @@ bool CompileCommandsGenerator::save() const
 	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
 	auto cwd = Commands::getWorkingDirectory();
-	Path::unix(cwd);
+	Path::toUnix(cwd);
 
 	Json outJson = Json::array();
 

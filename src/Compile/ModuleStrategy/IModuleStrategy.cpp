@@ -130,7 +130,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	{
 		auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
-		Path::unix(cwd);
+		Path::toUnix(cwd);
 		if (cwd.back() != '/')
 			cwd += '/';
 

@@ -552,7 +552,7 @@ std::string BuildPaths::getNormalizedOutputPath(const std::string& inPath) const
 std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) const
 {
 	std::string ret = String::getPathFolder(inPath);
-	Path::unix(ret, true);
+	Path::toUnix(ret, true);
 
 	normalizedPath(ret);
 

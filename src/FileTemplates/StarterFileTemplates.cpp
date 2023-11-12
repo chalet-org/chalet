@@ -305,9 +305,9 @@ std::string StarterFileTemplates::getDotEnv()
 	if (gitExists && !List::contains(paths, gitPath))
 	{
 		auto programFiles = Environment::getString("ProgramFiles");
-		Path::unix(programFiles);
+		Path::toUnix(programFiles);
 		String::replaceAll(gitPath, programFiles, "%ProgramFiles%");
-		Path::windows(gitPath);
+		Path::toWindows(gitPath);
 		ret = fmt::format(R"path(Path={};%Path%)path", gitPath);
 	}
 	else

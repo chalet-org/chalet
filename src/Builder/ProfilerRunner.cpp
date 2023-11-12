@@ -155,7 +155,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		Commands::sleep(1.0);
 
 		auto statsFileForType = profStatsFile;
-		Path::windows(statsFileForType);
+		Path::toWindows(statsFileForType);
 		StringList cmd{ "type", statsFileForType };
 		Commands::subprocessWithInput({ m_state.tools.commandPrompt(), "/c", String::join(cmd) });
 	}

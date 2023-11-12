@@ -9,7 +9,7 @@ namespace chalet
 {
 namespace Path
 {
-void unix(std::string& outValue, const bool inRemoveNewLine = false);
-void windows(std::string& outValue, const bool inRemoveNewLine = false);
+void toUnix(std::string& outValue, const bool inRemoveNewLine = false);
+void toWindows(std::string& outValue, const bool inRemoveNewLine = false);
 }
 }

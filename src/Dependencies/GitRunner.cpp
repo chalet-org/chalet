@@ -272,7 +272,7 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 #if defined(CHALET_WIN32)
 			if (String::equals(".git", path))
 			{
-				Path::windows(outPath);
+				Path::toWindows(outPath);
 				if (!Commands::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}

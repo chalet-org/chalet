@@ -28,7 +28,7 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::unix(m_file);
+	Path::toUnix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;

@@ -37,7 +37,7 @@ std::string SubChaletBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
 	auto ret = Commands::getAbsolutePath(rawLocation);
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }
@@ -49,7 +49,7 @@ std::string SubChaletBuilder::getOutputLocation() const
 	auto location = getLocation();
 
 	auto ret = fmt::format("{}/{}", location, buildOutputDir);
-	Path::unix(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }
