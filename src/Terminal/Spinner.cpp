@@ -19,7 +19,7 @@ struct
 {
 	std::mutex mutex;
 	Spinner* spinner = nullptr;
-	bool initialized = false;
+	size_t refCount = 0;
 } state;
 
 /*****************************************************************************/
@@ -41,32 +41,46 @@ void signalHandler(i32 inSignal)
 }
 
 /*****************************************************************************/
-Spinner::~Spinner()
+Spinner::Spinner()
 {
-	if (stop())
-	{
-		// SignalHandler::remove(SIGINT, signalHandler);
-		// SignalHandler::remove(SIGTERM, signalHandler);
-		// SignalHandler::remove(SIGABRT, signalHandler);
-	}
-}
-
-/*****************************************************************************/
-void Spinner::start()
-{
-	if (!state.initialized)
+	if (state.refCount == 0)
 	{
 		SignalHandler::add(SIGINT, signalHandler);
 		SignalHandler::add(SIGTERM, signalHandler);
 		SignalHandler::add(SIGABRT, signalHandler);
-
-		state.initialized = true;
 	}
 
+	if (state.refCount < std::numeric_limits<size_t>::max())
+		state.refCount++;
+}
+
+/*****************************************************************************/
+Spinner::~Spinner()
+{
 	stop();
 
-	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
-	state.spinner = this;
+	if (state.refCount > 0)
+		state.refCount--;
+
+	if (state.refCount == 0)
+	{
+		SignalHandler::remove(SIGINT, signalHandler);
+		SignalHandler::remove(SIGTERM, signalHandler);
+		SignalHandler::remove(SIGABRT, signalHandler);
+	}
+}
+
+/*****************************************************************************/
+bool Spinner::start()
+{
+	if (stop())
+	{
+		m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
+		state.spinner = this;
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
@@ -91,6 +105,10 @@ bool Spinner::stop()
 			result = true;
 		}
 	}
+	else
+	{
+		result = true;
+	}
 
 	if (result && state.spinner == this)
 		state.spinner = nullptr;
@@ -103,7 +121,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 {
 	auto start = clock::now();
 	std::chrono::milliseconds ms{ 0 };
-	auto step = std::chrono::milliseconds(3);
+	auto step = std::chrono::milliseconds(1);
 	while (ms < inLength)
 	{
 		auto finish = clock::now();
@@ -131,7 +149,7 @@ void Spinner::doRegularEllipsis()
 	if (Shell::isContinuousIntegrationServer())
 		return;
 
-	constexpr auto frameTime = std::chrono::milliseconds(333);
+	constexpr auto frameTime = std::chrono::milliseconds(250);
 
 	// first "frame" - keep output minimal
 	if (!sleepWithContext(frameTime))

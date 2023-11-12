@@ -13,11 +13,11 @@ namespace chalet
 {
 struct Spinner
 {
-	Spinner() = default;
+	Spinner();
 	CHALET_DISALLOW_COPY_MOVE(Spinner);
 	~Spinner();
 
-	void start();
+	bool start();
 	bool cancel();
 	bool stop();
 
