@@ -222,7 +222,7 @@ void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 	}
 	else
 	{
-		output = fmt::format("{} ... {}", color, reset);
+		output = fmt::format("{} -- {}", color, reset);
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
 	}
