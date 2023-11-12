@@ -34,6 +34,7 @@ struct IBuildEnvironment
 	bool isIntelClassic() const noexcept;
 	bool isMingw() const noexcept;
 	bool isMingwGcc() const noexcept;
+	bool isMingwClang() const noexcept;
 	bool isMsvc() const noexcept;
 	bool isEmscripten() const noexcept;
 
@@ -71,8 +72,6 @@ protected:
 
 	[[nodiscard]] static Unique<IBuildEnvironment> make(ToolchainType type, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable, BuildState& inState);
-
-	bool isMingwClang() const noexcept;
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const = 0;

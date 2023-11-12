@@ -372,7 +372,10 @@ void LinkerGCC::addLinkTimeOptimizations(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addThreadModelLinks(StringList& outArgList) const
 {
-	if (m_project.threads() && !m_state.environment->isEmbeddedTarget())
+	if (m_project.threads()
+		&& !m_state.environment->isWindowsClang()
+		&& !m_state.environment->isMingwClang()
+		&& !m_state.environment->isEmbeddedTarget())
 	{
 		if (m_state.environment->isMingw() && m_project.staticRuntimeLibrary())
 		{

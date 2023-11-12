@@ -48,6 +48,7 @@ void LinkerLLVMClang::addStripSymbols(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addThreadModelLinks(StringList& outArgList) const
 {
+	LOG("LinkerLLVMClang::addThreadModelLinks()");
 	UNUSED(outArgList);
 }
 
