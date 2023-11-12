@@ -1333,15 +1333,14 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	}
 	ret["ENABLE_TESTABILITY"] = getBoolString(true);
 
+	ret["EXECUTABLE_PREFIX"] = "lib";
 	if (inTarget.isStaticLibrary())
 	{
-		ret["EXECUTABLE_PREFIX"] = "lib";
-		ret["EXECUTABLE_SUFFIX"] = ".a";
+		ret["EXECUTABLE_SUFFIX"] = inState.environment->getStaticLibraryExtension();
 	}
 	else if (inTarget.isSharedLibrary())
 	{
-		ret["EXECUTABLE_PREFIX"] = "lib";
-		ret["EXECUTABLE_SUFFIX"] = ".dylib";
+		ret["EXECUTABLE_SUFFIX"] = inState.environment->getSharedLibraryExtension();
 	}
 
 	ret["FRAMEWORK_FLAG_PREFIX"] = "-framework";

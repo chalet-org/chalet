@@ -26,8 +26,10 @@ public:
 	virtual std::string getFrameworksPath() const final;
 
 private:
+#if defined(CHALET_LINUX)
 	std::string m_home;
 	std::string m_applicationsPath;
 	std::string m_mainExecutable;
+#endif
 };
 }

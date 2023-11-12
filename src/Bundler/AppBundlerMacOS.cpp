@@ -54,8 +54,10 @@ bool AppBundlerMacOS::initializeState()
 	if (!getMainExecutable(m_mainExecutable))
 		return false; // No executable. we don't care
 
-#endif
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
@@ -67,7 +69,9 @@ const std::string& AppBundlerMacOS::mainExecutable() const noexcept
 /*****************************************************************************/
 void AppBundlerMacOS::setOutputDirectory(const std::string& inPath) const
 {
+#if defined(CHALET_MACOS)
 	m_outputDirectory = inPath;
+#endif
 }
 
 /*****************************************************************************/
@@ -79,6 +83,7 @@ bool AppBundlerMacOS::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerMacOS::quickBundleForPlatform()
 {
+#if defined(CHALET_MACOS)
 	// If we got this far, the app bundle was built through Xcode
 	// so we only need to copy it
 
@@ -100,6 +105,9 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
@@ -224,6 +232,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
 {
+#if defined(CHALET_MACOS)
 	for (auto& [file, dependencies] : inDependencyMap)
 	{
 		auto filename = String::getPathFilename(file);
@@ -234,11 +243,16 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 	}
 
 	return true;
+#else
+	UNUSED(inInstallNameTool, inDependencyMap, inExecutablePath);
+	return false;
+#endif
 }
 
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const
 {
+#if defined(CHALET_MACOS)
 	if (!Files::pathExists(inOutputFile))
 		return true;
 
@@ -275,8 +289,223 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 	}
 
 	return true;
+#else
+	UNUSED(inInstallNameTool, inFile, inDependencies, inOutputFile);
+	return false;
+#endif
 }
 
+/*****************************************************************************/
+bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
+{
+#if defined(CHALET_MACOS)
+	const auto& icon = m_bundle.macosBundleIcon();
+	auto& sourceCache = m_state.cache.file().sources();
+
+	// calls to sips take a significant chunk of time,
+	//   so we only do this if the icon doesn't exist or has changed
+	//
+	if (!sourceCache.fileChangedOrDoesNotExist(icon, inOutPath))
+		return true;
+
+	if (!Files::pathExists(inOutPath))
+		Files::makeDirectory(inOutPath);
+
+	auto accentColorPath = fmt::format("{}/AccentColor.colorset", inOutPath);
+	auto appIconPath = fmt::format("{}/AppIcon.appiconset", inOutPath);
+
+	if (!Files::pathExists(accentColorPath))
+		Files::makeDirectory(accentColorPath);
+
+	if (!Files::pathExists(appIconPath))
+		Files::makeDirectory(appIconPath);
+
+	Json root = R"json({
+		"info" : { "author" : "xcode", "version" : 1 }
+	})json"_ojson;
+	std::ofstream(fmt::format("{}/Contents.json", inOutPath)) << root.dump(1, '\t') << std::endl;
+
+	Json accentColorJson = R"json({
+		"colors" : [{ "idiom" : "universal" }],
+		"info" : { "author" : "xcode", "version" : 1 }
+	})json"_ojson;
+	std::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << accentColorJson.dump(1, '\t') << std::endl;
+
+	Json appIconJson = R"json({
+		"images" : [],
+		"info" : { "author" : "xcode", "version" : 1 }
+	})json"_ojson;
+
+	const auto& sips = m_state.tools.sips();
+
+	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](i32 scale, i32 size) {
+		Json out = Json::object();
+
+		if (!icon.empty() && !sips.empty())
+		{
+			auto baseName = String::getPathBaseName(icon);
+			auto ext = String::getPathSuffix(icon);
+			i32 imageSize = scale * size;
+			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
+			// -Z 32 glfw.icns --out glfw-32.icns
+			if (Process::runNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
+			{
+				out["filename"] = String::getPathFilename(outIcon);
+			}
+		}
+
+		out["idiom"] = "mac"; // support ios/watchos here
+		out["scale"] = fmt::format("{}x", scale);
+		out["size"] = fmt::format("{}x{}", size, size);
+		appIconJson["images"].emplace_back(std::move(out));
+	};
+
+	std::vector<i32> sizes{ 16, 32, 128, 256, 512 };
+	for (i32 size : sizes)
+	{
+		addIdiom(1, size);
+		addIdiom(2, size);
+	}
+
+	std::ofstream(fmt::format("{}/Contents.json", appIconPath))
+		<< appIconJson.dump(1, '\t') << std::endl;
+
+	return true;
+
+#else
+	UNUSED(inOutPath);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::string& inOutFile, Json* outJson) const
+{
+#if defined(CHALET_MACOS)
+	if (inOutFile.empty())
+		return false;
+
+	// const auto& version = m_state.workspace.version();
+	std::string icon;
+	if (!m_iconBaseName.empty())
+		icon = fmt::format("{}.icns", m_iconBaseName);
+
+	auto replacePlistVariables = [&](std::string& outContent) {
+		String::replaceAll(outContent, "${name}", m_bundle.name());
+		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
+		String::replaceAll(outContent, "${icon}", icon);
+		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
+		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
+
+		// TODO: This uses the workspace version, but should be the same version as the mainExecutable
+		String::replaceAll(outContent, "${version}", m_state.workspace.metadata().versionString());
+	};
+
+	std::string tmpPlist = fmt::format("{}.json", inOutFile);
+	std::string infoPropertyList = m_bundle.macosBundleInfoPropertyList();
+	std::string infoPropertyListContent = m_bundle.macosBundleInfoPropertyListContent();
+
+	if (infoPropertyListContent.empty())
+	{
+		if (infoPropertyList.empty())
+		{
+			Diagnostic::error("No info plist or plist content");
+			return true;
+		}
+
+		if (String::endsWith(".plist", infoPropertyList))
+		{
+			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpPlist))
+				return false;
+
+			infoPropertyList = tmpPlist;
+		}
+		else if (!String::endsWith(".json", infoPropertyList))
+		{
+			Diagnostic::error("Unknown plist file '{}' - Must be in json or binary1 format", infoPropertyList);
+			return true;
+		}
+
+		std::ifstream input(infoPropertyList);
+		for (std::string line; std::getline(input, line);)
+		{
+			infoPropertyListContent += line + "\n";
+		}
+		input.close();
+	}
+
+	replacePlistVariables(infoPropertyListContent);
+	std::ofstream(tmpPlist) << infoPropertyListContent << std::endl;
+
+	if (outJson != nullptr)
+	{
+		if (!JsonComments::parse(*outJson, tmpPlist))
+			return false;
+	}
+
+	if (!m_state.tools.plistConvertToBinary(tmpPlist, inOutFile))
+		return false;
+
+	Files::remove(tmpPlist);
+	return true;
+#else
+	UNUSED(inOutFile, outJson);
+	return false;
+#endif
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFile) const
+{
+#if defined(CHALET_MACOS)
+	if (inOutFile.empty())
+		return false;
+
+	std::string tmpPlist = fmt::format("{}.json", inOutFile);
+	std::string entitlements = m_bundle.macosBundleEntitlementsPropertyList();
+	std::string entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
+
+	// No entitlements
+	if (entitlements.empty() && entitlementsContent.empty())
+		return true;
+
+	if (entitlementsContent.empty())
+	{
+		if (String::endsWith({ ".plist", ".xml" }, entitlements))
+		{
+			if (!m_state.tools.plistConvertToJson(entitlements, tmpPlist))
+				return false;
+
+			entitlements = tmpPlist;
+		}
+		else if (!String::endsWith(".json", entitlements))
+		{
+			Diagnostic::error("Unknown plist file '{}' - Must be in json or xml1 format", entitlements);
+			return true;
+		}
+
+		std::ifstream input(entitlements);
+		for (std::string line; std::getline(input, line);)
+		{
+			entitlementsContent += line + "\n";
+		}
+		input.close();
+	}
+
+	std::ofstream(tmpPlist) << entitlementsContent << std::endl;
+
+	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
+		return false;
+
+	Files::remove(tmpPlist);
+	return true;
+#else
+	UNUSED(inOutFile);
+	return false;
+#endif
+}
+
+#if defined(CHALET_MACOS)
 /*****************************************************************************/
 std::string AppBundlerMacOS::getPlistFile() const
 {
@@ -286,14 +515,12 @@ std::string AppBundlerMacOS::getPlistFile() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getEntitlementsFilePath() const
 {
-#if defined(CHALET_MACOS)
 	const auto& entitlements = m_bundle.macosBundleEntitlementsPropertyList();
 	const auto& entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
 
 	// No entitlements
 	if (!entitlements.empty() || !entitlementsContent.empty())
 		return fmt::format("{}/App.entitlements", m_outputDirectory);
-#endif
 
 	return std::string();
 }
@@ -301,7 +528,6 @@ std::string AppBundlerMacOS::getEntitlementsFilePath() const
 /*****************************************************************************/
 bool AppBundlerMacOS::createBundleIcon()
 {
-#if defined(CHALET_MACOS)
 	const auto& icon = m_bundle.macosBundleIcon();
 
 	if (icon.empty())
@@ -336,15 +562,12 @@ bool AppBundlerMacOS::createBundleIcon()
 	}
 
 	Diagnostic::printDone(timer.asString());
-#endif
-
 	return true;
 }
 
 /*****************************************************************************/
 bool AppBundlerMacOS::createBundleIconFromXcassets()
 {
-#if defined(CHALET_MACOS)
 	const auto& icon = m_bundle.macosBundleIcon();
 	if (icon.empty())
 		return true;
@@ -434,218 +657,6 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	}
 
 	return result;
-#else
-	return true;
-#endif
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
-{
-#if defined(CHALET_MACOS)
-	const auto& icon = m_bundle.macosBundleIcon();
-	auto& sourceCache = m_state.cache.file().sources();
-
-	// calls to sips take a significant chunk of time,
-	//   so we only do this if the icon doesn't exist or has changed
-	//
-	if (!sourceCache.fileChangedOrDoesNotExist(icon, inOutPath))
-		return true;
-
-	if (!Files::pathExists(inOutPath))
-		Files::makeDirectory(inOutPath);
-
-	auto accentColorPath = fmt::format("{}/AccentColor.colorset", inOutPath);
-	auto appIconPath = fmt::format("{}/AppIcon.appiconset", inOutPath);
-
-	if (!Files::pathExists(accentColorPath))
-		Files::makeDirectory(accentColorPath);
-
-	if (!Files::pathExists(appIconPath))
-		Files::makeDirectory(appIconPath);
-
-	Json root = R"json({
-		"info" : { "author" : "xcode", "version" : 1 }
-	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", inOutPath)) << root.dump(1, '\t') << std::endl;
-
-	Json accentColorJson = R"json({
-		"colors" : [{ "idiom" : "universal" }],
-		"info" : { "author" : "xcode", "version" : 1 }
-	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << accentColorJson.dump(1, '\t') << std::endl;
-
-	Json appIconJson = R"json({
-		"images" : [],
-		"info" : { "author" : "xcode", "version" : 1 }
-	})json"_ojson;
-
-	const auto& sips = m_state.tools.sips();
-
-	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](i32 scale, i32 size) {
-		Json out = Json::object();
-
-		if (!icon.empty() && !sips.empty())
-		{
-			auto baseName = String::getPathBaseName(icon);
-			auto ext = String::getPathSuffix(icon);
-			i32 imageSize = scale * size;
-			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
-			// -Z 32 glfw.icns --out glfw-32.icns
-			if (Process::runNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
-			{
-				out["filename"] = String::getPathFilename(outIcon);
-			}
-		}
-
-		out["idiom"] = "mac"; // support ios/watchos here
-		out["scale"] = fmt::format("{}x", scale);
-		out["size"] = fmt::format("{}x{}", size, size);
-		appIconJson["images"].emplace_back(std::move(out));
-	};
-
-	std::vector<i32> sizes{ 16, 32, 128, 256, 512 };
-	for (i32 size : sizes)
-	{
-		addIdiom(1, size);
-		addIdiom(2, size);
-	}
-
-	std::ofstream(fmt::format("{}/Contents.json", appIconPath))
-		<< appIconJson.dump(1, '\t') << std::endl;
-
-#else
-	UNUSED(inOutPath);
-#endif
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::string& inOutFile, Json* outJson) const
-{
-#if defined(CHALET_MACOS)
-	if (inOutFile.empty())
-		return false;
-
-	// const auto& version = m_state.workspace.version();
-	std::string icon;
-	if (!m_iconBaseName.empty())
-		icon = fmt::format("{}.icns", m_iconBaseName);
-
-	auto replacePlistVariables = [&](std::string& outContent) {
-		String::replaceAll(outContent, "${name}", m_bundle.name());
-		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
-		String::replaceAll(outContent, "${icon}", icon);
-		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
-		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
-
-		// TODO: This uses the workspace version, but should be the same version as the mainExecutable
-		String::replaceAll(outContent, "${version}", m_state.workspace.metadata().versionString());
-	};
-
-	std::string tmpPlist = fmt::format("{}.json", inOutFile);
-	std::string infoPropertyList = m_bundle.macosBundleInfoPropertyList();
-	std::string infoPropertyListContent = m_bundle.macosBundleInfoPropertyListContent();
-
-	if (infoPropertyListContent.empty())
-	{
-		if (infoPropertyList.empty())
-		{
-			Diagnostic::error("No info plist or plist content");
-			return true;
-		}
-
-		if (String::endsWith(".plist", infoPropertyList))
-		{
-			if (!m_state.tools.plistConvertToJson(infoPropertyList, tmpPlist))
-				return false;
-
-			infoPropertyList = tmpPlist;
-		}
-		else if (!String::endsWith(".json", infoPropertyList))
-		{
-			Diagnostic::error("Unknown plist file '{}' - Must be in json or binary1 format", infoPropertyList);
-			return true;
-		}
-
-		std::ifstream input(infoPropertyList);
-		for (std::string line; std::getline(input, line);)
-		{
-			infoPropertyListContent += line + "\n";
-		}
-		input.close();
-	}
-
-	replacePlistVariables(infoPropertyListContent);
-	std::ofstream(tmpPlist) << infoPropertyListContent << std::endl;
-
-	if (outJson != nullptr)
-	{
-		if (!JsonComments::parse(*outJson, tmpPlist))
-			return false;
-	}
-
-	if (!m_state.tools.plistConvertToBinary(tmpPlist, inOutFile))
-		return false;
-
-	Files::remove(tmpPlist);
-#else
-	UNUSED(inOutFile, outJson);
-#endif
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFile) const
-{
-#if defined(CHALET_MACOS)
-	if (inOutFile.empty())
-		return false;
-
-	std::string tmpPlist = fmt::format("{}.json", inOutFile);
-	std::string entitlements = m_bundle.macosBundleEntitlementsPropertyList();
-	std::string entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
-
-	// No entitlements
-	if (entitlements.empty() && entitlementsContent.empty())
-		return true;
-
-	if (entitlementsContent.empty())
-	{
-		if (String::endsWith({ ".plist", ".xml" }, entitlements))
-		{
-			if (!m_state.tools.plistConvertToJson(entitlements, tmpPlist))
-				return false;
-
-			entitlements = tmpPlist;
-		}
-		else if (!String::endsWith(".json", entitlements))
-		{
-			Diagnostic::error("Unknown plist file '{}' - Must be in json or xml1 format", entitlements);
-			return true;
-		}
-
-		std::ifstream input(entitlements);
-		for (std::string line; std::getline(input, line);)
-		{
-			entitlementsContent += line + "\n";
-		}
-		input.close();
-	}
-
-	std::ofstream(tmpPlist) << entitlementsContent << std::endl;
-
-	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
-		return false;
-
-	Files::remove(tmpPlist);
-#else
-	UNUSED(inOutFile);
-#endif
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -723,13 +734,11 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	Timer timer;
 
-#if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
 	{
 		Diagnostic::stepInfoEllipsis("Signing the application bundle");
 	}
 	else
-#endif
 	{
 		Diagnostic::stepInfoEllipsis("Signing binaries");
 	}
@@ -756,7 +765,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 		StringList bundleExtensions{
 			".app",
-			".framework",
+			Files::getPlatformFrameworkExtension(),
 			".kext",
 			".plugin",
 			".docset",
@@ -827,4 +836,5 @@ bool AppBundlerMacOS::signAppBundle() const
 		return false;
 	}
 }
+#endif
 }

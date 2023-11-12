@@ -336,11 +336,7 @@ std::string IBuildEnvironment::getSharedLibraryExtension() const
 	if (isWindowsTarget() || isMingw())
 		return ".dll";
 
-#if defined(CHALET_MACOS)
-	return ".dylib";
-#else
-	return ".so";
-#endif
+	return Files::getPlatformSharedLibraryExtension();
 }
 
 /*****************************************************************************/

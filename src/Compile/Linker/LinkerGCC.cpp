@@ -197,12 +197,12 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 	const auto& projectSharedLinks = m_project.projectSharedLinks();
 
 	const bool isEmscripten = m_state.environment->isEmscripten();
+	auto search = m_state.environment->getStaticLibraryExtension();
 
 	if (!staticLinks.empty())
 	{
 		startStaticLinkGroup(outArgList);
 
-		std::string search(".a");
 		for (auto& link : staticLinks)
 		{
 			if (isLinkSupported(link))
@@ -242,7 +242,6 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 
 	if (!sharedLinks.empty())
 	{
-		std::string search(".a");
 		for (auto& link : sharedLinks)
 		{
 			if (isLinkSupported(link))
@@ -587,7 +586,7 @@ void LinkerGCC::addAppleFrameworkOptions(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/Library/Frameworks"));
 	}
 	{
-		// const std::string suffix = ".framework";
+		// const std::string suffix = Files::getPlatformFrameworkExtension();
 		for (auto& framework : m_project.appleFrameworks())
 		{
 			outArgList.emplace_back("-framework");

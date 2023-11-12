@@ -7,6 +7,7 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -16,9 +17,8 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #include "State/Dependency/LocalDependency.hpp"
@@ -355,32 +355,12 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 		return std::string();
 
 	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
-	if (m_state.environment->isEmscripten())
-	{
-		bool endsInExe = String::endsWith(".html", outputPath);
-		if (!endsInExe)
-		{
-			outputPath = String::getPathFolderBaseName(outputPath);
-			outputPath += ".html";
-		}
-	}
-	else
-	{
-		bool endsInExe = String::endsWith(".exe", outputPath);
-		if (m_state.environment->isWindowsTarget())
-		{
-			if (!endsInExe)
-			{
-				outputPath = String::getPathFolderBaseName(outputPath);
-				outputPath += ".exe";
-			}
-		}
-		else
-		{
-			if (endsInExe)
-				outputPath = outputPath.substr(0, outputPath.size() - 4);
-		}
-	}
+
+	// Ignore the extension and enforce the one from the environment
+	//   If it was anything else, we wouldn't recognize it anyway
+	//
+	outputPath = String::getPathFolderBaseName(outputPath);
+	outputPath += m_state.environment->getExecutableExtension();
 
 	return outputPath;
 }

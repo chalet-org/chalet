@@ -505,7 +505,8 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath, const Mac
 bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId, const MacosCodeSignOptions& inOptions) const
 {
 #if defined(CHALET_MACOS)
-	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
+	auto framework = Files::getPlatformFrameworkExtension();
+	chalet_assert(String::endsWith(framework, inFrameworkPath), "Must be a .framework");
 
 	StringList cmd{ m_codesign };
 

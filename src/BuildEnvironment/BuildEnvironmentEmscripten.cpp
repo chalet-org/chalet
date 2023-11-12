@@ -46,7 +46,7 @@ std::string BuildEnvironmentEmscripten::getSharedLibraryExtension() const
 /*****************************************************************************/
 std::string BuildEnvironmentEmscripten::getStaticLibraryExtension() const
 {
-	return ".a";
+	return BuildEnvironmentGNU::getStaticLibraryExtension();
 }
 
 /*****************************************************************************/

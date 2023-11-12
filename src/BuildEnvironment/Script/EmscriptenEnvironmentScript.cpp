@@ -110,11 +110,9 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	auto nodePath = Files::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{
+		auto exe = Files::getPlatformExecutableExtension();
 		Path::toUnix(nodePath);
-		nodePath += "/bin/node";
-#if defined(CHALET_WIN32)
-		nodePath += ".exe";
-#endif
+		nodePath += fmt::format("/bin/node{}", exe);
 	}
 	else
 	{
@@ -153,10 +151,8 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	{
 		Path::toUnix(javaHome);
 
-		javaPath += "/bin/java";
-#if defined(CHALET_WIN32)
-		javaPath += ".exe";
-#endif
+		auto exe = Files::getPlatformExecutableExtension();
+		javaPath += fmt::format("/bin/java{}", exe);
 	}
 	else
 	{

@@ -11,6 +11,10 @@ namespace chalet
 {
 namespace Files
 {
+std::string getPlatformExecutableExtension();
+std::string getPlatformSharedLibraryExtension();
+std::string getPlatformFrameworkExtension();
+
 std::string getWorkingDirectory();
 bool changeWorkingDirectory(const std::string& inPath);
 

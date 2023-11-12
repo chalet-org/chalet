@@ -5,8 +5,8 @@
 
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 
-#include "Cache/WorkspaceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -39,7 +39,7 @@ std::string CommandAdapterMSVC::getPlatformToolset(const BuildState& inState)
 	if (majorVersion >= 1600)
 		return "142"; // VS 2019
 
-	return "141";	  // VS 2017
+	return "141"; // VS 2017
 }
 
 /*****************************************************************************/
@@ -733,6 +733,9 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 	// const bool hasStaticLinks = m_project.staticLinks().size() > 0;
 	// const bool hasDynamicLinks = m_project.links().size() > 0;
 
+	auto dll = m_state.environment->getSharedLibraryExtension();
+	auto lib = m_state.environment->getStaticLibraryExtension();
+
 	StringList links = m_project.links();
 	for (auto& link : m_project.staticLinks())
 	{
@@ -750,9 +753,9 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 				if (project.name() == link && project.isSharedLibrary())
 				{
 					auto outputFile = project.outputFile();
-					if (String::endsWith(".dll", outputFile))
+					if (String::endsWith(dll, outputFile))
 					{
-						String::replaceAll(outputFile, ".dll", ".lib");
+						String::replaceAll(outputFile, dll, lib);
 						List::addIfDoesNotExist(ret, std::move(outputFile));
 						found = true;
 						break;
@@ -766,7 +769,7 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 			if (Files::pathExists(link))
 				List::addIfDoesNotExist(ret, std::move(link));
 			else
-				List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+				List::addIfDoesNotExist(ret, fmt::format("{}{}", link, lib));
 		}
 	}
 
@@ -775,7 +778,7 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 		auto coreLinks = ILinker::getWin32CoreLibraryLinks(m_state, m_project);
 		for (const auto& link : coreLinks)
 		{
-			List::addIfDoesNotExist(ret, fmt::format("{}.lib", link));
+			List::addIfDoesNotExist(ret, fmt::format("{}{}", link, lib));
 		}
 	}
 

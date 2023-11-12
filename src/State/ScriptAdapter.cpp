@@ -5,9 +5,9 @@
 
 #include "State/ScriptAdapter.hpp"
 
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -83,8 +83,9 @@ ScriptAdapter::ScriptAdapter(const AncillaryTools& inTools) :
 std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const std::string& inScript, const std::string& inInputFile) const
 {
 #if defined(CHALET_WIN32)
+	auto exe = Files::getPlatformExecutableExtension();
 	std::string parsedScriptPath = inScript;
-	if (String::endsWith(".exe", parsedScriptPath))
+	if (String::endsWith(exe, parsedScriptPath))
 		parsedScriptPath = parsedScriptPath.substr(0, parsedScriptPath.size() - 4);
 
 	auto outScriptPath = Files::which(parsedScriptPath);

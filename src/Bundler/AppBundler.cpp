@@ -193,13 +193,18 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	// Timer timer;
 
+#if defined(CHALET_MACOS)
+	auto dylib = Files::getPlatformSharedLibraryExtension();
+	auto framework = Files::getPlatformFrameworkExtension();
+#endif
+
 	for (auto& dep : bundle.includes())
 	{
 #if defined(CHALET_MACOS)
-		if (String::endsWith(".framework", dep))
+		if (String::endsWith(framework, dep))
 			continue;
 
-		if (String::endsWith(".dylib", dep))
+		if (String::endsWith(dylib, dep))
 		{
 			if (!inBundler.copyIncludedPath(dep, frameworksPath))
 				return false;
@@ -279,10 +284,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		for (auto& dep : dependenciesToCopy)
 		{
 #if defined(CHALET_MACOS)
-			if (String::endsWith(".framework", dep))
+			if (String::endsWith(framework, dep))
 				continue;
 
-			if (String::endsWith(".dylib", dep))
+			if (String::endsWith(dylib, dep))
 			{
 				if (!inBundler.copyIncludedPath(dep, frameworksPath))
 					continue;
@@ -351,9 +356,13 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 	StringList allDependencies;
 
 #if defined(CHALET_MACOS)
+	auto dylib = Files::getPlatformSharedLibraryExtension();
+#endif
+
+#if defined(CHALET_MACOS)
 	for (auto& dep : inTarget.includes())
 	{
-		if (String::endsWith(".dylib", dep))
+		if (String::endsWith(dylib, dep))
 			List::addIfDoesNotExist(allDependencies, dep);
 	}
 #endif

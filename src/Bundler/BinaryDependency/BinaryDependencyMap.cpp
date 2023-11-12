@@ -146,7 +146,8 @@ const StringList& BinaryDependencyMap::notCopied() const noexcept
 bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 levels)
 {
 #if defined(CHALET_MACOS)
-	if (String::endsWith(".framework", inPath) || String::startsWith("/usr/lib/", inPath))
+	auto framework = Files::getPlatformFrameworkExtension();
+	if (String::endsWith(framework, inPath) || String::startsWith("/usr/lib/", inPath))
 		return true;
 #endif
 
@@ -287,15 +288,16 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 
 	CHALET_TRY
 	{
-		StringList cmd;
 #if defined(CHALET_MACOS)
-		cmd = { otool, "-L", inPath };
+		StringList cmd{ otool, "-L", inPath };
+		auto dylib = Files::getPlatformSharedLibraryExtension();
+		auto framework = Files::getPlatformFrameworkExtension();
 #else
 		// This block detects the dependencies of each target and adds them to a list
 		// The list resolves each path, favoring the paths supplied by chalet.json
 		// Note: this doesn't seem to work in standalone builds of GCC (tested 7.3.0)
 		//   but works fine w/ MSYS2
-		cmd = { ldd, inPath };
+		StringList cmd{ ldd, inPath };
 #endif
 		std::string targetDeps = Process::runOutput(cmd);
 
@@ -316,10 +318,10 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				beg++;
 
 #if defined(CHALET_MACOS)
-			size_t end = line.find(".dylib");
+			size_t end = line.find(dylib);
 			if (end == std::string::npos)
 			{
-				end = line.find(".framework");
+				end = line.find(framework);
 				if (end == std::string::npos)
 					continue;
 				else
@@ -344,7 +346,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			// rpath, etc
 			// We just want the main filename, and will try to resolve the path later
 			//
-			if (String::startsWith('@', dependency) || String::contains(".framework", dependency))
+			if (String::startsWith('@', dependency) || String::contains(framework, dependency))
 			{
 				auto lastSlash = dependency.find_last_of('/');
 				if (lastSlash != std::string::npos)

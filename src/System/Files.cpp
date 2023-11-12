@@ -132,6 +132,38 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 }
 
 /*****************************************************************************/
+std::string Files::getPlatformExecutableExtension()
+{
+#if defined(CHALET_WIN32)
+	return ".exe";
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
+std::string Files::getPlatformSharedLibraryExtension()
+{
+#if defined(CHALET_WIN32)
+	return ".dll";
+#elif defined(CHALET_MACOS)
+	return ".dylib";
+#else
+	return ".so";
+#endif
+}
+
+/*****************************************************************************/
+std::string Files::getPlatformFrameworkExtension()
+{
+#if defined(CHALET_MACOS)
+	return ".framework";
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
 i64 Files::getLastWriteTime(const std::string& inFile)
 {
 	if (::stat(inFile.c_str(), &statBuffer) == 0)
@@ -928,14 +960,14 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 	LPSTR lpFilePart;
 	char filename[MAX_PATH];
 
-	std::string extension{ ".exe" };
+	auto exe = Files::getPlatformExecutableExtension();
 	if (String::contains('.', inExecutable))
 	{
 		auto pos = inExecutable.find_last_of('.');
-		extension = inExecutable.substr(pos);
+		exe = inExecutable.substr(pos);
 	}
 
-	if (SearchPathA(NULL, inExecutable.c_str(), extension.c_str(), MAX_PATH, filename, &lpFilePart))
+	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart))
 	{
 		result = std::string(filename);
 		String::replaceAll(result, '\\', '/');

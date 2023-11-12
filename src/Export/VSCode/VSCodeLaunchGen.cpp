@@ -86,10 +86,8 @@ std::string VSCodeLaunchGen::getDebuggerPath() const
 	{
 		auto debugger = isLLDB ? "lldb" : "gdb";
 		auto compilerPath = String::getPathFolder(m_state.toolchain.compilerCxxAny().path);
-		auto path = fmt::format("{}/{}", compilerPath, debugger);
-#if defined(CHALET_WIN32)
-		path += ".exe";
-#endif
+		auto exe = Files::getPlatformExecutableExtension();
+		auto path = fmt::format("{}/{}{}", compilerPath, debugger, exe);
 		if (!Files::pathExists(path))
 		{
 			path = Files::which(debugger);

@@ -38,14 +38,16 @@ namespace chalet
 AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap) :
 	IAppBundler(inState, inBundle, inDependencyMap)
 {
+#if defined(CHALET_LINUX)
 	m_home = m_state.paths.homeDirectory();
-
 	m_applicationsPath = fmt::format("{}/.local/share/applications", m_home);
+#endif
 }
 
 /*****************************************************************************/
 bool AppBundlerLinux::removeOldFiles()
 {
+#if defined(CHALET_LINUX)
 	auto& buildTargets = m_bundle.buildTargets();
 
 	for (auto& target : m_state.targets)
@@ -66,6 +68,9 @@ bool AppBundlerLinux::removeOldFiles()
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
