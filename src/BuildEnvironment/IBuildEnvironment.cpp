@@ -322,6 +322,28 @@ void IBuildEnvironment::generateTargetSystemPaths()
 }
 
 /*****************************************************************************/
+std::string IBuildEnvironment::getExecutableExtension() const
+{
+	if (isWindowsTarget() || isMingw())
+		return ".exe";
+	else
+		return std::string();
+}
+
+/*****************************************************************************/
+std::string IBuildEnvironment::getSharedLibraryExtension() const
+{
+	if (isWindowsTarget() || isMingw())
+		return ".dll";
+
+#if defined(CHALET_MACOS)
+	return ".dylib";
+#else
+	return ".so";
+#endif
+}
+
+/*****************************************************************************/
 std::string IBuildEnvironment::getObjectFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.o", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));

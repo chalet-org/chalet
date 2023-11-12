@@ -24,6 +24,7 @@ namespace chalet
 BuildEnvironmentVisualStudioLLVM::BuildEnvironmentVisualStudioLLVM(const ToolchainType inType, BuildState& inState) :
 	BuildEnvironmentLLVM(inType, inState)
 {
+	m_isWindowsTarget = true;
 }
 
 /*****************************************************************************/
@@ -38,8 +39,6 @@ bool BuildEnvironmentVisualStudioLLVM::validateArchitectureFromInput()
 	m_config = std::make_unique<VisualStudioEnvironmentScript>();
 	if (!m_config->validateArchitectureFromInput(m_state, host, target))
 		return false;
-
-	m_isWindowsTarget = true;
 
 	// TODO: universal windows platform - uwp-windows-msvc
 

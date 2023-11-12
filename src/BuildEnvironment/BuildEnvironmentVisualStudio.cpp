@@ -29,10 +29,17 @@ namespace chalet
 BuildEnvironmentVisualStudio::BuildEnvironmentVisualStudio(const ToolchainType inType, BuildState& inState) :
 	IBuildEnvironment(inType, inState)
 {
+	m_isWindowsTarget = true;
 }
 
 /*****************************************************************************/
 BuildEnvironmentVisualStudio::~BuildEnvironmentVisualStudio() = default;
+
+/*****************************************************************************/
+std::string BuildEnvironmentVisualStudio::getStaticLibraryExtension() const
+{
+	return ".lib";
+}
 
 /*****************************************************************************/
 bool BuildEnvironmentVisualStudio::validateArchitectureFromInput()
@@ -43,8 +50,6 @@ bool BuildEnvironmentVisualStudio::validateArchitectureFromInput()
 	m_config = std::make_unique<VisualStudioEnvironmentScript>();
 	if (!m_config->validateArchitectureFromInput(m_state, host, target))
 		return false;
-
-	m_isWindowsTarget = true;
 
 	// TODO: universal windows platform - uwp-windows-msvc
 

@@ -26,6 +26,12 @@ BuildEnvironmentGNU::BuildEnvironmentGNU(const ToolchainType inType, BuildState&
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentGNU::getStaticLibraryExtension() const
+{
+	return ".a";
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
 	return StringList{ inExecutable, "-v" };

@@ -13,9 +13,9 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -1277,34 +1277,10 @@ void SourceTarget::parseOutputFilename() noexcept
 
 	bool staticLib = m_kind == SourceKind::StaticLibrary;
 
-#if defined(CHALET_WIN32)
-	std::string executableExtension{ ".exe" };
-	std::string libraryExtension{ ".dll" };
-#elif defined(CHALET_MACOS)
-	std::string executableExtension;
-	std::string libraryExtension{ ".dylib" };
-#else
-	std::string executableExtension;
-	std::string libraryExtension{ ".so" };
-#endif
-	if (m_state.environment->isEmscripten())
-	{
-		executableExtension = ".html";
-		libraryExtension = ".wasm";
-	}
-	else if (executableExtension.empty() && (m_state.environment->isMingw() || m_state.environment->isWindowsTarget()))
-	{
-		executableExtension = ".exe";
-		libraryExtension = ".dll";
-	}
-
-	if (staticLib)
-	{
-		if (m_state.environment->isMsvc() || m_state.environment->isWindowsClang())
-			libraryExtension = ".lib";
-		else
-			libraryExtension = ".a";
-	}
+	auto executableExtension = m_state.environment->getExecutableExtension();
+	auto libraryExtension = staticLib ?
+		m_state.environment->getStaticLibraryExtension() :
+		m_state.environment->getSharedLibraryExtension();
 
 	switch (m_kind)
 	{

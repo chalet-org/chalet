@@ -19,6 +19,8 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 	CHALET_DISALLOW_COPY_MOVE(BuildEnvironmentVisualStudio);
 	~BuildEnvironmentVisualStudio();
 
+	virtual std::string getStaticLibraryExtension() const override;
+
 	virtual std::string getObjectFile(const std::string& inSource) const final;
 	virtual std::string getDependencyFile(const std::string& inSource) const final;
 	virtual std::string getAssemblyFile(const std::string& inSource) const final;

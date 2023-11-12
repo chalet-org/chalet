@@ -26,6 +26,15 @@ BuildEnvironmentLLVM::BuildEnvironmentLLVM(const ToolchainType inType, BuildStat
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentLLVM::getStaticLibraryExtension() const
+{
+	if (isWindowsClang())
+		return ".lib";
+	else
+		return ".a";
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentLLVM::getVersionCommand(const std::string& inExecutable) const
 {
 	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };

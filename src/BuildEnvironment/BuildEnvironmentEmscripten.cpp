@@ -32,6 +32,24 @@ BuildEnvironmentEmscripten::BuildEnvironmentEmscripten(const ToolchainType inTyp
 BuildEnvironmentEmscripten::~BuildEnvironmentEmscripten() = default;
 
 /*****************************************************************************/
+std::string BuildEnvironmentEmscripten::getExecutableExtension() const
+{
+	return ".html";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentEmscripten::getSharedLibraryExtension() const
+{
+	return ".wasm";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentEmscripten::getStaticLibraryExtension() const
+{
+	return ".a";
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentEmscripten::getVersionCommand(const std::string& inExecutable) const
 {
 	if (String::endsWith("emcc.py", inExecutable))

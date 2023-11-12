@@ -19,6 +19,8 @@ struct BuildEnvironmentGNU : IBuildEnvironment
 	static std::string getCompilerMacros(const std::string& inCompilerExec, BuildState& inState, const PipeOption inStdError = PipeOption::Close);
 
 protected:
+	virtual std::string getStaticLibraryExtension() const override;
+
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;
