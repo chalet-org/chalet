@@ -34,9 +34,7 @@ struct IBuildEnvironment
 	bool isIntelClassic() const noexcept;
 	bool isMingw() const noexcept;
 	bool isMingwGcc() const noexcept;
-	bool isMingwClang() const noexcept;
 	bool isMsvc() const noexcept;
-	bool isClangOrMsvc() const noexcept;
 	bool isEmscripten() const noexcept;
 
 	const std::string& detectedVersion() const;
@@ -46,6 +44,9 @@ struct IBuildEnvironment
 	virtual std::string getExecutableExtension() const;
 	virtual std::string getSharedLibraryExtension() const;
 	virtual std::string getStaticLibraryExtension() const = 0;
+	virtual std::string getPrecompiledHeaderExtension() const = 0;
+
+	virtual std::string getCompilerAliasForVisualStudio() const = 0;
 
 	virtual std::string getObjectFile(const std::string& inSource) const;
 	virtual std::string getAssemblyFile(const std::string& inSource) const;
@@ -70,6 +71,8 @@ protected:
 
 	[[nodiscard]] static Unique<IBuildEnvironment> make(ToolchainType type, BuildState& inState);
 	static ToolchainType detectToolchainTypeFromPath(const std::string& inExecutable, BuildState& inState);
+
+	bool isMingwClang() const noexcept;
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const = 0;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const = 0;

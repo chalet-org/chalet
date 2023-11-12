@@ -17,6 +17,8 @@ struct BuildEnvironmentIntel final : BuildEnvironmentLLVM
 	CHALET_DISALLOW_COPY_MOVE(BuildEnvironmentIntel);
 	~BuildEnvironmentIntel();
 
+	virtual std::string getPrecompiledHeaderExtension() const final;
+
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;

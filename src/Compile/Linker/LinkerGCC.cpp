@@ -281,7 +281,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 		}
 	}
 
-	if (m_state.environment->isMingwGcc() || m_state.environment->isMingwClang())
+	if (m_state.environment->isMingw())
 	{
 		auto win32Links = getWin32CoreLibraryLinks();
 		for (const auto& link : win32Links)
@@ -372,10 +372,7 @@ void LinkerGCC::addLinkTimeOptimizations(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addThreadModelLinks(StringList& outArgList) const
 {
-	if (m_project.threads()
-		&& !m_state.environment->isWindowsClang()
-		&& !m_state.environment->isMingwClang()
-		&& !m_state.environment->isEmbeddedTarget())
+	if (m_project.threads() && !m_state.environment->isEmbeddedTarget())
 	{
 		if (m_state.environment->isMingw() && m_project.staticRuntimeLibrary())
 		{
@@ -654,7 +651,7 @@ void LinkerGCC::addExecutableOption(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	if (!m_state.environment->isWindowsTarget())
 	{
 		if (m_project.positionIndependentCode())
 		{

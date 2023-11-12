@@ -42,6 +42,18 @@ std::string BuildEnvironmentVisualStudio::getStaticLibraryExtension() const
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentVisualStudio::getPrecompiledHeaderExtension() const
+{
+	return ".pch";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentVisualStudio::getCompilerAliasForVisualStudio() const
+{
+	return "msvc";
+}
+
+/*****************************************************************************/
 bool BuildEnvironmentVisualStudio::validateArchitectureFromInput()
 {
 	std::string host;

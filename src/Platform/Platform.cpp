@@ -24,13 +24,13 @@ StringList Platform::validPlatforms() noexcept
 std::string Platform::platform() noexcept
 {
 #if defined(CHALET_WIN32)
-	return std::string("windows");
+	return "windows";
 #elif defined(CHALET_MACOS)
-	return std::string("macos");
+	return "macos";
 #elif defined(CHALET_LINUX)
-	return std::string("linux");
+	return "linux";
 #else
-	return std::string("unknown");
+	return "unknown";
 #endif
 }
 
@@ -67,5 +67,20 @@ void Platform::assignPlatform(const CommandLineInputs& inInputs, std::string& ou
 		outPlatform = Platform::platform();
 		outNotPlatforms.push_back("web");
 	}
+}
+
+/*****************************************************************************/
+StringList Platform::getDefaultPlatformDefines()
+{
+	StringList ret;
+#if defined(CHALET_WIN32)
+	ret.emplace_back("_WIN32");
+#elif defined(CHALET_MACOS)
+	ret.emplace_back("__APPLE__");
+#else
+	ret.emplace_back("__linux__");
+#endif
+
+	return ret;
 }
 }

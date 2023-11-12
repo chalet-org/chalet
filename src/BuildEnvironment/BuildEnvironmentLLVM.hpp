@@ -15,6 +15,9 @@ struct BuildEnvironmentLLVM : BuildEnvironmentGNU
 
 protected:
 	virtual std::string getStaticLibraryExtension() const override;
+	virtual std::string getPrecompiledHeaderExtension() const override;
+
+	virtual std::string getCompilerAliasForVisualStudio() const override;
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;

@@ -35,6 +35,18 @@ std::string BuildEnvironmentLLVM::getStaticLibraryExtension() const
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentLLVM::getPrecompiledHeaderExtension() const
+{
+	return ".pch";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getCompilerAliasForVisualStudio() const
+{
+	return "clang";
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentLLVM::getVersionCommand(const std::string& inExecutable) const
 {
 	return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };

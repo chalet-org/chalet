@@ -20,6 +20,9 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 	~BuildEnvironmentVisualStudio();
 
 	virtual std::string getStaticLibraryExtension() const override;
+	virtual std::string getPrecompiledHeaderExtension() const override;
+
+	virtual std::string getCompilerAliasForVisualStudio() const override;
 
 	virtual std::string getObjectFile(const std::string& inSource) const final;
 	virtual std::string getDependencyFile(const std::string& inSource) const final;

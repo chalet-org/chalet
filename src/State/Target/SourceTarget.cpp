@@ -1197,7 +1197,11 @@ void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 /*****************************************************************************/
 std::string SourceTarget::getPrecompiledHeaderResolvedToRoot() const
 {
-	return !m_state.paths.rootDirectory().empty() ? fmt::format("{}/{}", m_state.paths.rootDirectory(), m_precompiledHeader) : m_precompiledHeader;
+	auto& root = m_state.paths.rootDirectory();
+	if (!root.empty())
+		return fmt::format("{}/{}", root, m_precompiledHeader);
+
+	return m_precompiledHeader;
 }
 
 /*****************************************************************************/

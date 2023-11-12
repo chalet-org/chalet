@@ -5,8 +5,8 @@
 
 #include "Export/CodeBlocks/CodeBlocksCBPGen.hpp"
 
-#include "Compile/CompileToolchainController.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CompileToolchainController.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/TargetExportAdapter.hpp"
@@ -20,9 +20,9 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -558,7 +558,7 @@ void CodeBlocksCBPGen::addSourceLinkerOptions(XmlElement& outNode, const BuildSt
 	// Links
 	{
 		auto links = List::combineRemoveDuplicates(inTarget.links(), inTarget.staticLinks());
-		if (inState.environment->isMingwGcc() || inState.environment->isMingwClang())
+		if (inState.environment->isMingw())
 		{
 			auto win32Links = ILinker::getWin32CoreLibraryLinks(inState, inTarget);
 			for (auto& link : win32Links)

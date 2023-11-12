@@ -5,9 +5,10 @@
 
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 
-#include "Compile/CompileToolchainController.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CompileToolchainController.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Platform/Platform.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -49,9 +50,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["name"] = fmt::format("{} / {}", architecture, configName);
 		config["intelliSenseMode"] = getIntellisenseMode(*state);
 
-		StringList defines{
-			"_WIN32"
-		};
+		StringList defines = Platform::getDefaultPlatformDefines();
 		StringList includePath{
 			"${env.INCLUDE}",
 		};
@@ -176,21 +175,13 @@ std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) c
 		linux-gcc-arm
 	*/
 
-	std::string platform{ "windows" };
+	auto platform = Platform::platform();
 	if (inState.environment->isGcc())
 	{
 		platform = "linux";
 	}
 
-	std::string toolchain{ "msvc" };
-	if (inState.environment->isWindowsClang())
-	{
-		toolchain = "clang";
-	}
-	else if (inState.environment->isGcc())
-	{
-		toolchain = "gcc";
-	}
+	auto toolchain = inState.environment->getCompilerAliasForVisualStudio();
 
 	auto arch = Arch::toVSArch(inState.info.targetArchitecture());
 

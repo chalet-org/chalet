@@ -17,6 +17,7 @@ struct LinkerLLVMClang : public LinkerGCC
 protected:
 	virtual void addLinks(StringList& outArgList) const override;
 	virtual void addStripSymbols(StringList& outArgList) const override;
+	virtual void addThreadModelLinks(StringList& outArgList) const override;
 	virtual void addLinkerScripts(StringList& outArgList) const override;
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addLibStdCppLinkerOption(StringList& outArgList) const override;

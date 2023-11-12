@@ -32,6 +32,15 @@ BuildEnvironmentIntel::BuildEnvironmentIntel(const ToolchainType inType, BuildSt
 BuildEnvironmentIntel::~BuildEnvironmentIntel() = default;
 
 /*****************************************************************************/
+std::string BuildEnvironmentIntel::getPrecompiledHeaderExtension() const
+{
+	// if (isIntelClassic())
+	// 	return ".pchi";
+
+	return BuildEnvironmentLLVM::getPrecompiledHeaderExtension();
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentIntel::getVersionCommand(const std::string& inExecutable) const
 {
 	if (m_type == ToolchainType::IntelLLVM)

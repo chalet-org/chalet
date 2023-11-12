@@ -404,16 +404,9 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 	std::string ret;
 	if (inProject.usesPrecompiledHeader())
 	{
-		std::string ext;
-		if (m_state.environment->isClangOrMsvc() || m_state.environment->isIntelClassic())
-			ext = "pch";
-		// else if (m_state.environment->isIntelClassic())
-		// 	ext = "pchi";
-		else
-			ext = "gch";
-
-		const std::string base = getPrecompiledHeaderInclude(inProject);
-		ret = fmt::format("{}.{}", base, ext);
+		auto base = getPrecompiledHeaderInclude(inProject);
+		auto ext = m_state.environment->getPrecompiledHeaderExtension();
+		ret = fmt::format("{}{}", base, ext);
 	}
 
 	return ret;
@@ -422,13 +415,8 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 /*****************************************************************************/
 std::string BuildPaths::getPrecompiledHeaderObject(const std::string& inTarget) const
 {
-	std::string ret = inTarget;
-	if (m_state.environment->isMsvc())
-	{
-		String::replaceAll(ret, ".pch", ".obj");
-	}
-
-	return ret;
+	auto base = String::getPathFolderBaseName(inTarget);
+	return m_state.environment->getObjectFile(base);
 }
 
 /*****************************************************************************/

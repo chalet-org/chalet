@@ -32,6 +32,18 @@ std::string BuildEnvironmentGNU::getStaticLibraryExtension() const
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentGNU::getPrecompiledHeaderExtension() const
+{
+	return ".gch";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentGNU::getCompilerAliasForVisualStudio() const
+{
+	return "gcc";
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
 	return StringList{ inExecutable, "-v" };

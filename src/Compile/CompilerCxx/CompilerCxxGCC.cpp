@@ -5,9 +5,9 @@
 
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -691,7 +691,7 @@ void CompilerCxxGCC::addLibStdCppCompileOption(StringList& outArgList, const Sou
 /*****************************************************************************/
 void CompilerCxxGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	if (!m_state.environment->isWindowsTarget())
 	{
 		if (m_project.positionIndependentCode())
 		{
@@ -744,10 +744,7 @@ void CompilerCxxGCC::addFastMathOption(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxGCC::addThreadModelCompileOption(StringList& outArgList) const
 {
-	if (m_project.threads()
-		&& !m_state.environment->isWindowsClang()
-		&& !m_state.environment->isMingwClang()
-		&& !m_state.environment->isEmbeddedTarget())
+	if (m_project.threads() && !m_state.environment->isEmbeddedTarget())
 	{
 		std::string option{ "-pthread" };
 		// if (isFlagSupported(option))

@@ -40,7 +40,10 @@ ToolchainType IBuildEnvironment::type() const noexcept
 /*****************************************************************************/
 bool IBuildEnvironment::isWindowsTarget() const noexcept
 {
-	return m_isWindowsTarget;
+	// Windows Clang should always target windows because it uses the MSVC abi
+	// Mingw checks should also set m_isWindowsTarget, but just in case something went wrong
+	//
+	return m_isWindowsTarget || isWindowsClang() || isMingwGcc() || isMingwClang();
 }
 
 /*****************************************************************************/
@@ -122,12 +125,6 @@ bool IBuildEnvironment::isMingwClang() const noexcept
 bool IBuildEnvironment::isMsvc() const noexcept
 {
 	return m_type == ToolchainType::VisualStudio;
-}
-
-/*****************************************************************************/
-bool IBuildEnvironment::isClangOrMsvc() const noexcept
-{
-	return isClang() || isMsvc();
 }
 
 /*****************************************************************************/
@@ -324,7 +321,7 @@ void IBuildEnvironment::generateTargetSystemPaths()
 /*****************************************************************************/
 std::string IBuildEnvironment::getExecutableExtension() const
 {
-	if (isWindowsTarget() || isMingw())
+	if (isWindowsTarget())
 		return ".exe";
 	else
 		return std::string();
@@ -333,7 +330,7 @@ std::string IBuildEnvironment::getExecutableExtension() const
 /*****************************************************************************/
 std::string IBuildEnvironment::getSharedLibraryExtension() const
 {
-	if (isWindowsTarget() || isMingw())
+	if (isWindowsTarget())
 		return ".dll";
 
 	return Files::getPlatformSharedLibraryExtension();

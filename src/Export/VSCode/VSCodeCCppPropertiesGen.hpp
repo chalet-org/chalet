@@ -19,7 +19,6 @@ private:
 	std::string getName() const;
 	std::string getIntellisenseMode() const;
 	std::string getCompilerPath() const;
-	StringList getDefaultDefines() const;
 
 	const BuildState& m_state;
 };
