@@ -71,6 +71,8 @@ void AppBundlerMacOS::setOutputDirectory(const std::string& inPath) const
 {
 #if defined(CHALET_MACOS)
 	m_outputDirectory = inPath;
+#else
+	UNUSED(inPath);
 #endif
 }
 
@@ -192,8 +194,10 @@ std::string AppBundlerMacOS::getBundlePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/{}.app/Contents", m_outputDirectory, m_bundle.name());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -203,8 +207,10 @@ std::string AppBundlerMacOS::getExecutablePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/MacOS", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -214,8 +220,10 @@ std::string AppBundlerMacOS::getResourcePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/Resources", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -225,8 +233,10 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/Frameworks", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
