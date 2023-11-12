@@ -54,9 +54,9 @@ bool destroySpinnerThread(const bool cancel = false)
 
 	bool result = false;
 	if (cancel)
-		state.spinnerThread->cancel();
+		result = state.spinnerThread->cancel();
 	else
-		state.spinnerThread->stop();
+		result = state.spinnerThread->stop();
 
 	if (result)
 		state.spinnerThread.reset();
