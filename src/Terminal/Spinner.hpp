@@ -13,9 +13,13 @@ namespace chalet
 {
 struct Spinner
 {
-	Spinner();
+	Spinner() = default;
 	CHALET_DISALLOW_COPY_MOVE(Spinner);
 	~Spinner();
+
+	static Spinner& instance();
+	static bool instanceCreated();
+	static bool destroyInstance();
 
 	bool start();
 	bool cancel();
@@ -28,8 +32,10 @@ private:
 
 	void doRegularEllipsis();
 
-	std::atomic<bool> m_running = true;
-	std::atomic<bool> m_cancelled = false;
 	Unique<std::thread> m_thread;
+	std::mutex m_mutex;
+
+	bool m_running = true;
+	bool m_cancelled = false;
 };
 }

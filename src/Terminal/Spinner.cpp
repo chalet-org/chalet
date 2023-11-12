@@ -15,59 +15,66 @@ namespace chalet
 {
 namespace
 {
-struct
-{
-	std::mutex mutex;
-	Spinner* spinner = nullptr;
-	size_t refCount = 0;
-} state;
+Spinner* spinner = nullptr;
 
 /*****************************************************************************/
 void signalHandler(i32 inSignal)
 {
-	std::lock_guard<std::mutex> lock(state.mutex);
-	if (state.spinner)
+	UNUSED(inSignal);
+
+	if (spinner)
 	{
-		if (state.spinner->cancel())
+		if (spinner->cancel())
 		{
-			UNUSED(inSignal);
 			std::string output = Output::getAnsiStyle(Output::theme().reset);
 			std::cout.write(output.data(), output.size());
-
-			// std::exit(1);
 		}
 	}
 }
 }
 
 /*****************************************************************************/
-Spinner::Spinner()
+Spinner& Spinner::instance()
 {
-	if (state.refCount == 0)
+	if (spinner == nullptr)
 	{
+		spinner = new Spinner();
+
 		SignalHandler::add(SIGINT, signalHandler);
 		SignalHandler::add(SIGTERM, signalHandler);
 		SignalHandler::add(SIGABRT, signalHandler);
 	}
 
-	if (state.refCount < std::numeric_limits<size_t>::max())
-		state.refCount++;
+	return *spinner;
+}
+
+/*****************************************************************************/
+bool Spinner::instanceCreated()
+{
+	return spinner != nullptr;
+}
+
+/*****************************************************************************/
+bool Spinner::destroyInstance()
+{
+	if (spinner != nullptr)
+	{
+		SignalHandler::remove(SIGINT, signalHandler);
+		SignalHandler::remove(SIGTERM, signalHandler);
+		SignalHandler::remove(SIGABRT, signalHandler);
+
+		delete spinner;
+		spinner = nullptr;
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
 Spinner::~Spinner()
 {
 	stop();
-
-	if (state.refCount > 0)
-		state.refCount--;
-
-	if (state.refCount == 0)
-	{
-		SignalHandler::remove(SIGINT, signalHandler);
-		SignalHandler::remove(SIGTERM, signalHandler);
-		SignalHandler::remove(SIGABRT, signalHandler);
-	}
 }
 
 /*****************************************************************************/
@@ -76,7 +83,6 @@ bool Spinner::start()
 	if (stop())
 	{
 		m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
-		state.spinner = this;
 		return true;
 	}
 
@@ -93,10 +99,10 @@ bool Spinner::cancel()
 /*****************************************************************************/
 bool Spinner::stop()
 {
-	bool result = false;
-
+	bool result = true;
 	if (m_thread != nullptr)
 	{
+		result = false;
 		if (m_thread->joinable())
 		{
 			m_running = false;
@@ -105,13 +111,6 @@ bool Spinner::stop()
 			result = true;
 		}
 	}
-	else
-	{
-		result = true;
-	}
-
-	if (result && state.spinner == this)
-		state.spinner = nullptr;
 
 	return result;
 }
@@ -140,7 +139,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 void Spinner::doRegularEllipsis()
 {
 	{
-		std::lock_guard<std::mutex> lock(state.mutex);
+		std::lock_guard<std::mutex> lock(m_mutex);
 		std::string output{ " ... " };
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
@@ -171,7 +170,7 @@ void Spinner::doRegularEllipsis()
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(state.mutex);
+			std::lock_guard<std::mutex> lock(m_mutex);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();
 		}
@@ -187,7 +186,7 @@ void Spinner::doRegularEllipsis()
 
 	if (!m_cancelled)
 	{
-		// std::lock_guard<std::mutex> lock(state.mutex);
+		std::lock_guard<std::mutex> lock(m_mutex);
 		std::string output{ "\b\b\b\b\b ... " };
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();

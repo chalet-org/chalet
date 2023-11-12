@@ -39,7 +39,6 @@ struct : std::exception
 struct
 {
 	std::vector<Error> errorList;
-	Unique<Spinner> spinnerThread;
 
 	bool padded = false;
 	bool exceptionThrown = false;
@@ -49,17 +48,19 @@ struct
 /*****************************************************************************/
 bool destroySpinnerThread(const bool cancel = false)
 {
-	if (state.spinnerThread == nullptr)
+	if (!Spinner::instanceCreated())
 		return false;
 
 	bool result = false;
 	if (cancel)
-		result = state.spinnerThread->cancel();
+		result = Spinner::instance().cancel();
 	else
-		result = state.spinnerThread->stop();
+		result = Spinner::instance().stop();
 
 	if (result)
-		state.spinnerThread.reset();
+	{
+		Spinner::destroyInstance();
+	}
 
 	return result;
 }
@@ -191,8 +192,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 			std::cout.flush();
 
 			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
+			Spinner::instance().start();
 		}
 	}
 }
@@ -231,8 +231,7 @@ void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 			std::cout.flush();
 
 			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
+			Spinner::instance().start();
 		}
 	}
 }
@@ -270,8 +269,7 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 			std::cout.flush();
 
 			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
+			Spinner::instance().start();
 		}
 	}
 }
@@ -306,7 +304,7 @@ void Diagnostic::fatalErrorFromException(const char* inError)
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const u32 inLineNumber)
 {
 	auto& errStream = Output::getErrStream();
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		errStream.put('\n');
 		errStream.flush();
@@ -348,7 +346,7 @@ bool Diagnostic::assertionFailure() noexcept
 void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
 	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -364,7 +362,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
 	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -385,7 +383,7 @@ void Diagnostic::printErrors(const bool inForceStdOut)
 	if (state.errorList.empty())
 		return;
 
-	if (state.spinnerThread != nullptr && !destroySpinnerThread())
+	if (Spinner::instanceCreated() && !destroySpinnerThread())
 	{
 		if (!Shell::isSubprocess())
 		{
