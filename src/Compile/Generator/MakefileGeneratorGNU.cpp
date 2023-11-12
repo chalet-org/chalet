@@ -11,7 +11,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 // #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"

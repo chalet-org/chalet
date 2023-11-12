@@ -5,7 +5,7 @@
 
 #include "Process/Environment.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -173,7 +173,7 @@ bool Environment::saveToEnvFile(const std::string& inOutputFile)
 	cmd.emplace_back("-c");
 	cmd.emplace_back("printenv");
 #endif
-	bool result = Commands::subprocessOutputToFile(cmd, inOutputFile);
+	bool result = Files::subprocessOutputToFile(cmd, inOutputFile);
 	return result;
 }
 
@@ -199,8 +199,8 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 		beforeVars.close();
 	}
 
-	Commands::remove(inBeforeFile);
-	Commands::remove(inAfterFile);
+	Files::remove(inBeforeFile);
+	Files::remove(inAfterFile);
 
 	{
 		std::string outContents;

@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Process/Process.hpp"
+#include "Process/SubProcess.hpp"
 
 #if defined(CHALET_WIN32)
 #else
@@ -62,7 +62,7 @@ std::string getWindowsArguments(const StringList& inCmd)
 }
 
 /*****************************************************************************/
-i32 Process::waitForResult()
+i32 SubProcess::waitForResult()
 {
 	if (m_pid == 0)
 	{
@@ -112,7 +112,7 @@ i32 Process::waitForResult()
 }
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromCode(const i32 inCode)
+std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 {
 	DWORD messageId = static_cast<DWORD>(inCode);
 	if (messageId == 0)
@@ -136,7 +136,7 @@ std::string Process::getErrorMessageFromCode(const i32 inCode)
 }
 #else
 /*****************************************************************************/
-i32 Process::waitForResult()
+i32 SubProcess::waitForResult()
 {
 	i32 exitCode;
 	while (true)
@@ -155,7 +155,7 @@ i32 Process::waitForResult()
 }
 
 /*****************************************************************************/
-i32 Process::getReturnCode(const i32 inExitCode)
+i32 SubProcess::getReturnCode(const i32 inExitCode)
 {
 	// Note, we return signals as a negative value to differentiate them later
 	if (WIFEXITED(inExitCode))
@@ -167,7 +167,7 @@ i32 Process::getReturnCode(const i32 inExitCode)
 }
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromCode(const i32 inCode)
+std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 {
 	#if defined(CHALET_MACOS)
 	std::array<char, 256> buffer;
@@ -181,7 +181,7 @@ std::string Process::getErrorMessageFromCode(const i32 inCode)
 }
 
 /*****************************************************************************/
-Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
+SubProcess::CmdPtrArray SubProcess::getCmdVector(const StringList& inCmd)
 {
 	CmdPtrArray cmd;
 
@@ -198,7 +198,7 @@ Process::CmdPtrArray Process::getCmdVector(const StringList& inCmd)
 #endif
 
 /*****************************************************************************/
-std::string Process::getErrorMessageFromSignalRaised(const i32 inCode)
+std::string SubProcess::getErrorMessageFromSignalRaised(const i32 inCode)
 {
 	switch (inCode)
 	{
@@ -311,7 +311,7 @@ std::string Process::getErrorMessageFromSignalRaised(const i32 inCode)
 }
 
 /*****************************************************************************/
-std::string Process::getSignalNameFromCode(i32 inCode)
+std::string SubProcess::getSignalNameFromCode(i32 inCode)
 {
 	if (inCode < 0)
 		inCode *= -1;
@@ -427,7 +427,7 @@ std::string Process::getSignalNameFromCode(i32 inCode)
 }
 
 /*****************************************************************************/
-ProcessPipe& Process::getFilePipe(const HandleInput inFileNo)
+ProcessPipe& SubProcess::getFilePipe(const HandleInput inFileNo)
 {
 	if (inFileNo == FileNo::StdErr)
 	{
@@ -441,19 +441,19 @@ ProcessPipe& Process::getFilePipe(const HandleInput inFileNo)
 
 /*****************************************************************************/
 /*****************************************************************************/
-Process::~Process()
+SubProcess::~SubProcess()
 {
 	close();
 }
 
 /*****************************************************************************/
-bool Process::operator==(const Process& inProcess)
+bool SubProcess::operator==(const SubProcess& inProcess)
 {
 	return m_pid == inProcess.m_pid;
 }
 
 /*****************************************************************************/
-bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
+bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions)
 {
 #if defined(CHALET_WIN32)
 	STARTUPINFOA startupInfo;
@@ -628,7 +628,7 @@ bool Process::create(const StringList& inCmd, const ProcessOptions& inOptions)
 }
 
 /*****************************************************************************/
-void Process::close()
+void SubProcess::close()
 {
 	m_out.close();
 	m_err.close();
@@ -646,7 +646,7 @@ void Process::close()
 }
 
 /*****************************************************************************/
-bool Process::sendSignal(const SigNum inSignal)
+bool SubProcess::sendSignal(const SigNum inSignal)
 {
 #if defined(CHALET_WIN32)
 	if (m_pid == 0)
@@ -694,13 +694,13 @@ bool Process::sendSignal(const SigNum inSignal)
 }
 
 /*****************************************************************************/
-bool Process::terminate()
+bool SubProcess::terminate()
 {
 	return sendSignal(SigNum::Terminate);
 }
 
 /*****************************************************************************/
-bool Process::kill()
+bool SubProcess::kill()
 {
 	return sendSignal(SigNum::Kill);
 }

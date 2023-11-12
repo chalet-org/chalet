@@ -14,7 +14,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -209,7 +209,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				bool resolved = false;
 				if (String::endsWith(search, link))
 				{
-					if (Commands::pathExists(link))
+					if (Files::pathExists(link))
 					{
 						outArgList.emplace_back(getQuotedPath(link));
 						resolved = true;
@@ -220,7 +220,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 						for (auto& dir : libDirs)
 						{
 							auto path = fmt::format("{}/{}", dir, link);
-							if (Commands::pathExists(path))
+							if (Files::pathExists(path))
 							{
 								outArgList.emplace_back(getQuotedPath(path));
 								resolved = true;
@@ -249,7 +249,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				bool resolved = false;
 				if (String::endsWith(search, link))
 				{
-					if (Commands::pathExists(link))
+					if (Files::pathExists(link))
 					{
 						outArgList.emplace_back(getQuotedPath(link));
 						resolved = true;
@@ -260,7 +260,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 						for (auto& dir : libDirs)
 						{
 							auto path = fmt::format("{}/{}", dir, link);
-							if (Commands::pathExists(path))
+							if (Files::pathExists(path))
 							{
 								outArgList.emplace_back(getQuotedPath(path));
 								resolved = true;
@@ -684,7 +684,7 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 		}
 		cmd.emplace_back(fmt::format("-print-file-name={}", file));
 
-		auto raw = Commands::subprocessOutput(cmd);
+		auto raw = Files::subprocessOutput(cmd);
 		// auto split = String::split(raw, '\n');
 
 		return !String::equals(file, raw);

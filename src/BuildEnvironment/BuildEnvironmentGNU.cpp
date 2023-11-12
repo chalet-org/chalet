@@ -11,7 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/String.hpp"
@@ -86,7 +86,7 @@ bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo
 		// Apple clang version 12.0.5 (clang-1205.0.22.9)
 
 		const auto exec = String::getPathBaseName(outInfo.path);
-		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(outInfo.path));
+		std::string rawOutput = Files::subprocessOutput(getVersionCommand(outInfo.path));
 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');
@@ -286,7 +286,7 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 		std::string cachedArch;
 		if (sourceCache.archRequriesUpdate(compiler, cachedArch))
 		{
-			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
 
 			// Make our corrections here
 			//
@@ -377,7 +377,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 	inState.cache.file().addExtraHash(String::getPathFilename(macrosFile));
 
 	std::string result;
-	if (!Commands::pathExists(macrosFile))
+	if (!Files::pathExists(macrosFile))
 	{
 		// Clang/GCC only
 		// This command must be run from the bin directory in order to work
@@ -385,7 +385,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 		//
 		auto compilerPath = String::getPathFolder(inCompilerExec);
 		StringList command = { inCompilerExec, "-x", "c", Shell::getNull(), "-dM", "-E" };
-		result = Commands::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
+		result = Files::subprocessOutput(command, std::move(compilerPath), PipeOption::Pipe, inStdError);
 
 		if (!result.empty())
 		{
@@ -405,7 +405,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 void BuildEnvironmentGNU::parseSupportedFlagsFromHelpList(const StringList& inCommand)
 {
 	auto path = String::getPathFolder(inCommand.front());
-	std::string raw = Commands::subprocessOutput(inCommand, std::move(path));
+	std::string raw = Files::subprocessOutput(inCommand, std::move(path));
 	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)
@@ -498,9 +498,9 @@ void BuildEnvironmentGNU::generateTargetSystemPaths()
 	auto basePath = "/usr";
 
 	auto otherCompiler = fmt::format("{}/bin/{}-gcc", basePath, targetArch);
-	if (Commands::pathExists(otherCompiler))
+	if (Files::pathExists(otherCompiler))
 	{
-		auto version = Commands::subprocessOutput({ otherCompiler, "-dumpfullversion" });
+		auto version = Files::subprocessOutput({ otherCompiler, "-dumpfullversion" });
 		if (!version.empty())
 		{
 			version = version.substr(0, version.find_first_not_of("0123456789."));
@@ -509,25 +509,25 @@ void BuildEnvironmentGNU::generateTargetSystemPaths()
 				auto shortVersion = version.substr(0, version.find_first_not_of("0123456789"));
 
 				auto sysroot = fmt::format("{}/{}", basePath, targetArch);
-				if (!Commands::pathExists(sysroot))
+				if (!Files::pathExists(sysroot))
 				{
 					sysroot = fmt::format("{}/lib/{}", basePath, targetArch);
-					if (!Commands::pathExists(sysroot))
+					if (!Files::pathExists(sysroot))
 						sysroot.clear();
 				}
 
 				if (!sysroot.empty())
 				{
 					auto sysroot2 = fmt::format("{}/lib/gcc/{}/{}", basePath, targetArch, version);
-					if (!Commands::pathExists(sysroot2))
+					if (!Files::pathExists(sysroot2))
 					{
 						// TODO: way to control '-posix' or '-win32'
 						//
 						sysroot2 = fmt::format("{}/lib/gcc/{}/{}-posix", basePath, targetArch, version);
-						if (!Commands::pathExists(sysroot2))
+						if (!Files::pathExists(sysroot2))
 						{
 							sysroot2 = fmt::format("{}/lib/gcc-cross/{}/{}", basePath, targetArch, shortVersion);
-							if (!Commands::pathExists(sysroot2))
+							if (!Files::pathExists(sysroot2))
 								sysroot2.clear();
 						}
 					}
@@ -538,7 +538,7 @@ void BuildEnvironmentGNU::generateTargetSystemPaths()
 						// LOG(sysroot2);
 
 						auto addInclude = [this](std::string&& path) {
-							if (Commands::pathExists(path))
+							if (Files::pathExists(path))
 								m_targetSystemPaths.emplace_back(std::move(path));
 						};
 

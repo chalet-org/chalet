@@ -15,7 +15,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

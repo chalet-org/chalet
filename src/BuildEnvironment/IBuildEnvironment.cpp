@@ -14,7 +14,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 #include "BuildEnvironment/BuildEnvironmentAppleLLVM.hpp"
@@ -274,7 +274,7 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 		return true;
 
 	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable), CacheType::Local);
-	if (!Commands::pathExists(flagsFile))
+	if (!Files::pathExists(flagsFile))
 	{
 		if (populateSupportedFlags(inExecutable))
 		{
@@ -401,14 +401,14 @@ bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 		{
 			std::string tmpLib = fmt::format("{}{}", tmp, libDir);
 			std::string tmpInclude = fmt::format("{}{}", tmp, includeDir);
-			if (!Commands::pathExists(tmpLib) || !Commands::pathExists(tmpInclude))
+			if (!Files::pathExists(tmpLib) || !Files::pathExists(tmpInclude))
 				continue;
 		}
 
 		path = std::move(tmp);
 
 #if defined(CHALET_MACOS)
-		const auto& xcodePath = Commands::getXcodePath();
+		const auto& xcodePath = Files::getXcodePath();
 		String::replaceAll(path, xcodePath, "");
 		String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
 #endif

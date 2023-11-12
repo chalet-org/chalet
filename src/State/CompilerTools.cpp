@@ -10,7 +10,7 @@
 #include "Cache/SourceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/Unicode.hpp"
@@ -93,7 +93,7 @@ bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 		if (!outInfo.description.empty())
 			return false;
 
-		if (!outInfo.path.empty() && Commands::pathExists(outInfo.path))
+		if (!outInfo.path.empty() && Files::pathExists(outInfo.path))
 		{
 			if (!inEnvironment.getCompilerInfoFromExecutable(outInfo))
 				return false;
@@ -196,8 +196,8 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_make, version))
 		{
-			version = Commands::subprocessOutput({ m_make, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Files::subprocessOutput({ m_make, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())
@@ -223,8 +223,8 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_cmake, version))
 		{
-			version = Commands::subprocessOutput({ m_cmake, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Files::subprocessOutput({ m_cmake, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())
@@ -254,8 +254,8 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_ninja, version))
 		{
-			version = Commands::subprocessOutput({ m_ninja, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Files::subprocessOutput({ m_ninja, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())

@@ -19,7 +19,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -70,7 +70,7 @@ bool CodeBlocksCBPGen::initialize()
 
 	m_resourceExtensions = firstState.paths.windowsResourceExtensions();
 	m_resourceExtensions.emplace_back("manifest");
-	m_cwd = Commands::getCanonicalPath(firstState.inputs.workingDirectory());
+	m_cwd = Files::getCanonicalPath(firstState.inputs.workingDirectory());
 
 	for (auto& state : m_states)
 	{
@@ -225,8 +225,8 @@ clean:
 							break;
 						}
 					}
-					if (!Commands::pathExists(dependency))
-						Commands::makeDirectory(dependency);
+					if (!Files::pathExists(dependency))
+						Files::makeDirectory(dependency);
 
 					dependency += fmt::format("/{}", Hash::string(fmt::format("{}_{}", name, config)));
 
@@ -259,7 +259,7 @@ clean{config}:
 			}
 
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
-			Commands::createFileWithContents(outPath, makefileContents);
+			Files::createFileWithContents(outPath, makefileContents);
 		}
 	}
 
@@ -425,7 +425,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
 	outNode.addElement("Option", [&inState, &inTarget](XmlElement& node2) {
-		auto outputFile = Commands::getCanonicalPath(inState.paths.getTargetFilename(inTarget));
+		auto outputFile = Files::getCanonicalPath(inState.paths.getTargetFilename(inTarget));
 		node2.addAttribute("output", outputFile);
 		node2.addAttribute("prefix_auto", "0");
 		node2.addAttribute("extension_auto", "0");
@@ -683,19 +683,19 @@ std::string CodeBlocksCBPGen::getOutputType(const SourceTarget& inTarget) const
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedPath(const std::string& inFile) const
 {
-	return Commands::getCanonicalPath(inFile);
+	return Files::getCanonicalPath(inFile);
 }
 
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedLibraryPath(const std::string& inFile) const
 {
-	return Commands::getCanonicalPath(inFile);
+	return Files::getCanonicalPath(inFile);
 }
 
 /*****************************************************************************/
 std::string CodeBlocksCBPGen::getResolvedObjDir(const BuildState& inState) const
 {
-	return Commands::getCanonicalPath(inState.paths.objDir());
+	return Files::getCanonicalPath(inState.paths.objDir());
 }
 
 /*****************************************************************************/

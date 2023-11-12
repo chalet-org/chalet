@@ -10,7 +10,7 @@
 
 namespace chalet
 {
-namespace Commands
+namespace Files
 {
 using CreateSubprocessFunc = std::function<void(i32 /* pid */)>;
 
@@ -99,4 +99,4 @@ bool isUsingAppleCommandLineTools();
 }
 }
 
-#include "Terminal/Commands.inl"
+#include "Terminal/Files.inl"

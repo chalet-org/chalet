@@ -7,9 +7,9 @@
 
 #include <csignal>
 
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "System/SignalHandler.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
@@ -76,7 +76,7 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 	options.onStdErr = options.onStdOut;
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	// String::replaceAll(output, "\r\n", "\n");
@@ -131,7 +131,7 @@ bool executeCommandCarriageReturn(size_t inIndex, StringList inCommand)
 	};
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	if (!errorOutput.empty())
@@ -185,7 +185,7 @@ bool executeCommand(size_t inIndex, StringList inCommand)
 	};
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	if (!errorOutput.empty())
@@ -230,7 +230,7 @@ void signalHandler(i32 inSignal)
 		if (inSignal == SIGTERM)
 		{
 			// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-			ProcessController::haltAll(SigNum::Terminate);
+			SubProcessController::haltAll(SigNum::Terminate);
 		}
 	}
 }

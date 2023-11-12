@@ -8,7 +8,7 @@
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -83,7 +83,7 @@ bool SettingsManager::initialize()
 	// 	return false;
 
 	auto& settings = getSettings();
-	if (!Commands::pathExists(settings.filename()))
+	if (!Files::pathExists(settings.filename()))
 	{
 		if (m_action != SettingsAction::QueryKeys)
 		{

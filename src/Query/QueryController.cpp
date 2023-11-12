@@ -17,7 +17,7 @@
 #include "State/CompilerTools.hpp"
 #include "System/DefinesVersion.hpp"
 #include "Terminal/ColorTheme.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
@@ -266,7 +266,7 @@ StringList QueryController::getUserToolchainList() const
 
 	const auto& inputs = m_centralState.inputs();
 	const auto& envFile = inputs.envFile();
-	if (!envFile.empty() && Commands::pathExists(envFile))
+	if (!envFile.empty() && Files::pathExists(envFile))
 	{
 		DotEnvFileParser envParser(inputs);
 		if (envParser.readVariablesFromFile(envFile))

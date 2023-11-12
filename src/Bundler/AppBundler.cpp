@@ -15,7 +15,7 @@
 #include "Bundler/MacosDiskImageCreator.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -28,7 +28,7 @@
 #include "State/Distribution/ScriptDistTarget.hpp"
 #include "State/Distribution/ValidationDistTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -93,8 +93,8 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 
 		auto& distributionDirectory = m_state.inputs.distributionDirectory();
-		if (!Commands::pathExists(distributionDirectory))
-			Commands::makeDirectory(distributionDirectory);
+		if (!Files::pathExists(distributionDirectory))
+			Files::makeDirectory(distributionDirectory);
 
 #if defined(CHALET_MACOS)
 		if (m_state.toolchain.strategy() == StrategyType::XcodeBuild && bundle.isMacosAppBundle())
@@ -303,7 +303,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 			const auto filename = String::getPathFilename(exec);
 			const auto executable = fmt::format("{}/{}", executablePath, filename);
 
-			if (!Commands::setExecutableFlag(executable))
+			if (!Files::setExecutableFlag(executable))
 			{
 				Diagnostic::warn("Executable flag could not be set for: {}", executable);
 				continue;
@@ -314,8 +314,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
-	if (!Commands::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [](std::string inPath) {
-			Commands::remove(inPath);
+	if (!Files::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [](std::string inPath) {
+			Files::remove(inPath);
 		}))
 		return false;
 
@@ -504,18 +504,18 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 {
-	bool result = Commands::subprocessWithInput(inCmd);
+	bool result = Files::subprocessWithInput(inCmd);
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 
-	i32 lastExitCode = ProcessController::getLastExitCode();
+	i32 lastExitCode = SubProcessController::getLastExitCode();
 	if (lastExitCode != 0)
 	{
 		auto message = fmt::format("{} exited with code: {}", outputFile, lastExitCode);
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
 	}
 
-	auto lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+	auto lastSystemMessage = SubProcessController::getSystemMessage(lastExitCode);
 	if (!lastSystemMessage.empty())
 	{
 #if defined(CHALET_WIN32)
@@ -600,7 +600,7 @@ bool AppBundler::removeOldFiles(IAppBundler& inBundler)
 
 	if (!List::contains(m_removedDirs, subdirectory))
 	{
-		Commands::removeRecursively(subdirectory);
+		Files::removeRecursively(subdirectory);
 		m_removedDirs.push_back(subdirectory);
 	}
 
@@ -621,10 +621,10 @@ bool AppBundler::makeBundlePath(const std::string& inBundlePath, const std::stri
 	// make prod dir
 	for (auto& dir : dirList)
 	{
-		if (Commands::pathExists(dir))
+		if (Files::pathExists(dir))
 			continue;
 
-		if (!Commands::makeDirectory(dir))
+		if (!Files::makeDirectory(dir))
 			return false;
 	}
 

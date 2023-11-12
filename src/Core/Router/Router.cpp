@@ -13,7 +13,7 @@
 #include "Builder/BatchValidator.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "Query/QueryController.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
@@ -26,7 +26,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "System/UpdateNotifier.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/TerminalTest.hpp"
@@ -250,12 +250,12 @@ bool Router::routeValidate()
 		auto& arguments = *argumentsOpt;
 		for (const auto& val : arguments)
 		{
-			if (!Commands::addPathToListWithGlob(std::string(val), files, GlobMatch::FilesAndFolders))
+			if (!Files::addPathToListWithGlob(std::string(val), files, GlobMatch::FilesAndFolders))
 				return false;
 		}
 	}
 
-	if (schema.empty() || !Commands::pathExists(schema))
+	if (schema.empty() || !Files::pathExists(schema))
 	{
 		Diagnostic::error("Schema file for the validation doesn't exist: {}", schema);
 		return false;
@@ -263,7 +263,7 @@ bool Router::routeValidate()
 
 	for (auto& file : files)
 	{
-		if (file.empty() || !Commands::pathExists(file))
+		if (file.empty() || !Files::pathExists(file))
 		{
 			Diagnostic::error("File for the validation doesn't exist: {}", file);
 			return false;
@@ -349,7 +349,7 @@ bool Router::routeDebug()
 
 	Diagnostic::infoEllipsis("Testing");
 
-	Commands::sleep(5);
+	Files::sleep(5);
 	Diagnostic::printDone();
 
 	return true;

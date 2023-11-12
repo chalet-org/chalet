@@ -6,13 +6,13 @@
 #include "Compile/Strategy/CompileStrategyNinja.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
@@ -38,7 +38,7 @@ bool CompileStrategyNinja::initialize()
 	m_cacheFolder = m_state.cache.getCachePath(cachePathId, CacheType::Local);
 	m_cacheFile = fmt::format("{}/build.ninja", m_cacheFolder);
 
-	const bool cacheExists = Commands::pathExists(m_cacheFolder) && Commands::pathExists(m_cacheFile);
+	const bool cacheExists = Files::pathExists(m_cacheFolder) && Files::pathExists(m_cacheFile);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
@@ -46,13 +46,13 @@ bool CompileStrategyNinja::initialize()
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
-		Commands::removeRecursively(m_state.paths.buildOutputDir());
+		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || buildStrategyChanged || themeChanged;
 
-	if (!Commands::pathExists(m_cacheFolder))
-		Commands::makeDirectory(m_cacheFolder);
+	if (!Files::pathExists(m_cacheFolder))
+		Files::makeDirectory(m_cacheFolder);
 
 	m_initialized = true;
 
@@ -137,7 +137,7 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 
 	command.emplace_back(fmt::format("build_{}", hash));
-	bool result = Commands::subprocessNinjaBuild(command);
+	bool result = Files::subprocessNinjaBuild(command);
 
 	Environment::set(kNinjaStatus, oldNinjaStatus);
 

@@ -15,7 +15,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
@@ -46,9 +46,9 @@ bool BuildPaths::initialize()
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
 	const auto& outputDirectory = m_state.inputs.outputDirectory();
-	if (!Commands::pathExists(outputDirectory))
+	if (!Files::pathExists(outputDirectory))
 	{
-		Commands::makeDirectory(outputDirectory);
+		Files::makeDirectory(outputDirectory);
 	}
 
 	const auto& buildConfig = m_state.info.buildConfiguration();
@@ -755,13 +755,13 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 			continue;
 		}
 
-		if (!Commands::pathExists(file))
+		if (!Files::pathExists(file))
 		{
 			Diagnostic::warn("File not found: {}", file);
 			continue;
 		}
 
-		if (Commands::pathIsFile(file))
+		if (Files::pathIsFile(file))
 		{
 			List::addIfDoesNotExist(fileList, file);
 		}
@@ -789,7 +789,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 
 		if (inProject.usesPrecompiledHeader())
 		{
-			if (Commands::pathExists(inProject.precompiledHeader()))
+			if (Files::pathExists(inProject.precompiledHeader()))
 			{
 				auto outPath = getNormalizedDirectoryPath(inProject.precompiledHeader());
 
@@ -810,7 +810,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		const auto& files = inProject.files();
 		for (auto& file : files)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			List::addIfDoesNotExist(ret, getNormalizedDirectoryPath(file));

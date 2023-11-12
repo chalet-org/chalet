@@ -5,7 +5,7 @@
 
 #include "Cache/SourceCache.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/EnumIterator.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
@@ -116,7 +116,7 @@ Json SourceCache::asJson() const
 
 		for (auto& [file, data] : m_dataCache)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			if (!data.empty())
@@ -137,7 +137,7 @@ Json SourceCache::asJson() const
 
 		for (auto& [file, data] : m_lastWrites)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			if (data.needsUpdate)
@@ -191,7 +191,7 @@ void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
-	if (!Commands::pathExists(inFile))
+	if (!Files::pathExists(inFile))
 	{
 		m_lastWrites[inFile].lastWrite = m_initializedTime;
 		m_lastWrites[inFile].needsUpdate = true;
@@ -209,7 +209,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
-	if (!Commands::pathExists(inFile) || !Commands::pathExists(inDependency))
+	if (!Files::pathExists(inFile) || !Files::pathExists(inDependency))
 	{
 		m_lastWrites[inFile].lastWrite = m_initializedTime;
 		m_lastWrites[inFile].needsUpdate = true;
@@ -269,7 +269,7 @@ bool SourceCache::externalRequiresRebuild(const std::string& inPath)
 /*****************************************************************************/
 void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) const
 {
-	auto lastWrite = Commands::getLastWriteTime(inFile);
+	auto lastWrite = Files::getLastWriteTime(inFile);
 	if (lastWrite > m_initializedTime)
 	{
 		outFileData.lastWrite = m_initializedTime;

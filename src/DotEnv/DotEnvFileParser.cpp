@@ -8,7 +8,7 @@
 #include "BuildEnvironment/Script/VisualStudioEnvironmentScript.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 #if defined(CHALET_DEBUG)
@@ -27,7 +27,7 @@ DotEnvFileParser::DotEnvFileParser(const CommandLineInputs& inInputs) :
 bool DotEnvFileParser::readVariablesFromInputs()
 {
 	const auto& envFile = m_inputs.envFile();
-	if (envFile.empty() || !Commands::pathExists(envFile))
+	if (envFile.empty() || !Files::pathExists(envFile))
 		return true; // don't care
 
 #if defined(CHALET_DEBUG)

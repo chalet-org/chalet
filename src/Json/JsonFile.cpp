@@ -5,7 +5,7 @@
 
 #include "Json/JsonFile.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -27,9 +27,9 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 		return false;
 
 	const auto folder = String::getPathFolder(outFilename);
-	if (!folder.empty() && !Commands::pathExists(folder))
+	if (!folder.empty() && !Files::pathExists(folder))
 	{
-		if (!Commands::makeDirectory(folder))
+		if (!Files::makeDirectory(folder))
 			return false;
 	}
 

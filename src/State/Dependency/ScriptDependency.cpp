@@ -8,7 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 
@@ -46,7 +46,7 @@ bool ScriptDependency::validate()
 	m_file = std::move(resolved);
 	m_scriptType = scriptType;
 
-	if (!Commands::pathExists(m_file))
+	if (!Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;

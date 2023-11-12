@@ -21,7 +21,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -98,8 +98,8 @@ const std::string& IProjectExporter::workingDirectory() const noexcept
 /*****************************************************************************/
 bool IProjectExporter::saveSchemasToDirectory(const std::string& inDirectory) const
 {
-	if (!Commands::pathExists(inDirectory))
-		Commands::makeDirectory(inDirectory);
+	if (!Files::pathExists(inDirectory))
+		Files::makeDirectory(inDirectory);
 
 	// Generate schemas
 	{
@@ -124,9 +124,9 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 	if (inDirectory.empty())
 		return false;
 
-	if (!Commands::pathExists(inDirectory))
+	if (!Files::pathExists(inDirectory))
 	{
-		if (!Commands::makeDirectory(inDirectory))
+		if (!Files::makeDirectory(inDirectory))
 		{
 			Diagnostic::error("There was a problem creating the '{}' directory.", inDirectory);
 			return false;
@@ -214,8 +214,8 @@ const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inStat
 void IProjectExporter::cleanExportDirectory()
 {
 	// Wipe the old one
-	if (!m_directory.empty() && Commands::pathExists(m_directory))
-		Commands::removeRecursively(m_directory);
+	if (!m_directory.empty() && Files::pathExists(m_directory))
+		Files::removeRecursively(m_directory);
 }
 
 /*****************************************************************************/

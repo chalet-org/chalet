@@ -5,7 +5,7 @@
 
 #include "Json/JsonComments.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -101,7 +101,7 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 /*****************************************************************************/
 bool JsonComments::parse(Json& outJson, const std::string& inFilename, const bool inError)
 {
-	if (!Commands::pathExists(inFilename))
+	if (!Files::pathExists(inFilename))
 	{
 		outJson = Json();
 		return true;

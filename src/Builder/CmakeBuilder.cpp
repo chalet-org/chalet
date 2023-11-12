@@ -11,7 +11,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -20,7 +20,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/CMakeTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
@@ -44,7 +44,7 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 std::string CmakeBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
-	auto ret = Commands::getAbsolutePath(rawLocation);
+	auto ret = Files::getAbsolutePath(rawLocation);
 	Path::toUnix(ret);
 
 	return ret;
@@ -55,7 +55,7 @@ std::string CmakeBuilder::getOutputLocation() const
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
-	auto ret = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), m_target.targetFolder());
+	auto ret = fmt::format("{}/{}", Files::getAbsolutePath(buildOutputDir), m_target.targetFolder());
 	Path::toUnix(ret);
 
 	return ret;
@@ -118,7 +118,7 @@ bool CmakeBuilder::run()
 #endif
 
 		if (inRemoveDir && !m_target.recheck())
-			Commands::removeRecursively(m_outputLocation);
+			Files::removeRecursively(m_outputLocation);
 
 		Output::lineBreak();
 
@@ -134,15 +134,15 @@ bool CmakeBuilder::run()
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
-		Commands::removeRecursively(m_outputLocation);
+		Files::removeRecursively(m_outputLocation);
 
-	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
+	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
 	bool recheckCmake = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
 		if (outDirectoryDoesNotExist)
-			Commands::makeDirectory(m_outputLocation);
+			Files::makeDirectory(m_outputLocation);
 
 		if (isNinja)
 		{
@@ -155,7 +155,7 @@ bool CmakeBuilder::run()
 
 		{
 			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : m_outputLocation;
-			if (!Commands::subprocess(command, cwd))
+			if (!Files::subprocess(command, cwd))
 				return onRunFailure();
 		}
 
@@ -164,7 +164,7 @@ bool CmakeBuilder::run()
 		command = getBuildCommand(m_outputLocation);
 
 		// this will control ninja output, and other build outputs should be unaffected
-		bool result = Commands::subprocessNinjaBuild(command);
+		bool result = Files::subprocessNinjaBuild(command);
 		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
 		if (!result)
 			return onRunFailure(false);
@@ -552,7 +552,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 #if defined(CHALET_WIN32)
 	/*if (!usingToolchainFile && !isDefined["CMAKE_SH"])
 	{
-		if (Commands::which("sh").empty())
+		if (Files::which("sh").empty())
 			outList.emplace_back("-DCMAKE_SH=\"CMAKE_SH-NOTFOUND\"");
 	}*/
 #elif defined(CHALET_MACOS)
@@ -619,7 +619,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			auto nodePath = Environment::getString("EMSDK_NODE");
 			chalet_assert(!nodePath.empty(), "'EMSDK_NODE' was not set");
 
-			auto versionOutput = Commands::subprocessOutput({ nodePath, "--version" });
+			auto versionOutput = Files::subprocessOutput({ nodePath, "--version" });
 			if (String::startsWith('v', versionOutput))
 				versionOutput = versionOutput.substr(1);
 
@@ -764,7 +764,7 @@ bool CmakeBuilder::usesNinja() const
 		return true;
 
 	auto& ninjaExec = m_state.toolchain.ninja();
-	return !ninjaExec.empty() && Commands::pathExists(ninjaExec);
+	return !ninjaExec.empty() && Files::pathExists(ninjaExec);
 }
 
 }

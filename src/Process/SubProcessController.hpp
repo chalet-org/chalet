@@ -10,7 +10,7 @@
 
 namespace chalet
 {
-namespace ProcessController
+namespace SubProcessController
 {
 i32 run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize = 0);
 i32 getLastExitCode();

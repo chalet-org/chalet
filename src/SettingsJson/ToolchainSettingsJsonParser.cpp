@@ -11,7 +11,7 @@
 #include "Process/Environment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -133,7 +133,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 	const auto& archiver = m_state.toolchain.archiver();
 	const auto& linker = m_state.toolchain.linker();
 
-	if (compilerCpp.empty() || !Commands::pathExists(compilerCpp))
+	if (compilerCpp.empty() || !Files::pathExists(compilerCpp))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -142,7 +142,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (compilerC.empty() || !Commands::pathExists(compilerC))
+	if (compilerC.empty() || !Files::pathExists(compilerC))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -151,7 +151,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (archiver.empty() || !Commands::pathExists(archiver))
+	if (archiver.empty() || !Files::pathExists(archiver))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -160,7 +160,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 		result = false;
 	}
 
-	if (linker.empty() || !Commands::pathExists(linker))
+	if (linker.empty() || !Files::pathExists(linker))
 	{
 #if defined(CHALET_DEBUG)
 		m_jsonFile.dumpToTerminal();
@@ -173,7 +173,7 @@ bool ToolchainSettingsJsonParser::validatePaths()
 	if (m_state.environment != nullptr && !m_state.environment->isEmscripten())
 	{
 		const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
-		if (compilerWindowsResource.empty() || !Commands::pathExists(compilerWindowsResource))
+		if (compilerWindowsResource.empty() || !Files::pathExists(compilerWindowsResource))
 		{
 	#if defined(CHALET_DEBUG)
 			m_jsonFile.dumpToTerminal();
@@ -224,7 +224,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	if (!toolchain.contains(Keys::ToolchainCompilerCpp))
 	{
 		if (cpp.empty())
-			cpp = Commands::which(preference.cpp);
+			cpp = Files::which(preference.cpp);
 
 		toolchain[Keys::ToolchainCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
@@ -232,7 +232,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	if (!toolchain.contains(Keys::ToolchainCompilerC) || !toolchain[Keys::ToolchainCompilerC].is_string() || toolchain[Keys::ToolchainCompilerC].get<std::string>().empty())
 	{
 		if (cc.empty())
-			cc = Commands::which(preference.cc);
+			cc = Files::which(preference.cc);
 
 		toolchain[Keys::ToolchainCompilerC] = cc;
 		m_jsonFile.setDirty(true);
@@ -270,7 +270,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		for (const auto& search : searches)
 		{
-			rc = Commands::which(search);
+			rc = Files::which(search);
 			if (!rc.empty())
 				break;
 		}
@@ -321,7 +321,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		for (const auto& search : searches)
 		{
-			link = Commands::which(search);
+			link = Files::which(search);
 			if (!link.empty())
 				break;
 		}
@@ -388,7 +388,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		for (const auto& search : searches)
 		{
-			ar = Commands::which(search);
+			ar = Files::which(search);
 			if (!ar.empty())
 				break;
 		}
@@ -425,7 +425,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		for (const auto& search : searches)
 		{
-			prof = Commands::which(search);
+			prof = Files::which(search);
 			if (!prof.empty())
 				break;
 		}
@@ -476,7 +476,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 		for (const auto& search : searches)
 		{
-			disasm = Commands::which(search);
+			disasm = Files::which(search);
 			if (!disasm.empty())
 				break;
 		}
@@ -497,7 +497,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	auto whichAdd = [this](Json& inNode, const std::string& inKey) -> bool {
 		if (!inNode.contains(inKey) || !inNode.at(inKey).is_string() || inNode.at(inKey).get<std::string>().empty())
 		{
-			auto path = Commands::which(inKey);
+			auto path = Files::which(inKey);
 			bool res = !path.empty();
 			if (res || !inNode[inKey].is_string() || inNode.at(inKey).get<std::string>().empty())
 			{
@@ -532,12 +532,12 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		searches.push_back(Keys::ToolchainMake);
 		for (const auto& search : searches)
 		{
-			make = Commands::which(search);
+			make = Files::which(search);
 			if (!make.empty())
 				break;
 		}
 #else
-		std::string make = Commands::which(Keys::ToolchainMake);
+		std::string make = Files::which(Keys::ToolchainMake);
 #endif
 
 		toolchain[Keys::ToolchainMake] = std::move(make);

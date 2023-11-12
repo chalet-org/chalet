@@ -6,7 +6,7 @@
 #include "State/Target/ProcessBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -67,9 +67,9 @@ bool ProcessBuildTarget::validate()
 		}
 	}
 
-	if (!Commands::pathExists(m_path))
+	if (!Files::pathExists(m_path))
 	{
-		auto resolved = Commands::which(m_path);
+		auto resolved = Files::which(m_path);
 		if (resolved.empty() && m_dependsOn.empty())
 		{
 			Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);

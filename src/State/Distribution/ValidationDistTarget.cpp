@@ -8,7 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -31,7 +31,7 @@ bool ValidationDistTarget::initialize()
 
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
 	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
-			return Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::FilesAndFolders);
+			return Files::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::FilesAndFolders);
 		}))
 	{
 		Diagnostic::error("There was a problem resolving the files to validate for the '{}' target. {}.", this->name(), globMessage);
@@ -44,7 +44,7 @@ bool ValidationDistTarget::initialize()
 /*****************************************************************************/
 bool ValidationDistTarget::validate()
 {
-	if (m_schema.empty() || !Commands::pathExists(m_schema))
+	if (m_schema.empty() || !Files::pathExists(m_schema))
 	{
 		Diagnostic::error("Schema file for the validation target '{}' doesn't exist: {}", this->name(), m_schema);
 		return false;
@@ -52,7 +52,7 @@ bool ValidationDistTarget::validate()
 
 	for (auto& file : m_files)
 	{
-		if (file.empty() || !Commands::pathExists(file))
+		if (file.empty() || !Files::pathExists(file))
 		{
 			Diagnostic::error("File for the validation target '{}' doesn't exist: {}", this->name(), file);
 			return false;

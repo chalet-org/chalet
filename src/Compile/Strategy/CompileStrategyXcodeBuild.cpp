@@ -11,7 +11,7 @@
 #include "Export/IProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"
 #include "Process/Environment.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "Process/ProcessOptions.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -19,7 +19,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -44,7 +44,7 @@ bool CompileStrategyXcodeBuild::initialize()
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
-		Commands::removeRecursively(m_state.paths.buildOutputDir());
+		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
 	m_initialized = true;
@@ -64,7 +64,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	// auto& route = m_state.inputs.route();
 	auto& cwd = m_state.inputs.workingDirectory();
 
-	auto xcodebuild = Commands::which("xcodebuild");
+	auto xcodebuild = Files::which("xcodebuild");
 	if (xcodebuild.empty())
 	{
 		Diagnostic::error("Xcodebuild is required, but was not found in path.");
@@ -147,7 +147,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	bool result = false;
 	if (Output::showCommands())
 	{
-		result = Commands::subprocess(cmd);
+		result = Files::subprocess(cmd);
 	}
 	else
 	{
@@ -435,7 +435,7 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 		}
 	};
 
-	i32 result = ProcessController::run(inCmd, options);
+	i32 result = SubProcessController::run(inCmd, options);
 
 	if (!errors.empty())
 	{

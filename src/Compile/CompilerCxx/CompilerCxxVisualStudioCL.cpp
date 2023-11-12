@@ -12,7 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
@@ -52,7 +52,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 			configuration = "Release";
 
 		m_ifcDirectory = fmt::format("{}/ifc/{}/{}", toolsDir, arch, configuration);
-		if (!Commands::pathExists(m_ifcDirectory))
+		if (!Files::pathExists(m_ifcDirectory))
 		{
 			m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
 		}

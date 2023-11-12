@@ -14,7 +14,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -90,9 +90,9 @@ std::string VSCodeLaunchGen::getDebuggerPath() const
 #if defined(CHALET_WIN32)
 		path += ".exe";
 #endif
-		if (!Commands::pathExists(path))
+		if (!Files::pathExists(path))
 		{
-			path = Commands::which(debugger);
+			path = Files::which(debugger);
 		}
 
 		return path;

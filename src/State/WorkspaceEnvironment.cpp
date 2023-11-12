@@ -9,7 +9,7 @@
 
 #include "State/BuildState.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
@@ -91,10 +91,10 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : m_searchPaths)
 	{
-		// if (!Commands::pathExists(p))
+		// if (!Files::pathExists(p))
 		// 	continue;
 
-		auto path = Commands::getCanonicalPath(p); // for any relative paths
+		auto path = Files::getCanonicalPath(p); // for any relative paths
 
 		if (!String::contains(path, inRootPath))
 			List::addIfDoesNotExist(outList, std::move(path));
@@ -123,10 +123,10 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : m_searchPaths)
 	{
-		// if (!Commands::pathExists(p))
+		// if (!Files::pathExists(p))
 		// 	continue;
 
-		auto path = Commands::getCanonicalPath(p); // for any relative paths
+		auto path = Files::getCanonicalPath(p); // for any relative paths
 
 		if (!List::contains(rootPaths, path))
 			List::addIfDoesNotExist(outList, std::move(path));
@@ -134,10 +134,10 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 
 	for (auto& p : inAdditionalPaths)
 	{
-		// if (!Commands::pathExists(p))
+		// if (!Files::pathExists(p))
 		// 	continue;
 
-		auto path = Commands::getCanonicalPath(p); // for any relative paths
+		auto path = Files::getCanonicalPath(p); // for any relative paths
 
 		if (!List::contains(rootPaths, path))
 			List::addIfDoesNotExist(outList, std::move(path));

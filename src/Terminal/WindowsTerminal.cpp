@@ -6,7 +6,7 @@
 #include "Terminal/WindowsTerminal.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 
@@ -99,8 +99,8 @@ void WindowsTerminal::initialize()
 void WindowsTerminal::initializeCreateProcess()
 {
 #if defined(CHALET_WIN32)
-	auto cmd = Commands::which("rundll32");
-	Commands::subprocessMinimalOutput({ cmd });
+	auto cmd = Files::which("rundll32");
+	Files::subprocessMinimalOutput({ cmd });
 #endif
 }
 

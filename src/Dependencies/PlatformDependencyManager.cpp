@@ -9,7 +9,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -69,7 +69,7 @@ bool PlatformDependencyManager::hasRequired()
 #if defined(CHALET_WIN32)
 	auto arch = m_state.info.targetArchitectureString();
 #elif defined(CHALET_LINUX)
-	auto os = Commands::getFileContents("/etc/os-release");
+	auto os = Files::getFileContents("/etc/os-release");
 	if (os.empty())
 	{
 		Diagnostic::error("There was a problem detecting the Linux OS ID.");
@@ -125,12 +125,12 @@ bool PlatformDependencyManager::hasRequired()
 			auto& cc = m_state.toolchain.compilerCxxAny();
 
 			auto detect = String::getPathFolder(cc.path);
-			detect = Commands::getCanonicalPath(fmt::format("{}/../../usr/bin/msys-2.0.dll", detect));
-			if (!Commands::pathExists(detect))
+			detect = Files::getCanonicalPath(fmt::format("{}/../../usr/bin/msys-2.0.dll", detect));
+			if (!Files::pathExists(detect))
 				continue; // if toolchain is not MSYS2 (could be some other MinGW version) ... skip
 
 			auto pacman = fmt::format("{}/pacman.exe", String::getPathFolder(detect));
-			if (!Commands::pathExists(pacman))
+			if (!Files::pathExists(pacman))
 			{
 				Diagnostic::error("There was a problem detecting the MSYS2 dependencies.");
 				return false;
@@ -147,7 +147,7 @@ bool PlatformDependencyManager::hasRequired()
 				cmd.emplace_back(fmt::format("mingw-w64-{}-{}", arch, item));
 			}
 
-			auto installed = Commands::subprocessOutput(cmd);
+			auto installed = Files::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -190,8 +190,8 @@ bool PlatformDependencyManager::hasRequired()
 				return false;
 			}
 
-			auto brew = Commands::which("brew");
-			if (brew.empty() || !Commands::pathExists("/usr/local/Cellar"))
+			auto brew = Files::which("brew");
+			if (brew.empty() || !Files::pathExists("/usr/local/Cellar"))
 			{
 				Diagnostic::error("Homebrew was required by the build, but was not detected.");
 				return false;
@@ -205,7 +205,7 @@ bool PlatformDependencyManager::hasRequired()
 				Diagnostic::subInfoEllipsis("{}", item);
 
 				auto path = fmt::format("/usr/local/Cellar/{}", item);
-				bool exists = Commands::pathExists(path) && Commands::pathIsDirectory(path);
+				bool exists = Files::pathExists(path) && Files::pathIsDirectory(path);
 				Diagnostic::printFound(exists);
 
 				if (!exists)
@@ -222,7 +222,7 @@ bool PlatformDependencyManager::hasRequired()
 				return false;
 			}
 
-			auto port = Commands::which("port");
+			auto port = Files::which("port");
 			if (port.empty())
 			{
 				Diagnostic::error("MacPorts was required by the build, but was not detected.");
@@ -231,7 +231,7 @@ bool PlatformDependencyManager::hasRequired()
 
 			Timer timer;
 			Diagnostic::infoEllipsis("{}MacPorts{}", prefix, suffix);
-			auto installed = Commands::subprocessOutput({ port, "installed" });
+			auto installed = Files::subprocessOutput({ port, "installed" });
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -261,8 +261,8 @@ bool PlatformDependencyManager::hasRequired()
 		if ((linuxArch && String::equals(Keys::ReqArchLinuxSystem, key))
 			|| (linuxManjaro && String::equals(Keys::ReqManjaroSystem, key)))
 		{
-			auto pacman = Commands::which("pacman");
-			if (!Commands::pathExists(pacman))
+			auto pacman = Files::which("pacman");
+			if (!Files::pathExists(pacman))
 			{
 				Diagnostic::error("There was a problem detecting the system dependencies.");
 				return false;
@@ -276,7 +276,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Commands::subprocessOutput(cmd);
+			auto installed = Files::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -305,8 +305,8 @@ bool PlatformDependencyManager::hasRequired()
 		else if ((linuxUbuntu && String::equals(Keys::ReqUbuntuSystem, key))
 			|| (linuxDebian && String::equals(Keys::ReqDebianSystem, key)))
 		{
-			auto apt = Commands::which("apt");
-			if (!Commands::pathExists(apt))
+			auto apt = Files::which("apt");
+			if (!Files::pathExists(apt))
 			{
 				Diagnostic::error("There was a problem detecting the system dependencies.");
 				return false;
@@ -320,7 +320,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Commands::subprocessOutput(cmd);
+			auto installed = Files::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())
@@ -362,8 +362,8 @@ bool PlatformDependencyManager::hasRequired()
 		else if ((linuxFedora && String::equals(Keys::ReqFedoraSystem, key))
 			|| (linuxRedHat && String::equals(Keys::ReqRedHatSystem, key)))
 		{
-			auto yum = Commands::which("yum");
-			if (!Commands::pathExists(yum))
+			auto yum = Files::which("yum");
+			if (!Files::pathExists(yum))
 			{
 				Diagnostic::error("There was a problem detecting the system dependencies.");
 				return false;
@@ -377,7 +377,7 @@ bool PlatformDependencyManager::hasRequired()
 			for (auto& item : list)
 				cmd.emplace_back(item);
 
-			auto installed = Commands::subprocessOutput(cmd);
+			auto installed = Files::subprocessOutput(cmd);
 			Diagnostic::printDone(timer.asString());
 
 			if (installed.empty())

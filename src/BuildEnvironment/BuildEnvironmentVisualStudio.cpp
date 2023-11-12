@@ -15,7 +15,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -133,7 +133,7 @@ bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo
 	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
 	{
 		// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-		std::string rawOutput = Commands::subprocessOutput(getVersionCommand(outInfo.path));
+		std::string rawOutput = Files::subprocessOutput(getVersionCommand(outInfo.path));
 
 		auto splitOutput = String::split(rawOutput, '\n');
 		if (splitOutput.size() >= 2)

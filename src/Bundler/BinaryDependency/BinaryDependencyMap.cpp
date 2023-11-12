@@ -11,7 +11,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -47,7 +47,7 @@ void BinaryDependencyMap::addExcludesFromList(const StringList& inList)
 	m_excludes.clear();
 	for (auto& item : inList)
 	{
-		if (!Commands::pathExists(item))
+		if (!Files::pathExists(item))
 			continue;
 
 		List::addIfDoesNotExist(m_excludes, item);
@@ -65,7 +65,7 @@ void BinaryDependencyMap::addSearchDirsFromList(const StringList& inList)
 {
 	for (auto& item : inList)
 	{
-		if (!Commands::pathExists(item))
+		if (!Files::pathExists(item))
 			continue;
 
 		List::addIfDoesNotExist(m_searchDirs, item);
@@ -208,7 +208,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 
 			auto res = fmt::format("{}/Redist/{}/ucrt/DLLs/{}/{}", ucrtDir, ucrtVersion, arch, filename);
 			Path::toUnix(res);
-			if (!ucrtVersion.empty() && Commands::pathExists(res))
+			if (!ucrtVersion.empty() && Files::pathExists(res))
 			{
 				outDep = std::move(res);
 				return true;
@@ -217,7 +217,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 			{
 				res = fmt::format("{}/Redist/ucrt/DLLs/{}/{}", ucrtDir, arch, filename);
 				Path::toUnix(res);
-				if (Commands::pathExists(res))
+				if (Files::pathExists(res))
 				{
 					outDep = std::move(res);
 					return true;
@@ -229,14 +229,14 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 	}
 #endif
 
-	if (Commands::pathExists(outDep))
+	if (Files::pathExists(outDep))
 		return true;
 
 	std::string resolved;
 	for (auto& dir : m_searchDirs)
 	{
 		resolved = fmt::format("{}/{}", dir, filename);
-		if (Commands::pathExists(resolved))
+		if (Files::pathExists(resolved))
 		{
 			outDep = std::move(resolved);
 			return true;
@@ -245,7 +245,7 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 		resolved.clear();
 	}
 
-	resolved = Commands::which(filename);
+	resolved = Files::which(filename);
 	if (resolved.empty())
 		return false;
 
@@ -296,7 +296,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 		//   but works fine w/ MSYS2
 		cmd = { ldd, inPath };
 #endif
-		std::string targetDeps = Commands::subprocessOutput(cmd);
+		std::string targetDeps = Files::subprocessOutput(cmd);
 
 		std::string line;
 		std::istringstream stream(targetDeps);
@@ -352,7 +352,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			dependencyFile = String::getPathFilename(dependency);
 #else
 			dependencyFile = String::getPathFilename(dependency);
-			dependency = Commands::which(dependencyFile);
+			dependency = Files::which(dependencyFile);
 #endif
 
 			if (dependency.empty())

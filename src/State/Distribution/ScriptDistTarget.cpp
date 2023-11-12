@@ -8,7 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -74,7 +74,7 @@ bool ScriptDistTarget::validate()
 		}
 	}
 
-	if (m_dependsOn.empty() && !Commands::pathExists(m_file))
+	if (m_dependsOn.empty() && !Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the distribution script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;

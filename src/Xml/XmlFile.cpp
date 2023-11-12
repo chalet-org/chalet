@@ -5,7 +5,7 @@
 
 #include "Xml/XmlFile.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -23,9 +23,9 @@ bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const
 		return false;
 
 	const auto folder = String::getPathFolder(outFilename);
-	if (!folder.empty() && !Commands::pathExists(folder))
+	if (!folder.empty() && !Files::pathExists(folder))
 	{
-		if (!Commands::makeDirectory(folder))
+		if (!Files::makeDirectory(folder))
 			return false;
 	}
 

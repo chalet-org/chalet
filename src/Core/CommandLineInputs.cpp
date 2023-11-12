@@ -8,7 +8,7 @@
 #include "Platform/Arch.hpp"
 #include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
@@ -198,7 +198,7 @@ const std::string& CommandLineInputs::workingDirectory() const noexcept
 {
 	if (m_workingDirectory.empty())
 	{
-		m_workingDirectory = Commands::getWorkingDirectory();
+		m_workingDirectory = Files::getWorkingDirectory();
 		Path::toUnix(m_workingDirectory, true);
 	}
 	return m_workingDirectory;
@@ -277,10 +277,10 @@ void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
 	m_rootDirectory = std::move(inValue);
 	Path::toUnix(m_rootDirectory);
 
-	if (Commands::pathExists(m_rootDirectory))
+	if (Files::pathExists(m_rootDirectory))
 	{
-		Commands::changeWorkingDirectory(m_rootDirectory);
-		m_workingDirectory = Commands::getAbsolutePath(m_rootDirectory);
+		Files::changeWorkingDirectory(m_rootDirectory);
+		m_workingDirectory = Files::getAbsolutePath(m_rootDirectory);
 	}
 }
 
@@ -502,8 +502,8 @@ void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 		return;
 
 	m_appPath = inValue;
-	if (!Commands::pathExists(m_appPath))
-		m_appPath = Commands::which(m_appPath, false);
+	if (!Files::pathExists(m_appPath))
+		m_appPath = Files::which(m_appPath, false);
 }
 
 /*****************************************************************************/
@@ -666,17 +666,17 @@ void CommandLineInputs::resolveEnvFile()
 			if (!toSearch.empty())
 			{
 				toSearch = fmt::format("{}/{}", toSearch, inEnv);
-				if (Commands::pathExists(toSearch))
+				if (Files::pathExists(toSearch))
 					return toSearch;
 			}
 		}
 		else
 		{
-			if (Commands::pathExists(inRelativeEnv))
+			if (Files::pathExists(inRelativeEnv))
 				return inRelativeEnv;
 		}
 
-		if (Commands::pathExists(inEnv))
+		if (Files::pathExists(inEnv))
 			return inEnv;
 
 		return std::string();
@@ -690,7 +690,7 @@ void CommandLineInputs::resolveEnvFile()
 
 	if (tmp.empty())
 	{
-		if (Commands::pathExists(m_envFile))
+		if (Files::pathExists(m_envFile))
 			tmp = m_envFile;
 	}
 
@@ -830,10 +830,10 @@ std::string CommandLineInputs::getDefaultOsTargetVersion() const
 #if defined(CHALET_MACOS)
 	if (kDefaultOsTarget.empty())
 	{
-		auto swVers = Commands::which("sw_vers");
+		auto swVers = Files::which("sw_vers");
 		if (!swVers.empty())
 		{
-			auto result = Commands::subprocessOutput({ swVers });
+			auto result = Files::subprocessOutput({ swVers });
 			if (!result.empty())
 			{
 				auto split = String::split(result, '\n');
@@ -1536,10 +1536,10 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 	auto firstDash = inArch.find_first_of('-');
 	if (firstDash == std::string::npos)
 	{
-		auto gcc = Commands::which("gcc");
+		auto gcc = Files::which("gcc");
 		if (!gcc.empty())
 		{
-			auto cachedArch = Commands::subprocessOutput({ gcc, "-dumpmachine" });
+			auto cachedArch = Files::subprocessOutput({ gcc, "-dumpmachine" });
 			firstDash = cachedArch.find_first_of('-');
 
 			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
@@ -1569,7 +1569,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 				auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 				auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-				bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+				bool found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 				if (!found && String::startsWith("-pc-linux-gnu", suffix))
 				{
 					suffix = suffix.substr(3);
@@ -1578,7 +1578,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 					searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 					searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-					found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+					found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 				}
 
 				if (found)

@@ -5,7 +5,7 @@
 
 #include "Cache/ExternalDependencyCache.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -47,8 +47,8 @@ bool ExternalDependencyCache::save() const
 
 	if (m_cache.empty())
 	{
-		if (Commands::pathExists(m_filename))
-			Commands::remove(m_filename);
+		if (Files::pathExists(m_filename))
+			Files::remove(m_filename);
 	}
 	else
 	{

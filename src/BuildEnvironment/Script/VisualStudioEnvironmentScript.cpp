@@ -11,7 +11,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
@@ -36,23 +36,23 @@ bool VisualStudioEnvironmentScript::visualStudioExists()
 		std::string progFiles = Environment::getString("ProgramFiles(x86)");
 		state.vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
 
-		bool vswhereFound = Commands::pathExists(state.vswhere);
+		bool vswhereFound = Files::pathExists(state.vswhere);
 		if (!vswhereFound)
 		{
 			std::string progData = Environment::getString("ProgramData");
 			state.vswhere = fmt::format("{}\\chocolatey\\lib\\vswhere\\tools\\vswhere.exe", progData);
-			vswhereFound = Commands::pathExists(state.vswhere);
+			vswhereFound = Files::pathExists(state.vswhere);
 		}
 		if (!vswhereFound)
 		{
 			std::string progFiles64 = Environment::getString("ProgramFiles");
 			String::replaceAll(state.vswhere, progFiles, progFiles64);
 
-			vswhereFound = Commands::pathExists(state.vswhere);
+			vswhereFound = Files::pathExists(state.vswhere);
 			if (!vswhereFound)
 			{
 				// Do this one last to try to support legacy (< VS 2017)
-				state.vswhere = Commands::which("vswhere");
+				state.vswhere = Files::which("vswhere");
 				vswhereFound = !state.vswhere.empty();
 			}
 		}
@@ -133,7 +133,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	if (!m_envVarsFileDeltaExists)
 	{
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
-			auto temp = Commands::subprocessOutput(inCmd);
+			auto temp = Files::subprocessOutput(inCmd);
 			auto split = String::split(temp, "\n");
 			return split.front();
 		};
@@ -178,7 +178,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 			return false;
 		}
 
-		if (!Commands::pathExists(m_visualStudioPath))
+		if (!Files::pathExists(m_visualStudioPath))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", m_visualStudioPath);
 			return false;
@@ -306,7 +306,7 @@ std::string VisualStudioEnvironmentScript::getVisualStudioVersion(const VisualSt
 	addProductOptions(vswhereCmd);
 	vswhereCmd.emplace_back("-property");
 	vswhereCmd.emplace_back("installationVersion");
-	return Commands::subprocessOutput(vswhereCmd);
+	return Files::subprocessOutput(vswhereCmd);
 }
 
 /*****************************************************************************/

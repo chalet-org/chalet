@@ -9,7 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
 #include "System/DefinesVersion.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Version.hpp"
 
@@ -28,7 +28,7 @@ void UpdateNotifier::notifyForUpdates()
 	{
 		std::string git = m_centralState.tools.git();
 		if (git.empty())
-			git = Commands::which("git");
+			git = Files::which("git");
 
 		if (git.empty())
 			return;
@@ -40,7 +40,7 @@ void UpdateNotifier::notifyForUpdates()
 			"--tags",
 			"https://github.com/chalet-org/chalet",
 		};
-		auto output = Commands::subprocessOutput(cmd);
+		auto output = Files::subprocessOutput(cmd);
 		if (output.empty())
 			return;
 

@@ -13,7 +13,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
@@ -129,7 +129,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		Output::lineBreak();
 
 	{
-		auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
+		auto cwd = String::toLowerCase(Files::getWorkingDirectory());
 		Path::toUnix(cwd);
 		if (cwd.back() != '/')
 			cwd += '/';
@@ -176,8 +176,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 					auto p = String::getPathFolder(file);
 					auto dir = fmt::format("{}/{}", objDir, p);
-					if (!Commands::pathExists(dir))
-						Commands::makeDirectory(dir);
+					if (!Files::pathExists(dir))
+						Files::makeDirectory(dir);
 
 					header = file;
 
@@ -329,7 +329,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		}
 	}
 
-	bool targetExists = Commands::pathExists(inOutputs->target);
+	bool targetExists = Files::pathExists(inOutputs->target);
 	bool requiredFromLinks = rebuildRequiredFromLinks(inProject);
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
 	if (!buildJobs.empty() || !targetExists || requiredFromLinks)
@@ -363,8 +363,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			{
 				auto objectFile = m_state.environment->getObjectFile(failure);
 
-				if (Commands::pathExists(objectFile))
-					Commands::remove(objectFile);
+				if (Files::pathExists(objectFile))
+					Files::remove(objectFile);
 
 				sourceCache.markForLater(failure);
 			}
@@ -671,7 +671,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			else
 				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
 
-			if (!dependencyFile.empty() && Commands::pathExists(dependencyFile))
+			if (!dependencyFile.empty() && Files::pathExists(dependencyFile))
 			{
 				StringList includes;
 				if (!readIncludesFromDependencyFile(dependencyFile, includes))

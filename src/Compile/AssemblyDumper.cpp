@@ -15,7 +15,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -126,7 +126,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 			continue;
 
 		if (inForced)
-			Commands::remove(asmFile);
+			Files::remove(asmFile);
 
 		const auto& source = group->sourceFile;
 		const auto& object = group->objectFile;

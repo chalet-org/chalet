@@ -12,7 +12,7 @@
 #include "Libraries/Json.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -34,12 +34,12 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 /*****************************************************************************/
 bool GitRunner::run(GitDependency& gitDependency)
 {
-	bool destinationExists = Commands::pathExists(gitDependency.destination());
+	bool destinationExists = Files::pathExists(gitDependency.destination());
 	if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
 		return true;
 
 	gitDependency.setNeedsUpdate(true);
-	destinationExists = Commands::pathExists(gitDependency.destination());
+	destinationExists = Files::pathExists(gitDependency.destination());
 	if (fetchDependency(gitDependency, destinationExists))
 	{
 		if (!updateDependencyCache(gitDependency))
@@ -54,8 +54,8 @@ bool GitRunner::run(GitDependency& gitDependency)
 	{
 		const auto& destination = gitDependency.destination();
 
-		if (Commands::pathExists(destination))
-			Commands::removeRecursively(destination);
+		if (Files::pathExists(destination))
+			Files::removeRecursively(destination);
 	}
 
 	Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
@@ -69,7 +69,7 @@ bool GitRunner::gitRepositoryShouldUpdate(const GitDependency& inDependency, con
 	if (!m_dependencyCache.contains(destination))
 	{
 		if (inDestinationExists)
-			return Commands::removeRecursively(destination);
+			return Files::removeRecursively(destination);
 
 		return true;
 	}
@@ -89,7 +89,7 @@ bool GitRunner::fetchDependency(const GitDependency& inDependency, const bool in
 	displayFetchingMessageStart(inDependency);
 
 	StringList cmd = getCloneCommand(inDependency);
-	if (!Commands::subprocess(cmd))
+	if (!Files::subprocess(cmd))
 		return false;
 
 	const auto& commit = inDependency.commit();
@@ -206,7 +206,7 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 
 	if (update)
 	{
-		if (!Commands::removeRecursively(destination))
+		if (!Files::removeRecursively(destination))
 			return false;
 	}
 
@@ -267,19 +267,19 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 		 })
 	{
 		auto outPath = fmt::format("{}/{}", destination, path);
-		if (Commands::pathExists(outPath))
+		if (Files::pathExists(outPath))
 		{
 #if defined(CHALET_WIN32)
 			if (String::equals(".git", path))
 			{
 				Path::toWindows(outPath);
-				if (!Commands::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
+				if (!Files::subprocess({ m_commandPrompt, "/c", fmt::format("rmdir /q /s {}", outPath) }))
 					return false;
 			}
 			else
 #endif
 			{
-				if (!Commands::removeRecursively(outPath))
+				if (!Files::removeRecursively(outPath))
 					return false;
 			}
 		}
@@ -300,34 +300,34 @@ const std::string& GitRunner::getCheckoutTo(const GitDependency& inDependency)
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
 {
-	std::string branch = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
+	std::string branch = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
 	return branch;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
 {
-	std::string tag = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
+	std::string tag = Files::subprocessOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
 	return tag;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
 {
-	std::string hash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
+	std::string hash = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
 	return hash;
 }
 
 /*****************************************************************************/
 std::string GitRunner::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
 {
-	std::string originHash = Commands::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
+	std::string originHash = Files::subprocessOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
 	return originHash;
 }
 
 std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
 {
-	std::string result = Commands::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
+	std::string result = Files::subprocessOutput({ m_git, "ls-remote", inRepoPath, inBranch });
 	if (result.empty())
 		return result;
 
@@ -342,13 +342,13 @@ std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string&
 /*****************************************************************************/
 bool GitRunner::updateGitRepositoryShallow(const std::string& inRepoPath) const
 {
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
+	return Files::subprocess({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
 }
 
 /*****************************************************************************/
 bool GitRunner::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
-	return Commands::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
+	return Files::subprocess({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
 }
 
 /*****************************************************************************/

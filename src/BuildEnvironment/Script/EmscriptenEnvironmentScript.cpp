@@ -9,7 +9,7 @@
 #include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -48,7 +48,7 @@ bool EmscriptenEnvironmentScript::makeEnvironment(const BuildState& inState)
 #else
 		m_emsdkEnv = fmt::format("{}/emsdk_env.sh", emsdkRoot);
 #endif
-		if (!Commands::pathExists(m_emsdkEnv))
+		if (!Files::pathExists(m_emsdkEnv))
 		{
 			Diagnostic::error("No suitable Emscripten compiler installation found. Please install Emscripten and set the 'EMSDK' variable before continuing.");
 			return false;
@@ -107,7 +107,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	Path::toUnix(upstreamBin);
 #endif
 
-	auto nodePath = Commands::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
+	auto nodePath = Files::getFirstChildDirectory(fmt::format("{}/node", emsdkRoot));
 	if (!nodePath.empty())
 	{
 		Path::toUnix(nodePath);
@@ -118,7 +118,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	}
 	else
 	{
-		nodePath = Commands::which("node");
+		nodePath = Files::which("node");
 		if (nodePath.empty())
 		{
 			Diagnostic::error("node could not be found.");
@@ -126,7 +126,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 		}
 	}
 
-	auto pythonPath = Commands::getFirstChildDirectory(fmt::format("{}/python", emsdkRoot));
+	auto pythonPath = Files::getFirstChildDirectory(fmt::format("{}/python", emsdkRoot));
 	if (!pythonPath.empty())
 	{
 		Path::toUnix(pythonPath);
@@ -139,7 +139,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	}
 	else
 	{
-		pythonPath = Commands::which("python3");
+		pythonPath = Files::which("python3");
 		if (pythonPath.empty())
 		{
 			Diagnostic::error("python could not be found.");
@@ -148,7 +148,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	}
 
 	std::string javaPath;
-	auto javaHome = Commands::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
+	auto javaHome = Files::getFirstChildDirectory(fmt::format("{}/java", emsdkRoot));
 	if (!javaHome.empty())
 	{
 		Path::toUnix(javaHome);
@@ -160,7 +160,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	}
 	else
 	{
-		javaPath = Commands::which("java");
+		javaPath = Files::which("java");
 		if (javaPath.empty())
 			javaPath = "java";
 	}
@@ -201,7 +201,7 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	//   Would set EM_CONFIG
 
 	fileContents.pop_back();
-	return Commands::createFileWithContents(m_envVarsFileDelta, fileContents);
+	return Files::createFileWithContents(m_envVarsFileDelta, fileContents);
 }
 
 /*****************************************************************************/

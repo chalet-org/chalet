@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 
 #include <array>
 
-#include "Process/Process.hpp"
 #include "Process/ProcessPipe.hpp"
+#include "Process/SubProcess.hpp"
 #include "System/SignalHandler.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 
 #if defined(CHALET_WIN32)
@@ -23,25 +23,25 @@ namespace
 {
 struct
 {
-	std::vector<Process*> procesess;
+	std::vector<SubProcess*> procesess;
 	i32 lastErrorCode = 0;
 	bool initialized = false;
 } state;
 
 /*****************************************************************************/
-void addProcess(Process& inProcess)
+void addProcess(SubProcess& inProcess)
 {
 	state.procesess.push_back(&inProcess);
 }
 
 /*****************************************************************************/
-void removeProcess(const Process& inProcess)
+void removeProcess(const SubProcess& inProcess)
 {
 	auto it = state.procesess.end();
 	while (it != state.procesess.begin())
 	{
 		--it;
-		Process* process = (*it);
+		SubProcess* process = (*it);
 		if (*process == inProcess)
 		{
 			it = state.procesess.erase(it);
@@ -62,7 +62,7 @@ void subProcessSignalHandler(i32 inSignal)
 	while (it != state.procesess.begin())
 	{
 		--it;
-		Process* process = (*it);
+		SubProcess* process = (*it);
 
 		bool success = process->sendSignal(static_cast<SigNum>(inSignal));
 		if (success)
@@ -77,7 +77,7 @@ void subProcessSignalHandler(i32 inSignal)
 }
 
 /*****************************************************************************/
-i32 ProcessController::run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize)
+i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize)
 {
 	CHALET_TRY
 	{
@@ -96,13 +96,13 @@ i32 ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 			return -1;
 		}
 
-		if (!Commands::pathExists(inCmd.front()))
+		if (!Files::pathExists(inCmd.front()))
 		{
 			Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
 			return -1;
 		}
 
-		Process process;
+		SubProcess process;
 		if (!process.create(inCmd, inOptions))
 		{
 			state.lastErrorCode = process.waitForResult();
@@ -134,34 +134,34 @@ i32 ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 }
 
 /*****************************************************************************/
-i32 ProcessController::getLastExitCode()
+i32 SubProcessController::getLastExitCode()
 {
 	return state.lastErrorCode;
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSystemMessage(const i32 inExitCode)
+std::string SubProcessController::getSystemMessage(const i32 inExitCode)
 {
 	if (inExitCode == 0)
 		return std::string();
 
-	return Process::getErrorMessageFromCode(inExitCode);
+	return SubProcess::getErrorMessageFromCode(inExitCode);
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSignalRaisedMessage(const i32 inExitCode)
+std::string SubProcessController::getSignalRaisedMessage(const i32 inExitCode)
 {
-	return Process::getErrorMessageFromSignalRaised(inExitCode < 0 ? inExitCode * -1 : inExitCode);
+	return SubProcess::getErrorMessageFromSignalRaised(inExitCode < 0 ? inExitCode * -1 : inExitCode);
 }
 
 /*****************************************************************************/
-std::string ProcessController::getSignalNameFromCode(const i32 inExitCode)
+std::string SubProcessController::getSignalNameFromCode(const i32 inExitCode)
 {
-	return Process::getSignalNameFromCode(inExitCode);
+	return SubProcess::getSignalNameFromCode(inExitCode);
 }
 
 /*****************************************************************************/
-void ProcessController::haltAll(const SigNum inSignal)
+void SubProcessController::haltAll(const SigNum inSignal)
 {
 	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));
 }

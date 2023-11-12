@@ -11,7 +11,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -136,13 +136,13 @@ StringList IAppBundler::getAllExecutables() const
 /*****************************************************************************/
 bool IAppBundler::copyIncludedPath(const std::string& inDep, const std::string& inOutPath)
 {
-	if (Commands::pathExists(inDep))
+	if (Files::pathExists(inDep))
 	{
 		const auto filename = String::getPathFilename(inDep);
 		if (!filename.empty())
 		{
 			auto outputFile = fmt::format("{}/{}", inOutPath, filename);
-			if (Commands::pathExists(outputFile))
+			if (Files::pathExists(outputFile))
 				return true; // Already copied - duplicate dependency
 		}
 
@@ -150,7 +150,7 @@ bool IAppBundler::copyIncludedPath(const std::string& inDep, const std::string& 
 		auto& cwd = workingDirectoryWithTrailingPathSeparator();
 		String::replaceAll(dep, cwd, "");
 
-		if (!Commands::copy(dep, inOutPath))
+		if (!Files::copy(dep, inOutPath))
 		{
 			Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inOutPath);
 			return false;

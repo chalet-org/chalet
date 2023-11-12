@@ -11,7 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 #include "Utility/Timer.hpp"
@@ -100,7 +100,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
 		if (emptyInputArch || !String::contains('-', targetArch))
 		{
-			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
 			auto firstDash = cachedArch.find_first_of('-');
 
 			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
@@ -131,7 +131,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 			auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 			auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-			bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+			bool found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 			if (!found && String::startsWith("-pc-linux-gnu", suffix))
 			{
 				suffix = suffix.substr(3);
@@ -140,7 +140,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 				searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 				searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-				found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+				found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 			}
 
 			if (!found)
@@ -186,7 +186,7 @@ bool BuildEnvironmentLLVM::populateSupportedFlags(const std::string& inExecutabl
 /*****************************************************************************/
 void BuildEnvironmentLLVM::parseSupportedFlagsFromHelpList(const StringList& inCommand)
 {
-	std::string raw = Commands::subprocessOutput(inCommand);
+	std::string raw = Files::subprocessOutput(inCommand);
 	auto split = String::split(raw, '\n');
 
 	for (auto& line : split)

@@ -10,7 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/PlatformDependencyManager.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -50,13 +50,13 @@ BuildInfo::~BuildInfo() = default;
 bool BuildInfo::initialize()
 {
 #if defined(CHALET_LINUX)
-	auto mainCompiler = Commands::which("gcc");
+	auto mainCompiler = Files::which("gcc");
 	if (mainCompiler.empty())
-		mainCompiler = Commands::which("clang");
+		mainCompiler = Files::which("clang");
 
 	if (!mainCompiler.empty())
 	{
-		auto tripleResult = Commands::subprocessOutput({ mainCompiler, "-dumpmachine" });
+		auto tripleResult = Files::subprocessOutput({ mainCompiler, "-dumpmachine" });
 		if (!tripleResult.empty())
 		{
 			m_hostArchTriple = tripleResult.substr(0, tripleResult.find('\n'));

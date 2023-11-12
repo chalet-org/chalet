@@ -12,7 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -66,7 +66,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			if (project.usesPrecompiledHeader())
 			{
 				auto path = project.precompiledHeader();
-				if (Commands::pathExists(path))
+				if (Files::pathExists(path))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -78,7 +78,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
+				if (Files::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -189,7 +189,7 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 		ret = m_state.toolchain.compilerC().path;
 
 #if defined(CHALET_MACOS)
-	const auto& xcodePath = Commands::getXcodePath();
+	const auto& xcodePath = Files::getXcodePath();
 	String::replaceAll(ret, xcodePath, "");
 	String::replaceAll(ret, "/Toolchains/XcodeDefault.xctoolchain", "");
 #endif

@@ -13,7 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -41,10 +41,10 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	if (!windowsManifestFile.empty() && manifestChanged)
 	{
 		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-		if (!isNative && Commands::pathExists(windowsManifestResourceFile))
-			Commands::remove(windowsManifestResourceFile);
+		if (!isNative && Files::pathExists(windowsManifestResourceFile))
+			Files::remove(windowsManifestResourceFile);
 
-		if (!Commands::pathExists(windowsManifestFile))
+		if (!Files::pathExists(windowsManifestFile))
 		{
 			std::string manifestContents;
 			if (m_project.windowsApplicationManifest().empty())
@@ -54,7 +54,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 
 			String::replaceAll(manifestContents, '\t', ' ');
 
-			if (!Commands::createFileWithContents(windowsManifestFile, manifestContents))
+			if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
 			{
 				Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
 				return false;
@@ -65,7 +65,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	if (!windowsManifestResourceFile.empty() && (sources.fileChangedOrDoesNotExist(windowsManifestResourceFile) || manifestChanged))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
-		if (!Commands::createFileWithContents(windowsManifestResourceFile, rcContents))
+		if (!Files::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
 			Diagnostic::error("Error creating windows manifest resource file: {}", windowsManifestResourceFile);
 			return false;
@@ -89,10 +89,10 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile))
 	{
 		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-		if (!isNative && Commands::pathExists(windowsIconResourceFile))
-			Commands::remove(windowsIconResourceFile);
+		if (!isNative && Files::pathExists(windowsIconResourceFile))
+			Files::remove(windowsIconResourceFile);
 
-		if (!Commands::pathExists(windowsIconFile))
+		if (!Files::pathExists(windowsIconFile))
 		{
 			Diagnostic::error("Windows icon does not exist: {}", windowsIconFile);
 			return false;
@@ -102,7 +102,7 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDependantChanged(windowsIconResourceFile, windowsIconFile))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
-		if (!Commands::createFileWithContents(windowsIconResourceFile, rcContents))
+		if (!Files::createFileWithContents(windowsIconResourceFile, rcContents))
 		{
 			Diagnostic::error("Error creating windows icon resource file: {}", windowsIconResourceFile);
 			return false;

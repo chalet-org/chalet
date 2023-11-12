@@ -6,7 +6,7 @@
 #include "Bundler/BinaryDependency/DependencyWalker.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -95,7 +95,7 @@ bool DependencyWalker::read(const std::string& inFile, StringList& outList, Stri
 /*****************************************************************************/
 bool DependencyWalker::verifyImageFile(const std::string& inFile)
 {
-	if (Commands::pathExists(inFile))
+	if (Files::pathExists(inFile))
 	{
 		auto lower = String::toLowerCase(inFile);
 		return String::endsWith(StringList{ ".dll", ".exe" }, lower);
@@ -198,7 +198,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 
 					std::string dependency(dependencyName);
 					// dependency = String::toLowerCase(dependency);
-					std::string dependencyResolved = Commands::which(dependency);
+					std::string dependencyResolved = Files::which(dependency);
 					if (outNotFound != nullptr && dependencyResolved.empty())
 					{
 						outNotFound->push_back(dependency);
@@ -251,7 +251,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 
 					std::string dependency(dependencyName);
 					// dependency = String::toLowerCase(dependency);
-					std::string dependencyResolved = Commands::which(dependency);
+					std::string dependencyResolved = Files::which(dependency);
 					if (outNotFound != nullptr && dependencyResolved.empty())
 					{
 						outNotFound->push_back(dependency);

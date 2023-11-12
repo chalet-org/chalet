@@ -13,7 +13,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -76,7 +76,7 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 		auto path = Environment::getPath();
 		std::string vsLLVM;
 
-		auto cl = Commands::which("cl");
+		auto cl = Files::which("cl");
 		if (!cl.empty())
 		{
 			auto find = cl.find("/VC/Tools");
@@ -115,7 +115,7 @@ std::vector<CompilerPathStructure> BuildEnvironmentVisualStudioLLVM::getValidCom
 	std::string include;
 	bool found = false;
 
-	auto cl = Commands::which("cl");
+	auto cl = Files::which("cl");
 	if (!cl.empty())
 	{
 		cl = String::toLowerCase(cl);

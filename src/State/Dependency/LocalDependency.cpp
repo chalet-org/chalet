@@ -9,7 +9,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -38,7 +38,7 @@ bool LocalDependency::validate()
 		return false;
 	}
 
-	if (!Commands::pathExists(m_path))
+	if (!Files::pathExists(m_path))
 	{
 		Diagnostic::error("The local dependency path for '{}' does not exist.", this->name());
 		return false;

@@ -6,7 +6,7 @@
 #include "Utility/Path.hpp"
 
 #include "Process/Environment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

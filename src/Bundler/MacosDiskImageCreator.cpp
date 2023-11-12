@@ -13,7 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -37,7 +37,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
 
-	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
+	Files::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
 	Timer timer;
 
@@ -59,7 +59,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 				const auto& subdirectory = bundle.subdirectory();
 
 				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundleExtension());
-				if (!Commands::pathExists(appPath))
+				if (!Files::pathExists(appPath))
 				{
 					Diagnostic::error("Path not found, but it's required by {}.dmg: {}", m_diskName, appPath);
 					return false;
@@ -74,7 +74,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	uintmax_t appSize = 0;
 	for (auto& [_, path] : m_includedPaths)
 	{
-		appSize += Commands::getPathSize(path);
+		appSize += Files::getPathSize(path);
 	}
 	uintmax_t mb = 1000000;
 	uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
@@ -88,10 +88,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		dmgSize = temp + 16;
 	}
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+	if (!Files::subprocessMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
 		return false;
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "attach", tmpDmg }))
+	if (!Files::subprocessMinimalOutput({ hdiutil, "attach", tmpDmg }))
 		return false;
 
 	const auto& background1x = inDiskImage.background1x();
@@ -101,12 +101,12 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	if (hasBackground)
 	{
 		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
-		if (!Commands::makeDirectory(backgroundPath))
+		if (!Files::makeDirectory(backgroundPath))
 			return false;
 
 		if (String::endsWith(".tiff", background1x))
 		{
-			if (!Commands::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
+			if (!Files::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
 				return false;
 		}
 		else
@@ -121,38 +121,38 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 			cmd.emplace_back("-out");
 			cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
 
-			if (!Commands::subprocessNoOutput(cmd))
+			if (!Files::subprocessNoOutput(cmd))
 				return false;
 		}
 	}
 
 	if (inDiskImage.includeApplicationsSymlink())
 	{
-		if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
+		if (!Files::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
 			return false;
 	}
 
 	for (auto& [_, path] : m_includedPaths)
 	{
-		if (!Commands::copySilent(path, volumePath))
+		if (!Files::copySilent(path, volumePath))
 			return false;
 	}
 
 	const auto applescriptText = getDmgApplescript(inDiskImage);
 
-	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
+	if (!Files::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
 
-	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
+	Files::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
+	if (!Files::subprocessMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
 	std::string outDmgPath = fmt::format("{}/{}.dmg", distributionDirectory, m_diskName);
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
+	if (!Files::subprocessMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 
-	if (!Commands::removeRecursively(tmpDmg))
+	if (!Files::removeRecursively(tmpDmg))
 		return false;
 
 	Diagnostic::printDone(timer.asString());

@@ -9,7 +9,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -26,11 +26,11 @@ FileArchiver::FileArchiver(const BuildState& inState) :
 bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes)
 {
 	m_format = inTarget.format();
-	auto exactpath = Commands::getAbsolutePath(Commands::getCanonicalPath(m_outputDirectory));
+	auto exactpath = Files::getAbsolutePath(Files::getCanonicalPath(m_outputDirectory));
 	m_outputFilename = fmt::format("{}/{}", exactpath, inTarget.getOutputFilename(inBaseName));
 
-	if (Commands::pathExists(m_outputFilename))
-		Commands::remove(m_outputFilename);
+	if (Files::pathExists(m_outputFilename))
+		Files::remove(m_outputFilename);
 
 	auto resolvedIncludes = getResolvedIncludes(inIncludes);
 
@@ -69,8 +69,8 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		return false;
 	}
 
-	bool result = Commands::subprocessMinimalOutput(cmd, m_tmpDirectory);
-	Commands::removeRecursively(m_tmpDirectory);
+	bool result = Files::subprocessMinimalOutput(cmd, m_tmpDirectory);
+	Files::removeRecursively(m_tmpDirectory);
 	if (!result)
 	{
 		Diagnostic::error("Couldn't create archive '{}' because '{}' ran into a problem.", m_outputFilename, cmd.front());
@@ -83,7 +83,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 bool FileArchiver::powerShellIsValid() const
 {
 	const auto& powershell = m_state.tools.powershell();
-	if (powershell.empty() || !Commands::pathExists(powershell))
+	if (powershell.empty() || !Files::pathExists(powershell))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'powershell' was not found.", m_outputFilename);
 		return false;
@@ -100,7 +100,7 @@ bool FileArchiver::zipIsValid() const
 		return false;
 #else
 	const auto& zip = m_state.tools.zip();
-	if (zip.empty() || !Commands::pathExists(zip))
+	if (zip.empty() || !Files::pathExists(zip))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'zip' was not found.", m_outputFilename);
 		return false;
@@ -118,7 +118,7 @@ bool FileArchiver::tarIsValid() const
 		return false;
 #else
 	const auto& tar = m_state.tools.tar();
-	if (tar.empty() || !Commands::pathExists(tar))
+	if (tar.empty() || !Files::pathExists(tar))
 	{
 		Diagnostic::error("Couldn't create archive '{}' because 'tar' was not found.", m_outputFilename);
 		return false;
@@ -137,26 +137,26 @@ StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 	{
 		if (String::equals('*', include))
 		{
-			Commands::addPathToListWithGlob(fmt::format("{}/*", m_outputDirectory), tmp, GlobMatch::FilesAndFoldersExact);
+			Files::addPathToListWithGlob(fmt::format("{}/*", m_outputDirectory), tmp, GlobMatch::FilesAndFoldersExact);
 		}
 		else
 		{
 			auto filePath = fmt::format("{}/{}", m_outputDirectory, include);
-			if (Commands::pathExists(filePath))
+			if (Files::pathExists(filePath))
 			{
 				List::addIfDoesNotExist(tmp, std::move(filePath));
 			}
-			else if (Commands::pathExists(include))
+			else if (Files::pathExists(include))
 			{
 				List::addIfDoesNotExist(ret, include);
 			}
 			else
 			{
-				Commands::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
+				Files::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
 					List::addIfDoesNotExist(ret, std::move(inPath));
 				});
 
-				Commands::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
+				Files::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
 					List::addIfDoesNotExist(ret, std::move(inPath));
 				});
 			}
@@ -175,10 +175,10 @@ StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 std::string FileArchiver::makeTemporaryDirectory(const std::string& inBaseName) const
 {
 	auto ret = fmt::format("{}/{}", m_outputDirectory, inBaseName);
-	if (Commands::pathExists(ret))
-		Commands::removeRecursively(ret);
+	if (Files::pathExists(ret))
+		Files::removeRecursively(ret);
 
-	Commands::makeDirectory(ret);
+	Files::makeDirectory(ret);
 
 	return ret;
 }
@@ -194,14 +194,14 @@ bool FileArchiver::copyIncludestoTemporaryDirectory(const StringList& inIncludes
 		if (List::contains(inExcludes, file))
 			continue;
 
-		// if (!Commands::pathExists(file))
+		// if (!Files::pathExists(file))
 		// 	continue;
 
 		auto resolved = fmt::format("{}/{}", m_outputDirectory, file);
-		if (!Commands::pathExists(resolved))
+		if (!Files::pathExists(resolved))
 			resolved = file;
 
-		if (!Commands::copySilent(resolved, inDirectory))
+		if (!Files::copySilent(resolved, inDirectory))
 		{
 			Diagnostic::error("File not found: {}", file);
 			Diagnostic::error("Couldn't create archive '{}'.", m_outputFilename);
@@ -297,26 +297,26 @@ StringList FileArchiver::getIncludesForCommand(const StringList& inIncludes) con
 {
 	StringList ret;
 
-	auto cwd = Commands::getWorkingDirectory();
-	Commands::changeWorkingDirectory(m_tmpDirectory);
+	auto cwd = Files::getWorkingDirectory();
+	Files::changeWorkingDirectory(m_tmpDirectory);
 
 	for (auto& file : inIncludes)
 	{
 		auto filename = String::getPathFilename(file);
-		if (Commands::pathIsDirectory(filename))
+		if (Files::pathIsDirectory(filename))
 		{
-			Commands::addPathToListWithGlob(fmt::format("{}/*", filename), ret, GlobMatch::FilesAndFolders);
+			Files::addPathToListWithGlob(fmt::format("{}/*", filename), ret, GlobMatch::FilesAndFolders);
 		}
 		else
 		{
-			if (Commands::pathExists(filename))
+			if (Files::pathExists(filename))
 				List::addIfDoesNotExist(ret, std::move(filename));
 			else
 				List::addIfDoesNotExist(ret, file);
 		}
 	}
 
-	Commands::changeWorkingDirectory(cwd);
+	Files::changeWorkingDirectory(cwd);
 
 	return ret;
 }

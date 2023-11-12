@@ -10,7 +10,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -69,9 +69,9 @@ bool CLionProjectExporter::generateProjectFiles()
 
 	const auto& cwd = workingDirectory();
 	auto ideaDirectory = fmt::format("{}/.idea", cwd);
-	if (!Commands::pathExists(ideaDirectory) && Commands::pathExists(m_directory))
+	if (!Files::pathExists(ideaDirectory) && Files::pathExists(m_directory))
 	{
-		if (!Commands::copySilent(m_directory, cwd))
+		if (!Files::copySilent(m_directory, cwd))
 		{
 			Diagnostic::error("There was a problem copying the .idea directory to the workspace.");
 			return false;

@@ -24,7 +24,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -124,7 +124,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// const auto& chaletPath = firstState.inputs.appPath();
 
 	auto rootBuildFile = fmt::format("{}/{}", workingDirectory, inputFile);
-	if (!Commands::pathExists(rootBuildFile))
+	if (!Files::pathExists(rootBuildFile))
 		rootBuildFile = inputFile;
 
 	m_exportPath = String::getPathFolder(String::getPathFolder(inFilename));
@@ -321,7 +321,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
-			Commands::createFileWithContents(outPath, makefileContents);
+			Files::createFileWithContents(outPath, makefileContents);
 		}
 	}
 
@@ -507,7 +507,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				for (auto& file : pbxGroup.children)
 				{
 					auto fileType = getXcodeFileTypeFromFile(file);
-					bool isDirectory = String::equals("automatic", fileType) && Commands::pathIsDirectory(file);
+					bool isDirectory = String::equals("automatic", fileType) && Files::pathIsDirectory(file);
 					if (isDirectory)
 						fileType = "folder";
 
@@ -940,10 +940,10 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 	});
 	bool replaceContents = true;
 
-	if (Commands::pathExists(inFilename))
+	if (Files::pathExists(inFilename))
 	{
 		auto contentHash = Hash::uint64(contents);
-		auto existing = Commands::getFileContents(inFilename);
+		auto existing = Files::getFileContents(inFilename);
 		if (!existing.empty())
 		{
 			existing.pop_back();
@@ -954,7 +954,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 
 	// LOG(contents);
 
-	if (replaceContents && !Commands::createFileWithContents(inFilename, contents))
+	if (replaceContents && !Files::createFileWithContents(inFilename, contents))
 	{
 		Diagnostic::error("There was a problem creating the Xcode project: {}", inFilename);
 		return false;
@@ -1366,7 +1366,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			else
 			{
 				auto temp = fmt::format("{}/{}", cwd, include);
-				if (String::equals(intDir, include) || Commands::pathExists(temp))
+				if (String::equals(intDir, include) || Files::pathExists(temp))
 					searchPaths.emplace_back(std::move(temp));
 				else
 					searchPaths.emplace_back(include);
@@ -1435,7 +1435,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			else
 			{
 				auto temp = fmt::format("{}/{}", cwd, libDir);
-				if (String::equals(intDir, libDir) || Commands::pathExists(temp))
+				if (String::equals(intDir, libDir) || Files::pathExists(temp))
 				{
 					runPaths.emplace_back(temp);
 					searchPaths.emplace_back(temp);
@@ -1579,8 +1579,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
 	auto assetsPath = fmt::format("{}/Assets.xcassets", bundleDirectory);
 
-	if (!Commands::pathExists(bundleDirectory))
-		Commands::makeDirectory(bundleDirectory);
+	if (!Files::pathExists(bundleDirectory))
+		Files::makeDirectory(bundleDirectory);
 
 	if (!m_generatedBundleFiles[targetName])
 	{

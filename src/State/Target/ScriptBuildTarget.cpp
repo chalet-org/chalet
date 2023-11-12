@@ -8,7 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -76,7 +76,7 @@ bool ScriptBuildTarget::validate()
 		}
 	}
 
-	if (m_dependsOn.empty() && !Commands::pathExists(m_file))
+	if (m_dependsOn.empty() && !Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", this->name(), m_file);
 		return false;

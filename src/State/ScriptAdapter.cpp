@@ -6,7 +6,7 @@
 #include "State/ScriptAdapter.hpp"
 
 #include "State/AncillaryTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -87,7 +87,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 	if (String::endsWith(".exe", parsedScriptPath))
 		parsedScriptPath = parsedScriptPath.substr(0, parsedScriptPath.size() - 4);
 
-	auto outScriptPath = Commands::which(parsedScriptPath);
+	auto outScriptPath = Files::which(parsedScriptPath);
 
 	auto gitPath = AncillaryTools::getPathToGit();
 	if (!gitPath.empty())
@@ -95,32 +95,32 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		auto rootPath = String::getPathFolder(String::getPathFolder(gitPath));
 		gitPath = fmt::format("{}/usr/bin", rootPath);
 
-		if (!Commands::pathExists(gitPath))
+		if (!Files::pathExists(gitPath))
 		{
 			gitPath.clear();
 		}
 	}
 #else
-	auto outScriptPath = Commands::which(inScript);
+	auto outScriptPath = Files::which(inScript);
 	std::string gitPath;
 #endif
 	if (outScriptPath.empty())
-		outScriptPath = Commands::getAbsolutePath(inScript);
+		outScriptPath = Files::getAbsolutePath(inScript);
 
-	if (!Commands::pathExists(outScriptPath))
+	if (!Files::pathExists(outScriptPath))
 	{
 		Diagnostic::error("{}: The script '{}' was not found. Aborting.", inInputFile, inScript);
 		return std::make_pair(std::string(), ScriptType::None);
 	}
 
-	Commands::setExecutableFlag(outScriptPath);
+	Files::setExecutableFlag(outScriptPath);
 
 	std::string shebang;
 	bool shellFound = false;
 	ScriptType scriptType = ScriptType::None;
 
 	std::string shell;
-	shebang = Commands::readShebangFromFile(outScriptPath);
+	shebang = Files::readShebangFromFile(outScriptPath);
 	if (!shebang.empty())
 	{
 		if (String::startsWith("/usr/bin/env ", shebang))
@@ -131,7 +131,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 			{
 				shebang = shebang.substr(space + 1);
 				scriptType = getScriptTypeFromString(shebang);
-				shell = Commands::which(shebang);
+				shell = Files::which(shebang);
 				shellFound = !shell.empty();
 
 				if (!shellFound && String::startsWith("python", shebang))
@@ -143,26 +143,26 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 					//
 					if (String::equals("python", shebang))
 					{
-						shell = Commands::which("python3");
+						shell = Files::which("python3");
 					}
 					else if (String::equals("python3", shebang))
 					{
-						shell = Commands::which("python");
+						shell = Files::which("python");
 					}
 					else if (String::equals("python2", shebang)) // just in case
 					{
-						shell = Commands::which("python");
+						shell = Files::which("python");
 					}
 				}
 				else if (!shellFound && !gitPath.empty() && String::equals("perl", shebang))
 				{
 					shell = fmt::format("{}/perl.exe", gitPath);
-					shellFound = Commands::pathExists(shell);
+					shellFound = Files::pathExists(shell);
 				}
 				else if (!shellFound && !gitPath.empty() && String::equals("awk", shebang))
 				{
 					shell = fmt::format("{}/awk.exe", gitPath);
-					shellFound = Commands::pathExists(shell);
+					shellFound = Files::pathExists(shell);
 				}
 			}
 		}
@@ -174,11 +174,11 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 				scriptType = getScriptTypeFromString(search);
 
 				shell = shebang;
-				shellFound = Commands::pathExists(shell);
+				shellFound = Files::pathExists(shell);
 
 				if (!shellFound)
 				{
-					shell = Commands::which(search);
+					shell = Files::which(search);
 					shellFound = !shell.empty();
 
 					if (!shellFound)
@@ -210,7 +210,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Python;
 
-			auto python = Commands::which("python3");
+			auto python = Files::which("python3");
 			if (!python.empty())
 			{
 				shell = std::move(python);
@@ -218,7 +218,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 			}
 			else
 			{
-				python = Commands::which("python");
+				python = Files::which("python");
 				if (!python.empty())
 				{
 					shell = std::move(python);
@@ -227,7 +227,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 				else
 				{
 					// just in case
-					python = Commands::which("python2");
+					python = Files::which("python2");
 					if (!python.empty())
 					{
 						shell = std::move(python);
@@ -240,7 +240,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Ruby;
 
-			auto ruby = Commands::which("ruby");
+			auto ruby = Files::which("ruby");
 			if (!ruby.empty())
 			{
 				shell = std::move(ruby);
@@ -251,7 +251,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Perl;
 
-			auto perl = Commands::which("perl");
+			auto perl = Files::which("perl");
 			if (!perl.empty())
 			{
 				shell = std::move(perl);
@@ -262,7 +262,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 				if (!gitPath.empty())
 				{
 					perl = fmt::format("{}/perl.exe", gitPath);
-					if (Commands::pathExists(perl))
+					if (Files::pathExists(perl))
 					{
 						shell = std::move(perl);
 						shellFound = true;
@@ -274,7 +274,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Tcl;
 
-			auto perl = Commands::which("tclsh");
+			auto perl = Files::which("tclsh");
 			if (!perl.empty())
 			{
 				shell = std::move(perl);
@@ -285,7 +285,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Awk;
 
-			auto perl = Commands::which("awk");
+			auto perl = Files::which("awk");
 			if (!perl.empty())
 			{
 				shell = std::move(perl);
@@ -296,7 +296,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 				if (!gitPath.empty())
 				{
 					perl = fmt::format("{}/awk.exe", gitPath);
-					if (Commands::pathExists(perl))
+					if (Files::pathExists(perl))
 					{
 						shell = std::move(perl);
 						shellFound = true;
@@ -308,7 +308,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		{
 			scriptType = ScriptType::Lua;
 
-			auto lua = Commands::which("lua");
+			auto lua = Files::which("lua");
 			if (!lua.empty())
 			{
 				shell = std::move(lua);

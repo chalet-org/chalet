@@ -7,7 +7,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
@@ -59,7 +59,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 		if (group->type != SourceType::CPlusPlus)
 			continue;
 
-		if (!Commands::pathExists(group->dependencyFile))
+		if (!Files::pathExists(group->dependencyFile))
 			continue;
 
 		Json json;
@@ -154,7 +154,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			{
 				auto& filename = kSystemModules.at(systemModule);
 				auto resolvedPath = fmt::format("{}/modules/{}", m_msvcToolsDirectory, filename);
-				if (Commands::pathExists(resolvedPath))
+				if (Files::pathExists(resolvedPath))
 				{
 					outModules[systemModule].source = std::move(resolvedPath);
 					outModules[systemModule].systemModule = true;
@@ -248,7 +248,7 @@ Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
 	if (!m_msvcToolsDirectory.empty())
 	{
 		auto modulesJsonPath = fmt::format("{}/modules/modules.json", m_msvcToolsDirectory);
-		if (!Commands::pathExists(modulesJsonPath))
+		if (!Files::pathExists(modulesJsonPath))
 			return ret;
 
 		Json json;

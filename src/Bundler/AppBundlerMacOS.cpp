@@ -21,7 +21,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -92,7 +92,7 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 	auto outputFolder = String::getPathFolder(appPath);
 
 	auto& buildOutputDir = m_state.paths.buildOutputDir();
-	if (!Commands::copy(fmt::format("{}/{}", buildOutputDir, appName), outputFolder))
+	if (!Files::copy(fmt::format("{}/{}", buildOutputDir, appName), outputFolder))
 	{
 		Diagnostic::error("There was an problem copying {} to the output directory ({})", appName, outputFolder);
 		return false;
@@ -117,8 +117,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 		}
 	}
 
-	if (!Commands::pathExists(m_frameworksPath))
-		Commands::makeDirectory(m_frameworksPath);
+	if (!Files::pathExists(m_frameworksPath))
+		Files::makeDirectory(m_frameworksPath);
 
 	auto& installNameTool = m_state.tools.installNameTool();
 	if (m_bundle.updateRPaths())
@@ -132,7 +132,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	/*for (auto& executable : m_executableOutputPaths)
 	{
-		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
+		if (!Files::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
 			return false;
 	}*/
 
@@ -161,8 +161,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!signAppBundle())
 			return false;
 
-		if (Commands::pathExists(m_entitlementsFile))
-			Commands::remove(m_entitlementsFile);
+		if (Files::pathExists(m_entitlementsFile))
+			Files::remove(m_entitlementsFile);
 
 		Output::msgAction("Succeeded", String::getPathFolder(m_bundlePath));
 	}
@@ -238,12 +238,12 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const
 {
-	if (!Commands::pathExists(inOutputFile))
+	if (!Files::pathExists(inOutputFile))
 		return true;
 
 	if (inDependencies.size() > 0)
 	{
-		if (!Commands::subprocess({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }))
+		if (!Files::subprocess({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -257,7 +257,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 			continue;
 
 		auto depFile = String::getPathFilename(dep);
-		if (!Commands::subprocess({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }))
+		if (!Files::subprocess({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -266,7 +266,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 		// For dylibs linked w/o .a files, they get assigned "@executable_path/../Frameworks/"
 		//   so we need to attempt to update them as well
 		auto depFrameworkPath = fmt::format("@executable_path/../Frameworks/{}", depFile);
-		if (!Commands::subprocess({ inInstallNameTool, "-change", depFrameworkPath, fmt::format("@rpath/{}", depFile), inOutputFile }))
+		if (!Files::subprocess({ inInstallNameTool, "-change", depFrameworkPath, fmt::format("@rpath/{}", depFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -317,12 +317,12 @@ bool AppBundlerMacOS::createBundleIcon()
 	if (String::endsWith(".png", icon) && sipsFound)
 	{
 		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-		if (!Commands::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+		if (!Files::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 			return false;
 	}
 	else if (String::endsWith(".icns", icon))
 	{
-		if (!Commands::copy(icon, m_resourcePath))
+		if (!Files::copy(icon, m_resourcePath))
 			return false;
 	}
 	else
@@ -351,8 +351,8 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	Timer timer;
 
 	auto objDir = m_state.paths.bundleObjDir(m_bundle.name());
-	if (!Commands::pathExists(objDir))
-		Commands::makeDirectory(objDir);
+	if (!Files::pathExists(objDir))
+		Files::makeDirectory(objDir);
 
 	bool iconIsXcassets = String::endsWith(".xcassets", icon);
 
@@ -360,9 +360,9 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	if (iconIsXcassets)
 		assetsPath = icon;
 
-	auto usingCommandLineTools = Commands::isUsingAppleCommandLineTools();
+	auto usingCommandLineTools = Files::isUsingAppleCommandLineTools();
 
-	auto actool = Commands::which("actool");
+	auto actool = Files::which("actool");
 	if (actool.empty() || usingCommandLineTools)
 	{
 		auto& inputFile = m_state.inputs.inputFile();
@@ -396,7 +396,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
 
-	bool result = Commands::subprocessNoOutput({
+	bool result = Files::subprocessNoOutput({
 		actool,
 		"--output-format",
 		"human-readable-text",
@@ -451,17 +451,17 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	if (!sourceCache.fileChangedOrDoesNotExist(icon, inOutPath))
 		return true;
 
-	if (!Commands::pathExists(inOutPath))
-		Commands::makeDirectory(inOutPath);
+	if (!Files::pathExists(inOutPath))
+		Files::makeDirectory(inOutPath);
 
 	auto accentColorPath = fmt::format("{}/AccentColor.colorset", inOutPath);
 	auto appIconPath = fmt::format("{}/AppIcon.appiconset", inOutPath);
 
-	if (!Commands::pathExists(accentColorPath))
-		Commands::makeDirectory(accentColorPath);
+	if (!Files::pathExists(accentColorPath))
+		Files::makeDirectory(accentColorPath);
 
-	if (!Commands::pathExists(appIconPath))
-		Commands::makeDirectory(appIconPath);
+	if (!Files::pathExists(appIconPath))
+		Files::makeDirectory(appIconPath);
 
 	Json root = R"json({
 		"info" : { "author" : "xcode", "version" : 1 }
@@ -491,7 +491,7 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 			i32 imageSize = scale * size;
 			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
 			// -Z 32 glfw.icns --out glfw-32.icns
-			if (Commands::subprocessNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
+			if (Files::subprocessNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
 			{
 				out["filename"] = String::getPathFilename(outIcon);
 			}
@@ -588,7 +588,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 	if (!m_state.tools.plistConvertToBinary(tmpPlist, inOutFile))
 		return false;
 
-	Commands::remove(tmpPlist);
+	Files::remove(tmpPlist);
 #else
 	UNUSED(inOutFile, outJson);
 #endif
@@ -639,7 +639,7 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
 		return false;
 
-	Commands::remove(tmpPlist);
+	Files::remove(tmpPlist);
 #else
 	UNUSED(inOutFile);
 #endif
@@ -655,13 +655,13 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	// install_name_tool
 	for (auto& executable : m_executableOutputPaths)
 	{
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
+		if (!Files::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
+		if (!Files::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
+		if (!Files::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
 			return false;
 	}
 
@@ -683,7 +683,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 						continue;
 
 					const std::string filename = fmt::format("{}/{}.framework", path, framework);
-					if (!Commands::pathExists(filename))
+					if (!Files::pathExists(filename))
 						continue;
 
 					if (List::contains(addedFrameworks, framework))
@@ -691,14 +691,14 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 					addedFrameworks.push_back(framework);
 
-					if (!Commands::copy(filename, m_frameworksPath, fs::copy_options::skip_existing))
+					if (!Files::copy(filename, m_frameworksPath, fs::copy_options::skip_existing))
 						return false;
 
 					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworksPath, framework);
 
 					for (auto& executable : m_executableOutputPaths)
 					{
-						if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
+						if (!Files::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
 							return false;
 					}
 

@@ -13,7 +13,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -101,9 +101,9 @@ bool VSJsonProjectExporter::generateProjectFiles()
 
 	const auto& cwd = workingDirectory();
 	auto vsDirectory = fmt::format("{}/.vs", cwd);
-	if (!Commands::pathExists(vsDirectory) && Commands::pathExists(m_directory))
+	if (!Files::pathExists(vsDirectory) && Files::pathExists(m_directory))
 	{
-		if (!Commands::copySilent(m_directory, cwd))
+		if (!Files::copySilent(m_directory, cwd))
 		{
 			Diagnostic::error("There was a problem copying the .vs directory to the workspace.");
 			return false;

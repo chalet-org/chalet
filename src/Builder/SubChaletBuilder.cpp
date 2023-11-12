@@ -17,7 +17,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -36,7 +36,7 @@ SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTar
 std::string SubChaletBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
-	auto ret = Commands::getAbsolutePath(rawLocation);
+	auto ret = Files::getAbsolutePath(rawLocation);
 	Path::toUnix(ret);
 
 	return ret;
@@ -113,9 +113,9 @@ bool SubChaletBuilder::run()
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
-		Commands::removeRecursively(m_outputLocation);
+		Files::removeRecursively(m_outputLocation);
 
-	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
+	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	auto onRunFailure = [&oldPath]() -> bool {
@@ -133,7 +133,7 @@ bool SubChaletBuilder::run()
 		for (auto& targetName : m_target.targets())
 		{
 			auto cmd = getBuildCommand(targetName);
-			result = Commands::subprocess(cmd);
+			result = Files::subprocess(cmd);
 			if (!result)
 				return onRunFailure();
 		}
@@ -168,7 +168,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
+	auto proximateOutput = Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
 	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
 
 	cmd.emplace_back("--root-dir");
@@ -182,7 +182,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!hasSettings)
 	{
-		auto proximateSettings = Commands::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+		auto proximateSettings = Files::getProximatePath(m_state.inputs.settingsFile(), inLocation);
 
 		cmd.emplace_back("--settings-file");
 		cmd.emplace_back(getQuotedPath(proximateSettings));
@@ -205,9 +205,9 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!m_state.inputs.envFile().empty())
 	{
-		if (Commands::pathExists(m_state.inputs.envFile()))
+		if (Files::pathExists(m_state.inputs.envFile()))
 		{
-			auto envAbsolute = Commands::getAbsolutePath(m_state.inputs.envFile());
+			auto envAbsolute = Files::getAbsolutePath(m_state.inputs.envFile());
 			cmd.emplace_back("--env-file");
 			cmd.push_back(getQuotedPath(envAbsolute));
 		}

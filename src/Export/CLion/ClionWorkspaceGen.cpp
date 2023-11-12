@@ -21,7 +21,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Uuid.hpp"
@@ -47,12 +47,12 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	UNUSED(inPath);
 
 	auto toolsPath = fmt::format("{}/tools", inPath);
-	if (!Commands::pathExists(toolsPath))
-		Commands::makeDirectory(toolsPath);
+	if (!Files::pathExists(toolsPath))
+		Files::makeDirectory(toolsPath);
 
 	auto runConfigurationsPath = fmt::format("{}/runConfigurations", inPath);
-	if (!Commands::pathExists(runConfigurationsPath))
-		Commands::makeDirectory(runConfigurationsPath);
+	if (!Files::pathExists(runConfigurationsPath))
+		Files::makeDirectory(runConfigurationsPath);
 
 	auto nameFile = fmt::format("{}/.name", inPath);
 	auto workspaceFile = fmt::format("{}/workspace.xml", inPath);
@@ -63,13 +63,13 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 
 	auto& debugState = getDebugState();
 	auto& currentBuildDir = debugState.paths.currentBuildDir();
-	if (!Commands::pathExists(currentBuildDir))
-		Commands::makeDirectory(currentBuildDir);
+	if (!Files::pathExists(currentBuildDir))
+		Files::makeDirectory(currentBuildDir);
 
 	auto ccmdsJson = fmt::format("{}/compile_commands.json", currentBuildDir);
-	if (!Commands::pathExists(ccmdsJson))
+	if (!Files::pathExists(ccmdsJson))
 	{
-		Commands::createFileWithContents(ccmdsJson, "[]");
+		Files::createFileWithContents(ccmdsJson, "[]");
 	}
 
 	m_homeDirectory = Environment::getUserDirectory();
@@ -86,7 +86,7 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 		m_defaultRunTargetName = runTarget->name();
 	}
 
-	Commands::createFileWithContents(nameFile, m_projectName);
+	Files::createFileWithContents(nameFile, m_projectName);
 
 	m_toolchain = getToolchain();
 	m_arches = getArchitectures(m_toolchain);
@@ -741,7 +741,7 @@ StringList CLionWorkspaceGen::getArchitectures(const std::string& inToolchain) c
 /*****************************************************************************/
 std::string CLionWorkspaceGen::getResolvedPath(const std::string& inFile) const
 {
-	return Commands::getCanonicalPath(inFile);
+	return Files::getCanonicalPath(inFile);
 }
 
 /*****************************************************************************/

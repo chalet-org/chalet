@@ -5,7 +5,7 @@
 
 #include "BuildEnvironment/Script/IEnvironmentScript.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 
 namespace chalet
 {
@@ -35,7 +35,7 @@ void IEnvironmentScript::setEnvVarsFileDelta(const std::string& inValue)
 
 	m_envVarsFileDelta = inValue;
 
-	m_envVarsFileDeltaExists = Commands::pathExists(m_envVarsFileDelta);
+	m_envVarsFileDeltaExists = Files::pathExists(m_envVarsFileDelta);
 }
 
 /*****************************************************************************/

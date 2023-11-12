@@ -9,7 +9,7 @@
 #include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/String.hpp"
@@ -47,11 +47,11 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 		const auto& home = m_inputs.homeDirectory();
 		m_intelSetVars = fmt::format("{}/intel/oneapi/setvars.sh", home);
 #endif
-		if (!Commands::pathExists(m_intelSetVars))
+		if (!Files::pathExists(m_intelSetVars))
 		{
 #if !defined(CHALET_WIN32)
 			m_intelSetVars = "/opt/intel/oneapi/setvars.sh";
-			if (!Commands::pathExists(m_intelSetVars))
+			if (!Files::pathExists(m_intelSetVars))
 #endif
 			{
 				Diagnostic::error("No suitable Intel C++ compiler installation found. Pleas install the Intel oneAPI Toolkit before continuing.");

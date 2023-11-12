@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 
 #include <array>
 #include <chrono>
@@ -18,7 +18,7 @@
 #endif
 
 #include "Process/Environment.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
@@ -143,7 +143,7 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 }
 
 /*****************************************************************************/
-i64 Commands::getLastWriteTime(const std::string& inFile)
+i64 Files::getLastWriteTime(const std::string& inFile)
 {
 	if (::stat(inFile.c_str(), &statBuffer) == 0)
 	{
@@ -156,7 +156,7 @@ i64 Commands::getLastWriteTime(const std::string& inFile)
 }
 
 /*****************************************************************************/
-std::string Commands::getWorkingDirectory()
+std::string Files::getWorkingDirectory()
 {
 	std::error_code error;
 	auto cwd = fs::current_path(error);
@@ -168,7 +168,7 @@ std::string Commands::getWorkingDirectory()
 }
 
 /*****************************************************************************/
-bool Commands::changeWorkingDirectory(const std::string& inPath)
+bool Files::changeWorkingDirectory(const std::string& inPath)
 {
 	std::error_code error;
 	fs::current_path(inPath, error);
@@ -176,7 +176,7 @@ bool Commands::changeWorkingDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsFile(const std::string& inPath)
+bool Files::pathIsFile(const std::string& inPath)
 {
 	std::error_code error;
 	bool result = fs::is_regular_file(inPath, error);
@@ -184,7 +184,7 @@ bool Commands::pathIsFile(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsDirectory(const std::string& inPath)
+bool Files::pathIsDirectory(const std::string& inPath)
 {
 	std::error_code error;
 	bool result = fs::is_directory(inPath, error);
@@ -192,7 +192,7 @@ bool Commands::pathIsDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::pathIsSymLink(const std::string& inPath)
+bool Files::pathIsSymLink(const std::string& inPath)
 {
 	std::error_code error;
 	bool result = fs::is_symlink(inPath, error);
@@ -200,7 +200,7 @@ bool Commands::pathIsSymLink(const std::string& inPath)
 }
 
 /*****************************************************************************/
-std::string Commands::getCanonicalPath(const std::string& inPath)
+std::string Files::getCanonicalPath(const std::string& inPath)
 {
 	// This method doesn't care if the path is real or not, so weakly_canonical is used
 	std::error_code error;
@@ -219,7 +219,7 @@ std::string Commands::getCanonicalPath(const std::string& inPath)
 }
 
 /*****************************************************************************/
-std::string Commands::getAbsolutePath(const std::string& inPath)
+std::string Files::getAbsolutePath(const std::string& inPath)
 {
 	std::error_code error;
 	auto path = fs::absolute(inPath, error);
@@ -237,7 +237,7 @@ std::string Commands::getAbsolutePath(const std::string& inPath)
 }
 
 /*****************************************************************************/
-std::string Commands::getProximatePath(const std::string& inPath, const std::string& inBase)
+std::string Files::getProximatePath(const std::string& inPath, const std::string& inBase)
 {
 	std::error_code error;
 	auto path = fs::proximate(inPath, inBase, error);
@@ -255,7 +255,7 @@ std::string Commands::getProximatePath(const std::string& inPath, const std::str
 }
 
 /*****************************************************************************/
-std::string Commands::resolveSymlink(const std::string& inPath)
+std::string Files::resolveSymlink(const std::string& inPath)
 {
 	std::error_code error;
 	auto path = fs::read_symlink(inPath, error);
@@ -271,7 +271,7 @@ std::string Commands::resolveSymlink(const std::string& inPath)
 }
 
 /*****************************************************************************/
-uintmax_t Commands::getPathSize(const std::string& inPath)
+uintmax_t Files::getPathSize(const std::string& inPath)
 {
 	CHALET_TRY
 	{
@@ -308,7 +308,7 @@ uintmax_t Commands::getPathSize(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::makeDirectory(const std::string& inPath)
+bool Files::makeDirectory(const std::string& inPath)
 {
 	if (Output::showCommands())
 		Output::printCommand(fmt::format("make directory: {}", inPath));
@@ -324,16 +324,16 @@ bool Commands::makeDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::makeDirectories(const StringList& inPaths, bool& outDirectoriesMade)
+bool Files::makeDirectories(const StringList& inPaths, bool& outDirectoriesMade)
 {
 	outDirectoriesMade = false;
 	bool result = true;
 	for (auto& path : inPaths)
 	{
-		if (Commands::pathExists(path))
+		if (Files::pathExists(path))
 			continue;
 
-		result &= Commands::makeDirectory(path);
+		result &= Files::makeDirectory(path);
 		outDirectoriesMade = true;
 	}
 
@@ -341,9 +341,9 @@ bool Commands::makeDirectories(const StringList& inPaths, bool& outDirectoriesMa
 }
 
 /*****************************************************************************/
-bool Commands::remove(const std::string& inPath)
+bool Files::remove(const std::string& inPath)
 {
-	if (!Commands::pathExists(inPath))
+	if (!Files::pathExists(inPath))
 		return true;
 
 	if (Output::showCommands())
@@ -358,7 +358,7 @@ bool Commands::remove(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::removeRecursively(const std::string& inPath)
+bool Files::removeRecursively(const std::string& inPath)
 {
 	if (Output::showCommands())
 		Output::printCommand(fmt::format("remove recursively: {}", inPath));
@@ -372,7 +372,7 @@ bool Commands::removeRecursively(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::setExecutableFlag(const std::string& inPath)
+bool Files::setExecutableFlag(const std::string& inPath)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inPath);
@@ -398,7 +398,7 @@ bool Commands::setExecutableFlag(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo)
+bool Files::createDirectorySymbolicLink(const std::string& inFrom, const std::string& inTo)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inFrom, inTo);
@@ -417,7 +417,7 @@ bool Commands::createDirectorySymbolicLink(const std::string& inFrom, const std:
 }
 
 /*****************************************************************************/
-bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& inTo)
+bool Files::createSymbolicLink(const std::string& inFrom, const std::string& inTo)
 {
 #if defined(CHALET_WIN32)
 	UNUSED(inFrom, inTo);
@@ -436,7 +436,7 @@ bool Commands::createSymbolicLink(const std::string& inFrom, const std::string& 
 }
 
 /*****************************************************************************/
-bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
+bool Files::copy(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	CHALET_TRY
 	{
@@ -463,7 +463,7 @@ bool Commands::copy(const std::string& inFrom, const std::string& inTo, const fs
 }
 
 /*****************************************************************************/
-bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
+bool Files::copySilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	CHALET_TRY
 	{
@@ -488,7 +488,7 @@ bool Commands::copySilent(const std::string& inFrom, const std::string& inTo, co
 }
 
 /*****************************************************************************/
-bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent)
+bool Files::copyRename(const std::string& inFrom, const std::string& inTo, const bool inSilent)
 {
 	if (!inSilent)
 	{
@@ -507,7 +507,7 @@ bool Commands::copyRename(const std::string& inFrom, const std::string& inTo, co
 }
 
 /*****************************************************************************/
-bool Commands::moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
+bool Files::moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	CHALET_TRY
 	{
@@ -537,17 +537,17 @@ bool Commands::moveSilent(const std::string& inFrom, const std::string& inTo, co
 }
 
 /*****************************************************************************/
-bool Commands::rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting)
+bool Files::rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting)
 {
 	CHALET_TRY
 	{
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("rename: {} -> {}", inFrom, inTo));
 
-		if (!Commands::pathExists(inFrom))
+		if (!Files::pathExists(inFrom))
 			return inSkipNonExisting;
 
-		if (Commands::pathExists(inTo))
+		if (Files::pathExists(inTo))
 			fs::remove(inTo);
 
 		fs::rename(inFrom, inTo);
@@ -562,13 +562,13 @@ bool Commands::rename(const std::string& inFrom, const std::string& inTo, const 
 }
 
 /*****************************************************************************/
-bool Commands::pathExists(const std::string& inFile)
+bool Files::pathExists(const std::string& inFile)
 {
 	return stat(inFile.c_str(), &statBuffer) == 0;
 }
 
 /*****************************************************************************/
-bool Commands::pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions)
+bool Files::pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions)
 {
 	CHALET_TRY
 	{
@@ -623,7 +623,7 @@ bool Commands::pathIsEmpty(const std::string& inPath, const std::vector<fs::path
 // Should match:
 //   https://www.digitalocean.com/community/tools/glob?comments=true&glob=src%2F%2A%2A%2F%2A.cpp&matches=false&tests=src&tests=src%2Fmain.cpp&tests=src%2Fpch.hpp&tests=src%2Ffoo&tests=src%2Ffoo%2Ffoo.cpp&tests=src%2Ffoo%2Ffoo.hpp&tests=src%2Fbar&tests=src%2Fbar%2Fbar&tests=src%2Fbar%2Fbar%2Fbar.cpp&tests=src%2Fbar%2Fbar%2Fbar.hpp
 //
-bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	if (onFound == nullptr)
 		return false;
@@ -643,11 +643,11 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 
 	if (basePath.empty())
 	{
-		basePath = Commands::getWorkingDirectory();
+		basePath = Files::getWorkingDirectory();
 		Path::toUnix(basePath);
 	}
 
-	if (!Commands::pathIsDirectory(basePath))
+	if (!Files::pathIsDirectory(basePath))
 		return false;
 
 	auto pattern = inPattern;
@@ -740,7 +740,7 @@ bool Commands::forEachGlobMatch(const std::string& inPattern, const GlobMatch in
 }
 
 /*****************************************************************************/
-bool Commands::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
@@ -752,13 +752,13 @@ bool Commands::forEachGlobMatch(const StringList& inPatterns, const GlobMatch in
 }
 
 /*****************************************************************************/
-bool Commands::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	return forEachGlobMatch(fmt::format("{}/{}", inPath, inPattern), inSettings, onFound);
 }
 
 /*****************************************************************************/
-bool Commands::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
@@ -770,11 +770,11 @@ bool Commands::forEachGlobMatch(const std::string& inPath, const StringList& inP
 }
 
 /*****************************************************************************/
-bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
+bool Files::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
 {
 	if (inValue.find_first_of("*{") != std::string::npos)
 	{
-		if (!Commands::forEachGlobMatch(inValue, inSettings, [&outList](std::string inPath) {
+		if (!Files::forEachGlobMatch(inValue, inSettings, [&outList](std::string inPath) {
 				outList.emplace_back(std::move(inPath));
 			}))
 			return false;
@@ -792,9 +792,9 @@ bool Commands::addPathToListWithGlob(std::string&& inValue, StringList& outList,
 /*****************************************************************************/
 // TODO: This doesn't quite fit here
 //
-bool Commands::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
+bool Files::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
 {
-	if (!Commands::pathExists(inFile))
+	if (!Files::pathExists(inFile))
 		return false;
 
 	if (onReplace == nullptr)
@@ -814,11 +814,11 @@ bool Commands::readFileAndReplace(const std::string& inFile, const std::function
 }
 
 /*****************************************************************************/
-std::string Commands::readShebangFromFile(const std::string& inFile)
+std::string Files::readShebangFromFile(const std::string& inFile)
 {
 	std::string ret;
 
-	if (Commands::pathExists(inFile))
+	if (Files::pathExists(inFile))
 	{
 		std::ifstream file{ inFile };
 		std::getline(file, ret);
@@ -846,18 +846,18 @@ std::string Commands::readShebangFromFile(const std::string& inFile)
 }
 
 /*****************************************************************************/
-void Commands::sleep(const f64 inSeconds)
+void Files::sleep(const f64 inSeconds)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<i32>(inSeconds * 1000.0)));
 }
 
 /*****************************************************************************/
-bool Commands::createFileWithContents(const std::string& inFile, const std::string& inContents)
+bool Files::createFileWithContents(const std::string& inFile, const std::string& inContents)
 {
 	auto folder = String::getPathFolder(inFile);
-	if (!folder.empty() && !Commands::pathExists(folder))
+	if (!folder.empty() && !Files::pathExists(folder))
 	{
-		if (!Commands::makeDirectory(folder))
+		if (!Files::makeDirectory(folder))
 		{
 			Diagnostic::error("File with contents could not be created (Folder doesn't exist): {}", inFile);
 			return false;
@@ -870,9 +870,9 @@ bool Commands::createFileWithContents(const std::string& inFile, const std::stri
 }
 
 /*****************************************************************************/
-std::string Commands::getFileContents(const std::string& inFile)
+std::string Files::getFileContents(const std::string& inFile)
 {
-	if (!Commands::pathExists(inFile))
+	if (!Files::pathExists(inFile))
 		return std::string();
 
 	std::stringstream buffer;
@@ -883,7 +883,7 @@ std::string Commands::getFileContents(const std::string& inFile)
 }
 
 /*****************************************************************************/
-std::string Commands::getFirstChildDirectory(const std::string& inPath)
+std::string Files::getFirstChildDirectory(const std::string& inPath)
 {
 	std::error_code ec;
 	fs::path path(inPath);
@@ -906,13 +906,13 @@ std::string Commands::getFirstChildDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
+bool Files::subprocess(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
-	chalet_assert(inStdErr != PipeOption::Pipe, "Commands::subprocess must implement onStdErr");
+	chalet_assert(inStdOut != PipeOption::Pipe, "Files::subprocess must implement onStdOut");
+	chalet_assert(inStdErr != PipeOption::Pipe, "Files::subprocess must implement onStdErr");
 
 	ProcessOptions options;
 	options.cwd = std::move(inCwd);
@@ -920,17 +920,17 @@ bool Commands::subprocess(const StringList& inCmd, std::string inCwd, CreateSubp
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
 
-	return ProcessController::run(inCmd, options) == EXIT_SUCCESS;
+	return SubProcessController::run(inCmd, options) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
-bool Commands::subprocessWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
+bool Files::subprocessWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	chalet_assert(inStdOut != PipeOption::Pipe, "Commands::subprocess must implement onStdOut");
-	chalet_assert(inStdErr != PipeOption::Pipe, "Commands::subprocess must implement onStdErr");
+	chalet_assert(inStdOut != PipeOption::Pipe, "Files::subprocess must implement onStdOut");
+	chalet_assert(inStdErr != PipeOption::Pipe, "Files::subprocess must implement onStdErr");
 
 	ProcessOptions options;
 	options.cwd = std::move(inCwd);
@@ -939,17 +939,17 @@ bool Commands::subprocessWithInput(const StringList& inCmd, std::string inCwd, C
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
 
-	return ProcessController::run(inCmd, options) == EXIT_SUCCESS;
+	return SubProcessController::run(inCmd, options) == EXIT_SUCCESS;
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
+std::string Files::subprocessOutput(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	return subprocessOutput(inCmd, getWorkingDirectory(), inStdOut, inStdErr);
 }
 
 /*****************************************************************************/
-std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut, const PipeOption inStdErr)
+std::string Files::subprocessOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -986,7 +986,7 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 		};
 	}
 
-	UNUSED(ProcessController::run(inCmd, options));
+	UNUSED(SubProcessController::run(inCmd, options));
 
 	stripLastEndLine(ret);
 
@@ -994,34 +994,34 @@ std::string Commands::subprocessOutput(const StringList& inCmd, std::string inWo
 }
 
 /*****************************************************************************/
-bool Commands::subprocessNoOutput(const StringList& inCmd)
+bool Files::subprocessNoOutput(const StringList& inCmd)
 {
 	if (Output::showCommands())
-		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+		return Files::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
 	else
-		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
+		return Files::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::Close);
 }
 
 /*****************************************************************************/
-bool Commands::subprocessMinimalOutput(const StringList& inCmd)
+bool Files::subprocessMinimalOutput(const StringList& inCmd)
 {
 	if (Output::showCommands())
-		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+		return Files::subprocess(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
 	else
-		return Commands::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::StdErr);
+		return Files::subprocess(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::StdErr);
 }
 
 /*****************************************************************************/
-bool Commands::subprocessMinimalOutput(const StringList& inCmd, std::string inCwd)
+bool Files::subprocessMinimalOutput(const StringList& inCmd, std::string inCwd)
 {
 	if (Output::showCommands())
-		return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+		return Files::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr);
 	else
-		return Commands::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::StdErr);
+		return Files::subprocess(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::StdErr);
 }
 
 /*****************************************************************************/
-bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr)
+bool Files::subprocessOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -1043,13 +1043,13 @@ bool Commands::subprocessOutputToFile(const StringList& inCmd, const std::string
 		options.onStdErr = options.onStdOut;
 	}
 
-	bool result = ProcessController::run(inCmd, options) == EXIT_SUCCESS;
+	bool result = SubProcessController::run(inCmd, options) == EXIT_SUCCESS;
 	outputStream << std::endl;
 	return result;
 }
 
 /*****************************************************************************/
-bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
+bool Files::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -1090,7 +1090,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 		}
 	};
 
-	i32 result = ProcessController::run(inCmd, options);
+	i32 result = SubProcessController::run(inCmd, options);
 
 	if (!capData.empty())
 	{
@@ -1105,7 +1105,7 @@ bool Commands::subprocessNinjaBuild(const StringList& inCmd, std::string inCwd)
 }
 
 /*****************************************************************************/
-std::string Commands::isolateVersion(const std::string& outString)
+std::string Files::isolateVersion(const std::string& outString)
 {
 	std::string ret = outString;
 
@@ -1125,7 +1125,7 @@ std::string Commands::isolateVersion(const std::string& outString)
 }
 
 /*****************************************************************************/
-std::string Commands::which(const std::string& inExecutable, const bool inOutput)
+std::string Files::which(const std::string& inExecutable, const bool inOutput)
 {
 	if (inExecutable.empty())
 		return std::string();
@@ -1151,7 +1151,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inOutput
 		String::replaceAll(result, '\\', '/');
 	}
 #else
-	if (!Commands::pathExists(inExecutable)) // checks working dir
+	if (!Files::pathExists(inExecutable)) // checks working dir
 	{
 		auto path = Environment::getPath();
 		auto home = Environment::getUserDirectory();
@@ -1169,7 +1169,7 @@ std::string Commands::which(const std::string& inExecutable, const bool inOutput
 			}
 
 			result = fmt::format("{}/{}", tmp, inExecutable);
-			if (Commands::pathExists(result))
+			if (Files::pathExists(result))
 				break;
 
 			result.clear();
@@ -1190,14 +1190,14 @@ std::string Commands::which(const std::string& inExecutable, const bool inOutput
 	{
 		auto& xcodePath = getXcodePath();
 		std::string withXcodePath = xcodePath + result;
-		if (Commands::pathExists(withXcodePath))
+		if (Files::pathExists(withXcodePath))
 		{
 			result = std::move(withXcodePath);
 		}
 		else
 		{
 			withXcodePath = fmt::format("{}/Toolchains/XcodeDefault.xctoolchain{}", xcodePath, result);
-			if (Commands::pathExists(withXcodePath))
+			if (Files::pathExists(withXcodePath))
 			{
 				result = std::move(withXcodePath);
 			}
@@ -1211,12 +1211,12 @@ std::string Commands::which(const std::string& inExecutable, const bool inOutput
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-const std::string& Commands::getCygPath()
+const std::string& Files::getCygPath()
 {
 	if (state.cygPath.empty())
 	{
-		auto cygPath = Commands::which("cygpath");
-		state.cygPath = Commands::subprocessOutput({ std::move(cygPath), "-m", "/" });
+		auto cygPath = Files::which("cygpath");
+		state.cygPath = Files::subprocessOutput({ std::move(cygPath), "-m", "/" });
 		Path::toUnix(state.cygPath, true);
 		state.cygPath.pop_back();
 	}
@@ -1227,21 +1227,21 @@ const std::string& Commands::getCygPath()
 
 #if defined(CHALET_MACOS)
 /*****************************************************************************/
-const std::string& Commands::getXcodePath()
+const std::string& Files::getXcodePath()
 {
 	if (state.xcodePath.empty())
 	{
 		auto xcodeSelect = "/usr/bin/xcode-select";
-		state.xcodePath = Commands::subprocessOutput({ std::move(xcodeSelect), "-p" });
+		state.xcodePath = Files::subprocessOutput({ std::move(xcodeSelect), "-p" });
 	}
 
 	return state.xcodePath;
 }
 
 /*****************************************************************************/
-bool Commands::isUsingAppleCommandLineTools()
+bool Files::isUsingAppleCommandLineTools()
 {
-	const auto& xcodePath = Commands::getXcodePath();
+	const auto& xcodePath = Files::getXcodePath();
 	return String::startsWith("/Library/Developer/CommandLineTools", xcodePath);
 }
 #endif

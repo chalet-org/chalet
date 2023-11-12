@@ -29,7 +29,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -473,7 +473,7 @@ bool BuildState::initializeBuild()
 	{
 		auto compilerPath = toolchain.compilerCxxAny().binDir;
 		auto windres = fmt::format("{}/{}-windres", compilerPath, info.targetArchitectureTriple());
-		if (Commands::pathExists(windres))
+		if (Files::pathExists(windres))
 		{
 			toolchain.setCompilerWindowsResource(std::move(windres));
 		}
@@ -511,11 +511,11 @@ bool BuildState::initializeBuild()
 				if (systemPaths.empty())
 				{
 					std::string localLib{ "/usr/local/lib" };
-					if (Commands::pathExists(localLib))
+					if (Files::pathExists(localLib))
 						project.addLibDir(std::move(localLib));
 
 					std::string localInclude{ "/usr/local/include" };
-					if (Commands::pathExists(localInclude))
+					if (Files::pathExists(localInclude))
 						project.addIncludeDir(std::move(localInclude));
 				}
 #endif
@@ -595,12 +595,12 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
-	auto workingDirectory = Commands::getWorkingDirectory();
+	auto workingDirectory = Files::getWorkingDirectory();
 	Path::toUnix(workingDirectory, true);
 
 	if (String::toLowerCase(inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 	{
-		if (!Commands::changeWorkingDirectory(inputs.workingDirectory()))
+		if (!Files::changeWorkingDirectory(inputs.workingDirectory()))
 		{
 			Diagnostic::error("Error changing directory to '{}'", inputs.workingDirectory());
 			return false;
@@ -709,7 +709,7 @@ bool BuildState::validateState()
 	if (strat == StrategyType::Makefile)
 	{
 		const auto& makeExec = toolchain.make();
-		if (makeExec.empty() || !Commands::pathExists(makeExec))
+		if (makeExec.empty() || !Files::pathExists(makeExec))
 		{
 			Diagnostic::error("{} was either not defined in the toolchain, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
@@ -738,7 +738,7 @@ bool BuildState::validateState()
 	else if (strat == StrategyType::Ninja)
 	{
 		auto& ninjaExec = toolchain.ninja();
-		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
+		if (ninjaExec.empty() || !Files::pathExists(ninjaExec))
 		{
 			Diagnostic::error("{} was either not defined in the toolchain, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
@@ -766,7 +766,7 @@ bool BuildState::validateState()
 			return false;
 		}
 
-		if (Commands::isUsingAppleCommandLineTools())
+		if (Files::isUsingAppleCommandLineTools())
 		{
 			Diagnostic::error("The 'xcodebuild' strategy cannot be used with CommandLineTools. Please run 'sudo xcode-select -s /Applications/Xcode.app/Contents/Developer' (or with your chosen path to Xcode)");
 			return false;
@@ -816,7 +816,7 @@ bool BuildState::validateState()
 #if defined(CHALET_MACOS)
 		bool profilerAvailable = true;
 #else
-		bool profilerAvailable = !toolchain.profiler().empty() && Commands::pathExists(toolchain.profiler());
+		bool profilerAvailable = !toolchain.profiler().empty() && Files::pathExists(toolchain.profiler());
 #endif
 		if (!profilerAvailable)
 		{
@@ -840,7 +840,7 @@ bool BuildState::validateState()
 #if defined(CHALET_WIN32)
 		if (requiresVisualStudio)
 		{
-			auto vsperfcmd = Commands::which("vsperfcmd");
+			auto vsperfcmd = Files::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
 				std::string progFiles = Environment::getString("ProgramFiles(x86)");
@@ -951,7 +951,7 @@ void BuildState::makePathVariable()
 	{
 		// Edge case for cross-compilers that have an extra bin folder (like MinGW on Linux)
 		auto extraBinDir = fmt::format("{}/bin", String::getPathFolder(toolchain.compilerCpp().libDir));
-		if (Commands::pathExists(extraBinDir))
+		if (Files::pathExists(extraBinDir))
 		{
 			if (!List::contains(pathList, extraBinDir))
 				outList.emplace_back(std::move(extraBinDir));
@@ -970,10 +970,10 @@ void BuildState::makePathVariable()
 
 	for (auto& p : osPaths)
 	{
-		if (!Commands::pathExists(p))
+		if (!Files::pathExists(p))
 			continue;
 
-		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
+		auto path = Files::getCanonicalPath(p); // probably not needed, but just in case
 
 		if (!List::contains(pathList, path))
 			outList.emplace_back(std::move(path));
@@ -1108,7 +1108,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto& preferenceName = inputs.toolchainPreferenceName();
 		if (String::equals("gcc", preferenceName))
 		{
-			auto gcc = Commands::which("gcc");
+			auto gcc = Files::which("gcc");
 			if (gcc.empty())
 			{
 				auto homeDrive = Environment::getString("HOMEDRIVE");
@@ -1118,7 +1118,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 					//
 					std::string mingwPath;
 					auto msysPath = fmt::format("{}\\msys64", homeDrive);
-					if (Commands::pathExists(msysPath))
+					if (Files::pathExists(msysPath))
 					{
 						if (targetArch == Arch::Cpu::X64)
 						{
@@ -1126,7 +1126,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 							//
 							mingwPath = fmt::format("{}\\ucrt64\\bin", msysPath);
 
-							if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+							if (!Files::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
 							{
 								mingwPath = fmt::format("{}\\mingw64\\bin", msysPath);
 							}
@@ -1150,7 +1150,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 						}
 					}
 
-					if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+					if (!Files::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
 					{
 						mingwPath.clear();
 					}
@@ -1174,14 +1174,14 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto& preferenceName = inputs.toolchainPreferenceName();
 		if (String::equals("llvm", preferenceName))
 		{
-			auto clang = Commands::which("clang");
+			auto clang = Files::which("clang");
 			if (clang.empty())
 			{
 				auto programFiles = Environment::getString("ProgramFiles");
 				if (!programFiles.empty())
 				{
 					auto clangPath = fmt::format("{}\\LLVM\\bin", programFiles);
-					if (Commands::pathExists(fmt::format("{}\\clang.exe", clangPath)))
+					if (Files::pathExists(fmt::format("{}\\clang.exe", clangPath)))
 					{
 						std::string lowerClangPath = String::toLowerCase(clangPath);
 						if (!String::contains(lowerClangPath, lower))

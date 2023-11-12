@@ -11,7 +11,7 @@ namespace chalet
 {
 class ProcessPipe
 {
-	friend class Process;
+	friend class SubProcess;
 
 public:
 	ProcessPipe() = default;

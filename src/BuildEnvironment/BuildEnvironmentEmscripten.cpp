@@ -14,7 +14,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -108,7 +108,7 @@ bool BuildEnvironmentEmscripten::readArchitectureTripleFromCompiler()
 		auto& targetArch = m_state.inputs.targetArchitecture();
 		if (targetArch.empty())
 		{
-			cachedArch = Commands::subprocessOutput({ compiler, "-dumpmachine" });
+			cachedArch = Files::subprocessOutput({ compiler, "-dumpmachine" });
 			if (!String::equals("wasm32", cachedArch))
 				return false;
 
@@ -152,7 +152,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 			auto configFile = fmt::format("{}/.emscripten", userPath);
 			// auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
 
-			// if (!Commands::pathExists(configFile))
+			// if (!Files::pathExists(configFile))
 			{
 				auto upstreamBin = Environment::getString("EMSDK_UPSTREAM_BIN");
 				auto upstream = String::getPathFolder(upstreamBin);
@@ -170,7 +170,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 				configContents += "COMPILER_ENGINE = NODE_JS\n";
 				configContents += "JS_ENGINES = [NODE_JS]";
 
-				if (!Commands::createFileWithContents(configFile, configContents))
+				if (!Files::createFileWithContents(configFile, configContents))
 					return false;
 			}
 		}
@@ -178,7 +178,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 		// Expects:
 		// emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.47 (431685f05c67f0424c11473cc16798b9587bb536)
 
-		auto rawOutput = Commands::subprocessOutput(getVersionCommand(m_emcc));
+		auto rawOutput = Files::subprocessOutput(getVersionCommand(m_emcc));
 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');

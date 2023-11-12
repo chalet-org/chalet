@@ -12,7 +12,7 @@
 
 namespace chalet
 {
-class Process
+class SubProcess
 {
 	using CmdPtrArray = std::vector<char*>;
 #if defined(CHALET_WIN32)
@@ -22,10 +22,10 @@ class Process
 #endif
 
 public:
-	Process() = default;
-	CHALET_DISALLOW_COPY_MOVE(Process);
-	~Process();
-	bool operator==(const Process& rhs);
+	SubProcess() = default;
+	CHALET_DISALLOW_COPY_MOVE(SubProcess);
+	~SubProcess();
+	bool operator==(const SubProcess& rhs);
 
 	static std::string getErrorMessageFromCode(const i32 inCode);
 	static std::string getErrorMessageFromSignalRaised(const i32 inCode);
@@ -65,4 +65,4 @@ private:
 };
 }
 
-#include "Process/Process.inl"
+#include "Process/SubProcess.inl"

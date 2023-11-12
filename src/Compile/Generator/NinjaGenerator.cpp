@@ -12,7 +12,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

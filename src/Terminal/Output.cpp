@@ -7,7 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
@@ -50,7 +50,7 @@ bool Output::ansiColorsSupportedInComSpec()
 {
 	if (state.commandPromptVersion == -1)
 	{
-		state.commandPromptVersion = Commands::getLastWriteTime(Environment::getString("COMSPEC"));
+		state.commandPromptVersion = Files::getLastWriteTime(Environment::getString("COMSPEC"));
 		if (state.commandPromptVersion > 0)
 			state.commandPromptVersion *= 1000;
 	}

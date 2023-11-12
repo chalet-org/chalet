@@ -22,7 +22,7 @@
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
@@ -107,7 +107,7 @@ bool CentralState::initialize()
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
 
-	if (!Commands::pathExists(m_filename))
+	if (!Files::pathExists(m_filename))
 	{
 		Diagnostic::error("Build file '{}' was not found.", m_filename);
 		return false;
@@ -184,7 +184,7 @@ bool CentralState::initializeForQuery()
 
 	m_inputs.clearWorkingDirectory(m_filename);
 
-	if (!Commands::pathExists(m_filename))
+	if (!Files::pathExists(m_filename))
 		return true;
 
 	UNUSED(m_chaletJson.load(m_filename));

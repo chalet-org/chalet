@@ -9,7 +9,7 @@
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -94,7 +94,7 @@ bool CompileCommandsGenerator::save() const
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
-	auto cwd = Commands::getWorkingDirectory();
+	auto cwd = Files::getWorkingDirectory();
 	Path::toUnix(cwd);
 
 	Json outJson = Json::array();
@@ -110,8 +110,8 @@ bool CompileCommandsGenerator::save() const
 		outJson.push_back(std::move(node));
 	}
 
-	if (!Commands::pathExists(currentBuildDir))
-		Commands::makeDirectory(currentBuildDir);
+	if (!Files::pathExists(currentBuildDir))
+		Files::makeDirectory(currentBuildDir);
 
 	if (!m_compileCommands.empty())
 	{
@@ -120,7 +120,7 @@ bool CompileCommandsGenerator::save() const
 			Diagnostic::error("compile_commands.json could not be saved.");
 			return false;
 		}
-		if (!Commands::copySilent(outputFile, currentBuildDir))
+		if (!Files::copySilent(outputFile, currentBuildDir))
 		{
 			Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
 			return false;
@@ -139,9 +139,9 @@ bool CompileCommandsGenerator::save() const
 		if (lastTarget != nullptr)
 		{
 			auto lastCompileCommands = fmt::format("{}/{}/compile_commands.json", buildOutputDir, lastTarget->targetFolder());
-			if (Commands::pathExists(lastCompileCommands))
+			if (Files::pathExists(lastCompileCommands))
 			{
-				if (!Commands::copySilent(lastCompileCommands, currentBuildDir))
+				if (!Files::copySilent(lastCompileCommands, currentBuildDir))
 				{
 					Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
 					return false;

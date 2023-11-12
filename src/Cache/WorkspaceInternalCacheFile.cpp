@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -242,7 +242,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 {
 	m_filename = inFilename;
 	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-	m_lastBuildFileWrite = Commands::getLastWriteTime(inBuildFile);
+	m_lastBuildFileWrite = Files::getLastWriteTime(inBuildFile);
 
 	chalet_assert(m_initializedTime != 0, "");
 
@@ -503,12 +503,12 @@ void WorkspaceInternalCacheFile::setDisallowSave(const bool inValue)
 std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath) const
 {
 	Output::setShowCommandOverride(false);
-	if (!Commands::pathExists(appPath))
+	if (!Files::pathExists(appPath))
 	{
-		appPath = Commands::which(appPath);
+		appPath = Files::which(appPath);
 	}
 
-	auto lastWrite = Commands::getLastWriteTime(appPath);
+	auto lastWrite = Files::getLastWriteTime(appPath);
 	Output::setShowCommandOverride(true);
 
 	return Hash::string(std::to_string(lastWrite));

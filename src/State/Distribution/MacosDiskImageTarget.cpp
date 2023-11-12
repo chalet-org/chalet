@@ -6,7 +6,7 @@
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -43,7 +43,7 @@ bool MacosDiskImageTarget::validate()
 			Diagnostic::error("macosDiskImage.background1x must end with '.png' or '.tiff', but was '{}'.", m_background1x);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_background1x))
+		else if (!Files::pathExists(m_background1x))
 		{
 			Diagnostic::error("macosDiskImage.background1x '{}' was not found.", m_background1x);
 			result = false;
@@ -57,7 +57,7 @@ bool MacosDiskImageTarget::validate()
 			Diagnostic::error("macosDiskImage.background2x must end with '.png', but was '{}'.", m_background2x);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_background2x))
+		else if (!Files::pathExists(m_background2x))
 		{
 			Diagnostic::error("macosDiskImage.background2x '{}' was not found.", m_background2x);
 			result = false;

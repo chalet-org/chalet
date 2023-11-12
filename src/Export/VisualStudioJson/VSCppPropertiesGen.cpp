@@ -16,7 +16,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -69,7 +69,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (project.usesPrecompiledHeader())
 				{
 					auto path = project.precompiledHeader();
-					if (Commands::pathExists(path))
+					if (Files::pathExists(path))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
@@ -81,7 +81,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					if (path.back() == '/')
 						path.pop_back();
 
-					if (Commands::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)) || String::equals(path, state->paths.objDir()))
+					if (Files::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)) || String::equals(path, state->paths.objDir()))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}

@@ -14,7 +14,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "Terminal/Files.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
