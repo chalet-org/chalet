@@ -8,8 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -23,7 +23,7 @@ ScriptDependency::ScriptDependency(const CentralState& inCentralState) :
 /*****************************************************************************/
 bool ScriptDependency::initialize()
 {
-	Path::sanitize(m_file);
+	Path::toUnix(m_file);
 
 	if (!m_centralState.replaceVariablesInString(m_file, this))
 		return false;
@@ -46,7 +46,7 @@ bool ScriptDependency::validate()
 	m_file = std::move(resolved);
 	m_scriptType = scriptType;
 
-	if (!Commands::pathExists(m_file))
+	if (!Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;

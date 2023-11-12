@@ -5,13 +5,14 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Core/Arch.hpp"
-#include "Core/Platform.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Platform/Arch.hpp"
+#include "Platform/Platform.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Version.hpp"
 #include "Json/JsonValues.hpp"
@@ -98,7 +99,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
 }
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 {
 	return {
@@ -108,7 +109,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClassicVSPresets()
 	};
 }
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 {
 	return {
@@ -133,13 +134,11 @@ const std::string kArchPresetAuto(Values::Auto);
 const std::string kToolchainPresetGCC("gcc");
 const std::string kToolchainPresetLLVM("llvm");
 const std::string kToolchainPresetEmscripten("emscripten");
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
+#if CHALET_ENABLE_INTEL_ICC && !defined(CHALET_WIN32)
 const std::string kToolchainPresetICC("intel-classic");
 #endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
-	#if !defined(CHALET_WIN32)
+#if CHALET_ENABLE_INTEL_ICX && !defined(CHALET_WIN32)
 const std::string kToolchainPresetICX("intel-llvm");
-	#endif
 #endif
 #if defined(CHALET_WIN32)
 const std::string kToolchainPresetVisualStudioStable("vs-stable");
@@ -200,8 +199,8 @@ const std::string& CommandLineInputs::workingDirectory() const noexcept
 {
 	if (m_workingDirectory.empty())
 	{
-		m_workingDirectory = Commands::getWorkingDirectory();
-		Path::sanitize(m_workingDirectory, true);
+		m_workingDirectory = Files::getWorkingDirectory();
+		Path::toUnix(m_workingDirectory, true);
 	}
 	return m_workingDirectory;
 }
@@ -212,7 +211,7 @@ const std::string& CommandLineInputs::homeDirectory() const noexcept
 	if (m_homeDirectory.empty())
 	{
 		m_homeDirectory = Environment::getUserDirectory();
-		Path::sanitize(m_homeDirectory, true);
+		Path::toUnix(m_homeDirectory, true);
 	}
 	return m_homeDirectory;
 }
@@ -235,7 +234,7 @@ void CommandLineInputs::setInputFile(std::string&& inValue) noexcept
 
 	m_inputFile = std::move(inValue);
 
-	Path::sanitize(m_inputFile);
+	Path::toUnix(m_inputFile);
 	// clearWorkingDirectory(m_inputFile);
 }
 
@@ -251,7 +250,7 @@ void CommandLineInputs::setSettingsFile(std::string&& inValue) noexcept
 
 	m_settingsFile = std::move(inValue);
 
-	Path::sanitize(m_settingsFile);
+	Path::toUnix(m_settingsFile);
 	// clearWorkingDirectory(m_settingsFile);
 }
 
@@ -277,12 +276,12 @@ void CommandLineInputs::setRootDirectory(std::string&& inValue) noexcept
 		return;
 
 	m_rootDirectory = std::move(inValue);
-	Path::sanitize(m_rootDirectory);
+	Path::toUnix(m_rootDirectory);
 
-	if (Commands::pathExists(m_rootDirectory))
+	if (Files::pathExists(m_rootDirectory))
 	{
-		Commands::changeWorkingDirectory(m_rootDirectory);
-		m_workingDirectory = Commands::getAbsolutePath(m_rootDirectory);
+		Files::changeWorkingDirectory(m_rootDirectory);
+		m_workingDirectory = Files::getAbsolutePath(m_rootDirectory);
 	}
 }
 
@@ -299,7 +298,7 @@ void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 
 	m_outputDirectory = std::move(inValue);
 
-	Path::sanitize(m_outputDirectory);
+	Path::toUnix(m_outputDirectory);
 	// clearWorkingDirectory(m_outputDirectory);
 }
 
@@ -316,7 +315,7 @@ void CommandLineInputs::setExternalDirectory(std::string&& inValue) noexcept
 
 	m_externalDirectory = std::move(inValue);
 
-	Path::sanitize(m_externalDirectory);
+	Path::toUnix(m_externalDirectory);
 	// clearWorkingDirectory(m_externalDirectory);
 }
 
@@ -333,7 +332,7 @@ void CommandLineInputs::setDistributionDirectory(std::string&& inValue) noexcept
 
 	m_distributionDirectory = std::move(inValue);
 
-	Path::sanitize(m_distributionDirectory);
+	Path::toUnix(m_distributionDirectory);
 	// clearWorkingDirectory(m_distributionDirectory);
 }
 /*****************************************************************************/
@@ -504,6 +503,8 @@ void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 		return;
 
 	m_appPath = inValue;
+	if (!Files::pathExists(m_appPath))
+		m_appPath = Files::which(m_appPath, false);
 }
 
 /*****************************************************************************/
@@ -645,7 +646,7 @@ void CommandLineInputs::setEnvFile(std::string&& inValue) noexcept
 
 	m_envFile = std::move(inValue);
 
-	Path::sanitize(m_envFile);
+	Path::toUnix(m_envFile);
 	// clearWorkingDirectory(m_envFile);
 }
 
@@ -666,17 +667,17 @@ void CommandLineInputs::resolveEnvFile()
 			if (!toSearch.empty())
 			{
 				toSearch = fmt::format("{}/{}", toSearch, inEnv);
-				if (Commands::pathExists(toSearch))
+				if (Files::pathExists(toSearch))
 					return toSearch;
 			}
 		}
 		else
 		{
-			if (Commands::pathExists(inRelativeEnv))
+			if (Files::pathExists(inRelativeEnv))
 				return inRelativeEnv;
 		}
 
-		if (Commands::pathExists(inEnv))
+		if (Files::pathExists(inEnv))
 			return inEnv;
 
 		return std::string();
@@ -690,7 +691,7 @@ void CommandLineInputs::resolveEnvFile()
 
 	if (tmp.empty())
 	{
-		if (Commands::pathExists(m_envFile))
+		if (Files::pathExists(m_envFile))
 			tmp = m_envFile;
 	}
 
@@ -830,10 +831,10 @@ std::string CommandLineInputs::getDefaultOsTargetVersion() const
 #if defined(CHALET_MACOS)
 	if (kDefaultOsTarget.empty())
 	{
-		auto swVers = Commands::which("sw_vers");
+		auto swVers = Files::which("sw_vers");
 		if (!swVers.empty())
 		{
-			auto result = Commands::subprocessOutput({ swVers });
+			auto result = Process::runOutput({ swVers });
 			if (!result.empty())
 			{
 				auto split = String::split(result, '\n');
@@ -978,22 +979,18 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 	String::replaceAll(outValue, cwd, "");
 
 #if defined(CHALET_WIN32)
-	if (::isalpha(cwd.front()) > 0)
-	{
-		cwd[0] = static_cast<char>(::tolower(static_cast<uchar>(cwd.front())));
-	}
-
+	String::capitalize(cwd);
 	String::replaceAll(outValue, cwd, "");
 #endif
 }
 
 /*****************************************************************************/
-const std::optional<uint>& CommandLineInputs::maxJobs() const noexcept
+const std::optional<u32>& CommandLineInputs::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }
 
-void CommandLineInputs::setMaxJobs(const uint inValue) noexcept
+void CommandLineInputs::setMaxJobs(const u32 inValue) noexcept
 {
 	m_maxJobs = std::max(inValue, 1U);
 }
@@ -1119,7 +1116,7 @@ StringList CommandLineInputs::getToolchainPresets() const
 	ret.emplace_back(kToolchainPresetEmscripten);
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
 	auto intelClangPresets = getIntelClangVSPresets();
 	for (auto it = intelClangPresets.rbegin(); it != intelClangPresets.rend(); ++it)
@@ -1132,7 +1129,7 @@ StringList CommandLineInputs::getToolchainPresets() const
 	#endif
 #endif
 
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	for (auto it = intelClassicPresets.rbegin(); it != intelClassicPresets.rend(); ++it)
@@ -1211,10 +1208,10 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 
 	auto visualStudioPresets = getVisualStudioPresets();
 	auto visualStudioLLVMPresets = getVisualStudioLLVMPresets();
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 	auto intelClassicPresets = getIntelClassicVSPresets();
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 	auto intelClangPresets = getIntelClangVSPresets();
 	#endif
 
@@ -1366,7 +1363,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 			ret.type = ToolchainType::GNU;
 #endif
 	}
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+#if CHALET_ENABLE_INTEL_ICX
 	#if defined(CHALET_WIN32)
 	else if (intelClangPresets.find(inValue) != intelClangPresets.end())
 	#else
@@ -1390,7 +1387,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.disassembler = "dumpbin";
 	}
 #endif
-#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+#if CHALET_ENABLE_INTEL_ICC
 	#if defined(CHALET_WIN32)
 	else if (intelClassicPresets.find(inValue) != intelClassicPresets.end())
 	#else
@@ -1501,12 +1498,12 @@ VisualStudioVersion CommandLineInputs::getVisualStudioVersionFromPresetString(co
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);
 
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICC
+	#if CHALET_ENABLE_INTEL_ICC
 	presets = getIntelClassicVSPresets();
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);
 	#endif
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 	presets = getIntelClangVSPresets();
 	if (presets.find(inValue) != presets.end())
 		return presets.at(inValue);
@@ -1540,10 +1537,10 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 	auto firstDash = inArch.find_first_of('-');
 	if (firstDash == std::string::npos)
 	{
-		auto gcc = Commands::which("gcc");
+		auto gcc = Files::which("gcc");
 		if (!gcc.empty())
 		{
-			auto cachedArch = Commands::subprocessOutput({ gcc, "-dumpmachine" });
+			auto cachedArch = Process::runOutput({ gcc, "-dumpmachine" });
 			firstDash = cachedArch.find_first_of('-');
 
 			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
@@ -1573,7 +1570,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 				auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 				auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-				bool found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+				bool found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 				if (!found && String::startsWith("-pc-linux-gnu", suffix))
 				{
 					suffix = suffix.substr(3);
@@ -1582,7 +1579,7 @@ std::string CommandLineInputs::getValidGccArchTripleFromArch(const std::string& 
 					searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
 					searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
 
-					found = Commands::pathExists(searchPathA) || Commands::pathExists(searchPathB);
+					found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
 				}
 
 				if (found)

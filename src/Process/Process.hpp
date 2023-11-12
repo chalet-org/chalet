@@ -3,69 +3,39 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_HPP
-#define CHALET_PROCESS_HPP
+#pragma once
 
-#include "Process/ProcessOptions.hpp"
-#include "Process/ProcessPipe.hpp"
-#include "Process/ProcessTypes.hpp"
-#include "Process/SigNum.hpp"
+#include "Process/PipeOption.hpp"
 
 namespace chalet
 {
-class Process
+namespace Process
 {
-	using CmdPtrArray = std::vector<char*>;
-#if defined(CHALET_WIN32)
-	using HandleInput = DWORD;
-#else
-	using HandleInput = PipeHandle;
-#endif
+using CreateSubprocessFunc = std::function<void(i32 /* pid */)>;
 
-public:
-	Process() = default;
-	CHALET_DISALLOW_COPY_MOVE(Process);
-	~Process();
-	bool operator==(const Process& rhs);
+inline bool run(const StringList& inCmd);
+inline bool run(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
+inline bool run(const StringList& inCmd, std::string inCwd);
+inline bool run(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr);
+inline bool run(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr);
+inline bool run(const StringList& inCmd, const PipeOption inStdOut);
+inline bool run(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr);
+inline bool runWithInput(const StringList& inCmd);
+inline bool runWithInput(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
+inline bool runOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
 
-	static std::string getErrorMessageFromCode(const int inCode);
-	static std::string getErrorMessageFromSignalRaised(const int inCode);
-	static std::string getSignalNameFromCode(int inCode);
+bool run(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
+bool runWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
+bool runNoOutput(const StringList& inCmd);
+bool runMinimalOutput(const StringList& inCmd);
+bool runMinimalOutput(const StringList& inCmd, std::string inCwd);
+bool runOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
+std::string runOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
+std::string runOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 
-	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
-	void close();
+bool runNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
 
-	int waitForResult();
-	bool sendSignal(const SigNum inSignal);
-	bool terminate();
-	bool kill();
-
-	template <std::size_t Size>
-	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
-
-private:
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	int getReturnCode(const int inExitCode);
-	CmdPtrArray getCmdVector(const StringList& inCmd);
-#endif
-	ProcessPipe& getFilePipe(const HandleInput inFileNo);
-
-#if defined(CHALET_WIN32)
-	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };
-#else
-	std::string m_cwd;
-#endif
-
-	// ProcessPipe m_in;
-	ProcessPipe m_out;
-	ProcessPipe m_err;
-
-	ProcessID m_pid = 0;
-
-	bool m_killed = false;
-};
+}
 }
 
 #include "Process/Process.inl"
-
-#endif // CHALET_PROCESS_HPP

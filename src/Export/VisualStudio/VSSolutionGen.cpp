@@ -5,7 +5,7 @@
 
 #include "Export/VisualStudio/VSSolutionGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -13,7 +13,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -130,7 +130,7 @@ EndGlobal)sln",
 		FMT_ARG(solutionGUID),
 		FMT_ARG(vsConfigString));
 
-	if (!Commands::createFileWithContents(inFilename, contents))
+	if (!Files::createFileWithContents(inFilename, contents))
 	{
 		Diagnostic::error("There was a problem creating the VS solution: {}", inFilename);
 		return false;

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARCHIVER_LLVM_AR_HPP
-#define CHALET_ARCHIVER_LLVM_AR_HPP
+#pragma once
 
 #include "Compile/Archiver/ArchiverGNUAR.hpp"
 
@@ -15,5 +14,3 @@ struct ArchiverLLVMAR : public ArchiverGNUAR
 	explicit ArchiverLLVMAR(const BuildState& inState, const SourceTarget& inProject);
 };
 }
-
-#endif // CHALET_ARCHIVER_LLVM_AR_HPP

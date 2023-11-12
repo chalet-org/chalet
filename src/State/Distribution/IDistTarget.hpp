@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IDIST_TARGET_HPP
-#define CHALET_IDIST_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/DistTargetType.hpp"
 
@@ -59,5 +58,3 @@ private:
 
 using DistributionTargetList = std::vector<DistTarget>;
 }
-
-#endif // CHALET_IDIST_TARGET_HPP

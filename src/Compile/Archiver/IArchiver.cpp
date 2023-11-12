@@ -30,7 +30,7 @@ IArchiver::IArchiver(const BuildState& inState, const SourceTarget& inProject) :
 {
 	UNUSED(inType);
 	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("IArchiver:", static_cast<int>(inType), executable);
+	// LOG("IArchiver:", static_cast<i32>(inType), executable);
 #if defined(CHALET_WIN32)
 	if (String::equals("lib", executable))
 		return std::make_unique<ArchiverVisualStudioLIB>(inState, inProject);

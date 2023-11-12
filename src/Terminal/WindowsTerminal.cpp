@@ -6,8 +6,9 @@
 #include "Terminal/WindowsTerminal.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 
 #if defined(CHALET_WIN32)
@@ -24,8 +25,8 @@ namespace
 struct
 {
 	DWORD consoleMode = 0;
-	uint consoleCp = 0;
-	uint consoleOutputCp = 0;
+	u32 consoleCp = 0;
+	u32 consoleOutputCp = 0;
 	bool firstCall = false;
 } state;
 
@@ -99,8 +100,8 @@ void WindowsTerminal::initialize()
 void WindowsTerminal::initializeCreateProcess()
 {
 #if defined(CHALET_WIN32)
-	auto cmd = Commands::which("rundll32");
-	Commands::subprocessMinimalOutput({ cmd });
+	auto cmd = Files::which("rundll32");
+	Process::runMinimalOutput({ cmd });
 #endif
 }
 

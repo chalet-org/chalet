@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -97,7 +97,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 
 					if (m_sources != nullptr)
 					{
-						if (int val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildLastBuildStrategy))
+						if (i32 val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildLastBuildStrategy))
 							m_sources->setLastBuildStrategy(val);
 
 						if (value.contains(CacheKeys::DataCache))
@@ -179,15 +179,15 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 				bool removeId = false;
 				{
 					auto& build = builds.at(inId);
-					int lastStrategy = 0;
+					i32 lastStrategy = 0;
 					if (build.contains(CacheKeys::BuildLastBuildStrategy))
 					{
 						auto& strat = build.at(CacheKeys::BuildLastBuildStrategy);
 						if (strat.is_number())
-							lastStrategy = strat.get<int>();
+							lastStrategy = strat.get<i32>();
 					}
 
-					removeId = !build.is_object() || lastStrategy == static_cast<int>(StrategyType::Native);
+					removeId = !build.is_object() || lastStrategy == static_cast<i32>(StrategyType::Native);
 				}
 				if (removeId)
 				{
@@ -242,7 +242,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 {
 	m_filename = inFilename;
 	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-	m_lastBuildFileWrite = Commands::getLastWriteTime(inBuildFile);
+	m_lastBuildFileWrite = Files::getLastWriteTime(inBuildFile);
 
 	chalet_assert(m_initializedTime != 0, "");
 
@@ -503,12 +503,12 @@ void WorkspaceInternalCacheFile::setDisallowSave(const bool inValue)
 std::string WorkspaceInternalCacheFile::getAppVersionHash(std::string appPath) const
 {
 	Output::setShowCommandOverride(false);
-	if (!Commands::pathExists(appPath))
+	if (!Files::pathExists(appPath))
 	{
-		appPath = Commands::which(appPath);
+		appPath = Files::which(appPath);
 	}
 
-	auto lastWrite = Commands::getLastWriteTime(appPath);
+	auto lastWrite = Files::getLastWriteTime(appPath);
 	Output::setShowCommandOverride(true);
 
 	return Hash::string(std::to_string(lastWrite));

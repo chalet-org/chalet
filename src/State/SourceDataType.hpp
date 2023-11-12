@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_DATA_TYPE_HPP
-#define CHALET_SOURCE_DATA_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -13,7 +12,7 @@ namespace chalet
 //   It can be anything that describes the source file other than what's in SourceType
 //   At the moment, it's just internally used for optimizations
 //
-enum class SourceDataType : ushort
+enum class SourceDataType : u16
 {
 	None,
 	UserHeaderUnit,
@@ -22,5 +21,3 @@ enum class SourceDataType : ushort
 	Module,
 };
 }
-
-#endif // CHALET_SOURCE_DATA_TYPE_HPP

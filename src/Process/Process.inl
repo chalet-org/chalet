@@ -8,35 +8,62 @@
 namespace chalet
 {
 /*****************************************************************************/
-template <std::size_t Size>
-void Process::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const std::uint8_t inBufferSize, const ProcessOptions::PipeFunc& onRead)
+inline bool Process::run(const StringList& inCmd)
 {
-	auto& pipe = getFilePipe(inFileNo);
-#if defined(CHALET_WIN32)
-	DWORD bytesRead = 0;
-#else
-	ssize_t bytesRead = 0;
-#endif
-	std::size_t bufferSize = inBufferSize > 0 ? static_cast<std::size_t>(inBufferSize) : inBuffer.size();
-	while (true)
-	{
-		if (m_killed)
-			break;
+	return Process::run(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+}
 
-#if defined(CHALET_WIN32)
-		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(inBuffer.data()), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;
-		if (!result)
-			bytesRead = 0;
-#else
-		bytesRead = ::read(pipe.m_read, inBuffer.data(), bufferSize);
-#endif
-		if (bytesRead > 0)
-		{
-			if (onRead != nullptr)
-				onRead(std::string(inBuffer.data(), bytesRead));
-		}
-		else
-			break;
-	}
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, CreateSubprocessFunc inOnCreate)
+{
+	return Process::run(inCmd, std::string(), std::move(inOnCreate), PipeOption::StdOut, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, std::string inCwd)
+{
+	return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, std::string inCwd, const PipeOption inStdErr)
+{
+	return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, inStdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, std::string inCwd, const PipeOption inStdOut, const PipeOption inStdErr)
+{
+	return Process::run(inCmd, std::move(inCwd), nullptr, inStdOut, inStdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, const PipeOption inStdErr)
+{
+	return Process::run(inCmd, std::string(), nullptr, PipeOption::StdOut, inStdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::run(const StringList& inCmd, const PipeOption inStdOut, const PipeOption inStdErr)
+{
+	return Process::run(inCmd, std::string(), nullptr, inStdOut, inStdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::runWithInput(const StringList& inCmd)
+{
+	return Process::runWithInput(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::runWithInput(const StringList& inCmd, CreateSubprocessFunc inOnCreate)
+{
+	return Process::runWithInput(inCmd, std::string(), std::move(inOnCreate), PipeOption::StdOut, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+inline bool Process::runOutputToFile(const StringList& inCmd, const std::string& inOutputFile)
+{
+	return Process::runOutputToFile(inCmd, inOutputFile, PipeOption::Pipe);
 }
 }

@@ -5,20 +5,21 @@
 
 #include "Builder/ProfilerRunner.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Terminal/WindowsTerminal.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -61,7 +62,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		bool xctraceAvailable = false;
 		if (!m_state.tools.xcrun().empty())
 		{
-			const auto xctraceOutput = Commands::subprocessOutput({ m_state.tools.xcrun(), "xctrace" });
+			const auto xctraceOutput = Process::runOutput({ m_state.tools.xcrun(), "xctrace" });
 			xctraceAvailable = !String::contains("unable to find utility", xctraceOutput);
 		}
 		const bool useXcTrace = m_state.tools.xcodeVersionMajor() >= 12 || xctraceAvailable;
@@ -69,7 +70,7 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 		bool instrumentsAvailable = m_state.tools.xcodeVersionMajor() <= 12;
 		if (instrumentsAvailable && !m_state.tools.instruments().empty())
 		{
-			const auto instrumentsOutput = Commands::subprocessOutput({ m_state.tools.instruments() });
+			const auto instrumentsOutput = Process::runOutput({ m_state.tools.instruments() });
 			instrumentsAvailable = !String::contains("requires Xcode", instrumentsOutput);
 		}
 
@@ -101,7 +102,7 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 	auto outFile = m_state.paths.getTargetFilename(m_project);
 	m_state.inputs.clearWorkingDirectory(outFile);
 
-	auto message = fmt::format("{} exited with code: {}", outFile, ProcessController::getLastExitCode());
+	auto message = fmt::format("{} exited with code: {}", outFile, SubProcessController::getLastExitCode());
 
 	// Output::lineBreak();
 	Output::printSeparator();
@@ -116,7 +117,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 	WindowsTerminal::cleanup();
 #endif
 
-	bool result = Commands::subprocessWithInput(inCommand);
+	bool result = Process::runWithInput(inCommand);
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
@@ -136,14 +137,14 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	std::string gmonOut{ "gmon.out" };
 
-	if (!Commands::subprocessOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
+	if (!Process::runOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
 	}
 
-	if (Commands::pathExists(gmonOut))
-		Commands::remove(gmonOut);
+	if (Files::pathExists(gmonOut))
+		Files::remove(gmonOut);
 
 		// Output::lineBreak();
 #if defined(CHALET_WIN32)
@@ -152,12 +153,12 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
-		Commands::sleep(1.0);
+		Files::sleep(1.0);
 
 		auto statsFileForType = profStatsFile;
-		Path::sanitizeForWindows(statsFileForType);
+		Path::toWindows(statsFileForType);
 		StringList cmd{ "type", statsFileForType };
-		Commands::subprocessWithInput({ m_state.tools.commandPrompt(), "/c", String::join(cmd) });
+		Process::runWithInput({ m_state.tools.commandPrompt(), "/c", String::join(cmd) });
 	}
 #else
 	if (m_state.info.launchProfiler() && m_state.tools.bashAvailable())
@@ -165,12 +166,12 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
-		Commands::sleep(1.0);
+		Files::sleep(1.0);
 
 		StringList cmd{ "cat", profStatsFile };
 		cmd.emplace_back("|");
 		cmd.emplace_back("more");
-		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
+		Process::runWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
 	}
 #endif
 	else
@@ -198,9 +199,9 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto analysisFile = fmt::format("{}/{}.vsp", buildDir, executableName);
-	if (Commands::pathExists(analysisFile))
+	if (Files::pathExists(analysisFile))
 	{
-		if (!Commands::removeRecursively(analysisFile))
+		if (!Files::removeRecursively(analysisFile))
 			return false;
 	}
 
@@ -208,7 +209,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
-	Commands::subprocessMinimalOutput({
+	Process::runMinimalOutput({
 		m_state.toolchain.profiler(),
 		"/U",
 		inExecutable,
@@ -223,7 +224,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			if (project.isSharedLibrary())
 			{
 				auto file = m_state.paths.getTargetFilename(project);
-				Commands::subprocessMinimalOutput({ m_state.toolchain.profiler(), "/U", file });
+				Process::runMinimalOutput({ m_state.toolchain.profiler(), "/U", file });
 			}
 		}
 	}
@@ -231,7 +232,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	/////////////
 
 	// Start the trace service
-	if (!Commands::subprocessMinimalOutput({
+	if (!Process::runMinimalOutput({
 			vsperfcmd,
 			"/start:trace",
 			fmt::format("/output:{}", analysisFile),
@@ -246,14 +247,14 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	WindowsTerminal::cleanup();
 	#endif
 
-	bool result = Commands::subprocessWithInput(inCommand);
+	bool result = Process::runWithInput(inCommand);
 
 	#if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
 	#endif
 
 	// Shut down the service
-	if (!Commands::subprocessMinimalOutput({
+	if (!Process::runMinimalOutput({
 			vsperfcmd,
 			"/shutdown",
 		}))
@@ -271,15 +272,15 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	if (m_state.info.launchProfiler())
 	{
-		auto absAnalysisFile = Commands::getAbsolutePath(analysisFile);
+		auto absAnalysisFile = Files::getAbsolutePath(analysisFile);
 
 		std::string devEnvDir;
-		auto visualStudio = Commands::which("devenv");
+		auto visualStudio = Files::which("devenv");
 		if (visualStudio.empty())
 		{
 			devEnvDir = Environment::getString("DevEnvDir");
 			visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
-			if (devEnvDir.empty() || !Commands::pathExists(visualStudio))
+			if (devEnvDir.empty() || !Files::pathExists(visualStudio))
 			{
 				Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
 				return false;
@@ -293,9 +294,9 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
 		Output::lineBreak();
 
-		Commands::sleep(1.0);
+		Files::sleep(1.0);
 
-		Commands::subprocessMinimalOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+		Process::runMinimalOutput({ visualStudio, absAnalysisFile }, devEnvDir);
 	}
 	else
 	{
@@ -317,9 +318,9 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto instrumentsTrace = fmt::format("{}/{}.trace", buildDir, executableName);
-	if (Commands::pathExists(instrumentsTrace))
+	if (Files::pathExists(instrumentsTrace))
 	{
-		if (!Commands::removeRecursively(instrumentsTrace))
+		if (!Files::removeRecursively(instrumentsTrace))
 			return false;
 	}
 
@@ -357,7 +358,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 			cmd.push_back(arg);
 		}
 
-		result = Commands::subprocessWithInput(cmd);
+		result = Process::runWithInput(cmd);
 	}
 	else
 	{
@@ -379,7 +380,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		Diagnostic::info("Running {} through instruments without output...", inExecutable);
 		Output::lineBreak();
 
-		result = Commands::subprocessWithInput(cmd);
+		result = Process::runWithInput(cmd);
 	}
 
 	printExitedWithCode(result);
@@ -392,10 +393,10 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		Output::msgProfilerDoneAndLaunching(instrumentsTrace, "Instruments");
 		Output::lineBreak();
 
-		Commands::sleep(1.0);
+		Files::sleep(1.0);
 
-		auto open = Commands::which("open");
-		Commands::subprocess({ std::move(open), instrumentsTrace });
+		auto open = Files::which("open");
+		Process::run({ std::move(open), instrumentsTrace });
 	}
 	else
 	{
@@ -415,17 +416,17 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 	auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 
 	bool sampleResult = true;
-	auto onCreate = [&](int pid) -> void {
-		uint sampleDuration = 300;
-		uint samplingInterval = 1;
+	auto onCreate = [&](i32 pid) -> void {
+		u32 sampleDuration = 300;
+		u32 samplingInterval = 1;
 		Output::msgProfilerStartedSample(inExecutable, sampleDuration, samplingInterval);
 		Output::lineBreak();
 
 		sampleResult =
-			Commands::subprocess({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
+			Process::run({ m_state.tools.sample(), std::to_string(pid), std::to_string(sampleDuration), std::to_string(samplingInterval), "-wait", "-mayDie", "-file", profStatsFile }, PipeOption::Close);
 	};
 
-	bool result = Commands::subprocessWithInput(inCommand, std::move(onCreate));
+	bool result = Process::runWithInput(inCommand, std::move(onCreate));
 	if (!sampleResult)
 	{
 		Diagnostic::error("Error running sample...");
@@ -442,10 +443,10 @@ bool ProfilerRunner::runWithSample(const StringList& inCommand, const std::strin
 		Output::msgProfilerDoneAndLaunching(profStatsFile, std::string());
 		Output::lineBreak();
 
-		Commands::sleep(1.0);
+		Files::sleep(1.0);
 
 		StringList cmd{ "cat", profStatsFile, "|", "more" };
-		Commands::subprocessWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
+		Process::runWithInput({ m_state.tools.bash(), "-c", String::join(cmd) });
 	}
 	else
 	{

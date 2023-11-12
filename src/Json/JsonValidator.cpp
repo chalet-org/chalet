@@ -86,8 +86,8 @@ std::string ErrorHandler::getValueFromDump(const std::string& inString)
 /*****************************************************************************/
 std::string ErrorHandler::getPropertyFromErrorMsg(const std::string& inString)
 {
-	std::size_t start = inString.find_first_of('\'') + 1;
-	std::size_t end = inString.find_last_of('\'');
+	size_t start = inString.find_first_of('\'') + 1;
+	size_t end = inString.find_last_of('\'');
 
 	return inString.substr(start, end - start);
 }
@@ -95,17 +95,17 @@ std::string ErrorHandler::getPropertyFromErrorMsg(const std::string& inString)
 /*****************************************************************************/
 void ErrorHandler::getValueWithTypCheck(std::any& data, std::string& outString) const
 {
-	if (std::any_cast<double>(&data) || std::any_cast<float>(&data))
+	if (std::any_cast<f64>(&data) || std::any_cast<f32>(&data))
 	{
 		auto val = std::any_cast<Json::number_float_t>(data);
 		outString = std::to_string(val);
 	}
-	else if (std::any_cast<std::int64_t>(&data) || std::any_cast<std::int32_t>(&data))
+	else if (std::any_cast<i64>(&data) || std::any_cast<i32>(&data))
 	{
 		auto val = std::any_cast<Json::number_integer_t>(data);
 		outString = std::to_string(val);
 	}
-	else if (std::any_cast<std::uint64_t>(&data) || std::any_cast<std::uint32_t>(&data))
+	else if (std::any_cast<u64>(&data) || std::any_cast<u32>(&data))
 	{
 		auto val = std::any_cast<Json::number_unsigned_t>(data);
 		outString = std::to_string(val);
@@ -184,12 +184,12 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "Instance not const";
 
 		case JsonSchemaError::string_min_length: {
-			const std::size_t min_length = std::any_cast<std::size_t>(data);
+			const size_t min_length = std::any_cast<size_t>(data);
 			return "Instance is too short as per minLength:" + std::to_string(min_length);
 		}
 
 		case JsonSchemaError::string_max_length: {
-			const std::size_t max_length = std::any_cast<std::size_t>(data);
+			const size_t max_length = std::any_cast<size_t>(data);
 			return "Instance is too long as per maxLength:" + std::to_string(max_length);
 		}
 

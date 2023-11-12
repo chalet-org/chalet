@@ -5,7 +5,7 @@
 
 #include "Terminal/ColorTheme.hpp"
 
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -145,13 +145,13 @@ Color ColorTheme::getColorFromDigit(char value)
 			return Color::Reset;
 	}
 }
-Color ColorTheme::getColorFromDigit(const char inValue, const int inOffset)
+Color ColorTheme::getColorFromDigit(const char inValue, const i32 inOffset)
 {
 	auto color = getColorFromDigit(inValue);
 	if (color == Color::Black || color == Color::Reset)
 		return color;
 
-	return static_cast<Color>(inOffset + static_cast<int>(color));
+	return static_cast<Color>(inOffset + static_cast<i32>(color));
 }
 
 /*****************************************************************************/
@@ -344,7 +344,7 @@ std::string ColorTheme::asString() const
 std::string ColorTheme::asHexString() const
 {
 	auto colorToHexValue = [](const Color& inColor) -> char {
-		int color = static_cast<int>(inColor) % 100;
+		i32 color = static_cast<i32>(inColor) % 100;
 		for (char i = 0; i < 16; ++i)
 		{
 			auto col = getColorFromDigit(i);

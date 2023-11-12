@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IMODULE_STRATEGY_HPP
-#define CHALET_IMODULE_STRATEGY_HPP
+#pragma once
 
 #include "Compile/CommandPool.hpp"
 #include "Compile/CompileToolchainController.hpp"
@@ -95,5 +94,3 @@ private:
 	Dictionary<std::string> m_systemModules;
 };
 }
-
-#endif // CHALET_IMODULE_STRATEGY_HPP

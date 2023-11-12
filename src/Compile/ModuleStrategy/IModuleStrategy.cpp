@@ -7,16 +7,16 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -41,7 +41,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 
@@ -49,7 +49,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
 {
 	m_sourcesChanged = false;
-	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
+	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
 	m_implementationUnits.clear();
@@ -129,8 +129,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		Output::lineBreak();
 
 	{
-		auto cwd = String::toLowerCase(Commands::getWorkingDirectory());
-		Path::sanitize(cwd);
+		auto cwd = String::toLowerCase(Files::getWorkingDirectory());
+		Path::toUnix(cwd);
 		if (cwd.back() != '/')
 			cwd += '/';
 
@@ -176,8 +176,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 					auto p = String::getPathFolder(file);
 					auto dir = fmt::format("{}/{}", objDir, p);
-					if (!Commands::pathExists(dir))
-						Commands::makeDirectory(dir);
+					if (!Files::pathExists(dir))
+						Files::makeDirectory(dir);
 
 					header = file;
 
@@ -329,7 +329,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		}
 	}
 
-	bool targetExists = Commands::pathExists(inOutputs->target);
+	bool targetExists = Files::pathExists(inOutputs->target);
 	bool requiredFromLinks = rebuildRequiredFromLinks(inProject);
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
 	if (!buildJobs.empty() || !targetExists || requiredFromLinks)
@@ -363,8 +363,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			{
 				auto objectFile = m_state.environment->getObjectFile(failure);
 
-				if (Commands::pathExists(objectFile))
-					Commands::remove(objectFile);
+				if (Files::pathExists(objectFile))
+					Files::remove(objectFile);
 
 				sourceCache.markForLater(failure);
 			}
@@ -671,7 +671,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			else
 				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
 
-			if (!dependencyFile.empty() && Commands::pathExists(dependencyFile))
+			if (!dependencyFile.empty() && Files::pathExists(dependencyFile))
 			{
 				StringList includes;
 				if (!readIncludesFromDependencyFile(dependencyFile, includes))

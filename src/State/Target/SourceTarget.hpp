@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_TARGET_HPP
-#define CHALET_SOURCE_TARGET_HPP
+#pragma once
 
 #include "Compile/CodeLanguage.hpp"
 #include "Compile/PositionIndependentCodeType.hpp"
@@ -274,5 +273,3 @@ private:
 	bool m_windowsOutputDef = false;
 };
 }
-
-#endif // CHALET_SOURCE_TARGET_HPP

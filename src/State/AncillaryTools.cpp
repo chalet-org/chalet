@@ -6,10 +6,11 @@
 #include "State/AncillaryTools.hpp"
 
 #include "Bundler/MacosCodeSignOptions.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
@@ -19,24 +20,6 @@ namespace chalet
 AncillaryTools::AncillaryTools() :
 	m_scriptAdapter(*this)
 {
-}
-
-/*****************************************************************************/
-bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
-{
-	if (m_chalet.empty())
-	{
-		m_chalet = inAppPath;
-
-		if (!Commands::pathExists(m_chalet))
-		{
-			m_chalet = Commands::which("chalet");
-			if (!Commands::pathExists(m_chalet))
-				m_chalet.clear();
-		}
-	}
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -85,12 +68,12 @@ void AncillaryTools::fetchBashVersion()
 	if (!m_bash.empty())
 	{
 #if defined(CHALET_WIN32)
-		/*if (Commands::pathExists(m_bash))
+		/*if (Files::pathExists(m_bash))
 		{
-			std::string version = Commands::subprocessOutput({ m_bash, "--version" });
+			std::string version = Process::runOutput({ m_bash, "--version" });
 			m_bashAvailable = String::startsWith("GNU bash", version);
 		}*/
-		m_bashAvailable = Commands::pathExists(m_bash);
+		m_bashAvailable = Files::pathExists(m_bash);
 #else
 		m_bashAvailable = true;
 #endif
@@ -103,13 +86,13 @@ void AncillaryTools::fetchXcodeVersion()
 #if defined(CHALET_MACOS)
 	if (!m_xcodebuild.empty() && m_xcodeVersionMajor == 0 && m_xcodeVersionMinor == 0)
 	{
-		if (Commands::pathExists(m_xcodebuild))
+		if (Files::pathExists(m_xcodebuild))
 		{
-			std::string version = Commands::subprocessOutput({ m_xcodebuild, "-version" });
+			std::string version = Process::runOutput({ m_xcodebuild, "-version" });
 			if (String::contains("requires Xcode", version))
 				return;
 
-			version = Commands::isolateVersion(version);
+			version = Files::isolateVersion(version);
 
 			auto vals = String::split(version, '.');
 			if (vals.size() == 2)
@@ -139,12 +122,6 @@ std::string AncillaryTools::getApplePlatformSdk(const std::string& inKey) const
 void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
 	m_applePlatformSdk[inKey] = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::chalet() const noexcept
-{
-	return m_chalet;
 }
 
 /*****************************************************************************/
@@ -205,11 +182,11 @@ bool AncillaryTools::isSigningIdentityValid() const
 	if (!m_signingIdentity.empty())
 	{
 		// security find-identity -v -p codesigning
-		auto security = Commands::which("security");
+		auto security = Files::which("security");
 		if (!security.empty())
 		{
 			StringList cmd{ std::move(security), "find-identity", "-v", "-p", "codesigning" };
-			auto identities = Commands::subprocessOutput(cmd);
+			auto identities = Process::runOutput(cmd);
 			auto split = String::split(identities, '\n');
 			bool found = false;
 			for (auto& line : split)
@@ -270,7 +247,7 @@ const std::string& AncillaryTools::commandPrompt() const noexcept
 void AncillaryTools::setCommandPrompt(std::string&& inValue) noexcept
 {
 	m_commandPrompt = std::move(inValue);
-	Path::sanitizeForWindows(m_commandPrompt);
+	Path::toWindows(m_commandPrompt);
 }
 
 /*****************************************************************************/
@@ -413,11 +390,11 @@ void AncillaryTools::setXcodebuild(std::string&& inValue) noexcept
 {
 	m_xcodebuild = std::move(inValue);
 }
-uint AncillaryTools::xcodeVersionMajor() const noexcept
+u32 AncillaryTools::xcodeVersionMajor() const noexcept
 {
 	return m_xcodeVersionMajor;
 }
-uint AncillaryTools::xcodeVersionMinor() const noexcept
+u32 AncillaryTools::xcodeVersionMinor() const noexcept
 {
 	return m_xcodeVersionMinor;
 }
@@ -483,7 +460,7 @@ bool AncillaryTools::macosCodeSignFile(const std::string& inPath, const MacosCod
 
 	cmd.push_back(inPath);
 
-	return Commands::subprocessNoOutput(cmd);
+	return Process::runNoOutput(cmd);
 #else
 	UNUSED(inPath, inOptions);
 	return false;
@@ -517,7 +494,7 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath, const Mac
 
 	cmd.push_back(inPath);
 
-	return Commands::subprocessNoOutput(cmd);
+	return Process::runNoOutput(cmd);
 #else
 	UNUSED(inPath, inOptions);
 	return false;
@@ -528,7 +505,8 @@ bool AncillaryTools::macosCodeSignDiskImage(const std::string& inPath, const Mac
 bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFrameworkPath, const std::string& inVersionId, const MacosCodeSignOptions& inOptions) const
 {
 #if defined(CHALET_MACOS)
-	chalet_assert(String::endsWith(".framework", inFrameworkPath), "Must be a .framework");
+	auto framework = Files::getPlatformFrameworkExtension();
+	chalet_assert(String::endsWith(framework, inFrameworkPath), "Must be a .framework");
 
 	StringList cmd{ m_codesign };
 
@@ -558,7 +536,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 		cmd.emplace_back("-v");
 
 	cmd.push_back(inFrameworkPath);
-	return Commands::subprocessNoOutput(cmd);
+	return Process::runNoOutput(cmd);
 #else
 	UNUSED(inFrameworkPath, inVersionId, inOptions);
 	return false;
@@ -569,7 +547,7 @@ bool AncillaryTools::macosCodeSignFileWithBundleVersion(const std::string& inFra
 bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std::string& inOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput });
+	return Process::run({ m_plutil, "-convert", "binary1", inInput, "-o", inOutput });
 #else
 	UNUSED(inInput, inOutput);
 	return false;
@@ -580,7 +558,7 @@ bool AncillaryTools::plistConvertToBinary(const std::string& inInput, const std:
 bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::string& inOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-convert", "json", inInput, "-o", inOutput });
+	return Process::run({ m_plutil, "-convert", "json", inInput, "-o", inOutput });
 #else
 	UNUSED(inInput, inOutput);
 	return false;
@@ -591,7 +569,7 @@ bool AncillaryTools::plistConvertToJson(const std::string& inInput, const std::s
 bool AncillaryTools::plistConvertToXml(const std::string& inInput, const std::string& inOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-convert", "xml1", inInput, "-o", inOutput });
+	return Process::run({ m_plutil, "-convert", "xml1", inInput, "-o", inOutput });
 #else
 	UNUSED(inInput, inOutput);
 	return false;
@@ -602,7 +580,7 @@ bool AncillaryTools::plistConvertToXml(const std::string& inInput, const std::st
 bool AncillaryTools::plistCreateNew(const std::string& inOutput) const
 {
 #if defined(CHALET_MACOS)
-	return Commands::subprocess({ m_plutil, "-create", "binary1", inOutput });
+	return Process::run({ m_plutil, "-create", "binary1", inOutput });
 #else
 	UNUSED(inOutput);
 	return false;
@@ -612,7 +590,7 @@ bool AncillaryTools::plistCreateNew(const std::string& inOutput) const
 /*****************************************************************************/
 std::string AncillaryTools::getPathToGit()
 {
-	auto git = Commands::which("git");
+	auto git = Files::which("git");
 #if defined(CHALET_WIN32)
 	if (git.empty())
 	{
@@ -620,8 +598,8 @@ std::string AncillaryTools::getPathToGit()
 		if (!programs.empty())
 		{
 			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);
-			Path::sanitize(gitPath);
-			if (Commands::pathExists(gitPath))
+			Path::toUnix(gitPath);
+			if (Files::pathExists(gitPath))
 			{
 				git = std::move(gitPath);
 			}

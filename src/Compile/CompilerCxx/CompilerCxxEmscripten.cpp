@@ -5,13 +5,13 @@
 
 #include "Compile/CompilerCxx/CompilerCxxEmscripten.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

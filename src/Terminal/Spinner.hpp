@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SPINNER_HPP
-#define CHALET_SPINNER_HPP
+#pragma once
 
 #include <atomic>
 #include <mutex>
@@ -18,21 +17,25 @@ struct Spinner
 	CHALET_DISALLOW_COPY_MOVE(Spinner);
 	~Spinner();
 
-	void start();
+	static Spinner& instance();
+	static bool instanceCreated();
+	static bool destroyInstance();
+
+	bool start();
+	bool cancel();
 	bool stop();
 
 private:
 	using clock = std::chrono::steady_clock;
 
-	bool destroy();
 	bool sleepWithContext(const std::chrono::milliseconds& inLength);
 
 	void doRegularEllipsis();
 
-	std::atomic<bool> m_running = false;
 	Unique<std::thread> m_thread;
 	std::mutex m_mutex;
+
+	bool m_running = true;
+	bool m_cancelled = false;
 };
 }
-
-#endif // CHALET_SPINNER_HPP

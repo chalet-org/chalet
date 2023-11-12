@@ -8,6 +8,6 @@
 
 namespace chalet
 {
-template struct Size<ushort>;
-template struct Position<short>;
+template struct Size<u16>;
+template struct Position<i16>;
 }

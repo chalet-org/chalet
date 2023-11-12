@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_OUTPUTS_HPP
-#define CHALET_SOURCE_OUTPUTS_HPP
+#pragma once
 
 #include "State/SourceFileGroup.hpp"
 
@@ -20,5 +19,3 @@ struct SourceOutputs
 	StringList directories;
 };
 }
-
-#endif // CHALET_SOURCE_OUTPUTS_HPP

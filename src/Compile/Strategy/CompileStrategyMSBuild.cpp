@@ -5,17 +5,18 @@
 
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
-#include "Core/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
+#include "Platform/Arch.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 
@@ -40,7 +41,7 @@ bool CompileStrategyMSBuild::initialize()
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
-		Commands::removeRecursively(m_state.paths.buildOutputDir());
+		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
 	m_initialized = true;
@@ -62,7 +63,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 	auto& route = m_state.inputs.route();
 	auto& cwd = m_state.inputs.workingDirectory();
 
-	auto msbuild = Commands::which("msbuild");
+	auto msbuild = Files::which("msbuild");
 	if (msbuild.empty())
 	{
 		Diagnostic::error("MSBuild is required, but was not found in path.");
@@ -118,7 +119,7 @@ bool CompileStrategyMSBuild::doFullBuild()
 		cmd.emplace_back(fmt::format("{}/vcxproj/all.vcxproj", folder));
 	}
 
-	bool result = Commands::subprocess(cmd);
+	bool result = Process::run(cmd);
 	if (result)
 	{
 		String::replaceAll(project, fmt::format("{}/", cwd), "");

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CLION_WORKSPACE_GEN_HPP
-#define CHALET_CLION_WORKSPACE_GEN_HPP
+#pragma once
 
 #include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
@@ -72,5 +71,3 @@ private:
 	std::string m_inputFile;
 };
 }
-
-#endif // CHALET_CLION_WORKSPACE_GEN_HPP

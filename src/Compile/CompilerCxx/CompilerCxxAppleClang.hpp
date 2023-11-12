@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_APPLE_CLANG_HPP
-#define CHALET_COMPILER_CXX_APPLE_CLANG_HPP
+#pragma once
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
@@ -17,7 +16,7 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 	static StringList getAllowedSDKTargets();
 
 	static bool addSystemRootOption(StringList& outArgList, const BuildState& inState);
-	static bool addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const uint inVersionMajorMinor);
+	static bool addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const u32 inVersionMajorMinor);
 	static bool addMultiArchOptionsToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
@@ -38,5 +37,3 @@ protected:
 private:
 };
 }
-
-#endif // CHALET_COMPILER_CXX_APPLE_CLANG_HPP

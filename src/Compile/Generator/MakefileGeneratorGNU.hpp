@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MAKEFILE_GENERATOR_GNU_HPP
-#define CHALET_MAKEFILE_GENERATOR_GNU_HPP
+#pragma once
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "State/SourceOutputs.hpp"
@@ -41,5 +40,3 @@ private:
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
 };
 }
-
-#endif // CHALET_MAKEFILE_GENERATOR_GNU_HPP

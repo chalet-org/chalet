@@ -7,10 +7,10 @@
 
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/CentralState.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"

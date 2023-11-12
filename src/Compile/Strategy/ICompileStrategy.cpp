@@ -5,7 +5,7 @@
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
 #include "State/BuildInfo.hpp"
@@ -52,7 +52,7 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented StrategyType requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented StrategyType requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

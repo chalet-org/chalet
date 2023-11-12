@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ILINKER_HPP
-#define CHALET_ILINKER_HPP
+#pragma once
 
 #include "Compile/IToolchainExecutableBase.hpp"
 
@@ -48,9 +47,7 @@ protected:
 
 	StringList getWin32CoreLibraryLinks() const;
 
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
+	u32 m_versionMajorMinor = 0;
+	u32 m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_ILINKER_HPP

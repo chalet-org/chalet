@@ -8,8 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -24,7 +24,7 @@ ScriptDistTarget::ScriptDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
-	Path::sanitize(m_file);
+	Path::toUnix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;
@@ -74,7 +74,7 @@ bool ScriptDistTarget::validate()
 		}
 	}
 
-	if (m_dependsOn.empty() && !Commands::pathExists(m_file))
+	if (m_dependsOn.empty() && !Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the distribution script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;

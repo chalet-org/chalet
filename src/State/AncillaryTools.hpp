@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ANCILLARY_TOOLS_HPP
-#define CHALET_ANCILLARY_TOOLS_HPP
+#pragma once
 
 #include "State/ScriptAdapter.hpp"
 #include "State/VariableAdapter.hpp"
@@ -17,8 +16,6 @@ struct AncillaryTools
 {
 	AncillaryTools();
 
-	bool resolveOwnExecutable(const std::string& inAppPath);
-
 	bool validate(const std::string& inHomeDirectory);
 
 	void fetchBashVersion();
@@ -28,8 +25,6 @@ struct AncillaryTools
 
 	std::string getApplePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
-
-	const std::string& chalet() const noexcept;
 
 	const std::string& bash() const noexcept;
 	void setBash(std::string&& inValue) noexcept;
@@ -88,8 +83,8 @@ struct AncillaryTools
 
 	const std::string& xcodebuild() const noexcept;
 	void setXcodebuild(std::string&& inValue) noexcept;
-	uint xcodeVersionMajor() const noexcept;
-	uint xcodeVersionMinor() const noexcept;
+	u32 xcodeVersionMajor() const noexcept;
+	u32 xcodeVersionMinor() const noexcept;
 
 	const std::string& xcrun() const noexcept;
 	void setXcrun(std::string&& inValue) noexcept;
@@ -159,11 +154,9 @@ private:
 	mutable std::string m_signingCertificate;
 #endif
 
-	uint m_xcodeVersionMajor = 0;
-	uint m_xcodeVersionMinor = 0;
+	u32 m_xcodeVersionMajor = 0;
+	u32 m_xcodeVersionMinor = 0;
 
 	bool m_bashAvailable = false;
 };
 }
-
-#endif // CHALET_ANCILLARY_TOOLS_HPP

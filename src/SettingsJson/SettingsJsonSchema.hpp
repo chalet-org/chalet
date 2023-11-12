@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SETTINGS_JSON_SCHEMA_HPP
-#define CHALET_SETTINGS_JSON_SCHEMA_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -16,5 +15,3 @@ public:
 	Json get();
 };
 }
-
-#endif // CHALET_SETTINGS_JSON_SCHEMA_HPP

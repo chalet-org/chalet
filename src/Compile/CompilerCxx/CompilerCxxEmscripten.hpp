@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_EMSCRIPTEN_HPP
-#define CHALET_COMPILER_CXX_EMSCRIPTEN_HPP
+#pragma once
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
@@ -25,5 +24,3 @@ private:
 	// std::string m_pchSource;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_EMSCRIPTEN_HPP

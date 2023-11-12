@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUB_CHALET_TARGET_HPP
-#define CHALET_SUB_CHALET_TARGET_HPP
+#pragma once
 
 #include "State/Target/IBuildTarget.hpp"
 
@@ -49,5 +48,3 @@ private:
 	bool m_clean = true;
 };
 }
-
-#endif // CHALET_SUB_CHALET_TARGET_HPP

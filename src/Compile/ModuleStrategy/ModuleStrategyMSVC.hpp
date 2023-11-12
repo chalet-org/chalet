@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MODULE_STRATEGY_MSVC_HPP
-#define CHALET_MODULE_STRATEGY_MSVC_HPP
+#pragma once
 
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
 
@@ -28,5 +27,3 @@ private:
 	std::string m_msvcToolsDirectory;
 };
 }
-
-#endif // CHALET_MODULE_STRATEGY_MSVC_HPP

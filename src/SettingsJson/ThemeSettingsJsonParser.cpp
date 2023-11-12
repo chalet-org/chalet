@@ -6,7 +6,7 @@
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -29,7 +29,7 @@ bool ThemeSettingsJsonParser::serialize()
 	ColorTheme theme = Output::theme();
 
 	auto readFromSettings = [this](const std::string& inFile, ColorTheme& outTheme, const bool inGlobal) -> void {
-		if (!Commands::pathExists(inFile))
+		if (!Files::pathExists(inFile))
 			return;
 
 		JsonFile jsonFile;

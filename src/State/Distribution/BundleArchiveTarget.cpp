@@ -7,7 +7,7 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/GlobMatch.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

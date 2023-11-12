@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_DISK_IMAGE_CREATOR_HPP
-#define CHALET_MACOS_DISK_IMAGE_CREATOR_HPP
+#pragma once
 
 namespace chalet
 {
@@ -28,5 +27,3 @@ private:
 	Dictionary<std::string> m_includedPaths;
 };
 }
-
-#endif // CHALET_MACOS_DISK_IMAGE_CREATOR_HPP

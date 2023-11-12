@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PLATFORM_DEPENDENCY_MANAGER_HPP
-#define CHALET_PLATFORM_DEPENDENCY_MANAGER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -25,5 +24,3 @@ private:
 	Dictionary<StringList> m_platformRequires;
 };
 }
-
-#endif // CHALET_PLATFORM_DEPENDENCY_MANAGER_HPP

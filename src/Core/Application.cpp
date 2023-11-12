@@ -5,13 +5,13 @@
 
 #include "Core/Application.hpp"
 
-#include "Router/Router.hpp"
+#include "Core/Router/Router.hpp"
 
-#include "Arguments/CommandLine.hpp"
+#include "Core/Arguments/CommandLine.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/SignalHandler.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/SignalHandler.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Terminal/WindowsTerminal.hpp"
@@ -20,7 +20,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-int Application::run(const int argc, const char* argv[])
+i32 Application::run(const i32 argc, const char* argv[])
 {
 	initializeTerminal();
 
@@ -78,7 +78,7 @@ void Application::initializeTerminal()
 }
 
 /*****************************************************************************/
-int Application::onExit(const Status inStatus)
+i32 Application::onExit(const Status inStatus)
 {
 	chalet_assert(m_inputs != nullptr, "m_inputs must be allocated.");
 	if (inStatus == Status::EarlyFailure && m_inputs != nullptr)
@@ -92,7 +92,7 @@ int Application::onExit(const Status inStatus)
 
 	this->cleanup();
 
-	int result = static_cast<int>(inStatus);
+	i32 result = static_cast<i32>(inStatus);
 
 	return result > 0 ? 1 : 0;
 }

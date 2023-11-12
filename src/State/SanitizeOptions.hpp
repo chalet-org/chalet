@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SANITIZE_OPTIONS_HPP
-#define CHALET_SANITIZE_OPTIONS_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,5 +22,3 @@ enum
 using Type = uchar;
 }
 }
-
-#endif // CHALET_SANITIZE_OPTIONS_HPP

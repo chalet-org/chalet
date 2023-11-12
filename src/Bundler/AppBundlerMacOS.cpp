@@ -11,6 +11,8 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -20,8 +22,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -53,8 +54,10 @@ bool AppBundlerMacOS::initializeState()
 	if (!getMainExecutable(m_mainExecutable))
 		return false; // No executable. we don't care
 
-#endif
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
@@ -66,7 +69,11 @@ const std::string& AppBundlerMacOS::mainExecutable() const noexcept
 /*****************************************************************************/
 void AppBundlerMacOS::setOutputDirectory(const std::string& inPath) const
 {
+#if defined(CHALET_MACOS)
 	m_outputDirectory = inPath;
+#else
+	UNUSED(inPath);
+#endif
 }
 
 /*****************************************************************************/
@@ -78,6 +85,7 @@ bool AppBundlerMacOS::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerMacOS::quickBundleForPlatform()
 {
+#if defined(CHALET_MACOS)
 	// If we got this far, the app bundle was built through Xcode
 	// so we only need to copy it
 
@@ -92,13 +100,16 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 	auto outputFolder = String::getPathFolder(appPath);
 
 	auto& buildOutputDir = m_state.paths.buildOutputDir();
-	if (!Commands::copy(fmt::format("{}/{}", buildOutputDir, appName), outputFolder))
+	if (!Files::copy(fmt::format("{}/{}", buildOutputDir, appName), outputFolder))
 	{
 		Diagnostic::error("There was an problem copying {} to the output directory ({})", appName, outputFolder);
 		return false;
 	}
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 /*****************************************************************************/
@@ -117,8 +128,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 		}
 	}
 
-	if (!Commands::pathExists(m_frameworksPath))
-		Commands::makeDirectory(m_frameworksPath);
+	if (!Files::pathExists(m_frameworksPath))
+		Files::makeDirectory(m_frameworksPath);
 
 	auto& installNameTool = m_state.tools.installNameTool();
 	if (m_bundle.updateRPaths())
@@ -132,7 +143,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 
 	/*for (auto& executable : m_executableOutputPaths)
 	{
-		if (!Commands::subprocess({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
+		if (!Process::run({ installNameTool, "-add_rpath", "@executable_path/.", executable }))
 			return false;
 	}*/
 
@@ -161,8 +172,8 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!signAppBundle())
 			return false;
 
-		if (Commands::pathExists(m_entitlementsFile))
-			Commands::remove(m_entitlementsFile);
+		if (Files::pathExists(m_entitlementsFile))
+			Files::remove(m_entitlementsFile);
 
 		Output::msgAction("Succeeded", String::getPathFolder(m_bundlePath));
 	}
@@ -183,8 +194,10 @@ std::string AppBundlerMacOS::getBundlePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/{}.app/Contents", m_outputDirectory, m_bundle.name());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -194,8 +207,10 @@ std::string AppBundlerMacOS::getExecutablePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/MacOS", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -205,8 +220,10 @@ std::string AppBundlerMacOS::getResourcePath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/Resources", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
@@ -216,13 +233,16 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/Frameworks", getBundlePath());
 	else
-#endif
 		return m_outputDirectory;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
 {
+#if defined(CHALET_MACOS)
 	for (auto& [file, dependencies] : inDependencyMap)
 	{
 		auto filename = String::getPathFilename(file);
@@ -233,17 +253,22 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 	}
 
 	return true;
+#else
+	UNUSED(inInstallNameTool, inDependencyMap, inExecutablePath);
+	return false;
+#endif
 }
 
 /*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const
 {
-	if (!Commands::pathExists(inOutputFile))
+#if defined(CHALET_MACOS)
+	if (!Files::pathExists(inOutputFile))
 		return true;
 
 	if (inDependencies.size() > 0)
 	{
-		if (!Commands::subprocess({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }))
+		if (!Process::run({ inInstallNameTool, "-id", fmt::format("@rpath/{}", inFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -257,7 +282,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 			continue;
 
 		auto depFile = String::getPathFilename(dep);
-		if (!Commands::subprocess({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }))
+		if (!Process::run({ inInstallNameTool, "-change", dep, fmt::format("@rpath/{}", depFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -266,7 +291,7 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 		// For dylibs linked w/o .a files, they get assigned "@executable_path/../Frameworks/"
 		//   so we need to attempt to update them as well
 		auto depFrameworkPath = fmt::format("@executable_path/../Frameworks/{}", depFile);
-		if (!Commands::subprocess({ inInstallNameTool, "-change", depFrameworkPath, fmt::format("@rpath/{}", depFile), inOutputFile }))
+		if (!Process::run({ inInstallNameTool, "-change", depFrameworkPath, fmt::format("@rpath/{}", depFile), inOutputFile }))
 		{
 			Diagnostic::error("install_name_tool error");
 			return false;
@@ -274,167 +299,9 @@ bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTo
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string AppBundlerMacOS::getPlistFile() const
-{
-	return fmt::format("{}/Info.plist", m_bundlePath);
-}
-
-/*****************************************************************************/
-std::string AppBundlerMacOS::getEntitlementsFilePath() const
-{
-#if defined(CHALET_MACOS)
-	const auto& entitlements = m_bundle.macosBundleEntitlementsPropertyList();
-	const auto& entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
-
-	// No entitlements
-	if (!entitlements.empty() || !entitlementsContent.empty())
-		return fmt::format("{}/App.entitlements", m_outputDirectory);
-#endif
-
-	return std::string();
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::createBundleIcon()
-{
-#if defined(CHALET_MACOS)
-	const auto& icon = m_bundle.macosBundleIcon();
-
-	if (icon.empty())
-		return true;
-
-	Timer timer;
-	Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
-
-	m_iconBaseName = String::getPathBaseName(icon);
-
-	const auto& sips = m_state.tools.sips();
-	bool sipsFound = !sips.empty();
-
-	if (String::endsWith(".png", icon) && sipsFound)
-	{
-		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
-		if (!Commands::subprocessMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
-			return false;
-	}
-	else if (String::endsWith(".icns", icon))
-	{
-		if (!Commands::copy(icon, m_resourcePath))
-			return false;
-	}
-	else
-	{
-		if (!icon.empty() && !sipsFound)
-		{
-			auto& inputFile = m_state.inputs.inputFile();
-			Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", inputFile, icon);
-		}
-	}
-
-	Diagnostic::printDone(timer.asString());
-#endif
-
-	return true;
-}
-
-/*****************************************************************************/
-bool AppBundlerMacOS::createBundleIconFromXcassets()
-{
-#if defined(CHALET_MACOS)
-	const auto& icon = m_bundle.macosBundleIcon();
-	if (icon.empty())
-		return true;
-
-	Timer timer;
-
-	auto objDir = m_state.paths.bundleObjDir(m_bundle.name());
-	if (!Commands::pathExists(objDir))
-		Commands::makeDirectory(objDir);
-
-	bool iconIsXcassets = String::endsWith(".xcassets", icon);
-
-	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
-	if (iconIsXcassets)
-		assetsPath = icon;
-
-	auto usingCommandLineTools = Commands::isUsingAppleCommandLineTools();
-
-	auto actool = Commands::which("actool");
-	if (actool.empty() || usingCommandLineTools)
-	{
-		auto& inputFile = m_state.inputs.inputFile();
-		if (iconIsXcassets)
-		{
-			if (usingCommandLineTools)
-				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool from Xcode.", inputFile, icon);
-			else
-				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool.", inputFile, icon);
-			return false;
-		}
-
-		if (!usingCommandLineTools)
-		{
-			Diagnostic::warn("Could not find 'actool' required to create an icns from an asset catalog. Falling back to 'sips' method.");
-		}
-		// If actool is not found or using command line tools, make the bundle icon the old way
-		return createBundleIcon();
-	}
-
-	if (iconIsXcassets)
-		Diagnostic::stepInfoEllipsis("Using the asset catalog: '{}'", icon);
-	else
-		Diagnostic::stepInfoEllipsis("Creating an asset catalog from '{}'", icon);
-
-	if (!createAssetsXcassets(assetsPath))
-	{
-		Diagnostic::error("Could not create '{}' for application icon.", assetsPath);
-		return false;
-	}
-
-	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
-
-	bool result = Commands::subprocessNoOutput({
-		actool,
-		"--output-format",
-		"human-readable-text",
-		"--notices",
-		"--warnings",
-		"--export-dependency-info",
-		fmt::format("{}/assetcatalog_dependencies", objDir),
-		"--output-partial-info-plist",
-		tempPlist,
-		"--app-icon",
-		"AppIcon",
-		"--enable-on-demand-resources",
-		"YES",
-		"--development-region",
-		"en",
-		"--target-device",
-		"mac",
-		"--minimum-deployment-target",
-		m_state.inputs.osTargetVersion(),
-		"--platform",
-		m_state.inputs.osTargetName(),
-		"--compile",
-		m_resourcePath,
-		assetsPath,
-	});
-
-	if (result)
-	{
-		Diagnostic::printDone(timer.asString());
-	}
-	else
-	{
-		Diagnostic::error("There was a problem creating the application bundle icon.", assetsPath);
-	}
-
-	return result;
 #else
-	return true;
+	UNUSED(inInstallNameTool, inFile, inDependencies, inOutputFile);
+	return false;
 #endif
 }
 
@@ -451,17 +318,17 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	if (!sourceCache.fileChangedOrDoesNotExist(icon, inOutPath))
 		return true;
 
-	if (!Commands::pathExists(inOutPath))
-		Commands::makeDirectory(inOutPath);
+	if (!Files::pathExists(inOutPath))
+		Files::makeDirectory(inOutPath);
 
 	auto accentColorPath = fmt::format("{}/AccentColor.colorset", inOutPath);
 	auto appIconPath = fmt::format("{}/AppIcon.appiconset", inOutPath);
 
-	if (!Commands::pathExists(accentColorPath))
-		Commands::makeDirectory(accentColorPath);
+	if (!Files::pathExists(accentColorPath))
+		Files::makeDirectory(accentColorPath);
 
-	if (!Commands::pathExists(appIconPath))
-		Commands::makeDirectory(appIconPath);
+	if (!Files::pathExists(appIconPath))
+		Files::makeDirectory(appIconPath);
 
 	Json root = R"json({
 		"info" : { "author" : "xcode", "version" : 1 }
@@ -481,17 +348,17 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 
 	const auto& sips = m_state.tools.sips();
 
-	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](int scale, int size) {
+	auto addIdiom = [&appIconJson, &appIconPath, &icon, &sips](i32 scale, i32 size) {
 		Json out = Json::object();
 
 		if (!icon.empty() && !sips.empty())
 		{
 			auto baseName = String::getPathBaseName(icon);
 			auto ext = String::getPathSuffix(icon);
-			int imageSize = scale * size;
+			i32 imageSize = scale * size;
 			auto outIcon = fmt::format("{}/{}-{}@{}x.{}", appIconPath, baseName, size, scale, ext);
 			// -Z 32 glfw.icns --out glfw-32.icns
-			if (Commands::subprocessNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
+			if (Process::runNoOutput({ sips, "-Z", std::to_string(imageSize), icon, "--out", outIcon }))
 			{
 				out["filename"] = String::getPathFilename(outIcon);
 			}
@@ -503,8 +370,8 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 		appIconJson["images"].emplace_back(std::move(out));
 	};
 
-	std::vector<int> sizes{ 16, 32, 128, 256, 512 };
-	for (int size : sizes)
+	std::vector<i32> sizes{ 16, 32, 128, 256, 512 };
+	for (i32 size : sizes)
 	{
 		addIdiom(1, size);
 		addIdiom(2, size);
@@ -513,11 +380,12 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	std::ofstream(fmt::format("{}/Contents.json", appIconPath))
 		<< appIconJson.dump(1, '\t') << std::endl;
 
+	return true;
+
 #else
 	UNUSED(inOutPath);
+	return false;
 #endif
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -588,12 +456,12 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 	if (!m_state.tools.plistConvertToBinary(tmpPlist, inOutFile))
 		return false;
 
-	Commands::remove(tmpPlist);
+	Files::remove(tmpPlist);
+	return true;
 #else
 	UNUSED(inOutFile, outJson);
+	return false;
 #endif
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -639,12 +507,166 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
 		return false;
 
-	Commands::remove(tmpPlist);
+	Files::remove(tmpPlist);
+	return true;
 #else
 	UNUSED(inOutFile);
+	return false;
 #endif
+}
 
+#if defined(CHALET_MACOS)
+/*****************************************************************************/
+std::string AppBundlerMacOS::getPlistFile() const
+{
+	return fmt::format("{}/Info.plist", m_bundlePath);
+}
+
+/*****************************************************************************/
+std::string AppBundlerMacOS::getEntitlementsFilePath() const
+{
+	const auto& entitlements = m_bundle.macosBundleEntitlementsPropertyList();
+	const auto& entitlementsContent = m_bundle.macosBundleEntitlementsPropertyListContent();
+
+	// No entitlements
+	if (!entitlements.empty() || !entitlementsContent.empty())
+		return fmt::format("{}/App.entitlements", m_outputDirectory);
+
+	return std::string();
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createBundleIcon()
+{
+	const auto& icon = m_bundle.macosBundleIcon();
+
+	if (icon.empty())
+		return true;
+
+	Timer timer;
+	Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
+
+	m_iconBaseName = String::getPathBaseName(icon);
+
+	const auto& sips = m_state.tools.sips();
+	bool sipsFound = !sips.empty();
+
+	if (String::endsWith(".png", icon) && sipsFound)
+	{
+		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
+		if (!Process::runMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
+			return false;
+	}
+	else if (String::endsWith(".icns", icon))
+	{
+		if (!Files::copy(icon, m_resourcePath))
+			return false;
+	}
+	else
+	{
+		if (!icon.empty() && !sipsFound)
+		{
+			auto& inputFile = m_state.inputs.inputFile();
+			Diagnostic::warn("{}: Icon conversion from '{}' to icns requires the 'sips' command line tool.", inputFile, icon);
+		}
+	}
+
+	Diagnostic::printDone(timer.asString());
 	return true;
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::createBundleIconFromXcassets()
+{
+	const auto& icon = m_bundle.macosBundleIcon();
+	if (icon.empty())
+		return true;
+
+	Timer timer;
+
+	auto objDir = m_state.paths.bundleObjDir(m_bundle.name());
+	if (!Files::pathExists(objDir))
+		Files::makeDirectory(objDir);
+
+	bool iconIsXcassets = String::endsWith(".xcassets", icon);
+
+	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
+	if (iconIsXcassets)
+		assetsPath = icon;
+
+	auto usingCommandLineTools = Files::isUsingAppleCommandLineTools();
+
+	auto actool = Files::which("actool");
+	if (actool.empty() || usingCommandLineTools)
+	{
+		auto& inputFile = m_state.inputs.inputFile();
+		if (iconIsXcassets)
+		{
+			if (usingCommandLineTools)
+				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool from Xcode.", inputFile, icon);
+			else
+				Diagnostic::error("{}: Icon conversion from '{}' to icns requires the 'actool' cli tool.", inputFile, icon);
+			return false;
+		}
+
+		if (!usingCommandLineTools)
+		{
+			Diagnostic::warn("Could not find 'actool' required to create an icns from an asset catalog. Falling back to 'sips' method.");
+		}
+		// If actool is not found or using command line tools, make the bundle icon the old way
+		return createBundleIcon();
+	}
+
+	if (iconIsXcassets)
+		Diagnostic::stepInfoEllipsis("Using the asset catalog: '{}'", icon);
+	else
+		Diagnostic::stepInfoEllipsis("Creating an asset catalog from '{}'", icon);
+
+	if (!createAssetsXcassets(assetsPath))
+	{
+		Diagnostic::error("Could not create '{}' for application icon.", assetsPath);
+		return false;
+	}
+
+	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
+
+	bool result = Process::runNoOutput({
+		actool,
+		"--output-format",
+		"human-readable-text",
+		"--notices",
+		"--warnings",
+		"--export-dependency-info",
+		fmt::format("{}/assetcatalog_dependencies", objDir),
+		"--output-partial-info-plist",
+		tempPlist,
+		"--app-icon",
+		"AppIcon",
+		"--enable-on-demand-resources",
+		"YES",
+		"--development-region",
+		"en",
+		"--target-device",
+		"mac",
+		"--minimum-deployment-target",
+		m_state.inputs.osTargetVersion(),
+		"--platform",
+		m_state.inputs.osTargetName(),
+		"--compile",
+		m_resourcePath,
+		assetsPath,
+	});
+
+	if (result)
+	{
+		Diagnostic::printDone(timer.asString());
+	}
+	else
+	{
+		Diagnostic::error("There was a problem creating the application bundle icon.", assetsPath);
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -655,13 +677,13 @@ bool AppBundlerMacOS::setExecutablePaths() const
 	// install_name_tool
 	for (auto& executable : m_executableOutputPaths)
 	{
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
+		if (!Process::runNoOutput({ installNameTool, "-add_rpath", "@executable_path/../MacOS", executable }))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
+		if (!Process::runNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Frameworks", executable }))
 			return false;
 
-		if (!Commands::subprocessNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
+		if (!Process::runNoOutput({ installNameTool, "-add_rpath", "@executable_path/../Resources", executable }))
 			return false;
 	}
 
@@ -683,7 +705,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 						continue;
 
 					const std::string filename = fmt::format("{}/{}.framework", path, framework);
-					if (!Commands::pathExists(filename))
+					if (!Files::pathExists(filename))
 						continue;
 
 					if (List::contains(addedFrameworks, framework))
@@ -691,14 +713,14 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 					addedFrameworks.push_back(framework);
 
-					if (!Commands::copy(filename, m_frameworksPath, fs::copy_options::skip_existing))
+					if (!Files::copy(filename, m_frameworksPath, fs::copy_options::skip_existing))
 						return false;
 
 					const auto resolvedFramework = fmt::format("{}/{}.framework", m_frameworksPath, framework);
 
 					for (auto& executable : m_executableOutputPaths)
 					{
-						if (!Commands::subprocess({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
+						if (!Process::run({ installNameTool, "-change", resolvedFramework, fmt::format("@rpath/{}", filename), executable }))
 							return false;
 					}
 
@@ -722,13 +744,11 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	Timer timer;
 
-#if defined(CHALET_MACOS)
 	if (m_bundle.isMacosAppBundle())
 	{
 		Diagnostic::stepInfoEllipsis("Signing the application bundle");
 	}
 	else
-#endif
 	{
 		Diagnostic::stepInfoEllipsis("Signing binaries");
 	}
@@ -755,7 +775,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 		StringList bundleExtensions{
 			".app",
-			".framework",
+			Files::getPlatformFrameworkExtension(),
 			".kext",
 			".plugin",
 			".docset",
@@ -780,8 +800,8 @@ bool AppBundlerMacOS::signAppBundle() const
 			}
 		}
 
-		uint signingAttempts = 3;
-		for (uint i = 0; i < signingAttempts; ++i)
+		u32 signingAttempts = 3;
+		for (u32 i = 0; i < signingAttempts; ++i)
 		{
 			auto it = signLater.end();
 			while (it != signLater.begin())
@@ -826,4 +846,5 @@ bool AppBundlerMacOS::signAppBundle() const
 		return false;
 	}
 }
+#endif
 }

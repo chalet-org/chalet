@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CENTRAL_STATE_HPP
-#define CHALET_CENTRAL_STATE_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -99,5 +98,3 @@ private:
 	bool m_shouldPerformUpdateCheck = true;
 };
 }
-
-#endif // CHALET_CENTRAL_STATE_HPP

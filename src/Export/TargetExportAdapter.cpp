@@ -17,7 +17,7 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "State/Target/ValidationBuildTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -41,7 +41,7 @@ StringList TargetExportAdapter::getFiles() const
 		const auto& script = static_cast<const ScriptBuildTarget&>(m_target);
 
 		auto file = fmt::format("{}/{}", cwd, script.file());
-		if (!Commands::pathExists(file))
+		if (!Files::pathExists(file))
 			file = script.file();
 
 		ret.emplace_back(std::move(file));
@@ -147,7 +147,7 @@ std::string TargetExportAdapter::getCommand() const
 	{
 		const auto& validationTarget = static_cast<const ValidationBuildTarget&>(m_target);
 		StringList validateCmd{
-			fmt::format("\"{}\"", m_state.tools.chalet()),
+			fmt::format("\"{}\"", m_state.inputs.appPath()),
 			"validate",
 			fmt::format("\"{}\"", validationTarget.schema()),
 		};

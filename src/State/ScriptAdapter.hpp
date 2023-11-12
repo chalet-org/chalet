@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_ADAPTER_HPP
-#define CHALET_SCRIPT_ADAPTER_HPP
+#pragma once
 
 #include "State/ScriptType.hpp"
 
@@ -26,5 +25,3 @@ private:
 	mutable std::unordered_map<ScriptType, std::string> m_executables;
 };
 }
-
-#endif // CHALET_SCRIPT_ADAPTER_HPP

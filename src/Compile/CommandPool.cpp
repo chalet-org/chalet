@@ -7,12 +7,12 @@
 
 #include <csignal>
 
-#include "Process/ProcessController.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/SubProcessController.hpp"
+#include "System/SignalHandler.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
-#include "Utility/SignalHandler.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -20,7 +20,7 @@ namespace chalet
 /*****************************************************************************/
 namespace
 {
-enum class CommandPoolErrorCode : ushort
+enum class CommandPoolErrorCode : u16
 {
 	None,
 	Aborted,
@@ -31,15 +31,15 @@ enum class CommandPoolErrorCode : ushort
 struct PoolState
 {
 	size_t refCount = 0;
-	uint index = 0;
-	// uint threads = 0;
+	u32 index = 0;
+	// u32 threads = 0;
 
 	CommandPoolErrorCode errorCode = CommandPoolErrorCode::None;
 	std::function<bool()> shutdownHandler;
 
 	std::mutex mutex;
 
-	std::vector<std::size_t> erroredOn;
+	std::vector<size_t> erroredOn;
 };
 
 static PoolState* state = nullptr;
@@ -63,7 +63,7 @@ bool printCommand(std::string inText)
 
 /*****************************************************************************/
 #if defined(CHALET_WIN32)
-bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string sourceFile)
+bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string sourceFile)
 {
 	std::string output;
 
@@ -76,7 +76,7 @@ bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string s
 	options.onStdErr = options.onStdOut;
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	// String::replaceAll(output, "\r\n", "\n");
@@ -113,7 +113,7 @@ bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string s
 #endif
 
 /*****************************************************************************/
-bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
+bool executeCommandCarriageReturn(size_t inIndex, StringList inCommand)
 {
 #if defined(CHALET_WIN32)
 	ProcessOptions options;
@@ -131,7 +131,7 @@ bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
 	};
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	if (!errorOutput.empty())
@@ -168,7 +168,7 @@ bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
 }
 
 /*****************************************************************************/
-bool executeCommand(std::size_t inIndex, StringList inCommand)
+bool executeCommand(size_t inIndex, StringList inCommand)
 {
 	ProcessOptions options;
 	// auto onStdOut = [](std::string inData) {
@@ -185,7 +185,7 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 	};
 
 	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
+	if (SubProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
 	if (!errorOutput.empty())
@@ -217,7 +217,7 @@ bool executeCommand(std::size_t inIndex, StringList inCommand)
 }
 
 /*****************************************************************************/
-void signalHandler(int inSignal)
+void signalHandler(i32 inSignal)
 {
 	if (state == nullptr)
 		return;
@@ -230,14 +230,14 @@ void signalHandler(int inSignal)
 		if (inSignal == SIGTERM)
 		{
 			// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-			ProcessController::haltAll(SigNum::Terminate);
+			SubProcessController::haltAll(SigNum::Terminate);
 		}
 	}
 }
 }
 
 /*****************************************************************************/
-CommandPool::CommandPool(const std::size_t inThreads) :
+CommandPool::CommandPool(const size_t inThreads) :
 	m_threadPool(inThreads)
 {
 	if (state == nullptr)
@@ -249,7 +249,7 @@ CommandPool::CommandPool(const std::size_t inThreads) :
 		SignalHandler::add(SIGABRT, signalHandler);
 	}
 
-	if (state->refCount < std::numeric_limits<std::size_t>::max())
+	if (state->refCount < std::numeric_limits<size_t>::max())
 		state->refCount++;
 }
 
@@ -281,7 +281,7 @@ bool CommandPool::runAll(JobList& inJobs, Settings& inSettings)
 
 	for (auto& job : inJobs)
 	{
-		inSettings.total += static_cast<uint>(job->list.size());
+		inSettings.total += static_cast<u32>(job->list.size());
 	}
 
 	for (auto& job : inJobs)
@@ -289,7 +289,7 @@ bool CommandPool::runAll(JobList& inJobs, Settings& inSettings)
 		if (!run(*job, inSettings))
 			return false;
 
-		inSettings.startIndex += static_cast<uint>(job->list.size());
+		inSettings.startIndex += static_cast<u32>(job->list.size());
 		job.reset();
 	}
 
@@ -328,13 +328,13 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 	Output::setQuietNonBuild(false);
 
-	auto& executeCommandFunc = Environment::isMicrosoftTerminalOrWindowsBash() ? executeCommandCarriageReturn : executeCommand;
+	auto& executeCommandFunc = Shell::isMicrosoftTerminalOrWindowsBash() ? executeCommandCarriageReturn : executeCommand;
 
 	state->index = startIndex > 0 ? startIndex : 1;
-	uint totalCompiles = total;
+	u32 totalCompiles = total;
 	if (totalCompiles == 0)
 	{
-		totalCompiles = static_cast<uint>(inJob.list.size());
+		totalCompiles = static_cast<u32>(inJob.list.size());
 	}
 
 	m_reset = Output::getAnsiStyle(Output::theme().reset);
@@ -342,10 +342,10 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 	bool haltOnError = !keepGoing;
 
-	// state->threads = inJob.threads > 0 ? inJob.threads : static_cast<uint>(m_threadPool.threads());
+	// state->threads = inJob.threads > 0 ? inJob.threads : static_cast<u32>(m_threadPool.threads());
 	if (totalCompiles <= 1 || inJob.threads == 1)
 	{
-		std::size_t index = 0;
+		size_t index = 0;
 		for (auto& it : inJob.list)
 		{
 			if (it.command.empty())
@@ -374,7 +374,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	}
 	else
 	{
-		std::size_t index = 0;
+		size_t index = 0;
 		std::vector<std::future<bool>> threadResults;
 		for (auto& it : inJob.list)
 		{
@@ -434,7 +434,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 	if (state->errorCode != CommandPoolErrorCode::None)
 	{
-		std::size_t index = 0;
+		size_t index = 0;
 		for (auto& it : inJob.list)
 		{
 			if (List::contains(state->erroredOn, index))
@@ -461,7 +461,7 @@ const StringList& CommandPool::failures() const
 }
 
 /*****************************************************************************/
-std::string CommandPool::getPrintedText(std::string inText, uint inTotal)
+std::string CommandPool::getPrintedText(std::string inText, u32 inTotal)
 {
 	if (inTotal > 0)
 		return fmt::format("{}   [#/{}] {}{}", m_reset, inTotal, inText, m_reset);

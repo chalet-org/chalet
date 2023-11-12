@@ -68,8 +68,8 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 		return m_jsonFile.assignNodeIfEmpty<bool>(buildOptions, inKey, inDefault);
 	};
 
-	auto assignSettingUint = [this, &buildOptions](const char* inKey, const uint inDefault) {
-		return m_jsonFile.assignNodeIfEmpty<uint>(buildOptions, inKey, inDefault);
+	auto assignSettingUint = [this, &buildOptions](const char* inKey, const u32 inDefault) {
+		return m_jsonFile.assignNodeIfEmpty<u32>(buildOptions, inKey, inDefault);
 	};
 
 	auto assignSettingString = [this, &buildOptions](const char* inKey, const std::string& inDefault) {
@@ -236,7 +236,7 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 		else if (value.is_number())
 		{
 			if (String::equals(Keys::OptionsMaxJobs, key))
-				outState.maxJobs = static_cast<uint>(value.get<int>());
+				outState.maxJobs = static_cast<u32>(value.get<i32>());
 		}
 	}
 

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_STRING_HPP
-#define CHALET_STRING_HPP
+#pragma once
 
 namespace chalet
 {
@@ -26,6 +25,9 @@ bool endsWith(const std::string_view inFind, const std::string& inString);
 bool endsWith(const char inFind, const std::string& inString) noexcept;
 bool endsWith(const StringList& inFind, const std::string& inString);
 
+bool capitalize(std::string& outString);
+bool decapitalize(std::string& outString);
+
 bool onlyContainsCharacters(const std::string& inChars, const std::string& inString);
 std::string fromBoolean(const bool inValue) noexcept;
 void replaceAll(std::string& outString, const std::string_view inFrom, const std::string_view inTo);
@@ -37,8 +39,8 @@ std::string join(const StringList& inList, const char inSeparator = ' ');
 std::string join(StringList&& inList, const char inSeparator = ' ');
 std::string join(const StringList& inList, const std::string_view inSeparator);
 std::string join(StringList&& inList, const std::string_view inSeparator);
-StringList split(std::string inString, const char inSeparator = ' ', const std::size_t inMinLength = 0);
-StringList split(std::string inString, const std::string_view inSeparator, const std::size_t inMinLength = 0);
+StringList split(std::string inString, const char inSeparator = ' ', const size_t inMinLength = 0);
+StringList split(std::string inString, const std::string_view inSeparator, const size_t inMinLength = 0);
 std::string getPrefixed(const StringList& inList, const std::string& inPrefix);
 std::string getSuffixed(const StringList& inList, const std::string& inSuffix);
 std::string getPrefixedAndSuffixed(const StringList& inList, const std::string& inPrefix, const std::string& inSuffix);
@@ -56,5 +58,3 @@ std::string eol();
 
 }
 }
-
-#endif // CHALET_STRING_HPP

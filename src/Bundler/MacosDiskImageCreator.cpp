@@ -9,11 +9,12 @@
 #include "Bundler/MacosNotarizationMsg.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 
@@ -37,7 +38,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
 
-	Commands::subprocessNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
+	Process::runNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) });
 
 	Timer timer;
 
@@ -59,7 +60,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 				const auto& subdirectory = bundle.subdirectory();
 
 				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundleExtension());
-				if (!Commands::pathExists(appPath))
+				if (!Files::pathExists(appPath))
 				{
 					Diagnostic::error("Path not found, but it's required by {}.dmg: {}", m_diskName, appPath);
 					return false;
@@ -71,16 +72,16 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		}
 	}
 
-	std::uintmax_t appSize = 0;
+	uintmax_t appSize = 0;
 	for (auto& [_, path] : m_includedPaths)
 	{
-		appSize += Commands::getPathSize(path);
+		appSize += Files::getPathSize(path);
 	}
-	std::uintmax_t mb = 1000000;
-	std::uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
+	uintmax_t mb = 1000000;
+	uintmax_t dmgSize = appSize > mb ? appSize / mb : 10;
 	// if (dmgSize > 10)
 	{
-		std::uintmax_t temp = 16;
+		uintmax_t temp = 16;
 		while (temp < dmgSize)
 		{
 			temp += temp;
@@ -88,10 +89,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 		dmgSize = temp + 16;
 	}
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
+	if (!Process::runMinimalOutput({ hdiutil, "create", "-megabytes", std::to_string(dmgSize), "-fs", "HFS+", "-volname", m_diskName, tmpDmg }))
 		return false;
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "attach", tmpDmg }))
+	if (!Process::runMinimalOutput({ hdiutil, "attach", tmpDmg }))
 		return false;
 
 	const auto& background1x = inDiskImage.background1x();
@@ -101,12 +102,12 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	if (hasBackground)
 	{
 		const std::string backgroundPath = fmt::format("{}/.background", volumePath);
-		if (!Commands::makeDirectory(backgroundPath))
+		if (!Files::makeDirectory(backgroundPath))
 			return false;
 
 		if (String::endsWith(".tiff", background1x))
 		{
-			if (!Commands::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
+			if (!Files::copyRename(background1x, fmt::format("{}/background.tiff", backgroundPath)))
 				return false;
 		}
 		else
@@ -121,38 +122,38 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 			cmd.emplace_back("-out");
 			cmd.emplace_back(fmt::format("{}/background.tiff", backgroundPath));
 
-			if (!Commands::subprocessNoOutput(cmd))
+			if (!Process::runNoOutput(cmd))
 				return false;
 		}
 	}
 
 	if (inDiskImage.includeApplicationsSymlink())
 	{
-		if (!Commands::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
+		if (!Files::createDirectorySymbolicLink("/Applications", fmt::format("{}/Applications", volumePath)))
 			return false;
 	}
 
 	for (auto& [_, path] : m_includedPaths)
 	{
-		if (!Commands::copySilent(path, volumePath))
+		if (!Files::copySilent(path, volumePath))
 			return false;
 	}
 
 	const auto applescriptText = getDmgApplescript(inDiskImage);
 
-	if (!Commands::subprocess({ m_state.tools.osascript(), "-e", applescriptText }))
+	if (!Process::run({ m_state.tools.osascript(), "-e", applescriptText }))
 		return false;
 
-	Commands::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
+	Files::removeRecursively(fmt::format("{}/.fseventsd", volumePath));
 
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
+	if (!Process::runMinimalOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
 		return false;
 
 	std::string outDmgPath = fmt::format("{}/{}.dmg", distributionDirectory, m_diskName);
-	if (!Commands::subprocessMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
+	if (!Process::runMinimalOutput({ hdiutil, "convert", tmpDmg, "-format", "UDZO", "-o", outDmgPath }))
 		return false;
 
-	if (!Commands::removeRecursively(tmpDmg))
+	if (!Files::removeRecursively(tmpDmg))
 		return false;
 
 	Diagnostic::printDone(timer.asString());
@@ -196,14 +197,14 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 {
 	std::string pathbar = inDiskImage.pathbarVisible() ? "true" : "false";
 
-	ushort iconSize = inDiskImage.iconSize();
-	ushort textSize = inDiskImage.textSize();
+	u16 iconSize = inDiskImage.iconSize();
+	u16 textSize = inDiskImage.textSize();
 
-	ushort width = inDiskImage.size().width;
-	ushort height = inDiskImage.size().height;
+	u16 width = inDiskImage.size().width;
+	u16 height = inDiskImage.size().height;
 
-	ushort leftMost = std::numeric_limits<ushort>::max();
-	ushort bottomMost = height + (iconSize / static_cast<ushort>(2)) + 16;
+	u16 leftMost = std::numeric_limits<u16>::max();
+	u16 bottomMost = height + (iconSize / static_cast<u16>(2)) + 16;
 
 	std::string positions;
 	for (auto& [path, pos] : inDiskImage.positions())
@@ -223,7 +224,7 @@ std::string MacosDiskImageCreator::getDmgApplescript(const MacosDiskImageTarget&
 
 		if (pos.x > 0 && pos.x < leftMost)
 		{
-			leftMost = static_cast<ushort>(pos.x);
+			leftMost = static_cast<u16>(pos.x);
 		}
 
 		positions += fmt::format(R"applescript(

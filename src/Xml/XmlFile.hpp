@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_FILE_HPP
-#define CHALET_XML_FILE_HPP
+#pragma once
 
 #include "Xml/Xml.hpp"
 
@@ -15,9 +14,9 @@ struct XmlFile
 	XmlFile() = delete;
 	explicit XmlFile(std::string inFilename);
 
-	static bool saveToFile(const Xml& inXml, const std::string& outFilename, const int inIndent = 2);
+	static bool saveToFile(const Xml& inXml, const std::string& outFilename, const i32 inIndent = 2);
 
-	bool save(const int inIndent = 2);
+	bool save(const i32 inIndent = 2);
 
 	void resetAndSave();
 	void dumpToTerminal();
@@ -34,5 +33,3 @@ private:
 	std::string m_filename;
 };
 }
-
-#endif // CHALET_XML_FILE_HPP

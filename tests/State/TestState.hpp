@@ -3,16 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TEST_STATE_HPP
-#define CHALET_TEST_STATE_HPP
+#pragma once
 
 namespace chalet
 {
 namespace TestState
 {
-bool setChaletPath(const int argc, const char* const argv[]);
+bool setChaletPath(const i32 argc, const char* const argv[]);
 const std::string& chaletExec();
 }
 }
-
-#endif // CHALET_TEST_STATE_HPP

@@ -5,7 +5,7 @@
 
 #include "Compile/CompileToolchainController.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ToolchainType.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"

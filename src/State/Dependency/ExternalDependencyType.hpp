@@ -3,13 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
-#define CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
 // Source control + packages
-enum class ExternalDependencyType : ushort
+enum class ExternalDependencyType : u16
 {
 	Git,
 	Local,
@@ -17,5 +16,3 @@ enum class ExternalDependencyType : ushort
 	Script,
 };
 }
-
-#endif // CHALET_EXTERNAL_DEPENDENCY_TYPE_HPP

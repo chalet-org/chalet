@@ -9,13 +9,13 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Init/ChaletJsonProps.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Diagnostic.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -32,11 +32,11 @@ ProjectInitializer::ProjectInitializer(const CommandLineInputs& inInputs) :
 bool ProjectInitializer::run()
 {
 	const auto& path = m_inputs.initPath();
-	if (!Commands::pathExists(path))
+	if (!Files::pathExists(path))
 	{
 		if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), true))
 		{
-			if (!Commands::makeDirectory(path))
+			if (!Files::makeDirectory(path))
 			{
 				Diagnostic::error("Error creating directory '{}'", path);
 				return false;
@@ -47,16 +47,16 @@ bool ProjectInitializer::run()
 	}
 
 	// At the moment, only initialize an empty path
-	m_rootPath = Commands::getCanonicalPath(path);
+	m_rootPath = Files::getCanonicalPath(path);
 	m_stepTime = 0.1;
 
-	if (!Commands::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
+	if (!Files::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
 	{
 		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
 		return false;
 	}
 
-	Path::sanitize(m_rootPath);
+	Path::toUnix(m_rootPath);
 
 	auto initTemplate = m_inputs.initTemplate();
 	if (initTemplate == InitTemplateType::Unknown)
@@ -228,7 +228,7 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 {
 	Diagnostic::infoEllipsis("Initializing a new workspace called '{}'", inProps.workspaceName);
-	// Commands::sleep(1.5);
+	// Files::sleep(1.5);
 
 	bool result = true;
 
@@ -238,7 +238,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 	if (result)
 	{
 		auto location = fmt::format("{}/{}", m_rootPath, inProps.location); // src directory
-		Commands::makeDirectory(location);
+		Files::makeDirectory(location);
 
 		if (!makeMainCpp(inProps))
 			result = false;
@@ -272,9 +272,9 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 			auto git = AncillaryTools::getPathToGit();
 			if (!git.empty())
 			{
-				if (!Commands::subprocess({ git, "-C", m_rootPath, "init", "--quiet" }))
+				if (!Process::run({ git, "-C", m_rootPath, "init", "--quiet" }))
 					result = false;
-				else if (!Commands::subprocess({ git, "-C", m_rootPath, "checkout", "-b", "main", "--quiet" }))
+				else if (!Process::run({ git, "-C", m_rootPath, "checkout", "-b", "main", "--quiet" }))
 					result = false;
 			}
 			else
@@ -291,13 +291,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 
 		if (Output::getUserInputYesNo("Run 'chalet configure'?", true))
 		{
-			auto appPath = m_inputs.appPath();
-			if (!Commands::pathExists(appPath))
-			{
-				appPath = Commands::which("chalet");
-			}
-
-			if (!Commands::subprocess({ std::move(appPath), "configure" }, m_rootPath))
+			if (!Process::run({ m_inputs.appPath(), "configure" }, m_rootPath))
 				return false;
 		}
 		else
@@ -342,7 +336,7 @@ bool ProjectInitializer::makeMainCpp(const ChaletJsonProps& inProps)
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.mainSource);
 	const auto contents = StarterFileTemplates::getMainCxx(inProps.language, inProps.langStandard, inProps.modules);
 
-	return Commands::createFileWithContents(outFile, contents);
+	return Files::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
@@ -351,7 +345,7 @@ bool ProjectInitializer::makePch(const ChaletJsonProps& inProps)
 	const auto outFile = fmt::format("{}/{}/{}", m_rootPath, inProps.location, inProps.precompiledHeader);
 	const auto contents = StarterFileTemplates::getPch(inProps.precompiledHeader, inProps.language);
 
-	return Commands::createFileWithContents(outFile, contents);
+	return Files::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
@@ -360,7 +354,7 @@ bool ProjectInitializer::makeCMakeLists(const ChaletJsonProps& inProps)
 	const auto outFile = fmt::format("{}/CMakeLists.txt", m_rootPath);
 	const auto contents = StarterFileTemplates::getCMakeStarter(inProps);
 
-	return Commands::createFileWithContents(outFile, contents);
+	return Files::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
@@ -369,7 +363,7 @@ bool ProjectInitializer::makeGitIgnore()
 	const auto outFile = fmt::format("{}/.gitignore", m_rootPath);
 	const auto contents = StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
 
-	return Commands::createFileWithContents(outFile, contents);
+	return Files::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
@@ -378,7 +372,7 @@ bool ProjectInitializer::makeDotEnv()
 	const auto outFile = fmt::format("{}/{}", m_rootPath, m_inputs.platformEnv());
 	const auto contents = StarterFileTemplates::getDotEnv();
 
-	return Commands::createFileWithContents(outFile, contents);
+	return Files::createFileWithContents(outFile, contents);
 }
 
 /*****************************************************************************/
@@ -707,7 +701,7 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 	std::cout.put('\n');
 	std::cout.flush();
 
-	Commands::sleep(m_stepTime);
+	Files::sleep(m_stepTime);
 
 	Output::lineBreak();
 	Output::printSeparator();
@@ -719,7 +713,7 @@ void ProjectInitializer::printUserInputSplit() const
 	const std::string blankLine(80, ' ');
 	std::cout.write(blankLine.data(), blankLine.size());
 	std::cout.flush();
-	// Commands::sleep(0.5);
+	// Files::sleep(0.5);
 
 	Output::lineBreak();
 	Output::printSeparator();

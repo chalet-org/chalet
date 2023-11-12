@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_DEPENDENCY_HPP
-#define CHALET_SCRIPT_DEPENDENCY_HPP
+#pragma once
 
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/ScriptType.hpp"
@@ -35,5 +34,3 @@ private:
 	ScriptType m_scriptType = ScriptType::None;
 };
 }
-
-#endif // CHALET_SCRIPT_DEPENDENCY_HPP

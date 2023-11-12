@@ -3,12 +3,10 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_OUTPUT_HPP
-#define CHALET_OUTPUT_HPP
+#pragma once
 
 #include "Terminal/Color.hpp"
 #include "Terminal/ColorTheme.hpp"
-#include "Terminal/Formatting.hpp"
 
 namespace chalet
 {
@@ -67,7 +65,7 @@ void msgBuildFail();
 void msgCleaning();
 void msgNothingToClean();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
-void msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval);
+void msgProfilerStartedSample(const std::string& inExecutable, const u32 inDuration, const u32 inSamplingInterval);
 void msgProfilerDone(const std::string& inProfileAnalysis);
 void msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std::string& inApplication);
 void msgClean(const std::string& inBuildConfiguration);
@@ -83,5 +81,3 @@ void msgCopying(const std::string& inFrom, const std::string& inTo);
 void msgAction(const std::string& inLabel, const std::string& inTo);
 }
 }
-
-#endif // CHALET_OUTPUT_HPP

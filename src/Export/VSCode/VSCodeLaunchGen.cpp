@@ -5,7 +5,7 @@
 
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
@@ -14,7 +14,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -86,13 +86,11 @@ std::string VSCodeLaunchGen::getDebuggerPath() const
 	{
 		auto debugger = isLLDB ? "lldb" : "gdb";
 		auto compilerPath = String::getPathFolder(m_state.toolchain.compilerCxxAny().path);
-		auto path = fmt::format("{}/{}", compilerPath, debugger);
-#if defined(CHALET_WIN32)
-		path += ".exe";
-#endif
-		if (!Commands::pathExists(path))
+		auto exe = Files::getPlatformExecutableExtension();
+		auto path = fmt::format("{}/{}{}", compilerPath, debugger, exe);
+		if (!Files::pathExists(path))
 		{
-			path = Commands::which(debugger);
+			path = Files::which(debugger);
 		}
 
 		return path;

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TARGET_METADATA_HPP
-#define CHALET_TARGET_METADATA_HPP
+#pragma once
 
 #include "Utility/Version.hpp"
 
@@ -54,5 +53,3 @@ private:
 	std::string m_readme;
 };
 }
-
-#endif // CHALET_TARGET_METADATA_HPP

@@ -5,7 +5,7 @@
 
 #include "Utility/String.hpp"
 
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -124,6 +124,26 @@ bool String::endsWith(const StringList& inFind, const std::string& inString)
 }
 
 /*****************************************************************************/
+bool String::capitalize(std::string& outString)
+{
+	if (outString.empty() || ::isalpha(outString[0]) == 0)
+		return false;
+
+	outString[0] = static_cast<char>(::toupper(static_cast<uchar>(outString[0])));
+	return true;
+}
+
+/*****************************************************************************/
+bool String::decapitalize(std::string& outString)
+{
+	if (outString.empty() || ::isalpha(outString[0]) == 0)
+		return false;
+
+	outString[0] = static_cast<char>(::tolower(static_cast<uchar>(outString[0])));
+	return true;
+}
+
+/*****************************************************************************/
 bool String::onlyContainsCharacters(const std::string& inChars, const std::string& inString)
 {
 	return inString.find_first_not_of(inChars) != std::string::npos;
@@ -141,7 +161,7 @@ void String::replaceAll(std::string& outString, const std::string_view inFrom, c
 	if (inFrom.empty())
 		return;
 
-	std::size_t pos = 0;
+	size_t pos = 0;
 	while ((pos = outString.find(inFrom, pos)) != std::string::npos)
 	{
 		outString.replace(pos, inFrom.length(), inTo);
@@ -154,7 +174,7 @@ void String::replaceAll(std::string& outString, const std::string_view inFrom, c
 /*****************************************************************************/
 void String::replaceAll(std::string& outString, const char inFrom, const std::string_view inTo)
 {
-	std::size_t pos = 0;
+	size_t pos = 0;
 	while ((pos = outString.find(inFrom, pos)) != std::string::npos)
 	{
 		outString.replace(pos, 1, inTo);
@@ -195,7 +215,7 @@ std::string String::join(const StringList& inList, const char inSeparator)
 {
 	std::string ret;
 
-	std::ptrdiff_t i = 0;
+	ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
@@ -216,7 +236,7 @@ std::string String::join(StringList&& inList, const char inSeparator)
 {
 	std::string ret;
 
-	std::ptrdiff_t i = 0;
+	ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
@@ -237,7 +257,7 @@ std::string String::join(const StringList& inList, const std::string_view inSepa
 {
 	std::string ret;
 
-	std::ptrdiff_t i = 0;
+	ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
@@ -258,7 +278,7 @@ std::string String::join(StringList&& inList, const std::string_view inSeparator
 {
 	std::string ret;
 
-	std::ptrdiff_t i = 0;
+	ptrdiff_t i = 0;
 	for (auto& item : inList)
 	{
 		if (item.empty())
@@ -275,14 +295,14 @@ std::string String::join(StringList&& inList, const std::string_view inSeparator
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const char inSeparator, const std::size_t inMinLength)
+StringList String::split(std::string inString, const char inSeparator, const size_t inMinLength)
 {
 	StringList ret;
 
 	std::string sub;
 
-	std::size_t itr = 0;
-	std::size_t nextNonChar = 0;
+	size_t itr = 0;
+	size_t nextNonChar = 0;
 
 	bool nonCharFound = false;
 	while (itr != std::string::npos)
@@ -311,14 +331,14 @@ StringList String::split(std::string inString, const char inSeparator, const std
 }
 
 /*****************************************************************************/
-StringList String::split(std::string inString, const std::string_view inSeparator, const std::size_t inMinLength)
+StringList String::split(std::string inString, const std::string_view inSeparator, const size_t inMinLength)
 {
 	StringList ret;
 
 	std::string sub;
 
-	std::size_t itr = 0;
-	std::size_t nextNonChar = 0;
+	size_t itr = 0;
+	size_t nextNonChar = 0;
 
 	bool nonCharFound = false;
 	while (itr != std::string::npos)

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_COMMANDS_GENERATOR_HPP
-#define CHALET_COMPILE_COMMANDS_GENERATOR_HPP
+#pragma once
 
 #include "Compile/CompileToolchainController.hpp"
 
@@ -34,5 +33,3 @@ private:
 	std::vector<Unique<CompileCommand>> m_compileCommands;
 };
 }
-
-#endif // CHALET_COMPILE_COMMANDS_GENERATOR_HPP

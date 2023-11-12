@@ -32,12 +32,12 @@ Variant::Variant(T&& inValue)
 		m_value = inValue;
 		m_kind = Kind::Boolean;
 	}
-	else if constexpr (std::is_same_v<Type, std::optional<int>>)
+	else if constexpr (std::is_same_v<Type, std::optional<i32>>)
 	{
 		m_value = inValue;
 		m_kind = Kind::OptionalInteger;
 	}
-	else if constexpr (std::is_same_v<Type, int>)
+	else if constexpr (std::is_same_v<Type, i32>)
 	{
 		m_value = inValue;
 		m_kind = Kind::Integer;

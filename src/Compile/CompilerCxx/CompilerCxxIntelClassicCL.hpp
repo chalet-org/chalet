@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_INTEL_CLASSIC_CL_HPP
-#define CHALET_COMPILER_CXX_INTEL_CLASSIC_CL_HPP
+#pragma once
 
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
 
@@ -26,5 +25,3 @@ protected:
 	virtual void addFastMathOption(StringList& outArgList) const final;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_INTEL_CLASSIC_CL_HPP

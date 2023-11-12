@@ -5,14 +5,14 @@
 
 #include "Export/XcodeProjectExporter.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Xcode/XcodePBXProjGen.hpp"
 #include "Export/Xcode/XcodeXSchemeGen.hpp"
 #include "State/BuildState.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 
 namespace chalet
 {
@@ -74,20 +74,20 @@ bool XcodeProjectExporter::generateProjectFiles()
 	if (xcodeproj.empty())
 		return false;
 
-	if (!Commands::pathExists(xcodeproj))
-		Commands::makeDirectory(xcodeproj);
+	if (!Files::pathExists(xcodeproj))
+		Files::makeDirectory(xcodeproj);
 
 	auto project = getProjectName(*m_states.front());
 
 	auto xcworkspace = fmt::format("{}/project.xcworkspace", xcodeproj);
-	if (!Commands::pathExists(xcworkspace))
-		Commands::makeDirectory(xcworkspace);
+	if (!Files::pathExists(xcworkspace))
+		Files::makeDirectory(xcworkspace);
 
 	// contents.xcworkspacedata
 	auto xcworkspacedata = fmt::format("{}/contents.xcworkspacedata", xcworkspace);
-	if (!Commands::pathExists(xcworkspacedata))
+	if (!Files::pathExists(xcworkspacedata))
 	{
-		Commands::createFileWithContents(xcworkspacedata, R"xml(<?xml version="1.0" encoding="UTF-8"?>
+		Files::createFileWithContents(xcworkspacedata, R"xml(<?xml version="1.0" encoding="UTF-8"?>
 <Workspace version="1.0">
    <FileRef location="self:">
    </FileRef>
@@ -95,8 +95,8 @@ bool XcodeProjectExporter::generateProjectFiles()
 	}
 
 	auto xcschemes = fmt::format("{}/xcshareddata/xcschemes", xcodeproj);
-	if (!Commands::pathExists(xcschemes))
-		Commands::makeDirectory(xcschemes);
+	if (!Files::pathExists(xcschemes))
+		Files::makeDirectory(xcschemes);
 
 	{
 		XcodeXSchemeGen schemaGen(m_states, xcodeproj, m_debugConfiguration);

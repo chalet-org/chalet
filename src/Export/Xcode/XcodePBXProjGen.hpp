@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XCODE_PBXPROJ_GEN_HPP
-#define CHALET_XCODE_PBXPROJ_GEN_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 #include "State/Distribution/BundleTarget.hpp"
@@ -75,5 +74,3 @@ private:
 	mutable std::unordered_map<std::string, bool> m_generatedBundleFiles;
 };
 }
-
-#endif // CHALET_XCODE_PBXPROJ_GEN_HPP

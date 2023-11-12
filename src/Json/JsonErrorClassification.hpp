@@ -3,17 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_ERROR_CLASSIFICATION_HPP
-#define CHALET_JSON_ERROR_CLASSIFICATION_HPP
+#pragma once
 
 namespace chalet
 {
-enum class JsonErrorClassification : ushort
+enum class JsonErrorClassification : u16
 {
 	None,
 	Fatal,
 	Warning
 };
 }
-
-#endif // CHALET_JSON_ERROR_CLASSIFICATION_HPP

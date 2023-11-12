@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_MACOS_HPP
-#define CHALET_APP_BUNDLER_MACOS_HPP
+#pragma once
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/Json.hpp"
@@ -41,6 +40,9 @@ public:
 	bool createEntitlementsPropertyList(const std::string& inOutFile) const;
 
 private:
+	std::string m_mainExecutable;
+
+#if defined(CHALET_MACOS)
 	std::string getPlistFile() const;
 	std::string getEntitlementsFilePath() const;
 
@@ -50,8 +52,6 @@ private:
 	bool signAppBundle() const;
 
 	mutable std::string m_outputDirectory;
-
-	std::string m_mainExecutable;
 
 	StringList m_executableOutputPaths;
 
@@ -63,7 +63,6 @@ private:
 
 	std::string m_infoFile;
 	std::string m_entitlementsFile;
+#endif
 };
 }
-
-#endif // CHALET_APP_BUNDLER_MACOS_HPP

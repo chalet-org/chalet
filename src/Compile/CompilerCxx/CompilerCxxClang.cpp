@@ -5,13 +5,13 @@
 
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"

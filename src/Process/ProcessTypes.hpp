@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_TYPES_HPP
-#define CHALET_PROCESS_TYPES_HPP
+#pragma once
 
 #if defined(CHALET_WIN32)
 	#include "Libraries/WindowsApi.hpp"
@@ -21,9 +20,9 @@ constexpr DWORD StdIn = STD_INPUT_HANDLE;
 constexpr DWORD StdOut = STD_OUTPUT_HANDLE;
 constexpr DWORD StdErr = STD_ERROR_HANDLE;
 #else
-constexpr int StdIn = STDIN_FILENO;
-constexpr int StdOut = STDOUT_FILENO;
-constexpr int StdErr = STDERR_FILENO;
+constexpr i32 StdIn = STDIN_FILENO;
+constexpr i32 StdOut = STDOUT_FILENO;
+constexpr i32 StdErr = STDERR_FILENO;
 #endif
 }
 
@@ -33,11 +32,9 @@ typedef DWORD ProcessID;
 
 const PipeHandle kInvalidPipe = INVALID_HANDLE_VALUE;
 #else
-typedef int PipeHandle;
+typedef i32 PipeHandle;
 typedef ::pid_t ProcessID;
 
 constexpr PipeHandle kInvalidPipe = -1;
 #endif
 }
-
-#endif // CHALET_PROCESS_TYPES_HPP

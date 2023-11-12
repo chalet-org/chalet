@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WORKSPACE_CACHE_HPP
-#define CHALET_WORKSPACE_CACHE_HPP
+#pragma once
 
 #include "Cache/CacheType.hpp"
 #include "Cache/WorkspaceInternalCacheFile.hpp"
@@ -62,5 +61,3 @@ private:
 	bool m_removeOldCacheFolder = false;
 };
 }
-
-#endif // CHALET_WORKSPACE_CACHE_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TOOLCHAIN_TYPES_HPP
-#define CHALET_TOOLCHAIN_TYPES_HPP
+#pragma once
 
 #include <Compile/ToolchainType.hpp>
 
@@ -15,5 +14,3 @@ namespace ToolchainTypes
 std::string getTypeName(const ToolchainType inType) noexcept;
 }
 }
-
-#endif // CHALET_TOOLCHAIN_TYPES_HPP

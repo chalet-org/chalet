@@ -5,7 +5,7 @@
 
 #include "Cache/SourceCache.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/EnumIterator.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
@@ -29,9 +29,9 @@ void SourceCache::setLastBuildStrategy(const StrategyType inValue, const bool in
 	m_lastBuildStrategy = inValue;
 }
 
-void SourceCache::setLastBuildStrategy(const int inValue, const bool inCheckChanges) noexcept
+void SourceCache::setLastBuildStrategy(const i32 inValue, const bool inCheckChanges) noexcept
 {
-	if (inValue < static_cast<int>(StrategyType::None) || inValue >= static_cast<int>(StrategyType::Count))
+	if (inValue < static_cast<i32>(StrategyType::None) || inValue >= static_cast<i32>(StrategyType::Count))
 		return;
 
 	if (inCheckChanges && !m_buildStrategyChanged)
@@ -108,7 +108,7 @@ Json SourceCache::asJson() const
 	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
 	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
-	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<int>(m_lastBuildStrategy);
+	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<i32>(m_lastBuildStrategy);
 
 	if (!m_dataCache.empty())
 	{
@@ -116,7 +116,7 @@ Json SourceCache::asJson() const
 
 		for (auto& [file, data] : m_dataCache)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			if (!data.empty())
@@ -137,7 +137,7 @@ Json SourceCache::asJson() const
 
 		for (auto& [file, data] : m_lastWrites)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			if (data.needsUpdate)
@@ -191,7 +191,7 @@ void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
-	if (!Commands::pathExists(inFile))
+	if (!Files::pathExists(inFile))
 	{
 		m_lastWrites[inFile].lastWrite = m_initializedTime;
 		m_lastWrites[inFile].needsUpdate = true;
@@ -209,7 +209,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
-	if (!Commands::pathExists(inFile) || !Commands::pathExists(inDependency))
+	if (!Files::pathExists(inFile) || !Files::pathExists(inDependency))
 	{
 		m_lastWrites[inFile].lastWrite = m_initializedTime;
 		m_lastWrites[inFile].needsUpdate = true;
@@ -269,7 +269,7 @@ bool SourceCache::externalRequiresRebuild(const std::string& inPath)
 /*****************************************************************************/
 void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) const
 {
-	auto lastWrite = Commands::getLastWriteTime(inFile);
+	auto lastWrite = Files::getLastWriteTime(inFile);
 	if (lastWrite > m_initializedTime)
 	{
 		outFileData.lastWrite = m_initializedTime;

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VSCODE_C_CPP_PROPERTIES_GEN_HPP
-#define CHALET_VSCODE_C_CPP_PROPERTIES_GEN_HPP
+#pragma once
 
 namespace chalet
 {
@@ -20,10 +19,7 @@ private:
 	std::string getName() const;
 	std::string getIntellisenseMode() const;
 	std::string getCompilerPath() const;
-	StringList getDefaultDefines() const;
 
 	const BuildState& m_state;
 };
 }
-
-#endif // CHALET_VSCODE_C_CPP_PROPERTIES_GEN_HPP

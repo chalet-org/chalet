@@ -3,17 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CUSTOM_TOOLCHAIN_TREAT_AS_HPP
-#define CHALET_CUSTOM_TOOLCHAIN_TREAT_AS_HPP
+#pragma once
 
 namespace chalet
 {
-enum class CustomToolchainTreatAs : ushort
+enum class CustomToolchainTreatAs : u16
 {
 	None,
 	LLVM,
 	GCC,
 };
 }
-
-#endif // CHALET_CUSTOM_TOOLCHAIN_TREAT_AS_HPP

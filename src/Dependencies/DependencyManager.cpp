@@ -12,7 +12,7 @@
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Dependency/ScriptDependency.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -149,9 +149,9 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 
 	for (auto& it : inList)
 	{
-		if (Commands::pathExists(it))
+		if (Files::pathExists(it))
 		{
-			if (Commands::removeRecursively(it))
+			if (Files::removeRecursively(it))
 			{
 				std::string name = it;
 				String::replaceAll(name, fmt::format("{}/", externalDir), "");
@@ -170,9 +170,9 @@ bool DependencyManager::removeUnusedDependencies(const StringList& inList)
 bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 {
 	const auto& externalDir = m_centralState.inputs().externalDirectory();
-	if (Commands::pathIsEmpty(externalDir))
+	if (Files::pathIsEmpty(externalDir))
 	{
-		if (!Commands::remove(externalDir))
+		if (!Files::remove(externalDir))
 		{
 			Diagnostic::error("Error removing folder: {}", externalDir);
 			return false;

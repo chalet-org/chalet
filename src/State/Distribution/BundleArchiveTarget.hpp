@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUNDLE_ARCHIVE_TARGET_HPP
-#define CHALET_BUNDLE_ARCHIVE_TARGET_HPP
+#pragma once
 
 #include "State/ArchiveFormat.hpp"
 #include "State/Distribution/IDistTarget.hpp"
@@ -35,5 +34,3 @@ private:
 	ArchiveFormat m_format = ArchiveFormat::Zip;
 };
 }
-
-#endif // CHALET_BUNDLE_ARCHIVE_TARGET_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUNDLE_TARGET_HPP
-#define CHALET_BUNDLE_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/MacOSBundleType.hpp"
@@ -120,5 +119,3 @@ private:
 	bool m_updateRPaths = true;
 };
 }
-
-#endif // CHALET_BUNDLE_TARGET_HPP

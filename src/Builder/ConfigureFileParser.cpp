@@ -12,7 +12,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 // #include "Utility/Timer.hpp"
@@ -55,12 +55,12 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	bool metadataChanged = m_state.cache.file().metadataChanged();
 
 	std::string suffix(".in");
-	if (!Commands::pathExists(inOutputFolder))
-		Commands::makeDirectory(inOutputFolder);
+	if (!Files::pathExists(inOutputFolder))
+		Files::makeDirectory(inOutputFolder);
 
 	for (const auto& configureFile : configureFiles)
 	{
-		if (!Commands::pathExists(configureFile))
+		if (!Files::pathExists(configureFile))
 		{
 			Diagnostic::error("Configure file not found: {}", configureFile);
 			result = false;
@@ -80,20 +80,20 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 		auto outPath = fmt::format("{}/{}", inOutputFolder, outFile);
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
-		bool pathExists = Commands::pathExists(outPath);
+		bool pathExists = Files::pathExists(outPath);
 		if (configFileChanged || metadataChanged || !pathExists)
 		{
 			if (pathExists)
-				Commands::remove(outPath);
+				Files::remove(outPath);
 
-			if (!Commands::copyRename(configureFile, outPath, true))
+			if (!Files::copyRename(configureFile, outPath, true))
 			{
 				Diagnostic::error("There was a problem copying the file: {}", configureFile);
 				result = false;
 				continue;
 			}
 
-			if (!Commands::readFileAndReplace(outPath, onReplaceContents))
+			if (!Files::readFileAndReplace(outPath, onReplaceContents))
 			{
 				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
 				result = false;

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_SOLUTION_GEN_HPP
-#define CHALET_VS_SOLUTION_GEN_HPP
+#pragma once
 
 #include "Utility/Uuid.hpp"
 #include "Json/JsonFile.hpp"
@@ -27,5 +26,3 @@ private:
 	const OrderedDictionary<Uuid>& m_targetGuids;
 };
 }
-
-#endif // CHALET_VS_SOLUTION_GEN_HPP

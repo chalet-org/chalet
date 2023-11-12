@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_TASKS_GEN_HPP
-#define CHALET_VS_TASKS_GEN_HPP
+#pragma once
 
 #include "Json/JsonFile.hpp"
 
@@ -27,5 +26,3 @@ private:
 	std::string m_architecture;
 };
 }
-
-#endif // CHALET_VS_TASKS_GEN_HPP

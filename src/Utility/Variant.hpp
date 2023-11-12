@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARGUMENT_HPP
-#define CHALET_ARGUMENT_HPP
+#pragma once
 
 #include <any>
 
@@ -19,7 +18,7 @@ namespace chalet
 {
 struct Variant
 {
-	enum class Kind : uchar
+	enum class Kind : u8
 	{
 		Empty,
 		Boolean,
@@ -43,8 +42,8 @@ struct Variant
 
 	bool asBool() const;
 	std::optional<bool> asOptionalBool() const;
-	int asInt() const;
-	std::optional<int> asOptionalInt() const;
+	i32 asInt() const;
+	std::optional<i32> asOptionalInt() const;
 	std::string asString() const;
 	StringList asStringList() const;
 
@@ -66,5 +65,3 @@ private:
 #else
 	#pragma GCC diagnostic pop
 #endif
-
-#endif // CHALET_ARGUMENT_HPP

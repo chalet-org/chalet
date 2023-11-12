@@ -14,15 +14,15 @@
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
 #include "SettingsJson/SettingsJsonParser.hpp"
 
-#include "Core/Arch.hpp"
-#include "Core/DotEnvFileParser.hpp"
-#include "Core/QueryController.hpp"
+#include "DotEnv/DotEnvFileParser.hpp"
+#include "Platform/Arch.hpp"
+#include "Process/Environment.hpp"
+#include "Query/QueryController.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
@@ -107,7 +107,7 @@ bool CentralState::initialize()
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
 
-	if (!Commands::pathExists(m_filename))
+	if (!Files::pathExists(m_filename))
 	{
 		Diagnostic::error("Build file '{}' was not found.", m_filename);
 		return false;
@@ -184,7 +184,7 @@ bool CentralState::initializeForQuery()
 
 	m_inputs.clearWorkingDirectory(m_filename);
 
-	if (!Commands::pathExists(m_filename))
+	if (!Files::pathExists(m_filename))
 		return true;
 
 	UNUSED(m_chaletJson.load(m_filename));
@@ -580,7 +580,7 @@ bool CentralState::replaceVariablesInString(std::string& outString, const IExter
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_CXX_GCC_HPP
-#define CHALET_COMPILER_CXX_GCC_HPP
+#pragma once
 
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 
@@ -68,5 +67,3 @@ private:
 	StringList m_warnings;
 };
 }
-
-#endif // CHALET_COMPILER_CXX_GCC_HPP

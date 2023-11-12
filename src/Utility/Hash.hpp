@@ -3,15 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_HASH_HPP
-#define CHALET_HASH_HPP
+#pragma once
 
 namespace chalet
 {
 namespace Hash
 {
 std::string string(const std::string& inValue);
-std::size_t uint64(const std::string& inValue);
+size_t uint64(const std::string& inValue);
 
 template <typename... Args>
 std::string getHashableString(Args&&... args);
@@ -19,5 +18,3 @@ std::string getHashableString(Args&&... args);
 }
 
 #include "Utility/Hash.inl"
-
-#endif // CHALET_HASH_HPP

@@ -9,9 +9,10 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/PlatformDependencyManager.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -50,13 +51,13 @@ BuildInfo::~BuildInfo() = default;
 bool BuildInfo::initialize()
 {
 #if defined(CHALET_LINUX)
-	auto mainCompiler = Commands::which("gcc");
+	auto mainCompiler = Files::which("gcc");
 	if (mainCompiler.empty())
-		mainCompiler = Commands::which("clang");
+		mainCompiler = Files::which("clang");
 
 	if (!mainCompiler.empty())
 	{
-		auto tripleResult = Commands::subprocessOutput({ mainCompiler, "-dumpmachine" });
+		auto tripleResult = Process::runOutput({ mainCompiler, "-dumpmachine" });
 		if (!tripleResult.empty())
 		{
 			m_hostArchTriple = tripleResult.substr(0, tripleResult.find('\n'));
@@ -171,7 +172,7 @@ bool BuildInfo::targettingMinGW() const
 }
 
 /*****************************************************************************/
-uint BuildInfo::maxJobs() const noexcept
+u32 BuildInfo::maxJobs() const noexcept
 {
 	return m_maxJobs;
 }

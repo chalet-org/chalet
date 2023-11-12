@@ -3,17 +3,15 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_LINE_INPUTS_HPP
-#define CHALET_COMMAND_LINE_INPUTS_HPP
+#pragma once
 
+#include "BuildEnvironment/VisualStudioVersion.hpp"
 #include "Compile/ToolchainPreference.hpp"
-#include "Core/QueryOption.hpp"
-#include "Core/VisualStudioVersion.hpp"
+#include "Core/Router/CommandRoute.hpp"
 #include "Export/ExportKind.hpp"
 #include "Init/InitTemplateType.hpp"
-#include "Router/CommandRoute.hpp"
+#include "Query/QueryOption.hpp"
 #include "Settings/SettingsType.hpp"
-#include "Utility/DefinesExperimental.hpp"
 
 namespace chalet
 {
@@ -156,8 +154,8 @@ struct CommandLineInputs
 
 	void clearWorkingDirectory(std::string& outValue) const;
 
-	const std::optional<uint>& maxJobs() const noexcept;
-	void setMaxJobs(const uint inValue) noexcept;
+	const std::optional<u32>& maxJobs() const noexcept;
+	void setMaxJobs(const u32 inValue) noexcept;
 
 	const std::optional<bool>& dumpAssembly() const noexcept;
 	void setDumpAssembly(const bool inValue) noexcept;
@@ -233,7 +231,7 @@ private:
 	std::string m_hostArchitecture;
 	mutable std::string m_targetArchitecture;
 
-	std::optional<uint> m_maxJobs;
+	std::optional<u32> m_maxJobs;
 	std::optional<bool> m_dumpAssembly;
 	std::optional<bool> m_showCommands;
 	std::optional<bool> m_benchmark;
@@ -257,5 +255,3 @@ private:
 	bool m_saveUserToolchainGlobally = false;
 };
 }
-
-#endif // CHALET_COMMAND_LINE_INPUTS_HPP

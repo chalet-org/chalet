@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_WIN_RESOURCE_LLVM_RC_HPP
-#define CHALET_COMPILER_WIN_RESOURCE_LLVM_RC_HPP
+#pragma once
 
 #include "Compile/CompilerWinResource/CompilerWinResourceGNUWindRes.hpp"
 
@@ -20,5 +19,3 @@ protected:
 	virtual void addDefines(StringList& outArgList) const final;
 };
 }
-
-#endif // CHALET_COMPILER_WIN_RESOURCE_LLVM_RC_HPP

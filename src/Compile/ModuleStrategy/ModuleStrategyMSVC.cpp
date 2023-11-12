@@ -7,9 +7,9 @@
 
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Process/Environment.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -29,7 +29,7 @@ bool ModuleStrategyMSVC::initialize()
 	if (m_msvcToolsDirectory.empty())
 	{
 		m_msvcToolsDirectory = Environment::getString("VCToolsInstallDir");
-		Path::sanitize(m_msvcToolsDirectory);
+		Path::toUnix(m_msvcToolsDirectory);
 	}
 
 	return true;
@@ -59,7 +59,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 		if (group->type != SourceType::CPlusPlus)
 			continue;
 
-		if (!Commands::pathExists(group->dependencyFile))
+		if (!Files::pathExists(group->dependencyFile))
 			continue;
 
 		Json json;
@@ -140,7 +140,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			}
 
 			auto outHeader = file.get<std::string>();
-			Path::sanitize(outHeader);
+			Path::toUnix(outHeader);
 
 			List::addIfDoesNotExist(outModules[name].importedHeaderUnits, std::move(outHeader));
 		}
@@ -154,7 +154,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			{
 				auto& filename = kSystemModules.at(systemModule);
 				auto resolvedPath = fmt::format("{}/modules/{}", m_msvcToolsDirectory, filename);
-				if (Commands::pathExists(resolvedPath))
+				if (Files::pathExists(resolvedPath))
 				{
 					outModules[systemModule].source = std::move(resolvedPath);
 					outModules[systemModule].systemModule = true;
@@ -220,7 +220,7 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 		}
 
 		auto outInclude = include.get<std::string>();
-		Path::sanitize(outInclude);
+		Path::toUnix(outInclude);
 
 		outList.emplace_back(std::move(outInclude));
 	}
@@ -248,7 +248,7 @@ Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
 	if (!m_msvcToolsDirectory.empty())
 	{
 		auto modulesJsonPath = fmt::format("{}/modules/modules.json", m_msvcToolsDirectory);
-		if (!Commands::pathExists(modulesJsonPath))
+		if (!Files::pathExists(modulesJsonPath))
 			return ret;
 
 		Json json;

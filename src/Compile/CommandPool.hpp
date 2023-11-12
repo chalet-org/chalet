@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_POOL_HPP
-#define CHALET_COMMAND_POOL_HPP
+#pragma once
 
 #include "Libraries/ThreadPool.hpp"
 #include "Terminal/Color.hpp"
@@ -24,22 +23,22 @@ struct CommandPool
 	struct Job
 	{
 		CmdList list;
-		uint threads = 0;
+		u32 threads = 0;
 	};
 	using JobList = std::vector<Unique<CommandPool::Job>>;
 
 	struct Settings
 	{
 		Color color = Color::Red;
-		uint startIndex = 0;
-		uint total = 0;
+		u32 startIndex = 0;
+		u32 total = 0;
 		bool quiet = false;
 		bool showCommands = false;
 		bool keepGoing = false;
 		bool msvcCommand = false;
 	};
 
-	explicit CommandPool(const std::size_t inThreads);
+	explicit CommandPool(const size_t inThreads);
 	CHALET_DISALLOW_COPY_MOVE(CommandPool);
 	~CommandPool();
 
@@ -49,7 +48,7 @@ struct CommandPool
 	const StringList& failures() const;
 
 private:
-	std::string getPrintedText(std::string inText, uint inTotal);
+	std::string getPrintedText(std::string inText, u32 inTotal);
 	bool onError();
 	void cleanup();
 
@@ -62,5 +61,3 @@ private:
 	bool m_quiet = false;
 };
 }
-
-#endif // CHALET_COMMAND_POOL_HPP

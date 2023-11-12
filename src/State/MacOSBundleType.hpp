@@ -3,12 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_BUNDLE_TYPE_HPP
-#define CHALET_MACOS_BUNDLE_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
-enum class MacOSBundleType : ushort
+enum class MacOSBundleType : u16
 {
 	None,
 	Application,
@@ -17,5 +16,3 @@ enum class MacOSBundleType : ushort
 	KernelExtension,
 };
 }
-
-#endif // CHALET_MACOS_BUNDLE_TYPE_HPP

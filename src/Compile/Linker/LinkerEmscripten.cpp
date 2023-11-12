@@ -5,7 +5,7 @@
 
 #include "Compile/Linker/LinkerEmscripten.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"

@@ -11,9 +11,9 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Process/Environment.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -102,7 +102,7 @@ bool BundleTarget::validate()
 			Diagnostic::error("bundle.macosBundle.icon must end with '.png' or '.icns', but was '{}'.", m_macosBundleIcon);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_macosBundleIcon))
+		else if (!Files::pathExists(m_macosBundleIcon))
 		{
 			Diagnostic::error("bundle.macosBundle.icon '{}' was not found.", m_macosBundleIcon);
 			result = false;
@@ -116,7 +116,7 @@ bool BundleTarget::validate()
 			Diagnostic::error("bundle.macosBundle.infoPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleInfoPropertyList);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_macosBundleInfoPropertyList))
+		else if (!Files::pathExists(m_macosBundleInfoPropertyList))
 		{
 			if (String::endsWith(".plist", m_macosBundleInfoPropertyList))
 			{
@@ -141,7 +141,7 @@ bool BundleTarget::validate()
 			Diagnostic::error("bundle.macosBundle.entitlementsPropertyList must end with '.plist' or '.json', but was '{}'.", m_macosBundleEntitlementsPropertyList);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_macosBundleEntitlementsPropertyList))
+		else if (!Files::pathExists(m_macosBundleEntitlementsPropertyList))
 		{
 			Diagnostic::error("bundle.macosBundle.entitlementsPropertyList '{}' was not found.", m_macosBundleEntitlementsPropertyList);
 			result = false;
@@ -155,7 +155,7 @@ bool BundleTarget::validate()
 			Diagnostic::error("bundle.linuxDesktopEntry.icon must end with '.png' or '.svg', but was '{}'.", m_linuxDesktopEntryIcon);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_linuxDesktopEntryIcon))
+		else if (!Files::pathExists(m_linuxDesktopEntryIcon))
 		{
 			Diagnostic::error("bundle.linuxDesktopEntry.icon '{}' was not found.", m_linuxDesktopEntryIcon);
 			result = false;
@@ -169,7 +169,7 @@ bool BundleTarget::validate()
 			Diagnostic::error("bundle.linuxDesktopEntry must end with '.desktop', but was '{}'.", m_linuxDesktopEntryTemplate);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_linuxDesktopEntryTemplate))
+		else if (!Files::pathExists(m_linuxDesktopEntryTemplate))
 		{
 			std::ofstream(m_linuxDesktopEntryTemplate) << PlatformFileTemplates::linuxDesktopEntry();
 		}
@@ -183,20 +183,20 @@ bool BundleTarget::validate()
 bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 {
 	const auto add = [this](std::string in) {
-		Path::sanitize(in);
+		Path::toUnix(in);
 		List::addIfDoesNotExist(m_includes, std::move(in));
 	};
 
 	for (auto& dependency : m_rawIncludes)
 	{
-		if (Commands::pathExists(dependency))
+		if (Files::pathExists(dependency))
 		{
 			add(dependency);
 			continue;
 		}
 
 		/*std::string resolved = fmt::format("{}/{}", inState.paths.buildOutputDir(), inValue);
-		if (Commands::pathExists(resolved))
+		if (Files::pathExists(resolved))
 		{
 			add(resolved);
 			continue;
@@ -213,7 +213,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 				const auto& compilerPathBin = inState.toolchain.compilerCxx(project.language()).binDir;
 
 				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
-				if (Commands::pathExists(resolved))
+				if (Files::pathExists(resolved))
 				{
 					add(std::move(resolved));
 					found = true;
@@ -236,7 +236,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 			for (auto& path : inState.workspace.searchPaths())
 			{
 				resolved = fmt::format("{}/{}", path, dependency);
-				if (Commands::pathExists(resolved))
+				if (Files::pathExists(resolved))
 				{
 					add(std::move(resolved));
 					found = true;
@@ -246,7 +246,7 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 		}
 		if (!found)
 		{
-			resolved = Commands::which(dependency);
+			resolved = Files::which(dependency);
 			if (!resolved.empty())
 			{
 				add(std::move(resolved));
@@ -282,7 +282,7 @@ const std::string& BundleTarget::subdirectory() const noexcept
 void BundleTarget::setSubdirectory(std::string&& inValue)
 {
 	m_subdirectory = std::move(inValue);
-	Path::sanitize(m_subdirectory);
+	Path::toUnix(m_subdirectory);
 }
 
 /*****************************************************************************/
@@ -326,7 +326,7 @@ void BundleTarget::addBuildTarget(std::string&& inValue)
 	}
 	else
 	{
-		Path::sanitize(inValue);
+		Path::toUnix(inValue);
 		List::addIfDoesNotExist(m_buildTargets, std::move(inValue));
 	}
 }
@@ -350,7 +350,7 @@ void BundleTarget::addExcludes(StringList&& inList)
 
 void BundleTarget::addExclude(std::string&& inValue)
 {
-	Path::sanitize(inValue);
+	Path::toUnix(inValue);
 	List::addIfDoesNotExist(m_excludes, std::move(inValue));
 }
 
@@ -368,7 +368,7 @@ void BundleTarget::addIncludes(StringList&& inList)
 
 void BundleTarget::addInclude(std::string&& inValue)
 {
-	Path::sanitize(inValue);
+	Path::toUnix(inValue);
 	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
 }
 

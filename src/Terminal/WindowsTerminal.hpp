@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_TERMINAL_HPP
-#define CHALET_WINDOWS_TERMINAL_HPP
+#pragma once
 
 namespace chalet
 {
@@ -16,5 +15,3 @@ void initializeCreateProcess();
 void cleanup();
 }
 }
-
-#endif // CHALET_WINDOWS_TERMINAL_HPP

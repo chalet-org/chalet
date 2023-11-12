@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_DIST_TARGET_TYPE_HPP
-#define CHALET_DIST_TARGET_TYPE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ enum class DistTargetType
 	Validation,
 };
 }
-
-#endif // CHALET_DIST_TARGET_TYPE_HPP

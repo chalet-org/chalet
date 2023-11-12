@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VALIDATION_BUILD_TARGET_HPP
-#define CHALET_VALIDATION_BUILD_TARGET_HPP
+#pragma once
 
 #include "State/ScriptType.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -31,5 +30,3 @@ private:
 	StringList m_files;
 };
 }
-
-#endif // CHALET_VALIDATION_BUILD_TARGET_HPP

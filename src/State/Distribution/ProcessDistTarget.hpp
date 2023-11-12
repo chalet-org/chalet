@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_DIST_TARGET_HPP
-#define CHALET_PROCESS_DIST_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 
@@ -34,5 +33,3 @@ private:
 	std::string m_dependsOn;
 };
 }
-
-#endif // CHALET_PROCESS_DIST_TARGET_HPP

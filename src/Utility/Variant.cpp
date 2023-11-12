@@ -41,7 +41,7 @@ Variant::Variant(const Kind inKind) :
 			break;
 
 		case Variant::Kind::OptionalInteger:
-			m_value = std::optional<int>();
+			m_value = std::optional<i32>();
 			break;
 
 		case Variant::Kind::Integer:
@@ -91,22 +91,22 @@ std::optional<bool> Variant::asOptionalBool() const
 }
 
 /*****************************************************************************/
-int Variant::asInt() const
+i32 Variant::asInt() const
 {
 	if (m_kind == Kind::Integer)
 	{
-		return std::any_cast<int>(m_value);
+		return std::any_cast<i32>(m_value);
 	}
 
 	return 0;
 }
 
 /*****************************************************************************/
-std::optional<int> Variant::asOptionalInt() const
+std::optional<i32> Variant::asOptionalInt() const
 {
 	if (m_kind == Kind::OptionalInteger)
 	{
-		return std::any_cast<std::optional<int>>(m_value);
+		return std::any_cast<std::optional<i32>>(m_value);
 	}
 
 	return std::nullopt;
@@ -177,7 +177,7 @@ std::ostream& operator<<(std::ostream& os, const Variant& dt)
 			}
 			else
 			{
-				int val = *raw;
+				i32 val = *raw;
 				os << val;
 			}
 			break;

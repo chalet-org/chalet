@@ -26,8 +26,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_THREAD_POOL_HPP
-#define CHALET_THREAD_POOL_HPP
+#pragma once
 
 #include <atomic>
 #include <condition_variable>
@@ -41,7 +40,7 @@ namespace chalet
 class ThreadPool
 {
 public:
-	explicit ThreadPool(const std::size_t inThreads);
+	explicit ThreadPool(const size_t inThreads);
 	CHALET_DISALLOW_COPY_MOVE(ThreadPool);
 	~ThreadPool();
 
@@ -49,12 +48,12 @@ public:
 	std::future<typename std::invoke_result_t<T, Args...>> enqueue(T&& f, Args&&... args);
 
 	void stop();
-	std::size_t threads() const noexcept;
+	size_t threads() const noexcept;
 
 private:
 	void workerThread();
 
-	std::size_t m_threads = 0;
+	size_t m_threads = 0;
 
 	std::vector<std::thread> m_workers;
 	std::queue<std::function<void()>> m_tasks;
@@ -67,5 +66,3 @@ private:
 }
 
 #include "Libraries/ThreadPool.inl"
-
-#endif // CHALET_THREAD_POOL_HPP

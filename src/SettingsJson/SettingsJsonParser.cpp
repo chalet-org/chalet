@@ -7,15 +7,16 @@
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp" // getAllowedSDKTargets
 #include "Core/CommandLineInputs.hpp"
-#include "Core/HostPlatform.hpp"
+#include "Platform/HostPlatform.hpp"
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/CentralState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -83,7 +84,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 	for (const auto& sdk : sdkPaths)
 	{
 		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
-		bool found = !sdkPath.empty() && Commands::pathExists(sdkPath);
+		bool found = !sdkPath.empty() && Files::pathExists(sdkPath);
 		// bool required = !found && (!commandLineTools || (commandLineTools && String::equals("macosx", sdk)));
 		bool required = !found && String::equals("macosx", sdk);
 		if (inWithError && required)
@@ -242,7 +243,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		{
 			if (inPlatform == HostPlatform::Any || inPlatform == platform)
 			{
-				auto path = Commands::which(inKey);
+				auto path = Files::which(inKey);
 				bool res = !path.empty();
 				inNode[inKey] = std::move(path);
 				m_jsonFile.setDirty(true);
@@ -269,7 +270,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #if defined(CHALET_WIN32)
 	if (!tools.contains(Keys::ToolsCommandPrompt))
 	{
-		auto res = Commands::which("cmd");
+		auto res = Files::which("cmd");
 		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
 		tools[Keys::ToolsCommandPrompt] = std::move(res);
 		m_jsonFile.setDirty(true);
@@ -294,10 +295,10 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 	if (!tools.contains(Keys::ToolsPowershell))
 	{
-		auto powershell = Commands::which("pwsh"); // Powershell OS 6+ (ex: C:/Program Files/Powershell/6)
+		auto powershell = Files::which("pwsh"); // Powershell OS 6+ (ex: C:/Program Files/Powershell/6)
 #if defined(CHALET_WIN32)
 		if (powershell.empty())
-			powershell = Commands::which(Keys::ToolsPowershell);
+			powershell = Files::which(Keys::ToolsPowershell);
 #endif
 		tools[Keys::ToolsPowershell] = std::move(powershell);
 		m_jsonFile.setDirty(true);
@@ -335,7 +336,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 				tools[Keys::ToolsGit] = gitPath;
 		}
 
-		bool gitExists = Commands::pathExists(gitPath);
+		bool gitExists = Files::pathExists(gitPath);
 		if (gitExists)
 		{
 			const auto gitBinFolder = String::getPathFolder(gitPath);
@@ -346,7 +347,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 			if (bashPath.empty() && !gitPath.empty())
 			{
 				bashPath = fmt::format("{}/{}", gitBinFolder, "bash.exe");
-				if (Commands::pathExists(bashPath))
+				if (Files::pathExists(bashPath))
 				{
 					tools[Keys::ToolsBash] = bashPath;
 				}
@@ -357,7 +358,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 			if (lddPath.empty() && !gitPath.empty())
 			{
 				lddPath = fmt::format("{}/usr/bin/{}", gitRoot, "ldd.exe");
-				if (Commands::pathExists(lddPath))
+				if (Files::pathExists(lddPath))
 				{
 					tools[Keys::ToolsLdd] = lddPath;
 				}
@@ -564,7 +565,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			if (String::equals(Keys::OptionsMaxJobs, key))
 			{
 				if (!m_inputs.maxJobs().has_value())
-					m_inputs.setMaxJobs(static_cast<uint>(value.get<int>()));
+					m_inputs.setMaxJobs(static_cast<u32>(value.get<i32>()));
 			}
 			else
 				removeKeys.push_back(key);
@@ -683,7 +684,7 @@ std::pair<StringList, bool> SettingsJsonParser::getAppleSdks() const
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
 	//
-	const bool commandLineTools = Commands::isUsingAppleCommandLineTools();
+	const bool commandLineTools = Files::isUsingAppleCommandLineTools();
 	return std::make_pair(CompilerCxxAppleClang::getAllowedSDKTargets(), commandLineTools);
 }
 /*****************************************************************************/
@@ -698,14 +699,14 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	// iPhoneSimulator.platform
 	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
 
-	auto xcrun = Commands::which("xcrun");
+	auto xcrun = Files::which("xcrun");
 	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
 
 	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
-			std::string sdkPath = Commands::subprocessOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
+			std::string sdkPath = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
 
 			appleSkdsJson[sdk] = std::move(sdkPath);
 			m_jsonFile.setDirty(true);

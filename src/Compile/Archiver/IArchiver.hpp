@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IARCHIVER_HPP
-#define CHALET_IARCHIVER_HPP
+#pragma once
 
 #include "Compile/IToolchainExecutableBase.hpp"
 
@@ -22,5 +21,3 @@ protected:
 	virtual void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const final;
 };
 }
-
-#endif // CHALET_IARCHIVER_HPP

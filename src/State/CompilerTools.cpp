@@ -5,16 +5,17 @@
 
 #include "State/CompilerTools.hpp"
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -87,13 +88,13 @@ StringList CompilerTools::getToolchainBuildPathStyles()
 }
 
 /*****************************************************************************/
-bool CompilerTools::initialize(ICompileEnvironment& inEnvironment)
+bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 {
 	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())
 			return false;
 
-		if (!outInfo.path.empty() && Commands::pathExists(outInfo.path))
+		if (!outInfo.path.empty() && Files::pathExists(outInfo.path))
 		{
 			if (!inEnvironment.getCompilerInfoFromExecutable(outInfo))
 				return false;
@@ -196,8 +197,8 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_make, version))
 		{
-			version = Commands::subprocessOutput({ m_make, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Process::runOutput({ m_make, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())
@@ -223,8 +224,8 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_cmake, version))
 		{
-			version = Commands::subprocessOutput({ m_cmake, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Process::runOutput({ m_cmake, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())
@@ -254,8 +255,8 @@ void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_ninja, version))
 		{
-			version = Commands::subprocessOutput({ m_ninja, "--version" });
-			version = Commands::isolateVersion(version);
+			version = Process::runOutput({ m_ninja, "--version" });
+			version = Files::isolateVersion(version);
 		}
 
 		if (!version.empty())
@@ -371,12 +372,12 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
-uint CompilerTools::versionMajorMinor() const noexcept
+u32 CompilerTools::versionMajorMinor() const noexcept
 {
 	return m_toolchainVersionMajorMinor;
 }
 
-uint CompilerTools::versionPatch() const noexcept
+u32 CompilerTools::versionPatch() const noexcept
 {
 	return m_toolchainVersionPatch;
 }
@@ -438,15 +439,15 @@ void CompilerTools::setCmake(std::string&& inValue) noexcept
 {
 	m_cmake = std::move(inValue);
 }
-uint CompilerTools::cmakeVersionMajor() const noexcept
+u32 CompilerTools::cmakeVersionMajor() const noexcept
 {
 	return m_cmakeVersionMajor;
 }
-uint CompilerTools::cmakeVersionMinor() const noexcept
+u32 CompilerTools::cmakeVersionMinor() const noexcept
 {
 	return m_cmakeVersionMinor;
 }
-uint CompilerTools::cmakeVersionPatch() const noexcept
+u32 CompilerTools::cmakeVersionPatch() const noexcept
 {
 	return m_cmakeVersionPatch;
 }
@@ -479,11 +480,11 @@ void CompilerTools::setMake(std::string&& inValue) noexcept
 	m_makeIsNMake = String::endsWith("nmake.exe", lower) || m_makeIsJom;
 }
 
-uint CompilerTools::makeVersionMajor() const noexcept
+u32 CompilerTools::makeVersionMajor() const noexcept
 {
 	return m_makeVersionMajor;
 }
-uint CompilerTools::makeVersionMinor() const noexcept
+u32 CompilerTools::makeVersionMinor() const noexcept
 {
 	return m_makeVersionMinor;
 }
@@ -507,15 +508,15 @@ void CompilerTools::setNinja(std::string&& inValue) noexcept
 {
 	m_ninja = std::move(inValue);
 }
-uint CompilerTools::ninjaVersionMajor() const noexcept
+u32 CompilerTools::ninjaVersionMajor() const noexcept
 {
 	return m_ninjaVersionMajor;
 }
-uint CompilerTools::ninjaVersionMinor() const noexcept
+u32 CompilerTools::ninjaVersionMinor() const noexcept
 {
 	return m_ninjaVersionMinor;
 }
-uint CompilerTools::ninjaVersionPatch() const noexcept
+u32 CompilerTools::ninjaVersionPatch() const noexcept
 {
 	return m_ninjaVersionPatch;
 }

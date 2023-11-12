@@ -5,16 +5,16 @@
 
 #include "Cache/WorkspaceCache.hpp"
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -56,14 +56,14 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 	auto globalSettingsFile = inInputs.getGlobalSettingsFilePath();
 	auto globalSettingsFolder = String::getPathFolder(globalSettingsFile);
 
-	if (!Commands::pathExists(globalSettingsFolder))
-		Commands::makeDirectory(globalSettingsFolder);
+	if (!Files::pathExists(globalSettingsFolder))
+		Files::makeDirectory(globalSettingsFolder);
 
 	// Migrate old settings path pre 0.5.0
 	auto oldGlobalSettingsFile = fmt::format("{}/.chaletconfig", inInputs.homeDirectory());
-	if (Commands::pathExists(oldGlobalSettingsFile))
+	if (Files::pathExists(oldGlobalSettingsFile))
 	{
-		if (Commands::moveSilent(oldGlobalSettingsFile, globalSettingsFile))
+		if (Files::moveSilent(oldGlobalSettingsFile, globalSettingsFile))
 		{
 			// Update the theme
 			ThemeSettingsJsonParser themeParser(inInputs);
@@ -96,9 +96,9 @@ bool WorkspaceCache::createCacheFolder(const CacheType inCacheType)
 
 	Output::setShowCommandOverride(false);
 
-	if (!Commands::pathExists(cacheRef))
+	if (!Files::pathExists(cacheRef))
 	{
-		if (!Commands::makeDirectory(cacheRef))
+		if (!Files::makeDirectory(cacheRef))
 			return false;
 	}
 
@@ -120,11 +120,11 @@ bool WorkspaceCache::exists(const CacheType inCacheType) const
 {
 	if (inCacheType == CacheType::Local)
 	{
-		return Commands::pathExists(m_cacheFolderLocal) || Commands::pathExists(m_localSettings.filename());
+		return Files::pathExists(m_cacheFolderLocal) || Files::pathExists(m_localSettings.filename());
 	}
 	else
 	{
-		return Commands::pathExists(m_globalSettings.filename());
+		return Files::pathExists(m_globalSettings.filename());
 	}
 }
 
@@ -133,8 +133,8 @@ void WorkspaceCache::removeCacheFolder(const CacheType inCacheType)
 {
 	const auto& cacheRef = getCacheRef(inCacheType);
 
-	if (Commands::pathExists(cacheRef))
-		Commands::removeRecursively(cacheRef);
+	if (Files::pathExists(cacheRef))
+		Files::removeRecursively(cacheRef);
 }
 
 /*****************************************************************************/
@@ -204,7 +204,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 	const auto& cacheRef = getCacheRef(CacheType::Local);
 	StringList ids = m_cacheFile.getCacheIdsToNotRemove();
 
-	if (!Commands::pathExists(cacheRef) || ids.empty())
+	if (!Files::pathExists(cacheRef) || ids.empty())
 		return true;
 
 	Output::setShowCommandOverride(false);
@@ -212,7 +212,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 	for (auto& id : ids)
 	{
 		auto path = fmt::format("{}/{}", cacheRef, id);
-		if (!Commands::pathExists(path))
+		if (!Files::pathExists(path))
 		{
 			if (!m_cacheFile.removeSourceCache(id))
 				m_cacheFile.removeExtraCache(id);
@@ -231,7 +231,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 				const auto stem = path.stem().string();
 
 				if (!List::contains(ids, stem))
-					result &= Commands::removeRecursively(path.string());
+					result &= Files::removeRecursively(path.string());
 			}
 			else if (it.is_regular_file())
 			{
@@ -239,7 +239,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 				const auto filename = path.filename().string();
 
 				if (!List::contains(ids, filename))
-					result &= Commands::remove(path.string());
+					result &= Files::remove(path.string());
 			}
 		}
 	}
@@ -263,8 +263,8 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 	const auto& outputDirectory = inInputs.outputDirectory();
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
-		if (Commands::pathIsEmpty(inPath))
-			Commands::removeRecursively(inPath);
+		if (Files::pathIsEmpty(inPath))
+			Files::removeRecursively(inPath);
 	};
 
 	removePathIfEmpty(cacheRef);

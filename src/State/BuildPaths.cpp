@@ -5,8 +5,9 @@
 
 #include "State/BuildPaths.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
@@ -15,10 +16,9 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #include "State/Dependency/LocalDependency.hpp"
@@ -46,9 +46,9 @@ bool BuildPaths::initialize()
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
 	const auto& outputDirectory = m_state.inputs.outputDirectory();
-	if (!Commands::pathExists(outputDirectory))
+	if (!Files::pathExists(outputDirectory))
 	{
-		Commands::makeDirectory(outputDirectory);
+		Files::makeDirectory(outputDirectory);
 	}
 
 	const auto& buildConfig = m_state.info.buildConfiguration();
@@ -355,32 +355,12 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 		return std::string();
 
 	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
-	if (m_state.environment->isEmscripten())
-	{
-		bool endsInExe = String::endsWith(".html", outputPath);
-		if (!endsInExe)
-		{
-			outputPath = String::getPathFolderBaseName(outputPath);
-			outputPath += ".html";
-		}
-	}
-	else
-	{
-		bool endsInExe = String::endsWith(".exe", outputPath);
-		if (m_state.environment->isWindowsTarget())
-		{
-			if (!endsInExe)
-			{
-				outputPath = String::getPathFolderBaseName(outputPath);
-				outputPath += ".exe";
-			}
-		}
-		else
-		{
-			if (endsInExe)
-				outputPath = outputPath.substr(0, outputPath.size() - 4);
-		}
-	}
+
+	// Ignore the extension and enforce the one from the environment
+	//   If it was anything else, we wouldn't recognize it anyway
+	//
+	outputPath = String::getPathFolderBaseName(outputPath);
+	outputPath += m_state.environment->getExecutableExtension();
 
 	return outputPath;
 }
@@ -424,16 +404,9 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 	std::string ret;
 	if (inProject.usesPrecompiledHeader())
 	{
-		std::string ext;
-		if (m_state.environment->isClangOrMsvc() || m_state.environment->isIntelClassic())
-			ext = "pch";
-		// else if (m_state.environment->isIntelClassic())
-		// 	ext = "pchi";
-		else
-			ext = "gch";
-
-		const std::string base = getPrecompiledHeaderInclude(inProject);
-		ret = fmt::format("{}.{}", base, ext);
+		auto base = getPrecompiledHeaderInclude(inProject);
+		auto ext = m_state.environment->getPrecompiledHeaderExtension();
+		ret = fmt::format("{}{}", base, ext);
 	}
 
 	return ret;
@@ -442,13 +415,13 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 /*****************************************************************************/
 std::string BuildPaths::getPrecompiledHeaderObject(const std::string& inTarget) const
 {
-	std::string ret = inTarget;
 	if (m_state.environment->isMsvc())
 	{
-		String::replaceAll(ret, ".pch", ".obj");
+		auto base = String::getPathFolderBaseName(inTarget);
+		return base + ".obj";
 	}
 
-	return ret;
+	return inTarget;
 }
 
 /*****************************************************************************/
@@ -552,7 +525,7 @@ std::string BuildPaths::getNormalizedOutputPath(const std::string& inPath) const
 std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) const
 {
 	std::string ret = String::getPathFolder(inPath);
-	Path::sanitize(ret, true);
+	Path::toUnix(ret, true);
 
 	normalizedPath(ret);
 
@@ -755,13 +728,13 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 			continue;
 		}
 
-		if (!Commands::pathExists(file))
+		if (!Files::pathExists(file))
 		{
 			Diagnostic::warn("File not found: {}", file);
 			continue;
 		}
 
-		if (Commands::pathIsFile(file))
+		if (Files::pathIsFile(file))
 		{
 			List::addIfDoesNotExist(fileList, file);
 		}
@@ -789,7 +762,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 
 		if (inProject.usesPrecompiledHeader())
 		{
-			if (Commands::pathExists(inProject.precompiledHeader()))
+			if (Files::pathExists(inProject.precompiledHeader()))
 			{
 				auto outPath = getNormalizedDirectoryPath(inProject.precompiledHeader());
 
@@ -810,7 +783,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 		const auto& files = inProject.files();
 		for (auto& file : files)
 		{
-			if (!Commands::pathExists(file))
+			if (!Files::pathExists(file))
 				continue;
 
 			List::addIfDoesNotExist(ret, getNormalizedDirectoryPath(file));

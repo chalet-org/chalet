@@ -6,7 +6,7 @@
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -14,7 +14,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"

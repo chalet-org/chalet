@@ -9,18 +9,18 @@
 //
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/Platform.hpp"
+#include "Platform/Platform.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/ExternalDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -138,7 +138,7 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 /*****************************************************************************/
 bool ChaletJsonParser::validBuildRequested() const
 {
-	int count = 0;
+	i32 count = 0;
 	for (auto& target : m_state.targets)
 	{
 		count++;
@@ -1436,9 +1436,9 @@ bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, cons
 		else if (value.is_number())
 		{
 			if (String::equals("iconSize", key))
-				outTarget.setIconSize(static_cast<ushort>(value.get<int>()));
+				outTarget.setIconSize(static_cast<u16>(value.get<i32>()));
 			if (String::equals("textSize", key))
-				outTarget.setTextSize(static_cast<ushort>(value.get<int>()));
+				outTarget.setTextSize(static_cast<u16>(value.get<i32>()));
 		}
 		else if (value.is_object())
 		{
@@ -1457,21 +1457,21 @@ bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, cons
 			}
 			else if (String::equals("size", key))
 			{
-				int width = 0;
-				int height = 0;
+				i32 width = 0;
+				i32 height = 0;
 				for (const auto& [k, v] : value.items())
 				{
 					if (v.is_number())
 					{
 						if (String::equals("width", k))
-							width = v.get<int>();
+							width = v.get<i32>();
 						else if (String::equals("height", k))
-							height = v.get<int>();
+							height = v.get<i32>();
 					}
 				}
 				if (width > 0 && height > 0)
 				{
-					outTarget.setSize(static_cast<ushort>(width), static_cast<ushort>(height));
+					outTarget.setSize(static_cast<u16>(width), static_cast<u16>(height));
 				}
 			}
 			else if (String::equals("positions", key))
@@ -1480,20 +1480,20 @@ bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, cons
 				{
 					if (posJson.is_object())
 					{
-						int posX = 0;
-						int posY = 0;
+						i32 posX = 0;
+						i32 posY = 0;
 						for (const auto& [k, v] : posJson.items())
 						{
 							if (v.is_number())
 							{
 								if (String::equals("x", k))
-									posX = v.get<int>();
+									posX = v.get<i32>();
 								else if (String::equals("y", k))
-									posY = v.get<int>();
+									posY = v.get<i32>();
 							}
 						}
 
-						outTarget.addPosition(name, static_cast<short>(posX), static_cast<short>(posY));
+						outTarget.addPosition(name, static_cast<i16>(posX), static_cast<i16>(posY));
 					}
 				}
 			}

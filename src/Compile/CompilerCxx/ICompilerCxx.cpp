@@ -34,7 +34,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 [[nodiscard]] Unique<ICompilerCxx> ICompilerCxx::make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject)
 {
 	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("ICompilerCxx:", static_cast<int>(inType), executable);
+	// LOG("ICompilerCxx:", static_cast<i32>(inType), executable);
 	const bool clang = String::equals(StringList{ "clang", "clang++" }, executable);
 
 #if defined(CHALET_WIN32)

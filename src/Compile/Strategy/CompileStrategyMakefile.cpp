@@ -6,14 +6,14 @@
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 
 #include "Cache/WorkspaceCache.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/Environment.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -36,7 +36,7 @@ bool CompileStrategyMakefile::initialize()
 	auto& cacheFile = m_state.cache.file();
 	m_cacheFolder = m_state.cache.getCachePath(cachePathId, CacheType::Local);
 
-	const bool cacheExists = Commands::pathExists(m_cacheFolder);
+	const bool cacheExists = Files::pathExists(m_cacheFolder);
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
@@ -44,13 +44,13 @@ bool CompileStrategyMakefile::initialize()
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
-		Commands::removeRecursively(m_state.paths.buildOutputDir());
+		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || buildStrategyChanged || themeChanged;
 
-	if (!Commands::pathExists(m_cacheFolder))
-		Commands::makeDirectory(m_cacheFolder);
+	if (!Files::pathExists(m_cacheFolder))
+		Files::makeDirectory(m_cacheFolder);
 
 	m_initialized = true;
 
@@ -75,7 +75,7 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 	}
 
 	auto& buildFile = m_buildFiles.at(name);
-	if (m_cacheNeedsUpdate || !Commands::pathExists(buildFile))
+	if (m_cacheNeedsUpdate || !Files::pathExists(buildFile))
 	{
 		auto& hash = m_hashes.at(name);
 		auto& toolchain = m_toolchains.at(name);
@@ -289,10 +289,10 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 
 #endif
 
-	int result = ProcessController::run(inCmd, options);
+	i32 result = SubProcessController::run(inCmd, options);
 	if (!errorOutput.empty())
 	{
-		std::size_t cutoff = std::string::npos;
+		size_t cutoff = std::string::npos;
 		const auto make = String::getPathBaseName(m_state.toolchain.make());
 
 #if defined(CHALET_WIN32)

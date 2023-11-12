@@ -3,12 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_ENTRY_POINT_HPP
-#define CHALET_WINDOWS_ENTRY_POINT_HPP
+#pragma once
 
 namespace chalet
 {
-enum class WindowsEntryPoint : ushort
+enum class WindowsEntryPoint : u16
 {
 	None,
 	Main,
@@ -18,5 +17,3 @@ enum class WindowsEntryPoint : ushort
 	DllMain
 };
 }
-
-#endif // CHALET_WINDOWS_ENTRY_POINT_HPP

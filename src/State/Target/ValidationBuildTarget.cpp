@@ -6,8 +6,8 @@
 #include "State/Target/ValidationBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -26,14 +26,14 @@ bool ValidationBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::sanitize(m_schema);
+	Path::toUnix(m_schema);
 
 	if (!m_state.replaceVariablesInString(m_schema, this))
 		return false;
 
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
 	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
-			return Commands::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::FilesAndFolders);
+			return Files::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::FilesAndFolders);
 		}))
 	{
 		Diagnostic::error("There was a problem resolving the files to validate for the '{}' target. {}.", this->name(), globMessage);
@@ -46,7 +46,7 @@ bool ValidationBuildTarget::initialize()
 /*****************************************************************************/
 bool ValidationBuildTarget::validate()
 {
-	if (m_schema.empty() || !Commands::pathExists(m_schema))
+	if (m_schema.empty() || !Files::pathExists(m_schema))
 	{
 		Diagnostic::error("Schema file for the validation target '{}' doesn't exist: {}", this->name(), m_schema);
 		return false;
@@ -54,7 +54,7 @@ bool ValidationBuildTarget::validate()
 
 	for (auto& file : m_files)
 	{
-		if (file.empty() || !Commands::pathExists(file))
+		if (file.empty() || !Files::pathExists(file))
 		{
 			Diagnostic::error("File for the validation target '{}' doesn't exist: {}", this->name(), file);
 			return false;

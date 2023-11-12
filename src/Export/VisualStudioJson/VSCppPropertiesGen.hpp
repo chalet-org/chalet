@@ -3,10 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_CPP_PROPERTIES_GEN_HPP
-#define CHALET_VS_CPP_PROPERTIES_GEN_HPP
+#pragma once
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -29,5 +28,3 @@ private:
 	const Dictionary<std::string>& m_pathVariables;
 };
 }
-
-#endif // CHALET_VS_CPP_PROPERTIES_GEN_HPP

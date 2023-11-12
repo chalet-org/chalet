@@ -7,86 +7,110 @@
 
 #include <signal.h>
 
-#include "Terminal/Environment.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/SignalHandler.hpp"
+#include "Terminal/Shell.hpp"
 
 namespace chalet
 {
 namespace
 {
-struct
-{
-	std::mutex mutex;
-	Spinner* spinner = nullptr;
-	bool initialized = false;
-} state;
+Spinner* spinner = nullptr;
 
 /*****************************************************************************/
-void signalHandler(int inSignal)
+void signalHandler(i32 inSignal)
 {
-	std::lock_guard<std::mutex> lock(state.mutex);
+	UNUSED(inSignal);
 
-	if (state.spinner)
+	if (spinner)
 	{
-		state.spinner->stop();
-
-		UNUSED(inSignal);
-		std::string output{ "\b\b  \b\b" };
-		output += Output::getAnsiStyle(Output::theme().reset);
-		std::cout.write(output.data(), output.size());
-
-		// std::exit(1);
+		if (spinner->cancel())
+		{
+			std::string output = Output::getAnsiStyle(Output::theme().reset);
+			std::cout.write(output.data(), output.size());
+		}
 	}
 }
+}
+
+/*****************************************************************************/
+Spinner& Spinner::instance()
+{
+	if (spinner == nullptr)
+	{
+		spinner = new Spinner();
+
+		SignalHandler::add(SIGINT, signalHandler);
+		SignalHandler::add(SIGTERM, signalHandler);
+		SignalHandler::add(SIGABRT, signalHandler);
+	}
+
+	return *spinner;
+}
+
+/*****************************************************************************/
+bool Spinner::instanceCreated()
+{
+	return spinner != nullptr;
+}
+
+/*****************************************************************************/
+bool Spinner::destroyInstance()
+{
+	if (spinner != nullptr)
+	{
+		SignalHandler::remove(SIGINT, signalHandler);
+		SignalHandler::remove(SIGTERM, signalHandler);
+		SignalHandler::remove(SIGABRT, signalHandler);
+
+		delete spinner;
+		spinner = nullptr;
+		return true;
+	}
+
+	return false;
 }
 
 /*****************************************************************************/
 Spinner::~Spinner()
 {
-	SignalHandler::remove(SIGINT, signalHandler);
-	SignalHandler::remove(SIGTERM, signalHandler);
-	SignalHandler::remove(SIGABRT, signalHandler);
-
-	destroy();
+	stop();
 }
 
 /*****************************************************************************/
-void Spinner::start()
+bool Spinner::start()
 {
-	if (!state.initialized)
+	if (stop())
 	{
-		SignalHandler::add(SIGINT, signalHandler);
-		SignalHandler::add(SIGTERM, signalHandler);
-		SignalHandler::add(SIGABRT, signalHandler);
-
-		state.initialized = true;
+		m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
+		return true;
 	}
 
-	destroy();
+	return false;
+}
 
-	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
-	state.spinner = this;
+/*****************************************************************************/
+bool Spinner::cancel()
+{
+	m_cancelled = true;
+	return stop();
 }
 
 /*****************************************************************************/
 bool Spinner::stop()
 {
-	return destroy();
-}
-
-/*****************************************************************************/
-bool Spinner::destroy()
-{
-	bool result = m_running;
-
+	bool result = true;
 	if (m_thread != nullptr)
 	{
-		m_running = false;
-		m_thread->join();
-		m_thread.reset();
+		result = false;
+		if (m_thread->joinable())
+		{
+			m_running = false;
+			m_thread->join();
+			m_thread.reset();
+			result = true;
+		}
 	}
-	state.spinner = nullptr;
 
 	return result;
 }
@@ -115,16 +139,16 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 void Spinner::doRegularEllipsis()
 {
 	{
-		std::lock_guard<std::mutex> lock(state.mutex);
+		std::lock_guard<std::mutex> lock(m_mutex);
 		std::string output{ " ... " };
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
+
+		if (Shell::isContinuousIntegrationServer())
+			return;
 	}
 
-	if (Environment::isContinuousIntegrationServer())
-		return;
-
-	constexpr auto frameTime = std::chrono::milliseconds(333);
+	constexpr auto frameTime = std::chrono::milliseconds(250);
 
 	// first "frame" - keep output minimal
 	if (!sleepWithContext(frameTime))
@@ -132,7 +156,7 @@ void Spinner::doRegularEllipsis()
 
 	m_running = true;
 
-	uint i = 0;
+	u32 i = 0;
 	while (m_running)
 	{
 		std::string output;
@@ -146,7 +170,7 @@ void Spinner::doRegularEllipsis()
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(state.mutex);
+			std::lock_guard<std::mutex> lock(m_mutex);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();
 		}
@@ -160,9 +184,12 @@ void Spinner::doRegularEllipsis()
 			i = 0;
 	}
 
-	std::string output{ "\b\b\b\b\b ... " };
-	std::cout.write(output.data(), output.size());
-	std::cout.flush();
+	if (!m_cancelled)
+	{
+		std::lock_guard<std::mutex> lock(m_mutex);
+		std::string output{ "\b\b\b\b\b ... " };
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
+	}
 }
-
 }

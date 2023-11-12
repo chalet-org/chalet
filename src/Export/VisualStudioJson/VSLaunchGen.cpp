@@ -5,7 +5,7 @@
 
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
@@ -15,7 +15,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -94,7 +94,7 @@ Json VSLaunchGen::getConfiguration(const BuildState& inState, const IBuildTarget
 	auto filename = String::getPathFilename(program);
 	ret["name"] = filename;
 	// ret["project"] = fmt::format("${{chalet.buildDir}}/{}", filename);
-	ret["project"] = Commands::getCanonicalPath(program);
+	ret["project"] = Files::getCanonicalPath(program);
 	ret["args"] = arguments;
 
 	ret["currentDir"] = "${workspaceRoot}";

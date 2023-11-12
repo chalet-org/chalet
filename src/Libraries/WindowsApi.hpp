@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_API_HPP
-#define CHALET_WINDOWS_API_HPP
+#pragma once
 
 // Windows
 #if defined(_WIN32) && !defined(RC_INVOKED)
@@ -24,9 +23,8 @@
 	#include <windows.h>
 	#include <winuser.h>
 
-	#if defined(CHALET_MSVC)
+	#if defined(_MSC_VER)
 		#pragma execution_character_set("utf-8")
 	#endif
 #endif
 
-#endif // CHALET_WINDOWS_API_HPP

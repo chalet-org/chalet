@@ -7,17 +7,17 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -46,7 +46,7 @@ bool CompileStrategyNative::initialize()
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
-		Commands::removeRecursively(m_state.paths.buildOutputDir());
+		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
 	m_initialized = true;
@@ -70,8 +70,8 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = m_outputs.at(name);
 
-	m_generateDependencies = !Environment::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
-	bool targetExists = Commands::pathExists(outputs->target);
+	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
+	bool targetExists = Files::pathExists(outputs->target);
 
 	{
 		CommandPool::JobList jobs;

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_REGEX_PATTERNS_HPP
-#define CHALET_REGEX_PATTERNS_HPP
+#pragma once
 
 namespace chalet
 {
@@ -19,5 +18,3 @@ bool matchAndReplaceConfigureFileVariables(std::string& outText, const std::func
 bool matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string, bool&)>& onMatch);
 }
 }
-
-#endif // CHALET_REGEX_PATTERNS_HPP

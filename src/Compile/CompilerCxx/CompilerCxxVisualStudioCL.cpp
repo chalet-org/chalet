@@ -5,16 +5,16 @@
 
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Process/Environment.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -39,7 +39,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 	if (m_project.cppModules())
 	{
 		auto toolsDir = Environment::getString("VCToolsInstallDir");
-		Path::sanitize(toolsDir);
+		Path::toUnix(toolsDir);
 
 		std::string arch{ "x64" };
 		if (m_state.info.hostArchitecture() == Arch::Cpu::ARM64)
@@ -52,7 +52,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 			configuration = "Release";
 
 		m_ifcDirectory = fmt::format("{}/ifc/{}/{}", toolsDir, arch, configuration);
-		if (!Commands::pathExists(m_ifcDirectory))
+		if (!Files::pathExists(m_ifcDirectory))
 		{
 			m_ifcDirectory = fmt::format("{}/ifc/{}", toolsDir, arch);
 		}

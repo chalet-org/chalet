@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_CACHE_HPP
-#define CHALET_SOURCE_CACHE_HPP
+#pragma once
 
 #include "Cache/LastWrite.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -19,7 +18,7 @@ struct SourceCache
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
 	void setLastBuildStrategy(const StrategyType inValue, const bool inCheckChanges = false) noexcept;
-	void setLastBuildStrategy(const int inValue, const bool inCheckChanges = false) noexcept;
+	void setLastBuildStrategy(const i32 inValue, const bool inCheckChanges = false) noexcept;
 	bool buildStrategyChanged() const noexcept;
 	bool canRemoveCachedFolder() const noexcept;
 
@@ -66,5 +65,3 @@ private:
 	mutable bool m_dirty = false;
 };
 }
-
-#endif // CHALET_SOURCE_FILE_CACHE_HPP

@@ -5,7 +5,7 @@
 
 #include "Json/JsonFile.hpp"
 
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -21,15 +21,15 @@ JsonFile::JsonFile(std::string inFilename) :
 }
 
 /*****************************************************************************/
-bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent)
+bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const i32 inIndent)
 {
 	if (outFilename.empty())
 		return false;
 
 	const auto folder = String::getPathFolder(outFilename);
-	if (!folder.empty() && !Commands::pathExists(folder))
+	if (!folder.empty() && !Files::pathExists(folder))
 	{
-		if (!Commands::makeDirectory(folder))
+		if (!Files::makeDirectory(folder))
 			return false;
 	}
 
@@ -57,7 +57,7 @@ bool JsonFile::load(std::string inFilename, const bool inError)
 }
 
 /*****************************************************************************/
-bool JsonFile::save(const int inIndent)
+bool JsonFile::save(const i32 inIndent)
 {
 	if (!m_filename.empty() && m_dirty)
 	{

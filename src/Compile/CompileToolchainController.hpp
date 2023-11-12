@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_TOOLCHAIN_CONTROLLER_HPP
-#define CHALET_COMPILE_TOOLCHAIN_CONTROLLER_HPP
+#pragma once
 
 #include "Compile/Archiver/IArchiver.hpp"
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
@@ -35,5 +34,3 @@ private:
 
 using CompileToolchain = Unique<CompileToolchainController>;
 }
-
-#endif // CHALET_COMPILE_TOOLCHAIN_CONTROLLER_HPP

@@ -5,9 +5,9 @@
 
 #include "Compile/Linker/LinkerLLVMClang.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Compile/CompilerCxx/CompilerCxxClang.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Compile/Linker/LinkerVisualStudioLINK.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
@@ -28,7 +28,7 @@ void LinkerLLVMClang::addLinks(StringList& outArgList) const
 {
 	LinkerGCC::addLinks(outArgList);
 
-	if (m_state.environment->isWindowsClang() || m_state.environment->isMingwClang() || m_state.environment->isWindowsTarget())
+	if (m_state.environment->isWindowsTarget())
 	{
 		const std::string prefix{ "-l" };
 		auto win32Links = getWin32CoreLibraryLinks();
@@ -42,6 +42,13 @@ void LinkerLLVMClang::addLinks(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addStripSymbols(StringList& outArgList) const
 {
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
+void LinkerLLVMClang::addThreadModelLinks(StringList& outArgList) const
+{
+	LOG("LinkerLLVMClang::addThreadModelLinks()");
 	UNUSED(outArgList);
 }
 
@@ -126,7 +133,7 @@ void LinkerLLVMClang::addCppFilesystem(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	if (!m_state.environment->isWindowsTarget())
 	{
 		if (m_project.positionIndependentCode())
 		{

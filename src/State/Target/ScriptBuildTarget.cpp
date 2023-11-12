@@ -8,8 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -28,7 +28,7 @@ bool ScriptBuildTarget::initialize()
 	if (!IBuildTarget::initialize())
 		return false;
 
-	Path::sanitize(m_file);
+	Path::toUnix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;
@@ -76,7 +76,7 @@ bool ScriptBuildTarget::validate()
 		}
 	}
 
-	if (m_dependsOn.empty() && !Commands::pathExists(m_file))
+	if (m_dependsOn.empty() && !Files::pathExists(m_file))
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", this->name(), m_file);
 		return false;

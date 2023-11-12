@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_WINDOWS_HPP
-#define CHALET_APP_BUNDLER_WINDOWS_HPP
+#pragma once
 
 #include "Bundler/IAppBundler.hpp"
 
@@ -29,5 +28,3 @@ private:
 	//
 };
 }
-
-#endif // CHALET_APP_BUNDLER_WINDOWS_HPP

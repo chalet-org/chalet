@@ -5,11 +5,11 @@
 
 #include "State/Target/CMakeTarget.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -63,13 +63,13 @@ bool CMakeTarget::validate()
 	const auto& targetName = this->name();
 
 	bool result = true;
-	if (!Commands::pathExists(m_location))
+	if (!Files::pathExists(m_location))
 	{
 		Diagnostic::error("location for CMake target '{}' doesn't exist: {}", targetName, m_location);
 		result = false;
 	}
 
-	if (!m_buildFile.empty() && !Commands::pathExists(fmt::format("{}/{}", m_location, m_buildFile)))
+	if (!m_buildFile.empty() && !Files::pathExists(fmt::format("{}/{}", m_location, m_buildFile)))
 	{
 		Diagnostic::error("buildFile '{}' for CMake target '{}' was not found in the location: {}", m_buildFile, targetName, m_location);
 		result = false;

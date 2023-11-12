@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_PATHS_HPP
-#define CHALET_BUILD_PATHS_HPP
+#pragma once
 
 #include "State/SourceOutputs.hpp"
 
@@ -109,5 +108,3 @@ private:
 	bool m_initialized = false;
 };
 }
-
-#endif // CHALET_BUILD_PATHS_HPP

@@ -5,19 +5,21 @@
 
 #include "Builder/BuildManager.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
-#include "Builder/BinaryDependencyMap.hpp"
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ConfigureFileParser.hpp"
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/AssemblyDumper.hpp"
 #include "Compile/CompileToolchainController.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Process/ProcessController.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -33,13 +35,12 @@
 #include "State/Target/ValidationBuildTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonKeys.hpp"
@@ -464,7 +465,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
-	if (!Commands::makeDirectories(outputs->directories, m_directoriesMade))
+	if (!Files::makeDirectories(outputs->directories, m_directoriesMade))
 	{
 		Diagnostic::error("Error creating paths for project: {}", inProject.name());
 		return false;
@@ -495,7 +496,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCopied)
+bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, u32& outCopied)
 {
 	bool result = true;
 
@@ -508,9 +509,9 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, uint& outCo
 		for (auto& dep : copyFilesOnRun)
 		{
 			auto depFile = String::getPathFilename(dep);
-			if (!Commands::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
+			if (!Files::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
 			{
-				result &= Commands::copy(dep, buildOutputDir);
+				result &= Files::copy(dep, buildOutputDir);
 				++outCopied;
 			}
 		}
@@ -551,7 +552,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 	else
 		dirToClean = buildOutputDir;
 
-	if (!Commands::pathExists(dirToClean))
+	if (!Files::pathExists(dirToClean))
 		return false;
 
 	StringList buildDirs;
@@ -609,7 +610,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		std::error_code ec;
 		const auto& path = it->path();
 		auto shortPath = path.string();
-		Path::sanitize(shortPath);
+		Path::toUnix(shortPath);
 		String::replaceAll(shortPath, buildOutputDir, "");
 
 		if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
@@ -627,8 +628,8 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 
 	for (auto& dir : buildDirs)
 	{
-		if (Commands::pathExists(dir))
-			Commands::removeRecursively(dir);
+		if (Files::pathExists(dir))
+			Files::removeRecursively(dir);
 	}
 
 	bool regenConfigureFiles = m_strategy->isXcodeBuild() || m_strategy->isMSBuild();
@@ -655,14 +656,14 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		}
 	}
 
-	if (Commands::pathExists(currentBuildDir))
-		Commands::removeRecursively(currentBuildDir);
+	if (Files::pathExists(currentBuildDir))
+		Files::removeRecursively(currentBuildDir);
 
-	if (Commands::pathIsEmpty(externalBuildDir))
-		Commands::remove(externalBuildDir);
+	if (Files::pathIsEmpty(externalBuildDir))
+		Files::remove(externalBuildDir);
 
-	if (Commands::pathIsEmpty(buildOutputDir))
-		Commands::remove(buildOutputDir);
+	if (Files::pathIsEmpty(buildOutputDir))
+		Files::remove(buildOutputDir);
 
 	if (Output::cleanOutput())
 	{
@@ -677,15 +678,15 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 {
 	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
-	Path::sanitize(outputLocation);
+	Path::toUnix(outputLocation);
 
 	bool rebuild = true;
 	if (m_state.inputs.route().isRebuild())
 		rebuild = inTarget.rebuild();
 
-	if (rebuild && Commands::pathExists(outputLocation))
+	if (rebuild && Files::pathExists(outputLocation))
 	{
-		if (!Commands::removeRecursively(outputLocation))
+		if (!Files::removeRecursively(outputLocation))
 		{
 			Diagnostic::error("There was an error cleaning the '{}' Chalet project.", inTarget.name());
 			return false;
@@ -699,16 +700,16 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 {
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto outputLocation = fmt::format("{}/{}", Commands::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
-	Path::sanitize(outputLocation);
+	auto outputLocation = fmt::format("{}/{}", Files::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
+	Path::toUnix(outputLocation);
 
 	bool rebuild = true;
 	if (m_state.inputs.route().isRebuild())
 		rebuild = inTarget.rebuild();
 
-	if (rebuild && Commands::pathExists(outputLocation))
+	if (rebuild && Files::pathExists(outputLocation))
 	{
-		if (!Commands::removeRecursively(outputLocation))
+		if (!Files::removeRecursively(outputLocation))
 		{
 			Diagnostic::error("There was an error cleaning the '{}' CMake project.", inTarget.name());
 			return false;
@@ -855,10 +856,10 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 	auto intermediateDir = m_state.paths.intermediateDir(inProject);
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 
-	if (Commands::pathIsEmpty(intermediateDir))
-		Commands::remove(intermediateDir);
+	if (Files::pathIsEmpty(intermediateDir))
+		Files::remove(intermediateDir);
 
-	if (Commands::pathExists(buildOutputDir))
+	if (Files::pathExists(buildOutputDir))
 	{
 		fs::recursive_directory_iterator it(buildOutputDir);
 		fs::recursive_directory_iterator itEnd;
@@ -932,13 +933,13 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		outputFile = m_state.paths.getTargetFilename(project);
 	}
 
-	if (Commands::pathIsDirectory(outputFile))
+	if (Files::pathIsDirectory(outputFile))
 	{
 		Diagnostic::error("Requested run target '{}' resolves to a directory: {}", inTarget.name(), outputFile);
 		return false;
 	}
 
-	if (outputFile.empty() || !Commands::pathExists(outputFile))
+	if (outputFile.empty() || !Files::pathExists(outputFile))
 	{
 		Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.info.buildConfiguration(), inTarget.name());
 		return false;
@@ -946,14 +947,14 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	const auto& runArguments = m_state.inputs.runArguments();
 
-	auto file = Commands::getAbsolutePath(outputFile);
-	if (!Commands::pathExists(file))
+	auto file = Files::getAbsolutePath(outputFile);
+	if (!Files::pathExists(file))
 	{
 		Diagnostic::error("Couldn't find file: {}", file);
 		return false;
 	}
 
-	uint copied = 0;
+	u32 copied = 0;
 	for (const auto& target : m_buildTargets)
 	{
 		if (target->isSources())
@@ -988,7 +989,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	{
 		auto outputHtml = outputFile;
 		outputFile = fmt::format("{}/index.html", String::getPathFolder(outputFile));
-		Commands::copyRename(outputHtml, outputFile, true);
+		Files::copyRename(outputHtml, outputFile, true);
 
 		auto pythonPath = Environment::getString("EMSDK_PYTHON");
 		auto upstream = Environment::getString("EMSDK_UPSTREAM_EMSCRIPTEN");
@@ -1067,7 +1068,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	WindowsTerminal::cleanup();
 #endif
 
-	bool result = Commands::subprocessWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd);
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
@@ -1075,13 +1076,13 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 
-	int lastExitCode = ProcessController::getLastExitCode();
-	int signalRaised = 0;
+	i32 lastExitCode = SubProcessController::getLastExitCode();
+	i32 signalRaised = 0;
 
 	std::string signalRaisedMessage;
 	if (lastExitCode < 0)
 	{
-		signalRaisedMessage = ProcessController::getSignalRaisedMessage(lastExitCode);
+		signalRaisedMessage = SubProcessController::getSignalRaisedMessage(lastExitCode);
 		if (!signalRaisedMessage.empty())
 		{
 			signalRaised = lastExitCode * -1;
@@ -1102,7 +1103,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	std::string lastSystemMessage;
 	if (signalRaised == 0)
 	{
-		lastSystemMessage = ProcessController::getSystemMessage(lastExitCode);
+		lastSystemMessage = SubProcessController::getSystemMessage(lastExitCode);
 	}
 	if (!lastSystemMessage.empty())
 	{
@@ -1113,7 +1114,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	}
 	else if (!signalRaisedMessage.empty())
 	{
-		auto signalName = ProcessController::getSignalNameFromCode(signalRaised);
+		auto signalName = SubProcessController::getSignalNameFromCode(signalRaised);
 		Output::print(Output::theme().info, fmt::format("Error: {} [{}] - {}", signalName, signalRaised, signalRaisedMessage));
 	}
 	else if (lastExitCode != 0)

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CODEBLOCKS_CBP_GEN_HPP
-#define CHALET_CODEBLOCKS_CBP_GEN_HPP
+#pragma once
 
 #include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
@@ -23,7 +22,7 @@ struct CodeBlocksCBPGen
 	bool saveProjectFiles(const std::string& inDirectory);
 
 private:
-	enum class TargetGroupKind : ushort
+	enum class TargetGroupKind : u16
 	{
 		Source,
 		Script,
@@ -71,5 +70,3 @@ private:
 	std::string m_exportPath;
 };
 }
-
-#endif // CHALET_CODEBLOCKS_CBP_GEN_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_FILE_HPP
-#define CHALET_JSON_FILE_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -15,11 +14,11 @@ struct JsonFile
 	JsonFile() = default;
 	explicit JsonFile(std::string inFilename);
 
-	static bool saveToFile(const Json& inJson, const std::string& outFilename, const int inIndent = 1);
+	static bool saveToFile(const Json& inJson, const std::string& outFilename, const i32 inIndent = 1);
 
 	bool load(const bool inError = true);
 	bool load(std::string inFilename, const bool inError = true);
-	bool save(const int inIndent = 1);
+	bool save(const i32 inIndent = 1);
 
 	bool dirty() const noexcept;
 	void setDirty(const bool inValue) noexcept;
@@ -63,5 +62,3 @@ private:
 }
 
 #include "Json/JsonFile.inl"
-
-#endif // CHALET_JSON_FILE_HPP

@@ -77,11 +77,7 @@ const std::string& Uuid::str() const noexcept
 /*****************************************************************************/
 std::string Uuid::toUpperCase() const
 {
-	std::string ret(m_str);
-	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
-		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
-	});
-	return ret;
+	return String::toUpperCase(m_str);
 }
 
 /*****************************************************************************/
@@ -90,10 +86,7 @@ std::string Uuid::toUpperCase() const
 //
 std::string Uuid::toAppleHash() const
 {
-	std::string ret(m_str.substr(9));
-	std::transform(ret.begin(), ret.end(), ret.begin(), [](uchar c) {
-		return static_cast<uchar>(::toupper(static_cast<uchar>(c)));
-	});
+	auto ret = String::toUpperCase(m_str.substr(9));
 	String::replaceAll(ret, "-", "");
 	return ret;
 }

@@ -6,8 +6,8 @@
 #include "State/Distribution/ProcessDistTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -22,7 +22,7 @@ ProcessDistTarget::ProcessDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
-	Path::sanitize(m_path);
+	Path::toUnix(m_path);
 
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;
@@ -63,9 +63,9 @@ bool ProcessDistTarget::validate()
 		}
 	}
 
-	if (!Commands::pathExists(m_path))
+	if (!Files::pathExists(m_path))
 	{
-		auto resolved = Commands::which(m_path);
+		auto resolved = Files::which(m_path);
 		if (resolved.empty() && m_dependsOn.empty())
 		{
 			Diagnostic::error("The process path for the distribution target '{}' doesn't exist: {}", this->name(), m_path);

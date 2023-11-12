@@ -5,14 +5,15 @@
 
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Platform/Platform.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -40,7 +41,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	std::string cStandard;
 	std::string cppStandard;
-	StringList defines = getDefaultDefines();
+	StringList defines = Platform::getDefaultPlatformDefines();
 	StringList includePath;
 	StringList forcedInclude;
 #if defined(CHALET_MACOS)
@@ -66,7 +67,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			if (project.usesPrecompiledHeader())
 			{
 				auto path = project.precompiledHeader();
-				if (Commands::pathExists(path))
+				if (Files::pathExists(path))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -78,7 +79,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
+				if (Files::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -139,10 +140,6 @@ std::string VSCodeCCppPropertiesGen::getName() const
 
 #if defined(CHALET_WIN32)
 	ret = "Win32";
-
-	if (m_state.environment->isMingw())
-		ret += " (MinGW)";
-
 #elif defined(CHALET_MACOS)
 	ret = "Mac";
 #else
@@ -155,24 +152,8 @@ std::string VSCodeCCppPropertiesGen::getName() const
 /*****************************************************************************/
 std::string VSCodeCCppPropertiesGen::getIntellisenseMode() const
 {
-	std::string platform;
-#if defined(CHALET_WIN32)
-	platform = "windows";
-#elif defined(CHALET_MACOS)
-	platform = "macos";
-#else
-	platform = "linux";
-#endif
-
-	std::string toolchain;
-	if (m_state.environment->isClang())
-		toolchain = "clang";
-#if defined(CHALET_WIN32)
-	else if (m_state.environment->isMsvc())
-		toolchain = "msvc";
-#endif
-	else
-		toolchain = "gcc";
+	auto platform = Platform::platform();
+	auto toolchain = m_state.environment->getCompilerAliasForVisualStudio();
 
 	auto arch = Arch::toVSArch(m_state.info.targetArchitecture());
 	return fmt::format("{}-{}-{}", platform, toolchain, arch);
@@ -189,7 +170,7 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 		ret = m_state.toolchain.compilerC().path;
 
 #if defined(CHALET_MACOS)
-	const auto& xcodePath = Commands::getXcodePath();
+	const auto& xcodePath = Files::getXcodePath();
 	String::replaceAll(ret, xcodePath, "");
 	String::replaceAll(ret, "/Toolchains/XcodeDefault.xctoolchain", "");
 #endif
@@ -197,19 +178,4 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 	return ret;
 }
 
-/*****************************************************************************/
-StringList VSCodeCCppPropertiesGen::getDefaultDefines() const
-{
-	StringList ret;
-
-#if defined(CHALET_WIN32)
-	ret.emplace_back("_WIN32");
-#elif defined(CHALET_MACOS)
-	ret.emplace_back("__APPLE__");
-#else
-	ret.emplace_back("__linux__");
-#endif
-
-	return ret;
-}
 }

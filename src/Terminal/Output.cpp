@@ -6,9 +6,10 @@
 #include "Terminal/Output.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
-#include "Terminal/Path.hpp"
+#include "Process/Environment.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
+#include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 
@@ -26,7 +27,7 @@ static struct
 	bool allowCommandsToShow = true;
 	bool showBenchamrks = true;
 #if defined(CHALET_WIN32)
-	std::int64_t commandPromptVersion = -1;
+	i64 commandPromptVersion = -1;
 #endif
 } state;
 
@@ -49,7 +50,7 @@ bool Output::ansiColorsSupportedInComSpec()
 {
 	if (state.commandPromptVersion == -1)
 	{
-		state.commandPromptVersion = Commands::getLastWriteTime(Environment::getString("COMSPEC"));
+		state.commandPromptVersion = Files::getLastWriteTime(Environment::getString("COMSPEC"));
 		if (state.commandPromptVersion > 0)
 			state.commandPromptVersion *= 1000;
 	}
@@ -118,7 +119,7 @@ void Output::setShowBenchmarks(const bool inValue)
 std::ostream& Output::getErrStream()
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::cout;
 #endif
 
@@ -223,7 +224,7 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 std::string Output::getAnsiStyle(const Color inColor)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::string();
 #endif
 
@@ -231,7 +232,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
 	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
@@ -258,7 +259,7 @@ std::string Output::getAnsiStyle(const Color inColor)
 std::string Output::getAnsiStyleRaw(const Color inColor)
 {
 #if defined(CHALET_WIN32)
-	if (Environment::isVisualStudioOutput())
+	if (Shell::isVisualStudioOutput())
 		return std::string();
 #endif
 
@@ -266,7 +267,7 @@ std::string Output::getAnsiStyleRaw(const Color inColor)
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Environment::isCommandPromptOrPowerShell();
+	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
 	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
@@ -351,7 +352,7 @@ void Output::previousLine(const bool inForce)
 	if ((!state.quietNonBuild || inForce))
 	{
 #if defined(CHALET_WIN32)
-		if (!Environment::isVisualStudioOutput())
+		if (!Shell::isVisualStudioOutput())
 #endif
 		{
 			std::string eraser(80, ' ');
@@ -580,7 +581,7 @@ void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 }
 
 /*****************************************************************************/
-void Output::msgProfilerStartedSample(const std::string& inExecutable, const uint inDuration, const uint inSamplingInterval)
+void Output::msgProfilerStartedSample(const std::string& inExecutable, const u32 inDuration, const u32 inSamplingInterval)
 {
 	Diagnostic::info("Sampling {} for {} seconds with {} millisecond of run time between samples", inExecutable, inDuration, inSamplingInterval);
 }

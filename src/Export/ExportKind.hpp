@@ -3,12 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_EXPORT_KIND_HPP
-#define CHALET_EXPORT_KIND_HPP
+#pragma once
 
 namespace chalet
 {
-enum class ExportKind : ushort
+enum class ExportKind : u16
 {
 	None,
 	VisualStudioCodeJSON,
@@ -19,5 +18,3 @@ enum class ExportKind : ushort
 	CodeBlocks,
 };
 }
-
-#endif // CHALET_EXPORT_KIND_HPP

@@ -3,12 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_WINDOWS_CALLING_CONVENTION_HPP
-#define CHALET_WINDOWS_CALLING_CONVENTION_HPP
+#pragma once
 
 namespace chalet
 {
-enum class WindowsCallingConvention : ushort
+enum class WindowsCallingConvention : u16
 {
 	Cdecl,
 	FastCall,
@@ -16,5 +15,3 @@ enum class WindowsCallingConvention : ushort
 	VectorCall,
 };
 }
-
-#endif // CHALET_WINDOWS_CALLING_CONVENTION_HPP

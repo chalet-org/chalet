@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MACOS_DISK_IMAGE_TARGET_HPP
-#define CHALET_MACOS_DISK_IMAGE_TARGET_HPP
+#pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
 #include "Utility/Position.hpp"
@@ -25,17 +24,17 @@ struct MacosDiskImageTarget final : public IDistTarget
 	const std::string& background2x() const noexcept;
 	void setBackground2x(std::string&& inValue);
 
-	const Dictionary<Position<short>>& positions() const noexcept;
-	void addPosition(const std::string& inPath, const short inX, const short inY);
+	const Dictionary<Position<i16>>& positions() const noexcept;
+	void addPosition(const std::string& inPath, const i16 inX, const i16 inY);
 
-	const Size<ushort>& size() const noexcept;
-	void setSize(const ushort inWidth, const ushort inHeight) noexcept;
+	const Size<u16>& size() const noexcept;
+	void setSize(const u16 inWidth, const u16 inHeight) noexcept;
 
-	ushort iconSize() const noexcept;
-	void setIconSize(const ushort inValue) noexcept;
+	u16 iconSize() const noexcept;
+	void setIconSize(const u16 inValue) noexcept;
 
-	ushort textSize() const noexcept;
-	void setTextSize(const ushort inValue) noexcept;
+	u16 textSize() const noexcept;
+	void setTextSize(const u16 inValue) noexcept;
 
 	bool pathbarVisible() const noexcept;
 	void setPathbarVisible(const bool inValue) noexcept;
@@ -46,16 +45,14 @@ private:
 	std::string m_background1x;
 	std::string m_background2x;
 
-	Dictionary<Position<short>> m_positions;
+	Dictionary<Position<i16>> m_positions;
 
-	Size<ushort> m_size{ 512, 342 };
+	Size<u16> m_size{ 512, 342 };
 
-	ushort m_iconSize = 48;
-	ushort m_textSize = 12;
+	u16 m_iconSize = 48;
+	u16 m_textSize = 12;
 
 	bool m_pathbarVisible = false;
 	bool m_includeApplicationsSymlink = false;
 };
 }
-
-#endif // CHALET_MACOS_DISK_IMAGE_TARGET_HPP

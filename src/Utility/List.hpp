@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_LIST_HPP
-#define CHALET_LIST_HPP
+#pragma once
 
 namespace chalet
 {
@@ -38,5 +37,3 @@ StringList combine(Args&&... args);
 }
 
 #include "Utility/List.inl"
-
-#endif // CHALET_LIST_HPP

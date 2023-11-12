@@ -12,7 +12,7 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -92,9 +92,9 @@ bool VSCodeProjectExporter::generateProjectFiles()
 
 	const auto& cwd = workingDirectory();
 	auto vscodeDirectory = fmt::format("{}/.vscode", cwd);
-	if (!Commands::pathExists(vscodeDirectory) && Commands::pathExists(m_directory))
+	if (!Files::pathExists(vscodeDirectory) && Files::pathExists(m_directory))
 	{
-		if (!Commands::copySilent(m_directory, cwd))
+		if (!Files::copySilent(m_directory, cwd))
 		{
 			Diagnostic::error("There was a problem copying the .vscode directory to the workspace.");
 			return false;

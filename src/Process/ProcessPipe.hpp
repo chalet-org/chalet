@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_PIPE_HPP
-#define CHALET_PROCESS_PIPE_HPP
+#pragma once
 
 #include "Process/ProcessTypes.hpp"
 
@@ -12,7 +11,7 @@ namespace chalet
 {
 class ProcessPipe
 {
-	friend class Process;
+	friend class SubProcess;
 
 public:
 	ProcessPipe() = default;
@@ -39,5 +38,3 @@ private:
 	PipeHandle m_write = kInvalidPipe;
 };
 }
-
-#endif // CHALET_PROCESS_PIPE_HPP

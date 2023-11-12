@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_COMMENTS_HPP
-#define CHALET_JSON_COMMENTS_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -17,5 +16,3 @@ bool parse(Json& outJson, const std::string& inFilename, const bool inError = tr
 Json parseLiteral(const std::string& inJsonContent);
 }
 }
-
-#endif // CHALET_JSON_COMMENTS_HPP

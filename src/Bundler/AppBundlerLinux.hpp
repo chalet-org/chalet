@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_APP_BUNDLER_LINUX_HPP
-#define CHALET_APP_BUNDLER_LINUX_HPP
+#pragma once
 
 #include "Bundler/IAppBundler.hpp"
 #include "Libraries/FileSystem.hpp"
@@ -27,10 +26,10 @@ public:
 	virtual std::string getFrameworksPath() const final;
 
 private:
+#if defined(CHALET_LINUX)
 	std::string m_home;
 	std::string m_applicationsPath;
 	std::string m_mainExecutable;
+#endif
 };
 }
-
-#endif // CHALET_APP_BUNDLER_LINUX_HPP

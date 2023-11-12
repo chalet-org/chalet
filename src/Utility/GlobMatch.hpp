@@ -3,12 +3,11 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_GLOB_MATCH_HPP
-#define CHALET_GLOB_MATCH_HPP
+#pragma once
 
 namespace chalet
 {
-enum class GlobMatch : uchar
+enum class GlobMatch : u8
 {
 	Files,
 	Folders,
@@ -16,5 +15,3 @@ enum class GlobMatch : uchar
 	FilesAndFoldersExact,
 };
 }
-
-#endif // CHALET_GLOB_MATCH_HPP

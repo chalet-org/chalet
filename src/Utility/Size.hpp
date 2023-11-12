@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SIZE_HPP
-#define CHALET_SIZE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,7 +22,5 @@ struct Size
 
 namespace chalet
 {
-extern template struct Size<ushort>;
+extern template struct Size<u16>;
 }
-
-#endif // CHALET_SIZE_HPP

@@ -5,8 +5,8 @@
 
 #include "Export/Xcode/XcodeXSchemeGen.hpp"
 
-#include "Builder/BinaryDependencyMap.hpp"
 #include "Bundler/AppBundlerMacOS.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"

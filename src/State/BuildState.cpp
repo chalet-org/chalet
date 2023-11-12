@@ -5,14 +5,15 @@
 
 #include "State/BuildState.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BuildManager.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "ChaletJson/ChaletJsonParser.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Core/DotEnvFileGenerator.hpp"
-#include "Core/DotEnvFileParser.hpp"
+#include "DotEnv/DotEnvFileGenerator.hpp"
+#include "DotEnv/DotEnvFileParser.hpp"
 #include "Export/IProjectExporter.hpp"
+#include "Process/Environment.hpp"
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -28,12 +29,11 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -54,7 +54,7 @@ struct BuildState::Impl
 	std::vector<BuildTarget> targets;
 	std::vector<DistTarget> distribution;
 
-	Unique<ICompileEnvironment> environment;
+	Unique<IBuildEnvironment> environment;
 
 	bool checkForEnvironment = false;
 
@@ -303,7 +303,7 @@ bool BuildState::initializeBuildConfiguration()
 bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto createEnvironment = [this]() {
-		m_impl->environment = ICompileEnvironment::make(inputs.toolchainPreference().type, *this);
+		m_impl->environment = IBuildEnvironment::make(inputs.toolchainPreference().type, *this);
 		if (m_impl->environment == nullptr)
 		{
 			const auto& toolchainName = inputs.toolchainPreferenceName();
@@ -338,7 +338,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (!parser.serialize())
 		return false;
 
-	ToolchainType type = ICompileEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
+	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
 		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
@@ -354,7 +354,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		{
 			details = "An installation of MinGW was expected to be present in the 'Path' environment variable - set directly or via a '.env' file.";
 		}
-	#if CHALET_EXPERIMENTAL_ENABLE_INTEL_ICX
+	#if CHALET_ENABLE_INTEL_ICX
 		else if (preference.type == ToolchainType::IntelLLVM)
 		{
 			details = "The 'intel-llvm-*' preset requires oneAPI DPC++/C++ compiler to be installed, and the 'ONEAPI_ROOT' environment variable to be set.";
@@ -473,7 +473,7 @@ bool BuildState::initializeBuild()
 	{
 		auto compilerPath = toolchain.compilerCxxAny().binDir;
 		auto windres = fmt::format("{}/{}-windres", compilerPath, info.targetArchitectureTriple());
-		if (Commands::pathExists(windres))
+		if (Files::pathExists(windres))
 		{
 			toolchain.setCompilerWindowsResource(std::move(windres));
 		}
@@ -511,11 +511,11 @@ bool BuildState::initializeBuild()
 				if (systemPaths.empty())
 				{
 					std::string localLib{ "/usr/local/lib" };
-					if (Commands::pathExists(localLib))
+					if (Files::pathExists(localLib))
 						project.addLibDir(std::move(localLib));
 
 					std::string localInclude{ "/usr/local/include" };
-					if (Commands::pathExists(localInclude))
+					if (Files::pathExists(localInclude))
 						project.addIncludeDir(std::move(localInclude));
 				}
 #endif
@@ -595,12 +595,12 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
-	auto workingDirectory = Commands::getWorkingDirectory();
-	Path::sanitize(workingDirectory, true);
+	auto workingDirectory = Files::getWorkingDirectory();
+	Path::toUnix(workingDirectory, true);
 
 	if (String::toLowerCase(inputs.workingDirectory()) != String::toLowerCase(workingDirectory))
 	{
-		if (!Commands::changeWorkingDirectory(inputs.workingDirectory()))
+		if (!Files::changeWorkingDirectory(inputs.workingDirectory()))
 		{
 			Diagnostic::error("Error changing directory to '{}'", inputs.workingDirectory());
 			return false;
@@ -672,7 +672,7 @@ bool BuildState::validateState()
 					return false;
 				}
 
-				uint versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
+				u32 versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
 				if (versionMajorMinor < 1928)
 				{
 					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
@@ -709,7 +709,7 @@ bool BuildState::validateState()
 	if (strat == StrategyType::Makefile)
 	{
 		const auto& makeExec = toolchain.make();
-		if (makeExec.empty() || !Commands::pathExists(makeExec))
+		if (makeExec.empty() || !Files::pathExists(makeExec))
 		{
 			Diagnostic::error("{} was either not defined in the toolchain, or not found.", makeExec.empty() ? "make" : makeExec);
 			return false;
@@ -738,7 +738,7 @@ bool BuildState::validateState()
 	else if (strat == StrategyType::Ninja)
 	{
 		auto& ninjaExec = toolchain.ninja();
-		if (ninjaExec.empty() || !Commands::pathExists(ninjaExec))
+		if (ninjaExec.empty() || !Files::pathExists(ninjaExec))
 		{
 			Diagnostic::error("{} was either not defined in the toolchain, or not found.", ninjaExec.empty() ? "ninja" : ninjaExec);
 			return false;
@@ -766,7 +766,7 @@ bool BuildState::validateState()
 			return false;
 		}
 
-		if (Commands::isUsingAppleCommandLineTools())
+		if (Files::isUsingAppleCommandLineTools())
 		{
 			Diagnostic::error("The 'xcodebuild' strategy cannot be used with CommandLineTools. Please run 'sudo xcode-select -s /Applications/Xcode.app/Contents/Developer' (or with your chosen path to Xcode)");
 			return false;
@@ -795,8 +795,6 @@ bool BuildState::validateState()
 	}
 
 	UNUSED(hasSubChaletTargets);
-	if (!m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
-		return false;
 
 	// Note: Ignored in the clean command so targets with external dependency paths don't get validated
 	//
@@ -818,7 +816,7 @@ bool BuildState::validateState()
 #if defined(CHALET_MACOS)
 		bool profilerAvailable = true;
 #else
-		bool profilerAvailable = !toolchain.profiler().empty() && Commands::pathExists(toolchain.profiler());
+		bool profilerAvailable = !toolchain.profiler().empty() && Files::pathExists(toolchain.profiler());
 #endif
 		if (!profilerAvailable)
 		{
@@ -842,7 +840,7 @@ bool BuildState::validateState()
 #if defined(CHALET_WIN32)
 		if (requiresVisualStudio)
 		{
-			auto vsperfcmd = Commands::which("vsperfcmd");
+			auto vsperfcmd = Files::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
 				std::string progFiles = Environment::getString("ProgramFiles(x86)");
@@ -937,7 +935,7 @@ bool BuildState::validateDistribution()
 void BuildState::makePathVariable()
 {
 	auto originalPath = Environment::getPath();
-	Path::sanitize(originalPath);
+	Path::toUnix(originalPath);
 
 	char separator = Environment::getPathSeparator();
 	auto pathList = String::split(originalPath, separator);
@@ -953,7 +951,7 @@ void BuildState::makePathVariable()
 	{
 		// Edge case for cross-compilers that have an extra bin folder (like MinGW on Linux)
 		auto extraBinDir = fmt::format("{}/bin", String::getPathFolder(toolchain.compilerCpp().libDir));
-		if (Commands::pathExists(extraBinDir))
+		if (Files::pathExists(extraBinDir))
 		{
 			if (!List::contains(pathList, extraBinDir))
 				outList.emplace_back(std::move(extraBinDir));
@@ -972,10 +970,10 @@ void BuildState::makePathVariable()
 
 	for (auto& p : osPaths)
 	{
-		if (!Commands::pathExists(p))
+		if (!Files::pathExists(p))
 			continue;
 
-		auto path = Commands::getCanonicalPath(p); // probably not needed, but just in case
+		auto path = Files::getCanonicalPath(p); // probably not needed, but just in case
 
 		if (!List::contains(pathList, path))
 			outList.emplace_back(std::move(path));
@@ -988,7 +986,7 @@ void BuildState::makePathVariable()
 	}
 
 	std::string rootPath = String::join(std::move(outList), separator);
-	Path::sanitize(rootPath);
+	Path::toUnix(rootPath);
 
 	auto pathVariable = workspace.makePathVariable(rootPath);
 	enforceArchitectureInPath(pathVariable);
@@ -1084,7 +1082,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto oneApi = Environment::getString("ONEAPI_ROOT");
 		if (!oneApi.empty())
 		{
-			Path::sanitizeForWindows(oneApi);
+			Path::toWindows(oneApi);
 			oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
 			std::string lowerOneApi = String::toLowerCase(oneApi);
 			if (!String::contains(lowerOneApi, lower))
@@ -1110,7 +1108,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto& preferenceName = inputs.toolchainPreferenceName();
 		if (String::equals("gcc", preferenceName))
 		{
-			auto gcc = Commands::which("gcc");
+			auto gcc = Files::which("gcc");
 			if (gcc.empty())
 			{
 				auto homeDrive = Environment::getString("HOMEDRIVE");
@@ -1120,7 +1118,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 					//
 					std::string mingwPath;
 					auto msysPath = fmt::format("{}\\msys64", homeDrive);
-					if (Commands::pathExists(msysPath))
+					if (Files::pathExists(msysPath))
 					{
 						if (targetArch == Arch::Cpu::X64)
 						{
@@ -1128,7 +1126,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 							//
 							mingwPath = fmt::format("{}\\ucrt64\\bin", msysPath);
 
-							if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+							if (!Files::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
 							{
 								mingwPath = fmt::format("{}\\mingw64\\bin", msysPath);
 							}
@@ -1152,7 +1150,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 						}
 					}
 
-					if (!Commands::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
+					if (!Files::pathExists(fmt::format("{}\\gcc.exe", mingwPath)))
 					{
 						mingwPath.clear();
 					}
@@ -1176,14 +1174,14 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 		auto& preferenceName = inputs.toolchainPreferenceName();
 		if (String::equals("llvm", preferenceName))
 		{
-			auto clang = Commands::which("clang");
+			auto clang = Files::which("clang");
 			if (clang.empty())
 			{
 				auto programFiles = Environment::getString("ProgramFiles");
 				if (!programFiles.empty())
 				{
 					auto clangPath = fmt::format("{}\\LLVM\\bin", programFiles);
-					if (Commands::pathExists(fmt::format("{}\\clang.exe", clangPath)))
+					if (Files::pathExists(fmt::format("{}\\clang.exe", clangPath)))
 					{
 						std::string lowerClangPath = String::toLowerCase(clangPath);
 						if (!String::contains(lowerClangPath, lower))
@@ -1300,7 +1298,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);
@@ -1441,7 +1439,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				{
 					required = false;
 					match = match.substr(14);
-					match[0] = static_cast<char>(::tolower(static_cast<uchar>(match[0])));
+					String::decapitalize(match);
 
 					const auto& metadata = workspace.metadata();
 					return metadata.getMetadataFromString(match);

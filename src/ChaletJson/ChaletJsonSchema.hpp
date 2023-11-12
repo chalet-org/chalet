@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CHALET_JSON_SCHEMA_HPP
-#define CHALET_CHALET_JSON_SCHEMA_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -12,7 +11,7 @@ namespace chalet
 {
 class ChaletJsonSchema
 {
-	enum class Defs : ushort
+	enum class Defs : u16
 	{
 		WorkspaceName,
 		WorkspaceVersion,
@@ -222,5 +221,3 @@ private:
 	bool m_useRefs = true;
 };
 }
-
-#endif // CHALET_CHALET_JSON_SCHEMA_HPP

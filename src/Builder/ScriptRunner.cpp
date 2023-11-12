@@ -7,11 +7,11 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "Process/ProcessController.hpp"
+#include "Process/Process.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
-#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -31,8 +31,8 @@ bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, con
 	if (command.empty())
 		return false;
 
-	bool result = Commands::subprocess(command);
-	auto exitCode = ProcessController::getLastExitCode();
+	bool result = Process::run(command);
+	auto exitCode = SubProcessController::getLastExitCode();
 
 	// std::string script = inScript;
 	// m_inputs.clearWorkingDirectory(script);

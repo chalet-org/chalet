@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_EXTERNAL_DEPENDENCY_CACHE_HPP
-#define CHALET_EXTERNAL_DEPENDENCY_CACHE_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -48,4 +47,3 @@ private:
 };
 }
 
-#endif // CHALET_EXTERNAL_DEPENDENCY_CACHE_HPP

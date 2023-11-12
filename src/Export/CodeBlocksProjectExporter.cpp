@@ -6,7 +6,7 @@
 #include "Export/CodeBlocksProjectExporter.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocks/CodeBlocksCBPGen.hpp"
 #include "Export/CodeBlocks/CodeBlocksWorkspaceGen.hpp"
@@ -17,7 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 

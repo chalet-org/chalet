@@ -8,7 +8,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -48,7 +48,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<int>(inType));
+	Diagnostic::errorAbort("Unimplemented BuildTargetType requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

@@ -3,13 +3,12 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CENTRAL_CHALET_JSON_PARSER_HPP
-#define CHALET_CENTRAL_CHALET_JSON_PARSER_HPP
+#pragma once
 
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
-#include "Core/Platform.hpp"
+#include "Platform/Platform.hpp"
 #include "Libraries/Json.hpp"
-#include "Terminal/Environment.hpp"
+#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -64,5 +63,3 @@ private:
 	std::string m_platform;
 };
 }
-
-#endif // CHALET_CENTRAL_CHALET_JSON_PARSER_HPP

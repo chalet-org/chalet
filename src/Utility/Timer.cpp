@@ -20,7 +20,7 @@ void Timer::restart()
 }
 
 /*****************************************************************************/
-std::int64_t Timer::stop()
+i64 Timer::stop()
 {
 	m_end = clock::now();
 	auto executionTime = m_end - m_start;
@@ -37,7 +37,7 @@ std::string Timer::asString(const bool inRestart)
 	if (inRestart)
 		m_start = clock::now();
 
-	uint milliseconds = static_cast<uint>(std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count());
+	u32 milliseconds = static_cast<u32>(std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count());
 
 	if (milliseconds == 0)
 		return std::string();
@@ -45,21 +45,21 @@ std::string Timer::asString(const bool inRestart)
 	if (milliseconds < 1000)
 		return fmt::format("{}ms", milliseconds);
 
-	uint seconds = milliseconds / 1000;
+	u32 seconds = milliseconds / 1000;
 	milliseconds %= 1000;
 	auto ms = fmt::format("{:0>3}", milliseconds);
 
 	if (seconds < 60)
 		return fmt::format("{}.{}s", seconds, ms);
 
-	uint minutes = seconds / 60;
+	u32 minutes = seconds / 60;
 	seconds %= 60;
 	auto sec = fmt::format("{:0>2}", seconds);
 
 	if (minutes < 60)
 		return fmt::format("{}:{}.{}m", minutes, sec, ms);
 
-	uint hours = minutes / 60;
+	u32 hours = minutes / 60;
 	minutes %= 60;
 	auto min = fmt::format("{:0>2}", minutes);
 	return fmt::format("{}:{}:{}.{}h", hours, min, sec, ms);

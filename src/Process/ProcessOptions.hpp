@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_OPTIONS_HPP
-#define CHALET_PROCESS_OPTIONS_HPP
+#pragma once
 
 #include "Process/PipeOption.hpp"
 
@@ -13,7 +12,7 @@ namespace chalet
 struct ProcessOptions
 {
 	using PipeFunc = std::function<void(std::string /* output */)>;
-	using CreateFunc = std::function<void(int /* pid */)>;
+	using CreateFunc = std::function<void(i32 /* pid */)>;
 
 	std::string cwd;
 	PipeFunc onStdOut = nullptr;
@@ -25,5 +24,3 @@ struct ProcessOptions
 	PipeOption stderrOption = PipeOption::Close;
 };
 }
-
-#endif // CHALET_PROCESS_OPTIONS_HPP

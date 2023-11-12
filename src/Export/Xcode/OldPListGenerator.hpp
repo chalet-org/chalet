@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_OLD_PLIST_GENERATOR_HPP
-#define CHALET_OLD_PLIST_GENERATOR_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -30,5 +29,3 @@ private:
 }
 
 #include "Export/Xcode/OldPListGenerator.inl"
-
-#endif // CHALET_OLD_PLIST_GENERATOR_HPP

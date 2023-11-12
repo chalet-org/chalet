@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_NINJA_GENERATOR_HPP
-#define CHALET_NINJA_GENERATOR_HPP
+#pragma once
 
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "State/SourceOutputs.hpp"
@@ -52,5 +51,3 @@ private:
 	bool m_needsMsvcDepsPrefix = false;
 };
 }
-
-#endif // CHALET_NINJA_GENERATOR_HPP

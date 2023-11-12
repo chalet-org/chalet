@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_ADAPTER_WIN_RESOURCE_HPP
-#define CHALET_COMMAND_ADAPTER_WIN_RESOURCE_HPP
+#pragma once
 
 namespace chalet
 {
@@ -23,5 +22,3 @@ private:
 	const SourceTarget& m_project;
 };
 }
-
-#endif // CHALET_COMMAND_ADAPTER_WIN_RESOURCE_HPP

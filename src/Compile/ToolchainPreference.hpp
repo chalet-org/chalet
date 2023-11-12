@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_TOOLCHAIN_PREFERENCE_HPP
-#define CHALET_TOOLCHAIN_PREFERENCE_HPP
+#pragma once
 
 #include "Compile/BuildPathStyle.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
@@ -29,5 +28,3 @@ struct ToolchainPreference
 	void setType(const ToolchainType inType);
 };
 }
-
-#endif // CHALET_TOOLCHAIN_PREFERENCE_HPP

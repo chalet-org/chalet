@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SUB_CHALET_BUILDER_HPP
-#define CHALET_SUB_CHALET_BUILDER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -37,5 +36,3 @@ private:
 	bool m_quotedPaths = false;
 };
 }
-
-#endif // CHALET_SUB_CHALET_BUILDER_HPP

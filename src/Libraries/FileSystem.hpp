@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_FILE_SYSTEM_HPP
-#define CHALET_FILE_SYSTEM_HPP
+#pragma once
 
 #if defined(_MSC_VER) && _MSC_VER >= 1920
 #elif defined(__cplusplus) && __cplusplus >= 201703L && defined(__has_include)
@@ -29,5 +28,3 @@ namespace chalet
 namespace fs = std::filesystem;
 }
 #endif
-
-#endif // CHALET_FILE_SYSTEM_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_HPP
-#define CHALET_XML_HPP
+#pragma once
 
 #include "Xml/XmlElement.hpp"
 
@@ -15,7 +14,7 @@ struct Xml
 	Xml() = default;
 	explicit Xml(std::string inRootName);
 
-	std::string dump(const int inIndent = -1, const char inIndentChar = ' ') const;
+	std::string dump(const i32 inIndent = -1, const char inIndentChar = ' ') const;
 
 	void addRawHeader(std::string inHeader);
 
@@ -45,5 +44,3 @@ private:
 	bool m_standalone = false;
 };
 }
-
-#endif // CHALET_XML_HPP

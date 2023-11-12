@@ -3,11 +3,10 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_MAKEFILE_RUNNER_HPP
-#define CHALET_MAKEFILE_RUNNER_HPP
+#pragma once
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
-#include "Router/CommandRoute.hpp"
+#include "Core/Router/CommandRoute.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -41,7 +40,7 @@ private:
 	void printBuildInformation();
 	std::string getBuildStrategyName() const;
 
-	bool copyRunDependencies(const IBuildTarget& inProject, uint& outCopied);
+	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
 	bool doLazyClean(const std::function<void()>& onClean = nullptr, const bool inCleanExternals = false, const bool inForceCleanExternals = false);
@@ -87,5 +86,3 @@ private:
 	bool m_directoriesMade = false;
 };
 }
-
-#endif // CHALET_MAKEFILE_RUNNER_HPP

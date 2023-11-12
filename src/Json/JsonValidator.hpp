@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_JSON_VALIDATOR_HPP
-#define CHALET_JSON_VALIDATOR_HPP
+#pragma once
 
 #include "Libraries/Json.hpp"
 
@@ -29,5 +28,3 @@ private:
 	Unique<Impl> m_impl;
 };
 }
-
-#endif // CHALET_JSON_VALIDATOR_HPP

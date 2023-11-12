@@ -8,7 +8,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
@@ -145,7 +145,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 /*****************************************************************************/
 bool BatchValidator::parse(Json& outJson, const std::string& inFilename, const bool inPrintValid) const
 {
-	if (!Commands::pathExists(inFilename))
+	if (!Files::pathExists(inFilename))
 	{
 		outJson = Json();
 		return true;

@@ -9,6 +9,8 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -16,10 +18,9 @@
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Terminal/Path.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -36,8 +37,8 @@ SubChaletBuilder::SubChaletBuilder(const BuildState& inState, const SubChaletTar
 std::string SubChaletBuilder::getLocation() const
 {
 	const auto& rawLocation = m_target.location();
-	auto ret = Commands::getAbsolutePath(rawLocation);
-	Path::sanitize(ret);
+	auto ret = Files::getAbsolutePath(rawLocation);
+	Path::toUnix(ret);
 
 	return ret;
 }
@@ -49,7 +50,7 @@ std::string SubChaletBuilder::getOutputLocation() const
 	auto location = getLocation();
 
 	auto ret = fmt::format("{}/{}", location, buildOutputDir);
-	Path::sanitize(ret);
+	Path::toUnix(ret);
 
 	return ret;
 }
@@ -102,7 +103,7 @@ bool SubChaletBuilder::run()
 
 	const auto oldPath = Environment::getPath();
 
-	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.inputs.appPath()), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
@@ -113,9 +114,9 @@ bool SubChaletBuilder::run()
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
-		Commands::removeRecursively(m_outputLocation);
+		Files::removeRecursively(m_outputLocation);
 
-	bool outDirectoryDoesNotExist = !Commands::pathExists(m_outputLocation);
+	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	auto onRunFailure = [&oldPath]() -> bool {
@@ -133,7 +134,7 @@ bool SubChaletBuilder::run()
 		for (auto& targetName : m_target.targets())
 		{
 			auto cmd = getBuildCommand(targetName);
-			result = Commands::subprocess(cmd);
+			result = Process::run(cmd);
 			if (!result)
 				return onRunFailure();
 		}
@@ -165,10 +166,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inTarget, const 
 /*****************************************************************************/
 StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const std::string& inTarget, const bool hasSettings) const
 {
-	StringList cmd{ getQuotedPath(m_state.tools.chalet()) };
+	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
+	auto proximateOutput = Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
 	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
 
 	cmd.emplace_back("--root-dir");
@@ -182,7 +183,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!hasSettings)
 	{
-		auto proximateSettings = Commands::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+		auto proximateSettings = Files::getProximatePath(m_state.inputs.settingsFile(), inLocation);
 
 		cmd.emplace_back("--settings-file");
 		cmd.emplace_back(getQuotedPath(proximateSettings));
@@ -205,9 +206,9 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!m_state.inputs.envFile().empty())
 	{
-		if (Commands::pathExists(m_state.inputs.envFile()))
+		if (Files::pathExists(m_state.inputs.envFile()))
 		{
-			auto envAbsolute = Commands::getAbsolutePath(m_state.inputs.envFile());
+			auto envAbsolute = Files::getAbsolutePath(m_state.inputs.envFile());
 			cmd.emplace_back("--env-file");
 			cmd.push_back(getQuotedPath(envAbsolute));
 		}

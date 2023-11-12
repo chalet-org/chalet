@@ -5,16 +5,17 @@
 
 #include "Compile/Linker/LinkerGCC.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Compile/CompilerCxx/CompilerCxxGCC.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+// #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -196,12 +197,12 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 	const auto& projectSharedLinks = m_project.projectSharedLinks();
 
 	const bool isEmscripten = m_state.environment->isEmscripten();
+	auto search = m_state.environment->getStaticLibraryExtension();
 
 	if (!staticLinks.empty())
 	{
 		startStaticLinkGroup(outArgList);
 
-		std::string search(".a");
 		for (auto& link : staticLinks)
 		{
 			if (isLinkSupported(link))
@@ -209,7 +210,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				bool resolved = false;
 				if (String::endsWith(search, link))
 				{
-					if (Commands::pathExists(link))
+					if (Files::pathExists(link))
 					{
 						outArgList.emplace_back(getQuotedPath(link));
 						resolved = true;
@@ -220,7 +221,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 						for (auto& dir : libDirs)
 						{
 							auto path = fmt::format("{}/{}", dir, link);
-							if (Commands::pathExists(path))
+							if (Files::pathExists(path))
 							{
 								outArgList.emplace_back(getQuotedPath(path));
 								resolved = true;
@@ -241,7 +242,6 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 
 	if (!sharedLinks.empty())
 	{
-		std::string search(".a");
 		for (auto& link : sharedLinks)
 		{
 			if (isLinkSupported(link))
@@ -249,7 +249,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 				bool resolved = false;
 				if (String::endsWith(search, link))
 				{
-					if (Commands::pathExists(link))
+					if (Files::pathExists(link))
 					{
 						outArgList.emplace_back(getQuotedPath(link));
 						resolved = true;
@@ -260,7 +260,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 						for (auto& dir : libDirs)
 						{
 							auto path = fmt::format("{}/{}", dir, link);
-							if (Commands::pathExists(path))
+							if (Files::pathExists(path))
 							{
 								outArgList.emplace_back(getQuotedPath(path));
 								resolved = true;
@@ -281,7 +281,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 		}
 	}
 
-	if (m_state.environment->isMingwGcc() || m_state.environment->isMingwClang())
+	if (m_state.environment->isMingw())
 	{
 		auto win32Links = getWin32CoreLibraryLinks();
 		for (const auto& link : win32Links)
@@ -586,7 +586,7 @@ void LinkerGCC::addAppleFrameworkOptions(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/Library/Frameworks"));
 	}
 	{
-		// const std::string suffix = ".framework";
+		// const std::string suffix = Files::getPlatformFrameworkExtension();
 		for (auto& framework : m_project.appleFrameworks())
 		{
 			outArgList.emplace_back("-framework");
@@ -654,7 +654,7 @@ void LinkerGCC::addExecutableOption(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 {
-	if (!m_state.environment->isMingw() && !m_state.environment->isWindowsTarget())
+	if (!m_state.environment->isWindowsTarget())
 	{
 		if (m_project.positionIndependentCode())
 		{
@@ -684,7 +684,7 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 		}
 		cmd.emplace_back(fmt::format("-print-file-name={}", file));
 
-		auto raw = Commands::subprocessOutput(cmd);
+		auto raw = Process::runOutput(cmd);
 		// auto split = String::split(raw, '\n');
 
 		return !String::equals(file, raw);

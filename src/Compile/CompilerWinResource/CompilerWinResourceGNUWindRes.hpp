@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_WIN_RESOURCE_GNU_WIND_RES_HPP
-#define CHALET_COMPILER_WIN_RESOURCE_GNU_WIND_RES_HPP
+#pragma once
 
 #include "Compile/CompilerWinResource/ICompilerWinResource.hpp"
 
@@ -21,5 +20,3 @@ protected:
 	virtual void addDefines(StringList& outArgList) const override;
 };
 }
-
-#endif // CHALET_COMPILER_WIN_RESOURCE_GNU_WIND_RES_HPP

@@ -3,10 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_BUILD_INFO_HPP
-#define CHALET_BUILD_INFO_HPP
+#pragma once
 
-#include "Core/Arch.hpp"
+#include "Platform/Arch.hpp"
 
 namespace chalet
 {
@@ -42,7 +41,7 @@ struct BuildInfo
 	void setTargetArchitecture(const std::string& inValue) noexcept;
 	bool targettingMinGW() const;
 
-	uint maxJobs() const noexcept;
+	u32 maxJobs() const noexcept;
 	bool dumpAssembly() const noexcept;
 	bool generateCompileCommands() const noexcept;
 	bool launchProfiler() const noexcept;
@@ -61,7 +60,7 @@ private:
 	Arch m_hostArchitecture;
 	Arch m_targetArchitecture;
 
-	uint m_maxJobs = 0;
+	u32 m_maxJobs = 0;
 
 	bool m_dumpAssembly = false;
 	bool m_generateCompileCommands = false;
@@ -70,5 +69,3 @@ private:
 	bool m_onlyRequired = false;
 };
 }
-
-#endif // CHALET_BUILD_INFO_HPP

@@ -6,8 +6,8 @@
 #include "State/Distribution/MacosDiskImageTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Path.hpp"
+#include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -43,7 +43,7 @@ bool MacosDiskImageTarget::validate()
 			Diagnostic::error("macosDiskImage.background1x must end with '.png' or '.tiff', but was '{}'.", m_background1x);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_background1x))
+		else if (!Files::pathExists(m_background1x))
 		{
 			Diagnostic::error("macosDiskImage.background1x '{}' was not found.", m_background1x);
 			result = false;
@@ -57,7 +57,7 @@ bool MacosDiskImageTarget::validate()
 			Diagnostic::error("macosDiskImage.background2x must end with '.png', but was '{}'.", m_background2x);
 			result = false;
 		}
-		else if (!Commands::pathExists(m_background2x))
+		else if (!Files::pathExists(m_background2x))
 		{
 			Diagnostic::error("macosDiskImage.background2x '{}' was not found.", m_background2x);
 			result = false;
@@ -116,46 +116,46 @@ void MacosDiskImageTarget::setBackground2x(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const Dictionary<Position<short>>& MacosDiskImageTarget::positions() const noexcept
+const Dictionary<Position<i16>>& MacosDiskImageTarget::positions() const noexcept
 {
 	return m_positions;
 }
-void MacosDiskImageTarget::addPosition(const std::string& inPath, const short inX, const short inY)
+void MacosDiskImageTarget::addPosition(const std::string& inPath, const i16 inX, const i16 inY)
 {
 	auto path = String::getPathFolderBaseName(inPath);
 	if (String::equals("Applications", path))
 		m_includeApplicationsSymlink = true;
 
-	m_positions[std::move(path)] = Position<short>{ inX, inY };
+	m_positions[std::move(path)] = Position<i16>{ inX, inY };
 }
 
 /*****************************************************************************/
-const Size<ushort>& MacosDiskImageTarget::size() const noexcept
+const Size<u16>& MacosDiskImageTarget::size() const noexcept
 {
 	return m_size;
 }
-void MacosDiskImageTarget::setSize(const ushort inWidth, const ushort inHeight) noexcept
+void MacosDiskImageTarget::setSize(const u16 inWidth, const u16 inHeight) noexcept
 {
 	m_size.width = inWidth;
 	m_size.height = inHeight;
 }
 
 /*****************************************************************************/
-ushort MacosDiskImageTarget::iconSize() const noexcept
+u16 MacosDiskImageTarget::iconSize() const noexcept
 {
 	return m_iconSize;
 }
-void MacosDiskImageTarget::setIconSize(const ushort inValue) noexcept
+void MacosDiskImageTarget::setIconSize(const u16 inValue) noexcept
 {
 	m_iconSize = inValue;
 }
 
 /*****************************************************************************/
-ushort MacosDiskImageTarget::textSize() const noexcept
+u16 MacosDiskImageTarget::textSize() const noexcept
 {
 	return m_textSize;
 }
-void MacosDiskImageTarget::setTextSize(const ushort inValue) noexcept
+void MacosDiskImageTarget::setTextSize(const u16 inValue) noexcept
 {
 	m_textSize = inValue;
 }

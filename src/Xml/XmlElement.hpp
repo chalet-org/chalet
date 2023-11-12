@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_XML_ELEMENT_HPP
-#define CHALET_XML_ELEMENT_HPP
+#pragma once
 
 #include <variant>
 
@@ -22,7 +21,7 @@ public:
 	XmlElement() = default;
 	explicit XmlElement(std::string_view inName);
 
-	std::string dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const;
+	std::string dump(const u32 inIndent, const i32 inIndentSize, const char inIndentChar) const;
 
 	const std::string& name() const noexcept;
 	void setName(std::string_view inName);
@@ -58,5 +57,3 @@ private:
 	bool m_commented = false;
 };
 }
-
-#endif // CHALET_XML_ELEMENT_HPP

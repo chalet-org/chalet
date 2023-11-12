@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_GUID_HPP
-#define CHALET_GUID_HPP
+#pragma once
 
 namespace chalet
 {
@@ -48,5 +47,3 @@ private:
 	std::string m_str;
 };
 }
-
-#endif // CHALET_GUID_HPP

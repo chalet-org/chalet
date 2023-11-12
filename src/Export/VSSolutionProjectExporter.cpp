@@ -5,7 +5,7 @@
 
 #include "Export/VSSolutionProjectExporter.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudio/VSSolutionGen.hpp"
 #include "Export/VisualStudio/VSVCXProjGen.hpp"
@@ -160,7 +160,7 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 			const auto& name = target->name();
 			if (ret.find(name) == ret.end())
 			{
-				auto key = fmt::format("{}_{}", static_cast<int>(target->type()), name);
+				auto key = fmt::format("{}_{}", static_cast<i32>(target->type()), name);
 				ret.emplace(name, Uuid::v5(key, inProjectTypeGUID));
 			}
 		}
@@ -168,7 +168,7 @@ OrderedDictionary<Uuid> VSSolutionProjectExporter::getTargetGuids(const std::str
 
 	if (!inAllBuildName.empty())
 	{
-		auto key = fmt::format("{}_{}", std::numeric_limits<int>::max(), inAllBuildName);
+		auto key = fmt::format("{}_{}", std::numeric_limits<i32>::max(), inAllBuildName);
 		ret.emplace(inAllBuildName, Uuid::v5(key, inProjectTypeGUID));
 	}
 

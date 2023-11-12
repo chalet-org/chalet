@@ -6,11 +6,61 @@
 #ifdef _WIN32
 
 #include "Libraries/WindowsApi.hpp"
+#include "System/DefinesVersion.hpp"
 
-#include "Win32/Resource.h"
-#include "Win32/Icon.h"
+/*****************************************************************************/
+// Defines
+//
+#if defined(_DEBUG) || defined(DEBUG)
+	#define WIN32_MANIFEST 1
+#endif
 
+#define WIN32_ICON_MAIN 2
 
+#ifndef VOS_NT_WINDOWS32
+	#define VOS_NT_WINDOWS32 0x00040004L
+#endif
+
+#ifndef VS_FF_DEBUG
+	#define VS_FF_DEBUG 0x00000001L
+#endif
+
+#ifndef VFT_APP
+	#define VFT_APP 0x00000001L
+#endif
+
+#define STRINGIZE2(s) #s
+#define STRINGIZE(s) STRINGIZE2(s)
+
+#define VERSION_MAJOR CHALET_VERSION_MAJOR
+#define VERSION_MINOR CHALET_VERSION_MINOR
+#define VERSION_PATCH CHALET_VERSION_PATCH
+#define VERSION_BUILD 0
+
+#define VER_FILE_DESCRIPTION_STR "A JSON-based project & build tool"
+#define VER_FILE_VERSION VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH, VERSION_BUILD
+#define VER_FILE_VERSION_STR STRINGIZE(VERSION_MAJOR) "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_PATCH) "." STRINGIZE(VERSION_BUILD)
+
+#define VER_PRODUCTNAME_STR "Chalet"
+#define VER_PRODUCT_VERSION VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH
+#define VER_PRODUCT_VERSION_STR STRINGIZE(VERSION_MAJOR) "." STRINGIZE(VERSION_MINOR) "." STRINGIZE(VERSION_PATCH)
+#define VER_ORIGINAL_FILENAME_STR "chalet.exe"
+#define VER_INTERNAL_NAME_STR VER_ORIGINAL_FILENAME_STR
+#define VER_COPYRIGHT_STR "\xa9 2022 Cosmic Road Interactive, LLC"
+
+#ifdef _DEBUG
+	#define VER_VER_DEBUG VS_FF_DEBUG
+#else
+	#define VER_VER_DEBUG 0
+#endif
+
+#define VER_FILEOS VOS_NT_WINDOWS32
+#define VER_FILEFLAGS VER_VER_DEBUG
+#define VER_FILETYPE VFT_APP
+
+/*****************************************************************************/
+// Declare the location of the manifest & icon
+//
 #if defined(_DEBUG) || defined(DEBUG)
 WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
 #endif
@@ -18,7 +68,7 @@ WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
 WIN32_ICON_MAIN ICON "platform/windows/chalet.ico"
 
 /*****************************************************************************/
-// Version Info
+// Declare Version Info
 //
 1 VERSIONINFO
 	FILEVERSION			VER_FILE_VERSION

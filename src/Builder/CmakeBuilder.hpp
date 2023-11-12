@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_CMAKE_BUILDER_HPP
-#define CHALET_CMAKE_BUILDER_HPP
+#pragma once
 
 namespace chalet
 {
@@ -46,10 +45,8 @@ private:
 
 	std::string m_outputLocation;
 
-	uint m_cmakeVersionMajorMinor = 0;
+	u32 m_cmakeVersionMajorMinor = 0;
 
 	bool m_quotedPaths = false;
 };
 }
-
-#endif // CHALET_CMAKE_BUILDER_HPP

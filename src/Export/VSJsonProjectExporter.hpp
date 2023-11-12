@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_VS_JSON_PROJECT_EXPORTER_HPP
-#define CHALET_VS_JSON_PROJECT_EXPORTER_HPP
+#pragma once
 
 #include "Export/IProjectExporter.hpp"
 
@@ -24,5 +23,3 @@ private:
 	//
 };
 }
-
-#endif // CHALET_VS_JSON_PROJECT_EXPORTER_HPP

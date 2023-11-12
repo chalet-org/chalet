@@ -3,16 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_ARCHIVE_FORMAT_HPP
-#define CHALET_ARCHIVE_FORMAT_HPP
+#pragma once
 
 namespace chalet
 {
-enum class ArchiveFormat : ushort
+enum class ArchiveFormat : u16
 {
 	Zip,
 	Tar,
 };
 }
-
-#endif // CHALET_ARCHIVE_FORMAT_HPP

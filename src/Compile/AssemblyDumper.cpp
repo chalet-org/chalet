@@ -7,7 +7,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -15,8 +15,8 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Commands.hpp"
-#include "Terminal/Environment.hpp"
+#include "System/Files.hpp"
+#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -126,7 +126,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 			continue;
 
 		if (inForced)
-			Commands::remove(asmFile);
+			Files::remove(asmFile);
 
 		const auto& source = group->sourceFile;
 		const auto& object = group->objectFile;

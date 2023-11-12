@@ -5,7 +5,7 @@
 
 #include "Compile/Linker/ILinker.hpp"
 
-#include "Compile/Environment/ICompileEnvironment.hpp"
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -35,7 +35,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 [[nodiscard]] Unique<ILinker> ILinker::make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject)
 {
 	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("ILinker:", static_cast<int>(inType), executable);
+	// LOG("ILinker:", static_cast<i32>(inType), executable);
 	const bool lld = String::equals("lld", executable);
 
 #if defined(CHALET_WIN32)
@@ -80,7 +80,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 
 	StringList ret;
 
-	uint versionMajorMinor = inState.toolchain.compilerCxx(inProject.language()).versionMajorMinor;
+	u32 versionMajorMinor = inState.toolchain.compilerCxx(inProject.language()).versionMajorMinor;
 	bool oldMinGW = inState.environment->isMingwGcc() && versionMajorMinor < 700;
 	if (!oldMinGW)
 	{

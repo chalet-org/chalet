@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROJECT_INITIALIZER_HPP
-#define CHALET_PROJECT_INITIALIZER_HPP
+#pragma once
 
 #include "Compile/CodeLanguage.hpp"
 
@@ -63,8 +62,6 @@ private:
 
 	std::string m_rootPath;
 
-	double m_stepTime = 0.0;
+	f64 m_stepTime = 0.0;
 };
 }
-
-#endif // CHALET_PROJECT_INITIALIZER_HPP

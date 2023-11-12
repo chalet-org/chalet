@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_PROCESS_BUILD_TARGET_HPP
-#define CHALET_PROCESS_BUILD_TARGET_HPP
+#pragma once
 
 #include "State/Target/IBuildTarget.hpp"
 
@@ -35,5 +34,3 @@ private:
 	std::string m_dependsOn;
 };
 }
-
-#endif // CHALET_SCRIPT_BUILD_TARGET_HPP

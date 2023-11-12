@@ -5,9 +5,10 @@
 
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/CompileToolchainController.hpp"
-#include "Compile/Environment/ICompileEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Platform/Platform.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -16,7 +17,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Commands.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -49,9 +50,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		config["name"] = fmt::format("{} / {}", architecture, configName);
 		config["intelliSenseMode"] = getIntellisenseMode(*state);
 
-		StringList defines{
-			"_WIN32"
-		};
+		StringList defines = Platform::getDefaultPlatformDefines();
 		StringList includePath{
 			"${env.INCLUDE}",
 		};
@@ -69,7 +68,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (project.usesPrecompiledHeader())
 				{
 					auto path = project.precompiledHeader();
-					if (Commands::pathExists(path))
+					if (Files::pathExists(path))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
@@ -81,7 +80,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					if (path.back() == '/')
 						path.pop_back();
 
-					if (Commands::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)) || String::equals(path, state->paths.objDir()))
+					if (Files::pathExists(path) || String::equals(path, state->paths.intermediateDir(project)) || String::equals(path, state->paths.objDir()))
 					{
 						path = fmt::format("${{workspaceRoot}}/{}", path);
 					}
@@ -176,21 +175,13 @@ std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) c
 		linux-gcc-arm
 	*/
 
-	std::string platform{ "windows" };
+	auto platform = Platform::platform();
 	if (inState.environment->isGcc())
 	{
 		platform = "linux";
 	}
 
-	std::string toolchain{ "msvc" };
-	if (inState.environment->isWindowsClang())
-	{
-		toolchain = "clang";
-	}
-	else if (inState.environment->isGcc())
-	{
-		toolchain = "gcc";
-	}
+	auto toolchain = inState.environment->getCompilerAliasForVisualStudio();
 
 	auto arch = Arch::toVSArch(inState.info.targetArchitecture());
 

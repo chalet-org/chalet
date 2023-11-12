@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILE_STRATEGY_NINJA_HPP
-#define CHALET_COMPILE_STRATEGY_NINJA_HPP
+#pragma once
 
 #include "Compile/Generator/NinjaGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
@@ -33,5 +32,3 @@ private:
 	bool m_cacheNeedsUpdate = false;
 };
 }
-
-#endif // CHALET_COMPILE_STRATEGY_NINJA_HPP

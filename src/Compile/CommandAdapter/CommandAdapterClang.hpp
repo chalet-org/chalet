@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMMAND_ADAPTER_CLANG_HPP
-#define CHALET_COMMAND_ADAPTER_CLANG_HPP
+#pragma once
 
 namespace chalet
 {
@@ -50,9 +49,7 @@ private:
 	// std::string m_pchTarget;
 	// std::string m_pchMinusLocation;
 
-	uint m_versionMajorMinor = 0;
-	uint m_versionPatch = 0;
+	u32 m_versionMajorMinor = 0;
+	u32 m_versionPatch = 0;
 };
 }
-
-#endif // CHALET_COMMAND_ADAPTER_CLANG_HPP

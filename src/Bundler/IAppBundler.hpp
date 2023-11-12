@@ -3,10 +3,9 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_IAPP_BUNDLER_HPP
-#define CHALET_IAPP_BUNDLER_HPP
+#pragma once
 
-#include "Builder/BinaryDependencyMap.hpp"
+#include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 
 namespace chalet
 {
@@ -45,5 +44,3 @@ private:
 	std::string m_cwd;
 };
 }
-
-#endif // CHALET_IAPP_BUNDLER_HPP

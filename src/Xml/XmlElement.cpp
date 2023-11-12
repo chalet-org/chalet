@@ -18,7 +18,7 @@ XmlElement::XmlElement(std::string_view inName) :
 }
 
 /*****************************************************************************/
-std::string XmlElement::dump(const uint inIndent, const int inIndentSize, const char inIndentChar) const
+std::string XmlElement::dump(const u32 inIndent, const i32 inIndentSize, const char inIndentChar) const
 {
 	std::string ret;
 
@@ -50,11 +50,11 @@ std::string XmlElement::dump(const uint inIndent, const int inIndentSize, const 
 		}
 		else
 		{
-			uint nextIndent = 0;
+			u32 nextIndent = 0;
 			if (inIndentSize >= 0)
 			{
 				childNodes += '\n';
-				nextIndent = inIndent + static_cast<uint>(inIndentSize);
+				nextIndent = inIndent + static_cast<u32>(inIndentSize);
 			}
 
 			auto& nodeList = std::get<XmlElementList>(*m_child);
@@ -232,7 +232,7 @@ std::string XmlElement::getValidKey(const std::string_view& inKey) const
 {
 	std::string ret;
 
-	for (std::size_t i = 0; i < inKey.size(); ++i)
+	for (size_t i = 0; i < inKey.size(); ++i)
 	{
 		char c = inKey[i];
 		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
@@ -261,7 +261,7 @@ std::string XmlElement::getValidAttributeValue(const std::string_view& inValue) 
 {
 	std::string ret;
 
-	for (std::size_t i = 0; i < inValue.size(); ++i)
+	for (size_t i = 0; i < inValue.size(); ++i)
 	{
 		char c = inValue[i];
 		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
@@ -299,7 +299,7 @@ std::string XmlElement::getValidValue(const std::string_view& inValue) const
 {
 	std::string ret;
 
-	for (std::size_t i = 0; i < inValue.size(); ++i)
+	for (size_t i = 0; i < inValue.size(); ++i)
 	{
 		char c = inValue[i];
 		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))

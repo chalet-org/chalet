@@ -3,14 +3,13 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SIG_NUM_HPP
-#define CHALET_SIG_NUM_HPP
+#pragma once
 
 #include <signal.h>
 
 namespace chalet
 {
-enum class SigNum : int
+enum class SigNum : i32
 {
 	HangUp = 1,
 	Interrupt = SIGINT,
@@ -30,5 +29,3 @@ enum class SigNum : int
 	Terminate = SIGTERM,
 };
 }
-
-#endif // CHALET_SIG_NUM_HPP

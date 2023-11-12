@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SOURCE_FILE_GROUP_HPP
-#define CHALET_SOURCE_FILE_GROUP_HPP
+#pragma once
 
 #include "Compile/CodeLanguage.hpp"
 #include "State/SourceDataType.hpp"
@@ -24,5 +23,3 @@ struct SourceFileGroup
 
 using SourceFileGroupList = std::vector<Unique<SourceFileGroup>>;
 }
-
-#endif // CHALET_SOURCE_FILE_GROUP_HPP

@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_SCRIPT_RUNNER_HPP
-#define CHALET_SCRIPT_RUNNER_HPP
+#pragma once
 
 #include "State/ScriptType.hpp"
 
@@ -27,5 +26,3 @@ private:
 	const std::string& m_inputFile;
 };
 }
-
-#endif // CHALET_SCRIPT_RUNNER_HPP

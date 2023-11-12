@@ -3,8 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#ifndef CHALET_COMPILER_INFO_HPP
-#define CHALET_COMPILER_INFO_HPP
+#pragma once
 
 namespace chalet
 {
@@ -18,9 +17,7 @@ struct CompilerInfo
 	std::string libDir;
 	std::string includeDir;
 
-	uint versionMajorMinor;
-	uint versionPatch;
+	u32 versionMajorMinor;
+	u32 versionPatch;
 };
 }
-
-#endif // CHALET_COMPILER_INFO_HPP
