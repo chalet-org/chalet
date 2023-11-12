@@ -83,6 +83,5 @@ enum class Color : u16
 	BrightMagentaInverted = 795,
 	BrightCyanInverted = 796,
 	BrightWhiteInverted = 797,
-
 };
 }

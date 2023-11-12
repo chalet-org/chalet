@@ -60,6 +60,7 @@ struct Diagnostic
 	static void clearErrors();
 	static void throwCriticalError();
 	static void usePaddedErrors();
+	static void cancelEllipsis();
 
 private:
 	static void showInfo(std::string&& inMessage, const bool inLineBreak);

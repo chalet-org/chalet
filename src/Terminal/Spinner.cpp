@@ -26,17 +26,16 @@ struct
 void signalHandler(i32 inSignal)
 {
 	std::lock_guard<std::mutex> lock(state.mutex);
-
 	if (state.spinner)
 	{
-		state.spinner->stop();
+		if (state.spinner->cancel())
+		{
+			UNUSED(inSignal);
+			std::string output = Output::getAnsiStyle(Output::theme().reset);
+			std::cout.write(output.data(), output.size());
 
-		UNUSED(inSignal);
-		std::string output{ "\b\b  \b\b" };
-		output += Output::getAnsiStyle(Output::theme().reset);
-		std::cout.write(output.data(), output.size());
-
-		// std::exit(1);
+			// std::exit(1);
+		}
 	}
 }
 }
@@ -44,11 +43,12 @@ void signalHandler(i32 inSignal)
 /*****************************************************************************/
 Spinner::~Spinner()
 {
-	SignalHandler::remove(SIGINT, signalHandler);
-	SignalHandler::remove(SIGTERM, signalHandler);
-	SignalHandler::remove(SIGABRT, signalHandler);
-
-	destroy();
+	if (stop())
+	{
+		// SignalHandler::remove(SIGINT, signalHandler);
+		// SignalHandler::remove(SIGTERM, signalHandler);
+		// SignalHandler::remove(SIGABRT, signalHandler);
+	}
 }
 
 /*****************************************************************************/
@@ -63,30 +63,37 @@ void Spinner::start()
 		state.initialized = true;
 	}
 
-	destroy();
+	stop();
 
 	m_thread = std::make_unique<std::thread>(&Spinner::doRegularEllipsis, this);
 	state.spinner = this;
 }
 
 /*****************************************************************************/
-bool Spinner::stop()
+bool Spinner::cancel()
 {
-	return destroy();
+	m_cancelled = true;
+	return stop();
 }
 
 /*****************************************************************************/
-bool Spinner::destroy()
+bool Spinner::stop()
 {
-	bool result = m_running;
+	bool result = false;
 
 	if (m_thread != nullptr)
 	{
-		m_running = false;
-		m_thread->join();
-		m_thread.reset();
+		if (m_thread->joinable())
+		{
+			m_running = false;
+			m_thread->join();
+			m_thread.reset();
+			result = true;
+		}
 	}
-	state.spinner = nullptr;
+
+	if (result && state.spinner == this)
+		state.spinner = nullptr;
 
 	return result;
 }
@@ -96,7 +103,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 {
 	auto start = clock::now();
 	std::chrono::milliseconds ms{ 0 };
-	auto step = std::chrono::milliseconds(1);
+	auto step = std::chrono::milliseconds(3);
 	while (ms < inLength)
 	{
 		auto finish = clock::now();
@@ -160,9 +167,12 @@ void Spinner::doRegularEllipsis()
 			i = 0;
 	}
 
-	std::string output{ "\b\b\b\b\b ... " };
-	std::cout.write(output.data(), output.size());
-	std::cout.flush();
+	if (!m_cancelled)
+	{
+		// std::lock_guard<std::mutex> lock(state.mutex);
+		std::string output{ "\b\b\b\b\b ... " };
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
+	}
 }
-
 }

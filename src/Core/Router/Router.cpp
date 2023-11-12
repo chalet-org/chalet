@@ -347,6 +347,11 @@ bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
 
+	Diagnostic::infoEllipsis("Testing");
+
+	Commands::sleep(5);
+	Diagnostic::printDone();
+
 	return true;
 }
 #endif

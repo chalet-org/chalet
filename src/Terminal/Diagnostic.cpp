@@ -47,15 +47,37 @@ struct
 } state;
 
 /*****************************************************************************/
-bool destroySpinnerThread()
+bool destroySpinnerThread(const bool cancel = false)
 {
 	if (state.spinnerThread == nullptr)
 		return false;
 
-	bool result = state.spinnerThread->stop();
-	state.spinnerThread.reset();
+	bool result = false;
+	if (cancel)
+		state.spinnerThread->cancel();
+	else
+		state.spinnerThread->stop();
+
+	if (result)
+		state.spinnerThread.reset();
+
 	return result;
 }
+}
+
+/*****************************************************************************/
+void Diagnostic::cancelEllipsis()
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	if (destroySpinnerThread(true))
+	{
+		std::cout.write(reset.data(), reset.size());
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -67,22 +89,23 @@ void Diagnostic::printDone(const std::string& inTime)
 	const auto color = Output::getAnsiStyle(Output::theme().flair);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
-
-	auto word{ "done" };
-	std::string output;
-	if (!inTime.empty() && Output::showBenchmarks())
+	if (destroySpinnerThread())
 	{
-		output = fmt::format("{}{} ({}){}", color, word, inTime, reset);
-	}
-	else
-	{
-		output = fmt::format("{}{}{}", color, word, reset);
-	}
+		auto word{ "done" };
+		std::string output;
+		if (!inTime.empty() && Output::showBenchmarks())
+		{
+			output = fmt::format("{}{} ({}){}", color, word, inTime, reset);
+		}
+		else
+		{
+			output = fmt::format("{}{}{}", color, word, reset);
+		}
 
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -94,14 +117,15 @@ void Diagnostic::printValid(const bool inValid)
 	const auto color = Output::getAnsiStyle(inValid ? Output::theme().flair : Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
+	if (destroySpinnerThread())
+	{
+		auto valid = inValid ? "valid" : "FAILED";
+		auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
 
-	auto valid = inValid ? "valid" : "FAILED";
-	auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
-
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -113,22 +137,23 @@ void Diagnostic::printFound(const bool inFound, const std::string& inTime)
 	const auto color = Output::getAnsiStyle(inFound ? Output::theme().flair : Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
-
-	auto words = inFound ? "found" : "not found";
-	std::string output;
-	if (!inTime.empty() && Output::showBenchmarks())
+	if (destroySpinnerThread())
 	{
-		output = fmt::format("{}{}{} ({}){}", reset, color, words, inTime, reset);
-	}
-	else
-	{
-		output = fmt::format("{}{}{}{}", reset, color, words, reset);
-	}
+		auto words = inFound ? "found" : "not found";
+		std::string output;
+		if (!inTime.empty() && Output::showBenchmarks())
+		{
+			output = fmt::format("{}{}{} ({}){}", reset, color, words, inTime, reset);
+		}
+		else
+		{
+			output = fmt::format("{}{}{}{}", reset, color, words, reset);
+		}
 
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
