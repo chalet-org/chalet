@@ -415,8 +415,13 @@ std::string BuildPaths::getPrecompiledHeaderTarget(const SourceTarget& inProject
 /*****************************************************************************/
 std::string BuildPaths::getPrecompiledHeaderObject(const std::string& inTarget) const
 {
-	auto base = String::getPathFolderBaseName(inTarget);
-	return m_state.environment->getObjectFile(base);
+	if (m_state.environment->isMsvc())
+	{
+		auto base = String::getPathFolderBaseName(inTarget);
+		return base + ".obj";
+	}
+
+	return inTarget;
 }
 
 /*****************************************************************************/
