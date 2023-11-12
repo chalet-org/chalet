@@ -49,7 +49,7 @@ struct
 bool destroySpinnerThread(const bool cancel = false)
 {
 	if (!Spinner::instanceCreated())
-		return false;
+		return true;
 
 	bool result = false;
 	if (cancel)
@@ -198,6 +198,9 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 }
 
 /*****************************************************************************/
+// Note: don't use the Spinner here - would slow down operations like the
+//   batch validator
+//
 void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 {
 	if (Output::quietNonBuild())
@@ -219,20 +222,9 @@ void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 	}
 	else
 	{
-		if (Output::showCommands())
-		{
-			output = fmt::format("{} ... {}", color, reset);
-			std::cout.write(output.data(), output.size());
-			std::cout.flush();
-		}
-		else
-		{
-			std::cout.write(color.data(), color.size());
-			std::cout.flush();
-
-			destroySpinnerThread();
-			Spinner::instance().start();
-		}
+		output = fmt::format("{} ... {}", color, reset);
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
 	}
 }
 

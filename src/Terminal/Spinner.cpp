@@ -143,10 +143,10 @@ void Spinner::doRegularEllipsis()
 		std::string output{ " ... " };
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
-	}
 
-	if (Shell::isContinuousIntegrationServer())
-		return;
+		if (Shell::isContinuousIntegrationServer())
+			return;
+	}
 
 	constexpr auto frameTime = std::chrono::milliseconds(250);
 
