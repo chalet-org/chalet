@@ -75,7 +75,7 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	m_homeDirectory = Environment::getUserDirectory();
 	m_currentDirectory = fmt::format("$PROJECT_DIR$/{}", debugState.paths.currentBuildDir());
 	m_projectName = String::getPathBaseName(debugState.inputs.workingDirectory());
-	m_chaletPath = getResolvedPath(debugState.tools.chalet());
+	m_chaletPath = getResolvedPath(debugState.inputs.appPath());
 	m_projectId = Uuid::v5(debugState.workspace.metadata().name(), m_clionNamespaceGuid).str();
 	m_settingsFile = debugState.inputs.settingsFile();
 	m_inputFile = debugState.inputs.inputFile();

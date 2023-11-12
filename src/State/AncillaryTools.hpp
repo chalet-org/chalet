@@ -16,8 +16,6 @@ struct AncillaryTools
 {
 	AncillaryTools();
 
-	bool resolveOwnExecutable(const std::string& inAppPath);
-
 	bool validate(const std::string& inHomeDirectory);
 
 	void fetchBashVersion();
@@ -27,8 +25,6 @@ struct AncillaryTools
 
 	std::string getApplePlatformSdk(const std::string& inKey) const;
 	void addApplePlatformSdk(const std::string& inKey, std::string&& inValue);
-
-	const std::string& chalet() const noexcept;
 
 	const std::string& bash() const noexcept;
 	void setBash(std::string&& inValue) noexcept;

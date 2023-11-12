@@ -595,9 +595,6 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
-	if (!m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
-		return false;
-
 	auto workingDirectory = Commands::getWorkingDirectory();
 	Path::unix(workingDirectory, true);
 

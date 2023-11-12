@@ -121,7 +121,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	const auto& workingDirectory = firstState.inputs.workingDirectory();
 	const auto& inputFile = firstState.inputs.inputFile();
 
-	// const auto& chaletPath = firstState.tools.chalet();
+	// const auto& chaletPath = firstState.inputs.appPath();
 
 	auto rootBuildFile = fmt::format("{}/{}", workingDirectory, inputFile);
 	if (!Commands::pathExists(rootBuildFile))

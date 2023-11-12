@@ -290,13 +290,7 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 
 		if (Output::getUserInputYesNo("Run 'chalet configure'?", true))
 		{
-			auto appPath = m_inputs.appPath();
-			if (!Commands::pathExists(appPath))
-			{
-				appPath = Commands::which("chalet");
-			}
-
-			if (!Commands::subprocess({ std::move(appPath), "configure" }, m_rootPath))
+			if (!Commands::subprocess({ m_inputs.appPath(), "configure" }, m_rootPath))
 				return false;
 		}
 		else

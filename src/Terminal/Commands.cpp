@@ -1125,12 +1125,12 @@ std::string Commands::isolateVersion(const std::string& outString)
 }
 
 /*****************************************************************************/
-std::string Commands::which(const std::string& inExecutable)
+std::string Commands::which(const std::string& inExecutable, const bool inOutput)
 {
 	if (inExecutable.empty())
 		return std::string();
 
-	if (Output::showCommands())
+	if (inOutput && Output::showCommands())
 		Output::printCommand(fmt::format("executable search: {}", inExecutable));
 
 	std::string result;

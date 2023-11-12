@@ -9,6 +9,7 @@
 
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -17,7 +18,6 @@
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "Terminal/Commands.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -102,7 +102,7 @@ bool SubChaletBuilder::run()
 
 	const auto oldPath = Environment::getPath();
 
-	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.tools.chalet()), false);
+	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.inputs.appPath()), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
@@ -165,7 +165,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inTarget, const 
 /*****************************************************************************/
 StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const std::string& inTarget, const bool hasSettings) const
 {
-	StringList cmd{ getQuotedPath(m_state.tools.chalet()) };
+	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
 	auto proximateOutput = Commands::getProximatePath(m_state.inputs.outputDirectory(), inLocation);

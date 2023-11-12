@@ -147,7 +147,7 @@ std::string TargetExportAdapter::getCommand() const
 	{
 		const auto& validationTarget = static_cast<const ValidationBuildTarget&>(m_target);
 		StringList validateCmd{
-			fmt::format("\"{}\"", m_state.tools.chalet()),
+			fmt::format("\"{}\"", m_state.inputs.appPath()),
 			"validate",
 			fmt::format("\"{}\"", validationTarget.schema()),
 		};

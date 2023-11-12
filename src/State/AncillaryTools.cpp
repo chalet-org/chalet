@@ -22,22 +22,6 @@ AncillaryTools::AncillaryTools() :
 }
 
 /*****************************************************************************/
-bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
-{
-	if (m_chalet.empty())
-	{
-		m_chalet = inAppPath;
-
-		if (!Commands::pathExists(m_chalet))
-		{
-			m_chalet = Commands::which("chalet");
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool AncillaryTools::validate(const std::string& inHomeDirectory)
 {
 	fetchBashVersion();
@@ -137,12 +121,6 @@ std::string AncillaryTools::getApplePlatformSdk(const std::string& inKey) const
 void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
 {
 	m_applePlatformSdk[inKey] = std::move(inValue);
-}
-
-/*****************************************************************************/
-const std::string& AncillaryTools::chalet() const noexcept
-{
-	return m_chalet;
 }
 
 /*****************************************************************************/

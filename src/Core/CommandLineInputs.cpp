@@ -10,8 +10,8 @@
 #include "Process/Environment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Version.hpp"
 #include "Json/JsonValues.hpp"
@@ -502,6 +502,8 @@ void CommandLineInputs::setAppPath(const std::string& inValue) noexcept
 		return;
 
 	m_appPath = inValue;
+	if (!Commands::pathExists(m_appPath))
+		m_appPath = Commands::which(m_appPath, false);
 }
 
 /*****************************************************************************/

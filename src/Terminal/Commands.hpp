@@ -87,7 +87,7 @@ std::string subprocessOutput(const StringList& inCmd, std::string inWorkingDirec
 bool subprocessNinjaBuild(const StringList& inCmd, std::string inCwd = std::string());
 
 std::string isolateVersion(const std::string& outString);
-std::string which(const std::string& inExecutable);
+std::string which(const std::string& inExecutable, const bool inOutput = true);
 
 #if defined(CHALET_WIN32)
 const std::string& getCygPath();
