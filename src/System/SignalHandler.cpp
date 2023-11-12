@@ -192,7 +192,7 @@ void SignalHandler::exitHandler(const i32 inSignal)
 	std::cout.flush();
 
 	errStream.write(reset.data(), reset.size());
-	errStream.write("\n", 1);
+	// errStream.write("\n", 1);
 	errStream.flush();
 
 	state.exitCalled = true;
