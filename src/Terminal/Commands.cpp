@@ -1130,11 +1130,11 @@ std::string Commands::which(const std::string& inExecutable)
 	if (inExecutable.empty())
 		return std::string();
 
-	std::string result;
-#if defined(CHALET_WIN32)
 	if (Output::showCommands())
 		Output::printCommand(fmt::format("executable search: {}", inExecutable));
 
+	std::string result;
+#if defined(CHALET_WIN32)
 	LPSTR lpFilePart;
 	char filename[MAX_PATH];
 
@@ -1151,43 +1151,36 @@ std::string Commands::which(const std::string& inExecutable)
 		String::replaceAll(result, '\\', '/');
 	}
 #else
+	if (!Commands::pathExists(inExecutable)) // checks working dir
 	{
-		if (!Commands::pathExists(inExecutable)) // checks working dir
+		auto path = Environment::getPath();
+		auto home = Environment::getUserDirectory();
+		size_t start = 0;
+		while (start != std::string::npos)
 		{
-			auto path = Environment::getPath();
-			auto home = Environment::getUserDirectory();
-			size_t start = 0;
-			while (start != std::string::npos)
+			auto end = path.find(':', start);
+			auto tmp = path.substr(start, end - start);
+			while (tmp.back() == '/')
+				tmp.pop_back();
+
+			if (String::startsWith("~/", tmp))
 			{
-				auto end = path.find(':', start);
-				auto tmp = path.substr(start, end - start);
-				while (tmp.back() == '/')
-					tmp.pop_back();
-
-				if (String::startsWith("~/", tmp))
-				{
-					tmp = fmt::format("{}/{}", home, tmp.substr(2));
-				}
-
-				result = fmt::format("{}/{}", tmp, inExecutable);
-				if (Commands::pathExists(result))
-					break;
-
-				result.clear();
-				start = end;
-				if (start != std::string::npos)
-					++start;
+				tmp = fmt::format("{}/{}", home, tmp.substr(2));
 			}
+
+			result = fmt::format("{}/{}", tmp, inExecutable);
+			if (Commands::pathExists(result))
+				break;
+
+			result.clear();
+			start = end;
+			if (start != std::string::npos)
+				++start;
 		}
 	}
 
-	// which (original method) has issues when PATH is changed inside chalet - doesn't seem to inherit the env
-	// StringList command;
-	// command = { "which", inExecutable };
-
-	// result = Commands::subprocessOutput(command);
-	// if (String::contains("which: no", result))
-	// 	return std::string();
+	// Note: cli "which" (original method) has issues when PATH is changed inside chalet
+	//   doesn't seem to inherit the env
 
 	if (result.empty())
 		return result;

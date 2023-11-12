@@ -31,9 +31,9 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -595,6 +595,9 @@ void BuildState::initializeCache()
 /*****************************************************************************/
 bool BuildState::validateState()
 {
+	if (!m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
+		return false;
+
 	auto workingDirectory = Commands::getWorkingDirectory();
 	Path::unix(workingDirectory, true);
 
@@ -795,8 +798,6 @@ bool BuildState::validateState()
 	}
 
 	UNUSED(hasSubChaletTargets);
-	if (!m_impl->centralState.tools.resolveOwnExecutable(inputs.appPath()))
-		return false;
 
 	// Note: Ignored in the clean command so targets with external dependency paths don't get validated
 	//

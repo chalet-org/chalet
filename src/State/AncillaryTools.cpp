@@ -6,8 +6,8 @@
 #include "State/AncillaryTools.hpp"
 
 #include "Bundler/MacosCodeSignOptions.hpp"
-#include "Terminal/Commands.hpp"
 #include "Process/Environment.hpp"
+#include "Terminal/Commands.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -31,8 +31,6 @@ bool AncillaryTools::resolveOwnExecutable(const std::string& inAppPath)
 		if (!Commands::pathExists(m_chalet))
 		{
 			m_chalet = Commands::which("chalet");
-			if (!Commands::pathExists(m_chalet))
-				m_chalet.clear();
 		}
 	}
 
