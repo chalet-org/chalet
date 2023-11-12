@@ -12,7 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 
 namespace chalet
 {

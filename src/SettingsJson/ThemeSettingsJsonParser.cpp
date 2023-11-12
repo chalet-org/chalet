@@ -6,7 +6,7 @@
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 
 #include "Core/CommandLineInputs.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"

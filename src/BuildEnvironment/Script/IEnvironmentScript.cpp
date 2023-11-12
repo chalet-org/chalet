@@ -5,7 +5,7 @@
 
 #include "BuildEnvironment/Script/IEnvironmentScript.hpp"
 
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 
 namespace chalet
 {

@@ -10,7 +10,7 @@
 #include "Cache/SourceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Terminal/Unicode.hpp"

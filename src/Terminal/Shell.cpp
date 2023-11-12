@@ -7,7 +7,7 @@
 
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 

@@ -15,7 +15,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"

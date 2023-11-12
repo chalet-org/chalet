@@ -20,7 +20,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

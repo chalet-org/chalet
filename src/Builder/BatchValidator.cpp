@@ -8,7 +8,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"

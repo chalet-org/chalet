@@ -6,7 +6,7 @@
 #include "State/Target/SubChaletTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

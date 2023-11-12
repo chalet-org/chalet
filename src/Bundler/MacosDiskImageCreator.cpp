@@ -13,7 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/MacosDiskImageTarget.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 

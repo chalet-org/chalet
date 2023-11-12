@@ -22,7 +22,7 @@
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/List.hpp"

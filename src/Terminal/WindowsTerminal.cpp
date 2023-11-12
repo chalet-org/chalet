@@ -6,7 +6,7 @@
 #include "Terminal/WindowsTerminal.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 

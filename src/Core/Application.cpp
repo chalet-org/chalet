@@ -10,7 +10,7 @@
 #include "Core/Arguments/CommandLine.hpp"
 #include "SettingsJson/ThemeSettingsJsonParser.hpp"
 #include "System/SignalHandler.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 
 #if defined(CHALET_WIN32)

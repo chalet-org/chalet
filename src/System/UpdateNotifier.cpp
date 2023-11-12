@@ -9,7 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/CentralState.hpp"
 #include "System/DefinesVersion.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Version.hpp"
 

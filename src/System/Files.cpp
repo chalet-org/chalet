@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 
 #include <array>
 #include <chrono>
@@ -11,8 +11,9 @@
 #include <sys/stat.h>
 #include <thread>
 
-#include "Libraries/WindowsApi.hpp"
 #if defined(CHALET_WIN32)
+	#include "Libraries/WindowsApi.hpp"
+
 	#include <shellapi.h>
 	#include <winuser.h>
 #endif

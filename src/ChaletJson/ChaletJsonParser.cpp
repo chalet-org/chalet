@@ -19,7 +19,7 @@
 #include "State/Dependency/ExternalDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

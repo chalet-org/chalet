@@ -10,7 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/PlatformDependencyManager.hpp"
 #include "State/BuildState.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 

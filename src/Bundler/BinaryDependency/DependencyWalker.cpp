@@ -6,7 +6,7 @@
 #include "Bundler/BinaryDependency/DependencyWalker.hpp"
 
 #include "Libraries/WindowsApi.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"

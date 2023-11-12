@@ -15,7 +15,7 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/List.hpp"

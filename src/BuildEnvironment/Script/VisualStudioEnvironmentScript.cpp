@@ -11,7 +11,7 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"

@@ -5,7 +5,7 @@
 
 #include "Cache/SourceCache.hpp"
 
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/EnumIterator.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"

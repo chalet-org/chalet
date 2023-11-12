@@ -8,7 +8,7 @@
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 

@@ -11,7 +11,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"

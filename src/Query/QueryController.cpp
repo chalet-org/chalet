@@ -17,7 +17,7 @@
 #include "State/CompilerTools.hpp"
 #include "System/DefinesVersion.hpp"
 #include "Terminal/ColorTheme.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"

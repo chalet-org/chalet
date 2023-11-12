@@ -5,7 +5,7 @@
 
 #include "Xml/XmlFile.hpp"
 
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet

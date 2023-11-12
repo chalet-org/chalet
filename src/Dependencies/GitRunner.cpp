@@ -12,7 +12,7 @@
 #include "Libraries/Json.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/GitDependency.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"

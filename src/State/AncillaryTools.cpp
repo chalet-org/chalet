@@ -7,7 +7,7 @@
 
 #include "Bundler/MacosCodeSignOptions.hpp"
 #include "Process/Environment.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"

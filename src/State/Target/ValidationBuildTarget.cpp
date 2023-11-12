@@ -6,7 +6,7 @@
 #include "State/Target/ValidationBuildTarget.hpp"
 
 #include "State/BuildState.hpp"
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"

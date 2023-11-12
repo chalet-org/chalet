@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Terminal/Files.hpp"
+#include "System/Files.hpp"
 
 namespace chalet
 {
