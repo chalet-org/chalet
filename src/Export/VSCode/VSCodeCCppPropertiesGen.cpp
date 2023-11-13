@@ -112,7 +112,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	}
 
 	if (!hasProjects)
-		return false;
+		return true;
 
 	if (!cStandard.empty())
 		config["cStandard"] = std::move(cStandard);
