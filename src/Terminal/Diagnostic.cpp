@@ -27,7 +27,7 @@ struct Error
 };
 
 /*****************************************************************************/
-static struct : std::exception
+struct : std::exception
 {
 	const char* what() const throw() final
 	{
@@ -36,10 +36,9 @@ static struct : std::exception
 } kCriticalError;
 
 /*****************************************************************************/
-static struct
+struct
 {
 	std::vector<Error> errorList;
-	Unique<Spinner> spinnerThread;
 
 	bool padded = false;
 	bool exceptionThrown = false;
@@ -47,15 +46,39 @@ static struct
 } state;
 
 /*****************************************************************************/
-bool destroySpinnerThread()
+bool destroySpinnerThread(const bool cancel = false)
 {
-	if (state.spinnerThread == nullptr)
-		return false;
+	if (!Spinner::instanceCreated())
+		return true;
 
-	bool result = state.spinnerThread->stop();
-	state.spinnerThread.reset();
+	bool result = false;
+	if (cancel)
+		result = Spinner::instance().cancel();
+	else
+		result = Spinner::instance().stop();
+
+	if (result)
+	{
+		Spinner::destroyInstance();
+	}
+
 	return result;
 }
+}
+
+/*****************************************************************************/
+void Diagnostic::cancelEllipsis()
+{
+	if (Output::quietNonBuild())
+		return;
+
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	if (destroySpinnerThread(true))
+	{
+		std::cout.write(reset.data(), reset.size());
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -67,22 +90,23 @@ void Diagnostic::printDone(const std::string& inTime)
 	const auto color = Output::getAnsiStyle(Output::theme().flair);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
-
-	auto word{ "done" };
-	std::string output;
-	if (!inTime.empty() && Output::showBenchmarks())
+	if (destroySpinnerThread())
 	{
-		output = fmt::format("{}{} ({}){}", color, word, inTime, reset);
-	}
-	else
-	{
-		output = fmt::format("{}{}{}", color, word, reset);
-	}
+		auto word{ "done" };
+		std::string output;
+		if (!inTime.empty() && Output::showBenchmarks())
+		{
+			output = fmt::format("{}{} ({}){}", color, word, inTime, reset);
+		}
+		else
+		{
+			output = fmt::format("{}{}{}", color, word, reset);
+		}
 
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -94,14 +118,15 @@ void Diagnostic::printValid(const bool inValid)
 	const auto color = Output::getAnsiStyle(inValid ? Output::theme().flair : Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
+	if (destroySpinnerThread())
+	{
+		auto valid = inValid ? "valid" : "FAILED";
+		auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
 
-	auto valid = inValid ? "valid" : "FAILED";
-	auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
-
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -113,22 +138,23 @@ void Diagnostic::printFound(const bool inFound, const std::string& inTime)
 	const auto color = Output::getAnsiStyle(inFound ? Output::theme().flair : Output::theme().error);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	destroySpinnerThread();
-
-	auto words = inFound ? "found" : "not found";
-	std::string output;
-	if (!inTime.empty() && Output::showBenchmarks())
+	if (destroySpinnerThread())
 	{
-		output = fmt::format("{}{}{} ({}){}", reset, color, words, inTime, reset);
-	}
-	else
-	{
-		output = fmt::format("{}{}{}{}", reset, color, words, reset);
-	}
+		auto words = inFound ? "found" : "not found";
+		std::string output;
+		if (!inTime.empty() && Output::showBenchmarks())
+		{
+			output = fmt::format("{}{}{} ({}){}", reset, color, words, inTime, reset);
+		}
+		else
+		{
+			output = fmt::format("{}{}{}{}", reset, color, words, reset);
+		}
 
-	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
-	std::cout.flush();
+		std::cout.write(output.data(), output.size());
+		std::cout.put('\n');
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
@@ -166,8 +192,7 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 			std::cout.flush();
 
 			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
+			Spinner::instance().start();
 		}
 	}
 }
@@ -194,21 +219,9 @@ void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 	}
 	else
 	{
-		if (Output::showCommands())
-		{
-			output = fmt::format("{} ... {}", color, reset);
-			std::cout.write(output.data(), output.size());
-			std::cout.flush();
-		}
-		else
-		{
-			std::cout.write(color.data(), color.size());
-			std::cout.flush();
-
-			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
-		}
+		output = fmt::format("{} -- {}", color, reset);
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
 	}
 }
 
@@ -245,8 +258,7 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 			std::cout.flush();
 
 			destroySpinnerThread();
-			state.spinnerThread = std::make_unique<Spinner>();
-			state.spinnerThread->start();
+			Spinner::instance().start();
 		}
 	}
 }
@@ -281,7 +293,7 @@ void Diagnostic::fatalErrorFromException(const char* inError)
 void Diagnostic::customAssertion(const std::string_view inExpression, const std::string_view inMessage, const std::string_view inFile, const uint inLineNumber)
 {
 	auto& errStream = Output::getErrStream();
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		errStream.put('\n');
 		errStream.flush();
@@ -323,7 +335,7 @@ bool Diagnostic::assertionFailure() noexcept
 void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 {
 	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -339,7 +351,7 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 {
 	auto& out = inType == Type::Error ? Output::getErrStream() : std::cout;
-	if (state.spinnerThread != nullptr)
+	if (Spinner::instanceCreated())
 	{
 		out << std::endl;
 		destroySpinnerThread();
@@ -360,7 +372,7 @@ void Diagnostic::printErrors(const bool inForceStdOut)
 	if (state.errorList.empty())
 		return;
 
-	if (state.spinnerThread != nullptr && !destroySpinnerThread())
+	if (Spinner::instanceCreated() && !destroySpinnerThread())
 	{
 		if (!Environment::isSubprocess())
 		{

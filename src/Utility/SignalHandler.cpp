@@ -135,6 +135,11 @@ void SignalHandler::start(Callback inOnError)
 /*****************************************************************************/
 void SignalHandler::exitHandler(const int inSignal)
 {
+	if (state.onErrorCallback != nullptr)
+		state.onErrorCallback();
+
+	Diagnostic::cancelEllipsis();
+
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
 
@@ -183,14 +188,11 @@ void SignalHandler::exitHandler(const int inSignal)
 		}
 	}
 
-	if (state.onErrorCallback != nullptr)
-		state.onErrorCallback();
-
 	std::cout.write(reset.data(), reset.size());
 	std::cout.flush();
 
 	errStream.write(reset.data(), reset.size());
-	errStream.write("\n", 1);
+	// errStream.write("\n", 1);
 	errStream.flush();
 
 	state.exitCalled = true;

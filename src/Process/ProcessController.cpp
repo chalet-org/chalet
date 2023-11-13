@@ -23,8 +23,7 @@ namespace chalet
 {
 namespace
 {
-static std::mutex s_mutex;
-static struct
+struct
 {
 	std::vector<Process*> procesess;
 	int lastErrorCode = 0;
@@ -34,14 +33,12 @@ static struct
 /*****************************************************************************/
 void addProcess(Process& inProcess)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
 	state.procesess.push_back(&inProcess);
 }
 
 /*****************************************************************************/
 void removeProcess(const Process& inProcess)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
 	while (it != state.procesess.begin())
 	{
@@ -63,7 +60,6 @@ void removeProcess(const Process& inProcess)
 /*****************************************************************************/
 void subProcessSignalHandler(int inSignal)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
 	while (it != state.procesess.begin())
 	{
@@ -89,8 +85,6 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 	{
 		if (!state.initialized)
 		{
-			std::lock_guard<std::mutex> lock(s_mutex);
-
 			SignalHandler::add(SIGINT, subProcessSignalHandler);
 			SignalHandler::add(SIGTERM, subProcessSignalHandler);
 			SignalHandler::add(SIGABRT, subProcessSignalHandler);
