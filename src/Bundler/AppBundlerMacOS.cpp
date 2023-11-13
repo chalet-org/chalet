@@ -307,7 +307,9 @@ bool AppBundlerMacOS::createBundleIcon()
 		return true;
 
 	Timer timer;
-	Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
+
+	if (!Output::showCommands())
+		Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
 
 	m_iconBaseName = String::getPathBaseName(icon);
 
@@ -322,7 +324,8 @@ bool AppBundlerMacOS::createBundleIcon()
 	}
 	else if (String::endsWith(".icns", icon))
 	{
-		if (!Commands::copy(icon, m_resourcePath))
+		auto copyFunc = Output::showCommands() ? Commands::copy : Commands::copySilent;
+		if (!copyFunc(icon, m_resourcePath, fs::copy_options::overwrite_existing))
 			return false;
 	}
 	else
@@ -334,7 +337,8 @@ bool AppBundlerMacOS::createBundleIcon()
 		}
 	}
 
-	Diagnostic::printDone(timer.asString());
+	if (!Output::showCommands())
+		Diagnostic::printDone(timer.asString());
 #endif
 
 	return true;
@@ -347,6 +351,9 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	const auto& icon = m_bundle.macosBundleIcon();
 	if (icon.empty())
 		return true;
+
+	if (String::endsWith(".icns", icon))
+		return createBundleIcon();
 
 	Timer timer;
 
@@ -601,7 +608,7 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 {
 #if defined(CHALET_MACOS)
 	if (inOutFile.empty())
-		return false;
+		return true;
 
 	std::string tmpPlist = fmt::format("{}.json", inOutFile);
 	std::string entitlements = m_bundle.macosBundleEntitlementsPropertyList();
