@@ -561,7 +561,7 @@ bool AppBundlerMacOS::createBundleIcon()
 	}
 	else if (String::endsWith(".icns", icon))
 	{
-		auto copyFunc = Output::showComamnds() ? Commands::copy : Commands::copySilent;
+		auto copyFunc = Output::showCommands() ? Files::copy : Files::copySilent;
 		if (!copyFunc(icon, m_resourcePath, fs::copy_options::overwrite_existing))
 			return false;
 	}
