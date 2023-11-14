@@ -54,8 +54,16 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
 		return makeTool<LinkerVisualStudioClang>(result, inState, inProject);
 
+	// if (i32 result = linkerMatches("ld", inType == ToolchainType::MingwLLVM, "LLVM", false, false); result >= 0)
+	// 	return makeTool<LinkerGCC>(result, inState, inProject);
+
 	if (i32 result = linkerMatches("lld", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
-		return makeTool<LinkerLLVMClang>(result, inState, inProject);
+	{
+		if (result == 1)
+			return makeTool<LinkerLLVMClang>(result, inState, inProject);
+		else
+			Diagnostic::clearErrors();
+	}
 
 #elif defined(CHALET_MACOS)
 	if (i32 result = linkerMatches("ld", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
