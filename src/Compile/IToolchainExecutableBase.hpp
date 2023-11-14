@@ -19,6 +19,11 @@ struct IToolchainExecutableBase
 	virtual ~IToolchainExecutableBase() = default;
 
 protected:
+	static i32 executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType);
+
+	template <typename T>
+	[[nodiscard]] static Unique<T> makeTool(i32 result, const BuildState& inState, const SourceTarget& inProject);
+
 	static std::string getQuotedPath(const BuildState& inState, const std::string& inPath);
 
 	virtual std::string getQuotedPath(const std::string& inPath) const final;
@@ -33,3 +38,5 @@ private:
 	bool isNative() const noexcept;
 };
 }
+
+#include "Compile/IToolchainExecutableBase.inl"

@@ -21,6 +21,28 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 }
 
 /*****************************************************************************/
+i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType)
+{
+	const bool isExpected = String::equals(id, exec);
+	if (isExpected && (!onlyType || (onlyType && typeMatches)))
+	{
+		return 1;
+	}
+	else if (failTypeMismatch && (isExpected && !typeMatches))
+	{
+		Diagnostic::error("Expected '{}' as the {} for {}, but found a different toolchain type.", id, toolId, label);
+		return 0;
+	}
+	else if (typeMatches)
+	{
+		Diagnostic::error("Expected '{}' as the {} for {}, but found '{}'", id, toolId, label, exec);
+		return 0;
+	}
+
+	return -1;
+}
+
+/*****************************************************************************/
 std::string IToolchainExecutableBase::getQuotedPath(const BuildState& inState, const std::string& inPath)
 {
 	if (inState.toolchain.strategy() == StrategyType::Native)

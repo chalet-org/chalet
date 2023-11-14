@@ -34,39 +34,54 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 /*****************************************************************************/
 [[nodiscard]] Unique<ILinker> ILinker::make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject)
 {
-	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("ILinker:", static_cast<i32>(inType), executable);
-	const bool lld = String::equals("lld", executable);
+	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
+	// LOG("ILinker:", static_cast<i32>(inType), exec, inExecutable);
+
+	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
+		return executableMatches(exec, "linker", id, typeMatches, label, failTypeMismatch, onlyType);
+	};
+
+	// The goal here is to not only return the correct linker,
+	//   but validate the linker with the toolchain type
 
 #if defined(CHALET_WIN32)
-	if (String::equals("link", executable))
-		return std::make_unique<LinkerVisualStudioLINK>(inState, inProject);
-	else if (inType == ToolchainType::IntelClassic && String::equals("xilink", executable))
-		return std::make_unique<LinkerIntelClassicLINK>(inState, inProject);
-	else
+	if (i32 result = linkerMatches("link", inType == ToolchainType::VisualStudio, "Visual Studio", false, false); result >= 0)
+		return makeTool<LinkerVisualStudioLINK>(result, inState, inProject);
+
+	if (i32 result = linkerMatches("xilink", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
+		return makeTool<LinkerIntelClassicLINK>(result, inState, inProject);
+
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		return makeTool<LinkerVisualStudioClang>(result, inState, inProject);
+
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		return makeTool<LinkerLLVMClang>(result, inState, inProject);
+
 #elif defined(CHALET_MACOS)
-	if (inType == ToolchainType::AppleLLVM)
-		return std::make_unique<LinkerAppleClang>(inState, inProject);
-	else if (inType == ToolchainType::IntelClassic && String::equals("xild", executable))
-		return std::make_unique<LinkerIntelClassicGCC>(inState, inProject);
-	else
-#endif
-		if (lld && inType == ToolchainType::IntelLLVM)
-		return std::make_unique<LinkerIntelClang>(inState, inProject);
+	if (i32 result = linkerMatches("ld", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+		return makeTool<LinkerAppleClang>(result, inState, inProject);
 
-#if defined(CHALET_WIN32)
-	if (lld && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
-		return std::make_unique<LinkerVisualStudioClang>(inState, inProject);
+	if (i32 result = linkerMatches("xild", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
+		return makeTool<LinkerIntelClassicGCC>(result, inState, inProject);
 
-	if (lld && inType == ToolchainType::MingwLLVM)
-		return std::make_unique<LinkerLLVMClang>(inState, inProject);
-#else
-	if (lld || inType == ToolchainType::LLVM)
-		return std::make_unique<LinkerLLVMClang>(inState, inProject);
 #endif
 
-	if (inType == ToolchainType::Emscripten)
-		return std::make_unique<LinkerEmscripten>(inState, inProject);
+#if !defined(CHALET_WIN32)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+		return makeTool<LinkerLLVMClang>(result, inState, inProject);
+#endif
+
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::IntelLLVM, "Intel LLVM"); result >= 0)
+		return makeTool<LinkerIntelClang>(result, inState, inProject);
+
+	if (String::equals("lld", exec))
+	{
+		Diagnostic::error("Found 'lld' in a toolchain other than LLVM");
+		return nullptr;
+	}
+
+	if (i32 result = linkerMatches("wasm-ld", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
+		return makeTool<LinkerEmscripten>(result, inState, inProject);
 
 	return std::make_unique<LinkerGCC>(inState, inProject);
 }
@@ -238,5 +253,4 @@ StringList ILinker::getWin32CoreLibraryLinks() const
 {
 	return ILinker::getWin32CoreLibraryLinks(m_state, m_project);
 }
-
 }

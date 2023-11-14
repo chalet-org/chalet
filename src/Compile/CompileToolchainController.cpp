@@ -43,6 +43,9 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 	archiver = IArchiver::make(type, inState.toolchain.archiver(), inState, m_project);
 
 	linker = ILinker::make(type, inState.toolchain.linker(), inState, m_project);
+	if (linker == nullptr)
+		return false;
+
 	if (!linker->initialize())
 		return false;
 
