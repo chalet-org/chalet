@@ -12,6 +12,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/SourceOutputs.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
@@ -93,6 +94,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	m_toolchain = nullptr;
 	m_project = nullptr;
+
+	return true;
 }
 
 /*****************************************************************************/

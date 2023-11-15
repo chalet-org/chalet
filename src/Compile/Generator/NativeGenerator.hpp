@@ -13,6 +13,7 @@
 namespace chalet
 {
 class BuildState;
+struct SourceOutputs;
 
 class NativeGenerator
 {
