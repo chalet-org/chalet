@@ -10,6 +10,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
