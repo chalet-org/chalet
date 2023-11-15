@@ -28,17 +28,23 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ICompilerWinResource:", static_cast<i32>(inType), exec);
 
-	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
-		constexpr bool onlyType = true;
-		return executableMatches(exec, "windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
+		return executableMatches(exec, "Windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType);
 	};
 
 #if defined(CHALET_WIN32)
-	if (i32 result = compilerMatches("rc", inType == ToolchainType::VisualStudio, "Visual Studio"); result >= 0)
+	if (i32 result = compilerMatches("rc", inType == ToolchainType::VisualStudio || inType == ToolchainType::IntelLLVM, "Visual Studio"); result >= 0)
 		return makeTool<CompilerWinResourceVisualStudioRC>(result, inState, inProject);
 #endif
 
-	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::IntelLLVM, "LLVM"); result >= 0)
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
+
+	// Allow llvm-rc or windres for MinGW LLVM
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::MingwLLVM, "LLVM", false, false); result >= 0)
+		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
+
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
 		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
 
 	if (String::equals("llvm-rc", exec))

@@ -52,7 +52,10 @@ IArchiver::IArchiver(const BuildState& inState, const SourceTarget& inProject) :
 
 #endif
 
-	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::VisualStudioLLVM || inType == ToolchainType::LLVM || inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		return makeTool<ArchiverLLVMAR>(result, inState, inProject);
+
+	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
 		return makeTool<ArchiverLLVMAR>(result, inState, inProject);
 
 	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::Emscripten, "Emscripten", false); result >= 0)

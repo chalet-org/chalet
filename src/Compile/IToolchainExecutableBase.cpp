@@ -34,7 +34,7 @@ i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const c
 		Diagnostic::error("Expected '{}' as the {} for {}, but found a different toolchain type.", id, toolId, label);
 		return 0;
 	}
-	else if (typeMatches)
+	else if (typeMatches && onlyType)
 	{
 		Diagnostic::error("Expected '{}' as the {} for {}, but found '{}'", id, toolId, label, exec);
 		return 0;
