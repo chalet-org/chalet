@@ -109,6 +109,12 @@ bool LinkerLLVMClang::addArchitecture(StringList& outArgList, const std::string&
 }
 
 /*****************************************************************************/
+void LinkerLLVMClang::addFuseLdOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+}
+
+/*****************************************************************************/
 void LinkerLLVMClang::addCppFilesystem(StringList& outArgList) const
 {
 	if (m_project.cppFilesystem())

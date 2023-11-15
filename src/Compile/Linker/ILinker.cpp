@@ -87,12 +87,6 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	if (i32 result = linkerMatches("wasm-ld", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
 		return makeTool<LinkerEmscripten>(result, inState, inProject);
 
-	if (String::equals("lld", exec))
-	{
-		Diagnostic::error("Found 'lld' in a toolchain other than LLVM");
-		return nullptr;
-	}
-
 	return std::make_unique<LinkerGCC>(inState, inProject);
 }
 

@@ -76,6 +76,7 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	if (!addExecutable(ret))
 		return ret;
 
+	addFuseLdOption(ret);
 	addSharedOption(ret);
 
 	if (m_state.environment->isMingw())
@@ -132,6 +133,7 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	if (!addExecutable(ret))
 		return ret;
 
+	addFuseLdOption(ret);
 	addExecutableOption(ret);
 	addPositionIndependentCodeOption(ret);
 	addStripSymbols(ret);
@@ -496,6 +498,20 @@ void LinkerGCC::addEntryPoint(StringList& outArgList) const
 	UNUSED(outArgList);
 
 	// MinGW: See addSubSystem
+}
+
+/*****************************************************************************/
+void LinkerGCC::addFuseLdOption(StringList& outArgList) const
+{
+	auto& linker = m_state.toolchain.linker();
+	if (linker.empty())
+		return;
+
+	const auto exec = String::toLowerCase(String::getPathBaseName(linker));
+	if (String::equals({ "bfd", "gold", "lld", "mold" }, exec))
+	{
+		List::addIfDoesNotExist(outArgList, fmt::format("-fuse-ld={}", exec));
+	}
 }
 
 /*****************************************************************************/
