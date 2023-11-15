@@ -56,6 +56,8 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
+			auto& objDir = m_state.paths.objDir();
+			auto intermediateDir = m_state.paths.intermediateDir(project);
 
 			if (cStandard.empty())
 				cStandard = project.cStandard();
@@ -78,7 +80,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Commands::pathExists(path) || String::equals(path, m_state.paths.intermediateDir(project)) || String::equals(path, m_state.paths.objDir()))
+				if (Commands::pathExists(path) || String::equals(intermediateDir, path) || String::equals(objDir, path))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
@@ -86,15 +88,15 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				List::addIfDoesNotExist(includePath, path);
 			}
 
+			if (String::equals(String::toLowerCase(project.executionCharset()), "utf-8"))
+			{
+				List::addIfDoesNotExist(defines, std::string("_UNICODE"));
+				List::addIfDoesNotExist(defines, std::string("UNICODE"));
+			}
+
 			for (const auto& define : project.defines())
 			{
 				List::addIfDoesNotExist(defines, define);
-			}
-
-			if (String::equals(String::toLowerCase(project.executionCharset()), "utf-8"))
-			{
-				List::addIfDoesNotExist(defines, std::string("UNICODE"));
-				List::addIfDoesNotExist(defines, std::string("_UNICODE"));
 			}
 
 #if defined(CHALET_MACOS)
@@ -113,6 +115,12 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	if (!hasProjects)
 		return true;
+
+	if (m_state.info.generateCompileCommands())
+	{
+		const auto& currentDir = m_state.paths.buildOutputDir();
+		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", currentDir);
+	}
 
 	if (!cStandard.empty())
 		config["cStandard"] = std::move(cStandard);
