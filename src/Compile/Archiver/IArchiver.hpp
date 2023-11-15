@@ -17,6 +17,8 @@ struct IArchiver : public IToolchainExecutableBase
 
 	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const = 0;
 
+	virtual bool initialize() final;
+
 protected:
 	virtual void addSourceObjects(StringList& outArgList, const StringList& sourceObjs) const final;
 };

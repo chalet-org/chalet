@@ -33,39 +33,86 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 /*****************************************************************************/
 [[nodiscard]] Unique<ICompilerCxx> ICompilerCxx::make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject)
 {
-	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
+	const auto exec = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
 	// LOG("ICompilerCxx:", static_cast<i32>(inType), executable);
-	const bool clang = String::equals(StringList{ "clang", "clang++" }, executable);
+
+	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+		constexpr bool onlyType = true;
+		return executableMatches(exec, "C compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	};
+
+	auto cppCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+		constexpr bool onlyType = true;
+		return executableMatches(exec, "C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	};
+
+	auto cxxCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+		constexpr bool onlyType = true;
+		return executableMatches(exec, "C/C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	};
 
 #if defined(CHALET_WIN32)
-	if (String::equals("cl", executable))
-		return std::make_unique<CompilerCxxVisualStudioCL>(inState, inProject);
-	else if (inType == ToolchainType::IntelClassic && String::equals("icl", executable))
-		return std::make_unique<CompilerCxxIntelClassicCL>(inState, inProject);
-	else
+	if (i32 result = cxxCompilerMatches("cl", inType == ToolchainType::VisualStudio, "Visual Studio"); result >= 0)
+		return makeTool<CompilerCxxVisualStudioCL>(result, inState, inProject);
+
+	if (i32 result = cxxCompilerMatches("icl", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
+		return makeTool<CompilerCxxIntelClassicCL>(result, inState, inProject);
+
+	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
+
+	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
+
+	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxClang>(result, inState, inProject);
+
+	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxClang>(result, inState, inProject);
+
 #elif defined(CHALET_MACOS)
-	if (clang && inType == ToolchainType::AppleLLVM)
-		return std::make_unique<CompilerCxxAppleClang>(inState, inProject);
-	else if (inType == ToolchainType::IntelClassic && String::equals(StringList{ "icc", "icpc" }, executable))
-		return std::make_unique<CompilerCxxIntelClassicGCC>(inState, inProject);
-	else
-#endif
-		if (clang && inType == ToolchainType::IntelLLVM)
-		return std::make_unique<CompilerCxxIntelClang>(inState, inProject);
+	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+		return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
-#if defined(CHALET_WIN32)
-	if (clang && (inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM))
-		return std::make_unique<CompilerCxxVisualStudioClang>(inState, inProject);
+	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+		return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
-	if (clang && inType == ToolchainType::MingwLLVM)
-		return std::make_unique<CompilerCxxClang>(inState, inProject);
-#else
-	if (clang && inType == ToolchainType::LLVM)
-		return std::make_unique<CompilerCxxClang>(inState, inProject);
+	if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::AppleLLVM, "Intel Classic"); result >= 0)
+		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
+
+	if (i32 result = cCompilerMatches("icc", inType == ToolchainType::AppleLLVM, "Intel Classic"); result >= 0)
+		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
+
 #endif
 
-	if (inType == ToolchainType::Emscripten)
-		return std::make_unique<CompilerCxxEmscripten>(inState, inProject);
+#if !defined(CHALET_WIN32)
+	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxClang>(result, inState, inProject);
+
+	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+		return makeTool<CompilerCxxClang>(result, inState, inProject);
+#endif
+
+	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+		return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
+
+	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+		return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
+
+	if (i32 result = cxxCompilerMatches("emcc", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
+		return makeTool<CompilerCxxEmscripten>(result, inState, inProject);
+
+	if (String::equals("clang++", exec))
+	{
+		Diagnostic::error("Found 'clang++' in a toolchain other than LLVM");
+		return nullptr;
+	}
+
+	if (String::equals("clang", exec))
+	{
+		Diagnostic::error("Found 'clang' in a toolchain other than LLVM");
+		return nullptr;
+	}
 
 	return std::make_unique<CompilerCxxGCC>(inState, inProject);
 }

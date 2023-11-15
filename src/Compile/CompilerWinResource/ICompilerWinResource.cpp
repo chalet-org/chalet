@@ -25,15 +25,27 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 /*****************************************************************************/
 [[nodiscard]] Unique<ICompilerWinResource> ICompilerWinResource::make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject)
 {
-	UNUSED(inType);
+	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
+	// LOG("ICompilerWinResource:", static_cast<i32>(inType), exec);
 
-	const auto executable = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
-	// LOG("ICompilerWinResource:", static_cast<i32>(inType), executable);
+	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+		constexpr bool onlyType = true;
+		return executableMatches(exec, "windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	};
 
-	if (String::equals("rc", executable))
-		return std::make_unique<CompilerWinResourceVisualStudioRC>(inState, inProject);
-	else if (String::equals("llvm-rc", executable))
-		return std::make_unique<CompilerWinResourceLLVMRC>(inState, inProject);
+#if defined(CHALET_WIN32)
+	if (i32 result = compilerMatches("rc", inType == ToolchainType::VisualStudio, "Visual Studio"); result >= 0)
+		return makeTool<CompilerWinResourceVisualStudioRC>(result, inState, inProject);
+#endif
+
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::IntelLLVM, "LLVM"); result >= 0)
+		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
+
+	if (String::equals("llvm-rc", exec))
+	{
+		Diagnostic::error("Found 'llvm-rc' in a toolchain other than LLVM");
+		return nullptr;
+	}
 
 	return std::make_unique<CompilerWinResourceGNUWindRes>(inState, inProject);
 }

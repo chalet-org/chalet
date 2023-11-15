@@ -37,7 +37,8 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ILinker:", static_cast<i32>(inType), exec, inExecutable);
 
-	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
+	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+		constexpr bool onlyType = true;
 		return executableMatches(exec, "linker", id, typeMatches, label, failTypeMismatch, onlyType);
 	};
 
@@ -45,7 +46,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	//   but validate the linker with the toolchain type
 
 #if defined(CHALET_WIN32)
-	if (i32 result = linkerMatches("link", inType == ToolchainType::VisualStudio, "Visual Studio", false, false); result >= 0)
+	if (i32 result = linkerMatches("link", inType == ToolchainType::VisualStudio, "Visual Studio"); result >= 0)
 		return makeTool<LinkerVisualStudioLINK>(result, inState, inProject);
 
 	if (i32 result = linkerMatches("xilink", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
@@ -66,22 +67,23 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 
 #endif
 
-#if !defined(CHALET_WIN32)
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
 		return makeTool<LinkerLLVMClang>(result, inState, inProject);
+
 #endif
 
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::IntelLLVM, "Intel LLVM"); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
 		return makeTool<LinkerIntelClang>(result, inState, inProject);
+
+	if (i32 result = linkerMatches("wasm-ld", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
+		return makeTool<LinkerEmscripten>(result, inState, inProject);
 
 	if (String::equals("lld", exec))
 	{
 		Diagnostic::error("Found 'lld' in a toolchain other than LLVM");
 		return nullptr;
 	}
-
-	if (i32 result = linkerMatches("wasm-ld", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
-		return makeTool<LinkerEmscripten>(result, inState, inProject);
 
 	return std::make_unique<LinkerGCC>(inState, inProject);
 }
