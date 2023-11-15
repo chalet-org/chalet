@@ -454,8 +454,16 @@ std::string String::getPathBaseName(const std::string& inPath)
 	if (inPath.empty())
 		return inPath;
 
-	const auto& pathNoExt = inPath.substr(0, inPath.find_last_of('.'));
-	return pathNoExt.substr(pathNoExt.find_last_of('/') + 1);
+	auto lastSlash = inPath.find_last_of('/');
+	if (lastSlash != std::string::npos)
+	{
+		auto pathFilename = inPath.substr(lastSlash + 1);
+		return pathFilename.substr(0, pathFilename.find_last_of('.'));
+	}
+	else
+	{
+		return inPath.substr(0, inPath.find_last_of('.'));
+	}
 }
 
 /*****************************************************************************/

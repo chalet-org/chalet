@@ -10,6 +10,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -18,6 +19,28 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 	m_state(inState),
 	m_project(inProject)
 {
+}
+
+/*****************************************************************************/
+i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType)
+{
+	const bool isExpected = String::equals(id, exec);
+	if (isExpected && (!onlyType || (onlyType && typeMatches)))
+	{
+		return 1;
+	}
+	else if (failTypeMismatch && (isExpected && !typeMatches))
+	{
+		Diagnostic::error("Expected '{}' as the {} for {}, but found a different toolchain type.", id, toolId, label);
+		return 0;
+	}
+	else if (typeMatches && onlyType)
+	{
+		Diagnostic::error("Expected '{}' as the {} for {}, but found '{}'", id, toolId, label, exec);
+		return 0;
+	}
+
+	return -1;
 }
 
 /*****************************************************************************/

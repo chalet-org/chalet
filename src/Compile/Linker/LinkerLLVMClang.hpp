@@ -26,6 +26,7 @@ protected:
 	virtual bool addArchitecture(StringList& outArgList, const std::string& inArch) const override;
 
 	// Linking (Misc)
+	virtual void addFuseLdOption(StringList& outArgList) const override;
 	virtual void addCppFilesystem(StringList& outArgList) const override;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const override;
 	virtual void startStaticLinkGroup(StringList& outArgList) const override;

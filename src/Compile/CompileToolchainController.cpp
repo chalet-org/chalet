@@ -28,7 +28,7 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 	if (!cxxPath.empty())
 	{
 		compilerCxx = ICompilerCxx::make(type, cxxPath, inState, m_project);
-		if (!compilerCxx->initialize())
+		if (compilerCxx == nullptr || !compilerCxx->initialize())
 			return false;
 	}
 
@@ -36,14 +36,16 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 	if (!windRes.empty())
 	{
 		compilerWindowsResource = ICompilerWinResource::make(type, windRes, inState, m_project);
-		if (!compilerWindowsResource->initialize())
+		if (compilerWindowsResource == nullptr || !compilerWindowsResource->initialize())
 			return false;
 	}
 
 	archiver = IArchiver::make(type, inState.toolchain.archiver(), inState, m_project);
+	if (archiver == nullptr || !archiver->initialize())
+		return false;
 
 	linker = ILinker::make(type, inState.toolchain.linker(), inState, m_project);
-	if (!linker->initialize())
+	if (linker == nullptr || !linker->initialize())
 		return false;
 
 	return true;
