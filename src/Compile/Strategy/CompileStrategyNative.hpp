@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include "Compile/Generator/NativeGenerator.hpp"
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
-#include "Compile/CommandPool.hpp"
 #include "State/Target/SourceTarget.hpp"
 
 namespace chalet
@@ -27,25 +27,8 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
-	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
-	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
-	CommandPool::CmdList getLinkCommand(const std::string& inTarget, const StringList& inObjects);
+	NativeGenerator m_nativeGenerator;
 
-	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
-	StringList getRcCompile(const std::string& source, const std::string& target) const;
-
-	mutable Unique<CommandPool> m_commandPool;
-
-	StringList m_fileCache;
-
-	const SourceTarget* m_project = nullptr;
-	CompileToolchainController* m_toolchain = nullptr;
-
-	Dictionary<CommandPool::JobList> m_targets;
-
-	bool m_generateDependencies = false;
-	bool m_pchChanged = false;
-	bool m_sourcesChanged = false;
 	bool m_initialized = false;
 };
 }
