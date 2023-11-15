@@ -507,7 +507,10 @@ void LinkerGCC::addFuseLdOption(StringList& outArgList) const
 	if (linker.empty())
 		return;
 
-	const auto exec = String::toLowerCase(String::getPathBaseName(linker));
+	auto exec = String::toLowerCase(String::getPathBaseName(linker));
+	if (String::startsWith("ld.", exec))
+		exec = String::getPathSuffix(exec);
+
 	if (String::equals({ "bfd", "gold", "lld", "mold" }, exec))
 	{
 		List::addIfDoesNotExist(outArgList, fmt::format("-fuse-ld={}", exec));
