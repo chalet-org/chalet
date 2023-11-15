@@ -727,12 +727,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
-	defs[Defs::TargetSourceCxxLinkerScript] = R"json({
-		"type": "string",
-		"description": "An LD linker script path (`.ld` file) to pass to the linker command.\nThis is only used by GCC / MinGW toolchains.",
-		"minLength": 1
-	})json"_ojson;
-
 	defs[Defs::TargetSourceCxxLinkerOptions] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "Addtional options per compiler type (via property conditions) to add during the linking step.",
@@ -1701,7 +1695,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "includeDirs", Defs::TargetSourceCxxIncludeDirs, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "inputCharset", Defs::TargetSourceCxxInputCharSet, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "libDirs", Defs::TargetSourceCxxLibDirs, kPatternConditions);
-		addPropertyAndPattern(sourceTargetCxx, "linkerScript", Defs::TargetSourceCxxLinkerScript, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "links", Defs::TargetSourceCxxLinks, kPatternConditions);
 
@@ -2032,7 +2025,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxDefines: return "target-source-cxx-defines";
 		case Defs::TargetSourceCxxIncludeDirs: return "target-source-cxx-includeDirs";
 		case Defs::TargetSourceCxxLibDirs: return "target-source-cxx-libDirs";
-		case Defs::TargetSourceCxxLinkerScript: return "target-source-cxx-linkerScript";
 		case Defs::TargetSourceCxxLinks: return "target-source-cxx-links";
 		case Defs::TargetSourceCxxMacOsFrameworkPaths: return "target-source-cxx-macosFrameworkPaths";
 		case Defs::TargetSourceCxxMacOsFrameworks: return "target-source-cxx-macosFrameworks";

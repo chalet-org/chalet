@@ -7,9 +7,9 @@
 #include "State/BuildState.hpp"
 #include "Json/JsonFile.hpp"
 //
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Platform.hpp"
@@ -20,8 +20,8 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Json/JsonKeys.hpp"
@@ -924,8 +924,6 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setWarningPreset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "warnings", status))
 				outTarget.addWarning(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerScript", status))
-				outTarget.setLinkerScript(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "inputCharset", status))
 				outTarget.setInputCharset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "executionCharset", status))

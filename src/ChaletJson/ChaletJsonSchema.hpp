@@ -112,7 +112,6 @@ class ChaletJsonSchema
 		TargetSourceCxxDefines,
 		TargetSourceCxxIncludeDirs,
 		TargetSourceCxxLibDirs,
-		TargetSourceCxxLinkerScript,
 		TargetSourceCxxLinkerOptions,
 		TargetSourceCxxLinks,
 		TargetSourceCxxMacOsFrameworkPaths, // deprecated

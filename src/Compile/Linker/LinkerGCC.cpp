@@ -46,7 +46,6 @@ void LinkerGCC::getCommandOptions(StringList& outArgList)
 	addLinkTimeOptimizations(outArgList);
 	addThreadModelLinks(outArgList);
 	addArchitecture(outArgList, std::string());
-	addLinkerScripts(outArgList);
 	addLibStdCppLinkerOption(outArgList);
 	addSanitizerOptions(outArgList);
 	addStaticCompilerLibraries(outArgList);
@@ -100,7 +99,6 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
-	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);
@@ -143,7 +141,6 @@ StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, 
 	addLinkTimeOptimizations(ret);
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
-	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);
@@ -389,17 +386,6 @@ void LinkerGCC::addThreadModelLinks(StringList& outArgList) const
 		{
 			List::addIfDoesNotExist(outArgList, "-pthread");
 		}
-	}
-}
-
-/*****************************************************************************/
-void LinkerGCC::addLinkerScripts(StringList& outArgList) const
-{
-	const auto& linkerScript = m_project.linkerScript();
-	if (!linkerScript.empty())
-	{
-		outArgList.emplace_back("-T");
-		outArgList.push_back(linkerScript);
 	}
 }
 

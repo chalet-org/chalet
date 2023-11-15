@@ -119,9 +119,6 @@ struct SourceTarget final : public IBuildTarget
 	void setPrecompiledHeader(std::string&& inValue) noexcept;
 	bool usesPrecompiledHeader() const noexcept;
 
-	const std::string& linkerScript() const noexcept;
-	void setLinkerScript(std::string&& inValue) noexcept;
-
 	const std::string& inputCharset() const noexcept;
 	void setInputCharset(std::string&& inValue) noexcept;
 
@@ -240,7 +237,6 @@ private:
 	std::string m_cStandard;
 	std::string m_cppStandard;
 	std::string m_precompiledHeader;
-	std::string m_linkerScript;
 	std::string m_inputCharset;
 	std::string m_executionCharset;
 	std::string m_windowsApplicationManifest;

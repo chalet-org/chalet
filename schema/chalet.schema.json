@@ -1353,9 +1353,6 @@
 				"libDirs": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
 				},
-				"linkerScript": {
-					"$ref": "#/definitions/target-source-cxx-linkerScript"
-				},
 				"linkerOptions": {
 					"$ref": "#/definitions/target-source-cxx-linkerOptions"
 				},
@@ -1462,9 +1459,6 @@
 				},
 				"^libDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-libDirs"
-				},
-				"^linkerScript\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-source-cxx-linkerScript"
 				},
 				"^linkerOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-linkerOptions"
@@ -1607,11 +1601,6 @@
 					}
 				}
 			]
-		},
-		"target-source-cxx-linkerScript": {
-			"type": "string",
-			"description": "An LD linker script path (`.ld` file) to pass to the linker command.\nThis is only used by GCC / MinGW toolchains.",
-			"minLength": 1
 		},
 		"target-source-cxx-linkerOptions": {
 			"description": "Addtional options per compiler type (via property conditions) to add during the linking step.",

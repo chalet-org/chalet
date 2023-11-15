@@ -190,12 +190,6 @@ void ILinker::addThreadModelLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void ILinker::addLinkerScripts(StringList& outArgList) const
-{
-	UNUSED(outArgList);
-}
-
-/*****************************************************************************/
 void ILinker::addLibStdCppLinkerOption(StringList& outArgList) const
 {
 	UNUSED(outArgList);

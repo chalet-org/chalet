@@ -52,14 +52,6 @@ void LinkerLLVMClang::addThreadModelLinks(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerLLVMClang::addLinkerScripts(StringList& outArgList) const
-{
-	// TODO: Check if there's a clang/apple clang version of this
-	// If using LD with "-fuse-ld=lld-link", you can pass linkerscripts supposedly
-	UNUSED(outArgList);
-}
-
-/*****************************************************************************/
 void LinkerLLVMClang::addProfileInformation(StringList& outArgList) const
 {
 	// TODO: isExecutable or !isSharedLibrary

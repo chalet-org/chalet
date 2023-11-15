@@ -45,7 +45,6 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 	addThreadModelLinks(ret);
 	addArchitecture(ret, std::string());
 
-	addLinkerScripts(ret);
 	addLibStdCppLinkerOption(ret);
 	addSanitizerOptions(ret);
 	addStaticCompilerLibraries(ret);

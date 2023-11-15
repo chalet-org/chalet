@@ -420,7 +420,7 @@ std::string SourceTarget::getHash() const
 	auto appleFrameworks = String::join(m_appleFrameworks);
 	auto configureFiles = String::join(m_configureFiles);
 
-	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_linkerScript, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
+	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
 
 	return Hash::string(hashable);
 }
@@ -887,17 +887,6 @@ void SourceTarget::setPrecompiledHeader(std::string&& inValue) noexcept
 bool SourceTarget::usesPrecompiledHeader() const noexcept
 {
 	return !m_precompiledHeader.empty();
-}
-
-/*****************************************************************************/
-const std::string& SourceTarget::linkerScript() const noexcept
-{
-	return m_linkerScript;
-}
-
-void SourceTarget::setLinkerScript(std::string&& inValue) noexcept
-{
-	m_linkerScript = std::move(inValue);
 }
 
 /*****************************************************************************/
