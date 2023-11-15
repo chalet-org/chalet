@@ -77,10 +77,10 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
 		return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
-	if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::AppleLLVM, "Intel Classic"); result >= 0)
+	if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
 		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
 
-	if (i32 result = cCompilerMatches("icc", inType == ToolchainType::AppleLLVM, "Intel Classic"); result >= 0)
+	if (i32 result = cCompilerMatches("icc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
 		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
 
 #endif
