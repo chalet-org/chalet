@@ -507,7 +507,10 @@ void LinkerGCC::addFuseLdOption(StringList& outArgList) const
 	if (linker.empty())
 		return;
 
-	auto exec = String::toLowerCase(String::getPathBaseName(linker));
+	auto exec = String::toLowerCase(String::getPathFilename(linker));
+	if (String::endsWith(".exe", exec))
+		exec = String::getPathFolderBaseName(exec);
+
 	if (String::startsWith("ld.", exec))
 		exec = String::getPathSuffix(exec);
 
