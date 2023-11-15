@@ -1540,12 +1540,21 @@ void BuildState::generateUniqueIdForState()
 		targetHash += target->getHash();
 	}
 
+	const auto& compilerCpp = toolchain.compilerCpp().path;
+	const auto& compilerC = toolchain.compilerC().path;
+	const auto& compilerWindowsResource = toolchain.compilerWindowsResource();
+	const auto& linker = toolchain.linker();
+	const auto& archiver = toolchain.archiver();
+	const auto& profiler = toolchain.profiler();
+	const auto& disassembler = toolchain.disassembler();
+	auto toolchainHash = Hash::getHashableString(compilerCpp, compilerC, compilerWindowsResource, linker, archiver, profiler, disassembler);
+
 	// Note: no targetHash
 	auto hashable = Hash::getHashableString(hostArch, targetArch, targetOsName, targetOsVersion, envId, buildConfig, showCmds, dumpAssembly);
 	m_cachePathId = Hash::string(hashable);
 
 	// Unique ID is used by the internal cache to determine if the build files need to be updated
-	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash);
+	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, toolchainHash);
 	m_uniqueId = Hash::string(hashableTargets);
 }
 }
