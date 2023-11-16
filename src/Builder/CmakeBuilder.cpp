@@ -668,12 +668,14 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		if (m_state.info.keepGoing())
 			ret.emplace_back("--keep-going");
 
+#if defined(CHALET_WIN32)
 		if (!m_state.toolchain.makeIsNMake())
 		{
 			ret.emplace_back("--no-builtin-rules");
 			ret.emplace_back("--no-builtin-variables");
 			ret.emplace_back("--no-print-directory");
 		}
+#endif
 	}
 
 	// LOG(String::join(ret));
