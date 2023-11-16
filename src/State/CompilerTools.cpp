@@ -197,7 +197,25 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 		std::string version;
 		if (inCache.versionRequriesUpdate(m_make, version))
 		{
-			version = Process::runOutput({ m_make, "--version" });
+#if defined(CHALET_WIN32)
+			if (makeIsNMake())
+			{
+				version = Process::runOutput({ m_make });
+
+				auto split = String::split(version, '\n');
+				if (split.size() > 1)
+					version = split[1];
+			}
+			else if (makeIsJom())
+			{
+				version = Process::runOutput({ m_make, "-version" });
+			}
+			else
+#endif
+			{
+				version = Process::runOutput({ m_make, "--version" });
+			}
+
 			version = Files::isolateVersion(version);
 		}
 
