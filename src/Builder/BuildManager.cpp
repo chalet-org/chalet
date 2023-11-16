@@ -439,6 +439,7 @@ std::string BuildManager::getBuildStrategyName() const
 #endif
 
 		case StrategyType::Makefile: {
+#if defined(CHALET_WIN32)
 			if (m_state.toolchain.makeIsNMake())
 			{
 				if (m_state.toolchain.makeIsJom())
@@ -447,6 +448,7 @@ std::string BuildManager::getBuildStrategyName() const
 					ret = "NMAKE";
 			}
 			else
+#endif
 			{
 				ret = "GNU Make";
 			}
