@@ -48,7 +48,7 @@ bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
 			return false;
 		}
 
-		outChanged.emplace_back(Files::getCanonicalPath(gitDependency.destination()));
+		outChanged.emplace_back(Commands::getCanonicalPath(gitDependency.destination()));
 		return true;
 	}
 	else
