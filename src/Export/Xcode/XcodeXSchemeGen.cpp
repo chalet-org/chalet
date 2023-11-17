@@ -108,6 +108,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 	auto& firstState = *m_states.front();
 	auto runArgumentMap = firstState.getCentralState().runArgumentMap();
 	Dictionary<OrderedDictionary<std::string>> envMap;
+	StringList noEnvs;
 
 	bool foundRelease = false;
 	for (auto& state : m_states)
@@ -152,6 +153,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		if (!frameworkPath.empty())
 			environment.emplace(env.getFrameworkPathKey(), frameworkPath);
 
+		StringList sourceTargets;
 		for (auto& target : state->targets)
 		{
 			auto& targetName = target->name();
@@ -163,40 +165,56 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 			if (configs.find(targetName) != configs.end() && isRelease)
 				configs[targetName] = configName;
+
+			if (target->isSources())
+				sourceTargets.emplace_back(target->name());
 		}
-	}
-
-	for (auto& target : firstState.distribution)
-	{
-		if (!target->isDistributionBundle())
-			continue;
-
-#if defined(CHALET_MACOS)
-		auto& bundle = static_cast<BundleTarget&>(*target);
-		if (bundle.isMacosAppBundle())
+		for (auto& target : state->distribution)
 		{
-			auto name = fmt::format("{}.app", bundle.name());
-			if (runArgumentMap.find(name) != runArgumentMap.end())
+			if (!target->isDistributionBundle())
 				continue;
 
-			BinaryDependencyMap dependencyMap(firstState);
-			AppBundlerMacOS bundler(firstState, bundle, dependencyMap);
-			if (bundler.initializeState())
+#if defined(CHALET_MACOS)
+			auto& bundle = static_cast<BundleTarget&>(*target);
+			if (bundle.isMacosAppBundle())
 			{
-				auto& mainExecutable = bundler.mainExecutable();
-				if (!mainExecutable.empty())
+				auto name = bundle.name();
+				if (List::contains(sourceTargets, name))
+					name += '_';
+
+				if (List::addIfDoesNotExist(targetNames, name))
 				{
-					if (runArgumentMap.find(mainExecutable) != runArgumentMap.end())
+					if (!String::equals(m_debugConfiguration, configName))
+						configs[name] = configName;
+				}
+
+				if (configs.find(name) != configs.end() && isRelease)
+					configs[name] = configName;
+
+				if (runArgumentMap.find(name) != runArgumentMap.end())
+					continue;
+
+				BinaryDependencyMap dependencyMap(firstState);
+				AppBundlerMacOS bundler(firstState, bundle, dependencyMap);
+				if (bundler.initializeState())
+				{
+					auto& mainExecutable = bundler.mainExecutable();
+					if (!mainExecutable.empty())
 					{
-						if (List::addIfDoesNotExist(targetNames, name))
+						if (runArgumentMap.find(mainExecutable) != runArgumentMap.end())
 						{
-							runArgumentMap[name] = runArgumentMap.at(mainExecutable);
+							if (List::addIfDoesNotExist(targetNames, name))
+							{
+								runArgumentMap[name] = runArgumentMap.at(mainExecutable);
+							}
 						}
 					}
 				}
+
+				List::addIfDoesNotExist(noEnvs, name);
 			}
-		}
 #endif
+		}
 	}
 
 	if (!foundRelease && !otherRelease.empty())
@@ -233,7 +251,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("shouldAutocreateTestPlan", getBoolString(true));
 		});
-		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &envMap, &target](XmlElement& node) {
+		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &envMap, &target, &noEnvs](XmlElement& node) {
 			node.addAttribute("buildConfiguration", launchConfig);
 			node.addAttribute("selectedDebuggerIdentifier", "Xcode.DebuggerFoundation.Debugger.LLDB");
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
@@ -270,7 +288,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 				});
 			}
 
-			if (envMap.find(launchConfig) != envMap.end())
+			if (!List::contains(noEnvs, target) && envMap.find(launchConfig) != envMap.end())
 			{
 				auto& environment = envMap.at(launchConfig);
 				node.addElement("EnvironmentVariables", [this, &environment](XmlElement& node2) {
