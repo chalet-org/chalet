@@ -26,5 +26,7 @@ private:
 	bool removeExternalDependencyDirectoryIfEmpty() const;
 
 	CentralState& m_centralState;
+
+	StringList m_depsChanged;
 };
 }
