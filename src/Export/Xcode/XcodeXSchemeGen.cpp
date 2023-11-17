@@ -7,10 +7,12 @@
 
 #include "Builder/BinaryDependencyMap.hpp"
 #include "Bundler/AppBundlerMacOS.hpp"
+#include "Core/DotEnvFileGenerator.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "Terminal/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Uuid.hpp"
@@ -105,6 +107,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 	auto& firstState = *m_states.front();
 	auto runArgumentMap = firstState.getCentralState().runArgumentMap();
+	Dictionary<OrderedDictionary<std::string>> envMap;
 
 	bool foundRelease = false;
 	for (auto& state : m_states)
@@ -120,6 +123,34 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		bool isRelease = String::equals(releaseConfig, configName);
 		if (isRelease)
 			foundRelease = true;
+
+		auto env = DotEnvFileGenerator::make(*state);
+		auto path = env.getRunPaths();
+		if (!path.empty())
+		{
+			path = fmt::format("{}{}{}", path, Environment::getPathSeparator(), env.getPath());
+		}
+		auto libraryPath = env.getLibraryPath();
+		if (!libraryPath.empty())
+		{
+			libraryPath = fmt::format("{}{}${}", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
+		}
+		auto frameworkPath = env.getFrameworkPath();
+		if (!frameworkPath.empty())
+		{
+			frameworkPath = fmt::format("{}{}${}", frameworkPath, Environment::getPathSeparator(), env.getFrameworkPathKey());
+		}
+
+		auto& environment = envMap[configName];
+
+		if (!path.empty())
+			environment.emplace(Environment::getPathKey(), path);
+
+		if (!libraryPath.empty())
+			environment.emplace(env.getLibraryPathKey(), libraryPath);
+
+		if (!frameworkPath.empty())
+			environment.emplace(env.getFrameworkPathKey(), frameworkPath);
 
 		for (auto& target : state->targets)
 		{
@@ -144,7 +175,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto& bundle = static_cast<BundleTarget&>(*target);
 		if (bundle.isMacosAppBundle())
 		{
-			auto& name = bundle.name();
+			auto name = fmt::format("{}.app", bundle.name());
 			if (runArgumentMap.find(name) != runArgumentMap.end())
 				continue;
 
@@ -202,7 +233,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("shouldAutocreateTestPlan", getBoolString(true));
 		});
-		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &target](XmlElement& node) {
+		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &envMap, &target](XmlElement& node) {
 			node.addAttribute("buildConfiguration", launchConfig);
 			node.addAttribute("selectedDebuggerIdentifier", "Xcode.DebuggerFoundation.Debugger.LLDB");
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
@@ -224,6 +255,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 					node3.addAttribute("ReferencedContainer", fmt::format("container:{}", m_xcodeProj));
 				});
 			});
+
 			if (runArgumentMap.find(target) != runArgumentMap.end())
 			{
 				auto arguments = String::split(runArgumentMap.at(target));
@@ -233,6 +265,24 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 						node2.addElement("CommandLineArgument", [&arg](XmlElement& node3) {
 							node3.addAttribute("argument", arg);
 							node3.addAttribute("isEnabled", "YES");
+						});
+					}
+				});
+			}
+
+			if (envMap.find(launchConfig) != envMap.end())
+			{
+				auto& environment = envMap.at(launchConfig);
+				node.addElement("EnvironmentVariables", [this, &environment](XmlElement& node2) {
+					for (const auto& it : environment)
+					{
+						auto& key = it.first;
+						auto& value = it.second;
+
+						node2.addElement("EnvironmentVariable", [this, &key, &value](XmlElement& node3) {
+							node3.addAttribute("key", key);
+							node3.addAttribute("value", value);
+							node3.addAttribute("isEnabled", getBoolString(true));
 						});
 					}
 				});
