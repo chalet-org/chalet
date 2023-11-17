@@ -231,10 +231,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				auto& bundle = static_cast<BundleTarget&>(*target);
 				if (bundle.isMacosAppBundle())
 				{
-					auto& name = bundle.name();
+					auto name = fmt::format("{}.app", bundle.name());
 					if (groups.find(name) == groups.end())
 					{
-						auto bundleDirectory = fmt::format("{}/{}", m_exportPath, name);
+						auto bundleDirectory = fmt::format("{}/{}", m_exportPath, bundle.name());
 
 						groups.emplace(name, TargetGroup{});
 						groups[name].kind = TargetGroupKind::AppBundle;
@@ -245,8 +245,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						if (!icon.empty())
 							groups[name].children.emplace_back(icon);
 
-						groups[name].children.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
-						groups[name].resources.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
+						bool hasXcassets = icon.empty() || (!icon.empty() && !String::endsWith(".icns", icon));
+						if (hasXcassets)
+						{
+							groups[name].children.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
+							groups[name].resources.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
+						}
 
 						bool hasEntitlements = bundle.willHaveMacosEntitlementsPlist();
 						if (hasEntitlements)
@@ -390,6 +394,14 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 			else
 			{
+				for (auto& file : pbxGroup.children)
+				{
+					auto name = getSourceWithSuffix(file, target);
+					auto key = getHashWithLabel(fmt::format("{} in Resources", name));
+					node[key]["isa"] = section;
+					node[key]["fileRef"] = getHashedJsonValue(name);
+				}
+
 				if (pbxGroup.kind == TargetGroupKind::AppBundle)
 				{
 					for (auto& file : pbxGroup.dependencies)
@@ -399,14 +411,14 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						node[key]["isa"] = section;
 						node[key]["fileRef"] = getHashedJsonValue(file);
 					}
-				}
 
-				for (auto& file : pbxGroup.children)
-				{
-					auto name = getSourceWithSuffix(file, target);
-					auto key = getHashWithLabel(fmt::format("{} in Resources", name));
-					node[key]["isa"] = section;
-					node[key]["fileRef"] = getHashedJsonValue(name);
+					/*for (auto& file : pbxGroup.dependencies)
+					{
+						auto name = getSourceWithSuffix(file, target);
+						auto key = getHashWithLabel(fmt::format("{} in Embed Libraries", name));
+						node[key]["isa"] = section;
+						node[key]["fileRef"] = getHashedJsonValue(file);
+					}*/
 				}
 			}
 		}
@@ -569,6 +581,21 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					node[key]["files"].push_back(getHashWithLabel(fmt::format("{} in CopyFiles", name)));
 				}
 				node[key]["runOnlyForDeploymentPostprocessing"] = 0;
+
+				// libraries that are built outside of the project
+				/*{
+					auto key = getSectionKeyForTarget("Embed Libraries", target);
+					node[key]["isa"] = section;
+					node[key]["buildActionMask"] = kBuildActionMask;
+					node[key]["dstPath"] = "";
+					node[key]["dstSubfolderSpec"] = DstSubfolderSpec::Executables;
+					for (auto& file : pbxGroup.dependencies)
+					{
+						auto name = getSourceWithSuffix(file, target);
+						node[key]["files"].push_back(getHashWithLabel(fmt::format("{} in Embed Libraries", name)));
+					}
+					node[key]["runOnlyForDeploymentPostprocessing"] = 0;
+				}*/
 			}
 		}
 	}
@@ -635,7 +662,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		{
 			auto key = getSectionKeyForTarget(section, target);
 			node[key]["isa"] = section;
-			node[key]["target"] = getTargetHashWithLabel(target);
+			node[key]["target"] = getTargetHashWithLabel(target, pbxGroup.kind == TargetGroupKind::AppBundle);
 			node[key]["targetProxy"] = getSectionKeyForTarget("PBXContainerItemProxy", target);
 		}
 	}
@@ -655,7 +682,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				// TODO: Frameworks
 				auto sources = getSectionKeyForTarget("Sources", target);
 				auto resources = getSectionKeyForTarget("Resources", target);
-				auto key = getTargetHashWithLabel(target);
+				auto key = getTargetHashWithLabel(target, isAppBundle);
+
 				node[key]["isa"] = section;
 				node[key]["buildConfigurationList"] = getHashWithLabel(getBuildConfigurationListLabel(target, ListType::NativeProject));
 				node[key]["buildPhases"] = Json::array();
@@ -680,6 +708,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				{
 					auto copyFiles = getSectionKeyForTarget("CopyFiles", target);
 					node[key]["buildPhases"].push_back(copyFiles);
+
+					// auto embedLibraries = getSectionKeyForTarget("Embed Libraries", target);
+					// node[key]["buildPhases"].push_back(embedLibraries);
 				}
 			}
 		}
@@ -721,7 +752,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		node[key]["targets"] = Json::array();
 		for (const auto& [target, pbxGroup] : groups)
 		{
-			node[key]["targets"].push_back(getTargetHashWithLabel(target));
+			node[key]["targets"].push_back(getTargetHashWithLabel(target, pbxGroup.kind == TargetGroupKind::AppBundle));
 		}
 	}
 
@@ -879,7 +910,11 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			{
 				if (target->isDistributionBundle())
 				{
-					auto hash = getTargetConfigurationHash(configName, target->name());
+					auto name = target->name();
+					if (groups.find(fmt::format("{}.app", name)) != groups.end())
+						name = fmt::format("{}.app", name);
+
+					auto hash = getDistTargetConfigurationHash(configName, name);
 					auto key = getHashWithLabel(hash, configName);
 					node[key]["isa"] = section;
 					node[key]["buildSettings"] = getAppBundleBuildSettings(*state, static_cast<const BundleTarget&>(*target));
@@ -917,8 +952,16 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			StringList configurations;
 			for (auto& [configName, _] : configToTargets)
 			{
-				auto hash = getTargetConfigurationHash(configName, target);
-				configurations.emplace_back(getHashWithLabel(hash, configName));
+				if (pbxGroup.kind == TargetGroupKind::AppBundle)
+				{
+					auto hash = getDistTargetConfigurationHash(configName, target);
+					configurations.emplace_back(getHashWithLabel(hash, configName));
+				}
+				else
+				{
+					auto hash = getTargetConfigurationHash(configName, target);
+					configurations.emplace_back(getHashWithLabel(hash, configName));
+				}
 			}
 
 			auto type = pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle ? ListType::NativeProject : ListType::AggregateTarget;
@@ -983,6 +1026,12 @@ Uuid XcodePBXProjGen::getTargetHash(const std::string& inTarget) const
 }
 
 /*****************************************************************************/
+Uuid XcodePBXProjGen::getDistTargetHash(const std::string& inTarget) const
+{
+	return Uuid::v5(fmt::format("{}_DIST_TARGET", inTarget), m_xcodeNamespaceGuid);
+}
+
+/*****************************************************************************/
 Uuid XcodePBXProjGen::getConfigurationHash(const std::string& inConfig) const
 {
 	return Uuid::v5(fmt::format("{}_PROJECT", inConfig), m_xcodeNamespaceGuid);
@@ -991,13 +1040,22 @@ Uuid XcodePBXProjGen::getConfigurationHash(const std::string& inConfig) const
 /*****************************************************************************/
 Uuid XcodePBXProjGen::getTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const
 {
-	return Uuid::v5(fmt::format("{}-{}", inConfig, inTarget), m_xcodeNamespaceGuid);
+	return Uuid::v5(fmt::format("{}-{}_TARGET", inConfig, inTarget), m_xcodeNamespaceGuid);
 }
 
 /*****************************************************************************/
-std::string XcodePBXProjGen::getTargetHashWithLabel(const std::string& inTarget) const
+Uuid XcodePBXProjGen::getDistTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const
 {
-	return getHashWithLabel(getTargetHash(inTarget), inTarget);
+	return Uuid::v5(fmt::format("{}-{}_DIST_TARGET", inConfig, inTarget), m_xcodeNamespaceGuid);
+}
+
+/*****************************************************************************/
+std::string XcodePBXProjGen::getTargetHashWithLabel(const std::string& inTarget, const bool inDist) const
+{
+	if (inDist)
+		return getHashWithLabel(getDistTargetHash(inTarget), inTarget);
+	else
+		return getHashWithLabel(getTargetHash(inTarget), inTarget);
 }
 
 /*****************************************************************************/
@@ -1796,23 +1854,29 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 	const auto& links = inTarget.links();
 	for (auto& link : links)
 	{
-		ret.push_back(fmt::format("-l{}", link));
+		if (Files::pathExists(link))
+			ret.push_back(Files::getCanonicalPath(link));
+		else
+			ret.push_back(fmt::format("-l{}", link));
 	}
 	const auto& staticLinks = inTarget.staticLinks();
 	for (auto& link : staticLinks)
 	{
-		ret.push_back(fmt::format("-l{}", link));
+		if (Files::pathExists(link))
+			ret.push_back(Files::getCanonicalPath(link));
+		else
+			ret.push_back(fmt::format("-l{}", link));
 	}
 
 	// Apple Framework Options
 	{
 		for (auto& path : inTarget.libDirs())
 		{
-			ret.emplace_back(fmt::format("-F{}", path));
+			ret.emplace_back(fmt::format("-F{}", Files::getCanonicalPath(path)));
 		}
 		for (auto& path : inTarget.appleFrameworkPaths())
 		{
-			ret.emplace_back(fmt::format("-F{}", path));
+			ret.emplace_back(fmt::format("-F{}", Files::getCanonicalPath(path)));
 		}
 		List::addIfDoesNotExist(ret, "-F/Library/Frameworks");
 	}

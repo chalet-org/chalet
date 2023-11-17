@@ -32,9 +32,11 @@ private:
 	std::string getHashWithLabel(const std::string& inValue) const;
 	std::string getHashWithLabel(const Uuid& inHash, const std::string& inLabel) const;
 	Uuid getTargetHash(const std::string& inTarget) const;
+	Uuid getDistTargetHash(const std::string& inTarget) const;
 	Uuid getConfigurationHash(const std::string& inConfig) const;
 	Uuid getTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const;
-	std::string getTargetHashWithLabel(const std::string& inTarget) const;
+	Uuid getDistTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const;
+	std::string getTargetHashWithLabel(const std::string& inTarget, const bool inDist = false) const;
 	std::string getSectionKeyForTarget(const std::string& inKey, const std::string& inTarget) const;
 	std::string getBuildConfigurationListLabel(const std::string& inName, const ListType inType) const;
 	std::string getProjectName() const;
