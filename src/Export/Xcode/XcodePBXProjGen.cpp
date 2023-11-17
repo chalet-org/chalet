@@ -183,7 +183,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					const auto& links = sourceTarget.links();
 					for (auto& link : links)
 					{
-						if (Commands::pathExists(link))
+						if (Files::pathExists(link))
 							searches.emplace_back(link);
 						else
 							searches.emplace_back(fmt::format("/lib{}.dylib", link));
@@ -191,7 +191,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					const auto& appleFrameworks = sourceTarget.appleFrameworks();
 					for (auto& framework : appleFrameworks)
 					{
-						if (Commands::pathExists(framework))
+						if (Files::pathExists(framework))
 							searches.emplace_back(framework);
 						else
 							searches.emplace_back(fmt::format("/{}.framework", framework));
@@ -205,8 +205,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					const auto& libDirs = sourceTarget.libDirs();
 					for (auto& dir : libDirs)
 					{
-						auto resolvedDir = Commands::getCanonicalPath(dir);
-						if (!Commands::pathExists(resolvedDir))
+						auto resolvedDir = Files::getCanonicalPath(dir);
+						if (!Files::pathExists(resolvedDir))
 							continue;
 
 						for (const auto& entry : fs::recursive_directory_iterator(resolvedDir))
@@ -308,7 +308,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 						auto& icon = bundle.macosBundleIcon();
 						if (!icon.empty())
-							groups[name].children.emplace_back(Commands::getCanonicalPath(icon));
+							groups[name].children.emplace_back(Files::getCanonicalPath(icon));
 
 						bool hasXcassets = icon.empty() || (!icon.empty() && !String::endsWith(".icns", icon));
 						if (hasXcassets)
