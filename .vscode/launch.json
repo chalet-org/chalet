@@ -5,13 +5,21 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}",
 			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"build"
+				"-c",
+				"Release",
+				"-t",
+				"vs-stable",
+				"-a",
+				"x64",
+				"-b",
+				"native-experimental",
+				"bundle"
 			]
 		},
 		{
