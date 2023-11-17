@@ -161,18 +161,23 @@ std::string OldPListGenerator::getNodeAsPListString(const Json& inJson) const
 	if (!inJson.is_string())
 		return "\"\"";
 
-	bool startsWithHash = false;
+	bool noQuotes = false;
 	auto str = inJson.get<std::string>();
 	if (str.size() > 24)
 	{
 		auto substring = str.substr(0, 23);
 		if (substring.find_first_not_of("01234567890ABCDEF") == std::string::npos)
 		{
-			startsWithHash = true;
+			noQuotes = true;
 		}
 	}
 
-	if (!str.empty() && (startsWithHash || str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_/") == std::string::npos))
+	if (!str.empty() && !noQuotes)
+	{
+		noQuotes = String::startsWith('(', str);
+	}
+
+	if (!str.empty() && (noQuotes || str.find_first_not_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890_/") == std::string::npos))
 	{
 		return str;
 	}
