@@ -160,6 +160,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 				state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
 
+				const auto& buildOutputDir = state->paths.buildOutputDir();
 				// const auto& buildSuffix = sourceTarget.buildSuffix();
 
 				const auto& name = sourceTarget.name();
@@ -196,15 +197,25 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						else
 							searches.emplace_back(fmt::format("/{}.framework", framework));
 					}
+					const auto& workspaceSearchPaths = state->workspace.searchPaths();
 
 					StringList extensions{
 						".dylib",
 						".framework",
 					};
 
-					const auto& libDirs = sourceTarget.libDirs();
+					StringList libDirs = sourceTarget.libDirs();
+					for (auto& path : workspaceSearchPaths)
+						List::addIfDoesNotExist(libDirs, path);
+
 					for (auto& dir : libDirs)
 					{
+						if (String::startsWith(buildOutputDir, dir))
+							continue;
+
+						if (String::startsWith("/System/Library/Frameworks/", dir))
+							continue;
+
 						auto resolvedDir = Commands::getCanonicalPath(dir);
 						if (!Commands::pathExists(resolvedDir))
 							continue;
@@ -212,7 +223,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						for (const auto& entry : fs::recursive_directory_iterator(resolvedDir))
 						{
 							auto path = entry.path().string();
-							if (entry.is_regular_file())
+							if (entry.is_regular_file() || String::endsWith(".framework", path))
 							{
 								if (!String::endsWith(extensions, path))
 									continue;
@@ -1574,12 +1585,12 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		StringList runPaths;
 		StringList searchPaths;
 		const auto& libDirs = inTarget.libDirs();
-		const auto& workspaceSearchPaths = inState.workspace.searchPaths();
+		// const auto& workspaceSearchPaths = inState.workspace.searchPaths();
 		const auto& objDir = inState.paths.objDir();
 		const auto& externalDir = inState.inputs.externalDirectory();
 		const auto& externalBuildDir = inState.paths.externalBuildDir();
 		const auto& intDir = inState.paths.intermediateDir(inTarget);
-		const auto& appleFrameworkPaths = inTarget.appleFrameworkPaths();
+		// const auto& appleFrameworkPaths = inTarget.appleFrameworkPaths();
 
 		for (auto& libDir : libDirs)
 		{
@@ -1590,7 +1601,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			else if (String::startsWith(externalBuildDir, libDir) || String::startsWith(externalDir, libDir))
 			{
 				auto temp = Commands::getCanonicalPath(libDir);
-				runPaths.emplace_back(temp);
+				// runPaths.emplace_back(temp);
 				searchPaths.emplace_back(temp);
 			}
 			else
@@ -1598,32 +1609,32 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 				auto temp = Commands::getCanonicalPath(libDir);
 				if (String::equals(intDir, libDir) || Commands::pathExists(temp))
 				{
-					runPaths.emplace_back(temp);
+					// runPaths.emplace_back(temp);
 					searchPaths.emplace_back(temp);
 				}
 				else
 				{
-					runPaths.emplace_back(libDir);
+					// runPaths.emplace_back(libDir);
 					searchPaths.emplace_back(libDir);
 				}
 			}
 		}
-		for (auto& path : appleFrameworkPaths)
-		{
-			if (String::startsWith(externalBuildDir, path) || String::startsWith(externalDir, path))
-			{
-				auto temp = Commands::getCanonicalPath(path);
-				runPaths.emplace_back(temp);
-			}
-			else
-			{
-				runPaths.emplace_back(path);
-			}
-		}
-		for (auto& path : workspaceSearchPaths)
-		{
-			runPaths.emplace_back(path);
-		}
+		// for (auto& path : appleFrameworkPaths)
+		// {
+		// 	if (String::startsWith(externalBuildDir, path) || String::startsWith(externalDir, path))
+		// 	{
+		// 		auto temp = Commands::getCanonicalPath(path);
+		// 		runPaths.emplace_back(temp);
+		// 	}
+		// 	else
+		// 	{
+		// 		runPaths.emplace_back(path);
+		// 	}
+		// }
+		// for (auto& path : workspaceSearchPaths)
+		// {
+		// 	runPaths.emplace_back(path);
+		// }
 
 		runPaths.emplace_back("$(inherited)");
 		ret["LD_RUNPATH_SEARCH_PATHS"] = std::move(runPaths);
