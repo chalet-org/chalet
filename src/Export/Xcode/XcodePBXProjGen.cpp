@@ -1206,10 +1206,9 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 {
 	Json ret;
 
-	const auto& cwd = inState.inputs.workingDirectory();
-	auto distDir = fmt::format("{}/{}", cwd, inState.inputs.distributionDirectory());
-	auto buildDir = fmt::format("{}/{}", cwd, inState.paths.outputDirectory());
-	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto distDir = Commands::getCanonicalPath(inState.inputs.distributionDirectory());
+	auto buildDir = Commands::getCanonicalPath(inState.paths.outputDirectory());
+	auto buildOutputDir = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 
 	auto arches = inState.inputs.universalArches();
 	if (arches.empty())
@@ -1220,11 +1219,11 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	ret["DSTROOT"] = distDir;
 	ret["EAGER_LINKING"] = getBoolString(false);
 	ret["OBJROOT"] = buildOutputDir;
-	ret["PROJECT_RUN_PATH"] = cwd;
+	ret["PROJECT_RUN_PATH"] = inState.inputs.workingDirectory();
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
 	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
 
-	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	// ret["BUILD_ROOT"] = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 	// ret["SYMROOT"] = buildOutputDir;
 
 	return ret;
@@ -1237,13 +1236,12 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	CommandAdapterClang clangAdapter(inState, inTarget);
 
-	const auto& cwd = inState.inputs.workingDirectory();
 	auto lang = inTarget.language();
 	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
 
 	// TODO: this is currently just based on a Release mode
 
-	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto buildOutputDir = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
 	Json ret;
@@ -1361,11 +1359,11 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			}
 			else if (String::startsWith(externalBuildDir, include))
 			{
-				searchPaths.emplace_back(fmt::format("{}/{}", cwd, include));
+				searchPaths.emplace_back(Commands::getCanonicalPath(include));
 			}
 			else
 			{
-				auto temp = fmt::format("{}/{}", cwd, include);
+				auto temp = Commands::getCanonicalPath(include);
 				if (String::equals(intDir, include) || Commands::pathExists(temp))
 					searchPaths.emplace_back(std::move(temp));
 				else
@@ -1383,7 +1381,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	if (inTarget.usesPrecompiledHeader())
 	{
-		ret["GCC_PREFIX_HEADER"] = fmt::format("{}/{}", cwd, inTarget.precompiledHeader());
+		ret["GCC_PREFIX_HEADER"] = Commands::getCanonicalPath(inTarget.precompiledHeader());
 		ret["GCC_PRECOMPILE_PREFIX_HEADER"] = getBoolString(true);
 	}
 
@@ -1428,13 +1426,13 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			}
 			else if (String::startsWith(externalBuildDir, libDir) || String::startsWith(externalDir, libDir))
 			{
-				auto temp = fmt::format("{}/{}", cwd, libDir);
+				auto temp = Commands::getCanonicalPath(libDir);
 				runPaths.emplace_back(temp);
 				searchPaths.emplace_back(temp);
 			}
 			else
 			{
-				auto temp = fmt::format("{}/{}", cwd, libDir);
+				auto temp = Commands::getCanonicalPath(libDir);
 				if (String::equals(intDir, libDir) || Commands::pathExists(temp))
 				{
 					runPaths.emplace_back(temp);
@@ -1451,7 +1449,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		{
 			if (String::startsWith(externalBuildDir, path) || String::startsWith(externalDir, path))
 			{
-				auto temp = fmt::format("{}/{}", cwd, path);
+				auto temp = Commands::getCanonicalPath(path);
 				runPaths.emplace_back(temp);
 			}
 			else
@@ -1515,7 +1513,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
 	ret["USE_HEADERMAP"] = getBoolString(false);
 
-	// ret["BUILD_ROOT"] = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	// ret["BUILD_ROOT"] = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 	// ret["SWIFT_OBJC_BRIDGING_HEADER"] = "";
 
 	return ret;
@@ -1524,9 +1522,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 /*****************************************************************************/
 Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildTarget& inTarget) const
 {
-	const auto& cwd = inState.inputs.workingDirectory();
-
-	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto buildOutputDir = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 	// auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
 	UNUSED(inTarget);
@@ -1546,9 +1542,7 @@ Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildT
 /*****************************************************************************/
 Json XcodePBXProjGen::getExcludedBuildSettings(BuildState& inState, const std::string& inTargetName) const
 {
-	const auto& cwd = inState.inputs.workingDirectory();
-
-	auto buildOutputDir = fmt::format("{}/{}", cwd, inState.paths.buildOutputDir());
+	auto buildOutputDir = Commands::getCanonicalPath(inState.paths.buildOutputDir());
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTargetName);
 
 	Json ret;
@@ -1566,14 +1560,12 @@ Json XcodePBXProjGen::getExcludedBuildSettings(BuildState& inState, const std::s
 /*****************************************************************************/
 Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const BundleTarget& inTarget) const
 {
-	const auto& cwd = inState.inputs.workingDirectory();
-
 	auto& targetName = inTarget.name();
 
 	BinaryDependencyMap dependencyMap(inState);
 	AppBundlerMacOS bundler(inState, inTarget, dependencyMap);
 
-	auto objectDirectory = fmt::format("{}/{}", cwd, inState.paths.bundleObjDir(inTarget.name()));
+	auto objectDirectory = Commands::getCanonicalPath(inState.paths.bundleObjDir(inTarget.name()));
 	auto bundleDirectory = fmt::format("{}/{}", m_exportPath, targetName);
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);

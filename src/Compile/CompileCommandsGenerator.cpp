@@ -5,6 +5,7 @@
 
 #include "Compile/CompileCommandsGenerator.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
@@ -94,8 +95,6 @@ bool CompileCommandsGenerator::save() const
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
 	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
-	auto cwd = Commands::getWorkingDirectory();
-	Path::sanitize(cwd);
 
 	Json outJson = Json::array();
 
@@ -103,9 +102,9 @@ bool CompileCommandsGenerator::save() const
 	{
 		Json node;
 		node = Json::object();
-		node["directory"] = cwd;
+		node["directory"] = m_state.inputs.workingDirectory();
 		node["command"] = command->command;
-		node["file"] = fmt::format("{}/{}", cwd, command->file);
+		node["file"] = Commands::getCanonicalPath(command->file);
 
 		outJson.push_back(std::move(node));
 	}
