@@ -294,7 +294,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				if (bundle.isMacosAppBundle())
 				{
 					auto name = bundle.name();
-					if (groups.find(name) != groups.end())
+					if (List::contains(sourceTargets, name))
 						name += '_';
 
 					if (groups.find(name) == groups.end())
@@ -1029,10 +1029,10 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 				if (target->isDistributionBundle())
 				{
 					auto name = target->name();
-					if (groups.find(name) != groups.end())
+					if (List::contains(sourceTargets, name))
 						name += '_';
 
-					auto hash = getDistTargetConfigurationHash(configName, name);
+					auto hash = getTargetConfigurationHash(configName, name, true);
 					auto key = getHashWithLabel(hash, configName);
 					node[key]["isa"] = section;
 					node[key]["buildSettings"] = getAppBundleBuildSettings(*state, static_cast<const BundleTarget&>(*target));
@@ -1070,16 +1070,8 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			StringList configurations;
 			for (auto& [configName, _] : configToTargets)
 			{
-				if (pbxGroup.kind == TargetGroupKind::AppBundle)
-				{
-					auto hash = getDistTargetConfigurationHash(configName, target);
-					configurations.emplace_back(getHashWithLabel(hash, configName));
-				}
-				else
-				{
-					auto hash = getTargetConfigurationHash(configName, target);
-					configurations.emplace_back(getHashWithLabel(hash, configName));
-				}
+				auto hash = getTargetConfigurationHash(configName, target, pbxGroup.kind == TargetGroupKind::AppBundle);
+				configurations.emplace_back(getHashWithLabel(hash, configName));
 			}
 
 			auto type = pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle ? ListType::NativeProject : ListType::AggregateTarget;
@@ -1156,15 +1148,10 @@ Uuid XcodePBXProjGen::getConfigurationHash(const std::string& inConfig) const
 }
 
 /*****************************************************************************/
-Uuid XcodePBXProjGen::getTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const
+Uuid XcodePBXProjGen::getTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget, const bool inDist) const
 {
-	return Uuid::v5(fmt::format("{}-{}_TARGET", inConfig, inTarget), m_xcodeNamespaceGuid);
-}
-
-/*****************************************************************************/
-Uuid XcodePBXProjGen::getDistTargetConfigurationHash(const std::string& inConfig, const std::string& inTarget) const
-{
-	return Uuid::v5(fmt::format("{}-{}_DIST_TARGET", inConfig, inTarget), m_xcodeNamespaceGuid);
+	auto suffix = inDist ? "DIST_TARGET" : "TARGET";
+	return Uuid::v5(fmt::format("{}-{}_{}", inConfig, inTarget, suffix), m_xcodeNamespaceGuid);
 }
 
 /*****************************************************************************/
