@@ -34,13 +34,11 @@ StringList TargetExportAdapter::getFiles() const
 {
 	StringList ret;
 
-	const auto& cwd = m_state.inputs.workingDirectory();
-
 	if (m_target.isScript())
 	{
 		const auto& script = static_cast<const ScriptBuildTarget&>(m_target);
 
-		auto file = fmt::format("{}/{}", cwd, script.file());
+		auto file = Files::getCanonicalPath(script.file());
 		if (!Files::pathExists(file))
 			file = script.file();
 

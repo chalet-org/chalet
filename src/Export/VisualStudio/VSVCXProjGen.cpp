@@ -5,11 +5,12 @@
 
 #include "Export/VisualStudio/VSVCXProjGen.hpp"
 
-#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/TargetExportAdapter.hpp"
 #include "Export/VisualStudio/ProjectAdapterVCXProj.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -21,7 +22,6 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Xml/XmlFile.hpp"
@@ -797,7 +797,6 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 			if (m_adapters.find(config) != m_adapters.end())
 			{
 				const auto& vcxprojAdapter = *m_adapters.at(config);
-				const auto& cwd = vcxprojAdapter.workingDirectory();
 
 				allConfigs.emplace_back(config);
 
@@ -822,7 +821,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 					if (isModulesTarget && String::endsWith(".ixx", header))
 						continue;
 
-					auto file = fmt::format("{}/{}", cwd, header);
+					auto file = Files::getCanonicalPath(header);
 					if (Files::pathExists(file))
 						headers[file] = true;
 					else
@@ -833,7 +832,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 				for (auto& group : outputs.groups)
 				{
-					auto file = fmt::format("{}/{}", cwd, group->sourceFile);
+					auto file = Files::getCanonicalPath(group->sourceFile);
 					if (!Files::pathExists(file))
 						file = group->sourceFile;
 
@@ -864,7 +863,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 				manifest.first = state->paths.getWindowsManifestFilename(project);
 				if (!manifest.first.empty())
 				{
-					auto file = fmt::format("{}/{}", cwd, manifest.first);
+					auto file = Files::getCanonicalPath(manifest.first);
 					if (Files::pathExists(file))
 						manifest.first = file;
 
@@ -874,7 +873,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 				icon.first = project.windowsApplicationIcon();
 				if (!icon.first.empty())
 				{
-					auto file = fmt::format("{}/{}", cwd, icon.first);
+					auto file = Files::getCanonicalPath(icon.first);
 					if (Files::pathExists(file))
 						icon.first = file;
 
@@ -1315,8 +1314,7 @@ std::string VSVCXProjGen::getCondition(const std::string& inConfig) const
 std::string VSVCXProjGen::getResolvedInputFile() const
 {
 	auto& firstState = *m_states.front();
-	auto& cwd = firstState.inputs.workingDirectory();
-	auto inputFile = fmt::format("{}/{}", cwd, firstState.inputs.inputFile());
+	auto inputFile = Files::getCanonicalPath(firstState.inputs.inputFile());
 	if (!Files::pathExists(inputFile))
 		inputFile = firstState.inputs.inputFile();
 
