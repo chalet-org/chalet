@@ -21,6 +21,7 @@
 
 namespace chalet
 {
+std::mutex s_mutex;
 namespace
 {
 struct
@@ -33,21 +34,26 @@ struct
 /*****************************************************************************/
 void addProcess(Process& inProcess)
 {
+	std::lock_guard<std::mutex> lock(s_mutex);
 	state.procesess.push_back(&inProcess);
 }
 
 /*****************************************************************************/
 void removeProcess(const Process& inProcess)
 {
-	auto it = state.procesess.end();
-	while (it != state.procesess.begin())
+	std::lock_guard<std::mutex> lock(s_mutex);
+	if (state.procesess.empty())
 	{
-		--it;
-		Process* process = (*it);
-		if (*process == inProcess)
+		auto it = state.procesess.end();
+		while (it != state.procesess.begin())
 		{
-			it = state.procesess.erase(it);
-			return;
+			--it;
+			Process* process = (*it);
+			if (*process == inProcess)
+			{
+				it = state.procesess.erase(it);
+				return;
+			}
 		}
 	}
 
@@ -60,6 +66,7 @@ void removeProcess(const Process& inProcess)
 /*****************************************************************************/
 void subProcessSignalHandler(int inSignal)
 {
+	std::lock_guard<std::mutex> lock(s_mutex);
 	auto it = state.procesess.end();
 	while (it != state.procesess.begin())
 	{
@@ -85,6 +92,8 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 	{
 		if (!state.initialized)
 		{
+			std::lock_guard<std::mutex> lock(s_mutex);
+
 			SignalHandler::add(SIGINT, subProcessSignalHandler);
 			SignalHandler::add(SIGTERM, subProcessSignalHandler);
 			SignalHandler::add(SIGABRT, subProcessSignalHandler);
