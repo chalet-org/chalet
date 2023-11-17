@@ -33,6 +33,8 @@ bool DependencyManager::run()
 {
 	m_centralState.cache.file().loadExternalDependencies(m_centralState.inputs().externalDirectory());
 
+	m_depsChanged.clear();
+
 	for (auto& dependency : m_centralState.externalDependencies)
 	{
 		if (!dependency->validate())
@@ -46,7 +48,7 @@ bool DependencyManager::run()
 			if (!m_centralState.tools.git().empty())
 			{
 				GitRunner git(m_centralState);
-				if (!git.run(static_cast<GitDependency&>(*dependency)))
+				if (!git.run(static_cast<GitDependency&>(*dependency), m_depsChanged))
 					return false;
 			}
 			else
@@ -81,6 +83,16 @@ bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency
 	if (file.empty())
 		return false;
 
+	bool hasChanged = false;
+	for (auto& dep : m_depsChanged)
+	{
+		if (String::startsWith(dep, file))
+		{
+			hasChanged = true;
+			break;
+		}
+	}
+
 	auto cachedName = fmt::format("{}/{}", m_centralState.inputs().externalDirectory(), inDependency.name());
 	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
 	if (dependencyCache.contains(cachedName))
@@ -97,7 +109,7 @@ bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency
 		bool fileNeedsUpdate = lastCachedFile != file;
 		bool argsNeedsUpdate = lastCachedArgs != args;
 
-		if (!fileNeedsUpdate && !argsNeedsUpdate)
+		if (!hasChanged && !fileNeedsUpdate && !argsNeedsUpdate)
 			return true;
 	}
 	else

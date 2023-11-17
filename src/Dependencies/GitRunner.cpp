@@ -32,7 +32,7 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 }
 
 /*****************************************************************************/
-bool GitRunner::run(GitDependency& gitDependency)
+bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
 {
 	bool destinationExists = Commands::pathExists(gitDependency.destination());
 	if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
@@ -48,6 +48,7 @@ bool GitRunner::run(GitDependency& gitDependency)
 			return false;
 		}
 
+		outChanged.emplace_back(Files::getCanonicalPath(gitDependency.destination()));
 		return true;
 	}
 	else
@@ -181,7 +182,7 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 	const auto cachedBranch = json["b"].is_string() ? json["b"].get<std::string>() : std::string();
 	const auto cachedTag = json["t"].is_string() ? json["t"].get<std::string>() : std::string();
 
-	bool commitNeedsUpdate = !commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit));
+	bool commitNeedsUpdate = (!commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit))) || (commit.empty() && !cachedCommit.empty());
 	bool branchNeedsUpdate = cachedBranch != branch;
 	bool tagNeedsUpdate = cachedTag != tag;
 
