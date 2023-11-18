@@ -205,6 +205,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					};
 
 					StringList libDirs = sourceTarget.libDirs();
+					const auto& appleFrameworkPaths = sourceTarget.appleFrameworkPaths();
+					for (auto& path : appleFrameworkPaths)
+						List::addIfDoesNotExist(libDirs, path);
+
 					for (auto& path : workspaceSearchPaths)
 						List::addIfDoesNotExist(libDirs, path);
 
