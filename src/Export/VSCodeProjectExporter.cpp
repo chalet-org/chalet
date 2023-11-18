@@ -91,7 +91,7 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		}
 
 		auto clangFormat = fmt::format("{}/.clang-format", state->inputs.workingDirectory());
-		if (Files::pathExists(clangFormat))
+		if (Commands::pathExists(clangFormat))
 		{
 			VSCodeSettingsGen settingsJson(outState);
 			if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
