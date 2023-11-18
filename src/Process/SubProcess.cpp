@@ -662,18 +662,18 @@ bool SubProcess::sendSignal(const SigNum inSignal)
 	{
 		if (::GenerateConsoleCtrlEvent(CTRL_C_EVENT, m_pid) == FALSE)
 		{
-			DWORD error = ::GetLastError();
-			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_C_EVENT error: {}", error);
-			return false;
+			// DWORD error = ::GetLastError();
+			// Diagnostic::error("GenerateConsoleCtrlEvent CTRL_C_EVENT error: {}", error);
+			// return false;
 		}
 	}
 	else
 	{
 		if (::GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_pid) == FALSE)
 		{
-			DWORD error = ::GetLastError();
-			Diagnostic::error("GenerateConsoleCtrlEvent CTRL_BREAK_EVENT error: {}", error);
-			return false;
+			// DWORD error = ::GetLastError();
+			// Diagnostic::error("GenerateConsoleCtrlEvent CTRL_BREAK_EVENT error: {}", error);
+			// return false;
 		}
 	}
 
@@ -685,12 +685,12 @@ bool SubProcess::sendSignal(const SigNum inSignal)
 
 	if (::kill(m_pid, static_cast<i32>(inSignal)) < 0)
 	{
-		bool result = errno == ESRCH;
-		if (!result)
-		{
-			Diagnostic::error("Error shutting down process: {}", m_pid);
-		}
-		return result;
+		// bool result = errno == ESRCH;
+		// if (!result)
+		// {
+		// 	Diagnostic::error("Error shutting down process: {}", m_pid);
+		// }
+		// return result;
 	}
 #endif
 
