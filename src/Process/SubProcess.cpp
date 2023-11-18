@@ -679,14 +679,18 @@ bool SubProcess::sendSignal(const SigNum inSignal)
 
 #else
 	if (m_pid == -1)
-		return false;
+		return true;
 
 	m_killed = true;
 
-	if (::kill(m_pid, static_cast<i32>(inSignal)) != 0)
+	if (::kill(m_pid, static_cast<i32>(inSignal)) < 0)
 	{
-		Diagnostic::error("Error shutting down process: {}", m_pid);
-		return false;
+		bool result = errno == ESRCH;
+		if (!result)
+		{
+			Diagnostic::error("Error shutting down process: {}", m_pid);
+		}
+		return result;
 	}
 #endif
 
