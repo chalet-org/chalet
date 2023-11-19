@@ -99,13 +99,14 @@ bool Spinner::cancel()
 /*****************************************************************************/
 bool Spinner::stop()
 {
+	m_running = false;
+
 	bool result = true;
-	if (m_thread != nullptr && m_running)
+	if (m_thread != nullptr)
 	{
 		result = false;
 		if (m_thread->joinable())
 		{
-			m_running = false;
 			m_thread->join();
 			m_thread.reset();
 			result = true;
@@ -170,7 +171,7 @@ void Spinner::doRegularEllipsis()
 		}
 
 		{
-			std::lock_guard<std::mutex> lock(m_mutex);
+			// std::lock_guard<std::mutex> lock(m_mutex);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();
 		}

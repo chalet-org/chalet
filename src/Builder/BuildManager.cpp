@@ -142,10 +142,9 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	const bool routeWillRun = inRoute.willRun();
 	const auto& lastTargetName = m_state.inputs.lastTarget();
 
-	if (!runRoute)
+	if (!runRoute && m_state.toolchain.strategy() != StrategyType::Native)
 	{
 		printBuildInformation();
-
 		Output::lineBreak();
 	}
 
@@ -155,6 +154,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (!runRoute)
 	{
+		Timer prepTimer;
+		if (m_state.toolchain.strategy() == StrategyType::Native)
+		{
+			Diagnostic::infoEllipsis("Resolving source file dependencies");
+		}
+
 		if (m_state.info.dumpAssembly())
 		{
 			m_asmDumper = std::make_unique<AssemblyDumper>(m_state);
@@ -182,6 +187,13 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 						return false;
 				}
 			}
+		}
+
+		if (m_state.toolchain.strategy() == StrategyType::Native)
+		{
+			Diagnostic::printDone(prepTimer.asString());
+			printBuildInformation();
+			Output::lineBreak();
 		}
 	}
 
