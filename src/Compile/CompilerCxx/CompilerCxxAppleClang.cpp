@@ -103,7 +103,7 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 }
 
 /*****************************************************************************/
-bool CompilerCxxAppleClang::addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const uint inVersionMajorMinor)
+bool CompilerCxxAppleClang::addOsTargetOptions(StringList& outArgList, const BuildState& inState, const uint inVersionMajorMinor)
 {
 	const auto& osTargetName = inState.inputs.osTargetName();
 	const auto& osTargetVersion = inState.inputs.osTargetVersion();
@@ -240,22 +240,23 @@ void CompilerCxxAppleClang::addPchInclude(StringList& outArgList, const SourceTy
 bool CompilerCxxAppleClang::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 #if defined(CHALET_MACOS)
-	if (m_state.info.targetArchitecture() != Arch::Cpu::UniversalMacOS)
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+	{
+		if (!CompilerCxxAppleClang::addMultiArchOptionsToCommand(outArgList, inArch, m_state))
+			return false;
+
+		if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
+			return false;
+	}
+	else
 #endif
 	{
 		if (!CompilerCxxClang::addArchitecture(outArgList, inArch))
 			return false;
 
-		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state, m_versionMajorMinor))
+		if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
 			return false;
 	}
-#if defined(CHALET_MACOS)
-	else
-	{
-		if (!CompilerCxxAppleClang::addMultiArchOptionsToCommand(outArgList, inArch, m_state))
-			return false;
-	}
-#endif
 
 	return true;
 }
