@@ -15,6 +15,7 @@ enum class ExportKind : u16
 	VisualStudioSolution,
 	Xcode,
 	CLion,
+	Fleet,
 	CodeBlocks,
 };
 }

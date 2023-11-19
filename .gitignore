@@ -9,12 +9,14 @@ dist/
 .idea/
 .vs/
 .vscode/ipch/
+.fleet/
 
 # Project-specific
 *.exe.stackdump
 external/
 *.log
 
-# General
+# Other
+.cache/
 Thumbs.db
 .DS_Store

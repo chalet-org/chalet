@@ -44,8 +44,6 @@ CLionWorkspaceGen::CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inSt
 /*****************************************************************************/
 bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 {
-	UNUSED(inPath);
-
 	auto toolsPath = fmt::format("{}/tools", inPath);
 	if (!Files::pathExists(toolsPath))
 		Files::makeDirectory(toolsPath);

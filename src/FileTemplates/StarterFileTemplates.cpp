@@ -5,12 +5,12 @@
 
 #include "FileTemplates/StarterFileTemplates.hpp"
 
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonKeys.hpp"
@@ -282,8 +282,10 @@ dist/
 .idea/
 .vs/
 .vscode/
+.fleet/
 
 # Other
+.cache/
 Thumbs.db
 .DS_Store)",
 		fmt::arg("build", inBuildFolder),
