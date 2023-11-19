@@ -25,7 +25,8 @@ namespace chalet
 {
 /*****************************************************************************/
 NativeGenerator::NativeGenerator(BuildState& inState) :
-	m_state(inState)
+	m_state(inState),
+	m_sourceCache(m_state.cache.file().sources())
 {
 }
 
@@ -149,7 +150,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 	CommandPool::CmdList ret;
 	if (m_project->usesPrecompiledHeader())
 	{
-		auto& sourceCache = m_state.cache.file().sources();
 		const auto& source = m_project->precompiledHeader();
 		const auto& objDir = m_state.paths.objDir();
 
@@ -164,7 +164,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
-				bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, outObject);
+				bool pchChanged = fileChangedOrDependentChanged(source, outObject);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
@@ -187,7 +187,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		else
 #endif
 		{
-			bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, pchTarget);
+			bool pchChanged = fileChangedOrDependentChanged(source, pchTarget);
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
@@ -222,8 +222,6 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 {
 	chalet_assert(m_project != nullptr, "");
 
-	auto& sourceCache = m_state.cache.file().sources();
-
 	CommandPool::CmdList ret;
 
 	const auto& objDir = m_state.paths.objDir();
@@ -244,7 +242,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -267,7 +265,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -346,4 +344,43 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 	return ret;
 }
 
+/*****************************************************************************/
+bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target)
+{
+	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
+	if (!result)
+	{
+		auto dependency = m_state.environment->getDependencyFile(source);
+		if (Files::pathExists(dependency))
+		{
+			if (m_state.environment->isMsvc())
+			{
+				// ideally, generate gnu-style .d files based on msvc output
+			}
+			else
+			{
+				std::ifstream input(dependency);
+				for (std::string line; std::getline(input, line);)
+				{
+					if (line.empty())
+						continue;
+
+					if (!String::endsWith(':', line))
+						continue;
+
+					line.pop_back();
+
+					if (m_sourceCache.fileChangedOrDoesNotExist(line))
+					{
+						result = true;
+						break;
+					}
+
+					// LOG(source, line);
+				}
+			}
+		}
+	}
+	return result;
+}
 }

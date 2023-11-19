@@ -13,6 +13,7 @@
 namespace chalet
 {
 class BuildState;
+struct SourceCache;
 struct SourceOutputs;
 
 class NativeGenerator
@@ -35,7 +36,10 @@ private:
 	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
+	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target);
+
 	BuildState& m_state;
+	SourceCache& m_sourceCache;
 
 	mutable Unique<CommandPool> m_commandPool;
 
