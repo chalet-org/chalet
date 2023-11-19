@@ -100,7 +100,7 @@ bool Spinner::cancel()
 bool Spinner::stop()
 {
 	bool result = true;
-	if (m_thread != nullptr)
+	if (m_thread != nullptr && m_running)
 	{
 		result = false;
 		if (m_thread->joinable())
