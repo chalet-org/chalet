@@ -61,10 +61,11 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 {
 	UNUSED(inPath);
 
-	const auto& depDir = m_state.paths.depDir();
 	const auto shell = "cmd.exe";
 
 	auto recipes = String::join(m_targetRecipes);
+
+	auto dependency = m_state.environment->getDependencyFile("%");
 
 	std::string depDirs;
 
@@ -72,10 +73,10 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 	if (!isMsvc)
 	{
 		depDirs = fmt::format(R"makefile(
-{depDir}/%.d: ;
-.PRECIOUS: {depDir}/%.d
+{dependency}: ;
+.PRECIOUS: {dependency}
 )makefile",
-			FMT_ARG(depDir));
+			FMT_ARG(dependency));
 	}
 
 	//

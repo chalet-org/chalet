@@ -5,6 +5,7 @@
 
 #include "Compile/Generator/MakefileGeneratorGNU.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -40,7 +41,6 @@ void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, cons
 	const std::string buildRecipes = getBuildRecipes(inOutputs);
 	const auto printer = getPrinter();
 
-	const auto& depDir = m_state.paths.depDir();
 	std::string depends;
 	for (auto& group : inOutputs.groups)
 	{
@@ -50,6 +50,8 @@ void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, cons
 		depends += ' ';
 		depends += group->dependencyFile;
 	}
+
+	auto dependency = m_state.environment->getDependencyFile("%");
 
 	//
 	//
@@ -62,8 +64,8 @@ build_{hash}: {target}
 	@{printer}
 .PHONY: build_{hash}
 
-.PRECIOUS: {depDir}/%.d
-{depDir}/%.d: ;
+.PRECIOUS: {dependency}
+{dependency}: ;
 
 -include{depends}
 )makefile",
@@ -71,7 +73,7 @@ build_{hash}: {target}
 		FMT_ARG(printer),
 		FMT_ARG(buildRecipes),
 		FMT_ARG(target),
-		FMT_ARG(depDir),
+		FMT_ARG(dependency),
 		FMT_ARG(depends));
 
 	m_targetRecipes.emplace_back(std::move(makeTemplate));

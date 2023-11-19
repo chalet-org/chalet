@@ -526,6 +526,9 @@ std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) co
 }
 
 /*****************************************************************************/
+// Note: this might seem confusing, but it's to take relative input paths and keep output paths inside
+//   the build directory
+//
 void BuildPaths::normalizedPath(std::string& outPath) const
 {
 	String::replaceAll(outPath, "/../", "/p/");

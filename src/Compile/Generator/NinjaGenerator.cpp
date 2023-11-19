@@ -193,8 +193,7 @@ std::string NinjaGenerator::getPchRule()
 	if (m_project->usesPrecompiledHeader() && !List::contains(m_precompiledHeaders, fmt::format("{}/{}", objDir, pch)))
 	{
 		const auto deps = getRuleDeps();
-		const auto& depDir = m_state.paths.depDir();
-		const auto dependency = fmt::format("{}/$in.d", depDir);
+		const auto dependency = m_state.environment->getDependencyFile("$in");
 		const auto depFile = getDepFile(dependency);
 
 		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project);
@@ -260,8 +259,7 @@ std::string NinjaGenerator::getRcRule()
 	std::string ret;
 
 	const auto deps = getRuleDeps();
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto dependency = m_state.environment->getDependencyFile("$in");
 	const auto depFile = getDepFile(dependency);
 
 	const auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$in", "$out", m_generateDependencies, dependency));
@@ -292,8 +290,7 @@ std::string NinjaGenerator::getCxxRule(const std::string inId, const SourceType 
 
 	const auto deps = getRuleDeps();
 
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/$in.d", FMT_ARG(depDir));
+	const auto dependency = m_state.environment->getDependencyFile("$in");
 	const auto depFile = getDepFile(dependency);
 
 	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, derivative));

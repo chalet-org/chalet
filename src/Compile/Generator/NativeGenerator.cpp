@@ -151,7 +151,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 	{
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& source = m_project->precompiledHeader();
-		const auto& depDir = m_state.paths.depDir();
 		const auto& objDir = m_state.paths.objDir();
 
 #if defined(CHALET_MACOS)
@@ -174,7 +173,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					{
 						m_fileCache.emplace_back(std::move(pchCache));
 
-						const auto dependency = fmt::format("{}/{}.d", depDir, source);
+						auto dependency = m_state.environment->getDependencyFile(source);
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
@@ -197,7 +196,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				{
 					m_fileCache.emplace_back(std::move(pchCache));
 
-					const auto dependency = fmt::format("{}/{}.d", depDir, source);
+					auto dependency = m_state.environment->getDependencyFile(source);
 
 					CommandPool::Cmd out;
 					out.output = source;
@@ -328,9 +327,7 @@ StringList NativeGenerator::getCxxCompile(const std::string& source, const std::
 
 	StringList ret;
 
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
+	auto dependency = m_state.environment->getDependencyFile(source);
 	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, derivative);
 
 	return ret;
@@ -343,9 +340,7 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 
 	StringList ret;
 
-	const auto& depDir = m_state.paths.depDir();
-	const auto dependency = fmt::format("{depDir}/{source}.d", FMT_ARG(depDir), FMT_ARG(source));
-
+	auto dependency = m_state.environment->getDependencyFile(source);
 	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
 
 	return ret;
