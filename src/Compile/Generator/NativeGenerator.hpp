@@ -37,6 +37,7 @@ private:
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target);
+	bool checkDependentTargets(const SourceTarget& inProject) const;
 
 	BuildState& m_state;
 	SourceCache& m_sourceCache;
@@ -47,6 +48,8 @@ private:
 
 	const SourceTarget* m_project = nullptr;
 	CompileToolchainController* m_toolchain = nullptr;
+
+	StringList m_targetsChanged;
 
 	StringList m_fileCache;
 

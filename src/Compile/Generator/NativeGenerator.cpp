@@ -49,6 +49,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	bool targetExists = Files::pathExists(outputs->target);
 
+	bool dependentchanged = targetExists && checkDependentTargets(inProject);
+
 	{
 		CommandPool::JobList jobs;
 
@@ -61,7 +63,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		bool compileTarget = m_sourcesChanged || m_pchChanged || !targetExists;
+		bool compileTarget = m_sourcesChanged || m_pchChanged || dependentchanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(outputs->groups);
@@ -102,6 +104,9 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 /*****************************************************************************/
 bool NativeGenerator::buildProject(const SourceTarget& inProject)
 {
+	m_targetsChanged.clear();
+	m_fileCache.clear();
+
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;
 
@@ -292,6 +297,11 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		}
 	}
 
+	if (m_sourcesChanged)
+	{
+		m_targetsChanged.emplace_back(m_project->name());
+	}
+
 	return ret;
 }
 
@@ -381,6 +391,24 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 			}
 		}
 	}
+	return result;
+}
+
+/*****************************************************************************/
+bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
+{
+	bool result = false;
+
+	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
+	for (auto& link : links)
+	{
+		if (List::contains(m_targetsChanged, link))
+		{
+			result = true;
+			break;
+		}
+	}
+
 	return result;
 }
 }
