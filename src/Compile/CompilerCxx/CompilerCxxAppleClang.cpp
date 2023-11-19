@@ -244,19 +244,16 @@ bool CompilerCxxAppleClang::addArchitecture(StringList& outArgList, const std::s
 	{
 		if (!CompilerCxxAppleClang::addMultiArchOptionsToCommand(outArgList, inArch, m_state))
 			return false;
-
-		if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
-			return false;
 	}
 	else
 #endif
 	{
 		if (!CompilerCxxClang::addArchitecture(outArgList, inArch))
 			return false;
-
-		if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
-			return false;
 	}
+
+	if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
+		return false;
 
 	return true;
 }
