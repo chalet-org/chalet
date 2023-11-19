@@ -29,9 +29,9 @@ if [[ $PLATFORM == "windows" ]]; then
 	mingw32-make -j$(getconf _NPROCESSORS_ONLN)
 	# cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
 else
-	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
+	cmake -G "Ninja" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# make -j8
-	cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
+	cmake --build . -j $(getconf _NPROCESSORS_ONLN) --
 fi
 
 EXIT_CODE=$?
