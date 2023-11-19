@@ -31,7 +31,7 @@ if [[ $PLATFORM == "windows" ]]; then
 else
 	cmake -G "Ninja" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# make -j8
-	cmake --build . -j $(getconf _NPROCESSORS_ONLN) --
+	cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- -d keepdepfile
 fi
 
 EXIT_CODE=$?
