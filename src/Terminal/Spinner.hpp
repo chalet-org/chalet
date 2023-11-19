@@ -36,8 +36,8 @@ private:
 	Unique<std::thread> m_thread;
 	std::mutex m_mutex;
 
-	bool m_running = true;
-	bool m_cancelled = false;
+	std::atomic<bool> m_running = true;
+	std::atomic<bool> m_cancelled = false;
 };
 }
 

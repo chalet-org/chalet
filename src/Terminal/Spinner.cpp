@@ -100,12 +100,12 @@ bool Spinner::cancel()
 bool Spinner::stop()
 {
 	bool result = true;
-	if (m_thread != nullptr && m_running)
+	if (m_thread != nullptr)
 	{
+		m_running = false;
 		result = false;
 		if (m_thread->joinable())
 		{
-			m_running = false;
 			m_thread->join();
 			m_thread.reset();
 			result = true;
