@@ -84,7 +84,6 @@ bool BuildPaths::initialize()
 		m_intermediateDir = m_intermediateDir.substr(search);
 	}
 
-	m_currentBuildDir = fmt::format("{}/current", outputDirectory);
 	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());
 
 	m_initialized = true;
@@ -126,12 +125,6 @@ const std::string& BuildPaths::buildOutputDir() const
 	return m_buildOutputDir;
 }
 
-const std::string& BuildPaths::currentBuildDir() const
-{
-	chalet_assert(!m_currentBuildDir.empty(), "BuildPaths::currentBuildDir() called before BuildPaths::initialize().");
-	return m_currentBuildDir;
-}
-
 const std::string& BuildPaths::externalBuildDir() const
 {
 	chalet_assert(!m_externalBuildDir.empty(), "BuildPaths::externalBuildDir() called before BuildPaths::initialize().");
@@ -167,6 +160,12 @@ std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 std::string BuildPaths::bundleObjDir(const std::string& inName) const
 {
 	return fmt::format("{}/dist.{}", buildOutputDir(), inName);
+}
+
+/*****************************************************************************/
+std::string BuildPaths::currentCompileCommands() const
+{
+	return fmt::format("{}/compile_commands.json", outputDirectory());
 }
 
 /*****************************************************************************/
@@ -282,7 +281,6 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 
 	const bool isNotMsvc = !m_state.environment->isMsvc();
 	const bool dumpAssembly = m_state.info.dumpAssembly();
-	const bool generateCompileCommands = m_state.info.generateCompileCommands();
 
 	ret->objectListLinker = getObjectFilesList(files.list, inProject);
 	files.list = String::excludeIf(outFileCache, files.list);
@@ -327,11 +325,6 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	{
 		ret->directories.push_back(asmDir());
 		ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
-	}
-
-	if (generateCompileCommands)
-	{
-		ret->directories.push_back(currentBuildDir());
 	}
 
 	ret->target = getTargetFilename(inProject);

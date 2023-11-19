@@ -60,18 +60,16 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	auto jsonSchemasFile = fmt::format("{}/jsonSchemas.xml", inPath);
 
 	auto& debugState = getDebugState();
-	auto& currentBuildDir = debugState.paths.currentBuildDir();
-	if (!Files::pathExists(currentBuildDir))
-		Files::makeDirectory(currentBuildDir);
+	auto& outputDirectory = debugState.paths.outputDirectory();
 
-	auto ccmdsJson = fmt::format("{}/compile_commands.json", currentBuildDir);
+	auto ccmdsJson = debugState.paths.currentCompileCommands();
 	if (!Files::pathExists(ccmdsJson))
 	{
 		Files::createFileWithContents(ccmdsJson, "[]");
 	}
 
 	m_homeDirectory = Environment::getUserDirectory();
-	m_currentDirectory = fmt::format("$PROJECT_DIR$/{}", debugState.paths.currentBuildDir());
+	m_ccmdsDirectory = fmt::format("$PROJECT_DIR$/{}", outputDirectory);
 	m_projectName = String::getPathBaseName(debugState.inputs.workingDirectory());
 	m_chaletPath = getResolvedPath(debugState.inputs.appPath());
 	m_projectId = Uuid::v5(debugState.workspace.metadata().name(), m_clionNamespaceGuid).str();
@@ -459,7 +457,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 								});
 								node6.addElement("option", [this](XmlElement& node7) {
 									node7.addAttribute("name", "path");
-									node7.addAttribute("value", m_currentDirectory);
+									node7.addAttribute("value", m_ccmdsDirectory);
 								});
 							});
 						});
@@ -472,7 +470,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 									});
 									node7.addElement("option", [this](XmlElement& node8) {
 										node8.addAttribute("name", "path");
-										node8.addAttribute("value", m_currentDirectory);
+										node8.addAttribute("value", m_ccmdsDirectory);
 									});
 								});
 							});
@@ -486,7 +484,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "ExternalProjectsData");
 		node.addElement("projectState", [this](XmlElement& node2) {
-			node2.addAttribute("path", m_currentDirectory);
+			node2.addAttribute("path", m_ccmdsDirectory);
 			node2.addElement("ProjectState");
 		});
 	});
@@ -544,13 +542,13 @@ bool CLionWorkspaceGen::createMiscFile(const std::string& inFilename)
 			node2.addElement("CompDBProjectSettings", [this](XmlElement& node3) {
 				node3.addElement("option", [this](XmlElement& node4) {
 					node4.addAttribute("name", "externalProjectPath");
-					node4.addAttribute("value", m_currentDirectory);
+					node4.addAttribute("value", m_ccmdsDirectory);
 				});
 				node3.addElement("option", [this](XmlElement& node4) {
 					node4.addAttribute("name", "modules");
 					node4.addElement("set", [this](XmlElement& node5) {
 						node5.addElement("option", [this](XmlElement& node6) {
-							node6.addAttribute("value", m_currentDirectory);
+							node6.addAttribute("value", m_ccmdsDirectory);
 						});
 					});
 				});
@@ -559,7 +557,7 @@ bool CLionWorkspaceGen::createMiscFile(const std::string& inFilename)
 	});
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "CompDBWorkspace");
-		node.addAttribute("PROJECT_DIR", m_currentDirectory);
+		node.addAttribute("PROJECT_DIR", m_ccmdsDirectory);
 		node.addElement("contentRoot", [](XmlElement& node2) {
 			node2.addAttribute("DIR", "$PROJECT_DIR$");
 		});

@@ -10,9 +10,11 @@
 #include "Query/QueryController.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "System/Files.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -36,6 +38,12 @@ bool FleetWorkspaceGen::saveToPath(const std::string& inPath)
 	m_cwd = debugState.inputs.workingDirectory();
 	m_toolchain = getToolchain();
 	m_arches = getArchitectures(m_toolchain);
+
+	auto ccmdsJson = debugState.paths.currentCompileCommands();
+	if (!Files::pathExists(ccmdsJson))
+	{
+		Files::createFileWithContents(ccmdsJson, "[]");
+	}
 
 	for (auto& state : m_states)
 	{

@@ -60,7 +60,7 @@ private:
 
 	std::string m_clionNamespaceGuid;
 	std::string m_homeDirectory;
-	std::string m_currentDirectory;
+	std::string m_ccmdsDirectory;
 	std::string m_projectName;
 	std::string m_defaultRunTargetName;
 	std::string m_chaletPath;
