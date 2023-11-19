@@ -24,13 +24,13 @@ struct BuildPaths
 	const std::string& rootDirectory() const noexcept;
 	const std::string& outputDirectory() const noexcept;
 	const std::string& buildOutputDir() const;
-	const std::string& currentBuildDir() const;
 	const std::string& externalBuildDir() const;
 	const std::string& objDir() const;
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
 	std::string intermediateDir(const SourceTarget& inProject) const;
 	std::string bundleObjDir(const std::string& inName) const;
+	std::string currentCompileCommands() const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
 
 	std::string getExternalDir(const std::string& inName) const;
@@ -96,7 +96,6 @@ private:
 	HeapDictionary<SourceGroup> m_fileList;
 
 	std::string m_buildOutputDir;
-	std::string m_currentBuildDir;
 	std::string m_externalBuildDir;
 	std::string m_objDir;
 	std::string m_depDir;

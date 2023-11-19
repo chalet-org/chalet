@@ -92,8 +92,8 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, std:
 /*****************************************************************************/
 bool CompileCommandsGenerator::save() const
 {
+	const auto& outputDirectory = m_state.paths.outputDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	const auto& currentBuildDir = m_state.paths.currentBuildDir();
 	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
 
 	Json outJson = Json::array();
@@ -109,9 +109,6 @@ bool CompileCommandsGenerator::save() const
 		outJson.push_back(std::move(node));
 	}
 
-	if (!Files::pathExists(currentBuildDir))
-		Files::makeDirectory(currentBuildDir);
-
 	if (!m_compileCommands.empty())
 	{
 		if (!JsonFile::saveToFile(outJson, outputFile))
@@ -119,9 +116,9 @@ bool CompileCommandsGenerator::save() const
 			Diagnostic::error("compile_commands.json could not be saved.");
 			return false;
 		}
-		if (!Files::copySilent(outputFile, currentBuildDir))
+		if (!Files::copySilent(outputFile, outputDirectory))
 		{
-			Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
+			Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
 			return false;
 		}
 	}
@@ -140,9 +137,9 @@ bool CompileCommandsGenerator::save() const
 			auto lastCompileCommands = fmt::format("{}/{}/compile_commands.json", buildOutputDir, lastTarget->targetFolder());
 			if (Files::pathExists(lastCompileCommands))
 			{
-				if (!Files::copySilent(lastCompileCommands, currentBuildDir))
+				if (!Files::copySilent(lastCompileCommands, outputDirectory))
 				{
-					Diagnostic::error("compile_commands.json could not be copied to: '{}'", currentBuildDir);
+					Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
 					return false;
 				}
 			}

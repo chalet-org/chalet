@@ -119,8 +119,8 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	if (m_state.info.generateCompileCommands())
 	{
-		const auto& currentDir = m_state.paths.buildOutputDir();
-		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", currentDir);
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", buildOutputDir);
 	}
 
 	if (!cStandard.empty())

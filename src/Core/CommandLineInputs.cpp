@@ -40,6 +40,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 			{ "xcode", ExportKind::Xcode },
 #endif
 			{ "clion", ExportKind::CLion },
+			{ "fleet", ExportKind::Fleet },
 			{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

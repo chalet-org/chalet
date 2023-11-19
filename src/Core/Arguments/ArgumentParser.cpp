@@ -747,6 +747,8 @@ std::string ArgumentParser::getHelp()
 #endif
 			else if (String::equals("clion", preset))
 				return std::string("Jetbrains CLion (.idea)");
+			else if (String::equals("fleet", preset))
+				return std::string("Jetbrains Fleet (.fleet)");
 			else if (String::equals("codeblocks", preset))
 #if defined(CHALET_WIN32)
 				return std::string("Code::Blocks IDE (MinGW-only)");
@@ -768,6 +770,7 @@ std::string ArgumentParser::getHelp()
 				"xcode",
 #endif
 				"clion",
+				"fleet",
 				"codeblocks",
 		};
 

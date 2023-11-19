@@ -16,6 +16,7 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -159,7 +160,9 @@ bool DotEnvFileGenerator::save(const std::string& inFilename)
 	std::string contents;
 	for (auto& [name, var] : m_variables)
 	{
-		contents += fmt::format("{}={}\n", name, var);
+		auto line = fmt::format("{}={}\n", name, var);
+		String::replaceAll(line, ' ', "\\ ");
+		contents += std::move(line);
 	}
 
 	std::ofstream(inFilename) << contents;

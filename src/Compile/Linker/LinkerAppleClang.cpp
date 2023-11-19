@@ -112,22 +112,20 @@ void LinkerAppleClang::addSanitizerOptions(StringList& outArgList) const
 bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string& inArch) const
 {
 #if defined(CHALET_MACOS)
-	if (m_state.info.targetArchitecture() != Arch::Cpu::UniversalMacOS)
-#endif
-	{
-		if (!LinkerLLVMClang::addArchitecture(outArgList, inArch))
-			return false;
-
-		if (!CompilerCxxAppleClang::addArchitectureToCommand(outArgList, m_state, m_versionMajorMinor))
-			return false;
-	}
-#if defined(CHALET_MACOS)
-	else
+	if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 	{
 		if (!CompilerCxxAppleClang::addMultiArchOptionsToCommand(outArgList, inArch, m_state))
 			return false;
 	}
+	else
 #endif
+	{
+		if (!LinkerLLVMClang::addArchitecture(outArgList, inArch))
+			return false;
+	}
+
+	if (!CompilerCxxAppleClang::addOsTargetOptions(outArgList, m_state, m_versionMajorMinor))
+		return false;
 
 	return true;
 }

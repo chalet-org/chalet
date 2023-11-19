@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
+#include "Export/VSCode/VSCodeSettingsGen.hpp"
 #include "Export/VSCode/VSCodeTasksGen.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
@@ -86,6 +87,17 @@ bool VSCodeProjectExporter::generateProjectFiles()
 					Diagnostic::error("There was a problem saving the tasks.json file.");
 					return false;
 				}
+			}
+		}
+
+		auto clangFormat = fmt::format("{}/.clang-format", state->inputs.workingDirectory());
+		if (Files::pathExists(clangFormat))
+		{
+			VSCodeSettingsGen settingsJson(outState);
+			if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
+			{
+				Diagnostic::error("There was a problem saving the settings.json file.");
+				return false;
 			}
 		}
 	}
