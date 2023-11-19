@@ -16,6 +16,10 @@ struct CommandPool
 	{
 		std::string output;
 		std::string reference;
+#if defined(CHALET_WIN32)
+		// msvc only
+		std::string dependency;
+#endif
 		StringList command;
 	};
 	using CmdList = std::vector<Cmd>;

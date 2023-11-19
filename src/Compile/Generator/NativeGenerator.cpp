@@ -46,7 +46,6 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = inOutputs;
 
-	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	bool targetExists = Files::pathExists(outputs->target);
 
 	bool dependentchanged = targetExists && checkDependentTargets(inProject);
@@ -211,6 +210,11 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					if (!cxxExt.empty())
 						out.reference = fmt::format("{}.{}", out.output, cxxExt);
 
+#if defined(CHALET_WIN32)
+					if (m_state.environment->isMsvc())
+						out.dependency = std::move(dependency);
+#endif
+
 					ret.emplace_back(std::move(out));
 				}
 			}
@@ -249,7 +253,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::WindowsResource: {
 				bool sourceChanged = fileChangedOrDependentChanged(source, target);
 				m_sourcesChanged |= sourceChanged;
-				if (sourceChanged || m_pchChanged)
+				if (sourceChanged)
 				{
 					auto sourceFile = fmt::format("{}/{}", objDir, source);
 					if (!List::contains(m_fileCache, sourceFile))
@@ -284,6 +288,10 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 						out.command = getCxxCompile(source, target, group->type);
 						out.reference = out.output;
 
+#if defined(CHALET_WIN32)
+						if (m_state.environment->isMsvc())
+							out.dependency = m_state.environment->getDependencyFile(source);
+#endif
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -360,34 +368,34 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
 	if (!result)
 	{
+		if (m_cwd.empty())
+		{
+			m_cwd = m_state.inputs.workingDirectory() + '/';
+		}
+
 		auto dependency = m_state.environment->getDependencyFile(source);
 		if (Files::pathExists(dependency))
 		{
-			if (m_state.environment->isMsvc())
+			std::ifstream input(dependency);
+			for (std::string line; std::getline(input, line);)
 			{
-				// ideally, generate gnu-style .d files based on msvc output
-			}
-			else
-			{
-				std::ifstream input(dependency);
-				for (std::string line; std::getline(input, line);)
+				if (line.empty())
+					continue;
+
+				if (!String::endsWith(':', line))
+					continue;
+
+				String::replaceAll(line, m_cwd, "");
+
+				line.pop_back();
+
+				if (m_sourceCache.fileChangedOrDoesNotExist(line))
 				{
-					if (line.empty())
-						continue;
-
-					if (!String::endsWith(':', line))
-						continue;
-
-					line.pop_back();
-
-					if (m_sourceCache.fileChangedOrDoesNotExist(line))
-					{
-						result = true;
-						break;
-					}
-
-					// LOG(source, line);
+					result = true;
+					break;
 				}
+
+				// LOG(source, line);
 			}
 		}
 	}
