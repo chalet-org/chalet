@@ -99,11 +99,11 @@ bool Spinner::cancel()
 /*****************************************************************************/
 bool Spinner::stop()
 {
-	m_running = false;
 
 	bool result = true;
 	if (m_thread != nullptr)
 	{
+		m_running = false;
 		result = false;
 		if (m_thread->joinable())
 		{
@@ -127,10 +127,10 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 		auto finish = clock::now();
 		ms = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
+		std::this_thread::sleep_for(step);
+
 		if (!m_running)
 			return false;
-
-		std::this_thread::sleep_for(step);
 	}
 
 	return true;
@@ -171,7 +171,7 @@ void Spinner::doRegularEllipsis()
 		}
 
 		{
-			// std::lock_guard<std::mutex> lock(m_mutex);
+			std::lock_guard<std::mutex> lock(m_mutex);
 			std::cout.write(output.data(), output.size());
 			std::cout.flush();
 		}

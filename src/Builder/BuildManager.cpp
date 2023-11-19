@@ -194,6 +194,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Diagnostic::printDone(prepTimer.asString());
 			printBuildInformation();
 			Output::lineBreak();
+			m_timer.restart();
 		}
 	}
 
