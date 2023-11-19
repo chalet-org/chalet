@@ -16,7 +16,7 @@ struct CompilerCxxAppleClang final : public CompilerCxxClang
 	static StringList getAllowedSDKTargets();
 
 	static bool addSystemRootOption(StringList& outArgList, const BuildState& inState);
-	static bool addArchitectureToCommand(StringList& outArgList, const BuildState& inState, const u32 inVersionMajorMinor);
+	static bool addOsTargetOptions(StringList& outArgList, const BuildState& inState, const u32 inVersionMajorMinor);
 	static bool addMultiArchOptionsToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
