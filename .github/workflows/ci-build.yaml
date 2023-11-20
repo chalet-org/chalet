@@ -19,16 +19,12 @@ jobs:
       CC: gcc-11
       CXX: g++-11
       UBUNTU_VERSION: focal
-      NINJA_VERSION: 1.11.1
+      CI: 1
     steps:
       - name: "Checkout"
         uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-      - name: "Get Ninja"
-        uses: seanmiddleditch/gha-setup-ninja@master
-        with:
-          version: ${{ env.NINJA_VERSION }}
       - name: "arm setup"
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
@@ -42,7 +38,7 @@ jobs:
       - name: "Get Packages"
         run: |
           sudo apt update
-          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev uuid-dev:armhf gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
@@ -99,10 +95,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-      - name: "Get Ninja"
-        uses: seanmiddleditch/gha-setup-ninja@master
-        with:
-          version: ${{ env.NINJA_VERSION }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
@@ -163,10 +155,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
-      - name: "Get Ninja"
-        uses: seanmiddleditch/gha-setup-ninja@master
-        with:
-          version: ${{ env.NINJA_VERSION }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Show Version Info"
