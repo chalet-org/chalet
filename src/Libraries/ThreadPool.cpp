@@ -47,9 +47,9 @@ ThreadPool::ThreadPool(const size_t inThreads) :
 #if defined(CHALET_WIN32)
 		::SetThreadPriority((HANDLE)thread.native_handle(), THREAD_PRIORITY_NORMAL);
 #else
-		sched_param schedParams;
-		schedParams.sched_priority = 20;
-		::pthread_setschedparam(thread.native_handle(), 2, &schedParams);
+		// sched_param schedParams;
+		// schedParams.sched_priority = 20;
+		// ::pthread_setschedparam(thread.native_handle(), 2, &schedParams);
 #endif
 		m_workers.emplace_back(std::move(thread));
 	}
