@@ -36,7 +36,8 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			sourceCache = &m_state->cache.file().sources();
 		}
-		bool schemaChanged = !inCache || (sourceCache && sourceCache->fileChangedOrDoesNotExist(m_schemaFile));
+
+		bool schemaChanged = !inCache || (sourceCache && (sourceCache->isNewBuild() || sourceCache->fileChangedOrDoesNotExist(m_schemaFile)));
 
 		// After files have been checked for changes
 		StringList files;
@@ -44,11 +45,11 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			files = inFiles;
 		}
-		else
+		else if (sourceCache != nullptr)
 		{
 			for (auto& file : inFiles)
 			{
-				if (sourceCache && sourceCache->fileChangedOrDoesNotExist(file))
+				if (sourceCache->fileChangedOrDoesNotExist(file))
 					files.emplace_back(file);
 			}
 		}

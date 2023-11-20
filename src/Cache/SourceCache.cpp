@@ -171,6 +171,12 @@ bool SourceCache::updateInitializedTime(const std::time_t inTime)
 }
 
 /*****************************************************************************/
+bool SourceCache::isNewBuild() const
+{
+	return m_initializedTime == m_lastBuildTime;
+}
+
+/*****************************************************************************/
 void SourceCache::addLastWrite(std::string inFile, const std::string& inRaw)
 {
 	std::time_t lastWrite = strtoll(inRaw.c_str(), NULL, 0);
