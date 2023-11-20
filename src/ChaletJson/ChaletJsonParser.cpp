@@ -1233,6 +1233,10 @@ bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, 
 				outTarget.addInclude(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "format", status))
 				outTarget.setFormat(std::move(val));
+#if defined(CHALET_MACOS)
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macosNotarizationProfile", status))
+				outTarget.setMacosNotarizationProfile(std::move(val));
+#endif
 			else if (isInvalid(status))
 				return false;
 		}

@@ -155,6 +155,7 @@
 			"kind": "archive",
 			"format": "zip",
 			"include": "*"
+			// "macosNotarizationProfile": "${env:NOTARIZATION_PROFILE}"
 		},
 		"debian-pkg": {
 			"kind": "script",

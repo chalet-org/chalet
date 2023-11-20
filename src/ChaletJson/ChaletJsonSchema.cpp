@@ -319,6 +319,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson);
 	defs[Defs::DistributionArchiveInclude][SKeys::OneOf][0][SKeys::Default] = "*";
 
+	defs[Defs::DistributionArchiveMacosNotarizationProfile] = R"json({
+		"type": "string",
+		"description": "The keychain profile to use for notarization on macos. Requires Xcode 13 or higher",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 	defs[Defs::DistributionMacosDiskImageIconSize] = R"json({
 		"type": "integer",
@@ -1538,6 +1544,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(distArchive, "include", Defs::DistributionArchiveInclude, kPatternConditions);
 		addKind(distArchive, defs, Defs::DistributionKind, "archive");
 		addProperty(distArchive, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(distArchive, "macosNotarizationProfile", Defs::DistributionArchiveMacosNotarizationProfile);
+		// macosNotarizationProfile
+
 		defs[Defs::DistributionArchive] = std::move(distArchive);
 	}
 
@@ -1964,6 +1973,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionArchive: return "dist-archive";
 		case Defs::DistributionArchiveInclude: return "dist-archive-include";
 		case Defs::DistributionArchiveFormat: return "dist-archive-format";
+		case Defs::DistributionArchiveMacosNotarizationProfile: return "dist-archive-macosNotarizationProfile";
 		//
 		case Defs::DistributionMacosDiskImage: return "dist-macos-disk-image";
 		case Defs::DistributionMacosDiskImagePathbarVisible: return "dist-macos-disk-image-pathbarVisible";

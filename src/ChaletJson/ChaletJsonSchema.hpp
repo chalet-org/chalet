@@ -51,6 +51,7 @@ class ChaletJsonSchema
 		DistributionArchive,
 		DistributionArchiveFormat,
 		DistributionArchiveInclude,
+		DistributionArchiveMacosNotarizationProfile,
 		//
 		DistributionMacosDiskImage,
 		DistributionMacosDiskImagePathbarVisible,

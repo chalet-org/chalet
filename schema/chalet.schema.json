@@ -512,6 +512,9 @@
 				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
+				},
+				"macosNotarizationProfile": {
+					"$ref": "#/definitions/dist-archive-macosNotarizationProfile"
 				}
 			},
 			"patternProperties": {
@@ -551,6 +554,11 @@
 					}
 				}
 			]
+		},
+		"dist-archive-macosNotarizationProfile": {
+			"type": "string",
+			"description": "The keychain profile to use for notarization on macos. Requires Xcode 13 or higher",
+			"minLength": 1
 		},
 		"dist-macos-disk-image": {
 			"type": "object",

@@ -5,6 +5,7 @@
 
 #include "Bundler/MacosNotarizationMsg.hpp"
 
+#include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "Terminal/Output.hpp"
 
@@ -24,8 +25,10 @@ void MacosNotarizationMsg::showMessage(const std::string& inFile)
 	auto dim = Output::getAnsiStyle(Output::theme().flair);
 	auto reset = Output::getAnsiStyle(Color::Reset);
 
-	auto message = fmt::format(R"text(
-   {color}To complete notarization, please do the following:{reset}
+	if (m_state.tools.xcodeVersionMajor() < 13)
+	{
+		auto message = fmt::format(R"text(
+   {color}To notarize, please do the following:{reset}
    1. Make note of the bundle id used in your Info.plist (ie. com.company.myapp)
    2. To notarize: {color}xcrun altool --notarize-app --primary-bundle-id \"(bundle id)\" --username \"APPLE ID\" --password \"APP-SPECIFIC PASSWORD\" --file {file}{reset}
    3. Wait 5 minutes or so
@@ -34,12 +37,13 @@ void MacosNotarizationMsg::showMessage(const std::string& inFile)
 
    {dim}If the above is inaccurate or out of date, please open an issue:
    https://github.com/chalet-org/chalet/issues{reset})text",
-		fmt::arg("file", inFile),
-		FMT_ARG(color),
-		FMT_ARG(dim),
-		FMT_ARG(reset));
+			fmt::arg("file", inFile),
+			FMT_ARG(color),
+			FMT_ARG(dim),
+			FMT_ARG(reset));
 
-	Output::print(Color::Reset, message);
+		Output::print(Color::Reset, message);
+	}
 }
 
 }

@@ -11,6 +11,7 @@
 #include "State/BuildState.hpp"
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "System/Files.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -26,7 +27,7 @@ FileArchiver::FileArchiver(const BuildState& inState) :
 /*****************************************************************************/
 bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes)
 {
-	m_format = inTarget.format();
+	auto format = inTarget.format();
 	auto exactpath = Files::getAbsolutePath(Files::getCanonicalPath(m_outputDirectory));
 	m_outputFilename = fmt::format("{}/{}", exactpath, inTarget.getOutputFilename(inBaseName));
 
@@ -41,7 +42,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 		return false;
 
 	StringList cmd;
-	if (m_format == ArchiveFormat::Zip)
+	if (format == ArchiveFormat::Zip)
 	{
 		if (!zipIsValid())
 			return false;
@@ -52,7 +53,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 			return false;
 		}
 	}
-	else if (m_format == ArchiveFormat::Tar)
+	else if (format == ArchiveFormat::Tar)
 	{
 		if (!tarIsValid())
 			return false;
@@ -66,7 +67,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 
 	if (cmd.empty())
 	{
-		Diagnostic::error("Invalid archive format requested: {}.", static_cast<i32>(m_format));
+		Diagnostic::error("Invalid archive format requested: {}.", static_cast<i32>(format));
 		return false;
 	}
 
@@ -78,6 +79,45 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+bool FileArchiver::notarize(const BundleArchiveTarget& inTarget)
+{
+#if defined(CHALET_MACOS)
+	auto format = inTarget.format();
+	if (format == ArchiveFormat::Zip && m_state.tools.xcodeVersionMajor() >= 13)
+	{
+		auto& macosNotarizationProfile = inTarget.macosNotarizationProfile();
+		if (!macosNotarizationProfile.empty())
+		{
+			bool result = Process::runNoOutput({
+				m_state.tools.xcrun(),
+				"notarytool",
+				"submit",
+				m_outputFilename,
+				"--keychain-profile",
+				macosNotarizationProfile,
+				"--wait",
+			});
+
+			if (!result)
+			{
+				if (!Output::showCommands())
+					Diagnostic::error("Make sure the profile '{}' is valid and was run with 'notarytool store-credentials'", macosNotarizationProfile);
+
+				Diagnostic::error("Failed to notarize: {}", m_outputFilename);
+			}
+
+			return result;
+		}
+	}
+
+	return true;
+#else
+	UNUSED(inTarget) :
+		return true;
+#endif
 }
 
 /*****************************************************************************/
@@ -321,4 +361,5 @@ StringList FileArchiver::getIncludesForCommand(const StringList& inIncludes) con
 
 	return ret;
 }
+
 }

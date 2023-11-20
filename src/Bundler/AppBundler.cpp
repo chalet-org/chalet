@@ -421,6 +421,17 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 
 	Diagnostic::printDone(timer.asString());
 
+	if (!inTarget.macosNotarizationProfile().empty())
+	{
+		timer.restart();
+		Diagnostic::stepInfoEllipsis("Notarizing archive");
+
+		if (!archiver.notarize(inTarget))
+			return false;
+
+		Diagnostic::printDone(timer.asString());
+	}
+
 	return true;
 }
 

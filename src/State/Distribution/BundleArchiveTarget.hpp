@@ -23,6 +23,9 @@ struct BundleArchiveTarget final : public IDistTarget
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
 
+	const std::string& macosNotarizationProfile() const noexcept;
+	void setMacosNotarizationProfile(std::string&& inValue);
+
 	ArchiveFormat format() const noexcept;
 	void setFormat(std::string&& inValue);
 
@@ -30,6 +33,8 @@ private:
 	ArchiveFormat getFormatFromString(const std::string& inValue) const;
 
 	StringList m_includes;
+
+	std::string m_macosNotarizationProfile;
 
 	ArchiveFormat m_format = ArchiveFormat::Zip;
 };

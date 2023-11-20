@@ -5,6 +5,7 @@
 
 #include "State/Distribution/BundleArchiveTarget.hpp"
 
+#include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
@@ -37,12 +38,29 @@ bool BundleArchiveTarget::initialize()
 	if (!replaceVariablesInPathList(m_includes))
 		return false;
 
+#if defined(CHALET_MACOS)
+	if (!m_state.replaceVariablesInString(m_macosNotarizationProfile, this))
+		return false;
+#endif
+
 	return true;
 }
 
 /*****************************************************************************/
 bool BundleArchiveTarget::validate()
 {
+#if defined(CHALET_MACOS)
+	if (!m_macosNotarizationProfile.empty())
+	{
+		auto xcodeVersion = m_state.tools.xcodeVersionMajor();
+		if (xcodeVersion < 13)
+		{
+			Diagnostic::warn("Notarization using 'macosNotarizationProfile' requires Xcode 13 or higher, but found: {}", xcodeVersion);
+			m_macosNotarizationProfile.clear();
+		}
+	}
+#endif
+
 	return true;
 }
 
@@ -72,6 +90,17 @@ void BundleArchiveTarget::addInclude(std::string&& inValue)
 		inValue.pop_back();
 
 	List::addIfDoesNotExist(m_includes, std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& BundleArchiveTarget::macosNotarizationProfile() const noexcept
+{
+	return m_macosNotarizationProfile;
+}
+
+void BundleArchiveTarget::setMacosNotarizationProfile(std::string&& inValue)
+{
+	m_macosNotarizationProfile = std::move(inValue);
 }
 
 /*****************************************************************************/

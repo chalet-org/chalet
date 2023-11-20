@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include "State/ArchiveFormat.hpp"
-
 namespace chalet
 {
 class BuildState;
@@ -17,6 +15,8 @@ struct FileArchiver
 	explicit FileArchiver(const BuildState& inState);
 
 	bool archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes);
+
+	bool notarize(const BundleArchiveTarget& inTarget);
 
 private:
 	bool powerShellIsValid() const;
@@ -36,7 +36,5 @@ private:
 
 	std::string m_outputFilename;
 	std::string m_tmpDirectory;
-
-	ArchiveFormat m_format = ArchiveFormat::Zip;
 };
 }
