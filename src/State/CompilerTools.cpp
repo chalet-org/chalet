@@ -38,7 +38,7 @@ Dictionary<StrategyType> getStrategyTypes()
 	Dictionary<StrategyType> ret{
 		{ "makefile", StrategyType::Makefile },
 		{ "ninja", StrategyType::Ninja },
-		{ "native-experimental", StrategyType::Native },
+		{ "native", StrategyType::Native },
 		{ "msbuild", StrategyType::MSBuild },
 		{ "xcodebuild", StrategyType::XcodeBuild },
 	};
@@ -53,7 +53,7 @@ StringList CompilerTools::getToolchainStrategiesForSchema()
 	StringList ret{
 		"makefile",
 		"ninja",
-		"native-experimental",
+		"native",
 		"msbuild",
 		"xcodebuild",
 	};

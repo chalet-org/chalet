@@ -14,7 +14,7 @@
 				"-t",
 				"w64-mingw13",
 				"-b",
-				"native-experimental",
+				"native",
 				"build"
 			]
 		},
