@@ -1193,7 +1193,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 {
 	ToolchainPreference ret;
 	ret.buildPathStyle = BuildPathStyle::TargetTriple;
-	ret.strategy = StrategyType::Ninja;
+	ret.strategy = StrategyType::Native;
 
 	m_isToolchainPreset = false;
 
