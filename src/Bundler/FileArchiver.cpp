@@ -115,8 +115,8 @@ bool FileArchiver::notarize(const BundleArchiveTarget& inTarget)
 
 	return true;
 #else
-	UNUSED(inTarget) :
-		return true;
+	UNUSED(inTarget);
+	return true;
 #endif
 }
 
