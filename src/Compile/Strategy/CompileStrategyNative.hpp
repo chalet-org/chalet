@@ -27,8 +27,12 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
+	std::string m_cacheFile;
+	std::string m_cacheFolder;
+
 	NativeGenerator m_nativeGenerator;
 
 	bool m_initialized = false;
+	bool m_cacheNeedsUpdate = false;
 };
 }

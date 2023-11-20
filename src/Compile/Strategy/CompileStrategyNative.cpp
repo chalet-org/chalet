@@ -28,13 +28,20 @@ bool CompileStrategyNative::initialize()
 	const auto& cachePathId = m_state.cachePathId();
 
 	auto& cacheFile = m_state.cache.file();
-	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
+	m_cacheFolder = m_state.cache.getCachePath(cachePathId, CacheType::Local);
+	m_cacheFile = fmt::format("{}/build.chalet", m_cacheFolder);
 
+	const bool cacheExists = Files::pathExists(m_cacheFolder) && Files::pathExists(m_cacheFile);
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	if (buildStrategyChanged)
 	{
 		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
+	m_cacheNeedsUpdate = !cacheExists || buildStrategyChanged;
+	UNUSED(m_cacheNeedsUpdate);
+
+	if (!Files::pathExists(m_cacheFolder))
+		Files::makeDirectory(m_cacheFolder);
 
 	m_initialized = true;
 
@@ -56,6 +63,13 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 bool CompileStrategyNative::doPreBuild()
 {
 	m_nativeGenerator.initialize();
+	if (m_initialized && m_cacheNeedsUpdate)
+	{
+		std::string contents;
+		std::ofstream(m_cacheFile) << contents
+								   << std::endl;
+	}
+
 	return ICompileStrategy::doPreBuild();
 }
 
