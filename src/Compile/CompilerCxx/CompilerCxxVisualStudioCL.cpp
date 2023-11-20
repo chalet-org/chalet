@@ -6,6 +6,7 @@
 #include "Compile/CompilerCxx/CompilerCxxVisualStudioCL.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -13,9 +14,8 @@
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -100,8 +100,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	ret.emplace_back("/c");
 	addCharsets(ret);
 
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-	if (generateDependency && isNinja)
+	if (generateDependency)
 	{
 		ret.emplace_back("/showIncludes");
 	}
@@ -170,8 +169,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	addCharsets(ret);
 	ret.emplace_back("/MP");
 
-	const bool isNinja = m_state.toolchain.strategy() == StrategyType::Ninja;
-	if (generateDependency && isNinja)
+	if (generateDependency)
 	{
 		ret.emplace_back("/showIncludes");
 	}

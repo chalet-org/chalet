@@ -5,9 +5,9 @@
 
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -15,10 +15,10 @@
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 // #include "Utility/Timer.hpp"
 
@@ -49,7 +49,6 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
 {
 	m_sourcesChanged = false;
-	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
 	m_implementationUnits.clear();

@@ -52,7 +52,7 @@ jobs:
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (arm)"
-        run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native-experimental bundle
+        run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native bundle
       - name: "Upload assets (arm)"
         uses: softprops/action-gh-release@v1
         with:
@@ -63,7 +63,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Build: Release (x86_64)"
-        run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native-experimental bundle
+        run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native bundle
       - name: "Upload assets (x86_64)"
         uses: softprops/action-gh-release@v1
         with:
@@ -112,7 +112,7 @@ jobs:
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
       - name: "Build: Release (x86_64)"
-        run: build/Debug/chalet-debug -c Release -a x86_64 -b native-experimental bundle
+        run: build/Debug/chalet-debug -c Release -a x86_64 -b native bundle
       - name: "Notarize (x86_64)"
         run: |
           xcrun notarytool submit ./dist/chalet-x86_64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
@@ -124,7 +124,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Build: Release (arm64)"
-        run: build/Debug/chalet-debug -c Release -a arm64 -b native-experimental bundle
+        run: build/Debug/chalet-debug -c Release -a arm64 -b native bundle
       - name: "Notarize (arm64)"
         run: |
           xcrun notarytool submit ./dist/chalet-arm64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
@@ -136,7 +136,7 @@ jobs:
           draft: true
           prerelease: false
       - name: "Build: Release (universal)"
-        run: build/Debug/chalet-debug -c Release -a universal -b native-experimental bundle
+        run: build/Debug/chalet-debug -c Release -a universal -b native bundle
       - name: "Notarize (universal)"
         run: |
           xcrun notarytool submit ./dist/chalet-universal-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
@@ -179,7 +179,7 @@ jobs:
       - name: "Color Test"
         run: build/msvc_Debug/chalet-debug termtest
       - name: "Build: Release (x64)"
-        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 -b native-experimental bundle
+        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 -b native bundle
       - name: "Upload assets (x64)"
         uses: softprops/action-gh-release@v1
         with:
@@ -196,7 +196,7 @@ jobs:
         with:
           arch: amd64_arm64
       - name: "Build: Release (arm64)"
-        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native-experimental bundle
+        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native bundle
       - name: "Upload assets (arm64)"
         uses: softprops/action-gh-release@v1
         with:

@@ -250,7 +250,7 @@ std::string BuildEnvironmentVisualStudio::getAssemblyFile(const std::string& inS
 /*****************************************************************************/
 std::string BuildEnvironmentVisualStudio::getDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.d.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+	return fmt::format("{}/{}.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/

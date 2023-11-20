@@ -39,7 +39,7 @@ protected:
 
 	std::string m_hash;
 
-	bool m_generateDependencies = false;
+	bool m_generateDependencies = true;
 };
 
 }

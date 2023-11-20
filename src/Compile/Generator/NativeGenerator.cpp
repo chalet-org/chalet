@@ -25,7 +25,8 @@ namespace chalet
 {
 /*****************************************************************************/
 NativeGenerator::NativeGenerator(BuildState& inState) :
-	m_state(inState)
+	m_state(inState),
+	m_sourceCache(m_state.cache.file().sources())
 {
 }
 
@@ -45,8 +46,9 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = inOutputs;
 
-	m_generateDependencies = !Shell::isContinuousIntegrationServer() && !m_state.environment->isMsvc();
 	bool targetExists = Files::pathExists(outputs->target);
+
+	bool dependentchanged = targetExists && checkDependentTargets(inProject);
 
 	{
 		CommandPool::JobList jobs;
@@ -60,7 +62,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		bool compileTarget = m_sourcesChanged || m_pchChanged || !targetExists;
+		bool compileTarget = m_sourcesChanged || m_pchChanged || dependentchanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(outputs->groups);
@@ -101,6 +103,9 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 /*****************************************************************************/
 bool NativeGenerator::buildProject(const SourceTarget& inProject)
 {
+	m_targetsChanged.clear();
+	m_fileCache.clear();
+
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;
 
@@ -149,7 +154,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 	CommandPool::CmdList ret;
 	if (m_project->usesPrecompiledHeader())
 	{
-		auto& sourceCache = m_state.cache.file().sources();
 		const auto& source = m_project->precompiledHeader();
 		const auto& objDir = m_state.paths.objDir();
 
@@ -164,7 +168,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
-				bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, outObject);
+				bool pchChanged = fileChangedOrDependentChanged(source, outObject);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
@@ -187,7 +191,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		else
 #endif
 		{
-			bool pchChanged = sourceCache.fileChangedOrDoesNotExist(source, pchTarget);
+			bool pchChanged = fileChangedOrDependentChanged(source, pchTarget);
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
@@ -206,6 +210,11 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					if (!cxxExt.empty())
 						out.reference = fmt::format("{}.{}", out.output, cxxExt);
 
+#if defined(CHALET_WIN32)
+					if (m_state.environment->isMsvc())
+						out.dependency = std::move(dependency);
+#endif
+
 					ret.emplace_back(std::move(out));
 				}
 			}
@@ -221,8 +230,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupList& inGroups)
 {
 	chalet_assert(m_project != nullptr, "");
-
-	auto& sourceCache = m_state.cache.file().sources();
 
 	CommandPool::CmdList ret;
 
@@ -244,9 +251,9 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target);
 				m_sourcesChanged |= sourceChanged;
-				if (sourceChanged || m_pchChanged)
+				if (sourceChanged)
 				{
 					auto sourceFile = fmt::format("{}/{}", objDir, source);
 					if (!List::contains(m_fileCache, sourceFile))
@@ -267,7 +274,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -281,6 +288,10 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 						out.command = getCxxCompile(source, target, group->type);
 						out.reference = out.output;
 
+#if defined(CHALET_WIN32)
+						if (m_state.environment->isMsvc())
+							out.dependency = m_state.environment->getDependencyFile(source);
+#endif
 						ret.emplace_back(std::move(out));
 					}
 				}
@@ -292,6 +303,11 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			default:
 				break;
 		}
+	}
+
+	if (m_sourcesChanged)
+	{
+		m_targetsChanged.emplace_back(m_project->name());
 	}
 
 	return ret;
@@ -346,4 +362,52 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 	return ret;
 }
 
+/*****************************************************************************/
+bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target)
+{
+	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
+	if (result)
+		return true;
+
+	auto dependency = m_state.environment->getDependencyFile(source);
+	if (Files::pathExists(dependency))
+	{
+		std::ifstream input(dependency);
+		for (std::string line; std::getline(input, line);)
+		{
+			if (line.empty())
+				continue;
+
+			if (!String::endsWith(':', line))
+				continue;
+
+			line.pop_back();
+
+			if (m_sourceCache.fileChangedOrDoesNotExist(line))
+				return true;
+
+			// LOG(source, line);
+		}
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
+bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
+{
+	bool result = false;
+
+	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
+	for (auto& link : links)
+	{
+		if (List::contains(m_targetsChanged, link))
+		{
+			result = true;
+			break;
+		}
+	}
+
+	return result;
+}
 }

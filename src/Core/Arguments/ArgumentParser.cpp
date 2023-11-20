@@ -666,15 +666,15 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getStrategyPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("ninja", preset))
-				return std::string("Build with Ninja (recommended)");
+				return std::string("Build with Ninja");
 			else if (String::equals("makefile", preset))
 #if defined(CHALET_WIN32)
 				return std::string("Build with GNU Make (MinGW), NMake or Qt Jom (MSVC)");
 #else
 				return std::string("Build with GNU Make");
 #endif
-			else if (String::equals("native-experimental", preset))
-				return std::string("Build with Chalet (experimental!)");
+			else if (String::equals("native", preset))
+				return std::string("Build natively with Chalet");
 #if defined(CHALET_WIN32)
 			else if (String::equals("msbuild", preset))
 				return std::string("Build using a Visual Studio solution and MSBuild - requires vs-* toolchain preset");

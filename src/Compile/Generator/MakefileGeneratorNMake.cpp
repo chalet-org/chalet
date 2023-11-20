@@ -22,8 +22,6 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	// m_generateDependencies = !Shell::isContinuousIntegrationServer();
-	m_generateDependencies = false;
 }
 
 /*****************************************************************************/

@@ -7,12 +7,14 @@
 
 #include <csignal>
 
+#include "Process/Environment.hpp"
 #include "Process/SubProcessController.hpp"
-#include "System/SignalHandler.hpp"
 #include "System/Files.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -63,7 +65,7 @@ bool printCommand(std::string inText)
 
 /*****************************************************************************/
 #if defined(CHALET_WIN32)
-bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string sourceFile)
+bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string sourceFile, std::string dependencyFile)
 {
 	std::string output;
 
@@ -81,6 +83,7 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 
 	// String::replaceAll(output, "\r\n", "\n");
 	// String::replaceAll(output, '\n', "\r\n");
+
 	if (String::startsWith(sourceFile, output))
 		String::replaceAll(output, fmt::format("{}\r\n", sourceFile), "");
 
@@ -88,9 +91,64 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 	{
 		std::lock_guard<std::mutex> lock(state->mutex);
 
+		auto vcInstallDir = Environment::getString("VCINSTALLDIR");
+		auto ucrtsdkDir = Environment::getString("UniversalCRTSdkDir");
+		auto cwd = Files::getWorkingDirectory() + '\\';
+
+		std::string toPrint;
+		std::string dependencySearch("Note: including file: ");
+
+		std::string dependencies;
+
+		std::istringstream input(output);
+		for (std::string line; std::getline(input, line);)
+		{
+			if (String::startsWith(dependencySearch, line))
+			{
+				auto file = line.substr(dependencySearch.size());
+				auto firstNonSpace = file.find_first_not_of(' ');
+				if (firstNonSpace > 0)
+				{
+					file = file.substr(firstNonSpace);
+				}
+
+				// Don't include system headers - if the toolchain version changes, we'll figure that out elsewhere
+				//
+				if (!vcInstallDir.empty() && String::startsWith(vcInstallDir, file))
+					continue;
+
+				if (!ucrtsdkDir.empty() && String::startsWith(ucrtsdkDir, file))
+					continue;
+
+				String::replaceAll(file, cwd, "");
+
+				if (String::endsWith('\n', file))
+					file.pop_back();
+
+				if (String::endsWith('\r', file))
+					file.pop_back();
+
+				// When the dependencies get read, we'll look for this
+				file += ':';
+				file += '\n';
+
+				dependencies += std::move(file);
+			}
+			else
+			{
+				toPrint += line + "\r\n";
+			}
+		}
+
 		if (result)
 		{
-			std::cout.write(output.data(), output.size());
+			if (!dependencies.empty())
+			{
+				Path::toUnix(dependencies);
+				Files::createFileWithContents(dependencyFile, dependencies);
+			}
+
+			std::cout.write(toPrint.data(), toPrint.size());
 		}
 		else
 		{
@@ -103,7 +161,7 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 
 			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
 			std::cout.write(failure.data(), failure.size());
-			std::cout.write(output.data(), output.size());
+			std::cout.write(toPrint.data(), toPrint.size());
 		}
 		std::cout.flush();
 	}
@@ -359,7 +417,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 #if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
-				if (!executeCommandMsvc(index, it.command, String::getPathFilename(it.reference)) && haltOnError)
+				if (!executeCommandMsvc(index, it.command, String::getPathFilename(it.reference), it.dependency) && haltOnError)
 					break;
 			}
 			else
@@ -389,7 +447,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 #if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
-				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, index, it.command, String::getPathFilename(it.reference)));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, index, it.command, String::getPathFilename(it.reference), it.dependency));
 			}
 			else
 #endif

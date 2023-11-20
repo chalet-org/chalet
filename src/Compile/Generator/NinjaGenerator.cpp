@@ -30,8 +30,6 @@ NinjaGenerator::NinjaGenerator(const BuildState& inState) :
 		{ SourceType::ObjectiveC, &NinjaGenerator::getObjcRule },
 		{ SourceType::WindowsResource, &NinjaGenerator::getRcRule },
 	};
-	// m_generateDependencies = !Shell::isContinuousIntegrationServer();
-	m_generateDependencies = true;
 }
 
 /*****************************************************************************/

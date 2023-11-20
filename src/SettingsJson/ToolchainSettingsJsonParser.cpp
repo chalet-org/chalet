@@ -6,8 +6,8 @@
 #include "SettingsJson/ToolchainSettingsJsonParser.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Platform/Arch.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -578,7 +578,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		}
 		else if (preference.strategy == StrategyType::Native || (make.empty() && ninja.empty()))
 		{
-			toolchain[Keys::ToolchainBuildStrategy] = "native-experimental";
+			toolchain[Keys::ToolchainBuildStrategy] = "native";
 		}
 
 		m_jsonFile.setDirty(true);
