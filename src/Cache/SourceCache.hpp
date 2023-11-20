@@ -31,6 +31,7 @@ struct SourceCache
 	Json asJson() const;
 
 	bool updateInitializedTime(const std::time_t inTime = 0);
+	bool isNewBuild() const;
 
 	void addLastWrite(std::string inFile, const std::string& inRaw);
 	void addLastWrite(std::string inFile, const std::time_t inLastWrite);
