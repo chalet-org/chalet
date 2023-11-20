@@ -7,6 +7,7 @@
 
 #include <csignal>
 
+#include "Process/Environment.hpp"
 #include "Process/SubProcessController.hpp"
 #include "System/Files.hpp"
 #include "System/SignalHandler.hpp"
@@ -90,6 +91,10 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 	{
 		std::lock_guard<std::mutex> lock(state->mutex);
 
+		auto vcInstallDir = Environment::getString("VCINSTALLDIR");
+		auto ucrtsdkDir = Environment::getString("UniversalCRTSdkDir");
+		auto cwd = Files::getWorkingDirectory() + '\\';
+
 		std::string toPrint;
 		std::string dependencySearch("Note: including file: ");
 
@@ -106,6 +111,16 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 				{
 					file = file.substr(firstNonSpace);
 				}
+
+				// Don't include system headers - if the toolchain version changes, we'll figure that out elsewhere
+				//
+				if (!vcInstallDir.empty() && String::startsWith(vcInstallDir, file))
+					continue;
+
+				if (!ucrtsdkDir.empty() && String::startsWith(ucrtsdkDir, file))
+					continue;
+
+				String::replaceAll(file, cwd, "");
 
 				if (String::endsWith('\n', file))
 					file.pop_back();
@@ -130,8 +145,6 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 			if (!dependencies.empty())
 			{
 				Path::toUnix(dependencies);
-				// String::replaceAll(dependencies, '\r', '\n');
-				// String::replaceAll(dependencies, "\n\n", "\n");
 				Files::createFileWithContents(dependencyFile, dependencies);
 			}
 

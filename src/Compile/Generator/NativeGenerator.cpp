@@ -366,40 +366,31 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target)
 {
 	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
-	if (!result)
+	if (result)
+		return true;
+
+	auto dependency = m_state.environment->getDependencyFile(source);
+	if (Files::pathExists(dependency))
 	{
-		if (m_cwd.empty())
+		std::ifstream input(dependency);
+		for (std::string line; std::getline(input, line);)
 		{
-			m_cwd = m_state.inputs.workingDirectory() + '/';
-		}
+			if (line.empty())
+				continue;
 
-		auto dependency = m_state.environment->getDependencyFile(source);
-		if (Files::pathExists(dependency))
-		{
-			std::ifstream input(dependency);
-			for (std::string line; std::getline(input, line);)
-			{
-				if (line.empty())
-					continue;
+			if (!String::endsWith(':', line))
+				continue;
 
-				if (!String::endsWith(':', line))
-					continue;
+			line.pop_back();
 
-				String::replaceAll(line, m_cwd, "");
+			if (m_sourceCache.fileChangedOrDoesNotExist(line))
+				return true;
 
-				line.pop_back();
-
-				if (m_sourceCache.fileChangedOrDoesNotExist(line))
-				{
-					result = true;
-					break;
-				}
-
-				// LOG(source, line);
-			}
+			// LOG(source, line);
 		}
 	}
-	return result;
+
+	return false;
 }
 
 /*****************************************************************************/

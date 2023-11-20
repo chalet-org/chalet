@@ -53,8 +53,6 @@ private:
 
 	StringList m_fileCache;
 
-	std::string m_cwd;
-
 	bool m_generateDependencies = true;
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
