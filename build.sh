@@ -23,7 +23,11 @@ BUILD_FOLDER="build/$BUILD_CONFIGURATION"
 mkdir -p "$BUILD_FOLDER"
 cd "$CWD/$BUILD_FOLDER"
 
-if [[ $PLATFORM == "windows" ]]; then
+if [[ $CI == "1" ]]; then
+	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
+	# make -j8
+	cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
+elif [[ $PLATFORM == "windows" ]]; then
 	PATH="/c/msys64/mingw64/bin:$PATH"
 	cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	mingw32-make -j$(getconf _NPROCESSORS_ONLN)
