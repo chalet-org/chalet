@@ -88,17 +88,44 @@ void AncillaryTools::fetchXcodeVersion()
 	{
 		if (Files::pathExists(m_xcodebuild))
 		{
-			std::string version = Process::runOutput({ m_xcodebuild, "-version" });
-			if (String::contains("requires Xcode", version))
+			auto xcodePath = Files::getXcodePath();
+			if (xcodePath.empty())
 				return;
 
-			version = Files::isolateVersion(version);
+			if (String::endsWith("CommandLineTools", xcodePath))
+				return;
 
-			auto vals = String::split(version, '.');
-			if (vals.size() == 2)
+			if (String::endsWith("Contents/Developer", xcodePath))
+				xcodePath = String::getPathFolder(xcodePath);
+
+			auto versionPlist = fmt::format("{}/version.plist", xcodePath);
+			if (Files::pathExists(versionPlist))
 			{
-				m_xcodeVersionMajor = std::stoi(vals[0]);
-				m_xcodeVersionMinor = std::stoi(vals[1]);
+				auto fileContents = Files::getFileContents(versionPlist);
+				if (!fileContents.empty())
+				{
+					auto versionKey = fileContents.find("CFBundleShortVersionString");
+					if (versionKey != std::string::npos)
+					{
+						std::string search = "<string>";
+						auto versionValue = fileContents.find(search, versionKey);
+						if (versionValue != std::string::npos)
+						{
+							versionValue += search.size();
+							auto closer = fileContents.find("</string>", versionValue);
+							if (closer != std::string::npos)
+							{
+								auto version = fileContents.substr(versionValue, closer - versionValue);
+								auto vals = String::split(version, '.');
+								if (vals.size() >= 2)
+								{
+									m_xcodeVersionMajor = std::stoi(vals[0]);
+									m_xcodeVersionMinor = std::stoi(vals[1]);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 	}

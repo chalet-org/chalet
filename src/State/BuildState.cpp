@@ -466,6 +466,13 @@ bool BuildState::initializeBuild()
 	//
 	environment->generateTargetSystemPaths();
 
+#if defined(CHALET_MACOS)
+	if (environment->isAppleClang())
+	{
+		m_impl->centralState.tools.fetchXcodeVersion();
+	}
+#endif
+
 	// Get the path to windres, but with this method, it's not saved in settings
 	//  - it's specific to this architecture that we're building for
 	//
@@ -854,10 +861,6 @@ bool BuildState::validateState()
 			}
 			tools.setVsperfcmd(std::move(vsperfcmd));
 		}
-#endif
-
-#if defined(CHALET_MACOS)
-		m_impl->centralState.tools.fetchXcodeVersion();
 #endif
 	}
 
