@@ -28,7 +28,7 @@ jobs:
       - name: "Get Ninja"
         uses: seanmiddleditch/gha-setup-ninja@master
         with:
-          version: $NINJA_VERSION
+          version: ${{ env.NINJA_VERSION }}
       - name: "arm setup"
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
@@ -102,7 +102,7 @@ jobs:
       - name: "Get Ninja"
         uses: seanmiddleditch/gha-setup-ninja@master
         with:
-          version: $NINJA_VERSION
+          version: ${{ env.NINJA_VERSION }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
@@ -166,7 +166,7 @@ jobs:
       - name: "Get Ninja"
         uses: seanmiddleditch/gha-setup-ninja@master
         with:
-          version: $NINJA_VERSION
+          version: ${{ env.NINJA_VERSION }}
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Show Version Info"
