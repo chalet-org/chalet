@@ -43,15 +43,15 @@ ThreadPool::ThreadPool(const size_t inThreads) :
 {
 	for (size_t i = 0; i < m_threads; ++i)
 	{
-		std::thread thread(&ThreadPool::workerThread, this);
+		auto& thread = m_workers.emplace_back(&ThreadPool::workerThread, this);
 #if defined(CHALET_WIN32)
 		::SetThreadPriority((HANDLE)thread.native_handle(), THREAD_PRIORITY_NORMAL);
 #else
 		// sched_param schedParams;
 		// schedParams.sched_priority = 20;
 		// ::pthread_setschedparam(thread.native_handle(), 2, &schedParams);
+		UNUSED(thread);
 #endif
-		m_workers.emplace_back(std::move(thread));
 	}
 }
 
