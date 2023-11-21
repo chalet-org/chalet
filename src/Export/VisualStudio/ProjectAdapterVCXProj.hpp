@@ -51,6 +51,7 @@ struct ProjectAdapterVCXProj
 	std::string getPreprocessorDefinitions() const;
 	std::string getLanguageStandardCpp() const;
 	std::string getLanguageStandardC() const;
+	std::string getMultiProcessorCompilation() const;
 	std::string getTreatWarningsAsError() const;
 	std::string getDiagnosticsFormat() const;
 	std::string getDebugInformationFormat() const;

@@ -167,7 +167,9 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
-	ret.emplace_back("/MP");
+
+	if (m_msvcAdapter.supportsMultiProcessorCompilation())
+		ret.emplace_back("/MP");
 
 	if (generateDependency)
 	{
@@ -238,7 +240,9 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 	ret.emplace_back("/nologo");
 	ret.emplace_back("/c");
 	addCharsets(ret);
-	ret.emplace_back("/MP");
+
+	if (m_msvcAdapter.supportsMultiProcessorCompilation())
+		ret.emplace_back("/MP");
 
 	addSourceFileInterpretation(ret, SourceType::CPlusPlus);
 	addLanguageStandard(ret, SourceType::CPlusPlus);
@@ -330,7 +334,9 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 {
 	outArgList.emplace_back("/c");
 	addCharsets(outArgList);
-	outArgList.emplace_back("/MP");
+
+	if (m_msvcAdapter.supportsMultiProcessorCompilation())
+		outArgList.emplace_back("/MP");
 
 	addSourceFileInterpretation(outArgList, derivative);
 	addLanguageStandard(outArgList, derivative);
