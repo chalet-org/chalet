@@ -303,6 +303,12 @@ std::string ProjectAdapterVCXProj::getLanguageStandardC() const
 }
 
 /*****************************************************************************/
+std::string ProjectAdapterVCXProj::getMultiProcessorCompilation() const
+{
+	return getBoolean(m_msvcAdapter.supportsMultiProcessorCompilation());
+}
+
+/*****************************************************************************/
 std::string ProjectAdapterVCXProj::getTreatWarningsAsError() const
 {
 	return getBooleanIfTrue(m_project.treatWarningsAsErrors());

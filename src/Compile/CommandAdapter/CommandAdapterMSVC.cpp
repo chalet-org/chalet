@@ -287,6 +287,12 @@ bool CommandAdapterMSVC::supportsExternalWarnings() const
 }
 
 /*****************************************************************************/
+bool CommandAdapterMSVC::supportsMultiProcessorCompilation() const
+{
+	return m_state.info.maxJobs() > 1;
+}
+
+/*****************************************************************************/
 bool CommandAdapterMSVC::supportsIncrementalLinking() const
 {
 	const auto& config = m_state.configuration;

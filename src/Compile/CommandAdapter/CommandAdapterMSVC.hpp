@@ -44,6 +44,7 @@ struct CommandAdapterMSVC
 	bool supportsForceConformanceInForLoopScope() const;
 	bool supportsRemoveUnreferencedCodeData() const;
 	bool supportsExternalWarnings() const;
+	bool supportsMultiProcessorCompilation() const;
 
 	bool supportsIncrementalLinking() const;
 	bool supportsCOMDATFolding() const;
