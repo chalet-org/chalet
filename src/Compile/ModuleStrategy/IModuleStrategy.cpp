@@ -613,7 +613,6 @@ bool IModuleStrategy::onFailure()
 	Output::lineBreak();
 
 	m_state.toolchain.setStrategy(m_oldStrategy);
-	// m_state.cache.file().setDisallowSave(true);
 	return false;
 }
 

@@ -122,8 +122,6 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 
 		if (!m_commandPool->runAll(buildJobs, settings))
 		{
-			m_state.cache.file().setDisallowSave(true);
-
 			Output::lineBreak();
 			return false;
 		}

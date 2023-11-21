@@ -51,8 +51,6 @@ struct WorkspaceInternalCacheFile
 
 	void addExtraHash(std::string&& inHash);
 
-	void setDisallowSave(const bool inValue);
-
 	SourceCache& sources() const;
 	ExternalDependencyCache& externalDependencies();
 
@@ -89,7 +87,6 @@ private:
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;
 	bool m_appVersionChanged = false;
-	bool m_disallowSave = false;
 	bool m_dirty = false;
 };
 }
