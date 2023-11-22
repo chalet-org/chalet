@@ -369,9 +369,6 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 			++index;
 		}
-
-		if (state->errorCode != CommandPoolErrorCode::None)
-			signalHandler(SIGTERM);
 	}
 	else
 	{
