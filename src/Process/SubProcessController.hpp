@@ -17,6 +17,5 @@ i32 getLastExitCode();
 std::string getSystemMessage(const i32 inExitCode);
 std::string getSignalRaisedMessage(const i32 inExitCode);
 std::string getSignalNameFromCode(const i32 inExitCode);
-void haltAll(const SigNum inSignal = SigNum::Terminate);
 }
 }

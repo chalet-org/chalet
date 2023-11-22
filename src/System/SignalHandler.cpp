@@ -25,7 +25,7 @@ struct
 {
 	SignalHandler::Callback onErrorCallback = nullptr;
 	std::unordered_map<i32, std::vector<SignalHandler::SignalFunc>> signalHandlers;
-	bool exitCalled = false;
+	// bool exitCalled = false;
 } state;
 
 void printError(const std::string& inType, const std::string& inDescription)
@@ -39,6 +39,10 @@ void printError(const std::string& inType, const std::string& inDescription)
 
 void signalHandlerInternal(i32 inSignal)
 {
+	// if (state.exitCalled)
+	// 	return;
+
+	// state.exitCalled = true;
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
 		bool exitHandlerCalled = false;
@@ -75,13 +79,12 @@ void SignalHandler::add(i32 inSignal, SignalFunc inListener)
 			if (listener == inListener)
 				return;
 		}
+
 		vect.emplace_back(inListener);
 	}
 	else
 	{
-		std::vector<SignalHandler::SignalFunc> vect;
-		vect.emplace_back(inListener);
-		state.signalHandlers.emplace(inSignal, std::move(vect));
+		state.signalHandlers.emplace(inSignal, std::vector<SignalHandler::SignalFunc>{ inListener });
 	}
 }
 
@@ -91,15 +94,16 @@ void SignalHandler::remove(i32 inSignal, SignalFunc inListener)
 	if (state.signalHandlers.find(inSignal) != state.signalHandlers.end())
 	{
 		auto& vect = state.signalHandlers.at(inSignal);
-		auto it = vect.end();
-		while (it != vect.begin())
+		auto it = vect.begin();
+		while (it != vect.end())
 		{
-			--it;
-			SignalFunc func = (*it);
+			auto& func = (*it);
 			if (func == inListener)
 			{
 				it = vect.erase(it);
 			}
+			else
+				it++;
 		}
 	}
 }
@@ -107,6 +111,8 @@ void SignalHandler::remove(i32 inSignal, SignalFunc inListener)
 /*****************************************************************************/
 void SignalHandler::cleanup()
 {
+	Diagnostic::cancelEllipsis();
+
 	state.signalHandlers.clear();
 }
 
@@ -137,8 +143,6 @@ void SignalHandler::exitHandler(const i32 inSignal)
 {
 	if (state.onErrorCallback != nullptr)
 		state.onErrorCallback();
-
-	Diagnostic::cancelEllipsis();
 
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
@@ -194,7 +198,5 @@ void SignalHandler::exitHandler(const i32 inSignal)
 	errStream.write(reset.data(), reset.size());
 	// errStream.write("\n", 1);
 	errStream.flush();
-
-	state.exitCalled = true;
 }
 }

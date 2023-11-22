@@ -152,7 +152,9 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 		}
 		else
 		{
-			state->errorCode = CommandPoolErrorCode::BuildFailure;
+			if (state->errorCode == CommandPoolErrorCode::None)
+				state->errorCode = CommandPoolErrorCode::BuildFailure;
+
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
@@ -202,7 +204,9 @@ bool executeCommand(size_t inIndex, StringList inCommand)
 		}
 		else
 		{
-			state->errorCode = CommandPoolErrorCode::BuildFailure;
+			if (state->errorCode == CommandPoolErrorCode::None)
+				state->errorCode = CommandPoolErrorCode::BuildFailure;
+
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
@@ -228,14 +232,7 @@ void signalHandler(i32 inSignal)
 	if (inSignal != SIGTERM)
 		state->errorCode = CommandPoolErrorCode::Aborted;
 
-	if (state->shutdownHandler())
-	{
-		if (inSignal == SIGTERM)
-		{
-			// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-			SubProcessController::haltAll(SigNum::Terminate);
-		}
-	}
+	state->shutdownHandler();
 }
 }
 
@@ -372,6 +369,9 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 			++index;
 		}
+
+		if (state->errorCode != CommandPoolErrorCode::None)
+			signalHandler(SIGTERM);
 	}
 	else
 	{
