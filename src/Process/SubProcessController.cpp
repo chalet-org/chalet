@@ -20,27 +20,30 @@
 
 namespace chalet
 {
-std::mutex s_mutex;
 namespace
 {
 struct
 {
+#if defined(CHALET_WIN32)
 	std::vector<SubProcess*> procesess;
+	std::mutex mutex;
+#endif
 	i32 lastErrorCode = 0;
 	bool initialized = false;
 } state;
 
+#if defined(CHALET_WIN32)
 /*****************************************************************************/
 void addProcess(SubProcess& inProcess)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
+	std::lock_guard<std::mutex> lock(state.mutex);
 	state.procesess.push_back(&inProcess);
 }
 
 /*****************************************************************************/
 void removeProcess(const SubProcess& inProcess)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
+	std::lock_guard<std::mutex> lock(state.mutex);
 	if (state.procesess.empty())
 	{
 		auto it = state.procesess.end();
@@ -56,16 +59,14 @@ void removeProcess(const SubProcess& inProcess)
 		}
 	}
 
-#if defined(CHALET_WIN32)
 	if (state.procesess.empty())
 		WindowsTerminal::reset();
-#endif
 }
 
 /*****************************************************************************/
 void subProcessSignalHandler(i32 inSignal)
 {
-	std::lock_guard<std::mutex> lock(s_mutex);
+	std::lock_guard<std::mutex> lock(state.mutex);
 	auto it = state.procesess.end();
 	while (it != state.procesess.begin())
 	{
@@ -77,11 +78,10 @@ void subProcessSignalHandler(i32 inSignal)
 			it = state.procesess.erase(it);
 	}
 
-#if defined(CHALET_WIN32)
 	if (state.procesess.empty())
 		WindowsTerminal::reset();
-#endif
 }
+#endif
 }
 
 /*****************************************************************************/
@@ -91,12 +91,13 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 	{
 		if (!state.initialized)
 		{
-			std::lock_guard<std::mutex> lock(s_mutex);
+#if defined(CHALET_WIN32)
+			std::lock_guard<std::mutex> lock(state.mutex);
 
 			SignalHandler::add(SIGINT, subProcessSignalHandler);
 			SignalHandler::add(SIGTERM, subProcessSignalHandler);
 			SignalHandler::add(SIGABRT, subProcessSignalHandler);
-
+#endif
 			state.initialized = true;
 		}
 
@@ -119,7 +120,9 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 			return state.lastErrorCode;
 		}
 
+#if defined(CHALET_WIN32)
 		addProcess(process);
+#endif
 
 		{
 			std::array<char, 128> buffer{ 0 };
@@ -132,7 +135,9 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 
 		state.lastErrorCode = process.waitForResult();
 
+#if defined(CHALET_WIN32)
 		removeProcess(process);
+#endif
 
 		return state.lastErrorCode;
 	}
@@ -173,6 +178,10 @@ std::string SubProcessController::getSignalNameFromCode(const i32 inExitCode)
 /*****************************************************************************/
 void SubProcessController::haltAll(const SigNum inSignal)
 {
+#if defined(CHALET_WIN32)
 	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));
+#else
+	UNUSED(inSignal);
+#endif
 }
 }
