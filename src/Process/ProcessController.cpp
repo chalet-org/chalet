@@ -21,68 +21,12 @@
 
 namespace chalet
 {
-std::mutex s_mutex;
 namespace
 {
 struct
 {
-	std::vector<Process*> procesess;
 	int lastErrorCode = 0;
-	bool initialized = false;
 } state;
-
-/*****************************************************************************/
-void addProcess(Process& inProcess)
-{
-	std::lock_guard<std::mutex> lock(s_mutex);
-	state.procesess.push_back(&inProcess);
-}
-
-/*****************************************************************************/
-void removeProcess(const Process& inProcess)
-{
-	std::lock_guard<std::mutex> lock(s_mutex);
-	if (state.procesess.empty())
-	{
-		auto it = state.procesess.end();
-		while (it != state.procesess.begin())
-		{
-			--it;
-			Process* process = (*it);
-			if (*process == inProcess)
-			{
-				it = state.procesess.erase(it);
-				return;
-			}
-		}
-	}
-
-#if defined(CHALET_WIN32)
-	if (state.procesess.empty())
-		WindowsTerminal::reset();
-#endif
-}
-
-/*****************************************************************************/
-void subProcessSignalHandler(int inSignal)
-{
-	std::lock_guard<std::mutex> lock(s_mutex);
-	auto it = state.procesess.end();
-	while (it != state.procesess.begin())
-	{
-		--it;
-		Process* process = (*it);
-
-		bool success = process->sendSignal(static_cast<SigNum>(inSignal));
-		if (success)
-			it = state.procesess.erase(it);
-	}
-
-#if defined(CHALET_WIN32)
-	if (state.procesess.empty())
-		WindowsTerminal::reset();
-#endif
-}
 }
 
 /*****************************************************************************/
@@ -90,17 +34,6 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 {
 	CHALET_TRY
 	{
-		if (!state.initialized)
-		{
-			std::lock_guard<std::mutex> lock(s_mutex);
-
-			SignalHandler::add(SIGINT, subProcessSignalHandler);
-			SignalHandler::add(SIGTERM, subProcessSignalHandler);
-			SignalHandler::add(SIGABRT, subProcessSignalHandler);
-
-			state.initialized = true;
-		}
-
 		if (inCmd.empty())
 		{
 			Diagnostic::error("Subprocess: Command cannot be empty.");
@@ -120,8 +53,6 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 			return state.lastErrorCode;
 		}
 
-		addProcess(process);
-
 		{
 			std::array<char, 128> buffer{ 0 };
 			if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
@@ -132,8 +63,6 @@ int ProcessController::run(const StringList& inCmd, const ProcessOptions& inOpti
 		}
 
 		state.lastErrorCode = process.waitForResult();
-
-		removeProcess(process);
 
 		return state.lastErrorCode;
 	}
@@ -169,11 +98,5 @@ std::string ProcessController::getSignalRaisedMessage(const int inExitCode)
 std::string ProcessController::getSignalNameFromCode(const int inExitCode)
 {
 	return Process::getSignalNameFromCode(inExitCode);
-}
-
-/*****************************************************************************/
-void ProcessController::haltAll(const SigNum inSignal)
-{
-	subProcessSignalHandler(static_cast<std::underlying_type_t<SigNum>>(inSignal));
 }
 }

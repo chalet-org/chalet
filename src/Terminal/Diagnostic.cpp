@@ -72,6 +72,9 @@ void Diagnostic::cancelEllipsis()
 	if (Output::quietNonBuild())
 		return;
 
+	if (!Spinner::instanceCreated())
+		return;
+
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
 	if (destroySpinnerThread(true))

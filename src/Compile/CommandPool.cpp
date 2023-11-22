@@ -94,7 +94,9 @@ bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string s
 		}
 		else
 		{
-			state->errorCode = CommandPoolErrorCode::BuildFailure;
+			if (state->errorCode == CommandPoolErrorCode::None)
+				state->errorCode = CommandPoolErrorCode::BuildFailure;
+
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
@@ -113,102 +115,49 @@ bool executeCommandMsvc(std::size_t inIndex, StringList inCommand, std::string s
 #endif
 
 /*****************************************************************************/
-bool executeCommandCarriageReturn(std::size_t inIndex, StringList inCommand)
-{
-#if defined(CHALET_WIN32)
-	ProcessOptions options;
-
-	std::string errorOutput;
-	options.stdoutOption = PipeOption::Pipe;
-	options.stderrOption = PipeOption::Pipe;
-	options.onStdOut = [](std::string inData) {
-		String::replaceAll(inData, '\n', "\r\n");
-		std::lock_guard<std::mutex> lock(state->mutex);
-		std::cout.write(inData.data(), inData.size());
-	};
-	options.onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
-	};
-
-	bool result = true;
-	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
-		result = false;
-
-	if (!errorOutput.empty())
-	{
-		std::lock_guard<std::mutex> lock(state->mutex);
-		String::replaceAll(errorOutput, '\n', "\r\n");
-
-		if (result)
-		{
-			// Warnings
-			std::cout.write(errorOutput.data(), errorOutput.size());
-		}
-		else
-		{
-			state->errorCode = CommandPoolErrorCode::BuildFailure;
-			state->erroredOn.push_back(inIndex);
-
-			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Output::theme().reset);
-			auto cmdString = String::join(inCommand);
-
-			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);
-			std::cout.write(failure.data(), failure.size());
-			std::cout.write(errorOutput.data(), errorOutput.size());
-		}
-		std::cout.flush();
-	}
-
-	return result;
-#else
-	UNUSED(inIndex, inCommand);
-	return false;
-#endif
-}
-
-/*****************************************************************************/
 bool executeCommand(std::size_t inIndex, StringList inCommand)
 {
-	ProcessOptions options;
-	// auto onStdOut = [](std::string inData) {
-	// 	std::lock_guard<std::mutex> lock(state->mutex);
-	// 	std::cout.write(inData.data(), inData.size());
-	// };
+	std::string output;
 
-	std::string errorOutput;
+	ProcessOptions options;
 	options.stdoutOption = PipeOption::StdOut;
 	options.stderrOption = PipeOption::Pipe;
-	// options.onStdOut = onStdOut;
-	options.onStdErr = [&errorOutput](std::string inData) {
-		errorOutput += std::move(inData);
+	options.onStdErr = [&output](std::string inData) {
+		output += std::move(inData);
 	};
 
 	bool result = true;
 	if (ProcessController::run(inCommand, options) != EXIT_SUCCESS)
 		result = false;
 
-	if (!errorOutput.empty())
+	if (!output.empty())
 	{
 		std::lock_guard<std::mutex> lock(state->mutex);
+		auto eol = String::eol();
+		if (Environment::isMicrosoftTerminalOrWindowsBash())
+		{
+			String::replaceAll(output, '\n', eol);
+		}
 
 		if (result)
 		{
 			// Warnings
-			std::cout.write(errorOutput.data(), errorOutput.size());
+			std::cout.write(output.data(), output.size());
 		}
 		else
 		{
-			state->errorCode = CommandPoolErrorCode::BuildFailure;
+			if (state->errorCode == CommandPoolErrorCode::None)
+				state->errorCode = CommandPoolErrorCode::BuildFailure;
+
 			state->erroredOn.push_back(inIndex);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
 			auto reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(inCommand);
 
-			auto failure = fmt::format("{}FAILED: {}{}\n", error, reset, cmdString);
+			auto failure = fmt::format("{}FAILED: {}{}{}", error, reset, cmdString, eol);
 			std::cout.write(failure.data(), failure.size());
-			std::cout.write(errorOutput.data(), errorOutput.size());
+			std::cout.write(output.data(), output.size());
 		}
 		std::cout.flush();
 	}
@@ -225,14 +174,7 @@ void signalHandler(int inSignal)
 	if (inSignal != SIGTERM)
 		state->errorCode = CommandPoolErrorCode::Aborted;
 
-	if (state->shutdownHandler())
-	{
-		if (inSignal == SIGTERM)
-		{
-			// might result in a segfault, but if a SIGTERM has been sent, we really want to halt anyway
-			ProcessController::haltAll(SigNum::Terminate);
-		}
-	}
+	state->shutdownHandler();
 }
 }
 
@@ -328,8 +270,6 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 
 	Output::setQuietNonBuild(false);
 
-	auto& executeCommandFunc = Environment::isMicrosoftTerminalOrWindowsBash() ? executeCommandCarriageReturn : executeCommand;
-
 	state->index = startIndex > 0 ? startIndex : 1;
 	uint totalCompiles = total;
 	if (totalCompiles == 0)
@@ -365,7 +305,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 			else
 #endif
 			{
-				if (!executeCommandFunc(index, it.command) && haltOnError)
+				if (!executeCommand(index, it.command) && haltOnError)
 					break;
 			}
 
@@ -394,7 +334,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 			else
 #endif
 			{
-				threadResults.emplace_back(m_threadPool.enqueue(executeCommandFunc, index, it.command));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommand, index, it.command));
 			}
 
 			++index;
