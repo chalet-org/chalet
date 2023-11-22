@@ -278,6 +278,15 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		}
 	}
 
+	if (!runRoute)
+	{
+		if (!m_strategy->doPostBuild())
+		{
+			Diagnostic::error("The post-build step encountered a problem.");
+			return false;
+		}
+	}
+
 	if (error)
 	{
 		if (!runRoute)
@@ -289,12 +298,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	}
 	else if (!runRoute && inShowSuccess)
 	{
-		if (!m_strategy->doPostBuild())
-		{
-			Diagnostic::error("The post-build step encountered a problem.");
-			return false;
-		}
-
 		if (m_state.info.generateCompileCommands())
 		{
 			if (!m_strategy->saveCompileCommands())

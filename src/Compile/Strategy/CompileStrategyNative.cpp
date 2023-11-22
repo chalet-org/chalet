@@ -158,8 +158,6 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 		if (!m_commandPool->runAll(m_targets.at(inProject.name()), settings))
 		{
-			m_state.cache.file().setDisallowSave(true);
-
 			Output::lineBreak();
 			return false;
 		}
