@@ -585,9 +585,12 @@ bool Files::rename(const std::string& inFrom, const std::string& inTo, const boo
 /*****************************************************************************/
 bool Files::pathExists(const std::string& inFile)
 {
+#if defined(CHALET_WIN32)
 	std::error_code ec;
 	return fs::exists(inFile, ec);
-	// return stat(inFile.c_str(), &statBuffer) == 0;
+#else
+	return stat(inFile.c_str(), &statBuffer) == 0;
+#endif
 }
 
 /*****************************************************************************/
