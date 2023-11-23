@@ -376,7 +376,7 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 			if (line.empty())
 				continue;
 
-			if (!String::endsWith(':', line))
+			if (line.back() != ':')
 				continue;
 
 			line.pop_back();

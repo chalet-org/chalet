@@ -588,8 +588,7 @@ bool Files::pathExists(const std::string& inFile)
 #if defined(CHALET_WIN32)
 	// std::error_code ec;
 	// return fs::exists(inFile, ec);
-	DWORD dwAttrib = ::GetFileAttributesA(inFile.c_str());
-	return dwAttrib != INVALID_FILE_ATTRIBUTES;
+	return ::GetFileAttributesA(inFile.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
 	return stat(inFile.c_str(), &statBuffer) == 0;
 #endif

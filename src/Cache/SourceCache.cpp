@@ -197,15 +197,15 @@ void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
+	auto& fileData = getLastWrite(inFile);
 	if (!Files::pathExists(inFile))
 	{
-		m_lastWrites[inFile].lastWrite = m_initializedTime;
-		m_lastWrites[inFile].needsUpdate = true;
+		fileData.lastWrite = m_initializedTime;
+		fileData.needsUpdate = true;
 		m_dirty = true;
 		return true;
 	}
 
-	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
 		makeUpdate(inFile, fileData);
 
@@ -215,15 +215,15 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
+	auto& fileData = getLastWrite(inFile);
 	if (!Files::pathExists(inFile) || !Files::pathExists(inDependency))
 	{
-		m_lastWrites[inFile].lastWrite = m_initializedTime;
-		m_lastWrites[inFile].needsUpdate = true;
+		fileData.lastWrite = m_initializedTime;
+		fileData.needsUpdate = true;
 		m_dirty = true;
 		return true;
 	}
 
-	auto& fileData = getLastWrite(inFile);
 	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
 		makeUpdate(inFile, fileData);
 
