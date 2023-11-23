@@ -68,7 +68,6 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 	}
 	else
 	{
-		chalet_assert(m_initializedTime != 0, "");
 		chalet_assert(m_dataFile != nullptr, "");
 
 		m_sources = nullptr;
@@ -145,7 +144,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 
 		if (m_sources == nullptr)
 		{
-			auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(m_initializedTime));
+			auto [it, success] = m_sourceCaches.emplace(inId, std::make_unique<SourceCache>(0));
 			if (!success)
 			{
 				Diagnostic::error("Error creating cache for {}", inId);
@@ -241,10 +240,7 @@ bool WorkspaceInternalCacheFile::removeExtraCache(const std::string& inId)
 bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const std::string& inBuildFile)
 {
 	m_filename = inFilename;
-	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	m_lastBuildFileWrite = Files::getLastWriteTime(inBuildFile);
-
-	chalet_assert(m_initializedTime != 0, "");
 
 	m_dataFile = std::make_unique<JsonFile>(m_filename);
 	if (!m_dataFile->load(false))

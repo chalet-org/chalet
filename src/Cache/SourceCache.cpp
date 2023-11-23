@@ -157,15 +157,12 @@ Json SourceCache::asJson() const
 }
 
 /*****************************************************************************/
-bool SourceCache::updateInitializedTime(const std::time_t inTime)
+bool SourceCache::updateInitializedTime()
 {
 	// if (!m_dirty)
 	// 	return false;
 
-	if (inTime == 0)
-		m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-	else
-		m_initializedTime = inTime;
+	m_initializedTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
 	return true;
 }
@@ -173,7 +170,7 @@ bool SourceCache::updateInitializedTime(const std::time_t inTime)
 /*****************************************************************************/
 bool SourceCache::isNewBuild() const
 {
-	return m_initializedTime == m_lastBuildTime;
+	return m_lastBuildTime == 0;
 }
 
 /*****************************************************************************/

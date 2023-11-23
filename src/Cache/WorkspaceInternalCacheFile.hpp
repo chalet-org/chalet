@@ -72,7 +72,6 @@ private:
 	std::string m_hashVersion;
 	std::string m_hashVersionDebug;
 
-	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildFileWrite = 0;
 
 	SourceCache* m_sources = nullptr;
