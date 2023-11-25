@@ -129,6 +129,8 @@ const std::string kDefaultOutputDirectory("build");
 const std::string kDefaultExternalDirectory("chalet_external");
 const std::string kDefaultDistributionDirectory("dist");
 
+const std::string kYamlInputFile("chalet.yaml");
+
 const std::string kGlobalSettingsFile(".chalet/config.json");
 
 const std::string kArchPresetAuto(Values::Auto);
@@ -370,6 +372,12 @@ const std::string& CommandLineInputs::defaultExternalDirectory() const noexcept
 const std::string& CommandLineInputs::defaultDistributionDirectory() const noexcept
 {
 	return kDefaultDistributionDirectory;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::yamlInputFile() const noexcept
+{
+	return kYamlInputFile;
 }
 
 /*****************************************************************************/

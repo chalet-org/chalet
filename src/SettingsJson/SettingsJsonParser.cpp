@@ -37,9 +37,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 {
 	// Timer timer;
 
-	SettingsJsonSchema schemaBuilder;
-	Json schema = schemaBuilder.get();
-
+	Json schema = SettingsJsonSchema::get(m_inputs);
 	if (m_inputs.saveSchemaToFile())
 	{
 		JsonFile::saveToFile(schema, "schema/chalet-settings.schema.json");

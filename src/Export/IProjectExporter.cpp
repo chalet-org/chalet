@@ -106,14 +106,13 @@ bool IProjectExporter::saveSchemasToDirectory(const std::string& inDirectory) co
 
 	// Generate schemas
 	{
-		ChaletJsonSchema schemaBuilder;
+		ChaletJsonSchema schemaBuilder(m_inputs);
 		Json schema = schemaBuilder.get();
 		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", inDirectory), -1))
 			return false;
 	}
 	{
-		SettingsJsonSchema schemaBuilder;
-		Json schema = schemaBuilder.get();
+		Json schema = SettingsJsonSchema::get(m_inputs);
 		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet-settings.schema.json", inDirectory), -1))
 			return false;
 	}

@@ -49,7 +49,7 @@ bool CentralChaletJsonParser::serialize() const
 /*****************************************************************************/
 bool CentralChaletJsonParser::validateAgainstSchema() const
 {
-	ChaletJsonSchema schemaBuilder;
+	ChaletJsonSchema schemaBuilder(m_centralState.inputs());
 	Json jsonSchema = schemaBuilder.get();
 
 	if (m_centralState.inputs().saveSchemaToFile())

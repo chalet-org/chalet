@@ -147,7 +147,7 @@
 						"msbuild",
 						"xcodebuild"
 					],
-					"default": "makefile"
+					"default": "native"
 				},
 				"version": {
 					"type": "string",
@@ -176,7 +176,8 @@
 				},
 				"distributionDir": {
 					"type": "string",
-					"description": "The root directory of all distribution bundles."
+					"description": "The root directory of all distribution bundles.",
+					"default": "dist"
 				},
 				"dumpAssembly": {
 					"type": "boolean",

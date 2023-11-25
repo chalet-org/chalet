@@ -9,6 +9,8 @@
 
 namespace chalet
 {
+struct CommandLineInputs;
+
 class ChaletJsonSchema
 {
 	enum class Defs : u16
@@ -192,7 +194,7 @@ class ChaletJsonSchema
 	using DefinitionMap = std::map<Defs, Json>;
 
 public:
-	ChaletJsonSchema();
+	explicit ChaletJsonSchema(const CommandLineInputs& inInputs);
 
 	Json get();
 
@@ -207,6 +209,8 @@ private:
 	void addPatternProperty(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);
 	void addKind(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, std::string&& inConst);
 	void addKindEnum(Json& outJson, const DefinitionMap& inDefs, const Defs inDef, StringList&& inEnums);
+
+	const CommandLineInputs& m_inputs;
 
 	//
 	const std::string kPatternTargetName;

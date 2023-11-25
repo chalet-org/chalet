@@ -310,8 +310,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		}
 		else if (String::endsWith(m_inputs.defaultSettingsFile(), settings.filename()))
 		{
-			SettingsJsonSchema schemaBuilder;
-			Json schema = schemaBuilder.get();
+			Json schema = SettingsJsonSchema::get(m_inputs);
 			if (!settings.validate(std::move(schema)))
 			{
 				settings.setDirty(false);
@@ -321,7 +320,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		else if (String::endsWith(m_inputs.defaultInputFile(), settings.filename()))
 		{
 			// note: settings, but not settings (chalet.json)
-			ChaletJsonSchema schemaBuilder;
+			ChaletJsonSchema schemaBuilder(m_inputs);
 			Json jsonSchema = schemaBuilder.get();
 
 			if (!settings.validate(std::move(jsonSchema)))

@@ -36,6 +36,8 @@ struct CommandLineInputs
 	const std::string& defaultExternalDirectory() const noexcept;
 	const std::string& defaultDistributionDirectory() const noexcept;
 
+	const std::string& yamlInputFile() const noexcept;
+
 	const std::string& inputFile() const noexcept;
 	void setInputFile(std::string&& inValue) noexcept;
 

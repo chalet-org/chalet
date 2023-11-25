@@ -5,6 +5,7 @@
 
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/SuppressIntellisense.hpp"
 #include "Terminal/ColorTheme.hpp"
@@ -86,7 +87,7 @@ enum class Defs : u16
 };
 }
 /*****************************************************************************/
-Json SettingsJsonSchema::get()
+Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 {
 	Json ret;
 	ret["$schema"] = "http://json-schema.org/draft-07/schema";
@@ -227,7 +228,7 @@ Json SettingsJsonSchema::get()
 		"type": "string",
 		"description": "The strategy to use during the build.",
 		"enum": [],
-		"default": "makefile"
+		"default": "native"
 	})json"_ojson;
 	defs[Defs::ToolchainBuildStrategy][SKeys::Enum] = CompilerTools::getToolchainStrategiesForSchema();
 
@@ -396,15 +397,15 @@ Json SettingsJsonSchema::get()
 
 	defs[Defs::InputFile] = R"json({
 		"type": "string",
-		"description": "An input build file to use.",
-		"default": "chalet.json"
+		"description": "An input build file to use."
 	})json"_ojson;
+	defs[Defs::InputFile]["default"] = inInputs.defaultInputFile();
 
 	defs[Defs::EnvFile] = R"json({
 		"type": "string",
-		"description": "A file to load environment variables from.",
-		"default": ".env"
+		"description": "A file to load environment variables from."
 	})json"_ojson;
+	defs[Defs::EnvFile]["default"] = inInputs.defaultEnvFile();
 
 	defs[Defs::RootDir] = R"json({
 		"type": "string",
@@ -413,20 +414,21 @@ Json SettingsJsonSchema::get()
 
 	defs[Defs::OutputDir] = R"json({
 		"type": "string",
-		"description": "The output directory of the build.",
-		"default": "build"
+		"description": "The output directory of the build."
 	})json"_ojson;
+	defs[Defs::OutputDir]["default"] = inInputs.defaultOutputDirectory();
 
 	defs[Defs::ExternalDir] = R"json({
 		"type": "string",
-		"description": "The directory to install external dependencies into prior to the rest of the build's run.",
-		"default": "chalet_external"
+		"description": "The directory to install external dependencies into prior to the rest of the build's run."
 	})json"_ojson;
+	defs[Defs::ExternalDir]["default"] = inInputs.defaultExternalDirectory();
 
 	defs[Defs::DistributionDir] = R"json({
 		"type": "string",
 		"description": "The root directory of all distribution bundles."
 	})json"_ojson;
+	defs[Defs::DistributionDir]["default"] = inInputs.defaultDistributionDirectory();
 
 	defs[Defs::LastTarget] = R"json({
 		"type": "string",

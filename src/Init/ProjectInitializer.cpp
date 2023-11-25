@@ -160,7 +160,8 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 		return StarterFileTemplates::getDotEnv();
 	});
 
-	printFileNameAndContents(true, "chalet.json", [&outProps]() {
+	auto& defaultInputFile = m_inputs.defaultInputFile();
+	printFileNameAndContents(true, defaultInputFile, [&outProps]() {
 		auto jsonFile = StarterFileTemplates::getStandardChaletJson(outProps);
 		return jsonFile.dump(3, ' ');
 	});
@@ -212,7 +213,8 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 		return StarterFileTemplates::getDotEnv();
 	});
 
-	printFileNameAndContents(true, "chalet.json", [&outProps]() {
+	auto& defaultInputFile = m_inputs.defaultInputFile();
+	printFileNameAndContents(true, defaultInputFile, [&outProps]() {
 		auto jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(outProps);
 		return jsonFile.dump(3, ' ');
 	});
@@ -315,7 +317,8 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 /*****************************************************************************/
 bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 {
-	const auto filePath = fmt::format("{}/chalet.json", m_rootPath);
+	auto& defaultInputFile = m_inputs.defaultInputFile();
+	const auto filePath = fmt::format("{}/{}", m_rootPath, defaultInputFile);
 
 	Json jsonFile;
 	if (m_inputs.initTemplate() == InitTemplateType::CMake)

@@ -69,5 +69,9 @@ private:
 
 	std::string m_settingsFile;
 	std::string m_inputFile;
+
+	std::string m_defaultSettingsFile;
+	std::string m_defaultInputFile;
+	std::string m_yamlInputFile;
 };
 }
