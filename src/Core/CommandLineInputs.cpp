@@ -176,13 +176,19 @@ void CommandLineInputs::detectToolchainPreference()
 /*****************************************************************************/
 void CommandLineInputs::detectAlternativeInputFileFormats()
 {
+	if (m_inputFile.empty())
+	{
+		m_inputFile = kDefaultInputFile;
+	}
+
 	if (!m_inputFile.empty() && !Files::pathExists(m_inputFile))
 	{
+		auto json = fmt::format("{}.json", String::getPathFolderBaseName(m_inputFile));
 		auto yaml = fmt::format("{}.yaml", String::getPathFolderBaseName(m_inputFile));
 		if (Files::pathExists(yaml))
-		{
 			setInputFile(std::move(yaml));
-		}
+		else if (Files::pathExists(json))
+			setInputFile(std::move(json));
 	}
 }
 

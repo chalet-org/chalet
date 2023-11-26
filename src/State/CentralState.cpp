@@ -62,6 +62,8 @@ bool CentralState::initialize()
 	// if (!workspace.initialize())
 	// 	return false;
 
+	m_inputs.detectAlternativeInputFileFormats();
+
 	{
 		// Set global defaults here
 		IntermediateSettingsState state;
@@ -75,7 +77,7 @@ bool CentralState::initialize()
 		state.buildConfiguration = BuildConfiguration::getDefaultReleaseConfigurationName();
 		state.toolchainPreference = m_inputs.defaultToolchainPreset();
 		state.architecturePreference = Values::Auto;
-		state.inputFile = m_inputs.defaultInputFile();
+		state.inputFile = m_inputs.inputFile();
 		state.envFile = m_inputs.defaultEnvFile();
 		// state.rootDirectory = std::string();
 		state.outputDirectory = m_inputs.defaultOutputDirectory();
@@ -103,7 +105,6 @@ bool CentralState::initialize()
 
 	// If no toolchain was found in inputs or settings, use the default
 	m_inputs.detectToolchainPreference();
-	m_inputs.detectAlternativeInputFileFormats();
 
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);
@@ -178,9 +179,6 @@ bool CentralState::initializeForQuery()
 	m_inputs.resolveEnvFile();
 
 	UNUSED(cache.initializeSettings(m_inputs));
-
-	if (m_inputs.inputFile().empty())
-		m_inputs.setInputFile(std::string(m_inputs.defaultInputFile()));
 
 	m_inputs.detectAlternativeInputFileFormats();
 

@@ -104,9 +104,16 @@ void JsonFile::dumpToTerminal()
 }
 
 /*****************************************************************************/
-bool JsonFile::saveAsYaml(const std::string& inFilename) const
+bool JsonFile::saveAs(const std::string& inFilename, const i32 inIndent) const
 {
-	return YamlFile::saveToFile(json, inFilename);
+	if (String::endsWith(".yaml", inFilename))
+	{
+		return YamlFile::saveToFile(json, inFilename);
+	}
+	else
+	{
+		return JsonFile::saveToFile(json, inFilename, inIndent);
+	}
 }
 
 /*****************************************************************************/
