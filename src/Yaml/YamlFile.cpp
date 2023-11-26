@@ -215,8 +215,6 @@ bool YamlFile::parseAsJson(Json& outJson)
 		}
 	}
 
-	LOG(outJson.dump(4, ' '));
-
 	return true;
 }
 
