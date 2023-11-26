@@ -900,8 +900,7 @@ StringList QueryController::getChaletSchema() const
 {
 	StringList ret;
 
-	ChaletJsonSchema schemaBuilder(m_centralState.inputs());
-	Json schema = schemaBuilder.get();
+	Json schema = ChaletJsonSchema::get(m_centralState.inputs());
 	ret.emplace_back(schema.dump());
 
 	return ret;

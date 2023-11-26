@@ -29,6 +29,13 @@ ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 }
 
 /*****************************************************************************/
+Json ChaletJsonSchema::get(const CommandLineInputs& inInputs)
+{
+	ChaletJsonSchema schema(inInputs);
+	return schema.get();
+}
+
+/*****************************************************************************/
 ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 {
 	DefinitionMap defs;

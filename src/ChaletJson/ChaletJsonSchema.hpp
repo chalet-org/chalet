@@ -194,11 +194,13 @@ class ChaletJsonSchema
 	using DefinitionMap = std::map<Defs, Json>;
 
 public:
+	static Json get(const CommandLineInputs& inInputs);
+
+private:
 	explicit ChaletJsonSchema(const CommandLineInputs& inInputs);
 
 	Json get();
 
-private:
 	DefinitionMap getDefinitions();
 	std::string getDefinitionName(const Defs inDef);
 	Json getDefinition(const Defs inDef);

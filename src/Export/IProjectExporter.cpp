@@ -106,8 +106,7 @@ bool IProjectExporter::saveSchemasToDirectory(const std::string& inDirectory) co
 
 	// Generate schemas
 	{
-		ChaletJsonSchema schemaBuilder(m_inputs);
-		Json schema = schemaBuilder.get();
+		Json schema = ChaletJsonSchema::get(m_inputs);
 		if (!JsonFile::saveToFile(schema, fmt::format("{}/chalet.schema.json", inDirectory), -1))
 			return false;
 	}

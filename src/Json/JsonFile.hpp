@@ -27,6 +27,8 @@ struct JsonFile
 
 	void dumpToTerminal();
 
+	bool saveAsYaml(const std::string& inFilename) const;
+
 	void setContents(Json&& inJson);
 
 	const std::string& filename() const noexcept;

@@ -11,6 +11,7 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
 #include "Process/SubProcessController.hpp"
@@ -25,13 +26,14 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "System/UpdateNotifier.hpp"
 #include "System/Files.hpp"
+#include "System/UpdateNotifier.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/TerminalTest.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonFile.hpp"
 #include "Json/JsonValues.hpp"
 
 #include "Libraries/Json.hpp"
@@ -346,11 +348,45 @@ bool Router::workingDirectoryIsGlobalChaletDirectory()
 bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
+	LOG("");
 
-	Diagnostic::infoEllipsis("Testing");
+	Timer timer;
 
-	Files::sleep(5);
-	Diagnostic::printDone();
+	auto& yamlInput = m_inputs.yamlInputFile();
+	auto& defaultInputFile = m_inputs.defaultInputFile();
+	if (Files::pathExists(defaultInputFile))
+	{
+		JsonFile file(defaultInputFile);
+		if (!file.load())
+			return false;
+
+		if (!file.saveAsYaml(yamlInput))
+			return false;
+	}
+
+	if (Files::pathExists(yamlInput))
+	{
+		std::string yaml(yamlInput);
+		JsonFile file(yaml);
+		// if (!file.load())
+		// {
+		// 	Diagnostic::error("Failed to load: {}", yaml);
+		// 	return false;
+		// }
+		file.load();
+
+		auto parseTime = timer.asString();
+		if (parseTime.empty())
+			parseTime = "0ms";
+
+		LOG(yaml);
+		LOG("parsed in:", parseTime);
+
+		// file.dumpToTerminal();
+
+		if (!file.validate(ChaletJsonSchema::get(m_inputs)))
+			return false;
+	}
 
 	return true;
 }
