@@ -174,7 +174,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				if (pchChanged)
 				{
 					auto pchCache = Hash::uint64(fmt::format("{}/{}", objDir, intermediateSource));
-					if (!List::contains(m_fileCache, intermediateSource))
+					if (!List::contains(m_fileCache, pchCache))
 					{
 						m_fileCache.emplace_back(std::move(pchCache));
 
