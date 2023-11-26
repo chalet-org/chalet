@@ -123,69 +123,80 @@ bool YamlFile::parseAsJson(Json& outJson)
 		auto& node = *nodes.back();
 
 		// Objects
-		auto split = String::split(line, ": ");
-		if (split.size() == 2)
+		auto firstKeyValue = line.find(": ");
+		if (firstKeyValue != std::string::npos)
 		{
+			auto key = line.substr(0, firstKeyValue);
+			auto value = line.substr(firstKeyValue + 2);
+
 			if (node.is_null())
 				node = Json::object();
 
 			if (!node.is_object())
 				continue;
 
-			auto& value = split[1];
-			if (value.empty())
-				continue;
-
-			if (value.front() == '"' && value.back() == '"')
+			if (!value.empty())
 			{
-				value = value.substr(1, value.size() - 2);
-				node[std::move(split[0])] = std::move(value);
-				continue;
-			}
+				if (value.front() == '"' && value.back() == '"')
+				{
+					value = value.substr(1, value.size() - 2);
+					node[key] = std::move(value);
+					continue;
+				}
 
-			if (value.front() == '[' && value.back() == ']')
-			{
-				value = value.substr(1, value.size() - 2);
-				// assume the list is all strings for now
-				node[std::move(split[0])] = String::split(value, ',');
-				continue;
+				if (value.front() == '{' && value.back() == '}')
+				{
+					value = value.substr(1, value.size() - 2);
+					node[key] = parseAbbreviatedObject(value);
+					continue;
+				}
+
+				if (value.front() == '[' && value.back() == ']')
+				{
+					value = value.substr(1, value.size() - 2);
+					node[key] = parseAbbreviatedList(value);
+					continue;
+				}
 			}
 
 			if (String::equals("false", value))
 			{
-				node[std::move(split[0])] = false;
+				node[key] = false;
 			}
 			else if (String::equals("true", value))
 			{
-				node[std::move(split[0])] = true;
+				node[key] = true;
 			}
 			else if (String::equals("null", value))
 			{
-				node[std::move(split[0])] = Json();
+				node[key] = Json();
 			}
 			else
 			{
-				auto foundInteger = value.find_first_not_of("0123456789");
-				if (foundInteger == std::string::npos)
+				if (!value.empty())
 				{
-					auto numValue = strtoll(value.c_str(), NULL, 0);
-					node[std::move(split[0])] = numValue;
-					continue;
-				}
-
-				auto foundFloat = value.find_first_not_of("0123456789.");
-				if (foundFloat == std::string::npos)
-				{
-					auto firstDecimal = value.find('.');
-					if (value.find('.', firstDecimal + 1) == std::string::npos)
+					auto foundInteger = value.find_first_not_of("0123456789");
+					if (foundInteger == std::string::npos)
 					{
-						auto numValue = strtof(value.c_str(), NULL);
-						node[std::move(split[0])] = numValue;
+						auto numValue = strtoll(value.c_str(), NULL, 0);
+						node[key] = numValue;
 						continue;
+					}
+
+					auto foundFloat = value.find_first_not_of("0123456789.");
+					if (foundFloat == std::string::npos)
+					{
+						auto firstDecimal = value.find('.');
+						if (value.find('.', firstDecimal + 1) == std::string::npos)
+						{
+							auto numValue = strtof(value.c_str(), NULL);
+							node[key] = numValue;
+							continue;
+						}
 					}
 				}
 
-				node[std::move(split[0])] = std::move(value);
+				node[key] = std::move(value);
 			}
 		}
 		// Arrays
@@ -204,7 +215,67 @@ bool YamlFile::parseAsJson(Json& outJson)
 		}
 	}
 
+	LOG(outJson.dump(4, ' '));
+
 	return true;
+}
+
+/*****************************************************************************/
+StringList YamlFile::parseAbbreviatedList(const std::string& inValue) const
+{
+	auto list = String::split(inValue, ',');
+	for (auto& item : list)
+	{
+		while (!item.empty() && item.front() == ' ')
+			item = item.substr(1);
+
+		while (!item.empty() && item.back() == ' ')
+			item.pop_back();
+	}
+
+	return list;
+}
+
+/*****************************************************************************/
+Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
+{
+	Json ret = Json::object();
+
+	auto list = String::split(inValue, ',');
+	for (auto& item : list)
+	{
+		while (!item.empty() && item.front() == ' ')
+			item = item.substr(1);
+
+		while (!item.empty() && item.back() == ' ')
+			item.pop_back();
+
+		auto firstKeyValue = item.find(": ");
+		if (firstKeyValue != std::string::npos)
+		{
+			auto key = item.substr(0, firstKeyValue);
+			auto value = item.substr(firstKeyValue + 2);
+			if (key.empty())
+				continue;
+
+			if (!value.empty())
+			{
+				if (value.front() == '{' && value.back() == '}')
+				{
+					value = value.substr(1, value.size() - 2);
+					ret[key] = parseAbbreviatedObject(value);
+					continue;
+				}
+
+				if (value.front() == '"' && value.back() == '"')
+					value = value.substr(1, value.size() - 2);
+			}
+
+			ret[key] = std::move(value);
+		}
+	}
+
+	return ret;
 }
 
 /*****************************************************************************/

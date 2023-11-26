@@ -24,6 +24,9 @@ private:
 
 	std::string getNodeAsString(const std::string& inKey, const Json& inValue, const size_t inIndent = 0, const bool inArray = false) const;
 
+	StringList parseAbbreviatedList(const std::string& inValue) const;
+	Json parseAbbreviatedObject(const std::string& inValue) const;
+
 	const std::string& m_filename;
 };
 }
