@@ -237,7 +237,9 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 
 	if (node.is_array())
 	{
-		ret += '\n';
+		if (!root)
+			ret += '\n';
+
 		for (auto& value : node)
 		{
 			ret += getNodeAsString(std::string(), value, inIndent + 1, true);

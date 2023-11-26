@@ -10,6 +10,7 @@
 #include "SettingsJson/SettingsJsonSchema.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
+#include "Yaml/YamlFile.hpp"
 #include "Json/JsonKeys.hpp"
 
 namespace chalet
@@ -83,17 +84,21 @@ bool SettingsManager::initialize()
 	// 	return false;
 
 	auto& settings = getSettings();
-	if (!Files::pathExists(settings.filename()))
+	auto& filename = settings.filename();
+	if (!Files::pathExists(filename))
 	{
 		if (m_action != SettingsAction::QueryKeys)
 		{
 			if (m_type == SettingsType::Global)
-				Diagnostic::error("File '{}' doesn't exist.", settings.filename());
+				Diagnostic::error("File '{}' doesn't exist.", filename);
 			else
-				Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", settings.filename());
+				Diagnostic::error("Not a chalet project, or a build hasn't been run yet.", filename);
 		}
 		return false;
 	}
+
+	if (String::endsWith(".yaml", filename))
+		m_yamlOutput = true;
 
 	Json& node = settings.json;
 	if (!node.is_object())
@@ -123,7 +128,12 @@ bool SettingsManager::runSettingsGet(Json& node)
 	}
 	else
 	{
-		auto output = ptr->dump(3, ' ');
+		std::string output;
+		if (m_yamlOutput)
+			output = YamlFile::asString(*ptr);
+		else
+			output = ptr->dump(3, ' ');
+
 		std::cout.write(output.data(), output.size());
 		std::cout.put('\n');
 		std::cout.flush();
@@ -289,9 +299,15 @@ bool SettingsManager::runSettingsSet(Json& node)
 		std::string key(m_key);
 		String::replaceAll(key, "\\.", ".");
 
+		std::string content;
+		if (m_yamlOutput)
+			content = YamlFile::asString(*ptr);
+		else
+			content = ptr->dump(3, ' ');
+
 		std::string output;
 		if (ptr->is_object())
-			output = fmt::format("\"{}\": {}", key, ptr->dump(3, ' '));
+			output = fmt::format("\"{}\": {}", key, content);
 		else
 			output = fmt::format("{}: {}", key, m_value);
 
