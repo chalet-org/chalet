@@ -51,7 +51,7 @@ private:
 
 	StringList m_targetsChanged;
 
-	StringList m_fileCache;
+	std::vector<size_t> m_fileCache;
 
 	bool m_generateDependencies = true;
 	bool m_pchChanged = false;

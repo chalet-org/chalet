@@ -75,9 +75,10 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		if (compileTarget && !List::contains(m_fileCache, outputs->target))
+		auto targetHash = Hash::uint64(outputs->target);
+		if (compileTarget && !List::contains(m_fileCache, targetHash))
 		{
-			m_fileCache.push_back(outputs->target);
+			m_fileCache.push_back(targetHash);
 
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getLinkCommand(outputs->target, outputs->objectListLinker);
@@ -172,7 +173,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
-					auto pchCache = fmt::format("{}/{}", objDir, intermediateSource);
+					auto pchCache = Hash::uint64(fmt::format("{}/{}", objDir, intermediateSource));
 					if (!List::contains(m_fileCache, intermediateSource))
 					{
 						m_fileCache.emplace_back(std::move(pchCache));
@@ -195,7 +196,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
-				auto pchCache = fmt::format("{}/{}", objDir, source);
+				auto pchCache = Hash::uint64(fmt::format("{}/{}", objDir, source));
 				if (!List::contains(m_fileCache, pchCache))
 				{
 					m_fileCache.emplace_back(std::move(pchCache));
@@ -255,7 +256,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
-					auto sourceFile = fmt::format("{}/{}", objDir, source);
+					auto sourceFile = Hash::uint64(fmt::format("{}/{}", objDir, source));
 					if (!List::contains(m_fileCache, sourceFile))
 					{
 						m_fileCache.emplace_back(std::move(sourceFile));
@@ -278,7 +279,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
-					auto sourceFile = fmt::format("{}/{}", objDir, source);
+					auto sourceFile = Hash::uint64(fmt::format("{}/{}", objDir, source));
 					if (!List::contains(m_fileCache, sourceFile))
 					{
 						m_fileCache.emplace_back(std::move(sourceFile));

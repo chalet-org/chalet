@@ -225,10 +225,22 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
 	auto& fileData = getLastWrite(inFile);
-	if (!Files::pathExists(inFile) || !Files::pathExists(inDependency))
+	if (!Files::pathExists(inFile))
 	{
 		fileData.lastWrite = m_initializedTime;
 		fileData.needsUpdate = true;
+		m_dirty = true;
+		return true;
+	}
+
+	if (!Files::pathExists(inDependency))
+	{
+		auto lastWrite = Files::getLastWriteTime(inFile);
+		if (lastWrite == 0)
+			lastWrite = m_initializedTime;
+
+		fileData.lastWrite = lastWrite;
+		fileData.needsUpdate = false;
 		m_dirty = true;
 		return true;
 	}
