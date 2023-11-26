@@ -6,6 +6,7 @@
 #include "Export/VSCodeProjectExporter.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "Export/ExportAdapter.hpp"
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
 #include "Export/VSCode/VSCodeSettingsGen.hpp"
@@ -80,14 +81,14 @@ bool VSCodeProjectExporter::generateProjectFiles()
 					Diagnostic::error("There was a problem saving the launch.json file.");
 					return false;
 				}
-
-				VSCodeTasksGen tasksJson(outState);
-				if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
-				{
-					Diagnostic::error("There was a problem saving the tasks.json file.");
-					return false;
-				}
 			}
+		}
+
+		VSCodeTasksGen tasksJson(*m_exportAdapter);
+		if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
+		{
+			Diagnostic::error("There was a problem saving the tasks.json file.");
+			return false;
 		}
 
 		auto clangFormat = fmt::format("{}/.clang-format", state->inputs.workingDirectory());

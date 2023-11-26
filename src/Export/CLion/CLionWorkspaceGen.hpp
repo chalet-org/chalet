@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Utility/Uuid.hpp"
 #include "Xml/XmlFile.hpp"
 
@@ -16,20 +17,11 @@ struct SourceTarget;
 
 struct CLionWorkspaceGen
 {
-	explicit CLionWorkspaceGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inDebugConfig, const std::string& inAllBuildName);
+	explicit CLionWorkspaceGen(const ExportAdapter& inExportAdapter);
 
 	bool saveToPath(const std::string& inPath);
 
 private:
-	struct RunConfiguration
-	{
-		std::string name;
-		std::string config;
-		std::string arch;
-		std::string outputFile;
-		std::string args;
-		std::map<std::string, std::string> env;
-	};
 	bool createCustomTargetsFile(const std::string& inFilename);
 	bool createExternalToolsFile(const std::string& inFilename);
 	bool createRunConfigurationFile(const std::string& inPath, const RunConfiguration& inRunConfig);
@@ -37,26 +29,16 @@ private:
 	bool createMiscFile(const std::string& inFilename);
 	bool createJsonSchemasFile(const std::string& inFilename);
 
-	BuildState& getDebugState() const;
-
-	const std::string& getToolchain() const;
-	StringList getArchitectures(const std::string& inToolchain) const;
-
 	std::string getResolvedPath(const std::string& inFile) const;
 	std::string getBoolString(const bool inValue) const;
 	std::string getNodeIdentifier(const std::string& inName, const RunConfiguration& inRunConfig) const;
-	std::string getTargetName(const RunConfiguration& inRunConfig) const;
 	std::string getToolName(const std::string& inLabel, const RunConfiguration& inRunConfig) const;
 	std::string getTargetFolderName(const RunConfiguration& inRunConfig) const;
-	std::string getDefaultTargetName() const;
 
-	const std::vector<Unique<BuildState>>& m_states;
-	const std::string& m_debugConfiguration;
-	const std::string& m_allBuildName;
+	const ExportAdapter& m_exportAdapter;
 
-	std::vector<RunConfiguration> m_runConfigs;
+	RunConfigurationList m_runConfigs;
 	std::map<std::string, std::string> m_toolsMap;
-	StringList m_arches;
 
 	std::string m_clionNamespaceGuid;
 	std::string m_homeDirectory;
@@ -65,7 +47,6 @@ private:
 	std::string m_defaultRunTargetName;
 	std::string m_chaletPath;
 	std::string m_projectId;
-	std::string m_toolchain;
 
 	std::string m_settingsFile;
 	std::string m_inputFile;

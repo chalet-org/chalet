@@ -339,6 +339,13 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 
 	populatePathVariable();
 
+	m_exportAdapter = std::make_unique<ExportAdapter>(m_states, m_debugConfiguration, getAllBuildTargetName());
+	if (!m_exportAdapter->initialize())
+	{
+		Diagnostic::error("There was a problem initializing the project exporter.");
+		return false;
+	}
+
 	return true;
 }
 

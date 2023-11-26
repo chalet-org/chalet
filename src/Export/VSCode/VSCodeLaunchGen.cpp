@@ -8,6 +8,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -126,7 +127,11 @@ void VSCodeLaunchGen::setOptions(Json& outJson) const
 /*****************************************************************************/
 void VSCodeLaunchGen::setPreLaunchTask(Json& outJson) const
 {
-	outJson["preLaunchTask"] = fmt::format("Build: {}", m_state.configuration.name());
+	const auto& config = m_state.configuration.name();
+	const auto& arch = m_state.info.targetArchitectureString();
+
+	// outJson["preLaunchTask"] = fmt::format("Build: {}", m_state.configuration.name());
+	outJson["preLaunchTask"] = fmt::format("all [{} {}]", arch, config);
 }
 
 /*****************************************************************************/

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Export/ExportKind.hpp"
 
 namespace chalet
@@ -58,6 +59,8 @@ protected:
 
 	std::vector<Unique<BuildState>> m_states;
 	Dictionary<std::string> m_pathVariables;
+
+	Unique<ExportAdapter> m_exportAdapter;
 
 private:
 	bool generateStatesAndValidate(CentralState& inCentralState);

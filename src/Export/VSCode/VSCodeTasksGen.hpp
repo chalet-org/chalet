@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -13,18 +14,23 @@ class BuildState;
 
 struct VSCodeTasksGen
 {
-	explicit VSCodeTasksGen(const BuildState& inState);
+	explicit VSCodeTasksGen(const ExportAdapter& inExportAdapter);
 
-	bool saveToFile(const std::string& inFilename) const;
+	bool saveToFile(const std::string& inFilename);
 
 private:
-	Json getTask() const;
+	bool initialize();
 
-	void setLabel(Json& outJson) const;
+	Json makeRunConfiguration(const RunConfiguration& inRunConfig) const;
+
 	std::string getProblemMatcher() const;
 
-	bool willUseMSVC() const;
+	bool willUseMSVC(const BuildState& inState) const;
 
-	const BuildState& m_state;
+	const ExportAdapter& m_exportAdapter;
+
+	RunConfigurationList m_runConfigs;
+
+	bool m_usesMsvc = false;
 };
 }

@@ -58,8 +58,7 @@ bool FleetProjectExporter::generateProjectFiles()
 		return false;
 
 	{
-		auto allBuildTargetName = getAllBuildTargetName();
-		FleetWorkspaceGen workspaceGen(m_states, m_debugConfiguration, allBuildTargetName);
+		FleetWorkspaceGen workspaceGen(*m_exportAdapter);
 		if (!workspaceGen.saveToPath(m_directory))
 		{
 			Diagnostic::error("There was a problem creating the Fleet workspace files.");

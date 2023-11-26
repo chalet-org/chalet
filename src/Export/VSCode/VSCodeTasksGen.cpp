@@ -10,44 +10,45 @@
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
-#include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeTasksGen::VSCodeTasksGen(const BuildState& inState) :
-	m_state(inState)
+VSCodeTasksGen::VSCodeTasksGen(const ExportAdapter& inExportAdapter) :
+	m_exportAdapter(inExportAdapter)
 {
 }
 
 /*****************************************************************************/
-bool VSCodeTasksGen::saveToFile(const std::string& inFilename) const
+bool VSCodeTasksGen::saveToFile(const std::string& inFilename)
 {
+	if (!initialize())
+		return false;
+
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["version"] = "2.0.0";
 	jRoot["tasks"] = Json::array();
 	auto& tasks = jRoot.at("tasks");
 
-	tasks.push_back(getTask());
+	for (auto& runConfig : m_runConfigs)
+	{
+		tasks.push_back(makeRunConfiguration(runConfig));
+	}
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
 
 /*****************************************************************************/
-Json VSCodeTasksGen::getTask() const
+Json VSCodeTasksGen::makeRunConfiguration(const RunConfiguration& inRunConfig) const
 {
 	Json ret = Json::object();
-	setLabel(ret);
+	ret["label"] = m_exportAdapter.getRunConfigLabel(inRunConfig);
 	ret["type"] = "process";
-	ret["command"] = "chalet";
-	ret["args"] = {
-		"-c",
-		m_state.configuration.name(),
-		"build"
-	};
+	ret["command"] = m_exportAdapter.getRunConfigExec();
+	ret["args"] = m_exportAdapter.getRunConfigArguments(inRunConfig);
 	ret["group"] = "build";
 	ret["problemMatcher"] = {
 		getProblemMatcher(),
@@ -57,23 +58,27 @@ Json VSCodeTasksGen::getTask() const
 }
 
 /*****************************************************************************/
-void VSCodeTasksGen::setLabel(Json& outJson) const
+bool VSCodeTasksGen::initialize()
 {
-	outJson["label"] = fmt::format("Build: {}", m_state.configuration.name());
+	m_runConfigs = m_exportAdapter.getBasicRunConfigs();
+
+	m_usesMsvc = willUseMSVC(m_exportAdapter.getDebugState());
+
+	return true;
 }
 
 /*****************************************************************************/
 std::string VSCodeTasksGen::getProblemMatcher() const
 {
-	if (willUseMSVC())
+	if (m_usesMsvc)
 		return std::string("$msCompile");
 	else
 		return std::string("$gcc");
 }
 
 /*****************************************************************************/
-bool VSCodeTasksGen::willUseMSVC() const
+bool VSCodeTasksGen::willUseMSVC(const BuildState& inState) const
 {
-	return m_state.environment->isMsvc() || m_state.environment->isWindowsClang();
+	return inState.environment->isMsvc() || inState.environment->isWindowsClang();
 }
 }
