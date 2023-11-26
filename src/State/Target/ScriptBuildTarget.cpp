@@ -9,9 +9,9 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -86,13 +86,18 @@ bool ScriptBuildTarget::validate()
 }
 
 /*****************************************************************************/
-std::string ScriptBuildTarget::getHash() const
+const std::string& ScriptBuildTarget::getHash() const
 {
-	auto args = String::join(m_arguments);
+	if (m_hash.empty())
+	{
+		auto args = String::join(m_arguments);
 
-	auto hashable = Hash::getHashableString(this->name(), m_file, args);
+		auto hashable = Hash::getHashableString(this->name(), m_file, args);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/

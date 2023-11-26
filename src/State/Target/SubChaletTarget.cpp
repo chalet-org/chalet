@@ -72,13 +72,18 @@ bool SubChaletTarget::validate()
 }
 
 /*****************************************************************************/
-std::string SubChaletTarget::getHash() const
+const std::string& SubChaletTarget::getHash() const
 {
-	auto targets = String::join(m_targets);
+	if (m_hash.empty())
+	{
+		auto targets = String::join(m_targets);
 
-	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_buildFile, targets, m_recheck, m_rebuild, m_clean);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_buildFile, targets, m_recheck, m_rebuild, m_clean);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/

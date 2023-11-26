@@ -56,5 +56,6 @@ private:
 	bool m_generateDependencies = true;
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
+	bool m_projectHashChanged = false;
 };
 }

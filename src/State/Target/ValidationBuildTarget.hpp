@@ -16,7 +16,7 @@ struct ValidationBuildTarget final : public IBuildTarget
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
-	virtual std::string getHash() const final;
+	virtual const std::string& getHash() const final;
 
 	const std::string& schema() const noexcept;
 	void setSchema(std::string&& inValue) noexcept;

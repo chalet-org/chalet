@@ -22,7 +22,7 @@ struct IBuildTarget
 	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual bool validate() = 0;
-	virtual std::string getHash() const = 0;
+	virtual const std::string& getHash() const = 0;
 
 	virtual bool initialize();
 
@@ -48,6 +48,8 @@ protected:
 	bool processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const;
 
 	const BuildState& m_state;
+
+	mutable std::string m_hash;
 
 private:
 	std::string m_name;

@@ -16,6 +16,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -38,10 +39,11 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
 
-	m_pchChanged = false;
-	m_sourcesChanged = false;
-
 	chalet_assert(m_project != nullptr, "");
+
+	m_projectHashChanged = m_sourceCache.targetHashChanged(m_state.paths.getTargetFilename(*m_project), m_project->getHash());
+
+	m_sourcesChanged = m_pchChanged = m_projectHashChanged;
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = inOutputs;
@@ -363,10 +365,16 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 /*****************************************************************************/
 bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target)
 {
+	// Rebuild all if the target hash is different
+	if (m_projectHashChanged)
+		return true;
+
+	// Check the source file and target (object) if they were changed
 	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
 	if (result)
 		return true;
 
+	// Read through all the dependencies
 	auto dependency = m_state.environment->getDependencyFile(source);
 	if (Files::pathExists(dependency))
 	{

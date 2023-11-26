@@ -15,7 +15,7 @@ struct ProcessBuildTarget final : public IBuildTarget
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
-	virtual std::string getHash() const final;
+	virtual const std::string& getHash() const final;
 
 	const std::string& path() const noexcept;
 	void setPath(std::string&& inValue) noexcept;

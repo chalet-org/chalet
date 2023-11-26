@@ -7,9 +7,9 @@
 
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -65,13 +65,18 @@ bool ValidationBuildTarget::validate()
 }
 
 /*****************************************************************************/
-std::string ValidationBuildTarget::getHash() const
+const std::string& ValidationBuildTarget::getHash() const
 {
-	auto files = String::join(m_files);
+	if (m_hash.empty())
+	{
+		auto files = String::join(m_files);
 
-	auto hashable = Hash::getHashableString(this->name(), m_schema, files);
+		auto hashable = Hash::getHashableString(this->name(), m_schema, files);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/

@@ -16,7 +16,7 @@ struct ScriptBuildTarget final : public IBuildTarget
 
 	virtual bool initialize() final;
 	virtual bool validate() final;
-	virtual std::string getHash() const final;
+	virtual const std::string& getHash() const final;
 
 	const std::string& file() const noexcept;
 	void setFile(std::string&& inValue) noexcept;

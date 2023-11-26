@@ -7,9 +7,9 @@
 
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -83,13 +83,18 @@ bool ProcessBuildTarget::validate()
 }
 
 /*****************************************************************************/
-std::string ProcessBuildTarget::getHash() const
+const std::string& ProcessBuildTarget::getHash() const
 {
-	auto args = String::join(m_arguments);
+	if (m_hash.empty())
+	{
+		auto args = String::join(m_arguments);
 
-	auto hashable = Hash::getHashableString(this->name(), m_path, args);
+		auto hashable = Hash::getHashableString(this->name(), m_path, args);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/
@@ -129,5 +134,4 @@ void ProcessBuildTarget::setDependsOn(std::string&& inValue) noexcept
 {
 	m_dependsOn = std::move(inValue);
 }
-
 }

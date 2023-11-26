@@ -406,23 +406,28 @@ bool SourceTarget::validate()
 }
 
 /*****************************************************************************/
-std::string SourceTarget::getHash() const
+const std::string& SourceTarget::getHash() const
 {
-	auto files = String::join(m_files);
-	auto defines = String::join(m_defines);
-	auto links = String::join(m_links);
-	auto staticLinks = String::join(m_staticLinks);
-	auto warnings = String::join(m_warnings);
-	auto compileOptions = String::join(m_compileOptions);
-	auto libDirs = String::join(m_libDirs);
-	auto includeDirs = String::join(m_includeDirs);
-	auto appleFrameworkPaths = String::join(m_appleFrameworkPaths);
-	auto appleFrameworks = String::join(m_appleFrameworks);
-	auto configureFiles = String::join(m_configureFiles);
+	if (m_hash.empty())
+	{
+		auto files = String::join(m_files);
+		auto defines = String::join(m_defines);
+		auto links = String::join(m_links);
+		auto staticLinks = String::join(m_staticLinks);
+		auto warnings = String::join(m_warnings);
+		auto compileOptions = String::join(m_compileOptions);
+		auto libDirs = String::join(m_libDirs);
+		auto includeDirs = String::join(m_includeDirs);
+		auto appleFrameworkPaths = String::join(m_appleFrameworkPaths);
+		auto appleFrameworks = String::join(m_appleFrameworks);
+		auto configureFiles = String::join(m_configureFiles);
 
-	auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
+		auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/

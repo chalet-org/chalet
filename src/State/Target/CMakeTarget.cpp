@@ -85,14 +85,19 @@ bool CMakeTarget::validate()
 }
 
 /*****************************************************************************/
-std::string CMakeTarget::getHash() const
+const std::string& CMakeTarget::getHash() const
 {
-	auto defines = String::join(m_defines);
-	auto targets = String::join(m_targets);
+	if (m_hash.empty())
+	{
+		auto defines = String::join(m_defines);
+		auto targets = String::join(m_targets);
 
-	auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_recheck, m_rebuild, m_clean);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_recheck, m_rebuild, m_clean);
 
-	return Hash::string(hashable);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/
