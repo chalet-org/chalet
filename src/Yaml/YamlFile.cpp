@@ -215,6 +215,8 @@ bool YamlFile::parseAsJson(Json& outJson)
 		}
 	}
 
+	// LOG(outJson.dump(3, ' '));
+
 	return true;
 }
 
@@ -258,13 +260,6 @@ Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
 
 			if (!value.empty())
 			{
-				if (value.front() == '{' && value.back() == '}')
-				{
-					value = value.substr(1, value.size() - 2);
-					ret[key] = parseAbbreviatedObject(value);
-					continue;
-				}
-
 				if (value.front() == '"' && value.back() == '"')
 					value = value.substr(1, value.size() - 2);
 			}
