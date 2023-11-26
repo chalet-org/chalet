@@ -103,6 +103,7 @@ bool CentralState::initialize()
 
 	// If no toolchain was found in inputs or settings, use the default
 	m_inputs.detectToolchainPreference();
+	m_inputs.detectAlternativeInputFileFormats();
 
 	m_filename = m_inputs.inputFile();
 	m_inputs.clearWorkingDirectory(m_filename);

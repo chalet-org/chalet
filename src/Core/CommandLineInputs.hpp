@@ -19,7 +19,8 @@ struct CommandLineInputs
 {
 	CommandLineInputs();
 
-	void detectToolchainPreference() const;
+	void detectToolchainPreference();
+	void detectAlternativeInputFileFormats();
 
 	const std::string& defaultArchPreset() const noexcept;
 	const std::string& defaultToolchainPreset() const noexcept;

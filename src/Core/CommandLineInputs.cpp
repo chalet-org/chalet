@@ -164,12 +164,25 @@ CommandLineInputs::CommandLineInputs() :
 }
 
 /*****************************************************************************/
-void CommandLineInputs::detectToolchainPreference() const
+void CommandLineInputs::detectToolchainPreference()
 {
 	if (m_toolchainPreferenceName.empty())
 	{
 		const auto& defaultPreset = defaultToolchainPreset();
 		m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	}
+}
+
+/*****************************************************************************/
+void CommandLineInputs::detectAlternativeInputFileFormats()
+{
+	if (!Files::pathExists(m_inputFile))
+	{
+		auto yaml = fmt::format("{}.yaml", String::getPathFolderBaseName(m_inputFile));
+		if (Files::pathExists(yaml))
+		{
+			setInputFile(std::move(yaml));
+		}
 	}
 }
 
