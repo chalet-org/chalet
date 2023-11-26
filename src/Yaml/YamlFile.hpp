@@ -12,7 +12,8 @@ namespace chalet
 struct YamlFile
 {
 	static bool parse(Json& outJson, const std::string& inFilename, const bool inError = true);
-	static bool generate(const Json& inJson, const std::string& inFilename);
+	static bool saveToFile(const Json& inJson, const std::string& inFilename);
+	static std::string asString(const Json& inJson);
 
 private:
 	YamlFile() = delete;

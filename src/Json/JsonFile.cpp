@@ -106,7 +106,7 @@ void JsonFile::dumpToTerminal()
 /*****************************************************************************/
 bool JsonFile::saveAsYaml(const std::string& inFilename) const
 {
-	return YamlFile::generate(json, inFilename);
+	return YamlFile::saveToFile(json, inFilename);
 }
 
 /*****************************************************************************/

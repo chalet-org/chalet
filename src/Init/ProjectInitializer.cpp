@@ -18,6 +18,7 @@
 #include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
+#include "Yaml/YamlFile.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -138,7 +139,10 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 
 	outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
 	outProps.envFile = getMakeEnvFile();
+	outProps.inputFile = getInputFileFormat();
 	outProps.makeGitRepository = getMakeGitRepository();
+
+	outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
 
 	printUserInputSplit();
 
@@ -160,10 +164,12 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 		return StarterFileTemplates::getDotEnv();
 	});
 
-	auto& defaultInputFile = m_inputs.defaultInputFile();
-	printFileNameAndContents(true, defaultInputFile, [&outProps]() {
+	printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
 		auto jsonFile = StarterFileTemplates::getStandardChaletJson(outProps);
-		return jsonFile.dump(3, ' ');
+		if (outProps.isYaml)
+			return YamlFile::asString(jsonFile);
+		else
+			return jsonFile.dump(3, ' ');
 	});
 
 	return true;
@@ -191,7 +197,10 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
 	outProps.envFile = getMakeEnvFile();
+	outProps.inputFile = getInputFileFormat();
 	outProps.makeGitRepository = getMakeGitRepository();
+
+	outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
 
 	printUserInputSplit();
 
@@ -213,10 +222,12 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 		return StarterFileTemplates::getDotEnv();
 	});
 
-	auto& defaultInputFile = m_inputs.defaultInputFile();
-	printFileNameAndContents(true, defaultInputFile, [&outProps]() {
+	printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
 		auto jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(outProps);
-		return jsonFile.dump(3, ' ');
+		if (outProps.isYaml)
+			return YamlFile::asString(jsonFile);
+		else
+			return jsonFile.dump(3, ' ');
 	});
 
 	printFileNameAndContents(true, "CMakeLists.txt", [&outProps]() {
@@ -317,20 +328,18 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 /*****************************************************************************/
 bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 {
-	auto& defaultInputFile = m_inputs.defaultInputFile();
-	const auto filePath = fmt::format("{}/{}", m_rootPath, defaultInputFile);
+	const auto filePath = fmt::format("{}/{}", m_rootPath, inProps.inputFile);
 
 	Json jsonFile;
 	if (m_inputs.initTemplate() == InitTemplateType::CMake)
-	{
 		jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(inProps);
-	}
 	else
-	{
 		jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
-	}
 
-	return JsonFile::saveToFile(jsonFile, filePath);
+	if (inProps.isYaml)
+		return YamlFile::saveToFile(jsonFile, filePath);
+	else
+		return JsonFile::saveToFile(jsonFile, filePath);
 }
 
 /*****************************************************************************/
@@ -640,6 +649,22 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 			return RegexPatterns::matchesCxxStandardShort(input) || RegexPatterns::matchesGnuCStandard(input);
 		});
 	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string ProjectInitializer::getInputFileFormat() const
+{
+	std::string ret = "json";
+	Output::getUserInput("Build file format:", ret, "json or yaml", [](std::string& input) {
+		return String::equals("json", input) || String::equals("yaml", input);
+	});
+
+	if (String::equals("yaml", ret))
+		ret = m_inputs.yamlInputFile();
+	else
+		ret = m_inputs.defaultInputFile();
 
 	return ret;
 }

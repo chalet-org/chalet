@@ -20,10 +20,23 @@ bool YamlFile::parse(Json& outJson, const std::string& inFilename, const bool in
 }
 
 /*****************************************************************************/
-bool YamlFile::generate(const Json& inJson, const std::string& inFilename)
+bool YamlFile::saveToFile(const Json& inJson, const std::string& inFilename)
 {
 	YamlFile file(inFilename);
 	return file.save(inJson);
+}
+
+/*****************************************************************************/
+std::string YamlFile::asString(const Json& inJson)
+{
+	std::string filename;
+	YamlFile file(filename);
+	auto res = file.getNodeAsString(std::string(), inJson);
+
+	if (!res.empty() && res.back() == '\n')
+		res.pop_back();
+
+	return res;
 }
 
 /*****************************************************************************/
