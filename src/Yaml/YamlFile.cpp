@@ -33,6 +33,8 @@ YamlFile::YamlFile(const std::string& inFilename) :
 }
 
 /*****************************************************************************/
+// Note: doesn't support arrays of objects yet (not used anyway)
+//
 bool YamlFile::parseAsJson(Json& outJson)
 {
 	if (!Files::pathExists(m_filename))
@@ -51,9 +53,6 @@ bool YamlFile::parseAsJson(Json& outJson)
 	for (std::string line; std::getline(input, line);)
 	{
 		if (line.empty())
-			continue;
-
-		if (line.front() == '#')
 			continue;
 
 		// LOG(line);
@@ -79,6 +78,10 @@ bool YamlFile::parseAsJson(Json& outJson)
 			line.pop_back();
 
 		if (line.empty())
+			continue;
+
+		// ignore comments
+		if (line.front() == '#')
 			continue;
 
 		while (nodes.size() > indent + 1)
