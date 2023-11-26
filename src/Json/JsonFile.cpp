@@ -9,6 +9,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Yaml/YamlFile.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonValidator.hpp"
 
@@ -45,7 +46,14 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 bool JsonFile::load(const bool inError)
 {
 	chalet_assert(!m_filename.empty(), "JsonFile::load(): No file to load");
-	return JsonComments::parse(json, m_filename, inError);
+	if (String::endsWith(".yaml", m_filename))
+	{
+		return YamlFile::parse(json, m_filename, inError);
+	}
+	else
+	{
+		return JsonComments::parse(json, m_filename, inError);
+	}
 }
 
 /*****************************************************************************/
@@ -93,6 +101,19 @@ void JsonFile::dumpToTerminal()
 	std::cout.write(output.data(), output.size());
 	std::cout.put('\n');
 	std::cout.flush();
+}
+
+/*****************************************************************************/
+bool JsonFile::saveAs(const std::string& inFilename, const i32 inIndent) const
+{
+	if (String::endsWith(".yaml", inFilename))
+	{
+		return YamlFile::saveToFile(json, inFilename);
+	}
+	else
+	{
+		return JsonFile::saveToFile(json, inFilename, inIndent);
+	}
 }
 
 /*****************************************************************************/

@@ -7,6 +7,7 @@
 
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "System/SuppressIntellisense.hpp"
 #include "Utility/String.hpp"
@@ -16,7 +17,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-ChaletJsonSchema::ChaletJsonSchema() :
+ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
+	m_inputs(inInputs),
 	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
 	kPatternAbstractName(R"regex([A-Za-z\-_]+)regex"),
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
@@ -24,6 +26,13 @@ ChaletJsonSchema::ChaletJsonSchema() :
 	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
 	kPatternConditions(R"regex(\[(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\}))([\+\|](\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\})))*\])regex") // https://regexr.com/6jni8
 {
+}
+
+/*****************************************************************************/
+Json ChaletJsonSchema::get(const CommandLineInputs& inInputs)
+{
+	ChaletJsonSchema schema(inInputs);
+	return schema.get();
 }
 
 /*****************************************************************************/
@@ -83,9 +92,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	defs[Defs::ConfigurationDebugSymbols] = R"json({
 		"type": "boolean",
-		"description": "true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-g3` option (`-g` & macro information expansion) and forces `-O0` if the optimizationLevel is not `0` or `debug`.\nIn MSVC, this enables `/debug`, `/incremental` and forces `/Od` if the optimizationLevel is not `0` or `debug`.\nAdditionally, `_DEBUG` will be defined in `*-pc-windows-msvc` targets.\nThis flag is also the determining factor whether the `:debug` suffix is used in a chalet.json property.",
+		"description": "",
 		"default": false
 	})json"_ojson;
+	defs[Defs::ConfigurationDebugSymbols]["description"] = fmt::format("true to include debug symbols, false otherwise.\nIn GNU-based compilers, this is equivalent to the `-g3` option (`-g` & macro information expansion) and forces `-O0` if the optimizationLevel is not `0` or `debug`.\nIn MSVC, this enables `/debug`, `/incremental` and forces `/Od` if the optimizationLevel is not `0` or `debug`.\nAdditionally, `_DEBUG` will be defined in `*-pc-windows-msvc` targets.\nThis flag is also the determining factor whether the `:debug` suffix is used in a {} property.", m_inputs.defaultInputFile());
 
 	defs[Defs::ConfigurationEnableProfiling] = R"json({
 		"type": "boolean",
@@ -1388,18 +1398,19 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	//
-
 	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
-		"description": "The folder path of the root chalet.json for the project.",
+		"description": "",
 		"minLength": 1
 	})json"_ojson;
+	defs[Defs::TargetChaletLocation]["description"] = fmt::format("The folder path of the root {} for the project.", m_inputs.defaultInputFile());
 
 	defs[Defs::TargetChaletBuildFile] = R"json({
 		"type": "string",
-		"description": "The build file to use, if not chalet.json, relative to the location.",
+		"description": "",
 		"minLength": 1
 	})json"_ojson;
+	defs[Defs::TargetChaletBuildFile]["description"] = fmt::format("The build file to use, if not {}, relative to the location.", m_inputs.defaultInputFile());
 
 	defs[Defs::TargetChaletTargetNames] = makeArrayOrString(R"json({
 		"type": "string",

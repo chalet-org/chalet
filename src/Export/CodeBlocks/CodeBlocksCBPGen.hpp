@@ -68,5 +68,7 @@ private:
 	std::string m_compiler;
 	std::string m_cwd;
 	std::string m_exportPath;
+	std::string m_defaultInputFile;
+	std::string m_yamlInputFile;
 };
 }

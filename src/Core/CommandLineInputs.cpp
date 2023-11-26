@@ -129,6 +129,8 @@ const std::string kDefaultOutputDirectory("build");
 const std::string kDefaultExternalDirectory("chalet_external");
 const std::string kDefaultDistributionDirectory("dist");
 
+const std::string kYamlInputFile("chalet.yaml");
+
 const std::string kGlobalSettingsFile(".chalet/config.json");
 
 const std::string kArchPresetAuto(Values::Auto);
@@ -162,12 +164,31 @@ CommandLineInputs::CommandLineInputs() :
 }
 
 /*****************************************************************************/
-void CommandLineInputs::detectToolchainPreference() const
+void CommandLineInputs::detectToolchainPreference()
 {
 	if (m_toolchainPreferenceName.empty())
 	{
 		const auto& defaultPreset = defaultToolchainPreset();
 		m_toolchainPreference = getToolchainPreferenceFromString(defaultPreset);
+	}
+}
+
+/*****************************************************************************/
+void CommandLineInputs::detectAlternativeInputFileFormats()
+{
+	if (m_inputFile.empty())
+	{
+		m_inputFile = kDefaultInputFile;
+	}
+
+	if (!m_inputFile.empty() && !Files::pathExists(m_inputFile))
+	{
+		auto json = fmt::format("{}.json", String::getPathFolderBaseName(m_inputFile));
+		auto yaml = fmt::format("{}.yaml", String::getPathFolderBaseName(m_inputFile));
+		if (Files::pathExists(yaml))
+			setInputFile(std::move(yaml));
+		else if (Files::pathExists(json))
+			setInputFile(std::move(json));
 	}
 }
 
@@ -370,6 +391,12 @@ const std::string& CommandLineInputs::defaultExternalDirectory() const noexcept
 const std::string& CommandLineInputs::defaultDistributionDirectory() const noexcept
 {
 	return kDefaultDistributionDirectory;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::yamlInputFile() const noexcept
+{
+	return kYamlInputFile;
 }
 
 /*****************************************************************************/

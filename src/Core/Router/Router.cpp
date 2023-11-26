@@ -11,6 +11,8 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
+#include "ChaletJson/ChaletJsonSchema.hpp"
+#include "Convert/BuildFileConverter.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
 #include "Process/SubProcessController.hpp"
@@ -25,13 +27,14 @@
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
-#include "System/UpdateNotifier.hpp"
 #include "System/Files.hpp"
+#include "System/UpdateNotifier.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/TerminalTest.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
+#include "Json/JsonFile.hpp"
 #include "Json/JsonValues.hpp"
 
 #include "Libraries/Json.hpp"
@@ -73,6 +76,9 @@ bool Router::run()
 	{
 		case RouteType::Query:
 			return routeQuery();
+
+		case RouteType::Convert:
+			return routeConvert();
 
 		case RouteType::TerminalTest:
 			return routeTerminalTest();
@@ -292,6 +298,15 @@ bool Router::routeQuery()
 }
 
 /*****************************************************************************/
+bool Router::routeConvert()
+{
+	m_inputs.detectAlternativeInputFileFormats();
+
+	BuildFileConverter converter(m_inputs);
+	return converter.convertFromInputs();
+}
+
+/*****************************************************************************/
 bool Router::routeTerminalTest()
 {
 	TerminalTest termTest;
@@ -346,11 +361,6 @@ bool Router::workingDirectoryIsGlobalChaletDirectory()
 bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
-
-	Diagnostic::infoEllipsis("Testing");
-
-	Files::sleep(5);
-	Diagnostic::printDone();
 
 	return true;
 }

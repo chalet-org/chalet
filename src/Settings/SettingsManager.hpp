@@ -48,5 +48,6 @@ private:
 	SettingsType m_type = SettingsType::None;
 
 	bool m_initialized = false;
+	bool m_yamlOutput = false;
 };
 }

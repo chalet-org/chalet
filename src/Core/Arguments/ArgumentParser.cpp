@@ -32,6 +32,7 @@ CHALET_CONSTANT(SettingsValue) = "<value>";
 CHALET_CONSTANT(ValidateSchema) = "<schema>";
 CHALET_CONSTANT(QueryType) = "<type>";
 // CHALET_CONSTANT(QueryData) = "<data>";
+CHALET_CONSTANT(ConvertFormat) = "<format>";
 }
 
 namespace Positional
@@ -67,6 +68,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::SettingsUnset, &ArgumentParser::populateSettingsUnsetArguments },
 		{ RouteType::Validate, &ArgumentParser::populateValidateArguments },
 		{ RouteType::Query, &ArgumentParser::populateQueryArguments },
+		{ RouteType::Convert, &ArgumentParser::populateConvertArguments },
 		{ RouteType::TerminalTest, &ArgumentParser::populateTerminalTestArguments },
 	}),
 	m_routeDescriptions({
@@ -85,6 +87,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::SettingsUnset, "Remove the key/value pair given a valid property key." },
 		{ RouteType::Validate, "Validate JSON file(s) against a schema." },
 		{ RouteType::Query, "Query Chalet for project-specific information. Intended for IDE integrations." },
+		{ RouteType::Convert, "Convert the build file from one supported format to another." },
 		{ RouteType::TerminalTest, "Display all color themes and terminal capabilities." },
 	}),
 	m_routeMap({
@@ -106,6 +109,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ "unset", RouteType::SettingsUnset },
 		{ "validate", RouteType::Validate },
 		{ "query", RouteType::Query },
+		{ "convert", RouteType::Convert },
 		{ "termtest", RouteType::TerminalTest },
 	})
 {
@@ -785,6 +789,34 @@ std::string ArgumentParser::getHelp()
 			help += fmt::format("{}\n", line);
 		}
 	}
+	else if (m_route == RouteType::Convert)
+	{
+		auto getFormatDescription = [](const std::string& preset) -> std::string {
+			if (String::equals("json", preset))
+				return std::string("JSON: JavaScript Object Notation");
+			else if (String::equals("yaml", preset))
+				return std::string("YAML Ain't Markup Language");
+
+			return std::string();
+		};
+
+		help += "\nBuild file formats:\n";
+		StringList exportPresets{
+			"json",
+			"yaml",
+		};
+
+		for (auto& preset : exportPresets)
+		{
+			std::string line = preset;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getFormatDescription(preset);
+
+			help += fmt::format("{}\n", line);
+		}
+	}
 
 	help += "\nApplication Paths:\n";
 	StringList applicationPaths{
@@ -900,6 +932,9 @@ void ArgumentParser::populateMainArguments()
 
 	subcommands.push_back(fmt::format("unset {}", Arg::SettingsKey));
 	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::SettingsUnset)));
+
+	subcommands.push_back(fmt::format("convert {}", Arg::ConvertFormat));
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Convert));
 
 	subcommands.push_back(fmt::format("export {}", Arg::ExportKind));
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Export));
@@ -1341,6 +1376,16 @@ void ArgumentParser::populateSettingsUnsetArguments()
 	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
 		.setHelp("The config key to remove.")
 		.setRequired();
+}
+
+/*****************************************************************************/
+void ArgumentParser::populateConvertArguments()
+{
+	addTwoStringArguments(ArgumentIdentifier::InputFile, "-f", "--file")
+		.setHelp("The path to the build file to convert to another format.");
+
+	addTwoStringArguments(ArgumentIdentifier::ConvertFormat, Positional::Argument2, Arg::ConvertFormat)
+		.setHelp("The format to convert the build file to.");
 }
 
 /*****************************************************************************/

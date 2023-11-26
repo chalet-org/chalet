@@ -64,5 +64,6 @@ enum class ArgumentIdentifier : u16
 	QueryType,
 	QueryDataRemainingArgs,
 	SettingsKeysRemainingArgs,
+	ConvertFormat,
 };
 }

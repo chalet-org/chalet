@@ -106,6 +106,7 @@ private:
 	void populateSettingsGetKeysArguments();
 	void populateSettingsSetArguments();
 	void populateSettingsUnsetArguments();
+	void populateConvertArguments();
 	void populateValidateArguments();
 	void populateQueryArguments();
 	void populateTerminalTestArguments();

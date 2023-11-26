@@ -16,8 +16,8 @@
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/DefinesVersion.hpp"
-#include "Terminal/ColorTheme.hpp"
 #include "System/Files.hpp"
+#include "Terminal/ColorTheme.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
@@ -900,8 +900,7 @@ StringList QueryController::getChaletSchema() const
 {
 	StringList ret;
 
-	ChaletJsonSchema schemaBuilder;
-	Json schema = schemaBuilder.get();
+	Json schema = ChaletJsonSchema::get(m_centralState.inputs());
 	ret.emplace_back(schema.dump());
 
 	return ret;
@@ -912,8 +911,7 @@ StringList QueryController::getSettingsSchema() const
 {
 	StringList ret;
 
-	SettingsJsonSchema schemaBuilder;
-	Json schema = schemaBuilder.get();
+	Json schema = SettingsJsonSchema::get(m_centralState.inputs());
 	ret.emplace_back(schema.dump());
 
 	return ret;

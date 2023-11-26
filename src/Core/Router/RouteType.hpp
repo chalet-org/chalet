@@ -26,6 +26,7 @@ enum class RouteType : u16
 	SettingsUnset,
 	Validate,
 	Query,
+	Convert,
 	TerminalTest,
 #if defined(CHALET_DEBUG)
 	Debug,

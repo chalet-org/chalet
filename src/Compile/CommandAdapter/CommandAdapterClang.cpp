@@ -5,8 +5,8 @@
 
 #include "Compile/CommandAdapter/CommandAdapterClang.hpp"
 
-#include "Cache/WorkspaceCache.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -147,7 +147,7 @@ StringList CommandAdapterClang::getWarningList() const
 {
 	StringList ret;
 
-	auto getWithUserWarnings = [this](StringList&& warnings) {
+	auto getWithUserWarnings = [this](StringList&& warnings) -> StringList {
 		auto& userWarnings = m_project.warnings();
 		auto exclusions = getWarningExclusions();
 		for (auto& warning : userWarnings)
@@ -164,7 +164,7 @@ StringList CommandAdapterClang::getWarningList() const
 		if (m_project.treatWarningsAsErrors())
 			List::addIfDoesNotExist(warnings, "error");
 
-		return std::move(warnings);
+		return warnings;
 	};
 
 	auto warningsPreset = m_project.warningsPreset();

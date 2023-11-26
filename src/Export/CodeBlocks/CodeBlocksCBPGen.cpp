@@ -71,6 +71,8 @@ bool CodeBlocksCBPGen::initialize()
 	m_resourceExtensions = firstState.paths.windowsResourceExtensions();
 	m_resourceExtensions.emplace_back("manifest");
 	m_cwd = Files::getCanonicalPath(firstState.inputs.workingDirectory());
+	m_defaultInputFile = firstState.inputs.defaultInputFile();
+	m_yamlInputFile = firstState.inputs.yamlInputFile();
 
 	for (auto& state : m_states)
 	{
@@ -704,7 +706,8 @@ std::string CodeBlocksCBPGen::getVirtualFolder(const std::string& inFile, const 
 	if (!inPch.empty() && String::equals(inPch, inFile))
 		return "Precompile Header Files";
 
-	if (String::endsWith("chalet.json", inFile))
+	chalet_assert(!m_defaultInputFile.empty(), "m_defaultInputFile not set");
+	if (String::endsWith(m_defaultInputFile, inFile) || String::endsWith(m_yamlInputFile, inFile))
 		return "Chalet";
 
 	if (String::endsWith("CMakeLists.txt", inFile))

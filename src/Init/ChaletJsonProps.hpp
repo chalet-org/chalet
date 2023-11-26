@@ -18,11 +18,13 @@ struct ChaletJsonProps
 	std::string mainSource;
 	std::string precompiledHeader;
 	std::string langStandard;
+	std::string inputFile;
 	CodeLanguage language = CodeLanguage::None;
 	bool modules = false;
 	bool makeGitRepository = false;
 	bool useLocation = true;
 	bool defaultConfigs = true;
 	bool envFile = true;
+	bool isYaml = false;
 };
 }

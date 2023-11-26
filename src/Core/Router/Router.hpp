@@ -27,6 +27,7 @@ private:
 	bool routeSettings();
 	bool routeValidate();
 	bool routeQuery();
+	bool routeConvert();
 	bool routeTerminalTest();
 
 	bool routeExport(CentralState& inCentralState);

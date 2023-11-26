@@ -159,6 +159,10 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						inputs->setQueryOption(std::move(value));
 						break;
 
+					case ArgumentIdentifier::ConvertFormat:
+						inputs->setSettingsKey(std::move(value));
+						break;
+
 					case ArgumentIdentifier::RunTargetArguments:
 						inputs->setRunArguments(std::move(value));
 						break;

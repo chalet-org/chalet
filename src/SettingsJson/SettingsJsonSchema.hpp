@@ -9,9 +9,10 @@
 
 namespace chalet
 {
-class SettingsJsonSchema
+struct CommandLineInputs;
+
+namespace SettingsJsonSchema
 {
-public:
-	Json get();
-};
+Json get(const CommandLineInputs& inInputs);
+}
 }

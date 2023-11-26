@@ -76,6 +76,10 @@ bool CLionWorkspaceGen::saveToPath(const std::string& inPath)
 	m_settingsFile = debugState.inputs.settingsFile();
 	m_inputFile = debugState.inputs.inputFile();
 
+	m_defaultSettingsFile = debugState.inputs.defaultSettingsFile();
+	m_defaultInputFile = debugState.inputs.defaultInputFile();
+	m_yamlInputFile = debugState.inputs.yamlInputFile();
+
 	auto runTarget = debugState.getFirstValidRunTarget();
 	if (runTarget != nullptr)
 	{
@@ -488,11 +492,7 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 			node2.addElement("ProjectState");
 		});
 	});
-	/*
-  <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/.chaletrc" root0="FORCE_HIGHLIGHTING" />
-  </component>
-	*/
+
 	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "HighlightingSettingsPerFile");
 		node.addElement("setting", [this](XmlElement& node2) {
@@ -583,18 +583,22 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 {
 	XmlFile xmlFile(inFilename);
 
+	chalet_assert(!m_defaultInputFile.empty(), "m_defaultInputFile was empty");
+	chalet_assert(!m_yamlInputFile.empty(), "m_yamlInputFile was empty");
+	chalet_assert(!m_defaultSettingsFile.empty(), "m_defaultSettingsFile was empty");
+
 	auto& xmlRoot = xmlFile.getRoot();
 
 	xmlRoot.setName("project");
 	xmlRoot.addAttribute("version", "4");
-	xmlRoot.addElement("component", [](XmlElement& node) {
+	xmlRoot.addElement("component", [this](XmlElement& node) {
 		node.addAttribute("name", "JsonSchemaMappingsProjectConfiguration");
-		node.addElement("state", [](XmlElement& node2) {
-			node2.addElement("map", [](XmlElement& node3) {
-				node3.addElement("entry", [](XmlElement& node4) {
+		node.addElement("state", [this](XmlElement& node2) {
+			node2.addElement("map", [this](XmlElement& node3) {
+				node3.addElement("entry", [this](XmlElement& node4) {
 					node4.addAttribute("key", "chalet.schema");
-					node4.addElement("value", [](XmlElement& node5) {
-						node5.addElement("SchemaInfo", [](XmlElement& node6) {
+					node4.addElement("value", [this](XmlElement& node5) {
+						node5.addElement("SchemaInfo", [this](XmlElement& node6) {
 							node6.addElement("option", [](XmlElement& node7) {
 								node7.addAttribute("name", "generatedName");
 								node7.addAttribute("value", "New Schema");
@@ -611,13 +615,19 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 								node7.addAttribute("name", "schemaVersion");
 								node7.addAttribute("value", "JSON Schema version 7");
 							});
-							node6.addElement("option", [](XmlElement& node7) {
+							node6.addElement("option", [this](XmlElement& node7) {
 								node7.addAttribute("name", "patterns");
-								node7.addElement("list", [](XmlElement& node8) {
-									node8.addElement("Item", [](XmlElement& node9) {
-										node9.addElement("option", [](XmlElement& node10) {
+								node7.addElement("list", [this](XmlElement& node8) {
+									node8.addElement("Item", [this](XmlElement& node9) {
+										node9.addElement("option", [this](XmlElement& node10) {
 											node10.addAttribute("name", "path");
-											node10.addAttribute("value", "chalet.json");
+											node10.addAttribute("value", m_defaultInputFile);
+										});
+									});
+									node8.addElement("Item", [this](XmlElement& node9) {
+										node9.addElement("option", [this](XmlElement& node10) {
+											node10.addAttribute("name", "path");
+											node10.addAttribute("value", m_yamlInputFile);
 										});
 									});
 								});
@@ -625,10 +635,10 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 						});
 					});
 				});
-				node3.addElement("entry", [](XmlElement& node4) {
+				node3.addElement("entry", [this](XmlElement& node4) {
 					node4.addAttribute("key", "chalet.settings.schema");
-					node4.addElement("value", [](XmlElement& node5) {
-						node5.addElement("SchemaInfo", [](XmlElement& node6) {
+					node4.addElement("value", [this](XmlElement& node5) {
+						node5.addElement("SchemaInfo", [this](XmlElement& node6) {
 							node6.addElement("option", [](XmlElement& node7) {
 								node7.addAttribute("name", "generatedName");
 								node7.addAttribute("value", "New Schema");
@@ -645,13 +655,13 @@ bool CLionWorkspaceGen::createJsonSchemasFile(const std::string& inFilename)
 								node7.addAttribute("name", "schemaVersion");
 								node7.addAttribute("value", "JSON Schema version 7");
 							});
-							node6.addElement("option", [](XmlElement& node7) {
+							node6.addElement("option", [this](XmlElement& node7) {
 								node7.addAttribute("name", "patterns");
-								node7.addElement("list", [](XmlElement& node8) {
-									node8.addElement("Item", [](XmlElement& node9) {
-										node9.addElement("option", [](XmlElement& node10) {
+								node7.addElement("list", [this](XmlElement& node8) {
+									node8.addElement("Item", [this](XmlElement& node9) {
+										node9.addElement("option", [this](XmlElement& node10) {
 											node10.addAttribute("name", "path");
-											node10.addAttribute("value", ".chaletrc");
+											node10.addAttribute("value", m_defaultSettingsFile);
 										});
 									});
 								});

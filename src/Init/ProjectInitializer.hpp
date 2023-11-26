@@ -29,7 +29,6 @@ private:
 	bool makePch(const ChaletJsonProps& inProps);
 	bool makeCMakeLists(const ChaletJsonProps& inProps);
 	bool makeGitIgnore();
-	bool makeReadme();
 	bool makeDotEnv();
 
 	std::string getBannerV1() const;
@@ -46,6 +45,8 @@ private:
 	CodeLanguage getCodeLanguage() const;
 	StringList getSourceExtensions(const CodeLanguage inLang, const bool inModules) const;
 	std::string getLanguageStandard(const CodeLanguage inLang) const;
+
+	std::string getInputFileFormat() const;
 
 	bool getUseCxxModules(const CodeLanguage inLang, std::string langStandard) const;
 	bool getUseLocation() const;

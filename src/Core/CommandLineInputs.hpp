@@ -19,7 +19,8 @@ struct CommandLineInputs
 {
 	CommandLineInputs();
 
-	void detectToolchainPreference() const;
+	void detectToolchainPreference();
+	void detectAlternativeInputFileFormats();
 
 	const std::string& defaultArchPreset() const noexcept;
 	const std::string& defaultToolchainPreset() const noexcept;
@@ -35,6 +36,8 @@ struct CommandLineInputs
 	const std::string& defaultOutputDirectory() const noexcept;
 	const std::string& defaultExternalDirectory() const noexcept;
 	const std::string& defaultDistributionDirectory() const noexcept;
+
+	const std::string& yamlInputFile() const noexcept;
 
 	const std::string& inputFile() const noexcept;
 	void setInputFile(std::string&& inValue) noexcept;
