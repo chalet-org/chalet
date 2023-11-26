@@ -1381,7 +1381,7 @@ void ArgumentParser::populateSettingsUnsetArguments()
 /*****************************************************************************/
 void ArgumentParser::populateConvertArguments()
 {
-	addTwoStringArguments(ArgumentIdentifier::InputFile, "-f", "--file")
+	addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file")
 		.setHelp("The path to the build file to convert to another format.");
 
 	addTwoStringArguments(ArgumentIdentifier::ConvertFormat, Positional::Argument2, Arg::ConvertFormat)
