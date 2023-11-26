@@ -143,6 +143,14 @@ bool YamlFile::parseAsJson(Json& outJson)
 				continue;
 			}
 
+			if (value.front() == '[' && value.back() == ']')
+			{
+				value = value.substr(1, value.size() - 2);
+				// assume the list is all strings for now
+				node[std::move(split[0])] = String::split(value, ',');
+				continue;
+			}
+
 			if (String::equals("false", value))
 			{
 				node[std::move(split[0])] = false;
