@@ -176,7 +176,7 @@ void CommandLineInputs::detectToolchainPreference()
 /*****************************************************************************/
 void CommandLineInputs::detectAlternativeInputFileFormats()
 {
-	if (!Files::pathExists(m_inputFile))
+	if (!m_inputFile.empty() && !Files::pathExists(m_inputFile))
 	{
 		auto yaml = fmt::format("{}.yaml", String::getPathFolderBaseName(m_inputFile));
 		if (Files::pathExists(yaml))

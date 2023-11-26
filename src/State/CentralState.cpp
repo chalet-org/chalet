@@ -179,9 +179,12 @@ bool CentralState::initializeForQuery()
 
 	UNUSED(cache.initializeSettings(m_inputs));
 
+	if (m_inputs.inputFile().empty())
+		m_inputs.setInputFile(std::string(m_inputs.defaultInputFile()));
+
+	m_inputs.detectAlternativeInputFileFormats();
+
 	m_filename = m_inputs.inputFile();
-	if (m_filename.empty())
-		m_filename = m_inputs.defaultInputFile();
 
 	m_inputs.clearWorkingDirectory(m_filename);
 
