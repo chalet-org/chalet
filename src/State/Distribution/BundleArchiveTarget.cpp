@@ -43,6 +43,9 @@ bool BundleArchiveTarget::initialize()
 		return false;
 #endif
 
+	if (!processIncludeExceptions(m_includes))
+		return false;
+
 	return true;
 }
 

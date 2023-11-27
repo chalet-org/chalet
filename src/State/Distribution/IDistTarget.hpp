@@ -44,6 +44,7 @@ struct IDistTarget
 protected:
 	bool replaceVariablesInPathList(StringList& outList) const;
 	bool processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const;
+	bool processIncludeExceptions(StringList& outList) const;
 
 	const BuildState& m_state;
 

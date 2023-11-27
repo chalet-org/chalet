@@ -5,7 +5,10 @@
 
 #include "State/Distribution/IDistTarget.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildState.hpp"
+#include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 #include "State/Distribution/BundleArchiveTarget.hpp"
 #include "State/Distribution/BundleTarget.hpp"
@@ -102,6 +105,30 @@ bool IDistTarget::processEachPathList(StringList inList, std::function<bool(std:
 	{
 		if (!onProcess(std::move(val)))
 			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IDistTarget::processIncludeExceptions(StringList& outList) const
+{
+	if (m_state.environment->isEmscripten())
+	{
+		StringList additions;
+		auto ext = m_state.environment->getExecutableExtension();
+		for (auto& file : outList)
+		{
+			if (String::endsWith(ext, file))
+			{
+				auto noExtension = String::getPathFolderBaseName(file);
+				additions.emplace_back(fmt::format("{}.wasm", noExtension));
+				additions.emplace_back(fmt::format("{}.js", noExtension));
+			}
+		}
+
+		for (auto& file : additions)
+			List::addIfDoesNotExist(outList, std::move(file));
 	}
 
 	return true;

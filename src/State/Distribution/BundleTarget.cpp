@@ -7,14 +7,14 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
+#include "Process/Environment.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -79,6 +79,9 @@ bool BundleTarget::initialize()
 	if (!m_state.replaceVariablesInString(m_linuxDesktopEntryIcon, this))
 		return false;
 #endif
+
+	if (!processIncludeExceptions(m_includes))
+		return false;
 
 	return true;
 }

@@ -46,8 +46,9 @@ bool AppBundlerWeb::bundleForPlatform()
 			auto outputFilePath = m_state.paths.getTargetFilename(project);
 			if (project.isExecutable())
 			{
-				wasmFiles.emplace_back(fmt::format("{}.wasm", String::getPathFolderBaseName(outputFilePath)));
-				jsFiles.emplace_back(fmt::format("{}.js", String::getPathFolderBaseName(outputFilePath)));
+				auto noExtension = String::getPathFolderBaseName(outputFilePath);
+				wasmFiles.emplace_back(fmt::format("{}.wasm", noExtension));
+				jsFiles.emplace_back(fmt::format("{}.js", noExtension));
 			}
 		}
 	}
