@@ -90,7 +90,7 @@ struct SourceTarget final : public IBuildTarget
 	void parseOutputFilename() noexcept;
 
 	const std::string& outputFile() const noexcept;
-	const std::string& outputFileNoPrefix() const noexcept;
+	std::string getOutputFileWithoutPrefix() const noexcept;
 
 	CodeLanguage language() const noexcept;
 	void setLanguage(const std::string& inValue) noexcept;
@@ -190,7 +190,6 @@ struct SourceTarget final : public IBuildTarget
 	bool unityBuild() const noexcept;
 	void setUnityBuild(const bool inValue) noexcept;
 
-	bool unixSharedLibraryNamingConvention() const noexcept;
 	void setMinGWUnixSharedLibraryNamingConvention(const bool inValue) noexcept;
 
 	bool windowsOutputDef() const noexcept;
@@ -233,7 +232,6 @@ private:
 
 	std::string m_warningsPresetString;
 	std::string m_outputFile;
-	std::string m_outputFileNoPrefix;
 	std::string m_cStandard;
 	std::string m_cppStandard;
 	std::string m_precompiledHeader;

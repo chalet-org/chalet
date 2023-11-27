@@ -361,18 +361,7 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 /*****************************************************************************/
 std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 {
-	const auto& name = inProject.name();
-	std::string base;
-
-	if (inProject.unixSharedLibraryNamingConvention())
-	{
-		base = String::getPathFolderBaseName(inProject.outputFile());
-	}
-	else
-	{
-		base = name;
-	}
-
+	auto base = String::getPathFolderBaseName(inProject.outputFile());
 	return fmt::format("{}/{}", buildOutputDir(), base);
 }
 
@@ -433,21 +422,17 @@ std::string BuildPaths::getPrecompiledHeaderInclude(const SourceTarget& inProjec
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject) const
 {
-	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
+	bool canUseManifest = inProject.isExecutable() || inProject.isSharedLibrary();
+	if (canUseManifest && inProject.windowsApplicationManifestGenerationEnabled())
 	{
-		if (inProject.windowsApplicationManifest().empty())
-		{
-			auto outputFile = inProject.outputFileNoPrefix();
+		const auto& manifest = inProject.windowsApplicationManifest();
+		if (!manifest.empty())
+			return manifest;
 
-			// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-			return fmt::format("{}/{}.manifest", intermediateDir(inProject), outputFile);
+		auto outputFile = inProject.getOutputFileWithoutPrefix();
 
-			// return fmt::format("{}/default.manifest", intermediateDir());
-		}
-		else
-		{
-			return inProject.windowsApplicationManifest();
-		}
+		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
+		return fmt::format("{}/{}.manifest", intermediateDir(inProject), outputFile);
 	}
 
 	return std::string();
@@ -456,17 +441,11 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 /*****************************************************************************/
 std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& inProject) const
 {
-	if (!inProject.isStaticLibrary() && inProject.windowsApplicationManifestGenerationEnabled())
+	bool canUseManifest = inProject.isExecutable() || inProject.isSharedLibrary();
+	if (canUseManifest && inProject.windowsApplicationManifestGenerationEnabled())
 	{
-		/*if (inProject.windowsApplicationManifest().empty())
-		{
-			return fmt::format("{}/default.manifest.rc", intermediateDir());
-		}
-		else*/
-		{
-			const auto& name = inProject.name();
-			return fmt::format("{}/manifest.rc", intermediateDir(inProject), name);
-		}
+		const auto& name = inProject.name();
+		return fmt::format("{}/manifest.rc", intermediateDir(inProject), name);
 	}
 
 	return std::string();

@@ -503,7 +503,7 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
 			const auto& projectName = project.name();
-			if (project.kind() == SourceKind::StaticLibrary)
+			if (project.isStaticLibrary())
 			{
 				for (auto& link : m_links)
 				{
@@ -522,7 +522,7 @@ bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTar
 					List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
 				}
 			}
-			else if (project.kind() == SourceKind::SharedLibrary)
+			else if (project.isSharedLibrary())
 			{
 				for (auto& link : m_links)
 				{
@@ -726,9 +726,23 @@ const std::string& SourceTarget::outputFile() const noexcept
 }
 
 /*****************************************************************************/
-const std::string& SourceTarget::outputFileNoPrefix() const noexcept
+std::string SourceTarget::getOutputFileWithoutPrefix() const noexcept
 {
-	return m_outputFileNoPrefix;
+	if (isExecutable())
+	{
+		return name() + m_state.environment->getExecutableExtension();
+	}
+	else if (isSharedLibrary())
+	{
+		return name() + m_state.environment->getSharedLibraryExtension();
+	}
+	else if (isStaticLibrary())
+	{
+		return name() + m_state.environment->getStaticLibraryExtension();
+	}
+
+	chalet_assert(false, "getOutputFileWithoutPrefix() returned empty string");
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -1169,15 +1183,6 @@ void SourceTarget::setMinGWUnixSharedLibraryNamingConvention(const bool inValue)
 	m_mingwUnixSharedLibraryNamingConvention = inValue;
 }
 
-bool SourceTarget::unixSharedLibraryNamingConvention() const noexcept
-{
-	bool mingw = m_state.environment->isMingw();
-	bool mingwWithPrefix = m_mingwUnixSharedLibraryNamingConvention && mingw;
-	bool nonWindows = !mingw && !m_state.environment->isMsvc() && !m_state.environment->isWindowsClang();
-
-	return mingwWithPrefix || nonWindows;
-}
-
 /*****************************************************************************/
 bool SourceTarget::windowsOutputDef() const noexcept
 {
@@ -1270,33 +1275,16 @@ WindowsEntryPoint SourceTarget::parseWindowsEntryPoint(const std::string& inValu
 /*****************************************************************************/
 void SourceTarget::parseOutputFilename() noexcept
 {
-	const auto& projectName = name();
-	chalet_assert(!projectName.empty(), "parseOutputFilename: name is blank");
-
-	bool staticLib = m_kind == SourceKind::StaticLibrary;
-
-	switch (m_kind)
+	auto outputFileNoPrefix = getOutputFileWithoutPrefix();
+	if (isExecutable())
 	{
-		case SourceKind::Executable: {
-			auto executableExtension = m_state.environment->getExecutableExtension();
-			m_outputFileNoPrefix = projectName + executableExtension;
-			m_outputFile = projectName + executableExtension;
-			break;
-		}
-		case SourceKind::SharedLibrary:
-		case SourceKind::StaticLibrary: {
-			auto libraryPrefix = m_state.environment->getLibraryPrefix(m_mingwUnixSharedLibraryNamingConvention);
-			auto libraryExtension = staticLib ?
-				m_state.environment->getStaticLibraryExtension() :
-				m_state.environment->getSharedLibraryExtension();
-
-			m_outputFileNoPrefix = projectName + libraryExtension;
-			m_outputFile = libraryPrefix + m_outputFileNoPrefix;
-
-			break;
-		}
-		default:
-			break;
+		auto executableExtension = m_state.environment->getExecutableExtension();
+		m_outputFile = outputFileNoPrefix;
+	}
+	else
+	{
+		auto libraryPrefix = m_state.environment->getLibraryPrefix(m_mingwUnixSharedLibraryNamingConvention);
+		m_outputFile = libraryPrefix + outputFileNoPrefix;
 	}
 }
 
