@@ -68,14 +68,14 @@ void CompileToolchainController::setQuotedPaths(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	chalet_assert(archiver != nullptr, "");
 	chalet_assert(linker != nullptr, "");
 
 	if (m_project.kind() == SourceKind::StaticLibrary)
-		return archiver->getCommand(outputFile, sourceObjs, outputFileBase);
+		return archiver->getCommand(outputFile, sourceObjs);
 	else
-		return linker->getCommand(outputFile, sourceObjs, outputFileBase);
+		return linker->getCommand(outputFile, sourceObjs);
 }
 }

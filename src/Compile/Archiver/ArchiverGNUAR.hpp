@@ -13,6 +13,6 @@ struct ArchiverGNUAR : public IArchiver
 {
 	explicit ArchiverGNUAR(const BuildState& inState, const SourceTarget& inProject);
 
-	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const override;
+	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs) const override;
 };
 }

@@ -14,7 +14,7 @@ struct LinkerAppleClang final : public LinkerLLVMClang
 	explicit LinkerAppleClang(const BuildState& inState, const SourceTarget& inProject);
 
 protected:
-	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) final;
+	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs) final;
 
 	virtual void addStripSymbols(StringList& outArgList) const final;
 	virtual void addThreadModelLinks(StringList& outArgList) const final;

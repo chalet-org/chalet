@@ -342,8 +342,7 @@ std::string NinjaGenerator::getLinkRule()
 
 	std::string ret;
 
-	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand("$out", { "$in" }, targetBasename));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand("$out", { "$in" }));
 
 	if (!linkerCommand.empty())
 	{

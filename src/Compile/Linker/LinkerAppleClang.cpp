@@ -25,11 +25,9 @@ LinkerAppleClang::LinkerAppleClang(const BuildState& inState, const SourceTarget
 // ="-Wl,-flat_namespace,-undefined,suppress
 
 /*****************************************************************************/
-StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	StringList ret;
-
-	m_outputFileBase = outputFileBase;
 
 	if (!addExecutable(ret))
 		return ret;

@@ -19,8 +19,8 @@ struct LinkerVisualStudioLINK : public ILinker
 	virtual void getCommandOptions(StringList& outArgList) override;
 
 protected:
-	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
-	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
+	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs) override;
+	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs) override;
 
 	virtual bool addExecutable(StringList& outArgList) const override;
 	virtual void addLibDirs(StringList& outArgList) const override;
@@ -32,12 +32,12 @@ protected:
 	virtual void addLinkTimeOptimizations(StringList& outArgList) const override;
 
 	// General
-	virtual void addIncremental(StringList& outArgList, const std::string& outputFileBase) const;
-	virtual void addDebug(StringList& outArgList, const std::string& outputFileBase) const;
+	virtual void addIncremental(StringList& outArgList) const;
+	virtual void addDebug(StringList& outArgList) const;
 	virtual void addRandomizedBaseAddress(StringList& outArgList) const;
 	virtual void addCompatibleWithDataExecutionPrevention(StringList& outArgList) const;
 	virtual void addMachine(StringList& outArgList) const;
-	virtual void addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const;
+	virtual void addLinkTimeCodeGeneration(StringList& outArgList) const;
 	virtual void addWarningsTreatedAsErrors(StringList& outArgList) const;
 	virtual void addAdditionalOptions(StringList& outArgList) const;
 

@@ -496,13 +496,11 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 /*****************************************************************************/
 CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks)
 {
-	const auto targetBasename = m_state.paths.getTargetBasename(inProject);
-
 	CommandPool::CmdList ret;
 
 	{
 		CommandPool::Cmd out;
-		out.command = inToolchain.getOutputTargetCommand(inTarget, inLinks, targetBasename);
+		out.command = inToolchain.getOutputTargetCommand(inTarget, inLinks);
 
 		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);

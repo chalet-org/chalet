@@ -13,6 +13,6 @@ struct ArchiverLibTool final : public IArchiver
 {
 	explicit ArchiverLibTool(const BuildState& inState, const SourceTarget& inProject);
 
-	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const final;
+	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs) const final;
 };
 }

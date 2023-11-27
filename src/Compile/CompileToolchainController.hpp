@@ -23,7 +23,7 @@ struct CompileToolchainController
 
 	void setQuotedPaths(const bool inValue) noexcept;
 
-	StringList getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
+	StringList getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 
 	Unique<ICompilerCxx> compilerCxx;
 	Unique<ICompilerWinResource> compilerWindowsResource;

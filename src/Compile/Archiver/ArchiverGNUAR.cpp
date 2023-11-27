@@ -18,10 +18,8 @@ ArchiverGNUAR::ArchiverGNUAR(const BuildState& inState, const SourceTarget& inPr
 }
 
 /*****************************************************************************/
-StringList ArchiverGNUAR::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const
+StringList ArchiverGNUAR::getCommand(const std::string& outputFile, const StringList& sourceObjs) const
 {
-	UNUSED(outputFileBase);
-
 	StringList ret;
 
 	if (m_state.toolchain.archiver().empty())

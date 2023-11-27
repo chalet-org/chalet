@@ -15,7 +15,7 @@ struct IArchiver : public IToolchainExecutableBase
 
 	[[nodiscard]] static Unique<IArchiver> make(const ToolchainType inType, const std::string& inExecutable, const BuildState& inState, const SourceTarget& inProject);
 
-	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const = 0;
+	virtual StringList getCommand(const std::string& outputFile, const StringList& sourceObjs) const = 0;
 
 	virtual bool initialize() final;
 

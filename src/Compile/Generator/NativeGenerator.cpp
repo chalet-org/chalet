@@ -320,13 +320,11 @@ CommandPool::CmdList NativeGenerator::getLinkCommand(const std::string& inTarget
 	chalet_assert(m_project != nullptr, "");
 	chalet_assert(m_toolchain != nullptr, "");
 
-	const auto targetBasename = m_state.paths.getTargetBasename(*m_project);
-
 	CommandPool::CmdList ret;
 
 	{
 		CommandPool::Cmd out;
-		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects, targetBasename);
+		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects);
 
 		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);

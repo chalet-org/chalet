@@ -237,8 +237,7 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 
 	const auto preReqs = getLinkerPreReqs(objects);
 
-	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects));
 
 	if (!linkerCommand.empty())
 	{

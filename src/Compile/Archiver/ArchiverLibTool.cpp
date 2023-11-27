@@ -18,10 +18,8 @@ ArchiverLibTool::ArchiverLibTool(const BuildState& inState, const SourceTarget& 
 }
 
 /*****************************************************************************/
-StringList ArchiverLibTool::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) const
+StringList ArchiverLibTool::getCommand(const std::string& outputFile, const StringList& sourceObjs) const
 {
-	UNUSED(outputFileBase);
-
 	StringList ret;
 
 	if (m_state.toolchain.archiver().empty())

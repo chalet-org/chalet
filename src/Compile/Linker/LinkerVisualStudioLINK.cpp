@@ -37,7 +37,7 @@ void LinkerVisualStudioLINK::getCommandOptions(StringList& outArgList)
 }
 
 /*****************************************************************************/
-StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	UNUSED(outputFile, sourceObjs);
 
@@ -55,15 +55,15 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	addLinkerOptions(ret);
 
 	{
-		addIncremental(ret, outputFileBase);
+		addIncremental(ret);
 		addAdditionalOptions(ret);
 		addLibDirs(ret);
 		addLinks(ret);
 		// addPrecompiledHeaderLink(ret);
-		addDebug(ret, outputFileBase);
+		addDebug(ret);
 		addSubSystem(ret);
 		addLinkTimeOptimizations(ret);
-		addLinkTimeCodeGeneration(ret, outputFileBase);
+		addLinkTimeCodeGeneration(ret);
 		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
@@ -72,7 +72,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 	addWarningsTreatedAsErrors(ret);
 	addEntryPoint(ret);
 
-	ret.emplace_back(getPathCommand("/implib:", fmt::format("{}.lib", outputFileBase)));
+	ret.emplace_back(getPathCommand("/implib:", fmt::format("{}.lib", outputFileBase())));
 	ret.emplace_back(getPathCommand("/out:", outputFile));
 
 	addSourceObjects(ret, sourceObjs);
@@ -81,7 +81,7 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 }
 
 /*****************************************************************************/
-StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	UNUSED(outputFile, sourceObjs);
 
@@ -98,15 +98,15 @@ StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string&
 	addLinkerOptions(ret);
 
 	{
-		addIncremental(ret, outputFileBase);
+		addIncremental(ret);
 		addAdditionalOptions(ret);
 		addLibDirs(ret);
 		addLinks(ret);
 		// addPrecompiledHeaderLink(ret);
-		addDebug(ret, outputFileBase);
+		addDebug(ret);
 		addSubSystem(ret);
 		addLinkTimeOptimizations(ret);
-		addLinkTimeCodeGeneration(ret, outputFileBase);
+		addLinkTimeCodeGeneration(ret);
 		addRandomizedBaseAddress(ret);
 		addCompatibleWithDataExecutionPrevention(ret);
 		addMachine(ret);
@@ -203,7 +203,7 @@ void LinkerVisualStudioLINK::addLinkTimeOptimizations(StringList& outArgList) co
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::string& outputFileBase) const
+void LinkerVisualStudioLINK::addIncremental(StringList& outArgList) const
 {
 	if (m_msvcAdapter.supportsIncrementalLinking())
 		List::addIfDoesNotExist(outArgList, "/incremental");
@@ -211,14 +211,14 @@ void LinkerVisualStudioLINK::addIncremental(StringList& outArgList, const std::s
 		List::addIfDoesNotExist(outArgList, "/incremental:NO");
 
 	if (m_msvcAdapter.suportsILKGeneration())
-		outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase)));
+		outArgList.emplace_back(getPathCommand("/ilk:", fmt::format("{}.ilk", outputFileBase())));
 
 	if (m_msvcAdapter.disableFixedBaseAddress())
 		List::addIfDoesNotExist(outArgList, "/fixed:NO");
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string& outputFileBase) const
+void LinkerVisualStudioLINK::addDebug(StringList& outArgList) const
 {
 	if (m_msvcAdapter.enableDebugging())
 	{
@@ -227,8 +227,8 @@ void LinkerVisualStudioLINK::addDebug(StringList& outArgList, const std::string&
 		else
 			List::addIfDoesNotExist(outArgList, "/debug");
 
-		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase)));
-		outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase)));
+		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase())));
+		outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
 	}
 }
 
@@ -255,15 +255,15 @@ void LinkerVisualStudioLINK::addMachine(StringList& outArgList) const
 }
 
 /*****************************************************************************/
-void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList, const std::string& outputFileBase) const
+void LinkerVisualStudioLINK::addLinkTimeCodeGeneration(StringList& outArgList) const
 {
 	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		outArgList.emplace_back("/ltcg:INCREMENTAL");
-		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase));
+		outArgList.emplace_back(fmt::format("/ltcgout:{}.iobj", outputFileBase()));
 
-		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase));
+		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase()));
 	}
 }
 

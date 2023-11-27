@@ -54,7 +54,7 @@ void LinkerVisualStudioClang::addLinkerOptions(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, "-Wl,/incremental:NO");
 
 	if (m_msvcAdapter.suportsILKGeneration())
-		outArgList.emplace_back(getPathCommand("-Wl,/ilk:", fmt::format("{}.ilk", m_outputFileBase)));
+		outArgList.emplace_back(getPathCommand("-Wl,/ilk:", fmt::format("{}.ilk", outputFileBase())));
 
 	if (m_msvcAdapter.disableFixedBaseAddress())
 		List::addIfDoesNotExist(outArgList, "-Wl,/fixed:NO");
@@ -66,11 +66,8 @@ void LinkerVisualStudioClang::addLinkerOptions(StringList& outArgList) const
 		else
 			List::addIfDoesNotExist(outArgList, "-Wl,/debug");
 
-		if (!m_outputFileBase.empty())
-		{
-			outArgList.emplace_back(getPathCommand("-Wl,/pdb:", fmt::format("{}.pdb", m_outputFileBase)));
-			outArgList.emplace_back(getPathCommand("-Wl,/pdbstripped:", fmt::format("{}.stripped.pdb", m_outputFileBase)));
-		}
+		outArgList.emplace_back(getPathCommand("-Wl,/pdb:", fmt::format("{}.pdb", outputFileBase())));
+		outArgList.emplace_back(getPathCommand("-Wl,/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
 	}
 
 	if (m_msvcAdapter.supportsRandomizedBaseAddress())
@@ -83,13 +80,13 @@ void LinkerVisualStudioClang::addLinkerOptions(StringList& outArgList) const
 	if (!machine.empty())
 		outArgList.emplace_back(fmt::format("-Wl,/machine:{}", machine));
 
-	if (!m_outputFileBase.empty() && m_msvcAdapter.supportsLinkTimeCodeGeneration())
+	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
 	{
 		// combines w/ /GL - I think this is basically part of MS's link-time optimization
 		outArgList.emplace_back("-Wl,/ltcg:INCREMENTAL");
-		outArgList.emplace_back(fmt::format("-Wl,/ltcgout:{}.iobj", m_outputFileBase));
+		outArgList.emplace_back(fmt::format("-Wl,/ltcgout:{}.iobj", outputFileBase()));
 
-		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", m_outputFileBase));
+		// outArgList.emplace_back(fmt::format("/pgd:{}.pgd", outputFileBase()));
 	}
 
 	auto lbr = m_msvcAdapter.supportsLongBranchRedirects();

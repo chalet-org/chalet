@@ -66,11 +66,9 @@ bool LinkerGCC::isLinkSupported(const std::string& inLink) const
 }
 
 /*****************************************************************************/
-StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	StringList ret;
-
-	m_outputFileBase = outputFileBase;
 
 	if (!addExecutable(ret))
 		return ret;
@@ -83,9 +81,9 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 		std::string mingwLinkerOptions;
 		if (m_project.windowsOutputDef())
 		{
-			mingwLinkerOptions = fmt::format("-Wl,--output-def={}.def", outputFileBase);
+			mingwLinkerOptions = fmt::format("-Wl,--output-def={}.def", outputFileBase());
 		}
-		mingwLinkerOptions += fmt::format("-Wl,--out-implib={}.a", outputFileBase);
+		mingwLinkerOptions += fmt::format("-Wl,--out-implib={}.a", outputFileBase());
 		ret.emplace_back(std::move(mingwLinkerOptions));
 
 		ret.emplace_back("-Wl,--dll");
@@ -122,10 +120,8 @@ StringList LinkerGCC::getSharedLibTargetCommand(const std::string& outputFile, c
 }
 
 /*****************************************************************************/
-StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList LinkerGCC::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
-	m_outputFileBase = outputFileBase;
-
 	StringList ret;
 
 	if (!addExecutable(ret))
@@ -301,7 +297,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 		else
 			outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #elif defined(CHALET_MACOS)
-		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}", String::getPathBaseName(m_outputFileBase)));
+		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}", String::getPathBaseName(outputFileBase())));
 		outArgList.emplace_back("-Wl,-rpath,@executable_path/.");
 #else
 		UNUSED(outArgList);
@@ -310,7 +306,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 	else if (m_project.isSharedLibrary())
 	{
 #if defined(CHALET_MACOS)
-		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}.dylib", String::getPathBaseName(m_outputFileBase)));
+		outArgList.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}.dylib", String::getPathBaseName(outputFileBase())));
 #else
 		UNUSED(outArgList);
 #endif

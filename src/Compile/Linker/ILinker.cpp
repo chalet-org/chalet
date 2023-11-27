@@ -6,6 +6,7 @@
 #include "Compile/Linker/ILinker.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -126,16 +127,16 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 }
 
 /*****************************************************************************/
-StringList ILinker::getCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
+StringList ILinker::getCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	SourceKind kind = m_project.kind();
 	if (kind == SourceKind::SharedLibrary)
 	{
-		return getSharedLibTargetCommand(outputFile, sourceObjs, outputFileBase);
+		return getSharedLibTargetCommand(outputFile, sourceObjs);
 	}
 	else if (kind == SourceKind::Executable)
 	{
-		return getExecutableTargetCommand(outputFile, sourceObjs, outputFileBase);
+		return getExecutableTargetCommand(outputFile, sourceObjs);
 	}
 
 	return {};
@@ -250,5 +251,16 @@ void ILinker::addSourceObjects(StringList& outArgList, const StringList& sourceO
 StringList ILinker::getWin32CoreLibraryLinks() const
 {
 	return ILinker::getWin32CoreLibraryLinks(m_state, m_project);
+}
+
+/*****************************************************************************/
+const std::string& ILinker::outputFileBase() const
+{
+	if (m_outputFileBase.empty())
+	{
+		m_outputFileBase = m_state.paths.getTargetBasename(m_project);
+	}
+
+	return m_outputFileBase;
 }
 }

@@ -396,8 +396,7 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 
 	const auto preReqs = getLinkerPreReqs(objects);
 
-	const auto linkerTargetBase = m_state.paths.getTargetBasename(*m_project);
-	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects, linkerTargetBase));
+	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects));
 	if (!linkerCommand.empty())
 	{
 		const auto linkerEcho = getLinkerEcho();

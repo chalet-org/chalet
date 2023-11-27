@@ -19,8 +19,8 @@ struct LinkerGCC : public ILinker
 protected:
 	virtual bool isLinkSupported(const std::string& inLink) const;
 
-	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
-	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase) override;
+	virtual StringList getSharedLibTargetCommand(const std::string& outputFile, const StringList& sourceObjs) override;
+	virtual StringList getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs) override;
 
 	virtual bool addExecutable(StringList& outArgList) const override;
 	virtual void addLibDirs(StringList& outArgList) const override;
@@ -58,8 +58,6 @@ protected:
 	virtual void addSharedOption(StringList& outArgList) const;
 	virtual void addExecutableOption(StringList& outArgList) const;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const;
-
-	std::string m_outputFileBase;
 
 private:
 	// void initializeSupportedLinks();
