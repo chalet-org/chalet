@@ -1390,9 +1390,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("staticLink:", match))
+				if (String::startsWith("lib:", match))
 				{
-					match = match.substr(11);
+					match = match.substr(4);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getStaticLibraryExtension();
@@ -1534,9 +1534,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("staticLink:", match))
+				if (String::startsWith("lib:", match))
 				{
-					match = match.substr(11);
+					match = match.substr(4);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getStaticLibraryExtension();
