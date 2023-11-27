@@ -816,7 +816,7 @@ void CompilerCxxGCC::addObjectiveCxxRuntimeOption(StringList& outArgList, const 
 bool CompilerCxxGCC::addSystemRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
-	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state, this->quotedPaths());
 #else
 	UNUSED(outArgList);
 	return true;

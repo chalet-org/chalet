@@ -133,7 +133,7 @@ bool LinkerAppleClang::addArchitecture(StringList& outArgList, const std::string
 /*****************************************************************************/
 bool LinkerAppleClang::addSystemRootOption(StringList& outArgList) const
 {
-	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state, this->quotedPaths());
 }
 
 /*****************************************************************************/

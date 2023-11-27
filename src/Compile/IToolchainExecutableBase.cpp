@@ -22,6 +22,18 @@ IToolchainExecutableBase::IToolchainExecutableBase(const BuildState& inState, co
 }
 
 /*****************************************************************************/
+bool IToolchainExecutableBase::quotedPaths() const noexcept
+{
+	return m_quotedPaths;
+}
+
+/*****************************************************************************/
+void IToolchainExecutableBase::setQuotedPaths(const bool inValue) noexcept
+{
+	m_quotedPaths = inValue;
+}
+
+/*****************************************************************************/
 i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType)
 {
 	const bool isExpected = String::equals(id, exec);
@@ -44,9 +56,10 @@ i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const c
 }
 
 /*****************************************************************************/
-std::string IToolchainExecutableBase::getQuotedPath(const BuildState& inState, const std::string& inPath)
+std::string IToolchainExecutableBase::getQuotedPath(const BuildState& inState, const std::string& inPath, const bool inForce)
 {
-	if (inState.toolchain.strategy() == StrategyType::Native)
+	bool native = !inForce && inState.toolchain.strategy() == StrategyType::Native;
+	if (native)
 		return inPath;
 	else
 		return fmt::format("\"{}\"", inPath);
@@ -95,6 +108,6 @@ void IToolchainExecutableBase::addDefinesToList(StringList& outArgList, const st
 // Note: this could change in modulestrategy, so we check it from a function
 bool IToolchainExecutableBase::isNative() const noexcept
 {
-	return m_state.toolchain.strategy() == StrategyType::Native;
+	return !m_quotedPaths && m_state.toolchain.strategy() == StrategyType::Native;
 }
 }

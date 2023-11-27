@@ -617,7 +617,7 @@ bool LinkerGCC::addArchitecture(StringList& outArgList, const std::string& inArc
 bool LinkerGCC::addSystemRootOption(StringList& outArgList) const
 {
 #if defined(CHALET_MACOS)
-	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state, this->quotedPaths());
 #else
 	if (m_state.environment->isEmbeddedTarget())
 	{

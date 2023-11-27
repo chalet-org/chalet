@@ -61,6 +61,8 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		return StringList();
 	};
 
+	inToolchain->setQuotedPaths(true);
+
 	for (auto& group : inOutputs.groups)
 	{
 		StringList outCommand = getCommand(*group);
@@ -69,6 +71,8 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 		addCompileCommand(group->sourceFile, std::move(outCommand));
 	}
+
+	inToolchain->setQuotedPaths(false);
 
 	return true;
 }

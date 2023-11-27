@@ -52,6 +52,22 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 }
 
 /*****************************************************************************/
+void CompileToolchainController::setQuotedPaths(const bool inValue) noexcept
+{
+	if (compilerCxx)
+		compilerCxx->setQuotedPaths(inValue);
+
+	if (compilerWindowsResource)
+		compilerWindowsResource->setQuotedPaths(inValue);
+
+	if (archiver)
+		archiver->setQuotedPaths(inValue);
+
+	if (linker)
+		linker->setQuotedPaths(inValue);
+}
+
+/*****************************************************************************/
 StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase)
 {
 	chalet_assert(archiver != nullptr, "");

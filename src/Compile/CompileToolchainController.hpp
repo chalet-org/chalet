@@ -21,6 +21,8 @@ struct CompileToolchainController
 
 	bool initialize(const BuildState& inState);
 
+	void setQuotedPaths(const bool inValue) noexcept;
+
 	StringList getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs, const std::string& outputFileBase);
 
 	Unique<ICompilerCxx> compilerCxx;

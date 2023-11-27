@@ -80,7 +80,7 @@ StringList CompilerCxxAppleClang::getAllowedSDKTargets()
 }
 
 /*****************************************************************************/
-bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState)
+bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const BuildState& inState, const bool inQuotePaths)
 {
 	const auto& osTargetName = inState.inputs.osTargetName();
 	if (!osTargetName.empty())
@@ -94,7 +94,7 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 				// Note: If -m(sdk)-version-min= isn't specified, the version is inferred from the SDK,
 				//   which has its own minimum version ("MacOSX13.3.sdk" is 13.0 for instance)
 				outArgList.emplace_back("-isysroot");
-				outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, sdkPath));
+				outArgList.push_back(IToolchainExecutableBase::getQuotedPath(inState, sdkPath, inQuotePaths));
 			}
 		}
 	}
@@ -282,7 +282,7 @@ void CompilerCxxAppleClang::addDiagnosticColorOption(StringList& outArgList) con
 /*****************************************************************************/
 bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList) const
 {
-	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state);
+	return CompilerCxxAppleClang::addSystemRootOption(outArgList, m_state, this->quotedPaths());
 }
 
 /*****************************************************************************/
