@@ -19,7 +19,7 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 	CHALET_DISALLOW_COPY_MOVE(BuildEnvironmentVisualStudio);
 	~BuildEnvironmentVisualStudio();
 
-	virtual std::string getStaticLibraryExtension() const override;
+	virtual std::string getArchiveExtension() const override;
 	virtual std::string getPrecompiledHeaderExtension() const override;
 
 	virtual std::string getCompilerAliasForVisualStudio() const override;

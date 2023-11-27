@@ -26,7 +26,7 @@ BuildEnvironmentGNU::BuildEnvironmentGNU(const ToolchainType inType, BuildState&
 }
 
 /*****************************************************************************/
-std::string BuildEnvironmentGNU::getStaticLibraryExtension() const
+std::string BuildEnvironmentGNU::getArchiveExtension() const
 {
 	return ".a";
 }

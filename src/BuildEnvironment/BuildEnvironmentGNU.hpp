@@ -19,7 +19,7 @@ struct BuildEnvironmentGNU : IBuildEnvironment
 	static std::string getCompilerMacros(const std::string& inCompilerExec, BuildState& inState, const PipeOption inStdError = PipeOption::Close);
 
 protected:
-	virtual std::string getStaticLibraryExtension() const override;
+	virtual std::string getArchiveExtension() const override;
 	virtual std::string getPrecompiledHeaderExtension() const override;
 
 	virtual std::string getCompilerAliasForVisualStudio() const override;

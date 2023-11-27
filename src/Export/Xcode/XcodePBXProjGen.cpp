@@ -1512,7 +1512,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	if (inTarget.isStaticLibrary())
 	{
 		ret["EXECUTABLE_PREFIX"] = "lib";
-		ret["EXECUTABLE_SUFFIX"] = inState.environment->getStaticLibraryExtension();
+		ret["EXECUTABLE_SUFFIX"] = inState.environment->getArchiveExtension();
 	}
 	else if (inTarget.isSharedLibrary())
 	{

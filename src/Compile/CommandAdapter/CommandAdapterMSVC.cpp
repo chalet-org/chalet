@@ -736,7 +736,7 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 	// const bool hasDynamicLinks = m_project.links().size() > 0;
 
 	auto dll = m_state.environment->getSharedLibraryExtension();
-	auto lib = m_state.environment->getStaticLibraryExtension();
+	auto lib = m_state.environment->getArchiveExtension();
 
 	StringList links = m_project.links();
 	for (auto& link : m_project.staticLinks())

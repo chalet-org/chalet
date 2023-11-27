@@ -1395,7 +1395,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					match = match.substr(4);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getStaticLibraryExtension();
+					auto extension = environment->getArchiveExtension();
 					return prefix + match + extension;
 				}
 
@@ -1539,7 +1539,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					match = match.substr(4);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getStaticLibraryExtension();
+					auto extension = environment->getArchiveExtension();
 					return prefix + match + extension;
 				}
 

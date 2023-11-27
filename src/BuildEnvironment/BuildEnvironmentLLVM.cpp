@@ -26,7 +26,7 @@ BuildEnvironmentLLVM::BuildEnvironmentLLVM(const ToolchainType inType, BuildStat
 }
 
 /*****************************************************************************/
-std::string BuildEnvironmentLLVM::getStaticLibraryExtension() const
+std::string BuildEnvironmentLLVM::getArchiveExtension() const
 {
 	if (isWindowsClang())
 		return ".lib";

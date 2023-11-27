@@ -22,7 +22,7 @@ struct BuildEnvironmentEmscripten final : BuildEnvironmentLLVM
 protected:
 	virtual std::string getExecutableExtension() const final;
 	virtual std::string getSharedLibraryExtension() const final;
-	virtual std::string getStaticLibraryExtension() const final;
+	virtual std::string getArchiveExtension() const final;
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;

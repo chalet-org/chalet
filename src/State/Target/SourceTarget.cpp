@@ -722,7 +722,7 @@ std::string SourceTarget::getOutputFileWithoutPrefix() const noexcept
 	}
 	else if (isStaticLibrary())
 	{
-		return name() + m_state.environment->getStaticLibraryExtension();
+		return name() + m_state.environment->getArchiveExtension();
 	}
 
 	chalet_assert(false, "getOutputFileWithoutPrefix() returned empty string");

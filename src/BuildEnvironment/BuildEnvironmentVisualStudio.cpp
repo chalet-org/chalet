@@ -36,7 +36,7 @@ BuildEnvironmentVisualStudio::BuildEnvironmentVisualStudio(const ToolchainType i
 BuildEnvironmentVisualStudio::~BuildEnvironmentVisualStudio() = default;
 
 /*****************************************************************************/
-std::string BuildEnvironmentVisualStudio::getStaticLibraryExtension() const
+std::string BuildEnvironmentVisualStudio::getArchiveExtension() const
 {
 	return ".lib";
 }

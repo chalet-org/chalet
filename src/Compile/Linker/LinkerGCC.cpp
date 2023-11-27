@@ -192,7 +192,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 	const auto& projectSharedLinks = m_project.projectSharedLinks();
 
 	const bool isEmscripten = m_state.environment->isEmscripten();
-	auto search = m_state.environment->getStaticLibraryExtension();
+	auto search = m_state.environment->getArchiveExtension();
 
 	if (!staticLinks.empty())
 	{

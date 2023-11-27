@@ -14,7 +14,7 @@ struct BuildEnvironmentLLVM : BuildEnvironmentGNU
 	explicit BuildEnvironmentLLVM(const ToolchainType inType, BuildState& inState);
 
 protected:
-	virtual std::string getStaticLibraryExtension() const override;
+	virtual std::string getArchiveExtension() const override;
 	virtual std::string getPrecompiledHeaderExtension() const override;
 
 	virtual std::string getCompilerAliasForVisualStudio() const override;
