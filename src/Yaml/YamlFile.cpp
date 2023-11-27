@@ -335,8 +335,9 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 		{
 			auto foundFloat = val.find_first_not_of("0123456789.");
 			auto startsWithAsterisk = val.front() == '*';
+			auto startsWithAmpersand = val.front() == '&';
 			auto startsWithSquareBrace = val.front() == '[';
-			if (foundFloat == std::string::npos || startsWithAsterisk || startsWithSquareBrace)
+			if (foundFloat == std::string::npos || startsWithAsterisk || startsWithAmpersand || startsWithSquareBrace)
 			{
 				ret += fmt::format("\"{}\"", val);
 			}
