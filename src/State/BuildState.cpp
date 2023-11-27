@@ -1381,6 +1381,31 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return val;
 				}
 
+				if (String::startsWith("link:", match))
+				{
+					match = match.substr(5);
+					constexpr bool unixStyleWithMinGW = true;
+					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+					auto extension = environment->getSharedLibraryExtension();
+					return prefix + match + extension;
+				}
+
+				if (String::startsWith("staticLink:", match))
+				{
+					match = match.substr(11);
+					constexpr bool unixStyleWithMinGW = true;
+					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+					auto extension = environment->getStaticLibraryExtension();
+					return prefix + match + extension;
+				}
+
+				if (String::startsWith("exec:", match))
+				{
+					match = match.substr(5);
+					auto extension = environment->getExecutableExtension();
+					return match + extension;
+				}
+
 				if (onFail != nullptr)
 					return onFail(std::move(match));
 
@@ -1498,6 +1523,31 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 					}
 					return val;
+				}
+
+				if (String::startsWith("link:", match))
+				{
+					match = match.substr(5);
+					constexpr bool unixStyleWithMinGW = true;
+					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+					auto extension = environment->getSharedLibraryExtension();
+					return prefix + match + extension;
+				}
+
+				if (String::startsWith("staticLink:", match))
+				{
+					match = match.substr(11);
+					constexpr bool unixStyleWithMinGW = true;
+					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+					auto extension = environment->getStaticLibraryExtension();
+					return prefix + match + extension;
+				}
+
+				if (String::startsWith("exec:", match))
+				{
+					match = match.substr(5);
+					auto extension = environment->getExecutableExtension();
+					return match + extension;
 				}
 
 				if (onFail != nullptr)

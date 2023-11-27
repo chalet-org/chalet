@@ -43,7 +43,7 @@ struct IBuildEnvironment
 	bool isCompilerFlagSupported(const std::string& inFlag) const;
 
 	virtual std::string getExecutableExtension() const;
-	virtual std::string getLibraryPrefix(const bool inMingwUnix = true) const final;
+	virtual std::string getLibraryPrefix(const bool inMingwUnix) const final;
 	virtual std::string getSharedLibraryExtension() const;
 	virtual std::string getStaticLibraryExtension() const = 0;
 	virtual std::string getPrecompiledHeaderExtension() const = 0;
