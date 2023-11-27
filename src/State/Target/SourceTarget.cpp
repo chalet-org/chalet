@@ -1275,32 +1275,24 @@ void SourceTarget::parseOutputFilename() noexcept
 
 	bool staticLib = m_kind == SourceKind::StaticLibrary;
 
-	auto executableExtension = m_state.environment->getExecutableExtension();
-	auto libraryExtension = staticLib ?
-		m_state.environment->getStaticLibraryExtension() :
-		m_state.environment->getSharedLibraryExtension();
-
 	switch (m_kind)
 	{
 		case SourceKind::Executable: {
+			auto executableExtension = m_state.environment->getExecutableExtension();
+			m_outputFileNoPrefix = projectName + executableExtension;
 			m_outputFile = projectName + executableExtension;
-			m_outputFileNoPrefix = m_outputFile;
 			break;
 		}
 		case SourceKind::SharedLibrary:
 		case SourceKind::StaticLibrary: {
-			if (unixSharedLibraryNamingConvention())
-			{
-				// TODO: version number
+			auto libraryPrefix = m_state.environment->getLibraryPrefix(m_mingwUnixSharedLibraryNamingConvention);
+			auto libraryExtension = staticLib ?
+				m_state.environment->getStaticLibraryExtension() :
+				m_state.environment->getSharedLibraryExtension();
 
-				m_outputFileNoPrefix = projectName + libraryExtension;
-				m_outputFile = "lib" + m_outputFileNoPrefix;
-			}
-			else
-			{
-				m_outputFile = projectName + libraryExtension;
-				m_outputFileNoPrefix = m_outputFile;
-			}
+			m_outputFileNoPrefix = projectName + libraryExtension;
+			m_outputFile = libraryPrefix + m_outputFileNoPrefix;
+
 			break;
 		}
 		default:

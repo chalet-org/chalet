@@ -319,6 +319,19 @@ void IBuildEnvironment::generateTargetSystemPaths()
 }
 
 /*****************************************************************************/
+std::string IBuildEnvironment::getLibraryPrefix(const bool inMingwUnix) const
+{
+	bool mingw = isMingw();
+	bool mingwWithPrefix = inMingwUnix && mingw;
+	bool nonWindows = !mingw && !isMsvc() && !isWindowsClang();
+
+	if (mingwWithPrefix || nonWindows)
+		return "lib";
+	else
+		return std::string();
+}
+
+/*****************************************************************************/
 std::string IBuildEnvironment::getExecutableExtension() const
 {
 	if (isWindowsTarget())
