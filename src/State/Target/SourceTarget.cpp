@@ -1275,16 +1275,14 @@ WindowsEntryPoint SourceTarget::parseWindowsEntryPoint(const std::string& inValu
 /*****************************************************************************/
 void SourceTarget::parseOutputFilename() noexcept
 {
-	auto outputFileNoPrefix = getOutputFileWithoutPrefix();
 	if (isExecutable())
 	{
-		auto executableExtension = m_state.environment->getExecutableExtension();
-		m_outputFile = outputFileNoPrefix;
+		m_outputFile = getOutputFileWithoutPrefix();
 	}
 	else
 	{
 		auto libraryPrefix = m_state.environment->getLibraryPrefix(m_mingwUnixSharedLibraryNamingConvention);
-		m_outputFile = libraryPrefix + outputFileNoPrefix;
+		m_outputFile = libraryPrefix + getOutputFileWithoutPrefix();
 	}
 }
 

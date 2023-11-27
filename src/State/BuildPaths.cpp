@@ -429,10 +429,8 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 		if (!manifest.empty())
 			return manifest;
 
-		auto outputFile = inProject.getOutputFileWithoutPrefix();
-
 		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-		return fmt::format("{}/{}.manifest", intermediateDir(inProject), outputFile);
+		return fmt::format("{}/{}.manifest", intermediateDir(inProject), inProject.outputFile());
 	}
 
 	return std::string();
