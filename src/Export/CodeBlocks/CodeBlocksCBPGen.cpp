@@ -464,7 +464,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 		node.addAttribute("pch_mode", "1");
 	});
 
-	if (inTarget.kind() == SourceKind::SharedLibrary)
+	if (inTarget.isStaticLibrary())
 	{
 		outNode.addElement("Option", [](XmlElement& node) {
 			node.addAttribute("createDefFile", "1");
@@ -668,9 +668,9 @@ void CodeBlocksCBPGen::addAllBuildTarget(XmlElement& outNode, const BuildState& 
 std::string CodeBlocksCBPGen::getOutputType(const SourceTarget& inTarget) const
 {
 	char outputType = '1';
-	if (inTarget.kind() == SourceKind::SharedLibrary)
+	if (inTarget.isSharedLibrary())
 		outputType = '3';
-	else if (inTarget.kind() == SourceKind::StaticLibrary)
+	else if (inTarget.isStaticLibrary())
 		outputType = '2';
 #if defined(CHALET_WIN32)
 	else if (inTarget.windowsSubSystem() == WindowsSubSystem::Windows)

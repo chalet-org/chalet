@@ -814,12 +814,10 @@ std::string ProjectAdapterVCXProj::getProfile() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getSubSystem() const
 {
-	auto kind = m_project.kind();
-
 	// TODO: Support for /driver:WDM (NativeWDM or something)
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
-	if (kind == SourceKind::Executable)
+	if (m_project.isExecutable())
 	{
 		auto subSystem = m_project.windowsSubSystem();
 		switch (subSystem)

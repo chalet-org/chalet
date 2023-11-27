@@ -530,12 +530,10 @@ char CommandAdapterMSVC::getInlineFuncExpansion() const
 /*****************************************************************************/
 std::string CommandAdapterMSVC::getSubSystem() const
 {
-	const SourceKind kind = m_project.kind();
-
 	// TODO: Support for /driver:WDM (NativeWDM or something)
 	// https://docs.microsoft.com/en-us/cpp/build/reference/subsystem-specify-subsystem?view=msvc-160
 
-	if (kind == SourceKind::Executable)
+	if (m_project.isExecutable())
 	{
 		const WindowsSubSystem subSystem = m_project.windowsSubSystem();
 		switch (subSystem)
@@ -569,10 +567,8 @@ std::string CommandAdapterMSVC::getSubSystem() const
 /*****************************************************************************/
 std::string CommandAdapterMSVC::getEntryPoint() const
 {
-	const SourceKind kind = m_project.kind();
 	const WindowsEntryPoint entryPoint = m_project.windowsEntryPoint();
-
-	if (kind == SourceKind::Executable)
+	if (m_project.isExecutable())
 	{
 		switch (entryPoint)
 		{
@@ -587,7 +583,7 @@ std::string CommandAdapterMSVC::getEntryPoint() const
 
 		return "mainCRTStartup";
 	}
-	else if (kind == SourceKind::SharedLibrary)
+	else if (m_project.isSharedLibrary())
 	{
 		if (entryPoint == WindowsEntryPoint::DllMain)
 		{

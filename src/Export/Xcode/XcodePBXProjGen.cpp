@@ -80,7 +80,7 @@ struct TargetGroup
 	StringList headers;
 	StringList dependencies;
 	StringList resources;
-	SourceKind sourceKind = SourceKind::None;
+	SourceKind targetKind = SourceKind::None;
 	TargetGroupKind kind = TargetGroupKind::Script;
 };
 struct ProjectFileSet
@@ -169,7 +169,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					groups.emplace(name, TargetGroup{});
 					groups[name].path = workingDirectory;
 					groups[name].outputFile = sourceTarget.outputFile();
-					groups[name].sourceKind = sourceTarget.kind();
+					groups[name].targetKind = sourceTarget.kind();
 					groups[name].kind = TargetGroupKind::Source;
 				}
 
@@ -588,7 +588,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			{
 				auto key = getHashWithLabel(target);
 				node[key]["isa"] = section;
-				node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.sourceKind);
+				node[key]["explicitFileType"] = getXcodeFileType(pbxGroup.targetKind);
 				node[key]["includeInIndex"] = 0;
 				node[key]["path"] = pbxGroup.outputFile;
 				node[key]["sourceTree"] = "BUILT_PRODUCTS_DIR";
@@ -830,7 +830,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				node[key]["productReference"] = getHashWithLabel(target);
 
 				if (isSource)
-					node[key]["productType"] = getNativeProductType(pbxGroup.sourceKind);
+					node[key]["productType"] = getNativeProductType(pbxGroup.targetKind);
 				else
 					node[key]["productType"] = "com.apple.product-type.application";
 

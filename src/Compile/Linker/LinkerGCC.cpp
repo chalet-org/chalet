@@ -444,11 +444,10 @@ void LinkerGCC::addSubSystem(StringList& outArgList) const
 		// MinGW rolls these together for some reason
 		// -mwindows and -mconsole kind of do some magic behind the scenes, so it's hard to assume anything
 
-		const SourceKind kind = m_project.kind();
 		const WindowsSubSystem subSystem = m_project.windowsSubSystem();
 		const WindowsEntryPoint entryPoint = m_project.windowsEntryPoint();
 
-		if (kind == SourceKind::Executable)
+		if (m_project.isExecutable())
 		{
 			if (entryPoint == WindowsEntryPoint::WinMainUnicode || entryPoint == WindowsEntryPoint::MainUnicode)
 			{
@@ -464,7 +463,7 @@ void LinkerGCC::addSubSystem(StringList& outArgList) const
 				List::addIfDoesNotExist(outArgList, "-mconsole");
 			}
 		}
-		else if (kind == SourceKind::SharedLibrary)
+		else if (m_project.isSharedLibrary())
 		{
 			if (entryPoint == WindowsEntryPoint::DllMain)
 			{

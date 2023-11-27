@@ -431,22 +431,6 @@ const std::string& SourceTarget::getHash() const
 }
 
 /*****************************************************************************/
-bool SourceTarget::isExecutable() const noexcept
-{
-	return m_kind == SourceKind::Executable;
-}
-
-bool SourceTarget::isSharedLibrary() const noexcept
-{
-	return m_kind == SourceKind::SharedLibrary;
-}
-
-bool SourceTarget::isStaticLibrary() const noexcept
-{
-	return m_kind == SourceKind::StaticLibrary;
-}
-
-/*****************************************************************************/
 bool SourceTarget::hasMetadata() const noexcept
 {
 	return m_metadata != nullptr;
@@ -993,6 +977,22 @@ void SourceTarget::setKind(const SourceKind inValue) noexcept
 void SourceTarget::setKind(const std::string& inValue)
 {
 	m_kind = parseProjectKind(inValue);
+}
+
+/*****************************************************************************/
+bool SourceTarget::isExecutable() const noexcept
+{
+	return m_kind == SourceKind::Executable;
+}
+
+bool SourceTarget::isSharedLibrary() const noexcept
+{
+	return m_kind == SourceKind::SharedLibrary;
+}
+
+bool SourceTarget::isStaticLibrary() const noexcept
+{
+	return m_kind == SourceKind::StaticLibrary;
 }
 
 /*****************************************************************************/

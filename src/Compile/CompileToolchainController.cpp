@@ -73,7 +73,7 @@ StringList CompileToolchainController::getOutputTargetCommand(const std::string&
 	chalet_assert(archiver != nullptr, "");
 	chalet_assert(linker != nullptr, "");
 
-	if (m_project.kind() == SourceKind::StaticLibrary)
+	if (m_project.isStaticLibrary())
 		return archiver->getCommand(outputFile, sourceObjs);
 	else
 		return linker->getCommand(outputFile, sourceObjs);

@@ -28,10 +28,6 @@ struct SourceTarget final : public IBuildTarget
 	virtual bool validate() final;
 	virtual const std::string& getHash() const final;
 
-	bool isExecutable() const noexcept;
-	bool isSharedLibrary() const noexcept;
-	bool isStaticLibrary() const noexcept;
-
 	bool hasMetadata() const noexcept;
 	const TargetMetadata& metadata() const noexcept;
 	void setMetadata(Ref<TargetMetadata>&& inValue);
@@ -141,6 +137,9 @@ struct SourceTarget final : public IBuildTarget
 	SourceKind kind() const noexcept;
 	void setKind(const SourceKind inValue) noexcept;
 	void setKind(const std::string& inValue);
+	bool isExecutable() const noexcept;
+	bool isSharedLibrary() const noexcept;
+	bool isStaticLibrary() const noexcept;
 
 	WindowsSubSystem windowsSubSystem() const noexcept;
 	void setWindowsSubSystem(const WindowsSubSystem inValue) noexcept;

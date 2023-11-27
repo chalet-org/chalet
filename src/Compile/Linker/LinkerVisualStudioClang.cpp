@@ -116,8 +116,7 @@ void LinkerVisualStudioClang::addProfileInformation(StringList& outArgList) cons
 /*****************************************************************************/
 void LinkerVisualStudioClang::addSubSystem(StringList& outArgList) const
 {
-	const SourceKind kind = m_project.kind();
-	if (kind == SourceKind::Executable)
+	if (m_project.isExecutable())
 	{
 		const auto subSystem = m_msvcAdapter.getSubSystem();
 		List::addIfDoesNotExist(outArgList, fmt::format("-Wl,/subsystem:{}", subSystem));
