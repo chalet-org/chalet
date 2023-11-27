@@ -45,7 +45,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 	};
 }
 
-Dictionary<QueryOption> getQueryOptions()
+OrderedDictionary<QueryOption> getQueryOptions()
 {
 	return {
 		{ "all-toolchains", QueryOption::AllToolchains },

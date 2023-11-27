@@ -602,13 +602,13 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getToolchainPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("llvm", preset))
-				return std::string("The LLVM Compiler Infrastructure Project");
+				return "The LLVM Compiler Infrastructure Project";
 #if defined(CHALET_WIN32)
 			else if (String::equals("gcc", preset))
-				return std::string("MinGW: Minimalist GNU Compiler Collection for Windows");
+				return "MinGW: Minimalist GNU Compiler Collection for Windows";
 #else
 			else if (String::equals("gcc", preset))
-				return std::string("GNU Compiler Collection");
+				return "GNU Compiler Collection";
 #endif
 #if defined(CHALET_MACOS)
 			else if (String::equals("apple-llvm", preset))
@@ -670,21 +670,21 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getStrategyPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("ninja", preset))
-				return std::string("Build with Ninja");
+				return "Build with Ninja";
 			else if (String::equals("makefile", preset))
 #if defined(CHALET_WIN32)
-				return std::string("Build with GNU Make (MinGW), NMake or Qt Jom (MSVC)");
+				return "Build with GNU Make (MinGW), NMake or Qt Jom (MSVC)";
 #else
-				return std::string("Build with GNU Make");
+				return "Build with GNU Make";
 #endif
 			else if (String::equals("native", preset))
-				return std::string("Build natively with Chalet");
+				return "Build natively with Chalet";
 #if defined(CHALET_WIN32)
 			else if (String::equals("msbuild", preset))
-				return std::string("Build using a Visual Studio solution and MSBuild - requires vs-* toolchain preset");
+				return "Build using a Visual Studio solution and MSBuild - requires vs-* toolchain preset";
 #elif defined(CHALET_MACOS)
 			else if (String::equals("xcodebuild", preset))
-				return std::string("Build using an Xcode project and xcodebuild - requires apple-llvm toolchain preset");
+				return "Build using an Xcode project and xcodebuild - requires apple-llvm toolchain preset";
 #endif
 
 			return std::string();
@@ -709,13 +709,13 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getBuildPathStylePresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("target-triple", preset))
-				return std::string("The target architecture's triple - ex: build/x64-linux-gnu_Debug");
+				return "The target architecture's triple - ex: build/x64-linux-gnu_Debug";
 			else if (String::equals("toolchain-name", preset))
-				return std::string("The toolchain's name - ex: build/my-cool-toolchain_name_Debug");
+				return "The toolchain's name - ex: build/my-cool-toolchain_name_Debug";
 			else if (String::equals("architecture", preset))
-				return std::string("The architecture's identifier - ex: build/x86_64_Debug");
+				return "The architecture's identifier - ex: build/x86_64_Debug";
 			else if (String::equals("configuration", preset))
-				return std::string("Just the build configuration - ex: build/Debug");
+				return "Just the build configuration - ex: build/Debug";
 
 			return std::string();
 		};
@@ -739,25 +739,25 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getExportPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("vscode", preset))
-				return std::string("Visual Studio Code JSON format (launch.json, tasks.json, c_cpp_properties.json)");
+				return "Visual Studio Code JSON format (launch.json, tasks.json, c_cpp_properties.json)";
 #if defined(CHALET_WIN32)
 			else if (String::equals("vssolution", preset))
-				return std::string("Visual Studio Solution format (*.sln, *.vcxproj)");
+				return "Visual Studio Solution format (*.sln, *.vcxproj)";
 			else if (String::equals("vsjson", preset))
-				return std::string("Visual Studio JSON format (launch.vs.json, tasks.vs.json, CppProperties.json)");
+				return "Visual Studio JSON format (launch.vs.json, tasks.vs.json, CppProperties.json)";
 #elif defined(CHALET_MACOS)
 			else if (String::equals("xcode", preset))
 				return fmt::format("Apple{} Xcode project format (*.xcodeproj)", Unicode::registered());
 #endif
 			else if (String::equals("clion", preset))
-				return std::string("Jetbrains CLion (.idea)");
+				return "Jetbrains CLion (.idea)";
 			else if (String::equals("fleet", preset))
-				return std::string("Jetbrains Fleet (.fleet)");
+				return "Jetbrains Fleet (.fleet)";
 			else if (String::equals("codeblocks", preset))
 #if defined(CHALET_WIN32)
-				return std::string("Code::Blocks IDE (MinGW-only)");
+				return "Code::Blocks IDE (MinGW-only)";
 #else
-				return std::string("Code::Blocks IDE (GCC-only)");
+				return "Code::Blocks IDE (GCC-only)";
 #endif
 
 			return std::string();
@@ -789,13 +789,87 @@ std::string ArgumentParser::getHelp()
 			help += fmt::format("{}\n", line);
 		}
 	}
+	else if (m_route == RouteType::Query)
+	{
+		auto getQueryDescription = [](const std::string& preset) -> std::string {
+			if (String::equals("all-toolchains", preset))
+				return "A list of all user toolchain and built-in preset names.";
+			else if (String::equals("architecture", preset))
+				return "The current toolchain architecture.";
+			else if (String::equals("architectures", preset))
+				return "A list of all available toolchain architectures and aliases.";
+			else if (String::equals("options", preset))
+				return "A list of all the cli options (regardless of subcommand).";
+			else if (String::equals("commands", preset))
+				return "A list of all of the chalet subcommands.";
+			else if (String::equals("configuration", preset))
+				return "The current build configuration.";
+			else if (String::equals("configurations", preset))
+				return "A list of all available build configurations for the project.";
+			else if (String::equals("list-names", preset))
+				return "A list of all query types (this list).";
+			else if (String::equals("export-kinds", preset))
+				return "A list of the available export kinds.";
+			else if (String::equals("convert-formats", preset))
+				return "A list of the available convert formats.";
+			else if (String::equals("run-target", preset))
+				return "The current run target set.";
+			else if (String::equals("all-build-targets", preset))
+				return "A list of the available build targets in the project.";
+			else if (String::equals("all-run-targets", preset))
+				return "A list of the available run targets in the project.";
+			else if (String::equals("theme-names", preset))
+				return "A list of the available theme names.";
+			else if (String::equals("toolchain", preset))
+				return "The current toolchain name.";
+			else if (String::equals("toolchain-presets", preset))
+				return "A list of the built-in toolchain presets for the platform.";
+			else if (String::equals("user-toolchains", preset))
+				return "A list of the user-created toolchains (if any).";
+			else if (String::equals("build-strategy", preset))
+				return "The current build strategy for the selected toolchain.";
+			else if (String::equals("build-strategies", preset))
+				return "A list of the available build strategies for the platform.";
+			else if (String::equals("build-path-style", preset))
+				return "The current build path style for the selected toolchain.";
+			else if (String::equals("build-path-styles", preset))
+				return "A list of the available build path styles.";
+			else if (String::equals("state-chalet-json", preset))
+				return "A json structure describing the current project state.";
+			else if (String::equals("state-settings-json", preset))
+				return "A json structure describing the current configured state.";
+			else if (String::equals("schema-chalet-json", preset))
+				return "The build file schema in JSON format.";
+			else if (String::equals("schema-settings-json", preset))
+				return "The settings file schema in JSON format.";
+			else if (String::equals("version", preset))
+				return "The Chalet version.";
+
+			return std::string();
+		};
+
+		help += "\nQuery types:\n";
+
+		auto queryOptions = m_inputs.getCliQueryOptions();
+
+		for (auto& preset : queryOptions)
+		{
+			std::string line = preset;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getQueryDescription(preset);
+
+			help += fmt::format("{}\n", line);
+		}
+	}
 	else if (m_route == RouteType::Convert)
 	{
 		auto getFormatDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("json", preset))
-				return std::string("JSON: JavaScript Object Notation");
+				return "JSON: JavaScript Object Notation";
 			else if (String::equals("yaml", preset))
-				return std::string("YAML Ain't Markup Language");
+				return "YAML Ain't Markup Language";
 
 			return std::string();
 		};
@@ -1401,9 +1475,8 @@ void ArgumentParser::populateValidateArguments()
 /*****************************************************************************/
 void ArgumentParser::populateQueryArguments()
 {
-	auto listNames = m_inputs.getCliQueryOptions();
 	addTwoStringArguments(ArgumentIdentifier::QueryType, Positional::Argument2, Arg::QueryType)
-		.setHelp(fmt::format("The data type to query. ({})", String::join(listNames, ", ")))
+		.setHelp("The data type to query for.")
 		.setRequired();
 
 	addTwoStringArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
