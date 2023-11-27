@@ -77,6 +77,9 @@ _chalet_completions()
 		export)
 			COMPREPLY=($(compgen -W "$(chalet query export-kinds)" -- $cur))
 			;;
+		convert)
+			COMPREPLY=($(compgen -W "$(chalet query convert-formats)" -- $cur))
+			;;
 		validate)
             COMPREPLY=($(compgen -f "$cur"))
 			;;

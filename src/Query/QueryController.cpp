@@ -90,6 +90,10 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 			ret = m_centralState.inputs().getExportKindPresets();
 			break;
 
+		case QueryOption::ConvertFormats:
+			ret = m_centralState.inputs().getConvertFormatPresets();
+			break;
+
 		case QueryOption::QueryNames:
 			ret = m_centralState.inputs().getCliQueryOptions();
 			break;

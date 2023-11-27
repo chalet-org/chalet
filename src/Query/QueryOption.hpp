@@ -34,6 +34,7 @@ enum class QueryOption : u16
 	BuildPathStyle,
 	//
 	ExportKinds,
+	ConvertFormats,
 	ThemeNames,
 	//
 	ChaletJsonState,

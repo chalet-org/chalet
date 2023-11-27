@@ -55,6 +55,7 @@ function __fish_generate_completions
     complete -c $executable -n "__fish_chalet_prev_arg -b --build-strategy" -a "$(chalet query build-strategies)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg -p --build-path-style" -a "$(chalet query build-path-styles)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg export" -a "$(chalet query export-kinds)" -d ""
+    complete -c $executable -n "__fish_chalet_prev_arg convert" -a "$(chalet query convert-formats)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg query" -a "$(chalet query list-names)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg theme" -a "$(chalet query theme-names)" -d ""
     complete -c $executable -n "__fish_chalet_prev_arg get getkeys set unset" -a "" -d ""

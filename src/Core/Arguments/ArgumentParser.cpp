@@ -801,10 +801,8 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nBuild file formats:\n";
-		StringList exportPresets{
-			"json",
-			"yaml",
-		};
+
+		StringList exportPresets = m_inputs.getConvertFormatPresets();
 
 		for (auto& preset : exportPresets)
 		{

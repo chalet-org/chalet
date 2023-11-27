@@ -57,6 +57,7 @@ Dictionary<QueryOption> getQueryOptions()
 		{ "configurations", QueryOption::Configurations },
 		{ "list-names", QueryOption::QueryNames },
 		{ "export-kinds", QueryOption::ExportKinds },
+		{ "convert-formats", QueryOption::ConvertFormats },
 		{ "run-target", QueryOption::RunTarget },
 		{ "all-build-targets", QueryOption::AllBuildTargets },
 		{ "all-run-targets", QueryOption::AllRunTargets },
@@ -1185,6 +1186,12 @@ StringList CommandLineInputs::getExportKindPresets() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+StringList CommandLineInputs::getConvertFormatPresets() const
+{
+	return StringList{ "json", "yaml" };
 }
 
 /*****************************************************************************/

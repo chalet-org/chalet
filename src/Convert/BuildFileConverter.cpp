@@ -32,10 +32,8 @@ bool BuildFileConverter::convertFromInputs()
 /*****************************************************************************/
 bool BuildFileConverter::convert(const std::string& format, const std::string& inputFile)
 {
-	const bool yaml = String::equals("yaml", format);
-	const bool json = String::equals("json", format);
-
-	if (!yaml && !json)
+	auto formats = m_inputs.getConvertFormatPresets();
+	if (!String::equals(formats, format))
 	{
 		Diagnostic::error("Unsupported project format requested: {}", format);
 		return false;

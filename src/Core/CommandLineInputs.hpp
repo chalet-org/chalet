@@ -186,6 +186,7 @@ struct CommandLineInputs
 
 	StringList getToolchainPresets() const;
 	StringList getExportKindPresets() const;
+	StringList getConvertFormatPresets() const;
 	StringList getProjectInitializationPresets() const;
 	StringList getCliQueryOptions() const;
 
