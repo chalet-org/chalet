@@ -739,7 +739,7 @@ std::string ArgumentParser::getHelp()
 	{
 		auto getExportPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("vscode", preset))
-				return "Visual Studio Code JSON format (launch.json, tasks.json, c_cpp_properties.json)";
+				return "Visual Studio Code (.vscode)";
 #if defined(CHALET_WIN32)
 			else if (String::equals("vssolution", preset))
 				return "Visual Studio Solution format (*.sln, *.vcxproj)";
