@@ -104,7 +104,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		}
 
 		bool arrayIsh = String::startsWith("- ", line);
-		if (arrayIsh)
+		if (arrayIsh && indent >= lastIndent - 1)
 			indent = lastIndent + 1;
 		else
 			lastIndent = indent;
@@ -151,12 +151,26 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		}
 		else if (startOfObjectArray)
 		{
+			if (nodes.back()->is_object())
+				nodes.pop_back();
+
 			if (nodes.back()->is_null())
 				(*nodes.back()) = Json::array();
 
 			auto& node = *nodes.back();
 			node.push_back(Json::object());
 			nodes.push_back(&node.back());
+		}
+		else if (arrayIsh)
+		{
+			if (nodes.back()->is_object())
+				nodes.pop_back();
+
+			if (nodes.back()->is_null())
+				(*nodes.back()) = Json::array();
+
+			if (!nodes.back()->is_array())
+				return false;
 		}
 
 		if (objectIsh && nodes.back()->is_array())
@@ -257,9 +271,6 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		// Arrays
 		else if (!line.empty())
 		{
-			if (node.is_null())
-				node = Json::array();
-
 			if (!node.is_array())
 				continue;
 
