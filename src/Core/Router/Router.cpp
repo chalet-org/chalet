@@ -34,7 +34,6 @@
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
-#include "Yaml/YamlFile.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonValues.hpp"
 
@@ -362,57 +361,6 @@ bool Router::workingDirectoryIsGlobalChaletDirectory()
 bool Router::routeDebug()
 {
 	LOG("Router::routeDebug()");
-
-	auto json = R"json({
-    "stuff": true,
-    "morestuff": [
-        "boxA",
-        "boxB",
-        {
-            "name": "Gurtrude",
-            "age": 82,
-			"innerobjectarray": [
-				{
-					"name": "Bob",
-					"age": 44
-				},
-				{
-					"name": "Andrea",
-					"age": 36
-				},
-				"coolstuff"
-			]
-        },
-		"ohgodwhy"
-    ],
-    "notanarray": true,
-    "objectarray": [
-        {
-            "name": "Phil",
-            "age": 37,
-			"innerobjectarray": [
-				{
-					"name": "Bob",
-					"age": 44
-				},
-				{
-					"name": "Andrea",
-					"age": 36
-				}
-			]
-        }
-    ]
-})json"_ojson;
-
-	auto yaml = YamlFile::asString(json);
-
-	Json json2;
-	if (!YamlFile::parseLiteral(json2, yaml))
-		return false;
-
-	// LOG(json.dump(3, ' '));
-	// LOG(yaml);
-	LOG(json2.dump(3, ' '));
 
 	return true;
 }
