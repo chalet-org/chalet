@@ -1381,27 +1381,27 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return val;
 				}
 
-				if (String::startsWith("dlib:", match))
+				if (String::startsWith("so:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(3);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getSharedLibraryExtension();
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("slib:", match))
+				if (String::startsWith("ar:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(3);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getArchiveExtension();
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("exec:", match))
+				if (String::startsWith("exe:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(4);
 					auto extension = environment->getExecutableExtension();
 					return match + extension;
 				}
@@ -1525,27 +1525,27 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return val;
 				}
 
-				if (String::startsWith("dlib:", match))
+				if (String::startsWith("so:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(3);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getSharedLibraryExtension();
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("slib:", match))
+				if (String::startsWith("ar:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(3);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getArchiveExtension();
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("exec:", match))
+				if (String::startsWith("exe:", match))
 				{
-					match = match.substr(5);
+					match = match.substr(4);
 					auto extension = environment->getExecutableExtension();
 					return match + extension;
 				}
