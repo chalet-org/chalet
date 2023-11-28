@@ -8,9 +8,9 @@
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -159,6 +159,12 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 	std::string input;
 	std::getline(std::cin, input); // get up to first line break (if applicable)
+	if (std::cin.fail() || std::cin.eof())
+	{
+		std::cin.clear();
+		// return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
+		throw std::runtime_error("cancelled");
+	}
 
 	if (input.empty())
 		input = outResult;

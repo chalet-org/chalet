@@ -19,6 +19,7 @@ struct ProjectInitializer
 	bool run();
 
 private:
+	void showExit();
 	bool initializeNormalWorkspace(ChaletJsonProps& outProps);
 	bool initializeCMakeWorkspace(ChaletJsonProps& outProps);
 
