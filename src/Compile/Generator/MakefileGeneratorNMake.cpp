@@ -22,6 +22,7 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
+	m_generateDependencies = false;
 }
 
 /*****************************************************************************/
