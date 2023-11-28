@@ -657,7 +657,9 @@ std::string ProjectInitializer::getLanguageStandard(const CodeLanguage inLang) c
 std::string ProjectInitializer::getInputFileFormat() const
 {
 	std::string ret = "json";
-	Output::getUserInput("Build file format:", ret, "json or yaml", [](std::string& input) {
+	auto presets = m_inputs.getConvertFormatPresets();
+	auto description = fmt::format("Available formats: {}", String::join(presets));
+	Output::getUserInput("Build file format:", ret, description, [](std::string& input) {
 		return String::equals("json", input) || String::equals("yaml", input);
 	});
 
