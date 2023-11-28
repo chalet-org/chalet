@@ -20,6 +20,17 @@ bool YamlFile::parse(Json& outJson, const std::string& inFilename, const bool in
 }
 
 /*****************************************************************************/
+bool YamlFile::parseLiteral(Json& outJson, const std::string& inContents, const bool inError)
+{
+	UNUSED(inError);
+
+	std::string dummyFilename;
+
+	YamlFile file(dummyFilename);
+	return file.parseAsJson(outJson, inContents);
+}
+
+/*****************************************************************************/
 bool YamlFile::saveToFile(const Json& inJson, const std::string& inFilename)
 {
 	YamlFile file(inFilename);
@@ -46,13 +57,28 @@ YamlFile::YamlFile(const std::string& inFilename) :
 }
 
 /*****************************************************************************/
-// Note: doesn't support arrays of objects yet (not used anyway)
-//
-bool YamlFile::parseAsJson(Json& outJson)
+bool YamlFile::parseAsJson(Json& outJson) const
 {
 	if (!Files::pathExists(m_filename))
 		return false;
 
+	std::ifstream stream(m_filename);
+	return parseAsJson(outJson, stream);
+}
+
+/*****************************************************************************/
+bool YamlFile::parseAsJson(Json& outJson, const std::string& inContents) const
+{
+	if (inContents.empty())
+		return false;
+
+	std::stringstream stream(inContents);
+	return parseAsJson(outJson, stream);
+}
+
+/*****************************************************************************/
+bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
+{
 	outJson = Json::object();
 
 	std::vector<Json*> nodes;
@@ -62,8 +88,7 @@ bool YamlFile::parseAsJson(Json& outJson)
 	size_t indent = 0;
 	size_t lastIndent = 0;
 
-	std::ifstream input(m_filename);
-	for (std::string line; std::getline(input, line);)
+	for (std::string line; std::getline(stream, line);)
 	{
 		if (line.empty())
 			continue;
@@ -97,13 +122,18 @@ bool YamlFile::parseAsJson(Json& outJson)
 		if (line.front() == '#')
 			continue;
 
+		auto firstKeyValue = line.find(": ");
+		bool objectIsh = firstKeyValue != std::string::npos;
+		bool startOfObjectArray = arrayIsh && objectIsh;
+
 		while (nodes.size() > indent + 1)
 			nodes.pop_back();
 
 		chalet_assert(!nodes.empty(), "");
 
 		// Start of object or array - just the key
-		if (line.back() == ':')
+		bool startOfArrayOrObject = line.back() == ':';
+		if (startOfArrayOrObject)
 		{
 			line.pop_back();
 
@@ -119,12 +149,37 @@ bool YamlFile::parseAsJson(Json& outJson)
 			nodes.push_back(&node.at(line));
 			continue;
 		}
+		else if (startOfObjectArray)
+		{
+			if (nodes.back()->is_null())
+				(*nodes.back()) = Json::array();
+
+			auto& node = *nodes.back();
+			node.push_back(Json::object());
+			nodes.push_back(&node.back());
+		}
+
+		if (objectIsh && nodes.back()->is_array())
+		{
+			bool validObjectArray = false;
+			auto& node = *nodes.back();
+			if (node.is_array() && node.size() >= 1)
+			{
+				if (node.back().is_object())
+				{
+					nodes.push_back(&node.back());
+					validObjectArray = true;
+				}
+			}
+
+			if (!validObjectArray)
+				return false;
+		}
 
 		auto& node = *nodes.back();
 
 		// Objects
-		auto firstKeyValue = line.find(": ");
-		if (firstKeyValue != std::string::npos)
+		if (objectIsh)
 		{
 			auto key = line.substr(0, firstKeyValue);
 			auto value = line.substr(firstKeyValue + 2);
