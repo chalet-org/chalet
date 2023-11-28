@@ -1381,7 +1381,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return val;
 				}
 
-				if (String::startsWith("link:", match))
+				if (String::startsWith("dlib:", match))
 				{
 					match = match.substr(5);
 					constexpr bool unixStyleWithMinGW = true;
@@ -1390,9 +1390,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("lib:", match))
+				if (String::startsWith("slib:", match))
 				{
-					match = match.substr(4);
+					match = match.substr(5);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getArchiveExtension();
@@ -1525,7 +1525,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return val;
 				}
 
-				if (String::startsWith("link:", match))
+				if (String::startsWith("dlib:", match))
 				{
 					match = match.substr(5);
 					constexpr bool unixStyleWithMinGW = true;
@@ -1534,9 +1534,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return prefix + match + extension;
 				}
 
-				if (String::startsWith("lib:", match))
+				if (String::startsWith("slib:", match))
 				{
-					match = match.substr(4);
+					match = match.substr(5);
 					constexpr bool unixStyleWithMinGW = true;
 					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
 					auto extension = environment->getArchiveExtension();
