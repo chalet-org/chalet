@@ -193,8 +193,6 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 {
 	StringList ret;
 
-	UNUSED(arch);
-
 	if (!addExecutable(ret))
 		return ret;
 
