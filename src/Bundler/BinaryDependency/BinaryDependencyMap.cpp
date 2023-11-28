@@ -165,7 +165,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 
 	for (auto it = dependencies.begin(); it != dependencies.end();)
 	{
-		if (!resolveDependencyPath(*it))
+		if (!resolveDependencyPath(*it, inPath))
 		{
 			m_notCopied.push_back(*it);
 			it = dependencies.erase(it);
@@ -188,7 +188,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
+bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep, const std::string& inParentDep)
 {
 	const auto filename = String::getPathFilename(outDep);
 	if (outDep.empty()
@@ -245,6 +245,14 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep)
 		}
 
 		resolved.clear();
+	}
+
+	// Fixes a problem resolving libgcc_s.1.1.dylib from homebrew gcc on mac
+	resolved = fmt::format("{}/{}", String::getPathFolder(inParentDep), String::getPathFilename(outDep));
+	if (Files::pathExists(resolved))
+	{
+		outDep = std::move(resolved);
+		return true;
 	}
 
 	resolved = Files::which(filename);
