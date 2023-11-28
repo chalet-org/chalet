@@ -37,7 +37,7 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 		return makeTool<CompilerWinResourceVisualStudioRC>(result, inState, inProject);
 #endif
 
-	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false, false); result >= 0)
 		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
 
 	// Allow llvm-rc or windres for MinGW LLVM
