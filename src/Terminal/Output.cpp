@@ -162,8 +162,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 	if (std::cin.fail() || std::cin.eof())
 	{
 		std::cin.clear();
-		// return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
-		throw std::runtime_error("cancelled");
+		return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
 	}
 
 	if (input.empty())

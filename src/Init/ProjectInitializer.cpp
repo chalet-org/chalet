@@ -120,145 +120,127 @@ void ProjectInitializer::showExit()
 /*****************************************************************************/
 bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 {
-	CHALET_TRY
-	{
-		outProps.workspaceName = getWorkspaceName();
-		outProps.version = getWorkspaceVersion();
-		outProps.projectName = getProjectName(outProps.workspaceName);
+	outProps.workspaceName = getWorkspaceName();
+	outProps.version = getWorkspaceVersion();
+	outProps.projectName = getProjectName(outProps.workspaceName);
 
-		auto language = getCodeLanguage();
-		outProps.language = language;
+	auto language = getCodeLanguage();
+	outProps.language = language;
 
-		outProps.langStandard = getLanguageStandard(outProps.language);
+	outProps.langStandard = getLanguageStandard(outProps.language);
 
 #if defined(CHALET_WIN32) // modules can only be used in MSVC so far
-		outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
+	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
 #endif
-		m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
-		outProps.useLocation = getUseLocation();
-		outProps.location = getRootSourceDirectory();
-		outProps.mainSource = getMainSourceFile(outProps.language);
+	outProps.useLocation = getUseLocation();
+	outProps.location = getRootSourceDirectory();
+	outProps.mainSource = getMainSourceFile(outProps.language);
 
-		if (!outProps.modules)
-		{
-			outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
-		}
-
-		outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
-		outProps.envFile = getMakeEnvFile();
-		outProps.inputFile = getInputFileFormat();
-		outProps.makeGitRepository = getMakeGitRepository();
-
-		outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
-
-		printUserInputSplit();
-
-		printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-			auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
-			String::replaceAll(mainCpp, '\t', "   ");
-			return mainCpp;
-		});
-
-		printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-			return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
-		});
-
-		printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
-			return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
-		});
-
-		printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
-			return StarterFileTemplates::getDotEnv();
-		});
-
-		printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
-			auto jsonFile = StarterFileTemplates::getStandardChaletJson(outProps);
-			if (outProps.isYaml)
-				return YamlFile::asString(jsonFile);
-			else
-				return jsonFile.dump(3, ' ');
-		});
-
-		return true;
-	}
-	CHALET_CATCH(const std::runtime_error&)
+	if (!outProps.modules)
 	{
-		Output::lineBreak();
-		showExit();
-		return false;
+		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
 	}
+
+	outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
+	outProps.envFile = getMakeEnvFile();
+	outProps.inputFile = getInputFileFormat();
+	outProps.makeGitRepository = getMakeGitRepository();
+
+	outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
+
+	printUserInputSplit();
+
+	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
+		String::replaceAll(mainCpp, '\t', "   ");
+		return mainCpp;
+	});
+
+	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
+	});
+
+	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
+		return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
+	});
+
+	printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
+		return StarterFileTemplates::getDotEnv();
+	});
+
+	printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
+		auto jsonFile = StarterFileTemplates::getStandardChaletJson(outProps);
+		if (outProps.isYaml)
+			return YamlFile::asString(jsonFile);
+		else
+			return jsonFile.dump(3, ' ');
+	});
+
+	return true;
 }
 
 /*****************************************************************************/
 bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 {
-	CHALET_TRY
-	{
-		Diagnostic::info("Template: CMake");
+	Diagnostic::info("Template: CMake");
 
-		outProps.workspaceName = getWorkspaceName();
-		outProps.version = getWorkspaceVersion();
-		outProps.projectName = getProjectName(outProps.workspaceName);
+	outProps.workspaceName = getWorkspaceName();
+	outProps.version = getWorkspaceVersion();
+	outProps.projectName = getProjectName(outProps.workspaceName);
 
-		auto language = getCodeLanguage();
-		outProps.language = language;
+	auto language = getCodeLanguage();
+	outProps.language = language;
 
-		outProps.langStandard = getLanguageStandard(outProps.language);
+	outProps.langStandard = getLanguageStandard(outProps.language);
 
-		m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
-		outProps.useLocation = getUseLocation();
-		outProps.location = getRootSourceDirectory();
-		outProps.mainSource = getMainSourceFile(outProps.language);
-		outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
-		// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
-		outProps.envFile = getMakeEnvFile();
-		outProps.inputFile = getInputFileFormat();
-		outProps.makeGitRepository = getMakeGitRepository();
+	outProps.useLocation = getUseLocation();
+	outProps.location = getRootSourceDirectory();
+	outProps.mainSource = getMainSourceFile(outProps.language);
+	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
+	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
+	outProps.envFile = getMakeEnvFile();
+	outProps.inputFile = getInputFileFormat();
+	outProps.makeGitRepository = getMakeGitRepository();
 
-		outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
+	outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
 
-		printUserInputSplit();
+	printUserInputSplit();
 
-		printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
-			auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
-			String::replaceAll(mainCpp, '\t', "   ");
-			return mainCpp;
-		});
+	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
+		String::replaceAll(mainCpp, '\t', "   ");
+		return mainCpp;
+	});
 
-		printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
-			return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
-		});
+	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
+	});
 
-		printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
-			return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
-		});
+	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
+		return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
+	});
 
-		printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
-			return StarterFileTemplates::getDotEnv();
-		});
+	printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
+		return StarterFileTemplates::getDotEnv();
+	});
 
-		printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
-			auto jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(outProps);
-			if (outProps.isYaml)
-				return YamlFile::asString(jsonFile);
-			else
-				return jsonFile.dump(3, ' ');
-		});
+	printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
+		auto jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(outProps);
+		if (outProps.isYaml)
+			return YamlFile::asString(jsonFile);
+		else
+			return jsonFile.dump(3, ' ');
+	});
 
-		printFileNameAndContents(true, "CMakeLists.txt", [&outProps]() {
-			return StarterFileTemplates::getCMakeStarter(outProps);
-		});
+	printFileNameAndContents(true, "CMakeLists.txt", [&outProps]() {
+		return StarterFileTemplates::getCMakeStarter(outProps);
+	});
 
-		return true;
-	}
-	CHALET_CATCH(const std::runtime_error&)
-	{
-		Output::lineBreak();
-		showExit();
-		return false;
-	}
+	return true;
 }
 
 /*****************************************************************************/
