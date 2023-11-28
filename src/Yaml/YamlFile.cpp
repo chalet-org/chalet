@@ -377,10 +377,12 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 		if (!root)
 			ret += '\n';
 
+		bool first = false;
 		for (auto& [key, value] : node.items())
 		{
-			size_t indent = root ? 0 : inIndent + 1;
+			size_t indent = root && (!inArray || !first) ? 0 : inIndent + 1;
 			ret += getNodeAsString(key, value, indent);
+			first = true;
 		}
 	}
 	else if (node.is_string())
