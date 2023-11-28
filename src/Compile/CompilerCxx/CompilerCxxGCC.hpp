@@ -15,8 +15,8 @@ struct CompilerCxxGCC : public ICompilerCxx
 
 	virtual bool initialize() override;
 
-	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) override;
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative) override;
+	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& arch) override;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const SourceType derivative) override;
 	virtual void getCommandOptions(StringList& outArgList, const SourceType derivative) override;
 
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);

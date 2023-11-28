@@ -13,7 +13,7 @@ struct CompilerWinResourceLLVMRC final : public CompilerWinResourceGNUWindRes
 {
 	explicit CompilerWinResourceLLVMRC(const BuildState& inState, const SourceTarget& inProject);
 
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) override;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) override;
 
 protected:
 	virtual void addDefines(StringList& outArgList) const final;

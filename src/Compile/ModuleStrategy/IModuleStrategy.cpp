@@ -482,7 +482,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 			{
 				CommandPool::Cmd out;
 				out.output = source;
-				out.command = inToolchain.compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
+				out.command = inToolchain.compilerWindowsResource->getCommand(source, target, dependency);
 
 				out.reference = String::getPathFilename(out.output);
 

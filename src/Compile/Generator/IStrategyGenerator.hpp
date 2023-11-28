@@ -38,8 +38,6 @@ protected:
 	StringList m_precompiledHeaders;
 
 	std::string m_hash;
-
-	bool m_generateDependencies = true;
 };
 
 }

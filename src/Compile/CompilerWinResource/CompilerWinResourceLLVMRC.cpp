@@ -5,8 +5,8 @@
 
 #include "Compile/CompilerWinResource/CompilerWinResourceLLVMRC.hpp"
 
-#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CommandAdapter/CommandAdapterMSVC.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -21,9 +21,9 @@ CompilerWinResourceLLVMRC::CompilerWinResourceLLVMRC(const BuildState& inState, 
 }
 
 /*****************************************************************************/
-StringList CompilerWinResourceLLVMRC::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
+StringList CompilerWinResourceLLVMRC::getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
 {
-	UNUSED(generateDependency, dependency);
+	UNUSED(dependency);
 
 	StringList ret;
 

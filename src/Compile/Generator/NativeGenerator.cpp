@@ -182,7 +182,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", source, arch);
-						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch);
+						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch);
 
 						ret.emplace_back(std::move(out));
 					}
@@ -205,7 +205,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 
 					CommandPool::Cmd out;
 					out.output = source;
-					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, m_generateDependencies, dependency, std::string());
+					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, dependency, std::string());
 
 					const auto& cxxExt = m_state.paths.cxxExtension();
 					if (!cxxExt.empty())
@@ -343,7 +343,7 @@ StringList NativeGenerator::getCxxCompile(const std::string& source, const std::
 	StringList ret;
 
 	auto dependency = m_state.environment->getDependencyFile(source);
-	ret = m_toolchain->compilerCxx->getCommand(source, target, m_generateDependencies, dependency, derivative);
+	ret = m_toolchain->compilerCxx->getCommand(source, target, dependency, derivative);
 
 	return ret;
 }
@@ -356,7 +356,7 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 	StringList ret;
 
 	auto dependency = m_state.environment->getDependencyFile(source);
-	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, m_generateDependencies, dependency);
+	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, dependency);
 
 	return ret;
 }

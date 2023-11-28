@@ -26,11 +26,19 @@ bool IToolchainExecutableBase::quotedPaths() const noexcept
 {
 	return m_quotedPaths;
 }
-
-/*****************************************************************************/
 void IToolchainExecutableBase::setQuotedPaths(const bool inValue) noexcept
 {
 	m_quotedPaths = inValue;
+}
+
+/*****************************************************************************/
+bool IToolchainExecutableBase::generateDependencies() const noexcept
+{
+	return m_generateDependencies;
+}
+void IToolchainExecutableBase::setGenerateDependencies(const bool inValue) noexcept
+{
+	m_generateDependencies = inValue;
 }
 
 /*****************************************************************************/

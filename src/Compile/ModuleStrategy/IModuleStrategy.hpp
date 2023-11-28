@@ -80,7 +80,6 @@ protected:
 	StrategyType m_oldStrategy = StrategyType::None;
 
 	mutable bool m_sourcesChanged = false;
-	bool m_generateDependencies = true;
 
 private:
 	std::string getModuleId() const;

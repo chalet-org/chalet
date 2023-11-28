@@ -13,7 +13,7 @@ struct CompilerWinResourceVisualStudioRC final : public ICompilerWinResource
 {
 	explicit CompilerWinResourceVisualStudioRC(const BuildState& inState, const SourceTarget& inProject);
 
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) final;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) final;
 
 protected:
 	virtual void addIncludes(StringList& outArgList) const final;

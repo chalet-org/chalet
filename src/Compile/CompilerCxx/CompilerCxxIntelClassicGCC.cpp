@@ -59,12 +59,12 @@ bool CompilerCxxIntelClassicGCC::initialize()
 }
 
 /*****************************************************************************/
-StringList CompilerCxxIntelClassicGCC::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
+StringList CompilerCxxIntelClassicGCC::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& arch)
 {
 	StringList ret;
 	if (m_project.usesPrecompiledHeader())
 	{
-		ret = CompilerCxxGCC::getPrecompiledHeaderCommand(inputFile, outputFile, generateDependency, dependency, arch);
+		ret = CompilerCxxGCC::getPrecompiledHeaderCommand(inputFile, outputFile, dependency, arch);
 		ret.pop_back();
 		ret.emplace_back(getQuotedPath(m_pchSource));
 	}

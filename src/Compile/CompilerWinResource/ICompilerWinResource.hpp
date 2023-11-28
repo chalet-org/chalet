@@ -17,7 +17,7 @@ struct ICompilerWinResource : public IToolchainExecutableBase
 
 	virtual bool initialize() final;
 
-	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency) = 0;
+	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency) = 0;
 
 protected:
 	virtual void addIncludes(StringList& outArgList) const;

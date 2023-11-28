@@ -21,7 +21,7 @@ CompilerWinResourceGNUWindRes::CompilerWinResourceGNUWindRes(const BuildState& i
 }
 
 /*****************************************************************************/
-StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
+StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
 {
 	StringList ret;
 
@@ -36,7 +36,7 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 	ret.emplace_back("-O");
 	ret.emplace_back("coff");
 
-	if (generateDependency)
+	if (generateDependencies())
 	{
 		// Note: The dependency generation args have to be passed into the preprocessor
 		//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"

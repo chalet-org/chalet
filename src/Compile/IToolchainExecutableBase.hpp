@@ -21,6 +21,9 @@ struct IToolchainExecutableBase
 	bool quotedPaths() const noexcept;
 	void setQuotedPaths(const bool inValue) noexcept;
 
+	bool generateDependencies() const noexcept;
+	void setGenerateDependencies(const bool inValue) noexcept;
+
 protected:
 	static i32 executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType);
 
@@ -41,6 +44,7 @@ private:
 	bool isNative() const noexcept;
 
 	bool m_quotedPaths = false;
+	bool m_generateDependencies = true;
 };
 }
 

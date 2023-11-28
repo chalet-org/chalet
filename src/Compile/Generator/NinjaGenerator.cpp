@@ -206,7 +206,7 @@ std::string NinjaGenerator::getPchRule()
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 
-				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", outObject, m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", outObject, dependency, arch));
 				if (!pchCompile.empty())
 				{
 					String::replaceAll(pchCompile, outObject, "$out");
@@ -229,7 +229,7 @@ rule pch_{arch}_{hash}
 #endif
 		{
 			// Have to pass in object here because MSVC's PCH compile command is wack
-			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", object, m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand("$in", object, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
 				String::replaceAll(pchCompile, object, "$out");
@@ -260,7 +260,7 @@ std::string NinjaGenerator::getRcRule()
 	const auto dependency = m_state.environment->getDependencyFile("$in");
 	const auto depFile = getDepFile(dependency);
 
-	const auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$in", "$out", m_generateDependencies, dependency));
+	const auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$in", "$out", dependency));
 	if (!rcCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
@@ -291,7 +291,7 @@ std::string NinjaGenerator::getCxxRule(const std::string inId, const SourceType 
 	const auto dependency = m_state.environment->getDependencyFile("$in");
 	const auto depFile = getDepFile(dependency);
 
-	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", m_generateDependencies, dependency, derivative));
+	const auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand("$in", "$out", dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		ret = fmt::format(R"ninja(

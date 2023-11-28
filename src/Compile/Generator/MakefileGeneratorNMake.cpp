@@ -22,7 +22,6 @@ namespace chalet
 MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 	IStrategyGenerator(inState)
 {
-	m_generateDependencies = false;
 }
 
 /*****************************************************************************/
@@ -31,6 +30,8 @@ void MakefileGeneratorNMake::addProjectRecipes(const SourceTarget& inProject, co
 	m_project = &inProject;
 	m_toolchain = inToolchain.get();
 	m_hash = inTargetHash;
+
+	m_toolchain->setGenerateDependencies(false);
 
 	const auto& target = inOutputs.target;
 
@@ -279,7 +280,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 	{
 		const auto quietFlag = getQuietFlag();
 		m_precompiledHeaders.push_back(std::move(pchCache));
-		auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, m_generateDependencies, std::string(), std::string()));
+		auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, std::string(), std::string()));
 		if (!pchCompile.empty())
 		{
 
@@ -312,7 +313,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, m_generateDependencies, dependency));
+	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, dependency));
 	if (!rcCompile.empty())
 	{
 		const auto compilerEcho = getCompileEchoSources(source);
@@ -353,7 +354,7 @@ std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, cons
 	const auto quietFlag = getQuietFlag();
 
 	std::string dependency;
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, derivative));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		std::string compilerEcho;

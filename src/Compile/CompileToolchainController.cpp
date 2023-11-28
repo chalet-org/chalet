@@ -68,6 +68,22 @@ void CompileToolchainController::setQuotedPaths(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+void CompileToolchainController::setGenerateDependencies(const bool inValue) noexcept
+{
+	if (compilerCxx)
+		compilerCxx->setGenerateDependencies(inValue);
+
+	if (compilerWindowsResource)
+		compilerWindowsResource->setGenerateDependencies(inValue);
+
+	if (archiver)
+		archiver->setGenerateDependencies(inValue);
+
+	if (linker)
+		linker->setGenerateDependencies(inValue);
+}
+
+/*****************************************************************************/
 StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	chalet_assert(archiver != nullptr, "");

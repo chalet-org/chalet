@@ -20,9 +20,9 @@ CompilerWinResourceVisualStudioRC::CompilerWinResourceVisualStudioRC(const Build
 }
 
 /*****************************************************************************/
-StringList CompilerWinResourceVisualStudioRC::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency)
+StringList CompilerWinResourceVisualStudioRC::getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency)
 {
-	UNUSED(generateDependency, dependency);
+	UNUSED(dependency);
 
 	StringList ret;
 

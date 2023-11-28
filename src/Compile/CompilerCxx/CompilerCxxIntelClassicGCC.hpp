@@ -15,7 +15,7 @@ struct CompilerCxxIntelClassicGCC : public CompilerCxxGCC
 
 	virtual bool initialize() final;
 
-	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch) final;
+	virtual StringList getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& arch) final;
 
 protected:
 	virtual StringList getWarningExclusions() const final;

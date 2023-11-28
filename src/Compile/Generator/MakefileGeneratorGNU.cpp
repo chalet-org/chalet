@@ -241,7 +241,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 					dependencies += fmt::format(" {}_{}/{}", baseFolder, lastArch, filename);
 				}
 
-				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, m_generateDependencies, dependency, arch));
+				auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch));
 				if (!pchCompile.empty())
 				{
 					auto pch = String::getPathFolderBaseName(object);
@@ -267,7 +267,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 		else
 #endif
 		{
-			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, m_generateDependencies, dependency, std::string()));
+			auto pchCompile = String::join(m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dependency, std::string()));
 			if (!pchCompile.empty())
 			{
 				auto pch = String::getPathFolderBaseName(object);
@@ -303,11 +303,11 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 	const auto quietFlag = getQuietFlag();
 	const auto compileEcho = getCompileEchoSources(source);
 
-	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, m_generateDependencies, dependency));
+	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, dependency));
 	if (!rcCompile.empty())
 	{
 		std::string makeDependency;
-		if (m_generateDependencies && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
+		if (m_toolchain->compilerWindowsResource->generateDependencies() && m_state.toolchain.isCompilerWindowsResourceLLVMRC())
 		{
 			makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, object, source));
 		}
@@ -348,7 +348,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const 
 	const auto quietFlag = getQuietFlag();
 	const auto compileEcho = getCompileEchoSources(source);
 
-	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, m_generateDependencies, dependency, derivative));
+	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, dependency, derivative));
 	if (!cppCompile.empty())
 	{
 		std::string pch = pchTarget;

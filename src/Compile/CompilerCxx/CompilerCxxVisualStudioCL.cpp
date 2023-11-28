@@ -83,9 +83,9 @@ bool CompilerCxxVisualStudioCL::configureWarnings()
 }
 
 /*****************************************************************************/
-StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
+StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& arch)
 {
-	UNUSED(generateDependency, dependency, arch);
+	UNUSED(dependency, arch);
 
 	chalet_assert(!outputFile.empty(), "");
 
@@ -100,7 +100,7 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 	ret.emplace_back("/c");
 	addCharsets(ret);
 
-	if (generateDependency)
+	if (generateDependencies())
 	{
 		ret.emplace_back("/showIncludes");
 	}
@@ -153,9 +153,9 @@ StringList CompilerCxxVisualStudioCL::getPrecompiledHeaderCommand(const std::str
 }
 
 /*****************************************************************************/
-StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative)
+StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const SourceType derivative)
 {
-	UNUSED(generateDependency, dependency);
+	UNUSED(dependency);
 
 	chalet_assert(!outputFile.empty(), "");
 
@@ -171,7 +171,7 @@ StringList CompilerCxxVisualStudioCL::getCommand(const std::string& inputFile, c
 	if (m_msvcAdapter.supportsMultiProcessorCompilation())
 		ret.emplace_back("/MP");
 
-	if (generateDependency)
+	if (generateDependencies())
 	{
 		ret.emplace_back("/showIncludes");
 	}

@@ -38,19 +38,18 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 	auto getCommand = [&inToolchain](const SourceFileGroup& group) -> StringList {
 		const auto& source = group.sourceFile;
 		const auto& object = group.objectFile;
-		bool generateDeps = false;
 		std::string dep;
 		// Note: No windows resource files
 		switch (group.type)
 		{
 			case SourceType::CxxPrecompiledHeader:
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, generateDeps, dep, std::string());
+				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, std::string());
 
 			case SourceType::C:
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus:
-				return inToolchain->compilerCxx->getCommand(source, object, generateDeps, dep, group.type);
+				return inToolchain->compilerCxx->getCommand(source, object, dep, group.type);
 
 			case SourceType::WindowsResource:
 			case SourceType::Unknown:
@@ -61,7 +60,11 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		return StringList();
 	};
 
+	bool quotedPaths = inToolchain->linker->quotedPaths();
+	bool generateDependencies = inToolchain->linker->generateDependencies();
+
 	inToolchain->setQuotedPaths(true);
+	inToolchain->setGenerateDependencies(false);
 
 	for (auto& group : inOutputs.groups)
 	{
@@ -72,7 +75,8 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		addCompileCommand(group->sourceFile, std::move(outCommand));
 	}
 
-	inToolchain->setQuotedPaths(false);
+	inToolchain->setQuotedPaths(quotedPaths);
+	inToolchain->setGenerateDependencies(generateDependencies);
 
 	return true;
 }

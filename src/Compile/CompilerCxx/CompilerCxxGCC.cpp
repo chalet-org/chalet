@@ -189,7 +189,7 @@ bool CompilerCxxGCC::isFlagSupported(const std::string& inFlag) const
 }
 
 /*****************************************************************************/
-StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const std::string& arch)
+StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& arch)
 {
 	StringList ret;
 
@@ -198,7 +198,7 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 	if (!addExecutable(ret))
 		return ret;
 
-	if (generateDependency)
+	if (generateDependencies())
 	{
 		ret.emplace_back("-MT");
 		ret.emplace_back(getQuotedPath(outputFile));
@@ -248,14 +248,14 @@ StringList CompilerCxxGCC::getPrecompiledHeaderCommand(const std::string& inputF
 }
 
 /*****************************************************************************/
-StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::string& outputFile, const bool generateDependency, const std::string& dependency, const SourceType derivative)
+StringList CompilerCxxGCC::getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const SourceType derivative)
 {
 	StringList ret;
 
 	if (!addExecutable(ret))
 		return ret;
 
-	if (generateDependency)
+	if (generateDependencies())
 	{
 		ret.emplace_back("-MT");
 		ret.emplace_back(getQuotedPath(outputFile));
