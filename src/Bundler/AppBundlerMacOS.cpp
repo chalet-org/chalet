@@ -244,7 +244,7 @@ std::string AppBundlerMacOS::getResolvedIconName() const
 {
 	auto& bundleIcon = m_bundle.macosBundleIcon();
 	std::string icon;
-	if (!bundleIcon.empty())
+	if (String::endsWith(".icns", bundleIcon))
 		icon = String::getPathBaseName(bundleIcon);
 	else
 		icon = "AppIcon";
