@@ -409,13 +409,11 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		return false;
 
 	// const auto& version = m_state.workspace.version();
-	auto icon = getResolvedIconName();
-	icon += ".icns";
 
-	auto replacePlistVariables = [&](std::string& outContent) {
+	auto replacePlistVariables = [this](std::string& outContent) {
 		String::replaceAll(outContent, "${name}", m_bundle.name());
 		String::replaceAll(outContent, "${mainExecutable}", m_mainExecutable);
-		String::replaceAll(outContent, "${icon}", icon);
+		String::replaceAll(outContent, "${icon}", getResolvedIconName());
 		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
 		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
 
