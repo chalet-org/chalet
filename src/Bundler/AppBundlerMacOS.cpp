@@ -242,6 +242,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 /*****************************************************************************/
 std::string AppBundlerMacOS::getResolvedIconName() const
 {
+#if defined(CHALET_MACOS)
 	auto& bundleIcon = m_bundle.macosBundleIcon();
 	std::string icon;
 	if (String::endsWith(".icns", bundleIcon))
@@ -250,6 +251,9 @@ std::string AppBundlerMacOS::getResolvedIconName() const
 		icon = "AppIcon";
 
 	return icon;
+#else
+	return std::string();
+#endif
 }
 
 /*****************************************************************************/
