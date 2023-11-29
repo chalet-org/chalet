@@ -144,7 +144,6 @@ bool SubChaletBuilder::run()
 	if (result)
 	{
 		Environment::setPath(oldPath);
-		Output::lineBreak();
 		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
 	}
 	else
