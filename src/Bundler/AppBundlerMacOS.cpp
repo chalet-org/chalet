@@ -240,6 +240,19 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 }
 
 /*****************************************************************************/
+std::string AppBundlerMacOS::getResolvedIconName() const
+{
+	auto& bundleIcon = m_bundle.macosBundleIcon();
+	std::string icon;
+	if (!bundleIcon.empty())
+		icon = String::getPathBaseName(bundleIcon);
+	else
+		icon = "AppIcon";
+
+	return icon;
+}
+
+/*****************************************************************************/
 bool AppBundlerMacOS::changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const
 {
 #if defined(CHALET_MACOS)
@@ -396,9 +409,8 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		return false;
 
 	// const auto& version = m_state.workspace.version();
-	std::string icon;
-	if (!m_iconBaseName.empty())
-		icon = fmt::format("{}.icns", m_iconBaseName);
+	auto icon = getResolvedIconName();
+	icon += ".icns";
 
 	auto replacePlistVariables = [&](std::string& outContent) {
 		String::replaceAll(outContent, "${name}", m_bundle.name());
@@ -548,14 +560,13 @@ bool AppBundlerMacOS::createBundleIcon()
 	if (!Output::showCommands())
 		Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
 
-	m_iconBaseName = String::getPathBaseName(icon);
-
 	const auto& sips = m_state.tools.sips();
 	bool sipsFound = !sips.empty();
 
 	if (String::endsWith(".png", icon) && sipsFound)
 	{
-		std::string outIcon = fmt::format("{}/{}.icns", m_resourcePath, m_iconBaseName);
+		auto iconBaseName = String::getPathBaseName(icon);
+		auto outIcon = fmt::format("{}/{}.icns", m_resourcePath, iconBaseName);
 		if (!Process::runMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 			return false;
 	}

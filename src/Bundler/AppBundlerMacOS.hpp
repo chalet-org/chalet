@@ -32,6 +32,8 @@ public:
 	virtual std::string getResourcePath() const final;
 	virtual std::string getFrameworksPath() const final;
 
+	std::string getResolvedIconName() const;
+
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const BinaryDependencyMap& inDependencyMap, const std::string& inExecutablePath) const;
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
@@ -59,7 +61,6 @@ private:
 	std::string m_bundlePath;
 	std::string m_frameworksPath;
 	std::string m_resourcePath;
-	std::string m_iconBaseName;
 
 	std::string m_infoFile;
 	std::string m_entitlementsFile;

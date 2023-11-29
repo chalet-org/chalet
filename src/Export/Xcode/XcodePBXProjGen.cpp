@@ -1788,7 +1788,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
-	ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = "AppIcon";
+	ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = bundler.getResolvedIconName();
 	// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
 
 	// auto& signingIdentity = inState.tools.signingIdentity();
