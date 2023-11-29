@@ -405,7 +405,10 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 			auto startsWithAsterisk = val.front() == '*';
 			auto startsWithAmpersand = val.front() == '&';
 			auto startsWithSquareBrace = val.front() == '[';
-			if (foundFloat == std::string::npos || startsWithAsterisk || startsWithAmpersand || startsWithSquareBrace)
+			auto startsWithQuestion = val.front() == '?';
+			if (foundFloat == std::string::npos
+				|| startsWithAsterisk || startsWithAmpersand
+				|| startsWithSquareBrace || startsWithQuestion)
 			{
 				ret += fmt::format("\"{}\"", val);
 			}
