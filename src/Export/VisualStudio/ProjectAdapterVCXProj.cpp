@@ -112,7 +112,7 @@ std::string ProjectAdapterVCXProj::getObjectDir() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getIntermediateDir() const
 {
-	auto dir = Files::getCanonicalPath(m_state.paths.intermediateDir(m_project));
+	auto dir = Files::getCanonicalPath(m_state.paths.intermediateDir());
 	dir += '/';
 	return dir;
 }

@@ -28,7 +28,7 @@ struct BuildPaths
 	const std::string& objDir() const;
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
-	std::string intermediateDir(const SourceTarget& inProject) const;
+	std::string intermediateDir() const;
 	std::string bundleObjDir(const std::string& inName) const;
 	std::string currentCompileCommands() const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
@@ -51,6 +51,7 @@ struct BuildPaths
 	std::string getWindowsManifestFilename(const SourceTarget& inProject) const;
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
+	std::string getUnityBuildSourceFilename(const SourceTarget& inProject) const;
 	StringList getConfigureFiles(const SourceTarget& inProject) const;
 
 	std::string getNormalizedOutputPath(const std::string& inPath) const;

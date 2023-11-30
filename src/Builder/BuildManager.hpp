@@ -49,6 +49,8 @@ private:
 
 	bool onFinishBuild(const SourceTarget& inProject) const;
 
+	bool checkIntermediateFiles() const;
+
 	// commands
 	bool cmdBuild(const SourceTarget& inProject);
 	bool cmdRebuild(const SourceTarget& inProject);

@@ -196,17 +196,19 @@ struct SourceTarget final : public IBuildTarget
 
 	StringList getResolvedRunDependenciesList() const;
 
+	bool generateUnityBuildFile(std::string& outSourceFile) const;
+
 private:
 	bool removeExcludedFiles();
 	bool determinePicType();
 	bool initializeUnityBuild();
 
+	std::string getUnityBuildFile() const;
 	std::string getPrecompiledHeaderResolvedToRoot() const;
 
 	SourceKind parseProjectKind(const std::string& inValue);
 	WindowsSubSystem parseWindowsSubSystem(const std::string& inValue);
 	WindowsEntryPoint parseWindowsEntryPoint(const std::string& inValue);
-	StringList getWarningPreset();
 	ProjectWarningPresets parseWarnings(const std::string& inValue);
 
 	Ref<TargetMetadata> m_metadata;
@@ -239,6 +241,7 @@ private:
 	std::string m_windowsApplicationManifest;
 	std::string m_windowsApplicationIcon;
 	std::string m_buildSuffix;
+	std::string m_unityBuildContents;
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

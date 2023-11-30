@@ -173,8 +173,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					groups[name].kind = TargetGroupKind::Source;
 				}
 
-				// auto intDir = state->paths.intermediateDir(sourceTarget);
-
 				auto& pch = sourceTarget.precompiledHeader();
 
 				state->getTargetDependencies(groups[name].dependencies, name, false);
@@ -1528,7 +1526,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		const auto& includeDirs = inTarget.includeDirs();
 		const auto& objDir = inState.paths.objDir();
 		const auto& externalBuildDir = inState.paths.externalBuildDir();
-		const auto& intDir = inState.paths.intermediateDir(inTarget);
 		for (auto& include : includeDirs)
 		{
 			if (String::equals(objDir, include))
@@ -1542,7 +1539,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			else
 			{
 				auto temp = Files::getCanonicalPath(include);
-				if (String::equals(intDir, include) || Files::pathExists(temp))
+				if (Files::pathExists(temp))
 					searchPaths.emplace_back(std::move(temp));
 				else
 					searchPaths.emplace_back(include);
@@ -1593,7 +1590,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		const auto& objDir = inState.paths.objDir();
 		const auto& externalDir = inState.inputs.externalDirectory();
 		const auto& externalBuildDir = inState.paths.externalBuildDir();
-		const auto& intDir = inState.paths.intermediateDir(inTarget);
 		// const auto& appleFrameworkPaths = inTarget.appleFrameworkPaths();
 
 		for (auto& libDir : libDirs)
@@ -1611,7 +1607,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 			else
 			{
 				auto temp = Files::getCanonicalPath(libDir);
-				if (String::equals(intDir, libDir) || Files::pathExists(temp))
+				if (Files::pathExists(temp))
 				{
 					// runPaths.emplace_back(temp);
 					searchPaths.emplace_back(temp);

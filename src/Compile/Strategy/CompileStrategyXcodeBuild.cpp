@@ -38,15 +38,11 @@ bool CompileStrategyXcodeBuild::initialize()
 	if (m_initialized)
 		return false;
 
-	auto& cacheFile = m_state.cache.file();
+	// auto& cacheFile = m_state.cache.file();
 	const auto& cachePathId = m_state.cachePathId();
 	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
 
-	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
-	if (buildStrategyChanged)
-	{
-		Files::removeRecursively(m_state.paths.buildOutputDir());
-	}
+	// const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 
 	m_initialized = true;
 

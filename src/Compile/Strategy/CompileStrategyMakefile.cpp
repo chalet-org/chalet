@@ -42,10 +42,6 @@ bool CompileStrategyMakefile::initialize()
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
-	if (buildStrategyChanged)
-	{
-		Files::removeRecursively(m_state.paths.buildOutputDir());
-	}
 
 	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || buildStrategyChanged || themeChanged;
 

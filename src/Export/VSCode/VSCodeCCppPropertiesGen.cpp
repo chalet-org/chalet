@@ -58,7 +58,6 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 			auto& objDir = m_state.paths.objDir();
-			auto intermediateDir = m_state.paths.intermediateDir(project);
 
 			if (cStandard.empty())
 				cStandard = project.cStandard();
@@ -81,7 +80,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Files::pathExists(path) || String::equals(intermediateDir, path) || String::equals(objDir, path))
+				if (Files::pathExists(path) || String::equals(objDir, path))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}

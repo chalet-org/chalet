@@ -77,13 +77,6 @@ bool BuildPaths::initialize()
 		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch2, buildConfig);
 	}
 
-	m_intermediateDir = fmt::format("{}/int", outputDirectory);
-
-	{
-		auto search = m_intermediateDir.find_first_not_of("./"); // if it's relative
-		m_intermediateDir = m_intermediateDir.substr(search);
-	}
-
 	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());
 
 	m_initialized = true;
@@ -150,10 +143,10 @@ const std::string& BuildPaths::asmDir() const
 }
 
 /*****************************************************************************/
-std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
+std::string BuildPaths::intermediateDir() const
 {
-	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::intermediateDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
-	return fmt::format("{}.{}", m_intermediateDir, inProject.buildSuffix());
+	const auto& buildDir = buildOutputDir();
+	return fmt::format("{}/int", buildDir);
 }
 
 /*****************************************************************************/
@@ -175,7 +168,7 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/cache", buildDir), // General build cache for edges cases / other stuff
+		fmt::format("{}/int", buildDir),
 	};
 
 #if defined(CHALET_MACOS)
@@ -311,7 +304,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	ret->directories.push_back(m_buildOutputDir);
 	ret->directories.push_back(objDir());
 
-	ret->directories.push_back(intermediateDir(inProject));
+	// ret->directories.push_back(intermediateDir(inProject));
 
 	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
@@ -430,7 +423,7 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 			return manifest;
 
 		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-		return fmt::format("{}/{}.manifest", intermediateDir(inProject), inProject.outputFile());
+		return fmt::format("{}/{}.manifest", intermediateDir(), inProject.outputFile());
 	}
 
 	return std::string();
@@ -443,7 +436,7 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 	if (canUseManifest && inProject.windowsApplicationManifestGenerationEnabled())
 	{
 		const auto& name = inProject.name();
-		return fmt::format("{}/manifest.rc", intermediateDir(inProject), name);
+		return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
 	}
 
 	return std::string();
@@ -455,8 +448,19 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 	if (inProject.isExecutable() && !inProject.windowsApplicationIcon().empty())
 	{
 		const auto& name = inProject.name();
+		return fmt::format("{}/{}_icon.rc", intermediateDir(), name);
+	}
 
-		return fmt::format("{}/icon.rc", intermediateDir(inProject), name);
+	return std::string();
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getUnityBuildSourceFilename(const SourceTarget& inProject) const
+{
+	if (inProject.unityBuild())
+	{
+		const auto& name = inProject.name();
+		return fmt::format("{}/{}_unity.{}", intermediateDir(), name, cxxExtension());
 	}
 
 	return std::string();
@@ -762,7 +766,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 			List::addIfDoesNotExist(ret, getNormalizedDirectoryPath(file));
 		}
 
-		List::addIfDoesNotExist(ret, intermediateDir(inProject));
+		List::addIfDoesNotExist(ret, intermediateDir());
 
 		return ret;
 	}

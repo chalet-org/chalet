@@ -109,7 +109,13 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
+	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool forceRebuild = m_state.cache.file().forceRebuild();
+
+	if (strategyChanged)
+	{
+		Files::removeRecursively(m_state.paths.buildOutputDir());
+	}
 
 	populateBuildTargets(inRoute);
 	auto runTarget = getRunTarget(inRoute);
@@ -129,6 +135,14 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	{
 		// Don't produce any output from this
 		doLazyClean(nullptr, forceRebuild, forceRebuild);
+	}
+	else
+	{
+		if (!checkIntermediateFiles())
+		{
+			Diagnostic::error("Failed to generate needed intermediate files");
+			return false;
+		}
 	}
 
 	if (m_buildRoutes.find(inRoute.type()) == m_buildRoutes.end())
@@ -649,29 +663,9 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 			Files::removeRecursively(dir);
 	}
 
-	bool regenConfigureFiles = m_strategy->isXcodeBuild() || m_strategy->isMSBuild();
-	if (regenConfigureFiles)
-	{
-		for (auto& target : m_state.targets)
-		{
-			if (!target->isSources())
-				continue;
-
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.configureFiles().empty())
-				continue;
-
-			auto outFolder = m_state.paths.objDir();
-#if defined(CHALET_MACOS)
-			if (m_strategy->isXcodeBuild())
-			{
-				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
-			}
-#endif
-			ConfigureFileParser confFileParser(m_state, project);
-			confFileParser.run(outFolder); // ignore the result
-		}
-	}
+	bool cleanAll = onClean != nullptr;
+	if (!cleanAll && !checkIntermediateFiles())
+		return false;
 
 	auto ccmdsJson = m_state.paths.currentCompileCommands();
 	if (Files::pathExists(ccmdsJson))
@@ -685,8 +679,42 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 
 	if (Output::cleanOutput())
 	{
-		if (onClean != nullptr)
+		if (cleanAll)
 			onClean();
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::checkIntermediateFiles() const
+{
+	bool isPlatformProjectBuild = m_strategy->isXcodeBuild() || m_strategy->isMSBuild();
+	for (auto& target : m_state.targets)
+	{
+		if (!target->isSources())
+			continue;
+
+		const auto& project = static_cast<const SourceTarget&>(*target);
+		if (isPlatformProjectBuild && !project.configureFiles().empty())
+		{
+			auto outFolder = m_state.paths.objDir();
+#if defined(CHALET_MACOS)
+			if (m_strategy->isXcodeBuild())
+			{
+				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
+			}
+#endif
+			ConfigureFileParser confFileParser(m_state, project);
+			confFileParser.run(outFolder); // ignore the result
+		}
+
+		if (!isPlatformProjectBuild && project.unityBuild())
+		{
+			std::string unityBuildFilename;
+			if (!project.generateUnityBuildFile(unityBuildFilename))
+				return false;
+		}
 	}
 
 	return true;
@@ -871,11 +899,8 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 /*****************************************************************************/
 bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 {
-	auto intermediateDir = m_state.paths.intermediateDir(inProject);
+	UNUSED(inProject);
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-
-	if (Files::pathIsEmpty(intermediateDir))
-		Files::remove(intermediateDir);
 
 	if (Files::pathExists(buildOutputDir))
 	{
