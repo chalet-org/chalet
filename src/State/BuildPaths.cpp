@@ -45,7 +45,7 @@ bool BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	const auto& outputDirectory = m_state.inputs.outputDirectory();
+	auto outputDirectory = m_state.inputs.outputDirectory();
 	if (!Files::pathExists(outputDirectory))
 	{
 		Files::makeDirectory(outputDirectory);
@@ -55,26 +55,34 @@ bool BuildPaths::initialize()
 	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
 	const auto& arch = m_state.info.targetArchitectureString();
 
-	auto style = m_state.toolchain.buildPathStyle();
-	if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
+	auto chaletTarget = Environment::getString("__CHALET_TARGET");
+	if (chaletTarget.empty())
 	{
-		if (m_state.inputs.isMultiArchToolchainPreset())
-			m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, arch, toolchainPreference, buildConfig);
-		else
-			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
+		auto style = m_state.toolchain.buildPathStyle();
+		if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
+		{
+			if (m_state.inputs.isMultiArchToolchainPreset())
+				m_buildOutputDir = fmt::format("{}/{}-{}_{}", outputDirectory, arch, toolchainPreference, buildConfig);
+			else
+				m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, toolchainPreference, buildConfig);
+		}
+		else if (style == BuildPathStyle::Configuration)
+		{
+			m_buildOutputDir = fmt::format("{}/{}", outputDirectory, buildConfig);
+		}
+		else if (style == BuildPathStyle::ArchConfiguration)
+		{
+			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
+		}
+		else // BuildPathStyle::TargetTriple
+		{
+			const auto& arch2 = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
+			m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch2, buildConfig);
+		}
 	}
-	else if (style == BuildPathStyle::Configuration)
+	else
 	{
-		m_buildOutputDir = fmt::format("{}/{}", outputDirectory, buildConfig);
-	}
-	else if (style == BuildPathStyle::ArchConfiguration)
-	{
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch, buildConfig);
-	}
-	else // BuildPathStyle::TargetTriple
-	{
-		const auto& arch2 = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-		m_buildOutputDir = fmt::format("{}/{}_{}", outputDirectory, arch2, buildConfig);
+		m_buildOutputDir = outputDirectory;
 	}
 
 	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());

@@ -323,6 +323,12 @@ void CommandLineInputs::setOutputDirectory(std::string&& inValue) noexcept
 
 	Path::toUnix(m_outputDirectory);
 	// clearWorkingDirectory(m_outputDirectory);
+
+	auto parentCwd = Environment::getString("__CHALET_PARENT_CWD");
+	if (!parentCwd.empty())
+	{
+		String::replaceAll(m_outputDirectory, parentCwd, "");
+	}
 }
 
 /*****************************************************************************/

@@ -103,6 +103,9 @@ bool SubChaletBuilder::run()
 
 	const auto oldPath = Environment::getPath();
 
+	Environment::set("__CHALET_PARENT_CWD", m_state.inputs.workingDirectory() + '/');
+	Environment::set("__CHALET_TARGET", "1");
+
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.inputs.appPath()), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("location: {}", location), false);
@@ -121,6 +124,8 @@ bool SubChaletBuilder::run()
 
 	auto onRunFailure = [&oldPath]() -> bool {
 		Environment::setPath(oldPath);
+		Environment::set("__CHALET_PARENT_CWD", std::string());
+		Environment::set("__CHALET_TARGET", std::string());
 		Output::lineBreak();
 		return false;
 	};
