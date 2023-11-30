@@ -572,18 +572,6 @@ void Output::msgBuildFail()
 }
 
 /*****************************************************************************/
-void Output::msgCleaning()
-{
-	print(state.theme.build, "   Removing build files & folders...");
-}
-
-/*****************************************************************************/
-void Output::msgNothingToClean()
-{
-	print(state.theme.build, "   Nothing to clean...");
-}
-
-/*****************************************************************************/
 void Output::msgProfilerStartedGprof(const std::string& inProfileAnalysis)
 {
 	Diagnostic::info("Writing profiling analysis to {}. This may take a while...", inProfileAnalysis);

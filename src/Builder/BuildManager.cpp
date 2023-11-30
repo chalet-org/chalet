@@ -134,7 +134,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	else if (forceRebuild || inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doLazyClean(nullptr, forceRebuild, forceRebuild);
+		doLazyClean(false, forceRebuild, forceRebuild);
 	}
 
 	if (!checkIntermediateFiles())
@@ -565,7 +565,7 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool inCleanExternals, const bool inForceCleanExternals)
+bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExternals, const bool inForceCleanExternals)
 {
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 
@@ -581,8 +581,14 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 	else
 		dirToClean = buildOutputDir;
 
-	if (!Files::pathExists(dirToClean))
-		return false;
+	Timer timer;
+
+	if (inShowMessage && Output::cleanOutput())
+	{
+		Diagnostic::stepInfoEllipsis("Removing build files & folders");
+	}
+
+	bool didClean = false;
 
 	StringList buildDirs;
 	StringList externalLocations;
@@ -600,15 +606,19 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
 			if (inForceCleanExternals || (subChaletTarget.clean() && inCleanExternals))
-				doSubChaletClean(subChaletTarget);
+			{
+				didClean |= doSubChaletClean(subChaletTarget);
+			}
 			else
+			{
 				List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
+			}
 		}
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
 			if (inForceCleanExternals || (cmakeTarget.clean() && inCleanExternals))
-				doCMakeClean(cmakeTarget);
+				didClean |= doCMakeClean(cmakeTarget);
 			else
 				List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
 		}
@@ -631,27 +641,32 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 
 	buildOutputDir += '/';
 
-	fs::recursive_directory_iterator it(dirToClean);
-	fs::recursive_directory_iterator itEnd;
-
-	while (it != itEnd)
+	bool dirExists = Files::pathExists(dirToClean);
+	bool nothingToClean = !dirExists && !didClean;
+	if (dirExists)
 	{
-		std::error_code ec;
-		const auto& path = it->path();
-		auto shortPath = path.string();
-		Path::toUnix(shortPath);
-		String::replaceAll(shortPath, buildOutputDir, "");
+		fs::recursive_directory_iterator it(dirToClean);
+		fs::recursive_directory_iterator itEnd;
 
-		if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
+		while (it != itEnd)
 		{
-			auto pth = path;
-			++it;
+			std::error_code ec;
+			const auto& path = it->path();
+			auto shortPath = path.string();
+			Path::toUnix(shortPath);
+			String::replaceAll(shortPath, buildOutputDir, "");
 
-			fs::remove(pth, ec);
-		}
-		else
-		{
-			++it;
+			if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
+			{
+				auto pth = path;
+				++it;
+
+				fs::remove(pth, ec);
+			}
+			else
+			{
+				++it;
+			}
 		}
 	}
 
@@ -671,10 +686,11 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 	if (Files::pathIsEmpty(buildOutputDir))
 		Files::remove(buildOutputDir);
 
-	if (Output::cleanOutput())
+	if (inShowMessage && Output::cleanOutput())
 	{
-		if (onClean != nullptr)
-			onClean();
+		Diagnostic::printDone(timer.asString());
+		UNUSED(nothingToClean);
+		Output::lineBreak();
 	}
 
 	return true;
@@ -719,6 +735,13 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 {
 	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
 	Path::toUnix(outputLocation);
+
+	if (inTarget.clean())
+	{
+		SubChaletBuilder subChalet(m_state, inTarget);
+		if (!subChalet.run())
+			return false;
+	}
 
 	bool rebuild = true;
 	if (m_state.inputs.route().isRebuild())
@@ -1180,18 +1203,9 @@ bool BuildManager::cmdClean()
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
 
-	auto onClean = []() {
-		Output::msgCleaning();
-		Output::lineBreak();
-	};
-
 	bool forceRebuild = m_state.cache.file().forceRebuild();
-	if (!doLazyClean(onClean, true, forceRebuild))
-	{
-		Output::msgNothingToClean();
-		Output::lineBreak();
+	if (!doLazyClean(true, true, forceRebuild))
 		return true;
-	}
 
 	if (Output::showCommands())
 		Output::lineBreak();

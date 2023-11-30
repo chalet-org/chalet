@@ -149,7 +149,12 @@ bool SubChaletBuilder::run()
 	if (result)
 	{
 		Environment::setPath(oldPath);
-		Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+
+		bool clean = m_state.inputs.route().isClean() && m_target.clean();
+		if (!clean)
+		{
+			Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+		}
 	}
 	else
 	{
@@ -232,12 +237,18 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	cmd.emplace_back("--only-required");
 
-	if (m_state.inputs.route().isRebuild() && m_target.rebuild())
+	bool rebuild = m_state.inputs.route().isRebuild() && m_target.rebuild();
+	bool clean = m_state.inputs.route().isClean() && m_target.clean();
+
+	if (rebuild)
 		cmd.emplace_back("rebuild");
+	else if (clean)
+		cmd.emplace_back("clean");
 	else
 		cmd.emplace_back("build");
 
-	cmd.emplace_back(inTarget);
+	if (!clean)
+		cmd.emplace_back(inTarget);
 
 	return cmd;
 }

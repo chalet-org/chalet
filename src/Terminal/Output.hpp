@@ -62,8 +62,6 @@ void msgBuildSuccess();
 void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
 void msgCommandPoolError(const std::string& inMessage);
 void msgBuildFail();
-void msgCleaning();
-void msgNothingToClean();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
 void msgProfilerStartedSample(const std::string& inExecutable, const u32 inDuration, const u32 inSamplingInterval);
 void msgProfilerDone(const std::string& inProfileAnalysis);
