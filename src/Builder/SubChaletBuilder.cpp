@@ -122,13 +122,10 @@ bool SubChaletBuilder::run()
 	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
-	auto onRunFailure = [this, &oldPath](const bool inRemoveDir = true) -> bool {
+	auto onRunFailure = [this, &oldPath]() -> bool {
 		Environment::setPath(oldPath);
 		Environment::set("__CHALET_PARENT_CWD", std::string());
 		Environment::set("__CHALET_TARGET", std::string());
-
-		if (inRemoveDir && !m_target.recheck())
-			Files::removeRecursively(m_outputLocation);
 
 		Output::lineBreak();
 		return false;

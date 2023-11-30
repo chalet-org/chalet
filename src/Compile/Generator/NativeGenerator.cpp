@@ -125,6 +125,17 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 
 		if (!m_commandPool->runAll(buildJobs, settings))
 		{
+			auto& sourceCache = m_state.cache.file().sources();
+			for (auto& failure : m_commandPool->failures())
+			{
+				auto objectFile = m_state.environment->getObjectFile(failure);
+
+				if (Files::pathExists(objectFile))
+					Files::remove(objectFile);
+
+				sourceCache.markForLater(failure);
+			}
+
 			Output::lineBreak();
 			return false;
 		}
