@@ -586,7 +586,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(const SourceGroup& inFile
 	// add the pch
 	if (!inFiles.pch.empty())
 	{
-		auto makePch = [this, &inProject, &inFiles](const std::string& file) {
+		auto makePch = [this, &inProject](const std::string& file) {
 			auto group = std::make_unique<SourceFileGroup>();
 
 			group->type = SourceType::CxxPrecompiledHeader;
