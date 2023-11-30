@@ -46,10 +46,9 @@ bool BuildPaths::initialize()
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
 	m_parentCwd = Environment::getString("__CHALET_PARENT_CWD");
-	auto chaletTarget = Environment::getString("__CHALET_TARGET");
 
 	auto outputDirectory = m_state.inputs.outputDirectory();
-	bool isChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
+	bool isChaletTarget = m_state.isSubChaletTarget();
 	if (!Files::pathExists(outputDirectory))
 	{
 		Files::makeDirectory(outputDirectory);

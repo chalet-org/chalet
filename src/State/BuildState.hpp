@@ -47,6 +47,8 @@ public:
 
 	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;
 
+	bool isSubChaletTarget() const noexcept;
+
 	CentralState& getCentralState();
 	const CentralState& getCentralState() const;
 	const IBuildTarget* getFirstValidRunTarget() const;
@@ -88,5 +90,6 @@ private:
 	std::string m_uniqueId;
 
 	bool m_cacheEnabled = true;
+	bool m_isSubChaletTarget = false;
 };
 }

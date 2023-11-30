@@ -41,10 +41,16 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 
 	m_needsMsvcDepsPrefix |= m_state.environment->isMsvc();
 
-	const std::string rules = getRules(inOutputs);
-	const std::string buildRules = getBuildRules(inOutputs);
+	const auto rules = getRules(inOutputs);
+	const auto buildRules = getBuildRules(inOutputs);
 
-	auto objects = String::join(inOutputs.objectListLinker);
+	std::string objects;
+	for (auto& obj : inOutputs.objectListLinker)
+	{
+		objects += getSafeNinjaPath(obj);
+		objects += ' ';
+	}
+	// auto objects = String::join(inOutputs.objectListLinker);
 
 	for (auto& target : m_state.targets)
 	{
@@ -56,10 +62,14 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 
 			if (List::contains(inProject.projectStaticLinks(), project.name()))
 			{
-				objects += " " + m_state.paths.getTargetFilename(project);
+				objects += getSafeNinjaPath(m_state.paths.getTargetFilename(project));
+				objects += ' ';
 			}
 		}
 	}
+
+	if (objects.back() == ' ')
+		objects.pop_back();
 
 	auto keyword = m_project->isStaticLibrary() ? "archive" : "link";
 
@@ -68,7 +78,8 @@ void NinjaGenerator::addProjectRecipes(const SourceTarget& inProject, const Sour
 	//
 	//
 	// ==============================================================================
-	std::string ninjaTemplate = fmt::format(R"ninja({rules}{buildRules}
+	auto target = getSafeNinjaPath(inOutputs.target);
+	auto ninjaTemplate = fmt::format(R"ninja({rules}{buildRules}
 build {target}: {keyword}_{hash} {objects}
 
 build build_{hash}: phony | {target}
@@ -78,7 +89,7 @@ build build_{hash}: phony | {target}
 		FMT_ARG(rules),
 		FMT_ARG(buildRules),
 		FMT_ARG(objects),
-		fmt::arg("target", inOutputs.target));
+		FMT_ARG(target));
 
 	//
 
@@ -123,9 +134,10 @@ std::string NinjaGenerator::getDepFile(const std::string& inDependency)
 
 	if (!m_state.environment->isMsvc())
 	{
+		auto dependency = getSafeNinjaPath(inDependency);
 		ret = fmt::format(R"ninja(
   depfile = {dependency})ninja",
-			fmt::arg("dependency", inDependency));
+			FMT_ARG(dependency));
 	}
 
 	return ret;
@@ -171,7 +183,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	if (m_project->usesPrecompiledHeader())
 	{
-		const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
+		auto pchTarget = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderTarget(*m_project));
 		rules += getPchBuildRule(pchTarget);
 	}
 
@@ -194,7 +206,7 @@ std::string NinjaGenerator::getPchRule()
 		const auto dependency = m_state.environment->getDependencyFile("$in");
 		const auto depFile = getDepFile(dependency);
 
-		const auto object = m_state.paths.getPrecompiledHeaderTarget(*m_project);
+		auto object = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderTarget(*m_project));
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -417,7 +429,7 @@ build {pchTarget}: pch_{hash} {pch}
 #if defined(CHALET_WIN32)
 		if (m_state.environment->isMsvc())
 		{
-			auto pchObj = m_state.paths.getPrecompiledHeaderObject(pchTarget);
+			auto pchObj = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderObject(pchTarget));
 			ret += fmt::format(R"ninja(
 build {pchObj}: phony {pchTarget}
 )ninja",
@@ -439,7 +451,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	if (m_project->usesPrecompiledHeader())
 	{
 		StringList pches;
-		auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
+		auto pchTarget = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderTarget(*m_project));
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
@@ -463,15 +475,24 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 	std::string configureFilesDeps;
 	if (!m_project->configureFiles().empty())
 	{
-		auto deps = String::join(m_state.paths.getConfigureFiles(*m_project));
+		std::string deps;
+		auto configureFiles = m_state.paths.getConfigureFiles(*m_project);
+		for (auto& file : configureFiles)
+		{
+			deps += getSafeNinjaPath(file);
+			deps += ' ';
+		}
+		if (deps.back() == ' ')
+			deps.pop_back();
+
 		configureFilesDeps = fmt::format(" | {}", deps);
 	}
 
 	const bool objectiveCxx = m_project->objectiveCxx();
 	for (auto& group : inGroups)
 	{
-		const auto& source = group->sourceFile;
-		const auto& object = group->objectFile;
+		const auto& source = getSafeNinjaPath(group->sourceFile);
+		const auto& object = getSafeNinjaPath(group->objectFile);
 		if (source.empty())
 			continue;
 
@@ -531,5 +552,14 @@ std::string NinjaGenerator::getRuleDeps() const
 #else
 	return "gcc";
 #endif
+}
+
+/*****************************************************************************/
+std::string NinjaGenerator::getSafeNinjaPath(std::string path) const
+{
+	// C$:/
+
+	String::replaceAll(path, ":", "$:");
+	return path;
 }
 }

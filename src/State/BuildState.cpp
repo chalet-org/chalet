@@ -228,6 +228,12 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 }
 
 /*****************************************************************************/
+bool BuildState::isSubChaletTarget() const noexcept
+{
+	return m_isSubChaletTarget;
+}
+
+/*****************************************************************************/
 const IBuildTarget* BuildState::getFirstValidRunTarget() const
 {
 	auto lastTarget = inputs.lastTarget();
@@ -451,6 +457,9 @@ bool BuildState::initializeBuild()
 	Output::setShowCommandOverride(false);
 
 	Diagnostic::infoEllipsis("Configuring build");
+
+	auto chaletTarget = Environment::getString("__CHALET_TARGET");
+	m_isSubChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
 
 	if (!info.initialize())
 		return false;
@@ -1602,4 +1611,5 @@ void BuildState::generateUniqueIdForState()
 	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, toolchainHash);
 	m_uniqueId = Hash::string(hashableTargets);
 }
+
 }

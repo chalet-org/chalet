@@ -315,7 +315,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (error)
 	{
-		if (!runRoute)
+		if (!runRoute && !m_state.isSubChaletTarget())
 		{
 			Output::msgBuildFail();
 			Output::lineBreak();

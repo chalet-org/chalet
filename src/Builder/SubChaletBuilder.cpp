@@ -122,10 +122,14 @@ bool SubChaletBuilder::run()
 	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
-	auto onRunFailure = [&oldPath]() -> bool {
+	auto onRunFailure = [this, &oldPath](const bool inRemoveDir = true) -> bool {
 		Environment::setPath(oldPath);
 		Environment::set("__CHALET_PARENT_CWD", std::string());
 		Environment::set("__CHALET_TARGET", std::string());
+
+		if (inRemoveDir && !m_target.recheck())
+			Files::removeRecursively(m_outputLocation);
+
 		Output::lineBreak();
 		return false;
 	};
@@ -231,10 +235,11 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	}
 
 	// We'll use the native strategy because ninja doesn't like absolute paths on Windows
-
 	cmd.emplace_back("--build-strategy");
-	// cmd.push_back("native");
-	cmd.push_back(m_state.toolchain.getStrategyString());
+	if (m_state.toolchain.strategy() == StrategyType::Ninja)
+		cmd.push_back("native");
+	else
+		cmd.push_back(m_state.toolchain.getStrategyString());
 
 	if (Output::showCommands())
 		cmd.emplace_back("--show-commands");
