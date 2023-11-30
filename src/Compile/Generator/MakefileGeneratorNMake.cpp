@@ -105,41 +105,55 @@ void MakefileGeneratorNMake::reset()
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& file) const
+std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& inFile) const
 {
-	const auto blue = Output::getAnsiStyleForMakefile(Output::theme().build);
-	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
+	// const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
+	// const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		auto outFile = String::getPathFilename(file);
-		printer = getPrinter(fmt::format("{blue}{outFile}{reset}", FMT_ARG(blue), FMT_ARG(outFile), FMT_ARG(reset)));
+		// auto outFile = m_state.paths.getBuildOutputPath(inFile);
+		// auto text = fmt::format("{color}{outFile}{reset}",
+		// 	FMT_ARG(color),
+		// 	FMT_ARG(outFile),
+		// 	FMT_ARG(reset));
+		auto outFile = String::getPathFilename(inFile);
+		printer = getPrinter(outFile);
 	}
 	else
 	{
-		printer = getPrinter(blue);
+		// printer = getPrinter(color);
+		printer = getPrinter(std::string());
 	}
 
 	return fmt::format("@{}", printer);
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& file) const
+std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& inFile) const
 {
-	const auto blue = Output::getAnsiStyleForMakefile(Output::theme().build);
-	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
+	// const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
+	// const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+		const auto description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
-		printer = getPrinter(fmt::format("{blue}{description} {file}{reset}", FMT_ARG(blue), FMT_ARG(description), FMT_ARG(file), FMT_ARG(reset)));
+		auto outputFile = m_state.paths.getBuildOutputPath(inFile);
+		auto text = fmt::format("{} {}", description, outputFile);
+		// auto text = fmt::format("{color}{description} {outputFile}{reset}",
+		// 	FMT_ARG(color),
+		// 	FMT_ARG(description),
+		// 	FMT_ARG(outputFile),
+		// 	FMT_ARG(reset));
+		printer = getPrinter(text);
 	}
 	else
 	{
-		printer = getPrinter(blue);
+		// printer = getPrinter(color);
+		printer = getPrinter(std::string());
 	}
 
 	return fmt::format("@{}", printer);

@@ -25,7 +25,7 @@ private:
 	std::string getObjBuildRecipes(const SourceFileGroupList& inGroups);
 
 	std::string getCompileEchoSources(const std::string& inFile) const;
-	std::string getLinkerEcho() const;
+	std::string getLinkerEcho(const std::string& inFile) const;
 
 	std::string getPchRecipe(const std::string& source, const std::string& object, const std::string& dependency);
 	std::string getRcRecipe(const std::string& source, const std::string& object, const std::string& dependency) const;
@@ -38,5 +38,7 @@ private:
 	std::string getQuietFlag() const;
 	std::string getFallbackMakeDependsCommand(const std::string& inDependencyFile, const std::string& object, const std::string& source) const;
 	std::string getPrinter(const std::string& inPrint = "", const bool inNewLine = false) const;
+
+	size_t m_fileCount = 0;
 };
 }

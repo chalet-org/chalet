@@ -233,7 +233,8 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	// We'll use the native strategy because ninja doesn't like absolute paths on Windows
 
 	cmd.emplace_back("--build-strategy");
-	cmd.push_back("native");
+	// cmd.push_back("native");
+	cmd.push_back(m_state.toolchain.getStrategyString());
 
 	if (Output::showCommands())
 		cmd.emplace_back("--show-commands");

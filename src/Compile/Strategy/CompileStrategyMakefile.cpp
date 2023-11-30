@@ -158,11 +158,6 @@ bool CompileStrategyMakefile::buildMake(const SourceTarget& inProject) const
 
 	auto& hash = m_hashes.at(inProject.name());
 
-#if defined(CHALET_WIN32)
-	auto buildColor = Output::getAnsiStyle(Output::theme().build);
-	std::cout.write(buildColor.data(), buildColor.size());
-#endif
-
 	{
 		command.emplace_back(fmt::format("build_{}", hash));
 		bool result = subprocessMakefile(command);
@@ -212,11 +207,6 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 	}
 
 	auto& hash = m_hashes.at(inProject.name());
-
-	#if defined(CHALET_WIN32)
-	auto buildColor = Output::getAnsiStyle(Output::theme().build);
-	std::cout.write(buildColor.data(), buildColor.size());
-	#endif
 
 	command.emplace_back(std::string());
 

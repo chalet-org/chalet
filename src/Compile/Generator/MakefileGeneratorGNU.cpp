@@ -36,6 +36,7 @@ void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, cons
 
 	const auto& target = inOutputs.target;
 
+	m_fileCount = ((inOutputs.groups.size()) / 10) + 1;
 	const std::string buildRecipes = getBuildRecipes(inOutputs);
 	const auto printer = getPrinter();
 
@@ -172,11 +173,19 @@ std::string MakefileGeneratorGNU::getObjBuildRecipes(const SourceFileGroupList& 
 std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFile) const
 {
 	const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
+	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		printer = getPrinter(fmt::format("   {}{}", color, inFile), true);
+		auto outputFile = m_state.paths.getBuildOutputPath(inFile);
+		auto counter = std::string(m_fileCount, '=');
+		auto text = fmt::format("   [{counter}] {color}{outputFile}{reset}",
+			FMT_ARG(counter),
+			FMT_ARG(color),
+			FMT_ARG(outputFile),
+			FMT_ARG(reset));
+		printer = getPrinter(text, true);
 	}
 	else
 	{
@@ -187,15 +196,24 @@ std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFil
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getLinkerEcho() const
+std::string MakefileGeneratorGNU::getLinkerEcho(const std::string& inFile) const
 {
 	const auto color = Output::getAnsiStyleForMakefile(Output::theme().build);
+	const auto reset = Output::getAnsiStyleForMakefile(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
 	{
-		const std::string description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-		const auto text = fmt::format("{color}   {description} $@", FMT_ARG(color), FMT_ARG(description));
+		const auto description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
+
+		auto outputFile = m_state.paths.getBuildOutputPath(inFile);
+		auto counter = std::string(m_fileCount, '=');
+		const auto text = fmt::format("   [{counter}] {color}{description} {outputFile}{reset}",
+			FMT_ARG(counter),
+			FMT_ARG(color),
+			FMT_ARG(description),
+			FMT_ARG(outputFile),
+			FMT_ARG(reset));
 		printer = getPrinter(text, true);
 	}
 	else
@@ -399,7 +417,7 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 	const auto linkerCommand = String::join(m_toolchain->getOutputTargetCommand(linkerTarget, objects));
 	if (!linkerCommand.empty())
 	{
-		const auto linkerEcho = getLinkerEcho();
+		const auto linkerEcho = getLinkerEcho(linkerTarget);
 		const auto printer = getPrinter("\\n");
 
 		ret = fmt::format(R"makefile(
