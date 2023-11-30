@@ -169,7 +169,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
+	auto proximateOutput = Files::getCanonicalPath(Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation));
 	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
 
 	cmd.emplace_back("--root-dir");
@@ -183,7 +183,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!hasSettings)
 	{
-		auto proximateSettings = Files::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+		auto proximateSettings = Files::getCanonicalPath(Files::getProximatePath(m_state.inputs.settingsFile(), inLocation));
 
 		cmd.emplace_back("--settings-file");
 		cmd.emplace_back(getQuotedPath(proximateSettings));
@@ -218,6 +218,17 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	{
 		cmd.emplace_back("--arch");
 		cmd.push_back(m_state.inputs.architectureRaw());
+	}
+
+#if defined(CHALET_DEBUG)
+	if (Output::showCommands())
+	{
+		cmd.emplace_back("--show-commands");
+	}
+	else
+#endif
+	{
+		cmd.emplace_back("--no-show-commands");
 	}
 
 	cmd.emplace_back("--only-required");

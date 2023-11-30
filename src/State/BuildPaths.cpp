@@ -142,11 +142,17 @@ const std::string& BuildPaths::asmDir() const
 	return m_asmDir;
 }
 
-/*****************************************************************************/
-std::string BuildPaths::intermediateDir() const
+const std::string& BuildPaths::intermediateDir() const
 {
-	const auto& buildDir = buildOutputDir();
-	return fmt::format("{}/int", buildDir);
+	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
+	return m_intermediateDir;
+}
+
+/*****************************************************************************/
+const std::string& BuildPaths::intermediateDirWithPathSep() const
+{
+	chalet_assert(!m_intermediateDirWithPathSep.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
+	return m_intermediateDirWithPathSep;
 }
 
 /*****************************************************************************/
@@ -254,6 +260,9 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 {
 	m_objDir = fmt::format("{}/obj.{}", m_buildOutputDir, inProject.buildSuffix());
 	m_asmDir = fmt::format("{}/asm.{}", m_buildOutputDir, inProject.buildSuffix());
+	m_intermediateDir = fmt::format("{}/int", m_buildOutputDir);
+
+	m_intermediateDirWithPathSep = m_intermediateDir + '/';
 
 	m_depDir = m_objDir;
 }
@@ -303,8 +312,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 
 	ret->directories.push_back(m_buildOutputDir);
 	ret->directories.push_back(objDir());
-
-	// ret->directories.push_back(intermediateDir(inProject));
+	ret->directories.push_back(intermediateDir());
 
 	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
@@ -498,7 +506,7 @@ std::string BuildPaths::getNormalizedOutputPath(const std::string& inPath) const
 /*****************************************************************************/
 std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) const
 {
-	std::string ret = String::getPathFolder(inPath);
+	auto ret = String::getPathFolder(inPath);
 	Path::toUnix(ret, true);
 
 	normalizedPath(ret);
@@ -512,6 +520,10 @@ std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) co
 //
 void BuildPaths::normalizedPath(std::string& outPath) const
 {
+	auto& intDir = intermediateDirWithPathSep();
+	if (String::startsWith(intDir, outPath))
+		outPath = outPath.substr(intDir.size());
+
 	String::replaceAll(outPath, "/../", "/p/");
 
 	if (String::startsWith("../", outPath))
@@ -765,8 +777,6 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 
 			List::addIfDoesNotExist(ret, getNormalizedDirectoryPath(file));
 		}
-
-		List::addIfDoesNotExist(ret, intermediateDir());
 
 		return ret;
 	}

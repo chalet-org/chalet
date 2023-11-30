@@ -81,7 +81,11 @@ bool Output::quietNonBuild()
 
 void Output::setQuietNonBuild(const bool inValue)
 {
+#if defined(CHALET_DEBUG)
+	UNUSED(inValue);
+#else
 	state.quietNonBuild = inValue;
+#endif
 }
 
 /*****************************************************************************/

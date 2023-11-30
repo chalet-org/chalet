@@ -23,18 +23,6 @@ struct CommandAdapterClang
 	StringList getWarningExclusions() const;
 	StringList getSanitizersList() const;
 
-	// StringList getIncludeDirectories() const;
-	// StringList getAdditionalCompilerOptions(const bool inCharsetFlags = false) const;
-	// StringList getAdditionalLinkerOptions() const;
-
-	// StringList getLibDirectories() const;
-	// StringList getLinks(const bool inIncludeCore = true) const;
-
-	// bool createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath);
-	// const std::string& pchSource() const noexcept;
-	// const std::string& pchTarget() const noexcept;
-	// const std::string& pchMinusLocation() const noexcept;
-
 	bool supportsCppCoroutines() const;
 	bool supportsCppConcepts() const;
 	bool supportsFastMath() const;
@@ -44,10 +32,6 @@ struct CommandAdapterClang
 private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;
-
-	// std::string m_pchSource;
-	// std::string m_pchTarget;
-	// std::string m_pchMinusLocation;
 
 	u32 m_versionMajorMinor = 0;
 	u32 m_versionPatch = 0;

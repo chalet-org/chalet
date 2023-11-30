@@ -64,13 +64,11 @@ bool CompilerCxxVisualStudioCL::initialize()
 /*****************************************************************************/
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
-	if (m_state.toolchain.strategy() == StrategyType::MSBuild)
-		return true; // created by the project exporter
+	auto& objDir = m_state.paths.objDir();
+	auto intDir = m_state.paths.intermediateDir();
+	intDir.push_back('/');
 
-	std::string path = m_state.paths.objDir();
-	path.push_back('/');
-
-	return m_msvcAdapter.createPrecompiledHeaderSource(path, path);
+	return m_msvcAdapter.createPrecompiledHeaderSource(intDir, objDir);
 }
 
 /*****************************************************************************/

@@ -28,7 +28,7 @@ struct BuildPaths
 	const std::string& objDir() const;
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
-	std::string intermediateDir() const;
+	const std::string& intermediateDir() const;
 	std::string bundleObjDir(const std::string& inName) const;
 	std::string currentCompileCommands() const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
@@ -76,6 +76,8 @@ private:
 		StringList list;
 	};
 
+	const std::string& intermediateDirWithPathSep() const;
+
 	void normalizedPath(std::string& outPath) const;
 
 	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache);
@@ -102,6 +104,7 @@ private:
 	std::string m_depDir;
 	std::string m_asmDir;
 	std::string m_intermediateDir;
+	std::string m_intermediateDirWithPathSep;
 
 	mutable std::string m_cxxExtension;
 

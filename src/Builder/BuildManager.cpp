@@ -136,13 +136,11 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		// Don't produce any output from this
 		doLazyClean(nullptr, forceRebuild, forceRebuild);
 	}
-	else
+
+	if (!checkIntermediateFiles())
 	{
-		if (!checkIntermediateFiles())
-		{
-			Diagnostic::error("Failed to generate needed intermediate files");
-			return false;
-		}
+		Diagnostic::error("Failed to generate needed intermediate files");
+		return false;
 	}
 
 	if (m_buildRoutes.find(inRoute.type()) == m_buildRoutes.end())
@@ -663,10 +661,6 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 			Files::removeRecursively(dir);
 	}
 
-	bool cleanAll = onClean != nullptr;
-	if (!cleanAll && !checkIntermediateFiles())
-		return false;
-
 	auto ccmdsJson = m_state.paths.currentCompileCommands();
 	if (Files::pathExists(ccmdsJson))
 		Files::remove(ccmdsJson);
@@ -679,7 +673,7 @@ bool BuildManager::doLazyClean(const std::function<void()>& onClean, const bool 
 
 	if (Output::cleanOutput())
 	{
-		if (cleanAll)
+		if (onClean != nullptr)
 			onClean();
 	}
 
