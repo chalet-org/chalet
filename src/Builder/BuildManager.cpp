@@ -882,8 +882,7 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 		chalet_assert(m_asmDumper != nullptr, "");
 
 		StringList fileCache;
-		auto outputs = m_state.paths.getOutputs(inProject, fileCache);
-		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs)))
+		if (!m_asmDumper->dumpProject(inProject, fileCache))
 			return false;
 	}
 
@@ -946,9 +945,8 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 		chalet_assert(m_asmDumper != nullptr, "");
 
 		StringList fileCache;
-		auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 		bool forced = true;
-		if (!m_asmDumper->dumpProject(inProject.name(), std::move(outputs), forced))
+		if (!m_asmDumper->dumpProject(inProject, fileCache, forced))
 			return false;
 	}
 

@@ -42,7 +42,7 @@ template <typename MapType>
 using Dictionary = std::unordered_map<std::string, MapType>;
 
 template <typename MapType>
-using HeapDictionary = std::unordered_map<std::string, Unique<MapType>>;
+using HeapDictionary = Dictionary<Unique<MapType>>;
 
 using StringList = std::vector<std::string>;
 }

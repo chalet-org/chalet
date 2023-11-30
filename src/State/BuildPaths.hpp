@@ -68,7 +68,6 @@ private:
 	explicit BuildPaths(const BuildState& inState);
 
 	bool initialize();
-	void populateFileList(const SourceTarget& inProject);
 
 	struct SourceGroup
 	{
@@ -80,12 +79,12 @@ private:
 
 	void normalizedPath(std::string& outPath) const;
 
-	SourceFileGroupList getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache);
+	SourceFileGroupList getSourceFileGroupList(const SourceGroup& inFiles, const SourceTarget& inProject, StringList& outFileCache);
 	std::string getObjectFile(const std::string& inSource) const;
 	std::string getAssemblyFile(const std::string& inSource) const;
 	StringList getObjectFilesList(const StringList& inFiles, const SourceTarget& inProject) const;
 	StringList getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const;
-	std::unique_ptr<SourceGroup> getFiles(const SourceTarget& inProject) const;
+	Ref<SourceGroup> getFiles(const SourceTarget& inProject) const;
 	SourceGroup getDirectories(const SourceTarget& inProject) const;
 	StringList getFileList(const SourceTarget& inProject) const;
 	StringList getDirectoryList(const SourceTarget& inProject) const;
@@ -95,8 +94,6 @@ private:
 	const StringList m_resourceExts;
 	const StringList m_objectiveCExts;
 	const std::string m_objectiveCppExt;
-
-	HeapDictionary<SourceGroup> m_fileList;
 
 	std::string m_buildOutputDir;
 	std::string m_externalBuildDir;

@@ -5,18 +5,19 @@
 
 #include "Compile/AssemblyDumper.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -84,24 +85,25 @@ bool AssemblyDumper::validate() const
 }
 
 /*****************************************************************************/
-bool AssemblyDumper::dumpProject(const std::string& inProjectName, Unique<SourceOutputs>&& inOutputs, const bool inForced)
+bool AssemblyDumper::dumpProject(const SourceTarget& inTarget, StringList& outCache, const bool inForced)
 {
 	CommandPool::Job target;
-	target.list = getAsmCommands(*inOutputs, inForced);
+
+	{
+		auto outputs = m_state.paths.getOutputs(inTarget, outCache);
+		target.list = getAsmCommands(*outputs, inForced);
+	}
 
 	CommandPool::Settings settings;
 	settings.color = Output::theme().assembly;
 	settings.msvcCommand = false;
 	settings.showCommands = Output::showCommands();
 	settings.quiet = Output::quietNonBuild();
-
-	inOutputs.reset();
-
 	if (!target.list.empty())
 	{
 		if (!m_commandPool.run(target, settings))
 		{
-			Diagnostic::error("There was a problem dumping asm files for: {}", inProjectName);
+			Diagnostic::error("There was a problem dumping asm files for: {}", inTarget.name());
 			return false;
 		}
 

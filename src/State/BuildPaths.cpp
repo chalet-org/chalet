@@ -85,16 +85,6 @@ bool BuildPaths::initialize()
 }
 
 /*****************************************************************************/
-void BuildPaths::populateFileList(const SourceTarget& inProject)
-{
-	if (m_fileList.find(inProject.name()) != m_fileList.end())
-		return;
-
-	auto files = getFiles(inProject);
-	m_fileList.emplace(inProject.name(), std::move(files));
-}
-
-/*****************************************************************************/
 const std::string& BuildPaths::homeDirectory() const noexcept
 {
 	return m_state.inputs.homeDirectory();
@@ -274,9 +264,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 
 	setBuildDirectoriesBasedOnProjectKind(inProject);
 
-	chalet_assert(m_fileList.find(inProject.name()) != m_fileList.end(), "");
-
-	SourceGroup files = *m_fileList.at(inProject.name());
+	auto files = getFiles(inProject);
 	SourceGroup directories = getDirectories(inProject);
 
 	// inProject.isSharedLibrary() ? m_fileListCacheShared : m_fileListCache
@@ -284,9 +272,9 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 	const bool isNotMsvc = !m_state.environment->isMsvc();
 	const bool dumpAssembly = m_state.info.dumpAssembly();
 
-	ret->objectListLinker = getObjectFilesList(files.list, inProject);
-	files.list = String::excludeIf(outFileCache, files.list);
-	ret->groups = getSourceFileGroupList(std::move(files), inProject, outFileCache);
+	ret->objectListLinker = getObjectFilesList(files->list, inProject);
+	files->list = String::excludeIf(outFileCache, files->list);
+	ret->groups = getSourceFileGroupList(*files, inProject, outFileCache);
 
 	StringList objSubDirs = getOutputDirectoryList(directories, objDir());
 	// StringList depSubDirs = getOutputDirectoryList(directories, depDir());
@@ -327,6 +315,11 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 		ret->directories.push_back(asmDir());
 		ret->directories.insert(ret->directories.end(), asmSubDirs.begin(), asmSubDirs.end());
 	}
+
+	// for (auto& dir : ret->directories)
+	// {
+	// 	LOG(dir);
+	// }
 
 	ret->target = getTargetFilename(inProject);
 
@@ -535,11 +528,25 @@ void BuildPaths::normalizedPath(std::string& outPath) const
 /*****************************************************************************/
 /*****************************************************************************/
 /*****************************************************************************/
-SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, const SourceTarget& inProject, StringList& outFileCache)
+SourceFileGroupList BuildPaths::getSourceFileGroupList(const SourceGroup& inFiles, const SourceTarget& inProject, StringList& outFileCache)
 {
 	SourceFileGroupList ret;
 
 	const bool isModule = inProject.cppModules();
+
+	auto makeGroup = [this, &isModule](SourceType type, const std::string& file) {
+		auto group = std::make_unique<SourceFileGroup>();
+		group->type = type;
+		group->objectFile = getObjectFile(file);
+
+		if (type == SourceType::CPlusPlus && isModule)
+			group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
+		else
+			group->dependencyFile = m_state.environment->getDependencyFile(file);
+
+		group->sourceFile = file;
+		return group;
+	};
 
 	for (auto& file : inFiles.list)
 	{
@@ -556,18 +563,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 		if (!m_state.toolchain.canCompileWindowsResources() && type == SourceType::WindowsResource)
 			continue;
 
-		auto group = std::make_unique<SourceFileGroup>();
-		group->type = type;
-		group->objectFile = getObjectFile(file);
-
-		if (type == SourceType::CPlusPlus && isModule)
-			group->dependencyFile = m_state.environment->getModuleDirectivesDependencyFile(file);
-		else
-			group->dependencyFile = m_state.environment->getDependencyFile(file);
-
-		group->sourceFile = std::move(file);
-
-		ret.push_back(std::move(group));
+		ret.push_back(makeGroup(type, file));
 	}
 
 	// don't do this for the pch
@@ -582,14 +578,17 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(SourceGroup&& inFiles, co
 	// add the pch
 	if (!inFiles.pch.empty())
 	{
-		auto group = std::make_unique<SourceFileGroup>();
+		auto makePch = [this, &inProject, &inFiles](const std::string& file) {
+			auto group = std::make_unique<SourceFileGroup>();
 
-		group->type = SourceType::CxxPrecompiledHeader;
-		group->objectFile = getPrecompiledHeaderTarget(inProject);
-		group->dependencyFile = m_state.environment->getDependencyFile(inFiles.pch);
-		group->sourceFile = std::move(inFiles.pch);
+			group->type = SourceType::CxxPrecompiledHeader;
+			group->objectFile = getPrecompiledHeaderTarget(inProject);
+			group->dependencyFile = m_state.environment->getDependencyFile(file);
+			group->sourceFile = file;
+			return group;
+		};
 
-		ret.push_back(std::move(group));
+		ret.push_back(makePch(inFiles.pch));
 	}
 
 	return ret;
@@ -691,8 +690,11 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const
 {
 	StringList ret = inDirectoryList.list;
-	std::for_each(ret.begin(), ret.end(), [inFolder](std::string& str) {
-		str = fmt::format("{}/{}", inFolder, str);
+	std::for_each(ret.begin(), ret.end(), [this, &inFolder](std::string& str) {
+		if (String::startsWith(intermediateDir(), str))
+			str = fmt::format("{}/int", inFolder); // obj.(name)/int
+		else
+			str = fmt::format("{}/{}", inFolder, str);
 	});
 
 	return ret;
@@ -701,9 +703,6 @@ StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList
 /*****************************************************************************/
 StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 {
-	auto manifestResource = getWindowsManifestResourceFilename(inProject);
-	auto iconResource = getWindowsIconResourceFilename(inProject);
-
 	const auto& files = inProject.files();
 	auto& pch = inProject.precompiledHeader();
 	bool usesPch = inProject.usesPrecompiledHeader();
@@ -717,26 +716,25 @@ StringList BuildPaths::getFileList(const SourceTarget& inProject) const
 			continue;
 		}
 
-		if (!Files::pathExists(file))
+		if (!Files::pathExists(file) || !Files::pathIsFile(file))
 		{
 			Diagnostic::warn("File not found: {}", file);
 			continue;
 		}
 
-		if (Files::pathIsFile(file))
-		{
-			List::addIfDoesNotExist(fileList, file);
-		}
+		fileList.emplace_back(file);
 	}
 
+	auto manifestResource = getWindowsManifestResourceFilename(inProject);
 	if (!manifestResource.empty())
 	{
-		List::addIfDoesNotExist(fileList, std::move(manifestResource));
+		fileList.emplace_back(std::move(manifestResource));
 	}
 
+	auto iconResource = getWindowsIconResourceFilename(inProject);
 	if (!iconResource.empty())
 	{
-		List::addIfDoesNotExist(fileList, std::move(iconResource));
+		fileList.emplace_back(std::move(iconResource));
 	}
 
 	return fileList;
@@ -760,8 +758,7 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 				{
 					for (auto& arch : m_state.inputs.universalArches())
 					{
-						auto path = fmt::format("{}_{}", outPath, arch);
-						ret.emplace_back(std::move(path));
+						ret.emplace_back(fmt::format("{}_{}", outPath, arch));
 					}
 				}
 #endif
@@ -788,9 +785,9 @@ StringList BuildPaths::getDirectoryList(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
-std::unique_ptr<BuildPaths::SourceGroup> BuildPaths::getFiles(const SourceTarget& inProject) const
+Ref<BuildPaths::SourceGroup> BuildPaths::getFiles(const SourceTarget& inProject) const
 {
-	auto ret = std::make_unique<SourceGroup>();
+	auto ret = std::make_shared<SourceGroup>();
 	ret->list = getFileList(inProject);
 	ret->pch = inProject.precompiledHeader();
 

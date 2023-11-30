@@ -542,11 +542,6 @@ bool BuildState::initializeBuild()
 		{
 			if (!target->initialize())
 				return false;
-
-			if (target->isSources())
-			{
-				paths.populateFileList(static_cast<SourceTarget&>(*target));
-			}
 		}
 
 		for (auto& target : distribution)
