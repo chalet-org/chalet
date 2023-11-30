@@ -169,8 +169,8 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Files::getCanonicalPath(Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation));
-	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
+	auto buildDir = Files::getCanonicalPath(m_state.paths.buildOutputDir());
+	auto outputDirectory = fmt::format("{}/{}", buildDir, m_target.name());
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(getQuotedPath(inLocation));
@@ -183,7 +183,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!hasSettings)
 	{
-		auto proximateSettings = Files::getCanonicalPath(Files::getProximatePath(m_state.inputs.settingsFile(), inLocation));
+		auto proximateSettings = Files::getCanonicalPath(m_state.inputs.settingsFile());
 
 		cmd.emplace_back("--settings-file");
 		cmd.emplace_back(getQuotedPath(proximateSettings));
