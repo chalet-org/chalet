@@ -103,7 +103,7 @@ bool SubChaletBuilder::run()
 
 	const auto oldPath = Environment::getPath();
 
-	// Environment::set("__CHALET_PARENT_CWD", m_state.inputs.workingDirectory() + '/');
+	Environment::set("__CHALET_PARENT_CWD", m_state.inputs.workingDirectory() + '/');
 	Environment::set("__CHALET_TARGET", "1");
 
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.inputs.appPath()), false);
@@ -124,7 +124,7 @@ bool SubChaletBuilder::run()
 
 	auto onRunFailure = [&oldPath]() -> bool {
 		Environment::setPath(oldPath);
-		// Environment::set("__CHALET_PARENT_CWD", std::string());
+		Environment::set("__CHALET_PARENT_CWD", std::string());
 		Environment::set("__CHALET_TARGET", std::string());
 		Output::lineBreak();
 		return false;
@@ -179,8 +179,8 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto proximateOutput = Files::getProximatePath(m_state.inputs.outputDirectory(), inLocation);
-	auto outputDirectory = fmt::format("{}/{}", proximateOutput, m_target.name());
+	auto buildDir = Files::getCanonicalPath(m_state.paths.buildOutputDir());
+	auto outputDirectory = fmt::format("{}/{}", buildDir, m_target.name());
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(getQuotedPath(inLocation));
@@ -193,7 +193,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	if (!hasSettings)
 	{
-		auto proximateSettings = Files::getProximatePath(m_state.inputs.settingsFile(), inLocation);
+		auto proximateSettings = Files::getCanonicalPath(m_state.inputs.settingsFile());
 
 		cmd.emplace_back("--settings-file");
 		cmd.emplace_back(getQuotedPath(proximateSettings));
@@ -230,11 +230,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 		cmd.push_back(m_state.inputs.architectureRaw());
 	}
 
-	if (!m_state.toolchain.getStrategyString().empty())
-	{
-		cmd.emplace_back("--build-strategy");
-		cmd.push_back(m_state.toolchain.getStrategyString());
-	}
+	// We'll use the native strategy because ninja doesn't like absolute paths on Windows
+
+	cmd.emplace_back("--build-strategy");
+	cmd.push_back("native");
 
 	if (Output::showCommands())
 		cmd.emplace_back("--show-commands");

@@ -45,8 +45,10 @@ bool BuildPaths::initialize()
 {
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
-	auto outputDirectory = m_state.inputs.outputDirectory();
+	m_parentCwd = Environment::getString("__CHALET_PARENT_CWD");
 	auto chaletTarget = Environment::getString("__CHALET_TARGET");
+
+	auto outputDirectory = m_state.inputs.outputDirectory();
 	bool isChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
 	if (!Files::pathExists(outputDirectory))
 	{
@@ -514,6 +516,18 @@ std::string BuildPaths::getNormalizedDirectoryPath(const std::string& inPath) co
 	normalizedPath(ret);
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string BuildPaths::getBuildOutputPath(std::string path) const
+{
+	if (!m_parentCwd.empty())
+	{
+		String::replaceAll(path, m_parentCwd, "");
+		return path;
+	}
+
+	return path;
 }
 
 /*****************************************************************************/

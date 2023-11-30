@@ -181,7 +181,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 						auto dependency = m_state.environment->getDependencyFile(source);
 
 						CommandPool::Cmd out;
-						out.output = fmt::format("{} ({})", source, arch);
+						out.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
 						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch);
 
 						ret.emplace_back(std::move(out));
@@ -204,12 +204,12 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					auto dependency = m_state.environment->getDependencyFile(source);
 
 					CommandPool::Cmd out;
-					out.output = source;
+					out.output = m_state.paths.getBuildOutputPath(source);
 					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, dependency, std::string());
 
 					const auto& cxxExt = m_state.paths.cxxExtension();
 					if (!cxxExt.empty())
-						out.reference = fmt::format("{}.{}", out.output, cxxExt);
+						out.reference = fmt::format("{}.{}", source, cxxExt);
 
 #if defined(CHALET_WIN32)
 					if (m_state.environment->isMsvc())
@@ -262,9 +262,9 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 						m_fileCache.emplace_back(std::move(sourceFile));
 
 						CommandPool::Cmd out;
-						out.output = std::move(source);
+						out.output = m_state.paths.getBuildOutputPath(source);
 						out.command = getRcCompile(source, target);
-						out.reference = out.output;
+						out.reference = source;
 
 						ret.emplace_back(std::move(out));
 					}
@@ -285,9 +285,9 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 						m_fileCache.emplace_back(std::move(sourceFile));
 
 						CommandPool::Cmd out;
-						out.output = std::move(source);
+						out.output = m_state.paths.getBuildOutputPath(source);
 						out.command = getCxxCompile(source, target, group->type);
-						out.reference = out.output;
+						out.reference = source;
 
 #if defined(CHALET_WIN32)
 						if (m_state.environment->isMsvc())
@@ -327,7 +327,7 @@ CommandPool::CmdList NativeGenerator::getLinkCommand(const std::string& inTarget
 		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects);
 
 		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-		out.output = fmt::format("{} {}", label, inTarget);
+		out.output = fmt::format("{} {}", label, m_state.paths.getBuildOutputPath(inTarget));
 
 		ret.emplace_back(std::move(out));
 	}

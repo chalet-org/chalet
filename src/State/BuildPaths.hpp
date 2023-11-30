@@ -56,6 +56,7 @@ struct BuildPaths
 
 	std::string getNormalizedOutputPath(const std::string& inPath) const;
 	std::string getNormalizedDirectoryPath(const std::string& inPath) const;
+	std::string getBuildOutputPath(std::string inPath) const;
 
 	void setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inProject);
 	Unique<SourceOutputs> getOutputs(const SourceTarget& inProject, StringList& outFileCache);
@@ -102,6 +103,8 @@ private:
 	std::string m_asmDir;
 	std::string m_intermediateDir;
 	std::string m_intermediateDirWithPathSep;
+
+	std::string m_parentCwd;
 
 	mutable std::string m_cxxExtension;
 
