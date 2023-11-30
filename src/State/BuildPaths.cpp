@@ -46,6 +46,13 @@ bool BuildPaths::initialize()
 	chalet_assert(!m_initialized, "BuildPaths::initialize called twice.");
 
 	auto outputDirectory = m_state.inputs.outputDirectory();
+	// auto parentCwd = Environment::getString("__CHALET_PARENT_CWD");
+	auto chaletTarget = Environment::getString("__CHALET_TARGET");
+	bool isChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
+	if (isChaletTarget)
+	{
+		outputDirectory = Files::getProximatePath(outputDirectory, m_state.inputs.rootDirectory());
+	}
 	if (!Files::pathExists(outputDirectory))
 	{
 		Files::makeDirectory(outputDirectory);
@@ -55,8 +62,7 @@ bool BuildPaths::initialize()
 	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
 	const auto& arch = m_state.info.targetArchitectureString();
 
-	auto chaletTarget = Environment::getString("__CHALET_TARGET");
-	if (chaletTarget.empty())
+	if (!isChaletTarget)
 	{
 		auto style = m_state.toolchain.buildPathStyle();
 		if (style == BuildPathStyle::ToolchainName && !toolchainPreference.empty())
