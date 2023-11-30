@@ -736,20 +736,24 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
 	Path::toUnix(outputLocation);
 
-	if (inTarget.clean())
+	bool clean = m_state.inputs.route().isClean() || inTarget.clean();
+	bool rebuild = m_state.inputs.route().isRebuild() || inTarget.rebuild();
+
+	if (rebuild)
+	{
+		if (Files::pathExists(outputLocation))
+		{
+			if (!Files::removeRecursively(outputLocation))
+			{
+				Diagnostic::error("There was an error rebuilding the '{}' Chalet project.", inTarget.name());
+				return false;
+			}
+		}
+	}
+	else if (clean)
 	{
 		SubChaletBuilder subChalet(m_state, inTarget);
 		if (!subChalet.run())
-			return false;
-	}
-
-	bool rebuild = true;
-	if (m_state.inputs.route().isRebuild())
-		rebuild = inTarget.rebuild();
-
-	if (rebuild && Files::pathExists(outputLocation))
-	{
-		if (!Files::removeRecursively(outputLocation))
 		{
 			Diagnostic::error("There was an error cleaning the '{}' Chalet project.", inTarget.name());
 			return false;
