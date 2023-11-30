@@ -319,6 +319,17 @@ void CompilerTools::setStrategy(const std::string& inValue) noexcept
 		m_strategy = StrategyType::None;
 }
 
+std::string CompilerTools::getStrategyString() const
+{
+	auto strategyTypes = getStrategyTypes();
+	for (auto& [name, type] : strategyTypes)
+	{
+		if (type == m_strategy)
+			return name;
+	}
+	return std::string();
+}
+
 bool CompilerTools::strategyIsValid(const std::string& inValue) const
 {
 	auto strategyTypes = getStrategyTypes();
