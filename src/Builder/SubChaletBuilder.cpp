@@ -225,19 +225,18 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 		cmd.push_back(m_state.inputs.architectureRaw());
 	}
 
-#if defined(CHALET_DEBUG)
 	if (Output::showCommands())
-	{
 		cmd.emplace_back("--show-commands");
-	}
 	else
-#endif
-	{
 		cmd.emplace_back("--no-show-commands");
-	}
 
 	cmd.emplace_back("--only-required");
-	cmd.emplace_back("build");
+
+	if (m_state.inputs.route().isRebuild() && m_target.rebuild())
+		cmd.emplace_back("rebuild");
+	else
+		cmd.emplace_back("build");
+
 	cmd.emplace_back(inTarget);
 
 	return cmd;
