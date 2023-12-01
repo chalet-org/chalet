@@ -321,8 +321,10 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 		ret.emplace_back("-S");
 		ret.emplace_back(getQuotedPath(inLocation));
 
+		auto buildLocation = Files::getAbsolutePath(outputLocation());
+
 		ret.emplace_back("-B");
-		ret.emplace_back(getQuotedPath(outputLocation()));
+		ret.emplace_back(getQuotedPath(buildLocation));
 	}
 	else
 	{
@@ -662,7 +664,8 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
 	const bool isNinja = usesNinja();
 
-	StringList ret{ getQuotedPath(cmake), "--build", getQuotedPath(inOutputLocation), "-j", std::to_string(maxJobs) };
+	auto buildLocation = Files::getAbsolutePath(inOutputLocation);
+	StringList ret{ getQuotedPath(cmake), "--build", getQuotedPath(buildLocation), "-j", std::to_string(maxJobs) };
 
 	const auto& targets = m_target.targets();
 	if (!targets.empty())
