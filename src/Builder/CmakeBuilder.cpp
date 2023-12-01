@@ -52,17 +52,6 @@ std::string CmakeBuilder::getLocation() const
 }
 
 /*****************************************************************************/
-std::string CmakeBuilder::getOutputLocation() const
-{
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-
-	auto ret = fmt::format("{}/{}", Files::getAbsolutePath(buildOutputDir), m_target.targetFolder());
-	Path::toUnix(ret);
-
-	return ret;
-}
-
-/*****************************************************************************/
 std::string CmakeBuilder::getBuildFile(const bool inForce) const
 {
 	std::string ret;
@@ -106,7 +95,7 @@ bool CmakeBuilder::run()
 
 	// TODO: add doxygen to path?
 
-	m_outputLocation = getOutputLocation();
+	m_outputLocation = m_target.targetFolder();
 
 	const bool isNinja = usesNinja();
 
@@ -130,7 +119,7 @@ bool CmakeBuilder::run()
 	};
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_outputLocation);
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
@@ -166,7 +155,7 @@ bool CmakeBuilder::run()
 
 		// this will control ninja output, and other build outputs should be unaffected
 		bool result = Process::runNinjaBuild(command);
-		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
+		sourceCache.addExternalRebuild(m_outputLocation, result ? "0" : "1");
 		if (!result)
 			return onRunFailure(false);
 
@@ -290,7 +279,7 @@ StringList CmakeBuilder::getGeneratorCommand()
 {
 	if (m_outputLocation.empty())
 	{
-		m_outputLocation = getOutputLocation();
+		m_outputLocation = m_target.targetFolder();
 	}
 
 	auto location = getLocation();
@@ -668,7 +657,7 @@ std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 /*****************************************************************************/
 StringList CmakeBuilder::getBuildCommand() const
 {
-	auto outputLocation = getOutputLocation();
+	auto outputLocation = m_target.targetFolder();
 	return getBuildCommand(outputLocation);
 }
 

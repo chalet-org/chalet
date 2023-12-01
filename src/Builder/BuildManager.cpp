@@ -569,7 +569,6 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 {
 	std::string buildOutputDir = m_state.paths.buildOutputDir();
 
-	const auto& externalBuildDir = m_state.paths.externalBuildDir();
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 
 	const auto& inputBuild = m_state.inputs.buildConfiguration();
@@ -679,9 +678,6 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 	auto ccmdsJson = m_state.paths.currentCompileCommands();
 	if (Files::pathExists(ccmdsJson))
 		Files::remove(ccmdsJson);
-
-	if (Files::pathIsEmpty(externalBuildDir))
-		Files::remove(externalBuildDir);
 
 	if (Files::pathIsEmpty(buildOutputDir))
 		Files::remove(buildOutputDir);

@@ -87,7 +87,7 @@ bool BuildPaths::initialize()
 		m_buildOutputDir = outputDirectory;
 	}
 
-	m_externalBuildDir = fmt::format("{}/{}", m_buildOutputDir, m_state.inputs.externalDirectory());
+	m_externalBuildDir = fmt::format("{}/ext", m_buildOutputDir, m_state.inputs.externalDirectory());
 
 	m_initialized = true;
 
@@ -221,11 +221,14 @@ std::string BuildPaths::getExternalDir(const std::string& inName) const
 /*****************************************************************************/
 std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
 {
-	for (auto& dep : m_state.externalDependencies)
+	for (auto& target : m_state.targets)
 	{
-		if (String::equals(dep->name(), inName))
+		if (!target->isCMake() && !target->isSubChalet())
+			continue;
+
+		if (String::equals(target->name(), inName))
 		{
-			return fmt::format("{}/{}", externalBuildDir(), dep->name());
+			return fmt::format("{}.{}", externalBuildDir(), inName);
 		}
 	}
 

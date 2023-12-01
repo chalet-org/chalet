@@ -7,11 +7,13 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -40,9 +42,8 @@ bool CMakeTarget::initialize()
 	if (!m_state.replaceVariablesInString(m_runExecutable, this))
 		return false;
 
-	m_targetFolder = m_location;
-	if (String::equals('.', m_targetFolder))
-		m_targetFolder = this->name();
+	m_targetFolder = m_state.paths.getExternalBuildDir(this->name());
+	Path::toUnix(m_targetFolder);
 
 	// Note: this technically gets handled by ninja, but for correctness
 	for (auto& target : m_targets)
@@ -92,7 +93,7 @@ const std::string& CMakeTarget::getHash() const
 		auto defines = String::join(m_defines);
 		auto targets = String::join(m_targets);
 
-		auto hashable = Hash::getHashableString(this->name(), m_location, m_targetFolder, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_recheck, m_rebuild, m_clean);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_recheck, m_rebuild, m_clean);
 
 		m_hash = Hash::string(hashable);
 	}

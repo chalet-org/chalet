@@ -5,10 +5,12 @@
 
 #include "State/Target/SubChaletTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonValues.hpp"
 
@@ -32,9 +34,8 @@ bool SubChaletTarget::initialize()
 	if (!m_state.replaceVariablesInString(m_location, this))
 		return false;
 
-	m_targetFolder = m_location;
-	if (String::equals('.', m_targetFolder))
-		m_targetFolder = this->name();
+	m_targetFolder = m_state.paths.getExternalBuildDir(this->name());
+	Path::toUnix(m_targetFolder);
 
 	if (m_targets.empty())
 	{

@@ -44,18 +44,6 @@ std::string SubChaletBuilder::getLocation() const
 }
 
 /*****************************************************************************/
-std::string SubChaletBuilder::getOutputLocation() const
-{
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto location = getLocation();
-
-	auto ret = fmt::format("{}/{}", location, buildOutputDir);
-	Path::toUnix(ret);
-
-	return ret;
-}
-
-/*****************************************************************************/
 std::string SubChaletBuilder::getBuildFile() const
 {
 	std::string ret;
@@ -95,11 +83,9 @@ bool SubChaletBuilder::dependencyHasUpdate() const
 /*****************************************************************************/
 bool SubChaletBuilder::run()
 {
-	m_outputLocation.clear();
-
 	const auto& name = m_target.name();
 
-	m_outputLocation = getOutputLocation();
+	m_outputLocation = m_target.targetFolder();
 
 	const auto oldPath = Environment::getPath();
 
@@ -112,7 +98,7 @@ bool SubChaletBuilder::run()
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_target.targetFolder());
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_outputLocation);
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
@@ -144,7 +130,7 @@ bool SubChaletBuilder::run()
 			if (!result)
 				return onRunFailure();
 		}
-		sourceCache.addExternalRebuild(m_target.targetFolder(), result ? "0" : "1");
+		sourceCache.addExternalRebuild(m_outputLocation, result ? "0" : "1");
 	}
 
 	if (result)
@@ -180,8 +166,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto buildDir = Files::getCanonicalPath(m_state.paths.buildOutputDir());
-	auto outputDirectory = fmt::format("{}/{}", buildDir, m_target.name());
+	auto outputDirectory = Files::getCanonicalPath(m_outputLocation);
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(getQuotedPath(inLocation));

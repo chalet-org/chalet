@@ -25,7 +25,6 @@ public:
 
 private:
 	std::string getLocation() const;
-	std::string getOutputLocation() const;
 	std::string getQuotedPath(const std::string& inPath) const;
 
 	const BuildState& m_state;

@@ -28,7 +28,6 @@ private:
 	StringList getGeneratorCommand(const std::string& inLocation, const std::string& inBuildFile) const;
 
 	std::string getLocation() const;
-	std::string getOutputLocation() const;
 
 	std::string getGenerator() const;
 	std::string getArchitecture() const;
