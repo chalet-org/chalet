@@ -605,13 +605,9 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
 			if (inForceCleanExternals || (subChaletTarget.clean() && inCleanExternals))
-			{
 				didClean |= doSubChaletClean(subChaletTarget);
-			}
 			else
-			{
 				List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
-			}
 		}
 		else if (target->isCMake())
 		{
@@ -639,6 +635,11 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 	}
 
 	buildOutputDir += '/';
+
+	for (auto& location : externalLocations)
+	{
+		String::replaceAll(location, buildOutputDir, "");
+	}
 
 	bool dirExists = Files::pathExists(dirToClean);
 	bool nothingToClean = !dirExists && !didClean;

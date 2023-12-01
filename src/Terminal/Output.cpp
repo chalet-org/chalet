@@ -106,7 +106,11 @@ void Output::setShowCommands(const bool inValue)
 
 void Output::setShowCommandOverride(const bool inValue)
 {
+#if defined(CHALET_DEBUG)
+	UNUSED(inValue);
+#else
 	state.allowCommandsToShow = inValue;
+#endif
 }
 
 /*****************************************************************************/
