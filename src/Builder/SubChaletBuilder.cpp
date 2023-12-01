@@ -85,8 +85,6 @@ bool SubChaletBuilder::run()
 {
 	const auto& name = m_target.name();
 
-	m_outputLocation = m_target.targetFolder();
-
 	const auto oldPath = Environment::getPath();
 
 	Environment::set("__CHALET_PARENT_CWD", m_state.inputs.workingDirectory() + '/');
@@ -98,14 +96,14 @@ bool SubChaletBuilder::run()
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("cwd: {}", oldWorkingDirectory), false);
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_outputLocation);
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(outputLocation());
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
-		Files::removeRecursively(m_outputLocation);
+		Files::removeRecursively(outputLocation());
 
-	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
+	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	auto onRunFailure = [this, &oldPath]() -> bool {
@@ -130,7 +128,7 @@ bool SubChaletBuilder::run()
 			if (!result)
 				return onRunFailure();
 		}
-		sourceCache.addExternalRebuild(m_outputLocation, result ? "0" : "1");
+		sourceCache.addExternalRebuild(outputLocation(), result ? "0" : "1");
 	}
 
 	if (result)
@@ -166,7 +164,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
 
-	auto outputDirectory = Files::getCanonicalPath(m_outputLocation);
+	auto outputDirectory = Files::getCanonicalPath(outputLocation());
 
 	cmd.emplace_back("--root-dir");
 	cmd.push_back(getQuotedPath(inLocation));
@@ -253,6 +251,12 @@ std::string SubChaletBuilder::getQuotedPath(const std::string& inPath) const
 		return fmt::format("\"{}\"", inPath);
 	else
 		return inPath;
+}
+
+/*****************************************************************************/
+const std::string& SubChaletBuilder::outputLocation() const
+{
+	return m_target.targetFolder();
 }
 
 }

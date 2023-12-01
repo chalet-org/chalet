@@ -37,12 +37,12 @@ private:
 
 	std::string getQuotedPath(const std::string& inPath) const;
 
+	const std::string& outputLocation() const;
+
 	bool usesNinja() const;
 
 	const BuildState& m_state;
 	const CMakeTarget& m_target;
-
-	std::string m_outputLocation;
 
 	u32 m_cmakeVersionMajorMinor = 0;
 

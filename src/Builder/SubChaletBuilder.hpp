@@ -27,10 +27,10 @@ private:
 	std::string getLocation() const;
 	std::string getQuotedPath(const std::string& inPath) const;
 
+	const std::string& outputLocation() const;
+
 	const BuildState& m_state;
 	const SubChaletTarget& m_target;
-
-	std::string m_outputLocation;
 
 	bool m_quotedPaths = false;
 };

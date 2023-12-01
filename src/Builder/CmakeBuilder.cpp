@@ -95,8 +95,6 @@ bool CmakeBuilder::run()
 
 	// TODO: add doxygen to path?
 
-	m_outputLocation = m_target.targetFolder();
-
 	const bool isNinja = usesNinja();
 
 	static const char kNinjaStatus[] = "NINJA_STATUS";
@@ -108,7 +106,7 @@ bool CmakeBuilder::run()
 #endif
 
 		if (inRemoveDir && !m_target.recheck())
-			Files::removeRecursively(m_outputLocation);
+			Files::removeRecursively(outputLocation());
 
 		Output::lineBreak();
 
@@ -119,20 +117,20 @@ bool CmakeBuilder::run()
 	};
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(m_outputLocation);
+	bool lastBuildFailed = sourceCache.externalRequiresRebuild(outputLocation());
 	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	if (strategyChanged)
-		Files::removeRecursively(m_outputLocation);
+		Files::removeRecursively(outputLocation());
 
-	bool outDirectoryDoesNotExist = !Files::pathExists(m_outputLocation);
+	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckCmake = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
 		if (outDirectoryDoesNotExist)
-			Files::makeDirectory(m_outputLocation);
+			Files::makeDirectory(outputLocation());
 
 		if (isNinja)
 		{
@@ -144,18 +142,18 @@ bool CmakeBuilder::run()
 		command = getGeneratorCommand();
 
 		{
-			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : m_outputLocation;
+			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : outputLocation();
 			if (!Process::run(command, cwd))
 				return onRunFailure();
 		}
 
 		Output::lineBreak();
 
-		command = getBuildCommand(m_outputLocation);
+		command = getBuildCommand(outputLocation());
 
 		// this will control ninja output, and other build outputs should be unaffected
 		bool result = Process::runNinjaBuild(command);
-		sourceCache.addExternalRebuild(m_outputLocation, result ? "0" : "1");
+		sourceCache.addExternalRebuild(outputLocation(), result ? "0" : "1");
 		if (!result)
 			return onRunFailure(false);
 
@@ -277,11 +275,6 @@ std::string CmakeBuilder::getArchitecture() const
 /*****************************************************************************/
 StringList CmakeBuilder::getGeneratorCommand()
 {
-	if (m_outputLocation.empty())
-	{
-		m_outputLocation = m_target.targetFolder();
-	}
-
 	auto location = getLocation();
 	auto buildFile = getBuildFile();
 
@@ -329,7 +322,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 		ret.emplace_back(getQuotedPath(inLocation));
 
 		ret.emplace_back("-B");
-		ret.emplace_back(getQuotedPath(m_outputLocation));
+		ret.emplace_back(getQuotedPath(outputLocation()));
 	}
 	else
 	{
@@ -757,6 +750,12 @@ bool CmakeBuilder::usesNinja() const
 
 	auto& ninjaExec = m_state.toolchain.ninja();
 	return !ninjaExec.empty() && Files::pathExists(ninjaExec);
+}
+
+/*****************************************************************************/
+const std::string& CmakeBuilder::outputLocation() const
+{
+	return m_target.targetFolder();
 }
 
 }
