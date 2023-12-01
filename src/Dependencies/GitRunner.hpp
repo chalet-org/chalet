@@ -29,8 +29,6 @@ private:
 	void displayCheckingForUpdates(const std::string& inDestination);
 	void displayFetchingMessageStart(const GitDependency& inDependency);
 
-	const std::string& getCheckoutTo(const GitDependency& inDependency);
-
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryHash(const std::string& inRepoPath) const;

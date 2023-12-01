@@ -407,25 +407,6 @@ bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, c
 		}
 	}
 
-	bool hasRepository = !outDependency.repository().empty();
-	bool hasCommit = !outDependency.commit().empty();
-	bool hasTag = !outDependency.tag().empty();
-
-	if (!hasRepository)
-	{
-		Diagnostic::error("{}: 'repository' is required for git dependencies.", m_chaletJson.filename());
-		return false;
-	}
-
-	if (hasCommit && hasTag)
-	{
-		if (!outDependency.tag().empty())
-		{
-			Diagnostic::error("{}: Dependencies cannot contain both 'tag' and 'commit'. Found in '{}'", m_chaletJson.filename(), outDependency.repository());
-			return false;
-		}
-	}
-
 	return true;
 }
 

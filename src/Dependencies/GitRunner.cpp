@@ -226,7 +226,10 @@ void GitRunner::displayCheckingForUpdates(const std::string& inDestination)
 /*****************************************************************************/
 void GitRunner::displayFetchingMessageStart(const GitDependency& inDependency)
 {
-	const auto& checkoutTo = getCheckoutTo(inDependency);
+	const auto& branch = inDependency.branch();
+	const auto& tag = inDependency.tag();
+	const auto& checkoutTo = !tag.empty() ? tag : branch;
+
 	const auto& repository = inDependency.repository();
 
 	auto path = getCleanGitPath(repository);
@@ -290,15 +293,6 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-const std::string& GitRunner::getCheckoutTo(const GitDependency& inDependency)
-{
-	const auto& branch = inDependency.branch();
-	const auto& tag = inDependency.tag();
-
-	return !tag.empty() ? tag : branch;
 }
 
 /*****************************************************************************/

@@ -31,9 +31,31 @@ bool GitDependency::initialize()
 /*****************************************************************************/
 bool GitDependency::validate()
 {
+	if (m_repository.empty())
+	{
+		Diagnostic::error("The git dependency repository was blank for '{}'.", this->name());
+		return false;
+	}
+
 	if (m_destination.empty())
 	{
 		Diagnostic::error("The git dependency destination was blank for '{}'.", this->name());
+		return false;
+	}
+
+	const bool hasBranch = !m_branch.empty();
+	const bool hasTag = !m_tag.empty();
+	const bool hasCommit = !m_commit.empty();
+
+	if (hasTag && hasCommit && hasBranch)
+	{
+		Diagnostic::error("The git dependency '{}' is invalid - can't have a branch, tag and commit.", this->name());
+		return false;
+	}
+
+	if (hasTag && hasCommit)
+	{
+		Diagnostic::error("The git dependency '{}' is invalid - can't have both a tag and commit.", this->name());
 		return false;
 	}
 
