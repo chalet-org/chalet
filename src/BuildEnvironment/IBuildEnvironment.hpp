@@ -94,6 +94,7 @@ protected:
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
 	std::string getVarsPath(const std::string& inUniqueId) const;
+	std::string getCachePath(const std::string& inId) const;
 
 	BuildState& m_state;
 

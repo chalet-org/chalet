@@ -22,7 +22,7 @@ struct VisualStudioEnvironmentScript final : public IEnvironmentScript
 	const std::string& architecture() const noexcept;
 	void setArchitecture(const std::string& inHost, const std::string& inTarget, const StringList& inOptions);
 
-	void setVersion(const std::string& inValue, const VisualStudioVersion inVsVersion);
+	void setVersion(const std::string& inValue, const VisualStudioVersion inVsVersion, const std::string& inCachePath);
 	const std::string& detectedVersion() const noexcept;
 
 	bool isPreset() noexcept;

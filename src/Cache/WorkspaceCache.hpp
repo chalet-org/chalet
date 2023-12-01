@@ -23,8 +23,8 @@ struct WorkspaceCache
 
 	bool createCacheFolder(const CacheType inCacheType);
 	bool exists(const CacheType inCacheType = CacheType::Local) const;
-	std::string getHashPath(const std::string& inIdentifier, const CacheType inCacheType) const;
-	std::string getCachePath(const std::string& inIdentifier, const CacheType inCacheType) const;
+	std::string getHashPath(const std::string& inIdentifier) const;
+	std::string getCachePath(const std::string& inIdentifier) const;
 
 	WorkspaceInternalCacheFile& file() noexcept;
 

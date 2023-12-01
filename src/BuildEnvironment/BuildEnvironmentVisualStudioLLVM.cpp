@@ -53,10 +53,11 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 
 	Timer timer;
 
-	m_config->setVersion(inVersion, m_state.inputs.visualStudioVersion());
+	auto versionCache = getCachePath("vsversion.txt");
+	m_config->setVersion(inVersion, m_state.inputs.visualStudioVersion(), versionCache);
 
-	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
-	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
+	m_config->setEnvVarsFileBefore(getCachePath("original.env"));
+	m_config->setEnvVarsFileAfter(getCachePath("all.env"));
 	m_config->setEnvVarsFileDelta(getVarsPath(m_config->detectedVersion()));
 
 	if (m_config->envVarsFileDeltaExists())
@@ -97,6 +98,7 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 			Environment::setPath(path);
 		}
 	}
+	m_state.cache.file().addExtraHash(String::getPathFilename(versionCache));
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 
 	m_config.reset(); // No longer needed

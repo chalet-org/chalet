@@ -154,8 +154,8 @@ bool BuildEnvironmentIntel::createFromVersion(const std::string& inVersion)
 
 	m_config = std::make_unique<IntelEnvironmentScript>(m_state.inputs);
 
-	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
-	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
+	m_config->setEnvVarsFileBefore(getCachePath("original.env"));
+	m_config->setEnvVarsFileAfter(getCachePath("all.env"));
 	m_config->setEnvVarsFileDelta(getVarsPath("0"));
 
 	if (m_config->envVarsFileDeltaExists())
@@ -191,9 +191,9 @@ bool BuildEnvironmentIntel::createFromVersion(const std::string& inVersion)
 			vsConfig.varsAllArch += "x86";
 
 		vsConfig.varsAllArchOptions = m_state.inputs.archOptions();
-		vsConfig.varsFileOriginal = m_state.cache.getHashPath("msvc_original.env", CacheType::Local);
-		vsConfig.varsFileMsvc = m_state.cache.getHashPath("msvc_all.env", CacheType::Local);
-		vsConfig.varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}_delta.env", vsConfig.varsAllArch), CacheType::Local);
+		vsConfig.varsFileOriginal = m_state.cache.getHashPath("msvc_original.env");
+		vsConfig.varsFileMsvc = m_state.cache.getHashPath("msvc_all.env");
+		vsConfig.varsFileMsvcDelta = m_state.cache.getHashPath(fmt::format("msvc_{}_delta.env", vsConfig.varsAllArch));
 		vsConfig.varsAllArchOptions = m_state.inputs.archOptions();
 		vsConfig.isPreset = isPresetFromInput;
 

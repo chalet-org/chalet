@@ -40,7 +40,7 @@ bool CompileStrategyXcodeBuild::initialize()
 
 	// auto& cacheFile = m_state.cache.file();
 	const auto& cachePathId = m_state.cachePathId();
-	UNUSED(m_state.cache.getCachePath(cachePathId, CacheType::Local));
+	UNUSED(m_state.cache.getCachePath(cachePathId));
 
 	// const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 

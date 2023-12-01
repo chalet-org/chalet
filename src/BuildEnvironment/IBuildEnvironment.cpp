@@ -270,7 +270,7 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 	if (!supportsFlagFile())
 		return true;
 
-	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable), CacheType::Local);
+	std::string flagsFile = m_state.cache.getHashPath(fmt::format("flags_{}.env", inExecutable));
 	if (!Files::pathExists(flagsFile))
 	{
 		if (populateSupportedFlags(inExecutable))
@@ -484,7 +484,13 @@ std::string IBuildEnvironment::getVarsPath(const std::string& inUniqueId) const
 	// auto archString = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 	const auto& uniqueId = String::equals('0', inUniqueId) ? m_state.inputs.toolchainPreferenceName() : inUniqueId;
 
-	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId), CacheType::Local);
+	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId));
+}
+
+/*****************************************************************************/
+std::string IBuildEnvironment::getCachePath(const std::string& inId) const
+{
+	return m_state.cache.getHashPath(fmt::format("{}_{}", this->identifier(), inId));
 }
 
 /*****************************************************************************/

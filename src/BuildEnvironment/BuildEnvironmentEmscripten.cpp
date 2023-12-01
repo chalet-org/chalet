@@ -78,8 +78,8 @@ bool BuildEnvironmentEmscripten::createFromVersion(const std::string& inVersion)
 
 	m_config = std::make_unique<EmscriptenEnvironmentScript>();
 
-	m_config->setEnvVarsFileBefore(m_state.cache.getHashPath(fmt::format("{}_original.env", this->identifier()), CacheType::Local));
-	m_config->setEnvVarsFileAfter(m_state.cache.getHashPath(fmt::format("{}_all.env", this->identifier()), CacheType::Local));
+	m_config->setEnvVarsFileBefore(getCachePath("original.env"));
+	m_config->setEnvVarsFileAfter(getCachePath("all.env"));
 	m_config->setEnvVarsFileDelta(getVarsPath("0"));
 
 	if (m_config->envVarsFileDeltaExists())

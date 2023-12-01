@@ -8,10 +8,10 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
-#include "Process/Process.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -85,20 +85,32 @@ void VisualStudioEnvironmentScript::setArchitecture(const std::string& inHost, c
 }
 
 /*****************************************************************************/
-void VisualStudioEnvironmentScript::setVersion(const std::string& inValue, const VisualStudioVersion inVsVersion)
+void VisualStudioEnvironmentScript::setVersion(const std::string& inValue, const VisualStudioVersion inVsVersion, const std::string& inCachePath)
 {
 	m_rawVersion = inValue;
 	m_vsVersion = inVsVersion;
 
 	if (m_rawVersion.empty())
 	{
-		m_detectedVersion = getVisualStudioVersion(m_vsVersion);
-
-		// If there is more than one version installed, prefer the first version retrieved
-		auto lineBreak = m_detectedVersion.find('\n');
-		if (lineBreak != std::string::npos)
+		m_detectedVersion.clear();
+		if (!Files::pathExists(inCachePath))
 		{
-			m_detectedVersion = m_detectedVersion.substr(0, lineBreak);
+			m_detectedVersion = getVisualStudioVersion(m_vsVersion);
+
+			// If there is more than one version installed, prefer the first version retrieved
+			auto lineBreak = m_detectedVersion.find('\n');
+			if (lineBreak != std::string::npos)
+			{
+				m_detectedVersion = m_detectedVersion.substr(0, lineBreak);
+			}
+
+			std::ofstream(inCachePath) << m_detectedVersion + '\n';
+		}
+		else
+		{
+			m_detectedVersion = Files::getFileContents(inCachePath);
+			while (m_detectedVersion.back() == '\n')
+				m_detectedVersion.pop_back();
 		}
 	}
 	else
@@ -133,10 +145,13 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 	if (!m_envVarsFileDeltaExists)
 	{
-		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) {
+		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) -> std::string {
 			auto temp = Process::runOutput(inCmd);
-			auto split = String::split(temp, "\n");
-			return split.front();
+			auto firstLineBreak = temp.find('\n');
+			if (firstLineBreak != std::string::npos)
+				return temp.substr(0, firstLineBreak);
+			else
+				return std::string();
 		};
 
 		if (isPreset())
@@ -179,7 +194,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 			return false;
 		}
 
-		if (!Files::pathExists(m_visualStudioPath))
+		if (!m_visualStudioPath.empty() && !Files::pathExists(m_visualStudioPath))
 		{
 			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", m_visualStudioPath);
 			return false;

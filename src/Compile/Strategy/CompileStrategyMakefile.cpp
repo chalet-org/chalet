@@ -34,7 +34,7 @@ bool CompileStrategyMakefile::initialize()
 
 	const auto& cachePathId = m_state.cachePathId();
 	auto& cacheFile = m_state.cache.file();
-	m_cacheFolder = m_state.cache.getCachePath(cachePathId, CacheType::Local);
+	m_cacheFolder = m_state.cache.getCachePath(cachePathId);
 
 	const bool cacheExists = Files::pathExists(m_cacheFolder);
 	const bool appVersionChanged = cacheFile.appVersionChanged();

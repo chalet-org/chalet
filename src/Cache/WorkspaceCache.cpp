@@ -38,7 +38,7 @@ bool WorkspaceCache::initialize(const CommandLineInputs& inInputs)
 	m_cacheFolderLocal = fmt::format("{}/.cache", outputDirectory);
 	// m_cacheFolderGlobal = fmt::format("{}/.chalet", m_inputs.homeDirectory());
 
-	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file", CacheType::Local), inInputs.inputFile()))
+	if (!m_cacheFile.initialize(getHashPath("chalet_workspace_file"), inInputs.inputFile()))
 		return false;
 
 	if (!m_cacheFile.save())
@@ -138,11 +138,11 @@ void WorkspaceCache::removeCacheFolder(const CacheType inCacheType)
 }
 
 /*****************************************************************************/
-std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const CacheType inCacheType) const
+std::string WorkspaceCache::getHashPath(const std::string& inIdentifier) const
 {
 	std::string hash = Hash::string(inIdentifier);
 
-	const auto& cacheRef = getCacheRef(inCacheType);
+	const auto& cacheRef = getCacheRef(CacheType::Local);
 	std::string ret = fmt::format("{}/{}", cacheRef, hash);
 
 	// LOG(ret);
@@ -151,9 +151,9 @@ std::string WorkspaceCache::getHashPath(const std::string& inIdentifier, const C
 }
 
 /*****************************************************************************/
-std::string WorkspaceCache::getCachePath(const std::string& inIdentifier, const CacheType inCacheType) const
+std::string WorkspaceCache::getCachePath(const std::string& inIdentifier) const
 {
-	const auto& cacheRef = getCacheRef(inCacheType);
+	const auto& cacheRef = getCacheRef(CacheType::Local);
 	std::string ret;
 
 	if (inIdentifier.empty())

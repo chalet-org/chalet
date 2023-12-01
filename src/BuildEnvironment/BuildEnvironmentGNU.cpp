@@ -392,7 +392,7 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 	if (inCompilerExec.empty())
 		return std::string();
 
-	std::string macrosFile = inState.cache.getHashPath(fmt::format("macros_{}.env", inCompilerExec), CacheType::Local);
+	auto macrosFile = inState.cache.getHashPath(fmt::format("macros_{}.env", inCompilerExec));
 	inState.cache.file().addExtraHash(String::getPathFilename(macrosFile));
 
 	std::string result;
