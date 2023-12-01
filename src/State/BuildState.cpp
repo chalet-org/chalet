@@ -1580,16 +1580,12 @@ void BuildState::generateUniqueIdForState()
 	const auto& targetOsVersion = inputs.osTargetVersion();
 
 	bool showCmds = false;
-	if (toolchain.strategy() != StrategyType::Ninja)
-	{
-		showCmds = Output::showCommands();
-	}
+	// if (toolchain.strategy() == StrategyType::Makefile)
+	// 	showCmds = Output::showCommands();
 
 	bool dumpAssembly = false;
-	/*if (m_impl->environment->type() == ToolchainType::VisualStudio)
-	{
-		dumpAssembly = info.dumpAssembly();
-	}*/
+	// if (m_impl->environment->type() == ToolchainType::VisualStudio)
+	// 	dumpAssembly = info.dumpAssembly();
 
 	std::string targetHash;
 	for (auto& target : targets)
