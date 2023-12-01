@@ -106,7 +106,7 @@ bool SubChaletBuilder::run()
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
 
-	auto onRunFailure = [this, &oldPath]() -> bool {
+	auto onRunFailure = [&oldPath]() -> bool {
 		Environment::setPath(oldPath);
 		Environment::set("__CHALET_PARENT_CWD", std::string());
 		Environment::set("__CHALET_TARGET", std::string());
