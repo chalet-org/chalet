@@ -506,6 +506,9 @@ bool BuildState::initializeBuild()
 			auto objDir = paths.objDir();
 			project.addIncludeDir(std::move(objDir));
 
+			auto intermediateDir = paths.intermediateDir();
+			project.addIncludeDir(std::move(intermediateDir));
+
 			if (!inputs.route().isExport())
 			{
 				const bool isMsvc = environment->isMsvc();

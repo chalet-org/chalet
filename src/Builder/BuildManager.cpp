@@ -561,7 +561,7 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
 {
 	ConfigureFileParser confFileParser(m_state, inProject);
-	return confFileParser.run(m_state.paths.objDir());
+	return confFileParser.run(m_state.paths.intermediateDir());
 }
 
 /*****************************************************************************/
@@ -704,13 +704,13 @@ bool BuildManager::checkIntermediateFiles() const
 		const auto& project = static_cast<const SourceTarget&>(*target);
 		if (isPlatformProjectBuild && !project.configureFiles().empty())
 		{
-			auto outFolder = m_state.paths.objDir();
-#if defined(CHALET_MACOS)
-			if (m_strategy->isXcodeBuild())
-			{
-				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
-			}
-#endif
+			auto outFolder = m_state.paths.intermediateDir();
+			// #if defined(CHALET_MACOS)
+			// 			if (m_strategy->isXcodeBuild())
+			// 			{
+			// 				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
+			// 			}
+			// #endif
 			ConfigureFileParser confFileParser(m_state, project);
 			confFileParser.run(outFolder); // ignore the result
 		}

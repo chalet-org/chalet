@@ -321,11 +321,11 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 				//
 				if (!project.configureFiles().empty())
 				{
-					auto outFolder = state->paths.objDir();
-					if (m_kind == ExportKind::Xcode)
-					{
-						outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
-					}
+					auto outFolder = state->paths.intermediateDir();
+					// if (m_kind == ExportKind::Xcode)
+					// {
+					// 	outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
+					// }
 					ConfigureFileParser confFileParser(*state, project);
 					if (!confFileParser.run(outFolder))
 						return false;
