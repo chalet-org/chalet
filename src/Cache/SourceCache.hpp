@@ -29,8 +29,6 @@ struct SourceCache
 	bool dirty() const;
 	Json asJson() const;
 
-	bool targetHashChanged(const std::string& inTargetName, const std::string& inTargetHash);
-
 	bool updateInitializedTime();
 	bool isNewBuild() const;
 

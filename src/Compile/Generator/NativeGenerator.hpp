@@ -36,7 +36,7 @@ private:
 	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
-	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target);
+	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 
 	BuildState& m_state;
@@ -55,6 +55,5 @@ private:
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
-	bool m_projectHashChanged = false;
 };
 }

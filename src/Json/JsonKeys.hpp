@@ -138,7 +138,6 @@ namespace CacheKeys
 CHALET_CONSTANT(DataVersion) = "v";
 CHALET_CONSTANT(DataArch) = "a";
 CHALET_CONSTANT(DataExternalRebuild) = "e";
-CHALET_CONSTANT(DataTargetRebuild) = "t";
 CHALET_CONSTANT(Hashes) = "h";
 CHALET_CONSTANT(HashBuild) = "b";
 CHALET_CONSTANT(HashTheme) = "t";

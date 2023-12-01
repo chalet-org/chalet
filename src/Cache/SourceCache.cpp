@@ -157,18 +157,6 @@ Json SourceCache::asJson() const
 }
 
 /*****************************************************************************/
-bool SourceCache::targetHashChanged(const std::string& inTargetName, const std::string& inTargetHash)
-{
-	auto existing = dataCache(inTargetName, CacheKeys::DataTargetRebuild);
-	bool result = existing.empty() || existing != inTargetHash;
-	if (result)
-	{
-		addDataCache(inTargetName, CacheKeys::DataTargetRebuild, inTargetHash);
-	}
-	return result;
-}
-
-/*****************************************************************************/
 bool SourceCache::updateInitializedTime()
 {
 	// if (!m_dirty)

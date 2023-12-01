@@ -41,9 +41,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	chalet_assert(m_project != nullptr, "");
 
-	m_projectHashChanged = m_sourceCache.targetHashChanged(m_state.paths.getTargetFilename(*m_project), m_project->getHash());
-
-	m_sourcesChanged = m_pchChanged = m_projectHashChanged;
+	m_sourcesChanged = m_pchChanged = false;
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 	const auto& outputs = inOutputs;
@@ -51,6 +49,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	bool targetExists = Files::pathExists(outputs->target);
 
 	bool dependentchanged = targetExists && checkDependentTargets(inProject);
+
+	m_fileCache.reserve(m_fileCache.size() + outputs->groups.size() + 3);
 
 	{
 		CommandPool::JobList jobs;
@@ -167,6 +167,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 	if (m_project->usesPrecompiledHeader())
 	{
 		const auto& source = m_project->precompiledHeader();
+		auto dependency = m_state.environment->getDependencyFile(source);
 		const auto& objDir = m_state.paths.objDir();
 
 #if defined(CHALET_MACOS)
@@ -180,7 +181,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
-				bool pchChanged = fileChangedOrDependentChanged(source, outObject);
+				bool pchChanged = fileChangedOrDependentChanged(source, outObject, dependency);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
@@ -188,8 +189,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					if (!List::contains(m_fileCache, pchCache))
 					{
 						m_fileCache.emplace_back(std::move(pchCache));
-
-						auto dependency = m_state.environment->getDependencyFile(source);
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
@@ -203,7 +202,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		else
 #endif
 		{
-			bool pchChanged = fileChangedOrDependentChanged(source, pchTarget);
+			bool pchChanged = fileChangedOrDependentChanged(source, pchTarget, dependency);
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
@@ -211,8 +210,6 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				if (!List::contains(m_fileCache, pchCache))
 				{
 					m_fileCache.emplace_back(std::move(pchCache));
-
-					auto dependency = m_state.environment->getDependencyFile(source);
 
 					CommandPool::Cmd out;
 					out.output = m_state.paths.getBuildOutputPath(source);
@@ -252,6 +249,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 	for (auto& group : inGroups)
 	{
 		const auto& source = group->sourceFile;
+		const auto& dependency = group->dependencyFile;
 		const auto& target = group->objectFile;
 
 		if (source.empty())
@@ -263,7 +261,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = fileChangedOrDependentChanged(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -286,7 +284,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = fileChangedOrDependentChanged(source, target);
+				bool sourceChanged = fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -373,20 +371,15 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 }
 
 /*****************************************************************************/
-bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target)
+bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency)
 {
-	// Rebuild all if the target hash is different
-	if (m_projectHashChanged)
-		return true;
-
 	// Check the source file and target (object) if they were changed
 	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
 	if (result)
 		return true;
 
 	// Read through all the dependencies
-	auto dependency = m_state.environment->getDependencyFile(source);
-	if (Files::pathExists(dependency))
+	if (!dependency.empty() && Files::pathExists(dependency))
 	{
 		std::ifstream input(dependency);
 		for (std::string line; std::getline(input, line);)
