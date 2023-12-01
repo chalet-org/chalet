@@ -140,7 +140,7 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 			return false;
 		}
 
-		Output::lineBreak();
+		Output::lineBreak(m_state.isSubChaletTarget());
 	}
 
 	return true;
