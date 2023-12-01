@@ -113,10 +113,12 @@ StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
 
 	const auto& destination = inDependency.destination();
 	const auto& repository = inDependency.repository();
+	const auto& branch = inDependency.branch();
+	const auto& tag = inDependency.tag();
 	const auto& commit = inDependency.commit();
 	const bool submodules = inDependency.submodules();
 
-	const auto& checkoutTo = getCheckoutTo(inDependency);
+	const auto& checkoutTo = !tag.empty() ? tag : branch;
 
 	ret.push_back(m_centralState.tools.git());
 	ret.emplace_back("clone");
@@ -124,15 +126,15 @@ StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
 
 	if (!checkoutTo.empty() && !String::equals("HEAD", checkoutTo))
 	{
-		ret.emplace_back("-b");
+		ret.emplace_back("--branch");
 		ret.push_back(checkoutTo);
 	}
 
-	if (!commit.empty())
+	if (checkoutTo.empty() && !commit.empty())
 	{
 		ret.emplace_back("--single-branch");
 	}
-	else
+	else if (commit.empty())
 	{
 		ret.emplace_back("--depth");
 		ret.emplace_back("1");
