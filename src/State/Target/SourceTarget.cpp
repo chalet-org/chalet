@@ -17,6 +17,7 @@
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -33,6 +34,8 @@ SourceTarget::SourceTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool SourceTarget::initialize()
 {
+	// Timer timer;
+
 	if (!IBuildTarget::initialize())
 		return false;
 
@@ -66,6 +69,8 @@ bool SourceTarget::initialize()
 
 	m_headers = m_files;
 
+	// TODO: This right here, is slow - it accounts for most of the time spent in this method
+	//
 	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
 			return Files::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
 		}))
@@ -73,6 +78,8 @@ bool SourceTarget::initialize()
 		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
+
+	// LOG("--", this->name(), timer.asString());
 
 	if (!processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
 			return Files::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
