@@ -915,7 +915,6 @@ std::string CommandLineInputs::getDefaultOsTargetVersion() const
 			}
 		}
 	}
-	LOG(kDefaultOsTarget);
 	return kDefaultOsTarget;
 #else
 	return std::string();
