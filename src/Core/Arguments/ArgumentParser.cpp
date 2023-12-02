@@ -16,6 +16,7 @@
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
+// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -288,10 +289,10 @@ void ArgumentParser::makeParser()
 		else if (String::equals({ "configure", "c" }, routeString))
 			routeString = "configure,c";
 
-		m_argumentList.emplace_back(ArgumentIdentifier::RouteString, true)
-			.addArgument(Positional::Argument1, routeString)
-			.setHelp("This subcommand.")
-			.setRequired();
+		auto& arg = m_argumentList.emplace_back(ArgumentIdentifier::RouteString, true);
+		arg.addArgument(Positional::Argument1, routeString);
+		arg.setHelp("This subcommand.");
+		arg.setRequired();
 	}
 	else
 	{
@@ -920,47 +921,53 @@ std::string ArgumentParser::getHelp()
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addStringArgument(const ArgumentIdentifier inId, const char* inArg, std::string inDefaultValue)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::String)
-		.addArgument(inArg)
-		.setValue(std::move(inDefaultValue));
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::String);
+	arg.addArgument(inArg);
+	arg.setValue(std::move(inDefaultValue));
+	return arg;
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::String)
-		.addArgument(inShort, inLong)
-		.setValue(std::move(inDefaultValue));
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::String);
+	arg.addArgument(inShort, inLong);
+	arg.setValue(std::move(inDefaultValue));
+	return arg;
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalInteger)
-		.addArgument(inShort, inLong);
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::OptionalInteger);
+	arg.addArgument(inShort, inLong);
+	return arg;
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
-		.addArgument(inArgument)
-		.setValue(inDefaultValue);
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::Boolean);
+	arg.addArgument(inArgument);
+	arg.setValue(inDefaultValue);
+	return arg;
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::OptionalBoolean)
-		.addBooleanArgument(inArgument);
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::OptionalBoolean);
+	arg.addBooleanArgument(inArgument);
+	return arg;
 }
 
 /*****************************************************************************/
 MappedArgument& ArgumentParser::addTwoBoolArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, const bool inDefaultValue)
 {
-	return m_argumentList.emplace_back(inId, Variant::Kind::Boolean)
-		.addArgument(inShort, inLong)
-		.setValue(inDefaultValue);
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::Boolean);
+	arg.addArgument(inShort, inLong);
+	arg.setValue(inDefaultValue);
+	return arg;
 }
 
 /*****************************************************************************/
@@ -1042,136 +1049,136 @@ void ArgumentParser::populateMainArguments()
 		help += "Error!";
 	}
 
-	addBoolArgument(ArgumentIdentifier::SubCommand, "<subcommand>", true)
-		.setHelp(std::move(help));
+	auto& arg = addBoolArgument(ArgumentIdentifier::SubCommand, "<subcommand>", true);
+	arg.setHelp(std::move(help));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addHelpArg()
 {
-	addTwoBoolArguments(ArgumentIdentifier::Help, "-h", "--help", false)
-		.setHelp("Shows help message (if applicable, for the subcommand) and exits.");
+	auto& arg = addTwoBoolArguments(ArgumentIdentifier::Help, "-h", "--help", false);
+	arg.setHelp("Shows help message (if applicable, for the subcommand) and exits.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addVersionArg()
 {
-	addTwoBoolArguments(ArgumentIdentifier::Version, "-v", "--version", false)
-		.setHelp("Prints version information and exits.");
+	auto& arg = addTwoBoolArguments(ArgumentIdentifier::Version, "-v", "--version", false);
+	arg.setHelp("Prints version information and exits.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addInputFileArg()
 {
 	const auto& defaultValue = m_inputs.defaultInputFile();
-	addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file")
-		.setHelp(fmt::format("An input build file to use. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file");
+	arg.setHelp(fmt::format("An input build file to use. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addSettingsFileArg()
 {
 	const auto& defaultValue = m_inputs.defaultSettingsFile();
-	addTwoStringArguments(ArgumentIdentifier::SettingsFile, "-s", "--settings-file")
-		.setHelp(fmt::format("The path to a settings file to use. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::SettingsFile, "-s", "--settings-file");
+	arg.setHelp(fmt::format("The path to a settings file to use. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addFileArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::File, "-f", "--file")
-		.setHelp("The path to a JSON file to examine, if not the local/global settings.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::File, "-f", "--file");
+	arg.setHelp("The path to a JSON file to examine, if not the local/global settings.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addRootDirArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::RootDirectory, "-r", "--root-dir")
-		.setHelp("The root directory to run the build from. [default: \".\"]");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::RootDirectory, "-r", "--root-dir");
+	arg.setHelp("The root directory to run the build from. [default: \".\"]");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addOutputDirArg()
 {
 	const auto& defaultValue = m_inputs.defaultOutputDirectory();
-	addTwoStringArguments(ArgumentIdentifier::OutputDirectory, "-o", "--output-dir")
-		.setHelp(fmt::format("The output directory of the build. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::OutputDirectory, "-o", "--output-dir");
+	arg.setHelp(fmt::format("The output directory of the build. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addExternalDirArg()
 {
 	const auto& defaultValue = m_inputs.defaultExternalDirectory();
-	addTwoStringArguments(ArgumentIdentifier::ExternalDirectory, "-x", "--external-dir")
-		.setHelp(fmt::format("The directory to install external dependencies into. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExternalDirectory, "-x", "--external-dir");
+	arg.setHelp(fmt::format("The directory to install external dependencies into. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addDistributionDirArg()
 {
 	const auto& defaultValue = m_inputs.defaultDistributionDirectory();
-	addTwoStringArguments(ArgumentIdentifier::DistributionDirectory, "-d", "--distribution-dir")
-		.setHelp(fmt::format("The root directory for all distribution bundles. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::DistributionDirectory, "-d", "--distribution-dir");
+	arg.setHelp(fmt::format("The root directory for all distribution bundles. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addToolchainArg()
 {
 	const auto& defaultValue = m_inputs.defaultToolchainPreset();
-	addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain")
-		.setHelp(fmt::format("A toolchain or toolchain preset to use. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::Toolchain, "-t", "--toolchain");
+	arg.setHelp(fmt::format("A toolchain or toolchain preset to use. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addMaxJobsArg()
 {
 	auto jobs = std::thread::hardware_concurrency();
-	addTwoIntArguments(ArgumentIdentifier::MaxJobs, "-j", "--max-jobs")
-		.setHelp(fmt::format("The number of jobs to run during compilation. [default: {}]", jobs));
+	auto& arg = addTwoIntArguments(ArgumentIdentifier::MaxJobs, "-j", "--max-jobs");
+	arg.setHelp(fmt::format("The number of jobs to run during compilation. [default: {}]", jobs));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addEnvFileArg()
 {
 	const auto& defaultValue = m_inputs.defaultEnvFile();
-	addTwoStringArguments(ArgumentIdentifier::EnvFile, "-e", "--env-file")
-		.setHelp(fmt::format("A file to load environment variables from. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::EnvFile, "-e", "--env-file");
+	arg.setHelp(fmt::format("A file to load environment variables from. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addArchArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch")
-		.setHelp("The architecture to target for the build.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::TargetArchitecture, "-a", "--arch");
+	arg.setHelp("The architecture to target for the build.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBuildStrategyArg()
 {
 	const auto& defaultValue = m_inputs.defaultBuildStrategy();
-	addTwoStringArguments(ArgumentIdentifier::BuildStrategy, "-b", "--build-strategy")
-		.setHelp(fmt::format("The build strategy to use for the selected toolchain. [default: \"{}\"]", defaultValue));
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::BuildStrategy, "-b", "--build-strategy");
+	arg.setHelp(fmt::format("The build strategy to use for the selected toolchain. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBuildPathStyleArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::BuildPathStyle, "-p", "--build-path-style")
-		.setHelp("The build path style, with the configuration appended by an underscore.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::BuildPathStyle, "-p", "--build-path-style");
+	arg.setHelp("The build path style, with the configuration appended by an underscore.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addSaveSchemaArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema")
-		.setHelp("Save build & settings schemas to file.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::SaveSchema, "--save-schema");
+	arg.setHelp("Save build & settings schemas to file.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addSaveUserToolchainGloballyArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::SaveUserToolchainGlobally, "--save-user-toolchain-globally")
-		.setHelp("Save the current or generated toolchain globally and make it the default.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::SaveUserToolchainGlobally, "--save-user-toolchain-globally");
+	arg.setHelp("Save the current or generated toolchain globally and make it the default.");
 }
 
 /*****************************************************************************/
@@ -1182,104 +1189,104 @@ void ArgumentParser::addQuietArgs()
 	// --quieter = just build output
 	// --quietest = no output
 
-	addOptionalBoolArgument(ArgumentIdentifier::Quieter, "--quieter")
-		.setHelp("Show only the build output.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::Quieter, "--quieter");
+	arg.setHelp("Show only the build output.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBuildConfigurationArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::BuildConfiguration, "-c", "--configuration")
-		.setHelp("The build configuration to use. [default: \"Release\"]");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::BuildConfiguration, "-c", "--configuration");
+	arg.setHelp("The build configuration to use. [default: \"Release\"]");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBuildTargetArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget)
-		.setHelp("A build target to select. [default: \"all\"]");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget);
+	arg.setHelp("A build target to select. [default: \"all\"]");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addRunTargetArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget)
-		.setHelp("An executable or script target to run.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::BuildTargetName, Positional::Argument2, Arg::BuildTarget);
+	arg.setHelp("An executable or script target to run.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addRunArgumentsArg()
 {
-	addTwoStringArguments(ArgumentIdentifier::RunTargetArguments, Positional::RemainingArguments, Arg::RemainingArguments)
-		.setHelp("The arguments to pass to the run target.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::RunTargetArguments, Positional::RemainingArguments, Arg::RemainingArguments);
+	arg.setHelp("The arguments to pass to the run target.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addSettingsTypeArg()
 {
 	const auto& defaultValue = m_inputs.defaultSettingsFile();
-	addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", false)
-		.setHelp(fmt::format("Use the local settings. [{}]", defaultValue));
+	auto& arg1 = addTwoBoolArguments(ArgumentIdentifier::LocalSettings, "-l", "--local", false);
+	arg1.setHelp(fmt::format("Use the local settings. [{}]", defaultValue));
 
 	const auto& globalSettings = m_inputs.globalSettingsFile();
-	addTwoBoolArguments(ArgumentIdentifier::GlobalSettings, "-g", "--global", false)
-		.setHelp(fmt::format("Use the global settings. [~/{}]", globalSettings));
+	auto& arg2 = addTwoBoolArguments(ArgumentIdentifier::GlobalSettings, "-g", "--global", false);
+	arg2.setHelp(fmt::format("Use the global settings. [~/{}]", globalSettings));
 }
 
 /*****************************************************************************/
 void ArgumentParser::addDumpAssemblyArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--[no-]dump-assembly")
-		.setHelp("Create an .asm dump of each object file during the build.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::DumpAssembly, "--[no-]dump-assembly");
+	arg.setHelp("Create an .asm dump of each object file during the build.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addGenerateCompileCommandsArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--[no-]generate-compile-commands")
-		.setHelp("Generate a compile_commands.json file for Clang tooling use.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::GenerateCompileCommands, "--[no-]generate-compile-commands");
+	arg.setHelp("Generate a compile_commands.json file for Clang tooling use.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addOnlyRequiredArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::OnlyRequired, "--[no-]only-required")
-		.setHelp("Only build targets required by the target given at the command line.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::OnlyRequired, "--[no-]only-required");
+	arg.setHelp("Only build targets required by the target given at the command line.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addShowCommandsArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--[no-]show-commands")
-		.setHelp("Show the commands run during the build.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::ShowCommands, "--[no-]show-commands");
+	arg.setHelp("Show the commands run during the build.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addBenchmarkArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::Benchmark, "--[no-]benchmark")
-		.setHelp("Show all build times - total build time, build targets, other steps.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::Benchmark, "--[no-]benchmark");
+	arg.setHelp("Show all build times - total build time, build targets, other steps.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addLaunchProfilerArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::LaunchProfiler, "--[no-]launch-profiler")
-		.setHelp("If running profile targets, launch the preferred profiler afterwards.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::LaunchProfiler, "--[no-]launch-profiler");
+	arg.setHelp("If running profile targets, launch the preferred profiler afterwards.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addKeepGoingArg()
 {
-	addOptionalBoolArgument(ArgumentIdentifier::KeepGoing, "--[no-]keep-going")
-		.setHelp("If there's a build error, continue as much of the build as possible.");
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::KeepGoing, "--[no-]keep-going");
+	arg.setHelp("If there's a build error, continue as much of the build as possible.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::addSigningIdentityArg()
 {
-	addStringArgument(ArgumentIdentifier::SigningIdentity, "--signing-identity")
-		.setHelp("The code-signing identity to use when bundling the application distribution.");
+	auto& arg = addStringArgument(ArgumentIdentifier::SigningIdentity, "--signing-identity");
+	arg.setHelp("The code-signing identity to use when bundling the application distribution.");
 }
 
 /*****************************************************************************/
@@ -1287,11 +1294,11 @@ void ArgumentParser::addOsTargetNameArg()
 {
 #if defined(CHALET_MACOS)
 	const auto& defaultValue = m_inputs.getDefaultOsTargetName();
-	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name")
-		.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
+	arg.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
-	addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name")
-		.setHelp("The name of the operating system to target the build for.");
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
+	arg.setHelp("The name of the operating system to target the build for.");
 #endif
 }
 
@@ -1300,11 +1307,11 @@ void ArgumentParser::addOsTargetVersionArg()
 {
 #if defined(CHALET_MACOS)
 	const auto& defaultValue = m_inputs.getDefaultOsTargetVersion();
-	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version")
-		.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
+	arg.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
-	addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version")
-		.setHelp("The version of the operating system to target the build for.");
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
+	arg.setHelp("The version of the operating system to target the build for.");
 #endif
 }
 
@@ -1362,20 +1369,23 @@ void ArgumentParser::populateCommonBuildArguments()
 /*****************************************************************************/
 void ArgumentParser::populateBuildArguments()
 {
+	// Timer timer;
 	populateCommonBuildArguments();
 
 	addBuildTargetArg();
+
+	// LOG(timer.asString());
 }
 
 /*****************************************************************************/
 void ArgumentParser::populateInitArguments()
 {
 	const auto templates = m_inputs.getProjectInitializationPresets();
-	addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template")
-		.setHelp(fmt::format("The project template to use during initialization. (ex: {})", String::join(templates, ", ")));
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template");
+	arg1.setHelp(fmt::format("The project template to use during initialization. (ex: {})", String::join(templates, ", ")));
 
-	addTwoStringArguments(ArgumentIdentifier::InitPath, Positional::Argument2, Arg::InitPath, ".")
-		.setHelp("The path of the project to initialize. [default: \".\"]");
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::InitPath, Positional::Argument2, Arg::InitPath, ".");
+	arg2.setHelp("The path of the project to initialize. [default: \".\"]");
 }
 
 /*****************************************************************************/
@@ -1396,9 +1406,9 @@ void ArgumentParser::populateExportArguments()
 	addSigningIdentityArg();
 
 	const auto kinds = m_inputs.getExportKindPresets();
-	addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind)
-		.setHelp(fmt::format("The project kind to export to. (ex: {})", String::join(kinds, ", ")))
-		.setRequired();
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind);
+	arg.setHelp(fmt::format("The project kind to export to. (ex: {})", String::join(kinds, ", ")));
+	arg.setRequired();
 }
 
 /*****************************************************************************/
@@ -1407,8 +1417,8 @@ void ArgumentParser::populateSettingsGetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
-		.setHelp("The config key to get.");
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey);
+	arg.setHelp("The config key to get.");
 }
 
 /*****************************************************************************/
@@ -1417,11 +1427,11 @@ void ArgumentParser::populateSettingsGetKeysArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKeyQuery)
-		.setHelp("The config key to query for.");
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKeyQuery);
+	arg1.setHelp("The config key to query for.");
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
-		.setHelp("Additional query arguments, if applicable.");
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	arg2.setHelp("Additional query arguments, if applicable.");
 }
 
 /*****************************************************************************/
@@ -1430,13 +1440,13 @@ void ArgumentParser::populateSettingsSetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
-		.setHelp("The config key to change.")
-		.setRequired();
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey);
+	arg1.setHelp("The config key to change.");
+	arg1.setRequired();
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue)
-		.setHelp("The config value to change to.")
-		.setRequired();
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue);
+	arg2.setHelp("The config value to change to.");
+	arg2.setRequired();
 }
 
 /*****************************************************************************/
@@ -1445,42 +1455,42 @@ void ArgumentParser::populateSettingsUnsetArguments()
 	addFileArg();
 	addSettingsTypeArg();
 
-	addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey)
-		.setHelp("The config key to remove.")
-		.setRequired();
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKey);
+	arg.setHelp("The config key to remove.");
+	arg.setRequired();
 }
 
 /*****************************************************************************/
 void ArgumentParser::populateConvertArguments()
 {
-	addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file")
-		.setHelp("The path to the build file to convert to another format.");
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::InputFile, "-i", "--input-file");
+	arg1.setHelp("The path to the build file to convert to another format.");
 
-	addTwoStringArguments(ArgumentIdentifier::ConvertFormat, Positional::Argument2, Arg::ConvertFormat)
-		.setHelp("The format to convert the build file to.");
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::ConvertFormat, Positional::Argument2, Arg::ConvertFormat);
+	arg2.setHelp("The format to convert the build file to.");
 }
 
 /*****************************************************************************/
 void ArgumentParser::populateValidateArguments()
 {
-	addTwoStringArguments(ArgumentIdentifier::ValidateSchemaFile, Positional::Argument2, Arg::ValidateSchema)
-		.setHelp("A JSON schema (Draft 7) to validate files against. File requires '$schema'.")
-		.setRequired();
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::ValidateSchemaFile, Positional::Argument2, Arg::ValidateSchema);
+	arg1.setHelp("A JSON schema (Draft 7) to validate files against. File requires '$schema'.");
+	arg1.setRequired();
 
-	addTwoStringArguments(ArgumentIdentifier::ValidateFilesRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
-		.setHelp("File(s) to be validated using the selected schema.")
-		.setRequired();
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::ValidateFilesRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	arg2.setHelp("File(s) to be validated using the selected schema.");
+	arg2.setRequired();
 }
 
 /*****************************************************************************/
 void ArgumentParser::populateQueryArguments()
 {
-	addTwoStringArguments(ArgumentIdentifier::QueryType, Positional::Argument2, Arg::QueryType)
-		.setHelp("The data type to query for.")
-		.setRequired();
+	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::QueryType, Positional::Argument2, Arg::QueryType);
+	arg1.setHelp("The data type to query for.");
+	arg1.setRequired();
 
-	addTwoStringArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments)
-		.setHelp("Data to provide to the query. (architecture: <toolchain-name>)");
+	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	arg2.setHelp("Data to provide to the query. (architecture: <toolchain-name>)");
 }
 
 /*****************************************************************************/
