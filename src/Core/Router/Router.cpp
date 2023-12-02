@@ -168,8 +168,7 @@ bool Router::runRoutesThatRequireState()
 
 	if (centralState != nullptr)
 	{
-		UpdateNotifier updater(*centralState);
-		updater.notifyForUpdates();
+		UpdateNotifier::checkForUpdates(*centralState);
 
 		centralState->saveCaches();
 	}

@@ -23,7 +23,14 @@ UpdateNotifier::UpdateNotifier(const CentralState& inCentralState) :
 }
 
 /*****************************************************************************/
-void UpdateNotifier::notifyForUpdates()
+void UpdateNotifier::checkForUpdates(const CentralState& inCentralState)
+{
+	UpdateNotifier notifier(inCentralState);
+	notifier.checkForUpdates();
+}
+
+/*****************************************************************************/
+void UpdateNotifier::checkForUpdates()
 {
 	if (m_centralState.shouldPerformUpdateCheck())
 	{

@@ -30,7 +30,6 @@ private:
 
 	bool parseTools(Json& inNode);
 #if defined(CHALET_MACOS)
-	std::pair<StringList, bool> getAppleSdks() const;
 	bool detectAppleSdks(const bool inForce = false);
 	bool parseAppleSdks(Json& inNode);
 #endif

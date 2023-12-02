@@ -11,11 +11,12 @@ struct CentralState;
 
 struct UpdateNotifier
 {
-	explicit UpdateNotifier(const CentralState& inCentralState);
-
-	void notifyForUpdates();
+	static void checkForUpdates(const CentralState& inCentralState);
 
 private:
+	explicit UpdateNotifier(const CentralState& inCentralState);
+
+	void checkForUpdates();
 	void showUpdateMessage(const std::string& inOld, const std::string& inNew) const;
 
 	const CentralState& m_centralState;

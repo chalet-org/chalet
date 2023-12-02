@@ -78,7 +78,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 {
 #if defined(CHALET_MACOS)
 	bool needsUpdate = false;
-	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
+	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
 		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
@@ -671,20 +671,7 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 }
 
 #if defined(CHALET_MACOS)
-/*****************************************************************************/
-std::pair<StringList, bool> SettingsJsonParser::getAppleSdks() const
-{
-	// AppleTVOS.platform
-	// AppleTVSimulator.platform
-	// MacOSX.platform
-	// WatchOS.platform
-	// WatchSimulator.platform
-	// iPhoneOS.platform
-	// iPhoneSimulator.platform
-	//
-	const bool commandLineTools = Files::isUsingAppleCommandLineTools();
-	return std::make_pair(CompilerCxxAppleClang::getAllowedSDKTargets(), commandLineTools);
-}
+
 /*****************************************************************************/
 bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 {
@@ -698,15 +685,12 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
 
 	auto xcrun = Files::which("xcrun");
-	auto&& [sdkPaths, commandLineTools] = getAppleSdks();
-
+	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
-			std::string sdkPath = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
-
-			appleSkdsJson[sdk] = std::move(sdkPath);
+			appleSkdsJson[sdk] = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
 			m_jsonFile.setDirty(true);
 		}
 	}
