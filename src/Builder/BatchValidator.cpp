@@ -81,7 +81,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 				return false;
 			}
 
-			validator.setSchema(std::move(schema));
+			validator.setSchema(schema);
 		}
 
 		if (!files.empty())

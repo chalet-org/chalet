@@ -307,11 +307,11 @@ JsonValidator::JsonValidator() :
 JsonValidator::~JsonValidator() = default;
 
 /*****************************************************************************/
-bool JsonValidator::setSchema(Json&& inSchema)
+bool JsonValidator::setSchema(const Json& inSchema)
 {
 	CHALET_TRY
 	{
-		m_impl->validator.set_root_schema(std::move(inSchema));
+		m_impl->validator.set_root_schema(inSchema);
 		return true;
 	}
 	CHALET_CATCH(const std::exception& err)

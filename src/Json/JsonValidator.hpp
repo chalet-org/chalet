@@ -17,7 +17,7 @@ struct JsonValidator
 	CHALET_DISALLOW_COPY_MOVE(JsonValidator);
 	~JsonValidator();
 
-	bool setSchema(Json&& inSchema);
+	bool setSchema(const Json& inSchema);
 
 	bool validate(const Json& inJsonContent, const std::string& inFile, JsonValidationErrors& errors);
 

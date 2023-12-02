@@ -12,6 +12,7 @@
 #include "State/TargetMetadata.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -56,7 +57,7 @@ bool CentralChaletJsonParser::validateAgainstSchema() const
 		JsonFile::saveToFile(jsonSchema, "schema/chalet.schema.json");
 	}
 
-	if (!m_chaletJson.validate(std::move(jsonSchema)))
+	if (!m_chaletJson.validate(jsonSchema))
 		return false;
 
 	return true;

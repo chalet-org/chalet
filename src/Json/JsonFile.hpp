@@ -35,7 +35,7 @@ struct JsonFile
 	void makeNode(const char* inKey, const JsonDataType inType);
 
 	std::string getSchema();
-	bool validate(Json&& inSchemaJson);
+	bool validate(const Json& inSchemaJson);
 
 	template <typename T>
 	bool assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const;

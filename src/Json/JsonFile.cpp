@@ -198,13 +198,13 @@ std::string JsonFile::getSchema()
 }
 
 /*****************************************************************************/
-bool JsonFile::validate(Json&& inSchemaJson)
+bool JsonFile::validate(const Json& inSchemaJson)
 {
 	if (m_filename.empty())
 		return false;
 
 	JsonValidator validator;
-	if (!validator.setSchema(std::move(inSchemaJson)))
+	if (!validator.setSchema(inSchemaJson))
 		return false;
 
 	JsonValidationErrors errors;

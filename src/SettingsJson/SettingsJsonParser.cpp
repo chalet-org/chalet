@@ -56,7 +56,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 	if (!makeSettingsJson(inState))
 		return false;
 
-	if (!m_jsonFile.validate(std::move(schema)))
+	if (!m_jsonFile.validate(schema))
 		return false;
 
 	if (!serializeFromJsonRoot(m_jsonFile.json))
