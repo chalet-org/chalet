@@ -393,15 +393,15 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 
 			line.pop_back();
 
+			// The file didn't change if it's cached, so skip it
 			if (m_dependencyCache.find(line) != m_dependencyCache.end())
 				continue;
 
 			if (m_sourceCache.fileChangedOrDoesNotExist(line))
 				return true;
 
+			// Cache the filename if it didn't change
 			m_dependencyCache.emplace(line, true);
-
-			// LOG(source, line);
 		}
 	}
 
