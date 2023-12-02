@@ -120,33 +120,32 @@ bool BuildEnvironmentEmscripten::readArchitectureTripleFromCompiler()
 	if (compiler.empty())
 		return false;
 
-	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedArch;
-	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
-	{
+	getArchitectureWithCache(cachedArch, compiler, [this, &compiler]() {
 		auto& targetArch = m_state.inputs.targetArchitecture();
+		std::string outArch;
 		if (targetArch.empty())
 		{
-			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
-			if (!String::equals("wasm32", cachedArch))
-				return false;
+			outArch = Process::runOutput({ compiler, "-dumpmachine" });
+			if (!String::equals("wasm32", outArch))
+				return std::string();
 
-			cachedArch = getToolchainTriple(cachedArch);
+			outArch = getToolchainTriple(outArch);
 		}
 		else
 		{
 			if (!String::equals("wasm32", targetArch))
-				return false;
+				return std::string();
 
-			cachedArch = getToolchainTriple(targetArch);
+			outArch = getToolchainTriple(targetArch);
 		}
-	}
+		return outArch;
+	});
 
 	if (cachedArch.empty())
 		return false;
 
 	m_state.info.setTargetArchitecture(cachedArch);
-	sourceCache.addArch(compiler, cachedArch);
 
 	return true;
 }

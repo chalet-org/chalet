@@ -113,83 +113,76 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	if (compiler.empty())
 		return false;
 
-	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedArch;
-	if (sourceCache.archRequriesUpdate(compiler, cachedArch))
-	{
-		auto targetArch = m_state.info.targetArchitectureTriple();
+	getArchitectureWithCache(cachedArch, compiler, [&compiler]() {
+		auto outArch = Process::runOutput({ compiler, "-dumpmachine" });
+		auto firstDash = outArch.find_first_of('-');
 
-		bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-		if (emptyInputArch || !String::contains('-', targetArch))
-		{
-			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
-			auto firstDash = cachedArch.find_first_of('-');
+		bool valid = !outArch.empty() && firstDash != std::string::npos;
+		if (!valid)
+			return std::string();
 
-			bool valid = !cachedArch.empty() && firstDash != std::string::npos;
-			if (!valid)
-				return false;
-
-			auto suffix = cachedArch.substr(firstDash);
-#if defined(CHALET_LINUX)
-			Arch::Cpu arch = m_state.info.targetArchitecture();
-			if (arch == Arch::Cpu::ARMHF)
-			{
-				suffix += "eabihf";
-				targetArch = "arm";
-			}
-			else if (arch == Arch::Cpu::ARM)
-			{
-				suffix += "eabi";
-				targetArch = "arm";
-			}
-			else if (arch == Arch::Cpu::ARM64)
-			{
-				targetArch = "aarch64";
-			}
-#endif
-			cachedArch = fmt::format("{}{}", targetArch, suffix);
-
-#if defined(CHALET_LINUX)
-			auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
-			auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
-
-			bool found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
-			if (!found && String::startsWith("-pc-linux-gnu", suffix))
-			{
-				suffix = suffix.substr(3);
-				cachedArch = fmt::format("{}{}", targetArch, suffix);
-
-				searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
-				searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
-
-				found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
-			}
-
-			if (!found)
-			{
-				cachedArch.clear();
-			}
-#endif
-#if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto darwin = cachedArch.find("apple-darwin");
-			if (darwin != std::string::npos)
-			{
-				cachedArch = cachedArch.substr(0, darwin + 12);
-			}
-#endif
-		}
-		else
-		{
-			cachedArch = targetArch;
-		}
-	}
+		return outArch;
+	});
 
 	if (cachedArch.empty())
 		return false;
 
+	// Take the cached arch, and apply our target architecture
+
+	auto firstDash = cachedArch.find_first_of('-');
+	auto suffix = cachedArch.substr(firstDash);
+#if defined(CHALET_LINUX)
+	Arch::Cpu arch = m_state.info.targetArchitecture();
+	if (arch == Arch::Cpu::ARMHF)
+	{
+		suffix += "eabihf";
+		targetArch = "arm";
+	}
+	else if (arch == Arch::Cpu::ARM)
+	{
+		suffix += "eabi";
+		targetArch = "arm";
+	}
+	else if (arch == Arch::Cpu::ARM64)
+	{
+		targetArch = "aarch64";
+	}
+#endif
+	auto targetArch = m_state.info.targetArchitectureTriple();
+	cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+#if defined(CHALET_LINUX)
+	auto searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+	auto searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+	bool found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
+	if (!found && String::startsWith("-pc-linux-gnu", suffix))
+	{
+		suffix = suffix.substr(3);
+		cachedArch = fmt::format("{}{}", targetArch, suffix);
+
+		searchPathA = fmt::format("/usr/lib/gcc/{}", cachedArch);
+		searchPathB = fmt::format("/usr/lib/gcc-cross/{}", cachedArch);
+
+		found = Files::pathExists(searchPathA) || Files::pathExists(searchPathB);
+	}
+
+	if (!found)
+	{
+		cachedArch.clear();
+	}
+#endif
+#if defined(CHALET_MACOS)
+	// Strip out version in auto-detected mac triple
+	auto darwin = cachedArch.find("apple-darwin");
+	if (darwin != std::string::npos)
+	{
+		cachedArch = cachedArch.substr(0, darwin + 12);
+	}
+#endif
+
 	m_state.info.setTargetArchitecture(cachedArch);
-	sourceCache.addArch(compiler, cachedArch);
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
 	m_isEmbeddedTarget = String::contains(StringList{ "-none-eabi" }, m_state.info.targetArchitectureTriple());

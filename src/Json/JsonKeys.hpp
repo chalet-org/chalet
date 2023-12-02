@@ -136,7 +136,6 @@ CHALET_CONSTANT(OneOf) = "oneOf";
 namespace CacheKeys
 {
 CHALET_CONSTANT(DataVersion) = "v";
-CHALET_CONSTANT(DataArch) = "a";
 CHALET_CONSTANT(DataExternalRebuild) = "e";
 CHALET_CONSTANT(Hashes) = "h";
 CHALET_CONSTANT(HashBuild) = "b";

@@ -295,59 +295,51 @@ void BuildEnvironmentGNU::parseThreadModelFromVersionOutput(const std::string& i
 /*****************************************************************************/
 bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 {
-	const auto& targetTriple = m_state.info.targetArchitectureTriple();
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
-	bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
-	if (emptyInputArch || !String::contains('-', targetTriple))
-	{
-		auto& sourceCache = m_state.cache.file().sources();
-		std::string cachedArch;
-		if (sourceCache.archRequriesUpdate(compiler, cachedArch))
-		{
-			cachedArch = Process::runOutput({ compiler, "-dumpmachine" });
+	std::string cachedArch;
+	getArchitectureWithCache(cachedArch, compiler, [&compiler]() {
+		auto outArch = Process::runOutput({ compiler, "-dumpmachine" });
 
-			// Make our corrections here
-			//
+		// Make our corrections here
+		//
 #if defined(CHALET_MACOS)
-			// Strip out version in auto-detected mac triple
-			auto darwin = cachedArch.find("apple-darwin");
-			if (darwin != std::string::npos)
-			{
-				cachedArch = cachedArch.substr(0, darwin + 12);
-			}
+		// Strip out version in auto-detected mac triple
+		std::string search("apple-darwin");
+		auto darwin = outArch.find(search);
+		if (darwin != std::string::npos)
+		{
+			outArch = outArch.substr(0, darwin + search.size());
+		}
 #else
-			// Note: Standalone "mingw32" is used in 32-bit TDM GCC MinGW builds for some reason
-			if (String::equals("mingw32", cachedArch))
-			{
-				cachedArch = "i686-pc-mingw32";
-			}
+				// Note: Standalone "mingw32" is used in 32-bit TDM GCC MinGW builds for some reason
+				if (String::equals("mingw32", cachedArch))
+				{
+					cachedArch = "i686-pc-mingw32";
+				}
 #endif
-		}
+		return outArch;
+	});
 
-		std::string archFromInfo = m_state.info.targetArchitectureString();
-		if (String::equals("armhf", archFromInfo))
-		{
-			archFromInfo = "arm";
-		}
+	auto archFromInfo = m_state.info.targetArchitectureString();
+	if (String::equals("armhf", archFromInfo))
+		archFromInfo = "arm";
 
-		if (!emptyInputArch && !String::startsWith(archFromInfo, cachedArch))
-		{
-			auto expectedArch = Arch::from(cachedArch);
-			Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
-			/*if (m_genericGcc)
+	if (!archFromInfo.empty() && !String::startsWith(archFromInfo, cachedArch))
+	{
+		auto expectedArch = Arch::from(cachedArch);
+		Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
+		/*if (m_genericGcc)
 			{
 				// const auto& arch = m_state.info.targetArchitectureString();
 				// auto name = m_state.inputs.toolchainPreferenceName();
 				// String::replaceAll(name, arch, expectedArch.str);
 				// m_state.inputs.setToolchainPreferenceName(std::move(name));
 			}*/
-			return false;
-		}
-
-		m_state.info.setTargetArchitecture(cachedArch);
-		sourceCache.addArch(compiler, cachedArch);
+		return false;
 	}
+
+	m_state.info.setTargetArchitecture(cachedArch);
 
 	m_isWindowsTarget = String::contains(StringList{ "windows", "win32", "msvc", "mingw32", "w64" }, m_state.info.targetArchitectureTriple());
 	m_isEmbeddedTarget = String::contains(StringList{ "-none-eabi" }, m_state.info.targetArchitectureTriple());

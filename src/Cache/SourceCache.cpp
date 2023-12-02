@@ -60,12 +60,6 @@ void SourceCache::addVersion(const std::string& inExecutable, const std::string&
 }
 
 /*****************************************************************************/
-void SourceCache::addArch(const std::string& inExecutable, const std::string& inValue)
-{
-	addDataCache(inExecutable, CacheKeys::DataArch, inValue);
-}
-
-/*****************************************************************************/
 void SourceCache::addExternalRebuild(const std::string& inPath, const std::string& inValue)
 {
 	addDataCache(inPath, CacheKeys::DataExternalRebuild, inValue);
@@ -76,7 +70,7 @@ const std::string& SourceCache::dataCache(const std::string& inMainKey, const ch
 {
 	if (m_dataCache.find(inMainKey) == m_dataCache.end())
 	{
-		m_dataCache[inMainKey] = {};
+		m_dataCache[inMainKey] = Dictionary<std::string>();
 	}
 
 	auto& data = m_dataCache.at(inMainKey);
@@ -261,14 +255,6 @@ void SourceCache::markForLater(const std::string& inFile)
 bool SourceCache::versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
 {
 	outExistingValue = dataCache(inFile, CacheKeys::DataVersion);
-	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
-	return result;
-}
-
-/*****************************************************************************/
-bool SourceCache::archRequriesUpdate(const std::string& inFile, std::string& outExistingValue)
-{
-	outExistingValue = dataCache(inFile, CacheKeys::DataArch);
 	bool result = outExistingValue.empty() || fileChangedOrDoesNotExist(inFile);
 	return result;
 }

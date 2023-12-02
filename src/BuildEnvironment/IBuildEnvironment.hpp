@@ -93,6 +93,8 @@ protected:
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
+	void getArchitectureWithCache(std::string& outArch, const std::string& inExecutable, const std::function<std::string()>& onGet);
+
 	std::string getVarsPath(const std::string& inUniqueId) const;
 	std::string getCachePath(const std::string& inId) const;
 

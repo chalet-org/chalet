@@ -23,7 +23,6 @@ struct SourceCache
 	bool canRemoveCachedFolder() const noexcept;
 
 	void addVersion(const std::string& inExecutable, const std::string& inValue);
-	void addArch(const std::string& inExecutable, const std::string& inValue);
 	void addExternalRebuild(const std::string& inPath, const std::string& inValue);
 
 	bool dirty() const;
@@ -40,7 +39,6 @@ struct SourceCache
 	bool fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const;
 
 	bool versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
-	bool archRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
 	bool externalRequiresRebuild(const std::string& inPath);
 
 	void markForLater(const std::string& inFile);
