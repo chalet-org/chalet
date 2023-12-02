@@ -299,7 +299,7 @@ uintmax_t Files::getPathSize(const std::string& inPath)
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("get directory size: {}", inPath));
 
-		const auto path = fs::path{ inPath };
+		auto path = fs::path{ inPath };
 		uintmax_t ret = 0;
 		if (fs::is_directory(path))
 		{
@@ -650,7 +650,7 @@ bool Files::pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& 
 // Should match:
 //   https://www.digitalocean.com/community/tools/glob?comments=true&glob=src%2F%2A%2A%2F%2A.cpp&matches=false&tests=src&tests=src%2Fmain.cpp&tests=src%2Fpch.hpp&tests=src%2Ffoo&tests=src%2Ffoo%2Ffoo.cpp&tests=src%2Ffoo%2Ffoo.hpp&tests=src%2Fbar&tests=src%2Fbar%2Fbar&tests=src%2Fbar%2Fbar%2Fbar.cpp&tests=src%2Fbar%2Fbar%2Fbar.hpp
 //
-bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const GlobCallback& onFound)
 {
 	if (onFound == nullptr)
 		return false;
@@ -719,46 +719,37 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			pattern = basePath + '/' + pattern;
 	}
 
-	auto matchIsValid = [&inSettings](const fs::path& inmatch) -> bool {
-		bool isDirectory = fs::is_directory(inmatch);
-		bool isRegularFile = fs::is_regular_file(inmatch);
-
-		if (inSettings == GlobMatch::Files && isDirectory)
+	static auto matchIsValid = [](const fs::directory_entry& path, const GlobMatch& settings) -> bool {
+		bool isDirectory = path.is_directory();
+		if (settings == GlobMatch::Files && isDirectory)
 			return false;
 
-		if (inSettings == GlobMatch::Folders && isRegularFile)
+		bool isRegularFile = path.is_regular_file();
+		if (settings == GlobMatch::Folders && isRegularFile)
 			return false;
 
 		return isRegularFile || isDirectory;
 	};
 
-	if (exactMatch)
+	constexpr auto reOptions = std::regex_constants::match_default;
+	std::regex re(pattern);
+	for (auto& it : fs::recursive_directory_iterator(basePath))
 	{
-		std::regex re(pattern);
-		for (auto& it : fs::recursive_directory_iterator(basePath))
+		if (matchIsValid(it, inSettings))
 		{
-			const auto& fsPath = it.path();
-			if (matchIsValid(fsPath))
+			auto p = it.path().string();
+#if defined(CHALET_WIN32)
+			Path::toUnix(p);
+#endif
+			if (exactMatch)
 			{
-				auto p = fsPath.string();
-				Path::toUnix(p);
-				if (std::regex_match(p, re, std::regex_constants::match_default))
-					onFound(std::move(p));
+				if (std::regex_match(p.begin(), p.end(), re, reOptions))
+					onFound(p);
 			}
-		}
-	}
-	else
-	{
-		std::regex re(pattern);
-		for (auto& it : fs::recursive_directory_iterator(basePath))
-		{
-			const auto& fsPath = it.path();
-			if (matchIsValid(fsPath))
+			else
 			{
-				auto p = fsPath.string();
-				Path::toUnix(p);
-				if (std::regex_search(p, re, std::regex_constants::match_default))
-					onFound(std::move(p));
+				if (std::regex_search(p.begin(), p.end(), re, reOptions))
+					onFound(p);
 			}
 		}
 	}
@@ -767,7 +758,7 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 }
 
 /*****************************************************************************/
-bool Files::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const GlobCallback& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
@@ -779,13 +770,13 @@ bool Files::forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSet
 }
 
 /*****************************************************************************/
-bool Files::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const GlobCallback& onFound)
 {
 	return forEachGlobMatch(fmt::format("{}/{}", inPath, inPattern), inSettings, onFound);
 }
 
 /*****************************************************************************/
-bool Files::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound)
+bool Files::forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const GlobCallback& onFound)
 {
 	for (auto& pattern : inPatterns)
 	{
@@ -797,12 +788,12 @@ bool Files::forEachGlobMatch(const std::string& inPath, const StringList& inPatt
 }
 
 /*****************************************************************************/
-bool Files::addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings)
+bool Files::addPathToListWithGlob(const std::string& inValue, StringList& outList, const GlobMatch inSettings)
 {
 	if (inValue.find_first_of("*{") != std::string::npos)
 	{
-		if (!Files::forEachGlobMatch(inValue, inSettings, [&outList](std::string inPath) {
-				outList.emplace_back(std::move(inPath));
+		if (!Files::forEachGlobMatch(inValue, inSettings, [&outList](const std::string& inPath) {
+				outList.emplace_back(inPath);
 			}))
 			return false;
 
@@ -810,7 +801,7 @@ bool Files::addPathToListWithGlob(std::string&& inValue, StringList& outList, co
 	}
 	else
 	{
-		List::addIfDoesNotExist(outList, std::move(inValue));
+		List::addIfDoesNotExist(outList, inValue);
 	}
 
 	return true;

@@ -256,7 +256,7 @@ bool Router::routeValidate()
 		auto& arguments = *argumentsOpt;
 		for (const auto& val : arguments)
 		{
-			if (!Files::addPathToListWithGlob(std::string(val), files, GlobMatch::FilesAndFolders))
+			if (!Files::addPathToListWithGlob(val, files, GlobMatch::FilesAndFolders))
 				return false;
 		}
 	}

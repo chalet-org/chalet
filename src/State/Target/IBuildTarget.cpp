@@ -71,14 +71,16 @@ bool IBuildTarget::replaceVariablesInPathList(StringList& outList) const
 }
 
 /*****************************************************************************/
-bool IBuildTarget::processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const
+bool IBuildTarget::expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const
 {
-	if (!replaceVariablesInPathList(inList))
+	StringList list = outList;
+	if (!replaceVariablesInPathList(list))
 		return false;
 
-	for (auto&& val : inList)
+	outList.clear();
+	for (const auto& val : list)
 	{
-		if (!onProcess(std::move(val)))
+		if (!Files::addPathToListWithGlob(val, outList, inSettings))
 			return false;
 	}
 

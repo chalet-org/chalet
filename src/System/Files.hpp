@@ -11,6 +11,8 @@ namespace chalet
 {
 namespace Files
 {
+using GlobCallback = std::function<void(const std::string&)>;
+
 std::string getPlatformExecutableExtension();
 std::string getPlatformSharedLibraryExtension();
 std::string getPlatformFrameworkExtension();
@@ -46,12 +48,12 @@ bool copyRename(const std::string& inFrom, const std::string& inTo, const bool i
 bool moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions = fs::copy_options::overwrite_existing);
 bool rename(const std::string& inFrom, const std::string& inTo, const bool inSkipNonExisting = false);
 
-bool forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
-bool forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
-bool forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
-bool forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const std::function<void(std::string)>& onFound);
+bool forEachGlobMatch(const std::string& inPattern, const GlobMatch inSettings, const GlobCallback& onFound);
+bool forEachGlobMatch(const StringList& inPatterns, const GlobMatch inSettings, const GlobCallback& onFound);
+bool forEachGlobMatch(const std::string& inPath, const std::string& inPattern, const GlobMatch inSettings, const GlobCallback& onFound);
+bool forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, const GlobMatch inSettings, const GlobCallback& onFound);
 
-bool addPathToListWithGlob(std::string&& inValue, StringList& outList, const GlobMatch inSettings);
+bool addPathToListWithGlob(const std::string& inValue, StringList& outList, const GlobMatch inSettings);
 
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 std::string readShebangFromFile(const std::string& inFile);

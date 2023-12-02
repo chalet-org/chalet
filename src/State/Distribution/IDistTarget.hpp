@@ -6,6 +6,7 @@
 #pragma once
 
 #include "State/Distribution/DistTargetType.hpp"
+#include "Utility/GlobMatch.hpp"
 
 namespace chalet
 {
@@ -43,7 +44,7 @@ struct IDistTarget
 
 protected:
 	bool replaceVariablesInPathList(StringList& outList) const;
-	bool processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const;
+	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
 	bool processIncludeExceptions(StringList& outList) const;
 
 	const BuildState& m_state;

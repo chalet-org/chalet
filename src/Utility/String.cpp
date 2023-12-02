@@ -180,14 +180,12 @@ void String::replaceAll(std::string& outString, const char inFrom, const std::st
 		outString.replace(pos, 1, inTo);
 		pos += inTo.length();
 	}
-
-	return;
 }
 
 /*****************************************************************************/
 void String::replaceAll(std::string& outString, const char inFrom, const char inTo)
 {
-	return std::replace(outString.begin(), outString.end(), inFrom, inTo);
+	std::replace(outString.begin(), outString.end(), inFrom, inTo);
 }
 
 /*****************************************************************************/

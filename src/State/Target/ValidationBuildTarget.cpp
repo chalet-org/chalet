@@ -32,9 +32,8 @@ bool ValidationBuildTarget::initialize()
 		return false;
 
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::FilesAndFolders);
-		}))
+
+	if (!expandGlobPatternsInList(m_files, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the files to validate for the '{}' target. {}.", this->name(), globMessage);
 		return false;

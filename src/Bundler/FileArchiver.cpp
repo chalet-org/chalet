@@ -193,12 +193,12 @@ StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 			}
 			else
 			{
-				Files::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
-					List::addIfDoesNotExist(ret, std::move(inPath));
+				Files::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
+					List::addIfDoesNotExist(ret, inPath);
 				});
 
-				Files::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](std::string inPath) {
-					List::addIfDoesNotExist(ret, std::move(inPath));
+				Files::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
+					List::addIfDoesNotExist(ret, inPath);
 				});
 			}
 		}

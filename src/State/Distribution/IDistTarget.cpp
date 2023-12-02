@@ -7,6 +7,7 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildState.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -96,14 +97,16 @@ bool IDistTarget::replaceVariablesInPathList(StringList& outList) const
 }
 
 /*****************************************************************************/
-bool IDistTarget::processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const
+bool IDistTarget::expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const
 {
-	if (!replaceVariablesInPathList(inList))
+	StringList list = outList;
+	if (!replaceVariablesInPathList(list))
 		return false;
 
-	for (auto&& val : inList)
+	outList.clear();
+	for (const auto& val : list)
 	{
-		if (!onProcess(std::move(val)))
+		if (!Files::addPathToListWithGlob(val, outList, inSettings))
 			return false;
 	}
 

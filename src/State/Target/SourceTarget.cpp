@@ -17,7 +17,7 @@
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
+// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -43,25 +43,19 @@ bool SourceTarget::initialize()
 		m_treatWarningsAsErrors = true;
 
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!processEachPathList(std::move(m_appleFrameworkPaths), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_appleFrameworkPaths, GlobMatch::Folders);
-		}))
+	if (!expandGlobPatternsInList(m_appleFrameworkPaths, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
-	if (!processEachPathList(std::move(m_libDirs), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_libDirs, GlobMatch::Folders);
-		}))
+	if (!expandGlobPatternsInList(m_libDirs, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the lib directories for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
-	if (!processEachPathList(std::move(m_includeDirs), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_includeDirs, GlobMatch::Folders);
-		}))
+	if (!expandGlobPatternsInList(m_includeDirs, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the include directories for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -71,9 +65,7 @@ bool SourceTarget::initialize()
 
 	// TODO: This right here, is slow - it accounts for most of the time spent in this method
 	//
-	if (!processEachPathList(std::move(m_files), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_files, GlobMatch::Files);
-		}))
+	if (!expandGlobPatternsInList(m_files, GlobMatch::Files))
 	{
 		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -81,17 +73,13 @@ bool SourceTarget::initialize()
 
 	// LOG("--", this->name(), timer.asString());
 
-	if (!processEachPathList(std::move(m_fileExcludes), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_fileExcludes, GlobMatch::FilesAndFolders);
-		}))
+	if (!expandGlobPatternsInList(m_fileExcludes, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the excluded files for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
-	if (!processEachPathList(std::move(m_copyFilesOnRun), [this](std::string&& inValue) {
-			return Files::addPathToListWithGlob(std::move(inValue), m_copyFilesOnRun, GlobMatch::FilesAndFolders);
-		}))
+	if (!expandGlobPatternsInList(m_copyFilesOnRun, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -852,11 +840,13 @@ StringList SourceTarget::getHeaderFiles() const
 	// Used as a last resort (right now, in project export)
 
 	StringList headers = m_headers;
-	if (!processEachPathList(std::move(headers), [&headers](std::string&& inValue) {
-			auto header = String::getPathFolderBaseName(inValue);
-			header += ".{h,hh,hpp,hxx,H,inl,i,ii,ixx,ipp,txx,tpp,tpl,h\\+\\+}";
-			return Files::addPathToListWithGlob(std::move(header), headers, GlobMatch::Files);
-		}))
+	for (auto& file : headers)
+	{
+		file = String::getPathFolderBaseName(file);
+		file += ".{h,hh,hpp,hxx,H,inl,i,ii,ixx,ipp,txx,tpp,tpl,h\\+\\+}";
+	}
+
+	if (!expandGlobPatternsInList(headers, GlobMatch::Files))
 		return StringList{};
 
 	return headers;

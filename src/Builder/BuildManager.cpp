@@ -921,20 +921,22 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 
 	if (Files::pathExists(buildOutputDir))
 	{
+		std::error_code ec;
 		fs::recursive_directory_iterator it(buildOutputDir);
 		fs::recursive_directory_iterator itEnd;
 
 		while (it != itEnd)
 		{
-			std::error_code ec;
 			const auto& path = it->path();
 
-			if (fs::is_directory(path, ec) && fs::is_empty(path, ec))
+			if (it->is_directory() && fs::is_empty(path, ec))
 			{
 				auto pth = path;
 				++it;
 
+				ec.clear();
 				fs::remove(pth, ec);
+				ec.clear();
 			}
 			else
 			{

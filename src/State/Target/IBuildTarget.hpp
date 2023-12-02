@@ -6,6 +6,7 @@
 #pragma once
 
 #include "State/Target/BuildTargetType.hpp"
+#include "Utility/GlobMatch.hpp"
 
 namespace chalet
 {
@@ -45,7 +46,7 @@ struct IBuildTarget
 
 protected:
 	bool replaceVariablesInPathList(StringList& outList) const;
-	bool processEachPathList(StringList inList, std::function<bool(std::string&& inValue)> onProcess) const;
+	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
 
 	const BuildState& m_state;
 
