@@ -16,7 +16,6 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
-#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -75,10 +74,10 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		auto targetHash = Hash::uint64(outputs->target);
-		if (compileTarget && !List::contains(m_fileCache, targetHash))
+		auto& toCache = outputs->target;
+		if (compileTarget && m_fileCache.find(toCache) == m_fileCache.end())
 		{
-			m_fileCache.push_back(targetHash);
+			m_fileCache.emplace(toCache, true);
 
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getLinkCommand(outputs->target, outputs->objectListLinker);
@@ -185,10 +184,10 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
-					auto pchCache = Hash::uint64(fmt::format("{}/{}", objDir, intermediateSource));
-					if (!List::contains(m_fileCache, pchCache))
+					auto toCache = fmt::format("{}/{}", objDir, intermediateSource);
+					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace_back(std::move(pchCache));
+						m_fileCache.emplace(toCache, true);
 
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
@@ -206,10 +205,10 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
-				auto pchCache = Hash::uint64(fmt::format("{}/{}", objDir, source));
-				if (!List::contains(m_fileCache, pchCache))
+				auto toCache = fmt::format("{}/{}", objDir, source);
+				if (m_fileCache.find(toCache) == m_fileCache.end())
 				{
-					m_fileCache.emplace_back(std::move(pchCache));
+					m_fileCache.emplace(toCache, true);
 
 					CommandPool::Cmd out;
 					out.output = m_state.paths.getBuildOutputPath(source);
@@ -265,10 +264,10 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
-					auto sourceFile = Hash::uint64(fmt::format("{}/{}", objDir, source));
-					if (!List::contains(m_fileCache, sourceFile))
+					auto toCache = fmt::format("{}/{}", objDir, source);
+					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace_back(std::move(sourceFile));
+						m_fileCache.emplace(toCache, true);
 
 						CommandPool::Cmd out;
 						out.output = m_state.paths.getBuildOutputPath(source);
@@ -288,10 +287,10 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
-					auto sourceFile = Hash::uint64(fmt::format("{}/{}", objDir, source));
-					if (!List::contains(m_fileCache, sourceFile))
+					auto toCache = fmt::format("{}/{}", objDir, source);
+					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace_back(std::move(sourceFile));
+						m_fileCache.emplace(toCache, true);
 
 						CommandPool::Cmd out;
 						out.output = m_state.paths.getBuildOutputPath(source);
@@ -379,7 +378,7 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 		return true;
 
 	// Read through all the dependencies
-	if (!dependency.empty() && Files::pathExists(dependency))
+	if (!dependency.empty() /* && Files::pathExists(dependency) */)
 	{
 		std::ifstream input(dependency);
 		for (std::string line; std::getline(input, line);)
@@ -392,8 +391,13 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 
 			line.pop_back();
 
+			if (m_dependencyCache.find(line) != m_dependencyCache.end())
+				continue;
+
 			if (m_sourceCache.fileChangedOrDoesNotExist(line))
 				return true;
+
+			m_dependencyCache.emplace(line, true);
 
 			// LOG(source, line);
 		}
