@@ -130,6 +130,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 
 	// Take the cached arch, and apply our target architecture
 
+	auto targetArch = m_state.info.targetArchitectureTriple();
 	auto firstDash = cachedArch.find_first_of('-');
 	auto suffix = cachedArch.substr(firstDash);
 #if defined(CHALET_LINUX)
@@ -149,7 +150,6 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		targetArch = "aarch64";
 	}
 #endif
-	auto targetArch = m_state.info.targetArchitectureTriple();
 	cachedArch = fmt::format("{}{}", targetArch, suffix);
 
 #if defined(CHALET_LINUX)
