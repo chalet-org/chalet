@@ -12,7 +12,6 @@
 #include "State/TargetMetadata.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
-#include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -50,15 +49,23 @@ bool CentralChaletJsonParser::serialize() const
 /*****************************************************************************/
 bool CentralChaletJsonParser::validateAgainstSchema() const
 {
-	Json jsonSchema = ChaletJsonSchema::get(m_centralState.inputs());
+	Json jsonSchema;
 
 	if (m_centralState.inputs().saveSchemaToFile())
 	{
+		jsonSchema = ChaletJsonSchema::get(m_centralState.inputs());
 		JsonFile::saveToFile(jsonSchema, "schema/chalet.schema.json");
 	}
 
-	if (!m_chaletJson.validate(jsonSchema))
-		return false;
+	bool buildFileChanged = m_centralState.cache.file().buildFileChanged();
+	if (buildFileChanged)
+	{
+		if (jsonSchema.empty())
+			jsonSchema = ChaletJsonSchema::get(m_centralState.inputs());
+
+		if (!m_chaletJson.validate(jsonSchema))
+			return false;
+	}
 
 	return true;
 }
