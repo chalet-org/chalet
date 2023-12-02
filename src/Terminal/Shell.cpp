@@ -122,17 +122,23 @@ std::string getProcessPath(DWORD inPid)
 
 /*****************************************************************************/
 #if defined(CHALET_WIN32)
-std::pair<std::string, std::string> getParentProcessPaths()
+struct ProcessPaths
+{
+	std::string parent;
+	std::string parentParent;
+};
+ProcessPaths getParentProcessPaths()
 #else
 std::string getParentProcessPath()
 #endif
 {
 #if defined(CHALET_WIN32)
+	ProcessPaths ret;
 	DWORD pid = getParentProcessId();
-	std::string parent = getProcessPath(pid);
+	ret.parent = getProcessPath(pid);
 	DWORD ppid = getParentProcessId(pid);
-	std::string pparent = getProcessPath(ppid);
-	return std::make_pair<std::string, std::string>(std::move(parent), std::move(pparent));
+	ret.parentParent = getProcessPath(ppid);
+	return ret;
 #else
 	// pid_t pid = getpid();
 	pid_t pid = getParentProcessId();
@@ -291,33 +297,33 @@ void setTerminalType()
 	// Powershell needs to be detected from the parent PID
 	// Note: env is identical to command prompt. It uses its own env for things like $PSHOME
 	{
-		const auto& [parentPath, parentParentPath] = getParentProcessPaths();
-		if (String::endsWith("WindowsTerminal.exe", parentParentPath))
+		auto paths = getParentProcessPaths();
+		if (String::endsWith("WindowsTerminal.exe", paths.parentParent))
 		{
 			state.terminalType = ShellType::WindowsTerminal;
 			return printTermType();
 		}
-		else if (String::endsWith("pwsh.exe", parentPath))
+		else if (String::endsWith("pwsh.exe", paths.parent))
 		{
 			state.terminalType = ShellType::PowershellOpenSource;
 			return printTermType();
 		}
-		else if (String::endsWith("powershell_ise.exe", parentPath))
+		else if (String::endsWith("powershell_ise.exe", paths.parent))
 		{
 			state.terminalType = ShellType::PowershellIse;
 			return printTermType();
 		}
-		else if (String::endsWith("powershell.exe", parentPath))
+		else if (String::endsWith("powershell.exe", paths.parent))
 		{
 			state.terminalType = ShellType::Powershell;
 			return printTermType();
 		}
-		else if (String::endsWith("cmd.exe", parentPath))
+		else if (String::endsWith("cmd.exe", paths.parent))
 		{
 			state.terminalType = ShellType::CommandPrompt;
 			return printTermType();
 		}
-		else if (String::endsWith("clion64.exe", parentPath) || String::contains("JetBrains", parentPath))
+		else if (String::endsWith("clion64.exe", paths.parent) || String::contains("JetBrains", paths.parent))
 		{
 			state.terminalType = ShellType::CommandPromptJetBrains;
 			return printTermType();

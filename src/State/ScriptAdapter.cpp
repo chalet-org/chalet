@@ -80,8 +80,9 @@ ScriptAdapter::ScriptAdapter(const AncillaryTools& inTools) :
 }
 
 /*****************************************************************************/
-std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const std::string& inScript, const std::string& inInputFile) const
+ScriptAdapter::PathResult ScriptAdapter::getScriptTypeFromPath(const std::string& inScript, const std::string& inInputFile) const
 {
+	PathResult ret;
 #if defined(CHALET_WIN32)
 	auto exe = Files::getPlatformExecutableExtension();
 	std::string parsedScriptPath = inScript;
@@ -111,7 +112,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 	if (!Files::pathExists(outScriptPath))
 	{
 		Diagnostic::error("{}: The script '{}' was not found. Aborting.", inInputFile, inScript);
-		return std::make_pair(std::string(), ScriptType::None);
+		return ret;
 	}
 
 	Files::setExecutableFlag(outScriptPath);
@@ -343,12 +344,12 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 			else if (isBatchScript)
 			{
 				Diagnostic::error("{}: The script '{}' requires Command Prompt or Powershell, but they were not found in 'Path'.", inInputFile, inScript);
-				return std::make_pair(std::string(), ScriptType::None);
+				return ret;
 			}
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell, but it was not found in 'Path'.", inInputFile, inScript);
-				return std::make_pair(std::string(), ScriptType::None);
+				return ret;
 			}
 
 			shellFound = true;
@@ -365,7 +366,7 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 			else
 			{
 				Diagnostic::error("{}: The script '{}' requires powershell open source, but it was not found in 'PATH'.", inInputFile, inScript);
-				return std::make_pair(std::string(), ScriptType::None);
+				return ret;
 			}
 
 			shellFound = true;
@@ -384,14 +385,16 @@ std::pair<std::string, ScriptType> ScriptAdapter::getScriptTypeFromPath(const st
 		else
 			Diagnostic::error("{}: The script '{}' requires '{}', but it was not found.", inInputFile, inScript, type);
 
-		return std::make_pair(std::string(), ScriptType::None);
+		return ret;
 	}
 
 	// LOG(shell);
 	chalet_assert(scriptType != ScriptType::None, "bad script type");
 
 	m_executables[scriptType] = std::move(shell);
-	return std::make_pair(std::move(outScriptPath), scriptType);
+	ret.file = std::move(outScriptPath);
+	ret.type = scriptType;
+	return ret;
 }
 
 /*****************************************************************************/

@@ -9,8 +9,8 @@
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -40,12 +40,12 @@ bool ScriptDistTarget::validate()
 {
 	const auto& targetName = this->name();
 
-	auto [resolved, scriptType] = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
-	if (scriptType == ScriptType::None)
+	auto pathResult = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
+	if (pathResult.type == ScriptType::None)
 		return false;
 
-	m_file = std::move(resolved);
-	m_scriptType = scriptType;
+	m_file = std::move(pathResult.file);
+	m_scriptType = pathResult.type;
 
 	if (!m_dependsOn.empty())
 	{

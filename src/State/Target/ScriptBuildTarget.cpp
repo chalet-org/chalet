@@ -42,12 +42,12 @@ bool ScriptBuildTarget::initialize()
 /*****************************************************************************/
 bool ScriptBuildTarget::validate()
 {
-	auto [resolved, scriptType] = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
-	if (scriptType == ScriptType::None)
+	auto pathResult = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
+	if (pathResult.type == ScriptType::None)
 		return false;
 
-	m_file = std::move(resolved);
-	m_scriptType = scriptType;
+	m_file = std::move(pathResult.file);
+	m_scriptType = pathResult.type;
 
 	if (!m_dependsOn.empty())
 	{

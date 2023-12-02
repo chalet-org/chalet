@@ -15,7 +15,13 @@ struct ScriptAdapter
 {
 	explicit ScriptAdapter(const AncillaryTools& inTools);
 
-	std::pair<std::string, ScriptType> getScriptTypeFromPath(const std::string& inScript, const std::string& inInputFile) const;
+	struct PathResult
+	{
+		ScriptType type = ScriptType::None;
+		std::string file;
+	};
+
+	PathResult getScriptTypeFromPath(const std::string& inScript, const std::string& inInputFile) const;
 
 	const std::string& getExecutable(const ScriptType inType) const;
 

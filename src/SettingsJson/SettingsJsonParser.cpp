@@ -79,6 +79,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 #if defined(CHALET_MACOS)
 	bool needsUpdate = false;
 	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
+	// const bool commandLineTools = Files::isUsingAppleCommandLineTools();
 	for (const auto& sdk : sdkPaths)
 	{
 		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
