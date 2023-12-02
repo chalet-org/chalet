@@ -855,36 +855,67 @@ void CommandLineInputs::setOsTargetVersion(std::string&& inValue) noexcept
 	auto version = Version::fromString(inValue);
 	m_osTargetVersion = version.majorMinor();
 }
+
+/*****************************************************************************/
 std::string CommandLineInputs::getDefaultOsTargetVersion() const
 {
 #if defined(CHALET_MACOS)
 	if (kDefaultOsTarget.empty())
 	{
-		auto swVers = Files::which("sw_vers");
-		if (!swVers.empty())
+		std::string versionPlist("/System/Library/CoreServices/SystemVersion.plist");
+		if (Files::pathExists(versionPlist))
 		{
-			auto result = Process::runOutput({ swVers });
-			if (!result.empty())
+			auto fileContents = Files::getFileContents(versionPlist);
+			if (!fileContents.empty())
 			{
-				auto split = String::split(result, '\n');
-				for (auto& line : split)
+				auto versionKey = fileContents.find("ProductVersion");
+				if (versionKey != std::string::npos)
 				{
-					// Note: there is also "ProductName" but it varies between os versions
-					//  - Older versions had "Mac OS X" and newer ones have "macOS"
-					//
-					if (String::startsWith("ProductVersion", line))
+					std::string search = "<string>";
+					auto versionValue = fileContents.find(search, versionKey);
+					if (versionValue != std::string::npos)
 					{
-						auto lastTab = line.find_last_of('\t');
-						if (lastTab != std::string::npos)
+						versionValue += search.size();
+						auto closer = fileContents.find("</string>", versionValue);
+						if (closer != std::string::npos)
 						{
-							auto value = line.substr(lastTab + 1);
-							kDefaultOsTarget = String::toLowerCase(value);
+							auto version = fileContents.substr(versionValue, closer - versionValue);
+							kDefaultOsTarget = version;
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			// Note: slow - about 15ms
+			auto swVers = Files::which("sw_vers");
+			if (!swVers.empty())
+			{
+				auto result = Process::runOutput({ swVers });
+				if (!result.empty())
+				{
+					auto split = String::split(result, '\n');
+					for (auto& line : split)
+					{
+						// Note: there is also "ProductName" but it varies between os versions
+						//  - Older versions had "Mac OS X" and newer ones have "macOS"
+						//
+						if (String::startsWith("ProductVersion", line))
+						{
+							auto lastTab = line.find_last_of('\t');
+							if (lastTab != std::string::npos)
+							{
+								auto value = line.substr(lastTab + 1);
+								kDefaultOsTarget = String::toLowerCase(value);
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+	LOG(kDefaultOsTarget);
 	return kDefaultOsTarget;
 #else
 	return std::string();

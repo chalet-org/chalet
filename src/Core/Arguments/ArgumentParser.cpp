@@ -16,7 +16,6 @@
 #include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
-// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -1293,7 +1292,7 @@ void ArgumentParser::addSigningIdentityArg()
 void ArgumentParser::addOsTargetNameArg()
 {
 #if defined(CHALET_MACOS)
-	const auto& defaultValue = m_inputs.getDefaultOsTargetName();
+	const auto defaultValue = m_inputs.getDefaultOsTargetName();
 	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
 	arg.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
@@ -1306,7 +1305,7 @@ void ArgumentParser::addOsTargetNameArg()
 void ArgumentParser::addOsTargetVersionArg()
 {
 #if defined(CHALET_MACOS)
-	const auto& defaultValue = m_inputs.getDefaultOsTargetVersion();
+	const auto defaultValue = m_inputs.getDefaultOsTargetVersion();
 	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
 	arg.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
@@ -1369,12 +1368,9 @@ void ArgumentParser::populateCommonBuildArguments()
 /*****************************************************************************/
 void ArgumentParser::populateBuildArguments()
 {
-	// Timer timer;
 	populateCommonBuildArguments();
 
 	addBuildTargetArg();
-
-	// LOG(timer.asString());
 }
 
 /*****************************************************************************/
