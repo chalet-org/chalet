@@ -48,6 +48,7 @@ std::string BuildConfiguration::getDefaultReleaseConfigurationName()
 bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName)
 {
 	outConfig = BuildConfiguration();
+	outConfig.setName(inName);
 
 	auto makeDebug = [](BuildConfiguration& config) {
 		config.setOptimizationLevel("0");
@@ -159,8 +160,6 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 		Diagnostic::error("An invalid build configuration ({}) was requested. Expected: {}", inName, names);
 		return false;
 	}
-
-	outConfig.setName(inName);
 
 	return true;
 }

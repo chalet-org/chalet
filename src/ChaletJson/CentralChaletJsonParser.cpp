@@ -279,9 +279,8 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 					}
 					else if (value.is_array())
 					{
-						StringList val;
 						if (String::equals("sanitize", key))
-							config.addSanitizeOptions(std::move(val));
+							config.addSanitizeOptions(value.get<StringList>());
 					}
 				}
 
@@ -450,9 +449,8 @@ bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDepende
 		}
 		else if (value.is_array())
 		{
-			StringList val;
 			if (String::equals("arguments", key))
-				outDependency.addArguments(std::move(val));
+				outDependency.addArguments(value.get<StringList>());
 		}
 	}
 
