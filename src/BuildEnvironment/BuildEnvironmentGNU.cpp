@@ -313,9 +313,9 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 		}
 #else
 				// Note: Standalone "mingw32" is used in 32-bit TDM GCC MinGW builds for some reason
-				if (String::equals("mingw32", cachedArch))
+				if (String::equals("mingw32", outArch))
 				{
-					cachedArch = "i686-pc-mingw32";
+					outArch = "i686-pc-mingw32";
 				}
 #endif
 		return outArch;
