@@ -879,8 +879,7 @@ std::string CommandLineInputs::getDefaultOsTargetVersion() const
 						auto closer = fileContents.find("</string>", versionValue);
 						if (closer != std::string::npos)
 						{
-							auto version = fileContents.substr(versionValue, closer - versionValue);
-							kDefaultOsTarget = version;
+							kDefaultOsTarget = fileContents.substr(versionValue, closer - versionValue);
 						}
 					}
 				}
