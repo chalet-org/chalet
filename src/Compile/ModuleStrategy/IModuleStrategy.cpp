@@ -188,7 +188,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 					if (m_compileCache.find(header) == m_compileCache.end())
 						m_compileCache[header] = false;
 
-					rebuildFromHeader |= sourceCache.fileChangedOrDoesNotExist(header) || m_compileCache[header];
+					rebuildFromHeader |= sourceCache.fileChangedOrDoesNotExistNoCache(header) || m_compileCache[header];
 				}
 
 				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
@@ -417,7 +417,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
 
-		bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
+		bool sourceChanged = sourceCache.fileChangedOrDoesNotExistNoCache(source, isObject ? target : dependency) || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
@@ -476,7 +476,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 			if (m_compileCache.find(source) == m_compileCache.end())
 				m_compileCache[source] = false;
 
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
+			bool sourceChanged = sourceCache.fileChangedOrDoesNotExistNoCache(source, target) || m_compileCache[source];
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
@@ -598,7 +598,7 @@ bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) co
 
 			if (List::contains(inProject.projectStaticLinks(), project.name()))
 			{
-				result |= sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
+				result |= sourceCache.fileChangedOrDoesNotExistNoCache(m_state.paths.getTargetFilename(project));
 			}
 		}
 	}
@@ -658,7 +658,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			continue;
 
 		const auto& sourceFile = group->sourceFile;
-		rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
+		rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExistNoCache(sourceFile) || m_compileCache[sourceFile];
 		if (!rebuildFromIncludes)
 		{
 			std::string dependencyFile;
@@ -675,7 +675,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 
 				for (auto& include : includes)
 				{
-					rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
+					rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExistNoCache(include) || m_compileCache[sourceFile];
 				}
 				m_compileCache[sourceFile] |= rebuildFromIncludes;
 			}

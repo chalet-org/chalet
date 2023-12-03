@@ -590,7 +590,7 @@ bool Files::pathExists(const std::string& inFile)
 	// return fs::exists(inFile, ec);
 	return ::GetFileAttributesA(inFile.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
-	return stat(inFile.c_str(), &statBuffer) == 0;
+	return ::stat(inFile.c_str(), &statBuffer) == 0;
 #endif
 }
 

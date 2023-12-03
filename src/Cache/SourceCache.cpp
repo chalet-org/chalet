@@ -186,6 +186,29 @@ void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite
 }
 
 /*****************************************************************************/
+bool SourceCache::fileChangedOrDoesNotExistNoCache(const std::string& inFile) const
+{
+	auto lastWrite = Files::getLastWriteTime(inFile);
+	if (lastWrite == 0)
+		lastWrite = m_initializedTime;
+
+	return lastWrite > m_lastBuildTime;
+}
+
+/*****************************************************************************/
+bool SourceCache::fileChangedOrDoesNotExistNoCache(const std::string& inFile, const std::string& inDependency) const
+{
+	bool depDoesNotExist = !Files::pathExists(inDependency);
+	return fileChangedOrDoesNotExistNoCache(inFile) || depDoesNotExist;
+}
+
+/*****************************************************************************/
+bool SourceCache::fileChangedOrDependantChangedNoCache(const std::string& inFile, const std::string& inDependency) const
+{
+	return fileChangedOrDoesNotExistNoCache(inFile) || fileChangedOrDoesNotExistNoCache(inDependency);
+}
+
+/*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
 	auto& fileData = getLastWrite(inFile);

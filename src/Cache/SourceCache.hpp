@@ -34,6 +34,10 @@ struct SourceCache
 	void addLastWrite(std::string inFile, const std::string& inRaw);
 	void addLastWrite(std::string inFile, const std::time_t inLastWrite);
 
+	bool fileChangedOrDoesNotExistNoCache(const std::string& inFile) const;
+	bool fileChangedOrDoesNotExistNoCache(const std::string& inFile, const std::string& inDependency) const;
+	bool fileChangedOrDependantChangedNoCache(const std::string& inFile, const std::string& inDependency) const;
+
 	bool fileChangedOrDoesNotExist(const std::string& inFile) const;
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
 	bool fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const;

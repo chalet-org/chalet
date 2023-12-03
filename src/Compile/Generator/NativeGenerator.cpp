@@ -375,7 +375,7 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency)
 {
 	// Check the source file and target (object) if they were changed
-	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
+	bool result = m_sourceCache.fileChangedOrDoesNotExistNoCache(source, target);
 	if (result)
 		return true;
 
@@ -397,7 +397,7 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 			if (m_dependencyCache.find(line) != m_dependencyCache.end())
 				continue;
 
-			if (m_sourceCache.fileChangedOrDoesNotExist(line))
+			if (m_sourceCache.fileChangedOrDoesNotExistNoCache(line))
 				return true;
 
 			// Cache the filename if it didn't change
