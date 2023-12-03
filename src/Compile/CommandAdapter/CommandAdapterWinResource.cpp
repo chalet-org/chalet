@@ -44,18 +44,21 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 		if (Files::pathExists(windowsManifestResourceFile))
 			Files::remove(windowsManifestResourceFile);
 
-		std::string manifestContents;
-		if (m_project.windowsApplicationManifest().empty())
-			manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
-		else
-			manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
-
-		String::replaceAll(manifestContents, '\t', ' ');
-
-		if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
+		if (!Files::pathExists(windowsManifestFile))
 		{
-			Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
-			return false;
+			std::string manifestContents;
+			if (m_project.windowsApplicationManifest().empty())
+				manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+			else
+				manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
+
+			String::replaceAll(manifestContents, '\t', ' ');
+
+			if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
+			{
+				Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
+				return false;
+			}
 		}
 	}
 
