@@ -152,7 +152,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	const bool runRoute = inRoute.isRun();
 	const bool routeWillRun = inRoute.willRun();
-	const auto runTargetName = m_state.inputs.getRunTarget();
+
+	std::string runTargetName;
+	if (runTarget != nullptr)
+		runTargetName = runTarget->name();
 
 	if (!runRoute && m_state.toolchain.strategy() != StrategyType::Native)
 	{
@@ -227,7 +230,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	{
 		if (routeWillRun)
 		{
-			bool isRunTarget = String::equals(runTargetName, target->name());
+			bool isRunTarget = !runTargetName.empty() && String::equals(runTargetName, target->name());
 			bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
 
 			if (isRunTarget || noExplicitRunTarget)

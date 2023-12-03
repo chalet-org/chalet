@@ -46,7 +46,7 @@ struct ChaletJsonParser
 	bool serialize();
 
 private:
-	const std::string& getExpectedRunTarget() const;
+	const StringList& getBuildTargets() const;
 
 	bool serializeFromJsonRoot(const Json& inJson);
 
@@ -97,7 +97,7 @@ private:
 
 	StringList m_notPlatforms;
 	std::string m_platform;
-	mutable std::string m_expectedRunTarget;
+	mutable StringList m_buildTargets;
 
 	bool m_isWebPlatform = false;
 };

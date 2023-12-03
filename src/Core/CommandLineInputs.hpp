@@ -68,7 +68,6 @@ struct CommandLineInputs
 	const std::string& lastTarget() const noexcept;
 	void setLastTarget(std::string&& inValue) const noexcept;
 	StringList getBuildTargets() const;
-	std::string getRunTarget() const;
 
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;

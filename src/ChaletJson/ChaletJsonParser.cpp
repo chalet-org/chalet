@@ -116,15 +116,15 @@ bool ChaletJsonParser::serialize()
 }
 
 /*****************************************************************************/
-const std::string& ChaletJsonParser::getExpectedRunTarget() const
+const StringList& ChaletJsonParser::getBuildTargets() const
 {
-	if (m_expectedRunTarget.empty())
+	if (m_buildTargets.empty())
 	{
-		m_expectedRunTarget = m_state.inputs.getRunTarget();
-		if (String::equals(Values::All, m_expectedRunTarget))
-			m_expectedRunTarget.clear();
+		m_buildTargets = m_state.inputs.getBuildTargets();
+		if (m_buildTargets.empty())
+			m_buildTargets.emplace_back(Values::All);
 	}
-	return m_expectedRunTarget;
+	return m_buildTargets;
 }
 
 /*****************************************************************************/
@@ -176,7 +176,13 @@ std::string ChaletJsonParser::getValidRunTargetFromInput() const
 	if (target != nullptr)
 		return target->name();
 
-	Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", m_chaletJson.filename(), getExpectedRunTarget());
+	auto& filename = m_chaletJson.filename();
+	auto& lastTarget = m_state.inputs.lastTarget();
+	if (String::contains(',', lastTarget))
+		Diagnostic::error("{}: '{}' either does not contain an executable target, or are excluded based on property conditions.", filename, lastTarget);
+	else
+		Diagnostic::error("{}: '{}' is either not an executable target, or is excluded based on a property condition.", filename, lastTarget);
+
 	return std::string();
 }
 
@@ -857,14 +863,12 @@ bool ChaletJsonParser::parseValidationTarget(ValidationBuildTarget& outTarget, c
 /*****************************************************************************/
 bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const Json& inNode) const
 {
-	auto& runTarget = getExpectedRunTarget();
 	StringList validNames{
 		outTarget.name(),
 		Values::All,
 	};
-	bool willRun = !runTarget.empty() && String::equals(validNames, runTarget);
-	bool getDefaultRunArguments = m_state.inputs.route().isExport() || willRun;
 
+	bool getDefaultRunArguments = m_state.inputs.route().isExport() || m_state.inputs.route().willRun();
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -1712,20 +1716,20 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 	{
 		if (String::equals("runTarget", value))
 		{
-			auto& runTarget = getExpectedRunTarget();
+			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
 
-			if (!routeWillRun || runTarget.empty())
+			if (!routeWillRun || buildTargets.empty())
 				return ConditionResult::Fail;
 
 			if (negate)
 			{
-				if (String::equals(runTarget, outTarget.name()))
+				if (String::equals(buildTargets, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(runTarget, outTarget.name()))
+				if (!String::equals(buildTargets, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 
@@ -1736,20 +1740,20 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 	{
 		if (String::equals("runTarget", value))
 		{
-			auto& runTarget = getExpectedRunTarget();
+			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
 
-			if (!routeWillRun || runTarget.empty())
+			if (!routeWillRun || buildTargets.empty())
 				return ConditionResult::Fail;
 
 			if (negate)
 			{
-				if (String::equals(runTarget, outTarget.name()))
+				if (String::equals(buildTargets, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(runTarget, outTarget.name()))
+				if (!String::equals(buildTargets, outTarget.name()))
 					return ConditionResult::Fail;
 			}
 

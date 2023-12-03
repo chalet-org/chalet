@@ -239,15 +239,15 @@ const IBuildTarget* BuildState::getFirstValidRunTarget() const
 	if (targets.empty())
 		return nullptr;
 
-	auto lastTarget = inputs.getRunTarget();
-	if (String::equals(Values::All, lastTarget))
-		lastTarget.clear();
+	auto buildTargets = inputs.getBuildTargets();
+	if (List::contains(buildTargets, std::string(Values::All)))
+		buildTargets.clear();
 
-	bool lastTargetWasSet = !lastTarget.empty();
+	bool lastTargetWasSet = !buildTargets.empty();
 	for (auto& target : targets)
 	{
 		auto& name = target->name();
-		if (lastTargetWasSet && !String::equals(name, lastTarget))
+		if (lastTargetWasSet && !List::contains(buildTargets, name))
 			continue;
 
 		if (target->isSources())

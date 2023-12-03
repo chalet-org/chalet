@@ -454,18 +454,6 @@ StringList CommandLineInputs::getBuildTargets() const
 }
 
 /*****************************************************************************/
-std::string CommandLineInputs::getRunTarget() const
-{
-	if (!m_lastTarget.empty() && String::contains(',', m_lastTarget))
-	{
-		auto split = String::split(m_lastTarget, ',');
-		return split.back();
-	}
-
-	return m_lastTarget;
-}
-
-/*****************************************************************************/
 const std::optional<StringList>& CommandLineInputs::runArguments() const noexcept
 {
 	return m_runArguments;

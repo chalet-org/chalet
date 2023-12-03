@@ -99,14 +99,23 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	}
 	else
 	{
-		auto buildTargets = m_state.inputs.getBuildTargets();
-		for (auto& target : buildTargets)
+		const bool onlyRequired = m_state.info.onlyRequired();
+		if (onlyRequired)
 		{
-			// 	cmd.emplace_back("-scheme");
-			// 	cmd.emplace_back(target);
+			auto buildTargets = m_state.inputs.getBuildTargets();
+			for (auto& target : buildTargets)
+			{
+				// 	cmd.emplace_back("-scheme");
+				// 	cmd.emplace_back(target);
 
+				cmd.emplace_back("-target");
+				cmd.emplace_back(target);
+			}
+		}
+		else
+		{
 			cmd.emplace_back("-target");
-			cmd.emplace_back(target);
+			cmd.emplace_back("all");
 		}
 	}
 
