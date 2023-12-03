@@ -48,7 +48,7 @@ bool WorkspaceInternalCacheFile::sourceCacheAvailable() const
 /*****************************************************************************/
 SourceCache& WorkspaceInternalCacheFile::sources() const
 {
-	chalet_assert(m_sources != nullptr, "");
+	chalet_assert(m_sources != nullptr, "source cache was not set");
 	return *m_sources;
 }
 

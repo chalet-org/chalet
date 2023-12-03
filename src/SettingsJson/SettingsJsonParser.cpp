@@ -18,9 +18,9 @@
 #include "Terminal/Output.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
-// #include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -35,8 +35,6 @@ SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, CentralState
 /*****************************************************************************/
 bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 {
-	// Timer timer;
-
 	Json schema = SettingsJsonSchema::get(m_inputs);
 	if (m_inputs.saveSchemaToFile())
 	{
@@ -685,7 +683,12 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	// iPhoneSimulator.platform
 	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
 
-	auto xcrun = Files::which("xcrun");
+	chalet_assert(m_jsonFile.json.contains(Keys::Tools), "tools structure was not found");
+	auto& tools = m_jsonFile.json.at(Keys::Tools);
+
+	chalet_assert(tools.contains(Keys::ToolsXcrun), "xcrun not found in tools structure");
+
+	auto xcrun = tools.at(Keys::ToolsXcrun).get<std::string>();
 	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
