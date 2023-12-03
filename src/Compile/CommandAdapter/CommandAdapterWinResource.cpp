@@ -41,47 +41,31 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	bool manifestChanged = sources.fileChangedOrDoesNotExist(windowsManifestFile);
 	if (manifestChanged)
 	{
-		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-		if (!isNative && Files::pathExists(windowsManifestResourceFile))
+		if (Files::pathExists(windowsManifestResourceFile))
 			Files::remove(windowsManifestResourceFile);
 
-		if (!Files::pathExists(windowsManifestFile))
+		std::string manifestContents;
+		if (m_project.windowsApplicationManifest().empty())
+			manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
+		else
+			manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
+
+		String::replaceAll(manifestContents, '\t', ' ');
+
+		if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
 		{
-			std::string manifestContents;
-			if (m_project.windowsApplicationManifest().empty())
-				manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
-			else
-				manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
-
-			String::replaceAll(manifestContents, '\t', ' ');
-
-			if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
-			{
-				Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
-				return false;
-			}
+			Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);
+			return false;
 		}
 	}
 
-	if (sources.fileChangedOrDoesNotExist(windowsManifestResourceFile) || manifestChanged)
+	if (manifestChanged || sources.fileChangedOrDoesNotExist(windowsManifestResourceFile))
 	{
-		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
-
-		std::string existingRc;
-		if (Files::pathExists(windowsManifestResourceFile))
+		auto rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
+		if (!Files::createFileWithContents(windowsManifestResourceFile, rcContents))
 		{
-			existingRc = Files::getFileContents(windowsManifestResourceFile);
-			if (String::endsWith('\n', existingRc))
-				existingRc.pop_back(); // last endl;
-		}
-
-		if (manifestChanged || existingRc.empty() || !String::equals(rcContents, existingRc))
-		{
-			if (!Files::createFileWithContents(windowsManifestResourceFile, rcContents))
-			{
-				Diagnostic::error("Error creating windows manifest resource file: {}", windowsManifestResourceFile);
-				return false;
-			}
+			Diagnostic::error("Error creating windows manifest resource file: {}", windowsManifestResourceFile);
+			return false;
 		}
 	}
 
@@ -99,10 +83,10 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 	const auto& windowsIconFile = m_project.windowsApplicationIcon();
 	const auto windowsIconResourceFile = m_state.paths.getWindowsIconResourceFilename(m_project);
 
-	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile))
+	bool iconChanged = !windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile);
+	if (iconChanged)
 	{
-		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
-		if (!isNative && Files::pathExists(windowsIconResourceFile))
+		if (Files::pathExists(windowsIconResourceFile))
 			Files::remove(windowsIconResourceFile);
 
 		if (!Files::pathExists(windowsIconFile))
@@ -112,25 +96,13 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 		}
 	}
 
-	if (!windowsIconResourceFile.empty() && (sources.fileChangedOrDoesNotExist(windowsIconResourceFile) || sources.fileChangedOrDoesNotExist(windowsIconFile)))
+	if (iconChanged || sources.fileChangedOrDoesNotExist(windowsIconResourceFile))
 	{
-		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
-
-		std::string existingRc;
-		if (Files::pathExists(windowsIconResourceFile))
+		auto rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
+		if (!Files::createFileWithContents(windowsIconResourceFile, rcContents))
 		{
-			existingRc = Files::getFileContents(windowsIconResourceFile);
-			if (String::endsWith('\n', existingRc))
-				existingRc.pop_back(); // last endl;
-		}
-
-		if (existingRc.empty() || !String::equals(rcContents, existingRc))
-		{
-			if (!Files::createFileWithContents(windowsIconResourceFile, rcContents))
-			{
-				Diagnostic::error("Error creating windows icon resource file: {}", windowsIconResourceFile);
-				return false;
-			}
+			Diagnostic::error("Error creating windows icon resource file: {}", windowsIconResourceFile);
+			return false;
 		}
 	}
 
