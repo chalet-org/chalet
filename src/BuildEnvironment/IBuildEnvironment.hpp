@@ -78,7 +78,7 @@ protected:
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const = 0;
 	virtual bool verifyToolchain() = 0;
 	virtual bool supportsFlagFile() = 0;
-	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const = 0;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) = 0;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const = 0;
 
 	virtual void generateTargetSystemPaths();
@@ -93,7 +93,7 @@ protected:
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
-	void getArchitectureWithCache(std::string& outArch, const std::string& inExecutable, const std::function<std::string()>& onGet);
+	void getDataWithCache(std::string& outArch, const char* inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet);
 
 	std::string getVarsPath(const std::string& inUniqueId) const;
 	std::string getCachePath(const std::string& inId) const;

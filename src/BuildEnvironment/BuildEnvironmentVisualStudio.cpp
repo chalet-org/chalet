@@ -145,40 +145,41 @@ std::string BuildEnvironmentVisualStudio::getFullCxxCompilerString(const std::st
 }
 
 /*****************************************************************************/
-bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo& outInfo) const
+bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo& outInfo)
 {
 	Timer timer;
 
-	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
-	{
+	getDataWithCache(cachedVersion, "version", outInfo.path, [this, &outInfo]() {
 		// Microsoft (R) C/C++ Optimizing Compiler Version 19.28.29914 for x64
-		std::string rawOutput = Process::runOutput(getVersionCommand(outInfo.path));
+		auto rawOutput = Process::runOutput(getVersionCommand(outInfo.path));
 
 		auto splitOutput = String::split(rawOutput, '\n');
-		if (splitOutput.size() >= 2)
-		{
-			auto start = splitOutput[1].find("Version");
-			auto end = splitOutput[1].find(" for ");
-			if (start != std::string::npos && end != std::string::npos)
-			{
-				start += 8;
-				auto version = splitOutput[1].substr(start, end - start); // cl.exe version
-				version = version.substr(0, version.find_first_not_of("0123456789."));
-				cachedVersion = std::move(version);
+		if (splitOutput.size() < 2)
+			return std::string();
 
-				// const auto arch = splitOutput[1].substr(end + 5);
-			}
+		auto start = splitOutput[1].find("Version");
+		auto end = splitOutput[1].find(" for ");
+		if (start != std::string::npos && end != std::string::npos)
+		{
+			start += 8;
+			auto version = splitOutput[1].substr(start, end - start); // cl.exe version
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+			return version;
+
+			// const auto arch = splitOutput[1].substr(end + 5);
 		}
+		else
+		{
+			return std::string();
+		}
+	});
+	{
 	}
 
 	if (!cachedVersion.empty())
 	{
 		outInfo.version = std::move(cachedVersion);
-
-		sourceCache.addVersion(outInfo.path, outInfo.version);
-
 		outInfo.description = getFullCxxCompilerString(outInfo.path, outInfo.version);
 		return true;
 	}

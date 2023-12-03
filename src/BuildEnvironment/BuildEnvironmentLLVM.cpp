@@ -114,7 +114,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		return false;
 
 	std::string cachedArch;
-	getArchitectureWithCache(cachedArch, compiler, [&compiler]() {
+	getDataWithCache(cachedArch, "arch", compiler, [&compiler]() {
 		auto outArch = Process::runOutput({ compiler, "-dumpmachine" });
 		auto firstDash = outArch.find_first_of('-');
 

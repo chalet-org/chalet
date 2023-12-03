@@ -121,7 +121,7 @@ bool BuildEnvironmentEmscripten::readArchitectureTripleFromCompiler()
 		return false;
 
 	std::string cachedArch;
-	getArchitectureWithCache(cachedArch, compiler, [this, &compiler]() {
+	getDataWithCache(cachedArch, "arch", compiler, [this, &compiler]() {
 		auto& targetArch = m_state.inputs.targetArchitecture();
 		std::string outArch;
 		if (targetArch.empty())
@@ -151,7 +151,7 @@ bool BuildEnvironmentEmscripten::readArchitectureTripleFromCompiler()
 }
 
 /*****************************************************************************/
-bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& outInfo) const
+bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& outInfo)
 {
 	CompilerInfo info = outInfo;
 	bool result = BuildEnvironmentLLVM::getCompilerVersionAndDescription(info);
@@ -160,12 +160,9 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 
 	outInfo.version = info.version;
 
-	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(m_emcc, cachedVersion))
-	{
+	getDataWithCache(cachedVersion, "version", outInfo.path, [this]() {
 		{
-			//
 			auto userPath = Environment::getUserDirectory();
 			auto configFile = fmt::format("{}/.emscripten", userPath);
 			// auto configFile = fmt::format("{}/.emscripten", m_emsdkUpstream);
@@ -189,7 +186,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 				configContents += "JS_ENGINES = [NODE_JS]";
 
 				if (!Files::createFileWithContents(configFile, configContents))
-					return false;
+					return std::string();
 			}
 		}
 
@@ -201,32 +198,29 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');
 
-		if (splitOutput.size() >= 2)
-		{
-			std::string version;
-			for (auto& line : splitOutput)
-			{
-				auto start = line.find(") ");
-				if (start != std::string::npos)
-				{
-					version = line.substr(start + 2);
-					version = version.substr(0, version.find_first_not_of("0123456789."));
-					if (!version.empty())
-						break;
-				}
-			}
+		if (splitOutput.size() < 2)
+			return std::string();
 
-			cachedVersion = std::move(version);
+		std::string version;
+		for (auto& line : splitOutput)
+		{
+			auto start = line.find(") ");
+			if (start != std::string::npos)
+			{
+				version = line.substr(start + 2);
+				version = version.substr(0, version.find_first_not_of("0123456789."));
+				if (!version.empty())
+					break;
+			}
 		}
-	}
+
+		return version;
+	});
 
 	if (!cachedVersion.empty())
 	{
-		outInfo.path = m_emcc;
 		m_emccVersion = std::move(cachedVersion);
-
-		sourceCache.addVersion(m_emcc, m_emccVersion);
-
+		outInfo.path = m_emcc;
 		outInfo.description = getFullCxxCompilerString(m_emcc, outInfo.version);
 		return true;
 	}
@@ -273,5 +267,4 @@ std::string BuildEnvironmentEmscripten::getAssemblyFile(const std::string& inSou
 {
 	return fmt::format("{}/{}.o.wat", m_state.paths.asmDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
-
 }

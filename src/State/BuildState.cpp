@@ -436,12 +436,8 @@ bool BuildState::initializeToolchain()
 	if (!m_impl->environment->readArchitectureTripleFromCompiler())
 		return onError();
 
-	// Timer timer;
-
 	if (!toolchain.initialize(*m_impl->environment))
 		return onError();
-
-	// LOG("toolchain.initialize():", timer.asString(true));
 
 	if (!configuration.validate(*this))
 	{

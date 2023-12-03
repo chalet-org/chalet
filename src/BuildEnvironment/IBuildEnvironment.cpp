@@ -301,9 +301,9 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 }
 
 /*****************************************************************************/
-void IBuildEnvironment::getArchitectureWithCache(std::string& outArch, const std::string& inExecutable, const std::function<std::string()>& onGet)
+void IBuildEnvironment::getDataWithCache(std::string& outArch, const char* inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
 {
-	auto archCache = getCachePath(fmt::format("{}_arch.txt", inExecutable));
+	auto archCache = getCachePath(fmt::format("{}_{}.txt", inCompilerPath, inId));
 	m_state.cache.file().addExtraHash(String::getPathFilename(archCache));
 
 	if (!Files::pathExists(archCache))

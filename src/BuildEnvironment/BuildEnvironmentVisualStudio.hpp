@@ -40,7 +40,7 @@ protected:
 	virtual bool compilerVersionIsToolchainVersion() const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
 	virtual bool validateArchitectureFromInput() final;
-	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) const final;
+	virtual bool getCompilerVersionAndDescription(CompilerInfo& outInfo) final;
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 private:

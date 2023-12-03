@@ -16,6 +16,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -93,12 +94,10 @@ std::string BuildEnvironmentGNU::getFullCxxCompilerString(const std::string& inP
 }
 
 /*****************************************************************************/
-bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo) const
+bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo)
 {
-	auto& sourceCache = m_state.cache.file().sources();
 	std::string cachedVersion;
-	if (sourceCache.versionRequriesUpdate(outInfo.path, cachedVersion))
-	{
+	getDataWithCache(cachedVersion, "version", outInfo.path, [this, &outInfo]() {
 		// Expects:
 		// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
 		// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
@@ -110,43 +109,39 @@ bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo
 		StringList splitOutput;
 		splitOutput = String::split(rawOutput, '\n');
 
-		if (splitOutput.size() >= 2)
+		if (splitOutput.size() < 2)
+			return std::string();
+
+		std::string version;
+		// std::string threadModel;
+		// std::string arch;
+		for (auto& line : splitOutput)
 		{
-			std::string version;
-			// std::string threadModel;
-			// std::string arch;
-			for (auto& line : splitOutput)
-			{
-				parseVersionFromVersionOutput(line, version);
-				// parseArchFromVersionOutput(line, arch);
-				// parseThreadModelFromVersionOutput(line, threadModel);
-			}
+			parseVersionFromVersionOutput(line, version);
+			// parseArchFromVersionOutput(line, arch);
+			// parseThreadModelFromVersionOutput(line, threadModel);
+		}
 
 #if defined(CHALET_LINUX)
-			if (Shell::isWindowsSubsystemForLinux())
-			{
-				if (String::contains({ "(GCC)", "-win32 " }, version))
-					version = version.substr(0, version.find(" ("));
-				else
-					version = version.substr(0, version.find_first_not_of("0123456789."));
-			}
+		if (Shell::isWindowsSubsystemForLinux())
+		{
+			if (String::contains({ "(GCC)", "-win32 " }, version))
+				version = version.substr(0, version.find(" ("));
 			else
-#endif
-			{
 				version = version.substr(0, version.find_first_not_of("0123456789."));
-			}
-
-			if (!version.empty())
-				cachedVersion = std::move(version);
 		}
-	}
+		else
+#endif
+		{
+			version = version.substr(0, version.find_first_not_of("0123456789."));
+		}
+
+		return version;
+	});
 
 	if (!cachedVersion.empty())
 	{
 		outInfo.version = std::move(cachedVersion);
-
-		sourceCache.addVersion(outInfo.path, outInfo.version);
-
 		outInfo.description = getFullCxxCompilerString(outInfo.path, outInfo.version);
 		return true;
 	}
@@ -298,7 +293,7 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
 	std::string cachedArch;
-	getArchitectureWithCache(cachedArch, compiler, [&compiler]() {
+	getDataWithCache(cachedArch, "arch", compiler, [&compiler]() {
 		auto outArch = Process::runOutput({ compiler, "-dumpmachine" });
 
 		// Make our corrections here
