@@ -472,7 +472,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		}
 	}
 
-	std::string configureFilesDeps;
+	/*std::string configureFilesDeps;
 	if (!m_project->configureFiles().empty())
 	{
 		std::string deps;
@@ -486,7 +486,7 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 			deps.pop_back();
 
 		configureFilesDeps = fmt::format(" | {}", deps);
-	}
+	}*/
 
 	const bool objectiveCxx = m_project->objectiveCxx();
 	for (auto& group : inGroups)
@@ -532,7 +532,12 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		if (rule.empty())
 			continue;
 
-		const auto& implicitDeps = group->type != SourceType::WindowsResource ? pchImplicitDep : configureFilesDeps;
+		std::string implicitDeps;
+		if (group->type != SourceType::WindowsResource)
+		{
+			implicitDeps = pchImplicitDep;
+		}
+
 		ret += fmt::format("build {object}: {rule}_{hash} {source}{implicitDeps}\n",
 			fmt::arg("hash", m_hash),
 			FMT_ARG(object),
