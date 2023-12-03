@@ -236,8 +236,11 @@ bool BuildState::isSubChaletTarget() const noexcept
 /*****************************************************************************/
 const IBuildTarget* BuildState::getFirstValidRunTarget() const
 {
-	auto lastTarget = inputs.lastTarget();
-	if (String::equals(Values::All, lastTarget) && !targets.empty())
+	if (targets.empty())
+		return nullptr;
+
+	auto lastTarget = inputs.getRunTarget();
+	if (String::equals(Values::All, lastTarget))
 		lastTarget.clear();
 
 	bool lastTargetWasSet = !lastTarget.empty();

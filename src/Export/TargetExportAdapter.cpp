@@ -133,13 +133,11 @@ std::string TargetExportAdapter::getCommand() const
 		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
 		constexpr bool quotedPaths = true;
 		constexpr bool hasSettings = false;
+
 		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
-		const auto& targetNames = subChaletTarget.targets();
-		for (auto& targetName : targetNames)
-		{
-			auto buildCmd = builder.getBuildCommand(targetName, hasSettings);
-			ret += fmt::format("{}{}", String::join(buildCmd), eol);
-		}
+
+		auto buildCmd = builder.getBuildCommand(hasSettings);
+		ret = fmt::format("{}{}", String::join(buildCmd), eol);
 	}
 	else if (m_target.isValidation())
 	{
@@ -154,7 +152,7 @@ std::string TargetExportAdapter::getCommand() const
 		{
 			validateCmd.emplace_back(fmt::format("\"{}\"", file));
 		}
-		ret += fmt::format("{}{}", String::join(validateCmd), eol);
+		ret = fmt::format("{}{}", String::join(validateCmd), eol);
 	}
 
 	if (!ret.empty())

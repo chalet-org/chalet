@@ -72,13 +72,16 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	UNUSED(inRoute);
 	m_buildTargets.clear();
 
-	auto& lastTarget = m_state.inputs.lastTarget();
-	const bool addAllTargets = String::equals(Values::All, lastTarget) || !m_state.info.onlyRequired();
+	auto buildTargets = m_state.inputs.getBuildTargets();
+	const bool addAllTargets = List::contains(buildTargets, std::string(Values::All)) || !m_state.info.onlyRequired();
 
 	StringList requiredTargets;
 	if (!addAllTargets)
 	{
-		m_state.getTargetDependencies(requiredTargets, lastTarget, true);
+		for (auto& target : buildTargets)
+		{
+			m_state.getTargetDependencies(requiredTargets, target, true);
+		}
 	}
 
 	for (auto& target : m_state.targets)
@@ -88,9 +91,6 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 			continue;
 
 		m_buildTargets.emplace_back(target.get());
-
-		if (!addAllTargets && String::equals(lastTarget, targetName))
-			break;
 	}
 }
 
@@ -152,7 +152,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	const bool runRoute = inRoute.isRun();
 	const bool routeWillRun = inRoute.willRun();
-	const auto& lastTargetName = m_state.inputs.lastTarget();
+	const auto runTargetName = m_state.inputs.getRunTarget();
 
 	if (!runRoute && m_state.toolchain.strategy() != StrategyType::Native)
 	{
@@ -227,8 +227,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	{
 		if (routeWillRun)
 		{
-			bool isRunTarget = String::equals(lastTargetName, target->name());
-			bool noExplicitRunTarget = lastTargetName.empty() && runTarget == nullptr;
+			bool isRunTarget = String::equals(runTargetName, target->name());
+			bool noExplicitRunTarget = runTargetName.empty() && runTarget == nullptr;
 
 			if (isRunTarget || noExplicitRunTarget)
 			{
@@ -371,7 +371,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		}
 		else
 		{
-			Diagnostic::error("Run target not found: '{}'", lastTargetName);
+			Diagnostic::error("Run target not found: '{}'", runTargetName);
 			return false;
 		}
 	}

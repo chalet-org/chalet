@@ -440,6 +440,32 @@ void CommandLineInputs::setLastTarget(std::string&& inValue) const noexcept
 }
 
 /*****************************************************************************/
+StringList CommandLineInputs::getBuildTargets() const
+{
+	if (m_lastTarget.empty())
+		return StringList{};
+
+	if (String::contains(',', m_lastTarget))
+	{
+		return String::split(m_lastTarget, ',');
+	}
+
+	return StringList{ m_lastTarget };
+}
+
+/*****************************************************************************/
+std::string CommandLineInputs::getRunTarget() const
+{
+	if (!m_lastTarget.empty() && String::contains(',', m_lastTarget))
+	{
+		auto split = String::split(m_lastTarget, ',');
+		return split.back();
+	}
+
+	return m_lastTarget;
+}
+
+/*****************************************************************************/
 const std::optional<StringList>& CommandLineInputs::runArguments() const noexcept
 {
 	return m_runArguments;
@@ -1122,7 +1148,7 @@ const std::optional<bool>& CommandLineInputs::onlyRequired() const noexcept
 {
 	return m_onlyRequired;
 }
-void CommandLineInputs::setOnlyRequired(const bool inValue) noexcept
+void CommandLineInputs::setOnlyRequired(const bool inValue) const noexcept
 {
 	m_onlyRequired = inValue;
 }

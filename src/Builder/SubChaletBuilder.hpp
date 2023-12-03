@@ -20,8 +20,8 @@ public:
 
 	bool run();
 
-	StringList getBuildCommand(const std::string& inTarget, const bool hasSettings = true) const;
-	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const std::string& inTarget, const bool hasSettings = true) const;
+	StringList getBuildCommand(const bool hasSettings = true) const;
+	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings = true) const;
 
 private:
 	std::string getLocation() const;

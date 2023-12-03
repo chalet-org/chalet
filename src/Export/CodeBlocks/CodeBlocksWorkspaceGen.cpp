@@ -74,16 +74,15 @@ bool CodeBlocksWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 		const auto& workspaceName = debugState.workspace.metadata().name();
 		node.addAttribute("title", workspaceName);
 
-		auto& lastTarget = debugState.inputs.lastTarget();
-
+		auto runTarget = debugState.getFirstValidRunTarget();
 		for (auto& it : dependsList)
 		{
 			auto& name = it.first;
 			auto& depends = it.second;
-			node.addElement("Project", [this, &name, &depends, &lastTarget](XmlElement& node2) {
+			node.addElement("Project", [this, &name, &depends, &runTarget](XmlElement& node2) {
 				node2.addAttribute("filename", getRelativeProjectPath(name));
 
-				if (!lastTarget.empty() && String::equals(lastTarget, name))
+				if (runTarget != nullptr && String::equals(runTarget->name(), name))
 					node2.addAttribute("active", "1");
 
 				for (auto& depend : depends)
@@ -115,29 +114,13 @@ bool CodeBlocksWorkspaceGen::createWorkspaceLayoutFile(const std::string& inFile
 	auto& xmlRoot = xml.root();
 
 	auto& debugState = getDebugState();
-	auto& lastTarget = debugState.inputs.lastTarget();
-
-	std::string activeProject;
-	for (auto& state : m_states)
-	{
-		for (auto& target : state->targets)
-		{
-			if (!lastTarget.empty() && String::equals(lastTarget, target->name()))
-			{
-				activeProject = target->name();
-				break;
-			}
-		}
-
-		if (!activeProject.empty())
-			break;
-	}
+	auto runTarget = debugState.getFirstValidRunTarget();
 
 	xmlRoot.setName("CodeBlocks_workspace_layout_file");
-	if (!activeProject.empty())
+	if (runTarget != nullptr)
 	{
-		xmlRoot.addElement("ActiveProject", [this, &activeProject](XmlElement& node) {
-			node.addAttribute("path", getRelativeProjectPath(activeProject));
+		xmlRoot.addElement("ActiveProject", [this, &runTarget](XmlElement& node) {
+			node.addAttribute("path", getRelativeProjectPath(runTarget->name()));
 		});
 	}
 	xmlRoot.addElement("PreferredTarget", [this](XmlElement& node) {

@@ -318,7 +318,6 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		return false;
 	}
 
-	auto& optionsJson = settingsJson.json.at(Keys::Options);
 	auto fetchToolchain = [&toolchains, &preference, &arch]() -> Json& {
 		auto arch2 = Arch::from(arch);
 		auto& rootToolchain = toolchains.at(preference);
@@ -327,8 +326,8 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		else
 			return rootToolchain;
 	};
-	auto& toolchain = fetchToolchain();
 
+	auto& optionsJson = settingsJson.json.at(Keys::Options);
 	if (optionsJson.contains(Keys::OptionsToolchain))
 	{
 		auto& toolchainSetting = optionsJson.at(Keys::OptionsToolchain);
@@ -362,9 +361,9 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
-	auto& lastTarget = inInputs.lastTarget();
 	if (optionsJson.contains(Keys::OptionsLastTarget))
 	{
+		auto& lastTarget = inInputs.lastTarget();
 		auto& lastTargetNode = optionsJson.at(Keys::OptionsLastTarget);
 		if (lastTargetNode.is_string() && lastTargetNode.get<std::string>() != lastTarget)
 		{
@@ -399,6 +398,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
+	auto& toolchain = fetchToolchain();
 	if (toolchain.contains(Keys::ToolchainVersion))
 	{
 		const auto& versionString = inToolchain.version();

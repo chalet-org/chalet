@@ -201,6 +201,7 @@ bool Router::routeBundle(BuildState& inState)
 
 	// We always want to build all targets during the bundle step
 	inState.inputs.setLastTarget(Values::All);
+	inState.inputs.setOnlyRequired(false);
 
 	AppBundler bundler(inState);
 	{

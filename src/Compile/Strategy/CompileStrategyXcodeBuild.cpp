@@ -99,15 +99,15 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 	}
 	else
 	{
-		auto& lastTarget = m_state.inputs.lastTarget();
-		if (!lastTarget.empty())
+		auto buildTargets = m_state.inputs.getBuildTargets();
+		for (auto& target : buildTargets)
 		{
-			cmd.emplace_back("-scheme");
-			cmd.emplace_back(lastTarget);
-		}
+			// 	cmd.emplace_back("-scheme");
+			// 	cmd.emplace_back(target);
 
-		// cmd.emplace_back("-target");
-		// cmd.emplace_back(exporter.getAllBuildTargetName());
+			cmd.emplace_back("-target");
+			cmd.emplace_back(target);
+		}
 	}
 
 	// std::string target;

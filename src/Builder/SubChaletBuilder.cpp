@@ -121,13 +121,11 @@ bool SubChaletBuilder::run()
 	{
 		// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("new cwd: {}", cwd), false);
 
-		for (auto& targetName : m_target.targets())
-		{
-			auto cmd = getBuildCommand(targetName);
-			result = Process::run(cmd);
-			if (!result)
-				return onRunFailure();
-		}
+		auto cmd = getBuildCommand();
+		result = Process::run(cmd);
+		if (!result)
+			return onRunFailure();
+
 		sourceCache.addExternalRebuild(outputLocation(), result ? "0" : "1");
 	}
 
@@ -150,16 +148,16 @@ bool SubChaletBuilder::run()
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const std::string& inTarget, const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
 {
 	auto location = getLocation();
 	auto buildFile = getBuildFile();
 
-	return getBuildCommand(location, buildFile, inTarget, hasSettings);
+	return getBuildCommand(location, buildFile, hasSettings);
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const std::string& inTarget, const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings) const
 {
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
@@ -239,7 +237,10 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 		cmd.emplace_back("build");
 
 	if (!clean)
-		cmd.emplace_back(inTarget);
+	{
+		auto target = String::join(m_target.targets(), ',');
+		cmd.emplace_back(target);
+	}
 
 	return cmd;
 }

@@ -67,6 +67,8 @@ struct CommandLineInputs
 
 	const std::string& lastTarget() const noexcept;
 	void setLastTarget(std::string&& inValue) const noexcept;
+	StringList getBuildTargets() const;
+	std::string getRunTarget() const;
 
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;
@@ -179,7 +181,7 @@ struct CommandLineInputs
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
 	const std::optional<bool>& onlyRequired() const noexcept;
-	void setOnlyRequired(const bool inValue) noexcept;
+	void setOnlyRequired(const bool inValue) const noexcept;
 
 	bool saveUserToolchainGlobally() const noexcept;
 	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
@@ -242,7 +244,7 @@ private:
 	std::optional<bool> m_launchProfiler;
 	std::optional<bool> m_keepGoing;
 	std::optional<bool> m_generateCompileCommands;
-	std::optional<bool> m_onlyRequired;
+	mutable std::optional<bool> m_onlyRequired;
 
 	CommandRoute m_route;
 

@@ -103,6 +103,12 @@ bool CompileStrategyMSBuild::doFullBuild()
 
 	cmd.emplace_back(fmt::format("-target:{}", target));
 
+	// TODO: multiple targets
+	// auto buildTargets = m_state.inputs.getBuildTargets();
+	// for (auto& target : buildTargets)
+	// {
+	// }
+
 	auto project = exporter.getMainProjectOutput(m_state);
 
 	if (m_state.inputs.route().isBundle())

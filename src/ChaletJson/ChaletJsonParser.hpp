@@ -6,8 +6,8 @@
 #pragma once
 
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
-#include "Platform/Platform.hpp"
 #include "Libraries/Json.hpp"
+#include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -46,6 +46,8 @@ struct ChaletJsonParser
 	bool serialize();
 
 private:
+	const std::string& getExpectedRunTarget() const;
+
 	bool serializeFromJsonRoot(const Json& inJson);
 
 	bool parseRoot(const Json& inNode) const;
@@ -95,6 +97,7 @@ private:
 
 	StringList m_notPlatforms;
 	std::string m_platform;
+	mutable std::string m_expectedRunTarget;
 
 	bool m_isWebPlatform = false;
 };
