@@ -5,6 +5,8 @@
 
 #include "Utility/Timer.hpp"
 
+#define CHALET_SHOW_NANOSECONDS 0
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -40,7 +42,17 @@ std::string Timer::asString(const bool inRestart)
 	u32 milliseconds = static_cast<u32>(std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count());
 
 	if (milliseconds == 0)
+	{
+#if CHALET_SHOW_NANOSECONDS
+		u64 nanoseconds = static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(executionTime).count());
+		f64 milli = static_cast<f64>(nanoseconds) / 1000000.0;
+
+		auto result = std::to_string(milli);
+		return fmt::format("{}ms", result.substr(0, 5));
+#else
 		return std::string();
+#endif
+	}
 
 	if (milliseconds < 1000)
 		return fmt::format("{}ms", milliseconds);
