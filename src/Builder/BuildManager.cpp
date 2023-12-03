@@ -501,6 +501,12 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 		return false;
 	}
 
+	if (!inProject.configureFiles().empty())
+	{
+		if (!runConfigureFileParser(inProject, m_state.paths.intermediateDir()))
+			return false;
+	}
+
 	if (!buildToolchain->initialize(m_state))
 	{
 		Diagnostic::error("Error preparing the build for project: {}", inProject.name());
@@ -513,12 +519,6 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 	if (!inProject.cppModules())
 	{
 		if (!m_strategy->addProject(inProject))
-			return false;
-	}
-
-	if (!inProject.configureFiles().empty())
-	{
-		if (!runConfigureFileParser(inProject))
 			return false;
 	}
 
@@ -558,10 +558,10 @@ bool BuildManager::runProfiler(const SourceTarget& inProject, const StringList& 
 }
 
 /*****************************************************************************/
-bool BuildManager::runConfigureFileParser(const SourceTarget& inProject)
+bool BuildManager::runConfigureFileParser(const SourceTarget& inProject, const std::string& outFolder) const
 {
 	ConfigureFileParser confFileParser(m_state, inProject);
-	return confFileParser.run(m_state.paths.intermediateDir());
+	return confFileParser.run(outFolder);
 }
 
 /*****************************************************************************/
@@ -712,8 +712,7 @@ bool BuildManager::checkIntermediateFiles() const
 			// 				outFolder = fmt::format("{}/obj.{}", m_state.paths.buildOutputDir(), project.name());
 			// 			}
 			// #endif
-			ConfigureFileParser confFileParser(m_state, project);
-			confFileParser.run(outFolder); // ignore the result
+			runConfigureFileParser(project, outFolder); // ignore the result
 		}
 
 		if (!isPlatformProjectBuild && project.unityBuild())
