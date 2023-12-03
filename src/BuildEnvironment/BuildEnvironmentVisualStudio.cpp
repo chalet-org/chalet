@@ -6,7 +6,6 @@
 #include "BuildEnvironment/BuildEnvironmentVisualStudio.hpp"
 
 #include "BuildEnvironment/Script/VisualStudioEnvironmentScript.hpp"
-#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Arch.hpp"

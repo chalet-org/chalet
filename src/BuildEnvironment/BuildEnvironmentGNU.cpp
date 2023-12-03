@@ -5,7 +5,6 @@
 
 #include "BuildEnvironment/BuildEnvironmentGNU.hpp"
 
-#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"

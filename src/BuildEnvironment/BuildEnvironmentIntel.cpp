@@ -6,7 +6,6 @@
 #include "BuildEnvironment/BuildEnvironmentIntel.hpp"
 
 #include "BuildEnvironment/Script/IntelEnvironmentScript.hpp"
-#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
