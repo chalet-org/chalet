@@ -147,11 +147,8 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	{
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) -> std::string {
 			auto temp = Process::runOutput(inCmd);
-			auto firstLineBreak = temp.find('\n');
-			if (firstLineBreak != std::string::npos)
-				return temp.substr(0, firstLineBreak);
-			else
-				return std::string();
+			auto split = String::split(temp, "\n");
+			return split.front();
 		};
 
 		if (isPreset())
@@ -196,7 +193,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 		if (!m_visualStudioPath.empty() && !Files::pathExists(m_visualStudioPath))
 		{
-			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found. ({})", m_visualStudioPath);
+			Diagnostic::error("MSVC Environment could not be fetched: The path to Visual Studio could not be found: {}", m_visualStudioPath);
 			return false;
 		}
 
