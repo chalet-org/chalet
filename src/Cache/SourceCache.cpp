@@ -20,6 +20,11 @@ SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
+	// If the last build was run < 1s ago, we need to decrement it by 1 to ensure
+	//   that files checked with stat don't cause unnecessary rebuilds
+	//
+	if (m_lastBuildTime > 0)
+		m_lastBuildTime--;
 }
 
 /*****************************************************************************/
@@ -166,6 +171,9 @@ bool SourceCache::isNewBuild() const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
+	if (inFile.empty())
+		return false;
+
 	auto lastWrite = Files::getLastWriteTime(inFile);
 	if (lastWrite == 0)
 		lastWrite = m_initializedTime;
@@ -176,7 +184,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 /*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
-	bool depDoesNotExist = !Files::pathExists(inDependency);
+	bool depDoesNotExist = !inDependency.empty() && !Files::pathExists(inDependency);
 	return depDoesNotExist || fileChangedOrDoesNotExist(inFile);
 }
 
