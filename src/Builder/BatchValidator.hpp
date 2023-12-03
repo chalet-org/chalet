@@ -10,6 +10,7 @@
 
 namespace chalet
 {
+struct SourceCache;
 class BuildState;
 
 struct BatchValidator

@@ -133,7 +133,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 		const auto& source = group->sourceFile;
 		const auto& object = group->objectFile;
 
-		if (sourceCache.fileChangedOrDoesNotExistNoCache(source, asmFile))
+		if (sourceCache.fileChangedOrDoesNotExist(source, asmFile))
 		{
 			CommandPool::Cmd out;
 			out.output = asmFile;

@@ -112,12 +112,6 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 										{
 											auto rawValue = val.get<std::string>();
 											m_sources->addDataCache(file, key.data(), rawValue);
-
-											if (key == CacheKeys::BuildFiles)
-											{
-												std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
-												m_sources->addLastWrite(file, lastWrite);
-											}
 										}
 									}
 								}
@@ -127,13 +121,14 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 						if (value.contains(CacheKeys::BuildFiles))
 						{
 							auto& files = value.at(CacheKeys::BuildFiles);
-							if (files.is_object())
+							if (files.is_array())
 							{
-								for (auto& [file, val] : files.items())
+								for (auto& hash : files)
 								{
-									auto rawValue = val.get<std::string>();
-									std::time_t lastWrite = strtoll(rawValue.c_str(), NULL, 0);
-									m_sources->addLastWrite(file, lastWrite);
+									if (hash.is_number_unsigned())
+									{
+										m_sources->addToFileCache(hash.get<size_t>());
+									}
 								}
 							}
 						}

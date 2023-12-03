@@ -32,7 +32,7 @@ bool List::addIfDoesNotExist(std::vector<VectorType>& outList, VectorType&& inVa
 
 /*****************************************************************************/
 template <typename VectorType>
-void List::removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue)
+void List::removeIfExists(std::vector<VectorType>& outList, const VectorType& inValue)
 {
 	outList.erase(std::remove(outList.begin(), outList.end(), inValue), outList.end());
 }

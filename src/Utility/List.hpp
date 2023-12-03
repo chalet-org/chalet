@@ -19,9 +19,7 @@ bool addIfDoesNotExist(std::vector<std::string>& outList, const char* inValue);
 bool addIfDoesNotExist(std::vector<std::string>& outList, const std::string& inValue);
 
 template <typename VectorType>
-void removeIfExists(std::vector<VectorType>& outList, VectorType&& inValue);
-
-void removeIfExists(std::vector<std::string>& outList, const char* inValue);
+void removeIfExists(std::vector<VectorType>& outList, const VectorType& inValue);
 
 template <typename VectorType>
 bool contains(const std::vector<VectorType>& inList, const VectorType& inValue);

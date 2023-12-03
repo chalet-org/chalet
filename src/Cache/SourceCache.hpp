@@ -5,14 +5,11 @@
 
 #pragma once
 
-#include "Cache/LastWrite.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Libraries/Json.hpp"
 
 namespace chalet
 {
-using SourceLastWriteMap = Dictionary<LastWrite>;
-
 struct SourceCache
 {
 	explicit SourceCache(const std::time_t inLastBuildTime);
@@ -31,34 +28,25 @@ struct SourceCache
 	bool updateInitializedTime();
 	bool isNewBuild() const;
 
-	void addLastWrite(std::string inFile, const std::string& inRaw);
-	void addLastWrite(std::string inFile, const std::time_t inLastWrite);
-
-	bool fileChangedOrDoesNotExistNoCache(const std::string& inFile) const;
-	bool fileChangedOrDoesNotExistNoCache(const std::string& inFile, const std::string& inDependency) const;
-	bool fileChangedOrDependantChangedNoCache(const std::string& inFile, const std::string& inDependency) const;
-
 	bool fileChangedOrDoesNotExist(const std::string& inFile) const;
 	bool fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const;
-	bool fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const;
+	bool fileChangedOrDoesNotExistWithCache(const std::string& inFile);
 
 	bool versionRequriesUpdate(const std::string& inFile, std::string& outExistingValue);
 	bool externalRequiresRebuild(const std::string& inPath);
 
-	void markForLater(const std::string& inFile);
+	void updateFileCache(const std::string& inFile, const bool inResult);
 
 private:
 	friend struct WorkspaceInternalCacheFile;
 
 	const std::string& dataCache(const std::string& inMainKey, const char* inKey) noexcept;
 	void addDataCache(const std::string& inMainKey, const char* inKey, const std::string& inValue);
-
-	void makeUpdate(const std::string& inFile, LastWrite& outFileData) const;
-	LastWrite& getLastWrite(const std::string& inFile) const;
+	void addToFileCache(size_t inValue);
 
 	Dictionary<Dictionary<std::string>> m_dataCache;
 
-	mutable SourceLastWriteMap m_lastWrites;
+	std::vector<size_t> m_fileCache;
 
 	std::time_t m_initializedTime = 0;
 	std::time_t m_lastBuildTime = 0;

@@ -38,7 +38,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	if (windowsManifestFile.empty() || windowsManifestResourceFile.empty())
 		return true;
 
-	bool manifestChanged = sources.fileChangedOrDoesNotExistNoCache(windowsManifestFile);
+	bool manifestChanged = sources.fileChangedOrDoesNotExist(windowsManifestFile);
 	if (manifestChanged)
 	{
 		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
@@ -63,7 +63,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 		}
 	}
 
-	if (sources.fileChangedOrDoesNotExistNoCache(windowsManifestResourceFile) || manifestChanged)
+	if (sources.fileChangedOrDoesNotExist(windowsManifestResourceFile) || manifestChanged)
 	{
 		std::string rcContents = PlatformFileTemplates::windowsManifestResource(windowsManifestFile, m_project.isSharedLibrary());
 
@@ -99,7 +99,7 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 	const auto& windowsIconFile = m_project.windowsApplicationIcon();
 	const auto windowsIconResourceFile = m_state.paths.getWindowsIconResourceFilename(m_project);
 
-	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExistNoCache(windowsIconFile))
+	if (!windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile))
 	{
 		const bool isNative = m_state.toolchain.strategy() == StrategyType::Native;
 		if (!isNative && Files::pathExists(windowsIconResourceFile))
@@ -112,7 +112,7 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 		}
 	}
 
-	if (!windowsIconResourceFile.empty() && sources.fileChangedOrDependantChangedNoCache(windowsIconResourceFile, windowsIconFile))
+	if (!windowsIconResourceFile.empty() && (sources.fileChangedOrDoesNotExist(windowsIconResourceFile) || sources.fileChangedOrDoesNotExist(windowsIconFile)))
 	{
 		std::string rcContents = PlatformFileTemplates::windowsIconResource(windowsIconFile);
 

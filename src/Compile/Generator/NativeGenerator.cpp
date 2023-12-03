@@ -126,15 +126,12 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 
 		if (!m_commandPool->runAll(buildJobs, settings))
 		{
-			auto& sourceCache = m_state.cache.file().sources();
 			for (auto& failure : m_commandPool->failures())
 			{
 				auto objectFile = m_state.environment->getObjectFile(failure);
 
 				if (Files::pathExists(objectFile))
 					Files::remove(objectFile);
-
-				sourceCache.markForLater(failure);
 			}
 
 			Output::lineBreak();
@@ -375,7 +372,7 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency)
 {
 	// Check the source file and target (object) if they were changed
-	bool result = m_sourceCache.fileChangedOrDoesNotExistNoCache(source, target);
+	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
 	if (result)
 		return true;
 
@@ -397,7 +394,7 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 			if (m_dependencyCache.find(line) != m_dependencyCache.end())
 				continue;
 
-			if (m_sourceCache.fileChangedOrDoesNotExistNoCache(line))
+			if (m_sourceCache.fileChangedOrDoesNotExist(line))
 				return true;
 
 			// Cache the filename if it didn't change

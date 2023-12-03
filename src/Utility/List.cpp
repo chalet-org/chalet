@@ -26,12 +26,6 @@ bool List::addIfDoesNotExist(std::vector<std::string>& outList, const std::strin
 }
 
 /*****************************************************************************/
-void List::removeIfExists(std::vector<std::string>& outList, const char* inValue)
-{
-	List::removeIfExists(outList, std::string(inValue));
-}
-
-/*****************************************************************************/
 void List::removeDuplicates(std::vector<std::string>& outList)
 {
 	auto end = outList.end();

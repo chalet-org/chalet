@@ -37,7 +37,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			sourceCache = &m_state->cache.file().sources();
 		}
 
-		bool schemaChanged = !inCache || (sourceCache && (sourceCache->isNewBuild() || sourceCache->fileChangedOrDoesNotExistNoCache(m_schemaFile)));
+		bool schemaChanged = !inCache || (sourceCache && (sourceCache->isNewBuild() || sourceCache->fileChangedOrDoesNotExistWithCache(m_schemaFile)));
 
 		// After files have been checked for changes
 		StringList files;
@@ -49,7 +49,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			for (auto& file : inFiles)
 			{
-				if (sourceCache->fileChangedOrDoesNotExistNoCache(file))
+				if (sourceCache->fileChangedOrDoesNotExistWithCache(file))
 					files.emplace_back(file);
 			}
 		}
@@ -58,12 +58,11 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		JsonValidator validator;
 		if (!files.empty())
 		{
-			if (!this->parse(schema, m_schemaFile, false))
-			{
-				if (sourceCache)
-					sourceCache->markForLater(m_schemaFile);
+			bool res = this->parse(schema, m_schemaFile, false);
+			if (sourceCache)
+				sourceCache->updateFileCache(m_schemaFile, res);
+			if (!res)
 				return false;
-			}
 
 			if (schema.contains("$schema") && schema.at("$schema").is_string())
 			{
@@ -94,22 +93,21 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			Diagnostic::subInfoEllipsis("{}", file);
 
 			Json jsonFile;
-			if (!this->parse(jsonFile, file, true))
+			bool res = this->parse(jsonFile, file, true);
+			if (sourceCache)
+				sourceCache->updateFileCache(file, res);
+			if (!res)
 			{
-				if (sourceCache)
-					sourceCache->markForLater(file);
-
 				result = false;
 				continue;
 			}
 
 			JsonValidationErrors errors;
 			bool fileValid = validator.validate(jsonFile, file, errors);
+			if (sourceCache)
+				sourceCache->updateFileCache(file, fileValid);
 			if (!fileValid)
 			{
-				if (sourceCache)
-					sourceCache->markForLater(file);
-
 				Diagnostic::error("File: {}", file);
 				if (!validator.printErrors(errors))
 					result = false;

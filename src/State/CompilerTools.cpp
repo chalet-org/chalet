@@ -67,10 +67,10 @@ StringList CompilerTools::getToolchainStrategies()
 	StringList ret = getToolchainStrategiesForSchema();
 
 #if !defined(CHALET_WIN32)
-	List::removeIfExists(ret, "msbuild");
+	List::removeIfExists(ret, std::string("msbuild"));
 #endif
 #if !defined(CHALET_MACOS)
-	List::removeIfExists(ret, "xcodebuild");
+	List::removeIfExists(ret, std::string("xcodebuild"));
 #endif
 
 	return ret;

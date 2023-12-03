@@ -79,7 +79,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 		auto outPath = fmt::format("{}/{}", inOutputFolder, outFile);
 
-		bool configFileChanged = sources.fileChangedOrDoesNotExistNoCache(configureFile);
+		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
 		bool pathExists = Files::pathExists(outPath);
 		if (configFileChanged || metadataChanged || !pathExists)
 		{

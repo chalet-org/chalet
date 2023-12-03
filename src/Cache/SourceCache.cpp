@@ -7,6 +7,8 @@
 
 #include "System/Files.hpp"
 #include "Utility/EnumIterator.hpp"
+#include "Utility/Hash.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonKeys.hpp"
 
@@ -89,6 +91,12 @@ void SourceCache::addDataCache(const std::string& inMainKey, const char* inKey, 
 }
 
 /*****************************************************************************/
+void SourceCache::addToFileCache(size_t inValue)
+{
+	m_fileCache.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
 bool SourceCache::dirty() const
 {
 	return m_dirty;
@@ -125,26 +133,14 @@ Json SourceCache::asJson() const
 		}
 	}
 
-	if (!m_lastWrites.empty())
+	if (!m_fileCache.empty())
 	{
-		ret[CacheKeys::BuildFiles] = Json::object();
+		ret[CacheKeys::BuildFiles] = Json::array();
 
-		for (auto& [file, data] : m_lastWrites)
+		for (auto& hash : m_fileCache)
 		{
-			if (!Files::pathExists(file))
-				continue;
-
-			if (data.needsUpdate)
-				makeUpdate(file, data);
-
-			if (m_dataCache.find(file) != m_dataCache.end())
-				ret[CacheKeys::DataCache][file][CacheKeys::BuildFiles] = std::to_string(data.lastWrite);
-			else
-				ret[CacheKeys::BuildFiles][file] = std::to_string(data.lastWrite);
+			ret[CacheKeys::BuildFiles].push_back(hash);
 		}
-
-		if (ret[CacheKeys::BuildFiles].empty())
-			ret.erase(CacheKeys::BuildFiles);
 	}
 
 	return ret;
@@ -168,25 +164,7 @@ bool SourceCache::isNewBuild() const
 }
 
 /*****************************************************************************/
-void SourceCache::addLastWrite(std::string inFile, const std::string& inRaw)
-{
-	std::time_t lastWrite = strtoll(inRaw.c_str(), NULL, 0);
-	auto& fileData = m_lastWrites[std::move(inFile)];
-	fileData.lastWrite = lastWrite;
-	fileData.needsUpdate = true;
-	m_dirty = true;
-}
-
-void SourceCache::addLastWrite(std::string inFile, const std::time_t inLastWrite)
-{
-	auto& fileData = m_lastWrites[std::move(inFile)];
-	fileData.lastWrite = inLastWrite;
-	fileData.needsUpdate = true;
-	m_dirty = true;
-}
-
-/*****************************************************************************/
-bool SourceCache::fileChangedOrDoesNotExistNoCache(const std::string& inFile) const
+bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 {
 	auto lastWrite = Files::getLastWriteTime(inFile);
 	if (lastWrite == 0)
@@ -196,82 +174,23 @@ bool SourceCache::fileChangedOrDoesNotExistNoCache(const std::string& inFile) co
 }
 
 /*****************************************************************************/
-bool SourceCache::fileChangedOrDoesNotExistNoCache(const std::string& inFile, const std::string& inDependency) const
-{
-	bool depDoesNotExist = !Files::pathExists(inDependency);
-	return depDoesNotExist || fileChangedOrDoesNotExistNoCache(inFile);
-}
-
-/*****************************************************************************/
-bool SourceCache::fileChangedOrDependantChangedNoCache(const std::string& inFile, const std::string& inDependency) const
-{
-	return fileChangedOrDoesNotExistNoCache(inFile) || fileChangedOrDoesNotExistNoCache(inDependency);
-}
-
-/*****************************************************************************/
-bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
-{
-	auto& fileData = getLastWrite(inFile);
-	if (!Files::pathExists(inFile))
-	{
-		fileData.lastWrite = m_initializedTime;
-		fileData.needsUpdate = true;
-		m_dirty = true;
-		return true;
-	}
-
-	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
-		makeUpdate(inFile, fileData);
-
-	return fileData.lastWrite > m_lastBuildTime;
-}
-
-/*****************************************************************************/
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
-	auto& fileData = getLastWrite(inFile);
-	if (!Files::pathExists(inFile))
-	{
-		fileData.lastWrite = m_initializedTime;
-		fileData.needsUpdate = true;
-		m_dirty = true;
-		return true;
-	}
-
-	if (!Files::pathExists(inDependency))
-	{
-		auto lastWrite = Files::getLastWriteTime(inFile);
-		if (lastWrite == 0)
-			lastWrite = m_initializedTime;
-
-		fileData.lastWrite = lastWrite;
-		fileData.needsUpdate = false;
-		m_dirty = true;
-		return true;
-	}
-
-	if (fileData.needsUpdate && fileData.lastWrite < std::numeric_limits<std::time_t>::max())
-		makeUpdate(inFile, fileData);
-
-	return fileData.lastWrite > m_lastBuildTime;
+	bool depDoesNotExist = !Files::pathExists(inDependency);
+	return depDoesNotExist || fileChangedOrDoesNotExist(inFile);
 }
 
-/*****************************************************************************/
-bool SourceCache::fileChangedOrDependantChanged(const std::string& inFile, const std::string& inDependency) const
+bool SourceCache::fileChangedOrDoesNotExistWithCache(const std::string& inFile)
 {
-	return fileChangedOrDoesNotExist(inFile) || fileChangedOrDoesNotExist(inDependency);
-}
-
-/*****************************************************************************/
-void SourceCache::markForLater(const std::string& inFile)
-{
-	if (m_lastWrites.find(inFile) != m_lastWrites.end())
+	bool result = fileChangedOrDoesNotExist(inFile);
+	if (!result)
 	{
-		auto& fileData = m_lastWrites.at(inFile);
-		fileData.lastWrite = std::numeric_limits<std::time_t>::max();
-		fileData.needsUpdate = false;
-		m_dirty = true;
+		auto hash = Hash::uint64(inFile);
+		if (List::contains(m_fileCache, hash))
+			result = true;
 	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -291,33 +210,16 @@ bool SourceCache::externalRequiresRebuild(const std::string& inPath)
 }
 
 /*****************************************************************************/
-void SourceCache::makeUpdate(const std::string& inFile, LastWrite& outFileData) const
+void SourceCache::updateFileCache(const std::string& inFile, const bool inResult)
 {
-	auto lastWrite = Files::getLastWriteTime(inFile);
-	if (lastWrite > m_initializedTime)
+	auto hash = Hash::uint64(inFile);
+	if (inResult)
 	{
-		outFileData.lastWrite = m_initializedTime;
+		List::removeIfExists(m_fileCache, hash);
 	}
 	else
 	{
-		if (lastWrite == 0)
-			lastWrite = m_initializedTime;
-
-		outFileData.lastWrite = lastWrite;
+		List::addIfDoesNotExist(m_fileCache, std::move(hash));
 	}
-
-	outFileData.needsUpdate = false;
-	m_dirty = true;
 }
-
-/*****************************************************************************/
-LastWrite& SourceCache::getLastWrite(const std::string& inFile) const
-{
-	if (m_lastWrites.find(inFile) == m_lastWrites.end())
-	{
-		m_lastWrites.emplace(inFile, LastWrite());
-	}
-	return m_lastWrites.at(inFile);
-}
-
 }

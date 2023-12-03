@@ -332,7 +332,7 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	// calls to sips take a significant chunk of time,
 	//   so we only do this if the icon doesn't exist or has changed
 	//
-	if (!sourceCache.fileChangedOrDoesNotExistNoCache(icon, inOutPath))
+	if (!sourceCache.fileChangedOrDoesNotExist(icon, inOutPath))
 		return true;
 
 	if (!Files::pathExists(inOutPath))
