@@ -22,6 +22,12 @@ struct CompileStrategyMSBuild final : ICompileStrategy
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
+	StringList getMsBuildCommand(const std::string& inMsBuild, const std::string& inProjectName) const;
+	std::string getMsBuildTarget() const;
+	bool subprocessMsBuild(const StringList& inCmd, std::string inCwd) const;
+
+	std::string m_solution;
+
 	bool m_initialized = false;
 };
 }

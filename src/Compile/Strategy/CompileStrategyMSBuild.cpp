@@ -11,6 +11,8 @@
 #include "Export/VSSolutionProjectExporter.hpp"
 #include "Platform/Arch.hpp"
 #include "Process/Process.hpp"
+#include "Process/ProcessOptions.hpp"
+#include "Process/SubProcessController.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -18,7 +20,9 @@
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -56,7 +60,6 @@ bool CompileStrategyMSBuild::doFullBuild()
 {
 	// msbuild -nologo -t:Clean,Build -verbosity:m -clp:ForceConsoleColor -property:Configuration=Debug -property:Platform=x64 build/.projects/project.sln
 
-	auto& route = m_state.inputs.route();
 	auto& cwd = m_state.inputs.workingDirectory();
 
 	auto msbuild = Files::which("msbuild");
@@ -67,12 +70,57 @@ bool CompileStrategyMSBuild::doFullBuild()
 	}
 
 	VSSolutionProjectExporter exporter(m_state.inputs);
+	m_solution = exporter.getMainProjectOutput(m_state);
 
 	// TODO: In a recent version of MSBuild (observed in 17.6.3), there's an extra line break in minimal verbosity mode.
 	//   Unsure if it's intentional, or a bug, but we'll heandle it for now
 	//
-	if (m_state.toolchain.versionMajorMinor() >= 1706 && !Output::showCommands())
-		Output::previousLine();
+	// if (m_state.toolchain.versionMajorMinor() >= 1706 && !Output::showCommands())
+	// 	Output::previousLine();
+
+	auto buildTargets = m_state.inputs.getBuildTargets();
+	if (buildTargets.empty())
+		buildTargets.emplace_back(Values::All);
+
+	const bool keepGoing = m_state.info.keepGoing();
+	bool result = !buildTargets.empty();
+	for (auto& target : buildTargets)
+	{
+		auto cmd = getMsBuildCommand(msbuild, target);
+		if (Output::showCommands())
+		{
+			result &= Process::run(cmd);
+		}
+		else
+		{
+			result &= subprocessMsBuild(cmd, cwd);
+		}
+
+		if (!keepGoing && !result)
+			break;
+	}
+
+	if (result)
+	{
+		auto sln = m_solution;
+		String::replaceAll(sln, fmt::format("{}/", cwd), "");
+		Output::msgAction("Succeeded", sln);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+bool CompileStrategyMSBuild::buildProject(const SourceTarget& inProject)
+{
+	UNUSED(inProject);
+	return true;
+}
+
+/*****************************************************************************/
+StringList CompileStrategyMSBuild::getMsBuildCommand(const std::string& msbuild, const std::string& inProjectName) const
+{
+	chalet_assert(!m_solution.empty(), "m_solution was not assigned");
 
 	StringList cmd{
 		msbuild,
@@ -93,49 +141,121 @@ bool CompileStrategyMSBuild::doFullBuild()
 	auto arch = Arch::toVSArch2(m_state.info.targetArchitecture());
 	cmd.emplace_back(fmt::format("-property:Platform={}", arch));
 
-	std::string target;
-	if (route.isClean())
-		target = "Clean";
-	else if (route.isRebuild())
-		target = "Clean,Build";
-	else
-		target = "Build";
+	cmd.emplace_back(fmt::format("-target:{}", getMsBuildTarget()));
 
-	cmd.emplace_back(fmt::format("-target:{}", target));
-
-	// TODO: multiple targets
-	// auto buildTargets = m_state.inputs.getBuildTargets();
-	// for (auto& target : buildTargets)
-	// {
-	// }
-
-	auto project = exporter.getMainProjectOutput(m_state);
-
-	if (m_state.inputs.route().isBundle())
+	if (String::equals(Values::All, inProjectName))
 	{
-		cmd.emplace_back(project);
+		cmd.emplace_back(m_solution);
 	}
 	else
 	{
-		auto folder = String::getPathFolder(project);
-		cmd.emplace_back(fmt::format("{}/vcxproj/all.vcxproj", folder));
+		auto folder = String::getPathFolder(m_solution);
+		cmd.emplace_back(fmt::format("{}/vcxproj/{}.vcxproj", folder, inProjectName));
 	}
 
-	bool result = Process::run(cmd);
-	if (result)
-	{
-		String::replaceAll(project, fmt::format("{}/", cwd), "");
-		Output::msgAction("Succeeded", project);
-	}
-
-	return result;
+	return cmd;
 }
 
 /*****************************************************************************/
-bool CompileStrategyMSBuild::buildProject(const SourceTarget& inProject)
+std::string CompileStrategyMSBuild::getMsBuildTarget() const
 {
-	UNUSED(inProject);
-	return true;
+	auto& route = m_state.inputs.route();
+
+	if (route.isClean())
+		return "Clean";
+	else if (route.isRebuild())
+		return "Clean,Build";
+	else
+		return "Build";
+}
+
+/*****************************************************************************/
+bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::string inCwd) const
+{
+	if (Output::showCommands())
+		Output::printCommand(inCmd);
+
+	const auto color = Output::getAnsiStyle(Output::theme().build);
+	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+
+	auto cwd = fmt::format("{}/", inCwd);
+	Path::toWindows(cwd);
+
+	std::string errors;
+	auto processLine = [&cwd, &color, &reset, &errors](std::string& inLine) {
+		if (!inLine.empty())
+		{
+			if (String::contains(": error ", inLine))
+			{
+				errors += inLine;
+			}
+			else if (String::contains(": warning ", inLine))
+			{
+				std::cout.write(inLine.data(), inLine.size());
+				std::cout.flush();
+			}
+			else
+			{
+				if (String::startsWith("\x1b[m", inLine))
+					inLine = inLine.substr(3);
+
+				if (String::startsWith("  ", inLine))
+					inLine = inLine.substr(2);
+
+				String::replaceAll(inLine, cwd, "");
+				Path::toUnix(inLine);
+				auto coloredLine = fmt::format("   {}{}{}", color, inLine, reset);
+				std::cout.write(coloredLine.data(), coloredLine.size());
+				std::cout.flush();
+			}
+		}
+	};
+
+	std::string data;
+	std::string eol = String::eol();
+
+	ProcessOptions options;
+	options.cwd = std::move(inCwd);
+	options.stdoutOption = PipeOption::Pipe;
+	options.stderrOption = PipeOption::Pipe;
+	options.onStdErr = [&errors](std::string inData) -> void {
+		errors += std::move(inData);
+	};
+	options.onStdOut = [&processLine, &data, &eol](std::string inData) -> void {
+		auto lineBreak = inData.find(eol);
+		if (lineBreak == std::string::npos)
+		{
+			data += std::move(inData);
+		}
+		else
+		{
+			while (lineBreak != std::string::npos)
+			{
+				if (lineBreak > 0)
+				{
+					data += inData.substr(0, lineBreak + eol.size());
+				}
+				processLine(data);
+				data.clear();
+
+				inData = inData.substr(lineBreak + eol.size());
+				lineBreak = inData.find(eol);
+				if (lineBreak == std::string::npos)
+				{
+					data += std::move(inData);
+				}
+			}
+		}
+	};
+
+	i32 result = SubProcessController::run(inCmd, options);
+
+	if (!errors.empty())
+	{
+		std::cout.write(errors.data(), errors.size());
+	}
+
+	return result == EXIT_SUCCESS;
 }
 
 }

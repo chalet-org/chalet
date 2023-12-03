@@ -22,7 +22,7 @@ struct CompileStrategyXcodeBuild final : ICompileStrategy
 	virtual bool buildProject(const SourceTarget& inProject) final;
 
 private:
-	bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd);
+	bool subprocessXcodeBuild(const StringList& inCmd, std::string inCwd) const;
 
 	std::string getPlatformName() const;
 

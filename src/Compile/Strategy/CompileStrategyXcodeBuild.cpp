@@ -23,6 +23,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -103,6 +104,9 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		if (onlyRequired)
 		{
 			auto buildTargets = m_state.inputs.getBuildTargets();
+			if (buildTargets.empty())
+				buildTargets.emplace_back(Values::All);
+
 			for (auto& target : buildTargets)
 			{
 				// 	cmd.emplace_back("-scheme");
@@ -115,7 +119,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 		else
 		{
 			cmd.emplace_back("-target");
-			cmd.emplace_back("all");
+			cmd.emplace_back(Values::All);
 		}
 	}
 
@@ -180,7 +184,7 @@ bool CompileStrategyXcodeBuild::buildProject(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd)
+bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, std::string inCwd) const
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -274,7 +278,6 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 	bool errored = false;
 	bool allowOutput = false;
 	auto processLine = [&cwd, &printed, &allowOutput, &errored, &color, &reset](std::string& inLine) {
-		UNUSED(inLine);
 		UNUSED(getTargetName);
 
 		if (String::startsWith("Compile", inLine))
