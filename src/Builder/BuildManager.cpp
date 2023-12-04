@@ -112,6 +112,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (m_state.cache.file().canWipeBuildFolder())
 	{
+		LOG("canWipeBuildFolder():", true);
 		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
@@ -596,7 +597,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 		else if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			if (inCleanExternals || subChaletTarget.clean())
+			if (inCleanExternals)
 				didClean |= doSubChaletClean(subChaletTarget);
 
 			List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
@@ -604,7 +605,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			if (inCleanExternals || cmakeTarget.clean())
+			if (inCleanExternals)
 				didClean |= doCMakeClean(cmakeTarget);
 
 			List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
@@ -724,8 +725,8 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 	auto targetFolder = inTarget.targetFolder();
 	Path::toUnix(targetFolder);
 
-	bool clean = m_state.inputs.route().isClean() || inTarget.clean();
-	bool rebuild = m_state.inputs.route().isRebuild() || inTarget.rebuild();
+	bool clean = m_state.inputs.route().isClean() && inTarget.clean();
+	bool rebuild = m_state.inputs.route().isRebuild() && inTarget.rebuild();
 
 	if (clean)
 	{
@@ -751,8 +752,8 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 	auto targetFolder = inTarget.targetFolder();
 	Path::toUnix(targetFolder);
 
-	bool clean = m_state.inputs.route().isClean() || inTarget.clean();
-	bool rebuild = m_state.inputs.route().isRebuild() || inTarget.rebuild();
+	bool clean = m_state.inputs.route().isClean() && inTarget.clean();
+	bool rebuild = m_state.inputs.route().isRebuild() && inTarget.rebuild();
 
 	if ((clean || rebuild) && Files::pathExists(targetFolder))
 	{
