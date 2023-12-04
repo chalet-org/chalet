@@ -64,19 +64,19 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		bool compileTarget = m_sourcesChanged || m_pchChanged || dependentchanged || !targetExists;
+		m_compileTarget = m_sourcesChanged || m_pchChanged || dependentchanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(outputs->groups);
 			if (!target->list.empty() || !targetExists)
 			{
 				jobs.emplace_back(std::move(target));
-				compileTarget = true;
+				m_compileTarget = true;
 			}
 		}
 
 		const auto& toCache = outputs->target;
-		if (compileTarget && m_fileCache.find(toCache) == m_fileCache.end())
+		if (m_compileTarget && m_fileCache.find(toCache) == m_fileCache.end())
 		{
 			m_fileCache.emplace(toCache, true);
 
@@ -142,6 +142,12 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool NativeGenerator::targetCompiled() const noexcept
+{
+	return m_compileTarget;
 }
 
 /*****************************************************************************/

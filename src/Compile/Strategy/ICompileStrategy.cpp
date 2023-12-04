@@ -75,7 +75,13 @@ bool ICompileStrategy::isXcodeBuild() const noexcept
 /*****************************************************************************/
 bool ICompileStrategy::saveCompileCommands() const
 {
-	return m_compileCommandsGenerator.save();
+	if (m_filesUpdated)
+	{
+		if (!m_compileCommandsGenerator.save())
+			return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

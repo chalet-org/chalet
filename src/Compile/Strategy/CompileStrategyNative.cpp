@@ -58,6 +58,7 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyNative::doPreBuild()
 {
+	m_filesUpdated = false;
 	m_nativeGenerator.initialize();
 	if (m_initialized && m_cacheNeedsUpdate)
 	{
@@ -81,6 +82,8 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 {
 	if (!m_nativeGenerator.buildProject(inProject))
 		return false;
+
+	m_filesUpdated |= m_nativeGenerator.targetCompiled();
 
 	return true;
 }

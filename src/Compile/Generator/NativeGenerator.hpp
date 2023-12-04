@@ -28,6 +28,8 @@ public:
 	void initialize();
 	void dispose() const;
 
+	bool targetCompiled() const noexcept;
+
 private:
 	CommandPool::CmdList getPchCommands(const std::string& pchTarget);
 	CommandPool::CmdList getCompileCommands(const SourceFileGroupList& inGroups);
@@ -56,5 +58,6 @@ private:
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
+	bool m_compileTarget = false;
 };
 }
