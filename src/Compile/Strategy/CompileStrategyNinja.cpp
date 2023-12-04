@@ -138,10 +138,15 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 
 	Environment::set(kNinjaStatus, oldNinjaStatus);
 
-	// if (!result)
-	// {
-	// 	Output::lineBreak();
-	// }
+	if (!result)
+	{
+		m_filesUpdated = true;
+		// Output::lineBreak();
+	}
+	else
+	{
+		checkIfTargetWasUpdated(inProject);
+	}
 
 	return result;
 }

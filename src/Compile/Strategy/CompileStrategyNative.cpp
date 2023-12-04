@@ -48,7 +48,6 @@ bool CompileStrategyNative::initialize()
 bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 {
 	const auto& name = inProject.name();
-
 	if (!m_nativeGenerator.addProject(inProject, m_outputs.at(name), m_toolchains.at(name)))
 		return false;
 
@@ -58,7 +57,6 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool CompileStrategyNative::doPreBuild()
 {
-	m_filesUpdated = false;
 	m_nativeGenerator.initialize();
 	if (m_initialized && m_cacheNeedsUpdate)
 	{
@@ -81,7 +79,10 @@ bool CompileStrategyNative::doPostBuild() const
 bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 {
 	if (!m_nativeGenerator.buildProject(inProject))
+	{
+		m_filesUpdated = true;
 		return false;
+	}
 
 	m_filesUpdated |= m_nativeGenerator.targetCompiled();
 

@@ -114,6 +114,19 @@ bool CompileStrategyMSBuild::doFullBuild()
 	if (!Output::showCommands())
 		Environment::set("BUILD_FROM_CHALET", std::string());
 
+	if (!result)
+	{
+		m_filesUpdated = true;
+	}
+	else
+	{
+		for (auto& target : m_state.targets)
+		{
+			if (target->isSources())
+				checkIfTargetWasUpdated(static_cast<const SourceTarget&>(*target));
+		}
+	}
+
 	return result;
 }
 

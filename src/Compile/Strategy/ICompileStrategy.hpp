@@ -44,6 +44,8 @@ struct ICompileStrategy
 	bool buildProjectModules(const SourceTarget& inProject);
 
 protected:
+	void checkIfTargetWasUpdated(const SourceTarget& inProject);
+
 	BuildState& m_state;
 
 	Dictionary<Unique<SourceOutputs>> m_outputs;
@@ -54,7 +56,7 @@ protected:
 
 	StrategyType m_type;
 
-	bool m_filesUpdated = true;
+	bool m_filesUpdated = false;
 
 private:
 	bool addCompileCommands(const SourceTarget& inProject);

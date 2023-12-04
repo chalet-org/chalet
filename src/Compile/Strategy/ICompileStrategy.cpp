@@ -6,6 +6,8 @@
 #include "Compile/Strategy/ICompileStrategy.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
 #include "State/BuildInfo.hpp"
@@ -150,9 +152,20 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 			return false;
 	}
 
-	UNUSED(inProject);
+	checkIfTargetWasUpdated(inProject);
 
 	return true;
+}
+
+/*****************************************************************************/
+void ICompileStrategy::checkIfTargetWasUpdated(const SourceTarget& inProject)
+{
+	auto& sourceCache = m_state.cache.file().sources();
+	auto output = m_state.paths.getTargetFilename(inProject);
+	if (sourceCache.fileChangedOrDoesNotExist(output))
+	{
+		m_filesUpdated = true;
+	}
 }
 
 /*****************************************************************************/

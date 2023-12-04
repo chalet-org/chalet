@@ -102,17 +102,29 @@ bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject)
 
 	StringList command;
 
+	bool result = false;
 #if defined(CHALET_WIN32)
 	const bool makeIsNMake = m_state.toolchain.makeIsNMake();
 	if (makeIsNMake)
 	{
-		return buildNMake(inProject);
+		result = buildNMake(inProject);
 	}
 	else
 #endif
 	{
-		return buildMake(inProject);
+		result = buildMake(inProject);
 	}
+
+	if (!result)
+	{
+		m_filesUpdated = true;
+	}
+	else
+	{
+		checkIfTargetWasUpdated(inProject);
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
