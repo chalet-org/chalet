@@ -85,7 +85,6 @@ private:
 
 	bool m_forceRebuild = false;
 	bool m_buildHashChanged = false;
-	bool m_toolchainHashChanged = false;
 	bool m_toolchainChangedForBuildOutputPath = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;
