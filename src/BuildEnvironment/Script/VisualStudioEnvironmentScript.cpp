@@ -85,38 +85,11 @@ void VisualStudioEnvironmentScript::setArchitecture(const std::string& inHost, c
 }
 
 /*****************************************************************************/
-void VisualStudioEnvironmentScript::setVersion(const std::string& inValue, const VisualStudioVersion inVsVersion, const std::string& inCachePath)
+void VisualStudioEnvironmentScript::setVersion(const std::string& inValue, const std::string& inRawValue, const VisualStudioVersion inVsVersion)
 {
-	m_rawVersion = inValue;
+	m_rawVersion = inRawValue;
 	m_vsVersion = inVsVersion;
-
-	if (m_rawVersion.empty())
-	{
-		m_detectedVersion.clear();
-		if (!Files::pathExists(inCachePath))
-		{
-			m_detectedVersion = getVisualStudioVersion(m_vsVersion);
-
-			// If there is more than one version installed, prefer the first version retrieved
-			auto lineBreak = m_detectedVersion.find('\n');
-			if (lineBreak != std::string::npos)
-			{
-				m_detectedVersion = m_detectedVersion.substr(0, lineBreak);
-			}
-
-			std::ofstream(inCachePath) << m_detectedVersion + '\n';
-		}
-		else
-		{
-			m_detectedVersion = Files::getFileContents(inCachePath);
-			while (m_detectedVersion.back() == '\n')
-				m_detectedVersion.pop_back();
-		}
-	}
-	else
-	{
-		m_detectedVersion = m_rawVersion;
-	}
+	m_detectedVersion = inValue;
 }
 
 /*****************************************************************************/
@@ -319,7 +292,16 @@ std::string VisualStudioEnvironmentScript::getVisualStudioVersion(const VisualSt
 	addProductOptions(vswhereCmd);
 	vswhereCmd.emplace_back("-property");
 	vswhereCmd.emplace_back("installationVersion");
-	return Process::runOutput(vswhereCmd);
+	auto result = Process::runOutput(vswhereCmd);
+
+	// If there is more than one version installed, prefer the first version retrieved
+	auto lineBreak = result.find('\n');
+	if (lineBreak != std::string::npos)
+	{
+		result = result.substr(0, lineBreak);
+	}
+
+	return result;
 }
 
 /*****************************************************************************/

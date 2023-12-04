@@ -23,6 +23,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -117,7 +118,8 @@ bool CmakeBuilder::run()
 	};
 
 	auto& sourceCache = m_state.cache.file().sources();
-	bool lastBuildFailed = sourceCache.externalRequiresRebuild(outputLocation());
+	auto outputHash = Hash::string(outputLocation());
+	bool lastBuildFailed = sourceCache.dataCacheValueIsFalse(outputHash);
 	bool dependencyUpdated = dependencyHasUpdate();
 
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
@@ -149,7 +151,7 @@ bool CmakeBuilder::run()
 
 		// this will control ninja output, and other build outputs should be unaffected
 		bool result = Process::runNinjaBuild(command);
-		sourceCache.addExternalRebuild(outputLocation(), result ? "0" : "1");
+		sourceCache.addDataCache(outputHash, result);
 		if (!result)
 			return onRunFailure(false);
 

@@ -14,7 +14,7 @@
 namespace chalet
 {
 struct IBuildEnvironment;
-struct SourceCache;
+struct WorkspaceInternalCacheFile;
 
 struct CompilerTools
 {
@@ -25,9 +25,9 @@ struct CompilerTools
 	bool initialize(IBuildEnvironment& inEnvironment);
 	bool validate();
 
-	void fetchMakeVersion(SourceCache& inCache);
-	bool fetchCmakeVersion(SourceCache& inCache);
-	void fetchNinjaVersion(SourceCache& inCache);
+	void fetchMakeVersion(WorkspaceInternalCacheFile& inCache);
+	bool fetchCmakeVersion(WorkspaceInternalCacheFile& inCache);
+	void fetchNinjaVersion(WorkspaceInternalCacheFile& inCache);
 
 	StrategyType strategy() const noexcept;
 	void setStrategy(const StrategyType inValue) noexcept;

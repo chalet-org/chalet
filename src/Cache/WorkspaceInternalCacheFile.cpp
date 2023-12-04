@@ -24,35 +24,6 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() = default;
 WorkspaceInternalCacheFile::~WorkspaceInternalCacheFile() = default;
 
 /*****************************************************************************/
-void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
-{
-	m_buildHashChanged = m_hashBuild != inValue;
-	m_dirty |= m_buildHashChanged;
-	m_hashBuild = inValue;
-}
-
-/*****************************************************************************/
-void WorkspaceInternalCacheFile::setBuildOutputCache(const std::string& inPath, const std::string& inToolchain)
-{
-	if (m_outputPathCache.find(inPath) != m_outputPathCache.end())
-	{
-		auto& toolchain = m_outputPathCache.at(inPath);
-		m_toolchainChangedForBuildOutputPath = toolchain != inToolchain;
-		if (m_toolchainChangedForBuildOutputPath)
-		{
-			m_outputPathCache[inPath] = inToolchain;
-			m_dirty = true;
-		}
-	}
-	else
-	{
-		m_outputPathCache.emplace(inPath, inToolchain);
-		m_toolchainChangedForBuildOutputPath = false;
-		m_dirty = true;
-	}
-}
-
-/*****************************************************************************/
 bool WorkspaceInternalCacheFile::sourceCacheAvailable() const
 {
 	return m_sources != nullptr;
@@ -112,20 +83,16 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 						if (i32 val; m_dataFile->assignFromKey(val, value, CacheKeys::BuildLastBuildStrategy))
 							m_sources->setLastBuildStrategy(val);
 
-						if (value.contains(CacheKeys::DataCache))
+						if (value.contains(CacheKeys::HashDataCache))
 						{
-							auto& dataJson = value.at(CacheKeys::DataCache);
+							auto& dataJson = value.at(CacheKeys::HashDataCache);
 							if (dataJson.is_object())
 							{
-								for (auto& [file, data] : dataJson.items())
+								for (auto& [key, val] : dataJson.items())
 								{
-									if (data.is_object())
+									if (val.is_string())
 									{
-										for (auto& [key, val] : data.items())
-										{
-											auto rawValue = val.get<std::string>();
-											m_sources->addDataCache(file, key.data(), rawValue);
-										}
+										m_sources->addDataCache(key, val.get<std::string>());
 									}
 								}
 							}
@@ -164,7 +131,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 	}
 
 	if (inStrategy != StrategyType::None)
-		m_sources->setLastBuildStrategy(inStrategy, true);
+		m_sources->setLastBuildStrategy(static_cast<i32>(inStrategy), true);
 
 	m_sources->updateInitializedTime();
 
@@ -245,6 +212,96 @@ bool WorkspaceInternalCacheFile::removeExtraCache(const std::string& inId)
 }
 
 /*****************************************************************************/
+void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
+{
+	m_buildHashChanged = m_hashBuild != inValue;
+	m_dirty |= m_buildHashChanged;
+	m_hashBuild = inValue;
+}
+
+/*****************************************************************************/
+void WorkspaceInternalCacheFile::setBuildOutputCache(const std::string& inPath, const std::string& inToolchain)
+{
+	if (m_outputPathCache.find(inPath) != m_outputPathCache.end())
+	{
+		auto& toolchain = m_outputPathCache.at(inPath);
+		m_toolchainChangedForBuildOutputPath = toolchain != inToolchain;
+		if (m_toolchainChangedForBuildOutputPath)
+		{
+			m_outputPathCache[inPath] = inToolchain;
+			m_dirty = true;
+		}
+	}
+	else
+	{
+		m_outputPathCache.emplace(inPath, inToolchain);
+		m_toolchainChangedForBuildOutputPath = false;
+		m_dirty = true;
+	}
+}
+
+/*****************************************************************************/
+std::string WorkspaceInternalCacheFile::getDataValue(const std::string& inHash, const GetDataCallback& onGet)
+{
+	auto result = getDataCacheValue(inHash);
+	if (result.empty())
+	{
+		if (onGet != nullptr)
+			result = onGet();
+
+		addToDataCache(inHash, result);
+	}
+	return result;
+}
+
+/*****************************************************************************/
+std::string WorkspaceInternalCacheFile::getDataValueFromPath(const std::string& inPath, const GetDataCallback& onGet)
+{
+	chalet_assert(m_sources != nullptr, "getDataValueFromPath called before sources were set");
+
+	auto hash = Hash::string(inPath);
+	auto result = getDataCacheValue(hash);
+	if (result.empty() || m_sources->fileChangedOrDoesNotExist(inPath))
+	{
+		if (onGet != nullptr)
+			result = onGet();
+
+		addToDataCache(hash, result);
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+void WorkspaceInternalCacheFile::addToDataCache(const std::string& inKey, std::string value)
+{
+	String::replaceAll(value, String::eol(), "");
+#if defined(CHALET_WIN32)
+	String::replaceAll(value, "\n", "");
+#endif
+
+	if (m_dataCache.find(inKey) != m_dataCache.end())
+	{
+		m_dataCache[inKey] = value;
+	}
+	else
+	{
+		m_dataCache.emplace(inKey, std::move(value));
+	}
+}
+
+/*****************************************************************************/
+const std::string& WorkspaceInternalCacheFile::getDataCacheValue(const std::string& inKey)
+{
+	if (m_dataCache.find(inKey) == m_dataCache.end())
+	{
+		m_dataCache[inKey] = std::string();
+	}
+
+	return m_dataCache.at(inKey);
+}
+
+/*****************************************************************************/
 bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const std::string& inBuildFile)
 {
 	m_filename = inFilename;
@@ -289,6 +346,18 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 					for (auto& [key, value] : pathCache.items())
 					{
 						m_outputPathCache.emplace(key, value);
+					}
+				}
+			}
+
+			if (hashes.contains(CacheKeys::HashDataCache))
+			{
+				auto& dataCache = hashes.at(CacheKeys::HashDataCache);
+				if (dataCache.is_object())
+				{
+					for (auto& [key, value] : dataCache.items())
+					{
+						m_dataCache.emplace(key, value);
 					}
 				}
 			}
@@ -368,6 +437,12 @@ bool WorkspaceInternalCacheFile::save()
 		for (auto& [path, toolchain] : m_outputPathCache)
 		{
 			rootNode[CacheKeys::Hashes][CacheKeys::HashPathCache][path] = toolchain;
+		}
+
+		rootNode[CacheKeys::Hashes][CacheKeys::HashDataCache] = Json::object();
+		for (auto& [key, value] : m_dataCache)
+		{
+			rootNode[CacheKeys::Hashes][CacheKeys::HashDataCache][key] = value;
 		}
 
 		rootNode[CacheKeys::LastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);

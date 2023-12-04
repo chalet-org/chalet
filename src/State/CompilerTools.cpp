@@ -8,12 +8,13 @@
 #include "Platform/Arch.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -190,39 +191,36 @@ bool CompilerTools::validate()
 }
 
 /*****************************************************************************/
-void CompilerTools::fetchMakeVersion(SourceCache& inCache)
+void CompilerTools::fetchMakeVersion(WorkspaceInternalCacheFile& inCache)
 {
 	if (!m_make.empty() && m_makeVersionMajor == 0 && m_makeVersionMinor == 0)
 	{
-		std::string version;
-		if (inCache.versionRequriesUpdate(m_make, version))
-		{
+		auto version = inCache.getDataValueFromPath(m_make, [this]() {
+			std::string ret;
 #if defined(CHALET_WIN32)
 			if (makeIsJom())
 			{
-				version = Process::runOutput({ m_make, "-version" });
+				ret = Process::runOutput({ m_make, "-version" });
 			}
 			else if (makeIsNMake())
 			{
-				version = Process::runOutput({ m_make });
+				ret = Process::runOutput({ m_make });
 
-				auto split = String::split(version, '\n');
+				auto split = String::split(ret, '\n');
 				if (split.size() > 1)
-					version = split[1];
+					ret = split[1];
 			}
 			else
 #endif
 			{
-				version = Process::runOutput({ m_make, "--version" });
+				ret = Process::runOutput({ m_make, "--version" });
 			}
 
-			version = Files::isolateVersion(version);
-		}
+			return Files::isolateVersion(ret);
+		});
 
 		if (!version.empty())
 		{
-			inCache.addVersion(m_make, version);
-
 			auto vals = String::split(version, '.');
 			if (vals.size() == 2)
 			{
@@ -234,22 +232,19 @@ void CompilerTools::fetchMakeVersion(SourceCache& inCache)
 }
 
 /*****************************************************************************/
-bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
+bool CompilerTools::fetchCmakeVersion(WorkspaceInternalCacheFile& inCache)
 {
 	if (!m_cmake.empty() && m_cmakeVersionMajor == 0 && m_cmakeVersionMinor == 0)
 	{
 		m_cmakeAvailable = false;
-		std::string version;
-		if (inCache.versionRequriesUpdate(m_cmake, version))
-		{
-			version = Process::runOutput({ m_cmake, "--version" });
-			version = Files::isolateVersion(version);
-		}
+
+		auto version = inCache.getDataValueFromPath(m_cmake, [this]() {
+			auto ret = Process::runOutput({ m_cmake, "--version" });
+			return Files::isolateVersion(ret);
+		});
 
 		if (!version.empty())
 		{
-			inCache.addVersion(m_cmake, version);
-
 			auto vals = String::split(version, '.');
 			if (vals.size() == 3)
 			{
@@ -265,22 +260,19 @@ bool CompilerTools::fetchCmakeVersion(SourceCache& inCache)
 }
 
 /*****************************************************************************/
-void CompilerTools::fetchNinjaVersion(SourceCache& inCache)
+void CompilerTools::fetchNinjaVersion(WorkspaceInternalCacheFile& inCache)
 {
 	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
 	{
 		m_ninjaAvailable = false;
-		std::string version;
-		if (inCache.versionRequriesUpdate(m_ninja, version))
-		{
-			version = Process::runOutput({ m_ninja, "--version" });
-			version = Files::isolateVersion(version);
-		}
+
+		auto version = inCache.getDataValueFromPath(m_ninja, [this]() {
+			auto ret = Process::runOutput({ m_ninja, "--version" });
+			return Files::isolateVersion(ret);
+		});
 
 		if (!version.empty())
 		{
-			inCache.addVersion(m_ninja, version);
-
 			auto vals = String::split(version, '.');
 			if (vals.size() >= 3)
 			{

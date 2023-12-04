@@ -37,7 +37,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			sourceCache = &m_state->cache.file().sources();
 		}
 
-		bool schemaChanged = !inCache || (sourceCache && (sourceCache->isNewBuild() || sourceCache->fileChangedOrDoesNotExistWithCache(m_schemaFile)));
+		bool schemaChanged = !inCache || (sourceCache && sourceCache->fileChangedOrDoesNotExistWithCache(m_schemaFile));
 
 		// After files have been checked for changes
 		StringList files;
@@ -60,7 +60,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			bool res = this->parse(schema, m_schemaFile, false);
 			if (sourceCache)
-				sourceCache->updateFileCache(m_schemaFile, res);
+				sourceCache->addOrRemoveFileCache(m_schemaFile, res);
 			if (!res)
 				return false;
 
@@ -95,7 +95,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			Json jsonFile;
 			bool res = this->parse(jsonFile, file, true);
 			if (sourceCache)
-				sourceCache->updateFileCache(file, res);
+				sourceCache->addOrRemoveFileCache(file, res);
 			if (!res)
 			{
 				result = false;
@@ -105,7 +105,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			JsonValidationErrors errors;
 			bool fileValid = validator.validate(jsonFile, file, errors);
 			if (sourceCache)
-				sourceCache->updateFileCache(file, fileValid);
+				sourceCache->addOrRemoveFileCache(file, fileValid);
 			if (!fileValid)
 			{
 				Diagnostic::error("File: {}", file);

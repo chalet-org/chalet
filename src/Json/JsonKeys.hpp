@@ -135,22 +135,20 @@ CHALET_CONSTANT(OneOf) = "oneOf";
 
 namespace CacheKeys
 {
-CHALET_CONSTANT(DataVersion) = "v";
-CHALET_CONSTANT(DataExternalRebuild) = "e";
-CHALET_CONSTANT(Hashes) = "h";
+CHALET_CONSTANT(Hashes) = "ha";
+CHALET_CONSTANT(LastChaletJsonWriteTime) = "cw";
 CHALET_CONSTANT(HashBuild) = "b";
 CHALET_CONSTANT(HashTheme) = "t";
 CHALET_CONSTANT(HashVersionDebug) = "vd";
-CHALET_CONSTANT(HashVersionRelease) = "vr";
-CHALET_CONSTANT(HashPathCache) = "tc";
-CHALET_CONSTANT(HashMetadata) = "wm";
+CHALET_CONSTANT(HashVersionRelease) = "v";
+CHALET_CONSTANT(HashPathCache) = "p";
+CHALET_CONSTANT(HashDataCache) = "d";
+CHALET_CONSTANT(HashMetadata) = "m";
 CHALET_CONSTANT(HashExtra) = "e";
-CHALET_CONSTANT(LastChaletJsonWriteTime) = "c";
-CHALET_CONSTANT(Builds) = "d";
+CHALET_CONSTANT(Builds) = "bd";
 CHALET_CONSTANT(BuildLastBuilt) = "l";
 CHALET_CONSTANT(BuildLastBuildStrategy) = "s";
 CHALET_CONSTANT(BuildFiles) = "f";
-CHALET_CONSTANT(DataCache) = "x";
 }
 
 namespace MSVCKeys

@@ -15,6 +15,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 
 #include "BuildEnvironment/BuildEnvironmentAppleLLVM.hpp"
@@ -301,24 +302,12 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 }
 
 /*****************************************************************************/
-void IBuildEnvironment::getDataWithCache(std::string& outArch, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
+void IBuildEnvironment::getDataWithCache(std::string& outData, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
 {
-	auto archCache = getCachePath(fmt::format("{}_{}.txt", inCompilerPath, inId));
-	m_state.cache.file().addExtraHash(String::getPathFilename(archCache));
+	auto& cache = m_state.cache.file();
+	auto hash = Hash::string(fmt::format("{}_{}.txt", inCompilerPath, inId));
 
-	if (!Files::pathExists(archCache))
-	{
-		if (onGet != nullptr)
-			outArch = onGet();
-
-		std::ofstream(archCache) << outArch + '\n';
-	}
-	else
-	{
-		outArch = Files::getFileContents(archCache);
-		while (outArch.back() == '\n')
-			outArch.pop_back();
-	}
+	outData = cache.getDataValue(hash, onGet);
 }
 
 /*****************************************************************************/

@@ -18,6 +18,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -78,8 +79,11 @@ bool BuildEnvironmentVisualStudio::createFromVersion(const std::string& inVersio
 
 	Timer timer;
 
-	auto versionCache = getCachePath(fmt::format("{}_version.txt", m_state.inputs.toolchainPreferenceName()));
-	m_config->setVersion(inVersion, m_state.inputs.visualStudioVersion(), versionCache);
+	auto& toolchainName = m_state.inputs.toolchainPreferenceName();
+	getDataWithCache(m_detectedVersion, "vsversion", toolchainName, [this]() {
+		return m_config->getVisualStudioVersion(m_state.inputs.visualStudioVersion());
+	});
+	m_config->setVersion(m_detectedVersion, inVersion, m_state.inputs.visualStudioVersion());
 
 	m_config->setEnvVarsFileBefore(getCachePath("original.env"));
 	m_config->setEnvVarsFileAfter(getCachePath("all.env"));
@@ -102,7 +106,6 @@ bool BuildEnvironmentVisualStudio::createFromVersion(const std::string& inVersio
 	// 	m_state.inputs.setToolchainPreferenceName(makeToolchainName(m_config->architecture()));
 	// }
 
-	m_state.cache.file().addExtraHash(String::getPathFilename(versionCache));
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 
 	m_config.reset(); // No longer needed

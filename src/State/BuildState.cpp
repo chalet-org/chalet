@@ -779,8 +779,8 @@ bool BuildState::validateState()
 #endif
 	}
 
-	toolchain.fetchMakeVersion(cacheFile.sources());
-	toolchain.fetchNinjaVersion(cacheFile.sources());
+	toolchain.fetchMakeVersion(cacheFile);
+	toolchain.fetchNinjaVersion(cacheFile);
 
 	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
@@ -790,7 +790,7 @@ bool BuildState::validateState()
 		hasCMakeTargets |= target->isCMake();
 	}
 
-	if (hasCMakeTargets && !toolchain.fetchCmakeVersion(cacheFile.sources()))
+	if (hasCMakeTargets && !toolchain.fetchCmakeVersion(cacheFile))
 	{
 		Diagnostic::error("The path to the CMake executable could not be resolved: {}", toolchain.cmake());
 		return false;

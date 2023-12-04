@@ -16,6 +16,7 @@ struct JsonFile;
 
 struct WorkspaceInternalCacheFile
 {
+	using GetDataCallback = std::function<std::string()>;
 	WorkspaceInternalCacheFile();
 	CHALET_DISALLOW_COPY_MOVE(WorkspaceInternalCacheFile);
 	~WorkspaceInternalCacheFile();
@@ -30,6 +31,9 @@ struct WorkspaceInternalCacheFile
 	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
+
+	std::string getDataValue(const std::string& inHash, const GetDataCallback& onGet);
+	std::string getDataValueFromPath(const std::string& inPath, const GetDataCallback& onGet);
 
 	bool buildFileChanged() const noexcept;
 
@@ -59,6 +63,9 @@ struct WorkspaceInternalCacheFile
 	StringList getCacheIdsToNotRemove() const;
 
 private:
+	void addToDataCache(const std::string& inKey, std::string inValue);
+	const std::string& getDataCacheValue(const std::string& inKey);
+
 	std::string getAppVersionHash(std::string appPath) const;
 
 	StringList m_doNotRemoves;
@@ -80,6 +87,7 @@ private:
 	ExternalDependencyCache m_externalDependencies;
 	HeapDictionary<SourceCache> m_sourceCaches;
 	Dictionary<std::string> m_outputPathCache;
+	Dictionary<std::string> m_dataCache;
 
 	std::optional<bool> m_metadataChanged;
 
