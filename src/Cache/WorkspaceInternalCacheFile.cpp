@@ -463,8 +463,6 @@ bool WorkspaceInternalCacheFile::save()
 		m_dataFile->save(-1);
 
 		m_dirty = false;
-
-		return true;
 	}
 
 	return true;

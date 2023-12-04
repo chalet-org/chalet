@@ -21,16 +21,11 @@ struct WorkspaceInternalCacheFile
 	CHALET_DISALLOW_COPY_MOVE(WorkspaceInternalCacheFile);
 	~WorkspaceInternalCacheFile();
 
-	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
-	bool save();
-
 	bool loadExternalDependencies(const std::string& inPath);
 	bool saveExternalDependencies();
 
 	bool sourceCacheAvailable() const;
 	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
-	bool removeSourceCache(const std::string& inId);
-	bool removeExtraCache(const std::string& inId);
 
 	std::string getDataValue(const std::string& inHash, const GetDataCallback& onGet);
 	std::string getDataValueFromPath(const std::string& inPath, const GetDataCallback& onGet);
@@ -46,8 +41,8 @@ struct WorkspaceInternalCacheFile
 
 	bool canWipeBuildFolder() const;
 
-	void checkForMetadataChange(const std::string& inHash);
 	bool metadataChanged() const;
+	void checkForMetadataChange(const std::string& inHash);
 
 	bool themeChanged() const noexcept;
 	void checkIfThemeChanged();
@@ -60,9 +55,16 @@ struct WorkspaceInternalCacheFile
 	SourceCache& sources() const;
 	ExternalDependencyCache& externalDependencies();
 
+private:
+	friend struct WorkspaceCache;
+
+	bool initialize(const std::string& inFilename, const std::string& inBuildFile);
+	bool save();
+
+	bool removeSourceCache(const std::string& inId);
+	bool removeExtraCache(const std::string& inId);
 	StringList getCacheIdsToNotRemove() const;
 
-private:
 	void addToDataCache(const std::string& inKey, std::string inValue);
 	const std::string& getDataCacheValue(const std::string& inKey);
 
