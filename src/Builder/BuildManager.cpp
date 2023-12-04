@@ -132,7 +132,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	else if (inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doLazyClean(false, false, false);
+		doFullBuildFolderClean(false, false);
 	}
 
 	if (!checkIntermediateFiles())
@@ -566,20 +566,11 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject, const s
 }
 
 /*****************************************************************************/
-bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExternals, const bool inForceCleanExternals)
+bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool inCleanExternals)
 {
-	std::string buildOutputDir = m_state.paths.buildOutputDir();
+	auto buildOutputDir = m_state.paths.buildOutputDir();
 
-	const auto& outputDirectory = m_state.paths.outputDirectory();
-
-	const auto& inputBuild = m_state.inputs.buildConfiguration();
-	// const auto& build = m_state.buildConfiguration();
-
-	std::string dirToClean;
-	if (inputBuild.empty())
-		dirToClean = outputDirectory;
-	else
-		dirToClean = buildOutputDir;
+	auto dirToClean = buildOutputDir;
 
 	Timer timer;
 
@@ -605,18 +596,18 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 		else if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			if (inForceCleanExternals || (subChaletTarget.clean() && inCleanExternals))
+			if (inCleanExternals || subChaletTarget.clean())
 				didClean |= doSubChaletClean(subChaletTarget);
-			else
-				List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
+
+			List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
 		}
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			if (inForceCleanExternals || (cmakeTarget.clean() && inCleanExternals))
+			if (inCleanExternals || cmakeTarget.clean())
 				didClean |= doCMakeClean(cmakeTarget);
-			else
-				List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
+
+			List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
 		}
 	}
 
@@ -651,17 +642,17 @@ bool BuildManager::doLazyClean(const bool inShowMessage, const bool inCleanExter
 
 		while (it != itEnd)
 		{
-			std::error_code ec;
-			const auto& path = it->path();
-			auto shortPath = path.string();
+			auto shortPath = it->path().string();
 			Path::toUnix(shortPath);
+			
 			String::replaceAll(shortPath, buildOutputDir, "");
 
-			if (it->is_regular_file() && !String::startsWith(externalLocations, shortPath))
+			if (!String::startsWith(externalLocations, shortPath))
 			{
-				auto pth = path;
+				auto pth = it->path();
 				++it;
 
+				std::error_code ec;
 				fs::remove(pth, ec);
 			}
 			else
@@ -730,29 +721,23 @@ bool BuildManager::checkIntermediateFiles() const
 /*****************************************************************************/
 bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 {
-	auto outputLocation = fmt::format("{}/{}", m_state.inputs.outputDirectory(), inTarget.name());
-	Path::toUnix(outputLocation);
+	auto targetFolder = inTarget.targetFolder();
+	Path::toUnix(targetFolder);
 
 	bool clean = m_state.inputs.route().isClean() || inTarget.clean();
 	bool rebuild = m_state.inputs.route().isRebuild() || inTarget.rebuild();
 
-	if (rebuild)
-	{
-		if (Files::pathExists(outputLocation))
-		{
-			if (!Files::removeRecursively(outputLocation))
-			{
-				Diagnostic::error("There was an error rebuilding the '{}' Chalet project.", inTarget.name());
-				return false;
-			}
-		}
-	}
-	else if (clean)
+	if (clean)
 	{
 		SubChaletBuilder subChalet(m_state, inTarget);
-		if (!subChalet.run())
+		subChalet.removeSettingsFile();
+	}
+
+	if ((clean || rebuild) && Files::pathExists(targetFolder))
+	{
+		if (!Files::removeRecursively(targetFolder))
 		{
-			Diagnostic::error("There was an error cleaning the '{}' Chalet project.", inTarget.name());
+			Diagnostic::error("There was an error rebuilding the '{}' Chalet project.", inTarget.name());
 			return false;
 		}
 	}
@@ -763,17 +748,15 @@ bool BuildManager::doSubChaletClean(const SubChaletTarget& inTarget)
 /*****************************************************************************/
 bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 {
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto outputLocation = fmt::format("{}/{}", Files::getAbsolutePath(buildOutputDir), inTarget.targetFolder());
-	Path::toUnix(outputLocation);
+	auto targetFolder = inTarget.targetFolder();
+	Path::toUnix(targetFolder);
 
-	bool rebuild = true;
-	if (m_state.inputs.route().isRebuild())
-		rebuild = inTarget.rebuild();
+	bool clean = m_state.inputs.route().isClean() || inTarget.clean();
+	bool rebuild = m_state.inputs.route().isRebuild() || inTarget.rebuild();
 
-	if (rebuild && Files::pathExists(outputLocation))
+	if ((clean || rebuild) && Files::pathExists(targetFolder))
 	{
-		if (!Files::removeRecursively(outputLocation))
+		if (!Files::removeRecursively(targetFolder))
 		{
 			Diagnostic::error("There was an error cleaning the '{}' CMake project.", inTarget.name());
 			return false;
@@ -1206,7 +1189,7 @@ bool BuildManager::cmdClean()
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
 
-	if (!doLazyClean(true, true, false))
+	if (!doFullBuildFolderClean(true, true))
 		return true;
 
 	if (Output::showCommands())

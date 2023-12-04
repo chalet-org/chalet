@@ -20,6 +20,8 @@ public:
 
 	bool run();
 
+	void removeSettingsFile();
+
 	StringList getBuildCommand(const bool hasSettings = true) const;
 	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings = true) const;
 

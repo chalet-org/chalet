@@ -146,6 +146,17 @@ bool SubChaletBuilder::run()
 }
 
 /*****************************************************************************/
+void SubChaletBuilder::removeSettingsFile()
+{
+	auto location = getLocation();
+	auto& defaultSettingsFile = m_state.inputs.defaultSettingsFile();
+	auto settingsLocation = fmt::format("{}/{}", location, defaultSettingsFile);
+
+	if (Files::pathExists(settingsLocation))
+		Files::remove(settingsLocation);
+}
+
+/*****************************************************************************/
 StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
 {
 	auto location = getLocation();
@@ -257,5 +268,4 @@ const std::string& SubChaletBuilder::outputLocation() const
 {
 	return m_target.targetFolder();
 }
-
 }

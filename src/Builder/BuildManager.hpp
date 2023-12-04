@@ -43,7 +43,7 @@ private:
 	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
-	bool doLazyClean(const bool inShowMessage, const bool inCleanExternals, const bool inForceCleanExternals);
+	bool doFullBuildFolderClean(const bool inShowMessage, const bool inCleanExternals);
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 
