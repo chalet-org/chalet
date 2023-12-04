@@ -758,8 +758,7 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
 			auto command = vcxprojAdapter.getCommand();
 			auto outCommand = fmt::format(R"batch(if %BUILD_FROM_CHALET%==1 echo *== script start ==*
-{command}
-if %BUILD_FROM_CHALET%==1 echo *== script end ==*
+{command}if %BUILD_FROM_CHALET%==1 echo *== script end ==*
 )batch",
 				FMT_ARG(command));
 
