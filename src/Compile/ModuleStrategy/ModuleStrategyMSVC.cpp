@@ -5,12 +5,12 @@
 
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 
+#include "Process/Environment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonKeys.hpp"

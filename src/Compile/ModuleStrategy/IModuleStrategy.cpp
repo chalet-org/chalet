@@ -48,6 +48,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState) :
 /*****************************************************************************/
 bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
 {
+	m_toolchainChangedForOutputPath = m_state.cache.file().toolchainChangedForBuildOutputPath();
 	m_sourcesChanged = false;
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
@@ -414,7 +415,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
 
-		bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
+		bool sourceChanged = m_toolchainChangedForOutputPath || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
@@ -473,7 +474,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 			if (m_compileCache.find(source) == m_compileCache.end())
 				m_compileCache[source] = false;
 
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
+			bool sourceChanged = m_toolchainChangedForOutputPath || sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{

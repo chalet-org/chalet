@@ -93,9 +93,9 @@ protected:
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
-	void getDataWithCache(std::string& outArch, const char* inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet);
+	void getDataWithCache(std::string& outArch, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet);
 
-	std::string getVarsPath(const std::string& inUniqueId) const;
+	std::string getVarsPath(const std::string& inUniqueId = std::string()) const;
 	std::string getCachePath(const std::string& inId) const;
 
 	BuildState& m_state;

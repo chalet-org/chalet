@@ -53,7 +53,7 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 
 	Timer timer;
 
-	auto versionCache = getCachePath("vsversion.txt");
+	auto versionCache = getCachePath(fmt::format("{}_version.txt", m_state.inputs.toolchainPreferenceName()));
 	m_config->setVersion(inVersion, m_state.inputs.visualStudioVersion(), versionCache);
 
 	m_config->setEnvVarsFileBefore(getCachePath("original.env"));

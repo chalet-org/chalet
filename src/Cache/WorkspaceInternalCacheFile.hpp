@@ -31,9 +31,13 @@ struct WorkspaceInternalCacheFile
 	bool removeSourceCache(const std::string& inId);
 	bool removeExtraCache(const std::string& inId);
 
-	bool buildHashChanged() const noexcept;
 	bool buildFileChanged() const noexcept;
-	void setBuildHash(const std::string& inValue, const bool inTemp) noexcept;
+
+	bool buildHashChanged() const noexcept;
+	void setBuildHash(const std::string& inValue) noexcept;
+
+	bool toolchainChangedForBuildOutputPath() const noexcept;
+	void setBuildOutputCache(const std::string& inPath, const std::string& inToolchain);
 
 	bool forceRebuild() const noexcept;
 	void setForceRebuild(const bool inValue);
@@ -65,8 +69,7 @@ private:
 	Unique<JsonFile> m_dataFile;
 
 	std::string m_filename;
-	std::string m_tempBuildHash;
-	std::string m_buildHash;
+	std::string m_hashBuild;
 	std::string m_hashTheme;
 	std::string m_hashMetadata;
 	std::string m_hashVersion;
@@ -78,11 +81,14 @@ private:
 
 	ExternalDependencyCache m_externalDependencies;
 	HeapDictionary<SourceCache> m_sourceCaches;
+	Dictionary<std::string> m_outputPathCache;
 
 	std::optional<bool> m_metadataChanged;
 
 	bool m_forceRebuild = false;
 	bool m_buildHashChanged = false;
+	bool m_toolchainHashChanged = false;
+	bool m_toolchainChangedForBuildOutputPath = false;
 	bool m_buildFileChanged = false;
 	bool m_themeChanged = false;
 	bool m_appVersionChanged = false;

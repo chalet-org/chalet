@@ -56,6 +56,7 @@ private:
 	std::unordered_map<std::string, bool> m_fileCache;
 	std::unordered_map<std::string, bool> m_dependencyCache;
 
+	bool m_toolchainChangedForOutputPath = false;
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
 	bool m_compileTarget = false;

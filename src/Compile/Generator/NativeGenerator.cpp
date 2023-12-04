@@ -40,6 +40,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	chalet_assert(m_project != nullptr, "");
 
+	m_toolchainChangedForOutputPath = m_state.cache.file().toolchainChangedForBuildOutputPath();
 	m_sourcesChanged = m_pchChanged = false;
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
@@ -377,6 +378,9 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 /*****************************************************************************/
 bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency)
 {
+	if (m_toolchainChangedForOutputPath)
+		return true;
+
 	// Check the source file and target (object) if they were changed
 	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
 	if (result)

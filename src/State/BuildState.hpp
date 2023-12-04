@@ -87,7 +87,6 @@ private:
 	void generateUniqueIdForState();
 
 	std::string m_cachePathId;
-	std::string m_uniqueId;
 
 	bool m_cacheEnabled = true;
 	bool m_isSubChaletTarget = false;

@@ -142,6 +142,7 @@ CHALET_CONSTANT(HashBuild) = "b";
 CHALET_CONSTANT(HashTheme) = "t";
 CHALET_CONSTANT(HashVersionDebug) = "vd";
 CHALET_CONSTANT(HashVersionRelease) = "vr";
+CHALET_CONSTANT(HashPathCache) = "tc";
 CHALET_CONSTANT(HashMetadata) = "wm";
 CHALET_CONSTANT(HashExtra) = "e";
 CHALET_CONSTANT(LastChaletJsonWriteTime) = "c";

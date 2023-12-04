@@ -24,18 +24,31 @@ WorkspaceInternalCacheFile::WorkspaceInternalCacheFile() = default;
 WorkspaceInternalCacheFile::~WorkspaceInternalCacheFile() = default;
 
 /*****************************************************************************/
-void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue, const bool inTemp) noexcept
+void WorkspaceInternalCacheFile::setBuildHash(const std::string& inValue) noexcept
 {
-	if (inTemp)
+	m_buildHashChanged = m_hashBuild != inValue;
+	m_dirty |= m_buildHashChanged;
+	m_hashBuild = inValue;
+}
+
+/*****************************************************************************/
+void WorkspaceInternalCacheFile::setBuildOutputCache(const std::string& inPath, const std::string& inToolchain)
+{
+	if (m_outputPathCache.find(inPath) != m_outputPathCache.end())
 	{
-		m_tempBuildHash = inValue;
+		auto& toolchain = m_outputPathCache.at(inPath);
+		m_toolchainChangedForBuildOutputPath = toolchain != inToolchain;
+		if (m_toolchainChangedForBuildOutputPath)
+		{
+			m_outputPathCache[inPath] = inToolchain;
+			m_dirty = true;
+		}
 	}
 	else
 	{
-		m_buildHashChanged = m_buildHash != inValue;
-		m_dirty |= m_buildHashChanged;
-		m_buildHash = inValue;
-		m_tempBuildHash.clear();
+		m_outputPathCache.emplace(inPath, inToolchain);
+		m_toolchainChangedForBuildOutputPath = false;
+		m_dirty = true;
 	}
 }
 
@@ -254,7 +267,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 		if (hashes.is_object())
 		{
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashBuild))
-				m_buildHash = std::move(val);
+				m_hashBuild = std::move(val);
 
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashTheme))
 				m_hashTheme = std::move(val);
@@ -267,6 +280,18 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 
 			if (std::string val; m_dataFile->assignFromKey(val, hashes, CacheKeys::HashVersionDebug))
 				m_hashVersionDebug = std::move(val);
+
+			if (hashes.contains(CacheKeys::HashPathCache))
+			{
+				auto& pathCache = hashes.at(CacheKeys::HashPathCache);
+				if (pathCache.is_object())
+				{
+					for (auto& [key, value] : pathCache.items())
+					{
+						m_outputPathCache.emplace(key, value);
+					}
+				}
+			}
 
 			if (hashes.contains(CacheKeys::HashExtra))
 			{
@@ -304,9 +329,7 @@ bool WorkspaceInternalCacheFile::save()
 	if (m_filename.empty())
 		return false;
 
-	// configure step without building first would not have one. don't do anything
-	auto& buildHash = !m_tempBuildHash.empty() ? m_tempBuildHash : m_buildHash;
-	if (buildHash.empty())
+	if (m_hashBuild.empty())
 		return true;
 
 	for (auto& [_, sourceCache] : m_sourceCaches)
@@ -320,11 +343,14 @@ bool WorkspaceInternalCacheFile::save()
 
 		rootNode[CacheKeys::Hashes] = Json::object();
 
-		if (!buildHash.empty())
-			rootNode[CacheKeys::Hashes][CacheKeys::HashBuild] = buildHash;
+		if (!m_hashBuild.empty())
+			rootNode[CacheKeys::Hashes][CacheKeys::HashBuild] = m_hashBuild;
 
 		if (!m_hashTheme.empty())
 			rootNode[CacheKeys::Hashes][CacheKeys::HashTheme] = m_hashTheme;
+
+		if (!m_hashMetadata.empty())
+			rootNode[CacheKeys::Hashes][CacheKeys::HashMetadata] = m_hashMetadata;
 
 		if (!m_hashVersionDebug.empty())
 			rootNode[CacheKeys::Hashes][CacheKeys::HashVersionDebug] = m_hashVersionDebug;
@@ -332,13 +358,16 @@ bool WorkspaceInternalCacheFile::save()
 		if (!m_hashVersion.empty())
 			rootNode[CacheKeys::Hashes][CacheKeys::HashVersionRelease] = m_hashVersion;
 
-		if (!m_hashMetadata.empty())
-			rootNode[CacheKeys::Hashes][CacheKeys::HashMetadata] = m_hashMetadata;
-
 		rootNode[CacheKeys::Hashes][CacheKeys::HashExtra] = Json::array();
 		for (auto& hash : m_extraHashes)
 		{
 			rootNode[CacheKeys::Hashes][CacheKeys::HashExtra].push_back(hash);
+		}
+
+		rootNode[CacheKeys::Hashes][CacheKeys::HashPathCache] = Json::object();
+		for (auto& [path, toolchain] : m_outputPathCache)
+		{
+			rootNode[CacheKeys::Hashes][CacheKeys::HashPathCache][path] = toolchain;
 		}
 
 		rootNode[CacheKeys::LastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);
@@ -389,6 +418,12 @@ bool WorkspaceInternalCacheFile::buildHashChanged() const noexcept
 bool WorkspaceInternalCacheFile::buildFileChanged() const noexcept
 {
 	return m_buildFileChanged;
+}
+
+/*****************************************************************************/
+bool WorkspaceInternalCacheFile::toolchainChangedForBuildOutputPath() const noexcept
+{
+	return m_toolchainChangedForBuildOutputPath;
 }
 
 /*****************************************************************************/

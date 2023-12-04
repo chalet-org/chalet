@@ -34,7 +34,6 @@ bool CompileStrategyNative::initialize()
 	const bool cacheExists = Files::pathExists(m_cacheFolder) && Files::pathExists(m_cacheFile);
 	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 	m_cacheNeedsUpdate = !cacheExists || buildStrategyChanged;
-	UNUSED(m_cacheNeedsUpdate);
 
 	if (!Files::pathExists(m_cacheFolder))
 		Files::makeDirectory(m_cacheFolder);

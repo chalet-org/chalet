@@ -301,7 +301,7 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 }
 
 /*****************************************************************************/
-void IBuildEnvironment::getDataWithCache(std::string& outArch, const char* inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
+void IBuildEnvironment::getDataWithCache(std::string& outArch, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
 {
 	auto archCache = getCachePath(fmt::format("{}_{}.txt", inCompilerPath, inId));
 	m_state.cache.file().addExtraHash(String::getPathFilename(archCache));
@@ -503,7 +503,7 @@ std::string IBuildEnvironment::getVarsPath(const std::string& inUniqueId) const
 	const auto hostArch = static_cast<std::underlying_type_t<Arch::Cpu>>(m_state.info.hostArchitecture());
 	const auto& archString = m_state.info.targetArchitectureTriple();
 	// auto archString = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
-	const auto& uniqueId = String::equals('0', inUniqueId) ? m_state.inputs.toolchainPreferenceName() : inUniqueId;
+	const auto& uniqueId = inUniqueId.empty() ? m_state.inputs.toolchainPreferenceName() : inUniqueId;
 
 	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId));
 }

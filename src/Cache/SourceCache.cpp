@@ -20,11 +20,6 @@ SourceCache::SourceCache(const std::time_t inLastBuildTime) :
 	m_initializedTime(inLastBuildTime),
 	m_lastBuildTime(inLastBuildTime)
 {
-	// If the last build was run < 1s ago, we need to decrement it by 1 to ensure
-	//   that files checked with stat don't cause unnecessary rebuilds
-	//
-	if (m_lastBuildTime > 0)
-		m_lastBuildTime--;
 }
 
 /*****************************************************************************/
@@ -47,6 +42,7 @@ void SourceCache::setLastBuildStrategy(const i32 inValue, const bool inCheckChan
 	m_lastBuildStrategy = static_cast<StrategyType>(inValue);
 }
 
+/*****************************************************************************/
 bool SourceCache::buildStrategyChanged() const noexcept
 {
 	return m_buildStrategyChanged;
@@ -176,7 +172,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 
 	auto lastWrite = Files::getLastWriteTime(inFile);
 	if (lastWrite == 0)
-		lastWrite = m_initializedTime;
+		return true;
 
 	return lastWrite > m_lastBuildTime;
 }

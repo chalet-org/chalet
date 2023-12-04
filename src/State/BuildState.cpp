@@ -7,6 +7,7 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BuildManager.hpp"
+#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -560,10 +561,7 @@ bool BuildState::initializeBuild()
 
 	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
-		auto& cacheFile = m_impl->centralState.cache.file();
 		generateUniqueIdForState();
-		cacheFile.setBuildHash(m_uniqueId, false);
-		cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
 	}
 
 	Diagnostic::printDone(timer.asString());
@@ -1593,15 +1591,23 @@ void BuildState::generateUniqueIdForState()
 	const auto& archiver = toolchain.archiver();
 	const auto& profiler = toolchain.profiler();
 	const auto& disassembler = toolchain.disassembler();
-	auto toolchainHash = Hash::getHashableString(compilerCpp, compilerC, compilerWindowsResource, linker, archiver, profiler, disassembler);
+	auto hashableToolchain = Hash::getHashableString(compilerCpp, compilerC, compilerWindowsResource, linker, archiver, profiler, disassembler);
 
 	// Note: no targetHash
 	auto hashable = Hash::getHashableString(hostArch, targetArch, targetOsName, targetOsVersion, envId, buildConfig, showCmds, dumpAssembly);
 	m_cachePathId = Hash::string(hashable);
 
 	// Unique ID is used by the internal cache to determine if the build files need to be updated
-	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, toolchainHash);
-	m_uniqueId = Hash::string(hashableTargets);
+	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, hashableToolchain);
+	auto buildHash = Hash::string(hashableTargets);
+
+	auto& cacheFile = m_impl->centralState.cache.file();
+	cacheFile.setBuildHash(buildHash);
+	cacheFile.setSourceCache(m_cachePathId, toolchain.strategy());
+
+	auto toolchainHash = Hash::string(hashableToolchain);
+	auto outputHash = Hash::string(paths.buildOutputDir());
+	cacheFile.setBuildOutputCache(outputHash, toolchainHash);
 }
 
 }

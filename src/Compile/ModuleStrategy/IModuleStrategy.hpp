@@ -91,5 +91,7 @@ private:
 	std::string m_moduleId;
 
 	Dictionary<std::string> m_systemModules;
+
+	bool m_toolchainChangedForOutputPath = false;
 };
 }
