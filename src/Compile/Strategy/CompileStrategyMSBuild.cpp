@@ -83,7 +83,8 @@ bool CompileStrategyMSBuild::doFullBuild()
 	if (buildTargets.empty())
 		buildTargets.emplace_back(Values::All);
 
-	Environment::set("BUILD_FROM_CHALET", "1");
+	if (!Output::showCommands())
+		Environment::set("BUILD_FROM_CHALET", "1");
 
 	const bool keepGoing = m_state.info.keepGoing();
 	bool result = !buildTargets.empty();
@@ -110,7 +111,8 @@ bool CompileStrategyMSBuild::doFullBuild()
 		Output::msgAction("Succeeded", sln);
 	}
 
-	Environment::set("BUILD_FROM_CHALET", std::string());
+	if (!Output::showCommands())
+		Environment::set("BUILD_FROM_CHALET", std::string());
 
 	return result;
 }
