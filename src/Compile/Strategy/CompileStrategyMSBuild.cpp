@@ -10,6 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
 #include "Platform/Arch.hpp"
+#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "Process/ProcessOptions.hpp"
 #include "Process/SubProcessController.hpp"
@@ -82,6 +83,8 @@ bool CompileStrategyMSBuild::doFullBuild()
 	if (buildTargets.empty())
 		buildTargets.emplace_back(Values::All);
 
+	Environment::set("BUILD_FROM_CHALET", "1");
+
 	const bool keepGoing = m_state.info.keepGoing();
 	bool result = !buildTargets.empty();
 	for (auto& target : buildTargets)
@@ -106,6 +109,8 @@ bool CompileStrategyMSBuild::doFullBuild()
 		String::replaceAll(sln, fmt::format("{}/", cwd), "");
 		Output::msgAction("Succeeded", sln);
 	}
+
+	Environment::set("BUILD_FROM_CHALET", std::string());
 
 	return result;
 }
@@ -181,11 +186,27 @@ bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::str
 	auto cwd = fmt::format("{}/", inCwd);
 	Path::toWindows(cwd);
 
+	bool allowOutput = false;
 	std::string errors;
-	auto processLine = [&cwd, &color, &reset, &errors](std::string& inLine) {
+	auto processLine = [&cwd, &allowOutput, &color, &reset, &errors](std::string& inLine) {
 		if (!inLine.empty())
 		{
-			if (String::contains(": error ", inLine))
+			if (String::startsWith("\x1b[m", inLine))
+				inLine = inLine.substr(3);
+
+			if (String::startsWith("  ", inLine))
+				inLine = inLine.substr(2);
+
+			if (String::startsWith("*== script start ==*", inLine))
+			{
+				inLine.clear();
+				allowOutput = true;
+			}
+			else if (String::startsWith("*== script end ==*", inLine))
+			{
+				allowOutput = false;
+			}
+			else if (String::contains(": error ", inLine))
 			{
 				errors += inLine;
 			}
@@ -194,18 +215,17 @@ bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::str
 				std::cout.write(inLine.data(), inLine.size());
 				std::cout.flush();
 			}
-			else
+			else if (!allowOutput)
 			{
-				if (String::startsWith("\x1b[m", inLine))
-					inLine = inLine.substr(3);
-
-				if (String::startsWith("  ", inLine))
-					inLine = inLine.substr(2);
-
 				String::replaceAll(inLine, cwd, "");
 				Path::toUnix(inLine);
 				auto coloredLine = fmt::format("   {}{}{}", color, inLine, reset);
 				std::cout.write(coloredLine.data(), coloredLine.size());
+				std::cout.flush();
+			}
+			if (allowOutput && !inLine.empty())
+			{
+				std::cout.write(inLine.data(), inLine.size());
 				std::cout.flush();
 			}
 		}

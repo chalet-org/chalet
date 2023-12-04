@@ -757,12 +757,17 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 		{
 			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
 			auto command = vcxprojAdapter.getCommand();
+			auto outCommand = fmt::format(R"batch(if %BUILD_FROM_CHALET%==1 echo *== script start ==*
+{command}
+if %BUILD_FROM_CHALET%==1 echo *== script end ==*
+)batch",
+				FMT_ARG(command));
 
-			outNode.addElement("ItemDefinitionGroup", [&condition, &command](XmlElement& node) {
+			outNode.addElement("ItemDefinitionGroup", [&condition, &outCommand](XmlElement& node) {
 				node.addAttribute("Condition", condition);
 
-				node.addElement("PreBuildEvent", [&command](XmlElement& node2) {
-					node2.addElementWithText("Command", command);
+				node.addElement("PreBuildEvent", [&outCommand](XmlElement& node2) {
+					node2.addElementWithText("Command", outCommand);
 				});
 			});
 		}

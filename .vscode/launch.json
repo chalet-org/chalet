@@ -11,8 +11,6 @@
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"-c",
-				"Release",
 				"build"
 			]
 		},
