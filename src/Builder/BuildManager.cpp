@@ -644,7 +644,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 		{
 			auto shortPath = it->path().string();
 			Path::toUnix(shortPath);
-			
+
 			String::replaceAll(shortPath, buildOutputDir, "");
 
 			if (!String::startsWith(externalLocations, shortPath))

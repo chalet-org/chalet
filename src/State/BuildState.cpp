@@ -655,6 +655,28 @@ bool BuildState::validateState()
 		}
 	}
 
+	auto buildTargets = inputs.getBuildTargets();
+	if (List::contains(buildTargets, std::string(Values::All)))
+		buildTargets.clear();
+
+	for (auto& targetName : buildTargets)
+	{
+		bool found = false;
+		for (auto& target : targets)
+		{
+			if (String::equals(targetName, target->name()))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			Diagnostic::error("Requested build target '{}' does not exist.", targetName);
+			return false;
+		}
+	}
+
 	for (auto& target : targets)
 	{
 		if (target->isSources())
