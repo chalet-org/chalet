@@ -196,8 +196,8 @@
 				},
 				"generateCompileCommands": {
 					"type": "boolean",
-					"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
-					"default": false
+					"description": "true to generate a compile_commands.json file for Clang tooling use (default), false otherwise.",
+					"default": true
 				},
 				"onlyRequired": {
 					"type": "boolean",

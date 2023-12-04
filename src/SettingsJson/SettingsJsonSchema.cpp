@@ -325,8 +325,8 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 
 	defs[Defs::GenerateCompileCommands] = R"json({
 		"type": "boolean",
-		"description": "true to generate a compile_commands.json file for Clang tooling use, false otherwise (default).",
-		"default": false
+		"description": "true to generate a compile_commands.json file for Clang tooling use (default), false otherwise.",
+		"default": true
 	})json"_ojson;
 
 	defs[Defs::OnlyRequired] = R"json({

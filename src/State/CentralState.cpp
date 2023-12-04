@@ -73,7 +73,7 @@ bool CentralState::initialize()
 		state.keepGoing = false;
 		state.showCommands = false;
 		state.dumpAssembly = false;
-		state.generateCompileCommands = false;
+		state.generateCompileCommands = true;
 		state.buildConfiguration = BuildConfiguration::getDefaultReleaseConfigurationName();
 		state.toolchainPreference = m_inputs.defaultToolchainPreset();
 		state.architecturePreference = Values::Auto;
