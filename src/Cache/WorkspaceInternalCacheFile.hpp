@@ -36,13 +36,11 @@ struct WorkspaceInternalCacheFile
 	bool buildHashChanged() const noexcept;
 	void setBuildHash(const std::string& inValue) noexcept;
 
-	bool toolchainChangedForBuildOutputPath() const noexcept;
 	void setBuildOutputCache(const std::string& inPath, const std::string& inToolchain);
 
-	bool forceRebuild() const noexcept;
 	void setForceRebuild(const bool inValue);
 
-	bool buildStrategyChanged() const;
+	bool canWipeBuildFolder() const;
 
 	void checkForMetadataChange(const std::string& inHash);
 	bool metadataChanged() const;

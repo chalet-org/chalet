@@ -124,10 +124,14 @@ bool CompileCommandsGenerator::save() const
 			Diagnostic::error("compile_commands.json could not be saved.");
 			return false;
 		}
-		if (!Files::copySilent(outputFile, outputDirectory))
+
+		if (!String::equals(String::getPathFolder(outputFile), outputDirectory))
 		{
-			Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
-			return false;
+			if (!Files::copySilent(outputFile, outputDirectory))
+			{
+				Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
+				return false;
+			}
 		}
 	}
 	else

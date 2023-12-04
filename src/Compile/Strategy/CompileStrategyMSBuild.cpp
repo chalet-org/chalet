@@ -43,8 +43,6 @@ bool CompileStrategyMSBuild::initialize()
 	const auto& cachePathId = m_state.cachePathId();
 	UNUSED(m_state.cache.getCachePath(cachePathId));
 
-	// const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
-
 	m_initialized = true;
 
 	return true;

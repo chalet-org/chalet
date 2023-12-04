@@ -118,14 +118,10 @@ bool CmakeBuilder::run()
 
 	auto& sourceCache = m_state.cache.file().sources();
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(outputLocation());
-	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
-	if (strategyChanged)
-		Files::removeRecursively(outputLocation());
-
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
-	bool recheckCmake = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
+	bool recheckCmake = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{

@@ -109,10 +109,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	m_timer.restart();
 
 	m_strategy = ICompileStrategy::make(m_state.toolchain.strategy(), m_state);
-	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
-	bool forceRebuild = m_state.cache.file().forceRebuild();
 
-	if (strategyChanged)
+	if (m_state.cache.file().canWipeBuildFolder())
 	{
 		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
@@ -131,10 +129,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		Output::lineBreak();
 		return true;
 	}
-	else if (forceRebuild || inRoute.isRebuild())
+	else if (inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doLazyClean(false, forceRebuild, forceRebuild);
+		doLazyClean(false, false, false);
 	}
 
 	if (!checkIntermediateFiles())
@@ -1208,8 +1206,7 @@ bool BuildManager::cmdClean()
 	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
 	Output::lineBreak();
 
-	bool forceRebuild = m_state.cache.file().forceRebuild();
-	if (!doLazyClean(true, true, forceRebuild))
+	if (!doLazyClean(true, true, false))
 		return true;
 
 	if (Output::showCommands())

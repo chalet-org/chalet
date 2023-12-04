@@ -421,26 +421,15 @@ bool WorkspaceInternalCacheFile::buildFileChanged() const noexcept
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::toolchainChangedForBuildOutputPath() const noexcept
-{
-	return m_toolchainChangedForBuildOutputPath;
-}
-
-/*****************************************************************************/
-bool WorkspaceInternalCacheFile::forceRebuild() const noexcept
-{
-	return m_forceRebuild;
-}
-
 void WorkspaceInternalCacheFile::setForceRebuild(const bool inValue)
 {
 	m_forceRebuild = inValue;
 }
 
 /*****************************************************************************/
-bool WorkspaceInternalCacheFile::buildStrategyChanged() const
+bool WorkspaceInternalCacheFile::canWipeBuildFolder() const
 {
-	return m_forceRebuild || sources().buildStrategyChanged();
+	return m_forceRebuild || m_toolchainChangedForBuildOutputPath || sources().buildStrategyChanged();
 }
 
 /*****************************************************************************/

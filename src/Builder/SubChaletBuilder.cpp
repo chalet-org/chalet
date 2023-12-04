@@ -97,14 +97,10 @@ bool SubChaletBuilder::run()
 
 	auto& sourceCache = m_state.cache.file().sources();
 	bool lastBuildFailed = sourceCache.externalRequiresRebuild(outputLocation());
-	bool strategyChanged = m_state.cache.file().buildStrategyChanged();
 	bool dependencyUpdated = dependencyHasUpdate();
 
-	if (strategyChanged)
-		Files::removeRecursively(outputLocation());
-
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
-	bool recheckChalet = m_target.recheck() || lastBuildFailed || strategyChanged || dependencyUpdated;
+	bool recheckChalet = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
 	auto onRunFailure = [&oldPath]() -> bool {
 		Environment::setPath(oldPath);

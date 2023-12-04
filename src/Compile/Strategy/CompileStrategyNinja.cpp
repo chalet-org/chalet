@@ -44,9 +44,8 @@ bool CompileStrategyNinja::initialize()
 	const bool themeChanged = cacheFile.themeChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
-	const bool buildStrategyChanged = cacheFile.buildStrategyChanged();
 
-	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || buildStrategyChanged || themeChanged;
+	m_cacheNeedsUpdate = !cacheExists || appVersionChanged || buildHashChanged || buildFileChanged || themeChanged;
 
 	if (!Files::pathExists(m_cacheFolder))
 		Files::makeDirectory(m_cacheFolder);
