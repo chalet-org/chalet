@@ -306,6 +306,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 {
 	m_filename = inFilename;
 	m_lastBuildFileWrite = Files::getLastWriteTime(inBuildFile);
+	m_buildFileChanged = true;
 
 	m_dataFile = std::make_unique<JsonFile>(m_filename);
 	if (!m_dataFile->load(false))
