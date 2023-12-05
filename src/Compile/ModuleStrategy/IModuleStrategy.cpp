@@ -55,6 +55,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	m_previousSource.clear();
 	m_moduleId = getModuleId();
 
+	checkCommandsForChanges(inProject, *inToolchain);
+
 	Dictionary<ModuleLookup> modules;
 
 	CommandPool::Job target;
@@ -331,7 +333,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	bool targetExists = Files::pathExists(inOutputs->target);
 	bool requiredFromLinks = rebuildRequiredFromLinks(inProject);
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
-	if (!buildJobs.empty() || !targetExists || requiredFromLinks)
+	if (m_targetCommandChanged || !buildJobs.empty() || !targetExists || requiredFromLinks)
 	{
 		// Scan sources for module dependencies
 
@@ -412,7 +414,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
 
-		bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
+		bool sourceChanged = m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
@@ -471,7 +473,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 			if (m_compileCache.find(source) == m_compileCache.end())
 				m_compileCache[source] = false;
 
-			bool sourceChanged = sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
+			bool sourceChanged = m_winResourceCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
@@ -593,7 +595,7 @@ bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) co
 
 			if (List::contains(inProject.projectStaticLinks(), project.name()))
 			{
-				result |= sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
+				result |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
 			}
 		}
 	}
@@ -653,7 +655,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			continue;
 
 		const auto& sourceFile = group->sourceFile;
-		rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
+		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
 		if (!rebuildFromIncludes)
 		{
 			std::string dependencyFile;
@@ -670,7 +672,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 
 				for (auto& include : includes)
 				{
-					rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
+					rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
 				}
 				m_compileCache[sourceFile] |= rebuildFromIncludes;
 			}
@@ -877,6 +879,48 @@ void IModuleStrategy::logPayload(const Dictionary<ModulePayload>& inPayload) con
 		LOG("  Imported headers:");
 		for (auto& item : data.headerUnitTranslations)
 			LOG("    ", item);
+	}
+}
+
+/*****************************************************************************/
+void IModuleStrategy::checkCommandsForChanges(const SourceTarget& inProject, CompileToolchainController& inToolchain)
+{
+	m_moduleCommandsChanged = false;
+	m_winResourceCommandsChanged = false;
+	m_targetCommandChanged = false;
+
+	auto& name = inProject.name();
+	auto& sourceCache = m_state.cache.file().sources();
+
+	{
+		StringList moduleTranslations{};
+		StringList headerUnitTranslations{};
+		std::string sourceFile{ "cmd.cppm" };
+		auto objectFile = String::getPathFilename(m_state.environment->getObjectFile(sourceFile));
+		auto dependencyFile = String::getPathFilename(m_state.environment->getDependencyFile(sourceFile));
+		auto interfaceFile = String::getPathFilename(m_state.environment->getModuleBinaryInterfaceFile(sourceFile));
+
+		{
+			auto type = ModuleFileType::ModuleObject;
+			auto cxxHashKey = Hash::string(fmt::format("{}_cxx_module_{}", name, static_cast<int>(type)));
+			StringList options = inToolchain.compilerCxx->getModuleCommand(sourceFile, objectFile, dependencyFile, interfaceFile, moduleTranslations, headerUnitTranslations, type);
+
+			auto hash = Hash::string(String::join(options));
+			m_moduleCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
+		}
+
+		{
+			auto cxxHashKey = Hash::string(fmt::format("{}_source_{}", name, static_cast<int>(SourceType::WindowsResource)));
+			StringList options = inToolchain.compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");
+
+			auto hash = Hash::string(String::join(options));
+			m_winResourceCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
+		}
+
+		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
+		auto targetOptions = inToolchain.getOutputTargetCommand(inProject.outputFile(), StringList{});
+		auto targetHash = Hash::string(String::join(targetOptions));
+		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
 	}
 }
 }

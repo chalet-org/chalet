@@ -41,7 +41,7 @@ private:
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 
-	void checkCommandsForChanged();
+	void checkCommandsForChanges();
 
 	BuildState& m_state;
 	SourceCache& m_sourceCache;

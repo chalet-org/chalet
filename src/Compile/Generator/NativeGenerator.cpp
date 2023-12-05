@@ -42,7 +42,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	chalet_assert(m_project != nullptr, "");
 
-	checkCommandsForChanged();
+	checkCommandsForChanges();
 
 	m_sourcesChanged = m_pchChanged = false;
 
@@ -447,7 +447,7 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 }
 
 /*****************************************************************************/
-void NativeGenerator::checkCommandsForChanged()
+void NativeGenerator::checkCommandsForChanges()
 {
 	m_commandsChanged.clear();
 	m_targetCommandChanged = false;

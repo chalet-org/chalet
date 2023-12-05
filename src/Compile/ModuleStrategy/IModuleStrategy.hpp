@@ -88,6 +88,12 @@ private:
 	bool onFailure();
 	CommandPool::Settings getCommandPoolSettings() const;
 
+	void checkCommandsForChanges(const SourceTarget& inProject, CompileToolchainController& inToolchain);
+
+	bool m_moduleCommandsChanged = false;
+	bool m_winResourceCommandsChanged = false;
+	bool m_targetCommandChanged = false;
+
 	std::string m_moduleId;
 
 	Dictionary<std::string> m_systemModules;
