@@ -360,9 +360,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			for (auto& failure : commandPool.failures())
 			{
 				auto objectFile = m_state.environment->getObjectFile(failure);
-
-				if (Files::pathExists(objectFile))
-					Files::remove(objectFile);
+				Files::removeIfExists(objectFile);
 			}
 			return onFailure();
 		}

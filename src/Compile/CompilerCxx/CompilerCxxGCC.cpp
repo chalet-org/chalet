@@ -85,8 +85,7 @@ bool CompilerCxxGCC::initialize()
 			if (buildHashChanged && !cxxExt.empty())
 			{
 				auto pchSource = fmt::format("{}{}.{}", objDir, pch, cxxExt);
-				if (Files::pathExists(pchSource))
-					Files::remove(pchSource);
+				Files::removeIfExists(pchSource);
 			}
 
 			// make the intermediate header for the PCH

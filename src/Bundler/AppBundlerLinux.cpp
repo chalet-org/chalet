@@ -63,7 +63,7 @@ bool AppBundlerLinux::removeOldFiles()
 
 			const auto outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, String::getPathBaseName(project.outputFile()));
 
-			static_cast<void>(Files::remove(outputFile));
+			static_cast<void>(Files::removeIfExists(outputFile));
 		}
 	}
 

@@ -184,7 +184,7 @@ bool DependencyManager::removeExternalDependencyDirectoryIfEmpty() const
 	const auto& externalDir = m_centralState.inputs().externalDirectory();
 	if (Files::pathIsEmpty(externalDir))
 	{
-		if (!Files::remove(externalDir))
+		if (!Files::removeIfExists(externalDir))
 		{
 			Diagnostic::error("Error removing folder: {}", externalDir);
 			return false;

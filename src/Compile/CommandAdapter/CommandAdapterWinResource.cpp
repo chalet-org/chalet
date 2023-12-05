@@ -41,8 +41,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	bool manifestChanged = sources.fileChangedOrDoesNotExist(windowsManifestFile);
 	if (manifestChanged)
 	{
-		if (Files::pathExists(windowsManifestResourceFile))
-			Files::remove(windowsManifestResourceFile);
+		Files::removeIfExists(windowsManifestResourceFile);
 
 		if (String::startsWith(m_state.paths.intermediateDir(), windowsManifestFile) || !Files::pathExists(windowsManifestFile))
 		{
@@ -89,8 +88,7 @@ bool CommandAdapterWinResource::createWindowsApplicationIcon()
 	bool iconChanged = !windowsIconFile.empty() && sources.fileChangedOrDoesNotExist(windowsIconFile);
 	if (iconChanged)
 	{
-		if (Files::pathExists(windowsIconResourceFile))
-			Files::remove(windowsIconResourceFile);
+		Files::removeIfExists(windowsIconResourceFile);
 
 		if (!Files::pathExists(windowsIconFile))
 		{

@@ -172,8 +172,7 @@ bool AppBundlerMacOS::bundleForPlatform()
 		if (!signAppBundle())
 			return false;
 
-		if (Files::pathExists(m_entitlementsFile))
-			Files::remove(m_entitlementsFile);
+		Files::removeIfExists(m_entitlementsFile);
 
 		Output::msgAction("Succeeded", String::getPathFolder(m_bundlePath));
 	}
@@ -470,7 +469,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 	if (!m_state.tools.plistConvertToBinary(tmpPlist, inOutFile))
 		return false;
 
-	Files::remove(tmpPlist);
+	Files::removeIfExists(tmpPlist);
 	return true;
 #else
 	UNUSED(inOutFile, outJson);
@@ -521,7 +520,7 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
 		return false;
 
-	Files::remove(tmpPlist);
+	Files::removeIfExists(tmpPlist);
 	return true;
 #else
 	UNUSED(inOutFile);

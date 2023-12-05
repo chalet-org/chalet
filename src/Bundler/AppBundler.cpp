@@ -321,7 +321,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	// LOG("Distribution dependencies gathered in:", timer.asString());
 
 	if (!Files::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [](const std::string& inPath) {
-			Files::remove(inPath);
+			Files::removeIfExists(inPath);
 		}))
 		return false;
 

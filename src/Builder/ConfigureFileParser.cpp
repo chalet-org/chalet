@@ -84,7 +84,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 		if (configFileChanged || metadataChanged || !pathExists)
 		{
 			if (configFileChanged || pathExists)
-				Files::remove(outPath);
+				Files::removeIfExists(outPath);
 
 			if (!Files::copyRename(configureFile, outPath, true))
 			{

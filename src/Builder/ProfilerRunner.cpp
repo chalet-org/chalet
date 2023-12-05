@@ -143,10 +143,9 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 		return false;
 	}
 
-	if (Files::pathExists(gmonOut))
-		Files::remove(gmonOut);
+	Files::removeIfExists(gmonOut);
 
-		// Output::lineBreak();
+	// Output::lineBreak();
 #if defined(CHALET_WIN32)
 	if (m_state.info.launchProfiler())
 	{

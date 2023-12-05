@@ -809,8 +809,7 @@ bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inSour
 		if (buildHashChanged)
 		{
 			auto oldPch = fmt::format("{}/{}", m_state.paths.objDir(), pch);
-			if (Files::pathExists(oldPch))
-				Files::remove(oldPch);
+			Files::removeIfExists(oldPch);
 		}
 
 		if (!Files::pathExists(m_pchSource))

@@ -43,8 +43,7 @@ bool CompilerCxxIntelClassicGCC::initialize()
 		{
 			// If The previous build with this build path (matching target triples) has an intermediate PCH file, remove it
 			auto oldPch = fmt::format("{}/{}", m_state.paths.objDir(), pch);
-			if (Files::pathExists(oldPch))
-				Files::remove(oldPch);
+			Files::removeIfExists(oldPch);
 		}
 
 		if (!Files::pathExists(m_pchSource))

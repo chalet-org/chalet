@@ -84,6 +84,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 		{
 			m_fileCache.emplace(toCache, true);
 
+			Files::removeIfExists(outputs->target);
+
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getLinkCommand(outputs->target, outputs->objectListLinker);
 			if (!target->list.empty())
@@ -134,8 +136,7 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 			{
 				auto objectFile = m_state.environment->getObjectFile(failure);
 
-				if (Files::pathExists(objectFile))
-					Files::remove(objectFile);
+				Files::removeIfExists(objectFile);
 			}
 
 			Output::lineBreak();
@@ -200,6 +201,8 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					{
 						m_fileCache.emplace(std::move(toCache), true);
 
+						Files::removeIfExists(outObject);
+
 						CommandPool::Cmd out;
 						out.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
 						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch);
@@ -220,6 +223,8 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				if (m_fileCache.find(toCache) == m_fileCache.end())
 				{
 					m_fileCache.emplace(std::move(toCache), true);
+
+					Files::removeIfExists(pchTarget);
 
 					CommandPool::Cmd out;
 					out.output = m_state.paths.getBuildOutputPath(source);
@@ -271,7 +276,8 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = m_commandsChanged[group->type] || fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceCmdChanged = m_commandsChanged[group->type];
+				bool sourceChanged = sourceCmdChanged || fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -279,6 +285,8 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
 						m_fileCache.emplace(std::move(toCache), true);
+
+						Files::removeIfExists(target);
 
 						CommandPool::Cmd out;
 						out.output = m_state.paths.getBuildOutputPath(source);
@@ -294,7 +302,8 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = m_commandsChanged[group->type] || fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceCmdChanged = m_commandsChanged[group->type];
+				bool sourceChanged = sourceCmdChanged || fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -302,6 +311,8 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
 						m_fileCache.emplace(std::move(toCache), true);
+
+						Files::removeIfExists(target);
 
 						CommandPool::Cmd out;
 						out.output = m_state.paths.getBuildOutputPath(source);

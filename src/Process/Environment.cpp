@@ -200,8 +200,8 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 		beforeVars.close();
 	}
 
-	Files::remove(inBeforeFile);
-	Files::remove(inAfterFile);
+	Files::removeIfExists(inBeforeFile);
+	Files::removeIfExists(inAfterFile);
 
 	{
 		std::string outContents;

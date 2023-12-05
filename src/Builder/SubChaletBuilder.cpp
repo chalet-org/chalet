@@ -152,8 +152,7 @@ void SubChaletBuilder::removeSettingsFile()
 	auto& defaultSettingsFile = m_state.inputs.defaultSettingsFile();
 	auto settingsLocation = fmt::format("{}/{}", location, defaultSettingsFile);
 
-	if (Files::pathExists(settingsLocation))
-		Files::remove(settingsLocation);
+	Files::removeIfExists(settingsLocation);
 }
 
 /*****************************************************************************/

@@ -31,8 +31,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 	auto exactpath = Files::getAbsolutePath(Files::getCanonicalPath(m_outputDirectory));
 	m_outputFilename = fmt::format("{}/{}", exactpath, inTarget.getOutputFilename(inBaseName));
 
-	if (Files::pathExists(m_outputFilename))
-		Files::remove(m_outputFilename);
+	Files::removeIfExists(m_outputFilename);
 
 	auto resolvedIncludes = getResolvedIncludes(inIncludes);
 

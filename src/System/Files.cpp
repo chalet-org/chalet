@@ -362,7 +362,7 @@ bool Files::makeDirectories(const StringList& inPaths, bool& outDirectoriesMade)
 }
 
 /*****************************************************************************/
-bool Files::remove(const std::string& inPath)
+bool Files::removeIfExists(const std::string& inPath)
 {
 	if (!Files::pathExists(inPath))
 		return true;

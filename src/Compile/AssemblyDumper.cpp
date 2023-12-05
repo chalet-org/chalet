@@ -128,7 +128,7 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 			continue;
 
 		if (inForced)
-			Files::remove(asmFile);
+			Files::removeIfExists(asmFile);
 
 		const auto& source = group->sourceFile;
 		const auto& object = group->objectFile;

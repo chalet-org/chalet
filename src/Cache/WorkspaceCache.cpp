@@ -239,7 +239,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 				const auto filename = path.filename().string();
 
 				if (!List::contains(ids, filename))
-					result &= Files::remove(path.string());
+					result &= Files::removeIfExists(path.string());
 			}
 		}
 	}

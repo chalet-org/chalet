@@ -47,8 +47,7 @@ bool ExternalDependencyCache::save() const
 
 	if (m_cache.empty())
 	{
-		if (Files::pathExists(m_filename))
-			Files::remove(m_filename);
+		Files::removeIfExists(m_filename);
 	}
 	else
 	{
