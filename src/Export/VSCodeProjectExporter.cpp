@@ -72,10 +72,11 @@ bool VSCodeProjectExporter::generateProjectFiles()
 
 		if (state->configuration.debugSymbols())
 		{
-			const IBuildTarget* runnableTarget = getRunnableTarget(*state);
+			constexpr bool executablesOnly = true;
+			const IBuildTarget* runnableTarget = state->getFirstValidRunTarget(executablesOnly);
 			if (runnableTarget != nullptr)
 			{
-				VSCodeLaunchGen launchJson(outState, *runnableTarget);
+				VSCodeLaunchGen launchJson(*m_exportAdapter);
 				if (!launchJson.saveToFile(fmt::format("{}/launch.json", m_directory)))
 				{
 					Diagnostic::error("There was a problem saving the launch.json file.");

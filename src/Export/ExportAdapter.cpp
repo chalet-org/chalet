@@ -94,6 +94,20 @@ std::string ExportAdapter::getDefaultTargetName() const
 
 	return getRunConfigLabel(runConfig);
 }
+
+/*****************************************************************************/
+std::string ExportAdapter::getAllTargetName() const
+{
+	auto& debugState = getDebugState();
+
+	RunConfiguration runConfig;
+	runConfig.name = m_allBuildName;
+	runConfig.config = debugState.configuration.name();
+	runConfig.arch = debugState.info.hostArchitectureString();
+
+	return getRunConfigLabel(runConfig);
+}
+
 /*****************************************************************************/
 std::string ExportAdapter::getRunConfigLabel(const RunConfiguration& inRunConfig) const
 {

@@ -235,7 +235,7 @@ bool BuildState::isSubChaletTarget() const noexcept
 }
 
 /*****************************************************************************/
-const IBuildTarget* BuildState::getFirstValidRunTarget() const
+const IBuildTarget* BuildState::getFirstValidRunTarget(const bool inExecutablesOnly) const
 {
 	if (targets.empty())
 		return nullptr;
@@ -263,11 +263,11 @@ const IBuildTarget* BuildState::getFirstValidRunTarget() const
 			if (!project.runExecutable().empty())
 				return target.get();
 		}
-		else if (target->isScript())
+		else if (target->isScript() && !inExecutablesOnly)
 		{
 			return target.get();
 		}
-		else if (target->isProcess())
+		else if (target->isProcess() && !inExecutablesOnly)
 		{
 			return target.get();
 		}

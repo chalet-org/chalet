@@ -224,6 +224,10 @@ const std::string& CommandLineInputs::workingDirectory() const noexcept
 	{
 		m_workingDirectory = Files::getWorkingDirectory();
 		Path::toUnix(m_workingDirectory, true);
+
+#if defined(CHALET_WIN32)
+		m_workingDirectory[0] = static_cast<uchar>(::toupper(static_cast<uchar>(m_workingDirectory[0])));
+#endif
 	}
 	return m_workingDirectory;
 }

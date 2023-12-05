@@ -48,7 +48,6 @@ protected:
 	bool useDirectory(const std::string& inDirectory);
 	bool useProjectBuildDirectory(const std::string& inSubDirectory);
 	const BuildState* getAnyBuildStateButPreferDebug() const;
-	const IBuildTarget* getRunnableTarget(const BuildState& inState) const;
 
 	void cleanExportDirectory();
 

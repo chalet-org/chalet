@@ -19,6 +19,7 @@
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 // Reference: https://docs.microsoft.com/en-us/cpp/build/cppproperties-schema-reference?view=msvc-170
@@ -43,6 +44,10 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	for (auto& state : m_states)
 	{
+		auto cwd = state->inputs.workingDirectory();
+		if (cwd.back() != '/')
+			cwd += '/';
+
 		const auto& configName = state->configuration.name();
 		auto architecture = Arch::toVSArch(state->info.targetArchitecture());
 
@@ -68,10 +73,14 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (project.usesPrecompiledHeader())
 				{
 					auto path = project.precompiledHeader();
-					if (Files::pathExists(path))
+					Path::toUnix(path);
+
+					auto canonical = Files::getCanonicalPath(path);
+					if (String::startsWith(cwd, canonical))
 					{
-						path = fmt::format("${{workspaceRoot}}/{}", path);
+						path = fmt::format("${{workspaceFolder}}/{}", path);
 					}
+
 					List::addIfDoesNotExist(forcedInclude, path);
 				}
 
@@ -80,9 +89,12 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					if (path.back() == '/')
 						path.pop_back();
 
-					if (Files::pathExists(path) || String::equals(path, state->paths.objDir()))
+					Path::toUnix(path);
+
+					auto canonical = Files::getCanonicalPath(path);
+					if (String::startsWith(cwd, canonical))
 					{
-						path = fmt::format("${{workspaceRoot}}/{}", path);
+						path = fmt::format("${{workspaceFolder}}/{}", path);
 					}
 
 					List::addIfDoesNotExist(includePath, path);

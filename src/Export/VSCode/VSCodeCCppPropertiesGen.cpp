@@ -6,6 +6,7 @@
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Platform/Platform.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
@@ -15,6 +16,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -51,13 +53,16 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	};
 #endif
 
+	auto cwd = m_state.inputs.workingDirectory();
+	if (cwd.back() != '/')
+		cwd += '/';
+
 	bool hasProjects = false;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-			auto& objDir = m_state.paths.objDir();
 
 			if (cStandard.empty())
 				cStandard = project.cStandard();
@@ -68,10 +73,14 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 			if (project.usesPrecompiledHeader())
 			{
 				auto path = project.precompiledHeader();
-				if (Files::pathExists(path))
+				Path::toUnix(path);
+
+				auto canonical = Files::getCanonicalPath(path);
+				if (String::startsWith(cwd, canonical))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}
+
 				List::addIfDoesNotExist(forcedInclude, path);
 			}
 
@@ -80,7 +89,10 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				if (path.back() == '/')
 					path.pop_back();
 
-				if (Files::pathExists(path) || String::equals(objDir, path))
+				Path::toUnix(path);
+
+				auto canonical = Files::getCanonicalPath(path);
+				if (String::startsWith(cwd, canonical))
 				{
 					path = fmt::format("${{workspaceFolder}}/{}", path);
 				}

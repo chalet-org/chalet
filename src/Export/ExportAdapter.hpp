@@ -35,6 +35,7 @@ struct ExportAdapter
 	const std::string& debugConfiguration() const noexcept;
 
 	std::string getDefaultTargetName() const;
+	std::string getAllTargetName() const;
 	std::string getRunConfigLabel(const RunConfiguration& inRunConfig) const;
 	std::string getLabelArchitecture(const RunConfiguration& inRunConfig) const;
 	std::string getRunConfigExec() const;

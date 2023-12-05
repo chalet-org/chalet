@@ -21,9 +21,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeLaunchGen::VSCodeLaunchGen(const BuildState& inState, const IBuildTarget& inTarget) :
-	m_state(inState),
-	m_target(inTarget)
+VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter) :
+	m_exportAdapter(inExportAdapter)
 {
 }
 
@@ -36,57 +35,59 @@ bool VSCodeLaunchGen::saveToFile(const std::string& inFilename) const
 	jRoot["configurations"] = Json::array();
 	auto& configurations = jRoot.at("configurations");
 
-	configurations.push_back(getConfiguration());
+	auto& debugState = m_exportAdapter.getDebugState();
+	configurations.push_back(getConfiguration(debugState));
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
 
 /*****************************************************************************/
-Json VSCodeLaunchGen::getConfiguration() const
+Json VSCodeLaunchGen::getConfiguration(const BuildState& inState) const
 {
 	Json ret = Json::object();
-	ret["name"] = getName();
-	ret["type"] = getType();
+	ret["name"] = getName(inState);
+	ret["type"] = getType(inState);
 	ret["request"] = "launch";
 	ret["stopAtEntry"] = true;
 	ret["cwd"] = "${workspaceFolder}";
 
-	setOptions(ret);
+	setOptions(ret, inState);
 	setPreLaunchTask(ret);
-	setProgramPath(ret);
-	setEnvFilePath(ret);
+	setProgramPath(ret, inState);
+	setEnvFilePath(ret, inState);
 
 	return ret;
 }
 
 /*****************************************************************************/
-std::string VSCodeLaunchGen::getName() const
+std::string VSCodeLaunchGen::getName(const BuildState& inState) const
 {
-	if (willUseLLDB())
+	if (willUseLLDB(inState))
 		return std::string("LLDB");
-	else if (willUseMSVC())
+	else if (willUseMSVC(inState))
 		return std::string("MSVC");
 	else
 		return std::string("GDB");
 }
 
 /*****************************************************************************/
-std::string VSCodeLaunchGen::getType() const
+std::string VSCodeLaunchGen::getType(const BuildState& inState) const
 {
-	if (willUseMSVC())
+	if (willUseMSVC(inState))
 		return std::string("cppvsdbg");
 	else
 		return std::string("cppdbg");
 }
 
 /*****************************************************************************/
-std::string VSCodeLaunchGen::getDebuggerPath() const
+std::string VSCodeLaunchGen::getDebuggerPath(const BuildState& inState) const
 {
-	const bool isLLDB = willUseLLDB();
-	if (isLLDB || willUseGDB())
+	const bool isLLDB = willUseLLDB(inState);
+	if (isLLDB || willUseGDB(inState))
 	{
+		auto& debugState = m_exportAdapter.getDebugState();
 		auto debugger = isLLDB ? "lldb" : "gdb";
-		auto compilerPath = String::getPathFolder(m_state.toolchain.compilerCxxAny().path);
+		auto compilerPath = String::getPathFolder(debugState.toolchain.compilerCxxAny().path);
 		auto exe = Files::getPlatformExecutableExtension();
 		auto path = fmt::format("{}/{}{}", compilerPath, debugger, exe);
 		if (!Files::pathExists(path))
@@ -101,9 +102,9 @@ std::string VSCodeLaunchGen::getDebuggerPath() const
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setOptions(Json& outJson) const
+void VSCodeLaunchGen::setOptions(Json& outJson, const BuildState& inState) const
 {
-	if (willUseMSVC())
+	if (willUseMSVC(inState))
 	{
 		outJson["console"] = "integratedTerminal";
 	}
@@ -112,14 +113,14 @@ void VSCodeLaunchGen::setOptions(Json& outJson) const
 		outJson["externalConsole"] = false;
 		outJson["internalConsoleOptions"] = "neverOpen";
 
-		const bool isLLDB = willUseLLDB();
+		const bool isLLDB = willUseLLDB(inState);
 		outJson["MIMode"] = isLLDB ? "lldb" : "gdb";
 
 #if defined(CHALET_MACOS)
 		if (!isLLDB)
 #endif
 		{
-			outJson["miDebuggerPath"] = getDebuggerPath();
+			outJson["miDebuggerPath"] = getDebuggerPath(inState);
 		}
 	}
 }
@@ -127,25 +128,25 @@ void VSCodeLaunchGen::setOptions(Json& outJson) const
 /*****************************************************************************/
 void VSCodeLaunchGen::setPreLaunchTask(Json& outJson) const
 {
-	const auto& config = m_state.configuration.name();
-	const auto& arch = m_state.info.targetArchitectureString();
-
-	// outJson["preLaunchTask"] = fmt::format("Build: {}", m_state.configuration.name());
-	outJson["preLaunchTask"] = fmt::format("all [{} {}]", arch, config);
+	outJson["preLaunchTask"] = m_exportAdapter.getAllTargetName();
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setProgramPath(Json& outJson) const
+void VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) const
 {
-	auto program = m_state.paths.getExecutableTargetPath(m_target);
+	constexpr bool executablesOnly = true;
+	auto target = inState.getFirstValidRunTarget(executablesOnly);
+	chalet_assert(target != nullptr, "no valid run targets");
+
+	auto program = inState.paths.getExecutableTargetPath(*target);
 	if (!program.empty())
 	{
 		outJson["program"] = fmt::format("${{workspaceFolder}}/{}", program);
 	}
 
-	if (m_state.inputs.runArguments().has_value())
+	if (inState.inputs.runArguments().has_value())
 	{
-		outJson["args"] = *m_state.inputs.runArguments();
+		outJson["args"] = *inState.inputs.runArguments();
 	}
 	else
 	{
@@ -154,27 +155,27 @@ void VSCodeLaunchGen::setProgramPath(Json& outJson) const
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setEnvFilePath(Json& outJson) const
+void VSCodeLaunchGen::setEnvFilePath(Json& outJson, const BuildState& inState) const
 {
-	outJson["envFile"] = fmt::format("${{workspaceFolder}}/{}/run.env", m_state.paths.buildOutputDir());
+	outJson["envFile"] = fmt::format("${{workspaceFolder}}/{}/run.env", inState.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::willUseMSVC() const
+bool VSCodeLaunchGen::willUseMSVC(const BuildState& inState) const
 {
-	return m_state.environment->isMsvc() || m_state.environment->isWindowsClang();
+	return inState.environment->isMsvc() || inState.environment->isWindowsClang();
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::willUseLLDB() const
+bool VSCodeLaunchGen::willUseLLDB(const BuildState& inState) const
 {
-	return m_state.environment->isClang() && !m_state.environment->isWindowsClang();
+	return inState.environment->isClang() && !inState.environment->isWindowsClang();
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::willUseGDB() const
+bool VSCodeLaunchGen::willUseGDB(const BuildState& inState) const
 {
-	return !willUseMSVC() && !willUseLLDB();
+	return !willUseMSVC(inState) && !willUseLLDB(inState);
 }
 
 }

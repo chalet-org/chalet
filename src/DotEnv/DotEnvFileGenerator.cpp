@@ -161,7 +161,7 @@ bool DotEnvFileGenerator::save(const std::string& inFilename)
 	for (auto& [name, var] : m_variables)
 	{
 		auto line = fmt::format("{}={}\n", name, var);
-		String::replaceAll(line, ' ', "\\ ");
+		// String::replaceAll(line, ' ', "\\ ");
 		contents += std::move(line);
 	}
 

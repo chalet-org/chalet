@@ -183,35 +183,6 @@ const BuildState* IProjectExporter::getAnyBuildStateButPreferDebug() const
 }
 
 /*****************************************************************************/
-const IBuildTarget* IProjectExporter::getRunnableTarget(const BuildState& inState) const
-{
-	const IBuildTarget* ret = nullptr;
-	for (auto& target : inState.targets)
-	{
-		if (target->isSources())
-		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-			if (project.isExecutable())
-			{
-				ret = target.get();
-				break;
-			}
-		}
-		else if (target->isCMake())
-		{
-			const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
-			if (!cmakeProject.runExecutable().empty())
-			{
-				ret = target.get();
-				break;
-			}
-		}
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 void IProjectExporter::cleanExportDirectory()
 {
 	// Wipe the old one
