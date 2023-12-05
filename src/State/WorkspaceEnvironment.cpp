@@ -7,13 +7,13 @@
 
 #include "Libraries/FileSystem.hpp"
 
+#include "Process/Environment.hpp"
 #include "State/BuildState.hpp"
 #include "State/TargetMetadata.hpp"
 #include "System/Files.hpp"
-#include "Process/Environment.hpp"
 #include "Terminal/Output.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -36,6 +36,8 @@ bool WorkspaceEnvironment::initialize(const BuildState& inState)
 
 		if (!inState.replaceVariablesInString(path, static_cast<const IBuildTarget*>(nullptr)))
 			return false;
+
+		Path::toUnix(path);
 
 		addedPath += path;
 		addedPath += Environment::getPathSeparator();

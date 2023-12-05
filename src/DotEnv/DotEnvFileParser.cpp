@@ -133,6 +133,7 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 		}
 #endif
 
+		String::replaceAll(value, "\\ ", " ");
 		Environment::set(key.c_str(), value);
 	}
 
