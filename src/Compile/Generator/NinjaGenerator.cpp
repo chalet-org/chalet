@@ -183,7 +183,7 @@ std::string NinjaGenerator::getBuildRules(const SourceOutputs& inOutputs)
 
 	if (m_project->usesPrecompiledHeader())
 	{
-		auto pchTarget = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderTarget(*m_project));
+		auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
 		rules += getPchBuildRule(pchTarget);
 	}
 
@@ -384,6 +384,7 @@ std::string NinjaGenerator::getPchBuildRule(const std::string& pchTarget)
 	const auto& pch = m_project->precompiledHeader();
 	auto pchCache = fmt::format("{}/{}", objDir, pch);
 
+	auto target = getSafeNinjaPath(pchTarget);
 	if (m_project->usesPrecompiledHeader() && !List::contains(m_precompiledHeaders, pchCache))
 	{
 		m_precompiledHeaders.push_back(std::move(pchCache));
@@ -419,10 +420,10 @@ build {outObject}: pch_{arch}_{hash} {dependencies}
 #endif
 		{
 			ret += fmt::format(R"ninja(
-build {pchTarget}: pch_{hash} {pch}
+build {target}: pch_{hash} {pch}
 )ninja",
 				fmt::arg("hash", m_hash),
-				FMT_ARG(pchTarget),
+				FMT_ARG(target),
 				FMT_ARG(pch));
 		}
 
@@ -431,10 +432,10 @@ build {pchTarget}: pch_{hash} {pch}
 		{
 			auto pchObj = getSafeNinjaPath(m_state.paths.getPrecompiledHeaderObject(pchTarget));
 			ret += fmt::format(R"ninja(
-build {pchObj}: phony {pchTarget}
+build {pchObj}: phony {target}
 )ninja",
 				FMT_ARG(pchObj),
-				FMT_ARG(pchTarget));
+				FMT_ARG(target));
 		}
 #endif
 	}
