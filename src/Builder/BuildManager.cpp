@@ -112,7 +112,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (m_state.cache.file().canWipeBuildFolder())
 	{
-		LOG("canWipeBuildFolder():", true);
 		Files::removeRecursively(m_state.paths.buildOutputDir());
 	}
 
