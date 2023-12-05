@@ -345,17 +345,19 @@ bool Files::makeDirectory(const std::string& inPath)
 }
 
 /*****************************************************************************/
-bool Files::makeDirectories(const StringList& inPaths, bool& outDirectoriesMade)
+bool Files::makeDirectories(const StringList& inPaths)
 {
-	outDirectoriesMade = false;
 	bool result = true;
 	for (auto& path : inPaths)
 	{
 		if (Files::pathExists(path))
 			continue;
 
-		result &= Files::makeDirectory(path);
-		outDirectoriesMade = true;
+		std::error_code error;
+		result &= fs::create_directories(path, error);
+
+		if (error)
+			Diagnostic::error(error.message());
 	}
 
 	return result;

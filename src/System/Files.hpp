@@ -33,7 +33,7 @@ uintmax_t getPathSize(const std::string& inPath);
 i64 getLastWriteTime(const std::string& inFile);
 
 bool makeDirectory(const std::string& inPath);
-bool makeDirectories(const StringList& inPaths, bool& outDirectoriesMade);
+bool makeDirectories(const StringList& inPaths);
 
 bool removeIfExists(const std::string& inPath);
 bool removeRecursively(const std::string& inPath);

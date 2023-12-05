@@ -84,7 +84,5 @@ private:
 	Timer m_timer;
 
 	// SourceTarget* m_project = nullptr;
-
-	bool m_directoriesMade = false;
 };
 }

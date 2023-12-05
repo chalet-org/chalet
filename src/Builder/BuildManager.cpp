@@ -214,7 +214,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	m_strategy->doPreBuild();
 	m_fileCache.clear();
 
-	if (inRoute.isRebuild() || m_directoriesMade)
+	if (inRoute.isRebuild())
 	{
 		if (Output::showCommands())
 			Output::lineBreak();
@@ -496,7 +496,8 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
-	if (!Files::makeDirectories(outputs->directories, m_directoriesMade))
+	// Note: no output from this for now
+	if (!Files::makeDirectories(outputs->directories))
 	{
 		Diagnostic::error("Error creating paths for project: {}", inProject.name());
 		return false;

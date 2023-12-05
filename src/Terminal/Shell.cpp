@@ -170,7 +170,7 @@ std::string getParentProcessPath()
 #if defined(CHALET_LINUX)
 bool isRunningWindowsSubsystemForLinux()
 {
-	auto uname = Files::which("uname");
+	auto uname = Files::which("uname", false);
 	if (uname.empty())
 		return false;
 
