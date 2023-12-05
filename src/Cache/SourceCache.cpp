@@ -34,7 +34,7 @@ Json SourceCache::asJson() const
 	Json ret = Json::object();
 
 	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
-	ret[CacheKeys::BuildLastBuilt] = std::to_string(lastBuilt);
+	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
 	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<i32>(m_lastBuildStrategy);
 
