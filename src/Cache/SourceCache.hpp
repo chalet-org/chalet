@@ -23,6 +23,7 @@ struct SourceCache
 	void addDataCache(const std::string& inKey, std::string&& inValue);
 	void addDataCache(const std::string& inKey, const bool inValue);
 
+	bool dataCacheValueChanged(const std::string& inHash, const std::string& inValue);
 	bool dataCacheValueIsFalse(const std::string& inHash);
 
 	bool fileChangedOrDoesNotExist(const std::string& inFile) const;

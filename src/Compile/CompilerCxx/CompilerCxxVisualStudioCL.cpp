@@ -353,7 +353,7 @@ void CompilerCxxVisualStudioCL::getCommandOptions(StringList& outArgList, const 
 		addGenerateIntrinsicFunctions(outArgList);
 		addWholeProgramOptimization(outArgList);
 
-		// addDefines(outArgList);
+		addDefines(outArgList);
 
 		// /Gm-  // deprecated
 		addNoExceptionsOption(outArgList);

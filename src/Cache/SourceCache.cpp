@@ -89,6 +89,20 @@ void SourceCache::addDataCache(const std::string& inKey, const bool inValue)
 }
 
 /*****************************************************************************/
+bool SourceCache::dataCacheValueChanged(const std::string& inHash, const std::string& inValue)
+{
+	auto& value = getDataCacheValue(inHash);
+	bool result = value != inValue;
+	if (result)
+	{
+		m_dataCache[inHash] = inValue;
+		m_dirty = true;
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool SourceCache::dataCacheValueIsFalse(const std::string& inHash)
 {
 	auto& value = getDataCacheValue(inHash);

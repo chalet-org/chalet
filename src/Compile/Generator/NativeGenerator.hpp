@@ -41,6 +41,8 @@ private:
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 
+	void checkCommandsForChanged();
+
 	BuildState& m_state;
 	SourceCache& m_sourceCache;
 
@@ -55,6 +57,9 @@ private:
 
 	std::unordered_map<std::string, bool> m_fileCache;
 	std::unordered_map<std::string, bool> m_dependencyCache;
+
+	std::unordered_map<SourceType, bool> m_commandsChanged;
+	bool m_targetCommandChanged = false;
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;

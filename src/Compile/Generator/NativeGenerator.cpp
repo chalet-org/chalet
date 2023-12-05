@@ -12,10 +12,12 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -40,6 +42,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	chalet_assert(m_project != nullptr, "");
 
+	checkCommandsForChanged();
+
 	m_sourcesChanged = m_pchChanged = false;
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
@@ -47,7 +51,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	bool targetExists = Files::pathExists(outputs->target);
 
-	bool dependentchanged = targetExists && checkDependentTargets(inProject);
+	bool dependentChanged = targetExists && checkDependentTargets(inProject);
 
 	m_fileCache.reserve(m_fileCache.size() + outputs->groups.size() + 3);
 	m_dependencyCache.reserve(m_fileCache.size() * 2);
@@ -64,7 +68,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		m_compileTarget = m_sourcesChanged || m_pchChanged || dependentchanged || !targetExists;
+		m_compileTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(outputs->groups);
@@ -174,6 +178,8 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		auto dependency = m_state.environment->getDependencyFile(source);
 		const auto& objDir = m_state.paths.objDir();
 
+		bool pchCommandChanged = m_commandsChanged[SourceType::CxxPrecompiledHeader];
+
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
 		{
@@ -185,7 +191,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
-				bool pchChanged = fileChangedOrDependentChanged(source, outObject, dependency);
+				bool pchChanged = pchCommandChanged || fileChangedOrDependentChanged(source, outObject, dependency);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
@@ -206,7 +212,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		else
 #endif
 		{
-			bool pchChanged = fileChangedOrDependentChanged(source, pchTarget, dependency);
+			bool pchChanged = pchCommandChanged || fileChangedOrDependentChanged(source, pchTarget, dependency);
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
@@ -265,7 +271,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[group->type] || fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -288,7 +294,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[group->type] || fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -427,5 +433,57 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+void NativeGenerator::checkCommandsForChanged()
+{
+	m_commandsChanged.clear();
+	m_targetCommandChanged = false;
+
+	auto& name = m_project->name();
+	auto& sourceCache = m_state.cache.file().sources();
+
+	{
+		auto derivative = m_project->getDefaultSourceType();
+		SourceTypeList types{
+			derivative
+		};
+		if (m_project->usesPrecompiledHeader())
+		{
+			types.emplace_back(SourceType::CxxPrecompiledHeader);
+		}
+		if (m_project->objectiveCxx())
+		{
+			if (derivative == SourceType::ObjectiveC)
+				types.emplace_back(SourceType::C);
+			else if (derivative == SourceType::ObjectiveCPlusPlus)
+				types.emplace_back(SourceType::CPlusPlus);
+		}
+		if (m_state.toolchain.canCompileWindowsResources())
+		{
+			types.emplace_back(SourceType::WindowsResource);
+		}
+
+		for (auto& type : types)
+		{
+			auto cxxHashKey = Hash::string(fmt::format("{}_source_{}", name, static_cast<int>(type)));
+			StringList options;
+			if (type == SourceType::WindowsResource)
+				options = m_toolchain->compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");
+			else if (type == SourceType::CxxPrecompiledHeader)
+				options = m_toolchain->compilerCxx->getPrecompiledHeaderCommand("cmd.h", "cmd.h.pch", "cmd.h.d", std::string());
+			else
+				options = m_toolchain->compilerCxx->getCommand("cmd.cxx", "cmd.cxx.o", "cmd.cxx.d", derivative);
+
+			auto hash = Hash::string(String::join(options));
+			m_commandsChanged[type] = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
+		}
+
+		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
+		auto targetOptions = m_toolchain->getOutputTargetCommand(m_project->outputFile(), StringList{});
+		auto targetHash = Hash::string(String::join(targetOptions));
+		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
+	}
 }
 }
