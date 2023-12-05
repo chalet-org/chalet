@@ -96,6 +96,7 @@ std::string TargetExportAdapter::getCommand() const
 		{
 			cmd.front() = fmt::format("\"{}\"", cmd.front());
 			ret = String::join(cmd);
+
 			scriptType = script.scriptType();
 		}
 	}
@@ -125,7 +126,7 @@ std::string TargetExportAdapter::getCommand() const
 		auto buildCmd = builder.getBuildCommand();
 		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
 
-		ret = fmt::format("{}{}{}{}", String::join(genCmd), eol, String::join(buildCmd), eol);
+		ret = fmt::format("{}{}{}{}", String::join(genCmd), eol, String::join(buildCmd));
 	}
 	else if (m_target.isSubChalet())
 	{
@@ -137,7 +138,7 @@ std::string TargetExportAdapter::getCommand() const
 		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
 
 		auto buildCmd = builder.getBuildCommand(hasSettings);
-		ret = fmt::format("{}{}", String::join(buildCmd), eol);
+		ret = fmt::format("{}{}", String::join(buildCmd));
 	}
 	else if (m_target.isValidation())
 	{
@@ -152,11 +153,13 @@ std::string TargetExportAdapter::getCommand() const
 		{
 			validateCmd.emplace_back(fmt::format("\"{}\"", file));
 		}
-		ret = fmt::format("{}{}", String::join(validateCmd), eol);
+		ret = fmt::format("{}{}", String::join(validateCmd));
 	}
 
 	if (!ret.empty())
 	{
+		ret += eol;
+
 		if (scriptType == ScriptType::Python)
 		{
 			ret = fmt::format("cd {cwd}{eol}set PYTHONIOENCODING=utf-8{eol}set PYTHONLEGACYWINDOWSSTDIO=utf-8{eol}{ret}", FMT_ARG(cwd), FMT_ARG(eol), FMT_ARG(ret));
