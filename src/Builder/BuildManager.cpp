@@ -671,7 +671,9 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 
 	auto ccmdsJson = m_state.paths.currentCompileCommands();
 	Files::removeIfExists(ccmdsJson);
-	Files::removeIfExists(buildOutputDir);
+
+	if (Files::pathIsEmpty(buildOutputDir))
+		Files::removeIfExists(buildOutputDir);
 
 	if (inShowMessage && Output::cleanOutput())
 	{
