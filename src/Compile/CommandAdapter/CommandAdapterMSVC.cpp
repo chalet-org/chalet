@@ -735,8 +735,8 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 	// const bool hasStaticLinks = m_project.staticLinks().size() > 0;
 	// const bool hasDynamicLinks = m_project.links().size() > 0;
 
-	auto dll = m_state.environment->getSharedLibraryExtension();
-	auto lib = m_state.environment->getArchiveExtension();
+	auto archiveExt = m_state.environment->getArchiveExtension();
+	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	StringList links = m_project.links();
 	for (auto& link : m_project.staticLinks())
@@ -755,9 +755,9 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 				if (project.name() == link && project.isSharedLibrary())
 				{
 					auto outputFile = project.outputFile();
-					if (String::endsWith(dll, outputFile))
+					if (String::endsWith(sharedExt, outputFile))
 					{
-						String::replaceAll(outputFile, dll, lib);
+						String::replaceAll(outputFile, sharedExt, archiveExt);
 						List::addIfDoesNotExist(ret, std::move(outputFile));
 						found = true;
 						break;
@@ -768,10 +768,10 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 
 		if (!found)
 		{
-			if (Files::pathExists(link))
+			if (String::endsWith(archiveExt, link))
 				List::addIfDoesNotExist(ret, std::move(link));
 			else
-				List::addIfDoesNotExist(ret, fmt::format("{}{}", link, lib));
+				List::addIfDoesNotExist(ret, fmt::format("{}{}", link, archiveExt));
 		}
 	}
 
@@ -780,7 +780,7 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 		auto coreLinks = ILinker::getWin32CoreLibraryLinks(m_state, m_project);
 		for (const auto& link : coreLinks)
 		{
-			List::addIfDoesNotExist(ret, fmt::format("{}{}", link, lib));
+			List::addIfDoesNotExist(ret, fmt::format("{}{}", link, archiveExt));
 		}
 	}
 
