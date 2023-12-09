@@ -20,6 +20,8 @@ struct PackageManager
 
 private:
 	bool resolvePackagesFromSubChaletTargets();
+	bool initializePackages();
+	bool readImportedPackages();
 
 	BuildState& m_state;
 

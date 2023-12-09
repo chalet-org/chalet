@@ -32,6 +32,74 @@ bool PackageManager::initialize()
 	if (!resolvePackagesFromSubChaletTargets())
 		return false;
 
+	if (!initializePackages())
+		return false;
+
+	if (!readImportedPackages())
+		return false;
+
+	// Clear packages at this point. in theory, we should no longer need them
+	m_packages.clear();
+
+	return true;
+}
+
+/*****************************************************************************/
+void PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
+{
+	m_packages.emplace(inName, std::move(inValue));
+}
+
+/*****************************************************************************/
+bool PackageManager::resolvePackagesFromSubChaletTargets()
+{
+	Unique<ChaletJsonParser> chaletJsonParser;
+
+	auto packages = std::move(m_packages);
+	m_packages.clear();
+
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSubChalet())
+		{
+			auto& project = static_cast<SubChaletTarget&>(*target);
+			auto& location = project.location();
+			auto buildFile = project.buildFile();
+			if (buildFile.empty())
+				buildFile = m_state.inputs.defaultInputFile();
+
+			auto resolved = fmt::format("{}/{}", location, buildFile);
+			if (!Files::pathExists(resolved))
+			{
+				auto base = String::getPathFolderBaseName(buildFile);
+				resolved = fmt::format("{}/{}.yaml", location, base);
+			}
+
+			if (!Files::pathExists(resolved))
+				continue;
+
+			if (!chaletJsonParser)
+			{
+				chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
+			}
+
+			if (!chaletJsonParser->readPackagesIfAvailable(resolved, location))
+			{
+				Diagnostic::error("Error importing packages from: {}", resolved);
+				return false;
+			}
+		}
+	}
+
+	for (auto&& pkg : packages)
+		m_packages.emplace(pkg.first, std::move(pkg.second));
+
+	return true;
+}
+
+/*****************************************************************************/
+bool PackageManager::initializePackages()
+{
 	for (auto& [name, pkg] : m_packages)
 	{
 		LOG(name, "--", pkg->root());
@@ -43,6 +111,12 @@ bool PackageManager::initialize()
 		}
 	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool PackageManager::readImportedPackages()
+{
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -106,62 +180,6 @@ bool PackageManager::initialize()
 			}
 		}
 	}
-
-	// Clear packages at this point. in theory, we should no longer need them
-	m_packages.clear();
-
-	return true;
-}
-
-/*****************************************************************************/
-void PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
-{
-	m_packages.emplace(inName, std::move(inValue));
-}
-
-/*****************************************************************************/
-bool PackageManager::resolvePackagesFromSubChaletTargets()
-{
-	Unique<ChaletJsonParser> chaletJsonParser;
-
-	auto packages = std::move(m_packages);
-	m_packages.clear();
-
-	for (auto& target : m_state.targets)
-	{
-		if (target->isSubChalet())
-		{
-			auto& project = static_cast<SubChaletTarget&>(*target);
-			auto& location = project.location();
-			auto buildFile = project.buildFile();
-			if (buildFile.empty())
-				buildFile = m_state.inputs.defaultInputFile();
-
-			auto resolved = fmt::format("{}/{}", location, buildFile);
-			if (!Files::pathExists(resolved))
-			{
-				auto base = String::getPathFolderBaseName(buildFile);
-				resolved = fmt::format("{}/{}.yaml", location, base);
-			}
-
-			if (!Files::pathExists(resolved))
-				continue;
-
-			if (!chaletJsonParser)
-			{
-				chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
-			}
-
-			if (!chaletJsonParser->readPackagesIfAvailable(resolved, location))
-			{
-				Diagnostic::error("Error importing packages from: {}", resolved);
-				return false;
-			}
-		}
-	}
-
-	for (auto&& pkg : packages)
-		m_packages.emplace(pkg.first, std::move(pkg.second));
 
 	return true;
 }
