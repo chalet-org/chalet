@@ -208,7 +208,7 @@ bool PackageManager::readImportedPackages()
 				auto& pkg = m_packages.at(name);
 
 				auto& binaries = pkg->binaries();
-				auto& searchDirs = pkg->searchDirs();
+				auto& searchPaths = pkg->searchPaths();
 				auto& includeDirs = pkg->includeDirs();
 				auto& libDirs = pkg->libDirs();
 				auto& appleFrameworks = pkg->appleFrameworks();
@@ -223,8 +223,8 @@ bool PackageManager::readImportedPackages()
 					UNUSED(binary);
 				}
 
-				if (!searchDirs.empty())
-					m_state.workspace.addSearchPaths(StringList(searchDirs));
+				if (!searchPaths.empty())
+					m_state.workspace.addSearchPaths(StringList(searchPaths));
 
 				if (!includeDirs.empty())
 					project.addIncludeDirs(StringList(includeDirs));

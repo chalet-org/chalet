@@ -27,9 +27,9 @@ struct SourcePackage
 	void addBinaries(StringList&& inList);
 	void addBinary(std::string&& inValue);
 
-	const StringList& searchDirs() const noexcept;
-	void addSearchDirs(StringList&& inList);
-	void addSearchDir(std::string&& inValue);
+	const StringList& searchPaths() const noexcept;
+	void addSearchPaths(StringList&& inList);
+	void addSearchPath(std::string&& inValue);
 
 	const StringList& libDirs() const noexcept;
 	void addLibDirs(StringList&& inList);
@@ -69,7 +69,7 @@ private:
 	std::string m_root;
 
 	StringList m_binaries;
-	StringList m_searchDirs;
+	StringList m_searchPaths;
 	StringList m_links;
 	StringList m_staticLinks;
 	StringList m_libDirs;

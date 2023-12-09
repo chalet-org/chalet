@@ -44,7 +44,7 @@ bool SourcePackage::initialize()
 		return false;
 	}
 
-	if (!replaceVariablesInPathList(m_searchDirs))
+	if (!replaceVariablesInPathList(m_searchPaths))
 		return false;
 
 	if (!replaceVariablesInPathList(m_linkerOptions))
@@ -68,7 +68,7 @@ bool SourcePackage::initialize()
 	for (auto& path : m_includeDirs)
 		path = Files::getCanonicalPath(path);
 
-	for (auto& path : m_searchDirs)
+	for (auto& path : m_searchPaths)
 		path = Files::getCanonicalPath(path);
 
 	for (auto& path : m_links)
@@ -121,17 +121,17 @@ void SourcePackage::addBinary(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& SourcePackage::searchDirs() const noexcept
+const StringList& SourcePackage::searchPaths() const noexcept
 {
-	return m_searchDirs;
+	return m_searchPaths;
 }
-void SourcePackage::addSearchDirs(StringList&& inList)
+void SourcePackage::addSearchPaths(StringList&& inList)
 {
-	List::forEach(inList, this, &SourcePackage::addSearchDir);
+	List::forEach(inList, this, &SourcePackage::addSearchPath);
 }
-void SourcePackage::addSearchDir(std::string&& inValue)
+void SourcePackage::addSearchPath(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_searchDirs, inValue);
+	List::addIfDoesNotExist(m_searchPaths, inValue);
 }
 
 /*****************************************************************************/

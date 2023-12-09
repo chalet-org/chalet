@@ -344,6 +344,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 
 	m_dependencyMap->addExcludesFromList(inTarget.includes());
 	m_dependencyMap->clearSearchDirs();
+
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
