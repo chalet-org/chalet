@@ -20,11 +20,6 @@ SourcePackage::SourcePackage(const BuildState& inState) :
 /*****************************************************************************/
 bool SourcePackage::initialize()
 {
-	// Note: this only works correctly in-project
-	//
-	if (!replaceVariablesInPathList(m_binaries))
-		return false;
-
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
 	if (!expandGlobPatternsInList(m_appleFrameworkPaths, GlobMatch::Folders))
 	{
@@ -55,9 +50,6 @@ bool SourcePackage::initialize()
 
 	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
-
-	for (auto& path : m_binaries)
-		path = Files::getCanonicalPath(path);
 
 	for (auto& path : m_appleFrameworkPaths)
 		path = Files::getCanonicalPath(path);
@@ -104,20 +96,6 @@ const std::string& SourcePackage::root() const noexcept
 void SourcePackage::setRoot(const std::string& inValue) noexcept
 {
 	m_root = inValue;
-}
-
-/*****************************************************************************/
-const StringList& SourcePackage::binaries() const noexcept
-{
-	return m_binaries;
-}
-void SourcePackage::addBinaries(StringList&& inList)
-{
-	List::forEach(inList, this, &SourcePackage::addBinary);
-}
-void SourcePackage::addBinary(std::string&& inValue)
-{
-	List::addIfDoesNotExist(m_binaries, inValue);
 }
 
 /*****************************************************************************/

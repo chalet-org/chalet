@@ -2696,9 +2696,6 @@
 			"description": "An individual importable package.",
 			"additionalProperties": false,
 			"properties": {
-				"binaries": {
-					"$ref": "#/definitions/package-binaries"
-				},
 				"searchPaths": {
 					"$ref": "#/definitions/searchPaths"
 				},
@@ -2806,31 +2803,10 @@
 				}
 			},
 			"patternProperties": {
-				"^binaries\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/package-binaries"
-				},
 				"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/searchPaths"
 				}
 			}
-		},
-		"package-binaries": {
-			"description": "Compiled binary files to export from this workspace.",
-			"oneOf": [
-				{
-					"type": "string",
-					"minLength": 1
-				},
-				{
-					"type": "array",
-					"uniqueItems": true,
-					"minItems": 1,
-					"items": {
-						"type": "string",
-						"minLength": 1
-					}
-				}
-			]
 		},
 		"package-settings-cxx": {
 			"type": "object",

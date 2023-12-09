@@ -183,7 +183,6 @@ class ChaletJsonSchema
 		TargetChaletClean,
 		//
 		Package,
-		PackageBinaries,
 		// PackageSearchPaths,
 		PackageSettingsCxx,
 		//

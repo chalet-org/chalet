@@ -353,9 +353,7 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 		if (value.is_string())
 		{
 			std::string val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "binaries", status))
-				outPackage.addBinary(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
+			if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
 				outPackage.addSearchPath(std::move(val));
 			else if (isInvalid(status))
 				return false;
@@ -363,9 +361,7 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 		else if (value.is_array())
 		{
 			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "binaries", status))
-				outPackage.addBinaries(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
+			if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
 				outPackage.addSearchPaths(std::move(val));
 			else if (isInvalid(status))
 				return false;

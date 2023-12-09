@@ -207,7 +207,6 @@ bool PackageManager::readImportedPackages()
 
 				auto& pkg = m_packages.at(name);
 
-				auto& binaries = pkg->binaries();
 				auto& searchPaths = pkg->searchPaths();
 				auto& includeDirs = pkg->includeDirs();
 				auto& libDirs = pkg->libDirs();
@@ -216,12 +215,6 @@ bool PackageManager::readImportedPackages()
 				auto& links = pkg->links();
 				auto& staticLinks = pkg->staticLinks();
 				auto& linkerOptions = pkg->linkerOptions();
-
-				for (auto& binary : binaries)
-				{
-					// LOG(binary);
-					UNUSED(binary);
-				}
 
 				if (!searchPaths.empty())
 					m_state.workspace.addSearchPaths(StringList(searchPaths));

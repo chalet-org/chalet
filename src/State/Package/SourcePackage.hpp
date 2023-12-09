@@ -23,10 +23,6 @@ struct SourcePackage
 	const std::string& root() const noexcept;
 	void setRoot(const std::string& inValue) noexcept;
 
-	const StringList& binaries() const noexcept;
-	void addBinaries(StringList&& inList);
-	void addBinary(std::string&& inValue);
-
 	const StringList& searchPaths() const noexcept;
 	void addSearchPaths(StringList&& inList);
 	void addSearchPath(std::string&& inValue);
@@ -68,7 +64,6 @@ private:
 	std::string m_name;
 	std::string m_root;
 
-	StringList m_binaries;
 	StringList m_searchPaths;
 	StringList m_links;
 	StringList m_staticLinks;

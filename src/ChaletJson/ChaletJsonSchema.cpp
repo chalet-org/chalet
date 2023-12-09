@@ -1464,11 +1464,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	//
 	// Package
 	//
-	defs[Defs::PackageBinaries] = makeArrayOrString(R"json({
-		"type": "string",
-		"description": "Compiled binary files to export from this workspace.",
-		"minLength": 1
-	})json"_ojson);
 
 	//
 	// Platform Requires
@@ -1978,7 +1973,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "An individual importable package.",
 			"additionalProperties": false
 		})json"_ojson;
-		addPropertyAndPattern(package, "binaries", Defs::PackageBinaries, kPatternConditions);
 		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
 		package[SKeys::Properties]["settings"] = defs[Defs::PackageSettingsCxx];
@@ -2183,7 +2177,6 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletClean: return "target-chalet-clean";
 		//
 		case Defs::Package: return "package";
-		case Defs::PackageBinaries: return "package-binaries";
 		case Defs::PackageSettingsCxx: return "package-settings-cxx";
 		//
 		case Defs::PlatformRequires: return "platform-requires";
