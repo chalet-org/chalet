@@ -1799,6 +1799,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addProperty(abstractSource, "configureFiles", Defs::TargetSourceConfigureFiles);
 		addPropertyAndPattern(abstractSource, "files", Defs::TargetSourceFiles, kPatternConditions);
+		addPropertyAndPattern(abstractSource, "importPackages", Defs::TargetSourceImportPackages, kPatternConditions);
 		addPropertyAndPattern(abstractSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(abstractSource, "metadata", Defs::TargetSourceMetadata);
 

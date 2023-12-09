@@ -941,6 +941,9 @@
 				"files": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"importPackages": {
+					"$ref": "#/definitions/target-source-importPackages"
+				},
 				"language": {
 					"$ref": "#/definitions/target-source-language"
 				},
@@ -964,6 +967,9 @@
 			"patternProperties": {
 				"^files\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
+				},
+				"^importPackages\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-importPackages"
 				},
 				"^language\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
