@@ -27,8 +27,6 @@ PackageManager::PackageManager(BuildState& inState) :
 /*****************************************************************************/
 bool PackageManager::initialize()
 {
-	UNUSED(m_state);
-
 	if (!resolvePackagesFromSubChaletTargets())
 		return false;
 
