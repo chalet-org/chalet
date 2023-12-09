@@ -210,8 +210,6 @@ bool PackageManager::readImportedPackages()
 				auto& searchPaths = pkg->searchPaths();
 				auto& includeDirs = pkg->includeDirs();
 				auto& libDirs = pkg->libDirs();
-				auto& appleFrameworks = pkg->appleFrameworks();
-				auto& appleFrameworkPaths = pkg->appleFrameworkPaths();
 				auto& links = pkg->links();
 				auto& staticLinks = pkg->staticLinks();
 				auto& linkerOptions = pkg->linkerOptions();
@@ -235,6 +233,8 @@ bool PackageManager::readImportedPackages()
 					project.addLinkerOptions(StringList(linkerOptions));
 
 #if defined(CHALET_MACOS)
+				auto& appleFrameworks = pkg->appleFrameworks();
+				auto& appleFrameworkPaths = pkg->appleFrameworkPaths();
 				if (!appleFrameworkPaths.empty())
 					project.addAppleFrameworkPaths(StringList(appleFrameworkPaths));
 
