@@ -46,7 +46,7 @@ public:
 	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 	bool replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
-	std::string replaceVariablesInMatch(std::string& inMatch, bool& required) const;
+	std::string replaceVariablesInMatch(std::string& inMatch, bool& required, const bool inValidateExternals = true) const;
 	const std::string& cachePathId() const noexcept;
 
 	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;

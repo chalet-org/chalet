@@ -25,6 +25,7 @@
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/Package/SourcePackage.hpp"
 #include "State/PackageManager.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -1442,12 +1443,10 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required);
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &onFail](std::string match, bool& required) {
+				auto result = replaceVariablesInMatch(match, required, false);
 				if (!result.empty())
 					return result;
-
-				UNUSED(inTarget);
 
 				// if (inTarget != nullptr)
 				// {
@@ -1478,7 +1477,11 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 				return std::string();
 			}))
 		{
-			Diagnostic::error("{}: Package '(name)' has an unsupported variable in the value: {}", inputs.inputFile(), outString);
+			std::string name("(name)");
+			if (inTarget != nullptr)
+				name = inTarget->name();
+
+			Diagnostic::error("{}: Package '{}' has an unsupported variable in the value: {}", inputs.inputFile(), name, outString);
 			return false;
 		}
 	}
@@ -1487,7 +1490,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 }
 
 /*****************************************************************************/
-std::string BuildState::replaceVariablesInMatch(std::string& match, bool& required) const
+std::string BuildState::replaceVariablesInMatch(std::string& match, bool& required, const bool inValidateExternals) const
 {
 	if (String::equals("cwd", match))
 		return inputs.workingDirectory();
@@ -1534,23 +1537,37 @@ std::string BuildState::replaceVariablesInMatch(std::string& match, bool& requir
 	if (String::startsWith("external:", match))
 	{
 		match = match.substr(9);
-		auto val = paths.getExternalDir(match);
-		if (val.empty())
+		if (inValidateExternals)
 		{
-			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+			auto val = paths.getExternalDir(match);
+			if (val.empty())
+			{
+				Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+			}
+			return val;
 		}
-		return val;
+		else
+		{
+			return fmt::format("{}/{}", inputs.externalDirectory(), match);
+		}
 	}
 
 	if (String::startsWith("externalBuild:", match))
 	{
 		match = match.substr(14);
-		auto val = paths.getExternalBuildDir(match);
-		if (val.empty())
+		if (inValidateExternals)
 		{
-			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+			auto val = paths.getExternalBuildDir(match);
+			if (val.empty())
+			{
+				Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+			}
+			return val;
 		}
-		return val;
+		else
+		{
+			return fmt::format("{}.{}", paths.externalBuildDir(), match);
+		}
 	}
 
 	if (String::startsWith("so:", match))
