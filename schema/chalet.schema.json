@@ -972,6 +972,9 @@
 				"files": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"importPackages": {
+					"$ref": "#/definitions/target-source-importPackages"
+				},
 				"kind": {
 					"type": "string",
 					"description": "The type of the target's compiled binary, a script or external project.",
@@ -1011,6 +1014,9 @@
 				"^files\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
 				},
+				"^importPackages\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-importPackages"
+				},
 				"^language\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				},
@@ -1038,6 +1044,9 @@
 				},
 				"files": {
 					"$ref": "#/definitions/target-source-files"
+				},
+				"importPackages": {
+					"$ref": "#/definitions/target-source-importPackages"
 				},
 				"kind": {
 					"type": "string",
@@ -1074,6 +1083,9 @@
 			"patternProperties": {
 				"^files\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-files"
+				},
+				"^importPackages\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-importPackages"
 				},
 				"^language\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
@@ -1227,6 +1239,26 @@
 					"minItems": 1,
 					"items": {
 						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-importPackages": {
+			"description": "Packages to import into the source target.",
+			"oneOf": [
+				{
+					"type": "string",
+					"pattern": "^[\\w\\-+]{3,}(\\.[\\w\\-+]{3,})?$",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"pattern": "^[\\w\\-+]{3,}(\\.[\\w\\-+]{3,})?$",
 						"minLength": 1
 					}
 				}
@@ -2641,6 +2673,198 @@
 			"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
 		},
+		"package": {
+			"type": "object",
+			"description": "An individual importable package.",
+			"additionalProperties": false,
+			"properties": {
+				"binaries": {
+					"$ref": "#/definitions/package-binaries"
+				},
+				"searchPaths": {
+					"$ref": "#/definitions/searchPaths"
+				},
+				"settings": {
+					"type": "object",
+					"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
+					"additionalProperties": false,
+					"properties": {
+						"appleFrameworkPaths": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+						},
+						"appleFrameworks": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+						},
+						"includeDirs": {
+							"$ref": "#/definitions/target-source-cxx-includeDirs"
+						},
+						"libDirs": {
+							"$ref": "#/definitions/target-source-cxx-libDirs"
+						},
+						"links": {
+							"$ref": "#/definitions/target-source-cxx-links"
+						},
+						"linkerOptions": {
+							"$ref": "#/definitions/target-source-cxx-linkerOptions"
+						},
+						"staticLinks": {
+							"$ref": "#/definitions/target-source-cxx-staticLinks"
+						}
+					},
+					"patternProperties": {
+						"^appleFrameworkPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+						},
+						"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+						},
+						"^includeDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-includeDirs"
+						},
+						"^libDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-libDirs"
+						},
+						"^links\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-links"
+						},
+						"^linkerOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-linkerOptions"
+						},
+						"^staticLinks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-staticLinks"
+						}
+					}
+				},
+				"settings:Cxx": {
+					"type": "object",
+					"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
+					"additionalProperties": false,
+					"properties": {
+						"appleFrameworkPaths": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+						},
+						"appleFrameworks": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+						},
+						"includeDirs": {
+							"$ref": "#/definitions/target-source-cxx-includeDirs"
+						},
+						"libDirs": {
+							"$ref": "#/definitions/target-source-cxx-libDirs"
+						},
+						"links": {
+							"$ref": "#/definitions/target-source-cxx-links"
+						},
+						"linkerOptions": {
+							"$ref": "#/definitions/target-source-cxx-linkerOptions"
+						},
+						"staticLinks": {
+							"$ref": "#/definitions/target-source-cxx-staticLinks"
+						}
+					},
+					"patternProperties": {
+						"^appleFrameworkPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+						},
+						"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+						},
+						"^includeDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-includeDirs"
+						},
+						"^libDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-libDirs"
+						},
+						"^links\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-links"
+						},
+						"^linkerOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-linkerOptions"
+						},
+						"^staticLinks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+							"$ref": "#/definitions/target-source-cxx-staticLinks"
+						}
+					}
+				}
+			},
+			"patternProperties": {
+				"^binaries\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/package-binaries"
+				},
+				"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/searchPaths"
+				}
+			}
+		},
+		"package-binaries": {
+			"description": "Compiled binary files to export from this workspace.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"package-settings-cxx": {
+			"type": "object",
+			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
+			"additionalProperties": false,
+			"properties": {
+				"appleFrameworkPaths": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+				},
+				"appleFrameworks": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+				},
+				"includeDirs": {
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
+				},
+				"libDirs": {
+					"$ref": "#/definitions/target-source-cxx-libDirs"
+				},
+				"links": {
+					"$ref": "#/definitions/target-source-cxx-links"
+				},
+				"linkerOptions": {
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
+				},
+				"staticLinks": {
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
+				}
+			},
+			"patternProperties": {
+				"^appleFrameworkPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
+				},
+				"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-appleFrameworks"
+				},
+				"^includeDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-includeDirs"
+				},
+				"^libDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-libDirs"
+				},
+				"^links\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-links"
+				},
+				"^linkerOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-linkerOptions"
+				},
+				"^staticLinks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-staticLinks"
+				}
+			}
+		},
 		"platform-requires": {
 			"type": "object",
 			"description": "Define system packages to be verfied before the build begins.",
@@ -3051,6 +3275,16 @@
 		},
 		"searchPaths": {
 			"$ref": "#/definitions/searchPaths"
+		},
+		"package": {
+			"type": "object",
+			"additionalProperties": false,
+			"description": "The interface describing importable packages from this workspace.",
+			"patternProperties": {
+				"^[\\w\\-+.]{3,}$": {
+					"$ref": "#/definitions/package"
+				}
+			}
 		},
 		"targets": {
 			"type": "object",

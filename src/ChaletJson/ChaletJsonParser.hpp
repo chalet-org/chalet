@@ -37,6 +37,8 @@ struct ScriptDistTarget;
 struct ProcessDistTarget;
 struct ValidationDistTarget;
 
+struct SourcePackage;
+
 struct ChaletJsonParser
 {
 	explicit ChaletJsonParser(CentralState& inCentralState, BuildState& inState);
@@ -52,6 +54,10 @@ private:
 
 	bool parseRoot(const Json& inNode) const;
 	bool parsePlatformRequires(const Json& inNode) const;
+
+	bool parsePackage(const Json& inNode) const;
+	bool parsePackageTarget(SourcePackage& outTarget, const Json& inNode) const;
+	bool parsePackageSettingsCxx(SourcePackage& outTarget, const Json& inNode) const;
 
 	bool parseTargets(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;

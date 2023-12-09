@@ -98,6 +98,7 @@ class ChaletJsonSchema
 		TargetSourceLanguage,
 		TargetSourceConfigureFiles,
 		TargetSourceCopyFilesOnRun,
+		TargetSourceImportPackages,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,
@@ -180,6 +181,11 @@ class ChaletJsonSchema
 		TargetChaletRebuild,
 		TargetChaletClean,
 		//
+		Package,
+		PackageBinaries,
+		// PackageSearchPaths,
+		PackageSettingsCxx,
+		//
 		PlatformRequires,
 		PlatformRequiresUbuntuSystem,
 		PlatformRequiresDebianSystem,
@@ -217,6 +223,7 @@ private:
 	//
 	const std::string kPatternTargetName;
 	const std::string kPatternAbstractName;
+	const std::string kPatternPackageName;
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
 	const std::string kPatternDistributionNameSimple;

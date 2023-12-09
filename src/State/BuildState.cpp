@@ -25,6 +25,7 @@
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/PackageManager.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -51,6 +52,7 @@ struct BuildState::Impl
 	// WorkspaceEnvironment workspace;
 	CompilerTools toolchain;
 	BuildPaths paths;
+	PackageManager packages;
 	BuildConfiguration configuration;
 	std::vector<BuildTarget> targets;
 	std::vector<DistTarget> distribution;
@@ -64,7 +66,8 @@ struct BuildState::Impl
 		centralState(inCentralState),
 		info(inState, inputs),
 		// workspace(centralState.workspace), // copy
-		paths(inState)
+		paths(inState),
+		packages(inState)
 	{
 	}
 };
@@ -78,6 +81,7 @@ BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState)
 	workspace(m_impl->centralState.workspace),
 	toolchain(m_impl->toolchain),
 	paths(m_impl->paths),
+	packages(m_impl->packages),
 	configuration(m_impl->configuration),
 	targets(m_impl->targets),
 	distribution(m_impl->distribution),
@@ -459,6 +463,9 @@ bool BuildState::initializeBuild()
 		return false;
 
 	if (!paths.initialize())
+		return false;
+
+	if (!packages.initialize())
 		return false;
 
 	// No longer needed
@@ -1290,23 +1297,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
-				if (String::equals("cwd", match))
-					return inputs.workingDirectory();
-
-				if (String::equals("architecture", match))
-					return info.targetArchitectureString();
-
-				if (String::equals("targetTriple", match))
-					return info.targetArchitectureTriple();
-
-				if (String::equals("configuration", match))
-					return configuration.name();
-
-				if (String::equals("buildDir", match))
-					return paths.buildOutputDir();
-
-				if (String::equals("home", match))
-					return inputs.homeDirectory();
+				auto result = replaceVariablesInMatch(match, required);
+				if (!result.empty())
+					return result;
 
 				if (inTarget != nullptr)
 				{
@@ -1314,16 +1307,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 						return inTarget->name();
 				}
 
-				if (String::startsWith("meta:workspace", match))
-				{
-					required = false;
-					match = match.substr(14);
-					String::decapitalize(match);
-
-					const auto& metadata = workspace.metadata();
-					return metadata.getMetadataFromString(match);
-				}
-				else if (String::startsWith("meta:", match))
+				if (String::startsWith("meta:", match))
 				{
 					required = false;
 					match = match.substr(5);
@@ -1341,19 +1325,12 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return metadata.getMetadataFromString(match);
 				}
 
-				if (String::startsWith("env:", match))
-				{
-					required = false;
-					match = match.substr(4);
-					return Environment::getString(match.c_str());
-				}
-
 				if (String::startsWith("defined:", match))
 				{
 					required = false;
 					match = match.substr(8);
-					auto result = Environment::get(match.c_str());
-					if (result == nullptr)
+					auto var = Environment::getString(match.c_str());
+					if (!var.empty())
 					{
 						if (inTarget->isSources())
 						{
@@ -1362,65 +1339,11 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 							for (auto& define : defines)
 							{
 								if (String::equals(match, define))
-									result = "1";
+									var = "1";
 							}
 						}
 					}
-					return std::string(result != nullptr ? "true" : "false");
-				}
-
-				if (String::startsWith("var:", match))
-				{
-					required = false;
-					match = match.substr(4);
-					return tools.variables.get(match);
-				}
-
-				if (String::startsWith("external:", match))
-				{
-					match = match.substr(9);
-					auto val = paths.getExternalDir(match);
-					if (val.empty())
-					{
-						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-					}
-					return val;
-				}
-
-				if (String::startsWith("externalBuild:", match))
-				{
-					match = match.substr(14);
-					auto val = paths.getExternalBuildDir(match);
-					if (val.empty())
-					{
-						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-					}
-					return val;
-				}
-
-				if (String::startsWith("so:", match))
-				{
-					match = match.substr(3);
-					constexpr bool unixStyleWithMinGW = true;
-					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getSharedLibraryExtension();
-					return prefix + match + extension;
-				}
-
-				if (String::startsWith("ar:", match))
-				{
-					match = match.substr(3);
-					constexpr bool unixStyleWithMinGW = true;
-					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getArchiveExtension();
-					return prefix + match + extension;
-				}
-
-				if (String::startsWith("exe:", match))
-				{
-					match = match.substr(4);
-					auto extension = environment->getExecutableExtension();
-					return match + extension;
+					return std::string(!var.empty() ? "true" : "false");
 				}
 
 				if (onFail != nullptr)
@@ -1453,26 +1376,12 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
-				if (String::equals("cwd", match))
-					return inputs.workingDirectory();
-
-				if (String::equals("architecture", match))
-					return info.targetArchitectureString();
-
-				if (String::equals("targetTriple", match))
-					return info.targetArchitectureTriple();
-
-				if (String::equals("configuration", match))
-					return configuration.name();
-
-				if (String::equals("buildDir", match))
-					return paths.buildOutputDir();
+				auto result = replaceVariablesInMatch(match, required);
+				if (!result.empty())
+					return result;
 
 				if (String::equals("distributionDir", match))
 					return inputs.distributionDirectory();
-
-				if (String::equals("home", match))
-					return inputs.homeDirectory();
 
 				if (inTarget != nullptr)
 				{
@@ -1480,16 +1389,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 						return inTarget->name();
 				}
 
-				if (String::startsWith("meta:workspace", match))
-				{
-					required = false;
-					match = match.substr(14);
-					String::decapitalize(match);
-
-					const auto& metadata = workspace.metadata();
-					return metadata.getMetadataFromString(match);
-				}
-				else if (String::startsWith("meta:", match))
+				if (String::startsWith("meta:", match))
 				{
 					match = match.substr(5);
 
@@ -1498,73 +1398,12 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return metadata.getMetadataFromString(match);
 				}
 
-				if (String::startsWith("env:", match))
-				{
-					required = false;
-					match = match.substr(4);
-					return Environment::getString(match.c_str());
-				}
-
 				if (String::startsWith("defined:", match))
 				{
 					required = false;
 					match = match.substr(8);
-					auto result = Environment::get(match.c_str());
-					return std::string(result != nullptr ? "true" : "false");
-				}
-
-				if (String::startsWith("var:", match))
-				{
-					required = false;
-					match = match.substr(4);
-					return tools.variables.get(match);
-				}
-
-				if (String::startsWith("external:", match))
-				{
-					match = match.substr(9);
-					auto val = paths.getExternalDir(match);
-					if (val.empty())
-					{
-						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-					}
-					return val;
-				}
-
-				if (String::startsWith("externalBuild:", match))
-				{
-					match = match.substr(14);
-					auto val = paths.getExternalBuildDir(match);
-					if (val.empty())
-					{
-						Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-					}
-					return val;
-				}
-
-				if (String::startsWith("so:", match))
-				{
-					match = match.substr(3);
-					constexpr bool unixStyleWithMinGW = true;
-					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getSharedLibraryExtension();
-					return prefix + match + extension;
-				}
-
-				if (String::startsWith("ar:", match))
-				{
-					match = match.substr(3);
-					constexpr bool unixStyleWithMinGW = true;
-					auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
-					auto extension = environment->getArchiveExtension();
-					return prefix + match + extension;
-				}
-
-				if (String::startsWith("exe:", match))
-				{
-					match = match.substr(4);
-					auto extension = environment->getExecutableExtension();
-					return match + extension;
+					auto var = Environment::getString(match.c_str());
+					return std::string(!var.empty() ? "true" : "false");
 				}
 
 				if (onFail != nullptr)
@@ -1580,6 +1419,159 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool BuildState::replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+{
+	if (outString.empty())
+		return true;
+
+	if (inCheckHome)
+	{
+		const auto& homeDirectory = inputs.homeDirectory();
+		Environment::replaceCommonVariables(outString, homeDirectory);
+	}
+
+	if (String::contains("${", outString))
+	{
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
+				auto result = replaceVariablesInMatch(match, required);
+				if (!result.empty())
+					return result;
+
+				UNUSED(inTarget);
+
+				// if (inTarget != nullptr)
+				// {
+				// 	if (String::equals("name", match))
+				// 		return inTarget->name();
+				// }
+
+				if (String::startsWith("meta:", match))
+				{
+					match = match.substr(5);
+
+					required = false;
+					const auto& metadata = workspace.metadata();
+					return metadata.getMetadataFromString(match);
+				}
+
+				if (String::startsWith("defined:", match))
+				{
+					required = false;
+					match = match.substr(8);
+					auto var = Environment::getString(match.c_str());
+					return std::string(!var.empty() ? "true" : "false");
+				}
+
+				if (onFail != nullptr)
+					return onFail(std::move(match));
+
+				return std::string();
+			}))
+		{
+			Diagnostic::error("{}: Package '(name)' has an unsupported variable in the value: {}", inputs.inputFile(), outString);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+std::string BuildState::replaceVariablesInMatch(std::string& match, bool& required) const
+{
+	if (String::equals("cwd", match))
+		return inputs.workingDirectory();
+
+	if (String::equals("architecture", match))
+		return info.targetArchitectureString();
+
+	if (String::equals("targetTriple", match))
+		return info.targetArchitectureTriple();
+
+	if (String::equals("configuration", match))
+		return configuration.name();
+
+	if (String::equals("buildDir", match))
+		return paths.buildOutputDir();
+
+	if (String::equals("home", match))
+		return inputs.homeDirectory();
+
+	if (String::startsWith("meta:workspace", match))
+	{
+		required = false;
+		match = match.substr(14);
+		String::decapitalize(match);
+
+		const auto& metadata = workspace.metadata();
+		return metadata.getMetadataFromString(match);
+	}
+
+	if (String::startsWith("env:", match))
+	{
+		required = false;
+		match = match.substr(4);
+		return Environment::getString(match.c_str());
+	}
+
+	if (String::startsWith("var:", match))
+	{
+		required = false;
+		match = match.substr(4);
+		return tools.variables.get(match);
+	}
+
+	if (String::startsWith("external:", match))
+	{
+		match = match.substr(9);
+		auto val = paths.getExternalDir(match);
+		if (val.empty())
+		{
+			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+		}
+		return val;
+	}
+
+	if (String::startsWith("externalBuild:", match))
+	{
+		match = match.substr(14);
+		auto val = paths.getExternalBuildDir(match);
+		if (val.empty())
+		{
+			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
+		}
+		return val;
+	}
+
+	if (String::startsWith("so:", match))
+	{
+		match = match.substr(3);
+		constexpr bool unixStyleWithMinGW = true;
+		auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+		auto extension = environment->getSharedLibraryExtension();
+		return prefix + match + extension;
+	}
+
+	if (String::startsWith("ar:", match))
+	{
+		match = match.substr(3);
+		constexpr bool unixStyleWithMinGW = true;
+		auto prefix = environment->getLibraryPrefix(unixStyleWithMinGW);
+		auto extension = environment->getArchiveExtension();
+		return prefix + match + extension;
+	}
+
+	if (String::startsWith("exe:", match))
+	{
+		match = match.substr(4);
+		auto extension = environment->getExecutableExtension();
+		return match + extension;
+	}
+
+	return std::string();
 }
 
 /*****************************************************************************/

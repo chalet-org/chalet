@@ -43,11 +43,13 @@ bool SourceTarget::initialize()
 		m_treatWarningsAsErrors = true;
 
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+#if defined(CHALET_MACOS)
 	if (!expandGlobPatternsInList(m_appleFrameworkPaths, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
+#endif
 
 	if (!expandGlobPatternsInList(m_libDirs, GlobMatch::Folders))
 	{
@@ -710,6 +712,20 @@ void SourceTarget::addCopyFileOnRun(std::string&& inValue)
 }
 
 /*****************************************************************************/
+const StringList& SourceTarget::importPackages() const noexcept
+{
+	return m_importPackages;
+}
+void SourceTarget::addImportPackages(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addImportPackage);
+}
+void SourceTarget::addImportPackage(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_importPackages, std::move(inValue));
+}
+
+/*****************************************************************************/
 const std::string& SourceTarget::outputFile() const noexcept
 {
 	return m_outputFile;
@@ -1299,6 +1315,7 @@ StringList SourceTarget::getResolvedRunDependenciesList() const
 {
 	StringList ret;
 
+	const auto& searchPaths = m_state.workspace.searchPaths();
 	for (auto& dep : m_copyFilesOnRun)
 	{
 		if (Files::pathExists(dep))
@@ -1322,7 +1339,7 @@ StringList SourceTarget::getResolvedRunDependenciesList() const
 		}
 
 		bool found = false;
-		for (auto& path : m_state.workspace.searchPaths())
+		for (auto& path : searchPaths)
 		{
 			resolved = fmt::format("{}/{}", path, dep);
 			if (Files::pathExists(resolved))

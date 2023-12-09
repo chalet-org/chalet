@@ -18,6 +18,8 @@
 #include "State/CentralState.hpp"
 #include "State/Dependency/ExternalDependencyType.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Package/SourcePackage.hpp"
+#include "State/PackageManager.hpp"
 #include "State/TargetMetadata.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -141,6 +143,9 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 		if (!parseDistribution(inJson))
 			return false;
 	}
+
+	if (!parsePackage(inJson))
+		return false;
 
 	if (!parseTargets(inJson))
 		return false;
@@ -277,6 +282,151 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 				m_state.info.addRequiredPlatformDependency("redhat.system", std::move(val));
 #endif
 
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parsePackage(const Json& inNode) const
+{
+	if (!inNode.contains(Keys::Package))
+		return true;
+
+	const Json& packageRoot = inNode.at(Keys::Package);
+	if (!packageRoot.is_object() || packageRoot.size() == 0)
+	{
+		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Package);
+		return false;
+	}
+
+	for (auto& [name, packageJson] : packageRoot.items())
+	{
+		if (!packageJson.is_object())
+		{
+			Diagnostic::error("{}: package '{}' must be an object.", m_chaletJson.filename(), name);
+			return false;
+		}
+
+		auto package = std::make_shared<SourcePackage>(m_state);
+		package->setName(name);
+
+		if (!parsePackageTarget(*package, packageJson))
+		{
+			Diagnostic::error("{}: Error parsing the '{}' package.", m_chaletJson.filename(), name);
+			return false;
+		}
+
+		m_state.packages.add(name, std::move(package));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json& inNode) const
+{
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "binaries", status))
+				outPackage.addBinary(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchDirs", status))
+				outPackage.addBinary(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "binaries", status))
+				outPackage.addBinaries(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchDirs", status))
+				outPackage.addSearchDirs(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_object())
+		{
+			if (String::equals("settings:Cxx", key))
+			{
+				if (!parsePackageSettingsCxx(outPackage, value))
+					return false;
+			}
+			else if (String::equals("settings", key))
+			{
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_object() && String::equals("Cxx", k))
+					{
+						if (!parsePackageSettingsCxx(outPackage, value))
+							return false;
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parsePackageSettingsCxx(SourcePackage& outPackage, const Json& inNode) const
+{
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
+				outPackage.addLinkerOption(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "links", status))
+				outPackage.addLink(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticLinks", status))
+				outPackage.addStaticLink(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "libDirs", status))
+				outPackage.addLibDir(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
+				outPackage.addIncludeDir(std::move(val));
+#if defined(CHALET_MACOS)
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+				outPackage.addAppleFrameworkPath(std::move(val));
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+				outPackage.addAppleFramework(std::move(val));
+#endif
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_boolean())
+		{
+			return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "links", status))
+				outPackage.addLinks(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "staticLinks", status))
+				outPackage.addStaticLinks(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "libDirs", status))
+				outPackage.addLibDirs(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
+				outPackage.addIncludeDirs(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
+				outPackage.addLinkerOptions(std::move(val));
+#if defined(CHALET_MACOS)
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
+				outPackage.addAppleFrameworkPaths(std::move(val));
+			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworks", status))
+				outPackage.addAppleFrameworks(std::move(val));
+#endif
 			else if (isInvalid(status))
 				return false;
 		}
@@ -569,6 +719,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.addFile(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
 				outTarget.addConfigureFile(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
+				outTarget.addImportPackage(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
 			else if (isUnread(status) && String::equals("kind", key))
@@ -583,6 +735,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.addFiles(std::move(val));
 			else if (valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
 				outTarget.addConfigureFiles(std::move(val));
+			else if (valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
+				outTarget.addImportPackages(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
