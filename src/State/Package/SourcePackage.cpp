@@ -70,6 +70,16 @@ void SourcePackage::setName(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& SourcePackage::root() const noexcept
+{
+	return m_root;
+}
+void SourcePackage::setRoot(const std::string& inValue) noexcept
+{
+	m_root = inValue;
+}
+
+/*****************************************************************************/
 const StringList& SourcePackage::binaries() const noexcept
 {
 	return m_binaries;

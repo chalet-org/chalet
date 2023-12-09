@@ -60,13 +60,12 @@ constexpr bool isInvalid(JsonNodeReadStatus& inStatus)
 }
 
 /*****************************************************************************/
-ChaletJsonParser::ChaletJsonParser(CentralState& inCentralState, BuildState& inState) :
-	m_chaletJson(inCentralState.chaletJson()),
-	m_centralState(inCentralState),
+ChaletJsonParser::ChaletJsonParser(BuildState& inState) :
+	m_chaletJson(inState.getCentralState().chaletJson()),
 	m_state(inState),
 	kValidPlatforms(Platform::validPlatforms())
 {
-	Platform::assignPlatform(m_centralState.inputs(), m_platform, m_notPlatforms);
+	Platform::assignPlatform(m_state.inputs, m_platform, m_notPlatforms);
 	m_isWebPlatform = String::equals("web", m_platform);
 }
 
@@ -101,18 +100,31 @@ bool ChaletJsonParser::serialize()
 			return false;
 
 		// do after run target is validated
-		auto& runArguments = m_centralState.getRunTargetArguments(runTarget);
+		auto& runArguments = m_state.getCentralState().getRunTargetArguments(runTarget);
 		bool hasRunTargetsFromInput = m_state.inputs.runArguments().has_value();
 		if (runArguments.has_value() && !hasRunTargetsFromInput)
 			m_state.inputs.setRunArguments(*runArguments);
 
 		if (hasRunTargetsFromInput)
 		{
-			m_centralState.setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
+			m_state.getCentralState().setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
 		}
 	}
 
 	// Diagnostic::printDone(timer.asString());
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot)
+{
+	JsonFile buildFile(inFilename);
+	if (!buildFile.load())
+		return false;
+
+	if (!parsePackage(buildFile.json, inRoot))
+		return false;
 
 	return true;
 }
@@ -135,7 +147,7 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 	if (!parseRoot(inJson))
 		return false;
 
-	if (!m_centralState.inputs().route().isConfigure())
+	if (!m_state.getCentralState().inputs().route().isConfigure())
 	{
 		if (!parsePlatformRequires(inJson))
 			return false;
@@ -194,6 +206,7 @@ std::string ChaletJsonParser::getValidRunTargetFromInput() const
 /*****************************************************************************/
 bool ChaletJsonParser::parseRoot(const Json& inNode) const
 {
+	auto& centralState = m_state.getCentralState();
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -201,7 +214,7 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 		{
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
-				m_centralState.workspace.addSearchPath(std::move(val));
+				centralState.workspace.addSearchPath(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -209,7 +222,7 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
-				m_centralState.workspace.addSearchPaths(std::move(val));
+				centralState.workspace.addSearchPaths(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -291,7 +304,7 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::parsePackage(const Json& inNode) const
+bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoot) const
 {
 	if (!inNode.contains(Keys::Package))
 		return true;
@@ -313,6 +326,9 @@ bool ChaletJsonParser::parsePackage(const Json& inNode) const
 
 		auto package = std::make_shared<SourcePackage>(m_state);
 		package->setName(name);
+
+		if (!inRoot.empty())
+			package->setRoot(inRoot);
 
 		if (!parsePackageTarget(*package, packageJson))
 		{
@@ -1022,6 +1038,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 		Values::All,
 	};
 
+	auto& centralState = m_state.getCentralState();
 	bool getDefaultRunArguments = m_state.inputs.route().isExport() || m_state.inputs.route().willRun();
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -1031,7 +1048,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			StringList val;
 			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
+				centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{
@@ -1051,7 +1068,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			std::string val;
 			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				m_centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
+				centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{

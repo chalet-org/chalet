@@ -20,6 +20,9 @@ struct SourcePackage
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
+	const std::string& root() const noexcept;
+	void setRoot(const std::string& inValue) noexcept;
+
 	const StringList& binaries() const noexcept;
 	void addBinaries(StringList&& inList);
 	void addBinary(std::string&& inValue);
@@ -63,6 +66,7 @@ private:
 	const BuildState& m_state;
 
 	std::string m_name;
+	std::string m_root;
 
 	StringList m_binaries;
 	StringList m_searchDirs;

@@ -411,7 +411,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 /*****************************************************************************/
 bool BuildState::parseChaletJson()
 {
-	ChaletJsonParser parser(m_impl->centralState, *this);
+	ChaletJsonParser parser(*this);
 	return parser.serialize();
 }
 
@@ -463,9 +463,6 @@ bool BuildState::initializeBuild()
 		return false;
 
 	if (!paths.initialize())
-		return false;
-
-	if (!packages.initialize())
 		return false;
 
 	// No longer needed
@@ -548,12 +545,22 @@ bool BuildState::initializeBuild()
 	}
 
 	{
+		for (auto& target : targets)
+		{
+			// Iniitialize first so packages can resolve these build files
+			if (target->isSubChalet() && !target->initialize())
+				return false;
+		}
+
+		if (!packages.initialize())
+			return false;
+
 		if (!workspace.initialize(*this))
 			return false;
 
 		for (auto& target : targets)
 		{
-			if (!target->initialize())
+			if (!target->isSubChalet() && !target->initialize())
 				return false;
 		}
 
