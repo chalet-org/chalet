@@ -879,6 +879,24 @@
 				}
 			]
 		},
+		"packagePaths": {
+			"description": "Additional paths to search for packages. Can either be a path containing a build file or the path to the build file itself. If the resolved build files does not contain a 'package' declaration, it will be ignored.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
 		"target-outputDescription": {
 			"type": "string",
 			"description": "A description of the target to display in the build output.",
@@ -3276,6 +3294,9 @@
 		"searchPaths": {
 			"$ref": "#/definitions/searchPaths"
 		},
+		"packagePaths": {
+			"$ref": "#/definitions/packagePaths"
+		},
 		"package": {
 			"type": "object",
 			"additionalProperties": false,
@@ -3345,6 +3366,9 @@
 		},
 		"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 			"$ref": "#/definitions/searchPaths"
+		},
+		"^packagePaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+			"$ref": "#/definitions/packagePaths"
 		}
 	}
 }

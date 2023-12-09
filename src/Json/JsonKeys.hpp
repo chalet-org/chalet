@@ -26,6 +26,7 @@ CHALET_CONSTANT(AllowedArchitectures) = "allowedArchitectures";
 CHALET_CONSTANT(DefaultConfigurations) = "defaultConfigurations";
 CHALET_CONSTANT(ExternalDependencies) = "externalDependencies";
 CHALET_CONSTANT(SearchPaths) = "searchPaths";
+CHALET_CONSTANT(PackagePaths) = "packagePaths";
 
 //
 CHALET_CONSTANT(Kind) = "kind";

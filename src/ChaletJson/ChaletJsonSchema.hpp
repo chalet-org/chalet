@@ -84,6 +84,7 @@ class ChaletJsonSchema
 		EnvironmentVariables,
 		EnvironmentVariableValue,
 		EnvironmentSearchPaths,
+		EnvironmentPackagePaths,
 		//
 		TargetOutputDescription,
 		TargetKind,

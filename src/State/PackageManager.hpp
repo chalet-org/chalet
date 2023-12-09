@@ -16,7 +16,11 @@ struct PackageManager
 
 	bool initialize();
 
-	void add(const std::string& inName, Ref<SourcePackage>&& inValue);
+	bool add(const std::string& inName, Ref<SourcePackage>&& inValue);
+
+	const StringList& packagePaths() const noexcept;
+	void addPackagePaths(StringList&& inList);
+	void addPackagePath(std::string&& inValue);
 
 private:
 	bool resolvePackagesFromSubChaletTargets();
@@ -24,6 +28,8 @@ private:
 	bool readImportedPackages();
 
 	BuildState& m_state;
+
+	StringList m_packagePaths;
 
 	Dictionary<Ref<SourcePackage>> m_packages;
 };

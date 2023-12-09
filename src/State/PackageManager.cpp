@@ -14,6 +14,7 @@
 #include "State/Target/SubChaletTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -43,9 +44,30 @@ bool PackageManager::initialize()
 }
 
 /*****************************************************************************/
-void PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
+bool PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
 {
+	if (m_packages.find(inName) != m_packages.end())
+	{
+		Diagnostic::error("Duplicate package name was found: {}", inName);
+		return false;
+	}
+
 	m_packages.emplace(inName, std::move(inValue));
+	return true;
+}
+
+/*****************************************************************************/
+const StringList& PackageManager::packagePaths() const noexcept
+{
+	return m_packagePaths;
+}
+void PackageManager::addPackagePaths(StringList&& inList)
+{
+	List::forEach(inList, this, &PackageManager::addPackagePath);
+}
+void PackageManager::addPackagePath(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_packagePaths, std::move(inValue));
 }
 
 /*****************************************************************************/
@@ -56,41 +78,62 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 	auto packages = std::move(m_packages);
 	m_packages.clear();
 
+	auto readPackagesIfAvailable = [this, &chaletJsonParser](const std::string& location, std::string buildFile) {
+		if (buildFile.empty())
+			buildFile = m_state.inputs.defaultInputFile();
+
+		auto resolved = fmt::format("{}/{}", location, buildFile);
+		if (!Files::pathExists(resolved))
+		{
+			auto base = String::getPathFolderBaseName(buildFile);
+			resolved = fmt::format("{}/{}.yaml", location, base);
+		}
+
+		if (!Files::pathExists(resolved))
+			return true;
+
+		if (!chaletJsonParser)
+		{
+			chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
+		}
+
+		if (!chaletJsonParser->readPackagesIfAvailable(resolved, location))
+		{
+			Diagnostic::error("Error importing packages from: {}", resolved);
+			return false;
+		}
+
+		return true;
+	};
+
+	for (auto& path : m_packagePaths)
+	{
+		auto location = String::getPathFolder(path);
+		std::string buildFile;
+		if (String::endsWith({ ".json", ".yaml" }, path))
+			buildFile = String::getPathFilename(path);
+
+		if (!readPackagesIfAvailable(location, buildFile))
+			return false;
+	}
+
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSubChalet())
 		{
 			auto& project = static_cast<SubChaletTarget&>(*target);
 			auto& location = project.location();
-			auto buildFile = project.buildFile();
-			if (buildFile.empty())
-				buildFile = m_state.inputs.defaultInputFile();
 
-			auto resolved = fmt::format("{}/{}", location, buildFile);
-			if (!Files::pathExists(resolved))
-			{
-				auto base = String::getPathFolderBaseName(buildFile);
-				resolved = fmt::format("{}/{}.yaml", location, base);
-			}
-
-			if (!Files::pathExists(resolved))
-				continue;
-
-			if (!chaletJsonParser)
-			{
-				chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
-			}
-
-			if (!chaletJsonParser->readPackagesIfAvailable(resolved, location))
-			{
-				Diagnostic::error("Error importing packages from: {}", resolved);
+			if (!readPackagesIfAvailable(location, project.buildFile()))
 				return false;
-			}
 		}
 	}
 
 	for (auto&& pkg : packages)
-		m_packages.emplace(pkg.first, std::move(pkg.second));
+	{
+		if (!add(pkg.first, std::move(pkg.second)))
+			return false;
+	}
 
 	return true;
 }
@@ -181,5 +224,4 @@ bool PackageManager::readImportedPackages()
 
 	return true;
 }
-
 }

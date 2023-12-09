@@ -509,6 +509,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::EnvironmentPackagePaths] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Additional paths to search for packages. Can either be a path containing a build file or the path to the build file itself. If the resolved build files does not contain a 'package' declaration, it will be ignored.",
+		"minLength": 1
+	})json"_ojson);
+
 	//
 	// target
 	//
@@ -2077,6 +2083,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::EnvironmentVariables: return "variables";
 		case Defs::EnvironmentVariableValue: return "variable-value";
 		case Defs::EnvironmentSearchPaths: return "searchPaths";
+		case Defs::EnvironmentPackagePaths: return "packagePaths";
 		//
 		case Defs::TargetOutputDescription: return "target-outputDescription";
 		case Defs::TargetKind: return "target-kind";
@@ -2416,6 +2423,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyScript);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
+	addPropertyAndPattern(ret, "packagePaths", Defs::EnvironmentPackagePaths, kPatternConditions);
 
 	//
 	const auto package = "package";

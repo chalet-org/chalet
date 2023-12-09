@@ -206,7 +206,6 @@ std::string ChaletJsonParser::getValidRunTargetFromInput() const
 /*****************************************************************************/
 bool ChaletJsonParser::parseRoot(const Json& inNode) const
 {
-	auto& centralState = m_state.getCentralState();
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -214,7 +213,9 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 		{
 			std::string val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
-				centralState.workspace.addSearchPath(std::move(val));
+				m_state.workspace.addSearchPath(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::PackagePaths, status))
+				m_state.packages.addPackagePath(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -222,7 +223,9 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 		{
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::SearchPaths, status))
-				centralState.workspace.addSearchPaths(std::move(val));
+				m_state.workspace.addSearchPaths(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::PackagePaths, status))
+				m_state.packages.addPackagePaths(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -326,9 +329,7 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 
 		auto package = std::make_shared<SourcePackage>(m_state);
 		package->setName(name);
-
-		if (!inRoot.empty())
-			package->setRoot(inRoot);
+		package->setRoot(inRoot);
 
 		if (!parsePackageTarget(*package, packageJson))
 		{
@@ -336,7 +337,8 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 			return false;
 		}
 
-		m_state.packages.add(name, std::move(package));
+		if (!m_state.packages.add(name, std::move(package)))
+			return false;
 	}
 
 	return true;
