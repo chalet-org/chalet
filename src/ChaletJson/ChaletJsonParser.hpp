@@ -21,10 +21,10 @@ namespace chalet
 struct CentralState;
 class BuildState;
 
-struct BundleTarget;
-struct CMakeTarget;
+struct IBuildTarget;
 struct SourceTarget;
 struct SubChaletTarget;
+struct CMakeTarget;
 struct ScriptBuildTarget;
 struct ProcessBuildTarget;
 struct ValidationBuildTarget;
@@ -37,13 +37,16 @@ struct ScriptDistTarget;
 struct ProcessDistTarget;
 struct ValidationDistTarget;
 
+struct SourcePackage;
+
 struct ChaletJsonParser
 {
-	explicit ChaletJsonParser(CentralState& inCentralState, BuildState& inState);
+	explicit ChaletJsonParser(BuildState& inState);
 	CHALET_DISALLOW_COPY_MOVE(ChaletJsonParser);
 	~ChaletJsonParser();
 
 	bool serialize();
+	bool readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot);
 
 private:
 	const StringList& getBuildTargets() const;
@@ -52,6 +55,10 @@ private:
 
 	bool parseRoot(const Json& inNode) const;
 	bool parsePlatformRequires(const Json& inNode) const;
+
+	bool parsePackage(const Json& inNode, const std::string& inRoot = std::string()) const;
+	bool parsePackageTarget(SourcePackage& outTarget, const Json& inNode) const;
+	bool parsePackageSettingsCxx(SourcePackage& outTarget, const Json& inNode) const;
 
 	bool parseTargets(const Json& inNode);
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
@@ -86,7 +93,6 @@ private:
 	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	JsonFile& m_chaletJson;
-	CentralState& m_centralState;
 	BuildState& m_state;
 
 	HeapDictionary<SourceTarget> m_abstractSourceTarget;

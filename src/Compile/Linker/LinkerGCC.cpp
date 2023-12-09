@@ -15,7 +15,6 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
-#include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
@@ -192,7 +191,8 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 	const auto& projectSharedLinks = m_project.projectSharedLinks();
 
 	const bool isEmscripten = m_state.environment->isEmscripten();
-	auto search = m_state.environment->getArchiveExtension();
+	auto archiveExt = m_state.environment->getArchiveExtension();
+	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	if (!staticLinks.empty())
 	{
@@ -203,27 +203,10 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 			if (isLinkSupported(link))
 			{
 				bool resolved = false;
-				if (String::endsWith(search, link))
+				if (String::endsWith(archiveExt, link))
 				{
-					if (Files::pathExists(link))
-					{
-						outArgList.emplace_back(getQuotedPath(link));
-						resolved = true;
-					}
-					else
-					{
-						const auto& libDirs = m_project.libDirs();
-						for (auto& dir : libDirs)
-						{
-							auto path = fmt::format("{}/{}", dir, link);
-							if (Files::pathExists(path))
-							{
-								outArgList.emplace_back(getQuotedPath(path));
-								resolved = true;
-								break;
-							}
-						}
-					}
+					outArgList.emplace_back(getQuotedPath(link));
+					resolved = true;
 				}
 
 				if (!resolved)
@@ -242,27 +225,10 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 			if (isLinkSupported(link))
 			{
 				bool resolved = false;
-				if (String::endsWith(search, link))
+				if (String::endsWith(sharedExt, link) || String::endsWith(archiveExt, link))
 				{
-					if (Files::pathExists(link))
-					{
-						outArgList.emplace_back(getQuotedPath(link));
-						resolved = true;
-					}
-					else
-					{
-						const auto& libDirs = m_project.libDirs();
-						for (auto& dir : libDirs)
-						{
-							auto path = fmt::format("{}/{}", dir, link);
-							if (Files::pathExists(path))
-							{
-								outArgList.emplace_back(getQuotedPath(path));
-								resolved = true;
-								break;
-							}
-						}
-					}
+					outArgList.emplace_back(getQuotedPath(link));
+					resolved = true;
 				}
 
 				if (!resolved)
@@ -589,7 +555,6 @@ void LinkerGCC::addAppleFrameworkOptions(StringList& outArgList) const
 		List::addIfDoesNotExist(outArgList, getPathCommand(prefix, "/Library/Frameworks"));
 	}
 	{
-		// const std::string suffix = Files::getPlatformFrameworkExtension();
 		for (auto& framework : m_project.appleFrameworks())
 		{
 			outArgList.emplace_back("-framework");

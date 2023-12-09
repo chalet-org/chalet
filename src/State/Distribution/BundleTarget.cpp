@@ -235,8 +235,8 @@ bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
 
 		if (!found)
 		{
-
-			for (auto& path : inState.workspace.searchPaths())
+			const auto& searchPaths = inState.workspace.searchPaths();
+			for (auto& path : searchPaths)
 			{
 				resolved = fmt::format("{}/{}", path, dependency);
 				if (Files::pathExists(resolved))

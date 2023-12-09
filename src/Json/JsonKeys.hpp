@@ -15,6 +15,7 @@ CHALET_CONSTANT(WorkspaceName) = "name";
 CHALET_CONSTANT(WorkspaceVersion) = "version";
 CHALET_CONSTANT(PlatformRequires) = "platformRequires";
 CHALET_CONSTANT(Variables) = "variables";
+CHALET_CONSTANT(Package) = "package";
 CHALET_CONSTANT(Abstracts) = "abstracts";
 CHALET_CONSTANT(AbstractsAll) = "abstracts:*";
 CHALET_CONSTANT(Targets) = "targets";
@@ -25,6 +26,7 @@ CHALET_CONSTANT(AllowedArchitectures) = "allowedArchitectures";
 CHALET_CONSTANT(DefaultConfigurations) = "defaultConfigurations";
 CHALET_CONSTANT(ExternalDependencies) = "externalDependencies";
 CHALET_CONSTANT(SearchPaths) = "searchPaths";
+CHALET_CONSTANT(PackagePaths) = "packagePaths";
 
 //
 CHALET_CONSTANT(Kind) = "kind";

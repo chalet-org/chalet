@@ -1967,10 +1967,13 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 		ret.emplace_back(fmt::format("-Wl,-install_name,@rpath/{}.dylib", String::getPathBaseName(inTarget.outputFile())));
 	}
 
+	auto archiveExt = inState.environment->getArchiveExtension();
+	auto sharedExt = inState.environment->getSharedLibraryExtension();
+
 	const auto& links = inTarget.links();
 	for (auto& link : links)
 	{
-		if (Files::pathExists(link))
+		if (String::endsWith(sharedExt, link) || String::endsWith(archiveExt, link))
 			ret.push_back(Files::getCanonicalPath(link));
 		else
 			ret.push_back(fmt::format("-l{}", link));
@@ -1978,7 +1981,7 @@ StringList XcodePBXProjGen::getLinkerOptions(const BuildState& inState, const So
 	const auto& staticLinks = inTarget.staticLinks();
 	for (auto& link : staticLinks)
 	{
-		if (Files::pathExists(link))
+		if (String::endsWith(archiveExt, link))
 			ret.push_back(Files::getCanonicalPath(link));
 		else
 			ret.push_back(fmt::format("-l{}", link));

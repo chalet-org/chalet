@@ -82,6 +82,10 @@ struct SourceTarget final : public IBuildTarget
 	void addCopyFilesOnRun(StringList&& inList);
 	void addCopyFileOnRun(std::string&& inValue);
 
+	const StringList& importPackages() const noexcept;
+	void addImportPackages(StringList&& inList);
+	void addImportPackage(std::string&& inValue);
+
 	//
 	void parseOutputFilename() noexcept;
 
@@ -230,6 +234,7 @@ private:
 	StringList m_headers;
 	StringList m_fileExcludes;
 	StringList m_configureFiles;
+	StringList m_importPackages;
 
 	std::string m_warningsPresetString;
 	std::string m_outputFile;

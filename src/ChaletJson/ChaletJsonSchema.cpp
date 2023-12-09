@@ -20,7 +20,8 @@ namespace chalet
 ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
-	kPatternAbstractName(R"regex([A-Za-z\-_]+)regex"),
+	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
+	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{3,})?$)regex"),
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
 	kPatternDistributionName(R"regex(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
 	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
@@ -508,6 +509,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::EnvironmentPackagePaths] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Additional paths to search for packages. Can either be a path containing a build file or the path to the build file itself. If the resolved build files does not contain a 'package' declaration, it will be ignored.",
+		"minLength": 1
+	})json"_ojson);
+
 	//
 	// target
 	//
@@ -545,7 +552,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1,
 		"default": "*"
 	})json"_ojson;
-	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^(\\*|{})$", kPatternAbstractName);
+	defs[Defs::TargetSourceExtends][SKeys::Pattern] = fmt::format("^{}$", kPatternAbstractName);
 
 	/*defs[Defs::TargetSourceFiles] = makeArrayOrString(R"json({
 		"type": "string",
@@ -615,6 +622,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^exclude{}$", kPatternConditions)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["exclude"];
 	defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::PatternProperties][fmt::format("^include{}$", kPatternConditions)] = defs[Defs::TargetSourceFiles][SKeys::OneOf][2][SKeys::Properties]["include"];
+
+	// TargetSourceImportPackages
+	{
+		auto importPackages = R"json({
+		"type": "string",
+		"description": "Packages to import into the source target.",
+		"pattern": "",
+		"minLength": 1
+	})json"_ojson;
+		importPackages[SKeys::Pattern] = kPatternPackageName;
+		defs[Defs::TargetSourceImportPackages] = makeArrayOrString(std::move(importPackages));
+	}
 
 	// staticLibrary, sharedLibrary, executable, cmakeProject, chaletProject, script, process
 	//
@@ -1443,6 +1462,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	//
+	// Package
+	//
+
+	//
 	// Platform Requires
 	//
 	defs[Defs::PlatformRequiresUbuntuSystem] = makeArrayOrString(R"json({
@@ -1767,6 +1790,8 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
 	}
 
+	// Abstracts
+
 	{
 		auto abstractSource = R"json({
 			"type": "object",
@@ -1774,6 +1799,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addProperty(abstractSource, "configureFiles", Defs::TargetSourceConfigureFiles);
 		addPropertyAndPattern(abstractSource, "files", Defs::TargetSourceFiles, kPatternConditions);
+		addPropertyAndPattern(abstractSource, "importPackages", Defs::TargetSourceImportPackages, kPatternConditions);
 		addPropertyAndPattern(abstractSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(abstractSource, "metadata", Defs::TargetSourceMetadata);
 
@@ -1787,6 +1813,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 		defs[Defs::TargetAbstract] = std::move(abstractSource);
 	}
+
+	// Targets
+
 	{
 		auto targetSource = R"json({
 			"type": "object",
@@ -1800,6 +1829,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetSource, "configureFiles", Defs::TargetSourceConfigureFiles);
 		addProperty(targetSource, "extends", Defs::TargetSourceExtends);
 		addPropertyAndPattern(targetSource, "files", Defs::TargetSourceFiles, kPatternConditions);
+		addPropertyAndPattern(targetSource, "importPackages", Defs::TargetSourceImportPackages, kPatternConditions);
 		addKindEnum(targetSource, defs, Defs::TargetKind, { "staticLibrary", "sharedLibrary" });
 		addPropertyAndPattern(targetSource, "language", Defs::TargetSourceLanguage, kPatternConditions);
 		addProperty(targetSource, "metadata", Defs::TargetSourceMetadata);
@@ -1919,6 +1949,41 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
 
+	// Packages
+
+	{
+		auto packageSettingsCxx = R"json({
+			"type": "object",
+			"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
+			"additionalProperties": false
+		})json"_ojson;
+		addPropertyAndPattern(packageSettingsCxx, "appleFrameworkPaths", Defs::TargetSourceCxxAppleFrameworkPaths, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "appleFrameworks", Defs::TargetSourceCxxAppleFrameworks, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "includeDirs", Defs::TargetSourceCxxIncludeDirs, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "libDirs", Defs::TargetSourceCxxLibDirs, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "links", Defs::TargetSourceCxxLinks, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "linkerOptions", Defs::TargetSourceCxxLinkerOptions, kPatternConditions);
+		addPropertyAndPattern(packageSettingsCxx, "staticLinks", Defs::TargetSourceCxxStaticLinks, kPatternConditions);
+		// addPropertyAndPattern(packageSettingsCxx, "staticRuntimeLibrary", Defs::TargetSourceCxxStaticRuntimeLibrary, kPatternConditions);
+
+		defs[Defs::PackageSettingsCxx] = std::move(packageSettingsCxx);
+	}
+	{
+		auto package = R"json({
+			"type": "object",
+			"description": "An individual importable package.",
+			"additionalProperties": false
+		})json"_ojson;
+		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
+
+		package[SKeys::Properties]["settings"] = defs[Defs::PackageSettingsCxx];
+		package[SKeys::Properties]["settings:Cxx"] = defs[Defs::PackageSettingsCxx];
+
+		defs[Defs::Package] = std::move(package);
+	}
+
+	// Platform Requires
+
 	{
 		auto platformRequires = R"json({
 			"type": "object",
@@ -2013,6 +2078,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::EnvironmentVariables: return "variables";
 		case Defs::EnvironmentVariableValue: return "variable-value";
 		case Defs::EnvironmentSearchPaths: return "searchPaths";
+		case Defs::EnvironmentPackagePaths: return "packagePaths";
 		//
 		case Defs::TargetOutputDescription: return "target-outputDescription";
 		case Defs::TargetKind: return "target-kind";
@@ -2022,6 +2088,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";
+		case Defs::TargetSourceImportPackages: return "target-source-importPackages";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
 		//
@@ -2109,6 +2176,9 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
 		case Defs::TargetChaletClean: return "target-chalet-clean";
+		//
+		case Defs::Package: return "package";
+		case Defs::PackageSettingsCxx: return "package-settings-cxx";
 		//
 		case Defs::PlatformRequires: return "platform-requires";
 		case Defs::PlatformRequiresUbuntuSystem: return "platform-requires-ubuntu-system";
@@ -2250,16 +2320,16 @@ Json ChaletJsonSchema::get()
 
 	ret[SKeys::Properties]["platformRequires"] = getDefinition(Defs::PlatformRequires);
 
-	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
-	ret[SKeys::PatternProperties][fmt::format("^abstracts:(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";
+	ret[SKeys::PatternProperties][fmt::format("^abstracts:{}$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
+	ret[SKeys::PatternProperties][fmt::format("^abstracts:{}$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";
 
 	ret[SKeys::Properties]["abstracts"] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A list of abstract build targets"
 	})json"_ojson;
-	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
-	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^(\\*|{})$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
+	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
+	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
 
 	ret[SKeys::Properties]["allowedArchitectures"] = R"json({
 		"type": "array",
@@ -2347,6 +2417,16 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyScript);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
+	addPropertyAndPattern(ret, "packagePaths", Defs::EnvironmentPackagePaths, kPatternConditions);
+
+	//
+	const auto package = "package";
+	ret[SKeys::Properties][package] = R"json({
+		"type": "object",
+		"additionalProperties": false,
+		"description": "The interface describing importable packages from this workspace."
+	})json"_ojson;
+	ret[SKeys::Properties][package][SKeys::PatternProperties][kPatternTargetName] = getDefinition(Defs::Package);
 
 	//
 	const auto targets = "targets";
