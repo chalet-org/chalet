@@ -56,6 +56,33 @@ bool SourcePackage::initialize()
 	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
 
+	for (auto& path : m_binaries)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_appleFrameworkPaths)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_libDirs)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_includeDirs)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_searchDirs)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_links)
+	{
+		if (Files::pathExists(path))
+			path = Files::getCanonicalPath(path);
+	}
+
+	for (auto& path : m_staticLinks)
+	{
+		if (Files::pathExists(path))
+			path = Files::getCanonicalPath(path);
+	}
+
 	return true;
 }
 

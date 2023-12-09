@@ -108,7 +108,13 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 
 	for (auto& path : m_packagePaths)
 	{
-		auto location = String::getPathFolder(path);
+		if (!m_state.replaceVariablesInString(path, static_cast<const SourcePackage*>(nullptr)))
+			return false;
+
+		auto location = path;
+		if (!Files::pathIsDirectory(location))
+			location = String::getPathFolder(path);
+
 		std::string buildFile;
 		if (String::endsWith({ ".json", ".yaml" }, path))
 			buildFile = String::getPathFilename(path);
@@ -141,15 +147,39 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 /*****************************************************************************/
 bool PackageManager::initializePackages()
 {
+	auto cwd = Files::getWorkingDirectory();
+	auto onError = [&cwd]() {
+		Files::changeWorkingDirectory(cwd);
+		return false;
+	};
+
 	for (auto& [name, pkg] : m_packages)
 	{
-		LOG(name, "--", pkg->root());
+		bool rootChanged = false;
+		auto& root = pkg->root();
+		if (!root.empty())
+		{
+			if (!Files::pathExists(root))
+			{
+				Diagnostic::error("Error resolving the path to the imported package: {}", name);
+				return false;
+			}
 
+			Files::changeWorkingDirectory(root);
+			rootChanged = true;
+		}
+
+		// LOG(name, "--", pkg->root());
+
+		// Note: slow
 		if (!pkg->initialize())
 		{
 			Diagnostic::error("Error initializing the imported package: {}", name);
-			return false;
+			return onError();
 		}
+
+		if (rootChanged)
+			Files::changeWorkingDirectory(cwd);
 	}
 
 	return true;

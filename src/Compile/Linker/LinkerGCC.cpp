@@ -192,7 +192,8 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 	const auto& projectSharedLinks = m_project.projectSharedLinks();
 
 	const bool isEmscripten = m_state.environment->isEmscripten();
-	auto search = m_state.environment->getArchiveExtension();
+	auto archiveExt = m_state.environment->getArchiveExtension();
+	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	if (!staticLinks.empty())
 	{
@@ -203,7 +204,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 			if (isLinkSupported(link))
 			{
 				bool resolved = false;
-				if (String::endsWith(search, link))
+				if (String::endsWith(archiveExt, link))
 				{
 					if (Files::pathExists(link))
 					{
@@ -242,7 +243,7 @@ void LinkerGCC::addLinks(StringList& outArgList) const
 			if (isLinkSupported(link))
 			{
 				bool resolved = false;
-				if (String::endsWith(search, link))
+				if (String::endsWith(sharedExt, link) || String::endsWith(archiveExt, link))
 				{
 					if (Files::pathExists(link))
 					{
