@@ -28,7 +28,25 @@ PackageManager::PackageManager(BuildState& inState) :
 /*****************************************************************************/
 bool PackageManager::initialize()
 {
+	// for (auto& pkg : m_requiredPackages)
+	// {
+	// 	LOG(pkg);
+	// }
+
 	if (!resolvePackagesFromSubChaletTargets())
+		return false;
+
+	bool hasError = false;
+	for (auto& pkg : m_requiredPackages)
+	{
+		if (m_packages.find(pkg) == m_packages.end())
+		{
+			Diagnostic::error("Package '{}' is required by the workspace, but could not be found.", pkg);
+			hasError = true;
+		}
+	}
+
+	if (hasError)
 		return false;
 
 	if (!initializePackages())
@@ -54,6 +72,16 @@ bool PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue
 
 	m_packages.emplace(inName, std::move(inValue));
 	return true;
+}
+
+/*****************************************************************************/
+const StringList& PackageManager::requiredPackages() const noexcept
+{
+	return m_requiredPackages;
+}
+void PackageManager::addRequiredPackage(const std::string& inValue)
+{
+	List::addIfDoesNotExist(m_requiredPackages, inValue);
 }
 
 /*****************************************************************************/
@@ -199,12 +227,6 @@ bool PackageManager::readImportedPackages()
 
 			for (auto& name : importedPackages)
 			{
-				if (m_packages.find(name) == m_packages.end())
-				{
-					Diagnostic::error("Found unrecognized package '{}' in target: {}", name, project.name());
-					return false;
-				}
-
 				auto& pkg = m_packages.at(name);
 
 				auto& searchPaths = pkg->searchPaths();

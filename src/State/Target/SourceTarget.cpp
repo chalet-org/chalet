@@ -10,6 +10,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/PackageManager.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
@@ -722,6 +723,7 @@ void SourceTarget::addImportPackages(StringList&& inList)
 }
 void SourceTarget::addImportPackage(std::string&& inValue)
 {
+	m_state.packages.addRequiredPackage(inValue);
 	List::addIfDoesNotExist(m_importPackages, std::move(inValue));
 }
 

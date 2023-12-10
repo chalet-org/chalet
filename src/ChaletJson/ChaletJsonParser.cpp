@@ -156,10 +156,10 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 			return false;
 	}
 
-	if (!parsePackage(inJson))
+	if (!parseTargets(inJson))
 		return false;
 
-	if (!parseTargets(inJson))
+	if (!parsePackage(inJson))
 		return false;
 
 	return true;
@@ -319,8 +319,12 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 		return false;
 	}
 
+	auto& requiredPackages = m_state.packages.requiredPackages();
 	for (auto& [name, packageJson] : packageRoot.items())
 	{
+		if (!String::contains(requiredPackages, name))
+			continue;
+
 		if (!packageJson.is_object())
 		{
 			Diagnostic::error("{}: package '{}' must be an object.", m_chaletJson.filename(), name);

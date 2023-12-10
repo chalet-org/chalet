@@ -75,17 +75,18 @@ bool SourcePackage::initialize()
 	for (auto& path : m_searchPaths)
 		path = Files::getAbsolutePath(path);
 
+	auto archiveExt = m_state.environment->getArchiveExtension();
 	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	for (auto& path : m_links)
 	{
-		if (String::endsWith(sharedExt, path))
+		if (String::endsWith(sharedExt, path) || String::endsWith(archiveExt, path))
 			path = Files::getAbsolutePath(path);
 	}
 
 	for (auto& path : m_staticLinks)
 	{
-		if (String::endsWith(sharedExt, path))
+		if (String::endsWith(archiveExt, path))
 			path = Files::getAbsolutePath(path);
 	}
 
