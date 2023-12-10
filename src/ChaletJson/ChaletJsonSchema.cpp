@@ -1975,6 +1975,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"additionalProperties": false
 		})json"_ojson;
 		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
+		addPropertyAndPattern(package, "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 
 		package[SKeys::Properties]["settings"] = defs[Defs::PackageSettingsCxx];
 		package[SKeys::Properties]["settings:Cxx"] = defs[Defs::PackageSettingsCxx];

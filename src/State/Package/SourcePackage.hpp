@@ -27,6 +27,10 @@ struct SourcePackage
 	void addSearchPaths(StringList&& inList);
 	void addSearchPath(std::string&& inValue);
 
+	const StringList& copyFilesOnRun() const noexcept;
+	void addCopyFilesOnRun(StringList&& inList);
+	void addCopyFileOnRun(std::string&& inValue);
+
 	const StringList& libDirs() const noexcept;
 	void addLibDirs(StringList&& inList);
 	void addLibDir(std::string&& inValue);
@@ -65,6 +69,7 @@ private:
 	std::string m_root;
 
 	StringList m_searchPaths;
+	StringList m_copyFilesOnRun;
 	StringList m_links;
 	StringList m_staticLinks;
 	StringList m_libDirs;

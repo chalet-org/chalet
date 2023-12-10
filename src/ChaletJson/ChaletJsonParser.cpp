@@ -409,6 +409,8 @@ bool ChaletJsonParser::parsePackageSettingsCxx(SourcePackage& outPackage, const 
 				outPackage.addLibDir(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outPackage.addIncludeDir(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
+				outPackage.addCopyFileOnRun(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outPackage.addAppleFrameworkPath(std::move(val));
@@ -435,6 +437,8 @@ bool ChaletJsonParser::parsePackageSettingsCxx(SourcePackage& outPackage, const 
 				outPackage.addIncludeDirs(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outPackage.addLinkerOptions(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
+				outPackage.addCopyFilesOnRun(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outPackage.addAppleFrameworkPaths(std::move(val));

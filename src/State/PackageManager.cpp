@@ -213,6 +213,7 @@ bool PackageManager::readImportedPackages()
 				auto& links = pkg->links();
 				auto& staticLinks = pkg->staticLinks();
 				auto& linkerOptions = pkg->linkerOptions();
+				auto& copyFilesOnRun = pkg->copyFilesOnRun();
 
 				if (!searchPaths.empty())
 					m_state.workspace.addSearchPaths(StringList(searchPaths));
@@ -231,6 +232,9 @@ bool PackageManager::readImportedPackages()
 
 				if (!linkerOptions.empty())
 					project.addLinkerOptions(StringList(linkerOptions));
+
+				if (!copyFilesOnRun.empty())
+					project.addCopyFilesOnRun(StringList(copyFilesOnRun));
 
 #if defined(CHALET_MACOS)
 				auto& appleFrameworks = pkg->appleFrameworks();

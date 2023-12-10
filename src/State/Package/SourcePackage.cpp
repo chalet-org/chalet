@@ -21,11 +21,13 @@ SourcePackage::SourcePackage(const BuildState& inState) :
 bool SourcePackage::initialize()
 {
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+#if defined(CHALET_MACOS)
 	if (!expandGlobPatternsInList(m_appleFrameworkPaths, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the macos framework paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
+#endif
 
 	if (!expandGlobPatternsInList(m_libDirs, GlobMatch::Folders))
 	{
@@ -36,6 +38,12 @@ bool SourcePackage::initialize()
 	if (!expandGlobPatternsInList(m_includeDirs, GlobMatch::Folders))
 	{
 		Diagnostic::error("There was a problem resolving the include directories for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+
+	if (!expandGlobPatternsInList(m_copyFilesOnRun, GlobMatch::FilesAndFolders))
+	{
+		Diagnostic::error("There was a problem resolving the files to copy on run for the '{}' target. {}.", this->name(), globMessage);
 		return false;
 	}
 
@@ -51,8 +59,10 @@ bool SourcePackage::initialize()
 	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
 
+#if defined(CHALET_MACOS)
 	for (auto& path : m_appleFrameworkPaths)
 		path = Files::getCanonicalPath(path);
+#endif
 
 	for (auto& path : m_libDirs)
 		path = Files::getCanonicalPath(path);
@@ -61,6 +71,9 @@ bool SourcePackage::initialize()
 		path = Files::getCanonicalPath(path);
 
 	for (auto& path : m_searchPaths)
+		path = Files::getCanonicalPath(path);
+
+	for (auto& path : m_copyFilesOnRun)
 		path = Files::getCanonicalPath(path);
 
 	for (auto& path : m_links)
@@ -110,6 +123,20 @@ void SourcePackage::addSearchPaths(StringList&& inList)
 void SourcePackage::addSearchPath(std::string&& inValue)
 {
 	List::addIfDoesNotExist(m_searchPaths, inValue);
+}
+
+/*****************************************************************************/
+const StringList& SourcePackage::copyFilesOnRun() const noexcept
+{
+	return m_copyFilesOnRun;
+}
+void SourcePackage::addCopyFilesOnRun(StringList&& inList)
+{
+	List::forEach(inList, this, &SourcePackage::addCopyFileOnRun);
+}
+void SourcePackage::addCopyFileOnRun(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_copyFilesOnRun, inValue);
 }
 
 /*****************************************************************************/
@@ -225,6 +252,9 @@ bool SourcePackage::replaceVariablesInPathList(StringList& outList) const
 /*****************************************************************************/
 bool SourcePackage::expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const
 {
+	if (outList.empty())
+		return true;
+
 	StringList list = outList;
 	if (!replaceVariablesInPathList(list))
 		return false;

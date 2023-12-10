@@ -2705,6 +2705,9 @@
 				"searchPaths": {
 					"$ref": "#/definitions/searchPaths"
 				},
+				"copyFilesOnRun": {
+					"$ref": "#/definitions/target-copyFilesOnRun"
+				},
 				"settings": {
 					"type": "object",
 					"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
@@ -2811,6 +2814,9 @@
 			"patternProperties": {
 				"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/searchPaths"
+				},
+				"^copyFilesOnRun\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-copyFilesOnRun"
 				}
 			}
 		},
