@@ -63,10 +63,7 @@ bool PackageManager::initialize()
 bool PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
 {
 	if (m_impl->packages.find(inName) != m_impl->packages.end())
-	{
-		Diagnostic::error("Duplicate package name was found: {}", inName);
 		return false;
-	}
 
 	m_impl->packages.emplace(inName, std::move(inValue));
 	return true;

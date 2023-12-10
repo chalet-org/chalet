@@ -337,8 +337,7 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 			return false;
 		}
 
-		if (!m_state.packages.add(name, std::move(package)))
-			return false;
+		m_state.packages.add(name, std::move(package));
 	}
 
 	return true;
