@@ -41,8 +41,6 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 {
 	UNUSED(outputFile, sourceObjs);
 
-	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
-
 	StringList ret;
 
 	if (m_state.toolchain.linker().empty())
@@ -84,8 +82,6 @@ StringList LinkerVisualStudioLINK::getSharedLibTargetCommand(const std::string& 
 StringList LinkerVisualStudioLINK::getExecutableTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	UNUSED(outputFile, sourceObjs);
-
-	chalet_assert(!outputFile.empty() && sourceObjs.size() > 0, "");
 
 	StringList ret;
 
