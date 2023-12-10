@@ -355,6 +355,8 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 			std::string val;
 			if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
 				outPackage.addSearchPath(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
+				outPackage.addCopyFileOnRun(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -363,6 +365,8 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 			StringList val;
 			if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "searchPaths", status))
 				outPackage.addSearchPaths(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
+				outPackage.addCopyFilesOnRun(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -409,8 +413,6 @@ bool ChaletJsonParser::parsePackageSettingsCxx(SourcePackage& outPackage, const 
 				outPackage.addLibDir(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "includeDirs", status))
 				outPackage.addIncludeDir(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outPackage.addCopyFileOnRun(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outPackage.addAppleFrameworkPath(std::move(val));
@@ -437,8 +439,6 @@ bool ChaletJsonParser::parsePackageSettingsCxx(SourcePackage& outPackage, const 
 				outPackage.addIncludeDirs(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outPackage.addLinkerOptions(std::move(val));
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
-				outPackage.addCopyFilesOnRun(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outPackage.addAppleFrameworkPaths(std::move(val));

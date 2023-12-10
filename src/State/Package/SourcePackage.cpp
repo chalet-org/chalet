@@ -75,9 +75,6 @@ bool SourcePackage::initialize()
 	for (auto& path : m_searchPaths)
 		path = Files::getAbsolutePath(path);
 
-	for (auto& path : m_copyFilesOnRun)
-		path = Files::getAbsolutePath(path);
-
 	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	for (auto& path : m_links)
