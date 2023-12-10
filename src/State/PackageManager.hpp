@@ -13,6 +13,8 @@ struct SourcePackage;
 struct PackageManager
 {
 	explicit PackageManager(BuildState& inState);
+	CHALET_DISALLOW_COPY_MOVE(PackageManager);
+	~PackageManager();
 
 	bool initialize();
 
@@ -22,19 +24,21 @@ struct PackageManager
 	void addPackagePaths(StringList&& inList);
 	void addPackagePath(std::string&& inValue);
 
-	const StringList& requiredPackages() const noexcept;
-	void addRequiredPackage(const std::string& inValue);
+	void addRequiredPackage(const std::string& inName);
+
+	void addPackageDependencies(const std::string& inName, StringList&& inList);
+	void addPackageDependency(const std::string& inName, std::string&& inValue);
 
 private:
 	bool resolvePackagesFromSubChaletTargets();
+	bool validatePackageDependencies();
 	bool initializePackages();
 	bool readImportedPackages();
+	void resolveDependencies(const std::string& package, StringList& outPackages);
 
 	BuildState& m_state;
 
-	StringList m_packagePaths;
-	StringList m_requiredPackages;
-
-	Dictionary<Ref<SourcePackage>> m_packages;
+	struct Impl;
+	Unique<Impl> m_impl;
 };
 }

@@ -20,33 +20,31 @@
 namespace chalet
 {
 /*****************************************************************************/
+struct PackageManager::Impl
+{
+	StringList packagePaths;
+
+	Dictionary<StringList> packageDeps;
+	Dictionary<Ref<SourcePackage>> packages;
+};
+
+/*****************************************************************************/
 PackageManager::PackageManager(BuildState& inState) :
-	m_state(inState)
+	m_state(inState),
+	m_impl(std::make_unique<Impl>())
 {
 }
 
 /*****************************************************************************/
+PackageManager::~PackageManager() = default;
+
+/*****************************************************************************/
 bool PackageManager::initialize()
 {
-	// for (auto& pkg : m_requiredPackages)
-	// {
-	// 	LOG(pkg);
-	// }
-
 	if (!resolvePackagesFromSubChaletTargets())
 		return false;
 
-	bool hasError = false;
-	for (auto& pkg : m_requiredPackages)
-	{
-		if (m_packages.find(pkg) == m_packages.end())
-		{
-			Diagnostic::error("Package '{}' is required by the workspace, but could not be found.", pkg);
-			hasError = true;
-		}
-	}
-
-	if (hasError)
+	if (!validatePackageDependencies())
 		return false;
 
 	if (!initializePackages())
@@ -56,7 +54,7 @@ bool PackageManager::initialize()
 		return false;
 
 	// Clear packages at this point. in theory, we should no longer need them
-	m_packages.clear();
+	m_impl.reset();
 
 	return true;
 }
@@ -64,30 +62,27 @@ bool PackageManager::initialize()
 /*****************************************************************************/
 bool PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue)
 {
-	if (m_packages.find(inName) != m_packages.end())
+	if (m_impl->packages.find(inName) != m_impl->packages.end())
 	{
 		Diagnostic::error("Duplicate package name was found: {}", inName);
 		return false;
 	}
 
-	m_packages.emplace(inName, std::move(inValue));
+	m_impl->packages.emplace(inName, std::move(inValue));
 	return true;
 }
 
 /*****************************************************************************/
-const StringList& PackageManager::requiredPackages() const noexcept
+void PackageManager::addRequiredPackage(const std::string& inName)
 {
-	return m_requiredPackages;
-}
-void PackageManager::addRequiredPackage(const std::string& inValue)
-{
-	List::addIfDoesNotExist(m_requiredPackages, inValue);
+	if (m_impl->packageDeps.find(inName) == m_impl->packageDeps.end())
+		m_impl->packageDeps.emplace(inName, StringList{});
 }
 
 /*****************************************************************************/
 const StringList& PackageManager::packagePaths() const noexcept
 {
-	return m_packagePaths;
+	return m_impl->packagePaths;
 }
 void PackageManager::addPackagePaths(StringList&& inList)
 {
@@ -95,7 +90,29 @@ void PackageManager::addPackagePaths(StringList&& inList)
 }
 void PackageManager::addPackagePath(std::string&& inValue)
 {
-	List::addIfDoesNotExist(m_packagePaths, std::move(inValue));
+	List::addIfDoesNotExist(m_impl->packagePaths, std::move(inValue));
+}
+
+/*****************************************************************************/
+void PackageManager::addPackageDependencies(const std::string& inName, StringList&& inList)
+{
+	for (auto&& item : inList)
+	{
+		addPackageDependency(inName, std::move(item));
+	}
+}
+void PackageManager::addPackageDependency(const std::string& inName, std::string&& inValue)
+{
+	if (m_impl->packageDeps.find(inName) == m_impl->packageDeps.end())
+	{
+		m_impl->packageDeps.emplace(inName, StringList{ std::move(inValue) });
+	}
+	else
+	{
+		auto& list = m_impl->packageDeps.at(inName);
+		addRequiredPackage(inValue);
+		List::addIfDoesNotExist(list, std::move(inValue));
+	}
 }
 
 /*****************************************************************************/
@@ -103,8 +120,8 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 {
 	Unique<ChaletJsonParser> chaletJsonParser;
 
-	auto packages = std::move(m_packages);
-	m_packages.clear();
+	auto packages = std::move(m_impl->packages);
+	m_impl->packages.clear();
 
 	auto readPackagesIfAvailable = [this, &chaletJsonParser](const std::string& location, std::string buildFile) {
 		if (buildFile.empty())
@@ -134,7 +151,7 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 		return true;
 	};
 
-	for (auto& path : m_packagePaths)
+	for (auto& path : m_impl->packagePaths)
 	{
 		if (!m_state.replaceVariablesInString(path, static_cast<const SourcePackage*>(nullptr)))
 			return false;
@@ -173,6 +190,25 @@ bool PackageManager::resolvePackagesFromSubChaletTargets()
 }
 
 /*****************************************************************************/
+bool PackageManager::validatePackageDependencies()
+{
+	bool hasError = false;
+	for (auto& [pkg, _] : m_impl->packageDeps)
+	{
+		if (m_impl->packages.find(pkg) == m_impl->packages.end())
+		{
+			Diagnostic::error("Package '{}' is required by the workspace, but could not be found.", pkg);
+			hasError = true;
+		}
+	}
+
+	if (hasError)
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 bool PackageManager::initializePackages()
 {
 	auto cwd = Files::getWorkingDirectory();
@@ -181,8 +217,12 @@ bool PackageManager::initializePackages()
 		return false;
 	};
 
-	for (auto& [name, pkg] : m_packages)
+	for (auto& [name, pkg] : m_impl->packages)
 	{
+		// We only want to initialize the required packages
+		if (m_impl->packageDeps.find(name) == m_impl->packageDeps.end())
+			continue;
+
 		bool rootChanged = false;
 		auto& root = pkg->root();
 		if (!root.empty())
@@ -196,8 +236,6 @@ bool PackageManager::initializePackages()
 			Files::changeWorkingDirectory(root);
 			rootChanged = true;
 		}
-
-		// LOG(name, "--", pkg->root());
 
 		// Note: slow
 		if (!pkg->initialize())
@@ -225,9 +263,15 @@ bool PackageManager::readImportedPackages()
 			if (importedPackages.empty())
 				continue;
 
-			for (auto& name : importedPackages)
+			StringList packages;
+			for (auto& package : importedPackages)
 			{
-				auto& pkg = m_packages.at(name);
+				resolveDependencies(package, packages);
+			}
+
+			for (auto& name : packages)
+			{
+				auto& pkg = m_impl->packages.at(name);
 
 				auto& searchPaths = pkg->searchPaths();
 				auto& includeDirs = pkg->includeDirs();
@@ -272,5 +316,18 @@ bool PackageManager::readImportedPackages()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+void PackageManager::resolveDependencies(const std::string& package, StringList& outPackages)
+{
+	if (m_impl->packageDeps.find(package) != m_impl->packageDeps.end())
+	{
+		auto& list = m_impl->packageDeps.at(package);
+		for (auto& item : list)
+			resolveDependencies(item, outPackages);
+	}
+
+	List::addIfDoesNotExist(outPackages, package);
 }
 }

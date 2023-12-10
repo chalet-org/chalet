@@ -1958,8 +1958,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"description": "An individual importable package.",
 			"additionalProperties": false
 		})json"_ojson;
-		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 		addPropertyAndPattern(package, "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
+		addPropertyAndPattern(package, "importPackages", Defs::TargetSourceImportPackages, kPatternConditions);
+		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
 		package[SKeys::Properties]["settings"] = defs[Defs::PackageSettingsCxx];
 		package[SKeys::Properties]["settings:Cxx"] = defs[Defs::PackageSettingsCxx];

@@ -2654,11 +2654,14 @@
 			"description": "An individual importable package.",
 			"additionalProperties": false,
 			"properties": {
-				"searchPaths": {
-					"$ref": "#/definitions/searchPaths"
-				},
 				"copyFilesOnRun": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
+				},
+				"importPackages": {
+					"$ref": "#/definitions/target-source-importPackages"
+				},
+				"searchPaths": {
+					"$ref": "#/definitions/searchPaths"
 				},
 				"settings": {
 					"type": "object",
@@ -2764,11 +2767,14 @@
 				}
 			},
 			"patternProperties": {
-				"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/searchPaths"
-				},
 				"^copyFilesOnRun\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
+				},
+				"^importPackages\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-importPackages"
+				},
+				"^searchPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/searchPaths"
 				}
 			}
 		},

@@ -319,12 +319,8 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 		return false;
 	}
 
-	auto& requiredPackages = m_state.packages.requiredPackages();
 	for (auto& [name, packageJson] : packageRoot.items())
 	{
-		if (!String::contains(requiredPackages, name))
-			continue;
-
 		if (!packageJson.is_object())
 		{
 			Diagnostic::error("{}: package '{}' must be an object.", m_chaletJson.filename(), name);
@@ -351,6 +347,7 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 /*****************************************************************************/
 bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json& inNode) const
 {
+	auto& packageName = outPackage.name();
 	for (const auto& [key, value] : inNode.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -361,6 +358,8 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 				outPackage.addSearchPath(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 				outPackage.addCopyFileOnRun(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
+				m_state.packages.addPackageDependency(packageName, std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -371,6 +370,8 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 				outPackage.addSearchPaths(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 				outPackage.addCopyFilesOnRun(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
+				m_state.packages.addPackageDependencies(packageName, std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -755,9 +756,9 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "files", status))
 				outTarget.addFiles(std::move(val));
-			else if (valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "configureFiles", status))
 				outTarget.addConfigureFiles(std::move(val));
-			else if (valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "importPackages", status))
 				outTarget.addImportPackages(std::move(val));
 			else if (isInvalid(status))
 				return false;
