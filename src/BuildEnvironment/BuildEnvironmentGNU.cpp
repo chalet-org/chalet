@@ -291,6 +291,8 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 {
 	const auto& compiler = m_state.toolchain.compilerCxxAny().path;
 
+	bool emptyInputArch = m_state.inputs.targetArchitecture().empty();
+
 	std::string cachedArch;
 	getDataWithCache(cachedArch, "arch", compiler, [&compiler]() {
 		auto outArch = Process::runOutput({ compiler, "-dumpmachine" });
@@ -319,7 +321,7 @@ bool BuildEnvironmentGNU::readArchitectureTripleFromCompiler()
 	if (String::equals("armhf", archFromInfo))
 		archFromInfo = "arm";
 
-	if (!archFromInfo.empty() && !String::startsWith(archFromInfo, cachedArch))
+	if (!emptyInputArch && !String::startsWith(archFromInfo, cachedArch))
 	{
 		auto expectedArch = Arch::from(cachedArch);
 		Diagnostic::error("Expected '{}' or '{}'. Please use a different toolchain or create a new one for this architecture.", cachedArch, expectedArch.str);
