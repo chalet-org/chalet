@@ -119,8 +119,6 @@ class ChaletJsonSchema
 		TargetSourceCxxLibDirs,
 		TargetSourceCxxLinkerOptions,
 		TargetSourceCxxLinks,
-		TargetSourceCxxMacOsFrameworkPaths, // deprecated
-		TargetSourceCxxMacOsFrameworks,		// deprecated
 		TargetSourceCxxAppleFrameworkPaths,
 		TargetSourceCxxAppleFrameworks,
 		TargetSourceCxxPrecompiledHeader,
