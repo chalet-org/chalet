@@ -5,9 +5,11 @@
 
 #include "State/Package/SourcePackage.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -61,31 +63,33 @@ bool SourcePackage::initialize()
 
 #if defined(CHALET_MACOS)
 	for (auto& path : m_appleFrameworkPaths)
-		path = Files::getCanonicalPath(path);
+		path = Files::getAbsolutePath(path);
 #endif
 
 	for (auto& path : m_libDirs)
-		path = Files::getCanonicalPath(path);
+		path = Files::getAbsolutePath(path);
 
 	for (auto& path : m_includeDirs)
-		path = Files::getCanonicalPath(path);
+		path = Files::getAbsolutePath(path);
 
 	for (auto& path : m_searchPaths)
-		path = Files::getCanonicalPath(path);
+		path = Files::getAbsolutePath(path);
 
 	for (auto& path : m_copyFilesOnRun)
-		path = Files::getCanonicalPath(path);
+		path = Files::getAbsolutePath(path);
+
+	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
 	for (auto& path : m_links)
 	{
-		if (Files::pathExists(path))
-			path = Files::getCanonicalPath(path);
+		if (String::endsWith(sharedExt, path))
+			path = Files::getAbsolutePath(path);
 	}
 
 	for (auto& path : m_staticLinks)
 	{
-		if (Files::pathExists(path))
-			path = Files::getCanonicalPath(path);
+		if (String::endsWith(sharedExt, path))
+			path = Files::getAbsolutePath(path);
 	}
 
 	return true;

@@ -145,6 +145,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 	for (auto& state : m_states)
 	{
+		auto sharedExt = state->environment->getSharedLibraryExtension();
 		const auto& configName = state->configuration.name();
 		if (configToTargets.find(configName) == configToTargets.end())
 			configToTargets.emplace(configName, std::vector<const IBuildTarget*>{});
@@ -182,10 +183,19 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					const auto& links = sourceTarget.links();
 					for (auto& link : links)
 					{
-						if (Files::pathExists(link))
-							searches.emplace_back(link);
+						if (String::endsWith(sharedExt, link))
+						{
+							if (embedLibraries.find(name) == embedLibraries.end())
+								embedLibraries.emplace(name, StringList{});
+
+							// searches.emplace_back(link);
+
+							List::addIfDoesNotExist(embedLibraries[name], link);
+						}
 						else
+						{
 							searches.emplace_back(fmt::format("/lib{}.dylib", link));
+						}
 					}
 					const auto& appleFrameworks = sourceTarget.appleFrameworks();
 					for (auto& framework : appleFrameworks)
