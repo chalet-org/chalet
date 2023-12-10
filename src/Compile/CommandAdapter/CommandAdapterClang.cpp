@@ -164,7 +164,7 @@ StringList CommandAdapterClang::getWarningList() const
 		if (m_project.treatWarningsAsErrors())
 			List::addIfDoesNotExist(warnings, "error");
 
-		return warnings;
+		return std::move(warnings);
 	};
 
 	auto warningsPreset = m_project.warningsPreset();
