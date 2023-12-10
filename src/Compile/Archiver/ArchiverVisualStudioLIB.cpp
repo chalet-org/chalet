@@ -23,8 +23,6 @@ ArchiverVisualStudioLIB::ArchiverVisualStudioLIB(const BuildState& inState, cons
 /*****************************************************************************/
 StringList ArchiverVisualStudioLIB::getCommand(const std::string& outputFile, const StringList& sourceObjs) const
 {
-	chalet_assert(!outputFile.empty() && !sourceObjs.empty(), "");
-
 	StringList ret;
 
 	if (m_state.toolchain.archiver().empty())
