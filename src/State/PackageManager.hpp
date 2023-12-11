@@ -30,7 +30,7 @@ struct PackageManager
 	void addPackageDependency(const std::string& inName, std::string&& inValue);
 
 private:
-	bool resolvePackagesFromSubChaletTargets();
+	bool resolvePackagesFromSubPackagePathsAndChaletTargets();
 	bool validatePackageDependencies();
 	bool initializePackages();
 	bool readImportedPackages();

@@ -41,17 +41,23 @@ PackageManager::~PackageManager() = default;
 /*****************************************************************************/
 bool PackageManager::initialize()
 {
-	if (!resolvePackagesFromSubChaletTargets())
-		return false;
+	// At this point, we should have the packages required for this workspace
+	//  so if it's empty by now, there simply are none
+	//
+	if (!m_impl->packages.empty())
+	{
+		if (!resolvePackagesFromSubPackagePathsAndChaletTargets())
+			return false;
 
-	if (!validatePackageDependencies())
-		return false;
+		if (!validatePackageDependencies())
+			return false;
 
-	if (!initializePackages())
-		return false;
+		if (!initializePackages())
+			return false;
 
-	if (!readImportedPackages())
-		return false;
+		if (!readImportedPackages())
+			return false;
+	}
 
 	// Clear packages at this point. in theory, we should no longer need them
 	m_impl.reset();
@@ -113,7 +119,7 @@ void PackageManager::addPackageDependency(const std::string& inName, std::string
 }
 
 /*****************************************************************************/
-bool PackageManager::resolvePackagesFromSubChaletTargets()
+bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 {
 	Unique<ChaletJsonParser> chaletJsonParser;
 
