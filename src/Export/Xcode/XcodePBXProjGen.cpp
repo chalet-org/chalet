@@ -1646,6 +1646,10 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		// 	runPaths.emplace_back(path);
 		// }
 
+		runPaths.emplace_back("@executable_path/../MacOS");
+		runPaths.emplace_back("@executable_path/../Frameworks");
+		runPaths.emplace_back("@executable_path/../Resources");
+
 		runPaths.emplace_back("$(inherited)");
 		ret["LD_RUNPATH_SEARCH_PATHS"] = std::move(runPaths);
 
@@ -1834,12 +1838,6 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	// always set
 	ret["INFOPLIST_FILE"] = infoPlist;
-
-	ret["LD_RUNPATH_SEARCH_PATHS"] = {
-		"@executable_path/../MacOS",
-		"@executable_path/../Frameworks",
-		"@executable_path/../Resources",
-	};
 
 	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();
 
