@@ -361,6 +361,8 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						auto& buildTargets = bundle.buildTargets();
 						for (auto& tgt : buildTargets)
 						{
+							List::addIfDoesNotExist(m_appBuildTargets, tgt);
+
 							if (List::contains(sourceTargets, tgt))
 							{
 								groups[name].dependencies.emplace_back(tgt);
@@ -1646,9 +1648,15 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		// 	runPaths.emplace_back(path);
 		// }
 
-		runPaths.emplace_back("@executable_path/../MacOS");
-		runPaths.emplace_back("@executable_path/../Frameworks");
-		runPaths.emplace_back("@executable_path/../Resources");
+		if (inTarget.isExecutable())
+		{
+			if (List::contains(m_appBuildTargets, inTarget.name()))
+			{
+				runPaths.emplace_back("@executable_path/../MacOS");
+				runPaths.emplace_back("@executable_path/../Frameworks");
+				runPaths.emplace_back("@executable_path/../Resources");
+			}
+		}
 
 		runPaths.emplace_back("$(inherited)");
 		ret["LD_RUNPATH_SEARCH_PATHS"] = std::move(runPaths);

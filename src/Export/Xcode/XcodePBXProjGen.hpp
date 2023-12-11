@@ -68,6 +68,8 @@ private:
 
 	mutable Json m_infoPlistJson;
 
+	StringList m_appBuildTargets;
+
 	std::string m_exportPath;
 	std::string m_xcodeNamespaceGuid;
 	std::string m_projectGuid;
