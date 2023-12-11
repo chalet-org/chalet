@@ -768,6 +768,9 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 
 		if (!found)
 		{
+			if (String::endsWith(sharedExt, link))
+				String::replaceAll(link, sharedExt, archiveExt);
+
 			if (String::endsWith(archiveExt, link))
 				List::addIfDoesNotExist(ret, std::move(link));
 			else
