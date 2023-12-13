@@ -44,7 +44,10 @@ bool PackageManager::initialize()
 	// At this point, we should have the packages required for this workspace
 	//  so if it's empty by now, there simply are none
 	//
-	if (!m_impl->packages.empty())
+	const bool hasPackages = !m_impl->packages.empty();
+	const bool hasPackagePaths = !m_impl->packagePaths.empty();
+
+	if (hasPackages || hasPackagePaths)
 	{
 		if (!resolvePackagesFromSubPackagePathsAndChaletTargets())
 			return false;
