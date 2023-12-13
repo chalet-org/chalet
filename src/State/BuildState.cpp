@@ -1309,6 +1309,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				if (!result.empty())
 					return result;
 
+				if (String::equals("buildDir", match))
+					return paths.buildOutputDir();
+
 				if (inTarget != nullptr)
 				{
 					if (String::equals("name", match))
@@ -1388,6 +1391,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				if (!result.empty())
 					return result;
 
+				if (String::equals("buildDir", match))
+					return paths.buildOutputDir();
+
 				if (String::equals("distributionDir", match))
 					return inputs.distributionDirectory();
 
@@ -1443,16 +1449,27 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &onFail](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
 				auto result = replaceVariablesInMatch(match, required, false);
 				if (!result.empty())
 					return result;
 
-				// if (inTarget != nullptr)
-				// {
-				// 	if (String::equals("name", match))
-				// 		return inTarget->name();
-				// }
+				if (inTarget != nullptr)
+				{
+					// if (String::equals("name", match))
+					// 	return inTarget->name();
+
+					if (String::equals("buildDir", match))
+					{
+						// We can only assume we're using the same build path (buildFolder/[buildPath])
+						// Strip out the rest in case it's an absolute path
+						//
+						auto& root = inTarget->root();
+						auto buildFolder = String::getPathFilename(inputs.outputDirectory());
+						auto buildPath = String::getPathFilename(paths.buildOutputDir());
+						return fmt::format("{}/{}/{}", root, buildFolder, buildPath);
+					}
+				}
 
 				if (String::startsWith("meta:", match))
 				{
@@ -1503,9 +1520,6 @@ std::string BuildState::replaceVariablesInMatch(std::string& match, bool& requir
 
 	if (String::equals("configuration", match))
 		return configuration.name();
-
-	if (String::equals("buildDir", match))
-		return paths.buildOutputDir();
 
 	if (String::equals("home", match))
 		return inputs.homeDirectory();
