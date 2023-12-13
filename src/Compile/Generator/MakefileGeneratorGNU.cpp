@@ -179,9 +179,7 @@ std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFil
 	if (Output::cleanOutput())
 	{
 		auto outputFile = m_state.paths.getBuildOutputPath(inFile);
-		auto counter = std::string(m_fileCount, '=');
-		auto text = fmt::format("   [{counter}] {color}{outputFile}{reset}",
-			FMT_ARG(counter),
+		auto text = fmt::format("   {color}{outputFile}{reset}",
 			FMT_ARG(color),
 			FMT_ARG(outputFile),
 			FMT_ARG(reset));
@@ -207,9 +205,7 @@ std::string MakefileGeneratorGNU::getLinkerEcho(const std::string& inFile) const
 		const auto description = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 
 		auto outputFile = m_state.paths.getBuildOutputPath(inFile);
-		auto counter = std::string(m_fileCount, '=');
-		const auto text = fmt::format("   [{counter}] {color}{description} {outputFile}{reset}",
-			FMT_ARG(counter),
+		const auto text = fmt::format("   {color}{description} {outputFile}{reset}",
 			FMT_ARG(color),
 			FMT_ARG(description),
 			FMT_ARG(outputFile),
