@@ -485,6 +485,16 @@ void BundleTarget::setMacosBundleEntitlementsPropertyListContent(std::string&& i
 }
 
 /*****************************************************************************/
+bool BundleTarget::macosCopyToApplications() const noexcept
+{
+	return m_macosCopyToApplications;
+}
+void BundleTarget::setMacosCopyToApplications(const bool inValue) noexcept
+{
+	m_macosCopyToApplications = inValue;
+}
+
+/*****************************************************************************/
 bool BundleTarget::willHaveMacosInfoPlist() const noexcept
 {
 	return !m_macosBundleInfoPropertyList.empty() || !m_macosBundleInfoPropertyListContent.empty();

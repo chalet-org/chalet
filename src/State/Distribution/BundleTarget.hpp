@@ -75,6 +75,9 @@ struct BundleTarget final : public IDistTarget
 	const std::string& macosBundleEntitlementsPropertyListContent() const noexcept;
 	void setMacosBundleEntitlementsPropertyListContent(std::string&& inValue);
 
+	bool macosCopyToApplications() const noexcept;
+	void setMacosCopyToApplications(const bool inValue) noexcept;
+
 	bool willHaveMacosInfoPlist() const noexcept;
 	bool willHaveMacosEntitlementsPlist() const noexcept;
 #elif defined(CHALET_LINUX)
@@ -110,6 +113,8 @@ private:
 	std::string m_macosBundleEntitlementsPropertyListContent;
 
 	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
+
+	bool m_macosCopyToApplications = false;
 #elif defined(CHALET_LINUX)
 	std::string m_linuxDesktopEntryTemplate;
 	std::string m_linuxDesktopEntryIcon;

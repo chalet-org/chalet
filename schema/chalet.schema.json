@@ -195,11 +195,10 @@
 						"template"
 					],
 					"properties": {
-						"template": {
-							"type": "string",
-							"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
-							"minLength": 1,
-							"default": "app.desktop"
+						"copyToApplications": {
+							"type": "boolean",
+							"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found locally.",
+							"default": false
 						},
 						"icon": {
 							"type": "string",
@@ -207,10 +206,11 @@
 							"minLength": 1,
 							"default": "icon.png"
 						},
-						"copyToApplications": {
-							"type": "boolean",
-							"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found.",
-							"default": false
+						"template": {
+							"type": "string",
+							"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+							"minLength": 1,
+							"default": "app.desktop"
 						}
 					}
 				},
@@ -222,6 +222,11 @@
 						"type"
 					],
 					"properties": {
+						"copyToApplications": {
+							"type": "boolean",
+							"description": "If true, the app bundle will be copied to '~/Applications' so it can be found locally by Launchpad.",
+							"default": false
+						},
 						"entitlementsPropertyList": {
 							"description": "The path to a property list (.xml) file, .json file, or the properties themselves to describe the entitlements required to run the app. Only applies to codesigned bundles",
 							"oneOf": [

@@ -106,6 +106,9 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 		return false;
 	}
 
+	if (!copyAppBundleToApplications())
+		return false;
+
 	return true;
 #else
 	return false;
@@ -170,6 +173,9 @@ bool AppBundlerMacOS::bundleForPlatform()
 			return false;
 
 		if (!signAppBundle())
+			return false;
+
+		if (!copyAppBundleToApplications())
 			return false;
 
 		Files::removeIfExists(m_entitlementsFile);
@@ -848,7 +854,7 @@ bool AppBundlerMacOS::signAppBundle() const
 
 		if (isBundle)
 		{
-			auto appPath = m_bundlePath.substr(0, m_bundlePath.size() - 9);
+			auto appPath = String::getPathFolder(m_bundlePath);
 			if (!m_state.tools.macosCodeSignFile(appPath, entitlementOptions))
 			{
 				Diagnostic::error("Failed to sign: {}", appPath);
@@ -865,6 +871,30 @@ bool AppBundlerMacOS::signAppBundle() const
 		CHALET_EXCEPT_ERROR(err.what());
 		return false;
 	}
+}
+
+/*****************************************************************************/
+bool AppBundlerMacOS::copyAppBundleToApplications() const
+{
+	if (m_bundle.macosCopyToApplications())
+	{
+		auto appPath = String::getPathFolder(m_bundlePath);
+		if (appPath.empty())
+			return false;
+
+		auto home = m_state.paths.homeDirectory();
+		auto applicationsPath = fmt::format("{}/Applications", home);
+
+		auto oldBundlePath = fmt::format("{}/{}", applicationsPath, String::getPathFilename(appPath));
+		Files::removeIfExists(oldBundlePath);
+
+		if (Files::pathExists(applicationsPath))
+		{
+			Files::copy(appPath, applicationsPath);
+		}
+	}
+
+	return true;
 }
 #endif
 }

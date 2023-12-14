@@ -235,6 +235,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 
+		auto copyToApplications = R"json({
+			"type": "boolean",
+			"description": "If true, the app bundle will be copied to '~/Applications' so it can be found locally by Launchpad.",
+			"default": false
+		})json"_ojson;
+
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({
 			"type": "object",
 			"description": "Properties to describe the MacOS bundle.",
@@ -244,6 +250,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			],
 			"properties": {}
 		})json"_ojson;
+		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["copyToApplications"] = std::move(copyToApplications);
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["entitlementsPropertyList"] = std::move(macosEntitlementsPropertyList);
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["icon"] = std::move(macosBundleIcon);
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle][SKeys::Properties]["infoPropertyList"] = std::move(macosInfoPropertyList);
@@ -267,7 +274,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 		auto copyToApplications = R"json({
 			"type": "boolean",
-			"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found.",
+			"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found locally.",
 			"default": false
 		})json"_ojson;
 
@@ -280,9 +287,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			],
 			"properties": {}
 		})json"_ojson;
-		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["template"] = std::move(linuxDesktopEntryTemplate);
-		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["icon"] = std::move(linuxDesktopEntryIcon);
 		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["copyToApplications"] = std::move(copyToApplications);
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["icon"] = std::move(linuxDesktopEntryIcon);
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["template"] = std::move(linuxDesktopEntryTemplate);
 	}
 
 	defs[Defs::DistributionBundleMainExecutable] = R"json({

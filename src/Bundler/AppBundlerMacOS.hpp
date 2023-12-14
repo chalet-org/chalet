@@ -53,6 +53,8 @@ private:
 	bool setExecutablePaths() const;
 	bool signAppBundle() const;
 
+	bool copyAppBundleToApplications() const;
+
 	mutable std::string m_outputDirectory;
 
 	StringList m_executableOutputPaths;

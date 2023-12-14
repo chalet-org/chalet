@@ -1528,6 +1528,11 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 							outTarget.setMacosBundleEntitlementsPropertyListContent(v.dump());
 						}
 					}
+					else if (v.is_boolean())
+					{
+						if (String::equals("copyToApplications", k))
+							outTarget.setMacosCopyToApplications(v.get<bool>());
+					}
 				}
 #endif
 			}
