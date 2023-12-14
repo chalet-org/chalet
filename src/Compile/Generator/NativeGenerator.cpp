@@ -21,8 +21,6 @@
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
-// TODO: Finish.
-
 namespace chalet
 {
 /*****************************************************************************/

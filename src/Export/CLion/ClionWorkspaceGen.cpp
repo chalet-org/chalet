@@ -379,8 +379,9 @@ bool CLionWorkspaceGen::createWorkspaceFile(const std::string& inFilename)
 	});
 
 	xmlRoot.addElement("component", [this](XmlElement& node) {
+		// TODO: This format maybe - 2WnwGzZ5woZe0F4aLkNaXiztROm
 		node.addAttribute("name", "ProjectId");
-		node.addAttribute("id", m_projectId); // TODO: This format maybe - 2WnwGzZ5woZe0F4aLkNaXiztROm
+		node.addAttribute("id", m_projectId);
 	});
 
 	auto defaultTarget = m_exportAdapter.getDefaultTargetName();

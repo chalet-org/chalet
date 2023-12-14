@@ -733,8 +733,8 @@ std::string ProjectAdapterVCXProj::getOptimizeReferences() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getLinkerLinkTimeCodeGeneration() const
 {
-	// TODO
-	// UseFastLinkTimeCodeGeneration
+	// TODO:  UseFastLinkTimeCodeGeneration
+
 	if (m_msvcAdapter.supportsLinkTimeCodeGeneration())
 	{
 		return "UseFastLinkTimeCodeGeneration";

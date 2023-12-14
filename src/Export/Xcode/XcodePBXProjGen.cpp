@@ -1427,8 +1427,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 	auto lang = inTarget.language();
 	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
 
-	// TODO: this is currently just based on a Release mode
-
 	auto buildOutputDir = Files::getCanonicalPath(inState.paths.buildOutputDir());
 	auto objectDirectory = fmt::format("{}/obj.{}", buildOutputDir, inTarget.name());
 
@@ -1667,6 +1665,7 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 
 	// YES, YES_THIN, NO
 	//   TODO: thin = incremental - maybe add in the future?
+
 	// ret["LLVM_LTO"] = getBoolString(config.interproceduralOptimization());
 	ret["LLVM_LTO"] = config.interproceduralOptimization() ? "YES_THIN" : "NO";
 
@@ -1696,7 +1695,6 @@ Json XcodePBXProjGen::getBuildSettings(BuildState& inState, const SourceTarget& 
 		ret["OTHER_LDFLAGS"] = linkerOptions;
 	}
 
-	// TODO: Generate .app target based on the distribution
 	// ret["PRODUCT_BUNDLE_IDENTIFIER"] = "com.developer.application";
 
 	ret["PRODUCT_NAME"] = "$(TARGET_NAME)";

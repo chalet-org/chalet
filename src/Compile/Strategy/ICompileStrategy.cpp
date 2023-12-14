@@ -172,7 +172,8 @@ void ICompileStrategy::checkIfTargetWasUpdated(const SourceTarget& inProject)
 /*****************************************************************************/
 bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 {
-	if (m_state.info.generateCompileCommands()) // TODO: Not available yet w/ modules
+	// TODO: Not available yet w/ modules
+	if (m_state.info.generateCompileCommands())
 	{
 		const auto& name = inProject.name();
 		if (m_outputs.find(name) != m_outputs.end())
