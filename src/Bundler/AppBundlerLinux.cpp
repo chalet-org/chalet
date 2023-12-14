@@ -117,15 +117,17 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!Files::setExecutableFlag(desktopEntryFile))
 		return false;
 
-	// TODO: Flag for this?
-	/*if (!Shell::isContinuousIntegrationServer())
+	Diagnostic::printDone(timer.asString());
+
+	if (m_bundle.linuxCopyToApplications())
 	{
-		Files::copy(desktopEntryFile, m_applicationsPath);
-	}*/
+		if (Files::pathExists(m_applicationsPath))
+		{
+			Files::copy(desktopEntryFile, m_applicationsPath);
+		}
+	}
 
 	// Output::lineBreak();
-
-	Diagnostic::printDone(timer.asString());
 
 	return true;
 #else

@@ -265,6 +265,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			"default": "icon.png"
 		})json"_ojson;
 
+		auto copyToApplications = R"json({
+			"type": "boolean",
+			"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found.",
+			"default": false
+		})json"_ojson;
+
 		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry] = R"json({
 			"type": "object",
 			"description": "Properties to describe an XDG Desktop Entry.",
@@ -276,6 +282,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["template"] = std::move(linuxDesktopEntryTemplate);
 		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["icon"] = std::move(linuxDesktopEntryIcon);
+		m_nonIndexedDefs[Defs::DistributionBundleLinuxDesktopEntry][SKeys::Properties]["copyToApplications"] = std::move(copyToApplications);
 	}
 
 	defs[Defs::DistributionBundleMainExecutable] = R"json({

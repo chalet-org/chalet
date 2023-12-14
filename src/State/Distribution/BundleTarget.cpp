@@ -520,6 +520,16 @@ void BundleTarget::setLinuxDesktopEntryTemplate(std::string&& inValue)
 }
 
 /*****************************************************************************/
+bool BundleTarget::linuxCopyToApplications() const noexcept
+{
+	return m_linuxCopyToApplications;
+}
+void BundleTarget::setLinuxCopyToApplications(const bool inValue) noexcept
+{
+	m_linuxCopyToApplications = inValue;
+}
+
+/*****************************************************************************/
 bool BundleTarget::hasLinuxDesktopEntry() const noexcept
 {
 	return !m_linuxDesktopEntryTemplate.empty();

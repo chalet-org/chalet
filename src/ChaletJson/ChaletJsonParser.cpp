@@ -1491,6 +1491,11 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 						else if (String::equals("icon", k))
 							outTarget.setLinuxDesktopEntryIcon(v.get<std::string>());
 					}
+					else if (v.is_boolean())
+					{
+						if (String::equals("copyToApplications", k))
+							outTarget.setLinuxCopyToApplications(v.get<bool>());
+					}
 				}
 #endif
 			}

@@ -206,6 +206,11 @@
 							"description": "The location to an icon to use with the XDG Desktop Entry (PNG 256x256 is recommended)",
 							"minLength": 1,
 							"default": "icon.png"
+						},
+						"copyToApplications": {
+							"type": "boolean",
+							"description": "If true, the desktop entry file will be copied to '~/.local/share/applications' (if it exists on the distro) so it can be found.",
+							"default": false
 						}
 					}
 				},

@@ -84,6 +84,9 @@ struct BundleTarget final : public IDistTarget
 	const std::string& linuxDesktopEntryTemplate() const noexcept;
 	void setLinuxDesktopEntryTemplate(std::string&& inValue);
 
+	bool linuxCopyToApplications() const noexcept;
+	void setLinuxCopyToApplications(const bool inValue) noexcept;
+
 	bool hasLinuxDesktopEntry() const noexcept;
 #endif
 
@@ -110,6 +113,8 @@ private:
 #elif defined(CHALET_LINUX)
 	std::string m_linuxDesktopEntryTemplate;
 	std::string m_linuxDesktopEntryIcon;
+
+	bool m_linuxCopyToApplications = false;
 #endif
 
 	bool m_windowsIncludeRuntimeDlls = false;
