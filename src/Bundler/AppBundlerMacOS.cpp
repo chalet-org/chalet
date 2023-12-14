@@ -886,7 +886,8 @@ bool AppBundlerMacOS::copyAppBundleToApplications() const
 		auto applicationsPath = fmt::format("{}/Applications", home);
 
 		auto oldBundlePath = fmt::format("{}/{}", applicationsPath, String::getPathFilename(appPath));
-		Files::removeIfExists(oldBundlePath);
+		if (!Files::removeRecursively(oldBundlePath))
+			return false;
 
 		if (Files::pathExists(applicationsPath))
 		{

@@ -121,6 +121,10 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	if (m_bundle.linuxCopyToApplications())
 	{
+		auto outputDesktopEntry = fmt::format("{}/{}", m_applicationsPath, String::getPathFilename(desktopEntryFile));
+		if (!Files::removeIfExists(outputDesktopEntry))
+			return false;
+
 		if (Files::pathExists(m_applicationsPath))
 		{
 			Files::copy(desktopEntryFile, m_applicationsPath);
