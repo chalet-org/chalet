@@ -161,4 +161,15 @@ bool CompileCommandsGenerator::save() const
 	return true;
 }
 
+/*****************************************************************************/
+bool CompileCommandsGenerator::fileExists() const
+{
+	const auto& outputDirectory = m_state.paths.outputDirectory();
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	auto outputCC = fmt::format("{}/compile_commands.json", outputDirectory);
+	auto buildCC = fmt::format("{}/compile_commands.json", buildOutputDir);
+
+	return Files::pathExists(outputCC) && Files::pathExists(buildCC);
+}
+
 }

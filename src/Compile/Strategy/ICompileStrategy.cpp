@@ -78,7 +78,7 @@ bool ICompileStrategy::isXcodeBuild() const noexcept
 bool ICompileStrategy::saveCompileCommands() const
 {
 	auto buildHashChanged = m_state.cache.file().buildHashChanged();
-	if (buildHashChanged || m_filesUpdated)
+	if (buildHashChanged || m_filesUpdated || !m_compileCommandsGenerator.fileExists())
 	{
 		if (!m_compileCommandsGenerator.save())
 			return false;
