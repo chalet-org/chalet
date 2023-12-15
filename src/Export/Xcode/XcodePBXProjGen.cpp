@@ -1811,12 +1811,14 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
+#if defined(CHALET_MACOS)
 	auto& icon = inTarget.macosBundleIcon();
 	if (!String::endsWith(".icns", icon))
 	{
 		ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = bundler.getResolvedIconName();
 		// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
 	}
+#endif
 
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
