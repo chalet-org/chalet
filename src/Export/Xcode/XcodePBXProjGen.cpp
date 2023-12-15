@@ -330,10 +330,17 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						groups[name].outputFile = fmt::format("{}.app", target->name());
 
 						auto& icon = bundle.macosBundleIcon();
+						bool iconIsIcns = String::endsWith(".icns", icon);
 						if (!icon.empty())
-							groups[name].children.emplace_back(Files::getCanonicalPath(icon));
+						{
+							auto resolvedIcon = Files::getCanonicalPath(icon);
+							groups[name].children.emplace_back(resolvedIcon);
 
-						bool hasXcassets = icon.empty() || (!icon.empty() && !String::endsWith(".icns", icon));
+							if (iconIsIcns)
+								groups[name].resources.emplace_back(std::move(resolvedIcon));
+						}
+
+						bool hasXcassets = icon.empty() || (!icon.empty() && !iconIsIcns);
 						if (hasXcassets)
 						{
 							groups[name].children.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
@@ -1804,8 +1811,12 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
-	ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = bundler.getResolvedIconName();
-	// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
+	auto& icon = inTarget.macosBundleIcon();
+	if (!String::endsWith(".icns", icon))
+	{
+		ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = bundler.getResolvedIconName();
+		// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
+	}
 
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
