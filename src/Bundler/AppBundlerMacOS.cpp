@@ -565,20 +565,28 @@ bool AppBundlerMacOS::createBundleIcon()
 
 	Timer timer;
 
+	bool isPng = String::endsWith(".png", icon);
+	bool isIcns = String::endsWith(".icns", icon);
+
 	if (!Output::showCommands())
-		Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
+	{
+		if (isIcns)
+			Diagnostic::stepInfoEllipsis("Using the bundle icon '{}'", icon);
+		else
+			Diagnostic::stepInfoEllipsis("Creating the bundle icon from '{}'", icon);
+	}
 
 	const auto& sips = m_state.tools.sips();
 	bool sipsFound = !sips.empty();
 
-	if (String::endsWith(".png", icon) && sipsFound)
+	if (isPng && sipsFound)
 	{
 		auto iconBaseName = String::getPathBaseName(icon);
 		auto outIcon = fmt::format("{}/{}.icns", m_resourcePath, iconBaseName);
 		if (!Process::runMinimalOutput({ sips, "-s", "format", "icns", icon, "--out", outIcon }))
 			return false;
 	}
-	else if (String::endsWith(".icns", icon))
+	else if (isIcns)
 	{
 		auto copyFunc = Output::showCommands() ? Files::copy : Files::copySilent;
 		if (!copyFunc(icon, m_resourcePath, fs::copy_options::overwrite_existing))
