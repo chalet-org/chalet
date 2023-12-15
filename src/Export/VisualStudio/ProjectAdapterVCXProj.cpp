@@ -17,6 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -97,9 +98,7 @@ std::string ProjectAdapterVCXProj::getBooleanIfFalse(const bool inValue) const
 std::string ProjectAdapterVCXProj::getBuildDir() const
 {
 	// return "$(SolutionDir)$(Platform)_$(Configuration)\\";
-	auto dir = Files::getCanonicalPath(m_state.paths.buildOutputDir());
-	dir += '/';
-	return dir;
+	return Path::getWithSeparatorSuffix(Files::getCanonicalPath(m_state.paths.buildOutputDir()));
 }
 
 /*****************************************************************************/
@@ -112,9 +111,7 @@ std::string ProjectAdapterVCXProj::getObjectDir() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getIntermediateDir() const
 {
-	auto dir = Files::getCanonicalPath(m_state.paths.intermediateDir());
-	dir += '/';
-	return dir;
+	return Path::getWithSeparatorSuffix(Files::getCanonicalPath(m_state.paths.intermediateDir()));
 }
 
 /*****************************************************************************/

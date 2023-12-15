@@ -11,5 +11,6 @@ namespace Path
 {
 void toUnix(std::string& outValue, const bool inRemoveNewLine = false);
 void toWindows(std::string& outValue, const bool inRemoveNewLine = false);
+std::string getWithSeparatorSuffix(const std::string& inPath);
 }
 }

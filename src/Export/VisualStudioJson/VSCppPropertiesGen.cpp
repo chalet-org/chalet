@@ -44,9 +44,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	for (auto& state : m_states)
 	{
-		auto cwd = state->inputs.workingDirectory();
-		if (cwd.back() != '/')
-			cwd += '/';
+		auto cwd = Path::getWithSeparatorSuffix(state->inputs.workingDirectory());
 
 		const auto& configName = state->configuration.name();
 		auto architecture = Arch::toVSArch(state->info.targetArchitecture());

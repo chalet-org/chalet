@@ -63,4 +63,15 @@ void Path::toWindows(std::string& outValue, const bool inRemoveNewLine)
 	Path::toUnix(outValue, inRemoveNewLine);
 #endif
 }
+
+/*****************************************************************************/
+std::string Path::getWithSeparatorSuffix(const std::string& inPath)
+{
+	auto path = inPath;
+	Path::toUnix(path);
+	if (path.back() != '/')
+		path += '/';
+
+	return path;
+}
 }

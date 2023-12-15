@@ -25,6 +25,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
 #include "Utility/Version.hpp"
@@ -715,9 +716,7 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 	StringList addedFrameworks;
 
-	auto cwd = m_state.inputs.workingDirectory();
-	if (cwd.back() != '/')
-		cwd += '/';
+	auto cwd = Path::getWithSeparatorSuffix(m_state.inputs.workingDirectory());
 
 	for (auto& target : m_state.targets)
 	{

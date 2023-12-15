@@ -53,9 +53,7 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 	};
 #endif
 
-	auto cwd = m_state.inputs.workingDirectory();
-	if (cwd.back() != '/')
-		cwd += '/';
+	auto cwd = Path::getWithSeparatorSuffix(m_state.inputs.workingDirectory());
 
 	bool hasProjects = false;
 	for (auto& target : m_state.targets)

@@ -130,10 +130,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		Output::lineBreak();
 
 	{
-		auto cwd = String::toLowerCase(Files::getWorkingDirectory());
-		Path::toUnix(cwd);
-		if (cwd.back() != '/')
-			cwd += '/';
+		auto cwd = Path::getWithSeparatorSuffix(String::toLowerCase(Files::getWorkingDirectory()));
 
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
