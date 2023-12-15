@@ -715,6 +715,10 @@ bool AppBundlerMacOS::setExecutablePaths() const
 
 	StringList addedFrameworks;
 
+	auto cwd = m_state.inputs.workingDirectory();
+	if (cwd.back() != '/')
+		cwd += '/';
+
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -730,7 +734,10 @@ bool AppBundlerMacOS::setExecutablePaths() const
 					if (String::startsWith("/System/Library/Frameworks", path))
 						continue;
 
-					const std::string filename = fmt::format("{}/{}.framework", path, framework);
+					auto filename = fmt::format("{}/{}.framework", path, framework);
+					if (String::startsWith(cwd, filename))
+						filename = filename.substr(cwd.size());
+
 					if (!Files::pathExists(filename))
 						continue;
 
