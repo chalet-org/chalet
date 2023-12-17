@@ -28,7 +28,11 @@ cd "$CWD/$BUILD_FOLDER"
 if [[ $CI == "1" || $PLATFORM == "pi" ]]; then
 	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# make -j8
-	cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
+	if [[ $PLATFORM == "pi" ]]; then
+		cmake --build . -j 1 -- --no-print-directory
+	else
+		cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
+	fi
 elif [[ $PLATFORM == "windows" ]]; then
 	PATH="/c/msys64/mingw64/bin:$PATH"
 	cmake -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
