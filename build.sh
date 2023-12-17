@@ -11,7 +11,9 @@ if [[ $BUILD_CONFIGURATION == '' ]]; then
 	exit 1
 fi
 
-if [[ $OSTYPE == 'linux-gnu'* || $OSTYPE == 'cygwin'* ]]; then
+if [[ $OSTYPE == 'linux-gnueabihf' ]]; then
+	PLATFORM=pi
+elif [[ $OSTYPE == 'linux-gnu'* || $OSTYPE == 'cygwin'* ]]; then
 	PLATFORM=linux
 elif [[ $OSTYPE == 'darwin'* ]]; then
 	PLATFORM=macos
@@ -23,7 +25,7 @@ BUILD_FOLDER="build/$BUILD_CONFIGURATION"
 mkdir -p "$BUILD_FOLDER"
 cd "$CWD/$BUILD_FOLDER"
 
-if [[ $CI == "1" ]]; then
+if [[ $CI == "1" || $PLATFORM == "pi" ]]; then
 	cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$BUILD_CONFIGURATION $CWD
 	# make -j8
 	cmake --build . -j $(getconf _NPROCESSORS_ONLN) -- --no-print-directory
