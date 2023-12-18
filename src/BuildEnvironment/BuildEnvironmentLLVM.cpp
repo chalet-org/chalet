@@ -133,15 +133,24 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	auto firstDash = cachedArch.find_first_of('-');
 	auto suffix = cachedArch.substr(firstDash);
 #if defined(CHALET_LINUX)
+	if (String::startsWith("-unknown-linux-", suffix))
+	{
+		firstDash = suffix.find_first_of('-', 1);
+		suffix = suffix.substr(firstDash);
+	}
 	Arch::Cpu arch = m_state.info.targetArchitecture();
 	if (arch == Arch::Cpu::ARMHF)
 	{
-		suffix += "eabihf";
+		if (!String::endsWith("eabihf", suffix))
+			suffix += "eabihf";
+
 		targetArch = "arm";
 	}
 	else if (arch == Arch::Cpu::ARM)
 	{
-		suffix += "eabi";
+		if (!String::endsWith("eabi", suffix))
+			suffix += "eabi";
+
 		targetArch = "arm";
 	}
 	else if (arch == Arch::Cpu::ARM64)

@@ -40,7 +40,11 @@ std::string Arch::getHostCpuArchitecture()
 	#elif defined(_M_ARM64) && _M_ARM64 == 1
 	return "arm64";
 	#elif (defined(__arm__) && __arm__) || (defined(_M_ARM) && _M_ARM == 7)
-	return "arm";
+		#if defined(__ARM_FP) && __ARM_FP > 0
+		return "armhf";
+		#else
+		return "arm";
+		#endif
 	#else
 	return "i686";
 	#endif
