@@ -36,7 +36,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 	const auto exec = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
 	// LOG("ICompilerCxx:", static_cast<i32>(inType), executable);
 
-	bool isC = inProject.language() == CodeLanguage::C;
+	bool isC = inProject.language() == CodeLanguage::C || inProject.language() == CodeLanguage::ObjectiveC;
 
 	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
 		constexpr bool onlyType = true;
