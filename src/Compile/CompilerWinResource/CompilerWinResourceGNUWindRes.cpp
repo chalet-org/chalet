@@ -36,7 +36,7 @@ StringList CompilerWinResourceGNUWindRes::getCommand(const std::string& inputFil
 	ret.emplace_back("-O");
 	ret.emplace_back("coff");
 
-	if (generateDependencies())
+	if (generateDependencies() && !dependency.empty())
 	{
 		// Note: The dependency generation args have to be passed into the preprocessor
 		//   The underlying preprocessor command is "gcc -E -xc-header -DRC_INVOKED"

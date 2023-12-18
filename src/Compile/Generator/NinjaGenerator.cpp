@@ -268,16 +268,23 @@ std::string NinjaGenerator::getRcRule()
 {
 	std::string ret;
 
-	const auto deps = getRuleDeps();
-	const auto dependency = m_state.environment->getDependencyFile("$in");
-	const auto depFile = getDepFile(dependency);
+	// Note: only used by GNU windres
+
+	// auto deps = fmt::format("\n  deps = {}", getRuleDeps());
+	// const auto dependency = m_state.environment->getDependencyFile("$in");
+	// const auto depFile = getDepFile(dependency);
+
+	std::string deps;
+	std::string dependency;
+	std::string depFile;
+
+	deps += depFile;
 
 	const auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand("$in", "$out", dependency));
 	if (!rcCompile.empty())
 	{
 		ret = fmt::format(R"ninja(
-rule rc_{hash}
-  deps = {deps}{depFile}
+rule rc_{hash}{deps}
   description = $in
   command = {rcCompile}
 )ninja",
