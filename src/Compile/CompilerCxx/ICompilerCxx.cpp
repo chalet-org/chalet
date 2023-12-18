@@ -36,6 +36,8 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 	const auto exec = String::toLowerCase(String::getPathFolderBaseName(String::getPathFilename(inExecutable)));
 	// LOG("ICompilerCxx:", static_cast<i32>(inType), executable);
 
+	bool isC = inProject.language() == CodeLanguage::C;
+
 	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
 		constexpr bool onlyType = true;
 		return executableMatches(exec, "C compiler", id, typeMatches, label, failTypeMismatch, onlyType);
@@ -58,46 +60,67 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 	if (i32 result = cxxCompilerMatches("icl", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
 		return makeTool<CompilerCxxIntelClassicCL>(result, inState, inProject);
 
-	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
+	if (isC)
+	{
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
 
-	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxClang>(result, inState, inProject);
+	}
+	else
+	{
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
 
-	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxClang>(result, inState, inProject);
-
-	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxClang>(result, inState, inProject);
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxClang>(result, inState, inProject);
+	}
 
 #elif defined(CHALET_MACOS)
-	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
-		return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
+	if (isC)
+	{
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+			return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
-	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
-		return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
+		if (i32 result = cCompilerMatches("icc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
+			return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
+	}
+	else
+	{
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+			return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
-	if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
-		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
-
-	if (i32 result = cCompilerMatches("icc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
-		return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
+		if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
+			return makeTool<CompilerCxxIntelClassicGCC>(result, inState, inProject);
+	}
 
 #endif
 
 #if !defined(CHALET_WIN32)
-	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxClang>(result, inState, inProject);
+	if (isC)
+	{
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxClang>(result, inState, inProject);
+	}
+	else
+	{
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+			return makeTool<CompilerCxxClang>(result, inState, inProject);
+	}
 
-	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
-		return makeTool<CompilerCxxClang>(result, inState, inProject);
 #endif
 
-	if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
-		return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
-
-	if (i32 result = cCompilerMatches("clang", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
-		return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
+	if (isC)
+	{
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+			return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
+	}
+	else
+	{
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+			return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
+	}
 
 	if (i32 result = cxxCompilerMatches("emcc", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)
 		return makeTool<CompilerCxxEmscripten>(result, inState, inProject);
