@@ -445,7 +445,17 @@ bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 
 		path = std::move(tmp);
 
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+		if (this->isMsvc())
+		{
+			if (String::contains("hostx64", binDir))
+				m_state.info.setHostArchitecture("x86_64");
+			else if (String::contains("hostx86", binDir))
+				m_state.info.setHostArchitecture("i686");
+			else if (String::contains("hostarm64", binDir))
+				m_state.info.setHostArchitecture("arm64");
+		}
+#elif defined(CHALET_MACOS)
 		const auto& xcodePath = Files::getXcodePath();
 		String::replaceAll(path, xcodePath, "");
 		String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");

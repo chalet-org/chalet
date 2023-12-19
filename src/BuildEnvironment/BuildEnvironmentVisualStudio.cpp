@@ -198,23 +198,41 @@ std::vector<CompilerPathStructure> BuildEnvironmentVisualStudio::getValidCompile
 	std::vector<CompilerPathStructure> ret;
 
 #if defined(CHALET_WIN32)
-	ret.push_back({ "/bin/hostx64/x64", "/lib/x64", "/include" });
-	ret.push_back({ "/bin/hostx64/x86", "/lib/x86", "/include" });
-	ret.push_back({ "/bin/hostx64/arm64", "/lib/arm64", "/include" });
-	ret.push_back({ "/bin/hostx64/arm", "/lib/arm", "/include" });
+	auto hostArch = m_state.info.hostArchitecture();
+	auto arch = m_state.info.targetArchitecture();
 
-	ret.push_back({ "/bin/hostx86/x86", "/lib/x86", "/include" });
-	ret.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
-	ret.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
-	ret.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
+	if (arch == Arch::Cpu::X64)
+	{
+		ret.push_back({ "/bin/hostx64/x64", "/lib/x64", "/include" });
+		ret.push_back({ "/bin/hostx86/x64", "/lib/x64", "/include" });
+	}
+	else if (arch == Arch::Cpu::X86)
+	{
+		ret.push_back({ "/bin/hostx64/x86", "/lib/x86", "/include" });
+		ret.push_back({ "/bin/hostx86/x86", "/lib/x86", "/include" });
+	}
+	else if (arch == Arch::Cpu::ARM64)
+	{
+		ret.push_back({ "/bin/hostx64/arm64", "/lib/arm64", "/include" });
+		ret.push_back({ "/bin/hostx86/arm64", "/lib/arm64", "/include" });
+	}
+	else if (arch == Arch::Cpu::ARM)
+	{
+		ret.push_back({ "/bin/hostx64/arm", "/lib/arm", "/include" });
+		ret.push_back({ "/bin/hostx86/arm", "/lib/arm", "/include" });
+	}
 
-	if (String::equals("arm64", m_state.inputs.hostArchitecture()))
+	if (hostArch == Arch::Cpu::ARM64)
 	{
 		// Note: these are untested
 		//   https://devblogs.microsoft.com/visualstudio/arm64-visual-studio
-		ret.push_back({ "/bin/hostarm64/arm64", "/lib/arm64", "/include" });
-		ret.push_back({ "/bin/hostarm64/x64", "/lib/x64", "/include" });
-		ret.push_back({ "/bin/hostarm64/x86", "/lib/x86", "/include" });
+
+		if (arch == Arch::Cpu::ARM64)
+			ret.push_back({ "/bin/hostarm64/arm64", "/lib/arm64", "/include" });
+		else if (arch == Arch::Cpu::X64)
+			ret.push_back({ "/bin/hostarm64/x64", "/lib/x64", "/include" });
+		else if (arch == Arch::Cpu::X86)
+			ret.push_back({ "/bin/hostarm64/x86", "/lib/x86", "/include" });
 	}
 
 	// ret.push_back({"/bin/hostx64/x64", "/lib/64", "/include"});
