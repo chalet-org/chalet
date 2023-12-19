@@ -157,6 +157,10 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	{
 		targetArch = "aarch64";
 	}
+	else if (targetArch.find_first_of('-') != std::string::npos)
+	{
+		suffix.clear();
+	}
 #endif
 	cachedArch = fmt::format("{}{}", targetArch, suffix);
 
