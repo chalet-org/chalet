@@ -76,7 +76,8 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				auto canonical = Files::getCanonicalPath(path);
 				if (String::startsWith(cwd, canonical))
 				{
-					path = fmt::format("${{workspaceFolder}}/{}", path);
+					m_state.inputs.clearWorkingDirectory(canonical);
+					path = fmt::format("${{workspaceFolder}}/{}", canonical);
 				}
 
 				List::addIfDoesNotExist(forcedInclude, path);
@@ -92,7 +93,8 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 				auto canonical = Files::getCanonicalPath(path);
 				if (String::startsWith(cwd, canonical))
 				{
-					path = fmt::format("${{workspaceFolder}}/{}", path);
+					m_state.inputs.clearWorkingDirectory(canonical);
+					path = fmt::format("${{workspaceFolder}}/{}", canonical);
 				}
 
 				List::addIfDoesNotExist(includePath, path);
@@ -128,7 +130,8 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	if (m_state.info.generateCompileCommands())
 	{
-		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		auto buildOutputDir = m_state.paths.buildOutputDir();
+		m_state.inputs.clearWorkingDirectory(buildOutputDir);
 		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", buildOutputDir);
 	}
 

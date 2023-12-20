@@ -76,7 +76,8 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					auto canonical = Files::getCanonicalPath(path);
 					if (String::startsWith(cwd, canonical))
 					{
-						path = fmt::format("${{workspaceFolder}}/{}", path);
+						state->inputs.clearWorkingDirectory(canonical);
+						path = fmt::format("${{workspaceRoot}}/{}", canonical);
 					}
 
 					List::addIfDoesNotExist(forcedInclude, path);
@@ -92,7 +93,8 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 					auto canonical = Files::getCanonicalPath(path);
 					if (String::startsWith(cwd, canonical))
 					{
-						path = fmt::format("${{workspaceFolder}}/{}", path);
+						state->inputs.clearWorkingDirectory(canonical);
+						path = fmt::format("${{workspaceRoot}}/{}", canonical);
 					}
 
 					List::addIfDoesNotExist(includePath, path);
