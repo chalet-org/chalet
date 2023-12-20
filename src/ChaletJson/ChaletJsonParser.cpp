@@ -1885,11 +1885,10 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 		if (String::equals("runTarget", value))
 		{
 			auto& lastTarget = m_state.inputs.lastTarget();
-			if (String::equals(Values::All, lastTarget))
-				return ConditionResult::Pass;
-
 			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
+			if (routeWillRun && String::equals(Values::All, lastTarget))
+				return ConditionResult::Pass;
 
 			if (!routeWillRun || buildTargets.empty())
 				return ConditionResult::Fail;
@@ -1913,11 +1912,11 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 		if (String::equals("runTarget", value))
 		{
 			auto& lastTarget = m_state.inputs.lastTarget();
-			if (String::equals(Values::All, lastTarget))
-				return ConditionResult::Pass;
 
 			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
+			if (routeWillRun && String::equals(Values::All, lastTarget))
+				return ConditionResult::Pass;
 
 			if (!routeWillRun || buildTargets.empty())
 				return ConditionResult::Fail;
