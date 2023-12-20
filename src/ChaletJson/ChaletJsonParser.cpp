@@ -195,6 +195,7 @@ std::string ChaletJsonParser::getValidRunTargetFromInput() const
 
 	auto& filename = m_chaletJson.filename();
 	auto& lastTarget = m_state.inputs.lastTarget();
+
 	if (String::contains(',', lastTarget))
 		Diagnostic::error("{}: '{}' either does not contain an executable target, or are excluded based on property conditions.", filename, lastTarget);
 	else
@@ -1883,6 +1884,10 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 	{
 		if (String::equals("runTarget", value))
 		{
+			auto& lastTarget = m_state.inputs.lastTarget();
+			if (String::equals(Values::All, lastTarget))
+				return ConditionResult::Pass;
+
 			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
 
@@ -1907,6 +1912,10 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 	{
 		if (String::equals("runTarget", value))
 		{
+			auto& lastTarget = m_state.inputs.lastTarget();
+			if (String::equals(Values::All, lastTarget))
+				return ConditionResult::Pass;
+
 			auto& buildTargets = getBuildTargets();
 			const bool routeWillRun = m_state.inputs.route().willRun();
 
