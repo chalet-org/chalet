@@ -834,38 +834,6 @@ bool Files::readFileAndReplace(const std::string& inFile, const std::function<vo
 }
 
 /*****************************************************************************/
-std::string Files::readShebangFromFile(const std::string& inFile)
-{
-	std::string ret;
-
-	if (Files::pathExists(inFile))
-	{
-		std::ifstream file{ inFile };
-		std::getline(file, ret);
-
-		if (String::startsWith("#!", ret))
-		{
-			ret = ret.substr(2);
-
-			if (String::startsWith("/usr/bin/env ", ret))
-			{
-				// we'll parse the rest later
-			}
-			else
-			{
-				auto space = ret.find_first_of(" ");
-				if (space != std::string::npos)
-					ret = std::string();
-			}
-		}
-		else
-			ret = std::string();
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 void Files::sleep(const f64 inSeconds)
 {
 	std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<i32>(inSeconds * 1000.0)));

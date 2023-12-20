@@ -92,10 +92,11 @@ ScriptAdapter::PathResult ScriptAdapter::getScriptTypeFromPath(const std::string
 	auto outScriptPath = Files::which(parsedScriptPath);
 
 	auto gitPath = AncillaryTools::getPathToGit();
+	std::string gitRootPath;
 	if (!gitPath.empty())
 	{
-		auto rootPath = String::getPathFolder(String::getPathFolder(gitPath));
-		gitPath = fmt::format("{}/usr/bin", rootPath);
+		gitRootPath = String::getPathFolder(String::getPathFolder(gitPath));
+		gitPath = fmt::format("{}/usr/bin", gitRootPath);
 
 		if (!Files::pathExists(gitPath))
 		{
@@ -122,16 +123,44 @@ ScriptAdapter::PathResult ScriptAdapter::getScriptTypeFromPath(const std::string
 	ScriptType scriptType = ScriptType::None;
 
 	std::string shell;
-	shebang = Files::readShebangFromFile(outScriptPath);
+	shebang = readShebangFromFile(outScriptPath);
 	if (!shebang.empty())
 	{
-		if (String::startsWith("/usr/bin/env ", shebang))
+		if (String::contains("/env ", shebang))
 		{
-			auto space = shebang.find(' ');
-			auto search = shebang.substr(space + 1);
+			auto envPart = shebang.find("/env ");
+			auto search = shebang.substr(0, envPart + 4);
+			bool envExists = String::equals("/usr/bin/env", search);
+			if (!envExists)
+			{
+#if defined(CHALET_WIN32)
+				std::string oldSearch = search;
+				if (String::startsWith('/', search) && !gitRootPath.empty())
+				{
+					search = fmt::format("{}{}.exe", gitRootPath, search);
+					envExists = Files::pathExists(search);
+				}
+				else
+#endif
+				{
+					envExists = Files::pathExists(search);
+				}
+
+				if (!envExists)
+				{
+					Diagnostic::error("Did you mean to use '#!/usr/bin/env'?");
+#if defined(CHALET_WIN32)
+					Diagnostic::error("{}: The script requires '{}' ({}), but it does not exist. Aborting.", inInputFile, oldSearch, search);
+#else
+					Diagnostic::error("{}: The script requires '{}', but it does not exist. Aborting.", inInputFile, search);
+#endif
+					return ret;
+				}
+			}
+
 			if (!search.empty())
 			{
-				shebang = shebang.substr(space + 1);
+				shebang = shebang.substr(envPart + 5);
 				scriptType = getScriptTypeFromString(shebang);
 				shell = Files::which(shebang);
 				shellFound = !shell.empty();
@@ -404,5 +433,37 @@ const std::string& ScriptAdapter::getExecutable(const ScriptType inType) const
 		return m_executables.at(inType);
 
 	return m_executables.at(ScriptType::None);
+}
+
+/*****************************************************************************/
+std::string ScriptAdapter::readShebangFromFile(const std::string& inFile) const
+{
+	std::string ret;
+
+	if (Files::pathExists(inFile))
+	{
+		std::ifstream file{ inFile };
+		std::getline(file, ret); // get the first line in the file
+
+		if (String::startsWith("#!", ret))
+		{
+			ret = ret.substr(2);
+
+			if (String::contains("/env ", ret))
+			{
+				// we'll parse the rest later
+			}
+			else
+			{
+				auto space = ret.find_first_of(" ");
+				if (space != std::string::npos)
+					ret = std::string();
+			}
+		}
+		else
+			ret = std::string();
+	}
+
+	return ret;
 }
 }

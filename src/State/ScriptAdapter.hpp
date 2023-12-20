@@ -26,6 +26,8 @@ struct ScriptAdapter
 	const std::string& getExecutable(const ScriptType inType) const;
 
 private:
+	std::string readShebangFromFile(const std::string& inFile) const;
+
 	const AncillaryTools& m_tools;
 
 	mutable std::unordered_map<ScriptType, std::string> m_executables;
