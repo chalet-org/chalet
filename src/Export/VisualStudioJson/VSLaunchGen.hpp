@@ -6,7 +6,6 @@
 #pragma once
 
 #include "Export/ExportAdapter.hpp"
-#include "Platform/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet

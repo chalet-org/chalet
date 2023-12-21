@@ -11,9 +11,9 @@ namespace chalet
 {
 class BuildState;
 
-struct VSTasksGen
+struct VSProjectSettingsGen
 {
-	explicit VSTasksGen(const ExportAdapter& inExportAdapter);
+	explicit VSProjectSettingsGen(const ExportAdapter& inExportAdapter);
 
 	bool saveToFile(const std::string& inFilename);
 

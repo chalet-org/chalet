@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"
+#include "Export/VisualStudioJson/VSProjectSettingsGen.hpp"
 #include "Export/VisualStudioJson/VSTasksGen.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
@@ -79,6 +80,13 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	if (!tasksJson.saveToFile(fmt::format("{}/tasks.vs.json", m_directory)))
 	{
 		Diagnostic::error("There was a problem saving the tasks.vs.json file.");
+		return false;
+	}
+
+	VSProjectSettingsGen projectSettingsJson(*m_exportAdapter);
+	if (!projectSettingsJson.saveToFile(fmt::format("{}/ProjectSettings.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the ProjectSettings.json file.");
 		return false;
 	}
 
