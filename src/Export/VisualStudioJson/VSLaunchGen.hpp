@@ -5,26 +5,27 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Platform/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
 {
+struct CentralState;
 class BuildState;
 struct IBuildTarget;
 
 struct VSLaunchGen
 {
-	explicit VSLaunchGen(const std::vector<Unique<BuildState>>& inStates);
+	explicit VSLaunchGen(const ExportAdapter& inExportAdapter);
 
 	bool saveToFile(const std::string& inFilename);
 
 private:
-	Json getConfiguration(const BuildState& inState, const IBuildTarget& inTarget) const;
+	Json getConfiguration(const RunConfiguration& runConfig, const CentralState& inCentralState, const IBuildTarget& inTarget) const;
 	Json getEnvironment(const IBuildTarget& inTarget) const;
 
-	const std::vector<Unique<BuildState>>& m_states;
-
-	std::vector<const IBuildTarget*> m_executableTargets;
+	const ExportAdapter& m_exportAdapter;
+	RunConfigurationList m_runConfigs;
 };
 }

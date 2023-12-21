@@ -8,6 +8,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -22,14 +23,16 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSLaunchGen::VSLaunchGen(const std::vector<Unique<BuildState>>& inStates) :
-	m_states(inStates)
+VSLaunchGen::VSLaunchGen(const ExportAdapter& inExportAdapter) :
+	m_exportAdapter(inExportAdapter)
 {
 }
 
 /*****************************************************************************/
 bool VSLaunchGen::saveToFile(const std::string& inFilename)
 {
+	m_runConfigs = m_exportAdapter.getFullRunConfigs();
+
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["version"] = "3.0.0";
@@ -37,10 +40,15 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 	jRoot["configurations"] = Json::array();
 	auto& configurations = jRoot.at("configurations");
 
-	StringList targetList;
-	for (const auto& state : m_states)
+	auto& allTarget = m_exportAdapter.allBuildName();
+
+	for (auto& runConfig : m_runConfigs)
 	{
-		m_executableTargets.clear();
+		if (String::equals(allTarget, runConfig.name))
+			continue;
+
+		std::vector<const IBuildTarget*> executableTargets;
+		auto state = m_exportAdapter.getStateFromRunConfig(runConfig);
 		for (auto& target : state->targets)
 		{
 			if (target->isSources())
@@ -48,7 +56,7 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 				const auto& project = static_cast<const SourceTarget&>(*target);
 				if (project.isExecutable())
 				{
-					m_executableTargets.emplace_back(target.get());
+					executableTargets.emplace_back(target.get());
 				}
 			}
 			else if (target->isCMake())
@@ -56,18 +64,14 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 				const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
 				if (!cmakeProject.runExecutable().empty())
 				{
-					m_executableTargets.emplace_back(target.get());
+					executableTargets.emplace_back(target.get());
 				}
 			}
 		}
 
-		for (auto target : m_executableTargets)
+		for (auto target : executableTargets)
 		{
-			if (!List::contains(targetList, target->name()))
-			{
-				configurations.emplace_back(getConfiguration(*state, *target));
-				targetList.emplace_back(target->name());
-			}
+			configurations.emplace_back(getConfiguration(runConfig, state->getCentralState(), *target));
 		}
 	}
 
@@ -75,10 +79,10 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-Json VSLaunchGen::getConfiguration(const BuildState& inState, const IBuildTarget& inTarget) const
+Json VSLaunchGen::getConfiguration(const RunConfiguration& runConfig, const CentralState& inCentralState, const IBuildTarget& inTarget) const
 {
 	const auto& targetName = inTarget.name();
-	const auto& runArgumentMap = inState.getCentralState().runArgumentMap();
+	const auto& runArgumentMap = inCentralState.runArgumentMap();
 
 	StringList arguments;
 	if (runArgumentMap.find(targetName) != runArgumentMap.end())
@@ -88,13 +92,8 @@ Json VSLaunchGen::getConfiguration(const BuildState& inState, const IBuildTarget
 
 	Json ret = Json::object();
 
-	auto program = inState.paths.getExecutableTargetPath(inTarget);
-	// String::replaceAll(program, inState.configuration.name(), "${env.CHALET_CONFIG}");
-
-	auto filename = String::getPathFilename(program);
-	ret["name"] = filename;
-	// ret["project"] = fmt::format("${{chalet.buildDir}}/{}", filename);
-	ret["project"] = Files::getCanonicalPath(program);
+	ret["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
+	ret["project"] = Files::getCanonicalPath(runConfig.outputFile);
 	ret["args"] = arguments;
 
 	ret["currentDir"] = "${workspaceRoot}";

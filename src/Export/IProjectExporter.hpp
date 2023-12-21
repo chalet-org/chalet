@@ -57,13 +57,11 @@ protected:
 	std::string m_debugConfiguration;
 
 	std::vector<Unique<BuildState>> m_states;
-	Dictionary<std::string> m_pathVariables;
 
 	Unique<ExportAdapter> m_exportAdapter;
 
 private:
 	bool generateStatesAndValidate(CentralState& inCentralState);
-	void populatePathVariable();
 
 	ExportKind m_kind;
 };

@@ -29,12 +29,6 @@ VSTasksGen::VSTasksGen(const BuildState& inState) :
 /*****************************************************************************/
 bool VSTasksGen::saveToFile(const std::string& inFilename)
 {
-	m_toolchain = getToolchain();
-	m_architecture = m_state.info.targetArchitectureString();
-
-	if (m_architecture.empty() || m_toolchain.empty())
-		return false;
-
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["version"] = "0.2.1";
@@ -57,9 +51,9 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 			"-c",
 			"${chalet.configuration}",
 			"-a",
-			m_architecture,
+			"${chalet.architecture}",
 			"-t",
-			m_toolchain,
+			"${chalet.toolchain}",
 			"--only-required",
 			"--generate-compile-commands",
 			inChaletCmd,
@@ -77,12 +71,6 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 	tasks.emplace_back(makeTask("Chalet: Configure", "custom", "configure"));
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
-}
-
-/*****************************************************************************/
-const std::string& VSTasksGen::getToolchain() const
-{
-	return m_state.inputs.toolchainPreferenceName();
 }
 
 }

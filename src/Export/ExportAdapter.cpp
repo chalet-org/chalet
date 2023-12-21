@@ -18,6 +18,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -77,6 +78,12 @@ const std::string& ExportAdapter::cwd() const noexcept
 const std::string& ExportAdapter::debugConfiguration() const noexcept
 {
 	return m_debugConfiguration;
+}
+
+/*****************************************************************************/
+const std::string& ExportAdapter::allBuildName() const noexcept
+{
+	return m_allBuildName;
 }
 
 /*****************************************************************************/
@@ -332,6 +339,26 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 }
 
 /*****************************************************************************/
+std::string ExportAdapter::getPathVariableForState(const BuildState& inState) const
+{
+	StringList paths;
+	for (auto& target : inState.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<SourceTarget&>(*target);
+			for (auto& p : project.libDirs())
+				List::addIfDoesNotExist(paths, p);
+
+			for (auto& p : project.appleFrameworkPaths())
+				List::addIfDoesNotExist(paths, p);
+		}
+	}
+
+	return inState.workspace.makePathVariable(std::string(), paths);
+}
+
+/*****************************************************************************/
 BuildState& ExportAdapter::getDebugState() const
 {
 	for (auto& state : m_states)
@@ -341,6 +368,21 @@ BuildState& ExportAdapter::getDebugState() const
 	}
 
 	return *m_states.front();
+}
+
+/*****************************************************************************/
+BuildState* ExportAdapter::getStateFromRunConfig(const RunConfiguration& inRunConfig) const
+{
+	// Note: only reference the configuration here
+	for (auto& state : m_states)
+	{
+		auto& configuration = state->configuration.name();
+		if (String::equals(inRunConfig.config, configuration))
+			return state.get();
+	}
+
+	chalet_assert(false, "requested non-existent state from run config");
+	return nullptr;
 }
 
 /*****************************************************************************/

@@ -308,8 +308,6 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 	if (!validate(*debugState))
 		return false;
 
-	populatePathVariable();
-
 	m_exportAdapter = std::make_unique<ExportAdapter>(m_states, m_debugConfiguration, getAllBuildTargetName());
 	if (!m_exportAdapter->initialize())
 	{
@@ -320,32 +318,4 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 	return true;
 }
 
-/*****************************************************************************/
-void IProjectExporter::populatePathVariable()
-{
-	m_pathVariables.clear();
-
-	for (auto& state : m_states)
-	{
-		StringList paths;
-		for (auto& target : state->targets)
-		{
-			if (target->isSources())
-			{
-				auto& project = static_cast<SourceTarget&>(*target);
-				for (auto& p : project.libDirs())
-				{
-					List::addIfDoesNotExist(paths, p);
-				}
-				for (auto& p : project.appleFrameworkPaths())
-				{
-					List::addIfDoesNotExist(paths, p);
-				}
-			}
-		}
-
-		std::reverse(paths.begin(), paths.end());
-		m_pathVariables.emplace(state->configuration.name(), state->workspace.makePathVariable(std::string(), paths));
-	}
-}
 }

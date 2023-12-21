@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Platform/Arch.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -15,16 +16,20 @@ struct SourceTarget;
 
 struct VSCppPropertiesGen
 {
-	explicit VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const Dictionary<std::string>& inPathVariables);
+	explicit VSCppPropertiesGen(const ExportAdapter& inExportAdapter);
 
-	bool saveToFile(const std::string& inFilename) const;
+	bool saveToFile(const std::string& inFilename);
 
 private:
-	std::string getIntellisenseMode(const BuildState& inState) const;
+	std::string getIntellisenseMode(const BuildState& inState, const std::string& inArch) const;
+
 	Json getEnvironments(const BuildState& inState) const;
+	Json getGlobalEnvironments(const BuildState& inState) const;
+	Json makeEnvironmentVariable(const char* inName, const std::string& inValue) const;
+
 	const SourceTarget* getSignificantTarget(const BuildState& inState) const;
 
-	const std::vector<Unique<BuildState>>& m_states;
-	const Dictionary<std::string>& m_pathVariables;
+	const ExportAdapter& m_exportAdapter;
+	RunConfigurationList m_runConfigs;
 };
 }

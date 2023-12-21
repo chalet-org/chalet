@@ -41,13 +41,10 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 		{
 			auto& project = static_cast<SourceTarget&>(*target);
 			for (auto& p : project.libDirs())
-			{
 				List::addIfDoesNotExist(libDirs, p);
-			}
+
 			for (auto& p : project.appleFrameworkPaths())
-			{
 				List::addIfDoesNotExist(frameworks, p);
-			}
 		}
 	}
 

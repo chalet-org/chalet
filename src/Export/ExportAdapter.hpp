@@ -33,6 +33,7 @@ struct ExportAdapter
 	const std::string& toolchain() const noexcept;
 	const std::string& cwd() const noexcept;
 	const std::string& debugConfiguration() const noexcept;
+	const std::string& allBuildName() const noexcept;
 
 	std::string getDefaultTargetName() const;
 	std::string getAllTargetName() const;
@@ -44,7 +45,10 @@ struct ExportAdapter
 	RunConfigurationList getBasicRunConfigs() const;
 	RunConfigurationList getFullRunConfigs() const;
 
+	std::string getPathVariableForState(const BuildState& inState) const;
+
 	BuildState& getDebugState() const;
+	BuildState* getStateFromRunConfig(const RunConfiguration& inRunConfig) const;
 
 private:
 	const std::string& getToolchain() const;

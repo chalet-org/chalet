@@ -27,31 +27,31 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCppPropertiesGen::VSCppPropertiesGen(const std::vector<Unique<BuildState>>& inStates, const Dictionary<std::string>& inPathVariables) :
-	m_states(inStates),
-	m_pathVariables(inPathVariables)
+VSCppPropertiesGen::VSCppPropertiesGen(const ExportAdapter& inExportAdapter) :
+	m_exportAdapter(inExportAdapter)
 {
 }
 
 /*****************************************************************************/
-bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
+bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 {
+	m_runConfigs = m_exportAdapter.getBasicRunConfigs();
+
+	auto& debugState = m_exportAdapter.getDebugState();
+
 	Json jRoot;
 	jRoot = Json::object();
+	jRoot["environments"] = getGlobalEnvironments(debugState);
 	jRoot["configurations"] = Json::array();
 
+	auto cwd = Path::getWithSeparatorSuffix(debugState.inputs.workingDirectory());
+
 	auto& configurations = jRoot.at("configurations");
-
-	for (auto& state : m_states)
+	for (auto& runConfig : m_runConfigs)
 	{
-		auto cwd = Path::getWithSeparatorSuffix(state->inputs.workingDirectory());
-
-		const auto& configName = state->configuration.name();
-		auto architecture = Arch::toVSArch(state->info.targetArchitecture());
-
 		Json config;
-		config["name"] = fmt::format("{} / {}", architecture, configName);
-		config["intelliSenseMode"] = getIntellisenseMode(*state);
+		config["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
+		config["intelliSenseMode"] = getIntellisenseMode(debugState, runConfig.arch);
 
 		StringList defines = Platform::getDefaultPlatformDefines();
 		StringList includePath{
@@ -60,7 +60,13 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		StringList forcedInclude;
 
 		bool hasProjects = false;
-		const SourceTarget* signifcantTarget = getSignificantTarget(*state);
+
+		auto state = m_exportAdapter.getStateFromRunConfig(runConfig);
+		if (state == nullptr)
+		{
+			Diagnostic::error("An internal error occurred creating: {}", inFilename);
+			return false;
+		}
 
 		for (auto& target : state->targets)
 		{
@@ -118,6 +124,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		if (!hasProjects)
 			return false;
 
+		const SourceTarget* signifcantTarget = getSignificantTarget(*state);
 		if (signifcantTarget != nullptr)
 		{
 			const auto& sourceTarget = *signifcantTarget;
@@ -132,16 +139,14 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 			auto& compilers = config.at("compilers");
 
-			if (!sourceTarget.cStandard().empty())
-			{
-				compilers["c"] = Json::object();
-				compilers["c"]["path"] = state->toolchain.compilerC().path;
-			}
-
-			if (!sourceTarget.cppStandard().empty())
+			auto language = sourceTarget.language();
+			if (language == CodeLanguage::C || language == CodeLanguage::CPlusPlus)
 			{
 				compilers["cpp"] = Json::object();
 				compilers["cpp"]["path"] = state->toolchain.compilerCpp().path;
+
+				compilers["c"] = Json::object();
+				compilers["c"]["path"] = state->toolchain.compilerC().path;
 			}
 
 			auto derivative = sourceTarget.getDefaultSourceType();
@@ -163,7 +168,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) const
+std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState, const std::string& inArch) const
 {
 	/*
 		windows-msvc-x86
@@ -195,7 +200,7 @@ std::string VSCppPropertiesGen::getIntellisenseMode(const BuildState& inState) c
 
 	auto toolchain = inState.environment->getCompilerAliasForVisualStudio();
 
-	auto arch = Arch::toVSArch(inState.info.targetArchitecture());
+	auto arch = Arch::toVSArch(Arch::from(inArch).val);
 
 	return fmt::format("{}-{}-{}", platform, toolchain, arch);
 }
@@ -205,31 +210,35 @@ Json VSCppPropertiesGen::getEnvironments(const BuildState& inState) const
 {
 	Json ret = Json::array();
 
-	auto makeEnvironment = [](const char* inName, const std::string& inValue) {
-		Json env = Json::object();
-		env["namespace"] = "chalet";
-		env[inName] = inValue;
+	auto runEnvironment = m_exportAdapter.getPathVariableForState(inState);
 
-		return env;
-	};
-
-	// workspace.makePathVariable(path, inAdditionalPaths);
-
-	const auto& configName = inState.configuration.name();
-
-	chalet_assert(m_pathVariables.find(configName) != m_pathVariables.end(), "");
-	const auto& runEnvironment = m_pathVariables.at(configName);
-
-	ret.emplace_back(makeEnvironment("runEnvironment", runEnvironment));
-	ret.emplace_back(makeEnvironment("buildDir", inState.paths.buildOutputDir()));
-	ret.emplace_back(makeEnvironment("externalDir", inState.inputs.externalDirectory()));
-	ret.emplace_back(makeEnvironment("externalBuildDir", inState.paths.externalBuildDir()));
-	ret.emplace_back(makeEnvironment("configuration", configName));
-	ret.emplace_back(makeEnvironment("vsArch", Arch::toVSArch(inState.info.targetArchitecture())));
-	ret.emplace_back(makeEnvironment("architecture", inState.info.targetArchitectureString()));
-	ret.emplace_back(makeEnvironment("targetTriple", inState.info.targetArchitectureTriple()));
+	ret.emplace_back(makeEnvironmentVariable("runEnvironment", runEnvironment));
+	ret.emplace_back(makeEnvironmentVariable("buildDir", inState.paths.buildOutputDir()));
+	ret.emplace_back(makeEnvironmentVariable("configuration", inState.configuration.name()));
+	ret.emplace_back(makeEnvironmentVariable("architecture", inState.info.targetArchitectureString()));
 
 	return ret;
+}
+
+/*****************************************************************************/
+Json VSCppPropertiesGen::getGlobalEnvironments(const BuildState& inState) const
+{
+	Json ret = Json::array();
+
+	ret.emplace_back(makeEnvironmentVariable("externalDir", inState.inputs.externalDirectory()));
+	ret.emplace_back(makeEnvironmentVariable("toolchain", inState.inputs.toolchainPreferenceName()));
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json VSCppPropertiesGen::makeEnvironmentVariable(const char* inName, const std::string& inValue) const
+{
+	Json env = Json::object();
+	env["namespace"] = "chalet";
+	env[inName] = inValue;
+
+	return env;
 }
 
 /*****************************************************************************/
