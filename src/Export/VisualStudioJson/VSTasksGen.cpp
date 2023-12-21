@@ -54,7 +54,7 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 			"${chalet.architecture}",
 			"-t",
 			"${chalet.toolchain}",
-			"--no-only-required",
+			"--only-required",
 			"--generate-compile-commands",
 			inChaletCmd,
 		};

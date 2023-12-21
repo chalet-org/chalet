@@ -41,7 +41,6 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 	auto& configurations = jRoot.at("configurations");
 
 	auto& allTarget = m_exportAdapter.allBuildName();
-
 	for (auto& runConfig : m_runConfigs)
 	{
 		if (String::equals(allTarget, runConfig.name))

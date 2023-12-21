@@ -46,13 +46,9 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 
 	auto cwd = Path::getWithSeparatorSuffix(debugState.inputs.workingDirectory());
 
-	auto& allTarget = m_exportAdapter.allBuildName();
 	auto& configurations = jRoot.at("configurations");
 	for (auto& runConfig : m_runConfigs)
 	{
-		if (!String::equals(allTarget, runConfig.name))
-			continue;
-
 		Json config;
 		config["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
 		config["intelliSenseMode"] = getIntellisenseMode(debugState, runConfig.arch);
