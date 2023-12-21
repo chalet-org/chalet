@@ -58,49 +58,44 @@ bool VSCodeProjectExporter::generateProjectFiles()
 	if (output.empty())
 		return false;
 
-	const BuildState* state = getAnyBuildStateButPreferDebug();
-	chalet_assert(state != nullptr, "");
-	if (state != nullptr)
+	auto& debugState = m_exportAdapter->getDebugState();
+	VSCodeCCppPropertiesGen cCppProperties(debugState);
+	if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
 	{
-		const auto& outState = *state;
-		VSCodeCCppPropertiesGen cCppProperties(outState);
-		if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
-		{
-			Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");
-			return false;
-		}
+		Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");
+		return false;
+	}
 
-		if (state->configuration.debugSymbols())
+	if (debugState.configuration.debugSymbols())
+	{
+		constexpr bool executablesOnly = true;
+		const IBuildTarget* runnableTarget = debugState.getFirstValidRunTarget(executablesOnly);
+		if (runnableTarget != nullptr)
 		{
-			constexpr bool executablesOnly = true;
-			const IBuildTarget* runnableTarget = state->getFirstValidRunTarget(executablesOnly);
-			if (runnableTarget != nullptr)
+			VSCodeLaunchGen launchJson(*m_exportAdapter);
+			if (!launchJson.saveToFile(fmt::format("{}/launch.json", m_directory)))
 			{
-				VSCodeLaunchGen launchJson(*m_exportAdapter);
-				if (!launchJson.saveToFile(fmt::format("{}/launch.json", m_directory)))
-				{
-					Diagnostic::error("There was a problem saving the launch.json file.");
-					return false;
-				}
-			}
-		}
-
-		VSCodeTasksGen tasksJson(*m_exportAdapter);
-		if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
-		{
-			Diagnostic::error("There was a problem saving the tasks.json file.");
-			return false;
-		}
-
-		auto clangFormat = fmt::format("{}/.clang-format", state->inputs.workingDirectory());
-		if (Files::pathExists(clangFormat))
-		{
-			VSCodeSettingsGen settingsJson(outState);
-			if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
-			{
-				Diagnostic::error("There was a problem saving the settings.json file.");
+				Diagnostic::error("There was a problem saving the launch.json file.");
 				return false;
 			}
+		}
+	}
+
+	VSCodeTasksGen tasksJson(*m_exportAdapter);
+	if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the tasks.json file.");
+		return false;
+	}
+
+	auto clangFormat = fmt::format("{}/.clang-format", debugState.inputs.workingDirectory());
+	if (Files::pathExists(clangFormat))
+	{
+		VSCodeSettingsGen settingsJson(debugState);
+		if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
+		{
+			Diagnostic::error("There was a problem saving the settings.json file.");
+			return false;
 		}
 	}
 

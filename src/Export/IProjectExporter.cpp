@@ -157,32 +157,6 @@ bool IProjectExporter::useProjectBuildDirectory(const std::string& inSubDirector
 }
 
 /*****************************************************************************/
-const BuildState* IProjectExporter::getAnyBuildStateButPreferDebug() const
-{
-	const BuildState* ret = nullptr;
-	if (!m_states.empty())
-	{
-		if (!m_debugConfiguration.empty())
-		{
-			for (const auto& state : m_states)
-			{
-				if (String::equals(m_debugConfiguration, state->configuration.name()))
-				{
-					ret = state.get();
-					break;
-				}
-			}
-		}
-		else
-		{
-			ret = m_states.front().get();
-		}
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 void IProjectExporter::cleanExportDirectory()
 {
 	// Wipe the old one
@@ -270,8 +244,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 
 	Output::setQuietNonBuild(quiet);
 
-	auto debugState = getAnyBuildStateButPreferDebug();
-	if (debugState == nullptr)
+	if (m_states.empty())
 	{
 		Diagnostic::error("There are no valid projects to export.");
 		return false;
@@ -305,15 +278,16 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		}
 	}
 
-	if (!validate(*debugState))
-		return false;
-
 	m_exportAdapter = std::make_unique<ExportAdapter>(m_states, m_debugConfiguration, getAllBuildTargetName());
 	if (!m_exportAdapter->initialize())
 	{
 		Diagnostic::error("There was a problem initializing the project exporter.");
 		return false;
 	}
+
+	auto& debugState = m_exportAdapter->getDebugState();
+	if (!validate(debugState))
+		return false;
 
 	return true;
 }

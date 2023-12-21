@@ -83,20 +83,12 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
 	auto targetGuids = getTargetGuids(projectTypeGUID, allBuildTargetName);
 
-	const BuildState* firstState = getAnyBuildStateButPreferDebug();
-	if (firstState != nullptr)
+	auto& debugState = m_exportAdapter->getDebugState();
+	VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
+	if (!slnGen.saveToFile(solution))
 	{
-		VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
-		if (!slnGen.saveToFile(solution))
-		{
-			auto project = getProjectName(*firstState);
-			Diagnostic::error("There was a problem saving the {}.sln file.", project);
-			return false;
-		}
-	}
-	else
-	{
-		Diagnostic::error("Could not export: internal error");
+		auto project = getProjectName(debugState);
+		Diagnostic::error("There was a problem saving the {}.sln file.", project);
 		return false;
 	}
 

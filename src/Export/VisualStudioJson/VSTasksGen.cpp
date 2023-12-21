@@ -21,8 +21,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSTasksGen::VSTasksGen(const BuildState& inState) :
-	m_state(inState)
+VSTasksGen::VSTasksGen(const ExportAdapter& inExportAdapter) :
+	m_exportAdapter(inExportAdapter)
 {
 }
 
@@ -46,7 +46,7 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 			"${cpp.activeConfiguration}",
 		};
 		task["workingDirectory"] = "${workspaceRoot}";
-		task["command"] = "chalet";
+		task["command"] = m_exportAdapter.getRunConfigExec();
 		task["args"] = {
 			"-c",
 			"${chalet.configuration}",
@@ -54,7 +54,7 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 			"${chalet.architecture}",
 			"-t",
 			"${chalet.toolchain}",
-			"--only-required",
+			"--no-only-required",
 			"--generate-compile-commands",
 			inChaletCmd,
 		};

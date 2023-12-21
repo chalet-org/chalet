@@ -68,34 +68,28 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	// if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
 	// 	return false;
 
-	const BuildState* state = getAnyBuildStateButPreferDebug();
-	chalet_assert(state != nullptr, "");
-	if (state != nullptr)
+	VSCppPropertiesGen cppProperties(*m_exportAdapter);
+	if (!cppProperties.saveToFile(fmt::format("{}/CppProperties.json", m_directory)))
 	{
-		const auto& outState = *state;
+		Diagnostic::error("There was a problem saving the CppProperties.json file.");
+		return false;
+	}
 
-		VSCppPropertiesGen cppProperties(*m_exportAdapter);
-		if (!cppProperties.saveToFile(fmt::format("{}/CppProperties.json", m_directory)))
+	VSTasksGen tasksJson(*m_exportAdapter);
+	if (!tasksJson.saveToFile(fmt::format("{}/tasks.vs.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the tasks.vs.json file.");
+		return false;
+	}
+
+	auto& debugState = m_exportAdapter->getDebugState();
+	if (debugState.configuration.debugSymbols())
+	{
+		VSLaunchGen launchJson(*m_exportAdapter);
+		if (!launchJson.saveToFile(fmt::format("{}/launch.vs.json", m_directory)))
 		{
-			Diagnostic::error("There was a problem saving the CppProperties.json file.");
+			Diagnostic::error("There was a problem saving the launch.vs.json file.");
 			return false;
-		}
-
-		VSTasksGen tasksJson(outState);
-		if (!tasksJson.saveToFile(fmt::format("{}/tasks.vs.json", m_directory)))
-		{
-			Diagnostic::error("There was a problem saving the tasks.vs.json file.");
-			return false;
-		}
-
-		if (state->configuration.debugSymbols())
-		{
-			VSLaunchGen launchJson(*m_exportAdapter);
-			if (!launchJson.saveToFile(fmt::format("{}/launch.vs.json", m_directory)))
-			{
-				Diagnostic::error("There was a problem saving the launch.vs.json file.");
-				return false;
-			}
 		}
 	}
 

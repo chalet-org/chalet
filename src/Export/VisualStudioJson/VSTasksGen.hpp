@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -13,11 +14,11 @@ class BuildState;
 
 struct VSTasksGen
 {
-	explicit VSTasksGen(const BuildState& inState);
+	explicit VSTasksGen(const ExportAdapter& inExportAdapter);
 
 	bool saveToFile(const std::string& inFilename);
 
 private:
-	const BuildState& m_state;
+	const ExportAdapter& m_exportAdapter;
 };
 }
