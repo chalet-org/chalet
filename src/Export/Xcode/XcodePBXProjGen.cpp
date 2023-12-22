@@ -190,7 +190,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 							// searches.emplace_back(link);
 
-							List::addIfDoesNotExist(embedLibraries[name], link);
+							auto outLink = link;
+							String::replaceAll(outLink, buildOutputDir, "$BUILD_OUTPUT_DIR");
+							List::addIfDoesNotExist(embedLibraries[name], std::move(outLink));
 						}
 						else
 						{
@@ -1819,6 +1821,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 		// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";
 	}
 #endif
+
+	ret["BUILD_OUTPUT_DIR"] = inState.paths.buildOutputDir();
 
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
