@@ -22,7 +22,7 @@ Arch Arch::from(const std::string& inValue)
 }
 
 /*****************************************************************************/
-std::string Arch::getHostCpuArchitecture()
+std::string Arch::getHostCpuArchitecture() noexcept
 {
 #if defined(CHALET_MACOS)
 	#if defined(TARGET_CPU_ARM64) && TARGET_CPU_ARM64
@@ -41,9 +41,9 @@ std::string Arch::getHostCpuArchitecture()
 	return "arm64";
 	#elif (defined(__arm__) && __arm__) || (defined(_M_ARM) && _M_ARM == 7)
 		#if defined(__ARM_FP) && __ARM_FP > 0
-		return "armhf";
+	return "armhf";
 		#else
-		return "arm";
+	return "arm";
 		#endif
 	#else
 	return "i686";

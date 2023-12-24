@@ -52,13 +52,6 @@ bool DotEnvFileParser::readVariablesFromInputs()
 /*****************************************************************************/
 bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 {
-#if defined(CHALET_WIN32)
-	auto appDataPath = Environment::getString("APPDATA");
-	auto pathKey = Environment::getPathKey();
-
-	const bool msvcExists = VisualStudioEnvironmentScript::visualStudioExists();
-#endif
-
 	std::ifstream input(inFile);
 	for (std::string line; std::getline(input, line);)
 	{
@@ -84,7 +77,6 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 			continue;
 
 #if defined(CHALET_WIN32)
-		const bool isPath = String::equals(pathKey, key);
 		for (size_t end = value.find_last_of('%'); end != std::string::npos;)
 		{
 			size_t beg = value.substr(0, end).find_last_of('%');
@@ -103,14 +95,7 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 			//   we add a fake path (with valid syntax) to inject it into later (See BuildEnvironmentVisualStudio.cpp)
 			//
 			auto replaceValue = Environment::getString(replaceKey.c_str());
-			if (msvcExists && isPath && String::equals(pathKey, replaceKey))
-			{
-				value.replace(beg, length, fmt::format("{}\\__CHALET_PATH_INJECT__;{}", appDataPath, replaceValue));
-			}
-			else
-			{
-				value.replace(beg, length, replaceValue);
-			}
+			value.replace(beg, length, replaceValue);
 
 			end = value.find_last_of("%");
 		}

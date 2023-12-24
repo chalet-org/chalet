@@ -77,7 +77,7 @@ void EmscriptenEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 	{
 		if (String::equals(pathKey, name))
 		{
-			Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
+			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
 		}
 		else
 		{

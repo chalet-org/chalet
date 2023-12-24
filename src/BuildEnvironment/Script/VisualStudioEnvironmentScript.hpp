@@ -41,7 +41,6 @@ private:
 	StringList m_varsAllArchOptions;
 
 	// set during creation
-	std::string m_pathInject;
 	std::string m_visualStudioPath;
 	std::string m_rawVersion;
 	std::string m_detectedVersion;

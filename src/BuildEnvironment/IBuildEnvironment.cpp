@@ -424,10 +424,10 @@ const StringList& IBuildEnvironment::targetSystemPaths() const noexcept
 /*****************************************************************************/
 bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 {
-	std::string path = String::getPathFolder(outInfo.path);
-	const std::string lowercasePath = String::toLowerCase(path);
+	auto path = String::getPathFolder(outInfo.path);
+	const auto lowercasePath = String::toLowerCase(path);
 
-	std::vector<CompilerPathStructure> compilerStructures = getValidCompilerPaths();
+	auto compilerStructures = getValidCompilerPaths();
 
 	for (const auto& [binDir, libDir, includeDir] : compilerStructures)
 	{
@@ -437,8 +437,9 @@ bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 		auto tmp = path.substr(0, path.size() - binDir.size());
 
 		{
-			std::string tmpLib = fmt::format("{}{}", tmp, libDir);
-			std::string tmpInclude = fmt::format("{}{}", tmp, includeDir);
+			auto tmpLib = fmt::format("{}{}", tmp, libDir);
+			auto tmpInclude = fmt::format("{}{}", tmp, includeDir);
+
 			if (!Files::pathExists(tmpLib) || !Files::pathExists(tmpInclude))
 				continue;
 		}

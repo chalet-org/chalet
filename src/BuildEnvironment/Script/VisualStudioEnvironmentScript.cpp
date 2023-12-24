@@ -112,9 +112,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	UNUSED(inState);
 	m_pathVariable = Environment::getPath();
 
-	// Note: See Note about __CHALET_PATH_INJECT__ in Environment.cpp
 	auto appDataPath = Environment::getString("APPDATA");
-	m_pathInject = fmt::format("{}\\__CHALET_PATH_INJECT__", appDataPath);
 
 	if (!m_envVarsFileDeltaExists)
 	{
@@ -186,12 +184,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 		// Get the delta between the two and save it to a file
 		Environment::createDeltaEnvFile(m_envVarsFileBefore, m_envVarsFileAfter, m_envVarsFileDelta, [this](std::string& line) {
-			if (String::startsWith("__VSCMD_PREINIT_PATH=", line))
-			{
-				if (String::contains(m_pathInject, line))
-					String::replaceAll(line, m_pathInject + Environment::getPathSeparator(), "");
-			}
-			else if (String::startsWith(StringList{ "PATH=", "Path=" }, line))
+			if (String::startsWith("PATH=", line) || String::startsWith("Path=", line))
 			{
 				String::replaceAll(line, m_pathVariable, "");
 			}
@@ -225,15 +218,7 @@ void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 		if (String::equals(pathKey, name))
 #endif
 		{
-			if (String::contains(m_pathInject, m_pathVariable))
-			{
-				String::replaceAll(m_pathVariable, m_pathInject, var);
-				Environment::set(name.c_str(), m_pathVariable);
-			}
-			else
-			{
-				Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
-			}
+			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
 		}
 		else
 		{
@@ -292,6 +277,7 @@ std::string VisualStudioEnvironmentScript::getVisualStudioVersion(const VisualSt
 	addProductOptions(vswhereCmd);
 	vswhereCmd.emplace_back("-property");
 	vswhereCmd.emplace_back("installationVersion");
+
 	auto result = Process::runOutput(vswhereCmd);
 
 	// If there is more than one version installed, prefer the first version retrieved
@@ -396,12 +382,12 @@ bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildSta
 	};
 
 	std::string host;
-	std::string target = gnuArchToMsvcArch(inState.inputs.getResolvedTargetArchitecture());
+	auto target = gnuArchToMsvcArch(inState.inputs.getResolvedTargetArchitecture());
 
 	const auto& compiler = inState.toolchain.compilerCxxAny().path;
 	if (!compiler.empty())
 	{
-		std::string lower = String::toLowerCase(compiler);
+		auto lower = String::toLowerCase(compiler);
 		auto search = lower.find("/bin/host");
 		if (search == std::string::npos)
 		{
@@ -417,7 +403,7 @@ bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildSta
 		}
 
 		search += 9;
-		std::string hostFromCompilerPath = lower.substr(search, nextPath - search);
+		auto hostFromCompilerPath = lower.substr(search, nextPath - search);
 		search = nextPath + 1;
 		nextPath = lower.find('/', search);
 		if (search == std::string::npos)
@@ -430,7 +416,7 @@ bool VisualStudioEnvironmentScript::validateArchitectureFromInput(const BuildSta
 		if (host.empty())
 			host = hostFromCompilerPath;
 
-		std::string targetFromCompilerPath = lower.substr(search, nextPath - search);
+		auto targetFromCompilerPath = lower.substr(search, nextPath - search);
 		if (target.empty() || (target == targetFromCompilerPath && host == hostFromCompilerPath))
 		{
 			target = lower.substr(search, nextPath - search);

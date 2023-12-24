@@ -10,8 +10,8 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -102,7 +102,7 @@ void IntelEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 		if (String::equals(pathKey, name))
 #endif
 		{
-			Environment::set(name.c_str(), fmt::format("{}{}{}", m_pathVariable, pathSep, var));
+			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
 		}
 		else
 		{
