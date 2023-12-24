@@ -87,7 +87,7 @@ void WorkspaceEnvironment::addSearchPath(std::string&& inValue)
 /*****************************************************************************/
 std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath) const
 {
-	auto separator = Environment::getPathSeparator();
+	constexpr auto separator = Environment::getPathSeparator();
 	StringList outList;
 	StringList rootPaths = String::split(inRootPath, separator);
 
@@ -119,7 +119,7 @@ std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath
 /*****************************************************************************/
 std::string WorkspaceEnvironment::makePathVariable(const std::string& inRootPath, const StringList& inAdditionalPaths) const
 {
-	auto separator = Environment::getPathSeparator();
+	constexpr auto separator = Environment::getPathSeparator();
 	StringList outList;
 	StringList rootPaths = String::split(inRootPath, separator);
 

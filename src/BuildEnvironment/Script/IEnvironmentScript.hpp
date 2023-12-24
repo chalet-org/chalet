@@ -13,7 +13,7 @@ struct IEnvironmentScript
 	virtual ~IEnvironmentScript() = default;
 
 	virtual bool makeEnvironment(const BuildState& inState) = 0;
-	virtual void readEnvironmentVariablesFromDeltaFile() = 0;
+	virtual Dictionary<std::string> readEnvironmentVariablesFromDeltaFile();
 
 	virtual void setEnvVarsFileBefore(const std::string& inValue) final;
 	virtual void setEnvVarsFileAfter(const std::string& inValue) final;
@@ -25,6 +25,8 @@ struct IEnvironmentScript
 protected:
 	virtual bool saveEnvironmentFromScript() = 0;
 	virtual StringList getAllowedArchitectures() = 0;
+
+	virtual std::string getPathVariable(const std::string& inNewPath) const;
 
 	std::string m_envVarsFileBefore;
 	std::string m_envVarsFileAfter;

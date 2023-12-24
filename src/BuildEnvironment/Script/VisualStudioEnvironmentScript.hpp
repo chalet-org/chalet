@@ -15,7 +15,7 @@ struct VisualStudioEnvironmentScript final : public IEnvironmentScript
 	static bool visualStudioExists();
 
 	virtual bool makeEnvironment(const BuildState& inState) final;
-	virtual void readEnvironmentVariablesFromDeltaFile() final;
+	virtual Dictionary<std::string> readEnvironmentVariablesFromDeltaFile() final;
 
 	bool validateArchitectureFromInput(const BuildState& inState, std::string& outHost, std::string& outTarget);
 

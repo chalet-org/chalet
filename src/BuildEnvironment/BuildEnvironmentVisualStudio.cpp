@@ -176,8 +176,6 @@ bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo
 			return std::string();
 		}
 	});
-	{
-	}
 
 	if (!cachedVersion.empty())
 	{

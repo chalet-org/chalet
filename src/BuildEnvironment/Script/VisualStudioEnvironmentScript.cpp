@@ -201,30 +201,9 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 }
 
 /*****************************************************************************/
-void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
+Dictionary<std::string> VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 {
-	Dictionary<std::string> variables;
-	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
-
-#if !defined(CHALET_WIN32)
-	const auto pathKey = Environment::getPathKey();
-#endif
-	const char pathSep = Environment::getPathSeparator();
-	for (auto& [name, var] : variables)
-	{
-#if defined(CHALET_WIN32)
-		if (String::equals("path", String::toLowerCase(name)))
-#else
-		if (String::equals(pathKey, name))
-#endif
-		{
-			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
-		}
-		else
-		{
-			Environment::set(name.c_str(), var);
-		}
-	}
+	auto variables = IEnvironmentScript::readEnvironmentVariablesFromDeltaFile();
 
 	if (m_visualStudioPath.empty())
 	{
@@ -234,6 +213,8 @@ void VisualStudioEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
 			m_visualStudioPath = vsappDir->second;
 		}
 	}
+
+	return variables;
 }
 
 /*****************************************************************************/

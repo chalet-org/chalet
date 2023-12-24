@@ -65,33 +65,11 @@ bool EmscriptenEnvironmentScript::makeEnvironment(const BuildState& inState)
 }
 
 /*****************************************************************************/
-void EmscriptenEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
-{
-	Dictionary<std::string> variables;
-
-	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
-
-	const auto pathKey = Environment::getPathKey();
-	const char pathSep = Environment::getPathSeparator();
-	for (auto& [name, var] : variables)
-	{
-		if (String::equals(pathKey, name))
-		{
-			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
-		}
-		else
-		{
-			Environment::set(name.c_str(), var);
-		}
-	}
-}
-
-/*****************************************************************************/
 bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 {
 	std::string fileContents;
 	auto pathKey = Environment::getPathKey();
-	auto sep = Environment::getPathSeparator();
+	constexpr auto sep = Environment::getPathSeparator();
 
 	auto emsdkRoot = Environment::getString("EMSDK");
 	auto upstream = fmt::format("{}/upstream/emscripten", emsdkRoot);

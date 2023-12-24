@@ -16,7 +16,6 @@ struct EmscriptenEnvironmentScript final : public IEnvironmentScript
 	explicit EmscriptenEnvironmentScript();
 
 	virtual bool makeEnvironment(const BuildState& inState) final;
-	virtual void readEnvironmentVariablesFromDeltaFile() final;
 
 	bool isPreset() noexcept;
 

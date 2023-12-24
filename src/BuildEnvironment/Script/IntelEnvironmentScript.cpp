@@ -73,7 +73,7 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 		}
 
 		Environment::createDeltaEnvFile(m_envVarsFileBefore, m_envVarsFileAfter, m_envVarsFileDelta, [this](std::string& line) {
-			if (String::startsWith(StringList{ "PATH=", "Path=" }, line))
+			if (String::startsWith("PATH=", line) || String::startsWith("Path=", line))
 			{
 				String::replaceAll(line, m_pathVariable, "");
 			}
@@ -81,34 +81,6 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-void IntelEnvironmentScript::readEnvironmentVariablesFromDeltaFile()
-{
-	Dictionary<std::string> variables;
-
-	Environment::readEnvFileToDictionary(m_envVarsFileDelta, variables);
-
-#if !defined(CHALET_WIN32)
-	const auto pathKey = Environment::getPathKey();
-#endif
-	const char pathSep = Environment::getPathSeparator();
-	for (auto& [name, var] : variables)
-	{
-#if defined(CHALET_WIN32)
-		if (String::equals("path", String::toLowerCase(name)))
-#else
-		if (String::equals(pathKey, name))
-#endif
-		{
-			Environment::set(name.c_str(), fmt::format("{}{}{}", var, pathSep, m_pathVariable));
-		}
-		else
-		{
-			Environment::set(name.c_str(), var);
-		}
-	}
 }
 
 /*****************************************************************************/
@@ -180,5 +152,24 @@ StringList IntelEnvironmentScript::getAllowedArchitectures()
 		"x86_64",
 		"i686",
 	};
+}
+
+/*****************************************************************************/
+std::string IntelEnvironmentScript::getPathVariable(const std::string& inNewPath) const
+{
+	constexpr char pathSep = Environment::getPathSeparator();
+	auto path = IEnvironmentScript::getPathVariable(inNewPath);
+
+	auto clangPath = Environment::getString("ONEAPI_ROOT");
+	if (clangPath.empty())
+		return path;
+
+	Path::toWindows(clangPath);
+	if (clangPath.back() == '\\')
+		clangPath.pop_back();
+
+	clangPath = fmt::format("{}\\compiler\\latest\\windows\\bin-llvm", clangPath);
+
+	return fmt::format("{}{}{}", clangPath, pathSep, path);
 }
 }

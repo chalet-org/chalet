@@ -972,7 +972,7 @@ void BuildState::makePathVariable()
 	auto originalPath = Environment::getPath();
 	Path::toUnix(originalPath);
 
-	char separator = Environment::getPathSeparator();
+	constexpr char separator = Environment::getPathSeparator();
 	auto pathList = String::split(originalPath, separator);
 
 	StringList outList;
@@ -1110,22 +1110,6 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 
 	std::string lower = String::toLowerCase(outPathVariable);
 
-	// If using Intel LLVM, add the compiler path (This might just work with the 2023 version)
-	//
-	if (type == ToolchainType::IntelLLVM)
-	{
-		auto oneApi = Environment::getString("ONEAPI_ROOT");
-		if (!oneApi.empty())
-		{
-			Path::toWindows(oneApi);
-			oneApi = fmt::format("{}compiler\\latest\\windows\\bin-llvm", oneApi);
-			std::string lowerOneApi = String::toLowerCase(oneApi);
-			if (!String::contains(lowerOneApi, lower))
-			{
-				outPathVariable = fmt::format("{};{}", oneApi, outPathVariable);
-			}
-		}
-	}
 	// If using MinGW, search the most common install paths
 	//   x64:
 	//    C:/msys64/ucrt64 - recommended by the MSYS2 team
@@ -1135,7 +1119,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 	//    C:/msys64/mingw32
 	//    C:/mingw32
 	//
-	else if (type == ToolchainType::MingwGNU)
+	if (type == ToolchainType::MingwGNU)
 	{
 		// We only want to do this if the preference name was simply "gcc", and a "gcc.exe" was not found
 		//   Other GCC toolchain variants (with prefixes/suffixes) should not assume anything

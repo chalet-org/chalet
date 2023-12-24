@@ -17,13 +17,14 @@ struct IntelEnvironmentScript final : public IEnvironmentScript
 	explicit IntelEnvironmentScript(const CommandLineInputs& inInputs);
 
 	virtual bool makeEnvironment(const BuildState& inState) final;
-	virtual void readEnvironmentVariablesFromDeltaFile() final;
 
 	bool isPreset() noexcept;
 
 private:
 	virtual bool saveEnvironmentFromScript() final;
 	virtual StringList getAllowedArchitectures() final;
+
+	virtual std::string getPathVariable(const std::string& inNewPath) const final;
 
 	const CommandLineInputs& m_inputs;
 
