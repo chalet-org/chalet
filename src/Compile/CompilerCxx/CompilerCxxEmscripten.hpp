@@ -19,8 +19,5 @@ protected:
 	virtual bool addExecutable(StringList& outArgList) const final;
 
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const final;
-
-private:
-	// std::string m_pchSource;
 };
 }

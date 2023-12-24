@@ -14,8 +14,5 @@ struct CompilerCxxIntelClang : public CompilerCxxClang
 	explicit CompilerCxxIntelClang(const BuildState& inState, const SourceTarget& inProject);
 
 	virtual bool initialize() final;
-
-private:
-	// std::string m_pchSource;
 };
 }
