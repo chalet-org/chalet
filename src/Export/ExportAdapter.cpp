@@ -19,6 +19,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -243,19 +244,19 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 			if (!path.empty())
 			{
 				String::replaceAll(path, thisBuildDir, buildDir);
-				path = fmt::format("{}{}{}", path, Environment::getPathSeparator(), env.getPath());
+#if defined(CHALET_WIN32)
+				Path::toWindows(path);
+#endif
 			}
 			auto libraryPath = env.getLibraryPath();
 			if (!libraryPath.empty())
 			{
 				String::replaceAll(libraryPath, thisBuildDir, buildDir);
-				libraryPath = fmt::format("{}{}${}", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
 			}
 			auto frameworkPath = env.getFrameworkPath();
 			if (!frameworkPath.empty())
 			{
 				String::replaceAll(frameworkPath, thisBuildDir, buildDir);
-				frameworkPath = fmt::format("{}{}${}$", frameworkPath, Environment::getPathSeparator(), env.getFrameworkPathKey());
 			}
 
 			for (auto& target : state->targets)
@@ -285,10 +286,10 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 						runConfig.env.emplace(Environment::getPathKey(), path);
 
 					if (!libraryPath.empty())
-						runConfig.env.emplace(env.getLibraryPathKey(), libraryPath);
+						runConfig.env.emplace(Environment::getLibraryPathKey(), libraryPath);
 
 					if (!frameworkPath.empty())
-						runConfig.env.emplace(env.getFrameworkPathKey(), frameworkPath);
+						runConfig.env.emplace(Environment::getFrameworkPathKey(), frameworkPath);
 
 					runConfigs.emplace_back(std::move(runConfig));
 				}
@@ -316,10 +317,10 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 						runConfig.env.emplace(Environment::getPathKey(), path);
 
 					if (!libraryPath.empty())
-						runConfig.env.emplace(env.getLibraryPathKey(), libraryPath);
+						runConfig.env.emplace(Environment::getLibraryPathKey(), libraryPath);
 
 					if (!frameworkPath.empty())
-						runConfig.env.emplace(env.getFrameworkPathKey(), frameworkPath);
+						runConfig.env.emplace(Environment::getFrameworkPathKey(), frameworkPath);
 
 					runConfigs.emplace_back(std::move(runConfig));
 				}

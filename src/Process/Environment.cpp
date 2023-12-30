@@ -89,6 +89,28 @@ const char* Environment::getPathKey()
 }
 
 /*****************************************************************************/
+const char* Environment::getLibraryPathKey()
+{
+#if defined(CHALET_LINUX)
+	return "LD_LIBRARY_PATH";
+#elif defined(CHALET_MACOS)
+	return "DYLD_FALLBACK_LIBRARY_PATH";
+#else
+	return "__CHALET_ERROR_LIBRARY_PATH";
+#endif
+}
+
+/*****************************************************************************/
+const char* Environment::getFrameworkPathKey()
+{
+#if defined(CHALET_MACOS)
+	return "DYLD_FALLBACK_FRAMEWORK_PATH";
+#else
+	return "__CHALET_ERROR_FRAMEWORK_PATH";
+#endif
+}
+
+/*****************************************************************************/
 std::string Environment::getPath()
 {
 	auto path = Environment::get("PATH");

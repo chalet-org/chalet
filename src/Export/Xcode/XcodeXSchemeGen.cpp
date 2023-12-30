@@ -135,12 +135,12 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto libraryPath = env.getLibraryPath();
 		if (!libraryPath.empty())
 		{
-			libraryPath = fmt::format("{}{}${}", libraryPath, Environment::getPathSeparator(), env.getLibraryPathKey());
+			libraryPath = fmt::format("{}{}${}", libraryPath, Environment::getPathSeparator(), Environment::getLibraryPathKey());
 		}
 		auto frameworkPath = env.getFrameworkPath();
 		if (!frameworkPath.empty())
 		{
-			frameworkPath = fmt::format("{}{}${}", frameworkPath, Environment::getPathSeparator(), env.getFrameworkPathKey());
+			frameworkPath = fmt::format("{}{}${}", frameworkPath, Environment::getPathSeparator(), Environment::getFrameworkPathKey());
 		}
 
 		auto& environment = envMap[configName];
@@ -149,10 +149,10 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			environment.emplace(Environment::getPathKey(), path);
 
 		if (!libraryPath.empty())
-			environment.emplace(env.getLibraryPathKey(), libraryPath);
+			environment.emplace(Environment::getLibraryPathKey(), libraryPath);
 
 		if (!frameworkPath.empty())
-			environment.emplace(env.getFrameworkPathKey(), frameworkPath);
+			environment.emplace(Environment::getFrameworkPathKey(), frameworkPath);
 
 		StringList sourceTargets;
 		for (auto& target : state->targets)

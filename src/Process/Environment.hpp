@@ -18,6 +18,8 @@ void replaceCommonVariables(std::string& outString, const std::string& inHomeDir
 
 std::string getPath();
 const char* getPathKey();
+const char* getLibraryPathKey();
+const char* getFrameworkPathKey();
 void setPath(const std::string& inValue);
 constexpr char getPathSeparator();
 
