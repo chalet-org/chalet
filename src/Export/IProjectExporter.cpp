@@ -177,11 +177,19 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	else
 		Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
 
-	if (!generateStatesAndValidate(inCentralState))
-		return false;
+	auto& cacheFile = inCentralState.cache.file();
+	const bool appVersionChanged = cacheFile.appVersionChanged();
+	const bool buildFileChanged = cacheFile.buildFileChanged();
+	const bool buildHashChanged = cacheFile.buildHashChanged();
+	bool requiresRegen = appVersionChanged || buildFileChanged || buildHashChanged;
+	if (!inForBuild || requiresRegen)
+	{
+		if (!generateStatesAndValidate(inCentralState))
+			return false;
 
-	if (!generateProjectFiles())
-		return false;
+		if (!generateProjectFiles())
+			return false;
+	}
 
 	Diagnostic::printDone(timer.asString());
 
