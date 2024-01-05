@@ -39,6 +39,9 @@ std::string XcodeProjectExporter::getMainProjectOutput(const BuildState& inState
 std::string XcodeProjectExporter::getMainProjectOutput()
 {
 	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	if (m_states.empty())
+		return std::string();
+
 	return getMainProjectOutput(*m_states.front());
 }
 

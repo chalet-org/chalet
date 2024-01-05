@@ -42,6 +42,9 @@ std::string VSSolutionProjectExporter::getMainProjectOutput(const BuildState& in
 std::string VSSolutionProjectExporter::getMainProjectOutput()
 {
 	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	if (m_states.empty())
+		return std::string();
+
 	return getMainProjectOutput(*m_states.front());
 }
 

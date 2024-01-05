@@ -177,14 +177,27 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	else
 		Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
 
+	if (inForBuild && !makeStateAndValidate(inCentralState, inCentralState.inputs().buildConfiguration()))
+		return false;
+
 	auto& cacheFile = inCentralState.cache.file();
+	const bool exportPathExists = inForBuild && Files::pathExists(getMainProjectOutput());
 	const bool appVersionChanged = cacheFile.appVersionChanged();
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
-	bool requiresRegen = appVersionChanged || buildFileChanged || buildHashChanged;
+	const bool requiresRegen = !exportPathExists || appVersionChanged || buildFileChanged || buildHashChanged;
 	if (!inForBuild || requiresRegen)
 	{
+		if (!inCentralState.tools.isSigningIdentityValid())
+			return false;
+
 		if (!generateStatesAndValidate(inCentralState))
+			return false;
+
+		if (!makeExportAdapter())
+			return false;
+
+		if (!validateDebugState())
 			return false;
 
 		if (!generateProjectFiles())
@@ -220,23 +233,6 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 {
 	m_states.clear();
 
-	auto makeState = [this, &inCentralState](const std::string& configName) -> bool {
-		CommandLineInputs inputs = m_inputs;
-		inputs.setBuildConfiguration(std::string(configName));
-		inputs.setRoute(CommandRoute(RouteType::Export));
-
-		auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
-		state->setCacheEnabled(false);
-		if (!state->initialize())
-			return false;
-
-		m_states.emplace_back(std::move(state));
-		return true;
-	};
-
-	bool quiet = Output::quietNonBuild();
-	Output::setQuietNonBuild(true);
-
 	for (const auto& [name, config] : inCentralState.buildConfigurations())
 	{
 		// skip configurations with sanitizers for now
@@ -246,11 +242,9 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		if (m_debugConfiguration.empty() && config.debugSymbols())
 			m_debugConfiguration = name;
 
-		if (!makeState(name))
+		if (!makeStateAndValidate(inCentralState, name))
 			return false;
 	}
-
-	Output::setQuietNonBuild(quiet);
 
 	if (m_states.empty())
 	{
@@ -258,34 +252,60 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		return false;
 	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& configName)
+{
 	for (auto& state : m_states)
 	{
-		if (!state->tools.isSigningIdentityValid())
-			return false;
+		if (String::equals(state->configuration.name(), configName))
+			return true;
+	}
 
-		for (auto& target : state->targets)
+	bool quiet = Output::quietNonBuild();
+	Output::setQuietNonBuild(true);
+
+	CommandLineInputs inputs = m_inputs;
+	inputs.setBuildConfiguration(std::string(configName));
+	inputs.setRoute(CommandRoute(RouteType::Export));
+
+	auto& state = m_states.emplace_back(std::make_unique<BuildState>(std::move(inputs), inCentralState));
+	state->setCacheEnabled(false);
+	if (!state->initialize())
+		return false;
+
+	for (auto& target : state->targets)
+	{
+		if (target->isSources())
 		{
-			if (target->isSources())
-			{
-				const auto& project = static_cast<const SourceTarget&>(*target);
+			const auto& project = static_cast<const SourceTarget&>(*target);
 
-				// Generate the configure files upfront - TODO: kind of a brittle solution
-				//
-				if (!project.configureFiles().empty())
-				{
-					auto outFolder = state->paths.intermediateDir();
-					// if (m_kind == ExportKind::Xcode)
-					// {
-					// 	outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
-					// }
-					ConfigureFileParser confFileParser(*state, project);
-					if (!confFileParser.run(outFolder))
-						return false;
-				}
+			// Generate the configure files upfront - TODO: kind of a brittle solution
+			//
+			if (!project.configureFiles().empty())
+			{
+				auto outFolder = state->paths.intermediateDir();
+				// if (m_kind == ExportKind::Xcode)
+				// {
+				// 	outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
+				// }
+				ConfigureFileParser confFileParser(*state, project);
+				if (!confFileParser.run(outFolder))
+					return false;
 			}
 		}
 	}
 
+	Output::setQuietNonBuild(quiet);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IProjectExporter::makeExportAdapter()
+{
 	m_exportAdapter = std::make_unique<ExportAdapter>(m_states, m_debugConfiguration, getAllBuildTargetName());
 	if (!m_exportAdapter->initialize())
 	{
@@ -293,11 +313,16 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		return false;
 	}
 
+	return true;
+}
+
+/*****************************************************************************/
+bool IProjectExporter::validateDebugState()
+{
 	auto& debugState = m_exportAdapter->getDebugState();
 	if (!validate(debugState))
 		return false;
 
 	return true;
 }
-
 }

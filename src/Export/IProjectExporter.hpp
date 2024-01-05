@@ -43,6 +43,10 @@ protected:
 
 	const std::string& workingDirectory() const noexcept;
 
+	bool makeStateAndValidate(CentralState& inCentralState, const std::string& configName);
+	bool makeExportAdapter();
+	bool validateDebugState();
+
 	bool saveSchemasToDirectory(const std::string& inDirectory) const;
 
 	bool useDirectory(const std::string& inDirectory);

@@ -206,7 +206,8 @@ bool AncillaryTools::isSigningIdentityValid() const
 {
 #if defined(CHALET_MACOS)
 	// This can take a little bit of time (60ms), so only call it when it's needed
-	if (!m_signingIdentity.empty())
+	const bool shouldCallSecurity = !m_signingIdentity.empty() && (m_signingCertificate.empty() || m_signingDevelopmentTeam.empty());
+	if (shouldCallSecurity)
 	{
 		// security find-identity -v -p codesigning
 		auto security = Files::which("security");
