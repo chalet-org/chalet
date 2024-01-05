@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
+file(READ chalet.json CHALET_JSON_STRING)
+
+string(JSON CHALET_VERSION GET ${CHALET_JSON_STRING} version)
+string(JSON CHALET_DESCRIPTION GET ${CHALET_JSON_STRING} description)
+string(JSON CHALET_HOMEPAGE_URL GET ${CHALET_JSON_STRING} homepage)
+
 project(chalet-debug
-	VERSION 0.7.7
-	DESCRIPTION "A JSON-based project & build tool"
-	HOMEPAGE_URL "https://www.chalet-work.space"
+	VERSION ${CHALET_VERSION}
+	DESCRIPTION ${CHALET_DESCRIPTION}
+	HOMEPAGE_URL ${CHALET_HOMEPAGE_URL}
 	LANGUAGES CXX
 )
 
