@@ -136,27 +136,7 @@ StringList IAppBundler::getAllExecutables() const
 /*****************************************************************************/
 bool IAppBundler::copyIncludedPath(const std::string& inDep, const std::string& inOutPath)
 {
-	if (Files::pathExists(inDep))
-	{
-		const auto filename = String::getPathFilename(inDep);
-		if (!filename.empty())
-		{
-			auto outputFile = fmt::format("{}/{}", inOutPath, filename);
-			if (Files::pathExists(outputFile))
-				return true; // Already copied - duplicate dependency
-		}
-
-		auto dep = inDep;
-		auto& cwd = workingDirectoryWithTrailingPathSeparator();
-		String::replaceAll(dep, cwd, "");
-
-		if (!Files::copy(dep, inOutPath))
-		{
-			Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inOutPath);
-			return false;
-		}
-	}
-	return true;
+	return Files::copyIfDoesNotExistWithoutPrintingWorkingDirectory(inDep, inOutPath, workingDirectoryWithTrailingPathSeparator());
 }
 
 /*****************************************************************************/
@@ -165,9 +145,6 @@ const std::string& IAppBundler::workingDirectoryWithTrailingPathSeparator()
 	if (m_cwd.empty())
 	{
 		m_cwd = m_state.inputs.workingDirectory() + '/';
-#if defined(CHALET_WIN32)
-		String::capitalize(m_cwd);
-#endif
 	}
 	return m_cwd;
 }

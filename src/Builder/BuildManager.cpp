@@ -536,6 +536,8 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, u32& outCop
 	{
 		const auto& sourceTarget = static_cast<const SourceTarget&>(inTarget);
 
+		std::string cwd = m_state.inputs.workingDirectory() + '/';
+
 		const auto& buildOutputDir = m_state.paths.buildOutputDir();
 		auto copyFilesOnRun = sourceTarget.getResolvedRunDependenciesList();
 		for (auto& dep : copyFilesOnRun)
@@ -543,7 +545,7 @@ bool BuildManager::copyRunDependencies(const IBuildTarget& inTarget, u32& outCop
 			auto depFile = String::getPathFilename(dep);
 			if (!Files::pathExists(fmt::format("{}/{}", buildOutputDir, depFile)))
 			{
-				result &= Files::copy(dep, buildOutputDir);
+				result &= Files::copyIfDoesNotExistWithoutPrintingWorkingDirectory(dep, buildOutputDir, cwd);
 				++outCopied;
 			}
 		}

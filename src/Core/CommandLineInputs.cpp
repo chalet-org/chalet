@@ -226,7 +226,7 @@ const std::string& CommandLineInputs::workingDirectory() const noexcept
 		Path::toUnix(m_workingDirectory, true);
 
 #if defined(CHALET_WIN32)
-		m_workingDirectory[0] = static_cast<uchar>(::toupper(static_cast<uchar>(m_workingDirectory[0])));
+		String::capitalize(m_workingDirectory);
 #endif
 	}
 	return m_workingDirectory;
@@ -1053,11 +1053,6 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 	auto cwd = workingDirectory() + '/';
 
 	String::replaceAll(outValue, cwd, "");
-
-#if defined(CHALET_WIN32)
-	String::capitalize(cwd);
-	String::replaceAll(outValue, cwd, "");
-#endif
 }
 
 /*****************************************************************************/

@@ -530,6 +530,31 @@ bool Files::copyRename(const std::string& inFrom, const std::string& inTo, const
 }
 
 /*****************************************************************************/
+bool Files::copyIfDoesNotExistWithoutPrintingWorkingDirectory(const std::string& inFrom, const std::string& inTo, const std::string& cwd)
+{
+	if (Files::pathExists(inFrom))
+	{
+		const auto filename = String::getPathFilename(inFrom);
+		if (!filename.empty())
+		{
+			auto outputFile = fmt::format("{}/{}", inTo, filename);
+			if (Files::pathExists(outputFile))
+				return true; // Already copied - duplicate dependency
+		}
+
+		auto dep = inFrom;
+		String::replaceAll(dep, cwd, "");
+
+		if (!Files::copy(dep, inTo))
+		{
+			Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inTo);
+			return false;
+		}
+	}
+	return true;
+}
+
+/*****************************************************************************/
 bool Files::moveSilent(const std::string& inFrom, const std::string& inTo, const fs::copy_options inOptions)
 {
 	CHALET_TRY
