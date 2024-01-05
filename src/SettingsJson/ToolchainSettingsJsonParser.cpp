@@ -13,6 +13,7 @@
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
@@ -221,7 +222,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	std::string cpp;
 	std::string cc;
-	if (!toolchain.contains(Keys::ToolchainCompilerCpp))
+	if (!toolchain.contains(Keys::ToolchainCompilerCpp) || !toolchain[Keys::ToolchainCompilerCpp].is_string() || toolchain[Keys::ToolchainCompilerCpp].get<std::string>().empty())
 	{
 		if (cpp.empty())
 			cpp = Files::which(preference.cpp);
@@ -229,6 +230,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		toolchain[Keys::ToolchainCompilerCpp] = cpp;
 		m_jsonFile.setDirty(true);
 	}
+
 	if (!toolchain.contains(Keys::ToolchainCompilerC) || !toolchain[Keys::ToolchainCompilerC].is_string() || toolchain[Keys::ToolchainCompilerC].get<std::string>().empty())
 	{
 		if (cc.empty())
@@ -254,14 +256,14 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 #if defined(CHALET_LINUX)
 				searches.push_back("llvm-windres");
 #endif
-				searches.push_back("windres");
+				List::addIfDoesNotExist(searches, std::string("windres"));
 				searches.push_back("llvm-rc"); // check this after windres
 			}
 		}
 		else if (isGNU)
 		{
 			searches.push_back(preference.rc);
-			searches.push_back("windres");
+			List::addIfDoesNotExist(searches, std::string("windres"));
 		}
 		else
 		{
