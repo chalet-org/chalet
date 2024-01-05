@@ -69,14 +69,19 @@ bool destroySpinnerThread(const bool cancel = false)
 /*****************************************************************************/
 void Diagnostic::cancelEllipsis()
 {
-	bool spinnerDestroyed = destroySpinnerThread(true);
-	if (!spinnerDestroyed || Output::quietNonBuild())
+	if (Output::quietNonBuild())
+		return;
+
+	if (!Spinner::instanceCreated())
 		return;
 
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	std::cout.write(reset.data(), reset.size());
-	std::cout.flush();
+	if (destroySpinnerThread(true))
+	{
+		std::cout.write(reset.data(), reset.size());
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
