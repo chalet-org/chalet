@@ -5,8 +5,8 @@
 
 #include "Export/CodeBlocksProjectExporter.hpp"
 
-#include "Compile/CompileToolchainController.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CompileToolchainController.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CodeBlocks/CodeBlocksCBPGen.hpp"
 #include "Export/CodeBlocks/CodeBlocksWorkspaceGen.hpp"
@@ -46,6 +46,9 @@ std::string CodeBlocksProjectExporter::getMainProjectOutput(const BuildState& in
 std::string CodeBlocksProjectExporter::getMainProjectOutput()
 {
 	chalet_assert(!m_states.empty(), "states were empty getting project name");
+	if (m_states.empty())
+		return std::string();
+
 	return getMainProjectOutput(*m_states.front());
 }
 
