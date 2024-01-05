@@ -171,12 +171,6 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 
 	Output::setShowCommandOverride(false);
 
-	auto projectType = getProjectTypeName();
-	if (inForBuild)
-		Diagnostic::infoEllipsis("Generating '{}' format", projectType);
-	else
-		Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
-
 	if (inForBuild && !makeStateAndValidate(inCentralState, inCentralState.inputs().buildConfiguration()))
 		return false;
 
@@ -186,8 +180,16 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	const bool buildFileChanged = cacheFile.buildFileChanged();
 	const bool buildHashChanged = cacheFile.buildHashChanged();
 	const bool requiresRegen = !exportPathExists || appVersionChanged || buildFileChanged || buildHashChanged;
-	if (!inForBuild || requiresRegen)
+	const bool willGenerate = !inForBuild || requiresRegen;
+
+	auto projectType = getProjectTypeName();
+	if (willGenerate)
 	{
+		if (inForBuild)
+			Diagnostic::infoEllipsis("Generating '{}' format", projectType);
+		else
+			Diagnostic::infoEllipsis("Exporting to '{}' project format", projectType);
+
 		if (!inCentralState.tools.isSigningIdentityValid())
 			return false;
 
@@ -202,9 +204,9 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 
 		if (!generateProjectFiles())
 			return false;
-	}
 
-	Diagnostic::printDone(timer.asString());
+		Diagnostic::printDone(timer.asString());
+	}
 
 	Output::setShowCommandOverride(true);
 
