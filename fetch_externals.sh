@@ -20,7 +20,7 @@ repositories=(
 tags=(
 	'v2.x'
 	'10.1.1'
-	'master'
+	'chalet_v0.7.x'
 	'v3.10.2'
 	'v1.2.2'
 )
