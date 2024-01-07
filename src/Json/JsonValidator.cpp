@@ -74,7 +74,10 @@ void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, 
 
 	error.message = parseRawError(error);
 
-	m_errors.push_back(error);
+	if (!error.message.empty())
+	{
+		m_errors.push_back(error);
+	}
 }
 
 /*****************************************************************************/
@@ -144,13 +147,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return "The subschema has succeeded, but it is required to not validate";
 
 		case JsonSchemaError::logical_combination_all_of:
-			return fmt::format("At least one subschema has failed, but all of them are required to validate: {}", outError.value);
-
 		case JsonSchemaError::logical_combination_any_of:
-			return std::string(); // not currently handled
-
 		case JsonSchemaError::logical_combination_one_of:
-			return fmt::format("Exactly one subschema must pass, but all failed and any inner errors could not be returned: {}", outError.value);
+			// The inner errors should be handled instead - allOf, anyOf, oneOf are not useful info for the user
+			return std::string();
 
 		case JsonSchemaError::type_instance_unexpected_type: {
 			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))
@@ -165,21 +165,20 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			}
 		}
 
-		case JsonSchemaError::type_instance_not_found_in_required_enum: {
-			return fmt::format("An invalid value was found in '{}'. Expected string enum", parentKey);
-		}
+		case JsonSchemaError::type_instance_not_found_in_required_enum:
+			return std::string(); // not currently handled - can throw a false positive with unresolved const & enum comparisons
 
 		case JsonSchemaError::type_instance_not_const:
-			return "Instance not const";
+			return std::string(); // not currently handled - can throw a false positive with unresolved const & enum comparisons
 
 		case JsonSchemaError::string_min_length: {
 			const size_t min_length = std::any_cast<size_t>(data);
-			return "Instance is too short as per minLength:" + std::to_string(min_length);
+			return fmt::format("String in '{}' is shorter than the minimum length of {}", parentKey, min_length);
 		}
 
 		case JsonSchemaError::string_max_length: {
 			const size_t max_length = std::any_cast<size_t>(data);
-			return "Instance is too long as per maxLength:" + std::to_string(max_length);
+			return fmt::format("String in '{}' is longer than the maximum length of {}", parentKey, max_length);
 		}
 
 		case JsonSchemaError::string_content_checker_not_provided: {
@@ -259,7 +258,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			subError.data = std::move(std::get<1>(msg));
 			const auto& key = std::get<2>(msg);
 
-			return fmt::format("The '{}' object contains an unknown property '{}': {}", parentKey, key, parseRawError(subError));
+			return fmt::format("The object '{}' contains an unknown property '{}': {}", parentKey, key, parseRawError(subError));
 		}
 
 		case JsonSchemaError::array_required_not_empty:
@@ -344,9 +343,6 @@ bool JsonValidator::printErrors(JsonValidationErrors& errors)
 
 	for (auto& error : errors)
 	{
-		if (error.message.empty())
-			continue;
-
 		// Pass them to the primary error handler
 		String::replaceAll(error.message, '{', "{{");
 		String::replaceAll(error.message, '}', "}}");
