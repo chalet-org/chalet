@@ -214,12 +214,12 @@ bool JsonFile::validate(const Json& inSchemaJson)
 		// false if fatal error
 		if (!validator.printErrors(errors))
 		{
-			Diagnostic::error("Failed to validate the json file: {}", m_filename);
+			Diagnostic::error("Failed to validate the file: {}", m_filename);
 		}
 		else
 		{
 			// There was an exception
-			Diagnostic::error("An internal error occurred getting the JSON validation details for: {}", m_filename);
+			Diagnostic::error("An internal error occurred getting the validation details for: {}", m_filename);
 		}
 		return false;
 	}

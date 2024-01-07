@@ -262,6 +262,9 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return fmt::format("The '{}' object contains an unknown property '{}': {}", parentKey, key, parseRawError(subError));
 		}
 
+		case JsonSchemaError::array_required_not_empty:
+			return fmt::format("Array property '{}' was empty, but requires at least one item", parentKey);
+
 		case JsonSchemaError::array_too_many_items:
 			return fmt::format("Array property '{}' has too many items", parentKey);
 
