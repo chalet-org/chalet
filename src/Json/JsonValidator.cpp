@@ -173,12 +173,12 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 		case JsonSchemaError::string_min_length: {
 			const size_t min_length = std::any_cast<size_t>(data);
-			return fmt::format("String in '{}' is shorter than the minimum length of {}", parentKey, min_length);
+			return fmt::format("A {} in '{}' is shorter than the minimum length of {}", outError.typeName, parentKey, min_length);
 		}
 
 		case JsonSchemaError::string_max_length: {
 			const size_t max_length = std::any_cast<size_t>(data);
-			return fmt::format("String in '{}' is longer than the maximum length of {}", parentKey, max_length);
+			return fmt::format("A {} in '{}' is longer than the maximum length of {}", outError.typeName, parentKey, max_length);
 		}
 
 		case JsonSchemaError::string_content_checker_not_provided: {
