@@ -39,6 +39,10 @@ void Path::toUnix(std::string& outValue, const bool inRemoveNewLine)
 		while (outValue.back() == '/')
 			outValue.pop_back();
 	}
+
+#if defined(CHALET_WIN32)
+	Path::capitalizeDriveLetter(outValue);
+#endif
 }
 
 /*****************************************************************************/
@@ -59,9 +63,20 @@ void Path::toWindows(std::string& outValue, const bool inRemoveNewLine)
 
 	if (outValue.back() == ' ')
 		outValue.pop_back();
+
+	Path::capitalizeDriveLetter(outValue);
 #else
 	Path::toUnix(outValue, inRemoveNewLine);
 #endif
+}
+
+/*****************************************************************************/
+void Path::capitalizeDriveLetter(std::string& outValue)
+{
+	if (outValue.size() >= 3 && outValue[1] == ':' && outValue[2] == '/')
+	{
+		String::capitalize(outValue);
+	}
 }
 
 /*****************************************************************************/

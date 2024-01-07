@@ -183,7 +183,13 @@ std::string Files::getWorkingDirectory()
 	auto cwd = fs::current_path(error);
 
 	if (!error)
-		return cwd.string();
+	{
+		auto ret = cwd.string();
+#if defined(CHALET_WIN32)
+		Path::capitalizeDriveLetter(ret);
+#endif
+		return ret;
+	}
 	else
 		return std::string();
 }
@@ -962,7 +968,7 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart))
 	{
 		result = std::string(filename);
-		String::replaceAll(result, '\\', '/');
+		Path::toUnix(result);
 	}
 #else
 	if (!Files::pathExists(inExecutable)) // checks working dir
