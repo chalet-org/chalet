@@ -635,7 +635,15 @@ bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob,
 		auto settings = getCommandPoolSettings();
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.run(outJob, settings))
+		{
+			auto& failures = commandPool.failures();
+			for (auto& failure : failures)
+			{
+				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
+				Files::removeIfExists(dependency);
+			}
 			return false;
+		}
 	}
 
 	return true;
@@ -690,7 +698,16 @@ bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& out
 
 		CommandPool commandPool(m_state.info.maxJobs());
 		if (!commandPool.run(outJob, getCommandPoolSettings()))
+		{
+			auto& failures = commandPool.failures();
+			for (auto& failure : failures)
+			{
+				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
+				Files::removeIfExists(dependency);
+			}
+
 			return false;
+		}
 
 		Output::lineBreak();
 	}
