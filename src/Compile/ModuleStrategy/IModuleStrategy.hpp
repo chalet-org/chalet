@@ -15,6 +15,8 @@
 namespace chalet
 {
 class BuildState;
+struct CompileCommandsGenerator;
+
 class IModuleStrategy;
 using ModuleStrategy = Unique<IModuleStrategy>;
 
@@ -37,11 +39,11 @@ protected:
 	using DependencyGraph = std::unordered_map<SourceFileGroup*, std::vector<SourceFileGroup*>>;
 
 public:
-	explicit IModuleStrategy(BuildState& inState);
+	explicit IModuleStrategy(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 	CHALET_DISALLOW_COPY_MOVE(IModuleStrategy);
 	virtual ~IModuleStrategy() = default;
 
-	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState);
+	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
 	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
@@ -69,8 +71,10 @@ protected:
 	std::vector<SourceFileGroup*> getSourceFileGroupsForBuild(DependencyGraph& outDependencyGraph, SourceFileGroupList& outList) const;
 	void addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList) const;
 	void logPayload(const Dictionary<ModulePayload>& inPayload) const;
+	void addToCompileCommandsJson(const CommandPool::Cmd& inCmd) const;
 
 	BuildState& m_state;
+	CompileCommandsGenerator& m_compileCommandsGenerator;
 
 	std::string m_previousSource;
 

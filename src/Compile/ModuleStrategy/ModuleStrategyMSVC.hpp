@@ -11,7 +11,7 @@ namespace chalet
 {
 struct ModuleStrategyMSVC final : public IModuleStrategy
 {
-	explicit ModuleStrategyMSVC(BuildState& inState);
+	explicit ModuleStrategyMSVC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
 	virtual bool initialize() final;
 

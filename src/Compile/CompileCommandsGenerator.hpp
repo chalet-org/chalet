@@ -12,6 +12,7 @@ namespace chalet
 class BuildState;
 struct SourceTarget;
 struct SourceOutputs;
+struct SourceFileGroup;
 
 struct CompileCommandsGenerator
 {
@@ -25,9 +26,11 @@ struct CompileCommandsGenerator
 
 	bool fileExists() const;
 
-private:
 	void addCompileCommand(const std::string& inFile, StringList&& inCommand);
 	void addCompileCommand(const std::string& inFile, std::string&& inCommand);
+
+private:
+	StringList getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup) const;
 
 	const BuildState& m_state;
 

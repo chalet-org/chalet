@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "System/Files.hpp"
@@ -35,31 +36,6 @@ CompileCommandsGenerator::~CompileCommandsGenerator() = default;
 /*****************************************************************************/
 bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs)
 {
-	auto getCommand = [&inToolchain](const SourceFileGroup& group) -> StringList {
-		const auto& source = group.sourceFile;
-		const auto& object = group.objectFile;
-		std::string dep;
-		// Note: No windows resource files
-		switch (group.type)
-		{
-			case SourceType::CxxPrecompiledHeader:
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, std::string());
-
-			case SourceType::C:
-			case SourceType::CPlusPlus:
-			case SourceType::ObjectiveC:
-			case SourceType::ObjectiveCPlusPlus:
-				return inToolchain->compilerCxx->getCommand(source, object, dep, group.type);
-
-			case SourceType::WindowsResource:
-			case SourceType::Unknown:
-			default:
-				break;
-		}
-
-		return StringList();
-	};
-
 	bool quotedPaths = inToolchain->linker->quotedPaths();
 	bool generateDependencies = inToolchain->linker->generateDependencies();
 
@@ -68,7 +44,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	for (auto& group : inOutputs.groups)
 	{
-		StringList outCommand = getCommand(*group);
+		StringList outCommand = getCommand(inToolchain, *group);
 		if (outCommand.empty())
 			continue;
 
@@ -79,6 +55,35 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 	inToolchain->setGenerateDependencies(generateDependencies);
 
 	return true;
+}
+
+/*****************************************************************************/
+StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup) const
+{
+	const auto& source = inGroup.sourceFile;
+	const auto& object = inGroup.objectFile;
+	std::string dep;
+	// Note: No windows resource files
+
+	switch (inGroup.type)
+	{
+		case SourceType::CxxPrecompiledHeader:
+			return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, std::string());
+
+		case SourceType::C:
+		case SourceType::CPlusPlus:
+		case SourceType::ObjectiveC:
+		case SourceType::ObjectiveCPlusPlus: {
+			return inToolchain->compilerCxx->getCommand(source, object, dep, inGroup.type);
+		}
+
+		case SourceType::WindowsResource:
+		case SourceType::Unknown:
+		default:
+			break;
+	}
+
+	return StringList();
 }
 
 /*****************************************************************************/

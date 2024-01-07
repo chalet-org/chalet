@@ -145,7 +145,7 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 		auto& outputs = m_outputs.at(name);
 		auto& toolchain = m_toolchains.at(name);
 
-		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state);
+		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state, m_compileCommandsGenerator);
 		if (!moduleStrategy->initialize())
 			return false;
 

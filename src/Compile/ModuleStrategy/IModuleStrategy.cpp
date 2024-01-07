@@ -8,7 +8,9 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "Compile/CompileCommandsGenerator.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -25,18 +27,19 @@
 namespace chalet
 {
 /*****************************************************************************/
-IModuleStrategy::IModuleStrategy(BuildState& inState) :
-	m_state(inState)
+IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator) :
+	m_state(inState),
+	m_compileCommandsGenerator(inCompileCommandsGenerator)
 {
 }
 
 /*****************************************************************************/
-[[nodiscard]] ModuleStrategy IModuleStrategy::make(const ToolchainType inType, BuildState& inState)
+[[nodiscard]] ModuleStrategy IModuleStrategy::make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator)
 {
 	switch (inType)
 	{
 		case ToolchainType::VisualStudio:
-			return std::make_unique<ModuleStrategyMSVC>(inState);
+			return std::make_unique<ModuleStrategyMSVC>(inState, inCompileCommandsGenerator);
 		default:
 			break;
 	}
@@ -130,7 +133,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		Output::lineBreak();
 
 	{
-		auto cwd = Path::getWithSeparatorSuffix(String::toLowerCase(Files::getWorkingDirectory()));
+		auto cwd = m_state.inputs.workingDirectory() + '/';
 
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
@@ -166,8 +169,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				}
 				else
 				{
-					auto lowerHeader = String::toLowerCase(header);
-					if (String::startsWith(cwd, lowerHeader))
+					if (String::startsWith(cwd, header))
 						file = header.substr(cwd.size());
 					else
 						file = header;
@@ -434,11 +436,16 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
 				out.reference = source;
+				addToCompileCommandsJson(out);
 			}
 			else
 			{
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
 				out.reference = source;
+				if (type == ModuleFileType::HeaderUnitObject)
+				{
+					addToCompileCommandsJson(out);
+				}
 			}
 
 			ret.emplace_back(std::move(out));
@@ -937,4 +944,14 @@ void IModuleStrategy::checkCommandsForChanges(const SourceTarget& inProject, Com
 		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
 	}
 }
+
+/*****************************************************************************/
+void IModuleStrategy::addToCompileCommandsJson(const CommandPool::Cmd& inCmd) const
+{
+	if (m_state.info.generateCompileCommands())
+	{
+		m_compileCommandsGenerator.addCompileCommand(inCmd.reference, StringList(inCmd.command));
+	}
+}
+
 }

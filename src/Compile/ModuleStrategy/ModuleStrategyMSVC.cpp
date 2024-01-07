@@ -18,8 +18,8 @@
 namespace chalet
 {
 /*****************************************************************************/
-ModuleStrategyMSVC::ModuleStrategyMSVC(BuildState& inState) :
-	IModuleStrategy(inState)
+ModuleStrategyMSVC::ModuleStrategyMSVC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator) :
+	IModuleStrategy(inState, inCompileCommandsGenerator)
 {
 }
 
