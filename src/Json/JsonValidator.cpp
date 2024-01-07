@@ -143,25 +143,14 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		case JsonSchemaError::logical_not:
 			return "The subschema has succeeded, but it is required to not validate";
 
-		case JsonSchemaError::logical_combination: {
-			auto msg = fmt::format("Invalid value type found in: {}", String::join(outError.tree, '.'));
-			return msg;
-		}
-
-		case JsonSchemaError::logical_combination_all_of: {
-			const auto msg = std::any_cast<std::pair<JsonSchemaError, std::any>>(data);
-
-			JsonValidationError subError = outError;
-			subError.type = msg.first;
-			subError.data = std::move(msg.second);
-			return "At least one subschema has failed, but all of them are required to validate - " + parseRawError(subError);
-		}
+		case JsonSchemaError::logical_combination_all_of:
+			return fmt::format("At least one subschema has failed, but all of them are required to validate: {}", outError.value);
 
 		case JsonSchemaError::logical_combination_any_of:
 			return std::string(); // not currently handled
 
 		case JsonSchemaError::logical_combination_one_of:
-			return "More than one subschema has succeeded, but exactly one of them is required to validate";
+			return fmt::format("Exactly one subschema must pass, but all failed and any inner errors could not be returned: {}", outError.value);
 
 		case JsonSchemaError::type_instance_unexpected_type: {
 			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))

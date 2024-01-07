@@ -15,7 +15,6 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/int.chalet",
                 "/usr/local/include/**",
                 "/usr/include/**"
             ],
@@ -47,7 +46,6 @@
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
                 "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/int.chalet",
                 "/usr/local/include/"
             ],
             "defines": [
@@ -73,8 +71,7 @@
                 "${workspaceFolder}/external/stduuid/gsl",
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
-                "${workspaceFolder}/build/msvc_Debug",
-                "${workspaceFolder}/build/int.chalet"
+                "${workspaceFolder}/build/msvc_Debug"
             ],
             "defines": [
                 "_WIN32",
@@ -102,8 +99,7 @@
                 "${workspaceFolder}/external/stduuid/gsl",
                 "${workspaceFolder}/external",
                 "${workspaceFolder}/tests",
-                "${workspaceFolder}/build/Debug",
-                "${workspaceFolder}/build/int.chalet"
+                "${workspaceFolder}/build/Debug"
             ],
             "defines": [
                 "_WIN32",

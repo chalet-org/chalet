@@ -215,8 +215,13 @@ bool JsonFile::validate(const Json& inSchemaJson)
 		if (!validator.printErrors(errors))
 		{
 			Diagnostic::error("Failed to validate the json file: {}", m_filename);
-			return false;
 		}
+		else
+		{
+			// There was an exception
+			Diagnostic::error("An internal error occurred getting the JSON validation details for: {}", m_filename);
+		}
+		return false;
 	}
 
 	return true;
