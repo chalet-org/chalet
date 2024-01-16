@@ -882,15 +882,28 @@ bool BuildState::validateState()
 			auto vsperfcmd = Files::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				std::string progFiles = Environment::getString("ProgramFiles(x86)");
-				// TODO: more portable version
-				vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\vs2022\\vsperfcmd.exe", progFiles);
-				if (vsperfcmd.empty())
+				std::string vsVersion;
+				if (inputs.visualStudioVersion() == VisualStudioVersion::VisualStudio2022)
+					vsVersion = "vs2022";
+				else if (inputs.visualStudioVersion() == VisualStudioVersion::VisualStudio2019)
+					vsVersion = "vs2019";
+
+				if (!vsVersion.empty())
 				{
-					Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe or vsperf.exe, but they were not found in Path.");
-					return false;
+					std::string progFiles = Environment::getString("ProgramFiles(x86)");
+					// TODO: more portable version
+					vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\{}\\vsperfcmd.exe", progFiles, vsVersion);
+					if (!Files::pathExists(vsperfcmd))
+						vsperfcmd.clear();
 				}
 			}
+
+			if (vsperfcmd.empty())
+			{
+				Diagnostic::error("Profiling with MSVC requires vsperfcmd.exe, but it was not found in Path.");
+				return false;
+			}
+
 			tools.setVsperfcmd(std::move(vsperfcmd));
 		}
 #endif
