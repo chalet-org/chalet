@@ -191,7 +191,7 @@ void Arch::set(const std::string& inValue)
 	}
 	else if (String::endsWith("_arm64", str))
 	{
-		val = Arch::Cpu::ARMHF;
+		val = Arch::Cpu::ARM64;
 	}
 #endif
 	else if (String::equals("wasm32", str))
