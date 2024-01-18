@@ -85,4 +85,12 @@ bool FleetProjectExporter::generateProjectFiles()
 
 	return true;
 }
+
+/*****************************************************************************/
+bool FleetProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	UNUSED(inProject);
+	return true;
+}
+
 }

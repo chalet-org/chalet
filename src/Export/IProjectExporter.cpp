@@ -226,9 +226,12 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
 
-		if (inputs.exportOpen())
+		if (inputs.openAfterExport())
 		{
-			// LOG("opening:", project);
+			Diagnostic::printErrors();
+
+			if (!openProjectFilesInEditor(project))
+				return false;
 		}
 	}
 

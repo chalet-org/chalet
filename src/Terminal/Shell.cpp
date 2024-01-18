@@ -279,18 +279,18 @@ void setTerminalType()
 #if defined(CHALET_WIN32)
 	// TOOD: Cygwin, Windows Terminal
 
-	// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
-	auto result = Environment::get("MSYSTEM");
-	if (result != nullptr)
-	{
-		state.terminalType = ShellType::Bash;
-		return printTermType();
-	}
-
-	result = Environment::get("VSAPPIDDIR");
+	auto result = Environment::get("VSAPPIDDIR");
 	if (result != nullptr)
 	{
 		state.terminalType = ShellType::CommandPromptVisualStudio;
+		return printTermType();
+	}
+
+	// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
+	result = Environment::get("MSYSTEM");
+	if (result != nullptr)
+	{
+		state.terminalType = ShellType::Bash;
 		return printTermType();
 	}
 

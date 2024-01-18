@@ -124,6 +124,13 @@ bool XcodeProjectExporter::generateProjectFiles()
 }
 
 /*****************************************************************************/
+bool XcodeProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	UNUSED(inProject);
+	return true;
+}
+
+/*****************************************************************************/
 std::string XcodeProjectExporter::getProjectName(const BuildState& inState) const
 {
 	const auto& workspaceName = inState.workspace.metadata().name();

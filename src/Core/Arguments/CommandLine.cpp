@@ -270,7 +270,7 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 					}
 
 					case ArgumentIdentifier::ExportOpen: {
-						inputs->setExportOpen(value);
+						inputs->setOpenAfterExport(value);
 						break;
 					}
 

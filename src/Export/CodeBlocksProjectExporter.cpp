@@ -101,6 +101,13 @@ bool CodeBlocksProjectExporter::generateProjectFiles()
 }
 
 /*****************************************************************************/
+bool CodeBlocksProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	auto project = Files::getCanonicalPath(inProject);
+	return Files::openWithDefaultApplication(project);
+}
+
+/*****************************************************************************/
 std::string CodeBlocksProjectExporter::getProjectName(const BuildState& inState) const
 {
 	const auto& workspaceName = inState.workspace.metadata().name();

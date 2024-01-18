@@ -11,6 +11,8 @@
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"
 #include "Export/VisualStudioJson/VSProjectSettingsGen.hpp"
 #include "Export/VisualStudioJson/VSTasksGen.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -119,5 +121,34 @@ bool VSJsonProjectExporter::generateProjectFiles()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool VSJsonProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	std::string devEnvDir;
+	auto visualStudio = Files::which("devenv");
+	if (visualStudio.empty())
+	{
+		devEnvDir = Environment::getString("DevEnvDir");
+		visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
+		if (devEnvDir.empty() || !Files::pathExists(visualStudio))
+		{
+			Diagnostic::error("Failed to launch in Visual Studio: {}", inProject);
+			return false;
+		}
+	}
+	else
+	{
+		devEnvDir = String::getPathFolder(visualStudio);
+	}
+
+	// auto project = Files::getCanonicalPath(inProject);
+	const auto& cwd = workingDirectory();
+	return Process::runMinimalOutput({ visualStudio, cwd }, devEnvDir);
+
+	// LOG("VSSolutionProjectExporter::openProjectFilesInEditor", inProject);
+	// UNUSED(inProject);
+	// return true;
 }
 }

@@ -9,13 +9,17 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudio/VSSolutionGen.hpp"
 #include "Export/VisualStudio/VSVCXProjGen.hpp"
+#include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -141,6 +145,34 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool VSSolutionProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	std::string devEnvDir;
+	auto visualStudio = Files::which("devenv");
+	if (visualStudio.empty())
+	{
+		devEnvDir = Environment::getString("DevEnvDir");
+		visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
+		if (devEnvDir.empty() || !Files::pathExists(visualStudio))
+		{
+			Diagnostic::error("Failed to launch in Visual Studio: {}", inProject);
+			return false;
+		}
+	}
+	else
+	{
+		devEnvDir = String::getPathFolder(visualStudio);
+	}
+
+	auto project = Files::getCanonicalPath(inProject);
+	return Process::runMinimalOutput({ visualStudio, project }, devEnvDir);
+
+	// LOG("VSSolutionProjectExporter::openProjectFilesInEditor", inProject);
+	// UNUSED(inProject);
+	// return true;
 }
 
 /*****************************************************************************/

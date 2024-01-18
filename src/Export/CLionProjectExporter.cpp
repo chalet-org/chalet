@@ -85,4 +85,11 @@ bool CLionProjectExporter::generateProjectFiles()
 
 	return true;
 }
+
+/*****************************************************************************/
+bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	UNUSED(inProject);
+	return true;
+}
 }

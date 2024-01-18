@@ -1168,13 +1168,13 @@ void CommandLineInputs::setSaveUserToolchainGlobally(const bool inValue) noexcep
 }
 
 /*****************************************************************************/
-bool CommandLineInputs::exportOpen() const noexcept
+bool CommandLineInputs::openAfterExport() const noexcept
 {
-	return m_exportOpen;
+	return m_openAfterExport;
 }
-void CommandLineInputs::setExportOpen(const bool inValue) noexcept
+void CommandLineInputs::setOpenAfterExport(const bool inValue) noexcept
 {
-	m_exportOpen = inValue;
+	m_openAfterExport = inValue;
 }
 
 /*****************************************************************************/

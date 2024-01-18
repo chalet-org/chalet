@@ -38,6 +38,7 @@ protected:
 	virtual std::string getProjectTypeName() const = 0;
 	virtual bool validate(const BuildState& inState) = 0;
 	virtual bool generateProjectFiles() = 0;
+	virtual bool openProjectFilesInEditor(const std::string& inProject) = 0;
 
 	virtual bool shouldCleanOnReExport() const;
 

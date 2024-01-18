@@ -59,6 +59,8 @@ bool addPathToListWithGlob(const std::string& inValue, StringList& outList, cons
 bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 void sleep(const f64 inSeconds);
 
+bool openWithDefaultApplication(const std::string& inFile);
+
 bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions = {});
 

@@ -11,6 +11,7 @@
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
 #include "Export/VSCode/VSCodeSettingsGen.hpp"
 #include "Export/VSCode/VSCodeTasksGen.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -117,5 +118,18 @@ bool VSCodeProjectExporter::generateProjectFiles()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProject)
+{
+	UNUSED(inProject);
+	const auto& cwd = workingDirectory();
+
+	auto code = Files::which("code");
+	if (code.empty())
+		return false;
+
+	return Process::runMinimalOutput({ code, cwd });
 }
 }

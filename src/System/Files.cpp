@@ -871,6 +871,31 @@ void Files::sleep(const f64 inSeconds)
 }
 
 /*****************************************************************************/
+bool Files::openWithDefaultApplication(const std::string& inFile)
+{
+#if defined(CHALET_WIN32)
+	SHELLEXECUTEINFOA ShExecInfo = { 0 };
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = nullptr;
+	ShExecInfo.lpVerb = "open";
+	ShExecInfo.lpFile = inFile.c_str();
+	ShExecInfo.lpParameters = "";
+	ShExecInfo.lpDirectory = nullptr;
+	ShExecInfo.nShow = SW_SHOW;
+	ShExecInfo.hInstApp = nullptr;
+	::ShellExecuteExA(&ShExecInfo);
+	::WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
+	::CloseHandle(ShExecInfo.hProcess);
+
+	return true;
+#else
+	UNUSED(project);
+	return true;
+#endif
+}
+
+/*****************************************************************************/
 bool Files::createFileWithContents(const std::string& inFile, const std::string& inContents)
 {
 	auto folder = String::getPathFolder(inFile);
