@@ -1475,6 +1475,8 @@ void ArgumentParser::populateExportArguments()
 	addOsTargetNameArg();
 	addOsTargetVersionArg();
 	addSigningIdentityArg();
+	addShowCommandsArg();
+	addBenchmarkArg();
 	addExportOpenArg();
 
 	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind);
