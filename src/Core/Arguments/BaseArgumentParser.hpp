@@ -9,7 +9,7 @@ namespace chalet
 {
 class BaseArgumentParser
 {
-	using RawArgumentList = std::unordered_map<std::string, std::string>;
+	using RawArgumentList = std::map<std::string, std::string>;
 
 public:
 	BaseArgumentParser() = default;

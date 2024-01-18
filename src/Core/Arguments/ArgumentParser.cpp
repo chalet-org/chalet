@@ -379,12 +379,9 @@ bool ArgumentParser::doParse()
 	}
 	else
 	{
-		if (m_routeString.empty())
+		if (containsOption(Positional::Argument1) && m_routeString.empty())
 		{
-			if (containsOption(Positional::Argument1))
-				Diagnostic::error("Invalid subcommand: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
-			else
-				Diagnostic::error("Invalid argument(s) found. See 'chalet --help'.");
+			Diagnostic::error("Invalid subcommand: '{}'. See 'chalet --help'.", m_rawArguments.at(Positional::Argument1));
 			return false;
 		}
 
@@ -537,6 +534,9 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 		if (String::startsWith('@', key))
 		{
 			positionalArgs++;
+
+			if (String::equals(m_routeString, arg))
+				continue;
 
 			if (positionalArgs > maxPositionalArgs)
 				invalid.emplace_back(arg);

@@ -17,7 +17,7 @@ TEST_CASE("chalet::ArgumentsTest", "[args]")
 	REQUIRE(String::endsWith("Unknown argument: 'extraarg'. See 'chalet configure --help'.", res));
 
 	res = Process::runOutput({ exec, "-z", "bogus" });
-	REQUIRE(String::endsWith("Invalid argument(s) found. See 'chalet --help'.", res));
+	REQUIRE(String::endsWith("Unknown argument: '-z'. See 'chalet --help'.", res));
 
 	res = Process::runOutput({ exec, "set" });
 	REQUIRE(String::endsWith("Missing required argument: '<key>'. See 'chalet set --help'.", res));
