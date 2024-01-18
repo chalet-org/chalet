@@ -231,7 +231,10 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 			Diagnostic::printErrors();
 
 			if (!openProjectFilesInEditor(project))
+			{
+				Diagnostic::error("There was a problem opening the editor.");
 				return false;
+			}
 		}
 	}
 
