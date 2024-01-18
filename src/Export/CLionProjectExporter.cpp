@@ -95,8 +95,13 @@ bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject
 
 	// auto project = Files::getCanonicalPath(inProject);
 	auto clion = Files::which("clion");
+#if defined(CHALET_WIN32)
+	if (clion.empty())
+		clion = Files::which("clion64");
+#endif
+
 	if (!clion.empty())
-		return Process::run({ clion, cwd });
+		return Process::runMinimalOutput({ clion, cwd });
 	else
 		return false;
 }

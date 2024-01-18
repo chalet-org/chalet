@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Fleet/FleetWorkspaceGen.hpp"
+#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
@@ -95,8 +96,17 @@ bool FleetProjectExporter::openProjectFilesInEditor(const std::string& inProject
 
 	// auto project = Files::getCanonicalPath(inProject);
 	auto fleet = Files::which("fleet");
+#if defined(CHALET_WIN32)
+	if (fleet.empty())
+	{
+		auto appData = Environment::get("APPDATA");
+		fleet = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Fleet/Fleet.exe", appData));
+		if (!Files::pathExists(fleet))
+			fleet.clear();
+	}
+#endif
 	if (!fleet.empty())
-		return Process::run({ fleet, cwd });
+		return Process::runMinimalOutput({ fleet, cwd });
 	else
 		return false;
 }

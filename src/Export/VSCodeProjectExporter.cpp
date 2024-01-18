@@ -11,6 +11,7 @@
 #include "Export/VSCode/VSCodeLaunchGen.hpp"
 #include "Export/VSCode/VSCodeSettingsGen.hpp"
 #include "Export/VSCode/VSCodeTasksGen.hpp"
+#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
@@ -128,8 +129,22 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 
 	// auto project = Files::getCanonicalPath(inProject);
 	auto code = Files::which("code");
+#if defined(CHALET_WIN32)
+	if (code.empty())
+	{
+		auto appData = Environment::get("APPDATA");
+		code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
+		if (!Files::pathExists(code))
+		{
+			auto programFiles = Environment::get("ProgramFiles");
+			code = Files::getCanonicalPath(fmt::format("{}/VSCodium/VSCodium.exe", programFiles));
+			if (!Files::pathExists(code))
+				code.clear();
+		}
+	}
+#endif
 	if (!code.empty())
-		return Process::run({ code, cwd });
+		return Process::runMinimalOutput({ code, cwd });
 	else
 		return false;
 }
