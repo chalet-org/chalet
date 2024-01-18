@@ -126,10 +126,11 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	UNUSED(inProject);
 	const auto& cwd = workingDirectory();
 
+	// auto project = Files::getCanonicalPath(inProject);
 	auto code = Files::which("code");
-	if (code.empty())
+	if (!code.empty())
+		return Process::run({ code, cwd });
+	else
 		return false;
-
-	return Process::runMinimalOutput({ code, cwd });
 }
 }

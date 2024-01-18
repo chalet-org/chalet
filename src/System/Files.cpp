@@ -889,9 +889,25 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 	::CloseHandle(ShExecInfo.hProcess);
 
 	return true;
+#elif defined(CHALET_MACOS)
+	auto open = Files::which("open");
+	if (!open.empty())
+		return Process::run({ open, inFile });
+	else
+		return false;
 #else
-	UNUSED(inFile);
-	return true;
+	auto open = Files::which("xdg-open");
+	if (open.empty())
+		open = Files::which("gnome-open");
+	if (open.empty())
+		open = Files::which("kde-open");
+	if (open.empty())
+		open = Files::which("mimeopen");
+
+	if (!open.empty())
+		return Process::run({ open, inFile });
+	else
+		return false;
 #endif
 }
 

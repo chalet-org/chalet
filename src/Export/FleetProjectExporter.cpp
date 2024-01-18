@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Export/Fleet/FleetWorkspaceGen.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -90,7 +91,14 @@ bool FleetProjectExporter::generateProjectFiles()
 bool FleetProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
 	UNUSED(inProject);
-	return true;
+	const auto& cwd = workingDirectory();
+
+	// auto project = Files::getCanonicalPath(inProject);
+	auto fleet = Files::which("fleet");
+	if (!fleet.empty())
+		return Process::run({ fleet, cwd });
+	else
+		return false;
 }
 
 }

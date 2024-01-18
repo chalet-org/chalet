@@ -126,8 +126,8 @@ bool XcodeProjectExporter::generateProjectFiles()
 /*****************************************************************************/
 bool XcodeProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
-	UNUSED(inProject);
-	return true;
+	auto project = Files::getCanonicalPath(inProject);
+	return Files::openWithDefaultApplication(project);
 }
 
 /*****************************************************************************/

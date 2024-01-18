@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CLion/CLionWorkspaceGen.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -90,6 +91,13 @@ bool CLionProjectExporter::generateProjectFiles()
 bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
 	UNUSED(inProject);
-	return true;
+	const auto& cwd = workingDirectory();
+
+	// auto project = Files::getCanonicalPath(inProject);
+	auto clion = Files::which("clion");
+	if (!clion.empty())
+		return Process::run({ clion, cwd });
+	else
+		return false;
 }
 }
