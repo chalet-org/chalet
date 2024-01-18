@@ -222,7 +222,7 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 		const auto& cwd = inputs.workingDirectory();
 		String::replaceAll(project, fmt::format("{}/", cwd), "");
 
-		auto output = fmt::format("\n   Ouptut {}\u2192 {}{}{}\n", flair, color, project, reset);
+		auto output = fmt::format("\n   Output {}\u2192 {}{}{}\n", flair, color, project, reset);
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
 	}
