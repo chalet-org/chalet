@@ -50,125 +50,107 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 		switch (kind)
 		{
 			case Variant::Kind::String: {
-				auto value = mapped.value().asString();
-				if (value.empty())
-					continue;
-
+				auto& variant = mapped.value();
 				switch (id)
 				{
 					case ArgumentIdentifier::BuildTargetName:
-						inputs->setLastTarget(std::move(value));
+						inputs->setLastTarget(variant.asString());
 						break;
 
 					case ArgumentIdentifier::BuildConfiguration:
-						buildConfiguration = std::move(value);
+						buildConfiguration = variant.asString();
 						break;
 
 					case ArgumentIdentifier::InputFile:
-						inputFile = std::move(value);
+						inputFile = variant.asString();
 						break;
 
 					case ArgumentIdentifier::SettingsFile:
-						settingsFile = std::move(value);
+						settingsFile = variant.asString();
 						break;
 
 					case ArgumentIdentifier::File:
-						settingsFile = std::move(value);
+						settingsFile = variant.asString();
 						break;
 
 					case ArgumentIdentifier::RootDirectory:
-						rootDirectory = std::move(value);
+						rootDirectory = variant.asString();
 						break;
 
 					case ArgumentIdentifier::OutputDirectory:
-						outputDirectory = std::move(value);
+						outputDirectory = variant.asString();
 						break;
 
 					case ArgumentIdentifier::ExternalDirectory:
-						externalDirectory = std::move(value);
+						externalDirectory = variant.asString();
 						break;
 
 					case ArgumentIdentifier::DistributionDirectory:
-						distributionDirectory = std::move(value);
+						distributionDirectory = variant.asString();
 						break;
 
 					case ArgumentIdentifier::Toolchain:
-						toolchainPreference = std::move(value);
+						toolchainPreference = variant.asString();
 						break;
 
 					case ArgumentIdentifier::SigningIdentity:
-						inputs->setSigningIdentity(std::move(value));
+						inputs->setSigningIdentity(variant.asString());
 						break;
 
 					case ArgumentIdentifier::OsTargetName:
-						inputs->setOsTargetName(std::move(value));
+						inputs->setOsTargetName(variant.asString());
 						break;
 
 					case ArgumentIdentifier::OsTargetVersion:
-						inputs->setOsTargetVersion(std::move(value));
+						inputs->setOsTargetVersion(variant.asString());
 						break;
 
 					case ArgumentIdentifier::ExportKind:
-						inputs->setExportKind(std::move(value));
+						inputs->setExportKind(variant.asString());
 						break;
 
 					case ArgumentIdentifier::EnvFile:
-						envFile = std::move(value);
+						envFile = variant.asString();
 						break;
 
 					case ArgumentIdentifier::TargetArchitecture:
-						architecturePreference = std::move(value);
+						architecturePreference = variant.asString();
 						break;
 
 					case ArgumentIdentifier::BuildStrategy:
-						inputs->setBuildStrategyPreference(std::move(value));
+						inputs->setBuildStrategyPreference(variant.asString());
 						break;
 
 					case ArgumentIdentifier::BuildPathStyle:
-						inputs->setBuildPathStylePreference(std::move(value));
+						inputs->setBuildPathStylePreference(variant.asString());
 						break;
 
 					case ArgumentIdentifier::InitPath:
-						inputs->setInitPath(std::move(value));
+						inputs->setInitPath(variant.asString());
 						break;
 
 					case ArgumentIdentifier::InitTemplate:
-						inputs->setInitTemplate(std::move(value));
+						inputs->setInitTemplate(variant.asString());
 						break;
 
 					case ArgumentIdentifier::SettingsKey:
-						inputs->setSettingsKey(std::move(value));
+						inputs->setSettingsKey(variant.asString());
 						break;
 
 					case ArgumentIdentifier::SettingsValue:
-						inputs->setSettingsValue(std::move(value));
-						break;
-
-					case ArgumentIdentifier::SettingsKeysRemainingArgs:
+						inputs->setSettingsValue(variant.asString());
 						break;
 
 					case ArgumentIdentifier::ValidateSchemaFile:
-						settingsFile = std::move(value);
-						break;
-
-					case ArgumentIdentifier::ValidateFilesRemainingArgs:
-						inputs->setRunArguments(std::move(value));
+						settingsFile = variant.asString();
 						break;
 
 					case ArgumentIdentifier::QueryType:
-						inputs->setQueryOption(std::move(value));
+						inputs->setQueryOption(variant.asString());
 						break;
 
 					case ArgumentIdentifier::ConvertFormat:
-						inputs->setSettingsKey(std::move(value));
-						break;
-
-					case ArgumentIdentifier::RunTargetArguments:
-						inputs->setRunArguments(std::move(value));
-						break;
-
-					case ArgumentIdentifier::QueryDataRemainingArgs:
-						inputs->setQueryData(String::split(value, ' '));
+						inputs->setSettingsKey(variant.asString());
 						break;
 
 					default: break;
@@ -178,19 +160,27 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 			}
 
 			case Variant::Kind::StringList: {
-				// if (id == ArgumentIdentifier::RunTargetArguments)
-				// {
-				// 	auto runArgs = String::join(mapped.value().asStringList());
-				// 	inputs->setRunArguments(std::move(runArgs));
-				// }
-				// else if (id == ArgumentIdentifier::SettingsKeysRemainingArgs)
-				// {
-				// 	// ignore
-				// }
-				// else if (id == ArgumentIdentifier::QueryDataRemainingArgs)
-				// {
-				// 	inputs->setQueryData(mapped.value().asStringList());
-				// }
+				auto& variant = mapped.value();
+				switch (id)
+				{
+					case ArgumentIdentifier::ValidateFilesRemainingArgs:
+						inputs->setRunArguments(variant.asStringList());
+						break;
+
+					case ArgumentIdentifier::RunTargetArguments:
+						inputs->setRunArguments(variant.asStringList());
+						break;
+
+					case ArgumentIdentifier::QueryDataRemainingArgs:
+						inputs->setQueryData(variant.asStringList());
+						break;
+
+					case ArgumentIdentifier::SettingsKeysRemainingArgs:
+						break;
+
+					default: break;
+				}
+
 				break;
 			}
 
@@ -276,6 +266,11 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 					case ArgumentIdentifier::GlobalSettings: {
 						if (value)
 							inputs->setSettingsType(SettingsType::Global);
+						break;
+					}
+
+					case ArgumentIdentifier::ExportOpen: {
+						inputs->setExportOpen(value);
 						break;
 					}
 

@@ -185,6 +185,9 @@ struct CommandLineInputs
 	bool saveUserToolchainGlobally() const noexcept;
 	void setSaveUserToolchainGlobally(const bool inValue) noexcept;
 
+	bool exportOpen() const noexcept;
+	void setExportOpen(const bool inValue) noexcept;
+
 	StringList getToolchainPresets() const;
 	StringList getExportKindPresets() const;
 	StringList getConvertFormatPresets() const;
@@ -258,5 +261,6 @@ private:
 	mutable bool m_isToolchainPreset = false;
 	mutable bool m_isMultiArchToolchainPreset = false;
 	bool m_saveUserToolchainGlobally = false;
+	bool m_exportOpen = false;
 };
 }

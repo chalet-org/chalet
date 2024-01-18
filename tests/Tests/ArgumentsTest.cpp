@@ -14,7 +14,7 @@ TEST_CASE("chalet::ArgumentsTest", "[args]")
 	REQUIRE(String::endsWith("Invalid subcommand: 'badcmd'. See 'chalet --help'.", res));
 
 	res = Process::runOutput({ exec, "configure", "extraarg" });
-	REQUIRE(String::endsWith("Maximum number of positional arguments exceeded. See 'chalet configure --help'.", res));
+	REQUIRE(String::endsWith("Unknown argument: 'extraarg'. See 'chalet configure --help'.", res));
 
 	res = Process::runOutput({ exec, "-z", "bogus" });
 	REQUIRE(String::endsWith("Invalid argument(s) found. See 'chalet --help'.", res));

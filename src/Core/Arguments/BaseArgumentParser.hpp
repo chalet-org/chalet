@@ -17,7 +17,12 @@ public:
 	virtual ~BaseArgumentParser() = default;
 
 protected:
-	bool parse(const i32 argc, const char* argv[], const i32 inPositionalArgs = 0);
+	StringList getArgumentList(const i32 argc, const char* argv[]);
+
+	bool parse(StringList&& args, const u32 inPositionalArgs = 0);
+
+	bool parseArgument(size_t& index, std::string& arg, const std::string& nextArg);
+	void parseArgumentValue(std::string& arg);
 
 	virtual StringList getTruthyArguments() const = 0;
 
@@ -25,9 +30,9 @@ protected:
 	bool containsOption(const std::string& inShort, const std::string& inLong);
 
 	RawArgumentList m_rawArguments;
+	StringList m_remainingArguments;
 
 private:
-	std::optional<std::string> getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption);
-	bool optionExists(const char** inBegin, const char** inEnd, const std::string& inOption);
+	StringList m_truthyArguments;
 };
 }

@@ -43,6 +43,7 @@ private:
 	RouteType getRouteFromString(const std::string& inValue) const;
 
 	void makeParser();
+	void checkRemainingArguments();
 	bool doParse();
 	bool showHelp();
 	bool showVersion();
@@ -53,6 +54,7 @@ private:
 
 	MappedArgument& addStringArgument(const ArgumentIdentifier inId, const char* inArg, std::string inDefaultValue = std::string());
 	MappedArgument& addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue = std::string());
+	MappedArgument& addTwoStringListArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, StringList inDefaultValue = StringList());
 	MappedArgument& addTwoIntArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong);
 	MappedArgument& addBoolArgument(const ArgumentIdentifier inId, const char* inArgument, const bool inDefaultValue);
 	MappedArgument& addOptionalBoolArgument(const ArgumentIdentifier inId, const char* inArgument);
@@ -94,6 +96,7 @@ private:
 	void addSigningIdentityArg();
 	void addOsTargetNameArg();
 	void addOsTargetVersionArg();
+	void addExportOpenArg();
 
 	void populateBuildRunArguments();
 	void populateRunArguments();
@@ -126,7 +129,5 @@ private:
 	std::string m_routeString;
 
 	RouteType m_route;
-
-	bool m_hasRemaining = false;
 };
 }

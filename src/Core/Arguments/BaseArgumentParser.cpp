@@ -11,59 +11,107 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool BaseArgumentParser::parse(const i32 argc, const char* argv[], const i32 inPositionalArgs)
+StringList BaseArgumentParser::getArgumentList(const i32 argc, const char* argv[])
 {
+	StringList ret;
+
+	for (i32 i = 0; i < argc; ++i)
+	{
+		ret.emplace_back(std::string(argv[i]));
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool BaseArgumentParser::parseArgument(size_t& index, std::string& arg, const std::string& nextArg)
+{
+	if (arg.empty())
+		return true; // ignore it
+
+	if (arg.front() != '-')
+		return false;
+
+	// We need this list to make the distinction between key/value pairs and truthy/positional pairs
+	//
+	if (List::contains(m_truthyArguments, arg))
+	{
+		if (String::startsWith("--no-", arg))
+			m_rawArguments.emplace(arg, "0");
+		else
+			m_rawArguments.emplace(arg, "1");
+	}
+	else if (String::contains('=', arg))
+	{
+		String::replaceAll(arg, "=true", "=1");
+		String::replaceAll(arg, "=false", "=0");
+
+		auto eq = arg.find('=');
+
+		m_rawArguments.emplace(arg.substr(0, eq), arg.substr(eq + 1));
+	}
+	else
+	{
+		if (!nextArg.empty() && nextArg.front() != '-')
+		{
+			m_rawArguments.emplace(arg, nextArg);
+			index++;
+		}
+		else
+		{
+			m_rawArguments.emplace(arg, "1");
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+void BaseArgumentParser::parseArgumentValue(std::string& arg)
+{
+	if (arg.empty() || arg[0] == '-')
+		return;
+
+	if (arg.front() == '"')
+	{
+		arg = arg.substr(1);
+
+		if (arg.back() == '"')
+			arg.pop_back();
+	}
+
+	if (arg.front() == '\'')
+	{
+		arg = arg.substr(1);
+
+		if (arg.back() == '\'')
+			arg.pop_back();
+	}
+}
+
+/*****************************************************************************/
+bool BaseArgumentParser::parse(StringList&& args, const u32 inPositionalArgs)
+{
+	if (args.empty())
+		return false;
+
 	m_rawArguments.clear();
 
-	m_rawArguments.emplace("@0", std::string(argv[0]));
+	m_rawArguments.emplace("@0", args.front());
 
-	auto truthyArguments = getTruthyArguments();
+	m_truthyArguments = getTruthyArguments();
 
-	i32 j = 0;
-	for (i32 i = 1; i < argc; ++i)
+	u32 j = 0;
+	std::string blankArg;
+	for (size_t i = 1; i < args.size(); ++i)
 	{
-		auto arg = std::string(argv[i]);
-		if (arg[0] == '-')
+		auto& arg = args.at(i);
+		auto& nextArg = i + 1 < args.size() ? args.at(i + 1) : blankArg;
+		parseArgumentValue(nextArg);
+
+		if (parseArgument(i, arg, nextArg))
 		{
-			if (List::contains(truthyArguments, arg))
-			{
-				if (String::startsWith("--no-", arg))
-					m_rawArguments.emplace(std::move(arg), "0");
-				else
-					m_rawArguments.emplace(std::move(arg), "1");
-				continue;
-			}
-			else if (String::contains('=', arg))
-			{
-				String::replaceAll(arg, "=true", "=1");
-				String::replaceAll(arg, "=false", "=0");
-
-				auto eq = arg.find('=');
-
-				m_rawArguments.emplace(arg.substr(0, eq), arg.substr(eq + 1));
-				continue;
-			}
-			else
-			{
-				auto option = i + 1 < argc ? BaseArgumentParser::getOptionValue(argv + i, argv + i + 1, arg) : std::nullopt;
-				if (option.has_value())
-				{
-					if ((*option)[0] != '-')
-					{
-						m_rawArguments.emplace(std::move(arg), *option);
-						++i;
-						continue;
-					}
-					else
-					{
-						m_rawArguments.emplace(std::move(arg), "1");
-					}
-				}
-				else
-				{
-					m_rawArguments.emplace(std::move(arg), std::string());
-				}
-			}
+			continue;
 		}
 		else if (inPositionalArgs > 0)
 		{
@@ -79,27 +127,17 @@ bool BaseArgumentParser::parse(const i32 argc, const char* argv[], const i32 inP
 			if (j < inPositionalArgs)
 				continue;
 
-			bool notFirst = false;
-			std::string rest;
-			while (true)
+			++i;
+			while (i < args.size())
 			{
+				m_remainingArguments.emplace_back(std::move(args.at(i)));
 				++i;
-				if (i < argc)
-				{
-					if (notFirst)
-						rest += ' ';
-
-					rest += argv[i];
-					notFirst = true;
-				}
-				else
-					break;
 			}
-
-			if (!rest.empty())
-				m_rawArguments.emplace("...", std::move(rest));
 		}
 	}
+
+	if (!m_remainingArguments.empty())
+		m_rawArguments.emplace("...", "1");
 
 	return true;
 }
@@ -113,45 +151,6 @@ bool BaseArgumentParser::containsOption(const std::string& inOption)
 bool BaseArgumentParser::containsOption(const std::string& inShort, const std::string& inLong)
 {
 	return containsOption(inShort) || containsOption(inLong);
-}
-
-/*****************************************************************************/
-std::optional<std::string> BaseArgumentParser::getOptionValue(const char** inBegin, const char** inEnd, const std::string& inOption)
-{
-	auto itr = std::find(inBegin, inEnd, inOption);
-	if (itr != inEnd)
-	{
-		++itr;
-		std::string ret(*itr);
-		if (!ret.empty() /*&& ret.front() != '-'*/)
-		{
-			if (ret.front() == '"')
-			{
-				ret = ret.substr(1);
-
-				if (ret.back() == '"')
-					ret.pop_back();
-			}
-
-			if (ret.front() == '\'')
-			{
-				ret = ret.substr(1);
-
-				if (ret.back() == '\'')
-					ret.pop_back();
-			}
-
-			return ret;
-		}
-	}
-
-	return std::nullopt;
-}
-
-/*****************************************************************************/
-bool BaseArgumentParser::optionExists(const char** inBegin, const char** inEnd, const std::string& inOption)
-{
-	return std::find(inBegin, inEnd, inOption) != inEnd;
 }
 
 }

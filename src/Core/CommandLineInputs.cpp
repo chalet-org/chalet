@@ -614,6 +614,9 @@ const std::string& CommandLineInputs::buildStrategyPreference() const noexcept
 
 void CommandLineInputs::setBuildStrategyPreference(std::string&& inValue)
 {
+	if (inValue.empty())
+		return;
+
 	m_buildStrategyPreference = std::move(inValue);
 }
 
@@ -625,6 +628,9 @@ const std::string& CommandLineInputs::buildPathStylePreference() const noexcept
 
 void CommandLineInputs::setBuildPathStylePreference(std::string&& inValue)
 {
+	if (inValue.empty())
+		return;
+
 	m_buildPathStylePreference = std::move(inValue);
 }
 
@@ -838,6 +844,9 @@ const std::string& CommandLineInputs::signingIdentity() const noexcept
 }
 void CommandLineInputs::setSigningIdentity(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_signingIdentity = std::move(inValue);
 }
 
@@ -866,6 +875,9 @@ const std::string& CommandLineInputs::osTargetVersion() const noexcept
 }
 void CommandLineInputs::setOsTargetVersion(std::string&& inValue) noexcept
 {
+	// TODO: If value is blank, version is set to 0.0
+	//   This was technically a mistake - fix in the next minor version
+
 	auto version = Version::fromString(inValue);
 	m_osTargetVersion = version.majorMinor();
 }
@@ -1007,6 +1019,9 @@ QueryOption CommandLineInputs::queryOption() const noexcept
 }
 void CommandLineInputs::setQueryOption(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_queryOption = getQueryOptionFromString(inValue);
 }
 
@@ -1029,6 +1044,9 @@ const std::string& CommandLineInputs::settingsKey() const noexcept
 
 void CommandLineInputs::setSettingsKey(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_settingsKey = std::move(inValue);
 }
 
@@ -1040,6 +1058,9 @@ const std::string& CommandLineInputs::settingsValue() const noexcept
 
 void CommandLineInputs::setSettingsValue(std::string&& inValue) noexcept
 {
+	if (inValue.empty())
+		return;
+
 	m_settingsValue = std::move(inValue);
 }
 
@@ -1144,6 +1165,16 @@ bool CommandLineInputs::saveUserToolchainGlobally() const noexcept
 void CommandLineInputs::setSaveUserToolchainGlobally(const bool inValue) noexcept
 {
 	m_saveUserToolchainGlobally = inValue;
+}
+
+/*****************************************************************************/
+bool CommandLineInputs::exportOpen() const noexcept
+{
+	return m_exportOpen;
+}
+void CommandLineInputs::setExportOpen(const bool inValue) noexcept
+{
+	m_exportOpen = inValue;
 }
 
 /*****************************************************************************/

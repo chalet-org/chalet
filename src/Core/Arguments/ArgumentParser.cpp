@@ -144,14 +144,15 @@ StringList ArgumentParser::getTruthyArguments() const
 		"--local",
 		"-g",
 		"--global",
+		"--open",
 	};
 }
 
 /*****************************************************************************/
 bool ArgumentParser::resolveFromArguments(const i32 argc, const char* argv[])
 {
-	i32 maxPositionalArgs = 2;
-	if (!parse(argc, argv, maxPositionalArgs))
+	constexpr u32 maxPositionalArgs = 2;
+	if (!parse(getArgumentList(argc, argv), maxPositionalArgs))
 	{
 		Diagnostic::error("Bad argument parse");
 		return false;
@@ -300,8 +301,71 @@ void ArgumentParser::makeParser()
 }
 
 /*****************************************************************************/
+void ArgumentParser::checkRemainingArguments()
+{
+	if (m_remainingArguments.empty())
+		return;
+
+	for (const auto& arg : m_argumentList)
+	{
+		if (String::equals(Positional::RemainingArguments, arg.key()))
+			return;
+	}
+
+	if (containsOption(Positional::RemainingArguments))
+	{
+		auto remainingArgs = m_rawArguments.at(Positional::RemainingArguments);
+		m_rawArguments.erase(Positional::RemainingArguments);
+	}
+
+	std::string blankArg;
+	size_t i = 0;
+	auto it = m_remainingArguments.begin();
+	while (it != m_remainingArguments.end())
+	{
+		auto& arg = (*it);
+		bool found = false;
+		for (auto& mapped : m_argumentList)
+		{
+			if (String::equals(mapped.key(), arg) || String::equals(mapped.keyLong(), arg))
+			{
+				found = true;
+				break;
+			}
+		}
+
+		if (found)
+		{
+			auto next = it + 1;
+
+			size_t j = i;
+
+			{
+				auto& nextArg = next != m_remainingArguments.end() ? (*next) : blankArg;
+				parseArgumentValue(nextArg);
+				parseArgument(i, arg, nextArg);
+			}
+
+			if (i > j && next != m_remainingArguments.end())
+			{
+				next = m_remainingArguments.erase(next);
+			}
+			it = m_remainingArguments.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+
+		i++;
+	}
+}
+
+/*****************************************************************************/
 bool ArgumentParser::doParse()
 {
+	checkRemainingArguments();
+
 	if (containsOption("-h", "--help") || m_rawArguments.size() == 1)
 	{
 		return showHelp();
@@ -373,63 +437,32 @@ std::string ArgumentParser::getSeeHelpMessage()
 /*****************************************************************************/
 bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 {
-	// Add exceptions for routes with only required remaining arguments
-	// we need to remove the assumed @2 for the first of them
-	// bool routeHasOnePositionalArgument = m_route == RouteType::Validate;
-	// if (routeHasOnePositionalArgument)
-	// {
-	// 	// If it doesn't exist, let it fail later
-	// 	if (containsOption(Positional::Argument2))
-	// 	{
-	// 		auto value = m_rawArguments.at(Positional::Argument2);
-	// 		m_rawArguments.erase(Positional::Argument2);
-	// 		m_rawArguments[Positional::RemainingArguments] = fmt::format("'{}' {}", value, m_rawArguments[Positional::RemainingArguments]);
-	// 	}
-	// }
-
-	StringList invalid;
-	for (auto& [key, _] : m_rawArguments)
-	{
-		if (String::equals(Positional::RemainingArguments, key) || String::startsWith('@', key))
-			continue;
-
-		bool valid = false;
-		for (auto& mapped : m_argumentList)
-		{
-			if (String::equals(key, mapped.key()) || String::equals(key, mapped.keyLong()))
-			{
-				valid = true;
-				break;
-			}
-		}
-		if (!valid)
-			invalid.push_back(key);
-	}
-
-	if (!invalid.empty())
-	{
-		auto seeHelp = getSeeHelpMessage();
-		Diagnostic::error("Unknown argument: '{}'. {}", invalid.front(), seeHelp);
-		return false;
-	}
-
-	m_hasRemaining = containsOption(Positional::RemainingArguments);
-
+	bool containsRemaining = !m_remainingArguments.empty();
 	bool allowsRemaining = false;
 
 	i32 maxPositionalArgs = 0;
+
+	StringList allArguments;
 
 	// TODO: Check invalid
 	for (auto& mapped : m_argumentList)
 	{
 		bool isRemaining = String::equals(Positional::RemainingArguments, mapped.key());
-		if (String::startsWith('@', mapped.key()))
+		bool isPositional = String::startsWith('@', mapped.key());
+
+		if (isPositional)
 			maxPositionalArgs++;
 
 		if (mapped.id() == ArgumentIdentifier::RouteString)
 			continue;
 
 		allowsRemaining |= isRemaining;
+
+		if (!isRemaining && !mapped.key().empty())
+			allArguments.emplace_back(mapped.key());
+
+		if (!isRemaining && !isPositional && !mapped.keyLong().empty())
+			allArguments.emplace_back(mapped.keyLong());
 
 		std::string value;
 		if (containsOption(mapped.key()))
@@ -467,9 +500,8 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 
 			case Variant::Kind::OptionalInteger: {
 				if (!value.empty())
-				{
 					mapped.setValue(std::optional<i32>(atoi(value.c_str())));
-				}
+
 				break;
 			}
 
@@ -477,38 +509,65 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 				mapped.setValue(value);
 				break;
 
+			case Variant::Kind::StringList: {
+				if (isRemaining)
+					mapped.setValue(m_remainingArguments);
+
+				break;
+			}
 			case Variant::Kind::Empty:
-			case Variant::Kind::StringList:
 			default:
 				break;
 		}
 	}
 
+	StringList invalid;
+	bool remainingNotAllowed = containsRemaining && !allowsRemaining;
+	if (remainingNotAllowed)
+	{
+		invalid = m_remainingArguments;
+	}
+
 	i32 positionalArgs = 0;
-	for (auto& [key, _] : m_rawArguments)
+	for (auto& [key, arg] : m_rawArguments)
 	{
 		if (String::equals(Positional::ProgramArgument, key))
 			continue;
 
-		if (key.empty())
+		if (String::startsWith('@', key))
+		{
+			positionalArgs++;
+
+			if (positionalArgs > maxPositionalArgs)
+				invalid.emplace_back(arg);
+
+			continue;
+		}
+
+		if (String::equals(Positional::RemainingArguments, key))
 			continue;
 
-		if (String::startsWith('@', key))
-			positionalArgs++;
+		if (!List::contains(allArguments, key))
+		{
+			invalid.emplace_back(key);
+		}
 	}
 
+	if (!invalid.empty())
+	{
+		auto seeHelp = getSeeHelpMessage();
+		for (auto& arg : invalid)
+		{
+			Diagnostic::error("Unknown argument: '{}'. {}", arg, seeHelp);
+		}
+		return false;
+	}
+
+	// fallback in case something is broken
 	if (positionalArgs > maxPositionalArgs)
 	{
 		auto seeHelp = getSeeHelpMessage();
 		Diagnostic::error("Maximum number of positional arguments exceeded. {}", seeHelp);
-		return false;
-	}
-
-	if (m_hasRemaining && !allowsRemaining)
-	{
-		auto seeHelp = getSeeHelpMessage();
-		auto& remaining = m_rawArguments.at(Positional::RemainingArguments);
-		Diagnostic::error("Maximum number of positional arguments exceeded, starting with: '{}'. {}", remaining, seeHelp);
 		return false;
 	}
 
@@ -763,7 +822,7 @@ std::string ArgumentParser::getHelp()
 			return std::string();
 		};
 
-		help += "\nExport presets:\n";
+		help += "\nExport project types:\n";
 		StringList exportPresets
 		{
 			"vscode",
@@ -930,6 +989,15 @@ MappedArgument& ArgumentParser::addStringArgument(const ArgumentIdentifier inId,
 MappedArgument& ArgumentParser::addTwoStringArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, std::string inDefaultValue)
 {
 	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::String);
+	arg.addArgument(inShort, inLong);
+	arg.setValue(std::move(inDefaultValue));
+	return arg;
+}
+
+/*****************************************************************************/
+MappedArgument& ArgumentParser::addTwoStringListArguments(const ArgumentIdentifier inId, const char* inShort, const char* inLong, StringList inDefaultValue)
+{
+	auto& arg = m_argumentList.emplace_back(inId, Variant::Kind::StringList);
 	arg.addArgument(inShort, inLong);
 	arg.setValue(std::move(inDefaultValue));
 	return arg;
@@ -1216,7 +1284,7 @@ void ArgumentParser::addRunTargetArg()
 /*****************************************************************************/
 void ArgumentParser::addRunArgumentsArg()
 {
-	auto& arg = addTwoStringArguments(ArgumentIdentifier::RunTargetArguments, Positional::RemainingArguments, Arg::RemainingArguments);
+	auto& arg = addTwoStringListArguments(ArgumentIdentifier::RunTargetArguments, Positional::RemainingArguments, Arg::RemainingArguments);
 	arg.setHelp("The arguments to pass to the run target.");
 }
 
@@ -1315,6 +1383,13 @@ void ArgumentParser::addOsTargetVersionArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addExportOpenArg()
+{
+	auto& arg = addBoolArgument(ArgumentIdentifier::ExportOpen, "--open", false);
+	arg.setHelp("Open the project in its associated editor after exporting.");
+}
+
+/*****************************************************************************/
 void ArgumentParser::populateBuildRunArguments()
 {
 	populateCommonBuildArguments();
@@ -1400,10 +1475,10 @@ void ArgumentParser::populateExportArguments()
 	addOsTargetNameArg();
 	addOsTargetVersionArg();
 	addSigningIdentityArg();
+	addExportOpenArg();
 
-	const auto kinds = m_inputs.getExportKindPresets();
 	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportKind, Positional::Argument2, Arg::ExportKind);
-	arg.setHelp(fmt::format("The project kind to export to. (ex: {})", String::join(kinds, ", ")));
+	arg.setHelp("The project type to export to. (see below)");
 	arg.setRequired();
 }
 
@@ -1426,7 +1501,7 @@ void ArgumentParser::populateSettingsGetKeysArguments()
 	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::SettingsKey, Positional::Argument2, Arg::SettingsKeyQuery);
 	arg1.setHelp("The config key to query for.");
 
-	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::SettingsKeysRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
 	arg2.setHelp("Additional query arguments, if applicable.");
 }
 
@@ -1440,7 +1515,7 @@ void ArgumentParser::populateSettingsSetArguments()
 	arg1.setHelp("The config key to change.");
 	arg1.setRequired();
 
-	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue);
+	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue);
 	arg2.setHelp("The config value to change to.");
 	arg2.setRequired();
 }
@@ -1473,7 +1548,7 @@ void ArgumentParser::populateValidateArguments()
 	arg1.setHelp("A JSON schema (Draft 7) to validate files against. File requires '$schema'.");
 	arg1.setRequired();
 
-	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::ValidateFilesRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::ValidateFilesRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
 	arg2.setHelp("File(s) to be validated using the selected schema.");
 	arg2.setRequired();
 }
@@ -1485,7 +1560,7 @@ void ArgumentParser::populateQueryArguments()
 	arg1.setHelp("The data type to query for.");
 	arg1.setRequired();
 
-	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
+	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::QueryDataRemainingArgs, Positional::RemainingArguments, Arg::RemainingArguments);
 	arg2.setHelp("Data to provide to the query. (architecture: <toolchain-name>)");
 }
 

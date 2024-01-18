@@ -225,6 +225,11 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 		auto output = fmt::format("\n   Output {}\u2192 {}{}{}\n", flair, color, project, reset);
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
+
+		if (inputs.exportOpen())
+		{
+			// LOG("opening:", project);
+		}
 	}
 
 	return true;
