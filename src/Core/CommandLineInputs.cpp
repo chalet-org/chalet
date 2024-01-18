@@ -875,11 +875,15 @@ const std::string& CommandLineInputs::osTargetVersion() const noexcept
 }
 void CommandLineInputs::setOsTargetVersion(std::string&& inValue) noexcept
 {
-	// TODO: If value is blank, version is set to 0.0
-	//   This was technically a mistake - fix in the next minor version
-
-	auto version = Version::fromString(inValue);
-	m_osTargetVersion = version.majorMinor();
+	if (!inValue.empty())
+	{
+		auto version = Version::fromString(inValue);
+		m_osTargetVersion = version.majorMinor();
+	}
+	else
+	{
+		m_osTargetVersion = std::move(inValue);
+	}
 }
 
 /*****************************************************************************/

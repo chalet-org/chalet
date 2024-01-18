@@ -890,7 +890,7 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 
 	return true;
 #else
-	UNUSED(project);
+	UNUSED(inFile);
 	return true;
 #endif
 }
