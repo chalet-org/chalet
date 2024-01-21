@@ -949,7 +949,7 @@ std::string ArgumentParser::getHelp()
 		}
 	}
 
-	help += "\nApplication Paths:\n";
+	help += "\nApplication paths:\n";
 	StringList applicationPaths{
 		"~/.chalet/",
 		fmt::format("~/{}", m_inputs.globalSettingsFile()),
