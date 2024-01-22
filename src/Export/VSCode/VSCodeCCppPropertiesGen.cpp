@@ -23,8 +23,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState) :
-	m_state(inState)
+VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState, const ExportAdapter& inExportAdapter) :
+	m_state(inState),
+	m_exportAdapter(inExportAdapter)
 {
 }
 
@@ -130,9 +131,11 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 
 	if (m_state.info.generateCompileCommands())
 	{
-		auto buildOutputDir = m_state.paths.buildOutputDir();
-		m_state.inputs.clearWorkingDirectory(buildOutputDir);
-		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", buildOutputDir);
+		m_exportAdapter.createCompileCommandsStub();
+
+		auto outputDirectory = m_state.inputs.outputDirectory();
+		m_state.inputs.clearWorkingDirectory(outputDirectory);
+		config["compileCommands"] = fmt::format("${{workspaceFolder}}/{}/compile_commands.json", outputDirectory);
 	}
 
 	if (!cStandard.empty())

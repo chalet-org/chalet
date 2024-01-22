@@ -11,6 +11,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -26,7 +27,8 @@ struct CompileCommandsGenerator::CompileCommand
 
 /*****************************************************************************/
 CompileCommandsGenerator::CompileCommandsGenerator(const BuildState& inState) :
-	m_state(inState)
+	m_state(inState),
+	kCompileCommandsJson("compile_commands.json")
 {
 }
 
@@ -53,6 +55,26 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	inToolchain->setQuotedPaths(quotedPaths);
 	inToolchain->setGenerateDependencies(generateDependencies);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CompileCommandsGenerator::addCompileCommandsStubsFromState()
+{
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			const auto& project = static_cast<const SourceTarget&>(*target);
+			const auto& files = project.files();
+			for (auto& file : files)
+				addCompileCommand(file, std::string());
+
+			if (project.usesPrecompiledHeader())
+				addCompileCommand(project.precompiledHeader(), std::string());
+		}
+	}
 
 	return true;
 }
@@ -107,7 +129,7 @@ bool CompileCommandsGenerator::save() const
 {
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto outputFile = fmt::format("{}/compile_commands.json", buildOutputDir);
+	auto outputFile = fmt::format("{}/{}", buildOutputDir, kCompileCommandsJson);
 
 	Json outJson = Json::array();
 
@@ -126,7 +148,7 @@ bool CompileCommandsGenerator::save() const
 	{
 		if (!JsonFile::saveToFile(outJson, outputFile))
 		{
-			Diagnostic::error("compile_commands.json could not be saved.");
+			Diagnostic::error("There was a problem saving: {}", outputFile);
 			return false;
 		}
 
@@ -134,7 +156,7 @@ bool CompileCommandsGenerator::save() const
 		{
 			if (!Files::copySilent(outputFile, outputDirectory))
 			{
-				Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
+				Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
 				return false;
 			}
 		}
@@ -151,12 +173,12 @@ bool CompileCommandsGenerator::save() const
 		}
 		if (lastTarget != nullptr)
 		{
-			auto lastCompileCommands = fmt::format("{}/{}/compile_commands.json", buildOutputDir, lastTarget->targetFolder());
+			auto lastCompileCommands = fmt::format("{}/{}/{}", buildOutputDir, lastTarget->targetFolder(), kCompileCommandsJson);
 			if (Files::pathExists(lastCompileCommands))
 			{
 				if (!Files::copySilent(lastCompileCommands, outputDirectory))
 				{
-					Diagnostic::error("compile_commands.json could not be copied to: '{}'", outputDirectory);
+					Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
 					return false;
 				}
 			}
@@ -167,12 +189,37 @@ bool CompileCommandsGenerator::save() const
 }
 
 /*****************************************************************************/
+bool CompileCommandsGenerator::saveStub(const std::string& outputFile) const
+{
+	Json outJson = Json::array();
+
+	for (auto& command : m_compileCommands)
+	{
+		Json node;
+		node = Json::object();
+		node["directory"] = m_state.inputs.workingDirectory();
+		node["command"] = command->command;
+		node["file"] = Files::getCanonicalPath(command->file);
+
+		outJson.push_back(std::move(node));
+	}
+
+	if (!JsonFile::saveToFile(outJson, outputFile))
+	{
+		Diagnostic::error("There was a problem saving: {}", outputFile);
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool CompileCommandsGenerator::fileExists() const
 {
 	const auto& outputDirectory = m_state.paths.outputDirectory();
 	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	auto outputCC = fmt::format("{}/compile_commands.json", outputDirectory);
-	auto buildCC = fmt::format("{}/compile_commands.json", buildOutputDir);
+	auto outputCC = fmt::format("{}/{}", outputDirectory, kCompileCommandsJson);
+	auto buildCC = fmt::format("{}/{}", buildOutputDir, kCompileCommandsJson);
 
 	return Files::pathExists(outputCC) && Files::pathExists(buildCC);
 }

@@ -61,7 +61,7 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		return false;
 
 	auto& debugState = m_exportAdapter->getDebugState();
-	VSCodeCCppPropertiesGen cCppProperties(debugState);
+	VSCodeCCppPropertiesGen cCppProperties(debugState, *m_exportAdapter);
 	if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
 	{
 		Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");

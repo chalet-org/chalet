@@ -893,7 +893,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxBuildSuffix] = R"json({
 		"type": "string",
-		"description": "Describes a suffix used to differentiate targets within build folders. If the same suffix is used between multiple targets, they can share objects and a precompiled header. By default, the suffix is the name of the target, so setting this to the name of another target will share its objects.\nAffected paths:\n`${buildOutputDir}/obj.${suffix}`\n`${buildOutputDir}/asm.${suffix}`\n`${buildDir}/int.${suffix}`",
+		"description": "Describes a suffix used to differentiate targets within build folders. If the same suffix is used between multiple targets, they can share objects and a precompiled header. By default, the suffix is the name of the target, so setting this to the name of another target will share its objects.\nAffected paths:\n`${buildOutputDir}/obj.${suffix}`\n`${buildOutputDir}/asm.${suffix}`",
 		"minLength": 1
 	})json"_ojson;
 	defs[Defs::TargetSourceCxxBuildSuffix][SKeys::Pattern] = kPatternTargetName;

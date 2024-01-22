@@ -5,13 +5,15 @@
 
 #pragma once
 
+#include "Export/ExportAdapter.hpp"
+
 namespace chalet
 {
 class BuildState;
 
 struct VSCodeCCppPropertiesGen
 {
-	explicit VSCodeCCppPropertiesGen(const BuildState& inState);
+	VSCodeCCppPropertiesGen(const BuildState& inState, const ExportAdapter& inExportAdapter);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -21,5 +23,6 @@ private:
 	std::string getCompilerPath() const;
 
 	const BuildState& m_state;
+	const ExportAdapter& m_exportAdapter;
 };
 }

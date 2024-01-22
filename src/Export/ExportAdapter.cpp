@@ -6,6 +6,7 @@
 #include "Export/ExportAdapter.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/CompileCommandsGenerator.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "DotEnv/DotEnvFileGenerator.hpp"
 #include "Process/Environment.hpp"
@@ -51,10 +52,15 @@ bool ExportAdapter::createCompileCommandsStub() const
 	auto ccmdsJson = debugState.paths.currentCompileCommands();
 	if (!Files::pathExists(ccmdsJson))
 	{
-		return Files::createFileWithContents(ccmdsJson, "[]");
+		CompileCommandsGenerator ccmdsGen(debugState);
+		if (!ccmdsGen.addCompileCommandsStubsFromState())
+			return false;
+
+		if (!ccmdsGen.saveStub(ccmdsJson))
+			return false;
 	}
 
-	return false;
+	return true;
 }
 
 /*****************************************************************************/

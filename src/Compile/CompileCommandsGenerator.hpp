@@ -21,8 +21,10 @@ struct CompileCommandsGenerator
 	~CompileCommandsGenerator();
 
 	bool addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs);
+	bool addCompileCommandsStubsFromState();
 
 	bool save() const;
+	bool saveStub(const std::string& inPath) const;
 
 	bool fileExists() const;
 
@@ -36,5 +38,7 @@ private:
 
 	struct CompileCommand;
 	std::vector<Unique<CompileCommand>> m_compileCommands;
+
+	const std::string kCompileCommandsJson;
 };
 }
