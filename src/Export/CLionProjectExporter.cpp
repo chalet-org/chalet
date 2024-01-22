@@ -7,11 +7,13 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CLion/CLionWorkspaceGen.hpp"
+#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -98,6 +100,50 @@ bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject
 #if defined(CHALET_WIN32)
 	if (clion.empty())
 		clion = Files::which("clion64");
+
+	if (clion.empty())
+	{
+		auto programs = Environment::getProgramFiles();
+		if (!programs.empty())
+		{
+			Path::toUnix(programs);
+			auto jetbrains = fmt::format("{}/JetBrains", programs);
+
+			// We need a safe way to check for CLion directories, and get the latest version
+			// Can't really
+
+			std::map<std::string, std::string> directories;
+
+			CHALET_TRY
+			{
+				for (auto& it : fs::directory_iterator(jetbrains))
+				{
+					if (it.is_directory())
+					{
+						auto folder = String::toLowerCase(it.path().filename().string());
+						if (String::startsWith("clion", folder))
+						{
+							auto path = it.path().string();
+							Path::toUnix(path);
+							directories.emplace(folder, std::move(path));
+						}
+					}
+				}
+			}
+			CHALET_CATCH(const std::exception&)
+			{
+				return false;
+			}
+
+			if (!directories.empty())
+			{
+				const auto& clionDirectory = directories.rbegin()->second;
+				clion = fmt::format("{}/bin/clion64.exe", clionDirectory);
+				if (!Files::pathExists(clion))
+					clion.clear();
+			}
+		}
+	}
 #endif
 
 	if (!clion.empty())

@@ -136,7 +136,7 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 		code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
 		if (!Files::pathExists(code))
 		{
-			auto programFiles = Environment::get("ProgramFiles");
+			auto programFiles = Environment::getProgramFiles();
 			code = Files::getCanonicalPath(fmt::format("{}/VSCodium/VSCodium.exe", programFiles));
 			if (!Files::pathExists(code))
 				code.clear();

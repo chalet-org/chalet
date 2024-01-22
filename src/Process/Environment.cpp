@@ -177,6 +177,16 @@ std::string Environment::getComSpec()
 }
 
 /*****************************************************************************/
+std::string Environment::getProgramFiles()
+{
+	return getString("ProgramFiles");
+}
+std::string Environment::getProgramFilesX86()
+{
+	return getString("ProgramFiles(x86)");
+}
+
+/*****************************************************************************/
 bool Environment::saveToEnvFile(const std::string& inOutputFile)
 {
 #if defined(CHALET_WIN32)

@@ -890,7 +890,7 @@ bool BuildState::validateState()
 
 				if (!vsVersion.empty())
 				{
-					std::string progFiles = Environment::getString("ProgramFiles(x86)");
+					std::string progFiles = Environment::getProgramFilesX86();
 					// TODO: more portable version
 					vsperfcmd = fmt::format("{}\\Microsoft Visual Studio\\Shared\\Common\\VSPerfCollectionTools\\{}\\vsperfcmd.exe", progFiles, vsVersion);
 					if (!Files::pathExists(vsperfcmd))
@@ -1209,7 +1209,7 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 			auto clang = Files::which("clang");
 			if (clang.empty())
 			{
-				auto programFiles = Environment::getString("ProgramFiles");
+				auto programFiles = Environment::getProgramFiles();
 				if (!programFiles.empty())
 				{
 					auto clangPath = fmt::format("{}\\LLVM\\bin", programFiles);

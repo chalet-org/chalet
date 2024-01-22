@@ -34,7 +34,7 @@ bool VisualStudioEnvironmentScript::visualStudioExists()
 #if defined(CHALET_WIN32)
 	if (state.exists == -1)
 	{
-		std::string progFiles = Environment::getString("ProgramFiles(x86)");
+		std::string progFiles = Environment::getProgramFilesX86();
 		state.vswhere = fmt::format("{}\\Microsoft Visual Studio\\Installer\\vswhere.exe", progFiles);
 
 		bool vswhereFound = Files::pathExists(state.vswhere);
@@ -46,7 +46,7 @@ bool VisualStudioEnvironmentScript::visualStudioExists()
 		}
 		if (!vswhereFound)
 		{
-			std::string progFiles64 = Environment::getString("ProgramFiles");
+			std::string progFiles64 = Environment::getProgramFiles();
 			String::replaceAll(state.vswhere, progFiles, progFiles64);
 
 			vswhereFound = Files::pathExists(state.vswhere);

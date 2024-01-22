@@ -622,7 +622,7 @@ std::string AncillaryTools::getPathToGit()
 #if defined(CHALET_WIN32)
 	if (git.empty())
 	{
-		auto programs = Environment::getString("ProgramFiles");
+		auto programs = Environment::getProgramFiles();
 		if (!programs.empty())
 		{
 			auto gitPath = fmt::format("{}/Git/bin/git.exe", programs);
