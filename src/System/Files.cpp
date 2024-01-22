@@ -874,21 +874,9 @@ void Files::sleep(const f64 inSeconds)
 bool Files::openWithDefaultApplication(const std::string& inFile)
 {
 #if defined(CHALET_WIN32)
-	SHELLEXECUTEINFOA ShExecInfo = { 0 };
-	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFOA);
-	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-	ShExecInfo.hwnd = nullptr;
-	ShExecInfo.lpVerb = "open";
-	ShExecInfo.lpFile = inFile.c_str();
-	ShExecInfo.lpParameters = "";
-	ShExecInfo.lpDirectory = nullptr;
-	ShExecInfo.nShow = SW_SHOW;
-	ShExecInfo.hInstApp = nullptr;
-	::ShellExecuteExA(&ShExecInfo);
-	::WaitForSingleObject(ShExecInfo.hProcess, INFINITE);
-	::CloseHandle(ShExecInfo.hProcess);
+	HINSTANCE result = ::ShellExecuteA(nullptr, "open", inFile.c_str(), "", nullptr, SW_SHOW);
+	return INT_PTR(result) > 32;
 
-	return true;
 #elif defined(CHALET_MACOS)
 	auto open = Files::which("open");
 	if (!open.empty())

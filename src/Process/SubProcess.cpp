@@ -501,10 +501,7 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 		std::string args = getWindowsArguments(inCmd);
 
 		DWORD processFlags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
-		/*if (m_newProcessGroup)
-		{
-			processFlags |= CREATE_NEW_PROCESS_GROUP;
-		}*/
+		// processFlags |= CREATE_NEW_PROCESS_GROUP;
 
 		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
 			args.data(),   // program arguments

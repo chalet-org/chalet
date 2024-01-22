@@ -12,7 +12,7 @@ namespace chalet
 {
 namespace SubProcessController
 {
-i32 run(const StringList& inCmd, const ProcessOptions& inOptions, const u8 inBufferSize = 0);
+i32 run(const StringList& inCmd, const ProcessOptions& inOptions);
 i32 getLastExitCode();
 std::string getSystemMessage(const i32 inExitCode);
 std::string getSignalRaisedMessage(const i32 inExitCode);

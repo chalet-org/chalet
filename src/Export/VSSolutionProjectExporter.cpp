@@ -168,11 +168,7 @@ bool VSSolutionProjectExporter::openProjectFilesInEditor(const std::string& inPr
 	}
 
 	auto project = Files::getCanonicalPath(inProject);
-	return Process::runMinimalOutput({ visualStudio, project }, devEnvDir);
-
-	// LOG("VSSolutionProjectExporter::openProjectFilesInEditor", inProject);
-	// UNUSED(inProject);
-	// return true;
+	return Process::runMinimalOutputWithoutWait({ visualStudio, project }, devEnvDir);
 }
 
 /*****************************************************************************/

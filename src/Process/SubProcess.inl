@@ -9,7 +9,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <size_t Size>
-void SubProcess::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const u8 inBufferSize, const ProcessOptions::PipeFunc& onRead)
+void SubProcess::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const ProcessOptions::PipeFunc& onRead)
 {
 	auto& pipe = getFilePipe(inFileNo);
 #if defined(CHALET_WIN32)
@@ -17,7 +17,7 @@ void SubProcess::read(HandleInput inFileNo, std::array<char, Size>& inBuffer, co
 #else
 	ssize_t bytesRead = 0;
 #endif
-	size_t bufferSize = inBufferSize > 0 ? static_cast<size_t>(inBufferSize) : inBuffer.size();
+	size_t bufferSize = inBuffer.size();
 	while (true)
 	{
 		if (m_killed)

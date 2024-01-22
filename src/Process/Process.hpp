@@ -24,11 +24,13 @@ inline bool runWithInput(const StringList& inCmd);
 inline bool runWithInput(const StringList& inCmd, CreateSubprocessFunc inOnCreate);
 inline bool runOutputToFile(const StringList& inCmd, const std::string& inOutputFile);
 
-bool run(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
+bool run(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, const bool inWaitForResult = true);
 bool runWithInput(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr);
 bool runNoOutput(const StringList& inCmd);
 bool runMinimalOutput(const StringList& inCmd);
 bool runMinimalOutput(const StringList& inCmd, std::string inCwd);
+bool runMinimalOutputWithoutWait(const StringList& inCmd);
+bool runMinimalOutputWithoutWait(const StringList& inCmd, std::string inCwd);
 bool runOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
 std::string runOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 std::string runOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);

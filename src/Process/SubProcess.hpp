@@ -40,7 +40,7 @@ public:
 	bool kill();
 
 	template <size_t Size>
-	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const u8 inBufferSize, const ProcessOptions::PipeFunc& onRead = nullptr);
+	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)

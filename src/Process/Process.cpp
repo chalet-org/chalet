@@ -30,7 +30,7 @@ void stripLastEndLine(std::string& inString)
 }
 
 /*****************************************************************************/
-bool Process::run(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr)
+bool Process::run(const StringList& inCmd, std::string inCwd, CreateSubprocessFunc inOnCreate, const PipeOption inStdOut, const PipeOption inStdErr, const bool inWaitForResult)
 {
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
@@ -43,6 +43,7 @@ bool Process::run(const StringList& inCmd, std::string inCwd, CreateSubprocessFu
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
 	options.onCreate = std::move(inOnCreate);
+	options.waitForResult = inWaitForResult;
 
 	return SubProcessController::run(inCmd, options) == EXIT_SUCCESS;
 }
@@ -142,6 +143,24 @@ bool Process::runMinimalOutput(const StringList& inCmd, std::string inCwd)
 		return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr);
 	else
 		return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::StdErr);
+}
+
+/*****************************************************************************/
+bool Process::runMinimalOutputWithoutWait(const StringList& inCmd)
+{
+	if (Output::showCommands())
+		return Process::run(inCmd, std::string(), nullptr, PipeOption::StdOut, PipeOption::StdErr, false);
+	else
+		return Process::run(inCmd, std::string(), nullptr, PipeOption::Close, PipeOption::StdErr, false);
+}
+
+/*****************************************************************************/
+bool Process::runMinimalOutputWithoutWait(const StringList& inCmd, std::string inCwd)
+{
+	if (Output::showCommands())
+		return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::StdOut, PipeOption::StdErr, false);
+	else
+		return Process::run(inCmd, std::move(inCwd), nullptr, PipeOption::Close, PipeOption::StdErr, false);
 }
 
 /*****************************************************************************/

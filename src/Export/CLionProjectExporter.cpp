@@ -101,7 +101,7 @@ bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject
 #endif
 
 	if (!clion.empty())
-		return Process::runMinimalOutput({ clion, cwd });
+		return Process::runMinimalOutputWithoutWait({ clion, cwd });
 	else
 		return false;
 }

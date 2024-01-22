@@ -144,7 +144,7 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	}
 #endif
 	if (!code.empty())
-		return Process::runMinimalOutput({ code, cwd });
+		return Process::runMinimalOutputWithoutWait({ code, cwd });
 	else
 		return false;
 }

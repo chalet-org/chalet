@@ -22,5 +22,7 @@ struct ProcessOptions
 	PipeOption stdinOption = PipeOption::Close;
 	PipeOption stdoutOption = PipeOption::Close;
 	PipeOption stderrOption = PipeOption::Close;
+
+	bool waitForResult = true;
 };
 }

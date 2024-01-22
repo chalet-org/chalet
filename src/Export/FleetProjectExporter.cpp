@@ -106,7 +106,7 @@ bool FleetProjectExporter::openProjectFilesInEditor(const std::string& inProject
 	}
 #endif
 	if (!fleet.empty())
-		return Process::runMinimalOutput({ fleet, cwd });
+		return Process::runMinimalOutputWithoutWait({ fleet, cwd });
 	else
 		return false;
 }

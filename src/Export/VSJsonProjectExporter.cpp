@@ -145,7 +145,7 @@ bool VSJsonProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 
 	// auto project = Files::getCanonicalPath(inProject);
 	const auto& cwd = workingDirectory();
-	return Process::runMinimalOutput({ visualStudio, cwd }, devEnvDir);
+	return Process::runMinimalOutputWithoutWait({ visualStudio, cwd }, devEnvDir);
 
 	// LOG("VSSolutionProjectExporter::openProjectFilesInEditor", inProject);
 	// UNUSED(inProject);
