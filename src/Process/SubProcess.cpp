@@ -197,7 +197,7 @@ SubProcess::CmdPtrArray SubProcess::getCmdVector(const StringList& inCmd)
 
 #endif
 
-std::array<char, 128> SubProcess::kDataBuffer = std::array<char, 128>();
+std::array<char, SubProcess::kDataBufferSize> SubProcess::kDataBuffer = std::array<char, kDataBufferSize>();
 
 /*****************************************************************************/
 std::string SubProcess::getErrorMessageFromSignalRaised(const i32 inCode)
