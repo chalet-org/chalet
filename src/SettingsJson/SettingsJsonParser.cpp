@@ -578,12 +578,8 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 					{
 						map.emplace(k, v.get<StringList>());
 					}
-					else if (v.is_string())
-					{
-						// compatibility with earlier chalet versions
-						//   will be a StringList by the end of this run
-						map.emplace(k, m_centralState.getArgumentStringListFromString(v.get<std::string>()));
-					}
+
+					// Note: if it's a string, it's from an old version of chalet, so don't read it
 				}
 				m_centralState.setRunArgumentMap(std::move(map));
 			}

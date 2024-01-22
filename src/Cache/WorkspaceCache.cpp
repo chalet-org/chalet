@@ -383,7 +383,17 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 				if (runArgsJson.find(key) != runArgsJson.end())
 				{
 					auto& existing = runArgsJson.at(key);
-					if ((existing.is_array() && existing.get<StringList>() != value) || existing.is_string())
+					if (existing.is_array())
+					{
+						auto listAsString = String::join(existing.get<StringList>());
+						auto valueAsString = String::join(value);
+						if (!String::equals(listAsString, valueAsString))
+						{
+							runArgsJson[key] = value;
+							settingsJson.setDirty(true);
+						}
+					}
+					else if (existing.is_string())
 					{
 						runArgsJson[key] = value;
 						settingsJson.setDirty(true);

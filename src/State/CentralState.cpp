@@ -285,7 +285,7 @@ const std::optional<StringList>& CentralState::getRunTargetArguments(const std::
 	{
 		if (m_runArgumentMap.find(inTarget) != m_runArgumentMap.end())
 		{
-			m_inputs.setRunArguments(std::move(m_runArgumentMap.at(inTarget)));
+			m_inputs.setRunArguments(StringList(m_runArgumentMap.at(inTarget)));
 		}
 	}
 
