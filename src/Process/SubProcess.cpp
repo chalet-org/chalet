@@ -721,6 +721,7 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 #else
 	ssize_t bytesRead = 0;
 #endif
+	auto bufferData = kDataBuffer.data();
 	size_t bufferSize = kDataBuffer.size();
 	while (true)
 	{
@@ -728,16 +729,16 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 			break;
 
 #if defined(CHALET_WIN32)
-		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(kDataBuffer.data()), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;
+		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;
 		if (!result)
 			bytesRead = 0;
 #else
-		bytesRead = ::read(pipe.m_read, kDataBuffer.data(), bufferSize);
+		bytesRead = ::read(pipe.m_read, bufferData, bufferSize);
 #endif
 		if (bytesRead > 0)
 		{
 			if (onRead != nullptr)
-				onRead(std::string(kDataBuffer.data(), bytesRead));
+				onRead(std::string(bufferData, bytesRead));
 		}
 		else
 			break;
