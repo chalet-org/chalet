@@ -503,7 +503,11 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 		DWORD processFlags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
 
 		// Disables CTRL+C / CTRL+Break behavior
-		// processFlags |= CREATE_NEW_PROCESS_GROUP;
+		if (!inOptions.waitForResult)
+		{
+			processFlags |= CREATE_NEW_PROCESS_GROUP;
+			processFlags |= DETACHED_PROCESS;
+		}
 
 		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
 			args.data(),   // program arguments
