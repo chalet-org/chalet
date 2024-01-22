@@ -39,8 +39,7 @@ public:
 	bool terminate();
 	bool kill();
 
-	template <size_t Size>
-	void read(HandleInput inFileNo, std::array<char, Size>& inBuffer, const ProcessOptions::PipeFunc& onRead = nullptr);
+	void read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRead = nullptr);
 
 private:
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
@@ -48,6 +47,8 @@ private:
 	CmdPtrArray getCmdVector(const StringList& inCmd);
 #endif
 	ProcessPipe& getFilePipe(const HandleInput inFileNo);
+
+	static std::array<char, 128> kDataBuffer;
 
 #if defined(CHALET_WIN32)
 	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };
@@ -64,5 +65,3 @@ private:
 	bool m_killed = false;
 };
 }
-
-#include "Process/SubProcess.inl"

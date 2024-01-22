@@ -54,12 +54,11 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 
 		if (inOptions.waitForResult)
 		{
-			std::array<char, 128> buffer{ 0 };
 			if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
-				process.read(FileNo::StdOut, buffer, inOptions.onStdOut);
+				process.read(FileNo::StdOut, inOptions.onStdOut);
 
 			if (inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close)
-				process.read(FileNo::StdErr, buffer, inOptions.onStdErr);
+				process.read(FileNo::StdErr, inOptions.onStdErr);
 		}
 
 		state.lastErrorCode = inOptions.waitForResult ? process.waitForResult() : 0;
