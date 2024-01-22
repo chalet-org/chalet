@@ -52,6 +52,7 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 			return state.lastErrorCode;
 		}
 
+		if (inOptions.waitForResult)
 		{
 			std::array<char, 128> buffer{ 0 };
 			if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
