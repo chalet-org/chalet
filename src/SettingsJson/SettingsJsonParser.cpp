@@ -575,9 +575,15 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 				for (const auto& [k, v] : value.items())
 				{
 					if (v.is_array())
+					{
 						map.emplace(k, v.get<StringList>());
+					}
 					else if (v.is_string())
+					{
+						// compatibility with earlier chalet versions
+						//   will be a StringList by the end of this run
 						map.emplace(k, m_centralState.getArgumentStringListFromString(v.get<std::string>()));
+					}
 				}
 				m_centralState.setRunArgumentMap(std::move(map));
 			}
