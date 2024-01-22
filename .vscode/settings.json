@@ -13,6 +13,7 @@
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
 	"search.exclude": {
+		".chaletrc": false,
 		"external": true,
 		"dist": true,
 		"build": true,

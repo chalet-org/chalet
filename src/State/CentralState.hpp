@@ -37,12 +37,10 @@ struct CentralState
 
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
 
-	void setRunArgumentMap(Dictionary<std::string>&& inMap);
-	void setRunArguments(const std::string& inKey, std::string&& inValue);
+	void setRunArgumentMap(Dictionary<StringList>&& inMap);
 	void setRunArguments(const std::string& inKey, StringList&& inValue);
-	void addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue);
 	void addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue);
-	const Dictionary<std::string>& runArgumentMap() const noexcept;
+	const Dictionary<StringList>& runArgumentMap() const noexcept;
 	const std::optional<StringList>& getRunTargetArguments(const std::string& inTarget);
 	void clearRunArgumentMap();
 
@@ -51,6 +49,8 @@ struct CentralState
 	bool isAllowedArchitecture(const std::string& inArch) const;
 
 	bool replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
+
+	StringList getArgumentStringListFromString(const std::string& inValue);
 
 	WorkspaceEnvironment workspace;
 	WorkspaceCache cache;
@@ -86,7 +86,7 @@ private:
 
 	BuildConfigurationMap m_buildConfigurations;
 
-	Dictionary<std::string> m_runArgumentMap;
+	Dictionary<StringList> m_runArgumentMap;
 
 	StringList m_allowedArchitectures;
 	StringList m_requiredBuildConfigurations;

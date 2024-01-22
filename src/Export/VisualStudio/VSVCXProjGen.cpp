@@ -346,7 +346,7 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename, const std::string
 	{
 		auto& args = runArgumentMap.at(name);
 		xmlRoot.addElement("PropertyGroup", [&args](XmlElement& node2) {
-			node2.addElementWithText("LocalDebuggerCommandArguments", args);
+			node2.addElementWithText("LocalDebuggerCommandArguments", String::join(args));
 			node2.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
 		});
 	}

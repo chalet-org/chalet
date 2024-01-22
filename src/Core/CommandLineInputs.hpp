@@ -72,7 +72,6 @@ struct CommandLineInputs
 	const std::optional<StringList>& runArguments() const noexcept;
 	void setRunArguments(StringList&& inValue) const noexcept;
 	void setRunArguments(const StringList& inValue) const noexcept;
-	void setRunArguments(std::string&& inValue) const noexcept;
 
 	const std::string& appPath() const noexcept;
 	void setAppPath(const std::string& inValue) noexcept;

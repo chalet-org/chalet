@@ -100,14 +100,15 @@ bool ChaletJsonParser::serialize()
 			return false;
 
 		// do after run target is validated
-		auto& runArguments = m_state.getCentralState().getRunTargetArguments(runTarget);
+		auto& centralState = m_state.getCentralState();
+		auto& runArguments = centralState.getRunTargetArguments(runTarget);
 		bool hasRunTargetsFromInput = m_state.inputs.runArguments().has_value();
 		if (runArguments.has_value() && !hasRunTargetsFromInput)
 			m_state.inputs.setRunArguments(*runArguments);
 
 		if (hasRunTargetsFromInput)
 		{
-			m_state.getCentralState().setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
+			centralState.setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
 		}
 	}
 
@@ -1075,7 +1076,7 @@ bool ChaletJsonParser::parseRunTargetProperties(IBuildTarget& outTarget, const J
 			std::string val;
 			if (getDefaultRunArguments && valueMatchesSearchKeyPattern(val, value, key, "defaultRunArguments", status))
 			{
-				centralState.addRunArgumentsIfNew(outTarget.name(), std::move(val));
+				centralState.addRunArgumentsIfNew(outTarget.name(), centralState.getArgumentStringListFromString(val));
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "copyFilesOnRun", status))
 			{

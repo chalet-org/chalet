@@ -571,11 +571,13 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 		{
 			if (m_inputs.route().willRun() && String::equals(Keys::OptionsRunArguments, key))
 			{
-				Dictionary<std::string> map;
+				Dictionary<StringList> map;
 				for (const auto& [k, v] : value.items())
 				{
-					if (v.is_string())
-						map.emplace(k, v.get<std::string>());
+					if (v.is_array())
+						map.emplace(k, v.get<StringList>());
+					else if (v.is_string())
+						map.emplace(k, m_centralState.getArgumentStringListFromString(v.get<std::string>()));
 				}
 				m_centralState.setRunArgumentMap(std::move(map));
 			}

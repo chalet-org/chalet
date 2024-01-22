@@ -475,65 +475,6 @@ void CommandLineInputs::setRunArguments(const StringList& inValue) const noexcep
 	m_runArguments = inValue;
 }
 
-void CommandLineInputs::setRunArguments(std::string&& inValue) const noexcept
-{
-	if (inValue.empty())
-		return;
-
-	StringList argList;
-
-	std::string nextArg;
-	bool hasQuote = false;
-	bool previousBackslash = false;
-	for (uchar c : inValue)
-	{
-		if (c == '\\')
-		{
-			nextArg.push_back(c);
-			previousBackslash = !previousBackslash;
-			continue;
-		}
-		else if (c == '\'')
-		{
-			if (!nextArg.empty())
-				nextArg.push_back(c);
-
-			hasQuote = true;
-		}
-		else if (c == ' ')
-		{
-			if (previousBackslash)
-			{
-				nextArg.push_back(c);
-				continue;
-			}
-			else if (hasQuote)
-			{
-				nextArg.pop_back(); // remove the last quote
-			}
-
-			argList.emplace_back(nextArg);
-			nextArg.clear();
-		}
-		else
-		{
-			nextArg.push_back(c);
-			previousBackslash = false;
-			hasQuote = false;
-		}
-	}
-
-	if (!nextArg.empty())
-	{
-		argList.emplace_back(nextArg);
-	}
-
-	if (!argList.empty())
-	{
-		m_runArguments = std::move(argList);
-	}
-}
-
 /*****************************************************************************/
 const std::string& CommandLineInputs::appPath() const noexcept
 {

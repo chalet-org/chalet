@@ -454,7 +454,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 	const auto& runArgumentMap = inState.getCentralState().runArgumentMap();
 	if (runArgumentMap.find(inTarget.name()) != runArgumentMap.end())
 	{
-		auto& args = runArgumentMap.at(inTarget.name());
+		auto args = String::join(runArgumentMap.at(inTarget.name()));
 		outNode.addElement("Option", [&args](XmlElement& node) {
 			node.addAttribute("parameters", args);
 		});

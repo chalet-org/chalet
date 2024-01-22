@@ -255,7 +255,7 @@ bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, co
 		node2.addAttribute("PROJECT_NAME", m_projectName);
 		node2.addAttribute("TARGET_NAME", m_exportAdapter.getRunConfigLabel(inRunConfig));
 		node2.addAttribute("RUN_PATH", inRunConfig.outputFile);
-		node2.addAttribute("PROGRAM_PARAMS", inRunConfig.args);
+		node2.addAttribute("PROGRAM_PARAMS", String::join(inRunConfig.args));
 		if (!inRunConfig.env.empty())
 		{
 			node2.addElement("envs", [&inRunConfig](XmlElement& node3) {

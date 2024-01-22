@@ -79,7 +79,7 @@ Json VSLaunchGen::getConfiguration(const RunConfiguration& runConfig, const Cent
 	StringList arguments;
 	if (runArgumentMap.find(targetName) != runArgumentMap.end())
 	{
-		arguments = String::split(runArgumentMap.at(targetName), ' ');
+		arguments = runArgumentMap.at(targetName);
 	}
 
 	Json ret = Json::object();

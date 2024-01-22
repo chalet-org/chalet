@@ -15,7 +15,7 @@ struct RunConfiguration
 	std::string config;
 	std::string arch;
 	std::string outputFile;
-	std::string args;
+	StringList args;
 	std::map<std::string, std::string> env;
 };
 

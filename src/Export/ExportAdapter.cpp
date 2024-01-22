@@ -274,10 +274,6 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					if (!project.isExecutable())
 						continue;
 
-					std::string arguments;
-					if (runArgumentMap.find(targetName) != runArgumentMap.end())
-						arguments = runArgumentMap.at(targetName);
-
 					auto outputFile = state->paths.getTargetFilename(project);
 					String::replaceAll(outputFile, thisBuildDir, buildDir);
 
@@ -286,7 +282,9 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					runConfig.config = config;
 					runConfig.arch = arch;
 					runConfig.outputFile = std::move(outputFile);
-					runConfig.args = arguments;
+
+					if (runArgumentMap.find(targetName) != runArgumentMap.end())
+						runConfig.args = runArgumentMap.at(targetName);
 
 					if (!path.empty())
 						runConfig.env.emplace(Environment::getPathKey(), path);
@@ -305,10 +303,6 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					if (project.runExecutable().empty())
 						continue;
 
-					std::string arguments;
-					if (runArgumentMap.find(targetName) != runArgumentMap.end())
-						arguments = runArgumentMap.at(targetName);
-
 					auto outputFile = state->paths.getTargetFilename(project);
 					String::replaceAll(outputFile, thisBuildDir, buildDir);
 
@@ -316,8 +310,11 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
+
 					runConfig.outputFile = std::move(outputFile);
-					runConfig.args = arguments;
+
+					if (runArgumentMap.find(targetName) != runArgumentMap.end())
+						runConfig.args = runArgumentMap.at(targetName);
 
 					if (!path.empty())
 						runConfig.env.emplace(Environment::getPathKey(), path);

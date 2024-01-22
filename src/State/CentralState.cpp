@@ -254,29 +254,15 @@ bool CentralState::runDependencyManager()
 }
 
 /*****************************************************************************/
-void CentralState::setRunArgumentMap(Dictionary<std::string>&& inMap)
+void CentralState::setRunArgumentMap(Dictionary<StringList>&& inMap)
 {
 	m_runArgumentMap = std::move(inMap);
 }
 
 /*****************************************************************************/
-void CentralState::setRunArguments(const std::string& inKey, std::string&& inValue)
-{
-	m_runArgumentMap[inKey] = std::move(inValue);
-}
-
-/*****************************************************************************/
 void CentralState::setRunArguments(const std::string& inKey, StringList&& inValue)
 {
-	// TODO: probably a bad idea to join the arguments like this here... rework later
-	m_runArgumentMap[inKey] = String::join(inValue);
-}
-
-/*****************************************************************************/
-void CentralState::addRunArgumentsIfNew(const std::string& inKey, std::string&& inValue)
-{
-	if (m_runArgumentMap.find(inKey) == m_runArgumentMap.end())
-		setRunArguments(inKey, std::move(inValue));
+	m_runArgumentMap[inKey] = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -287,7 +273,7 @@ void CentralState::addRunArgumentsIfNew(const std::string& inKey, StringList&& i
 }
 
 /*****************************************************************************/
-const Dictionary<std::string>& CentralState::runArgumentMap() const noexcept
+const Dictionary<StringList>& CentralState::runArgumentMap() const noexcept
 {
 	return m_runArgumentMap;
 }
@@ -310,6 +296,63 @@ const std::optional<StringList>& CentralState::getRunTargetArguments(const std::
 void CentralState::clearRunArgumentMap()
 {
 	m_runArgumentMap.clear();
+}
+
+/*****************************************************************************/
+StringList CentralState::getArgumentStringListFromString(const std::string& inValue)
+{
+	StringList argList;
+
+	if (inValue.empty())
+		return argList;
+
+	std::string nextArg;
+	bool hasQuote = false;
+	bool previousBackslash = false;
+	for (uchar c : inValue)
+	{
+		if (c == '\\')
+		{
+			nextArg.push_back(c);
+			previousBackslash = !previousBackslash;
+			continue;
+		}
+		else if (c == '\'')
+		{
+			if (!nextArg.empty())
+				nextArg.push_back(c);
+
+			hasQuote = true;
+		}
+		else if (c == ' ')
+		{
+			if (previousBackslash)
+			{
+				nextArg.push_back(c);
+				continue;
+			}
+			else if (hasQuote)
+			{
+				nextArg.pop_back(); // remove the last quote
+			}
+
+			argList.emplace_back(nextArg);
+			nextArg.clear();
+		}
+		else
+		{
+			nextArg.push_back(c);
+			previousBackslash = false;
+			hasQuote = false;
+		}
+	}
+
+	if (!nextArg.empty())
+	{
+		argList.emplace_back(nextArg);
+	}
+
+	return argList;
 }
 
 /*****************************************************************************/

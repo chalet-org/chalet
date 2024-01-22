@@ -277,7 +277,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 			if (runArgumentMap.find(target) != runArgumentMap.end())
 			{
-				auto arguments = String::split(runArgumentMap.at(target));
+				auto& arguments = runArgumentMap.at(target);
 				node.addElement("CommandLineArguments", [&arguments](XmlElement& node2) {
 					for (auto& arg : arguments)
 					{
