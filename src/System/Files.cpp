@@ -880,7 +880,7 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 #elif defined(CHALET_MACOS)
 	auto open = Files::which("open");
 	if (!open.empty())
-		return Process::run({ open, inFile });
+		return Process::runMinimalOutputWithoutWait({ open, inFile });
 	else
 		return false;
 #else
@@ -893,7 +893,7 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 		open = Files::which("mimeopen");
 
 	if (!open.empty())
-		return Process::run({ open, inFile });
+		return Process::runMinimalOutputWithoutWait({ open, inFile });
 	else
 		return false;
 #endif
