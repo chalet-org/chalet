@@ -38,20 +38,16 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 
 	bool isC = inProject.language() == CodeLanguage::C || inProject.language() == CodeLanguage::ObjectiveC;
 
-	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool checkPrefix = false) -> i32 {
-		constexpr bool onlyType = true;
-		return executableMatches(exec, "C compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "C compiler", id, typeMatches, label, opts);
 	};
 
-	auto cppCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool checkPrefix = false) -> i32 {
-		constexpr bool onlyType = true;
-		return executableMatches(exec, "C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto cppCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "C++ compiler", id, typeMatches, label, opts);
 	};
 
-	auto cxxCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
-		constexpr bool onlyType = true;
-		constexpr bool checkPrefix = false;
-		return executableMatches(exec, "C/C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto cxxCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "C/C++ compiler", id, typeMatches, label, opts);
 	};
 
 #if defined(CHALET_WIN32)
@@ -63,25 +59,25 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 
 	if (isC)
 	{
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
 
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::MingwLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 	else
 	{
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxVisualStudioClang>(result, inState, inProject);
 
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::MingwLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 
 #elif defined(CHALET_MACOS)
 	if (isC)
 	{
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::AppleLLVM, "AppleClang", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
 		if (i32 result = cCompilerMatches("icc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
@@ -89,7 +85,7 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 	}
 	else
 	{
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::AppleLLVM, "AppleClang", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxAppleClang>(result, inState, inProject);
 
 		if (i32 result = cppCompilerMatches("icpc", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
@@ -101,12 +97,12 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 #if !defined(CHALET_WIN32)
 	if (isC)
 	{
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false, true); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", MatchOpts::OnlyType | MatchOpts::CheckPrefix); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 	else
 	{
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false, true); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", MatchOpts::OnlyType | MatchOpts::CheckPrefix); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 
@@ -114,12 +110,12 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 
 	if (isC)
 	{
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::IntelLLVM, "Intel LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
 	}
 	else
 	{
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::IntelLLVM, "Intel LLVM", MatchOpts::OnlyType); result >= 0)
 			return makeTool<CompilerCxxIntelClang>(result, inState, inProject);
 	}
 

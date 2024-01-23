@@ -14,6 +14,13 @@ struct SourceTarget;
 
 struct IToolchainExecutableBase
 {
+	enum MatchOpts
+	{
+		None = 0,
+		FailTypeMismatch = 1 << 0,
+		OnlyType = 1 << 1,
+		CheckPrefix = 1 << 2,
+	};
 	explicit IToolchainExecutableBase(const BuildState& inState, const SourceTarget& inProject);
 	CHALET_DISALLOW_COPY_MOVE(IToolchainExecutableBase);
 	virtual ~IToolchainExecutableBase() = default;
@@ -25,7 +32,7 @@ struct IToolchainExecutableBase
 	void setGenerateDependencies(const bool inValue) noexcept;
 
 protected:
-	static i32 executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType, const bool checkPrefix);
+	static i32 executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const i32 opts);
 
 	template <typename T>
 	[[nodiscard]] static Unique<T> makeTool(i32 result, const BuildState& inState, const SourceTarget& inProject);

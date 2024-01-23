@@ -28,8 +28,8 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ICompilerWinResource:", static_cast<i32>(inType), exec);
 
-	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true, const bool checkPrefix = false) -> i32 {
-		return executableMatches(exec, "Windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "Windows resource compiler", id, typeMatches, label, opts);
 	};
 
 #if defined(CHALET_WIN32)
@@ -37,14 +37,14 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 		return makeTool<CompilerWinResourceVisualStudioRC>(result, inState, inProject);
 #endif
 
-	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false, false); result >= 0)
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", 0); result >= 0)
 		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
 
 	// Allow llvm-rc or windres for MinGW LLVM
-	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::MingwLLVM, "LLVM", false, false); result >= 0)
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::MingwLLVM, "LLVM", 0); result >= 0)
 		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
 
-	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+	if (i32 result = compilerMatches("llvm-rc", inType == ToolchainType::IntelLLVM, "Intel LLVM", MatchOpts::OnlyType); result >= 0)
 		return makeTool<CompilerWinResourceLLVMRC>(result, inState, inProject);
 
 	if (String::equals("llvm-rc", exec))

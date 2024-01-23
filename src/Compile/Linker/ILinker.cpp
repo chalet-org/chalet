@@ -38,9 +38,8 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ILinker:", static_cast<i32>(inType), exec, inExecutable);
 
-	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
-		constexpr bool checkPrefix = false;
-		return executableMatches(exec, "linker", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "linker", id, typeMatches, label, opts);
 	};
 
 	// The goal here is to not only return the correct linker,
@@ -53,13 +52,13 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	if (i32 result = linkerMatches("xilink", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
 		return makeTool<LinkerIntelClassicLINK>(result, inState, inProject);
 
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", false); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM || inType == ToolchainType::VisualStudioLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 		return makeTool<LinkerVisualStudioClang>(result, inState, inProject);
 
 	// if (i32 result = linkerMatches("ld", inType == ToolchainType::MingwLLVM, "LLVM", false, false); result >= 0)
 	// 	return makeTool<LinkerGCC>(result, inState, inProject);
 
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::MingwLLVM, "LLVM", false); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::MingwLLVM, "LLVM", MatchOpts::OnlyType); result >= 0)
 	{
 		if (result == 1)
 			return makeTool<LinkerLLVMClang>(result, inState, inProject);
@@ -68,7 +67,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	}
 
 #elif defined(CHALET_MACOS)
-	if (i32 result = linkerMatches("ld", inType == ToolchainType::AppleLLVM, "AppleClang", false); result >= 0)
+	if (i32 result = linkerMatches("ld", inType == ToolchainType::AppleLLVM, "AppleClang", MatchOpts::OnlyType); result >= 0)
 		return makeTool<LinkerAppleClang>(result, inState, inProject);
 
 	if (i32 result = linkerMatches("xild", inType == ToolchainType::IntelClassic, "Intel Classic"); result >= 0)
@@ -77,12 +76,12 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 #endif
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", false, false); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", 0); result >= 0)
 		return makeTool<LinkerLLVMClang>(result, inState, inProject);
 
 #endif
 
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::IntelLLVM, "Intel LLVM", MatchOpts::OnlyType); result >= 0)
 		return makeTool<LinkerIntelClang>(result, inState, inProject);
 
 	if (i32 result = linkerMatches("wasm-ld", inType == ToolchainType::Emscripten, "Emscripten"); result >= 0)

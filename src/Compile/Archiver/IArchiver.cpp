@@ -31,9 +31,8 @@ IArchiver::IArchiver(const BuildState& inState, const SourceTarget& inProject) :
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("IArchiver:", static_cast<i32>(inType), exec);
 
-	auto archiverMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool checkPrefix = false) -> i32 {
-		constexpr bool onlyType = true;
-		return executableMatches(exec, "archiver", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
+	auto archiverMatches = [&exec](const char* id, const bool typeMatches, const char* label, const i32 opts = MatchOpts::FailTypeMismatch | MatchOpts::OnlyType) -> i32 {
+		return executableMatches(exec, "archiver", id, typeMatches, label, opts);
 	};
 
 #if defined(CHALET_WIN32)
@@ -52,13 +51,13 @@ IArchiver::IArchiver(const BuildState& inState, const SourceTarget& inProject) :
 
 #endif
 
-	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::VisualStudioLLVM || inType == ToolchainType::LLVM || inType == ToolchainType::MingwLLVM, "LLVM", false, true); result >= 0)
+	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::VisualStudioLLVM || inType == ToolchainType::LLVM || inType == ToolchainType::MingwLLVM, "LLVM", MatchOpts::OnlyType | MatchOpts::CheckPrefix); result >= 0)
 		return makeTool<ArchiverLLVMAR>(result, inState, inProject);
 
-	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::IntelLLVM, "Intel LLVM", false); result >= 0)
+	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::IntelLLVM, "Intel LLVM", MatchOpts::OnlyType); result >= 0)
 		return makeTool<ArchiverLLVMAR>(result, inState, inProject);
 
-	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::Emscripten, "Emscripten", false); result >= 0)
+	if (i32 result = archiverMatches("llvm-ar", inType == ToolchainType::Emscripten, "Emscripten", MatchOpts::OnlyType); result >= 0)
 		return makeTool<ArchiverLLVMAR>(result, inState, inProject);
 
 	if (String::equals("llvm-ar", exec))
