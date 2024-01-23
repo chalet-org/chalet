@@ -117,7 +117,7 @@ std::string ExportAdapter::getAllTargetName() const
 	RunConfiguration runConfig;
 	runConfig.name = m_allBuildName;
 	runConfig.config = debugState.configuration.name();
-	runConfig.arch = debugState.info.hostArchitectureString();
+	runConfig.arch = debugState.info.targetArchitectureString();
 
 	return getRunConfigLabel(runConfig);
 }
