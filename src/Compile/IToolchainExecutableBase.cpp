@@ -42,9 +42,9 @@ void IToolchainExecutableBase::setGenerateDependencies(const bool inValue) noexc
 }
 
 /*****************************************************************************/
-i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType)
+i32 IToolchainExecutableBase::executableMatches(const std::string& exec, const char* toolId, const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch, const bool onlyType, const bool checkPrefix)
 {
-	const bool isExpected = String::equals(id, exec);
+	const bool isExpected = String::equals(id, exec) || (checkPrefix && String::startsWith(id, fmt::format("{}-", exec)));
 	if (isExpected && (!onlyType || (onlyType && typeMatches)))
 	{
 		return 1;

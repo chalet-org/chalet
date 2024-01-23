@@ -28,8 +28,8 @@ ICompilerWinResource::ICompilerWinResource(const BuildState& inState, const Sour
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ICompilerWinResource:", static_cast<i32>(inType), exec);
 
-	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
-		return executableMatches(exec, "Windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+	auto compilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true, const bool checkPrefix = false) -> i32 {
+		return executableMatches(exec, "Windows resource compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
 	};
 
 #if defined(CHALET_WIN32)

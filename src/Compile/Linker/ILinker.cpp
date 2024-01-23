@@ -38,9 +38,9 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 	const auto exec = String::toLowerCase(String::getPathBaseName(inExecutable));
 	// LOG("ILinker:", static_cast<i32>(inType), exec, inExecutable);
 
-	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
-		constexpr bool onlyType = true;
-		return executableMatches(exec, "linker", id, typeMatches, label, failTypeMismatch, onlyType);
+	auto linkerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool onlyType = true) -> i32 {
+		constexpr bool checkPrefix = false;
+		return executableMatches(exec, "linker", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
 	};
 
 	// The goal here is to not only return the correct linker,
@@ -77,7 +77,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 #endif
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", false, false); result >= 0)
 		return makeTool<LinkerLLVMClang>(result, inState, inProject);
 
 #endif

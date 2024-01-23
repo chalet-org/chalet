@@ -38,19 +38,20 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 
 	bool isC = inProject.language() == CodeLanguage::C || inProject.language() == CodeLanguage::ObjectiveC;
 
-	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+	auto cCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool checkPrefix = false) -> i32 {
 		constexpr bool onlyType = true;
-		return executableMatches(exec, "C compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+		return executableMatches(exec, "C compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
 	};
 
-	auto cppCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
+	auto cppCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true, const bool checkPrefix = false) -> i32 {
 		constexpr bool onlyType = true;
-		return executableMatches(exec, "C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+		return executableMatches(exec, "C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
 	};
 
 	auto cxxCompilerMatches = [&exec](const char* id, const bool typeMatches, const char* label, const bool failTypeMismatch = true) -> i32 {
 		constexpr bool onlyType = true;
-		return executableMatches(exec, "C/C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType);
+		constexpr bool checkPrefix = false;
+		return executableMatches(exec, "C/C++ compiler", id, typeMatches, label, failTypeMismatch, onlyType, checkPrefix);
 	};
 
 #if defined(CHALET_WIN32)
@@ -100,12 +101,12 @@ ICompilerCxx::ICompilerCxx(const BuildState& inState, const SourceTarget& inProj
 #if !defined(CHALET_WIN32)
 	if (isC)
 	{
-		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+		if (i32 result = cCompilerMatches("clang", inType == ToolchainType::LLVM, "LLVM", false, true); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 	else
 	{
-		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false); result >= 0)
+		if (i32 result = cppCompilerMatches("clang++", inType == ToolchainType::LLVM, "LLVM", false, true); result >= 0)
 			return makeTool<CompilerCxxClang>(result, inState, inProject);
 	}
 
