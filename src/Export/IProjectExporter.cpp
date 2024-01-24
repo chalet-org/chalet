@@ -234,6 +234,10 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 				return false;
 			}
 		}
+		else
+		{
+			Diagnostic::stepInfo("{}Note: Use '--open' with this command to open in {}.{}", flair, projectType, reset);
+		}
 	}
 
 	return true;

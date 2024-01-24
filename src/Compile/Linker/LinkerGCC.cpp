@@ -259,7 +259,7 @@ void LinkerGCC::addRunPath(StringList& outArgList) const
 	{
 #if defined(CHALET_LINUX)
 		if (m_state.toolchain.strategy() == StrategyType::Native)
-			outArgList.emplace_back("-Wl,-rpath=$ORIGIN"); // Note: Single quotes are required!
+			outArgList.emplace_back("-Wl,-rpath=$ORIGIN");
 		else
 			outArgList.emplace_back("-Wl,-rpath,'$$ORIGIN'"); // Note: Single quotes are required!
 #elif defined(CHALET_MACOS)
