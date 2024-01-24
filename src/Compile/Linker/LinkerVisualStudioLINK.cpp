@@ -224,7 +224,9 @@ void LinkerVisualStudioLINK::addDebug(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, "/debug");
 
 		outArgList.emplace_back(getPathCommand("/pdb:", fmt::format("{}.pdb", outputFileBase())));
-		outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
+
+		if (m_msvcAdapter.supportsStrippedPdb())
+			outArgList.emplace_back(getPathCommand("/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
 	}
 }
 

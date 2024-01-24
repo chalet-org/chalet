@@ -776,7 +776,7 @@ std::string ProjectAdapterVCXProj::getProgramDatabaseFile() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getStripPrivateSymbols() const
 {
-	if (m_msvcAdapter.enableDebugging())
+	if (m_msvcAdapter.supportsStrippedPdb())
 	{
 		return "$(OutDir)$(TargetName).stripped.pdb";
 	}
