@@ -260,7 +260,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("useCustomWorkingDirectory", getBoolString(true));
 			node.addAttribute("customWorkingDirectory", "$(PROJECT_RUN_PATH)");
 			node.addAttribute("ignoresPersistentStateOnLaunch", getBoolString(false));
-			node.addAttribute("debugDocumentVersioning", getBoolString(true));
+			node.addAttribute("debugDocumentVersioning", getBoolString(false));
 			node.addAttribute("debugServiceExtension", "internal");
 			node.addAttribute("allowLocationSimulation", getBoolString(true));
 			node.addAttribute("viewDebuggingEnabled", "No");
@@ -313,7 +313,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("savedToolIdentifier", "");
 			node.addAttribute("useCustomWorkingDirectory", getBoolString(true));
 			node.addAttribute("customWorkingDirectory", "$(PROJECT_RUN_PATH)");
-			node.addAttribute("debugDocumentVersioning", getBoolString(true));
+			node.addAttribute("debugDocumentVersioning", getBoolString(false));
 			node.addElement("BuildableProductRunnable", [this, &target](XmlElement& node2) {
 				node2.addAttribute("runnableDebuggingMode", "0");
 				node2.addElement("BuildableReference", [this, &target](XmlElement& node3) {
