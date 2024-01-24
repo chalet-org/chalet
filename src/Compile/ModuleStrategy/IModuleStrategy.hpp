@@ -71,7 +71,7 @@ protected:
 	std::vector<SourceFileGroup*> getSourceFileGroupsForBuild(DependencyGraph& outDependencyGraph, SourceFileGroupList& outList) const;
 	void addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList) const;
 	void logPayload(const Dictionary<ModulePayload>& inPayload) const;
-	void addToCompileCommandsJson(const CommandPool::Cmd& inCmd) const;
+	void addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const;
 
 	BuildState& m_state;
 	CompileCommandsGenerator& m_compileCommandsGenerator;

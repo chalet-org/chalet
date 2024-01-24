@@ -413,22 +413,22 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			m_compileCache[source] = false;
 
+		ModuleFileType type = inType;
+		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
+			type = ModuleFileType::ModuleImplementationUnit;
+
+		auto interfaceFile = group->otherFile;
+		if (interfaceFile.empty())
+		{
+			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
+		}
+
 		bool sourceChanged = m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
-			auto interfaceFile = group->otherFile;
-			if (interfaceFile.empty())
-			{
-				interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
-			}
-
 			CommandPool::Cmd out;
 			out.output = getBuildOutputForFile(*group, isObject);
-
-			ModuleFileType type = inType;
-			if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
-				type = ModuleFileType::ModuleImplementationUnit;
 
 			if (inModules.find(source) != inModules.end())
 			{
@@ -436,22 +436,82 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
 				out.reference = source;
-				addToCompileCommandsJson(out);
 			}
 			else
 			{
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
 				out.reference = source;
-				if (type == ModuleFileType::HeaderUnitObject)
-				{
-					addToCompileCommandsJson(out);
-				}
 			}
 
 			ret.emplace_back(std::move(out));
 		}
+		if (m_state.info.generateCompileCommands())
+		{
+			if (inModules.find(source) != inModules.end())
+			{
+				const auto& module = inModules.at(source);
+
+				bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
+				inToolchain.compilerCxx->setQuotedPaths(true);
+				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
+				inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
+			}
+			else
+			{
+				if (type == ModuleFileType::HeaderUnitObject)
+				{
+					bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
+					inToolchain.compilerCxx->setQuotedPaths(true);
+					addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
+					inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
+				}
+			}
+		}
 
 		m_compileCache[source] = sourceChanged;
+	}
+
+	// Generate compile commands
+	if (m_state.info.generateCompileCommands())
+	{
+		bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
+		inToolchain.compilerCxx->setQuotedPaths(true);
+
+		for (auto& group : inGroups)
+		{
+			if (group->type != SourceType::CPlusPlus)
+				continue;
+
+			const auto& source = group->sourceFile;
+			if (source.empty())
+				continue;
+
+			const auto& target = group->objectFile;
+			const auto& dependency = group->dependencyFile;
+
+			ModuleFileType type = inType;
+			if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
+				type = ModuleFileType::ModuleImplementationUnit;
+
+			auto interfaceFile = group->otherFile;
+			if (interfaceFile.empty())
+			{
+				interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
+			}
+
+			if (inModules.find(source) != inModules.end())
+			{
+				const auto& module = inModules.at(source);
+
+				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
+			}
+			else if (type == ModuleFileType::HeaderUnitObject)
+			{
+				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
+			}
+		}
+
+		inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
 	}
 
 	return ret;
@@ -946,12 +1006,11 @@ void IModuleStrategy::checkCommandsForChanges(const SourceTarget& inProject, Com
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addToCompileCommandsJson(const CommandPool::Cmd& inCmd) const
+void IModuleStrategy::addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const
 {
 	if (m_state.info.generateCompileCommands())
 	{
-		m_compileCommandsGenerator.addCompileCommand(inCmd.reference, StringList(inCmd.command));
+		m_compileCommandsGenerator.addCompileCommand(inReference, std::move(inCmd));
 	}
 }
-
 }
