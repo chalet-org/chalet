@@ -197,8 +197,6 @@ SubProcess::CmdPtrArray SubProcess::getCmdVector(const StringList& inCmd)
 
 #endif
 
-std::array<char, SubProcess::kDataBufferSize> SubProcess::kDataBuffer = std::array<char, kDataBufferSize>();
-
 /*****************************************************************************/
 std::string SubProcess::getErrorMessageFromSignalRaised(const i32 inCode)
 {
@@ -721,8 +719,8 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 #else
 	ssize_t bytesRead = 0;
 #endif
-	auto bufferData = kDataBuffer.data();
-	size_t bufferSize = kDataBuffer.size();
+	auto bufferData = m_DataBuffer.data();
+	size_t bufferSize = m_DataBuffer.size();
 	while (true)
 	{
 		if (m_killed)

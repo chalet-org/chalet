@@ -51,7 +51,7 @@ private:
 	ProcessPipe& getFilePipe(const HandleInput inFileNo);
 
 	static constexpr size_t kDataBufferSize = 256;
-	static std::array<char, kDataBufferSize> kDataBuffer;
+	std::array<char, kDataBufferSize> m_DataBuffer;
 
 #if defined(CHALET_WIN32)
 	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };
