@@ -365,6 +365,13 @@ bool CommandAdapterMSVC::supportsRandomizedBaseAddress() const
 }
 
 /*****************************************************************************/
+bool CommandAdapterMSVC::supportsStrippedPdb() const
+{
+	// VS 2019+
+	return m_versionMajorMinor >= 1920 && enableDebugging();
+}
+
+/*****************************************************************************/
 std::string CommandAdapterMSVC::getLanguageStandardCpp() const
 {
 	// 2015 Update 3 or later (/std flag doesn't exist prior

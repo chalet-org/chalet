@@ -67,7 +67,9 @@ void LinkerVisualStudioClang::addLinkerOptions(StringList& outArgList) const
 			List::addIfDoesNotExist(outArgList, "-Wl,/debug");
 
 		outArgList.emplace_back(getPathCommand("-Wl,/pdb:", fmt::format("{}.pdb", outputFileBase())));
-		outArgList.emplace_back(getPathCommand("-Wl,/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
+
+		if (m_msvcAdapter.supportsStrippedPdb())
+			outArgList.emplace_back(getPathCommand("-Wl,/pdbstripped:", fmt::format("{}.stripped.pdb", outputFileBase())));
 	}
 
 	if (m_msvcAdapter.supportsRandomizedBaseAddress())

@@ -56,6 +56,7 @@ struct CommandAdapterMSVC
 	bool disableFixedBaseAddress() const;
 	bool enableDebugging() const;
 	bool supportsRandomizedBaseAddress() const;
+	bool supportsStrippedPdb() const;
 
 	std::string getPlatformToolset() const;
 
