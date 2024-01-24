@@ -445,28 +445,6 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 			ret.emplace_back(std::move(out));
 		}
-		if (m_state.info.generateCompileCommands())
-		{
-			if (inModules.find(source) != inModules.end())
-			{
-				const auto& module = inModules.at(source);
-
-				bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
-				inToolchain.compilerCxx->setQuotedPaths(true);
-				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
-				inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
-			}
-			else
-			{
-				if (type == ModuleFileType::HeaderUnitObject)
-				{
-					bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
-					inToolchain.compilerCxx->setQuotedPaths(true);
-					addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
-					inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
-				}
-			}
-		}
 
 		m_compileCache[source] = sourceChanged;
 	}
