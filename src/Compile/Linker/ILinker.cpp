@@ -76,7 +76,7 @@ ILinker::ILinker(const BuildState& inState, const SourceTarget& inProject) :
 #endif
 
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", 0); result >= 0)
+	if (i32 result = linkerMatches("lld", inType == ToolchainType::LLVM, "LLVM", MatchOpts::CheckPrefix); result >= 0)
 		return makeTool<LinkerLLVMClang>(result, inState, inProject);
 
 #endif
