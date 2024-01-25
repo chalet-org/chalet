@@ -434,6 +434,7 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
 	for (auto& link : links)
 	{
+		LOG(link);
 		if (List::contains(m_targetsChanged, link))
 		{
 			result = true;
@@ -490,9 +491,14 @@ void NativeGenerator::checkCommandsForChanges()
 		}
 
 		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
-		auto targetOptions = m_toolchain->getOutputTargetCommand(m_project->outputFile(), StringList{});
+		auto targetOptions = m_toolchain->getOutputTargetCommand(m_project->outputFile(), m_project->files());
 		auto targetHash = Hash::string(String::join(targetOptions));
 		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
+
+		if (m_targetCommandChanged)
+		{
+			m_targetsChanged.emplace_back(m_project->name());
+		}
 	}
 }
 }
