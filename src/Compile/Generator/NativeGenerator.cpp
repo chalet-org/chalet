@@ -110,7 +110,6 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 /*****************************************************************************/
 bool NativeGenerator::buildProject(const SourceTarget& inProject)
 {
-	m_targetsChanged.clear();
 	m_fileCache.clear();
 	m_dependencyCache.clear();
 
@@ -118,7 +117,6 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 		return true;
 
 	auto& buildJobs = m_targets.at(inProject.name());
-
 	if (!buildJobs.empty())
 	{
 		CommandPool::Settings settings;
@@ -336,7 +334,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 
 	if (m_sourcesChanged)
 	{
-		m_targetsChanged.emplace_back(m_project->name());
+		List::addIfDoesNotExist(m_targetsChanged, m_project->name());
 	}
 
 	return ret;
@@ -496,7 +494,7 @@ void NativeGenerator::checkCommandsForChanges()
 
 		if (m_targetCommandChanged)
 		{
-			m_targetsChanged.emplace_back(m_project->name());
+			List::addIfDoesNotExist(m_targetsChanged, m_project->name());
 		}
 	}
 }

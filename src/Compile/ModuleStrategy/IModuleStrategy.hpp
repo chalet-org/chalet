@@ -55,21 +55,21 @@ public:
 protected:
 	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const;
 
-	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType) const;
+	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
 
 	void addCompileCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
-	CommandPool::CmdList getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks);
+	CommandPool::CmdList getLinkCommand(CompileToolchainController& inToolchain, const std::string& inTarget, const StringList& inLinks);
 
 	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
 
-	bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) const;
+	bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	void checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups);
-	bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) const;
+	bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups);
 	void checkForDependencyChanges(DependencyGraph& dependencyGraph) const;
 	bool addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupList& outList) const;
-	bool makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList) const;
+	bool makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList);
 	std::vector<SourceFileGroup*> getSourceFileGroupsForBuild(DependencyGraph& outDependencyGraph, SourceFileGroupList& outList) const;
-	void addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList) const;
+	void addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList);
 	void logPayload(const Dictionary<ModulePayload>& inPayload) const;
 	void addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const;
 
@@ -87,19 +87,24 @@ protected:
 
 private:
 	std::string getModuleId() const;
-	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
+	bool rebuildRequiredFromLinks() const;
 
 	bool onFailure();
 	CommandPool::Settings getCommandPoolSettings() const;
 
-	void checkCommandsForChanges(const SourceTarget& inProject, CompileToolchainController& inToolchain);
+	bool checkDependentTargets(const SourceTarget& inProject) const;
+	void checkCommandsForChanges(CompileToolchainController& inToolchain);
+
+	StringList m_targetsChanged;
+
+	Dictionary<std::string> m_systemModules;
+
+	std::string m_moduleId;
+
+	const SourceTarget* m_project = nullptr;
 
 	bool m_moduleCommandsChanged = false;
 	bool m_winResourceCommandsChanged = false;
 	bool m_targetCommandChanged = false;
-
-	std::string m_moduleId;
-
-	Dictionary<std::string> m_systemModules;
 };
 }

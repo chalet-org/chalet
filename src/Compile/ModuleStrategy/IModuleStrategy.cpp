@@ -54,11 +54,14 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	m_sourcesChanged = false;
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
+
 	m_implementationUnits.clear();
 	m_previousSource.clear();
 	m_moduleId = getModuleId();
 
-	checkCommandsForChanges(inProject, *inToolchain);
+	m_project = &inProject;
+
+	checkCommandsForChanges(*inToolchain);
 
 	Dictionary<ModuleLookup> modules;
 
@@ -89,7 +92,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 		if (!systemModules.empty())
 		{
-			auto& cppStandard = inProject.cppStandard();
+			auto& cppStandard = m_project->cppStandard();
 			if (String::equals("c++20", cppStandard))
 			{
 				StringList sysModList;
@@ -330,9 +333,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	}
 
 	bool targetExists = Files::pathExists(inOutputs->target);
-	bool requiredFromLinks = rebuildRequiredFromLinks(inProject);
+	bool requiredFromLinks = rebuildRequiredFromLinks();
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
-	if (m_targetCommandChanged || !buildJobs.empty() || !targetExists || requiredFromLinks)
+	bool dependentChanged = targetExists && checkDependentTargets(*m_project);
+	bool compileTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || !targetExists;
+	if (compileTarget)
 	{
 		// Scan sources for module dependencies
 
@@ -347,7 +352,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 		{
 			auto job = std::make_unique<CommandPool::Job>();
-			job->list = getLinkCommand(*inToolchain, inProject, inOutputs->target, links);
+			job->list = getLinkCommand(*inToolchain, inOutputs->target, links);
 			buildJobs.emplace_back(std::move(job));
 		}
 
@@ -372,6 +377,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	// Build in groups after dependencies / order have been resolved
 
 	m_state.toolchain.setStrategy(m_oldStrategy);
+	m_project = nullptr;
 
 	return true;
 }
@@ -389,7 +395,7 @@ std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSour
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType) const
+CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType)
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
@@ -447,6 +453,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		}
 
 		m_compileCache[source] = sourceChanged;
+	}
+
+	if (m_sourcesChanged)
+	{
+		List::addIfDoesNotExist(m_targetsChanged, m_project->name());
 	}
 
 	// Generate compile commands
@@ -533,7 +544,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const SourceTarget& inProject, const std::string& inTarget, const StringList& inLinks)
+CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const std::string& inTarget, const StringList& inLinks)
 {
 	CommandPool::CmdList ret;
 
@@ -541,7 +552,7 @@ CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController&
 		CommandPool::Cmd out;
 		out.command = inToolchain.getOutputTargetCommand(inTarget, inLinks);
 
-		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
+		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);
 
 		ret.emplace_back(std::move(out));
@@ -620,7 +631,7 @@ std::string IModuleStrategy::getModuleId() const
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) const
+bool IModuleStrategy::rebuildRequiredFromLinks() const
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
@@ -632,10 +643,10 @@ bool IModuleStrategy::rebuildRequiredFromLinks(const SourceTarget& inProject) co
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
 
-			if (String::equals(project.name(), inProject.name()))
+			if (String::equals(project.name(), m_project->name()))
 				break;
 
-			if (List::contains(inProject.projectStaticLinks(), project.name()))
+			if (List::contains(m_project->projectStaticLinks(), project.name()))
 			{
 				result |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
 			}
@@ -667,7 +678,7 @@ CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) const
+bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
 {
 	// Scan sources for module dependencies
 
@@ -731,7 +742,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) const
+bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
 {
 	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
 	if (!outJob.list.empty())
@@ -831,7 +842,7 @@ bool IModuleStrategy::addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupLi
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList) const
+bool IModuleStrategy::makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList)
 {
 	if (inList.empty())
 		return false;
@@ -869,7 +880,7 @@ std::vector<SourceFileGroup*> IModuleStrategy::getSourceFileGroupsForBuild(Depen
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList) const
+void IModuleStrategy::addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList)
 {
 	auto groupsAdded = getSourceFileGroupsForBuild(outDependencyGraph, sourceCompiles);
 	if (!sourceCompiles.empty())
@@ -942,13 +953,31 @@ void IModuleStrategy::logPayload(const Dictionary<ModulePayload>& inPayload) con
 }
 
 /*****************************************************************************/
-void IModuleStrategy::checkCommandsForChanges(const SourceTarget& inProject, CompileToolchainController& inToolchain)
+bool IModuleStrategy::checkDependentTargets(const SourceTarget& inProject) const
+{
+	bool result = false;
+
+	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
+	for (auto& link : links)
+	{
+		if (List::contains(m_targetsChanged, link))
+		{
+			result = true;
+			break;
+		}
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+void IModuleStrategy::checkCommandsForChanges(CompileToolchainController& inToolchain)
 {
 	m_moduleCommandsChanged = false;
 	m_winResourceCommandsChanged = false;
 	m_targetCommandChanged = false;
 
-	auto& name = inProject.name();
+	auto& name = m_project->name();
 	auto& sourceCache = m_state.cache.file().sources();
 
 	{
@@ -977,9 +1006,14 @@ void IModuleStrategy::checkCommandsForChanges(const SourceTarget& inProject, Com
 		}
 
 		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
-		auto targetOptions = inToolchain.getOutputTargetCommand(inProject.outputFile(), StringList{});
+		auto targetOptions = inToolchain.getOutputTargetCommand(m_project->outputFile(), m_project->files());
 		auto targetHash = Hash::string(String::join(targetOptions));
 		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
+
+		if (m_targetCommandChanged)
+		{
+			List::addIfDoesNotExist(m_targetsChanged, m_project->name());
+		}
 	}
 }
 
