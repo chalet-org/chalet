@@ -434,7 +434,6 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
 	for (auto& link : links)
 	{
-		LOG(link);
 		if (List::contains(m_targetsChanged, link))
 		{
 			result = true;
