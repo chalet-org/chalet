@@ -20,7 +20,7 @@ CompilerCxxIntelClassicCL::CompilerCxxIntelClassicCL(const BuildState& inState, 
 /*****************************************************************************/
 bool CompilerCxxIntelClassicCL::initialize()
 {
-	if (!createPrecompiledHeaderSource())
+	if (!CompilerCxxVisualStudioCL::initialize())
 		return false;
 
 	return true;

@@ -35,8 +35,8 @@ ProjectAdapterVCXProj::ProjectAdapterVCXProj(const BuildState& inState, const So
 /*****************************************************************************/
 bool ProjectAdapterVCXProj::createPrecompiledHeaderSource()
 {
-	auto intDir = getIntermediateDir();
 	std::string objDir{ "$(IntDir)" }; // note: objDir()
+	auto intDir = getIntermediateDir();
 
 	return m_msvcAdapter.createPrecompiledHeaderSource(intDir, objDir);
 }

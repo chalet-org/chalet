@@ -806,7 +806,6 @@ bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inSour
 
 	if (m_project.usesPrecompiledHeader())
 	{
-		bool buildHashChanged = m_state.cache.file().buildHashChanged();
 		const auto& pch = m_project.precompiledHeader();
 
 		auto ext = m_state.environment->getPrecompiledHeaderExtension();
@@ -814,13 +813,6 @@ bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inSour
 		m_pchSource = fmt::format("{}{}.{}", inSourcePath, pch, cxxExt);
 		m_pchTarget = fmt::format("{}{}{}", inPchPath, pch, ext);
 		m_pchMinusLocation = String::getPathFilename(pch);
-
-		// If The previous build with this build path (matching target triples) has an intermediate PCH file, remove it
-		if (buildHashChanged)
-		{
-			auto oldPch = fmt::format("{}/{}", m_state.paths.objDir(), pch);
-			Files::removeIfExists(oldPch);
-		}
 
 		if (!Files::pathExists(m_pchSource))
 		{

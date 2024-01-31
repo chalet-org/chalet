@@ -46,11 +46,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	for (auto& group : inOutputs.groups)
 	{
-		StringList outCommand = getCommand(inToolchain, *group);
-		if (outCommand.empty())
-			continue;
-
-		addCompileCommand(group->sourceFile, std::move(outCommand));
+		addCompileCommand(getSourceFile(*group), getCommand(inToolchain, *group));
 	}
 
 	inToolchain->setQuotedPaths(quotedPaths);
@@ -77,6 +73,21 @@ bool CompileCommandsGenerator::addCompileCommandsStubsFromState()
 	}
 
 	return true;
+}
+
+const std::string& CompileCommandsGenerator::getSourceFile(const SourceFileGroup& inGroup) const
+{
+	if (inGroup.type == SourceType::CxxPrecompiledHeader)
+	{
+		if (!inGroup.otherFile.empty())
+			return inGroup.otherFile;
+		else
+			return inGroup.objectFile;
+	}
+	else
+	{
+		return inGroup.sourceFile;
+	}
 }
 
 /*****************************************************************************/
@@ -111,8 +122,10 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 /*****************************************************************************/
 void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, StringList&& inCommand)
 {
-	auto command = String::join(std::move(inCommand));
-	addCompileCommand(inFile, std::move(command));
+	if (inCommand.empty())
+		return;
+
+	addCompileCommand(inFile, String::join(std::move(inCommand)));
 }
 
 /*****************************************************************************/

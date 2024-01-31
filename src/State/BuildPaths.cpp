@@ -610,6 +610,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(const SourceGroup& inFile
 			group->objectFile = getPrecompiledHeaderTarget(inProject);
 			group->dependencyFile = m_state.environment->getDependencyFile(file);
 			group->sourceFile = file;
+			group->otherFile = m_state.environment->getPrecompiledHeaderSourceFile(file);
 			return group;
 		};
 

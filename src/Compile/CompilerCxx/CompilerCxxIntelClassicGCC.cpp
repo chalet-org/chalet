@@ -5,6 +5,7 @@
 
 #include "Compile/CompilerCxx/CompilerCxxIntelClassicGCC.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -33,16 +34,8 @@ bool CompilerCxxIntelClassicGCC::initialize()
 
 	if (m_project.usesPrecompiledHeader())
 	{
-		bool buildHashChanged = m_state.cache.file().buildHashChanged();
-
-		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();
-		m_pchSource = fmt::format("{}/{}.{}", objDir, pch, cxxExt);
-
-		if (buildHashChanged)
-		{
-			Files::removeIfExists(m_pchSource);
-		}
+		m_pchSource = m_state.environment->getPrecompiledHeaderSourceFile(pch);
 
 		if (!Files::pathExists(m_pchSource))
 		{

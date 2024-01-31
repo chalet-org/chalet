@@ -372,6 +372,21 @@ std::string IBuildEnvironment::getAssemblyFile(const std::string& inSource) cons
 }
 
 /*****************************************************************************/
+std::string IBuildEnvironment::getPrecompiledHeaderIntermediateFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}", m_state.paths.intermediateDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string IBuildEnvironment::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+{
+	// Most compilers don't use this, so return an empty string
+
+	UNUSED(inSource);
+	return std::string();
+}
+
+/*****************************************************************************/
 std::string IBuildEnvironment::getWindowsResourceObjectFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.res", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));

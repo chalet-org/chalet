@@ -11,6 +11,7 @@
 #include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
@@ -44,8 +45,10 @@ StringList BuildEnvironmentIntel::getVersionCommand(const std::string& inExecuta
 {
 	if (m_type == ToolchainType::IntelLLVM)
 		return { inExecutable, "-target", m_state.info.targetArchitectureTriple(), "-v" };
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 		return { inExecutable, "-V" };
+	else
+		return StringList{};
 }
 
 /*****************************************************************************/
@@ -55,8 +58,10 @@ std::string BuildEnvironmentIntel::getFullCxxCompilerString(const std::string& i
 
 	if (m_type == ToolchainType::IntelLLVM)
 		return fmt::format("Intel{} oneAPI DPC++/C++ version {}", Unicode::registered(), inVersion);
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 		return fmt::format("Intel{} 64 Compiler Classic version {}", Unicode::registered(), inVersion);
+	else
+		return std::string();
 }
 
 /*****************************************************************************/
@@ -83,7 +88,7 @@ ToolchainType BuildEnvironmentIntel::getToolchainTypeFromMacros(const std::strin
 		if (intelClang)
 			return ToolchainType::IntelLLVM;
 	}
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 	{
 #if defined(CHALET_WIN32)
 		return ToolchainType::IntelClassic;
@@ -125,7 +130,7 @@ std::vector<CompilerPathStructure> BuildEnvironmentIntel::getValidCompilerPaths(
 #else
 #endif
 	}
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 	{
 		if (arch == Arch::Cpu::X64)
 		{
@@ -231,10 +236,11 @@ std::string BuildEnvironmentIntel::makeToolchainName(const std::string& inArch) 
 			ret += "-vs-2017";
 #endif
 	}
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 	{
 		ret = fmt::format("{}-intel-classic", inArch);
 	}
+
 	return ret;
 }
 
@@ -244,7 +250,7 @@ bool BuildEnvironmentIntel::readArchitectureTripleFromCompiler()
 	if (m_type == ToolchainType::IntelLLVM)
 		return BuildEnvironmentLLVM::readArchitectureTripleFromCompiler();
 #if !defined(CHALET_WIN32)
-	else
+	else if (m_type == ToolchainType::IntelClassic)
 		return BuildEnvironmentGNU::readArchitectureTripleFromCompiler();
 #endif
 
@@ -279,11 +285,7 @@ void BuildEnvironmentIntel::parseVersionFromVersionOutput(const std::string& inL
 /*****************************************************************************/
 bool BuildEnvironmentIntel::populateSupportedFlags(const std::string& inExecutable)
 {
-	if (m_type == ToolchainType::IntelLLVM)
-	{
-		return BuildEnvironmentLLVM::populateSupportedFlags(inExecutable);
-	}
-	else
+	if (m_type == ToolchainType::IntelClassic)
 	{
 		StringList categories{
 			"codegen",
@@ -315,6 +317,27 @@ bool BuildEnvironmentIntel::populateSupportedFlags(const std::string& inExecutab
 		BuildEnvironmentGNU::parseSupportedFlagsFromHelpList(cmd);
 
 		return true;
+	}
+	else
+	{
+		return BuildEnvironmentLLVM::populateSupportedFlags(inExecutable);
+	}
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentIntel::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+{
+	if (m_type == ToolchainType::IntelClassic)
+	{
+		const auto& cxxExt = m_state.paths.cxxExtension();
+		if (cxxExt.empty())
+			return std::string();
+
+		return fmt::format("{}/{}.{}", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource), cxxExt);
+	}
+	else
+	{
+		return IBuildEnvironment::getPrecompiledHeaderSourceFile(inSource);
 	}
 }
 }

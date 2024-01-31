@@ -270,6 +270,16 @@ std::string BuildEnvironmentVisualStudio::getAssemblyFile(const std::string& inS
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentVisualStudio::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+{
+	const auto& cxxExt = m_state.paths.cxxExtension();
+	if (cxxExt.empty())
+		return std::string();
+
+	return fmt::format("{}/{}.{}", m_state.paths.intermediateDir(), m_state.paths.getNormalizedOutputPath(inSource), cxxExt);
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentVisualStudio::getDependencyFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));

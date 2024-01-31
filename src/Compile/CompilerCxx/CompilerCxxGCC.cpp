@@ -58,9 +58,8 @@ bool CompilerCxxGCC::initialize()
 			return true;
 		};
 
-		const auto& objDir = m_state.paths.objDir();
 		const auto& pch = m_project.precompiledHeader();
-		std::string pchIntermediate = fmt::format("{}/{}", objDir, pch);
+		auto pchIntermediate = m_state.environment->getPrecompiledHeaderIntermediateFile(pch);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -79,15 +78,6 @@ bool CompilerCxxGCC::initialize()
 		else
 #endif
 		{
-			// If The previous build with this build path (matching target triples) has a PCH source file, remove it (MSVC -> LLVM)
-			bool buildHashChanged = m_state.cache.file().buildHashChanged();
-			const auto& cxxExt = m_state.paths.cxxExtension();
-			if (buildHashChanged && !cxxExt.empty())
-			{
-				auto pchSource = fmt::format("{}{}.{}", objDir, pch, cxxExt);
-				Files::removeIfExists(pchSource);
-			}
-
 			// make the intermediate header for the PCH
 			if (!makeIntermediateHeader(pchIntermediate, pch))
 				return false;
