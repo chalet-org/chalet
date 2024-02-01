@@ -444,10 +444,17 @@ void CompilerCxxGCC::addPchInclude(StringList& outArgList, const SourceType deri
 {
 	if (precompiledHeaderAllowedForSourceType(derivative))
 	{
-		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
-
 		outArgList.emplace_back("-include");
-		outArgList.emplace_back(getPathCommand("", objDirPch));
+
+		if (m_forceActualPchPath)
+		{
+			outArgList.emplace_back(getPathCommand("", m_project.precompiledHeader()));
+		}
+		else
+		{
+			const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
+			outArgList.emplace_back(getPathCommand("", objDirPch));
+		}
 	}
 }
 

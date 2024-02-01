@@ -463,9 +463,6 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	// Generate compile commands
 	if (m_state.info.generateCompileCommands())
 	{
-		bool quotedPaths = inToolchain.compilerCxx->quotedPaths();
-		inToolchain.compilerCxx->setQuotedPaths(true);
-
 		for (auto& group : inGroups)
 		{
 			if (group->type != SourceType::CPlusPlus)
@@ -499,8 +496,6 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
 			}
 		}
-
-		inToolchain.compilerCxx->setQuotedPaths(quotedPaths);
 	}
 
 	return ret;

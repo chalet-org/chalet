@@ -29,7 +29,6 @@ struct CompileCommandsGenerator
 	bool fileExists() const;
 
 	void addCompileCommand(const std::string& inFile, StringList&& inCommand);
-	void addCompileCommand(const std::string& inFile, std::string&& inCommand);
 
 private:
 	const std::string& getSourceFile(const SourceFileGroup& inGroup) const;

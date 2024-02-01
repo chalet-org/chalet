@@ -22,7 +22,7 @@ namespace chalet
 struct CompileCommandsGenerator::CompileCommand
 {
 	std::string file;
-	std::string command;
+	StringList arguments;
 };
 
 /*****************************************************************************/
@@ -41,8 +41,9 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 	bool quotedPaths = inToolchain->linker->quotedPaths();
 	bool generateDependencies = inToolchain->linker->generateDependencies();
 
-	inToolchain->setQuotedPaths(true);
+	inToolchain->setQuotedPaths(false);
 	inToolchain->setGenerateDependencies(false);
+	inToolchain->setForceActualPchPath(true);
 
 	for (auto& group : inOutputs.groups)
 	{
@@ -51,6 +52,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	inToolchain->setQuotedPaths(quotedPaths);
 	inToolchain->setGenerateDependencies(generateDependencies);
+	inToolchain->setForceActualPchPath(false);
 
 	return true;
 }
@@ -65,10 +67,10 @@ bool CompileCommandsGenerator::addCompileCommandsStubsFromState()
 			const auto& project = static_cast<const SourceTarget&>(*target);
 			const auto& files = project.files();
 			for (auto& file : files)
-				addCompileCommand(file, std::string());
+				addCompileCommand(file, StringList{});
 
 			if (project.usesPrecompiledHeader())
-				addCompileCommand(project.precompiledHeader(), std::string());
+				addCompileCommand(project.precompiledHeader(), StringList{});
 		}
 	}
 
@@ -106,9 +108,8 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 		case SourceType::C:
 		case SourceType::CPlusPlus:
 		case SourceType::ObjectiveC:
-		case SourceType::ObjectiveCPlusPlus: {
+		case SourceType::ObjectiveCPlusPlus:
 			return inToolchain->compilerCxx->getCommand(source, object, dep, inGroup.type);
-		}
 
 		case SourceType::WindowsResource:
 		case SourceType::Unknown:
@@ -125,15 +126,9 @@ void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, Stri
 	if (inCommand.empty())
 		return;
 
-	addCompileCommand(inFile, String::join(std::move(inCommand)));
-}
-
-/*****************************************************************************/
-void CompileCommandsGenerator::addCompileCommand(const std::string& inFile, std::string&& inCommand)
-{
 	auto compileCommand = std::make_unique<CompileCommand>();
 	compileCommand->file = inFile;
-	compileCommand->command = std::move(inCommand);
+	compileCommand->arguments = std::move(inCommand);
 	m_compileCommands.push_back(std::move(compileCommand));
 }
 
@@ -151,7 +146,7 @@ bool CompileCommandsGenerator::save() const
 		Json node;
 		node = Json::object();
 		node["directory"] = m_state.inputs.workingDirectory();
-		node["command"] = command->command;
+		node["arguments"] = command->arguments;
 		node["file"] = Files::getCanonicalPath(command->file);
 
 		outJson.push_back(std::move(node));
@@ -211,7 +206,7 @@ bool CompileCommandsGenerator::saveStub(const std::string& outputFile) const
 		Json node;
 		node = Json::object();
 		node["directory"] = m_state.inputs.workingDirectory();
-		node["command"] = command->command;
+		node["arguments"] = command->arguments;
 		node["file"] = Files::getCanonicalPath(command->file);
 
 		outJson.push_back(std::move(node));

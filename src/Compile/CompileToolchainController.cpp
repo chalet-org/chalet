@@ -83,6 +83,12 @@ void CompileToolchainController::setGenerateDependencies(const bool inValue) noe
 		linker->setGenerateDependencies(inValue);
 }
 
+void CompileToolchainController::setForceActualPchPath(const bool inValue) noexcept
+{
+	if (compilerCxx)
+		compilerCxx->setForceActualPchPath(inValue);
+}
+
 /*****************************************************************************/
 StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
