@@ -15,6 +15,7 @@
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -36,6 +37,10 @@ bool FleetWorkspaceGen::saveToPath(const std::string& inPath)
 	if (!createRunJsonFile(runJson))
 		return false;
 
+	auto settingsJson = fmt::format("{}/settings.json", inPath);
+	if (!createSettingsJsonFile(settingsJson))
+		return false;
+
 	return true;
 }
 
@@ -51,6 +56,26 @@ bool FleetWorkspaceGen::createRunJsonFile(const std::string& inFilename)
 	{
 		jRoot["configurations"].emplace_back(makeRunConfiguration(runConfig));
 	}
+
+	return JsonFile::saveToFile(jRoot, inFilename, 1);
+}
+
+/*****************************************************************************/
+bool FleetWorkspaceGen::createSettingsJsonFile(const std::string& inFilename)
+{
+	Json jRoot;
+	jRoot = Json::object();
+
+	const auto kClangdDatabases = "lsp.clangd.compilation.databases";
+
+	jRoot[kClangdDatabases] = Json::array();
+
+	auto& debugState = m_exportAdapter.getDebugState();
+	auto compileCommands = Files::getCanonicalPath(fmt::format("{}/compile_commands.json", debugState.inputs.outputDirectory()));
+	// #if defined(CHALET_WIN32)
+	// 	Path::toWindows(compileCommands);
+	// #endif
+	jRoot[kClangdDatabases].emplace_back(compileCommands);
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }

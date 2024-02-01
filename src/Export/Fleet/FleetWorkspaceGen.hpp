@@ -20,6 +20,7 @@ struct FleetWorkspaceGen
 
 private:
 	bool createRunJsonFile(const std::string& inFilename);
+	bool createSettingsJsonFile(const std::string& inFilename);
 
 	Json makeRunConfiguration(const RunConfiguration& inRunConfig) const;
 
