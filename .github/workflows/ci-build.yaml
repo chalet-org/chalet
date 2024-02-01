@@ -22,7 +22,7 @@ jobs:
       CI: 1
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "arm setup"
@@ -92,7 +92,7 @@ jobs:
       - name: "Create Keychain profile"
         run: xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
@@ -152,7 +152,7 @@ jobs:
         with:
           arch: amd64
       - name: "Checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ secrets.CURRENT_RELEASE_BRANCH }}
       - name: "Fetch Dependencies"
