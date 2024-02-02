@@ -531,7 +531,6 @@ bool BuildState::initializeBuild()
 				}
 #endif
 #if defined(CHALET_MACOS)
-				project.addAppleFrameworkPath(std::string(paths.objDir()));
 				project.addAppleFrameworkPath("/Library/Frameworks");
 				project.addAppleFrameworkPath("/System/Library/Frameworks");
 #endif
