@@ -156,6 +156,7 @@ struct CommandLineInputs
 	void setSettingsValue(std::string&& inValue) noexcept;
 
 	void clearWorkingDirectory(std::string& outValue) const;
+	void clearWorkingDirectory(StringList& outList) const;
 
 	const std::optional<u32>& maxJobs() const noexcept;
 	void setMaxJobs(const u32 inValue) noexcept;

@@ -6,6 +6,7 @@
 #include "State/Package/SourcePackage.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -64,13 +65,19 @@ bool SourcePackage::initialize()
 #if defined(CHALET_MACOS)
 	for (auto& path : m_appleFrameworkPaths)
 		path = Files::getAbsolutePath(path);
+
+	m_state.inputs.clearWorkingDirectory(m_appleFrameworkPaths);
 #endif
 
 	for (auto& path : m_libDirs)
 		path = Files::getAbsolutePath(path);
 
+	m_state.inputs.clearWorkingDirectory(m_libDirs);
+
 	for (auto& path : m_includeDirs)
 		path = Files::getAbsolutePath(path);
+
+	m_state.inputs.clearWorkingDirectory(m_includeDirs);
 
 	for (auto& path : m_searchPaths)
 		path = Files::getAbsolutePath(path);
@@ -89,6 +96,9 @@ bool SourcePackage::initialize()
 		if (String::endsWith(archiveExt, path))
 			path = Files::getAbsolutePath(path);
 	}
+
+	m_state.inputs.clearWorkingDirectory(m_libDirs);
+	m_state.inputs.clearWorkingDirectory(m_includeDirs);
 
 	return true;
 }

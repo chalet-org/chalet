@@ -179,7 +179,7 @@ void LinkerGCC::addLibDirs(StringList& outArgList) const
 		outArgList.emplace_back(getPathCommand(prefix, dir));
 	}
 
-	outArgList.emplace_back(getPathCommand(prefix, m_state.paths.buildOutputDir()));
+	List::addIfDoesNotExist(outArgList, getPathCommand(prefix, m_state.paths.buildOutputDir()));
 }
 
 /*****************************************************************************/
@@ -544,10 +544,6 @@ void LinkerGCC::addAppleFrameworkOptions(StringList& outArgList) const
 #if defined(CHALET_MACOS)
 	{
 		const std::string prefix = "-F";
-		for (auto& path : m_project.libDirs())
-		{
-			outArgList.emplace_back(getPathCommand(prefix, path));
-		}
 		for (auto& path : m_project.appleFrameworkPaths())
 		{
 			outArgList.emplace_back(getPathCommand(prefix, path));

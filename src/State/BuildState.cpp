@@ -502,11 +502,7 @@ bool BuildState::initializeBuild()
 			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
 
-			auto objDir = paths.objDir();
-			project.addIncludeDir(std::move(objDir));
-
-			auto intermediateDir = paths.intermediateDir();
-			project.addIncludeDir(std::move(intermediateDir));
+			project.addIncludeDir(std::string(paths.intermediateDir()));
 
 			if (!inputs.route().isExport())
 			{
@@ -535,6 +531,7 @@ bool BuildState::initializeBuild()
 				}
 #endif
 #if defined(CHALET_MACOS)
+				project.addAppleFrameworkPath(std::string(paths.objDir()));
 				project.addAppleFrameworkPath("/Library/Frameworks");
 				project.addAppleFrameworkPath("/System/Library/Frameworks");
 #endif
@@ -1464,7 +1461,10 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 						auto& root = inTarget->root();
 						auto buildFolder = String::getPathFilename(inputs.outputDirectory());
 						auto buildPath = String::getPathFilename(paths.buildOutputDir());
-						return fmt::format("{}/{}/{}", root, buildFolder, buildPath);
+						if (!root.empty())
+							return fmt::format("{}/{}/{}", root, buildFolder, buildPath);
+						else
+							return fmt::format("{}/{}", buildFolder, buildPath);
 					}
 				}
 

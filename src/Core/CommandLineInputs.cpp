@@ -1018,6 +1018,16 @@ void CommandLineInputs::clearWorkingDirectory(std::string& outValue) const
 }
 
 /*****************************************************************************/
+void CommandLineInputs::clearWorkingDirectory(StringList& outList) const
+{
+	auto cwd = workingDirectory() + '/';
+	for (auto& item : outList)
+	{
+		String::replaceAll(item, cwd, "");
+	}
+}
+
+/*****************************************************************************/
 const std::optional<u32>& CommandLineInputs::maxJobs() const noexcept
 {
 	return m_maxJobs;
