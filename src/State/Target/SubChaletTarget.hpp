@@ -48,7 +48,5 @@ private:
 	bool m_recheck = true;
 	bool m_rebuild = true;
 	bool m_clean = true;
-
-	mutable bool m_hashChanged = true;
 };
 }
