@@ -1018,7 +1018,7 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 			}
 
 			result = fmt::format("{}/{}", tmp, inExecutable);
-			if (Files::pathExists(result))
+			if (Files::pathExists(result) && !Files::pathIsDirectory(result))
 				break;
 
 			result.clear();
@@ -1039,14 +1039,14 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 	{
 		auto& xcodePath = getXcodePath();
 		std::string withXcodePath = xcodePath + result;
-		if (Files::pathExists(withXcodePath))
+		if (Files::pathExists(withXcodePath) && !Files::pathIsDirectory(withXcodePath))
 		{
 			result = std::move(withXcodePath);
 		}
 		else
 		{
 			withXcodePath = fmt::format("{}/Toolchains/XcodeDefault.xctoolchain{}", xcodePath, result);
-			if (Files::pathExists(withXcodePath))
+			if (Files::pathExists(withXcodePath) && !Files::pathIsDirectory(withXcodePath))
 			{
 				result = std::move(withXcodePath);
 			}
