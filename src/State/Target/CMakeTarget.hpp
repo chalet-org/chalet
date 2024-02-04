@@ -58,6 +58,8 @@ private:
 	std::string m_toolset;
 	std::string m_runExecutable;
 
+	mutable i32 m_hashChanged = -1;
+
 	bool m_recheck = true;
 	bool m_rebuild = true;
 	bool m_clean = true;

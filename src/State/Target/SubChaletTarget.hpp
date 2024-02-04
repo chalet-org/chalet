@@ -45,6 +45,8 @@ private:
 	std::string m_targetFolder;
 	std::string m_buildFile;
 
+	mutable i32 m_hashChanged = -1;
+
 	bool m_recheck = true;
 	bool m_rebuild = true;
 	bool m_clean = true;

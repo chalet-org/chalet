@@ -109,22 +109,27 @@ const std::string& CMakeTarget::getHash() const
 /*****************************************************************************/
 bool CMakeTarget::hashChanged() const noexcept
 {
-	bool externalChanged = false;
-	if (String::startsWith(m_state.inputs.externalDirectory(), location()))
+	if (m_hashChanged == -1)
 	{
-		auto loc = location().substr(m_state.inputs.externalDirectory().size() + 1);
-		for (auto& dep : m_state.externalDependencies)
+		bool externalChanged = false;
+		if (String::startsWith(m_state.inputs.externalDirectory(), location()))
 		{
-			const auto& name = dep->name();
-			if (String::startsWith(name, loc))
+			auto loc = location().substr(m_state.inputs.externalDirectory().size() + 1);
+			for (auto& dep : m_state.externalDependencies)
 			{
-				externalChanged = dep->needsUpdate();
-				break;
+				const auto& name = dep->name();
+				if (String::startsWith(name, loc))
+				{
+					externalChanged = dep->needsUpdate();
+					break;
+				}
 			}
 		}
+		auto& sourceCache = m_state.cache.file().sources();
+		bool cacheChanged = sourceCache.dataCacheValueChanged(Hash::string(fmt::format("cmake.{}", this->name())), m_hash);
+		m_hashChanged = static_cast<i32>(cacheChanged || externalChanged);
 	}
-	auto& sourceCache = m_state.cache.file().sources();
-	return sourceCache.dataCacheValueChanged(Hash::string(this->name()), m_hash) || externalChanged;
+	return m_hashChanged == 1;
 }
 
 /*****************************************************************************/
