@@ -449,6 +449,9 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 /*****************************************************************************/
 bool NativeGenerator::anyCmakeOrSubChaletTargetsChanged() const
 {
+	// Note: At the moment, this forces any sources targets to re-link if the below returns true
+	//  In the future, it would be better to figure out which libraries are where
+	//
 	for (auto& target : m_state.targets)
 	{
 		if (target->isCMake())
