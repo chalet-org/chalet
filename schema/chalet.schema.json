@@ -2675,52 +2675,11 @@
 				},
 				"settings": {
 					"type": "object",
-					"description": "Settings for compiling C, C++, and Windows resource files.\nMay also include settings related to linking.",
+					"description": "Settings for each language",
 					"additionalProperties": false,
 					"properties": {
-						"appleFrameworkPaths": {
-							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
-						},
-						"appleFrameworks": {
-							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
-						},
-						"includeDirs": {
-							"$ref": "#/definitions/target-source-cxx-includeDirs"
-						},
-						"libDirs": {
-							"$ref": "#/definitions/target-source-cxx-libDirs"
-						},
-						"links": {
-							"$ref": "#/definitions/target-source-cxx-links"
-						},
-						"linkerOptions": {
-							"$ref": "#/definitions/target-source-cxx-linkerOptions"
-						},
-						"staticLinks": {
-							"$ref": "#/definitions/target-source-cxx-staticLinks"
-						}
-					},
-					"patternProperties": {
-						"^appleFrameworkPaths\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-appleFrameworkPaths"
-						},
-						"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-appleFrameworks"
-						},
-						"^includeDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-includeDirs"
-						},
-						"^libDirs\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-libDirs"
-						},
-						"^links\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-links"
-						},
-						"^linkerOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-linkerOptions"
-						},
-						"^staticLinks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-							"$ref": "#/definitions/target-source-cxx-staticLinks"
+						"Cxx": {
+							"$ref": "#/definitions/package-settings-cxx"
 						}
 					}
 				},

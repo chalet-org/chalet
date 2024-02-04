@@ -389,7 +389,7 @@ bool ChaletJsonParser::parsePackageTarget(SourcePackage& outPackage, const Json&
 				{
 					if (v.is_object() && String::equals("Cxx", k))
 					{
-						if (!parsePackageSettingsCxx(outPackage, value))
+						if (!parsePackageSettingsCxx(outPackage, v))
 							return false;
 					}
 				}

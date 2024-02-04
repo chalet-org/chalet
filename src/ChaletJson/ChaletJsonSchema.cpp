@@ -1976,7 +1976,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(package, "importPackages", Defs::TargetSourceImportPackages, kPatternConditions);
 		addPropertyAndPattern(package, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 
-		package[SKeys::Properties]["settings"] = defs[Defs::PackageSettingsCxx];
+		package[SKeys::Properties]["settings"] = R"json({
+			"type": "object",
+			"description": "Settings for each language",
+			"additionalProperties": false
+		})json"_ojson;
+		package[SKeys::Properties]["settings"][SKeys::Properties]["Cxx"] = getDefinition(Defs::PackageSettingsCxx);
 		package[SKeys::Properties]["settings:Cxx"] = defs[Defs::PackageSettingsCxx];
 
 		defs[Defs::Package] = std::move(package);
