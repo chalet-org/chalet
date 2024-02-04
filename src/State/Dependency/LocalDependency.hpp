@@ -21,7 +21,5 @@ struct LocalDependency final : public IExternalDependency
 
 private:
 	std::string m_path;
-
-	bool m_needsUpdate = false;
 };
 }

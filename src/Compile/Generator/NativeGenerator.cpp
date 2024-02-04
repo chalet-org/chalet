@@ -15,13 +15,13 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "state/Target/SubChaletTarget.hpp"
 
 namespace chalet
 {
