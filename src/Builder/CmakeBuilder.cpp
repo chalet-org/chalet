@@ -71,22 +71,28 @@ std::string CmakeBuilder::getBuildFile(const bool inForce) const
 }
 
 /*****************************************************************************/
-bool CmakeBuilder::dependencyHasUpdate() const
+bool CmakeBuilder::dependencyHasUpdated() const
 {
-	bool updated = false;
-	for (const auto& dependency : m_state.externalDependencies)
+	if (String::startsWith(m_state.inputs.externalDirectory(), m_target.location()))
 	{
-		if (dependency->isGit())
+		auto location = m_target.location().substr(m_state.inputs.externalDirectory().size() + 1);
+		for (auto& dep : m_state.externalDependencies)
 		{
-			auto& gitDependency = static_cast<GitDependency&>(*dependency);
-			if (String::startsWith(gitDependency.destination(), m_target.location()))
+			const auto& name = dep->name();
+			if (String::startsWith(name, location))
 			{
-				updated = gitDependency.needsUpdate();
+				if (dep->needsUpdate() || m_target.hashChanged())
+				{
+					Files::removeRecursively(m_target.targetFolder());
+					return true;
+				}
+				else
+					break;
 			}
 		}
 	}
 
-	return updated;
+	return false;
 }
 
 /*****************************************************************************/
@@ -120,7 +126,7 @@ bool CmakeBuilder::run()
 	auto& sourceCache = m_state.cache.file().sources();
 	auto outputHash = Hash::string(outputLocation());
 	bool lastBuildFailed = sourceCache.dataCacheValueIsFalse(outputHash);
-	bool dependencyUpdated = dependencyHasUpdate();
+	bool dependencyUpdated = dependencyHasUpdated();
 
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckCmake = m_target.recheck() || lastBuildFailed || dependencyUpdated;

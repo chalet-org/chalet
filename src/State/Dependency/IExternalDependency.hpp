@@ -31,6 +31,9 @@ struct IExternalDependency
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 
+	bool needsUpdate() const noexcept;
+	void setNeedsUpdate(const bool inValue) noexcept;
+
 protected:
 	bool replaceVariablesInPathList(StringList& outList);
 
@@ -40,6 +43,8 @@ private:
 	std::string m_name;
 
 	ExternalDependencyType m_type;
+
+	bool m_needsUpdate = false;
 };
 
 using ExternalDependencyList = std::vector<ExternalDependency>;

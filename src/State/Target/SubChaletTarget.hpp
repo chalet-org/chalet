@@ -17,6 +17,8 @@ struct SubChaletTarget final : public IBuildTarget
 	virtual bool validate() final;
 	virtual const std::string& getHash() const final;
 
+	bool hashChanged() const noexcept;
+
 	const StringList& targets() const noexcept;
 	void addTargets(StringList&& inList);
 	void addTarget(std::string&& inValue);
@@ -46,5 +48,7 @@ private:
 	bool m_recheck = true;
 	bool m_rebuild = true;
 	bool m_clean = true;
+
+	mutable bool m_hashChanged = true;
 };
 }

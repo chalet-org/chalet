@@ -58,15 +58,4 @@ void LocalDependency::setPath(std::string&& inValue) noexcept
 	m_path = std::move(inValue);
 }
 
-/*****************************************************************************/
-bool LocalDependency::needsUpdate() const noexcept
-{
-	return m_needsUpdate;
-}
-
-void LocalDependency::setNeedsUpdate(const bool inValue) noexcept
-{
-	m_needsUpdate = inValue;
-}
-
 }

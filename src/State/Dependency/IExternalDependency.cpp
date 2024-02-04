@@ -90,4 +90,14 @@ void IExternalDependency::setName(const std::string& inValue) noexcept
 	m_name = inValue;
 }
 
+/*****************************************************************************/
+bool IExternalDependency::needsUpdate() const noexcept
+{
+	return m_needsUpdate;
+}
+void IExternalDependency::setNeedsUpdate(const bool inValue) noexcept
+{
+	m_needsUpdate = inValue;
+}
+
 }

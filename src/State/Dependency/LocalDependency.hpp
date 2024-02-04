@@ -19,9 +19,6 @@ struct LocalDependency final : public IExternalDependency
 	const std::string& path() const noexcept;
 	void setPath(std::string&& inValue) noexcept;
 
-	bool needsUpdate() const noexcept;
-	void setNeedsUpdate(const bool inValue) noexcept;
-
 private:
 	std::string m_path;
 

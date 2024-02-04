@@ -17,6 +17,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/GitDependency.hpp"
+#include "State/Dependency/LocalDependency.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
@@ -63,22 +64,28 @@ std::string SubChaletBuilder::getBuildFile() const
 }
 
 /*****************************************************************************/
-bool SubChaletBuilder::dependencyHasUpdate() const
+bool SubChaletBuilder::dependencyHasUpdated() const
 {
-	bool updated = false;
-	for (const auto& dependency : m_state.externalDependencies)
+	if (String::startsWith(m_state.inputs.externalDirectory(), m_target.location()))
 	{
-		if (dependency->isGit())
+		auto location = m_target.location().substr(m_state.inputs.externalDirectory().size() + 1);
+		for (auto& dep : m_state.externalDependencies)
 		{
-			auto& gitDependency = static_cast<GitDependency&>(*dependency);
-			if (String::startsWith(gitDependency.destination(), m_target.location()))
+			const auto& name = dep->name();
+			if (String::startsWith(name, location))
 			{
-				updated = gitDependency.needsUpdate();
+				if (dep->needsUpdate() || m_target.hashChanged())
+				{
+					Files::removeRecursively(m_target.targetFolder());
+					return true;
+				}
+				else
+					break;
 			}
 		}
 	}
 
-	return updated;
+	return true;
 }
 
 /*****************************************************************************/
@@ -99,7 +106,7 @@ bool SubChaletBuilder::run()
 	auto& sourceCache = m_state.cache.file().sources();
 	auto outputHash = Hash::string(outputLocation());
 	bool lastBuildFailed = sourceCache.dataCacheValueIsFalse(outputHash);
-	bool dependencyUpdated = dependencyHasUpdate();
+	bool dependencyUpdated = dependencyHasUpdated();
 
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || dependencyUpdated;

@@ -124,17 +124,6 @@ void GitDependency::setSubmodules(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-bool GitDependency::needsUpdate() const noexcept
-{
-	return m_needsUpdate;
-}
-
-void GitDependency::setNeedsUpdate(const bool inValue) noexcept
-{
-	m_needsUpdate = inValue;
-}
-
-/*****************************************************************************/
 bool GitDependency::parseDestination()
 {
 	// LOG("repository: ", m_repository);

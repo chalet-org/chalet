@@ -17,6 +17,8 @@ struct CMakeTarget final : public IBuildTarget
 	virtual bool validate() final;
 	virtual const std::string& getHash() const final;
 
+	bool hashChanged() const noexcept;
+
 	const StringList& defines() const noexcept;
 	void addDefines(StringList&& inList);
 	void addDefine(std::string&& inValue);

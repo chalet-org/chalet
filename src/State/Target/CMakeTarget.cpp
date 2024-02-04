@@ -6,6 +6,9 @@
 #include "State/Target/CMakeTarget.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Cache/SourceCache.hpp"
+#include "Cache/WorkspaceCache.hpp"
+#include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -99,6 +102,13 @@ const std::string& CMakeTarget::getHash() const
 	}
 
 	return m_hash;
+}
+
+/*****************************************************************************/
+bool CMakeTarget::hashChanged() const noexcept
+{
+	auto& sourceCache = m_state.cache.file().sources();
+	return sourceCache.dataCacheValueChanged(Hash::string(this->name()), m_hash);
 }
 
 /*****************************************************************************/
