@@ -15,6 +15,8 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/SubChaletTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
@@ -62,6 +64,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	m_project = &inProject;
 
 	checkCommandsForChanges(*inToolchain);
+
+	bool otherTargetsChanged = anyCmakeOrSubChaletTargetsChanged();
 
 	Dictionary<ModuleLookup> modules;
 
@@ -336,8 +340,8 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 	bool requiredFromLinks = rebuildRequiredFromLinks();
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
 	bool dependentChanged = targetExists && checkDependentTargets(*m_project);
-	bool compileTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || !targetExists;
-	if (compileTarget)
+	bool linkTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || otherTargetsChanged || !targetExists;
+	if (linkTarget)
 	{
 		// Scan sources for module dependencies
 
@@ -963,6 +967,28 @@ bool IModuleStrategy::checkDependentTargets(const SourceTarget& inProject) const
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::anyCmakeOrSubChaletTargetsChanged() const
+{
+	for (auto& target : m_state.targets)
+	{
+		if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (project.hashChanged())
+				return true;
+		}
+		else if (target->isSubChalet())
+		{
+			auto& project = static_cast<const SubChaletTarget&>(*target);
+			if (project.hashChanged())
+				return true;
+		}
+	}
+
+	return false;
 }
 
 /*****************************************************************************/

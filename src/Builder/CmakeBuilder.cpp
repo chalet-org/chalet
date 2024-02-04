@@ -73,23 +73,10 @@ std::string CmakeBuilder::getBuildFile(const bool inForce) const
 /*****************************************************************************/
 bool CmakeBuilder::dependencyHasUpdated() const
 {
-	if (String::startsWith(m_state.inputs.externalDirectory(), m_target.location()))
+	if (m_target.hashChanged())
 	{
-		auto location = m_target.location().substr(m_state.inputs.externalDirectory().size() + 1);
-		for (auto& dep : m_state.externalDependencies)
-		{
-			const auto& name = dep->name();
-			if (String::startsWith(name, location))
-			{
-				if (dep->needsUpdate() || m_target.hashChanged())
-				{
-					Files::removeRecursively(m_target.targetFolder());
-					return true;
-				}
-				else
-					break;
-			}
-		}
+		Files::removeRecursively(m_target.targetFolder());
+		return true;
 	}
 
 	return false;

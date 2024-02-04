@@ -14,12 +14,14 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "state/Target/SubChaletTarget.hpp"
 
 namespace chalet
 {
@@ -41,6 +43,8 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	chalet_assert(m_project != nullptr, "");
 
 	checkCommandsForChanges();
+
+	bool otherTargetsChanged = anyCmakeOrSubChaletTargetsChanged();
 
 	m_sourcesChanged = m_pchChanged = false;
 
@@ -66,19 +70,19 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		m_compileTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || !targetExists;
+		m_linkTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || otherTargetsChanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(outputs->groups);
 			if (!target->list.empty() || !targetExists)
 			{
 				jobs.emplace_back(std::move(target));
-				m_compileTarget = true;
+				m_linkTarget = true;
 			}
 		}
 
 		const auto& toCache = outputs->target;
-		if (m_compileTarget && m_fileCache.find(toCache) == m_fileCache.end())
+		if (m_linkTarget && m_fileCache.find(toCache) == m_fileCache.end())
 		{
 			m_fileCache.emplace(toCache, true);
 
@@ -148,7 +152,7 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 /*****************************************************************************/
 bool NativeGenerator::targetCompiled() const noexcept
 {
-	return m_compileTarget;
+	return m_linkTarget;
 }
 
 /*****************************************************************************/
@@ -440,6 +444,28 @@ bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+bool NativeGenerator::anyCmakeOrSubChaletTargetsChanged() const
+{
+	for (auto& target : m_state.targets)
+	{
+		if (target->isCMake())
+		{
+			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (project.hashChanged())
+				return true;
+		}
+		else if (target->isSubChalet())
+		{
+			auto& project = static_cast<const SubChaletTarget&>(*target);
+			if (project.hashChanged())
+				return true;
+		}
+	}
+
+	return false;
 }
 
 /*****************************************************************************/

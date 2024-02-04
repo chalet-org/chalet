@@ -16,7 +16,6 @@ public:
 	explicit SubChaletBuilder(const BuildState& inState, const SubChaletTarget& inTarget, const bool inQuotedPaths = false);
 
 	std::string getBuildFile() const;
-	bool dependencyHasUpdated() const;
 
 	bool run();
 
@@ -26,6 +25,7 @@ public:
 	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings = true) const;
 
 private:
+	bool dependencyHasUpdated() const;
 	std::string getLocation() const;
 	std::string getQuotedPath(const std::string& inPath) const;
 

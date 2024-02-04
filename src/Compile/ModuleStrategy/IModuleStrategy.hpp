@@ -93,6 +93,7 @@ private:
 	CommandPool::Settings getCommandPoolSettings() const;
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
+	bool anyCmakeOrSubChaletTargetsChanged() const;
 	void checkCommandsForChanges(CompileToolchainController& inToolchain);
 
 	StringList m_targetsChanged;

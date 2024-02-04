@@ -8,8 +8,10 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Cache/WorkspaceInternalCacheFile.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Dependency/IExternalDependency.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -93,8 +95,22 @@ const std::string& SubChaletTarget::getHash() const
 /*****************************************************************************/
 bool SubChaletTarget::hashChanged() const noexcept
 {
+	bool externalChanged = false;
+	if (String::startsWith(m_state.inputs.externalDirectory(), location()))
+	{
+		auto loc = location().substr(m_state.inputs.externalDirectory().size() + 1);
+		for (auto& dep : m_state.externalDependencies)
+		{
+			const auto& name = dep->name();
+			if (String::startsWith(name, loc))
+			{
+				externalChanged = dep->needsUpdate();
+				break;
+			}
+		}
+	}
 	auto& sourceCache = m_state.cache.file().sources();
-	return sourceCache.dataCacheValueChanged(Hash::string(this->name()), m_hash);
+	return sourceCache.dataCacheValueChanged(Hash::string(this->name()), m_hash) || externalChanged;
 }
 
 /*****************************************************************************/

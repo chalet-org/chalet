@@ -40,6 +40,7 @@ private:
 
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
 	bool checkDependentTargets(const SourceTarget& inProject) const;
+	bool anyCmakeOrSubChaletTargetsChanged() const;
 
 	void checkCommandsForChanges();
 
@@ -63,6 +64,6 @@ private:
 
 	bool m_pchChanged = false;
 	bool m_sourcesChanged = false;
-	bool m_compileTarget = false;
+	bool m_linkTarget = false;
 };
 }

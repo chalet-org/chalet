@@ -18,13 +18,13 @@ public:
 	bool run();
 
 	std::string getBuildFile(const bool inForce = false) const;
-	bool dependencyHasUpdated() const;
 
 	StringList getGeneratorCommand();
 	StringList getBuildCommand() const;
 	StringList getBuildCommand(const std::string& inOutputLocation) const;
 
 private:
+	bool dependencyHasUpdated() const;
 	StringList getGeneratorCommand(const std::string& inLocation, const std::string& inBuildFile) const;
 
 	std::string getLocation() const;
