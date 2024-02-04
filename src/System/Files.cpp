@@ -1000,6 +1000,14 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 		Path::toUnix(result);
 	}
 #else
+	static auto pathIsValid = [](const bool hasExtension, const std::string& p) -> bool {
+		if (!Files::pathExists(p))
+			return false;
+
+		return (hasExtension && Files::pathIsDirectory(p)) || (!hasExtension && !Files::pathIsDirectory(p));
+	};
+
+	const bool hasExtension = inExecutable.find_last_of('.') != std::string::npos;
 	if (!Files::pathExists(inExecutable)) // checks working dir
 	{
 		auto path = Environment::getPath();
@@ -1018,7 +1026,8 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 			}
 
 			result = fmt::format("{}/{}", tmp, inExecutable);
-			if (Files::pathExists(result) && !Files::pathIsDirectory(result))
+
+			if (pathIsValid(hasExtension, result))
 				break;
 
 			result.clear();
@@ -1039,14 +1048,14 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 	{
 		auto& xcodePath = getXcodePath();
 		std::string withXcodePath = xcodePath + result;
-		if (Files::pathExists(withXcodePath) && !Files::pathIsDirectory(withXcodePath))
+		if (pathIsValid(hasExtension, withXcodePath))
 		{
 			result = std::move(withXcodePath);
 		}
 		else
 		{
 			withXcodePath = fmt::format("{}/Toolchains/XcodeDefault.xctoolchain{}", xcodePath, result);
-			if (Files::pathExists(withXcodePath) && !Files::pathIsDirectory(withXcodePath))
+			if (pathIsValid(hasExtension, withXcodePath))
 			{
 				result = std::move(withXcodePath);
 			}
