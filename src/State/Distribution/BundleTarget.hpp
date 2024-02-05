@@ -6,6 +6,7 @@
 #pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
+#include "State/MacOSBundleIconMethod.hpp"
 #include "State/MacOSBundleType.hpp"
 
 namespace chalet
@@ -63,6 +64,9 @@ struct BundleTarget final : public IDistTarget
 	const std::string& macosBundleIcon() const noexcept;
 	void setMacosBundleIcon(std::string&& inValue);
 
+	MacOSBundleIconMethod macosBundleIconMethod() const noexcept;
+	void setMacosBundleIconMethod(std::string&& inValue);
+
 	const std::string& macosBundleInfoPropertyList() const noexcept;
 	void setMacosBundleInfoPropertyList(std::string&& inValue);
 
@@ -113,6 +117,7 @@ private:
 	std::string m_macosBundleEntitlementsPropertyListContent;
 
 	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
+	MacOSBundleIconMethod m_macosBundleIconMethod = MacOSBundleIconMethod::Default;
 
 	bool m_macosCopyToApplications = false;
 #elif defined(CHALET_LINUX)

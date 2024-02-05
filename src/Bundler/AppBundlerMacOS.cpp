@@ -251,7 +251,7 @@ std::string AppBundlerMacOS::getResolvedIconName() const
 #if defined(CHALET_MACOS)
 	auto& bundleIcon = m_bundle.macosBundleIcon();
 	std::string icon;
-	if (String::endsWith(".icns", bundleIcon))
+	if (m_usingSipsForIcon || String::endsWith(".icns", bundleIcon))
 		icon = String::getPathBaseName(bundleIcon);
 	else
 		icon = "AppIcon";
@@ -625,14 +625,11 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	bool iconIsXcassets = String::endsWith(".xcassets", icon);
 
-	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
-	if (iconIsXcassets)
-		assetsPath = icon;
-
 	auto usingCommandLineTools = Files::isUsingAppleCommandLineTools();
+	bool forceSips = m_bundle.macosBundleIconMethod() == MacOSBundleIconMethod::Sips;
 
 	auto actool = Files::which("actool");
-	if (actool.empty() || usingCommandLineTools)
+	if (forceSips || actool.empty() || usingCommandLineTools)
 	{
 		auto& inputFile = m_state.inputs.inputFile();
 		if (iconIsXcassets)
@@ -644,10 +641,13 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 			return false;
 		}
 
-		if (!usingCommandLineTools)
+		if (!forceSips && !usingCommandLineTools)
 		{
 			Diagnostic::warn("Could not find 'actool' required to create an icns from an asset catalog. Falling back to 'sips' method.");
 		}
+
+		m_usingSipsForIcon = true;
+
 		// If actool is not found or using command line tools, make the bundle icon the old way
 		return createBundleIcon();
 	}
@@ -656,6 +656,10 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 		Diagnostic::stepInfoEllipsis("Using the asset catalog: '{}'", icon);
 	else
 		Diagnostic::stepInfoEllipsis("Creating an asset catalog from '{}'", icon);
+
+	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
+	if (iconIsXcassets)
+		assetsPath = icon;
 
 	if (!createAssetsXcassets(assetsPath))
 	{
@@ -900,8 +904,11 @@ bool AppBundlerMacOS::copyAppBundleToApplications() const
 		auto applicationsPath = fmt::format("{}/Applications", home);
 
 		auto oldBundlePath = fmt::format("{}/{}", applicationsPath, String::getPathFilename(appPath));
-		if (!Files::removeRecursively(oldBundlePath))
-			return false;
+		if (Files::pathExists(oldBundlePath))
+		{
+			if (!Files::removeRecursively(oldBundlePath))
+				return false;
+		}
 
 		if (Files::pathExists(applicationsPath))
 		{

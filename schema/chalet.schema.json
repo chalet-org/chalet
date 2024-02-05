@@ -246,6 +246,17 @@
 							"minLength": 1,
 							"default": "icon.png"
 						},
+						"iconMethod": {
+							"type": "string",
+							"description": "The method to use to create the app bundle icon. The default method is to use 'actool' and fallback to 'sips' if 'actool' is not available on the machine. Set to 'actool' to require it, or 'sips' to always use sips. The 'xcodebuild' strategy will use whatever Xcode uses (actool).",
+							"minLength": 1,
+							"enum": [
+								"default",
+								"actool",
+								"sips"
+							],
+							"default": "default"
+						},
 						"infoPropertyList": {
 							"description": "The path to a property list (.plist) file, .json file, or the properties themselves to export as a plist defining the bundle.",
 							"oneOf": [

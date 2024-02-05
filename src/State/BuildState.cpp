@@ -501,43 +501,6 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
-
-			project.addIncludeDir(std::string(paths.intermediateDir()));
-
-			if (!inputs.route().isExport())
-			{
-				const bool isMsvc = environment->isMsvc();
-				if (!isMsvc)
-				{
-					auto& compilerInfo = toolchain.compilerCxx(project.language());
-					auto libDir = compilerInfo.libDir;
-					project.addLibDir(std::move(libDir));
-
-					auto includeDir = compilerInfo.includeDir;
-					project.addIncludeDir(std::move(includeDir));
-				}
-
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-				const auto& systemPaths = environment->targetSystemPaths();
-				if (systemPaths.empty())
-				{
-					std::string localLib{ "/usr/local/lib" };
-					if (Files::pathExists(localLib))
-						project.addLibDir(std::move(localLib));
-
-					std::string localInclude{ "/usr/local/include" };
-					if (Files::pathExists(localInclude))
-						project.addIncludeDir(std::move(localInclude));
-				}
-#endif
-#if defined(CHALET_MACOS)
-				project.addAppleFrameworkPath("/Library/Frameworks");
-				project.addAppleFrameworkPath("/System/Library/Frameworks");
-#endif
-			}
-
-			if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
-				return false;
 		}
 	}
 
@@ -557,6 +520,44 @@ bool BuildState::initializeBuild()
 
 		for (auto& target : targets)
 		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<SourceTarget&>(*target);
+				project.addIncludeDir(std::string(paths.intermediateDir()));
+
+				if (!inputs.route().isExport())
+				{
+					const bool isMsvc = environment->isMsvc();
+					if (!isMsvc)
+					{
+						auto& compilerInfo = toolchain.compilerCxx(project.language());
+						project.addLibDir(std::string(compilerInfo.libDir));
+						project.addIncludeDir(std::string(compilerInfo.includeDir));
+					}
+
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+					const auto& systemPaths = environment->targetSystemPaths();
+					if (systemPaths.empty())
+					{
+						std::string localLib{ "/usr/local/lib" };
+						if (Files::pathExists(localLib))
+							project.addLibDir(std::move(localLib));
+
+						std::string localInclude{ "/usr/local/include" };
+						if (Files::pathExists(localInclude))
+							project.addIncludeDir(std::move(localInclude));
+					}
+#endif
+#if defined(CHALET_MACOS)
+					project.addAppleFrameworkPath("/Library/Frameworks");
+					project.addAppleFrameworkPath("/System/Library/Frameworks");
+#endif
+				}
+
+				if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
+					return false;
+			}
+
 			if (!target->isSubChalet() && !target->initialize())
 				return false;
 		}

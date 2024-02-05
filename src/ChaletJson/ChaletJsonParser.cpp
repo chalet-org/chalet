@@ -1514,6 +1514,8 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 							outTarget.setMacosBundleType(v.get<std::string>());
 						else if (String::equals("icon", k))
 							outTarget.setMacosBundleIcon(v.get<std::string>());
+						else if (String::equals("iconMethod", k))
+							outTarget.setMacosBundleIconMethod(v.get<std::string>());
 						else if (String::equals("infoPropertyList", k))
 							outTarget.setMacosBundleInfoPropertyList(v.get<std::string>());
 						else if (String::equals("entitlementsPropertyList", k))

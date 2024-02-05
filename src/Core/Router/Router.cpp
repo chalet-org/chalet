@@ -210,6 +210,8 @@ bool Router::routeBundle(BuildState& inState)
 			return false;
 	}
 
+	inState.getCentralState().saveCaches();
+
 	for (auto& target : inState.distribution)
 	{
 		if (!bundler.run(target))
