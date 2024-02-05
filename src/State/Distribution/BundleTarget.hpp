@@ -117,7 +117,7 @@ private:
 	std::string m_macosBundleEntitlementsPropertyListContent;
 
 	MacOSBundleType m_macosBundleType = MacOSBundleType::None;
-	MacOSBundleIconMethod m_macosBundleIconMethod = MacOSBundleIconMethod::Default;
+	MacOSBundleIconMethod m_macosBundleIconMethod = MacOSBundleIconMethod::Actool;
 
 	bool m_macosCopyToApplications = false;
 #elif defined(CHALET_LINUX)

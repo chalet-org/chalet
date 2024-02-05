@@ -630,7 +630,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	auto usingCommandLineTools = Files::isUsingAppleCommandLineTools();
 	bool forceSips = m_bundle.macosBundleIconMethod() == MacOSBundleIconMethod::Sips;
 
-	auto actool = Files::which("actool");
+	auto actool = forceSips ? std::string() : Files::which("actool");
 	if (forceSips || actool.empty() || usingCommandLineTools)
 	{
 		auto& inputFile = m_state.inputs.inputFile();

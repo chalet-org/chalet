@@ -447,12 +447,10 @@ MacOSBundleIconMethod BundleTarget::macosBundleIconMethod() const noexcept
 }
 void BundleTarget::setMacosBundleIconMethod(std::string&& inValue)
 {
-	if (String::equals("actool", inValue))
-		m_macosBundleIconMethod = MacOSBundleIconMethod::Actool;
-	else if (String::equals("sips", inValue))
+	if (String::equals("sips", inValue))
 		m_macosBundleIconMethod = MacOSBundleIconMethod::Sips;
 	else
-		m_macosBundleIconMethod = MacOSBundleIconMethod::Default;
+		m_macosBundleIconMethod = MacOSBundleIconMethod::Actool;
 }
 
 /*****************************************************************************/

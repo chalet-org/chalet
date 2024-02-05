@@ -243,14 +243,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 		auto macosBundleIconMethod = R"json({
 			"type": "string",
-			"description": "The method to use to create the app bundle icon. The default method is to use 'actool' and fallback to 'sips' if 'actool' is not available on the machine. Set to 'actool' to require it, or 'sips' to always use sips. The 'xcodebuild' strategy will use whatever Xcode uses (actool).",
+			"description": "The method to use to create the app bundle icon. The default method is to use 'actool' and fallback to 'sips' if 'actool' is not available on the machine (the case with Command Line Tools). Set to 'sips' to always use sips. The 'xcodebuild' strategy will use actool.",
 			"minLength": 1,
 			"enum": [
-				"default",
 				"actool",
 				"sips"
 			],
-			"default": "default"
+			"default": "actool"
 		})json"_ojson;
 
 		m_nonIndexedDefs[Defs::DistributionBundleMacOSBundle] = R"json({

@@ -9,7 +9,6 @@ namespace chalet
 {
 enum class MacOSBundleIconMethod : u16
 {
-	Default,
 	Actool,
 	Sips
 };
