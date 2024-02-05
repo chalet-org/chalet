@@ -353,6 +353,7 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 			m_dependencyMap->addSearchDirsFromList(project.libDirs());
 		}
 	}
+	m_dependencyMap->addSearchDirsFromList(m_state.workspace.searchPaths());
 
 	StringList allDependencies;
 
