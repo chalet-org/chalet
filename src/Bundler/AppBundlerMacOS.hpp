@@ -66,8 +66,6 @@ private:
 
 	std::string m_infoFile;
 	std::string m_entitlementsFile;
-
-	bool m_usingSipsForIcon = false;
 #endif
 };
 }

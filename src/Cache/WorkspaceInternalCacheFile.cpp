@@ -394,8 +394,6 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 /*****************************************************************************/
 bool WorkspaceInternalCacheFile::save()
 {
-	m_sources = nullptr;
-
 	if (m_filename.empty())
 		return false;
 
