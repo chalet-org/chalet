@@ -101,7 +101,7 @@ bool AppBundlerLinux::bundleForPlatform()
 			return false;
 	}
 
-	if (!Files::copyRename(desktopEntry, desktopEntryFile, true))
+	if (!Files::copyRename(desktopEntry, desktopEntryFile))
 		return false;
 
 	if (!Files::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
