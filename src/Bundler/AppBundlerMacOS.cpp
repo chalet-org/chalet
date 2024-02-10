@@ -156,8 +156,6 @@ bool AppBundlerMacOS::bundleForPlatform()
 	{
 		if (!signAppBundle())
 			return false;
-
-		Output::msgAction("Succeeded", m_outputDirectory);
 	}
 	else
 	{
