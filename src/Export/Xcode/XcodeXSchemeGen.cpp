@@ -127,32 +127,28 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			foundRelease = true;
 
 		auto env = DotEnvFileGenerator::make(*state);
+		auto& environment = envMap[configName];
+
 		auto path = env.getRunPaths();
 		if (!path.empty())
 		{
-			path = fmt::format("{}{}{}", path, Environment::getPathSeparator(), env.getPath());
+			path = fmt::format("{}:${}", path, Environment::getPathKey());
+			environment.emplace(Environment::getPathKey(), path);
 		}
+
 		auto libraryPath = env.getLibraryPath();
 		if (!libraryPath.empty())
 		{
-			libraryPath = fmt::format("{}{}${}", libraryPath, Environment::getPathSeparator(), Environment::getLibraryPathKey());
+			libraryPath = fmt::format("{}:${}", libraryPath, Environment::getLibraryPathKey());
+			environment.emplace(Environment::getLibraryPathKey(), libraryPath);
 		}
+
 		auto frameworkPath = env.getFrameworkPath();
 		if (!frameworkPath.empty())
 		{
-			frameworkPath = fmt::format("{}{}${}", frameworkPath, Environment::getPathSeparator(), Environment::getFrameworkPathKey());
-		}
-
-		auto& environment = envMap[configName];
-
-		if (!path.empty())
-			environment.emplace(Environment::getPathKey(), path);
-
-		if (!libraryPath.empty())
-			environment.emplace(Environment::getLibraryPathKey(), libraryPath);
-
-		if (!frameworkPath.empty())
+			frameworkPath = fmt::format("{}:${}", frameworkPath, Environment::getFrameworkPathKey());
 			environment.emplace(Environment::getFrameworkPathKey(), frameworkPath);
+		}
 
 		StringList sourceTargets;
 		for (auto& target : state->targets)
