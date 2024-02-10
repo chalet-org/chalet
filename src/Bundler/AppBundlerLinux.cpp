@@ -90,21 +90,19 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	const std::string bundlePath = getBundlePath();
 
+	const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
+
+	const auto desktopEntryFile = fmt::format("{}/{}.desktop", bundlePath, m_bundle.name());
+	const auto iconPath = icon.empty() ? icon : Files::getAbsolutePath(fmt::format("{}/{}", bundlePath, String::getPathFilename(icon)));
+
 	if (!icon.empty())
 	{
 		if (!Files::copy(icon, bundlePath))
 			return false;
 	}
 
-	const auto filename = fmt::format("{}/{}", bundlePath, m_mainExecutable);
-
-	const auto desktopEntryFile = fmt::format("{}/{}.desktop", bundlePath, m_bundle.name());
-	const auto iconPath = icon.empty() ? icon : Files::getAbsolutePath(fmt::format("{}/{}", bundlePath, String::getPathFilename(icon)));
-
 	if (!Files::copyRename(desktopEntry, desktopEntryFile))
 		return false;
-
-	Diagnostic::stepInfoEllipsis("Creating the XDG Desktop Entry for the application");
 
 	if (!Files::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
 			String::replaceAll(fileContents, "${mainExecutable}", Files::getAbsolutePath(filename));
@@ -116,8 +114,6 @@ bool AppBundlerLinux::bundleForPlatform()
 
 	if (!Files::setExecutableFlag(desktopEntryFile))
 		return false;
-
-	Diagnostic::printDone(timer.asString());
 
 	if (m_bundle.linuxCopyToApplications())
 	{
