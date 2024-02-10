@@ -867,11 +867,12 @@ bool AppBundlerMacOS::signAppBundle() const
 
 	if (m_bundle.isMacosAppBundle())
 	{
-		Diagnostic::stepInfoEllipsis("Signing the application bundle");
+		auto bundle = String::getPathFolder(m_bundlePath);
+		Diagnostic::stepInfoEllipsis("Signing: {}", bundle);
 	}
 	else
 	{
-		Diagnostic::stepInfoEllipsis("Signing binaries");
+		Diagnostic::stepInfoEllipsis("Signing binaries: {}", m_bundlePath);
 	}
 
 	bool isBundle = String::endsWith(".app/Contents", m_bundlePath);

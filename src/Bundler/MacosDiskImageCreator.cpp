@@ -59,7 +59,10 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 				auto& bundle = static_cast<BundleTarget&>(*target);
 				const auto& subdirectory = bundle.subdirectory();
 
-				std::string appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundleExtension());
+				auto appPath = fmt::format("{}/{}.{}", subdirectory, path, bundle.macosBundleExtension());
+				if (appPath.back() == '.')
+					appPath.pop_back();
+
 				if (!Files::pathExists(appPath))
 				{
 					Diagnostic::error("Path not found, but it's required by {}.dmg: {}", m_diskName, appPath);
