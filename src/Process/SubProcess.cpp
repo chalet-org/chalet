@@ -717,15 +717,12 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 #if defined(CHALET_WIN32)
 	DWORD bytesRead = 0;
 #else
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = std::numeric_limits<ssize_t>::max();
 #endif
 	auto bufferData = m_DataBuffer.data();
 	size_t bufferSize = m_DataBuffer.size();
-	while (true)
+	while (!m_killed && bytesRead > 0)
 	{
-		if (m_killed)
-			break;
-
 #if defined(CHALET_WIN32)
 		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;
 		if (!result)
@@ -738,8 +735,6 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 			if (onRead != nullptr)
 				onRead(std::string(bufferData, bytesRead));
 		}
-		else
-			break;
 	}
 }
 

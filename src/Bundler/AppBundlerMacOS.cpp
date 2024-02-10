@@ -619,7 +619,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	if (String::endsWith(".icns", macosBundleIcon))
 		return createBundleIcon();
 
-	Timer timer;
+	// Timer timer;
 
 	auto objDir = m_state.paths.bundleObjDir(m_bundle.name());
 	if (!Files::pathExists(objDir))
@@ -653,9 +653,9 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 	}
 
 	if (iconIsXcassets)
-		Diagnostic::stepInfoEllipsis("Using the asset catalog: '{}'", macosBundleIcon);
+		Diagnostic::stepInfo("Using the asset catalog: {}", macosBundleIcon);
 	else
-		Diagnostic::stepInfoEllipsis("Creating an asset catalog from '{}'", macosBundleIcon);
+		Diagnostic::stepInfo("Creating an asset catalog from: {}", macosBundleIcon);
 
 	auto assetsPath = fmt::format("{}/Assets.xcassets", objDir);
 	if (iconIsXcassets)
@@ -669,7 +669,8 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	auto tempPlist = fmt::format("{}/assetcatalog_generated_info.plist", objDir);
 
-	bool result = Process::runNoOutput({
+	//	Note: can't redirect stdout with actool
+	bool result = Process::run({
 		actool,
 		"--output-format",
 		"human-readable-text",
@@ -682,7 +683,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 		"--app-icon",
 		getResolvedIconName(),
 		"--enable-on-demand-resources",
-		"YES",
+		"NO",
 		"--development-region",
 		"en",
 		"--target-device",
@@ -698,7 +699,7 @@ bool AppBundlerMacOS::createBundleIconFromXcassets()
 
 	if (result)
 	{
-		Diagnostic::printDone(timer.asString());
+		// Diagnostic::printDone(timer.asString());
 	}
 	else
 	{
