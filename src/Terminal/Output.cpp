@@ -669,6 +669,16 @@ void Output::msgAction(const std::string& inLabel, const std::string& inTo)
 	const auto flair = getAnsiStyle(state.theme.flair);
 	const auto build = getAnsiStyle(state.theme.build);
 
-	Diagnostic::stepInfo("{}{} {}->{} {}", build, inLabel, flair, reset, inTo);
+	Diagnostic::stepInfo("{}{}{} -> {}{}", build, inLabel, flair, reset, inTo);
+}
+
+/*****************************************************************************/
+void Output::msgActionEllipsis(const std::string& inLabel, const std::string& inTo)
+{
+	const auto reset = getAnsiStyle(state.theme.reset);
+	const auto flair = getAnsiStyle(state.theme.flair);
+	const auto build = getAnsiStyle(state.theme.build);
+
+	Diagnostic::stepInfoEllipsis("{}{}{} -> {}{}", build, inLabel, flair, reset, inTo);
 }
 }

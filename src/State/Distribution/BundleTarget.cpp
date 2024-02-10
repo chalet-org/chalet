@@ -100,9 +100,9 @@ bool BundleTarget::validate()
 #if defined(CHALET_MACOS)
 	if (!m_macosBundleIcon.empty())
 	{
-		if (!String::endsWith(StringList{ ".png", ".icns" }, m_macosBundleIcon))
+		if (!String::endsWith(StringList{ ".png", ".icns", ".iconset" }, m_macosBundleIcon))
 		{
-			Diagnostic::error("bundle.macosBundle.icon must end with '.png' or '.icns', but was '{}'.", m_macosBundleIcon);
+			Diagnostic::error("bundle.macosBundle.icon must end with '.png', '.icns' or '.iconset', but was '{}'.", m_macosBundleIcon);
 			result = false;
 		}
 		else if (!Files::pathExists(m_macosBundleIcon))

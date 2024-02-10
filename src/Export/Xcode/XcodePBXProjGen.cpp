@@ -333,16 +333,27 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 						auto& icon = bundle.macosBundleIcon();
 						bool iconIsIcns = String::endsWith(".icns", icon);
+						bool iconIsIconSet = String::endsWith(".iconset", icon);
+						bool iconIsBuilt = iconIsIcns || iconIsIconSet;
 						if (!icon.empty())
 						{
-							auto resolvedIcon = Files::getCanonicalPath(icon);
+							std::string resolvedIcon;
+							if (iconIsIconSet)
+							{
+								auto iconBaseName = String::getPathBaseName(icon);
+								resolvedIcon = fmt::format("{}/{}/{}.icns", m_exportPath, target->name(), iconBaseName);
+							}
+							else
+							{
+								resolvedIcon = Files::getCanonicalPath(icon);
+							}
 							groups[name].children.emplace_back(resolvedIcon);
 
-							if (iconIsIcns)
+							if (iconIsBuilt)
 								groups[name].resources.emplace_back(std::move(resolvedIcon));
 						}
 
-						bool hasXcassets = icon.empty() || (!icon.empty() && !iconIsIcns);
+						bool hasXcassets = icon.empty() || (!icon.empty() && !iconIsBuilt);
 						if (hasXcassets)
 						{
 							groups[name].children.emplace_back(fmt::format("{}/Assets.xcassets", bundleDirectory));
@@ -1777,6 +1788,10 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	if (!Files::pathExists(bundleDirectory))
 		Files::makeDirectory(bundleDirectory);
 
+#if defined(CHALET_MACOS)
+	auto& macosBundleIcon = inTarget.macosBundleIcon();
+#endif
+
 	if (!m_generatedBundleFiles[targetName])
 	{
 		m_infoPlistJson.clear();
@@ -1784,9 +1799,12 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 		bundler.setOutputDirectory(objectDirectory);
 		bundler.initializeState();
 
-		bundler.createAssetsXcassets(assetsPath);
-
 #if defined(CHALET_MACOS)
+		if (String::endsWith(".iconset", macosBundleIcon))
+			bundler.createIcnsFromIconSet(bundleDirectory);
+		else
+			bundler.createAssetsXcassets(assetsPath);
+
 		if (inTarget.willHaveMacosInfoPlist())
 			bundler.createInfoPropertyListAndReplaceVariables(infoPlist, &m_infoPlistJson);
 
@@ -1814,8 +1832,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
 #if defined(CHALET_MACOS)
-	auto& icon = inTarget.macosBundleIcon();
-	if (!String::endsWith(".icns", icon))
+	if (!String::endsWith({ ".icns", "iconset" }, macosBundleIcon))
 	{
 		ret["ASSETCATALOG_COMPILER_APPICON_NAME"] = bundler.getResolvedIconName();
 		// ret["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "AccentColor";

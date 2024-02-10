@@ -38,6 +38,7 @@ public:
 	bool changeRPathOfDependents(const std::string& inInstallNameTool, const std::string& inFile, const StringList& inDependencies, const std::string& inOutputFile) const;
 
 	bool createAssetsXcassets(const std::string& inOutPath);
+	bool createIcnsFromIconSet(const std::string& inOutPath);
 	bool createInfoPropertyListAndReplaceVariables(const std::string& inOutFile, Json* outJson = nullptr) const;
 	bool createEntitlementsPropertyList(const std::string& inOutFile) const;
 
@@ -48,7 +49,7 @@ private:
 	std::string getPlistFile() const;
 	std::string getEntitlementsFilePath() const;
 
-	bool createBundleIcon();
+	bool createBundleIcon(const std::string& inOutPath);
 	bool createBundleIconFromXcassets();
 	bool setExecutablePaths() const;
 	bool signAppBundle() const;
