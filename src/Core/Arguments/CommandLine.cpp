@@ -137,10 +137,6 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						inputs->setSettingsKey(variant.asString());
 						break;
 
-					case ArgumentIdentifier::SettingsValue:
-						inputs->setSettingsValue(variant.asString());
-						break;
-
 					case ArgumentIdentifier::ValidateSchemaFile:
 						settingsFile = variant.asString();
 						break;
@@ -174,6 +170,15 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 					case ArgumentIdentifier::QueryDataRemainingArgs:
 						inputs->setQueryData(variant.asStringList());
 						break;
+
+					case ArgumentIdentifier::SettingsValueRemainingArgs: {
+						auto list = variant.asStringList();
+						if (!list.empty())
+						{
+							inputs->setSettingsValue(std::move(list.front()));
+						}
+						break;
+					}
 
 					case ArgumentIdentifier::SettingsKeysRemainingArgs:
 						break;

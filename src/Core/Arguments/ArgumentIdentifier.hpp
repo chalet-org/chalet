@@ -61,7 +61,7 @@ enum class ArgumentIdentifier : u16
 	// Other
 	RouteString,
 	SettingsKey,
-	SettingsValue,
+	SettingsValueRemainingArgs,
 	QueryType,
 	QueryDataRemainingArgs,
 	SettingsKeysRemainingArgs,

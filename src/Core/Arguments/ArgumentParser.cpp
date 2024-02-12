@@ -1517,7 +1517,7 @@ void ArgumentParser::populateSettingsSetArguments()
 	arg1.setHelp("The config key to change.");
 	arg1.setRequired();
 
-	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::SettingsValue, Positional::RemainingArguments, Arg::SettingsValue);
+	auto& arg2 = addTwoStringListArguments(ArgumentIdentifier::SettingsValueRemainingArgs, Positional::RemainingArguments, Arg::SettingsValue);
 	arg2.setHelp("The config value to change to.");
 	arg2.setRequired();
 }
