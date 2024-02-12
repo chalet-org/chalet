@@ -197,8 +197,9 @@ bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::str
 	const auto color = Output::getAnsiStyle(Output::theme().build);
 	const auto reset = Output::getAnsiStyle(Output::theme().reset);
 
-	auto cwd = fmt::format("{}/", inCwd);
-	Path::toWindows(cwd);
+	auto cwd = inCwd;
+	Path::toUnix(cwd);
+	cwd += '/';
 
 	bool allowOutput = false;
 	std::string errors;
@@ -229,10 +230,18 @@ bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::str
 				std::cout.write(inLine.data(), inLine.size());
 				std::cout.flush();
 			}
+			else if (String::startsWith("   Creating library", inLine))
+			{
+				Path::toUnix(inLine);
+				String::replaceAll(inLine, cwd, "");
+				auto coloredLine = fmt::format("{}{}{}", color, inLine, reset);
+				std::cout.write(coloredLine.data(), coloredLine.size());
+				std::cout.flush();
+			}
 			else if (!allowOutput)
 			{
-				String::replaceAll(inLine, cwd, "");
 				Path::toUnix(inLine);
+				String::replaceAll(inLine, cwd, "");
 				auto coloredLine = fmt::format("   {}{}{}", color, inLine, reset);
 				std::cout.write(coloredLine.data(), coloredLine.size());
 				std::cout.flush();
