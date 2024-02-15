@@ -44,6 +44,7 @@ struct CompilerTools
 
 	const std::string& version() const noexcept;
 	void setVersion(const std::string& inValue) noexcept;
+	u32 versionMajor() const noexcept;
 	u32 versionMajorMinor() const noexcept;
 	u32 versionPatch() const noexcept;
 
@@ -117,6 +118,7 @@ private:
 
 	std::string m_version;
 
+	u32 m_toolchainVersionMajor = 0;
 	u32 m_toolchainVersionMajorMinor = 0;
 	u32 m_toolchainVersionPatch = 0;
 

@@ -9,6 +9,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompileCommandsGenerator.hpp"
+#include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
@@ -42,11 +43,13 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 	{
 		case ToolchainType::VisualStudio:
 			return std::make_unique<ModuleStrategyMSVC>(inState, inCompileCommandsGenerator);
+		case ToolchainType::GNU:
+			return std::make_unique<ModuleStrategyGCC>(inState, inCompileCommandsGenerator);
 		default:
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
+	Diagnostic::error("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 
@@ -1021,6 +1024,7 @@ void IModuleStrategy::checkCommandsForChanges(CompileToolchainController& inTool
 			m_moduleCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
 		}
 
+		if (inToolchain.compilerWindowsResource)
 		{
 			auto cxxHashKey = Hash::string(fmt::format("{}_source_{}", name, static_cast<int>(SourceType::WindowsResource)));
 			StringList options = inToolchain.compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");
