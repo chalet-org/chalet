@@ -8,6 +8,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
+#include "Compile/GccModuleDefines.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -356,7 +357,12 @@ StringList CompilerCxxGCC::getModuleCommand(const std::string& inputFile, const 
 		// ret.emplace_back(fmt::format("-fdep-file={}", getQuotedPath(interfaceFile)));
 		// ret.emplace_back(fmt::format("-fdep-output={}", getQuotedPath(outputFile)));
 	}
+
+#if CHALET_GCC_USE_MAPPER_FILES
 	ret.emplace_back(fmt::format("-fmodule-mapper={}", m_state.environment->getModuleDirectivesDependencyFile(inputFile)));
+#else
+	ret.emplace_back(fmt::format("-fmodule-mapper=|@g++-mapper-server -r{}/.mmap", m_state.paths.objDir()));
+#endif
 
 	addSourceFileInterpretation(ret, inType);
 	addOptimizations(ret);

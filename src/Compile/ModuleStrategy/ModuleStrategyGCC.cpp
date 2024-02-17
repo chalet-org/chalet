@@ -6,6 +6,7 @@
 #include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Compile/GccModuleDefines.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -181,6 +182,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 {
 	UNUSED(outJob, inToolchain, outPayload, inGroups);
 
+#if CHALET_GCC_USE_MAPPER_FILES
 	Dictionary<std::string> mapFiles;
 
 	for (auto& [module, payload] : outPayload)
@@ -189,26 +191,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 		for (auto& headerMap : payload.headerUnitTranslations)
 		{
 			auto split = String::split(headerMap, '=');
-
-			std::string file;
-			auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, split[0]);
-			if (Files::pathExists(resolved))
-			{
-				// system
-				file = std::move(resolved);
-			}
-			else
-			{
-				file = split[0];
-				// for (auto& header : m_userHeaders)
-				// {
-				// 	if (String::endsWith(header, file))
-				// 	{
-				// 		file = header;
-				// 		break;
-				// 	}
-				// }
-			}
+			auto& file = split[0];
 
 			moduleContents += fmt::format("{} {}\n", file, split[1]);
 
@@ -247,6 +230,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 			Files::createFileWithContents(outputFile, contents);
 		}
 	}
+#endif
 
 	return true;
 }

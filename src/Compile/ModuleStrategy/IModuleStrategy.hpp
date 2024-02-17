@@ -87,6 +87,8 @@ protected:
 
 	mutable bool m_sourcesChanged = false;
 
+	const SourceTarget* m_project = nullptr;
+
 private:
 	std::string getModuleId() const;
 	bool rebuildRequiredFromLinks() const;
@@ -100,8 +102,6 @@ private:
 	StringList m_targetsChanged;
 
 	Dictionary<std::string> m_systemModules;
-
-	const SourceTarget* m_project = nullptr;
 
 	bool m_moduleCommandsChanged = false;
 	bool m_winResourceCommandsChanged = false;
