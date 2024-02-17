@@ -5,10 +5,13 @@
 
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Process/Environment.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -39,6 +42,64 @@ bool ModuleStrategyMSVC::initialize()
 bool ModuleStrategyMSVC::isSystemModuleFile(const std::string& inFile) const
 {
 	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inFile);
+}
+
+/*****************************************************************************/
+bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+{
+	// Scan sources for module dependencies
+
+	outJob.list = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	if (!outJob.list.empty())
+	{
+		// Output::msgScanningForModuleDependencies();
+		// Output::lineBreak();
+
+		auto settings = getCommandPoolSettings();
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.run(outJob, settings))
+		{
+			auto& failures = commandPool.failures();
+			for (auto& failure : failures)
+			{
+				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
+				Files::removeIfExists(dependency);
+			}
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
+{
+	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	if (!outJob.list.empty())
+	{
+		// Scan sources for module dependencies
+
+		// Output::msgBuildingRequiredHeaderUnits();
+		// Output::lineBreak();
+
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.run(outJob, getCommandPoolSettings()))
+		{
+			auto& failures = commandPool.failures();
+			for (auto& failure : failures)
+			{
+				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
+				Files::removeIfExists(dependency);
+			}
+
+			return false;
+		}
+
+		Output::lineBreak();
+	}
+
+	return true;
 }
 
 /*****************************************************************************/

@@ -24,6 +24,10 @@ protected:
 
 	virtual std::string getCompilerAliasForVisualStudio() const override;
 
+	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const override;
+	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const override;
+	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const override;
+
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const override;
 	virtual bool verifyToolchain() override;

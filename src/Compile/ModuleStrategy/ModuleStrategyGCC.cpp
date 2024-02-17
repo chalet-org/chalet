@@ -51,7 +51,178 @@ bool ModuleStrategyGCC::initialize()
 /*****************************************************************************/
 bool ModuleStrategyGCC::isSystemModuleFile(const std::string& inFile) const
 {
-	LOG(inFile);
+	return Files::pathExists(fmt::format("{}/{}", m_systemHeaderDirectory, inFile));
+}
+
+/*****************************************************************************/
+bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+{
+	UNUSED(outJob, inToolchain);
+
+	const std::string kModulePrefix("export module ");
+	const std::string kImportPrefix("import ");
+	const std::string kExportImportPrefix("export import ");
+	const StringList kBreakOn{
+		"namespace",
+		"const",
+		"using",
+		"class",
+		"struct"
+	};
+
+	auto readImports = [this](const std::string& line, const std::string& moduleName, const std::string& source, const std::string& prefix) {
+		auto imported = line.substr(prefix.size(), line.find_last_of(';') - prefix.size());
+		const bool hasAngleBrackets = imported.front() == '<' && imported.back() == '>';
+		const bool hasQuotes = imported.front() == '"' && imported.back() == '"';
+		if (hasAngleBrackets || hasQuotes)
+		{
+			imported = imported.substr(1, imported.size() - 2);
+
+			if (m_headerUnitImports.find(source) == m_headerUnitImports.end())
+				m_headerUnitImports.emplace(source, StringList{});
+
+			// m_userHeaders.emplace_back(imported);
+
+			m_headerUnitImports.at(source).emplace_back(std::move(imported));
+		}
+		else if (imported.front() == ':')
+		{
+			if (!moduleName.empty())
+			{
+				imported = fmt::format("{}{}", moduleName, imported);
+
+				if (m_moduleImports.find(source) == m_moduleImports.end())
+					m_moduleImports.emplace(source, StringList{});
+
+				m_moduleImports.at(source).emplace_back(std::move(imported));
+			}
+		}
+		else
+		{
+			if (m_moduleImports.find(source) == m_moduleImports.end())
+				m_moduleImports.emplace(source, StringList{});
+
+			m_moduleImports.at(source).emplace_back(std::move(imported));
+		}
+	};
+
+	for (auto& group : inGroups)
+	{
+		if (group->type != SourceType::CPlusPlus)
+			continue;
+
+		auto& source = group->sourceFile;
+		auto name = String::getPathBaseName(source);
+		std::string moduleName;
+
+		std::ifstream input(source);
+		for (std::string line; std::getline(input, line);)
+		{
+			if (line.empty())
+				continue;
+
+			if (String::startsWith(kModulePrefix, line))
+			{
+				moduleName = line.substr(kModulePrefix.size(), line.find_last_of(';') - kModulePrefix.size());
+				continue;
+			}
+			if (String::startsWith(kImportPrefix, line))
+			{
+				readImports(line, moduleName, source, kImportPrefix);
+				continue;
+			}
+			if (String::startsWith(kExportImportPrefix, line))
+			{
+				readImports(line, moduleName, source, kExportImportPrefix);
+				continue;
+			}
+
+			if (String::startsWith(kBreakOn, line))
+				break;
+		}
+
+		if (moduleName.empty())
+		{
+			moduleName = fmt::format("@{}", source);
+		}
+
+		if (!moduleName.empty())
+		{
+			m_moduleMap.emplace(source, moduleName);
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
+{
+	UNUSED(outJob, inToolchain, outPayload, inGroups);
+
+	Dictionary<std::string> mapFiles;
+
+	for (auto& [module, payload] : outPayload)
+	{
+		std::string moduleContents;
+		for (auto& headerMap : payload.headerUnitTranslations)
+		{
+			auto split = String::split(headerMap, '=');
+
+			std::string file;
+			auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, split[0]);
+			if (Files::pathExists(resolved))
+			{
+				// system
+				file = std::move(resolved);
+			}
+			else
+			{
+				file = split[0];
+				for (auto& header : m_userHeaders)
+				{
+					if (String::endsWith(header, file))
+					{
+						file = header;
+						break;
+					}
+				}
+			}
+
+			moduleContents += fmt::format("{} {}\n", file, split[1]);
+
+			auto& name = split[0];
+			if (mapFiles.find(name) == mapFiles.end())
+			{
+				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
+			}
+		}
+		for (auto& moduleMap : payload.moduleTranslations)
+		{
+			auto split = String::split(moduleMap, '=');
+			moduleContents += fmt::format("{} {}\n", split[0], split[1]);
+		}
+		if (mapFiles.find(module) == mapFiles.end())
+		{
+			if (m_moduleMap.find(module) != m_moduleMap.end())
+			{
+				auto& moduleName = m_moduleMap.at(module);
+				auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
+				moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
+			}
+			mapFiles.emplace(module, std::move(moduleContents));
+		}
+	}
+
+	for (auto& [name, contents] : mapFiles)
+	{
+		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(name);
+		if (!Files::pathExists(outputFile))
+		{
+			Files::createFileWithContents(outputFile, contents);
+		}
+	}
+
 	return true;
 }
 
@@ -59,26 +230,27 @@ bool ModuleStrategyGCC::isSystemModuleFile(const std::string& inFile) const
 bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
 {
 	UNUSED(inOutputs, outModules);
-	LOG("readModuleDependencies");
 
-	StringList systemHeaders{
-		"iostream",
-		"cstdlib"
-	};
 	for (auto& group : inOutputs.groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
 			continue;
 
-		auto name = String::getPathBaseName(group->sourceFile);
-		LOG(name);
-		outModules[name].source = group->sourceFile;
-		outModules[name].importedHeaderUnits = systemHeaders;
-	}
+		if (m_moduleMap.find(group->sourceFile) == m_moduleMap.end())
+			continue;
 
-	for (auto& systemModule : systemHeaders)
-	{
-		outModules[systemModule].source = fmt::format("{}/{}", m_systemHeaderDirectory, systemModule);
+		auto& name = m_moduleMap.at(group->sourceFile);
+
+		outModules[name].source = group->sourceFile;
+		if (m_moduleImports.find(group->sourceFile) != m_moduleImports.end())
+		{
+			outModules[name].importedModules = m_moduleImports.at(group->sourceFile);
+		}
+
+		if (m_headerUnitImports.find(group->sourceFile) != m_headerUnitImports.end())
+		{
+			outModules[name].importedHeaderUnits = m_headerUnitImports.at(group->sourceFile);
+		}
 	}
 
 	return true;

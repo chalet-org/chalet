@@ -144,6 +144,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	{
 		auto cwd = m_state.inputs.workingDirectory() + '/';
+		auto& includeDirs = m_project->includeDirs();
 
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
@@ -179,6 +180,19 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				}
 				else
 				{
+					if (!Files::pathExists(header))
+					{
+						for (auto& dir : includeDirs)
+						{
+							auto resolved = fmt::format("{}/{}", dir, header);
+							if (Files::pathExists(resolved))
+							{
+								header = resolved;
+								break;
+							}
+						}
+					}
+
 					if (String::startsWith(cwd, header))
 						file = header.substr(cwd.size());
 					else
@@ -430,6 +444,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
 			type = ModuleFileType::ModuleImplementationUnit;
 
+		if (group->dataType == SourceDataType::SystemHeaderUnit)
+			type = ModuleFileType::SystemHeaderUnitObject;
+		else if (group->dataType == SourceDataType::UserHeaderUnit)
+			type = ModuleFileType::HeaderUnitObject;
+
 		auto interfaceFile = group->otherFile;
 		if (interfaceFile.empty())
 		{
@@ -455,6 +474,9 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
 				out.reference = source;
 			}
+
+			if (out.command.empty())
+				continue;
 
 			ret.emplace_back(std::move(out));
 		}
@@ -680,34 +702,6 @@ CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
-{
-	// Scan sources for module dependencies
-
-	outJob.list = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
-	if (!outJob.list.empty())
-	{
-		// Output::msgScanningForModuleDependencies();
-		// Output::lineBreak();
-
-		auto settings = getCommandPoolSettings();
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, settings))
-		{
-			auto& failures = commandPool.failures();
-			for (auto& failure : failures)
-			{
-				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
-				Files::removeIfExists(dependency);
-			}
-			return false;
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups)
 {
 	bool rebuildFromIncludes = false;
@@ -741,36 +735,6 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			}
 		}
 	}
-}
-
-/*****************************************************************************/
-bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
-{
-	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
-	if (!outJob.list.empty())
-	{
-		// Scan sources for module dependencies
-
-		// Output::msgBuildingRequiredHeaderUnits();
-		// Output::lineBreak();
-
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, getCommandPoolSettings()))
-		{
-			auto& failures = commandPool.failures();
-			for (auto& failure : failures)
-			{
-				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
-				Files::removeIfExists(dependency);
-			}
-
-			return false;
-		}
-
-		Output::lineBreak();
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

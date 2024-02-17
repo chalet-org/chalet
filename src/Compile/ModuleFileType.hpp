@@ -12,6 +12,7 @@ enum class ModuleFileType : u16
 	ModuleDependency,
 	HeaderUnitDependency,
 	HeaderUnitObject,
+	SystemHeaderUnitObject,
 	ModuleObject,
 	ModuleImplementationUnit,
 };
