@@ -19,6 +19,8 @@ struct CompilerCxxGCC : public ICompilerCxx
 	virtual StringList getCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const SourceType derivative) override;
 	virtual void getCommandOptions(StringList& outArgList, const SourceType derivative) override;
 
+	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType) override;
+
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
@@ -32,6 +34,7 @@ protected:
 	virtual bool isFlagSupported(const std::string& inFlag) const;
 
 	virtual void addSourceFileInterpretation(StringList& outArgList, const SourceType derivative) const override;
+	virtual void addSourceFileInterpretation(StringList& outArgList, const ModuleFileType moduleType) const;
 	virtual void addIncludes(StringList& outArgList) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addDefines(StringList& outArgList) const override;

@@ -9,6 +9,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompileCommandsGenerator.hpp"
+#include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
@@ -42,11 +43,14 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 	{
 		case ToolchainType::VisualStudio:
 			return std::make_unique<ModuleStrategyMSVC>(inState, inCompileCommandsGenerator);
+		case ToolchainType::GNU:
+		case ToolchainType::MingwGNU:
+			return std::make_unique<ModuleStrategyGCC>(inState, inCompileCommandsGenerator);
 		default:
 			break;
 	}
 
-	Diagnostic::errorAbort("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
+	Diagnostic::error("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 
@@ -141,6 +145,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	{
 		auto cwd = m_state.inputs.workingDirectory() + '/';
+		auto& includeDirs = m_project->includeDirs();
 
 		auto& sourceCache = m_state.cache.file().sources();
 		const auto& objDir = m_state.paths.objDir();
@@ -176,6 +181,19 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				}
 				else
 				{
+					if (!Files::pathExists(header))
+					{
+						for (auto& dir : includeDirs)
+						{
+							auto resolved = fmt::format("{}/{}", dir, header);
+							if (Files::pathExists(resolved))
+							{
+								header = resolved;
+								break;
+							}
+						}
+					}
+
 					if (String::startsWith(cwd, header))
 						file = header.substr(cwd.size());
 					else
@@ -352,7 +370,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		settings.startIndex = 1;
 		settings.total = 0;
 
-		StringList links = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		StringList links;
+		if (m_state.environment->isMsvc())
+			links = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		else
+			links = inOutputs->objectListLinker;
 
 		{
 			auto job = std::make_unique<CommandPool::Job>();
@@ -387,18 +409,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 }
 
 /*****************************************************************************/
-std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const
-{
-	if (!inIsObject)
-		return inSource.dependencyFile;
-
-	if (inSource.dataType == SourceDataType::SystemHeaderUnit || inSource.dataType == SourceDataType::SystemModule)
-		return String::getPathFilename(inSource.sourceFile);
-
-	return inSource.sourceFile;
-}
-
-/*****************************************************************************/
 CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType)
 {
 	auto& sourceCache = m_state.cache.file().sources();
@@ -407,6 +417,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	CommandPool::CmdList ret;
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
+	bool isMsvc = m_state.environment->isMsvc();
 
 	for (auto& group : inGroups)
 	{
@@ -427,31 +438,51 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
 			type = ModuleFileType::ModuleImplementationUnit;
 
+		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
+		if (systemHeaderUnit)
+			type = ModuleFileType::SystemHeaderUnitObject;
+		else if (group->dataType == SourceDataType::UserHeaderUnit)
+			type = ModuleFileType::HeaderUnitObject;
+
 		auto interfaceFile = group->otherFile;
 		if (interfaceFile.empty())
 		{
 			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 		}
 
-		bool sourceChanged = m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
+		// Note: don't make objectDependent a reference - breaks in MSVC
+		const std::string* objectDependent = &interfaceFile;
+		if (isMsvc || type == ModuleFileType::ModuleImplementationUnit)
+			objectDependent = &target;
+
+		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isObject ? *objectDependent : dependency);
+		bool sourceChanged = m_moduleCommandsChanged || fileChangedInCache || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
 			CommandPool::Cmd out;
 			out.output = getBuildOutputForFile(*group, isObject);
 
+			std::string inputFile;
+			if (systemHeaderUnit && !isMsvc)
+				inputFile = String::getPathFilename(source);
+			else
+				inputFile = source;
+
 			if (inModules.find(source) != inModules.end())
 			{
 				const auto& module = inModules.at(source);
 
-				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
-				out.reference = source;
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
 			}
 			else
 			{
-				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
-				out.reference = source;
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, blankList, blankList, type);
 			}
+			out.reference = source;
+
+			if (out.command.empty())
+				continue;
 
 			ret.emplace_back(std::move(out));
 		}
@@ -677,34 +708,6 @@ CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
-{
-	// Scan sources for module dependencies
-
-	outJob.list = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
-	if (!outJob.list.empty())
-	{
-		// Output::msgScanningForModuleDependencies();
-		// Output::lineBreak();
-
-		auto settings = getCommandPoolSettings();
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, settings))
-		{
-			auto& failures = commandPool.failures();
-			for (auto& failure : failures)
-			{
-				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
-				Files::removeIfExists(dependency);
-			}
-			return false;
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups)
 {
 	bool rebuildFromIncludes = false;
@@ -738,36 +741,6 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			}
 		}
 	}
-}
-
-/*****************************************************************************/
-bool IModuleStrategy::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
-{
-	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
-	if (!outJob.list.empty())
-	{
-		// Scan sources for module dependencies
-
-		// Output::msgBuildingRequiredHeaderUnits();
-		// Output::lineBreak();
-
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, getCommandPoolSettings()))
-		{
-			auto& failures = commandPool.failures();
-			for (auto& failure : failures)
-			{
-				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
-				Files::removeIfExists(dependency);
-			}
-
-			return false;
-		}
-
-		Output::lineBreak();
-	}
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -1021,6 +994,7 @@ void IModuleStrategy::checkCommandsForChanges(CompileToolchainController& inTool
 			m_moduleCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
 		}
 
+		if (inToolchain.compilerWindowsResource)
 		{
 			auto cxxHashKey = Hash::string(fmt::format("{}_source_{}", name, static_cast<int>(SourceType::WindowsResource)));
 			StringList options = inToolchain.compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");

@@ -51,9 +51,11 @@ public:
 	virtual bool isSystemModuleFile(const std::string& inFile) const = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
+	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) = 0;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) = 0;
 
 protected:
-	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const;
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const = 0;
 
 	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
 
@@ -62,9 +64,7 @@ protected:
 
 	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
 
-	bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
 	void checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups);
-	bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups);
 	void checkForDependencyChanges(DependencyGraph& dependencyGraph) const;
 	bool addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupList& outList) const;
 	bool makeModuleBatch(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList, CommandPool::JobList& outJobList);
@@ -72,11 +72,13 @@ protected:
 	void addModuleBuildJobs(CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph, CommandPool::JobList& outJobList);
 	void logPayload(const Dictionary<ModulePayload>& inPayload) const;
 	void addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const;
+	CommandPool::Settings getCommandPoolSettings() const;
 
 	BuildState& m_state;
 	CompileCommandsGenerator& m_compileCommandsGenerator;
 
 	std::string m_previousSource;
+	std::string m_moduleId;
 
 	StringList m_implementationUnits;
 	mutable Dictionary<bool> m_compileCache;
@@ -85,12 +87,13 @@ protected:
 
 	mutable bool m_sourcesChanged = false;
 
+	const SourceTarget* m_project = nullptr;
+
 private:
 	std::string getModuleId() const;
 	bool rebuildRequiredFromLinks() const;
 
 	bool onFailure();
-	CommandPool::Settings getCommandPoolSettings() const;
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 	bool anyCmakeOrSubChaletTargetsChanged() const;
@@ -99,10 +102,6 @@ private:
 	StringList m_targetsChanged;
 
 	Dictionary<std::string> m_systemModules;
-
-	std::string m_moduleId;
-
-	const SourceTarget* m_project = nullptr;
 
 	bool m_moduleCommandsChanged = false;
 	bool m_winResourceCommandsChanged = false;

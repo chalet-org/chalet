@@ -702,17 +702,28 @@ bool BuildState::validateState()
 					return false;
 				}
 
-				if (!environment->isMsvc())
+				if (!environment->isMsvc() && !environment->isGcc())
 				{
-					Diagnostic::error("{}: C++ modules are only supported with MSVC.", inputs.inputFile());
+					Diagnostic::error("{}: C++ modules are not supported in this toolchain.", inputs.inputFile());
 					return false;
 				}
 
 				u32 versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
-				if (versionMajorMinor < 1928)
+				if (environment->isMsvc())
 				{
-					Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
-					return false;
+					if (versionMajorMinor < 1928)
+					{
+						Diagnostic::error("{}: C++ modules are only supported in Chalet with MSVC versions >= 19.28 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
+						return false;
+					}
+				}
+				else if (environment->isGcc())
+				{
+					if (versionMajorMinor < 1101)
+					{
+						Diagnostic::error("{}: C++ modules are only supported in Chalet with GCC versions >= 11.1.0 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
+						return false;
+					}
 				}
 
 				if (project.objectiveCxx())

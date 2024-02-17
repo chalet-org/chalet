@@ -130,7 +130,7 @@ bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 	const auto& version = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
 	if (m_version.empty() || (inEnvironment.compilerVersionIsToolchainVersion() && m_version != version))
 	{
-		m_version = version;
+		setVersion(version);
 	}
 
 	m_isWindowsTarget = inEnvironment.isWindowsTarget();
@@ -368,6 +368,7 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 {
 	m_version = inValue;
 
+	m_toolchainVersionMajor = 0;
 	m_toolchainVersionMajorMinor = 0;
 	m_toolchainVersionPatch = 0;
 
@@ -377,6 +378,7 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 		if (split.size() >= 1)
 		{
 			m_toolchainVersionMajorMinor = atoi(split[0].c_str());
+			m_toolchainVersionMajor = m_toolchainVersionMajorMinor;
 			m_toolchainVersionMajorMinor *= 100;
 
 			if (split.size() >= 2)
@@ -393,6 +395,11 @@ void CompilerTools::setVersion(const std::string& inValue) noexcept
 }
 
 /*****************************************************************************/
+u32 CompilerTools::versionMajor() const noexcept
+{
+	return m_toolchainVersionMajor;
+}
+
 u32 CompilerTools::versionMajorMinor() const noexcept
 {
 	return m_toolchainVersionMajorMinor;

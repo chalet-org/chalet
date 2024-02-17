@@ -230,7 +230,7 @@ StringList CompilerCxxVisualStudioCL::getModuleCommand(const std::string& inputF
 		return ret;
 
 	bool isDependency = inType == ModuleFileType::ModuleDependency || inType == ModuleFileType::HeaderUnitDependency;
-	bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::HeaderUnitDependency;
+	bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::SystemHeaderUnitObject || inType == ModuleFileType::HeaderUnitDependency;
 
 	if (!addExecutable(ret))
 		return ret;

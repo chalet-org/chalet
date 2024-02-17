@@ -9,9 +9,9 @@
 
 namespace chalet
 {
-struct ModuleStrategyMSVC final : public IModuleStrategy
+struct ModuleStrategyGCC final : public IModuleStrategy
 {
-	explicit ModuleStrategyMSVC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
+	explicit ModuleStrategyGCC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
 	virtual bool initialize() final;
 
@@ -26,6 +26,13 @@ protected:
 private:
 	Dictionary<std::string> getSystemModules() const;
 
-	std::string m_msvcToolsDirectory;
+	Dictionary<std::string> m_moduleMap;
+	Dictionary<StringList> m_moduleImports;
+	Dictionary<StringList> m_headerUnitImports;
+
+	StringList m_systemHeaders;
+	// StringList m_userHeaders;
+
+	std::string m_systemHeaderDirectory;
 };
 }

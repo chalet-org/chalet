@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
@@ -41,6 +42,24 @@ std::string BuildEnvironmentGNU::getPrecompiledHeaderExtension() const
 std::string BuildEnvironmentGNU::getCompilerAliasForVisualStudio() const
 {
 	return "gcc";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentGNU::getModuleDirectivesDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.mmap", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentGNU::getModuleBinaryInterfaceFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.gcm", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentGNU::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.gcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/
