@@ -64,7 +64,7 @@ bool openWithDefaultApplication(const std::string& inFile);
 bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions = {});
 
-bool createFileWithContents(const std::string& inFile, const std::string& inContents);
+bool createFileWithContents(const std::string& inFile, const std::string& inContents, const bool inUnixEol = false);
 std::string getFileContents(const std::string& inFile);
 
 std::string getFirstChildDirectory(const std::string& inPath);

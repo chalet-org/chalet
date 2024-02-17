@@ -900,7 +900,7 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 }
 
 /*****************************************************************************/
-bool Files::createFileWithContents(const std::string& inFile, const std::string& inContents)
+bool Files::createFileWithContents(const std::string& inFile, const std::string& inContents, const bool inUnixEol)
 {
 	auto folder = String::getPathFolder(inFile);
 	if (!folder.empty() && !Files::pathExists(folder))
@@ -912,7 +912,11 @@ bool Files::createFileWithContents(const std::string& inFile, const std::string&
 		}
 	}
 
-	std::ofstream(inFile) << inContents << std::endl;
+	auto eol = String::eol();
+	if (inUnixEol)
+		std::ofstream(inFile, std::ios_base::binary | std::ios_base::out) << inContents + '\n';
+	else
+		std::ofstream(inFile) << inContents + eol;
 
 	return true;
 }

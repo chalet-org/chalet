@@ -6,7 +6,6 @@
 #include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Compile/GccModuleDefines.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -182,7 +181,6 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 {
 	UNUSED(outJob, inToolchain, outPayload, inGroups);
 
-#if CHALET_GCC_USE_MAPPER_FILES
 	Dictionary<std::string> mapFiles;
 
 	for (auto& [module, payload] : outPayload)
@@ -211,8 +209,11 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 			if (m_moduleMap.find(module) != m_moduleMap.end())
 			{
 				auto& moduleName = m_moduleMap.at(module);
-				auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
-				moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
+				if (!String::startsWith('@', moduleName))
+				{
+					auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
+					moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
+				}
 			}
 			mapFiles.emplace(module, std::move(moduleContents));
 		}
@@ -227,10 +228,9 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(mapFile);
 		// if (!Files::pathExists(outputFile))
 		{
-			Files::createFileWithContents(outputFile, contents);
+			Files::createFileWithContents(outputFile, contents, true);
 		}
 	}
-#endif
 
 	return true;
 }
