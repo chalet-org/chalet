@@ -369,7 +369,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		settings.startIndex = 1;
 		settings.total = 0;
 
-		StringList links = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		StringList links;
+		if (m_state.environment->isMsvc())
+			links = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		else
+			links = inOutputs->objectListLinker;
 
 		{
 			auto job = std::make_unique<CommandPool::Job>();
