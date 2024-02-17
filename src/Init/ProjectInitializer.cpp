@@ -129,9 +129,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
-#if defined(CHALET_WIN32) // modules can only be used in MSVC so far
 	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
-#endif
 	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
 
 	outProps.useLocation = getUseLocation();
@@ -688,7 +686,7 @@ bool ProjectInitializer::getUseCxxModules(const CodeLanguage inLang, std::string
 
 	if (!langStandard.empty() && langStandard.front() == '2')
 	{
-		return Output::getUserInputYesNo("Enable C++ modules?", false, "If true, C++ source files are treated as modules. (MSVC Only)");
+		return Output::getUserInputYesNo("Enable C++ modules?", false, "If true, C++ source files are treated as modules.");
 	}
 
 	return false;
