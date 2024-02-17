@@ -130,7 +130,7 @@ bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 	const auto& version = m_compilerCpp.version.empty() ? m_compilerC.version : m_compilerCpp.version;
 	if (m_version.empty() || (inEnvironment.compilerVersionIsToolchainVersion() && m_version != version))
 	{
-		m_version = version;
+		setVersion(version);
 	}
 
 	m_isWindowsTarget = inEnvironment.isWindowsTarget();
