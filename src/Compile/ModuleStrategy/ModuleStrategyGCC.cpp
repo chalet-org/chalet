@@ -227,9 +227,11 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 
 	for (auto& [name, contents] : mapFiles)
 	{
-		auto mapFile = name;
-		if (isSystemModuleFile(mapFile))
+		std::string mapFile;
+		if (isSystemModuleFile(name))
 			mapFile = String::getPathFilename(mapFile);
+		else
+			mapFile = name;
 
 		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(mapFile);
 		// if (!Files::pathExists(outputFile))
