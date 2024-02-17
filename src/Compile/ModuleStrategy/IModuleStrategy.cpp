@@ -408,18 +408,6 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 }
 
 /*****************************************************************************/
-std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const
-{
-	if (!inIsObject)
-		return inSource.dependencyFile;
-
-	if (inSource.dataType == SourceDataType::SystemHeaderUnit || inSource.dataType == SourceDataType::SystemModule)
-		return String::getPathFilename(inSource.sourceFile);
-
-	return inSource.sourceFile;
-}
-
-/*****************************************************************************/
 CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType)
 {
 	auto& sourceCache = m_state.cache.file().sources();
@@ -731,9 +719,8 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
 		if (!rebuildFromIncludes)
 		{
-			std::string source = sourceFile;
 			std::string dependencyFile;
-			if (isSystemModuleFile(source))
+			if (isSystemModuleFile(sourceFile))
 				dependencyFile = group->dependencyFile;
 			else
 				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);

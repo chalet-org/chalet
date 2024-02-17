@@ -48,14 +48,14 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
 	virtual bool initialize() = 0;
-	virtual bool isSystemModuleFile(std::string& file) const = 0;
+	virtual bool isSystemModuleFile(const std::string& inFile) const = 0;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
 	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) = 0;
 	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) = 0;
 
 protected:
-	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const;
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const = 0;
 
 	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
 

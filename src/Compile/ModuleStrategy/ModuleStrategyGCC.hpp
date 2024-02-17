@@ -16,7 +16,8 @@ struct ModuleStrategyGCC final : public IModuleStrategy
 	virtual bool initialize() final;
 
 protected:
-	virtual bool isSystemModuleFile(std::string& file) const final;
+	virtual bool isSystemModuleFile(const std::string& inFile) const final;
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const final;
 	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) final;
 	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) final;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
@@ -30,7 +31,7 @@ private:
 	Dictionary<StringList> m_headerUnitImports;
 
 	StringList m_systemHeaders;
-	StringList m_userHeaders;
+	// StringList m_userHeaders;
 
 	std::string m_systemHeaderDirectory;
 };

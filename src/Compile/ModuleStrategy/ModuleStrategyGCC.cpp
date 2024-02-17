@@ -49,15 +49,21 @@ bool ModuleStrategyGCC::initialize()
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::isSystemModuleFile(std::string& file) const
+bool ModuleStrategyGCC::isSystemModuleFile(const std::string& inFile) const
 {
-	auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, file);
-	if (Files::pathExists(resolved))
+	return !m_systemHeaderDirectory.empty() && String::startsWith(m_systemHeaderDirectory, inFile);
+}
+
+/*****************************************************************************/
+std::string ModuleStrategyGCC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
+{
+	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
+	if (String::startsWith(m_systemHeaderDirectory, ret))
 	{
-		file = std::move(resolved);
-		return true;
+		ret = String::getPathFilename(ret);
 	}
-	return false;
+
+	return ret;
 }
 
 /*****************************************************************************/
@@ -88,6 +94,10 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 				m_headerUnitImports.emplace(source, StringList{});
 
 			// m_userHeaders.emplace_back(imported);
+
+			auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, imported);
+			if (Files::pathExists(resolved))
+				imported = std::move(resolved);
 
 			m_headerUnitImports.at(source).emplace_back(std::move(imported));
 		}
@@ -185,22 +195,19 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 			else
 			{
 				file = split[0];
-				for (auto& header : m_userHeaders)
-				{
-					if (String::endsWith(header, file))
-					{
-						file = header;
-						break;
-					}
-				}
+				// for (auto& header : m_userHeaders)
+				// {
+				// 	if (String::endsWith(header, file))
+				// 	{
+				// 		file = header;
+				// 		break;
+				// 	}
+				// }
 			}
 
 			moduleContents += fmt::format("{} {}\n", file, split[1]);
 
 			auto& name = split[0];
-			if (String::startsWith(m_systemHeaderDirectory, name))
-				name = String::getPathFilename(name);
-
 			if (mapFiles.find(name) == mapFiles.end())
 			{
 				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
@@ -225,7 +232,11 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 
 	for (auto& [name, contents] : mapFiles)
 	{
-		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(name);
+		auto mapFile = name;
+		if (isSystemModuleFile(mapFile))
+			mapFile = String::getPathFilename(mapFile);
+
+		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(mapFile);
 		// if (!Files::pathExists(outputFile))
 		{
 			Files::createFileWithContents(outputFile, contents);

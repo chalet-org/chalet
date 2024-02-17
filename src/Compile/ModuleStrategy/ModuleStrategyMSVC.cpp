@@ -39,9 +39,9 @@ bool ModuleStrategyMSVC::initialize()
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::isSystemModuleFile(std::string& file) const
+bool ModuleStrategyMSVC::isSystemModuleFile(const std::string& inFile) const
 {
-	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, file);
+	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inFile);
 }
 
 /*****************************************************************************/
