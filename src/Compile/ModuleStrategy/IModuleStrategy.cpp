@@ -44,6 +44,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 		case ToolchainType::VisualStudio:
 			return std::make_unique<ModuleStrategyMSVC>(inState, inCompileCommandsGenerator);
 		case ToolchainType::GNU:
+		case ToolchainType::MingwGNU:
 			return std::make_unique<ModuleStrategyGCC>(inState, inCompileCommandsGenerator);
 		default:
 			break;
@@ -449,11 +450,12 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 		}
 
-		auto& objectDependent = interfaceFile;
+		// Note: don't make objectDependent a reference - breaks in MSVC
+		const std::string* objectDependent = &interfaceFile;
 		if (isMsvc || type == ModuleFileType::ModuleImplementationUnit)
-			objectDependent = target;
+			objectDependent = &target;
 
-		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isObject ? objectDependent : dependency);
+		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isObject ? *objectDependent : dependency);
 		bool sourceChanged = m_moduleCommandsChanged || fileChangedInCache || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)

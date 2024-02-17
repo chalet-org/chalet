@@ -29,6 +29,7 @@ ModuleStrategyGCC::ModuleStrategyGCC(BuildState& inState, CompileCommandsGenerat
 bool ModuleStrategyGCC::initialize()
 {
 	const auto& systemIncludeDir = m_state.toolchain.compilerCxxAny().includeDir;
+	auto& version = m_state.toolchain.version();
 	u32 versionMajor = m_state.toolchain.versionMajor();
 	auto cppFolder = fmt::format("{}/c++", systemIncludeDir);
 	if (Files::pathIsSymLink(cppFolder))
@@ -36,14 +37,18 @@ bool ModuleStrategyGCC::initialize()
 		cppFolder = fmt::format("{}/{}", systemIncludeDir, Files::resolveSymlink(cppFolder));
 	}
 
-	cppFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, versionMajor));
-	if (!Files::pathExists(cppFolder))
+	auto versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, versionMajor));
+	if (!Files::pathExists(versionFolder))
 	{
-		Diagnostic::error("Could not resolve system include directory");
-		return false;
+		versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, version));
+		if (!Files::pathExists(versionFolder))
+		{
+			Diagnostic::error("Could not resolve system include directory");
+			return false;
+		}
 	}
 
-	m_systemHeaderDirectory = std::move(cppFolder);
+	m_systemHeaderDirectory = std::move(versionFolder);
 
 	return true;
 }
