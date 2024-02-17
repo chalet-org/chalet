@@ -351,14 +351,20 @@ StringList CompilerCxxGCC::getModuleCommand(const std::string& inputFile, const 
 
 	ret.emplace_back("-fmodules-ts");
 
+	ret.emplace_back(fmt::format("-fmodule-mapper={}", m_state.environment->getModuleDirectivesDependencyFile(inputFile)));
+	// ret.emplace_back(fmt::format("-fmodule-mapper=|@g++-mapper-server -r{}/.mmap", m_state.paths.objDir()));
+
+	// if (inType == ModuleFileType::HeaderUnitObject)
+	// {
+	// 	ret.emplace_back("-flang-info-include-translate");
+	// 	ret.emplace_back("-flang-info-module-cmi");
+	// }
+
 	if (inType == ModuleFileType::ModuleDependency)
 	{
 		// ret.emplace_back(fmt::format("-fdep-file={}", getQuotedPath(interfaceFile)));
 		// ret.emplace_back(fmt::format("-fdep-output={}", getQuotedPath(outputFile)));
 	}
-
-	ret.emplace_back(fmt::format("-fmodule-mapper={}", m_state.environment->getModuleDirectivesDependencyFile(inputFile)));
-	// ret.emplace_back(fmt::format("-fmodule-mapper=|@g++-mapper-server -r{}/.mmap", m_state.paths.objDir()));
 
 	addSourceFileInterpretation(ret, inType);
 	addOptimizations(ret);

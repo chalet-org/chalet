@@ -6,6 +6,7 @@
 #include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -183,13 +184,18 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 
 	Dictionary<std::string> mapFiles;
 
+	auto& cwd = m_state.inputs.workingDirectory();
+
 	for (auto& [module, payload] : outPayload)
 	{
 		std::string moduleContents;
 		for (auto& headerMap : payload.headerUnitTranslations)
 		{
 			auto split = String::split(headerMap, '=');
-			auto& file = split[0];
+			auto file = Files::getCanonicalPath(split[0]);
+
+			// This is only needed by header-units
+			String::replaceAll(file, cwd, ".");
 
 			moduleContents += fmt::format("{} {}\n", file, split[1]);
 
