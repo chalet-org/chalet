@@ -229,7 +229,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 	{
 		std::string mapFile;
 		if (isSystemModuleFile(name))
-			mapFile = String::getPathFilename(mapFile);
+			mapFile = String::getPathFilename(name);
 		else
 			mapFile = name;
 
