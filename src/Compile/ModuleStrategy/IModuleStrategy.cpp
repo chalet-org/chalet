@@ -428,7 +428,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	CommandPool::CmdList ret;
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
-	bool isMsvcObject = isObject && m_state.environment->isMsvc();
+	bool isMsvc = m_state.environment->isMsvc();
 
 	for (auto& group : inGroups)
 	{
@@ -449,7 +449,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
 			type = ModuleFileType::ModuleImplementationUnit;
 
-		if (group->dataType == SourceDataType::SystemHeaderUnit)
+		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
+		if (systemHeaderUnit)
 			type = ModuleFileType::SystemHeaderUnitObject;
 		else if (group->dataType == SourceDataType::UserHeaderUnit)
 			type = ModuleFileType::HeaderUnitObject;
@@ -460,7 +461,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 		}
 
-		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isMsvcObject ? target : dependency);
+		auto& objectDependent = interfaceFile;
+		if (isMsvc || type == ModuleFileType::ModuleImplementationUnit)
+			objectDependent = target;
+
+		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isObject ? objectDependent : dependency);
 		bool sourceChanged = m_moduleCommandsChanged || fileChangedInCache || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
@@ -468,15 +473,21 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			CommandPool::Cmd out;
 			out.output = getBuildOutputForFile(*group, isObject);
 
+			std::string inputFile;
+			if (systemHeaderUnit && !isMsvc)
+				inputFile = String::getPathFilename(source);
+			else
+				inputFile = source;
+
 			if (inModules.find(source) != inModules.end())
 			{
 				const auto& module = inModules.at(source);
 
-				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
 			}
 			else
 			{
-				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, blankList, blankList, type);
 			}
 			out.reference = source;
 

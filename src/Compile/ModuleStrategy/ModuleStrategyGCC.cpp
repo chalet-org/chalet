@@ -198,6 +198,9 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 			moduleContents += fmt::format("{} {}\n", file, split[1]);
 
 			auto& name = split[0];
+			if (String::startsWith(m_systemHeaderDirectory, name))
+				name = String::getPathFilename(name);
+
 			if (mapFiles.find(name) == mapFiles.end())
 			{
 				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
