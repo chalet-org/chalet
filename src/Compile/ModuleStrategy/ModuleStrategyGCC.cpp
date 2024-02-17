@@ -49,9 +49,15 @@ bool ModuleStrategyGCC::initialize()
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::isSystemModuleFile(const std::string& inFile) const
+bool ModuleStrategyGCC::isSystemModuleFile(std::string& file) const
 {
-	return Files::pathExists(fmt::format("{}/{}", m_systemHeaderDirectory, inFile));
+	auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, file);
+	if (Files::pathExists(resolved))
+	{
+		file = std::move(resolved);
+		return true;
+	}
+	return false;
 }
 
 /*****************************************************************************/
@@ -217,7 +223,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 	for (auto& [name, contents] : mapFiles)
 	{
 		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(name);
-		if (!Files::pathExists(outputFile))
+		// if (!Files::pathExists(outputFile))
 		{
 			Files::createFileWithContents(outputFile, contents);
 		}
@@ -259,19 +265,9 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 /*****************************************************************************/
 bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
 {
-	LOG("readIncludesFromDependencyFile:", inFile);
-
-	UNUSED(outList);
+	UNUSED(inFile, outList);
 
 	return true;
-}
-
-/*****************************************************************************/
-std::string ModuleStrategyGCC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
-{
-	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
-
-	return ret;
 }
 
 /*****************************************************************************/

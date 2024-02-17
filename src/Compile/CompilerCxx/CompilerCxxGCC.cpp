@@ -394,7 +394,10 @@ StringList CompilerCxxGCC::getModuleCommand(const std::string& inputFile, const 
 	ret.emplace_back("-o");
 	ret.emplace_back(getQuotedPath(outputFile));
 	ret.emplace_back("-c");
-	ret.emplace_back(getQuotedPath(inputFile));
+	if (inType == ModuleFileType::SystemHeaderUnitObject)
+		ret.emplace_back(getQuotedPath(String::getPathFilename(inputFile)));
+	else
+		ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

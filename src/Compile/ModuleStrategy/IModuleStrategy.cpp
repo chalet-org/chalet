@@ -428,6 +428,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	CommandPool::CmdList ret;
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
+	bool isMsvcObject = isObject && m_state.environment->isMsvc();
 
 	for (auto& group : inGroups)
 	{
@@ -459,7 +460,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 		}
 
-		bool sourceChanged = m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, isObject ? target : dependency) || m_compileCache[source];
+		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isMsvcObject ? target : dependency);
+		bool sourceChanged = m_moduleCommandsChanged || fileChangedInCache || m_compileCache[source];
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
@@ -471,13 +473,12 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				const auto& module = inModules.at(source);
 
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
-				out.reference = source;
 			}
 			else
 			{
 				out.command = inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type);
-				out.reference = source;
 			}
+			out.reference = source;
 
 			if (out.command.empty())
 				continue;
@@ -719,8 +720,9 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
 		if (!rebuildFromIncludes)
 		{
+			std::string source = sourceFile;
 			std::string dependencyFile;
-			if (isSystemModuleFile(sourceFile))
+			if (isSystemModuleFile(source))
 				dependencyFile = group->dependencyFile;
 			else
 				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);
