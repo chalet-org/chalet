@@ -719,9 +719,9 @@ bool BuildState::validateState()
 				}
 				else if (environment->isGcc())
 				{
-					if (versionMajorMinor < 1110)
+					if (versionMajorMinor < 1101)
 					{
-						Diagnostic::error("{}: C++ modules are only supported in Chalet with GCC versions >= 11.1 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
+						Diagnostic::error("{}: C++ modules are only supported in Chalet with GCC versions >= 11.1.0 (found {})", inputs.inputFile(), toolchain.compilerCxx(project.language()).version);
 						return false;
 					}
 				}
