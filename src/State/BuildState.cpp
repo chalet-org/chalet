@@ -339,6 +339,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	{
 		if (!createEnvironment())
 		{
+			Output::lineBreak();
 			Diagnostic::error("Toolchain was not recognized.");
 			return false;
 		}
