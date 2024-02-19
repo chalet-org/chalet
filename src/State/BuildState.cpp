@@ -61,6 +61,7 @@ struct BuildState::Impl
 	Unique<IBuildEnvironment> environment;
 
 	bool checkForEnvironment = false;
+	bool refreshCache = false;
 
 	Impl(CommandLineInputs&& inInputs, CentralState& inCentralState, BuildState& inState) :
 		inputs(std::move(inInputs)),
@@ -102,6 +103,9 @@ bool BuildState::initialize()
 	//   and the toolchain needs to be populated into .chaletrc
 	// After, for cases when the architecture was deduced after reading the cache
 	enforceArchitectureInPath();
+
+	if (!checkForExceptionalToolchainCases())
+		return false;
 
 	if (!parseToolchainFromSettingsJson())
 		return false;
@@ -315,6 +319,28 @@ bool BuildState::initializeBuildConfiguration()
 }
 
 /*****************************************************************************/
+bool BuildState::checkForExceptionalToolchainCases()
+{
+#if defined(CHALET_WIN32)
+	auto& preference = inputs.toolchainPreference();
+	bool isVisualStudio = preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM;
+	if (isVisualStudio)
+	{
+		auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
+		ToolchainSettingsJsonParser parser(*this, settingsFile);
+		if (!parser.validatePathsWithoutFullParseAndEraseToolchainOnFailure())
+		{
+			auto& preferenceName = inputs.toolchainPreferenceName();
+			inputs.setToolchainPreference(std::string(preferenceName));
+			m_impl->refreshCache = true;
+		}
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildState::parseToolchainFromSettingsJson()
 {
 	auto createEnvironment = [this]() {
@@ -327,7 +353,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 			return false;
 		}
 
-		if (!m_impl->environment->create(toolchain.version()))
+		if (!m_impl->environment->create(toolchain.version(), m_impl->refreshCache))
 			return false;
 
 		return true;

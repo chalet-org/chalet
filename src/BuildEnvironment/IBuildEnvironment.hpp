@@ -90,12 +90,12 @@ protected:
 	virtual bool validateArchitectureFromInput();
 	virtual bool populateSupportedFlags(const std::string& inExecutable);
 
-	bool create(const std::string& inVersion = std::string());
+	bool create(const std::string& inVersion = std::string(), const bool inRefreshCache = false);
 	bool getCompilerPaths(CompilerInfo& outInfo) const;
 	bool getCompilerInfoFromExecutable(CompilerInfo& outInfo);
 	bool makeSupportedCompilerFlags(const std::string& inExecutable);
 
-	void getDataWithCache(std::string& outData, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet);
+	void getDataWithCache(std::string& outData, const std::string& inId, const std::string& inItem, const std::function<std::string()>& onGet);
 
 	std::string getVarsPath(const std::string& inUniqueId = std::string()) const;
 	std::string getCachePath(const std::string& inId) const;
@@ -115,6 +115,7 @@ protected:
 
 	bool m_isWindowsTarget = false;
 	bool m_isEmbeddedTarget = false;
+	bool m_refreshCache = false;
 
 private:
 	std::string m_identifier;

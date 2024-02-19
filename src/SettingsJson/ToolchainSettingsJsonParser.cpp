@@ -32,9 +32,13 @@ bool ToolchainSettingsJsonParser::serialize()
 {
 	Output::setShowCommandOverride(false);
 
+	auto onError = []() {
+		Output::setShowCommandOverride(true);
+		return false;
+	};
+
 	auto& rootNode = m_jsonFile.json;
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
-	auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
 	auto& toolchains = rootNode[Keys::Toolchains];
 
@@ -45,7 +49,7 @@ bool ToolchainSettingsJsonParser::serialize()
 		if (!m_state.inputs.makeCustomToolchainFromEnvironment())
 		{
 			Diagnostic::error("{}: The requested toolchain of '{}' could not be detected due to an internal error.", m_jsonFile.filename(), preferenceName);
-			return false;
+			return onError();
 		}
 	}
 	else
@@ -54,14 +58,79 @@ bool ToolchainSettingsJsonParser::serialize()
 		if (!containsPref && !m_state.inputs.isToolchainPreset())
 		{
 			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
-			return false;
+			return onError();
 		}
 	}
 
-	if (!toolchains.contains(preferenceName))
-		toolchains[preferenceName] = Json::object();
+	auto& toolchainNode = getToolchainNode(toolchains);
+	if (!serialize(toolchainNode))
+		return onError();
 
-	auto& node = toolchains.at(preferenceName);
+	Output::setShowCommandOverride(true);
+	return true;
+}
+
+/*****************************************************************************/
+bool ToolchainSettingsJsonParser::validatePathsWithoutFullParseAndEraseToolchainOnFailure()
+{
+	bool result = true;
+
+	Output::setShowCommandOverride(false);
+
+	auto& rootNode = m_jsonFile.json;
+
+	auto& toolchains = rootNode[Keys::Toolchains];
+	if (!toolchains.empty())
+	{
+		auto& toolchain = getToolchainNode(toolchains);
+		if (!toolchain.empty())
+		{
+			auto pathFromKeyIsInvalid = [&toolchain](const char* inKey) {
+				bool jsonInvalid = !toolchain.contains(inKey) || !toolchain[inKey].is_string();
+				if (jsonInvalid)
+					return true;
+
+				auto value = toolchain[inKey].get<std::string>();
+				if (value.empty())
+					return true;
+
+				return Files::pathExists(value);
+			};
+
+			// We only want to wipe the toolchain of ALL of these are not found
+
+			result = false;
+			result |= pathFromKeyIsInvalid(Keys::ToolchainCompilerCpp);
+			result |= pathFromKeyIsInvalid(Keys::ToolchainCompilerC);
+			result |= pathFromKeyIsInvalid(Keys::ToolchainLinker);
+			result |= pathFromKeyIsInvalid(Keys::ToolchainArchiver);
+			result |= pathFromKeyIsInvalid(Keys::ToolchainDisassembler);
+
+			LOG("toolchain check result:", result);
+
+			if (!result)
+			{
+				// Wipe the toolchain
+				const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
+				toolchains.erase(preferenceName);
+			}
+		}
+	}
+
+	Output::setShowCommandOverride(true);
+	return result;
+}
+
+/*****************************************************************************/
+Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
+{
+	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
+	auto arch = m_state.inputs.getResolvedTargetArchitecture();
+
+	if (!inToolchainsNode.contains(preferenceName) || !inToolchainsNode.at(preferenceName).is_object())
+		inToolchainsNode[preferenceName] = Json::object();
+
+	auto& node = inToolchainsNode.at(preferenceName);
 	bool isDefined = false;
 	StringList keys{
 		Keys::ToolchainCompilerC,
@@ -90,21 +159,14 @@ bool ToolchainSettingsJsonParser::serialize()
 		{
 			node[arch2.str] = Json::object();
 		}
-
-		if (!serialize(node.at(arch2.str)))
-			return false;
-
 		m_state.inputs.setMultiArchToolchainPreset(true);
+
+		return node.at(arch2.str);
 	}
 	else
 	{
-		if (!serialize(node))
-			return false;
+		return node;
 	}
-
-	Output::setShowCommandOverride(true);
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -127,64 +189,46 @@ bool ToolchainSettingsJsonParser::serialize(Json& inNode)
 /*****************************************************************************/
 bool ToolchainSettingsJsonParser::validatePaths()
 {
-	// TODO: move
 	bool result = true;
 	const auto& compilerCpp = m_state.toolchain.compilerCpp().path;
 	const auto& compilerC = m_state.toolchain.compilerC().path;
+	const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
 	const auto& archiver = m_state.toolchain.archiver();
 	const auto& linker = m_state.toolchain.linker();
 
-	if (compilerCpp.empty() || !Files::pathExists(compilerCpp))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
+	auto pathIsInvalid = [&result](const std::string& inPath) {
+		bool isInvalid = inPath.empty() || !Files::pathExists(inPath);
+		if (isInvalid)
+		{
+			result = false;
+		}
+		return isInvalid;
+	};
+
+	if (pathIsInvalid(compilerCpp))
 		Diagnostic::error("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename());
-		result = false;
-	}
 
-	if (compilerC.empty() || !Files::pathExists(compilerC))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
+	if (pathIsInvalid(compilerC))
 		Diagnostic::error("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename());
-		result = false;
-	}
 
-	if (archiver.empty() || !Files::pathExists(archiver))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
+	if (pathIsInvalid(archiver))
 		Diagnostic::error("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename());
-		result = false;
-	}
 
-	if (linker.empty() || !Files::pathExists(linker))
-	{
-#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
-#endif
+	if (pathIsInvalid(linker))
 		Diagnostic::error("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename());
-		result = false;
-	}
 
 #if defined(CHALET_WIN32)
 	if (m_state.environment != nullptr && !m_state.environment->isEmscripten())
 	{
-		const auto& compilerWindowsResource = m_state.toolchain.compilerWindowsResource();
-		if (compilerWindowsResource.empty() || !Files::pathExists(compilerWindowsResource))
-		{
-	#if defined(CHALET_DEBUG)
-			m_jsonFile.dumpToTerminal();
-	#endif
+		if (pathIsInvalid(compilerWindowsResource))
 			Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
-		}
 	}
 #endif
 	if (!result)
 	{
+#if defined(CHALET_DEBUG)
+		m_jsonFile.dumpToTerminal();
+#endif
 		auto& preference = m_state.inputs.toolchainPreferenceName();
 		auto arch = m_state.inputs.getResolvedTargetArchitecture();
 

@@ -215,7 +215,7 @@ IBuildEnvironment::IBuildEnvironment(const ToolchainType inType, BuildState& inS
 }
 
 /*****************************************************************************/
-bool IBuildEnvironment::create(const std::string& inVersion)
+bool IBuildEnvironment::create(const std::string& inVersion, const bool inRefreshCache)
 {
 	if (m_initialized)
 	{
@@ -225,6 +225,13 @@ bool IBuildEnvironment::create(const std::string& inVersion)
 
 	m_initialized = true;
 	m_identifier = ToolchainTypes::getTypeName(this->type());
+	m_refreshCache = inRefreshCache;
+
+	if (m_refreshCache)
+	{
+		auto& cache = m_state.cache.file();
+		cache.resetDataCache();
+	}
 
 	if (!validateArchitectureFromInput())
 		return false;
@@ -302,10 +309,10 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 }
 
 /*****************************************************************************/
-void IBuildEnvironment::getDataWithCache(std::string& outData, const std::string& inId, const std::string& inCompilerPath, const std::function<std::string()>& onGet)
+void IBuildEnvironment::getDataWithCache(std::string& outData, const std::string& inId, const std::string& inItem, const std::function<std::string()>& onGet)
 {
 	auto& cache = m_state.cache.file();
-	auto hash = Hash::string(fmt::format("{}_{}.txt", inCompilerPath, inId));
+	auto hash = Hash::string(fmt::format("{}_{}.txt", inItem, inId));
 
 	outData = cache.getDataValue(hash, onGet);
 }
@@ -520,13 +527,23 @@ std::string IBuildEnvironment::getVarsPath(const std::string& inUniqueId) const
 	// auto archString = m_state.inputs.getArchWithOptionsAsString(m_state.info.targetArchitectureTriple());
 	const auto& uniqueId = inUniqueId.empty() ? m_state.inputs.toolchainPreferenceName() : inUniqueId;
 
-	return m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId));
+	auto path = m_state.cache.getHashPath(fmt::format("{}_{}_{}_{}.env", id, hostArch, archString, uniqueId));
+	if (m_refreshCache)
+	{
+		Files::removeIfExists(path);
+	}
+	return path;
 }
 
 /*****************************************************************************/
 std::string IBuildEnvironment::getCachePath(const std::string& inId) const
 {
-	return m_state.cache.getHashPath(fmt::format("{}_{}", this->identifier(), inId));
+	auto path = m_state.cache.getHashPath(fmt::format("{}_{}", this->identifier(), inId));
+	if (m_refreshCache)
+	{
+		Files::removeIfExists(path);
+	}
+	return path;
 }
 
 /*****************************************************************************/

@@ -241,6 +241,12 @@ void WorkspaceInternalCacheFile::setBuildOutputCache(const std::string& inPath, 
 }
 
 /*****************************************************************************/
+void WorkspaceInternalCacheFile::resetDataCache()
+{
+	m_forceDataCacheReset = true;
+}
+
+/*****************************************************************************/
 std::string WorkspaceInternalCacheFile::getDataValue(const std::string& inHash, const GetDataCallback& onGet)
 {
 	auto result = getDataCacheValue(inHash);
@@ -293,7 +299,7 @@ void WorkspaceInternalCacheFile::addToDataCache(const std::string& inKey, std::s
 /*****************************************************************************/
 const std::string& WorkspaceInternalCacheFile::getDataCacheValue(const std::string& inKey)
 {
-	if (m_dataCache.find(inKey) == m_dataCache.end())
+	if (m_dataCache.find(inKey) == m_dataCache.end() || m_forceDataCacheReset)
 	{
 		m_dataCache[inKey] = std::string();
 	}

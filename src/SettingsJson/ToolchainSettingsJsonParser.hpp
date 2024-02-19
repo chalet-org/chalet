@@ -18,9 +18,11 @@ struct ToolchainSettingsJsonParser
 	explicit ToolchainSettingsJsonParser(BuildState& inState, JsonFile& inJsonFile);
 
 	bool serialize();
+	bool validatePathsWithoutFullParseAndEraseToolchainOnFailure();
 	bool validatePaths();
 
 private:
+	Json& getToolchainNode(Json& inToolchainsNode);
 	bool serialize(Json& inNode);
 	bool makeToolchain(Json& toolchain, const ToolchainPreference& preference);
 	bool parseToolchain(Json& inNode);

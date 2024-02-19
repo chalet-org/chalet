@@ -27,6 +27,7 @@ struct WorkspaceInternalCacheFile
 	bool sourceCacheAvailable() const;
 	bool setSourceCache(const std::string& inId, const StrategyType inStrategy);
 
+	void resetDataCache();
 	std::string getDataValue(const std::string& inHash, const GetDataCallback& onGet);
 	std::string getDataValueFromPath(const std::string& inPath, const GetDataCallback& onGet);
 
@@ -94,6 +95,7 @@ private:
 	std::optional<bool> m_metadataChanged;
 
 	bool m_forceRebuild = false;
+	bool m_forceDataCacheReset = false;
 	bool m_buildHashChanged = false;
 	bool m_toolchainChangedForBuildOutputPath = false;
 	bool m_buildFileChanged = false;
