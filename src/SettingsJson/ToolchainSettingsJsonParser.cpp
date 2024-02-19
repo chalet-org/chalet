@@ -221,6 +221,8 @@ bool ToolchainSettingsJsonParser::validatePaths()
 		if (pathIsInvalid(compilerWindowsResource))
 			Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
 	}
+#else
+	UNUSED(compilerWindowsResource);
 #endif
 	if (!result)
 	{
