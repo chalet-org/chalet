@@ -256,6 +256,9 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 {
 	UNUSED(inOutputs);
 
+	StringList foundSystemModules;
+	auto kSystemModules = getSystemModules();
+
 	for (auto& group : inOutputs.groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
@@ -269,12 +272,59 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 		outModules[name].source = group->sourceFile;
 		if (m_moduleImports.find(group->sourceFile) != m_moduleImports.end())
 		{
-			outModules[name].importedModules = m_moduleImports.at(group->sourceFile);
+			auto& modulesForSource = m_moduleImports.at(group->sourceFile);
+			for (auto& moduleName : modulesForSource)
+			{
+				if (kSystemModules.find(moduleName) != kSystemModules.end())
+				{
+					List::addIfDoesNotExist(foundSystemModules, moduleName);
+				}
+
+				List::addIfDoesNotExist(outModules[name].importedModules, moduleName);
+			}
 		}
 
 		if (m_headerUnitImports.find(group->sourceFile) != m_headerUnitImports.end())
 		{
 			outModules[name].importedHeaderUnits = m_headerUnitImports.at(group->sourceFile);
+		}
+	}
+
+	if (!kSystemModules.empty())
+	{
+		/*
+		u32 versionMajorMinor = m_state.toolchain.compilerCpp().versionMajorMinor;
+		if (versionMajorMinor < 1400) // maybe?
+		{
+			// Move warning here later
+		}
+		*/
+
+		for (auto& systemModule : foundSystemModules)
+		{
+			// Just show a warning for now
+			Diagnostic::warn("'import {};' was used by a module, but C++23 Standard libary modules aren't supported by this compiler.", systemModule);
+
+			/*
+			if (kSystemModules.find(systemModule) != kSystemModules.end())
+			{
+				auto& filename = kSystemModules.at(systemModule);
+				auto resolvedPath = fmt::format("{}/modules/{}", m_systemHeaderDirectory, filename);
+				if (Files::pathExists(resolvedPath))
+				{
+					outModules[systemModule].source = std::move(resolvedPath);
+					outModules[systemModule].systemModule = true;
+
+					if (String::equals("std.compat", systemModule))
+					{
+						// This is a bit of a hack so we don't have to scan std and std.compat deps if they're not used
+						// maybe fix later...
+						//
+						outModules[systemModule].importedModules.push_back("std");
+					}
+				}
+			}
+			*/
 		}
 	}
 
@@ -286,7 +336,7 @@ bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile
 {
 	UNUSED(inFile, outList);
 
-	// TODO
+	// TODO - the module dependency files are kind of incomplete when you use import <MyHeader.hpp>
 
 	return true;
 }
@@ -295,6 +345,9 @@ bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile
 Dictionary<std::string> ModuleStrategyGCC::getSystemModules() const
 {
 	Dictionary<std::string> ret;
+
+	ret.emplace("std", "std");
+	ret.emplace("std.compat", "std.compat");
 
 	return ret;
 }

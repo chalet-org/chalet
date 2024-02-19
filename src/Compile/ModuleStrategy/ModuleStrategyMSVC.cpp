@@ -107,13 +107,8 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 {
 	// Version 1.1
 
-	auto kSystemModules = getSystemModules();
-	// for (auto& [name, file] : kSystemModules)
-	// {
-	// 	LOG(name, file);
-	// }
-
 	StringList foundSystemModules;
+	auto kSystemModules = getSystemModules();
 
 	for (auto& group : inOutputs.groups)
 	{
@@ -186,7 +181,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			auto moduleName = mod.get<std::string>();
 			if (kSystemModules.find(moduleName) != kSystemModules.end())
 			{
-				foundSystemModules.emplace_back(moduleName);
+				List::addIfDoesNotExist(foundSystemModules, moduleName);
 			}
 			List::addIfDoesNotExist(outModules[name].importedModules, std::move(moduleName));
 		}

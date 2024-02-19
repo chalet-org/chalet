@@ -735,7 +735,7 @@ bool BuildState::validateState()
 					return false;
 				}
 
-				u32 versionMajorMinor = toolchain.compilerCxx(project.language()).versionMajorMinor;
+				u32 versionMajorMinor = toolchain.compilerCpp().versionMajorMinor;
 				if (environment->isMsvc())
 				{
 					if (versionMajorMinor < 1928)
