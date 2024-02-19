@@ -77,6 +77,10 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 {
 	UNUSED(outJob, inToolchain);
 
+	// We need to call this to update the compiler cache, but we don't want to use the commands
+	auto commands = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	UNUSED(commands);
+
 	const std::string kModulePrefix("export module ");
 	const std::string kImportPrefix("import ");
 	const std::string kExportImportPrefix("export import ");
@@ -181,6 +185,10 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
 {
 	UNUSED(outJob, inToolchain, inGroups);
+
+	// We need to call this to update the compiler cache, but we don't want to use the commands
+	auto commands = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	UNUSED(commands);
 
 	Dictionary<std::string> mapFiles;
 

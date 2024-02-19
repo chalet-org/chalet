@@ -92,6 +92,8 @@ protected:
 private:
 	std::string getModuleId() const;
 	bool rebuildRequiredFromLinks() const;
+	bool cachedValue(const std::string& inSource) const;
+	void setCompilerCache(const std::string& inSource, const bool inValue) const;
 
 	bool onFailure();
 

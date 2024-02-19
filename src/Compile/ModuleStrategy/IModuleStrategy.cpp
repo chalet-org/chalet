@@ -417,6 +417,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	CommandPool::CmdList ret;
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
+	bool isHeaderUnitDependency = inType == ModuleFileType::HeaderUnitDependency;
 	bool isMsvc = m_state.environment->isMsvc();
 
 	for (auto& group : inGroups)
@@ -432,16 +433,19 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		const auto& dependency = group->dependencyFile;
 
 		if (m_compileCache.find(source) == m_compileCache.end())
-			m_compileCache[source] = false;
+			setCompilerCache(source, false);
 
 		ModuleFileType type = inType;
 		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
 			type = ModuleFileType::ModuleImplementationUnit;
 
 		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
+		bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
+		bool isHeaderUnit = systemHeaderUnit || userHeaderUnit;
+
 		if (systemHeaderUnit)
 			type = ModuleFileType::SystemHeaderUnitObject;
-		else if (group->dataType == SourceDataType::UserHeaderUnit)
+		else if (userHeaderUnit)
 			type = ModuleFileType::HeaderUnitObject;
 
 		auto interfaceFile = group->otherFile;
@@ -451,12 +455,13 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		}
 
 		// Note: don't make objectDependent a reference - breaks in MSVC
-		const std::string* objectDependent = &interfaceFile;
-		if (isMsvc || type == ModuleFileType::ModuleImplementationUnit)
-			objectDependent = &target;
+		const std::string* objectDependent = &target;
+		if (!isMsvc && (isHeaderUnit || isHeaderUnitDependency))
+			objectDependent = &interfaceFile;
+		else if (isObject)
+			objectDependent = &dependency;
 
-		bool fileChangedInCache = sourceCache.fileChangedOrDoesNotExist(source, isObject ? *objectDependent : dependency);
-		bool sourceChanged = m_moduleCommandsChanged || fileChangedInCache || m_compileCache[source];
+		bool sourceChanged = m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, *objectDependent) || cachedValue(source);
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
@@ -487,7 +492,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			ret.emplace_back(std::move(out));
 		}
 
-		m_compileCache[source] = sourceChanged;
+		setCompilerCache(source, sourceChanged);
 	}
 
 	if (m_sourcesChanged)
@@ -554,9 +559,9 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 		if (group->type == SourceType::WindowsResource)
 		{
 			if (m_compileCache.find(source) == m_compileCache.end())
-				m_compileCache[source] = false;
+				setCompilerCache(source, false);
 
-			bool sourceChanged = m_winResourceCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, target) || m_compileCache[source];
+			bool sourceChanged = m_winResourceCommandsChanged || sourceCache.fileChangedOrDoesNotExist(source, target) || cachedValue(source);
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
@@ -568,7 +573,7 @@ void IModuleStrategy::addCompileCommands(CommandPool::CmdList& outList, CompileT
 
 				outList.emplace_back(std::move(out));
 			}
-			m_compileCache[source] = sourceChanged;
+			setCompilerCache(source, sourceChanged);
 		}
 	}
 }
@@ -686,6 +691,18 @@ bool IModuleStrategy::rebuildRequiredFromLinks() const
 }
 
 /*****************************************************************************/
+bool IModuleStrategy::cachedValue(const std::string& inSource) const
+{
+	return m_compileCache[inSource];
+}
+
+/*****************************************************************************/
+void IModuleStrategy::setCompilerCache(const std::string& inSource, const bool inValue) const
+{
+	m_compileCache[inSource] = inValue;
+}
+
+/*****************************************************************************/
 bool IModuleStrategy::onFailure()
 {
 	Output::lineBreak();
@@ -718,7 +735,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 			continue;
 
 		const auto& sourceFile = group->sourceFile;
-		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || m_compileCache[sourceFile];
+		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || cachedValue(sourceFile);
 		if (!rebuildFromIncludes)
 		{
 			std::string dependencyFile;
@@ -735,9 +752,9 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 
 				for (auto& include : includes)
 				{
-					rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(include) || m_compileCache[sourceFile];
+					rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(include) || cachedValue(sourceFile);
 				}
-				m_compileCache[sourceFile] |= rebuildFromIncludes;
+				setCompilerCache(sourceFile, cachedValue(sourceFile) || rebuildFromIncludes);
 			}
 		}
 	}
@@ -749,7 +766,7 @@ void IModuleStrategy::checkForDependencyChanges(DependencyGraph& inDependencyGra
 	std::vector<SourceFileGroup*> needsRebuild;
 	for (auto& [group, dependencies] : inDependencyGraph)
 	{
-		if (m_compileCache[group->sourceFile])
+		if (cachedValue(group->sourceFile))
 			needsRebuild.push_back(group);
 	}
 
@@ -766,7 +783,7 @@ void IModuleStrategy::checkForDependencyChanges(DependencyGraph& inDependencyGra
 					continue;
 
 				auto group = itr->first;
-				m_compileCache[group->sourceFile] = true;
+				setCompilerCache(group->sourceFile, true);
 				needsRebuild.push_back(group);
 				itr = dependencyGraphCopy.erase(itr);
 				itr = dependencyGraphCopy.begin(); // We need to rescan
