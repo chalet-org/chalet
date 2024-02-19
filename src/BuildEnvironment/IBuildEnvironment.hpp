@@ -50,6 +50,8 @@ struct IBuildEnvironment
 
 	virtual std::string getCompilerAliasForVisualStudio() const = 0;
 
+	virtual bool supportsCppModules() const;
+
 	virtual std::string getObjectFile(const std::string& inSource) const;
 	virtual std::string getAssemblyFile(const std::string& inSource) const;
 	virtual std::string getPrecompiledHeaderIntermediateFile(const std::string& inSource) const;

@@ -19,6 +19,8 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 	CHALET_DISALLOW_COPY_MOVE(BuildEnvironmentVisualStudio);
 	~BuildEnvironmentVisualStudio();
 
+	virtual bool supportsCppModules() const override;
+
 	virtual std::string getArchiveExtension() const override;
 	virtual std::string getPrecompiledHeaderExtension() const override;
 

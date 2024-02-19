@@ -36,6 +36,21 @@ BuildEnvironmentVisualStudio::BuildEnvironmentVisualStudio(const ToolchainType i
 BuildEnvironmentVisualStudio::~BuildEnvironmentVisualStudio() = default;
 
 /*****************************************************************************/
+bool BuildEnvironmentVisualStudio::supportsCppModules() const
+{
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1928)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with MSVC versions >= 19.28 (found {})", inputFile, compiler.version);
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentVisualStudio::getArchiveExtension() const
 {
 	return ".lib";

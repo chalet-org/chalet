@@ -367,6 +367,14 @@ std::string IBuildEnvironment::getSharedLibraryExtension() const
 }
 
 /*****************************************************************************/
+bool IBuildEnvironment::supportsCppModules() const
+{
+	auto& inputFile = m_state.inputs.inputFile();
+	Diagnostic::error("{}: C++ modules are not supported by this toolchain.", inputFile);
+	return false;
+}
+
+/*****************************************************************************/
 std::string IBuildEnvironment::getObjectFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.o", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource));

@@ -27,6 +27,20 @@ BuildEnvironmentGNU::BuildEnvironmentGNU(const ToolchainType inType, BuildState&
 }
 
 /*****************************************************************************/
+bool BuildEnvironmentGNU::supportsCppModules() const
+{
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1101)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with GCC versions >= 11.1.0 (found {})", inputFile, compiler.version);
+		return false;
+	}
+	return true;
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentGNU::getArchiveExtension() const
 {
 	return ".a";

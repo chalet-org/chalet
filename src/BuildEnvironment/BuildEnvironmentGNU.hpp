@@ -14,6 +14,8 @@ struct BuildEnvironmentGNU : IBuildEnvironment
 {
 	explicit BuildEnvironmentGNU(const ToolchainType inType, BuildState& inState);
 
+	virtual bool supportsCppModules() const override;
+
 	virtual void generateTargetSystemPaths() override;
 
 	static std::string getCompilerMacros(const std::string& inCompilerExec, BuildState& inState, const PipeOption inStdError = PipeOption::Close);
