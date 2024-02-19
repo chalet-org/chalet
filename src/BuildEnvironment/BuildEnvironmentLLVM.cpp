@@ -25,6 +25,12 @@ BuildEnvironmentLLVM::BuildEnvironmentLLVM(const ToolchainType inType, BuildStat
 }
 
 /*****************************************************************************/
+bool BuildEnvironmentLLVM::supportsCppModules() const
+{
+	return IBuildEnvironment::supportsCppModules();
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentLLVM::getArchiveExtension() const
 {
 	if (isWindowsClang())

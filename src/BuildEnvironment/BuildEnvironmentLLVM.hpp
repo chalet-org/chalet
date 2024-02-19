@@ -13,6 +13,8 @@ struct BuildEnvironmentLLVM : BuildEnvironmentGNU
 {
 	explicit BuildEnvironmentLLVM(const ToolchainType inType, BuildState& inState);
 
+	virtual bool supportsCppModules() const override;
+
 protected:
 	virtual std::string getArchiveExtension() const override;
 	virtual std::string getPrecompiledHeaderExtension() const override;
