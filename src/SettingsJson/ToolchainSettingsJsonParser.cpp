@@ -106,8 +106,6 @@ bool ToolchainSettingsJsonParser::validatePathsWithoutFullParseAndEraseToolchain
 			result |= pathFromKeyIsInvalid(Keys::ToolchainArchiver);
 			result |= pathFromKeyIsInvalid(Keys::ToolchainDisassembler);
 
-			LOG("toolchain check result:", result);
-
 			if (!result)
 			{
 				// Wipe the toolchain
