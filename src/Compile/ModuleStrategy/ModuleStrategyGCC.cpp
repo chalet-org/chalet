@@ -180,7 +180,7 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 /*****************************************************************************/
 bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
 {
-	UNUSED(outJob, inToolchain, outPayload, inGroups);
+	UNUSED(outJob, inToolchain, inGroups);
 
 	Dictionary<std::string> mapFiles;
 
@@ -246,7 +246,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 /*****************************************************************************/
 bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
 {
-	UNUSED(inOutputs, outModules);
+	UNUSED(inOutputs);
 
 	for (auto& group : inOutputs.groups)
 	{
@@ -277,6 +277,8 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
 {
 	UNUSED(inFile, outList);
+
+	// TODO
 
 	return true;
 }
