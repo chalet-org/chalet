@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
@@ -27,7 +28,15 @@ BuildEnvironmentLLVM::BuildEnvironmentLLVM(const ToolchainType inType, BuildStat
 /*****************************************************************************/
 bool BuildEnvironmentLLVM::supportsCppModules() const
 {
-	return IBuildEnvironment::supportsCppModules();
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1600)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with Clang versions >= 16.0.0 (found {})", inputFile, compiler.version);
+		return false;
+	}
+	return true;
 }
 
 /*****************************************************************************/
@@ -49,6 +58,24 @@ std::string BuildEnvironmentLLVM::getPrecompiledHeaderExtension() const
 std::string BuildEnvironmentLLVM::getCompilerAliasForVisualStudio() const
 {
 	return "clang";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleDirectivesDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.mmap", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.pcm", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.pcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/

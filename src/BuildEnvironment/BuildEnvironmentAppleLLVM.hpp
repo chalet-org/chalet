@@ -13,6 +13,8 @@ struct BuildEnvironmentAppleLLVM final : BuildEnvironmentLLVM
 {
 	explicit BuildEnvironmentAppleLLVM(const ToolchainType inType, BuildState& inState);
 
+	virtual bool supportsCppModules() const final;
+
 protected:
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const override;

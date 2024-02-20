@@ -9,23 +9,23 @@
 
 namespace chalet
 {
-struct ModuleStrategyGCC final : public IModuleStrategy
+struct ModuleStrategyGCC : public IModuleStrategy
 {
 	explicit ModuleStrategyGCC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
-	virtual bool initialize() final;
+	virtual bool initialize() override;
 
 protected:
-	virtual bool isSystemModuleFile(const std::string& inFile) const final;
-	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const final;
-	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) final;
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) final;
-	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) final;
-	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) final;
+	virtual bool isSystemModuleFile(const std::string& inFile) const override;
+	virtual std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const override;
+	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) override;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) override;
+	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) override;
+	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) override;
+
+	virtual Dictionary<std::string> getSystemModules() const;
 
 private:
-	Dictionary<std::string> getSystemModules() const;
-
 	Dictionary<std::string> m_moduleMap;
 	Dictionary<StringList> m_moduleImports;
 	Dictionary<StringList> m_headerUnitImports;

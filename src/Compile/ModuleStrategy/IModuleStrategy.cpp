@@ -9,6 +9,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompileCommandsGenerator.hpp"
+#include "Compile/ModuleStrategy/ModuleStrategyClang.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -46,6 +47,11 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 		case ToolchainType::GNU:
 		case ToolchainType::MingwGNU:
 			return std::make_unique<ModuleStrategyGCC>(inState, inCompileCommandsGenerator);
+		case ToolchainType::LLVM:
+		case ToolchainType::AppleLLVM:
+		case ToolchainType::VisualStudioLLVM:
+		case ToolchainType::IntelLLVM:
+			return std::make_unique<ModuleStrategyClang>(inState, inCompileCommandsGenerator);
 		default:
 			break;
 	}
