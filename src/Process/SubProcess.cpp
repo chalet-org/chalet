@@ -500,13 +500,13 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 		const char* cwd = inOptions.cwd.empty() ? nullptr : inOptions.cwd.c_str();
 		std::string args = getWindowsArguments(inCmd);
 
-		DWORD processFlags = HIGH_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
+		DWORD processFlags = NORMAL_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
 
 		// Disables CTRL+C / CTRL+Break behavior
 		if (!inOptions.waitForResult)
 		{
 			processFlags |= CREATE_NEW_PROCESS_GROUP;
-			processFlags |= DETACHED_PROCESS;
+			processFlags |= CREATE_NO_WINDOW;
 		}
 
 		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
