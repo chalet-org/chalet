@@ -133,6 +133,9 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 							continue;
 
 						path = Files::getCanonicalPath(path);
+#if defined(CHALET_MACOS)
+						String::replaceAll(path, " (framework directory)", "");
+#endif
 						pathFileOutput += path + '\n';
 					}
 
