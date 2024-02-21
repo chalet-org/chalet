@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -36,6 +37,7 @@ bool ModuleStrategyClang::initialize()
 /*****************************************************************************/
 bool ModuleStrategyClang::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
 {
+	// Note: note actually using --precompile stage, because we can do it all at once
 	return ModuleStrategyGCC::scanSourcesForModuleDependencies(outJob, inToolchain, inGroups);
 }
 

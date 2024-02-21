@@ -49,8 +49,9 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 			return std::make_unique<ModuleStrategyGCC>(inState, inCompileCommandsGenerator);
 		case ToolchainType::LLVM:
 		case ToolchainType::AppleLLVM:
-		case ToolchainType::VisualStudioLLVM:
 		case ToolchainType::IntelLLVM:
+		case ToolchainType::MingwLLVM:
+		case ToolchainType::VisualStudioLLVM:
 			return std::make_unique<ModuleStrategyClang>(inState, inCompileCommandsGenerator);
 		default:
 			break;
@@ -494,16 +495,16 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		else if (userHeaderUnit)
 			type = ModuleFileType::HeaderUnitObject;
 
-		auto interfaceFile = group->otherFile;
-		if (interfaceFile.empty())
+		auto bmiFile = group->otherFile;
+		if (bmiFile.empty())
 		{
-			interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
+			bmiFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 		}
 
 		// Note: don't make objectDependent a reference - breaks in MSVC
 		const std::string* objectDependent = &target;
 		if (!isMsvc && (isHeaderUnit || isHeaderUnitDependency))
-			objectDependent = &interfaceFile;
+			objectDependent = &bmiFile;
 		else if (isObject)
 			objectDependent = &dependency;
 
@@ -524,11 +525,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			{
 				const auto& module = inModules.at(source);
 
-				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type);
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type);
 			}
 			else
 			{
-				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, interfaceFile, blankList, blankList, type);
+				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, blankList, blankList, type);
 			}
 			out.reference = source;
 

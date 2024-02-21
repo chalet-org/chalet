@@ -349,6 +349,8 @@ StringList CompilerCxxGCC::getModuleCommand(const std::string& inputFile, const 
 
 	constexpr auto derivative = SourceType::CPlusPlus;
 
+	addSourceFileInterpretation(ret, inType);
+
 	ret.emplace_back("-fmodules-ts");
 
 	ret.emplace_back(fmt::format("-fmodule-mapper={}", m_state.environment->getModuleDirectivesDependencyFile(inputFile)));
@@ -366,7 +368,6 @@ StringList CompilerCxxGCC::getModuleCommand(const std::string& inputFile, const 
 		// ret.emplace_back(fmt::format("-fdep-output={}", getQuotedPath(outputFile)));
 	}
 
-	addSourceFileInterpretation(ret, inType);
 	addOptimizations(ret);
 	addLanguageStandard(ret, derivative);
 	addCppCoroutines(ret);

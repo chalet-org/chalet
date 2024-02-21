@@ -329,7 +329,6 @@ StringList BuildEnvironmentVisualStudio::getSystemIncludeDirectories(const std::
 	auto toolsDirectory = Environment::getString("VCToolsInstallDir");
 	if (!toolsDirectory.empty())
 	{
-		LOG(toolsDirectory);
 		Path::toUnix(toolsDirectory);
 		ret.emplace_back(toolsDirectory);
 	}

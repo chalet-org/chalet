@@ -62,12 +62,19 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 
 	constexpr auto derivative = SourceType::CPlusPlus;
 
+	addSourceFileInterpretation(ret, inType);
+
 	const bool moduleDependency = inType == ModuleFileType::ModuleDependency;
-	const bool moduleObject = inType == ModuleFileType::ModuleObject;
-	if (moduleDependency || moduleObject)
+	const bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::SystemHeaderUnitObject;
+	const bool isModuleObject = inType == ModuleFileType::ModuleObject;
+	const bool moduleImplementationUnit = inType == ModuleFileType::ModuleImplementationUnit;
+	if (moduleDependency || isHeaderUnit)
+		ret.emplace_back("--precompile");
+
+	if (moduleDependency || isModuleObject || moduleImplementationUnit)
 	{
 		if (moduleDependency)
-			ret.emplace_back("--precompile");
+			ret.emplace_back("-fmodule-output");
 
 		for (const auto& item : inModuleReferences)
 		{
@@ -79,9 +86,11 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 		// {
 		// 	ret.emplace_back(fmt::format("-fmodule-file", getQuotedPath(item)));
 		// }
+
+		if (isModuleObject)
+			ret.emplace_back(fmt::format("-fmodule-output={}", getQuotedPath(interfaceFile)));
 	}
 
-	addSourceFileInterpretation(ret, inType);
 	addOptimizations(ret);
 	addLanguageStandard(ret, derivative);
 	addCppCoroutines(ret);
@@ -115,7 +124,12 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 	addSystemIncludes(ret);
 
 	ret.emplace_back("-o");
-	ret.emplace_back(getQuotedPath(outputFile));
+
+	if (moduleDependency || isHeaderUnit)
+		ret.emplace_back(getQuotedPath(interfaceFile));
+	else
+		ret.emplace_back(getQuotedPath(outputFile));
+
 	ret.emplace_back("-c");
 	if (inType == ModuleFileType::SystemHeaderUnitObject)
 		ret.emplace_back(getQuotedPath(String::getPathFilename(inputFile)));
