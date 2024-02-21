@@ -61,7 +61,7 @@ std::string BuildEnvironmentGNU::getCompilerAliasForVisualStudio() const
 /*****************************************************************************/
 std::string BuildEnvironmentGNU::getModuleDirectivesDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.module.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+	return fmt::format("{}/{}.mmap", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/

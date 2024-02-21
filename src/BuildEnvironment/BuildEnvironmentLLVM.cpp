@@ -64,7 +64,7 @@ std::string BuildEnvironmentLLVM::getCompilerAliasForVisualStudio() const
 /*****************************************************************************/
 std::string BuildEnvironmentLLVM::getModuleDirectivesDependencyFile(const std::string& inSource) const
 {
-	return fmt::format("{}/{}.pcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+	return fmt::format("{}/{}.mmap", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
 }
 
 /*****************************************************************************/

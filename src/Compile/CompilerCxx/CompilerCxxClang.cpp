@@ -97,6 +97,12 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 	addCppConcepts(ret);
 	addWarnings(ret);
 
+	if (inType == ModuleFileType::SystemHeaderUnitObject)
+	{
+		// TODO: Found this in emscripten. maybe remove this in the future
+		List::addIfDoesNotExist(ret, "-Wno-pragma-system-header-outside-header");
+	}
+
 	addCharsets(ret);
 	addLibStdCppCompileOption(ret, derivative);
 	addPositionIndependentCodeOption(ret);

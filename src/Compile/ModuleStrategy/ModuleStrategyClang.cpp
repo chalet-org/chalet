@@ -44,6 +44,18 @@ bool ModuleStrategyClang::initialize()
 }
 
 /*****************************************************************************/
+bool ModuleStrategyClang::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
+{
+	UNUSED(outJob);
+
+	// We need to call this to update the compiler cache, but we don't want to use the commands
+	auto commands = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	UNUSED(commands);
+
+	return true;
+}
+
+/*****************************************************************************/
 bool ModuleStrategyClang::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
 {
 	UNUSED(inFile, outList);

@@ -150,7 +150,7 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 /*****************************************************************************/
 bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
 {
-	UNUSED(outJob, inToolchain, inGroups);
+	UNUSED(outJob);
 
 	// We need to call this to update the compiler cache, but we don't want to use the commands
 	auto commands = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
