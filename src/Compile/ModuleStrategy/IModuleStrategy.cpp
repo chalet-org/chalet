@@ -217,10 +217,16 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 			for (auto& header : module.importedHeaderUnits)
 			{
 				std::string file;
+				std::string headerUnitName;
 
 				auto group = std::make_unique<SourceFileGroup>();
 				if (isSystemHeaderFileOrModuleFile(header))
 				{
+					if (m_state.environment->isClang())
+						headerUnitName = String::getPathFilename(header);
+					else
+						headerUnitName = header;
+
 					file = String::getPathFilename(header);
 					file = fmt::format("{}_{}", file, m_moduleId);
 
@@ -253,6 +259,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 						Files::makeDirectory(dir);
 
 					header = file;
+					headerUnitName = header;
 
 					group->sourceFile = file;
 					group->dataType = SourceDataType::UserHeaderUnit;
@@ -267,7 +274,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 				auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
 
-				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", header, ifcFile));
+				List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", headerUnitName, ifcFile));
 
 				if (List::contains(addedHeaderUnits, header))
 					continue;
