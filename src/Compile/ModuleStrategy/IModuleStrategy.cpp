@@ -65,10 +65,6 @@ bool IModuleStrategy::initialize()
 {
 	const auto& compiler = m_state.toolchain.compilerCpp().path;
 	m_systemHeaderDirectories = m_state.environment->getSystemIncludeDirectories(compiler);
-	for (auto& systemDir : m_systemHeaderDirectories)
-	{
-		LOG(systemDir);
-	}
 
 	return true;
 }

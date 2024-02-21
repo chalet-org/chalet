@@ -106,7 +106,9 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 				auto split = String::split(clangOutput, '\n');
 				for (auto& path : split)
 				{
-					path = path.substr(1);
+					while (path.front() == ' ')
+						path = path.substr(1);
+
 					Path::toUnix(path);
 					pathFileOutput += path + '\n';
 				}
@@ -121,8 +123,16 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 
 	if (exists)
 	{
+		StringList ret;
 		auto contents = Files::getFileContents(systemDirsFile);
-		return String::split(contents, '\n');
+		auto results = String::split(contents, '\n');
+		for (auto&& path : results)
+		{
+			if (!path.empty())
+				ret.emplace_back(std::move(path));
+		}
+
+		return ret;
 	}
 
 	return StringList();
