@@ -5,6 +5,7 @@
 
 #include "Process/Process.hpp"
 
+#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "System/Files.hpp"
@@ -82,6 +83,7 @@ std::string Process::runOutput(const StringList& inCmd, std::string inWorkingDir
 	std::string ret;
 
 	ProcessOptions options;
+	options.waitForResult = true;
 	options.cwd = std::move(inWorkingDirectory);
 	options.stdoutOption = inStdOut;
 	options.stderrOption = inStdErr;
@@ -188,6 +190,36 @@ bool Process::runOutputToFile(const StringList& inCmd, const std::string& inOutp
 
 	bool result = SubProcessController::run(inCmd, options) == EXIT_SUCCESS;
 	outputStream << std::endl;
+	return result;
+}
+
+/*****************************************************************************/
+bool Process::runOutputToFileThroughShell(const StringList& inCmd, const std::string& inOutputFile)
+{
+	if (inCmd.empty())
+		return false;
+
+	StringList shellCmd = inCmd;
+	shellCmd[0] = fmt::format("\"{}\"", shellCmd[0]);
+	shellCmd.emplace_back(">");
+	shellCmd.emplace_back(inOutputFile);
+	shellCmd.emplace_back("2>&1");
+#if defined(CHALET_WIN32)
+	auto& cmd = shellCmd;
+#else
+	auto shellCmdString = String::join(shellCmd);
+
+	auto bash = Environment::getShell();
+
+	StringList cmd;
+	cmd.emplace_back(std::move(bash));
+	cmd.emplace_back("-c");
+	cmd.emplace_back(fmt::format("'{}'", shellCmdString));
+
+#endif
+
+	auto outCmd = String::join(cmd);
+	bool result = std::system(outCmd.c_str()) == EXIT_SUCCESS;
 	return result;
 }
 

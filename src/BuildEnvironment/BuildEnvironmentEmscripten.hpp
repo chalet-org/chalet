@@ -24,6 +24,7 @@ protected:
 	virtual std::string getSharedLibraryExtension() const final;
 	virtual std::string getArchiveExtension() const final;
 
+	virtual std::string getSystemIncludeOutputFromClang(const std::string& inExecutable, const std::string& inTempFile, const std::string& inSystemDirsFile) final;
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;
 	virtual bool createFromVersion(const std::string& inVersion) final;
@@ -41,6 +42,7 @@ private:
 
 	std::string m_emsdkRoot;
 	std::string m_emsdkUpstream;
+	mutable std::string m_clangPath;
 	mutable std::string m_emcc;
 	mutable std::string m_emccVersion;
 };

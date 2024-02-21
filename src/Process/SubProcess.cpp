@@ -523,17 +523,15 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 		m_processInfo = processInfo;
 		m_pid = processInfo.dwProcessId;
 
-		if (m_out.m_read != m_out.m_write)
-			m_out.closeWrite();
-
-		if (m_err.m_read != m_err.m_write)
-			m_err.closeWrite();
-
 		if (inOptions.stdoutOption == PipeOption::Close)
 			m_out.close();
+		else if (m_out.m_read != m_out.m_write)
+			m_out.closeWrite();
 
 		if (inOptions.stderrOption == PipeOption::Close)
 			m_err.close();
+		else if (m_err.m_read != m_err.m_write)
+			m_err.closeWrite();
 
 		if (!success)
 			return false;
@@ -727,7 +725,7 @@ void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRe
 			break;
 
 #if defined(CHALET_WIN32)
-		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), nullptr) == TRUE;
+		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
 		if (!result)
 			bytesRead = 0;
 #else

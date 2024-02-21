@@ -32,6 +32,7 @@ bool runMinimalOutput(const StringList& inCmd, std::string inCwd);
 bool runMinimalOutputWithoutWait(const StringList& inCmd);
 bool runMinimalOutputWithoutWait(const StringList& inCmd, std::string inCwd);
 bool runOutputToFile(const StringList& inCmd, const std::string& inOutputFile, const PipeOption inStdErr);
+bool runOutputToFileThroughShell(const StringList& inCmd, const std::string& inOutputFile);
 std::string runOutput(const StringList& inCmd, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 std::string runOutput(const StringList& inCmd, std::string inWorkingDirectory, const PipeOption inStdOut = PipeOption::Pipe, const PipeOption inStdErr = PipeOption::Pipe);
 

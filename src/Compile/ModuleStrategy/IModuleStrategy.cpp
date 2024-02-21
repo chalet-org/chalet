@@ -52,6 +52,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 		case ToolchainType::IntelLLVM:
 		case ToolchainType::MingwLLVM:
 		case ToolchainType::VisualStudioLLVM:
+		case ToolchainType::Emscripten:
 			return std::make_unique<ModuleStrategyClang>(inState, inCompileCommandsGenerator);
 		default:
 			break;

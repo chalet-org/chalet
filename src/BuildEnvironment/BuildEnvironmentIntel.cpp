@@ -9,6 +9,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -37,7 +38,7 @@ bool BuildEnvironmentIntel::supportsCppModules() const
 	auto& inputFile = m_state.inputs.inputFile();
 	auto& compiler = m_state.toolchain.compilerCpp();
 	u32 versionMajorMinor = compiler.versionMajorMinor;
-	if (versionMajorMinor < 1500)
+	if (versionMajorMinor < 202300)
 	{
 		Diagnostic::error("{}: C++ modules are only supported with Clang versions >= 15.0.0 (found {})", inputFile, compiler.version);
 		return false;

@@ -25,6 +25,7 @@ protected:
 	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const override;
 	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const override;
 
+	virtual std::string getSystemIncludeOutputFromClang(const std::string& inExecutable, const std::string& inTempFile, const std::string& inSystemDirsFile);
 	virtual StringList getSystemIncludeDirectories(const std::string& inExecutable) override;
 
 	virtual StringList getVersionCommand(const std::string& inExecutable) const override;

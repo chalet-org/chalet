@@ -58,9 +58,9 @@ struct IBuildEnvironment
 	virtual std::string getPrecompiledHeaderSourceFile(const std::string& inSource) const;
 	virtual std::string getWindowsResourceObjectFile(const std::string& inSource) const;
 	virtual std::string getDependencyFile(const std::string& inSource) const;
-	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const;
-	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const;
-	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const;
+	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const = 0;
+	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const = 0;
+	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const = 0;
 
 	virtual StringList getSystemIncludeDirectories(const std::string& inExecutable);
 

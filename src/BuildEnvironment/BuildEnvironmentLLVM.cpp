@@ -80,6 +80,23 @@ std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceDependencyFile(const s
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentLLVM::getSystemIncludeOutputFromClang(const std::string& inExecutable, const std::string& inTempFile, const std::string& inSystemDirsFile)
+{
+	// UNUSED(inSystemDirsFile);
+	// return Process::runOutput({ inExecutable, "-E", "-x", "c++", "-v", inTempFile });
+
+	std::string result;
+	if (Process::runOutputToFileThroughShell({ inExecutable, "-E", "-x", "c++", "-v", inTempFile }, inSystemDirsFile))
+	{
+		result = Files::getFileContents(inSystemDirsFile);
+#if defined(CHALET_WIN32)
+		String::replaceAll(result, "\r\n", "\n");
+#endif
+	}
+	return result;
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& inExecutable)
 {
 	auto systemDirsFile = getCachePath("systemIncludeDirectories");
@@ -91,30 +108,41 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 		auto tempFile = fmt::format("{}/temp.cpp", intermediateDir);
 		Files::createFileWithContents(tempFile, "int main(){return 0;}");
 
-		auto clangOutput = Process::runOutput({ inExecutable, "-E", "-x", "c++", "-v", tempFile });
-		std::string findString("#include <...> search starts here:\n");
-		auto startSearch = clangOutput.find(findString);
-		if (startSearch != std::string::npos)
+		auto clangOutput = getSystemIncludeOutputFromClang(inExecutable, tempFile, systemDirsFile);
+		if (!clangOutput.empty())
 		{
-			auto endSearch = clangOutput.find("\nEnd of search list.");
-			if (endSearch != std::string::npos)
+			std::string findString("#include <...> search starts here:\n");
+			auto startSearch = clangOutput.find(findString);
+			if (startSearch != std::string::npos)
 			{
-				startSearch += findString.size();
-				clangOutput = clangOutput.substr(startSearch, endSearch - startSearch);
-
-				std::string pathFileOutput;
-				auto split = String::split(clangOutput, '\n');
-				for (auto& path : split)
+				auto endSearch = clangOutput.find("\nEnd of search list.");
+				if (endSearch != std::string::npos)
 				{
-					while (path.front() == ' ')
-						path = path.substr(1);
+					startSearch += findString.size();
+					clangOutput = clangOutput.substr(startSearch, endSearch - startSearch);
 
-					Path::toUnix(path);
-					pathFileOutput += path + '\n';
+					std::string pathFileOutput;
+					auto split = String::split(clangOutput, '\n');
+					for (auto& path : split)
+					{
+						while (!path.empty() && path.front() == ' ')
+							path = path.substr(1);
+
+						Path::toUnix(path);
+						if (path == ".")
+							continue;
+
+						path = Files::getCanonicalPath(path);
+						pathFileOutput += path + '\n';
+					}
+
+					exists = Files::createFileWithContents(systemDirsFile, pathFileOutput);
 				}
-
-				exists = Files::createFileWithContents(systemDirsFile, pathFileOutput);
 			}
+		}
+		else
+		{
+			Files::removeIfExists(systemDirsFile);
 		}
 		Files::removeIfExists(tempFile);
 	}

@@ -174,7 +174,7 @@ void ProcessPipe::closeWrite()
 /*****************************************************************************/
 void ProcessPipe::close()
 {
-	closeRead();
 	closeWrite();
+	closeRead();
 }
 }

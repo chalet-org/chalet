@@ -49,6 +49,18 @@ std::string BuildEnvironmentEmscripten::getArchiveExtension() const
 }
 
 /*****************************************************************************/
+std::string BuildEnvironmentEmscripten::getSystemIncludeOutputFromClang(const std::string& inExecutable, const std::string& inTempFile, const std::string& inSystemDirsFile)
+{
+	UNUSED(inExecutable, inSystemDirsFile);
+
+	chalet_assert(!m_clangPath.empty(), "");
+	if (m_clangPath.empty())
+		return std::string();
+
+	return Process::runOutput({ m_clangPath, "-E", "-x", "c++", "-v", inTempFile });
+}
+
+/*****************************************************************************/
 StringList BuildEnvironmentEmscripten::getVersionCommand(const std::string& inExecutable) const
 {
 	if (String::endsWith("emcc.py", inExecutable))
@@ -157,6 +169,7 @@ bool BuildEnvironmentEmscripten::getCompilerVersionAndDescription(CompilerInfo& 
 	if (!result)
 		return false;
 
+	m_clangPath = outInfo.path;
 	outInfo.version = info.version;
 
 	std::string cachedVersion;
