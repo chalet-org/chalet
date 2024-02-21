@@ -38,7 +38,7 @@ bool BuildEnvironmentIntel::supportsCppModules() const
 	auto& inputFile = m_state.inputs.inputFile();
 	auto& compiler = m_state.toolchain.compilerCpp();
 	u32 versionMajorMinor = compiler.versionMajorMinor;
-	if (versionMajorMinor < 202300)
+	if (versionMajorMinor < 202310)
 	{
 		Diagnostic::error("{}: C++ modules are only supported with Clang versions >= 15.0.0 (found {})", inputFile, compiler.version);
 		return false;
