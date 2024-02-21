@@ -27,8 +27,5 @@ private:
 	Dictionary<std::string> m_moduleMap;
 	Dictionary<StringList> m_moduleImports;
 	Dictionary<StringList> m_headerUnitImports;
-
-	StringList m_systemHeaders;
-	// StringList m_userHeaders;
 };
 }

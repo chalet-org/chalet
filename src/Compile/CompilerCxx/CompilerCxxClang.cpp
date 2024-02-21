@@ -82,10 +82,10 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 			ret.emplace_back(fmt::format("-fmodule-file={}", item));
 		}
 
-		// for (const auto& item : inHeaderUnits)
-		// {
-		// 	ret.emplace_back(fmt::format("-fmodule-file", getQuotedPath(item)));
-		// }
+		for (const auto& item : inHeaderUnits)
+		{
+			ret.emplace_back(fmt::format("-fmodule-file={}", getQuotedPath(item)));
+		}
 
 		if (isModuleObject)
 			ret.emplace_back(fmt::format("-fmodule-output={}", getQuotedPath(interfaceFile)));
@@ -131,10 +131,10 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 		ret.emplace_back(getQuotedPath(outputFile));
 
 	ret.emplace_back("-c");
-	if (inType == ModuleFileType::SystemHeaderUnitObject)
-		ret.emplace_back(getQuotedPath(String::getPathFilename(inputFile)));
-	else
-		ret.emplace_back(getQuotedPath(inputFile));
+	// if (inType == ModuleFileType::SystemHeaderUnitObject)
+	// 	ret.emplace_back(getQuotedPath(String::getPathFilename(inputFile)));
+	// else
+	ret.emplace_back(getQuotedPath(inputFile));
 
 	return ret;
 }

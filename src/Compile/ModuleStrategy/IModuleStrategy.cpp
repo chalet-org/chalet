@@ -473,7 +473,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 	bool isHeaderUnitDependency = inType == ModuleFileType::HeaderUnitDependency;
-	bool isMsvc = m_state.environment->isMsvc();
+	bool isGcc = m_state.environment->isGcc();
+	bool isClang = m_state.environment->isClang();
 
 	for (auto& group : inGroups)
 	{
@@ -511,7 +512,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 
 		// Note: don't make objectDependent a reference - breaks in MSVC
 		const std::string* objectDependent = &target;
-		if (!isMsvc && (isHeaderUnit || isHeaderUnitDependency))
+		if ((isGcc || isClang) && (isHeaderUnit || isHeaderUnitDependency))
 			objectDependent = &bmiFile;
 		else if (isObject)
 			objectDependent = &dependency;
@@ -524,7 +525,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			out.output = getBuildOutputForFile(*group, isObject);
 
 			std::string inputFile;
-			if (systemHeaderUnit && !isMsvc)
+			if (systemHeaderUnit && isGcc)
 				inputFile = String::getPathFilename(source);
 			else
 				inputFile = source;

@@ -31,26 +31,16 @@ ModuleStrategyClang::ModuleStrategyClang(BuildState& inState, CompileCommandsGen
 /*****************************************************************************/
 bool ModuleStrategyClang::initialize()
 {
-	return IModuleStrategy::initialize();
-}
+	if (!IModuleStrategy::initialize())
+		return false;
 
-/*****************************************************************************/
-bool ModuleStrategyClang::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
-{
-	// Note: note actually using --precompile stage, because we can do it all at once
-	return ModuleStrategyGCC::scanSourcesForModuleDependencies(outJob, inToolchain, inGroups);
-}
+	if (m_state.environment->isEmscripten())
+	{
+		auto& upstreamInclude = m_state.toolchain.compilerCpp().includeDir;
+		List::addIfDoesNotExist(m_systemHeaderDirectories, fmt::format("{}/c++/v1", upstreamInclude));
+	}
 
-/*****************************************************************************/
-bool ModuleStrategyClang::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
-{
-	return ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(outJob, inToolchain, outPayload, inGroups);
-}
-
-/*****************************************************************************/
-bool ModuleStrategyClang::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
-{
-	return ModuleStrategyGCC::readModuleDependencies(inOutputs, outModules);
+	return true;
 }
 
 /*****************************************************************************/
