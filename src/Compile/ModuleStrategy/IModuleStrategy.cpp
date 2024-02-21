@@ -61,6 +61,50 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 }
 
 /*****************************************************************************/
+bool IModuleStrategy::initialize()
+{
+	const auto& compiler = m_state.toolchain.compilerCpp().path;
+	m_systemHeaderDirectories = m_state.environment->getSystemIncludeDirectories(compiler);
+	for (auto& systemDir : m_systemHeaderDirectories)
+	{
+		LOG(systemDir);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IModuleStrategy::isSystemHeaderFileOrModuleFile(const std::string& inFile) const
+{
+	if (m_systemHeaderDirectories.empty())
+		return false;
+
+	for (auto& systemDir : m_systemHeaderDirectories)
+	{
+		if (String::startsWith(systemDir, inFile))
+			return true;
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
+std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
+{
+	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
+	for (auto& systemDir : m_systemHeaderDirectories)
+	{
+		if (String::startsWith(systemDir, ret))
+		{
+			ret = String::getPathFilename(ret);
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
 {
 	m_sourcesChanged = false;
@@ -177,7 +221,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 				std::string file;
 
 				auto group = std::make_unique<SourceFileGroup>();
-				if (isSystemModuleFile(header))
+				if (isSystemHeaderFileOrModuleFile(header))
 				{
 					file = String::getPathFilename(header);
 					file = fmt::format("{}_{}", file, m_moduleId);
@@ -745,7 +789,7 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupLi
 		if (!rebuildFromIncludes)
 		{
 			std::string dependencyFile;
-			if (isSystemModuleFile(sourceFile))
+			if (isSystemHeaderFileOrModuleFile(sourceFile))
 				dependencyFile = group->dependencyFile;
 			else
 				dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(sourceFile);

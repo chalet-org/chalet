@@ -14,6 +14,8 @@ struct CompilerCxxClang : public CompilerCxxGCC
 {
 	explicit CompilerCxxClang(const BuildState& inState, const SourceTarget& inProject);
 
+	virtual StringList getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependencyFile, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType) override;
+
 	static bool addArchitectureToCommand(StringList& outArgList, const std::string& inArch, const BuildState& inState);
 	static void addSanitizerOptions(StringList& outArgList, const BuildState& inState);
 
@@ -21,6 +23,7 @@ protected:
 	virtual std::string getPragmaId() const override;
 	virtual StringList getWarningExclusions() const override;
 
+	virtual void addSourceFileInterpretation(StringList& outArgList, const ModuleFileType moduleType) const override;
 	virtual void addWarnings(StringList& outArgList) const override;
 	virtual void addProfileInformation(StringList& outArgList) const override;
 	virtual void addSanitizerOptions(StringList& outArgList) const override;

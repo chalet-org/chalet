@@ -8,6 +8,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
+#include "Process/Process.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -29,28 +30,7 @@ ModuleStrategyClang::ModuleStrategyClang(BuildState& inState, CompileCommandsGen
 /*****************************************************************************/
 bool ModuleStrategyClang::initialize()
 {
-	// Apple Clang - (macos SDK)/usr/include/c++/v1
-	return true;
-}
-
-/*****************************************************************************/
-bool ModuleStrategyClang::isSystemModuleFile(const std::string& inFile) const
-{
-	// return !m_systemHeaderDirectory.empty() && String::startsWith(m_systemHeaderDirectory, inFile);
-	UNUSED(inFile);
-	return false;
-}
-
-/*****************************************************************************/
-std::string ModuleStrategyClang::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
-{
-	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
-	if (String::startsWith(m_systemHeaderDirectory, ret))
-	{
-		ret = String::getPathFilename(ret);
-	}
-
-	return ret;
+	return IModuleStrategy::initialize();
 }
 
 /*****************************************************************************/

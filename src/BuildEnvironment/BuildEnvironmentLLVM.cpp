@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #include "Utility/Timer.hpp"
@@ -76,6 +77,55 @@ std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceFile(const std::string
 std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.pcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& inExecutable)
+{
+	auto systemDirsFile = getCachePath("systemIncludeDirectories");
+	bool exists = true;
+	if (!Files::pathExists(systemDirsFile))
+	{
+		exists = false;
+		const auto& intermediateDir = m_state.paths.intermediateDir();
+		auto tempFile = fmt::format("{}/temp.cpp", intermediateDir);
+		Files::createFileWithContents(tempFile, "int main(){return 0;}");
+
+		auto clangOutput = Process::runOutput({ inExecutable, "-E", "-x", "c++", "-v", tempFile });
+		std::string findString("#include <...> search starts here:\n");
+		auto startSearch = clangOutput.find(findString);
+		if (startSearch != std::string::npos)
+		{
+			auto endSearch = clangOutput.find("\nEnd of search list.");
+			if (endSearch != std::string::npos)
+			{
+				startSearch += findString.size();
+				clangOutput = clangOutput.substr(startSearch, endSearch - startSearch);
+
+				std::string pathFileOutput;
+				auto split = String::split(clangOutput, '\n');
+				for (auto& path : split)
+				{
+					path = path.substr(1);
+					Path::toUnix(path);
+					pathFileOutput += path + '\n';
+				}
+
+				exists = Files::createFileWithContents(systemDirsFile, pathFileOutput);
+			}
+		}
+		Files::removeIfExists(tempFile);
+	}
+
+	m_state.cache.file().addExtraHash(String::getPathFilename(systemDirsFile));
+
+	if (exists)
+	{
+		auto contents = Files::getFileContents(systemDirsFile);
+		return String::split(contents, '\n');
+	}
+
+	return StringList();
 }
 
 /*****************************************************************************/

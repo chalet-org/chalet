@@ -451,17 +451,6 @@ void CompilerCxxGCC::addSourceFileInterpretation(StringList& outArgList, const M
 		outArgList.emplace_back("c++-header");
 	else
 		outArgList.emplace_back("c++");
-
-	UNUSED(moduleType);
-
-	// if (moduleType == ModuleFileType::)
-	// 	outArgList.emplace_back("c++-header");
-	// else if (derivative == SourceType::CxxPrecompiledHeader && language == CodeLanguage::C)
-	// 	outArgList.emplace_back("c-header");
-	// else if (derivative == SourceType::ObjectiveCPlusPlus || derivative == SourceType::CPlusPlus)
-	// 	outArgList.emplace_back("c++");
-	// else
-	// 	outArgList.emplace_back("c");
 }
 
 /*****************************************************************************/

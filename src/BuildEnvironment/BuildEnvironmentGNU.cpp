@@ -77,6 +77,38 @@ std::string BuildEnvironmentGNU::getModuleBinaryInterfaceDependencyFile(const st
 }
 
 /*****************************************************************************/
+StringList BuildEnvironmentGNU::getSystemIncludeDirectories(const std::string& inExecutable)
+{
+	UNUSED(inExecutable);
+
+	StringList ret;
+
+	const auto& systemIncludeDir = m_state.toolchain.compilerCpp().includeDir;
+	auto& version = m_state.toolchain.version();
+	u32 versionMajor = m_state.toolchain.versionMajor();
+	auto cppFolder = fmt::format("{}/c++", systemIncludeDir);
+	if (Files::pathIsSymLink(cppFolder))
+	{
+		cppFolder = fmt::format("{}/{}", systemIncludeDir, Files::resolveSymlink(cppFolder));
+	}
+
+	auto versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, versionMajor));
+	if (!Files::pathExists(versionFolder))
+	{
+		versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, version));
+		if (!Files::pathExists(versionFolder))
+		{
+			Diagnostic::error("Could not resolve system include directory");
+			versionFolder.clear();
+		}
+	}
+
+	if (!versionFolder.empty())
+		ret.emplace_back(std::move(versionFolder));
+
+	return ret;
+}
+/*****************************************************************************/
 StringList BuildEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
 	return StringList{ inExecutable, "-v" };

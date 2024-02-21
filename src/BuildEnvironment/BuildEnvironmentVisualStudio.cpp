@@ -19,6 +19,7 @@
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/Hash.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -316,6 +317,24 @@ std::string BuildEnvironmentVisualStudio::getModuleBinaryInterfaceFile(const std
 std::string BuildEnvironmentVisualStudio::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
 {
 	return fmt::format("{}/{}.ifc.d.json", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+StringList BuildEnvironmentVisualStudio::getSystemIncludeDirectories(const std::string& inExecutable)
+{
+	UNUSED(inExecutable);
+
+	StringList ret;
+
+	auto toolsDirectory = Environment::getString("VCToolsInstallDir");
+	if (!toolsDirectory.empty())
+	{
+		LOG(toolsDirectory);
+		Path::toUnix(toolsDirectory);
+		ret.emplace_back(toolsDirectory);
+	}
+
+	return ret;
 }
 
 }

@@ -41,6 +41,106 @@ StringList CompilerCxxClang::getWarningExclusions() const
 }
 
 /*****************************************************************************/
+StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, const std::string& outputFile, const std::string& dependency, const std::string& interfaceFile, const StringList& inModuleReferences, const StringList& inHeaderUnits, const ModuleFileType inType)
+{
+	UNUSED(inHeaderUnits);
+
+	StringList ret;
+
+	if (!addExecutable(ret))
+		return ret;
+
+	if (generateDependencies())
+	{
+		ret.emplace_back("-MT");
+		ret.emplace_back(getQuotedPath(interfaceFile));
+		ret.emplace_back("-MMD");
+		ret.emplace_back("-MP");
+		ret.emplace_back("-MF");
+		ret.emplace_back(getQuotedPath(dependency));
+	}
+
+	constexpr auto derivative = SourceType::CPlusPlus;
+
+	const bool moduleDependency = inType == ModuleFileType::ModuleDependency;
+	const bool moduleObject = inType == ModuleFileType::ModuleObject;
+	if (moduleDependency || moduleObject)
+	{
+		if (moduleDependency)
+			ret.emplace_back("--precompile");
+
+		for (const auto& item : inModuleReferences)
+		{
+			// Note: can't quote these paths
+			ret.emplace_back(fmt::format("-fmodule-file={}", item));
+		}
+
+		// for (const auto& item : inHeaderUnits)
+		// {
+		// 	ret.emplace_back(fmt::format("-fmodule-file", getQuotedPath(item)));
+		// }
+	}
+
+	addSourceFileInterpretation(ret, inType);
+	addOptimizations(ret);
+	addLanguageStandard(ret, derivative);
+	addCppCoroutines(ret);
+	addCppConcepts(ret);
+	addWarnings(ret);
+
+	addCharsets(ret);
+	addLibStdCppCompileOption(ret, derivative);
+	addPositionIndependentCodeOption(ret);
+	addCompileOptions(ret);
+	addObjectiveCxxRuntimeOption(ret, derivative);
+	addDiagnosticColorOption(ret);
+	addFastMathOption(ret);
+	addNoRunTimeTypeInformationOption(ret);
+	addNoExceptionsOption(ret);
+	addThreadModelCompileOption(ret);
+	addArchitecture(ret, std::string());
+	addSystemRootOption(ret);
+	addLinkTimeOptimizations(ret);
+
+	addDebuggingInformationOption(ret);
+	addProfileInformation(ret);
+	addSanitizerOptions(ret);
+
+	addDefines(ret);
+
+	// Before other includes
+	addPchInclude(ret, derivative);
+
+	addIncludes(ret);
+	addSystemIncludes(ret);
+
+	ret.emplace_back("-o");
+	ret.emplace_back(getQuotedPath(outputFile));
+	ret.emplace_back("-c");
+	if (inType == ModuleFileType::SystemHeaderUnitObject)
+		ret.emplace_back(getQuotedPath(String::getPathFilename(inputFile)));
+	else
+		ret.emplace_back(getQuotedPath(inputFile));
+
+	return ret;
+}
+
+/*****************************************************************************/
+void CompilerCxxClang::addSourceFileInterpretation(StringList& outArgList, const ModuleFileType moduleType) const
+{
+	outArgList.emplace_back("-x");
+
+	if (moduleType == ModuleFileType::SystemHeaderUnitObject)
+		outArgList.emplace_back("c++-system-header");
+	else if (moduleType == ModuleFileType::HeaderUnitObject)
+		outArgList.emplace_back("c++-header");
+	else if (moduleType == ModuleFileType::ModuleImplementationUnit)
+		outArgList.emplace_back("c++");
+	else
+		outArgList.emplace_back("c++-module");
+}
+
+/*****************************************************************************/
 void CompilerCxxClang::addWarnings(StringList& outArgList) const
 {
 	CompilerCxxGCC::addWarnings(outArgList);
