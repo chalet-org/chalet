@@ -65,11 +65,15 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 	addSourceFileInterpretation(ret, inType);
 
 	const bool moduleDependency = inType == ModuleFileType::ModuleDependency;
-	const bool isHeaderUnit = inType == ModuleFileType::HeaderUnitObject || inType == ModuleFileType::SystemHeaderUnitObject;
+	const bool isSystemHeaderUnit = inType == ModuleFileType::SystemHeaderUnitObject;
+	const bool isHeaderUnit = isSystemHeaderUnit || inType == ModuleFileType::HeaderUnitObject;
 	const bool isModuleObject = inType == ModuleFileType::ModuleObject;
 	const bool moduleImplementationUnit = inType == ModuleFileType::ModuleImplementationUnit;
 	if (moduleDependency || isHeaderUnit)
 		ret.emplace_back("--precompile");
+
+	if (isSystemHeaderUnit)
+		ret.emplace_back("-fmodule-header=system");
 
 	if (moduleDependency || isModuleObject || moduleImplementationUnit)
 	{
@@ -97,7 +101,7 @@ StringList CompilerCxxClang::getModuleCommand(const std::string& inputFile, cons
 	addCppConcepts(ret);
 	addWarnings(ret);
 
-	if (inType == ModuleFileType::SystemHeaderUnitObject)
+	if (isSystemHeaderUnit)
 	{
 		// TODO: Found this in emscripten. maybe remove this in the future
 		List::addIfDoesNotExist(ret, "-Wno-pragma-system-header-outside-header");

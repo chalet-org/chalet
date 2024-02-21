@@ -471,6 +471,22 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 	StringList blankList;
 	CommandPool::CmdList ret;
 
+	auto getFileType = [this, inType = inType](const Unique<SourceFileGroup>& group) -> ModuleFileType {
+		ModuleFileType type = inType;
+		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, group->sourceFile))
+			type = ModuleFileType::ModuleImplementationUnit;
+
+		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
+		bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
+
+		if (systemHeaderUnit)
+			type = ModuleFileType::SystemHeaderUnitObject;
+		else if (userHeaderUnit)
+			type = ModuleFileType::HeaderUnitObject;
+
+		return type;
+	};
+
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 	bool isHeaderUnitDependency = inType == ModuleFileType::HeaderUnitDependency;
 	bool isGcc = m_state.environment->isGcc();
@@ -491,18 +507,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 		if (m_compileCache.find(source) == m_compileCache.end())
 			setCompilerCache(source, false);
 
-		ModuleFileType type = inType;
-		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
-			type = ModuleFileType::ModuleImplementationUnit;
+		auto type = getFileType(group);
 
 		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
 		bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
 		bool isHeaderUnit = systemHeaderUnit || userHeaderUnit;
-
-		if (systemHeaderUnit)
-			type = ModuleFileType::SystemHeaderUnitObject;
-		else if (userHeaderUnit)
-			type = ModuleFileType::HeaderUnitObject;
 
 		auto bmiFile = group->otherFile;
 		if (bmiFile.empty())
@@ -571,9 +580,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			const auto& target = group->objectFile;
 			const auto& dependency = group->dependencyFile;
 
-			ModuleFileType type = inType;
-			if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, source))
-				type = ModuleFileType::ModuleImplementationUnit;
+			auto type = getFileType(group);
 
 			auto interfaceFile = group->otherFile;
 			if (interfaceFile.empty())
