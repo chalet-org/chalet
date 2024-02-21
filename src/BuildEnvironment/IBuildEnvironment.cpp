@@ -435,6 +435,14 @@ std::string IBuildEnvironment::getModuleBinaryInterfaceDependencyFile(const std:
 }
 
 /*****************************************************************************/
+StringList IBuildEnvironment::getSystemIncludeDirectories(const std::string& inExecutable)
+{
+	UNUSED(inExecutable);
+	chalet_assert(false, "getSystemIncludeDirectories not implmeneted for Build environment");
+	return StringList{};
+}
+
+/*****************************************************************************/
 const std::string& IBuildEnvironment::sysroot() const noexcept
 {
 	return m_sysroot;

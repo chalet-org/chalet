@@ -13,7 +13,7 @@ enum class ModuleFileType : u16
 	HeaderUnitDependency,
 	HeaderUnitObject,
 	SystemHeaderUnitObject,
-	ModuleObject,
-	ModuleImplementationUnit,
+	ModuleObject,			  // Module compilations
+	ModuleImplementationUnit, // Aka, the file with "main"
 };
 }

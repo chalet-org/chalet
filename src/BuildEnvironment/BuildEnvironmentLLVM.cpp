@@ -9,9 +9,11 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #include "Utility/Timer.hpp"
@@ -27,7 +29,15 @@ BuildEnvironmentLLVM::BuildEnvironmentLLVM(const ToolchainType inType, BuildStat
 /*****************************************************************************/
 bool BuildEnvironmentLLVM::supportsCppModules() const
 {
-	return IBuildEnvironment::supportsCppModules();
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1600)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with Clang versions >= 16.0.0 (found {})", inputFile, compiler.version);
+		return false;
+	}
+	return true;
 }
 
 /*****************************************************************************/
@@ -49,6 +59,83 @@ std::string BuildEnvironmentLLVM::getPrecompiledHeaderExtension() const
 std::string BuildEnvironmentLLVM::getCompilerAliasForVisualStudio() const
 {
 	return "clang";
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleDirectivesDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.pcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.pcm", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+std::string BuildEnvironmentLLVM::getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const
+{
+	return fmt::format("{}/{}.pcm.d", m_state.paths.depDir(), m_state.paths.getNormalizedOutputPath(inSource));
+}
+
+/*****************************************************************************/
+StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& inExecutable)
+{
+	auto systemDirsFile = getCachePath("systemIncludeDirectories");
+	bool exists = true;
+	if (!Files::pathExists(systemDirsFile))
+	{
+		exists = false;
+		const auto& intermediateDir = m_state.paths.intermediateDir();
+		auto tempFile = fmt::format("{}/temp.cpp", intermediateDir);
+		Files::createFileWithContents(tempFile, "int main(){return 0;}");
+
+		auto clangOutput = Process::runOutput({ inExecutable, "-E", "-x", "c++", "-v", tempFile });
+		std::string findString("#include <...> search starts here:\n");
+		auto startSearch = clangOutput.find(findString);
+		if (startSearch != std::string::npos)
+		{
+			auto endSearch = clangOutput.find("\nEnd of search list.");
+			if (endSearch != std::string::npos)
+			{
+				startSearch += findString.size();
+				clangOutput = clangOutput.substr(startSearch, endSearch - startSearch);
+
+				std::string pathFileOutput;
+				auto split = String::split(clangOutput, '\n');
+				for (auto& path : split)
+				{
+					while (path.front() == ' ')
+						path = path.substr(1);
+
+					Path::toUnix(path);
+					pathFileOutput += path + '\n';
+				}
+
+				exists = Files::createFileWithContents(systemDirsFile, pathFileOutput);
+			}
+		}
+		Files::removeIfExists(tempFile);
+	}
+
+	m_state.cache.file().addExtraHash(String::getPathFilename(systemDirsFile));
+
+	if (exists)
+	{
+		StringList ret;
+		auto contents = Files::getFileContents(systemDirsFile);
+		auto results = String::split(contents, '\n');
+		for (auto&& path : results)
+		{
+			if (!path.empty())
+				ret.emplace_back(std::move(path));
+		}
+
+		return ret;
+	}
+
+	return StringList();
 }
 
 /*****************************************************************************/

@@ -34,6 +34,8 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const final;
 	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const final;
 
+	virtual StringList getSystemIncludeDirectories(const std::string& inExecutable) override;
+
 protected:
 	virtual StringList getVersionCommand(const std::string& inExecutable) const final;
 	virtual std::string getFullCxxCompilerString(const std::string& inPath, const std::string& inVersion) const final;

@@ -5,7 +5,9 @@
 
 #include "BuildEnvironment/BuildEnvironmentAppleLLVM.hpp"
 
+#include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -14,6 +16,20 @@ namespace chalet
 BuildEnvironmentAppleLLVM::BuildEnvironmentAppleLLVM(const ToolchainType inType, BuildState& inState) :
 	BuildEnvironmentLLVM(inType, inState)
 {
+}
+
+/*****************************************************************************/
+bool BuildEnvironmentAppleLLVM::supportsCppModules() const
+{
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1600)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with Apple Clang versions >= 16.0.0 (found {})", inputFile, compiler.version);
+		return false;
+	}
+	return true;
 }
 
 /*****************************************************************************/

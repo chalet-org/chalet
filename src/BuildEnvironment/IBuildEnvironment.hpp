@@ -62,6 +62,8 @@ struct IBuildEnvironment
 	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const;
 	virtual std::string getModuleBinaryInterfaceDependencyFile(const std::string& inSource) const;
 
+	virtual StringList getSystemIncludeDirectories(const std::string& inExecutable);
+
 	const std::string& sysroot() const noexcept;
 	const std::string& targetSystemVersion() const noexcept;
 	const StringList& targetSystemPaths() const noexcept;

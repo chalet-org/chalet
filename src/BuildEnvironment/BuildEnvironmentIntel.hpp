@@ -17,6 +17,8 @@ struct BuildEnvironmentIntel final : BuildEnvironmentLLVM
 	CHALET_DISALLOW_COPY_MOVE(BuildEnvironmentIntel);
 	~BuildEnvironmentIntel();
 
+	virtual bool supportsCppModules() const override;
+
 	virtual std::string getPrecompiledHeaderExtension() const final;
 
 protected:

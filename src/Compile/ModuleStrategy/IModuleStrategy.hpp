@@ -47,15 +47,15 @@ public:
 
 	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
 
-	virtual bool initialize() = 0;
-	virtual bool isSystemModuleFile(const std::string& inFile) const = 0;
+	virtual bool initialize();
+	bool isSystemHeaderFileOrModuleFile(const std::string& inFile) const;
 	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
 	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) = 0;
 	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) = 0;
 
 protected:
-	virtual std::string getBuildOutputForFile(const SourceFileGroup& inSource, const bool inIsObject) const = 0;
+	std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const;
 
 	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
 
@@ -80,6 +80,7 @@ protected:
 	std::string m_previousSource;
 	std::string m_moduleId;
 
+	StringList m_systemHeaderDirectories;
 	StringList m_implementationUnits;
 	mutable Dictionary<bool> m_compileCache;
 

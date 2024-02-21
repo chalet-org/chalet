@@ -29,47 +29,7 @@ ModuleStrategyGCC::ModuleStrategyGCC(BuildState& inState, CompileCommandsGenerat
 /*****************************************************************************/
 bool ModuleStrategyGCC::initialize()
 {
-	const auto& systemIncludeDir = m_state.toolchain.compilerCxxAny().includeDir;
-	auto& version = m_state.toolchain.version();
-	u32 versionMajor = m_state.toolchain.versionMajor();
-	auto cppFolder = fmt::format("{}/c++", systemIncludeDir);
-	if (Files::pathIsSymLink(cppFolder))
-	{
-		cppFolder = fmt::format("{}/{}", systemIncludeDir, Files::resolveSymlink(cppFolder));
-	}
-
-	auto versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, versionMajor));
-	if (!Files::pathExists(versionFolder))
-	{
-		versionFolder = Files::getCanonicalPath(fmt::format("{}/{}", cppFolder, version));
-		if (!Files::pathExists(versionFolder))
-		{
-			Diagnostic::error("Could not resolve system include directory");
-			return false;
-		}
-	}
-
-	m_systemHeaderDirectory = std::move(versionFolder);
-
-	return true;
-}
-
-/*****************************************************************************/
-bool ModuleStrategyGCC::isSystemModuleFile(const std::string& inFile) const
-{
-	return !m_systemHeaderDirectory.empty() && String::startsWith(m_systemHeaderDirectory, inFile);
-}
-
-/*****************************************************************************/
-std::string ModuleStrategyGCC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
-{
-	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
-	if (String::startsWith(m_systemHeaderDirectory, ret))
-	{
-		ret = String::getPathFilename(ret);
-	}
-
-	return ret;
+	return IModuleStrategy::initialize();
 }
 
 /*****************************************************************************/
@@ -105,9 +65,15 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 
 			// m_userHeaders.emplace_back(imported);
 
-			auto resolved = fmt::format("{}/{}", m_systemHeaderDirectory, imported);
-			if (Files::pathExists(resolved))
-				imported = std::move(resolved);
+			for (auto& systemDir : m_systemHeaderDirectories)
+			{
+				auto resolved = fmt::format("{}/{}", systemDir, imported);
+				if (Files::pathExists(resolved))
+				{
+					imported = std::move(resolved);
+					break;
+				}
+			}
 
 			m_headerUnitImports.at(source).emplace_back(std::move(imported));
 		}
@@ -236,7 +202,7 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 	for (auto& [name, contents] : mapFiles)
 	{
 		std::string mapFile;
-		if (isSystemModuleFile(name))
+		if (isSystemHeaderFileOrModuleFile(name))
 			mapFile = String::getPathFilename(name);
 		else
 			mapFile = name;

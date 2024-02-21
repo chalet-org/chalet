@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include "Compile/ModuleStrategy/IModuleStrategy.hpp"
+#include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 
 namespace chalet
 {
-struct ModuleStrategyMSVC final : public IModuleStrategy
+struct ModuleStrategyClang final : public ModuleStrategyGCC
 {
-	explicit ModuleStrategyMSVC(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
+	explicit ModuleStrategyClang(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
 	virtual bool initialize() final;
 
@@ -23,7 +23,5 @@ protected:
 
 private:
 	Dictionary<std::string> getSystemModules() const;
-
-	std::string m_systemModuleDirectory;
 };
 }

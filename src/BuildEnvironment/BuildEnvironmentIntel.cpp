@@ -32,6 +32,20 @@ BuildEnvironmentIntel::BuildEnvironmentIntel(const ToolchainType inType, BuildSt
 BuildEnvironmentIntel::~BuildEnvironmentIntel() = default;
 
 /*****************************************************************************/
+bool BuildEnvironmentIntel::supportsCppModules() const
+{
+	auto& inputFile = m_state.inputs.inputFile();
+	auto& compiler = m_state.toolchain.compilerCpp();
+	u32 versionMajorMinor = compiler.versionMajorMinor;
+	if (versionMajorMinor < 1500)
+	{
+		Diagnostic::error("{}: C++ modules are only supported with Clang versions >= 15.0.0 (found {})", inputFile, compiler.version);
+		return false;
+	}
+	return true;
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentIntel::getPrecompiledHeaderExtension() const
 {
 	// if (isIntelClassic())

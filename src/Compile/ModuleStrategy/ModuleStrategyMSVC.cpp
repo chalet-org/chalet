@@ -10,6 +10,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
@@ -29,19 +30,15 @@ ModuleStrategyMSVC::ModuleStrategyMSVC(BuildState& inState, CompileCommandsGener
 /*****************************************************************************/
 bool ModuleStrategyMSVC::initialize()
 {
-	if (m_msvcToolsDirectory.empty())
+	if (!IModuleStrategy::initialize())
+		return false;
+
+	if (!m_systemHeaderDirectories.empty())
 	{
-		m_msvcToolsDirectory = Environment::getString("VCToolsInstallDir");
-		Path::toUnix(m_msvcToolsDirectory);
+		m_systemModuleDirectory = fmt::format("{}/modules", m_systemHeaderDirectories.front());
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-bool ModuleStrategyMSVC::isSystemModuleFile(const std::string& inFile) const
-{
-	return !m_msvcToolsDirectory.empty() && String::startsWith(m_msvcToolsDirectory, inFile);
 }
 
 /*****************************************************************************/
@@ -209,7 +206,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			if (kSystemModules.find(systemModule) != kSystemModules.end())
 			{
 				auto& filename = kSystemModules.at(systemModule);
-				auto resolvedPath = fmt::format("{}/modules/{}", m_msvcToolsDirectory, filename);
+				auto resolvedPath = fmt::format("{}/{}", m_systemModuleDirectory, filename);
 				if (Files::pathExists(resolvedPath))
 				{
 					outModules[systemModule].source = std::move(resolvedPath);
@@ -285,25 +282,13 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 }
 
 /*****************************************************************************/
-std::string ModuleStrategyMSVC::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
-{
-	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
-	if (String::startsWith(m_msvcToolsDirectory, ret))
-	{
-		ret = String::getPathFilename(ret);
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
 {
 	Dictionary<std::string> ret;
 
-	if (!m_msvcToolsDirectory.empty())
+	if (!m_systemModuleDirectory.empty())
 	{
-		auto modulesJsonPath = fmt::format("{}/modules/modules.json", m_msvcToolsDirectory);
+		auto modulesJsonPath = fmt::format("{}/modules.json", m_systemModuleDirectory);
 		if (!Files::pathExists(modulesJsonPath))
 			return ret;
 
