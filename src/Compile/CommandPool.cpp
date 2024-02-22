@@ -281,11 +281,17 @@ bool CommandPool::runAll(JobList& inJobs, Settings& inSettings)
 
 	for (auto& job : inJobs)
 	{
+		if (job->list.empty())
+			continue;
+
 		inSettings.total += static_cast<u32>(job->list.size());
 	}
 
 	for (auto& job : inJobs)
 	{
+		if (job->list.empty())
+			continue;
+
 		if (!run(*job, inSettings))
 			return false;
 
