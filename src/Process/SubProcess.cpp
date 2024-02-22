@@ -795,12 +795,13 @@ bool SubProcess::readOnce(const HandleInput& inFileNo, OutputBuffer& dataBuffer,
 	auto& pipe = inFileNo == FileNo::StdErr ? m_err : m_out;
 
 #if defined(CHALET_WIN32)
-	bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
+	bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(dataBuffer.data()), static_cast<DWORD>(dataBuffer.size()), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
 	if (!result)
 		bytesRead = 0;
 #else
 	bytesRead = ::read(pipe.m_read, dataBuffer.data(), dataBuffer.size());
 #endif
+
 	return bytesRead > 0;
 }
 
