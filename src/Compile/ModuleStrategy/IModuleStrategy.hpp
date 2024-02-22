@@ -30,6 +30,7 @@ protected:
 		StringList importedModules;
 		StringList importedHeaderUnits;
 		bool systemModule = false;
+		bool implementationUnit = false;
 	};
 
 	struct ModulePayload
@@ -88,10 +89,6 @@ protected:
 	StringList m_systemHeaderDirectories;
 	StringList m_implementationUnits;
 
-	StrategyType m_oldStrategy = StrategyType::None;
-
-	mutable bool m_sourcesChanged = false;
-
 	const SourceTarget* m_project = nullptr;
 
 private:
@@ -108,7 +105,6 @@ private:
 	void addOtherBuildCommands(CommandPool::CmdList& outList);
 
 	std::string getModuleId() const;
-	bool rebuildRequiredFromLinks() const;
 	bool cachedValue(const std::string& inSource) const;
 	void setCompilerCache(const std::string& inSource, const bool inValue) const;
 	ModuleFileType getFileType(const Unique<SourceFileGroup>& group, const ModuleFileType inBaseType) const;
@@ -120,6 +116,10 @@ private:
 
 	mutable Dictionary<bool> m_compileCache;
 	Dictionary<std::string> m_systemModules;
+
+	StrategyType m_oldStrategy = StrategyType::None;
+
+	mutable bool m_sourcesChanged = false;
 
 	bool m_moduleCommandsChanged = false;
 	bool m_winResourceCommandsChanged = false;

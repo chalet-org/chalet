@@ -145,7 +145,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 	addOtherBuildJobsToLastJob(buildJobs);
 
 	bool targetExists = Files::pathExists(outputs->target);
-	bool requiredFromLinks = rebuildRequiredFromLinks();
+	bool requiredFromLinks = m_moduleCommandsChanged || m_compileAdapter.rebuildRequiredFromLinks(*m_project);
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
 	bool dependentChanged = targetExists && m_compileAdapter.checkDependentTargets(*m_project);
 	bool linkTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || otherTargetsChanged || !targetExists;
@@ -261,7 +261,7 @@ bool IModuleStrategy::addAllHeaderUnits()
 	SourceFileGroupList userHeaderUnits;
 	for (auto& [name, module] : m_modules)
 	{
-		if (String::startsWith('@', name))
+		if (module.implementationUnit)
 			m_implementationUnits.push_back(module.source);
 
 		m_modulePayload[module.source] = ModulePayload();
@@ -752,31 +752,6 @@ std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inFile
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::rebuildRequiredFromLinks() const
-{
-	auto& sourceCache = m_state.cache.file().sources();
-
-	bool result = false;
-
-	for (auto& target : m_state.targets)
-	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-
-			if (String::equals(project.name(), m_project->name()))
-				break;
-
-			if (List::contains(m_project->projectStaticLinks(), project.name()))
-			{
-				result |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
-			}
-		}
-	}
-	return result;
-}
-
-/*****************************************************************************/
 bool IModuleStrategy::cachedValue(const std::string& inSource) const
 {
 	return m_compileCache[inSource];
@@ -808,8 +783,9 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges()
 			continue;
 
 		const auto& sourceFile = group->sourceFile;
-		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile) || cachedValue(sourceFile);
-		if (!rebuildFromIncludes)
+		bool sourceNeedsUpdate = cachedValue(sourceFile);
+		rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(sourceFile);
+		if (sourceNeedsUpdate || !rebuildFromIncludes)
 		{
 			std::string dependencyFile;
 			if (isSystemHeaderFileOrModuleFile(sourceFile))
@@ -825,9 +801,9 @@ void IModuleStrategy::checkIncludedHeaderFilesForChanges()
 
 				for (auto& include : includes)
 				{
-					rebuildFromIncludes |= m_moduleCommandsChanged || sourceCache.fileChangedOrDoesNotExist(include) || cachedValue(sourceFile);
+					rebuildFromIncludes |= sourceCache.fileChangedOrDoesNotExist(include);
 				}
-				setCompilerCache(sourceFile, cachedValue(sourceFile) || rebuildFromIncludes);
+				setCompilerCache(sourceFile, sourceNeedsUpdate || rebuildFromIncludes);
 			}
 		}
 	}

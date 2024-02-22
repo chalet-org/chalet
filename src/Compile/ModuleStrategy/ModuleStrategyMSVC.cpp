@@ -131,7 +131,9 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 
 		auto name = data.at(MSVCKeys::ProvidedModule).get<std::string>();
 		if (name.empty())
-			name = fmt::format("@{}", group->sourceFile);
+		{
+			m_modules[name].implementationUnit = true;
+		}
 
 		m_modules[name].source = group->sourceFile;
 

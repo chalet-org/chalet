@@ -22,11 +22,13 @@ struct NativeCompileAdapter
 	void addChangedTarget(const SourceTarget& inProject);
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
+	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
 	bool anyCmakeOrSubChaletTargetsChanged() const;
 
 	void setDependencyCacheSize(const size_t inSize);
 	void clearDependencyCache();
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
+	bool anyDependenciesChanged(const std::string& dependency);
 
 	CommandPool::Settings getCommandPoolSettings() const;
 	CommandPool::CmdList getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;

@@ -9,6 +9,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "State/BuildInfo.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -17,6 +18,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -48,6 +50,29 @@ bool NativeCompileAdapter::checkDependentTargets(const SourceTarget& inProject) 
 		}
 	}
 
+	return result;
+}
+
+/*****************************************************************************/
+bool NativeCompileAdapter::rebuildRequiredFromLinks(const SourceTarget& inProject) const
+{
+	bool result = false;
+
+	for (auto& target : m_state.targets)
+	{
+		if (target->isSources())
+		{
+			auto& project = static_cast<const SourceTarget&>(*target);
+
+			if (String::equals(project.name(), inProject.name()))
+				break;
+
+			if (List::contains(inProject.projectStaticLinks(), project.name()))
+			{
+				result |= m_sourceCache.fileChangedOrDoesNotExist(m_state.paths.getTargetFilename(project));
+			}
+		}
+	}
 	return result;
 }
 
@@ -96,6 +121,12 @@ bool NativeCompileAdapter::fileChangedOrDependentChanged(const std::string& sour
 	if (result)
 		return true;
 
+	return anyDependenciesChanged(dependency);
+}
+
+/*****************************************************************************/
+bool NativeCompileAdapter::anyDependenciesChanged(const std::string& dependency)
+{
 	// Read through all the dependencies
 	if (!dependency.empty() && Files::pathExists(dependency))
 	{

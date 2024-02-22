@@ -24,7 +24,7 @@ protected:
 	virtual Dictionary<std::string> getSystemModules() const;
 
 private:
-	Dictionary<std::string> m_moduleMap;
+	Dictionary<std::string> m_reverseModuleLookup;
 	Dictionary<StringList> m_moduleImports;
 	Dictionary<StringList> m_headerUnitImports;
 };

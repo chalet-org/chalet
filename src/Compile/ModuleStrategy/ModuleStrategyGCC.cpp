@@ -135,12 +135,13 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 
 		if (moduleName.empty())
 		{
-			moduleName = fmt::format("@{}", source);
+			moduleName = source;
+			m_modules[moduleName].implementationUnit = true;
 		}
 
 		if (!moduleName.empty())
 		{
-			m_moduleMap.emplace(source, moduleName);
+			m_reverseModuleLookup.emplace(source, moduleName);
 		}
 	}
 
@@ -158,10 +159,10 @@ bool ModuleStrategyGCC::readModuleDependencies()
 		if (group->type != SourceType::CPlusPlus)
 			continue;
 
-		if (m_moduleMap.find(group->sourceFile) == m_moduleMap.end())
+		if (m_reverseModuleLookup.find(group->sourceFile) == m_reverseModuleLookup.end())
 			continue;
 
-		auto& name = m_moduleMap.at(group->sourceFile);
+		auto& name = m_reverseModuleLookup.at(group->sourceFile);
 
 		m_modules[name].source = group->sourceFile;
 		if (m_moduleImports.find(group->sourceFile) != m_moduleImports.end())
@@ -267,17 +268,19 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
 			}
 		}
+
 		for (auto& moduleMap : payload.moduleTranslations)
 		{
 			auto split = String::split(moduleMap, '=');
 			moduleContents += fmt::format("{} {}\n", split[0], split[1]);
 		}
+
 		if (mapFiles.find(module) == mapFiles.end())
 		{
-			if (m_moduleMap.find(module) != m_moduleMap.end())
+			if (m_reverseModuleLookup.find(module) != m_reverseModuleLookup.end())
 			{
-				auto& moduleName = m_moduleMap.at(module);
-				if (!String::startsWith('@', moduleName))
+				auto& moduleName = m_reverseModuleLookup.at(module);
+				if (!m_modules[moduleName].implementationUnit)
 				{
 					auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
 					moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
