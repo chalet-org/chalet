@@ -312,10 +312,6 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 {
 	auto&& [cmdColor, startIndex, total, quiet, showCommmands, keepGoing, msvcCommand] = inSettings;
 
-	#if !defined(CHALET_WIN32)
-	UNUSED(msvcCommand);
-	#endif
-
 	m_exceptionThrown.clear();
 	state->errorCode = CommandPoolErrorCode::None;
 	state->erroredOn.clear();
@@ -329,6 +325,8 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 		state->cwd = Files::getWorkingDirectory() + '\\';
 		state->dependencySearch = "Note: including file: ";
 	}
+	#else
+	UNUSED(msvcCommand);
 	#endif
 
 	state->shutdownHandler = [this]() -> bool {
