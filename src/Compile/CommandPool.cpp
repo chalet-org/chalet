@@ -5,17 +5,19 @@
 
 #include "Compile/CommandPool.hpp"
 
-#include <csignal>
+#if !USE_ALT_COMMAND_POOL
 
-#include "Process/Environment.hpp"
-#include "Process/SubProcessController.hpp"
-#include "System/Files.hpp"
-#include "System/SignalHandler.hpp"
-#include "Terminal/Output.hpp"
-#include "Terminal/Shell.hpp"
-#include "Utility/List.hpp"
-#include "Utility/Path.hpp"
-#include "Utility/String.hpp"
+	#include <csignal>
+
+	#include "Process/Environment.hpp"
+	#include "Process/SubProcessController.hpp"
+	#include "System/Files.hpp"
+	#include "System/SignalHandler.hpp"
+	#include "Terminal/Output.hpp"
+	#include "Terminal/Shell.hpp"
+	#include "Utility/List.hpp"
+	#include "Utility/Path.hpp"
+	#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -32,12 +34,12 @@ enum class CommandPoolErrorCode : u16
 
 struct PoolState
 {
-#if defined(CHALET_WIN32)
+	#if defined(CHALET_WIN32)
 	std::string vcInstallDir;
 	std::string ucrtsdkDir;
 	std::string cwd;
 	std::string dependencySearch;
-#endif
+	#endif
 
 	size_t refCount = 0;
 	u32 index = 0;
@@ -70,8 +72,8 @@ bool printCommand(std::string inText)
 	return true;
 }
 
-/*****************************************************************************/
-#if defined(CHALET_WIN32)
+	/*****************************************************************************/
+	#if defined(CHALET_WIN32)
 bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string sourceFile, std::string dependencyFile)
 {
 	std::string output;
@@ -172,7 +174,7 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 
 	return result;
 }
-#endif
+	#endif
 
 /*****************************************************************************/
 bool executeCommand(size_t inIndex, StringList inCommand)
@@ -310,16 +312,16 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 {
 	auto&& [cmdColor, startIndex, total, quiet, showCommmands, keepGoing, msvcCommand] = inSettings;
 
-#if !defined(CHALET_WIN32)
+	#if !defined(CHALET_WIN32)
 	UNUSED(msvcCommand);
-#endif
+	#endif
 
 	m_exceptionThrown.clear();
 	state->errorCode = CommandPoolErrorCode::None;
 	state->erroredOn.clear();
 	m_quiet = quiet;
 
-#if defined(CHALET_WIN32)
+	#if defined(CHALET_WIN32)
 	if (msvcCommand)
 	{
 		state->vcInstallDir = Environment::getString("VCINSTALLDIR");
@@ -327,7 +329,7 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 		state->cwd = Files::getWorkingDirectory() + '\\';
 		state->dependencySearch = "Note: including file: ";
 	}
-#endif
+	#endif
 
 	state->shutdownHandler = [this]() -> bool {
 		// if (state->errorCode != CommandPoolErrorCode::None)
@@ -372,14 +374,14 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 				&& haltOnError)
 				break;
 
-#if defined(CHALET_WIN32)
+	#if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
 				if (!executeCommandMsvc(index, it.command, String::getPathFilename(it.reference), it.dependency) && haltOnError)
 					break;
 			}
 			else
-#endif
+	#endif
 			{
 				if (!executeCommand(index, it.command) && haltOnError)
 					break;
@@ -402,13 +404,13 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
 					totalCompiles)));
 
-#if defined(CHALET_WIN32)
+	#if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
 				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, index, it.command, String::getPathFilename(it.reference), it.dependency));
 			}
 			else
-#endif
+	#endif
 			{
 				threadResults.emplace_back(m_threadPool.enqueue(executeCommand, index, it.command));
 			}
@@ -518,3 +520,4 @@ void CommandPool::cleanup()
 	state->errorCode = CommandPoolErrorCode::None;
 }
 }
+#endif

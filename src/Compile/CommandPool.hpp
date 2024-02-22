@@ -5,8 +5,17 @@
 
 #pragma once
 
-#include "Libraries/ThreadPool.hpp"
-#include "Terminal/Color.hpp"
+#include "System/DefinesExperimentalFeatures.hpp"
+
+#if CHALET_ALT_COMMAND_POOL
+	#include "Compile/CommandPoolAlt.hpp"
+namespace chalet
+{
+using CommandPool = CommandPoolAlt;
+}
+#else
+	#include "Libraries/ThreadPool.hpp"
+	#include "Terminal/Color.hpp"
 
 namespace chalet
 {
@@ -16,10 +25,10 @@ struct CommandPool
 	{
 		std::string output;
 		std::string reference;
-#if defined(CHALET_WIN32)
+	#if defined(CHALET_WIN32)
 		// msvc only
 		std::string dependency;
-#endif
+	#endif
 		StringList command;
 	};
 	using CmdList = std::vector<Cmd>;
@@ -65,3 +74,4 @@ private:
 	bool m_quiet = false;
 };
 }
+#endif
