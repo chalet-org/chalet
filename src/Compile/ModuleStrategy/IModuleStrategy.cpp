@@ -103,8 +103,11 @@ std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inFile
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain)
+bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 {
+	if (!initialize())
+		return false;
+
 	m_sourcesChanged = false;
 	m_oldStrategy = m_state.toolchain.strategy();
 	m_state.toolchain.setStrategy(StrategyType::Native);
@@ -115,68 +118,63 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 
 	m_project = &inProject;
 
-	checkCommandsForChanges(*inToolchain);
+	checkCommandsForChanges();
 
 	bool otherTargetsChanged = anyCmakeOrSubChaletTargetsChanged();
-
-	Dictionary<ModuleLookup> modules;
 
 	CommandPool::Job target;
 
 	// 1. Generate module source file dependency files to determine build order later
 	//
-	if (!scanSourcesForModuleDependencies(target, *inToolchain, inOutputs->groups))
+	if (!scanSourcesForModuleDependencies(target))
 		return onFailure();
 
 	// 2. Read the module dependency files that were generated
 	//
-	if (!readModuleDependencies(*inOutputs, modules))
+	if (!readModuleDependencies())
 		return onFailure();
 
 	// Build header units (build order shouldn't matter)
-	Dictionary<ModulePayload> modulePayload;
-	StringList headerUnitObjects;
-	SourceFileGroupList headerUnitList;
 
-	if (!addSystemModules(modules, modulePayload, inOutputs))
+	if (!addSystemModules())
 		return onFailure();
 
 	// Do this line break after the std module check
 	if (!target.list.empty())
 		Output::lineBreak();
 
-	if (!addAllHeaderUnits(modules, modulePayload, headerUnitObjects, headerUnitList))
+	if (!addAllHeaderUnits())
 		return onFailure();
 
 	// Scan Includes deduced from the dependency files
-	checkIncludedHeaderFilesForChanges(inOutputs->groups);
+	checkIncludedHeaderFilesForChanges();
 
 	// Log the current payload
-	// logPayload(modulePayload);
+	// logPayload(m_modulePayload);
 
 	// Generate module header unit dependency files to determine their build order
 	//
-	if (!scanHeaderUnitsForModuleDependencies(target, *inToolchain, modulePayload, headerUnitList))
+	if (!scanHeaderUnitsForModuleDependencies(target))
 		return onFailure();
 
 	target.list.clear();
 
 	CommandPool::JobList buildJobs;
-	addHeaderUnitsBuildJob(buildJobs, *inToolchain, headerUnitList, modulePayload);
+	addHeaderUnitsBuildJob(buildJobs);
 
-	headerUnitList.clear(); // No longer needed
+	m_headerUnitList.clear(); // No longer needed
 
-	buildDependencyGraphAndAddModulesBuildJobs(buildJobs, *inToolchain, modules, modulePayload, inOutputs);
+	buildDependencyGraphAndAddModulesBuildJobs(buildJobs);
 
 	// No longer needed
-	modules.clear();
+	m_modules.clear();
 	m_systemModules.clear();
 
 	//
 
-	addOtherBuildJobsToLastJob(buildJobs, *inToolchain, inOutputs);
+	addOtherBuildJobsToLastJob(buildJobs);
 
-	bool targetExists = Files::pathExists(inOutputs->target);
+	bool targetExists = Files::pathExists(outputs->target);
 	bool requiredFromLinks = rebuildRequiredFromLinks();
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
 	bool dependentChanged = targetExists && checkDependentTargets(*m_project);
@@ -192,18 +190,19 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 		settings.startIndex = 1;
 		settings.total = 0;
 
-		addHeaderUnitsToTargetLinks(inOutputs, std::move(headerUnitObjects));
+		addHeaderUnitsToTargetLinks();
 
-		auto addLinkJob = [this, &inToolchain, &inOutputs]() {
+		auto addLinkJob = [this]() {
 			auto job = std::make_unique<CommandPool::Job>();
-			job->list = getLinkCommand(*inToolchain, inOutputs->target, inOutputs->objectListLinker);
+			job->list = getLinkCommand(outputs->target, outputs->objectListLinker);
 			return job;
 		};
 
 		buildJobs.emplace_back(addLinkJob());
 
-		inOutputs.reset();
-		inToolchain.reset();
+		// clear up memory
+		outputs.reset();
+		toolchain.reset();
 		m_compileCache.clear();
 
 		CommandPool commandPool(m_state.info.maxJobs());
@@ -229,10 +228,10 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject, Unique<SourceO
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::addSystemModules(Dictionary<ModuleLookup>& modules, Dictionary<ModulePayload>& modulePayload, Unique<SourceOutputs>& inOutputs)
+bool IModuleStrategy::addSystemModules()
 {
 	std::vector<ModuleLookup*> systemModules;
-	for (auto& [name, module] : modules)
+	for (auto& [name, module] : m_modules)
 	{
 		if (module.systemModule)
 			systemModules.emplace_back(&module);
@@ -260,7 +259,7 @@ bool IModuleStrategy::addSystemModules(Dictionary<ModuleLookup>& modules, Dictio
 
 		for (auto& module : systemModules)
 		{
-			modulePayload[module->source] = ModulePayload();
+			m_modulePayload[module->source] = ModulePayload();
 
 			auto baseName = String::getPathBaseName(module->source);
 			baseName = fmt::format("{}_{}", baseName, m_moduleId);
@@ -274,7 +273,7 @@ bool IModuleStrategy::addSystemModules(Dictionary<ModuleLookup>& modules, Dictio
 			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(baseName);
 			group->otherFile = m_state.environment->getModuleBinaryInterfaceFile(baseName);
 
-			inOutputs->groups.emplace_back(std::move(group));
+			outputs->groups.emplace_back(std::move(group));
 		}
 	}
 
@@ -282,7 +281,7 @@ bool IModuleStrategy::addSystemModules(Dictionary<ModuleLookup>& modules, Dictio
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::addAllHeaderUnits(Dictionary<ModuleLookup>& modules, Dictionary<ModulePayload>& modulePayload, StringList& headerUnitObjects, SourceFileGroupList& headerUnitList)
+bool IModuleStrategy::addAllHeaderUnits()
 {
 	auto cwd = m_state.inputs.workingDirectory() + '/';
 	auto& includeDirs = m_project->includeDirs();
@@ -292,14 +291,14 @@ bool IModuleStrategy::addAllHeaderUnits(Dictionary<ModuleLookup>& modules, Dicti
 
 	StringList addedHeaderUnits;
 	SourceFileGroupList userHeaderUnits;
-	for (auto& [name, module] : modules)
+	for (auto& [name, module] : m_modules)
 	{
 		if (String::startsWith('@', name))
 			m_implementationUnits.push_back(module.source);
 
-		modulePayload[module.source] = ModulePayload();
+		m_modulePayload[module.source] = ModulePayload();
 
-		if (!addModuleRecursively(module, module, modules, modulePayload))
+		if (!addModuleRecursively(module, module))
 			return false;
 
 		if (module.systemModule)
@@ -366,7 +365,7 @@ bool IModuleStrategy::addAllHeaderUnits(Dictionary<ModuleLookup>& modules, Dicti
 
 			auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
 
-			List::addIfDoesNotExist(modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", headerUnitName, ifcFile));
+			List::addIfDoesNotExist(m_modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", headerUnitName, ifcFile));
 
 			if (List::contains(addedHeaderUnits, header))
 				continue;
@@ -384,47 +383,47 @@ bool IModuleStrategy::addAllHeaderUnits(Dictionary<ModuleLookup>& modules, Dicti
 			}
 			else
 			{
-				headerUnitObjects.emplace_back(group->objectFile);
-				headerUnitList.emplace_back(std::move(group));
+				m_headerUnitObjects.emplace_back(group->objectFile);
+				m_headerUnitList.emplace_back(std::move(group));
 			}
 		}
 
 		m_compileCache[module.source] |= rebuildFromHeader;
 	}
 
-	sortHeaderUnits(userHeaderUnits, headerUnitObjects, headerUnitList);
+	sortHeaderUnits(userHeaderUnits);
 
 	return true;
 }
 
 /*****************************************************************************/
-void IModuleStrategy::sortHeaderUnits(SourceFileGroupList& userHeaderUnits, StringList& headerUnitObjects, SourceFileGroupList& headerUnitList)
+void IModuleStrategy::sortHeaderUnits(SourceFileGroupList& userHeaderUnits)
 {
-	// Sort user header units at the end of headerUnitList
+	// Sort user header units at the end of m_headerUnitList
 	//
 	auto itr = userHeaderUnits.begin();
 	while (itr != userHeaderUnits.end())
 	{
 		auto&& group = *itr;
-		headerUnitObjects.emplace_back(group->objectFile);
-		headerUnitList.emplace_back(std::move(group));
+		m_headerUnitObjects.emplace_back(group->objectFile);
+		m_headerUnitList.emplace_back(std::move(group));
 		itr = userHeaderUnits.erase(itr);
 	}
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addHeaderUnitsToTargetLinks(Unique<SourceOutputs>& inOutputs, StringList&& headerUnitObjects)
+void IModuleStrategy::addHeaderUnitsToTargetLinks()
 {
 	if (m_state.environment->isMsvc())
 	{
-		inOutputs->objectListLinker = List::combineRemoveDuplicates(std::move(inOutputs->objectListLinker), std::move(headerUnitObjects));
+		outputs->objectListLinker = List::combineRemoveDuplicates(std::move(outputs->objectListLinker), std::move(m_headerUnitObjects));
 	}
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const SourceFileGroupList& inHeaderUnitList, const Dictionary<ModulePayload>& modulePayload)
+void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs)
 {
-	for (const auto& group : inHeaderUnitList)
+	for (const auto& group : m_headerUnitList)
 	{
 		if (group->dataType == SourceDataType::UserHeaderUnit)
 		{
@@ -437,9 +436,9 @@ void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs, Compile
 		}
 	}
 
-	auto makeHeaderUnitsJob = [this, &inToolchain, &inHeaderUnitList, &modulePayload]() {
+	auto makeHeaderUnitsJob = [this]() {
 		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(inToolchain, inHeaderUnitList, modulePayload, ModuleFileType::HeaderUnitObject);
+		job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
 		return job;
 	};
 
@@ -447,13 +446,13 @@ void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs, Compile
 }
 
 /*****************************************************************************/
-void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModuleLookup>& modules, const Dictionary<ModulePayload>& modulePayload, Unique<SourceOutputs>& inOutputs)
+void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::JobList& jobs)
 {
 	SourceFileGroupList sourceCompiles;
 	DependencyGraph dependencyGraph;
 	{
 		Dictionary<SourceFileGroup*> outGroups;
-		for (auto& group : inOutputs->groups)
+		for (auto& group : outputs->groups)
 		{
 			if (group->type != SourceType::CPlusPlus)
 				continue;
@@ -461,7 +460,7 @@ void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::Jo
 			outGroups[group->sourceFile] = group.get();
 		}
 
-		for (const auto& [name, module] : modules)
+		for (const auto& [name, module] : m_modules)
 		{
 			if (outGroups.find(module.source) == outGroups.end())
 				continue;
@@ -470,10 +469,10 @@ void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::Jo
 
 			for (auto& m : module.importedModules)
 			{
-				if (modules.find(m) == modules.end())
+				if (m_modules.find(m) == m_modules.end())
 					continue;
 
-				const auto& otherModule = modules.at(m);
+				const auto& otherModule = m_modules.at(m);
 				if (outGroups.find(otherModule.source) == outGroups.end())
 					continue;
 
@@ -483,11 +482,11 @@ void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::Jo
 	}
 
 	checkForDependencyChanges(dependencyGraph);
-	addModulesBuildJobs(jobs, inToolchain, modulePayload, sourceCompiles, dependencyGraph);
+	addModulesBuildJobs(jobs, sourceCompiles, dependencyGraph);
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, Unique<SourceOutputs>& inOutputs)
+void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 {
 	if (!jobs.empty())
 	{
@@ -495,13 +494,13 @@ void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs, Com
 			jobs.pop_back();
 
 		auto& job = jobs.back();
-		addOtherBuildCommands(job->list, inToolchain, inOutputs->groups);
+		addOtherBuildCommands(job->list);
 	}
 	else
 	{
-		auto addOtherCompilationsJob = [this, &inToolchain, &inOutputs]() {
+		auto addOtherCompilationsJob = [this]() {
 			auto job = std::make_unique<CommandPool::Job>();
-			addOtherBuildCommands(job->list, inToolchain, inOutputs->groups);
+			addOtherBuildCommands(job->list);
 			return job;
 		};
 		jobs.emplace_back(addOtherCompilationsJob());
@@ -509,7 +508,7 @@ void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs, Com
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType)
+CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inPayload, const ModuleFileType inType)
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
@@ -584,15 +583,15 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 			else
 				inputFile = source;
 
-			if (inModules.find(source) != inModules.end())
+			if (inPayload.find(source) != inPayload.end())
 			{
-				const auto& module = inModules.at(source);
+				const auto& module = inPayload.at(source);
 
-				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type);
+				out.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type);
 			}
 			else
 			{
-				out.command = inToolchain.compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, blankList, blankList, type);
+				out.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, blankList, blankList, type);
 			}
 			out.reference = source;
 
@@ -633,15 +632,15 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 				interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
 			}
 
-			if (inModules.find(source) != inModules.end())
+			if (inPayload.find(source) != inPayload.end())
 			{
-				const auto& module = inModules.at(source);
+				const auto& module = inPayload.at(source);
 
-				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
+				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
 			}
 			else if (type == ModuleFileType::HeaderUnitObject)
 			{
-				addToCompileCommandsJson(source, inToolchain.compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
+				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
 			}
 		}
 	}
@@ -650,11 +649,11 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(CompileToolchainControll
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList)
 {
 	auto& sourceCache = m_state.cache.file().sources();
 
-	for (auto& group : inGroups)
+	for (auto& group : outputs->groups)
 	{
 		const auto& source = group->sourceFile;
 
@@ -675,7 +674,7 @@ void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList, Compi
 			{
 				CommandPool::Cmd out;
 				out.output = source;
-				out.command = inToolchain.compilerWindowsResource->getCommand(source, target, dependency);
+				out.command = toolchain->compilerWindowsResource->getCommand(source, target, dependency);
 
 				out.reference = String::getPathFilename(out.output);
 
@@ -687,13 +686,13 @@ void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList, Compi
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController& inToolchain, const std::string& inTarget, const StringList& inLinks)
+CommandPool::CmdList IModuleStrategy::getLinkCommand(const std::string& inTarget, const StringList& inLinks)
 {
 	CommandPool::CmdList ret;
 
 	{
 		CommandPool::Cmd out;
-		out.command = inToolchain.getOutputTargetCommand(inTarget, inLinks);
+		out.command = toolchain->getOutputTargetCommand(inTarget, inLinks);
 
 		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
 		out.output = fmt::format("{} {}", label, inTarget);
@@ -705,14 +704,14 @@ CommandPool::CmdList IModuleStrategy::getLinkCommand(CompileToolchainController&
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload)
+bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule)
 {
 	for (const auto& imported : inModule.importedModules)
 	{
-		if (inModules.find(imported) == inModules.end())
+		if (m_modules.find(imported) == m_modules.end())
 			continue;
 
-		const auto& otherModule = inModules.at(imported);
+		const auto& otherModule = m_modules.at(imported);
 
 		std::string ifcFile;
 		if (m_systemModules.find(otherModule.source) != m_systemModules.end())
@@ -724,7 +723,7 @@ bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const Module
 			ifcFile = m_state.environment->getModuleBinaryInterfaceFile(otherModule.source);
 		}
 
-		List::addIfDoesNotExist(outPayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
+		List::addIfDoesNotExist(m_modulePayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
 
 		for (auto& header : otherModule.importedHeaderUnits)
 		{
@@ -751,7 +750,7 @@ bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const Module
 		}
 
 		m_previousSource = inModule.source;
-		if (!addModuleRecursively(outModule, otherModule, inModules, outPayload))
+		if (!addModuleRecursively(outModule, otherModule))
 			return false;
 	}
 
@@ -833,11 +832,11 @@ CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-void IModuleStrategy::checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups)
+void IModuleStrategy::checkIncludedHeaderFilesForChanges()
 {
 	bool rebuildFromIncludes = false;
 	auto& sourceCache = m_state.cache.file().sources();
-	for (auto& group : inGroups)
+	for (auto& group : outputs->groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
 			continue;
@@ -939,14 +938,14 @@ bool IModuleStrategy::addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupLi
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::makeModuleBatch(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList)
+bool IModuleStrategy::makeModuleBatch(CommandPool::JobList& jobs, const SourceFileGroupList& inList)
 {
 	if (inList.empty())
 		return false;
 
-	auto makeModuleObjectsJob = [this, &inToolchain, &inList, &inModules]() {
+	auto makeModuleObjectsJob = [this, &inList]() {
 		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(inToolchain, inList, inModules, ModuleFileType::ModuleObject);
+		job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
 		return job;
 	};
 
@@ -978,7 +977,7 @@ std::vector<SourceFileGroup*> IModuleStrategy::getSourceFileGroupsForBuild(Depen
 }
 
 /*****************************************************************************/
-void IModuleStrategy::addModulesBuildJobs(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph)
+void IModuleStrategy::addModulesBuildJobs(CommandPool::JobList& jobs, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph)
 {
 	auto groupsAdded = getSourceFileGroupsForBuild(outDependencyGraph, sourceCompiles);
 	if (!sourceCompiles.empty())
@@ -988,7 +987,7 @@ void IModuleStrategy::addModulesBuildJobs(CommandPool::JobList& jobs, CompileToo
 		{
 			LOG("  ", group->sourceFile);
 		}*/
-		makeModuleBatch(jobs, inToolchain, inModules, sourceCompiles);
+		makeModuleBatch(jobs, sourceCompiles);
 		sourceCompiles.clear();
 	}
 
@@ -1025,7 +1024,7 @@ void IModuleStrategy::addModulesBuildJobs(CommandPool::JobList& jobs, CompileToo
 					groupsAdded.push_back(group.get());
 				}
 
-				makeModuleBatch(jobs, inToolchain, inModules, sourceCompiles);
+				makeModuleBatch(jobs, sourceCompiles);
 				sourceCompiles.clear();
 			}
 			itr = outDependencyGraph.begin();
@@ -1034,9 +1033,9 @@ void IModuleStrategy::addModulesBuildJobs(CommandPool::JobList& jobs, CompileToo
 }
 
 /*****************************************************************************/
-void IModuleStrategy::logPayload(const Dictionary<ModulePayload>& inPayload) const
+void IModuleStrategy::logPayload() const
 {
-	for (auto& [source, data] : inPayload)
+	for (auto& [source, data] : m_modulePayload)
 	{
 		LOG(source);
 
@@ -1094,7 +1093,7 @@ bool IModuleStrategy::anyCmakeOrSubChaletTargetsChanged() const
 }
 
 /*****************************************************************************/
-void IModuleStrategy::checkCommandsForChanges(CompileToolchainController& inToolchain)
+void IModuleStrategy::checkCommandsForChanges()
 {
 	m_moduleCommandsChanged = false;
 	m_winResourceCommandsChanged = false;
@@ -1114,23 +1113,23 @@ void IModuleStrategy::checkCommandsForChanges(CompileToolchainController& inTool
 		{
 			auto type = ModuleFileType::ModuleObject;
 			auto cxxHashKey = Hash::string(fmt::format("{}_cxx_module_{}", name, static_cast<int>(type)));
-			StringList options = inToolchain.compilerCxx->getModuleCommand(sourceFile, objectFile, dependencyFile, interfaceFile, moduleTranslations, headerUnitTranslations, type);
+			StringList options = toolchain->compilerCxx->getModuleCommand(sourceFile, objectFile, dependencyFile, interfaceFile, moduleTranslations, headerUnitTranslations, type);
 
 			auto hash = Hash::string(String::join(options));
 			m_moduleCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
 		}
 
-		if (inToolchain.compilerWindowsResource)
+		if (toolchain->compilerWindowsResource)
 		{
 			auto cxxHashKey = Hash::string(fmt::format("{}_source_{}", name, static_cast<int>(SourceType::WindowsResource)));
-			StringList options = inToolchain.compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");
+			StringList options = toolchain->compilerWindowsResource->getCommand("cmd.rc", "cmd.res", "cmd.rc.d");
 
 			auto hash = Hash::string(String::join(options));
 			m_winResourceCommandsChanged = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
 		}
 
 		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
-		auto targetOptions = inToolchain.getOutputTargetCommand(m_project->outputFile(), m_project->files());
+		auto targetOptions = toolchain->getOutputTargetCommand(m_project->outputFile(), m_project->files());
 		auto targetHash = Hash::string(String::join(targetOptions));
 		m_targetCommandChanged = sourceCache.dataCacheValueChanged(targetHashKey, targetHash);
 

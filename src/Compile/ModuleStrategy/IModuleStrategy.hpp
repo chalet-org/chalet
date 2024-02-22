@@ -45,33 +45,42 @@ public:
 
 	[[nodiscard]] static ModuleStrategy make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator);
 
-	virtual bool buildProject(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs, CompileToolchain&& inToolchain);
+	virtual bool buildProject(const SourceTarget& inProject);
 
-	virtual bool initialize();
-	bool isSystemHeaderFileOrModuleFile(const std::string& inFile) const;
-	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) = 0;
-	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
-	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) = 0;
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) = 0;
+	Unique<SourceOutputs> outputs;
+	CompileToolchain toolchain;
 
 protected:
+	virtual bool initialize();
+
+	bool isSystemHeaderFileOrModuleFile(const std::string& inFile) const;
+	virtual bool readModuleDependencies() = 0;
+	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
+	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) = 0;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) = 0;
+
 	std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const;
 
-	CommandPool::CmdList getModuleCommands(CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups, const Dictionary<ModulePayload>& inModules, const ModuleFileType inType);
+	CommandPool::CmdList getModuleCommands(const SourceFileGroupList& inSourceList, const Dictionary<ModulePayload>& inPayload, const ModuleFileType inType);
 
-	CommandPool::CmdList getLinkCommand(CompileToolchainController& inToolchain, const std::string& inTarget, const StringList& inLinks);
+	CommandPool::CmdList getLinkCommand(const std::string& inTarget, const StringList& inLinks);
 
-	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule, const Dictionary<ModuleLookup>& inModules, Dictionary<ModulePayload>& outPayload);
+	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule);
 
-	void checkIncludedHeaderFilesForChanges(const SourceFileGroupList& inGroups);
+	void checkIncludedHeaderFilesForChanges();
 	void checkForDependencyChanges(DependencyGraph& dependencyGraph) const;
 	bool addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupList& outList) const;
-	void logPayload(const Dictionary<ModulePayload>& inPayload) const;
+	void logPayload() const;
 	void addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const;
 	CommandPool::Settings getCommandPoolSettings() const;
 
 	BuildState& m_state;
 	CompileCommandsGenerator& m_compileCommandsGenerator;
+
+	Dictionary<ModuleLookup> m_modules;
+	Dictionary<ModulePayload> m_modulePayload;
+	StringList m_headerUnitObjects;
+	SourceFileGroupList m_headerUnitList;
 
 	std::string m_previousSource;
 	std::string m_moduleId;
@@ -87,17 +96,17 @@ protected:
 	const SourceTarget* m_project = nullptr;
 
 private:
-	bool addSystemModules(Dictionary<ModuleLookup>& modules, Dictionary<ModulePayload>& modulePayload, Unique<SourceOutputs>& inOutputs);
-	bool addAllHeaderUnits(Dictionary<ModuleLookup>& modules, Dictionary<ModulePayload>& modulePayload, StringList& headerUnitObjects, SourceFileGroupList& headerUnitList);
-	void sortHeaderUnits(SourceFileGroupList& userHeaderUnits, StringList& headerUnitObjects, SourceFileGroupList& headerUnitList);
-	void addHeaderUnitsToTargetLinks(Unique<SourceOutputs>& inOutputs, StringList&& headerUnitObjects);
-	void addHeaderUnitsBuildJob(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const SourceFileGroupList& inHeaderUnitList, const Dictionary<ModulePayload>& modulePayload);
-	void buildDependencyGraphAndAddModulesBuildJobs(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModuleLookup>& modules, const Dictionary<ModulePayload>& modulePayload, Unique<SourceOutputs>& inOutputs);
-	void addModulesBuildJobs(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph);
-	bool makeModuleBatch(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, const Dictionary<ModulePayload>& inModules, const SourceFileGroupList& inList);
+	bool addSystemModules();
+	bool addAllHeaderUnits();
+	void sortHeaderUnits(SourceFileGroupList& userHeaderUnits);
+	void addHeaderUnitsToTargetLinks();
+	void addHeaderUnitsBuildJob(CommandPool::JobList& jobs);
+	void buildDependencyGraphAndAddModulesBuildJobs(CommandPool::JobList& jobs);
+	void addModulesBuildJobs(CommandPool::JobList& jobs, SourceFileGroupList& sourceCompiles, DependencyGraph& outDependencyGraph);
+	bool makeModuleBatch(CommandPool::JobList& jobs, const SourceFileGroupList& inList);
 	std::vector<SourceFileGroup*> getSourceFileGroupsForBuild(DependencyGraph& outDependencyGraph, SourceFileGroupList& outList) const;
-	void addOtherBuildJobsToLastJob(CommandPool::JobList& jobs, CompileToolchainController& inToolchain, Unique<SourceOutputs>& inOutputs);
-	void addOtherBuildCommands(CommandPool::CmdList& outList, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups);
+	void addOtherBuildJobsToLastJob(CommandPool::JobList& jobs);
+	void addOtherBuildCommands(CommandPool::CmdList& outList);
 
 	std::string getModuleId() const;
 	bool rebuildRequiredFromLinks() const;
@@ -108,7 +117,7 @@ private:
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 	bool anyCmakeOrSubChaletTargetsChanged() const;
-	void checkCommandsForChanges(CompileToolchainController& inToolchain);
+	void checkCommandsForChanges();
 
 	StringList m_targetsChanged;
 

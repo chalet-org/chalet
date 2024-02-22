@@ -142,17 +142,13 @@ bool ICompileStrategy::buildProjectModules(const SourceTarget& inProject)
 	const auto& name = inProject.name();
 	if (m_outputs.find(name) != m_outputs.end())
 	{
-		auto& outputs = m_outputs.at(name);
-		auto& toolchain = m_toolchains.at(name);
-
 		auto moduleStrategy = IModuleStrategy::make(m_state.environment->type(), m_state, m_compileCommandsGenerator);
 		if (moduleStrategy == nullptr)
 			return false;
 
-		if (!moduleStrategy->initialize())
-			return false;
-
-		if (!moduleStrategy->buildProject(inProject, std::move(outputs), std::move(toolchain)))
+		moduleStrategy->outputs = std::move(m_outputs.at(name));
+		moduleStrategy->toolchain = std::move(m_toolchains.at(name));
+		if (!moduleStrategy->buildProject(inProject))
 			return false;
 	}
 

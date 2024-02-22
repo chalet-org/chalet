@@ -42,11 +42,11 @@ bool ModuleStrategyMSVC::initialize()
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJob)
 {
 	// Scan sources for module dependencies
 
-	outJob.list = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	outJob.list = getModuleCommands(outputs->groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
 	if (!outJob.list.empty())
 	{
 		// Output::msgScanningForModuleDependencies();
@@ -70,9 +70,9 @@ bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJ
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
+bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
 {
-	outJob.list = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	outJob.list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
 	if (!outJob.list.empty())
 	{
 		// Scan sources for module dependencies
@@ -100,14 +100,14 @@ bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& 
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
+bool ModuleStrategyMSVC::readModuleDependencies()
 {
 	// Version 1.1
 
 	StringList foundSystemModules;
 	auto kSystemModules = getSystemModules();
 
-	for (auto& group : inOutputs.groups)
+	for (auto& group : outputs->groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
 			continue;
@@ -164,7 +164,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 		if (name.empty())
 			name = fmt::format("@{}", group->sourceFile);
 
-		outModules[name].source = group->sourceFile;
+		m_modules[name].source = group->sourceFile;
 
 		for (auto& moduleItr : data.at(MSVCKeys::ImportedModules).items())
 		{
@@ -180,7 +180,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			{
 				List::addIfDoesNotExist(foundSystemModules, moduleName);
 			}
-			List::addIfDoesNotExist(outModules[name].importedModules, std::move(moduleName));
+			List::addIfDoesNotExist(m_modules[name].importedModules, std::move(moduleName));
 		}
 
 		for (auto& fileItr : data.at(MSVCKeys::ImportedHeaderUnits).items())
@@ -195,7 +195,7 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 			auto outHeader = file.get<std::string>();
 			Path::toUnix(outHeader);
 
-			List::addIfDoesNotExist(outModules[name].importedHeaderUnits, std::move(outHeader));
+			List::addIfDoesNotExist(m_modules[name].importedHeaderUnits, std::move(outHeader));
 		}
 	}
 
@@ -209,15 +209,15 @@ bool ModuleStrategyMSVC::readModuleDependencies(const SourceOutputs& inOutputs, 
 				auto resolvedPath = fmt::format("{}/{}", m_systemModuleDirectory, filename);
 				if (Files::pathExists(resolvedPath))
 				{
-					outModules[systemModule].source = std::move(resolvedPath);
-					outModules[systemModule].systemModule = true;
+					m_modules[systemModule].source = std::move(resolvedPath);
+					m_modules[systemModule].systemModule = true;
 
 					if (String::equals("std.compat", systemModule))
 					{
 						// This is a bit of a hack so we don't have to scan std and std.compat deps if they're not used
 						// maybe fix later...
 						//
-						outModules[systemModule].importedModules.push_back("std");
+						m_modules[systemModule].importedModules.push_back("std");
 					}
 				}
 			}

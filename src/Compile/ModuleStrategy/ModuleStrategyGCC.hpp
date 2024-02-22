@@ -16,9 +16,9 @@ struct ModuleStrategyGCC : public IModuleStrategy
 	virtual bool initialize() override;
 
 protected:
-	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups) override;
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) override;
-	virtual bool readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules) override;
+	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) override;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) override;
+	virtual bool readModuleDependencies() override;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) override;
 
 	virtual Dictionary<std::string> getSystemModules() const;

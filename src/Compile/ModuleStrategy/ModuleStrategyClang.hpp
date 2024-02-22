@@ -16,7 +16,7 @@ struct ModuleStrategyClang final : public ModuleStrategyGCC
 	virtual bool initialize() final;
 
 protected:
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups) final;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) final;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) final;
 
 private:

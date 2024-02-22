@@ -33,12 +33,12 @@ bool ModuleStrategyGCC::initialize()
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, const SourceFileGroupList& inGroups)
+bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJob)
 {
-	UNUSED(outJob, inToolchain);
+	UNUSED(outJob);
 
 	// We need to call this to update the compiler cache, but we don't want to use the commands
-	auto commands = getModuleCommands(inToolchain, inGroups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
+	auto commands = getModuleCommands(outputs->groups, Dictionary<ModulePayload>{}, ModuleFileType::ModuleDependency);
 	UNUSED(commands);
 
 	const std::string kModulePrefix("export module ");
@@ -98,7 +98,7 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 		}
 	};
 
-	for (auto& group : inGroups)
+	for (auto& group : outputs->groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
 			continue;
@@ -148,19 +148,19 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob, CompileToolchainController& inToolchain, Dictionary<ModulePayload>& outPayload, const SourceFileGroupList& inGroups)
+bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
 {
 	UNUSED(outJob);
 
 	// We need to call this to update the compiler cache, but we don't want to use the commands
-	auto commands = getModuleCommands(inToolchain, inGroups, outPayload, ModuleFileType::HeaderUnitDependency);
+	auto commands = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
 	UNUSED(commands);
 
 	Dictionary<std::string> mapFiles;
 
 	auto& cwd = m_state.inputs.workingDirectory();
 
-	for (auto& [module, payload] : outPayload)
+	for (auto& [module, payload] : m_modulePayload)
 	{
 		std::string moduleContents;
 		for (auto& headerMap : payload.headerUnitTranslations)
@@ -218,14 +218,12 @@ bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& o
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, Dictionary<ModuleLookup>& outModules)
+bool ModuleStrategyGCC::readModuleDependencies()
 {
-	UNUSED(inOutputs);
-
 	StringList foundSystemModules;
 	auto kSystemModules = getSystemModules();
 
-	for (auto& group : inOutputs.groups)
+	for (auto& group : outputs->groups)
 	{
 		if (group->type != SourceType::CPlusPlus)
 			continue;
@@ -235,7 +233,7 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 
 		auto& name = m_moduleMap.at(group->sourceFile);
 
-		outModules[name].source = group->sourceFile;
+		m_modules[name].source = group->sourceFile;
 		if (m_moduleImports.find(group->sourceFile) != m_moduleImports.end())
 		{
 			auto& modulesForSource = m_moduleImports.at(group->sourceFile);
@@ -246,13 +244,13 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 					List::addIfDoesNotExist(foundSystemModules, moduleName);
 				}
 
-				List::addIfDoesNotExist(outModules[name].importedModules, moduleName);
+				List::addIfDoesNotExist(m_modules[name].importedModules, moduleName);
 			}
 		}
 
 		if (m_headerUnitImports.find(group->sourceFile) != m_headerUnitImports.end())
 		{
-			outModules[name].importedHeaderUnits = m_headerUnitImports.at(group->sourceFile);
+			m_modules[name].importedHeaderUnits = m_headerUnitImports.at(group->sourceFile);
 		}
 	}
 
@@ -278,15 +276,15 @@ bool ModuleStrategyGCC::readModuleDependencies(const SourceOutputs& inOutputs, D
 				auto resolvedPath = fmt::format("{}/modules/{}", m_systemHeaderDirectory, filename);
 				if (Files::pathExists(resolvedPath))
 				{
-					outModules[systemModule].source = std::move(resolvedPath);
-					outModules[systemModule].systemModule = true;
+					m_modules[systemModule].source = std::move(resolvedPath);
+					m_modules[systemModule].systemModule = true;
 
 					if (String::equals("std.compat", systemModule))
 					{
 						// This is a bit of a hack so we don't have to scan std and std.compat deps if they're not used
 						// maybe fix later...
 						//
-						outModules[systemModule].importedModules.push_back("std");
+						m_modules[systemModule].importedModules.push_back("std");
 					}
 				}
 			}
