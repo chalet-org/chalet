@@ -122,6 +122,9 @@ CommandPool::CmdList AssemblyDumper::getAsmCommands(const SourceOutputs& inOutpu
 
 	for (auto& group : inOutputs.groups)
 	{
+		if (group->type == SourceType::CxxPrecompiledHeader)
+			continue;
+
 		const auto& asmFile = group->otherFile;
 
 		if (asmFile.empty() || List::contains(m_cache, asmFile))
