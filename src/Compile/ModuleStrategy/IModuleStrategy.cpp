@@ -471,19 +471,21 @@ void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 /*****************************************************************************/
 ModuleFileType IModuleStrategy::getFileType(const Unique<SourceFileGroup>& group, const ModuleFileType inBaseType) const
 {
-	ModuleFileType type = inBaseType;
-	if (type == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, group->sourceFile))
-		type = ModuleFileType::ModuleImplementationUnit;
+	if (inBaseType == ModuleFileType::HeaderUnitDependency)
+		return inBaseType;
+
+	if (inBaseType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, group->sourceFile))
+		return ModuleFileType::ModuleImplementationUnit;
 
 	bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
 	bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
 
 	if (systemHeaderUnit)
-		type = ModuleFileType::SystemHeaderUnitObject;
+		return ModuleFileType::SystemHeaderUnitObject;
 	else if (userHeaderUnit)
-		type = ModuleFileType::HeaderUnitObject;
+		return ModuleFileType::HeaderUnitObject;
 
-	return type;
+	return inBaseType;
 }
 
 /*****************************************************************************/
