@@ -724,7 +724,7 @@ bool SubProcess::sendSignal(const SigNum inSignal)
 	}
 
 #else
-	if (m_pid == -1)
+	if (m_pid <= 0)
 		return true;
 
 	if (::kill(m_pid, static_cast<i32>(inSignal)) < 0)

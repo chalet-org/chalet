@@ -423,8 +423,6 @@ void CommandPoolAlt::RunningProcess::printOutput()
 			if (state->errorCode == CommandPoolErrorCode::None)
 				state->errorCode = CommandPoolErrorCode::BuildFailure;
 
-			state->erroredOn.push_back(index);
-
 			auto error = Output::getAnsiStyle(Output::theme().error);
 			auto reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(*command);
@@ -435,6 +433,7 @@ void CommandPoolAlt::RunningProcess::printOutput()
 		}
 		std::cout.flush();
 	}
+	output.clear();
 }
 
 	#if defined(CHALET_WIN32)
@@ -506,8 +505,6 @@ void CommandPoolAlt::RunningProcess::printMsvcOutput()
 		{
 			if (state->errorCode == CommandPoolErrorCode::None)
 				state->errorCode = CommandPoolErrorCode::BuildFailure;
-
-			state->erroredOn.push_back(index);
 
 			auto error = Output::getAnsiStyle(Output::theme().error);
 			auto reset = Output::getAnsiStyle(Output::theme().reset);
