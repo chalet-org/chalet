@@ -21,6 +21,7 @@ enum class Defs : u16
 {
 	/* Tools */
 	Bash,
+	CCache,
 	CommandPrompt,
 	CodeSign,
 	Git,
@@ -104,8 +105,13 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 
 	defs[Defs::Bash] = R"json({
 		"type": "string",
-		"description": "The executable path to GNU Bourne-Again SHell.",
+		"description": "The executable path to GNU Bourne-Again Shell.",
 		"default": "/usr/bin/bash"
+	})json"_ojson;
+
+	defs[Defs::CCache] = R"json({
+		"type": "string",
+		"description": "The executable path to Ccache."
 	})json"_ojson;
 
 	defs[Defs::CommandPrompt] = R"json({
@@ -563,6 +569,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	})json"_ojson;
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties] = Json::object();
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsBash] = defs[Defs::Bash];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCCache] = defs[Defs::CCache];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCommandPrompt] = defs[Defs::CommandPrompt];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCodesign] = defs[Defs::CodeSign];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsGit] = defs[Defs::Git];

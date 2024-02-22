@@ -261,6 +261,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	Json& tools = m_jsonFile.json[Keys::Tools];
 
 	whichAdd(tools, Keys::ToolsBash);
+	whichAdd(tools, Keys::ToolsCCache);
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsCodesign, HostPlatform::MacOS);
 #endif
@@ -626,6 +627,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		{
 			if (String::equals(Keys::ToolsBash, key))
 				m_centralState.tools.setBash(value.get<std::string>());
+			else if (String::equals(Keys::ToolsCCache, key))
+				m_centralState.tools.setCCache(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCodesign, key))
 				m_centralState.tools.setCodesign(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCommandPrompt, key))

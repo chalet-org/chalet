@@ -275,8 +275,12 @@
 			"properties": {
 				"bash": {
 					"type": "string",
-					"description": "The executable path to GNU Bourne-Again SHell.",
+					"description": "The executable path to GNU Bourne-Again Shell.",
 					"default": "/usr/bin/bash"
+				},
+				"ccache": {
+					"type": "string",
+					"description": "The executable path to Ccache."
 				},
 				"command_prompt": {
 					"type": "string",
