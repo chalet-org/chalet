@@ -162,11 +162,12 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 		addHeaderUnitsToTargetLinks();
 
-		{
+		auto addLinkJob = [this]() {
 			auto job = std::make_unique<CommandPool::Job>();
 			job->list = m_compileAdapter.getLinkCommand(*m_project, *toolchain, *outputs);
-			buildJobs.emplace_back(std::move(job));
+			return job;
 		};
+		buildJobs.emplace_back(addLinkJob());
 
 		// clear up memory
 		outputs.reset();
@@ -404,9 +405,12 @@ void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs)
 		}
 	}
 
-	auto job = std::make_unique<CommandPool::Job>();
-	job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
-	jobs.emplace_back(std::move(job));
+	auto makeHeaderUnitsJob = [this]() {
+		auto job = std::make_unique<CommandPool::Job>();
+		job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
+		return job;
+	};
+	jobs.emplace_back(makeHeaderUnitsJob());
 }
 
 /*****************************************************************************/
@@ -462,9 +466,12 @@ void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 	}
 	else
 	{
-		auto job = std::make_unique<CommandPool::Job>();
-		addOtherBuildCommands(job->list);
-		jobs.emplace_back(std::move(job));
+		auto addOtherCompilationsJob = [this]() {
+			auto job = std::make_unique<CommandPool::Job>();
+			addOtherBuildCommands(job->list);
+			return job;
+		};
+		jobs.emplace_back(addOtherCompilationsJob());
 	}
 }
 
@@ -887,9 +894,12 @@ bool IModuleStrategy::makeModuleBatch(CommandPool::JobList& jobs, const SourceFi
 	if (inList.empty())
 		return false;
 
-	auto job = std::make_unique<CommandPool::Job>();
-	job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
-	jobs.emplace_back(std::move(job));
+	auto makeModuleObjectsJob = [this, &inList]() {
+		auto job = std::make_unique<CommandPool::Job>();
+		job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
+		return job;
+	};
+	jobs.emplace_back(makeModuleObjectsJob());
 
 	return true;
 }
