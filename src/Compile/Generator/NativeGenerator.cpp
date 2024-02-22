@@ -88,7 +88,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			Files::removeIfExists(outputs->target);
 
 			auto target = std::make_unique<CommandPool::Job>();
-			target->list = getLinkCommand(outputs->target, outputs->objectListLinker);
+			target->list = m_compileAdapter.getLinkCommand(*m_project, *m_toolchain, *outputs);
 			if (!target->list.empty())
 			{
 				jobs.emplace_back(std::move(target));
@@ -122,13 +122,7 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 	auto& buildJobs = m_targets.at(inProject.name());
 	if (!buildJobs.empty())
 	{
-		CommandPool::Settings settings;
-		settings.color = Output::theme().build;
-		settings.msvcCommand = m_state.environment->isMsvc();
-		settings.keepGoing = m_state.info.keepGoing();
-		settings.showCommands = Output::showCommands();
-		settings.quiet = Output::quietNonBuild();
-
+		auto settings = m_compileAdapter.getCommandPoolSettings();
 		if (!m_commandPool->runAll(buildJobs, settings))
 		{
 			for (auto& failure : m_commandPool->failures())
@@ -338,27 +332,6 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 	if (m_sourcesChanged)
 	{
 		m_compileAdapter.addChangedTarget(*m_project);
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
-CommandPool::CmdList NativeGenerator::getLinkCommand(const std::string& inTarget, const StringList& inObjects)
-{
-	chalet_assert(m_project != nullptr, "");
-	chalet_assert(m_toolchain != nullptr, "");
-
-	CommandPool::CmdList ret;
-
-	{
-		CommandPool::Cmd out;
-		out.command = m_toolchain->getOutputTargetCommand(inTarget, inObjects);
-
-		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-		out.output = fmt::format("{} {}", label, m_state.paths.getBuildOutputPath(inTarget));
-
-		ret.emplace_back(std::move(out));
 	}
 
 	return ret;

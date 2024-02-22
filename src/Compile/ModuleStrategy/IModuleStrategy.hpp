@@ -64,8 +64,6 @@ protected:
 
 	CommandPool::CmdList getModuleCommands(const SourceFileGroupList& inSourceList, const Dictionary<ModulePayload>& inPayload, const ModuleFileType inType);
 
-	CommandPool::CmdList getLinkCommand(const std::string& inTarget, const StringList& inLinks);
-
 	bool addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule);
 
 	void checkIncludedHeaderFilesForChanges();
@@ -73,7 +71,6 @@ protected:
 	bool addSourceGroup(SourceFileGroup* inGroup, SourceFileGroupList& outList) const;
 	void logPayload() const;
 	void addToCompileCommandsJson(const std::string& inReference, StringList&& inCmd) const;
-	CommandPool::Settings getCommandPoolSettings() const;
 
 	BuildState& m_state;
 	CompileCommandsGenerator& m_compileCommandsGenerator;

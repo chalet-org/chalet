@@ -5,10 +5,14 @@
 
 #pragma once
 
+#include "Compile/CommandPool.hpp"
+#include "CompileToolchainController.hpp"
+
 namespace chalet
 {
 class BuildState;
 struct SourceCache;
+struct SourceOutputs;
 struct SourceTarget;
 
 struct NativeCompileAdapter
@@ -23,6 +27,9 @@ struct NativeCompileAdapter
 	void setDependencyCacheSize(const size_t inSize);
 	void clearDependencyCache();
 	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
+
+	CommandPool::Settings getCommandPoolSettings() const;
+	CommandPool::CmdList getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
 
 private:
 	const BuildState& m_state;

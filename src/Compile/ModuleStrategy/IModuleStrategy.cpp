@@ -73,37 +73,6 @@ bool IModuleStrategy::initialize()
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::isSystemHeaderFileOrModuleFile(const std::string& inFile) const
-{
-	if (m_systemHeaderDirectories.empty())
-		return false;
-
-	for (auto& systemDir : m_systemHeaderDirectories)
-	{
-		if (String::startsWith(systemDir, inFile))
-			return true;
-	}
-
-	return false;
-}
-
-/*****************************************************************************/
-std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
-{
-	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
-	for (auto& systemDir : m_systemHeaderDirectories)
-	{
-		if (String::startsWith(systemDir, ret))
-		{
-			ret = String::getPathFilename(ret);
-			break;
-		}
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 {
 	if (!initialize())
@@ -187,7 +156,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 		// Output::msgModulesCompiling();
 		// Output::lineBreak();
 
-		auto settings = getCommandPoolSettings();
+		auto settings = m_compileAdapter.getCommandPoolSettings();
 		settings.startIndex = 1;
 		settings.total = 0;
 
@@ -195,7 +164,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 		auto addLinkJob = [this]() {
 			auto job = std::make_unique<CommandPool::Job>();
-			job->list = getLinkCommand(outputs->target, outputs->objectListLinker);
+			job->list = m_compileAdapter.getLinkCommand(*m_project, *toolchain, *outputs);
 			return job;
 		};
 
@@ -687,24 +656,6 @@ void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList)
 }
 
 /*****************************************************************************/
-CommandPool::CmdList IModuleStrategy::getLinkCommand(const std::string& inTarget, const StringList& inLinks)
-{
-	CommandPool::CmdList ret;
-
-	{
-		CommandPool::Cmd out;
-		out.command = toolchain->getOutputTargetCommand(inTarget, inLinks);
-
-		auto label = m_project->isStaticLibrary() ? "Archiving" : "Linking";
-		out.output = fmt::format("{} {}", label, inTarget);
-
-		ret.emplace_back(std::move(out));
-	}
-
-	return ret;
-}
-
-/*****************************************************************************/
 bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const ModuleLookup& inModule)
 {
 	for (const auto& imported : inModule.importedModules)
@@ -774,6 +725,37 @@ std::string IModuleStrategy::getModuleId() const
 }
 
 /*****************************************************************************/
+bool IModuleStrategy::isSystemHeaderFileOrModuleFile(const std::string& inFile) const
+{
+	if (m_systemHeaderDirectories.empty())
+		return false;
+
+	for (auto& systemDir : m_systemHeaderDirectories)
+	{
+		if (String::startsWith(systemDir, inFile))
+			return true;
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
+std::string IModuleStrategy::getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const
+{
+	std::string ret = inIsObject ? inFile.sourceFile : inFile.dependencyFile;
+	for (auto& systemDir : m_systemHeaderDirectories)
+	{
+		if (String::startsWith(systemDir, ret))
+		{
+			ret = String::getPathFilename(ret);
+			break;
+		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool IModuleStrategy::rebuildRequiredFromLinks() const
 {
 	auto& sourceCache = m_state.cache.file().sources();
@@ -817,19 +799,6 @@ bool IModuleStrategy::onFailure()
 
 	m_state.toolchain.setStrategy(m_oldStrategy);
 	return false;
-}
-
-/*****************************************************************************/
-CommandPool::Settings IModuleStrategy::getCommandPoolSettings() const
-{
-	CommandPool::Settings ret;
-	ret.color = Output::theme().build;
-	ret.msvcCommand = m_state.environment->isMsvc();
-	ret.keepGoing = m_state.info.keepGoing();
-	ret.showCommands = Output::showCommands();
-	ret.quiet = Output::quietNonBuild();
-
-	return ret;
 }
 
 /*****************************************************************************/

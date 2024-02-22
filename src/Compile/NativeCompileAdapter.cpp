@@ -5,13 +5,17 @@
 
 #include "Compile/NativeCompileAdapter.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
+#include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "System/Files.hpp"
+#include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 
 namespace chalet
@@ -119,6 +123,37 @@ bool NativeCompileAdapter::fileChangedOrDependentChanged(const std::string& sour
 	}
 
 	return false;
+}
+
+/*****************************************************************************/
+CommandPool::Settings NativeCompileAdapter::getCommandPoolSettings() const
+{
+	CommandPool::Settings settings;
+	settings.color = Output::theme().build;
+	settings.msvcCommand = m_state.environment->isMsvc();
+	settings.keepGoing = m_state.info.keepGoing();
+	settings.showCommands = Output::showCommands();
+	settings.quiet = Output::quietNonBuild();
+
+	return settings;
+}
+
+/*****************************************************************************/
+CommandPool::CmdList NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+{
+	CommandPool::CmdList ret;
+
+	{
+		CommandPool::Cmd out;
+		out.command = inToolchain.getOutputTargetCommand(inOutputs.target, inOutputs.objectListLinker);
+
+		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
+		out.output = fmt::format("{} {}", label, inOutputs.target);
+
+		ret.emplace_back(std::move(out));
+	}
+
+	return ret;
 }
 
 }

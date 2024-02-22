@@ -52,9 +52,8 @@ bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJ
 		// Output::msgScanningForModuleDependencies();
 		// Output::lineBreak();
 
-		auto settings = getCommandPoolSettings();
 		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, settings))
+		if (!commandPool.run(outJob, m_compileAdapter.getCommandPoolSettings()))
 		{
 			auto& failures = commandPool.failures();
 			for (auto& failure : failures)
@@ -81,7 +80,7 @@ bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& 
 		// Output::lineBreak();
 
 		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, getCommandPoolSettings()))
+		if (!commandPool.run(outJob, m_compileAdapter.getCommandPoolSettings()))
 		{
 			auto& failures = commandPool.failures();
 			for (auto& failure : failures)
