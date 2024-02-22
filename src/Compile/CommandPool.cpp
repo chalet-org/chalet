@@ -5,7 +5,7 @@
 
 #include "Compile/CommandPool.hpp"
 
-#if !USE_ALT_COMMAND_POOL
+#if !CHALET_ALT_COMMAND_POOL
 
 	#include <csignal>
 
