@@ -5,6 +5,8 @@
 
 #include "Compile/CompilerCxx/ICompilerCxx.hpp"
 
+#include "State/AncillaryTools.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -160,6 +162,12 @@ bool ICompilerCxx::addExecutable(StringList& outArgList) const
 	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
 	if (executable.empty())
 		return false;
+
+	auto& ccache = m_state.tools.ccache();
+	if (m_state.info.compilerCache() && !ccache.empty())
+	{
+		outArgList.emplace_back(getQuotedPath(ccache));
+	}
 
 	outArgList.emplace_back(getQuotedPath(executable));
 	return true;
