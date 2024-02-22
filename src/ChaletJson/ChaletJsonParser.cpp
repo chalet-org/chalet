@@ -1134,6 +1134,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.addCompileOption(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outTarget.addLinkerOption(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "ccacheOptions", status))
+				outTarget.addCcacheOption(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "links", status))
@@ -1210,6 +1212,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.addCompileOptions(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "linkerOptions", status))
 				outTarget.addLinkerOptions(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "ccacheOptions", status))
+				outTarget.addCcacheOptions(std::move(val));
 #if defined(CHALET_MACOS)
 			else if (!m_isWebPlatform && isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "appleFrameworkPaths", status))
 				outTarget.addAppleFrameworkPaths(std::move(val));

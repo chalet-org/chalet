@@ -103,6 +103,9 @@ bool SourceTarget::initialize()
 	if (!replaceVariablesInPathList(m_linkerOptions))
 		return false;
 
+	if (!replaceVariablesInPathList(m_ccacheOptions))
+		return false;
+
 	if (!replaceVariablesInPathList(m_links))
 		return false;
 
@@ -425,6 +428,7 @@ const std::string& SourceTarget::getHash() const
 		auto staticLinks = String::join(m_staticLinks);
 		auto warnings = String::join(m_warnings);
 		auto compileOptions = String::join(m_compileOptions);
+		// Note: no need to add m_ccacheOptions
 		auto libDirs = String::join(m_libDirs);
 		auto includeDirs = String::join(m_includeDirs);
 		auto appleFrameworkPaths = String::join(m_appleFrameworkPaths);
@@ -725,6 +729,20 @@ void SourceTarget::addImportPackage(std::string&& inValue)
 {
 	m_state.packages.addRequiredPackage(inValue);
 	List::addIfDoesNotExist(m_importPackages, std::move(inValue));
+}
+
+/*****************************************************************************/
+const StringList& SourceTarget::ccacheOptions() const noexcept
+{
+	return m_ccacheOptions;
+}
+void SourceTarget::addCcacheOptions(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addCcacheOption);
+}
+void SourceTarget::addCcacheOption(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_ccacheOptions, std::move(inValue));
 }
 
 /*****************************************************************************/

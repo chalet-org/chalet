@@ -111,6 +111,7 @@ class ChaletJsonSchema
 		TargetSourceMetadataReadme,
 		//
 		TargetSourceCxx,
+		TargetSourceCxxCcacheOptions,
 		TargetSourceCxxCStandard,
 		TargetSourceCxxCppStandard,
 		TargetSourceCxxCompileOptions,

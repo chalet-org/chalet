@@ -345,6 +345,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_CXX_COMPILER",
 			"CMAKE_C_COMPILER",
 			"CMAKE_RC_COMPILER",
+			"CMAKE_CXX_COMPILER_LAUNCHER",
 			"CMAKE_BUILD_TYPE",
 			"CMAKE_LIBRARY_ARCHITECTURE",
 			"CMAKE_LIBRARY_PATH",
@@ -449,6 +450,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		const auto& compiler = m_state.toolchain.compilerWindowsResource();
 		if (!compiler.empty())
 			outList.emplace_back(fmt::format("-DCMAKE_RC_COMPILER={}", getQuotedPath(compiler)));
+	}
+
+	if (m_state.info.compilerCache() && !usingToolchainFile && !isDefined["CMAKE_CXX_COMPILER_LAUNCHER"])
+	{
+		auto& ccache = m_state.tools.ccache();
+		if (!ccache.empty())
+			outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER_LAUNCHER={}", getQuotedPath(ccache)));
 	}
 
 	if (!usingToolchainFile && !isDefined["CMAKE_BUILD_TYPE"])

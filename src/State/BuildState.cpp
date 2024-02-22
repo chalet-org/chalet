@@ -694,6 +694,15 @@ bool BuildState::validateState()
 		}
 	}
 
+	if (info.compilerCache() && (tools.ccache().empty() || !Files::pathExists(tools.ccache())))
+	{
+		if (tools.ccache().empty())
+			Diagnostic::warn("The option 'compilerCache' was set to true, but the path to ccache was empty.");
+		else
+			Diagnostic::warn("The option 'compilerCache' was set to true, but the path to ccache was not found: {}", tools.ccache());
+		tools.setCcache(std::string());
+	}
+
 	auto buildTargets = inputs.getBuildTargets();
 	if (List::contains(buildTargets, std::string(Values::All)))
 		buildTargets.clear();

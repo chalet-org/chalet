@@ -191,6 +191,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsCompilerCache, m_inputs.compilerCache(), inState.compilerCache);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOnlyRequired, m_inputs.onlyRequired(), inState.onlyRequired);
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
@@ -260,6 +261,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	Json& tools = m_jsonFile.json[Keys::Tools];
 
 	whichAdd(tools, Keys::ToolsBash);
+	whichAdd(tools, Keys::ToolsCcache);
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsCodesign, HostPlatform::MacOS);
 #endif
@@ -544,6 +546,11 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 				if (!m_inputs.keepGoing().has_value())
 					m_inputs.setKeepGoing(value.get<bool>());
 			}
+			else if (String::equals(Keys::OptionsCompilerCache, key))
+			{
+				if (!m_inputs.compilerCache().has_value())
+					m_inputs.setCompilerCache(value.get<bool>());
+			}
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 			{
 				if (!m_inputs.generateCompileCommands().has_value())
@@ -620,6 +627,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		{
 			if (String::equals(Keys::ToolsBash, key))
 				m_centralState.tools.setBash(value.get<std::string>());
+			else if (String::equals(Keys::ToolsCcache, key))
+				m_centralState.tools.setCcache(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCodesign, key))
 				m_centralState.tools.setCodesign(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCommandPrompt, key))

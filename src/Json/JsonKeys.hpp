@@ -61,6 +61,7 @@ CHALET_CONSTANT(OptionsShowCommands) = "showCommands";
 CHALET_CONSTANT(OptionsBenchmark) = "benchmark";
 CHALET_CONSTANT(OptionsLaunchProfiler) = "launchProfiler";
 CHALET_CONSTANT(OptionsKeepGoing) = "keepGoing";
+CHALET_CONSTANT(OptionsCompilerCache) = "compilerCache";
 CHALET_CONSTANT(OptionsSigningIdentity) = "signingIdentity";
 CHALET_CONSTANT(OptionsOsTargetName) = "osTargetName";
 CHALET_CONSTANT(OptionsOsTargetVersion) = "osTargetVersion";
@@ -90,6 +91,7 @@ CHALET_CONSTANT(ToolchainNinja) = "ninja";
 //
 CHALET_CONSTANT(Tools) = "tools";
 CHALET_CONSTANT(ToolsBash) = "bash";
+CHALET_CONSTANT(ToolsCcache) = "ccache";
 CHALET_CONSTANT(ToolsCodesign) = "codesign";
 CHALET_CONSTANT(ToolsCommandPrompt) = "command_prompt";
 CHALET_CONSTANT(ToolsGit) = "git";

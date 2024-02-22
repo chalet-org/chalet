@@ -93,6 +93,7 @@ private:
 	void addBenchmarkArg();
 	void addLaunchProfilerArg();
 	void addKeepGoingArg();
+	void addCompilerCacheArg();
 	void addSigningIdentityArg();
 	void addOsTargetNameArg();
 	void addOsTargetVersionArg();

@@ -30,6 +30,9 @@ struct AncillaryTools
 	void setBash(std::string&& inValue) noexcept;
 	bool bashAvailable() const noexcept;
 
+	const std::string& ccache() const noexcept;
+	void setCcache(std::string&& inValue) noexcept;
+
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;
 
@@ -120,6 +123,7 @@ private:
 	std::string m_chalet;
 
 	std::string m_bash;
+	std::string m_ccache;
 	std::string m_codesign;
 	std::string m_commandPrompt;
 	std::string m_git;

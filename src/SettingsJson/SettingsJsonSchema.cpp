@@ -21,6 +21,7 @@ enum class Defs : u16
 {
 	/* Tools */
 	Bash,
+	Ccache,
 	CommandPrompt,
 	CodeSign,
 	Git,
@@ -63,6 +64,7 @@ enum class Defs : u16
 	ShowCommands,
 	Benchmark,
 	KeepGoing,
+	CompilerCache,
 	LaunchProfiler,
 	LastBuildConfiguration,
 	LastToolchain,
@@ -103,8 +105,13 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 
 	defs[Defs::Bash] = R"json({
 		"type": "string",
-		"description": "The executable path to GNU Bourne-Again SHell.",
+		"description": "The executable path to GNU Bourne-Again Shell.",
 		"default": "/usr/bin/bash"
+	})json"_ojson;
+
+	defs[Defs::Ccache] = R"json({
+		"type": "string",
+		"description": "The executable path to Ccache."
 	})json"_ojson;
 
 	defs[Defs::CommandPrompt] = R"json({
@@ -359,6 +366,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"default": false
 	})json"_ojson;
 
+	defs[Defs::CompilerCache] = R"json({
+		"type": "boolean",
+		"description": "true to use a compiler cache (ie. ccache) if available, false to disable (default).",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::LaunchProfiler] = R"json({
 		"type": "boolean",
 		"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
@@ -537,6 +550,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOnlyRequired] = defs[Defs::OnlyRequired];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsCompilerCache] = defs[Defs::CompilerCache];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];
@@ -555,6 +569,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	})json"_ojson;
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties] = Json::object();
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsBash] = defs[Defs::Bash];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCcache] = defs[Defs::Ccache];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCommandPrompt] = defs[Defs::CommandPrompt];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCodesign] = defs[Defs::CodeSign];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsGit] = defs[Defs::Git];

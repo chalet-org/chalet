@@ -86,6 +86,10 @@ struct SourceTarget final : public IBuildTarget
 	void addImportPackages(StringList&& inList);
 	void addImportPackage(std::string&& inValue);
 
+	const StringList& ccacheOptions() const noexcept;
+	void addCcacheOptions(StringList&& inList);
+	void addCcacheOption(std::string&& inValue);
+
 	//
 	void parseOutputFilename() noexcept;
 
@@ -235,6 +239,7 @@ private:
 	StringList m_fileExcludes;
 	StringList m_configureFiles;
 	StringList m_importPackages;
+	StringList m_ccacheOptions;
 
 	std::string m_warningsPresetString;
 	std::string m_outputFile;

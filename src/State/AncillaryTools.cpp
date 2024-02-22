@@ -168,6 +168,16 @@ bool AncillaryTools::bashAvailable() const noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::ccache() const noexcept
+{
+	return m_ccache;
+}
+void AncillaryTools::setCcache(std::string&& inValue) noexcept
+{
+	m_ccache = std::move(inValue);
+}
+
+/*****************************************************************************/
 const std::string& AncillaryTools::codesign() const noexcept
 {
 	return m_codesign;

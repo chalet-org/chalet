@@ -43,6 +43,7 @@ enum class ArgumentIdentifier : u16
 	Benchmark,
 	LaunchProfiler,
 	KeepGoing,
+	CompilerCache,
 	SaveUserToolchainGlobally,
 	SigningIdentity,
 	OsTargetName,

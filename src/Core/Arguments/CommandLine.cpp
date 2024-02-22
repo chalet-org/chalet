@@ -232,6 +232,10 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						inputs->setKeepGoing(value);
 						break;
 
+					case ArgumentIdentifier::CompilerCache:
+						inputs->setCompilerCache(value);
+						break;
+
 					case ArgumentIdentifier::GenerateCompileCommands:
 						inputs->setGenerateCompileCommands(value);
 						break;
