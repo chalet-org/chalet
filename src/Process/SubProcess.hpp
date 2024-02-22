@@ -17,13 +17,20 @@ namespace chalet
 class SubProcess
 {
 	using CmdPtrArray = std::vector<char*>;
-#if defined(CHALET_WIN32)
-	using HandleInput = DWORD;
-#else
-	using HandleInput = PipeHandle;
-#endif
+
+	static constexpr size_t kDataBufferSize = 256;
 
 public:
+	using OutputBuffer = std::array<char, kDataBufferSize>;
+
+#if defined(CHALET_WIN32)
+	using HandleInput = DWORD;
+	using ReadResult = DWORD;
+#else
+	using HandleInput = PipeHandle;
+	using ReadResult = ssize_t;
+#endif
+
 	SubProcess() = default;
 	CHALET_DISALLOW_COPY_MOVE(SubProcess);
 	~SubProcess();
@@ -32,26 +39,26 @@ public:
 	static std::string getErrorMessageFromCode(const i32 inCode);
 	static std::string getErrorMessageFromSignalRaised(const i32 inCode);
 	static std::string getSignalNameFromCode(i32 inCode);
+	static ReadResult getInitialReadValue();
 
 	bool create(const StringList& inCmd, const ProcessOptions& inOptions);
 	void close();
 
+	i32 pollState();
 	i32 waitForResult();
 	bool sendSignal(const SigNum inSignal);
 	bool terminate();
 	bool kill();
+	bool killed();
 
-	void read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRead = nullptr);
+	void read(const HandleInput& inFileNo, OutputBuffer& dataBuffer, const ProcessOptions::PipeFunc& onRead = nullptr);
+	bool readOnce(const HandleInput& inFileNo, OutputBuffer& dataBuffer, ReadResult& bytesRead);
 
 private:
 #if defined(CHALET_MACOS) || defined(CHALET_LINUX)
 	i32 getReturnCode(const i32 inExitCode);
 	CmdPtrArray getCmdVector(const StringList& inCmd);
 #endif
-	ProcessPipe& getFilePipe(const HandleInput inFileNo);
-
-	static constexpr size_t kDataBufferSize = 256;
-	std::array<char, kDataBufferSize> m_DataBuffer;
 
 #if defined(CHALET_WIN32)
 	PROCESS_INFORMATION m_processInfo{ 0, 0, 0, 0 };

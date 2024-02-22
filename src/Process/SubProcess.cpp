@@ -62,6 +62,53 @@ std::string getWindowsArguments(const StringList& inCmd)
 }
 
 /*****************************************************************************/
+i32 SubProcess::pollState()
+{
+	if (m_pid == 0)
+	{
+		DWORD error = ::GetLastError();
+		return static_cast<i32>(error);
+	}
+
+	DWORD waitMs = 0;
+	DWORD result = ::WaitForSingleObject(m_processInfo.hProcess, waitMs);
+	if (result == WAIT_TIMEOUT)
+	{
+		return -1;
+	}
+	else if (result == WAIT_ABANDONED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_ABANDONED error: {}", error);
+		return -1;
+	}
+	else if (result == WAIT_FAILED)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject WAIT_FAILED error: {}", error);
+		return -1;
+	}
+
+	if (result != WAIT_OBJECT_0)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("WaitForSingleObject error: {}", error);
+		return -1;
+	}
+
+	DWORD exitCode;
+	bool ret = ::GetExitCodeProcess(m_processInfo.hProcess, &exitCode) == TRUE;
+	if (!ret)
+	{
+		DWORD error = ::GetLastError();
+		Diagnostic::error("GetExitCodeProcess error: {}", error);
+		return -1;
+	}
+
+	return static_cast<i32>(exitCode);
+}
+
+/*****************************************************************************/
 i32 SubProcess::waitForResult()
 {
 	if (m_pid == 0)
@@ -136,9 +183,20 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 }
 #else
 /*****************************************************************************/
+i32 SubProcess::pollState()
+{
+	i32 exitCode = -1;
+	ProcessID child = ::waitpid(m_pid, &exitCode, WNOHANG);
+	if (child == 0 || (child == -1 && errno == EINTR))
+		return -1;
+
+	return getReturnCode(exitCode);
+}
+
+/*****************************************************************************/
 i32 SubProcess::waitForResult()
 {
-	i32 exitCode;
+	i32 exitCode = -1;
 	while (true)
 	{
 		ProcessID child = ::waitpid(m_pid, &exitCode, 0);
@@ -427,19 +485,6 @@ std::string SubProcess::getSignalNameFromCode(i32 inCode)
 }
 
 /*****************************************************************************/
-ProcessPipe& SubProcess::getFilePipe(const HandleInput inFileNo)
-{
-	if (inFileNo == FileNo::StdErr)
-	{
-		return m_err;
-	}
-	else
-	{
-		return m_out;
-	}
-}
-
-/*****************************************************************************/
 /*****************************************************************************/
 SubProcess::~SubProcess()
 {
@@ -709,36 +754,54 @@ bool SubProcess::kill()
 }
 
 /*****************************************************************************/
-void SubProcess::read(HandleInput inFileNo, const ProcessOptions::PipeFunc& onRead)
+bool SubProcess::killed()
 {
-	auto& pipe = getFilePipe(inFileNo);
+	return m_killed;
+}
+
+/*****************************************************************************/
+SubProcess::ReadResult SubProcess::getInitialReadValue()
+{
 #if defined(CHALET_WIN32)
-	DWORD bytesRead = 0;
+	return static_cast<ReadResult>(0);
 #else
-	ssize_t bytesRead = std::numeric_limits<ssize_t>::max();
+	return std::numeric_limits<ReadResult>::max();
 #endif
-	auto bufferData = m_DataBuffer.data();
-	size_t bufferSize = m_DataBuffer.size();
+}
+
+/*****************************************************************************/
+void SubProcess::read(const HandleInput& inFileNo, OutputBuffer& dataBuffer, const ProcessOptions::PipeFunc& onRead)
+{
+	ReadResult bytesRead = getInitialReadValue();
+
 	while (true)
 	{
 		if (m_killed)
 			break;
 
-#if defined(CHALET_WIN32)
-		bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
-		if (!result)
-			bytesRead = 0;
-#else
-		bytesRead = ::read(pipe.m_read, bufferData, bufferSize);
-#endif
-		if (bytesRead > 0)
+		if (readOnce(inFileNo, dataBuffer, bytesRead))
 		{
 			if (onRead != nullptr)
-				onRead(std::string(bufferData, bytesRead));
+				onRead(std::string(dataBuffer.data(), bytesRead));
 		}
 		else
 			break;
 	}
+}
+
+/*****************************************************************************/
+bool SubProcess::readOnce(const HandleInput& inFileNo, OutputBuffer& dataBuffer, ReadResult& bytesRead)
+{
+	auto& pipe = inFileNo == FileNo::StdErr ? m_err : m_out;
+
+#if defined(CHALET_WIN32)
+	bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(bufferData), static_cast<DWORD>(bufferSize), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
+	if (!result)
+		bytesRead = 0;
+#else
+	bytesRead = ::read(pipe.m_read, dataBuffer.data(), dataBuffer.size());
+#endif
+	return bytesRead > 0;
 }
 
 }

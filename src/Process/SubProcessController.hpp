@@ -10,12 +10,21 @@
 
 namespace chalet
 {
-namespace SubProcessController
+class SubProcess;
+
+struct SubProcessController
 {
-i32 run(const StringList& inCmd, const ProcessOptions& inOptions);
-i32 getLastExitCode();
-std::string getSystemMessage(const i32 inExitCode);
-std::string getSignalRaisedMessage(const i32 inExitCode);
-std::string getSignalNameFromCode(const i32 inExitCode);
-}
+	static i32 run(const StringList& inCmd, const ProcessOptions& inOptions);
+	static bool create(SubProcess& process, const StringList& inCmd, const ProcessOptions& inOptions);
+	static i32 getLastExitCodeFromProcess(SubProcess& process);
+	static i32 getLastExitCodeFromProcess(SubProcess& process, const bool waitForResult);
+	static i32 pollProcessState(SubProcess& process);
+	static i32 getLastExitCode();
+	static std::string getSystemMessage(const i32 inExitCode);
+	static std::string getSignalRaisedMessage(const i32 inExitCode);
+	static std::string getSignalNameFromCode(const i32 inExitCode);
+
+private:
+	static bool commandIsValid(const StringList& inCmd);
+};
 }

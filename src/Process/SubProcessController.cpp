@@ -33,43 +33,75 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 {
 	CHALET_TRY
 	{
-		if (inCmd.empty())
-		{
-			Diagnostic::error("Subprocess: Command cannot be empty.");
+		if (!commandIsValid(inCmd))
 			return -1;
-		}
-
-		if (!Files::pathExists(inCmd.front()))
-		{
-			Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
-			return -1;
-		}
 
 		SubProcess process;
 		if (!process.create(inCmd, inOptions))
-		{
-			state.lastErrorCode = process.waitForResult();
-			return state.lastErrorCode;
-		}
+			return getLastExitCodeFromProcess(process);
 
 		if (inOptions.waitForResult)
 		{
+			SubProcess::OutputBuffer dataBuffer;
 			if (inOptions.stdoutOption == PipeOption::Pipe || inOptions.stdoutOption == PipeOption::Close)
-				process.read(FileNo::StdOut, inOptions.onStdOut);
+				process.read(FileNo::StdOut, dataBuffer, inOptions.onStdOut);
 
 			if (inOptions.stderrOption == PipeOption::Pipe || inOptions.stderrOption == PipeOption::Close)
-				process.read(FileNo::StdErr, inOptions.onStdErr);
+				process.read(FileNo::StdErr, dataBuffer, inOptions.onStdErr);
 		}
 
-		state.lastErrorCode = inOptions.waitForResult ? process.waitForResult() : 0;
-
-		return state.lastErrorCode;
+		return getLastExitCodeFromProcess(process, inOptions.waitForResult);
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
 		Diagnostic::error("Subprocess error: {}", err.what());
 		return -1;
 	}
+}
+
+/*****************************************************************************/
+bool SubProcessController::create(SubProcess& outProcess, const StringList& inCmd, const ProcessOptions& inOptions)
+{
+	CHALET_TRY
+	{
+		if (!commandIsValid(inCmd))
+			return false;
+
+		if (!outProcess.create(inCmd, inOptions))
+			return getLastExitCodeFromProcess(outProcess);
+
+		return true;
+	}
+	CHALET_CATCH(const std::exception& err)
+	{
+		Diagnostic::error("Subprocess error: {}", err.what());
+		return false;
+	}
+}
+
+/*****************************************************************************/
+i32 SubProcessController::getLastExitCodeFromProcess(SubProcess& process)
+{
+	state.lastErrorCode = process.waitForResult();
+	return state.lastErrorCode;
+}
+
+/*****************************************************************************/
+i32 SubProcessController::getLastExitCodeFromProcess(SubProcess& process, const bool waitForResult)
+{
+	state.lastErrorCode = waitForResult ? process.waitForResult() : 0;
+	return state.lastErrorCode;
+}
+
+/*****************************************************************************/
+i32 SubProcessController::pollProcessState(SubProcess& process)
+{
+	auto result = process.pollState();
+	if (result == -1)
+		return result;
+
+	state.lastErrorCode = result;
+	return result;
 }
 
 /*****************************************************************************/
@@ -97,5 +129,23 @@ std::string SubProcessController::getSignalRaisedMessage(const i32 inExitCode)
 std::string SubProcessController::getSignalNameFromCode(const i32 inExitCode)
 {
 	return SubProcess::getSignalNameFromCode(inExitCode);
+}
+
+/*****************************************************************************/
+bool SubProcessController::commandIsValid(const StringList& inCmd)
+{
+	if (inCmd.empty())
+	{
+		Diagnostic::error("Subprocess: Command cannot be empty.");
+		return false;
+	}
+
+	if (!Files::pathExists(inCmd.front()))
+	{
+		Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
+		return false;
+	}
+
+	return true;
 }
 }
