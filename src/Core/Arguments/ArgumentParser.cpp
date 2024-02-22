@@ -1350,6 +1350,13 @@ void ArgumentParser::addKeepGoingArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addCompilerCacheArg()
+{
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::CompilerCache, "--[no-]compiler-cache");
+	arg.setHelp("Use a compiler cache (ie. ccache) if available.");
+}
+
+/*****************************************************************************/
 void ArgumentParser::addSigningIdentityArg()
 {
 	auto& arg = addStringArgument(ArgumentIdentifier::SigningIdentity, "--signing-identity");
@@ -1431,6 +1438,7 @@ void ArgumentParser::populateCommonBuildArguments()
 	addBenchmarkArg();
 	addLaunchProfilerArg();
 	addKeepGoingArg();
+	addCompilerCacheArg();
 	addGenerateCompileCommandsArg();
 	addOnlyRequiredArg();
 	addSaveUserToolchainGloballyArg();

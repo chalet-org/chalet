@@ -46,6 +46,7 @@ struct BuildInfo
 	bool generateCompileCommands() const noexcept;
 	bool launchProfiler() const noexcept;
 	bool keepGoing() const noexcept;
+	bool compilerCache() const noexcept;
 	bool onlyRequired() const noexcept;
 
 private:
@@ -66,6 +67,7 @@ private:
 	bool m_generateCompileCommands = false;
 	bool m_launchProfiler = true;
 	bool m_keepGoing = false;
+	bool m_compilerCache = false;
 	bool m_onlyRequired = false;
 };
 }

@@ -176,6 +176,9 @@ struct CommandLineInputs
 	const std::optional<bool>& keepGoing() const noexcept;
 	void setKeepGoing(const bool inValue) noexcept;
 
+	const std::optional<bool>& compilerCache() const noexcept;
+	void setCompilerCache(const bool inValue) noexcept;
+
 	const std::optional<bool>& generateCompileCommands() const noexcept;
 	void setGenerateCompileCommands(const bool inValue) noexcept;
 
@@ -245,6 +248,7 @@ private:
 	std::optional<bool> m_benchmark;
 	std::optional<bool> m_launchProfiler;
 	std::optional<bool> m_keepGoing;
+	std::optional<bool> m_compilerCache;
 	std::optional<bool> m_generateCompileCommands;
 	mutable std::optional<bool> m_onlyRequired;
 

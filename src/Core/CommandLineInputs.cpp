@@ -1092,6 +1092,16 @@ void CommandLineInputs::setKeepGoing(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::optional<bool>& CommandLineInputs::compilerCache() const noexcept
+{
+	return m_compilerCache;
+}
+void CommandLineInputs::setCompilerCache(const bool inValue) noexcept
+{
+	m_compilerCache = inValue;
+}
+
+/*****************************************************************************/
 const std::optional<bool>& CommandLineInputs::generateCompileCommands() const noexcept
 {
 	return m_generateCompileCommands;

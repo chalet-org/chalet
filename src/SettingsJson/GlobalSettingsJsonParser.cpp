@@ -81,6 +81,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 	assignSettingBool(Keys::OptionsBenchmark, inState.benchmark);
 	assignSettingBool(Keys::OptionsLaunchProfiler, inState.launchProfiler);
 	assignSettingBool(Keys::OptionsKeepGoing, inState.keepGoing);
+	assignSettingBool(Keys::OptionsCompilerCache, inState.compilerCache);
 	assignSettingBool(Keys::OptionsGenerateCompileCommands, inState.generateCompileCommands);
 	assignSettingBool(Keys::OptionsOnlyRequired, inState.onlyRequired);
 	assignSettingUint(Keys::OptionsMaxJobs, inState.maxJobs);
@@ -228,6 +229,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.launchProfiler = value.get<bool>();
 			else if (String::equals(Keys::OptionsKeepGoing, key))
 				outState.keepGoing = value.get<bool>();
+			else if (String::equals(Keys::OptionsCompilerCache, key))
+				outState.compilerCache = value.get<bool>();
 			else if (String::equals(Keys::OptionsGenerateCompileCommands, key))
 				outState.generateCompileCommands = value.get<bool>();
 			else if (String::equals(Keys::OptionsOnlyRequired, key))

@@ -214,6 +214,11 @@
 					"description": "true to continue as much of the build as possible if there's a build error, false to halt on error (default).",
 					"default": false
 				},
+				"compilerCache": {
+					"type": "boolean",
+					"description": "true to use a compiler cache (ie. ccache) if available, false to disable (default).",
+					"default": false
+				},
 				"launchProfiler": {
 					"type": "boolean",
 					"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",

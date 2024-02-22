@@ -34,6 +34,7 @@ struct IntermediateSettingsState
 	bool benchmark = false;
 	bool launchProfiler = false;
 	bool keepGoing = false;
+	bool compilerCache = false;
 	bool showCommands = false;
 	bool dumpAssembly = false;
 	bool generateCompileCommands = false;

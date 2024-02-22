@@ -61,6 +61,7 @@ CHALET_CONSTANT(OptionsShowCommands) = "showCommands";
 CHALET_CONSTANT(OptionsBenchmark) = "benchmark";
 CHALET_CONSTANT(OptionsLaunchProfiler) = "launchProfiler";
 CHALET_CONSTANT(OptionsKeepGoing) = "keepGoing";
+CHALET_CONSTANT(OptionsCompilerCache) = "compilerCache";
 CHALET_CONSTANT(OptionsSigningIdentity) = "signingIdentity";
 CHALET_CONSTANT(OptionsOsTargetName) = "osTargetName";
 CHALET_CONSTANT(OptionsOsTargetVersion) = "osTargetVersion";

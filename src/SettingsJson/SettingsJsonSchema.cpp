@@ -63,6 +63,7 @@ enum class Defs : u16
 	ShowCommands,
 	Benchmark,
 	KeepGoing,
+	CompilerCache,
 	LaunchProfiler,
 	LastBuildConfiguration,
 	LastToolchain,
@@ -359,6 +360,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"default": false
 	})json"_ojson;
 
+	defs[Defs::CompilerCache] = R"json({
+		"type": "boolean",
+		"description": "true to use a compiler cache (ie. ccache) if available, false to disable (default).",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::LaunchProfiler] = R"json({
 		"type": "boolean",
 		"description": "If running profile targets, true to launch the preferred profiler afterwards (default), false to just generate the output files.",
@@ -537,6 +544,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOnlyRequired] = defs[Defs::OnlyRequired];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsInputFile] = defs[Defs::InputFile];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsKeepGoing] = defs[Defs::KeepGoing];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsCompilerCache] = defs[Defs::CompilerCache];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsLaunchProfiler] = defs[Defs::LaunchProfiler];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsMaxJobs] = defs[Defs::MaxJobs];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOutputDirectory] = defs[Defs::OutputDir];

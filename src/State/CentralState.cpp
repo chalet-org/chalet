@@ -71,6 +71,7 @@ bool CentralState::initialize()
 		state.benchmark = true;
 		state.launchProfiler = true;
 		state.keepGoing = false;
+		state.compilerCache = false;
 		state.showCommands = false;
 		state.dumpAssembly = false;
 		state.generateCompileCommands = true;
