@@ -7,13 +7,13 @@
 
 #include "Compile/CommandPool.hpp"
 #include "Compile/CompileToolchainController.hpp"
+#include "Compile/NativeCompileAdapter.hpp"
 #include "State/SourceFileGroup.hpp"
 #include "State/Target/SourceTarget.hpp"
 
 namespace chalet
 {
 class BuildState;
-struct SourceCache;
 struct SourceOutputs;
 
 class NativeGenerator
@@ -38,14 +38,11 @@ private:
 	StringList getCxxCompile(const std::string& source, const std::string& target, const SourceType derivative) const;
 	StringList getRcCompile(const std::string& source, const std::string& target) const;
 
-	bool fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency);
-	bool checkDependentTargets(const SourceTarget& inProject) const;
-	bool anyCmakeOrSubChaletTargetsChanged() const;
-
 	void checkCommandsForChanges();
 
 	BuildState& m_state;
-	SourceCache& m_sourceCache;
+
+	NativeCompileAdapter m_compileAdapter;
 
 	mutable Unique<CommandPool> m_commandPool;
 
@@ -54,10 +51,7 @@ private:
 	const SourceTarget* m_project = nullptr;
 	CompileToolchainController* m_toolchain = nullptr;
 
-	StringList m_targetsChanged;
-
 	std::unordered_map<std::string, bool> m_fileCache;
-	std::unordered_map<std::string, bool> m_dependencyCache;
 
 	std::unordered_map<SourceType, bool> m_commandsChanged;
 	bool m_targetCommandChanged = false;

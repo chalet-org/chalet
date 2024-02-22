@@ -28,7 +28,7 @@ namespace chalet
 /*****************************************************************************/
 NativeGenerator::NativeGenerator(BuildState& inState) :
 	m_state(inState),
-	m_sourceCache(m_state.cache.file().sources())
+	m_compileAdapter(inState)
 {
 }
 
@@ -44,7 +44,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	checkCommandsForChanges();
 
-	bool otherTargetsChanged = anyCmakeOrSubChaletTargetsChanged();
+	bool otherTargetsChanged = m_compileAdapter.anyCmakeOrSubChaletTargetsChanged();
 
 	m_sourcesChanged = m_pchChanged = false;
 
@@ -52,11 +52,10 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	const auto& outputs = inOutputs;
 
 	bool targetExists = Files::pathExists(outputs->target);
-
-	bool dependentChanged = targetExists && checkDependentTargets(inProject);
+	bool dependentChanged = targetExists && m_compileAdapter.checkDependentTargets(inProject);
 
 	m_fileCache.reserve(m_fileCache.size() + outputs->groups.size() + 3);
-	m_dependencyCache.reserve(m_fileCache.size() * 2);
+	m_compileAdapter.setDependencyCacheSize(m_fileCache.size() * 2);
 
 	{
 		CommandPool::JobList jobs;
@@ -115,7 +114,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 bool NativeGenerator::buildProject(const SourceTarget& inProject)
 {
 	m_fileCache.clear();
-	m_dependencyCache.clear();
+	m_compileAdapter.clearDependencyCache();
 
 	if (m_targets.find(inProject.name()) == m_targets.end())
 		return true;
@@ -192,7 +191,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
 				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
-				bool pchChanged = pchCommandChanged || fileChangedOrDependentChanged(source, outObject, dependency);
+				bool pchChanged = pchCommandChanged || m_compileAdapter.fileChangedOrDependentChanged(source, outObject, dependency);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
@@ -215,7 +214,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		else
 #endif
 		{
-			bool pchChanged = pchCommandChanged || fileChangedOrDependentChanged(source, pchTarget, dependency);
+			bool pchChanged = pchCommandChanged || m_compileAdapter.fileChangedOrDependentChanged(source, pchTarget, dependency);
 			m_pchChanged |= pchChanged;
 			if (pchChanged)
 			{
@@ -277,7 +276,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		{
 			case SourceType::WindowsResource: {
 				bool sourceCmdChanged = m_commandsChanged[group->type];
-				bool sourceChanged = sourceCmdChanged || fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = sourceCmdChanged || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -303,7 +302,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
 				bool sourceCmdChanged = m_commandsChanged[group->type];
-				bool sourceChanged = sourceCmdChanged || fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = sourceCmdChanged || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -338,7 +337,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 
 	if (m_sourcesChanged)
 	{
-		List::addIfDoesNotExist(m_targetsChanged, m_project->name());
+		m_compileAdapter.addChangedTarget(*m_project);
 	}
 
 	return ret;
@@ -389,86 +388,6 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 	ret = m_toolchain->compilerWindowsResource->getCommand(source, target, dependency);
 
 	return ret;
-}
-
-/*****************************************************************************/
-bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, const std::string& target, const std::string& dependency)
-{
-	// Check the source file and target (object) if they were changed
-	bool result = m_sourceCache.fileChangedOrDoesNotExist(source, target);
-	if (result)
-		return true;
-
-	// Read through all the dependencies
-	if (!dependency.empty() && Files::pathExists(dependency))
-	{
-		std::ifstream input(dependency);
-		for (std::string line; std::getline(input, line);)
-		{
-			if (line.empty())
-				continue;
-
-			if (line.back() != ':')
-				continue;
-
-			line.pop_back();
-
-			// The file didn't change if it's cached, so skip it
-			if (m_dependencyCache.find(line) != m_dependencyCache.end())
-				continue;
-
-			if (m_sourceCache.fileChangedOrDoesNotExist(line))
-				return true;
-
-			// Cache the filename if it didn't change
-			m_dependencyCache.emplace(line, true);
-		}
-	}
-
-	return false;
-}
-
-/*****************************************************************************/
-bool NativeGenerator::checkDependentTargets(const SourceTarget& inProject) const
-{
-	bool result = false;
-
-	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
-	for (auto& link : links)
-	{
-		if (List::contains(m_targetsChanged, link))
-		{
-			result = true;
-			break;
-		}
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
-bool NativeGenerator::anyCmakeOrSubChaletTargetsChanged() const
-{
-	// Note: At the moment, this forces any sources targets to re-link if the below returns true
-	//  In the future, it would be better to figure out which libraries are where
-	//
-	for (auto& target : m_state.targets)
-	{
-		if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (project.hashChanged())
-				return true;
-		}
-		else if (target->isSubChalet())
-		{
-			auto& project = static_cast<const SubChaletTarget&>(*target);
-			if (project.hashChanged())
-				return true;
-		}
-	}
-
-	return false;
 }
 
 /*****************************************************************************/
@@ -523,7 +442,7 @@ void NativeGenerator::checkCommandsForChanges()
 
 		if (m_targetCommandChanged)
 		{
-			List::addIfDoesNotExist(m_targetsChanged, m_project->name());
+			m_compileAdapter.addChangedTarget(*m_project);
 		}
 	}
 }

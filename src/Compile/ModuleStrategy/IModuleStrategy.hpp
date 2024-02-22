@@ -7,6 +7,7 @@
 
 #include "Compile/CommandPool.hpp"
 #include "Compile/CompileToolchainController.hpp"
+#include "Compile/NativeCompileAdapter.hpp"
 #include "Compile/Strategy/StrategyType.hpp"
 #include "Compile/ToolchainType.hpp"
 #include "State/SourceOutputs.hpp"
@@ -77,6 +78,8 @@ protected:
 	BuildState& m_state;
 	CompileCommandsGenerator& m_compileCommandsGenerator;
 
+	NativeCompileAdapter m_compileAdapter;
+
 	Dictionary<ModuleLookup> m_modules;
 	Dictionary<ModulePayload> m_modulePayload;
 	StringList m_headerUnitObjects;
@@ -115,11 +118,7 @@ private:
 
 	bool onFailure();
 
-	bool checkDependentTargets(const SourceTarget& inProject) const;
-	bool anyCmakeOrSubChaletTargetsChanged() const;
 	void checkCommandsForChanges();
-
-	StringList m_targetsChanged;
 
 	Dictionary<std::string> m_systemModules;
 

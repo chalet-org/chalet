@@ -33,7 +33,8 @@ namespace chalet
 /*****************************************************************************/
 IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator) :
 	m_state(inState),
-	m_compileCommandsGenerator(inCompileCommandsGenerator)
+	m_compileCommandsGenerator(inCompileCommandsGenerator),
+	m_compileAdapter(inState)
 {
 }
 
@@ -120,7 +121,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 	checkCommandsForChanges();
 
-	bool otherTargetsChanged = anyCmakeOrSubChaletTargetsChanged();
+	bool otherTargetsChanged = m_compileAdapter.anyCmakeOrSubChaletTargetsChanged();
 
 	CommandPool::Job target;
 
@@ -177,7 +178,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 	bool targetExists = Files::pathExists(outputs->target);
 	bool requiredFromLinks = rebuildRequiredFromLinks();
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
-	bool dependentChanged = targetExists && checkDependentTargets(*m_project);
+	bool dependentChanged = targetExists && m_compileAdapter.checkDependentTargets(*m_project);
 	bool linkTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || otherTargetsChanged || !targetExists;
 	if (linkTarget)
 	{
@@ -606,7 +607,7 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 
 	if (m_sourcesChanged)
 	{
-		List::addIfDoesNotExist(m_targetsChanged, m_project->name());
+		m_compileAdapter.addChangedTarget(*m_project);
 	}
 
 	// Generate compile commands
@@ -1050,49 +1051,6 @@ void IModuleStrategy::logPayload() const
 }
 
 /*****************************************************************************/
-bool IModuleStrategy::checkDependentTargets(const SourceTarget& inProject) const
-{
-	bool result = false;
-
-	auto links = List::combineRemoveDuplicates(inProject.projectSharedLinks(), inProject.projectStaticLinks());
-	for (auto& link : links)
-	{
-		if (List::contains(m_targetsChanged, link))
-		{
-			result = true;
-			break;
-		}
-	}
-
-	return result;
-}
-
-/*****************************************************************************/
-bool IModuleStrategy::anyCmakeOrSubChaletTargetsChanged() const
-{
-	// Note: At the moment, this forces any sources targets to re-link if the below returns true
-	//  In the future, it would be better to figure out which libraries are where
-	//
-	for (auto& target : m_state.targets)
-	{
-		if (target->isCMake())
-		{
-			auto& project = static_cast<const CMakeTarget&>(*target);
-			if (project.hashChanged())
-				return true;
-		}
-		else if (target->isSubChalet())
-		{
-			auto& project = static_cast<const SubChaletTarget&>(*target);
-			if (project.hashChanged())
-				return true;
-		}
-	}
-
-	return false;
-}
-
-/*****************************************************************************/
 void IModuleStrategy::checkCommandsForChanges()
 {
 	m_moduleCommandsChanged = false;
@@ -1135,7 +1093,7 @@ void IModuleStrategy::checkCommandsForChanges()
 
 		if (m_targetCommandChanged)
 		{
-			List::addIfDoesNotExist(m_targetsChanged, m_project->name());
+			m_compileAdapter.addChangedTarget(*m_project);
 		}
 	}
 }
