@@ -167,6 +167,12 @@ bool ICompilerCxx::addExecutable(StringList& outArgList) const
 	if (m_state.info.compilerCache() && !ccache.empty())
 	{
 		outArgList.emplace_back(getQuotedPath(ccache));
+
+		auto& ccacheOptions = m_project.ccacheOptions();
+		for (auto& option : ccacheOptions)
+		{
+			outArgList.emplace_back(option);
+		}
 	}
 
 	outArgList.emplace_back(getQuotedPath(executable));

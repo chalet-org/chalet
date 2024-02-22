@@ -761,6 +761,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::TargetSourceCxxCcacheOptions] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Addtional options to pass to ccache if using the 'compilerCache' chalet option. These are typically in key=value format.",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetSourceCxxCppStandard] = R"json({
 		"type": "string",
 		"description": "The C++ standard to use during compilation",
@@ -1737,6 +1743,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "appleFrameworkPaths", Defs::TargetSourceCxxAppleFrameworkPaths, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "appleFrameworks", Defs::TargetSourceCxxAppleFrameworks, kPatternConditions);
 		addProperty(sourceTargetCxx, "buildSuffix", Defs::TargetSourceCxxBuildSuffix);
+		addPropertyAndPattern(sourceTargetCxx, "ccacheOptions", Defs::TargetSourceCxxCcacheOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "compileOptions", Defs::TargetSourceCxxCompileOptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppConcepts", Defs::TargetSourceCxxCppConcepts, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cppCoroutines", Defs::TargetSourceCxxCppCoroutines, kPatternConditions);
@@ -2122,6 +2129,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceMetadataReadme: return "target-source-metadata-readme";
 		//
 		case Defs::TargetSourceCxx: return "target-source-cxx";
+		case Defs::TargetSourceCxxCcacheOptions: return "target-source-cxx-ccacheOptions";
 		case Defs::TargetSourceCxxCStandard: return "target-source-cxx-cStandard";
 		case Defs::TargetSourceCxxCppStandard: return "target-source-cxx-cppStandard";
 		case Defs::TargetSourceCxxCompileOptions: return "target-source-cxx-compileOptions";

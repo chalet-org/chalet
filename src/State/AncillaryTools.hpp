@@ -31,7 +31,7 @@ struct AncillaryTools
 	bool bashAvailable() const noexcept;
 
 	const std::string& ccache() const noexcept;
-	void setCCache(std::string&& inValue) noexcept;
+	void setCcache(std::string&& inValue) noexcept;
 
 	const std::string& codesign() const noexcept;
 	void setCodesign(std::string&& inValue) noexcept;

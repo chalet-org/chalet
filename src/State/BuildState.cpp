@@ -700,7 +700,7 @@ bool BuildState::validateState()
 			Diagnostic::warn("The option 'compilerCache' was set to true, but the path to ccache was empty.");
 		else
 			Diagnostic::warn("The option 'compilerCache' was set to true, but the path to ccache was not found: {}", tools.ccache());
-		tools.setCCache(std::string());
+		tools.setCcache(std::string());
 	}
 
 	auto buildTargets = inputs.getBuildTargets();

@@ -172,7 +172,7 @@ const std::string& AncillaryTools::ccache() const noexcept
 {
 	return m_ccache;
 }
-void AncillaryTools::setCCache(std::string&& inValue) noexcept
+void AncillaryTools::setCcache(std::string&& inValue) noexcept
 {
 	m_ccache = std::move(inValue);
 }

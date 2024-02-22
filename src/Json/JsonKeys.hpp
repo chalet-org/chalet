@@ -91,7 +91,7 @@ CHALET_CONSTANT(ToolchainNinja) = "ninja";
 //
 CHALET_CONSTANT(Tools) = "tools";
 CHALET_CONSTANT(ToolsBash) = "bash";
-CHALET_CONSTANT(ToolsCCache) = "ccache";
+CHALET_CONSTANT(ToolsCcache) = "ccache";
 CHALET_CONSTANT(ToolsCodesign) = "codesign";
 CHALET_CONSTANT(ToolsCommandPrompt) = "command_prompt";
 CHALET_CONSTANT(ToolsGit) = "git";

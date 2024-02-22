@@ -1394,6 +1394,9 @@
 				"buildSuffix": {
 					"$ref": "#/definitions/target-source-cxx-buildSuffix"
 				},
+				"ccacheOptions": {
+					"$ref": "#/definitions/target-source-cxx-ccacheOptions"
+				},
 				"compileOptions": {
 					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
@@ -1495,6 +1498,9 @@
 				"^appleFrameworks\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-appleFrameworks"
 				},
+				"^ccacheOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-ccacheOptions"
+				},
 				"^compileOptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-compileOptions"
 				},
@@ -1586,6 +1592,24 @@
 					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
 				}
 			}
+		},
+		"target-source-cxx-ccacheOptions": {
+			"description": "Addtional options to pass to ccache if using the 'compilerCache' chalet option. These are typically in key=value format.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-source-cxx-cStandard": {
 			"type": "string",
