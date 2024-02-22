@@ -32,6 +32,13 @@ enum class CommandPoolErrorCode : u16
 
 struct PoolState
 {
+#if defined(CHALET_WIN32)
+	std::string vcInstallDir;
+	std::string ucrtsdkDir;
+	std::string cwd;
+	std::string dependencySearch;
+#endif
+
 	size_t refCount = 0;
 	u32 index = 0;
 	// u32 threads = 0;
@@ -91,21 +98,16 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 	{
 		std::lock_guard<std::mutex> lock(state->mutex);
 
-		auto vcInstallDir = Environment::getString("VCINSTALLDIR");
-		auto ucrtsdkDir = Environment::getString("UniversalCRTSdkDir");
-		auto cwd = Files::getWorkingDirectory() + '\\';
-
 		std::string toPrint;
-		std::string dependencySearch("Note: including file: ");
 
 		std::string dependencies;
 
 		std::istringstream input(output);
 		for (std::string line; std::getline(input, line);)
 		{
-			if (String::startsWith(dependencySearch, line))
+			if (String::startsWith(state->dependencySearch, line))
 			{
-				auto file = line.substr(dependencySearch.size());
+				auto file = line.substr(state->dependencySearch.size());
 				auto firstNonSpace = file.find_first_not_of(' ');
 				if (firstNonSpace > 0)
 				{
@@ -114,13 +116,13 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 
 				// Don't include system headers - if the toolchain version changes, we'll figure that out elsewhere
 				//
-				if (!vcInstallDir.empty() && String::startsWith(vcInstallDir, file))
+				if (!state->vcInstallDir.empty() && String::startsWith(state->vcInstallDir, file))
 					continue;
 
-				if (!ucrtsdkDir.empty() && String::startsWith(ucrtsdkDir, file))
+				if (!state->ucrtsdkDir.empty() && String::startsWith(state->ucrtsdkDir, file))
 					continue;
 
-				String::replaceAll(file, cwd, "");
+				String::replaceAll(file, state->cwd, "");
 
 				if (String::endsWith('\n', file))
 					file.pop_back();
@@ -316,6 +318,16 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	state->errorCode = CommandPoolErrorCode::None;
 	state->erroredOn.clear();
 	m_quiet = quiet;
+
+#if defined(CHALET_WIN32)
+	if (msvcCommand)
+	{
+		state->vcInstallDir = Environment::getString("VCINSTALLDIR");
+		state->ucrtsdkDir = Environment::getString("UniversalCRTSdkDir");
+		state->cwd = Files::getWorkingDirectory() + '\\';
+		state->dependencySearch = "Note: including file: ";
+	}
+#endif
 
 	state->shutdownHandler = [this]() -> bool {
 		// if (state->errorCode != CommandPoolErrorCode::None)
