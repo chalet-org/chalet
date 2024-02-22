@@ -69,36 +69,6 @@ bool ModuleStrategyMSVC::scanSourcesForModuleDependencies(CommandPool::Job& outJ
 }
 
 /*****************************************************************************/
-bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
-{
-	outJob.list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
-	if (!outJob.list.empty())
-	{
-		// Scan sources for module dependencies
-
-		// Output::msgBuildingRequiredHeaderUnits();
-		// Output::lineBreak();
-
-		CommandPool commandPool(m_state.info.maxJobs());
-		if (!commandPool.run(outJob, m_compileAdapter.getCommandPoolSettings()))
-		{
-			auto& failures = commandPool.failures();
-			for (auto& failure : failures)
-			{
-				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
-				Files::removeIfExists(dependency);
-			}
-
-			return false;
-		}
-
-		Output::lineBreak();
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool ModuleStrategyMSVC::readModuleDependencies()
 {
 	// Version 1.1
@@ -275,6 +245,36 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 		Path::toUnix(outInclude);
 
 		outList.emplace_back(std::move(outInclude));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ModuleStrategyMSVC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
+{
+	outJob.list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
+	if (!outJob.list.empty())
+	{
+		// Scan sources for module dependencies
+
+		// Output::msgBuildingRequiredHeaderUnits();
+		// Output::lineBreak();
+
+		CommandPool commandPool(m_state.info.maxJobs());
+		if (!commandPool.run(outJob, m_compileAdapter.getCommandPoolSettings()))
+		{
+			auto& failures = commandPool.failures();
+			for (auto& failure : failures)
+			{
+				auto dependency = m_state.environment->getModuleDirectivesDependencyFile(failure);
+				Files::removeIfExists(dependency);
+			}
+
+			return false;
+		}
+
+		Output::lineBreak();
 	}
 
 	return true;

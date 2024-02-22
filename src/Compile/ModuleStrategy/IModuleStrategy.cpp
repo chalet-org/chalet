@@ -162,13 +162,11 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 		addHeaderUnitsToTargetLinks();
 
-		auto addLinkJob = [this]() {
+		{
 			auto job = std::make_unique<CommandPool::Job>();
 			job->list = m_compileAdapter.getLinkCommand(*m_project, *toolchain, *outputs);
-			return job;
+			buildJobs.emplace_back(std::move(job));
 		};
-
-		buildJobs.emplace_back(addLinkJob());
 
 		// clear up memory
 		outputs.reset();
@@ -406,13 +404,9 @@ void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs)
 		}
 	}
 
-	auto makeHeaderUnitsJob = [this]() {
-		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
-		return job;
-	};
-
-	jobs.emplace_back(makeHeaderUnitsJob());
+	auto job = std::make_unique<CommandPool::Job>();
+	job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
+	jobs.emplace_back(std::move(job));
 }
 
 /*****************************************************************************/
@@ -468,13 +462,39 @@ void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 	}
 	else
 	{
-		auto addOtherCompilationsJob = [this]() {
-			auto job = std::make_unique<CommandPool::Job>();
-			addOtherBuildCommands(job->list);
-			return job;
-		};
-		jobs.emplace_back(addOtherCompilationsJob());
+		auto job = std::make_unique<CommandPool::Job>();
+		addOtherBuildCommands(job->list);
+		jobs.emplace_back(std::move(job));
 	}
+}
+
+/*****************************************************************************/
+ModuleFileType IModuleStrategy::getFileType(const Unique<SourceFileGroup>& group, const ModuleFileType inBaseType) const
+{
+	ModuleFileType type = inBaseType;
+	if (type == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, group->sourceFile))
+		type = ModuleFileType::ModuleImplementationUnit;
+
+	bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
+	bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
+
+	if (systemHeaderUnit)
+		type = ModuleFileType::SystemHeaderUnitObject;
+	else if (userHeaderUnit)
+		type = ModuleFileType::HeaderUnitObject;
+
+	return type;
+}
+
+/*****************************************************************************/
+std::string IModuleStrategy::getBmiFile(const Unique<SourceFileGroup>& group)
+{
+	if (group->otherFile.empty())
+	{
+		return m_state.environment->getModuleBinaryInterfaceFile(group->sourceFile);
+	}
+
+	return group->otherFile;
 }
 
 /*****************************************************************************/
@@ -484,22 +504,6 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 
 	StringList blankList;
 	CommandPool::CmdList ret;
-
-	auto getFileType = [this, inType = inType](const Unique<SourceFileGroup>& group) -> ModuleFileType {
-		ModuleFileType type = inType;
-		if (inType == ModuleFileType::ModuleObject && List::contains(m_implementationUnits, group->sourceFile))
-			type = ModuleFileType::ModuleImplementationUnit;
-
-		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
-		bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
-
-		if (systemHeaderUnit)
-			type = ModuleFileType::SystemHeaderUnitObject;
-		else if (userHeaderUnit)
-			type = ModuleFileType::HeaderUnitObject;
-
-		return type;
-	};
 
 	bool isObject = inType == ModuleFileType::ModuleObject || inType == ModuleFileType::HeaderUnitObject;
 	bool isHeaderUnitDependency = inType == ModuleFileType::HeaderUnitDependency;
@@ -521,17 +525,13 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 		if (m_compileCache.find(source) == m_compileCache.end())
 			setCompilerCache(source, false);
 
-		auto type = getFileType(group);
+		auto type = getFileType(group, inType);
 
 		bool systemHeaderUnit = group->dataType == SourceDataType::SystemHeaderUnit;
 		bool userHeaderUnit = group->dataType == SourceDataType::UserHeaderUnit;
 		bool isHeaderUnit = systemHeaderUnit || userHeaderUnit;
 
-		auto bmiFile = group->otherFile;
-		if (bmiFile.empty())
-		{
-			bmiFile = m_state.environment->getModuleBinaryInterfaceFile(source);
-		}
+		auto bmiFile = getBmiFile(group);
 
 		// Note: don't make objectDependent a reference - breaks in MSVC
 		const std::string* objectDependent = &target;
@@ -594,23 +594,19 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 			const auto& target = group->objectFile;
 			const auto& dependency = group->dependencyFile;
 
-			auto type = getFileType(group);
+			auto type = getFileType(group, inType);
 
-			auto interfaceFile = group->otherFile;
-			if (interfaceFile.empty())
-			{
-				interfaceFile = m_state.environment->getModuleBinaryInterfaceFile(source);
-			}
+			auto bmiFile = getBmiFile(group);
 
 			if (inPayload.find(source) != inPayload.end())
 			{
 				const auto& module = inPayload.at(source);
 
-				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, module.moduleTranslations, module.headerUnitTranslations, type));
+				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type));
 			}
 			else if (type == ModuleFileType::HeaderUnitObject)
 			{
-				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, interfaceFile, blankList, blankList, type));
+				addToCompileCommandsJson(source, toolchain->compilerCxx->getModuleCommand(source, target, dependency, bmiFile, blankList, blankList, type));
 			}
 		}
 	}
@@ -913,13 +909,9 @@ bool IModuleStrategy::makeModuleBatch(CommandPool::JobList& jobs, const SourceFi
 	if (inList.empty())
 		return false;
 
-	auto makeModuleObjectsJob = [this, &inList]() {
-		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
-		return job;
-	};
-
-	jobs.emplace_back(makeModuleObjectsJob());
+	auto job = std::make_unique<CommandPool::Job>();
+	job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
+	jobs.emplace_back(std::move(job));
 
 	return true;
 }

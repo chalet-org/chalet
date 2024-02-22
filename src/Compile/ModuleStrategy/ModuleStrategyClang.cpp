@@ -44,6 +44,13 @@ bool ModuleStrategyClang::initialize()
 }
 
 /*****************************************************************************/
+bool ModuleStrategyClang::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
+{
+	UNUSED(inFile, outList);
+	return true;
+}
+
+/*****************************************************************************/
 bool ModuleStrategyClang::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
 {
 	UNUSED(outJob);
@@ -52,13 +59,6 @@ bool ModuleStrategyClang::scanHeaderUnitsForModuleDependencies(CommandPool::Job&
 	auto commands = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
 	UNUSED(commands);
 
-	return true;
-}
-
-/*****************************************************************************/
-bool ModuleStrategyClang::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
-{
-	UNUSED(inFile, outList);
 	return true;
 }
 

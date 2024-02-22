@@ -17,9 +17,9 @@ struct ModuleStrategyGCC : public IModuleStrategy
 
 protected:
 	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) override;
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) override;
 	virtual bool readModuleDependencies() override;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) override;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) override;
 
 	virtual Dictionary<std::string> getSystemModules() const;
 

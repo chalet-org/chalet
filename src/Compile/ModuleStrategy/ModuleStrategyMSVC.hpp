@@ -17,9 +17,9 @@ struct ModuleStrategyMSVC final : public IModuleStrategy
 
 protected:
 	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) final;
-	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) final;
 	virtual bool readModuleDependencies() final;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) final;
+	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) final;
 
 private:
 	Dictionary<std::string> getSystemModules() const;

@@ -49,15 +49,15 @@ public:
 	virtual bool buildProject(const SourceTarget& inProject);
 
 	Unique<SourceOutputs> outputs;
-	CompileToolchain toolchain;
+	Unique<CompileToolchainController> toolchain;
 
 protected:
 	virtual bool initialize();
 
 	bool isSystemHeaderFileOrModuleFile(const std::string& inFile) const;
+	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) = 0;
 	virtual bool readModuleDependencies() = 0;
 	virtual bool readIncludesFromDependencyFile(const std::string& inFile, StringList& outList) = 0;
-	virtual bool scanSourcesForModuleDependencies(CommandPool::Job& outJob) = 0;
 	virtual bool scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob) = 0;
 
 	std::string getBuildOutputForFile(const SourceFileGroup& inFile, const bool inIsObject) const;
@@ -87,7 +87,6 @@ protected:
 
 	StringList m_systemHeaderDirectories;
 	StringList m_implementationUnits;
-	mutable Dictionary<bool> m_compileCache;
 
 	StrategyType m_oldStrategy = StrategyType::None;
 
@@ -112,11 +111,14 @@ private:
 	bool rebuildRequiredFromLinks() const;
 	bool cachedValue(const std::string& inSource) const;
 	void setCompilerCache(const std::string& inSource, const bool inValue) const;
+	ModuleFileType getFileType(const Unique<SourceFileGroup>& group, const ModuleFileType inBaseType) const;
+	std::string getBmiFile(const Unique<SourceFileGroup>& group);
 
 	bool onFailure();
 
 	void checkCommandsForChanges();
 
+	mutable Dictionary<bool> m_compileCache;
 	Dictionary<std::string> m_systemModules;
 
 	bool m_moduleCommandsChanged = false;

@@ -148,76 +148,6 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 }
 
 /*****************************************************************************/
-bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
-{
-	UNUSED(outJob);
-
-	// We need to call this to update the compiler cache, but we don't want to use the commands
-	auto commands = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
-	UNUSED(commands);
-
-	Dictionary<std::string> mapFiles;
-
-	auto& cwd = m_state.inputs.workingDirectory();
-
-	for (auto& [module, payload] : m_modulePayload)
-	{
-		std::string moduleContents;
-		for (auto& headerMap : payload.headerUnitTranslations)
-		{
-			auto split = String::split(headerMap, '=');
-			auto file = Files::getCanonicalPath(split[0]);
-
-			// This is only needed by header-units
-			String::replaceAll(file, cwd, ".");
-
-			moduleContents += fmt::format("{} {}\n", file, split[1]);
-
-			auto& name = split[0];
-			if (mapFiles.find(name) == mapFiles.end())
-			{
-				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
-			}
-		}
-		for (auto& moduleMap : payload.moduleTranslations)
-		{
-			auto split = String::split(moduleMap, '=');
-			moduleContents += fmt::format("{} {}\n", split[0], split[1]);
-		}
-		if (mapFiles.find(module) == mapFiles.end())
-		{
-			if (m_moduleMap.find(module) != m_moduleMap.end())
-			{
-				auto& moduleName = m_moduleMap.at(module);
-				if (!String::startsWith('@', moduleName))
-				{
-					auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
-					moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
-				}
-			}
-			mapFiles.emplace(module, std::move(moduleContents));
-		}
-	}
-
-	for (auto& [name, contents] : mapFiles)
-	{
-		std::string mapFile;
-		if (isSystemHeaderFileOrModuleFile(name))
-			mapFile = String::getPathFilename(name);
-		else
-			mapFile = name;
-
-		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(mapFile);
-		// if (!Files::pathExists(outputFile))
-		{
-			Files::createFileWithContents(outputFile, contents, true);
-		}
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool ModuleStrategyGCC::readModuleDependencies()
 {
 	StringList foundSystemModules;
@@ -301,6 +231,76 @@ bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile
 	UNUSED(inFile, outList);
 
 	// TODO - the module dependency files are kind of incomplete when you use import <MyHeader.hpp>
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ModuleStrategyGCC::scanHeaderUnitsForModuleDependencies(CommandPool::Job& outJob)
+{
+	UNUSED(outJob);
+
+	// We need to call this to update the compiler cache, but we don't want to use the commands
+	auto commands = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitDependency);
+	UNUSED(commands);
+
+	Dictionary<std::string> mapFiles;
+
+	auto& cwd = m_state.inputs.workingDirectory();
+
+	for (auto& [module, payload] : m_modulePayload)
+	{
+		std::string moduleContents;
+		for (auto& headerMap : payload.headerUnitTranslations)
+		{
+			auto split = String::split(headerMap, '=');
+			auto file = Files::getCanonicalPath(split[0]);
+
+			// This is only needed by header-units
+			String::replaceAll(file, cwd, ".");
+
+			moduleContents += fmt::format("{} {}\n", file, split[1]);
+
+			auto& name = split[0];
+			if (mapFiles.find(name) == mapFiles.end())
+			{
+				mapFiles.emplace(name, fmt::format("{} {}\n", file, split[1]));
+			}
+		}
+		for (auto& moduleMap : payload.moduleTranslations)
+		{
+			auto split = String::split(moduleMap, '=');
+			moduleContents += fmt::format("{} {}\n", split[0], split[1]);
+		}
+		if (mapFiles.find(module) == mapFiles.end())
+		{
+			if (m_moduleMap.find(module) != m_moduleMap.end())
+			{
+				auto& moduleName = m_moduleMap.at(module);
+				if (!String::startsWith('@', moduleName))
+				{
+					auto modulePath = m_state.environment->getModuleBinaryInterfaceFile(module);
+					moduleContents += fmt::format("{} {}\n", moduleName, modulePath);
+				}
+			}
+			mapFiles.emplace(module, std::move(moduleContents));
+		}
+	}
+
+	for (auto& [name, contents] : mapFiles)
+	{
+		std::string mapFile;
+		if (isSystemHeaderFileOrModuleFile(name))
+			mapFile = String::getPathFilename(name);
+		else
+			mapFile = name;
+
+		auto outputFile = m_state.environment->getModuleDirectivesDependencyFile(mapFile);
+		// if (!Files::pathExists(outputFile))
+		{
+			Files::createFileWithContents(outputFile, contents, true);
+		}
+	}
 
 	return true;
 }
