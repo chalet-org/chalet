@@ -19,6 +19,8 @@ struct BuildEnvironmentEmscripten final : BuildEnvironmentLLVM
 
 	virtual std::string getAssemblyFile(const std::string& inSource) const final;
 
+	const std::string& clangPath() const noexcept;
+
 protected:
 	virtual std::string getExecutableExtension() const final;
 	virtual std::string getSharedLibraryExtension() const final;

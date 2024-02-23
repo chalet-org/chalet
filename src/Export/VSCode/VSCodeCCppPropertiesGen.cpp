@@ -5,6 +5,7 @@
 
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
 
+#include "BuildEnvironment/BuildEnvironmentEmscripten.hpp"
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Platform.hpp"
@@ -32,19 +33,9 @@ VSCodeCCppPropertiesGen::VSCodeCCppPropertiesGen(const BuildState& inState, cons
 /*****************************************************************************/
 bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 {
-	Json jRoot;
-	jRoot = Json::object();
-	jRoot["version"] = 4;
-	jRoot["configurations"] = Json::array();
-
-	Json config;
-	config["name"] = getName();
-	config["intelliSenseMode"] = getIntellisenseMode();
-	config["compilerPath"] = getCompilerPath();
-
 	std::string cStandard;
 	std::string cppStandard;
-	StringList defines = Platform::getDefaultPlatformDefines();
+	StringList defines = getPlatformDefines();
 	StringList includePath;
 	StringList forcedInclude;
 #if defined(CHALET_MACOS)
@@ -126,10 +117,29 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 		}
 	}
 
+	addSystemIncludes(includePath);
+
 	if (!hasProjects)
 		return true;
 
-	if (m_state.info.generateCompileCommands())
+	// JSON
+
+	Json jRoot;
+	jRoot = Json::object();
+	jRoot["version"] = 4;
+	jRoot["configurations"] = Json::array();
+
+	Json config;
+	config["name"] = getName();
+
+	if (!m_state.environment->isEmscripten())
+	{
+		config["intelliSenseMode"] = getIntellisenseMode();
+	}
+
+	config["compilerPath"] = getCompilerPath();
+
+	if (m_state.info.generateCompileCommands() && !m_state.environment->isEmscripten())
 	{
 		m_exportAdapter.createCompileCommandsStub();
 
@@ -159,17 +169,18 @@ bool VSCodeCCppPropertiesGen::saveToFile(const std::string& inFilename) const
 /*****************************************************************************/
 std::string VSCodeCCppPropertiesGen::getName() const
 {
-	std::string ret;
+	if (m_state.environment->isEmscripten())
+	{
+		return "Emscripten";
+	}
 
 #if defined(CHALET_WIN32)
-	ret = "Win32";
+	return "Win32";
 #elif defined(CHALET_MACOS)
-	ret = "Mac";
+	return "Mac";
 #else
-	ret = "Linux";
+	return "Linux";
 #endif
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -185,6 +196,12 @@ std::string VSCodeCCppPropertiesGen::getIntellisenseMode() const
 /*****************************************************************************/
 std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 {
+	if (m_state.environment->isEmscripten())
+	{
+		auto& environment = static_cast<BuildEnvironmentEmscripten&>(*m_state.environment);
+		return environment.clangPath();
+	}
+
 	std::string ret;
 
 	if (!m_state.toolchain.compilerCpp().path.empty())
@@ -199,6 +216,33 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 #endif
 
 	return ret;
+}
+
+/*****************************************************************************/
+StringList VSCodeCCppPropertiesGen::getPlatformDefines() const
+{
+	if (m_state.environment->isEmscripten())
+	{
+		return StringList{
+			"__EMSCRIPTEN__"
+		};
+	}
+
+	return Platform::getDefaultPlatformDefines();
+}
+
+/*****************************************************************************/
+void VSCodeCCppPropertiesGen::addSystemIncludes(StringList& outList) const
+{
+	if (m_state.environment->isEmscripten())
+	{
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/include");
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/arch/emscripten");
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/compat");
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libcxx/include");
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libcxxabi/include");
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/include");
+	}
 }
 
 }

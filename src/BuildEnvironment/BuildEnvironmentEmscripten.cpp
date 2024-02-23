@@ -31,6 +31,12 @@ BuildEnvironmentEmscripten::BuildEnvironmentEmscripten(const ToolchainType inTyp
 BuildEnvironmentEmscripten::~BuildEnvironmentEmscripten() = default;
 
 /*****************************************************************************/
+const std::string& BuildEnvironmentEmscripten::clangPath() const noexcept
+{
+	return m_clangPath;
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentEmscripten::getExecutableExtension() const
 {
 	return ".html";

@@ -5,6 +5,7 @@
 
 #include "Export/VSCodeProjectExporter.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/ExportAdapter.hpp"
 #include "Export/VSCode/VSCodeCCppPropertiesGen.hpp"
@@ -68,7 +69,8 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		return false;
 	}
 
-	if (debugState.configuration.debugSymbols())
+	bool allowedEnvironment = !debugState.environment->isEmscripten();
+	if (debugState.configuration.debugSymbols() && allowedEnvironment)
 	{
 		constexpr bool executablesOnly = true;
 		const IBuildTarget* runnableTarget = debugState.getFirstValidRunTarget(executablesOnly);

@@ -21,6 +21,8 @@ private:
 	std::string getName() const;
 	std::string getIntellisenseMode() const;
 	std::string getCompilerPath() const;
+	StringList getPlatformDefines() const;
+	void addSystemIncludes(StringList& outList) const;
 
 	const BuildState& m_state;
 	const ExportAdapter& m_exportAdapter;
