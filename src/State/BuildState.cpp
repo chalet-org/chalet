@@ -882,7 +882,7 @@ bool BuildState::validateState()
 		{
 			if (willRun)
 			{
-				Diagnostic::error("The profiler for this toolchain was either blank or not found.");
+				Diagnostic::error("The profiler for the '{}' toolchain was either blank or not found.", inputs.toolchainPreferenceName());
 				return false;
 			}
 		}
