@@ -236,6 +236,7 @@ void VSCodeCCppPropertiesGen::addSystemIncludes(StringList& outList) const
 {
 	if (m_state.environment->isEmscripten())
 	{
+		outList.emplace_back("${env:EMSDK}/upstream/emscripten/cache/sysroot/include");
 		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/include");
 		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/arch/emscripten");
 		outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/compat");
