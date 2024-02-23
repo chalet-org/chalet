@@ -37,6 +37,18 @@ const std::string& BuildEnvironmentEmscripten::clangPath() const noexcept
 }
 
 /*****************************************************************************/
+const std::string& BuildEnvironmentEmscripten::emsdkRoot() const noexcept
+{
+	return m_emsdkRoot;
+}
+
+/*****************************************************************************/
+const std::string& BuildEnvironmentEmscripten::emsdkUpstream() const noexcept
+{
+	return m_emsdkUpstream;
+}
+
+/*****************************************************************************/
 std::string BuildEnvironmentEmscripten::getExecutableExtension() const
 {
 	return ".html";

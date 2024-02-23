@@ -198,7 +198,7 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 {
 	if (m_state.environment->isEmscripten())
 	{
-		auto& environment = static_cast<BuildEnvironmentEmscripten&>(*m_state.environment);
+		auto& environment = static_cast<const BuildEnvironmentEmscripten&>(*m_state.environment);
 		return environment.clangPath();
 	}
 
@@ -236,14 +236,20 @@ void VSCodeCCppPropertiesGen::addSystemIncludes(StringList& outList) const
 {
 	if (m_state.environment->isEmscripten())
 	{
-		outList.emplace_back("${env:EMSDK}/upstream/emscripten/cache/sysroot/include/**");
+		auto& environment = static_cast<const BuildEnvironmentEmscripten&>(*m_state.environment);
+		auto& sdkRoot = environment.emsdkRoot();
+		auto upstream = environment.emsdkUpstream();
+		String::replaceAll(upstream, sdkRoot, "${env:EMSDK}");
 
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/include");
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/arch/emscripten");
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libc/compat");
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libcxx/include");
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/lib/libcxxabi/include");
-		// outList.emplace_back("${env:EMSDK}/upstream/emscripten/system/include");
+		// Note: cache/sysroot should collect all the other paths listed below
+		outList.emplace_back(fmt::format("{}/cache/sysroot/include/**", upstream));
+
+		// ${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/include
+		// ${env:EMSDK}/upstream/emscripten/system/lib/libc/musl/arch/emscripten
+		// ${env:EMSDK}/upstream/emscripten/system/lib/libc/compat
+		// ${env:EMSDK}/upstream/emscripten/system/lib/libcxx/include
+		// ${env:EMSDK}/upstream/emscripten/system/lib/libcxxabi/include
+		// ${env:EMSDK}/upstream/emscripten/system/include
 	}
 }
 
