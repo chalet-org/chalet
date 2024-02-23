@@ -362,7 +362,12 @@ void Diagnostic::showMessage(const Type inType, std::string&& inMessage)
 /*****************************************************************************/
 void Diagnostic::addError(const Type inType, std::string&& inMessage)
 {
-	state.errorList.push_back({ inType, std::move(inMessage) });
+	for (auto& error : state.errorList)
+	{
+		if (error.type == inType && String::equals(error.message, inMessage))
+			return;
+	}
+	state.errorList.emplace_back(Error{ inType, std::move(inMessage) });
 }
 
 /*****************************************************************************/
