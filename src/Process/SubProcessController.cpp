@@ -18,14 +18,77 @@
 	#include "Terminal/WindowsTerminal.hpp"
 #endif
 
+// Note: the signal handling in this class is so Windows can correctly pass a CTRL+C event to the child process
+
 namespace chalet
 {
 namespace
 {
 struct
 {
+#if defined(CHALET_WIN32)
+	std::vector<SubProcess*> procesess;
+	std::mutex mutex;
+#endif
 	i32 lastErrorCode = 0;
+#if defined(CHALET_WIN32)
+	bool initialized = false;
+#endif
 } state;
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+void addProcess(SubProcess& inProcess)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	state.procesess.push_back(&inProcess);
+}
+
+/*****************************************************************************/
+void removeProcess(const SubProcess& inProcess)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	if (!state.procesess.empty())
+	{
+		auto it = state.procesess.end();
+		while (it != state.procesess.begin())
+		{
+			--it;
+			SubProcess* process = (*it);
+			if (*process == inProcess)
+			{
+				it = state.procesess.erase(it);
+				return;
+			}
+		}
+	}
+
+	if (state.procesess.empty())
+		WindowsTerminal::reset();
+}
+
+/*****************************************************************************/
+void subProcessSignalHandler(i32 inSignal)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	if (!state.procesess.empty())
+	{
+		auto it = state.procesess.end();
+		while (it != state.procesess.begin())
+		{
+			--it;
+			SubProcess* process = (*it);
+
+			bool success = process->sendSignal(static_cast<SigNum>(inSignal));
+			if (success)
+				it = state.procesess.erase(it);
+		}
+	}
+
+	if (state.procesess.empty())
+		WindowsTerminal::reset();
+}
+#endif
 }
 
 /*****************************************************************************/
@@ -45,12 +108,28 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 			return -1;
 		}
 
+#if defined(CHALET_WIN32)
+		if (!state.initialized)
+		{
+			std::lock_guard<std::mutex> lock(state.mutex);
+
+			SignalHandler::add(SIGINT, subProcessSignalHandler);
+			// SignalHandler::add(SIGTERM, subProcessSignalHandler);
+			// SignalHandler::add(SIGABRT, subProcessSignalHandler);
+			state.initialized = true;
+		}
+#endif
+
 		SubProcess process;
 		if (!process.create(inCmd, inOptions))
 		{
 			state.lastErrorCode = process.waitForResult();
 			return state.lastErrorCode;
 		}
+
+#if defined(CHALET_WIN32)
+		addProcess(process);
+#endif
 
 		if (inOptions.waitForResult)
 		{
@@ -62,6 +141,10 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 		}
 
 		state.lastErrorCode = inOptions.waitForResult ? process.waitForResult() : 0;
+
+#if defined(CHALET_WIN32)
+		removeProcess(process);
+#endif
 
 		return state.lastErrorCode;
 	}
