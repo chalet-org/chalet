@@ -339,6 +339,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	{
 		if (!createEnvironment())
 		{
+			Output::lineBreak();
 			Diagnostic::error("Toolchain was not recognized.");
 			return false;
 		}
@@ -648,11 +649,6 @@ bool BuildState::validateState()
 			return false;
 		}
 #endif
-		if (configuration.enableProfiling())
-		{
-			Diagnostic::error("The '{}' toolchain does not support profiling.");
-			return false;
-		}
 	}
 
 	const bool lto = configuration.interproceduralOptimization();
@@ -849,6 +845,7 @@ bool BuildState::validateState()
 
 	if (configuration.enableProfiling() && !inputs.route().isExport())
 	{
+		bool willRun = inputs.route().willRun();
 #if defined(CHALET_MACOS)
 		bool profilerAvailable = true;
 #else
@@ -856,8 +853,11 @@ bool BuildState::validateState()
 #endif
 		if (!profilerAvailable)
 		{
-			Diagnostic::error("The profiler for this toolchain was either blank or not found.");
-			return false;
+			if (willRun)
+			{
+				Diagnostic::error("The profiler for the '{}' toolchain was either blank or not found.", inputs.toolchainPreferenceName());
+				return false;
+			}
 		}
 
 		profilerAvailable = false;
@@ -868,9 +868,9 @@ bool BuildState::validateState()
 		profilerAvailable |= requiresVisualStudio;
 #endif
 		profilerAvailable |= toolchain.isProfilerGprof();
-		if (!profilerAvailable)
+		if (!profilerAvailable && willRun)
 		{
-			Diagnostic::error("Profiling on this toolchain is not yet supported.");
+			Diagnostic::error("Profiling on the '{}' toolchain is not supported.", inputs.toolchainPreferenceName());
 			return false;
 		}
 #if defined(CHALET_WIN32)
