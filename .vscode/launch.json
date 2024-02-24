@@ -11,10 +11,7 @@
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"-t",
-				"emscripten",
-				"export",
-				"vscode"
+				"buildrun"
 			]
 		},
 		{

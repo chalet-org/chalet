@@ -18,14 +18,77 @@
 	#include "Terminal/WindowsTerminal.hpp"
 #endif
 
+// Note: the signal handling in this class is so Windows can correctly pass a CTRL+C event to the child process
+
 namespace chalet
 {
 namespace
 {
 struct
 {
+#if defined(CHALET_WIN32)
+	std::vector<SubProcess*> procesess;
+	std::mutex mutex;
+#endif
 	i32 lastErrorCode = 0;
+#if defined(CHALET_WIN32)
+	bool initialized = false;
+#endif
 } state;
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+void addProcess(SubProcess& inProcess)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	state.procesess.push_back(&inProcess);
+}
+
+/*****************************************************************************/
+void removeProcess(const SubProcess& inProcess)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	if (!state.procesess.empty())
+	{
+		auto it = state.procesess.end();
+		while (it != state.procesess.begin())
+		{
+			--it;
+			SubProcess* process = (*it);
+			if (*process == inProcess)
+			{
+				it = state.procesess.erase(it);
+				return;
+			}
+		}
+	}
+
+	if (state.procesess.empty())
+		WindowsTerminal::reset();
+}
+
+/*****************************************************************************/
+void subProcessSignalHandler(i32 inSignal)
+{
+	std::lock_guard<std::mutex> lock(state.mutex);
+	if (!state.procesess.empty())
+	{
+		auto it = state.procesess.end();
+		while (it != state.procesess.begin())
+		{
+			--it;
+			SubProcess* process = (*it);
+
+			bool success = process->sendSignal(static_cast<SigNum>(inSignal));
+			if (success)
+				it = state.procesess.erase(it);
+		}
+	}
+
+	if (state.procesess.empty())
+		WindowsTerminal::reset();
+}
+#endif
 }
 
 /*****************************************************************************/
@@ -40,6 +103,9 @@ i32 SubProcessController::run(const StringList& inCmd, const ProcessOptions& inO
 		if (!process.create(inCmd, inOptions))
 			return getLastExitCodeFromProcess(process);
 
+#if defined(CHALET_WIN32)
+		addProcess(process);
+#endif
 		if (inOptions.waitForResult)
 		{
 			SubProcess::OutputBuffer dataBuffer;
@@ -67,6 +133,10 @@ bool SubProcessController::create(SubProcess& outProcess, const StringList& inCm
 		if (!commandIsValid(inCmd))
 			return false;
 
+#if defined(CHALET_WIN32)
+		addProcess(outProcess);
+#endif
+
 		if (!outProcess.create(inCmd, inOptions))
 			return getLastExitCodeFromProcess(outProcess);
 
@@ -83,6 +153,11 @@ bool SubProcessController::create(SubProcess& outProcess, const StringList& inCm
 i32 SubProcessController::getLastExitCodeFromProcess(SubProcess& process)
 {
 	state.lastErrorCode = process.waitForResult();
+
+#if defined(CHALET_WIN32)
+	removeProcess(process);
+#endif
+
 	return state.lastErrorCode;
 }
 
@@ -90,6 +165,11 @@ i32 SubProcessController::getLastExitCodeFromProcess(SubProcess& process)
 i32 SubProcessController::getLastExitCodeFromProcess(SubProcess& process, const bool waitForResult)
 {
 	state.lastErrorCode = waitForResult ? process.waitForResult() : 0;
+
+#if defined(CHALET_WIN32)
+	removeProcess(process);
+#endif
+
 	return state.lastErrorCode;
 }
 
@@ -145,6 +225,18 @@ bool SubProcessController::commandIsValid(const StringList& inCmd)
 		Diagnostic::error("Subprocess: Executable not found: {}", inCmd.front());
 		return false;
 	}
+
+#if defined(CHALET_WIN32)
+	if (!state.initialized)
+	{
+		std::lock_guard<std::mutex> lock(state.mutex);
+
+		SignalHandler::add(SIGINT, subProcessSignalHandler);
+		// SignalHandler::add(SIGTERM, subProcessSignalHandler);
+		// SignalHandler::add(SIGABRT, subProcessSignalHandler);
+		state.initialized = true;
+	}
+#endif
 
 	return true;
 }
