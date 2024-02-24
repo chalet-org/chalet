@@ -174,7 +174,6 @@ bool EmscriptenEnvironmentScript::saveEnvironmentFromScript()
 	//   https://emscripten.org/docs/tools_reference/emsdk.html#emscripten-compiler-configuration-file-emscripten
 	//   Would set EM_CONFIG
 
-	fileContents.pop_back();
 	return Files::createFileWithContents(m_envVarsFileDelta, fileContents);
 }
 

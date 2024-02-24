@@ -5,7 +5,7 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}/../chalet-example-modules",
 			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
 			"console": "integratedTerminal",
