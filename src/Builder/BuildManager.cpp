@@ -1105,9 +1105,9 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 
 			auto port = Environment::getString("EMRUN_PORT");
 			if (m_state.configuration.debugSymbols())
-				Output::print(Output::theme().info, fmt::format("Nagivate to: http://localhost:{}/{}\n", port, m_state.paths.buildOutputDir()));
+				Output::print(Output::theme().info, fmt::format("Navigate to: http://localhost:{}/{}\n", port, m_state.paths.buildOutputDir()));
 			else
-				Output::print(Output::theme().info, fmt::format("Nagivate to: http://localhost:{}\n", port));
+				Output::print(Output::theme().info, fmt::format("Navigate to: http://localhost:{}\n", port));
 		}
 	}
 
