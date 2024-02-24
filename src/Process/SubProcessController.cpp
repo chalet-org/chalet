@@ -133,12 +133,12 @@ bool SubProcessController::create(SubProcess& outProcess, const StringList& inCm
 		if (!commandIsValid(inCmd))
 			return false;
 
+		if (!outProcess.create(inCmd, inOptions))
+			return getLastExitCodeFromProcess(outProcess);
+
 #if defined(CHALET_WIN32)
 		addProcess(outProcess);
 #endif
-
-		if (!outProcess.create(inCmd, inOptions))
-			return getLastExitCodeFromProcess(outProcess);
 
 		return true;
 	}
