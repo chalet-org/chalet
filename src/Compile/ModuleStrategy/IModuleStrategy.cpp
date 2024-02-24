@@ -456,15 +456,16 @@ void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::Jo
 /*****************************************************************************/
 void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 {
+	while (!jobs.empty() && jobs.back()->list.empty())
+		jobs.pop_back();
+
 	if (!jobs.empty())
 	{
-		while (!jobs.empty() && jobs.back()->list.empty())
-			jobs.pop_back();
-
 		auto& job = jobs.back();
 		addOtherBuildCommands(job->list);
 	}
-	else
+
+	if (jobs.empty())
 	{
 		auto addOtherCompilationsJob = [this]() {
 			auto job = std::make_unique<CommandPool::Job>();
