@@ -180,7 +180,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 	if (!result && inFailOnFalse)
 	{
 		const auto error = Output::getAnsiStyle(state.theme.error);
-		auto invalid = fmt::format("{cleanLine}{lineUp}{output}{input}{color} -- {error}invalid entry{reset}",
+		auto invalid = fmt::format("{cleanLine}{lineUp}{output}{input}{color} -- {error}invalid entry{reset}\n",
 			FMT_ARG(cleanLine),
 			FMT_ARG(lineUp),
 			FMT_ARG(output),
@@ -190,7 +190,6 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 			FMT_ARG(reset));
 
 		std::cout.write(invalid.data(), invalid.size());
-		std::cout.put('\n');
 		std::cout.flush();
 
 		return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
@@ -199,7 +198,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 	{
 		outResult = input;
 
-		auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}",
+		auto toOutput = fmt::format("{cleanLine}{lineUp}{output}{outResult}{reset}\n",
 			FMT_ARG(cleanLine),
 			FMT_ARG(lineUp),
 			FMT_ARG(output),
@@ -208,7 +207,6 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 		// toOutput.append(80 - toOutput.size(), ' ');
 		std::cout.write(toOutput.data(), toOutput.size());
-		std::cout.put('\n');
 		std::cout.flush();
 
 		return result;
@@ -369,9 +367,8 @@ void Output::previousLine(const bool inForce)
 #endif
 		{
 			std::string eraser(80, ' ');
-			auto prevLine = fmt::format("{}[F{}", getEscapeChar(), eraser);
+			auto prevLine = fmt::format("{}[F{}\n", getEscapeChar(), eraser);
 			std::cout.write(prevLine.data(), prevLine.size());
-			std::cout.put('\n');
 			prevLine = fmt::format("{}[F", getEscapeChar());
 			std::cout.write(prevLine.data(), prevLine.size());
 			std::cout.flush();
@@ -388,16 +385,15 @@ void Output::print(const Color inColor, const std::string& inText)
 		std::string output;
 		if (inColor == Color::Reset)
 		{
-			output = fmt::format("{}{}", reset, inText);
+			output = fmt::format("{}{}\n", reset, inText);
 		}
 		else
 		{
 			const auto color = getAnsiStyle(inColor);
-			output = fmt::format("{}{}{}", color, inText, reset);
+			output = fmt::format("{}{}{}\n", color, inText, reset);
 		}
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -410,19 +406,17 @@ void Output::print(const Color inColor, const StringList& inList)
 		const auto reset = getAnsiStyle(state.theme.reset);
 		if (inColor == Color::Reset)
 		{
-			auto output = fmt::format("{}{}", reset, String::join(inList));
+			auto output = fmt::format("{}{}\n", reset, String::join(inList));
 
 			std::cout.write(output.data(), output.size());
-			std::cout.put('\n');
 			std::cout.flush();
 		}
 		else
 		{
 			const auto color = getAnsiStyle(inColor);
-			auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
+			auto output = fmt::format("{}{}{}\n", color, String::join(inList), reset);
 
 			std::cout.write(output.data(), output.size());
-			std::cout.put('\n');
 			std::cout.flush();
 		}
 	}
@@ -435,10 +429,9 @@ void Output::printCommand(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}{}{}", color, inText, reset);
+		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -450,10 +443,9 @@ void Output::printCommand(const StringList& inList)
 	{
 		const auto color = getAnsiStyle(state.theme.build);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}{}{}", color, String::join(inList), reset);
+		auto output = fmt::format("{}{}{}\n", color, String::join(inList), reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -465,10 +457,9 @@ void Output::printInfo(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.info);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}{}{}", color, inText, reset);
+		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -480,10 +471,9 @@ void Output::printFlair(const std::string& inText)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}{}{}", color, inText, reset);
+		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -495,10 +485,9 @@ void Output::printSeparator(const char inChar)
 	{
 		const auto color = getAnsiStyle(state.theme.flair);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}{}{}", color, std::string(80, inChar), reset);
+		auto output = fmt::format("{}{}{}\n", color, std::string(80, inChar), reset);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -550,10 +539,9 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 	{
 		const auto colorError = getAnsiStyle(state.theme.error);
 		const auto reset = getAnsiStyle(state.theme.reset);
-		auto output = fmt::format("{}FAILED: {}{}", colorError, reset, inMessage);
+		auto output = fmt::format("{}FAILED: {}{}\n", colorError, reset, inMessage);
 
 		std::cout.write(output.data(), output.size());
-		std::cout.put('\n');
 		std::cout.flush();
 	}
 }
@@ -568,10 +556,9 @@ void Output::msgBuildFail()
 	const auto color = getAnsiStyle(state.theme.error);
 	const auto reset = getAnsiStyle(state.theme.reset);
 
-	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}", color, symbol, reset);
+	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}\n", color, symbol, reset);
 
 	std::cout.write(output.data(), output.size());
-	std::cout.put('\n');
 	std::cout.flush();
 }
 

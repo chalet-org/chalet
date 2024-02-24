@@ -261,7 +261,7 @@ void Environment::readEnvFileToDictionary(const std::string& inFile, Dictionary<
 		auto splitVar = String::split(line, '=');
 		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)
 		{
-			outVariables[std::move(splitVar.front())] = splitVar.back();
+			outVariables[std::move(splitVar.front())] = std::move(splitVar.back());
 		}
 	}
 	input.close();

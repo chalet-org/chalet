@@ -322,7 +322,7 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 		}
 
 		if (sub.size() >= inMinLength)
-			ret.emplace_back(std::move(sub));
+			ret.push_back(sub);
 	}
 
 	return ret;
