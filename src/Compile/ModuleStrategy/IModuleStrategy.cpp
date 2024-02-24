@@ -162,12 +162,12 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 		addHeaderUnitsToTargetLinks();
 
-		auto addLinkJob = [this]() {
+		{
 			auto job = std::make_unique<CommandPool::Job>();
 			job->list = m_compileAdapter.getLinkCommand(*m_project, *toolchain, *outputs);
-			return job;
-		};
-		buildJobs.emplace_back(addLinkJob());
+			if (!job->list.empty())
+				buildJobs.emplace_back(std::move(job));
+		}
 
 		// clear up memory
 		outputs.reset();
@@ -404,13 +404,10 @@ void IModuleStrategy::addHeaderUnitsBuildJob(CommandPool::JobList& jobs)
 			group->dependencyFile = m_state.environment->getModuleBinaryInterfaceDependencyFile(fmt::format("{}_{}", file, m_moduleId));
 		}
 	}
-
-	auto makeHeaderUnitsJob = [this]() {
-		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
-		return job;
-	};
-	jobs.emplace_back(makeHeaderUnitsJob());
+	auto job = std::make_unique<CommandPool::Job>();
+	job->list = getModuleCommands(m_headerUnitList, m_modulePayload, ModuleFileType::HeaderUnitObject);
+	if (!job->list.empty())
+		jobs.emplace_back(std::move(job));
 }
 
 /*****************************************************************************/
@@ -456,23 +453,19 @@ void IModuleStrategy::buildDependencyGraphAndAddModulesBuildJobs(CommandPool::Jo
 /*****************************************************************************/
 void IModuleStrategy::addOtherBuildJobsToLastJob(CommandPool::JobList& jobs)
 {
-	while (!jobs.empty() && jobs.back()->list.empty())
-		jobs.pop_back();
-
 	if (!jobs.empty())
 	{
 		auto& job = jobs.back();
 		addOtherBuildCommands(job->list);
+		if (job->list.empty())
+			jobs.pop_back();
 	}
-
-	if (jobs.empty())
+	else
 	{
-		auto addOtherCompilationsJob = [this]() {
-			auto job = std::make_unique<CommandPool::Job>();
-			addOtherBuildCommands(job->list);
-			return job;
-		};
-		jobs.emplace_back(addOtherCompilationsJob());
+		auto job = std::make_unique<CommandPool::Job>();
+		addOtherBuildCommands(job->list);
+		if (!job->list.empty())
+			jobs.emplace_back(std::move(job));
 	}
 }
 
@@ -895,12 +888,10 @@ bool IModuleStrategy::makeModuleBatch(CommandPool::JobList& jobs, const SourceFi
 	if (inList.empty())
 		return false;
 
-	auto makeModuleObjectsJob = [this, &inList]() {
-		auto job = std::make_unique<CommandPool::Job>();
-		job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
-		return job;
-	};
-	jobs.emplace_back(makeModuleObjectsJob());
+	auto job = std::make_unique<CommandPool::Job>();
+	job->list = getModuleCommands(inList, m_modulePayload, ModuleFileType::ModuleObject);
+	if (!job->list.empty())
+		jobs.emplace_back(std::move(job));
 
 	return true;
 }
