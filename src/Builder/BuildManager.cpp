@@ -420,8 +420,9 @@ void BuildManager::printBuildInformation()
 	if (usingC)
 		printDetailsImpl(m_state.toolchain.compilerC(), "C");
 
+	auto& machineArch = m_state.inputs.hostArchitecture();
 	const auto& hostArch = m_state.info.hostArchitectureString();
-	if (hostArch != m_state.info.targetArchitectureString())
+	if (hostArch != machineArch)
 	{
 		Diagnostic::info("Host Architecture: {}", hostArch);
 	}
