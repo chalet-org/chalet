@@ -766,11 +766,15 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 
 	constexpr auto reOptions = std::regex_constants::match_default;
 	std::regex re(pattern);
-	for (auto& it : fs::recursive_directory_iterator(basePath))
+
+	fs::recursive_directory_iterator it(basePath);
+	fs::recursive_directory_iterator itEnd;
+
+	while (it != itEnd)
 	{
-		if (matchIsValid(it, inSettings))
+		if (matchIsValid(*it, inSettings))
 		{
-			auto p = it.path().string();
+			auto p = it->path().string();
 #if defined(CHALET_WIN32)
 			Path::toUnix(p);
 #endif
@@ -784,7 +788,15 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 				if (std::regex_search(p.begin(), p.end(), re, reOptions))
 					onFound(p);
 			}
+
+			// if the path was removed during onFound
+			if (!Files::pathExists(p))
+			{
+				it = fs::recursive_directory_iterator(basePath);
+			}
 		}
+
+		it++;
 	}
 
 	return true;
