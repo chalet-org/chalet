@@ -27,6 +27,10 @@ protected:
 	virtual std::vector<CompilerPathStructure> getValidCompilerPaths() const final;
 
 private:
+	void cacheClLocation() const;
+
 	Unique<VisualStudioEnvironmentScript> m_config;
+
+	mutable std::string m_cl;
 };
 }

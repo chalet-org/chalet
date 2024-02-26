@@ -14,6 +14,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
+#include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Timer.hpp"
@@ -43,6 +44,16 @@ bool BuildEnvironmentVisualStudioLLVM::validateArchitectureFromInput()
 	// TODO: universal windows platform - uwp-windows-msvc
 
 	return BuildEnvironmentLLVM::validateArchitectureFromInput();
+}
+
+/*****************************************************************************/
+void BuildEnvironmentVisualStudioLLVM::cacheClLocation() const
+{
+	if (m_cl.empty())
+	{
+		m_cl = Files::which("cl");
+		chalet_assert(!m_cl.empty(), "cl not found");
+	}
 }
 
 /*****************************************************************************/
@@ -79,13 +90,14 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 		auto path = Environment::getPath();
 		std::string vsLLVM;
 
-		auto cl = Files::which("cl");
-		if (!cl.empty())
+		cacheClLocation();
+		if (!m_cl.empty())
 		{
-			auto find = cl.find("/VC/Tools");
+			auto cl = String::toLowerCase(m_cl);
+			auto find = cl.find("/vc/tools");
 			if (find != std::string::npos)
 			{
-				vsLLVM = cl.substr(0, find + 9);
+				vsLLVM = m_cl.substr(0, find + 9);
 				vsLLVM += "/Llvm";
 			}
 		}
@@ -101,6 +113,7 @@ bool BuildEnvironmentVisualStudioLLVM::createFromVersion(const std::string& inVe
 			Environment::setPath(path);
 		}
 	}
+
 	m_state.cache.file().addExtraHash(String::getPathFilename(m_config->envVarsFileDelta()));
 
 	m_config.reset(); // No longer needed
@@ -118,10 +131,10 @@ std::vector<CompilerPathStructure> BuildEnvironmentVisualStudioLLVM::getValidCom
 	std::string include;
 	bool found = false;
 
-	auto cl = Files::which("cl");
-	if (!cl.empty())
+	cacheClLocation();
+	if (!m_cl.empty())
 	{
-		cl = String::toLowerCase(cl);
+		auto cl = String::toLowerCase(m_cl);
 		auto find = cl.find("/vc/tools");
 		if (find != std::string::npos)
 		{
