@@ -321,6 +321,7 @@ bool Router::routeExport(CentralState& inCentralState)
 	// We want export to assume all targets are needed
 	m_inputs.setLastTarget(Values::All);
 	m_inputs.setOnlyRequired(false);
+	m_inputs.setDumpAssembly(false);
 
 	auto projectExporter = IProjectExporter::make(m_inputs.exportKind(), m_inputs);
 	if (!projectExporter->generate(inCentralState))
