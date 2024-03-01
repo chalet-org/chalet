@@ -147,6 +147,6 @@ bool CompileStrategyNinja::buildProject(const SourceTarget& inProject)
 		checkIfTargetWasUpdated(inProject);
 	}
 
-	return result;
+	return result && ICompileStrategy::buildProject(inProject);
 }
 }
