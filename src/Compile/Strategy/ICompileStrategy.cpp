@@ -215,7 +215,8 @@ bool ICompileStrategy::generateDebugSymbolFiles(const SourceTarget& inProject) c
 	if (inProject.isExecutable() || inProject.isSharedLibrary())
 	{
 		auto filename = m_state.paths.getTargetFilename(inProject);
-		if (sourceCache.fileChangedOrDoesNotExist(filename))
+		auto dsym = fmt::format("{}.dSYM", filename);
+		if (sourceCache.fileChangedOrDoesNotExist(filename, dsym))
 		{
 			if (m_dsymUtil.empty())
 			{
@@ -224,7 +225,6 @@ bool ICompileStrategy::generateDebugSymbolFiles(const SourceTarget& inProject) c
 					return true;
 			}
 
-			auto dsym = fmt::format("{}.dSYM", filename);
 			if (!Process::run({ m_dsymUtil, filename, "-o", dsym }))
 			{
 				Diagnostic::error("There was a problem generating: {}", dsym);
