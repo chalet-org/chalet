@@ -83,7 +83,7 @@ bool CompileStrategyNative::buildProject(const SourceTarget& inProject)
 
 	m_filesUpdated |= m_nativeGenerator.targetCompiled();
 
-	return true;
+	return ICompileStrategy::buildProject(inProject);
 }
 
 }

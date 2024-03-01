@@ -10,9 +10,12 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/Generator/IStrategyGenerator.hpp"
 #include "Compile/ModuleStrategy/IModuleStrategy.hpp"
+#include "Process/Process.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "System/Files.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
@@ -114,6 +117,22 @@ bool ICompileStrategy::doFullBuild()
 }
 
 /*****************************************************************************/
+bool ICompileStrategy::buildProject(const SourceTarget& inProject)
+{
+#if defined(CHALET_MACOS)
+	// generate dsym on mac
+	if (m_state.environment->isAppleClang() && m_state.configuration.debugSymbols())
+	{
+		if (!generateDebugSymbolFiles(inProject))
+			return false;
+	}
+#else
+	UNUSED(inProject);
+#endif
+	return true;
+}
+
+/*****************************************************************************/
 bool ICompileStrategy::doPostBuild() const
 {
 	return true;
@@ -186,4 +205,35 @@ bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 	return true;
 }
 
+#if defined(CHALET_MACOS)
+/*****************************************************************************/
+// Mac only for now
+bool ICompileStrategy::generateDebugSymbolFiles(const SourceTarget& inProject) const
+{
+	auto& sourceCache = m_state.cache.file().sources();
+	if (inProject.isExecutable() || inProject.isSharedLibrary())
+	{
+		auto filename = m_state.paths.getTargetFilename(inProject);
+		if (sourceCache.fileChangedOrDoesNotExist(filename))
+		{
+			if (m_dsymUtil.empty())
+			{
+				m_dsymUtil = Files::which("dsymutil");
+				if (m_dsymUtil.empty())
+					return true;
+			}
+
+			auto dsym = fmt::format("{}.dSYM", filename);
+			if (!Process::run({ m_dsymUtil, filename, "-o", dsym }))
+			{
+				Diagnostic::error("There was a problem generating: {}", dsym);
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+#endif
 }

@@ -1010,7 +1010,7 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 		exe = inExecutable.substr(pos);
 	}
 
-	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart))
+	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart) > 0)
 	{
 		result = std::string(filename);
 		Path::toUnix(result);

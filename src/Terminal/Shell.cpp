@@ -122,24 +122,18 @@ std::string getProcessPath(DWORD inPid)
 
 /*****************************************************************************/
 #if defined(CHALET_WIN32)
-struct ProcessPaths
+std::string getParentProcessPath(DWORD pid)
 {
-	std::string parent;
-	std::string parentParent;
-};
-ProcessPaths getParentProcessPaths()
+	return getProcessPath(pid);
+}
+std::string getParentParentProcessPath(DWORD pid)
+{
+	DWORD ppid = getParentProcessId(pid);
+	return getProcessPath(ppid);
+}
 #else
 std::string getParentProcessPath()
-#endif
 {
-#if defined(CHALET_WIN32)
-	ProcessPaths ret;
-	DWORD pid = getParentProcessId();
-	ret.parent = getProcessPath(pid);
-	DWORD ppid = getParentProcessId(pid);
-	ret.parentParent = getProcessPath(ppid);
-	return ret;
-#else
 	// pid_t pid = getpid();
 	pid_t pid = getParentProcessId();
 
@@ -163,8 +157,8 @@ std::string getParentProcessPath()
 	}
 
 	return name;
-#endif
 }
+#endif
 
 /*****************************************************************************/
 #if defined(CHALET_LINUX)
@@ -279,67 +273,73 @@ void setTerminalType()
 #if defined(CHALET_WIN32)
 	// TOOD: Cygwin, Windows Terminal
 
-	auto result = Environment::get("VSAPPIDDIR");
-	if (result != nullptr)
+	auto result = Environment::getString("VSAPPIDDIR");
+	if (!result.empty())
 	{
 		state.terminalType = ShellType::CommandPromptVisualStudio;
 		return printTermType();
 	}
 
+	// Jetbrains should set this variable
+	DWORD pid = getParentProcessId();
+	auto parentPath = getParentProcessPath(pid);
+	if (String::endsWith("clion64.exe", parentPath) || String::contains("JetBrains", parentPath))
+	{
+		state.terminalType = ShellType::CommandPromptJetBrains;
+		return printTermType();
+	}
+
 	// MSYSTEM: Non-nullptr in MSYS2, Git Bash & std::system calls
-	result = Environment::get("MSYSTEM");
-	if (result != nullptr)
+	result = Environment::getString("MSYSTEM");
+	if (!result.empty())
 	{
 		state.terminalType = ShellType::Bash;
 		return printTermType();
 	}
 
+	// Note, slower to do the following
+
 	// Powershell needs to be detected from the parent PID
 	// Note: env is identical to command prompt. It uses its own env for things like $PSHOME
 	{
-		auto paths = getParentProcessPaths();
-		if (String::endsWith("WindowsTerminal.exe", paths.parentParent))
+		auto parentParentPath = getParentParentProcessPath(pid);
+		if (String::endsWith("WindowsTerminal.exe", parentParentPath))
 		{
 			state.terminalType = ShellType::WindowsTerminal;
 			return printTermType();
 		}
-		else if (String::endsWith("pwsh.exe", paths.parent))
+		else if (String::endsWith("pwsh.exe", parentPath))
 		{
 			state.terminalType = ShellType::PowershellOpenSource;
 			return printTermType();
 		}
-		else if (String::endsWith("powershell_ise.exe", paths.parent))
+		else if (String::endsWith("powershell_ise.exe", parentPath))
 		{
 			state.terminalType = ShellType::PowershellIse;
 			return printTermType();
 		}
-		else if (String::endsWith("powershell.exe", paths.parent))
+		else if (String::endsWith("powershell.exe", parentPath))
 		{
 			state.terminalType = ShellType::Powershell;
 			return printTermType();
 		}
-		else if (String::endsWith("cmd.exe", paths.parent))
+		else if (String::endsWith("cmd.exe", parentPath))
 		{
 			state.terminalType = ShellType::CommandPrompt;
 			return printTermType();
 		}
-		else if (String::endsWith("clion64.exe", paths.parent) || String::contains("JetBrains", paths.parent))
-		{
-			state.terminalType = ShellType::CommandPromptJetBrains;
-			return printTermType();
-		}
 	}
 
-	result = Environment::get("COLORTERM");
-	if (result != nullptr)
+	result = Environment::getString("COLORTERM");
+	if (!result.empty())
 	{
 		state.terminalType = ShellType::GenericColorTerm;
 		return printTermType();
 	}
 
 	// Detect Command prompt from PROMPT
-	result = Environment::get("PROMPT");
-	if (result != nullptr)
+	result = Environment::getString("PROMPT");
+	if (!result.empty())
 	{
 		state.terminalType = ShellType::CommandPrompt;
 		return printTermType();

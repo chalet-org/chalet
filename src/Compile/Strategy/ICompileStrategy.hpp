@@ -38,7 +38,7 @@ struct ICompileStrategy
 
 	virtual bool doPreBuild();
 	virtual bool doFullBuild();
-	virtual bool buildProject(const SourceTarget& inProject) = 0;
+	virtual bool buildProject(const SourceTarget& inProject);
 	virtual bool doPostBuild() const;
 
 	bool buildProjectModules(const SourceTarget& inProject);
@@ -60,6 +60,11 @@ protected:
 
 private:
 	bool addCompileCommands(const SourceTarget& inProject);
+#if defined(CHALET_MACOS)
+	bool generateDebugSymbolFiles(const SourceTarget& inProject) const;
+
+	mutable std::string m_dsymUtil;
+#endif
 };
 
 }

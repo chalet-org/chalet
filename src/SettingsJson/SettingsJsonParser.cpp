@@ -343,7 +343,9 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 			auto& bashNode = tools.at(Keys::ToolsBash);
 			auto bashPath = bashNode.get<std::string>();
-			if (bashPath.empty() && !gitPath.empty())
+
+			// We need to ignore WSL bash
+			if (!gitPath.empty() && (bashPath.empty() || String::contains("SYSTEM32", bashPath)))
 			{
 				bashPath = fmt::format("{}/{}", gitBinFolder, "bash.exe");
 				if (Files::pathExists(bashPath))
