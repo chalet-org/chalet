@@ -119,13 +119,15 @@ bool ICompileStrategy::doFullBuild()
 /*****************************************************************************/
 bool ICompileStrategy::buildProject(const SourceTarget& inProject)
 {
-// generate dsym on mac
 #if defined(CHALET_MACOS)
+	// generate dsym on mac
 	if (m_state.environment->isAppleClang() && m_state.configuration.debugSymbols())
 	{
 		if (!generateDebugSymbolFiles(inProject))
 			return false;
 	}
+#else
+	UNUSED(inProject);
 #endif
 	return true;
 }
