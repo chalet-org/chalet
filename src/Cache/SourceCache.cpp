@@ -33,7 +33,12 @@ Json SourceCache::asJson() const
 {
 	Json ret = Json::object();
 
-	time_t lastBuilt = m_dirty ? m_initializedTime : m_lastBuildTime;
+	time_t lastBuilt = 0;
+	if (m_dirty)
+		lastBuilt = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	else
+		lastBuilt = m_lastBuildTime;
+
 	ret[CacheKeys::BuildLastBuilt] = std::to_string(++lastBuilt);
 
 	ret[CacheKeys::BuildLastBuildStrategy] = static_cast<i32>(m_lastBuildStrategy);
@@ -117,6 +122,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 		return false;
 
 	auto lastWrite = Files::getLastWriteTime(inFile);
+	LOG(inFile, lastWrite, m_lastBuildTime, lastWrite > m_lastBuildTime);
 	if (lastWrite == 0)
 		return true;
 
@@ -127,7 +133,8 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
 	bool depDoesNotExist = !inDependency.empty() && !Files::pathExists(inDependency);
-	return depDoesNotExist || fileChangedOrDoesNotExist(inFile);
+	bool fileChanged = fileChangedOrDoesNotExist(inFile);
+	return fileChanged || depDoesNotExist;
 }
 
 /*****************************************************************************/
