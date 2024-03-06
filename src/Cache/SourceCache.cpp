@@ -122,7 +122,6 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 		return false;
 
 	auto lastWrite = Files::getLastWriteTime(inFile);
-	LOG(inFile, lastWrite, m_lastBuildTime, lastWrite > m_lastBuildTime);
 	if (lastWrite == 0)
 		return true;
 
