@@ -132,8 +132,7 @@ bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile) const
 bool SourceCache::fileChangedOrDoesNotExist(const std::string& inFile, const std::string& inDependency) const
 {
 	bool depDoesNotExist = !inDependency.empty() && !Files::pathExists(inDependency);
-	bool fileChanged = fileChangedOrDoesNotExist(inFile);
-	return fileChanged || depDoesNotExist;
+	return depDoesNotExist || fileChangedOrDoesNotExist(inFile);
 }
 
 /*****************************************************************************/
