@@ -15,6 +15,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "System/DefinesExperimentalFeatures.hpp"
 #include "System/Files.hpp"
 
 #include "Compile/CompileToolchainController.hpp"
@@ -210,6 +211,7 @@ bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 // Mac only for now
 bool ICompileStrategy::generateDebugSymbolFiles(const SourceTarget& inProject) const
 {
+	#if CHALET_MACOS_GEN_DSYM
 	auto& sourceCache = m_state.cache.file().sources();
 	if (inProject.isExecutable() || inProject.isSharedLibrary())
 	{
@@ -231,6 +233,9 @@ bool ICompileStrategy::generateDebugSymbolFiles(const SourceTarget& inProject) c
 			}
 		}
 	}
+	#else
+	UNUSED(inProject);
+	#endif
 
 	return true;
 }

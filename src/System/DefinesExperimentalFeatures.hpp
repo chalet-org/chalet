@@ -8,3 +8,4 @@
 #include "System/DefinesPlatform.hpp"
 
 #define CHALET_ALT_COMMAND_POOL 0
+#define CHALET_MACOS_GEN_DSYM 0
