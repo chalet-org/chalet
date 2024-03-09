@@ -39,7 +39,6 @@ bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
 	if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
 		return true;
 
-	gitDependency.setNeedsUpdate(true);
 	destinationExists = Files::pathExists(gitDependency.destination());
 	if (fetchDependency(gitDependency, destinationExists))
 	{

@@ -7,9 +7,12 @@
 
 #include "Core/CommandLineInputs.hpp"
 
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "System/Files.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -45,6 +48,14 @@ bool LocalDependency::validate()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string LocalDependency::getStateHash(const BuildState& inState) const
+{
+	auto configHash = inState.configuration.getHash();
+	auto hashable = Hash::getHashableString(this->name(), m_path, configHash);
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/
