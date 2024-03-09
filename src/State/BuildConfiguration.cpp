@@ -9,6 +9,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
@@ -251,6 +252,13 @@ bool BuildConfiguration::validate(const BuildState& inState)
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+std::string BuildConfiguration::getHash() const
+{
+	auto hashable = Hash::getHashableString(m_sanitizeOptions, m_optimizationLevel, m_interproceduralOptimization, m_debugSymbols, m_enableProfiling);
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

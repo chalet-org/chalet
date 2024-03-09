@@ -8,7 +8,9 @@
 #include "Core/CommandLineInputs.hpp"
 
 #include "State/BuildPaths.hpp"
+#include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -26,6 +28,14 @@ bool GitDependency::initialize()
 		return false;
 
 	return true;
+}
+
+/*****************************************************************************/
+std::string GitDependency::getStateHash(const BuildState& inState) const
+{
+	auto configHash = inState.configuration.getHash();
+	auto hashable = Hash::getHashableString(this->name(), m_destination, m_repository, m_branch, m_tag, m_commit, configHash);
+	return Hash::string(hashable);
 }
 
 /*****************************************************************************/

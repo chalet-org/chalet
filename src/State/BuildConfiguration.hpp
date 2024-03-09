@@ -20,6 +20,8 @@ struct BuildConfiguration
 
 	bool validate(const BuildState& inState);
 
+	std::string getHash() const;
+
 	const std::string& name() const noexcept;
 	void setName(const std::string& inValue) noexcept;
 

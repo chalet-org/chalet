@@ -16,6 +16,8 @@ struct GitDependency final : public IExternalDependency
 	virtual bool initialize() final;
 	virtual bool validate() final;
 
+	virtual std::string getStateHash(const BuildState& inState) const final;
+
 	const std::string& repository() const noexcept;
 	void setRepository(std::string&& inValue) noexcept;
 
