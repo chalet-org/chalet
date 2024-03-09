@@ -56,6 +56,7 @@ public:
 	CentralState& getCentralState();
 	const CentralState& getCentralState() const;
 	const IBuildTarget* getFirstValidRunTarget(const bool inExecutablesOnly = false) const;
+	const IExternalDependency* getExternalDependencyFromLocation(const std::string& inLocation) const;
 
 	AncillaryTools& tools;
 	WorkspaceCache& cache;

@@ -22,7 +22,9 @@
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Dependency/GitDependency.hpp"
 #include "State/Dependency/IExternalDependency.hpp"
+#include "State/Dependency/LocalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Package/SourcePackage.hpp"
@@ -275,6 +277,32 @@ const IBuildTarget* BuildState::getFirstValidRunTarget(const bool inExecutablesO
 		else if (target->isProcess() && !inExecutablesOnly)
 		{
 			return target.get();
+		}
+	}
+
+	return nullptr;
+}
+
+/*****************************************************************************/
+const IExternalDependency* BuildState::getExternalDependencyFromLocation(const std::string& inLocation) const
+{
+	for (auto& dep : externalDependencies)
+	{
+		if (dep->isGit())
+		{
+			auto& gitDep = static_cast<const GitDependency&>(*dep);
+			if (String::startsWith(gitDep.destination(), inLocation))
+			{
+				return dep.get();
+			}
+		}
+		else if (dep->isLocal())
+		{
+			auto& localDep = static_cast<const LocalDependency&>(*dep);
+			if (String::startsWith(localDep.path(), inLocation))
+			{
+				return dep.get();
+			}
 		}
 	}
 
