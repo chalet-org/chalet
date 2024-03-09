@@ -162,7 +162,12 @@ ScriptAdapter::PathResult ScriptAdapter::getScriptTypeFromPath(const std::string
 			{
 				shebang = shebang.substr(envPart + 5);
 				scriptType = getScriptTypeFromString(shebang);
-				shell = Files::which(shebang);
+
+				if (String::equals("bash", shebang))
+					shell = m_tools.bash();
+				else
+					shell = Files::which(shebang);
+
 				shellFound = !shell.empty();
 
 				if (!shellFound && String::startsWith("python", shebang))
