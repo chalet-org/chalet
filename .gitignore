@@ -10,6 +10,9 @@ dist/
 .vs/
 .vscode/ipch/
 .fleet/
+CMakeSettings.json
+launch.vs.json
+tasks.vs.json
 
 # Project-specific
 *.exe.stackdump
