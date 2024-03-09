@@ -112,26 +112,12 @@ bool CMakeTarget::hashChanged() const noexcept
 {
 	if (m_hashChanged == -1)
 	{
-		const IExternalDependency* dependency = nullptr;
-		if (String::startsWith(m_state.inputs.externalDirectory(), location()))
-		{
-			auto loc = location().substr(m_state.inputs.externalDirectory().size() + 1);
-			for (auto& dep : m_state.externalDependencies)
-			{
-				if (String::startsWith(dep->name(), loc))
-				{
-					dependency = dep.get();
-					break;
-				}
-			}
-		}
-
-		if (dependency == nullptr)
-			return true;
+		auto dependency = m_state.getExternalDependencyFromLocation(m_location);
 
 		auto& sourceCache = m_state.cache.file().sources();
 		auto configHash = m_state.configuration.getHash();
-		bool cacheChanged = sourceCache.dataCacheValueChanged(Hash::string(fmt::format("cmake.{}.{}", dependency->getHash(), configHash)), m_hash);
+		auto dependencyHash = dependency != nullptr ? dependency->getHash() : std::string();
+		bool cacheChanged = sourceCache.dataCacheValueChanged(Hash::string(fmt::format("cmake.{}.{}", dependencyHash, configHash)), m_hash);
 		m_hashChanged = static_cast<i32>(cacheChanged);
 	}
 	return m_hashChanged == 1;
