@@ -7,9 +7,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 
-#include "State/BuildConfiguration.hpp"
-#include "State/BuildPaths.hpp"
-#include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
@@ -51,11 +48,15 @@ bool LocalDependency::validate()
 }
 
 /*****************************************************************************/
-std::string LocalDependency::getStateHash(const BuildState& inState) const
+const std::string& LocalDependency::getHash() const
 {
-	auto configHash = inState.configuration.getHash();
-	auto hashable = Hash::getHashableString(this->name(), m_path, configHash);
-	return Hash::string(hashable);
+	if (m_hash.empty())
+	{
+		auto hashable = Hash::getHashableString(this->name(), m_path);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/

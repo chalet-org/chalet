@@ -17,7 +17,7 @@ struct ScriptDependency final : public IExternalDependency
 	virtual bool initialize() final;
 	virtual bool validate() final;
 
-	virtual std::string getStateHash(const BuildState& inState) const final;
+	virtual const std::string& getHash() const final;
 
 	const std::string& file() const noexcept;
 	void setFile(std::string&& inValue) noexcept;

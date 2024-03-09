@@ -7,8 +7,6 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
-#include "State/BuildConfiguration.hpp"
-#include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
@@ -60,12 +58,16 @@ bool ScriptDependency::validate()
 }
 
 /*****************************************************************************/
-std::string ScriptDependency::getStateHash(const BuildState& inState) const
+const std::string& ScriptDependency::getHash() const
 {
-	auto configHash = inState.configuration.getHash();
-	auto arguments = String::join(m_arguments);
-	auto hashable = Hash::getHashableString(this->name(), m_file, arguments, configHash);
-	return Hash::string(hashable);
+	if (m_hash.empty())
+	{
+		auto arguments = String::join(m_arguments);
+		auto hashable = Hash::getHashableString(this->name(), m_file, arguments);
+		m_hash = Hash::string(hashable);
+	}
+
+	return m_hash;
 }
 
 /*****************************************************************************/
