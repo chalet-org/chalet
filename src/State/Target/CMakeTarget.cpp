@@ -11,6 +11,7 @@
 #include "Cache/WorkspaceInternalCacheFile.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -129,7 +130,8 @@ bool CMakeTarget::hashChanged() const noexcept
 			return true;
 
 		auto& sourceCache = m_state.cache.file().sources();
-		bool cacheChanged = sourceCache.dataCacheValueChanged(Hash::string(fmt::format("cmake.{}", dependency->getStateHash(m_state))), m_hash);
+		auto configHash = m_state.configuration.getHash();
+		bool cacheChanged = sourceCache.dataCacheValueChanged(Hash::string(fmt::format("cmake.{}.{}", dependency->getHash(), configHash)), m_hash);
 		m_hashChanged = static_cast<i32>(cacheChanged);
 	}
 	return m_hashChanged == 1;

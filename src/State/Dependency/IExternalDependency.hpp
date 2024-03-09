@@ -11,7 +11,6 @@ namespace chalet
 {
 struct IExternalDependency;
 struct CentralState;
-class BuildState;
 using ExternalDependency = Unique<IExternalDependency>;
 
 struct IExternalDependency
@@ -23,7 +22,7 @@ struct IExternalDependency
 
 	virtual bool initialize() = 0;
 	virtual bool validate() = 0;
-	virtual std::string getStateHash(const BuildState& inState) const = 0;
+	virtual const std::string& getHash() const = 0;
 
 	ExternalDependencyType type() const noexcept;
 	bool isGit() const noexcept;
@@ -37,6 +36,8 @@ protected:
 	bool replaceVariablesInPathList(StringList& outList);
 
 	const CentralState& m_centralState;
+
+	mutable std::string m_hash;
 
 private:
 	std::string m_name;
