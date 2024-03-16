@@ -1879,6 +1879,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	// always set
 	ret["INFOPLIST_FILE"] = infoPlist;
 
+	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
 	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();
 
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
