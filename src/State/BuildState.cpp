@@ -1331,6 +1331,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				if (!result.empty())
 					return result;
 
+				if (String::equals("outputDir", match))
+					return paths.outputDirectory();
+
 				if (String::equals("buildDir", match))
 					return paths.buildOutputDir();
 
@@ -1412,6 +1415,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				auto result = replaceVariablesInMatch(match, required);
 				if (!result.empty())
 					return result;
+
+				if (String::equals("outputDir", match))
+					return paths.outputDirectory();
 
 				if (String::equals("buildDir", match))
 					return paths.buildOutputDir();
