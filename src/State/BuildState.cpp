@@ -1359,6 +1359,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 				if (!result.empty())
 					return result;
 
+				if (String::equals("outputDir", match))
+					return paths.outputDirectory();
+
 				if (String::equals("buildDir", match))
 					return paths.buildOutputDir();
 
@@ -1440,6 +1443,9 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 				auto result = replaceVariablesInMatch(match, required);
 				if (!result.empty())
 					return result;
+
+				if (String::equals("outputDir", match))
+					return paths.outputDirectory();
 
 				if (String::equals("buildDir", match))
 					return paths.buildOutputDir();
@@ -1576,6 +1582,9 @@ std::string BuildState::replaceVariablesInMatch(std::string& match, bool& requir
 
 	if (String::equals("home", match))
 		return inputs.homeDirectory();
+
+	if (String::equals("maxJobs", match))
+		return std::to_string(info.maxJobs());
 
 	if (String::startsWith("meta:workspace", match))
 	{
