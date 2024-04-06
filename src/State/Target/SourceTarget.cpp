@@ -190,31 +190,33 @@ bool SourceTarget::determinePicType()
 		}
 		else if (m_kind == SourceKind::SharedLibrary)
 		{
-			m_picType = PositionIndependentCodeType::Shared;
+			m_picType = PositionIndependentCodeType::Code;
 		}
 		else if (m_kind == SourceKind::StaticLibrary)
 		{
-			const auto& targetName = this->name();
-			for (const auto& target : m_state.targets)
-			{
-				if (String::equals(targetName, target->name()))
-					continue;
+			m_picType = PositionIndependentCodeType::Code;
 
-				if (target->isSources())
-				{
-					const auto& sources = static_cast<const SourceTarget&>(*target);
-					const auto& links = sources.projectStaticLinks();
-					if (List::contains(links, targetName))
-					{
-						if (sources.isExecutable())
-							m_picType = PositionIndependentCodeType::Executable;
-						else if (sources.isSharedLibrary())
-							m_picType = PositionIndependentCodeType::Shared;
+			// const auto& targetName = this->name();
+			// for (const auto& target : m_state.targets)
+			// {
+			// 	if (String::equals(targetName, target->name()))
+			// 		continue;
 
-						break;
-					}
-				}
-			}
+			// 	if (target->isSources())
+			// 	{
+			// 		const auto& sources = static_cast<const SourceTarget&>(*target);
+			// 		const auto& links = sources.projectStaticLinks();
+			// 		if (List::contains(links, targetName))
+			// 		{
+			// 			if (sources.isExecutable())
+			// 				m_picType = PositionIndependentCodeType::Executable;
+			// 			else if (sources.isSharedLibrary())
+			// 				m_picType = PositionIndependentCodeType::Code;
+
+			// 			break;
+			// 		}
+			// 	}
+			// }
 		}
 	}
 
@@ -1076,7 +1078,7 @@ void SourceTarget::setWindowsEntryPoint(const std::string& inValue)
 /*****************************************************************************/
 bool SourceTarget::positionIndependentCode() const noexcept
 {
-	return m_picType == PositionIndependentCodeType::Shared;
+	return m_picType == PositionIndependentCodeType::Code;
 }
 
 bool SourceTarget::positionIndependentExecutable() const noexcept
@@ -1093,7 +1095,7 @@ void SourceTarget::setPicType(const std::string& inValue)
 {
 	if (String::equals("shared", inValue))
 	{
-		m_picType = PositionIndependentCodeType::Shared;
+		m_picType = PositionIndependentCodeType::Code;
 	}
 	else if (String::equals("shared", inValue))
 	{

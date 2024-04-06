@@ -11,7 +11,7 @@ enum class PositionIndependentCodeType : u16
 {
 	None,
 	Auto,
-	Shared,
+	Code,
 	Executable,
 };
 }
