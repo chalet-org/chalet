@@ -11,6 +11,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Yaml/YamlFile.hpp"
 #include "Json/JsonComments.hpp"
 #include "Json/JsonValidationError.hpp"
 #include "Json/JsonValidator.hpp"
@@ -148,6 +149,11 @@ bool BatchValidator::parse(Json& outJson, const std::string& inFilename, const b
 	{
 		outJson = Json();
 		return true;
+	}
+
+	if (String::endsWith(".yaml", inFilename))
+	{
+		return YamlFile::parse(outJson, inFilename);
 	}
 
 	std::string lines;
