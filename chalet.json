@@ -46,6 +46,9 @@
 			"staticRuntimeLibrary[toolchain:msvc]": true,
 			"cppFilesystem": true,
 			"warningsPreset": "strict",
+			"warnings[:linux]": [
+				"no-dangling-reference"
+			],
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [
 				"_DEBUG"
