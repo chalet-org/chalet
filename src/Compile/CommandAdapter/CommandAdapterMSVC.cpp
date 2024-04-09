@@ -213,7 +213,7 @@ bool CommandAdapterMSVC::supportsEditAndContinue() const
 /*****************************************************************************/
 bool CommandAdapterMSVC::supportsJustMyCodeDebugging() const
 {
-	return m_state.configuration.debugSymbols();
+	return m_state.configuration.debugSymbols() && m_project.justMyCodeDebugging();
 }
 
 /*****************************************************************************/

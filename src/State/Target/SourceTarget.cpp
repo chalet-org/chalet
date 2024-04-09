@@ -1239,6 +1239,15 @@ void SourceTarget::setWindowsOutputDef(const bool inValue) noexcept
 	m_windowsOutputDef = inValue;
 }
 
+bool SourceTarget::justMyCodeDebugging() const noexcept
+{
+	return m_justMyCodeDebugging;
+}
+void SourceTarget::setJustMyCodeDebugging(const bool inValue) noexcept
+{
+	m_justMyCodeDebugging = inValue;
+}
+
 /*****************************************************************************/
 std::string SourceTarget::getPrecompiledHeaderResolvedToRoot() const
 {

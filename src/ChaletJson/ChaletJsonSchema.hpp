@@ -145,6 +145,7 @@ class ChaletJsonSchema
 		TargetSourceCxxWindowsAppIcon,
 		TargetSourceCxxWindowsOutputDef,
 		TargetSourceCxxMinGWUnixSharedLibraryNamingConvention,
+		TargetSourceCxxJustMyCodeDebugging,
 		TargetSourceCxxWindowsSubSystem,
 		TargetSourceCxxWindowsEntryPoint,
 		//

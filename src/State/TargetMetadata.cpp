@@ -22,6 +22,11 @@ bool TargetMetadata::initialize(const BuildState& inState, const IBuildTarget* i
 			Diagnostic::error("Workspace metadata cannot reference itself: {}", outVar);
 			return false;
 		}
+		else if (!isWorkspace && String::contains("${meta:", outVar) && !String::contains("${meta:workspace", outVar))
+		{
+			Diagnostic::error("Metadata cannot reference itself: {}", outVar);
+			return false;
+		}
 
 		return inState.replaceVariablesInString(outVar, inTarget);
 	};

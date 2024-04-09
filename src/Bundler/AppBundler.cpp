@@ -518,8 +518,8 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files(), false);
-	if (!result)
-		Output::lineBreak();
+	// if (!result)
+	// 	Output::lineBreak();
 
 	return result;
 }

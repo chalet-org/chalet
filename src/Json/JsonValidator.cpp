@@ -138,19 +138,22 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 	switch (outError.type)
 	{
 		case JsonSchemaError::schema_ref_unresolved:
-			return "Unresolved or freed schema-reference " + std::any_cast<std::string>(data);
+			return fmt::format("Unresolved or freed schema-reference {}", std::any_cast<std::string>(data));
 
 		case JsonSchemaError::no_root_schema_set:
-			return "No root schema has yet been set for validating an instance";
+			return "No root schema has yet been set for validating an instance.";
 
 		case JsonSchemaError::logical_not:
-			return "The subschema has succeeded, but it is required to not validate";
+			return fmt::format("The subschema for '{}' is required to not match (per 'not'), but in this cased matched.", parentKey);
+
+		case JsonSchemaError::logical_combination_any_of:
+			return fmt::format("At least one of the subschemas are required for '{}' (per 'anyOf'), but none of them matched.", parentKey);
 
 		case JsonSchemaError::logical_combination_all_of:
-		case JsonSchemaError::logical_combination_any_of:
+			return fmt::format("All of the subschemas are required for '{}' (per 'allOf'), but at least one of them did not match.", parentKey);
+
 		case JsonSchemaError::logical_combination_one_of:
-			// The inner errors should be handled instead - allOf, anyOf, oneOf are not useful info for the user
-			return std::string();
+			return fmt::format("One of the subschemas are required for '{}' (per 'oneOf'), but none matched.", parentKey);
 
 		case JsonSchemaError::type_instance_unexpected_type: {
 			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))
@@ -183,7 +186,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 
 		case JsonSchemaError::string_content_checker_not_provided: {
 			auto sub_data = std::any_cast<std::pair<std::string, std::string>>(data);
-			return "A content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '" + sub_data.first + "' '" + sub_data.second + '\'';
+			return fmt::format("A content checker was not provided but a contentEncoding or contentMediaType for this string have been present: '{}' '{}'", sub_data.first, sub_data.second);
 		}
 
 		case JsonSchemaError::string_content_checker_failed:
@@ -200,27 +203,27 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::string_format_checker_not_provided:
-			return "A format checker was not provided but a format keyword for this string is present: " + std::any_cast<std::string>(data);
+			return fmt::format("A format checker was not provided but a format keyword for this string is present: {}", std::any_cast<std::string>(data));
 
 		case JsonSchemaError::string_format_checker_failed:
-			return "Format-checking failed: " + std::any_cast<std::string>(data);
+			return fmt::format("Format-checking failed: {}", std::any_cast<std::string>(data));
 
 		case JsonSchemaError::numeric_multiple_of: {
 			std::string multiple;
 			getValueWithTypCheck(data, multiple);
-			return "Instance is not a multiple of " + multiple;
+			return fmt::format("Instance is not a multiple of {}", multiple);
 		}
 
 		case JsonSchemaError::numeric_exceeds_maximum: {
 			std::string maximum;
 			getValueWithTypCheck(data, maximum);
-			return "Instance exceeds maximum of " + maximum;
+			return fmt::format("Instance exceeds maximum of {}", maximum);
 		}
 
 		case JsonSchemaError::numeric_below_minimum: {
 			std::string minimum;
 			getValueWithTypCheck(data, minimum);
-			return "Instance is below minimum of " + minimum;
+			return fmt::format("Instance is below minimum of {}", minimum);
 		}
 
 		case JsonSchemaError::null_found_non_null:

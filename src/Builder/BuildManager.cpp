@@ -852,8 +852,8 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 
 	stopTimerAndShowBenchmark(buildTimer);
 
-	if (!result)
-		Output::lineBreak();
+	// if (!result)
+	// 	Output::lineBreak();
 
 	return result;
 }

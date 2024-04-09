@@ -1489,6 +1489,9 @@
 				},
 				"windowsSubSystem": {
 					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
+				},
+				"justMyCodeDebugging": {
+					"$ref": "#/definitions/target-source-cxx-justMyCodeDebugging"
 				}
 			},
 			"patternProperties": {
@@ -1590,6 +1593,9 @@
 				},
 				"^windowsSubSystem\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-windowsSubSystem"
+				},
+				"^justMyCodeDebugging\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-justMyCodeDebugging"
 				}
 			}
 		},
@@ -2227,6 +2233,11 @@
 		"target-source-cxx-mingwUnixSharedLibraryNamingConvention": {
 			"type": "boolean",
 			"description": "If true (default), shared libraries will use the `lib(name).dll` naming convention in the MinGW toolchain (default), false to use `(name).dll`.",
+			"default": true
+		},
+		"target-source-cxx-justMyCodeDebugging": {
+			"type": "boolean",
+			"description": "If true (default) on builds with debugging, enables 'Just My Code' in supported debuggers. Disabling this may improve performance in some situations. Currently only supported with MSVC",
 			"default": true
 		},
 		"target-source-cxx-windowsSubSystem": {
