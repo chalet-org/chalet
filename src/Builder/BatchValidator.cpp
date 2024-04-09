@@ -133,6 +133,11 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 				Output::printCommand(fmt::format("   Success! {} {} passed validation.", files.size(), filesPrint));
 			}
 		}
+		else
+		{
+			Diagnostic::printValid(false);
+			Diagnostic::printErrors(true);
+		}
 
 		return result;
 	}

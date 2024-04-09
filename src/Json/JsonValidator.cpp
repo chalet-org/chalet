@@ -146,10 +146,15 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		case JsonSchemaError::logical_not:
 			return "The subschema has succeeded, but it is required to not validate";
 
-		case JsonSchemaError::logical_combination_all_of:
 		case JsonSchemaError::logical_combination_any_of:
+			return fmt::format("At least one of the subschemas are required for '{}' (per 'anyOf'), but none of them matched.", parentKey);
+
+		case JsonSchemaError::logical_combination_all_of:
+			// TODO: this should work in theory, but doesn't trigger
+			return fmt::format("All of the subschemas are required for '{}' (per 'allOf'), but one did not match.", parentKey);
+
 		case JsonSchemaError::logical_combination_one_of:
-			// The inner errors should be handled instead - allOf, anyOf, oneOf are not useful info for the user
+			// TODO: The inner errors should be handled instead - if these fail, it just means a single combination failed
 			return std::string();
 
 		case JsonSchemaError::type_instance_unexpected_type: {
