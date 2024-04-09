@@ -198,6 +198,9 @@ struct SourceTarget final : public IBuildTarget
 	bool windowsOutputDef() const noexcept;
 	void setWindowsOutputDef(const bool inValue) noexcept;
 
+	bool justMyCodeDebugging() const noexcept;
+	void setJustMyCodeDebugging(const bool inValue) noexcept;
+
 	StringList getResolvedRunDependenciesList() const;
 
 	bool generateUnityBuildFile(std::string& outSourceFile) const;
@@ -272,5 +275,6 @@ private:
 	bool m_mingwUnixSharedLibraryNamingConvention = true;
 	bool m_setWindowsPrefixOutputFilename = false;
 	bool m_windowsOutputDef = false;
+	bool m_justMyCodeDebugging = true;
 };
 }

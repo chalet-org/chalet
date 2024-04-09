@@ -1323,6 +1323,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxJustMyCodeDebugging] = R"json({
+		"type": "boolean",
+		"description": "If true (default) on builds with debugging, enables 'Just My Code' in supported debuggers. Disabling this may improve performance in some situations. Currently only supported with MSVC",
+		"default": true
+	})json"_ojson;
+
 	//
 
 	defs[Defs::TargetScriptFile] = R"json({
@@ -1770,6 +1776,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "windowsApplicationManifest", Defs::TargetSourceCxxWindowsAppManifest, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "windowsEntryPoint", Defs::TargetSourceCxxWindowsEntryPoint, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "windowsSubSystem", Defs::TargetSourceCxxWindowsSubSystem, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "justMyCodeDebugging", Defs::TargetSourceCxxJustMyCodeDebugging, kPatternConditions);
 
 		defs[Defs::TargetSourceCxx] = std::move(sourceTargetCxx);
 	}
@@ -2157,6 +2164,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		// case Defs::TargetSourceCxxWindowsOutputDef: return "target-source-cxx-windowsOutputDef";
 		case Defs::TargetSourceCxxWindowsSubSystem: return "target-source-cxx-windowsSubSystem";
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
+		case Defs::TargetSourceCxxJustMyCodeDebugging: return "target-source-cxx-justMyCodeDebugging";
 		//
 		case Defs::TargetScript: return "target-script";
 		case Defs::TargetScriptFile: return "target-script-file";

@@ -1184,6 +1184,8 @@ bool ChaletJsonParser::parseCompilerSettingsCxx(SourceTarget& outTarget, const J
 				outTarget.setUnityBuild(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "mingwUnixSharedLibraryNamingConvention", status))
 				outTarget.setMinGWUnixSharedLibraryNamingConvention(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "justMyCodeDebugging", status))
+				outTarget.setJustMyCodeDebugging(val);
 			// else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "windowsOutputDef", status))
 			// 	outTarget.setWindowsOutputDef(val);
 			else if (isInvalid(status))
