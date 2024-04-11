@@ -47,6 +47,7 @@
 			"cppFilesystem": true,
 			"warningsPreset": "strict",
 			"warnings[:linux]": [
+				"no-unknown-warning-option",
 				"no-dangling-reference"
 			],
 			"treatWarningsAsErrors": true,
