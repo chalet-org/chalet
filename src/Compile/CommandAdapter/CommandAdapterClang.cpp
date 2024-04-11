@@ -168,6 +168,9 @@ StringList CommandAdapterClang::getWarningList() const
 	};
 
 	auto warningsPreset = m_project.warningsPreset();
+	auto language = m_project.language();
+	bool isC = language == CodeLanguage::C || language == CodeLanguage::ObjectiveC;
+
 	if (warningsPreset == ProjectWarningPresets::None)
 		return getWithUserWarnings(std::move(ret));
 
@@ -193,7 +196,10 @@ StringList CommandAdapterClang::getWarningList() const
 	ret.emplace_back("format=2");
 	ret.emplace_back("missing-declarations");
 	ret.emplace_back("missing-include-dirs");
-	ret.emplace_back("non-virtual-dtor");
+
+	if (!isC)
+		ret.emplace_back("non-virtual-dtor");
+
 	ret.emplace_back("redundant-decls");
 
 	if (warningsPreset == ProjectWarningPresets::Strict)
@@ -205,17 +211,21 @@ StringList CommandAdapterClang::getWarningList() const
 	if (warningsPreset == ProjectWarningPresets::StrictPedantic)
 		return getWithUserWarnings(std::move(ret));
 
-	ret.emplace_back("noexcept");
 	ret.emplace_back("undef");
 	ret.emplace_back("conversion");
 	ret.emplace_back("cast-qual");
 	ret.emplace_back("float-equal");
 	ret.emplace_back("inline");
-	ret.emplace_back("old-style-cast");
-	ret.emplace_back("strict-null-sentinel");
-	ret.emplace_back("overloaded-virtual");
 	ret.emplace_back("sign-conversion");
-	ret.emplace_back("sign-promo");
+
+	if (!isC)
+	{
+		ret.emplace_back("noexcept");
+		ret.emplace_back("old-style-cast");
+		ret.emplace_back("strict-null-sentinel");
+		ret.emplace_back("overloaded-virtual");
+		ret.emplace_back("sign-promo");
+	}
 
 	// if (warningsPreset == ProjectWarningPresets::VeryStrict)
 	// 	return getWithUserWarnings(std::move(ret));

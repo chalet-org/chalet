@@ -93,7 +93,11 @@ bool CompilerCxxGCC::configureWarnings()
 	m_warnings.clear();
 
 	bool result = true;
+
 	auto warningsPreset = m_project.warningsPreset();
+	auto language = m_project.language();
+	bool isC = language == CodeLanguage::C || language == CodeLanguage::ObjectiveC;
+
 	if (warningsPreset == ProjectWarningPresets::None)
 		return result;
 
@@ -119,7 +123,10 @@ bool CompilerCxxGCC::configureWarnings()
 	m_warnings.emplace_back("format=2");
 	m_warnings.emplace_back("missing-declarations");
 	m_warnings.emplace_back("missing-include-dirs");
-	m_warnings.emplace_back("non-virtual-dtor");
+
+	if (!isC)
+		m_warnings.emplace_back("non-virtual-dtor");
+
 	m_warnings.emplace_back("redundant-decls");
 
 	if (warningsPreset == ProjectWarningPresets::Strict)
@@ -131,17 +138,21 @@ bool CompilerCxxGCC::configureWarnings()
 	if (warningsPreset == ProjectWarningPresets::StrictPedantic)
 		return result;
 
-	m_warnings.emplace_back("noexcept");
 	m_warnings.emplace_back("undef");
 	m_warnings.emplace_back("conversion");
 	m_warnings.emplace_back("cast-qual");
 	m_warnings.emplace_back("float-equal");
 	m_warnings.emplace_back("inline");
-	m_warnings.emplace_back("old-style-cast");
-	m_warnings.emplace_back("strict-null-sentinel");
-	m_warnings.emplace_back("overloaded-virtual");
 	m_warnings.emplace_back("sign-conversion");
-	m_warnings.emplace_back("sign-promo");
+
+	if (!isC)
+	{
+		m_warnings.emplace_back("noexcept");
+		m_warnings.emplace_back("old-style-cast");
+		m_warnings.emplace_back("strict-null-sentinel");
+		m_warnings.emplace_back("overloaded-virtual");
+		m_warnings.emplace_back("sign-promo");
+	}
 
 	// if (warningsPreset == ProjectWarningPresets::VeryStrict)
 	// 	return result;
