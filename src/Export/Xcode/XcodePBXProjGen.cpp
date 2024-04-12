@@ -434,17 +434,21 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			std::string makefileContents;
 			for (auto& [configName, _] : configToTargets)
 			{
-				if (group.others.find(configName) == group.others.end())
-					continue;
+				std::string ruleCommand;
 
-				auto& source = group.others.at(configName);
-				auto split = String::split(source, '\n');
+				if (group.others.find(configName) != group.others.end())
+				{
+					auto& source = group.others.at(configName);
+					auto split = String::split(source, '\n');
+					ruleCommand = String::join(split, "\n\t@");
+				}
+
 				makefileContents += fmt::format(R"shell({}:
 	@{}
 
 )shell",
 					configName,
-					String::join(split, "\n\t@"));
+					ruleCommand);
 			}
 
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
