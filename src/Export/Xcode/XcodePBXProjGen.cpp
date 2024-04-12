@@ -80,6 +80,7 @@ struct TargetGroup
 	StringList headers;
 	StringList dependencies;
 	StringList resources;
+	std::unordered_map<std::string, std::string> others;
 	SourceKind targetKind = SourceKind::None;
 	TargetGroupKind kind = TargetGroupKind::Script;
 };
@@ -304,7 +305,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 					state->getTargetDependencies(groups[name].dependencies, name, false);
 					groups[name].kind = TargetGroupKind::Script;
-					groups[name].sources.push_back(std::move(command));
+					groups[name].others.emplace(configName, std::move(command));
 					groups[name].children = adapter.getFiles();
 				}
 			}
@@ -431,10 +432,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		else if (group.kind == TargetGroupKind::Script)
 		{
 			std::string makefileContents;
-			size_t index = 0;
 			for (auto& [configName, _] : configToTargets)
 			{
-				auto& source = group.sources.at(index);
+				if (group.others.find(configName) == group.others.end())
+					continue;
+
+				auto& source = group.others.at(configName);
 				auto split = String::split(source, '\n');
 				makefileContents += fmt::format(R"shell({}:
 	@{}
@@ -442,7 +445,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 )shell",
 					configName,
 					String::join(split, "\n\t@"));
-				index++;
 			}
 
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
@@ -954,7 +956,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (pbxGroup.kind != TargetGroupKind::Script)
 				continue;
 
-			if (!pbxGroup.sources.empty())
+			if (!pbxGroup.others.empty())
 			{
 				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
 				auto shellScript = fmt::format(R"shell(set -e
