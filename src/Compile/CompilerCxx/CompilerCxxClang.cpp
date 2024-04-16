@@ -215,9 +215,17 @@ void CompilerCxxClang::addLanguageStandard(StringList& outArgList, const SourceT
 /*****************************************************************************/
 void CompilerCxxClang::addDiagnosticColorOption(StringList& outArgList) const
 {
-	std::string diagnosticColor{ "-fcolor-diagnostics" };
-	if (isFlagSupported(diagnosticColor))
-		List::addIfDoesNotExist(outArgList, std::move(diagnosticColor));
+	std::string colorDiagnostics{ "-fcolor-diagnostics" };
+	if (isFlagSupported(colorDiagnostics))
+		List::addIfDoesNotExist(outArgList, std::move(colorDiagnostics));
+
+#if defined(CHALET_WIN32)
+	{
+		std::string ansiEscapeCodes{ "-fansi-escape-codes" };
+		if (isFlagSupported(ansiEscapeCodes))
+			List::addIfDoesNotExist(outArgList, std::move(ansiEscapeCodes));
+	}
+#endif
 }
 
 /*****************************************************************************/
