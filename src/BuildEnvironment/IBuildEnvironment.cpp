@@ -157,7 +157,7 @@ std::string IBuildEnvironment::getMajorVersion() const
 /*****************************************************************************/
 bool IBuildEnvironment::isCompilerFlagSupported(const std::string& inFlag) const
 {
-	return m_supportedFlags.find(inFlag) != m_supportedFlags.end();
+	return m_supportedFlags.empty() || m_supportedFlags.find(inFlag) != m_supportedFlags.end();
 }
 
 /*****************************************************************************/
