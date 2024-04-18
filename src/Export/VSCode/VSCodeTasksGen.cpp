@@ -79,6 +79,6 @@ std::string VSCodeTasksGen::getProblemMatcher() const
 /*****************************************************************************/
 bool VSCodeTasksGen::willUseMSVC(const BuildState& inState) const
 {
-	return inState.environment->isMsvc() || inState.environment->isWindowsClang();
+	return inState.environment->isMsvc();
 }
 }
