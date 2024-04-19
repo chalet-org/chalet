@@ -122,13 +122,6 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		if (line.front() == '#')
 			continue;
 
-		auto hasComment = line.find(" #");
-		if (hasComment != std::string::npos)
-			line = line.substr(0, hasComment);
-
-		if (line.empty())
-			continue;
-
 		auto firstKeyValue = line.find(": ");
 		bool objectIsh = firstKeyValue != std::string::npos;
 		bool startOfObjectArray = arrayIsh && objectIsh;
