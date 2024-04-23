@@ -729,25 +729,28 @@ bool BuildState::validateState()
 		tools.setCcache(std::string());
 	}
 
-	auto buildTargets = inputs.getBuildTargets();
-	if (List::contains(buildTargets, std::string(Values::All)))
-		buildTargets.clear();
-
-	for (auto& targetName : buildTargets)
+	if (!inputs.route().isConfigure())
 	{
-		bool found = false;
-		for (auto& target : targets)
+		auto buildTargets = inputs.getBuildTargets();
+		if (List::contains(buildTargets, std::string(Values::All)))
+			buildTargets.clear();
+
+		for (auto& targetName : buildTargets)
 		{
-			if (String::equals(targetName, target->name()))
+			bool found = false;
+			for (auto& target : targets)
 			{
-				found = true;
-				break;
+				if (String::equals(targetName, target->name()))
+				{
+					found = true;
+					break;
+				}
 			}
-		}
-		if (!found)
-		{
-			Diagnostic::error("Requested build target '{}' does not exist.", targetName);
-			return false;
+			if (!found)
+			{
+				Diagnostic::error("Requested build target '{}' does not exist.", targetName);
+				return false;
+			}
 		}
 	}
 
