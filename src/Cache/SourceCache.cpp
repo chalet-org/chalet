@@ -29,6 +29,12 @@ bool SourceCache::dirty() const
 }
 
 /*****************************************************************************/
+void SourceCache::reset()
+{
+	m_dirty = false;
+}
+
+/*****************************************************************************/
 Json SourceCache::asJson() const
 {
 	Json ret = Json::object();

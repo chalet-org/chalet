@@ -69,7 +69,9 @@ bool JsonFile::save(const i32 inIndent)
 {
 	if (!m_filename.empty() && m_dirty)
 	{
-		return JsonFile::saveToFile(json, m_filename, inIndent);
+		bool result = JsonFile::saveToFile(json, m_filename, inIndent);
+		m_dirty = false;
+		return result;
 	}
 
 	// if there's nothing to save, we don't care

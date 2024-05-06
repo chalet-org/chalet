@@ -15,6 +15,7 @@ struct SourceCache
 	explicit SourceCache(const std::time_t inLastBuildTime);
 
 	bool dirty() const;
+	void reset();
 	Json asJson() const;
 
 	bool buildStrategyChanged() const noexcept;
