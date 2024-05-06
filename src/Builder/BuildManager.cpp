@@ -25,6 +25,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -355,7 +356,14 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 			Diagnostic::error("No executable project was found to run.");
 			return false;
 		}
-		else if (runTarget->isSources() || runTarget->isCMake())
+
+		// save cache early, so the build timestamp gets updated correctly
+		// If a user is running their app, then changes a file and saves while the app is running,
+		//  the timestamp would get updated AFTER they stop running the app otherwise
+		//
+		m_state.getCentralState().saveCaches();
+
+		if (runTarget->isSources() || runTarget->isCMake())
 		{
 			Output::lineBreak();
 			return cmdRun(*runTarget);

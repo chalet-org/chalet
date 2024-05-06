@@ -470,6 +470,11 @@ bool WorkspaceInternalCacheFile::save()
 		m_dirty = false;
 	}
 
+	for (auto& [_, sourceCache] : m_sourceCaches)
+	{
+		sourceCache->reset();
+	}
+
 	return true;
 }
 
