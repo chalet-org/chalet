@@ -406,12 +406,13 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 		if (!val.empty())
 		{
 			auto foundFloat = val.find_first_not_of("0123456789.");
+			auto startsWithHash = val.front() == '#';
 			auto startsWithAsterisk = val.front() == '*';
 			auto startsWithAmpersand = val.front() == '&';
 			auto startsWithSquareBrace = val.front() == '[';
 			auto startsWithQuestion = val.front() == '?';
 			if (foundFloat == std::string::npos
-				|| startsWithAsterisk || startsWithAmpersand
+				|| startsWithHash || startsWithAsterisk || startsWithAmpersand
 				|| startsWithSquareBrace || startsWithQuestion)
 			{
 				ret += fmt::format("\"{}\"", val);
