@@ -5,10 +5,16 @@
 
 #include "Utility/Timer.hpp"
 
+#define CHALET_SHOW_MICROSECONDS 0
 #define CHALET_SHOW_NANOSECONDS 0
+#define CHALET_SHOW_PICOSECONDS 0
 
 namespace chalet
 {
+#if CHALET_SHOW_PICOSECONDS
+using std_chrono_picoseconds = std::chrono::duration<long long, std::pico>;
+#endif
+
 /*****************************************************************************/
 Timer::Timer()
 {
@@ -40,15 +46,38 @@ std::string Timer::asString(const bool inRestart)
 		m_start = clock::now();
 
 	u32 milliseconds = static_cast<u32>(std::chrono::duration_cast<std::chrono::milliseconds>(executionTime).count());
-
 	if (milliseconds == 0)
 	{
-#if CHALET_SHOW_NANOSECONDS
-		u64 nanoseconds = static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(executionTime).count());
-		f64 milli = static_cast<f64>(nanoseconds) / 1000000.0;
-
-		auto result = std::to_string(milli);
-		return fmt::format("{}ms", result.substr(0, 5));
+#if CHALET_SHOW_MICROSECONDS
+		u64 microseconds = static_cast<u64>(std::chrono::duration_cast<std::chrono::microseconds>(executionTime).count());
+		if (microseconds == 0)
+		{
+	#if CHALET_SHOW_NANOSECONDS
+			u64 nanoseconds = static_cast<u64>(std::chrono::duration_cast<std::chrono::nanoseconds>(executionTime).count());
+			if (nanoseconds == 0)
+			{
+		#if CHALET_SHOW_PICOSECONDS
+				u64 picoseconds = static_cast<u64>(std::chrono::duration_cast<std_chrono_picoseconds>(executionTime).count());
+				auto result = std::to_string(picoseconds);
+				return fmt::format("{}ps", result.substr(0, 5));
+		#else
+				return std::string();
+		#endif
+			}
+			else
+			{
+				auto result = std::to_string(nanoseconds);
+				return fmt::format("{}ns", result.substr(0, 5));
+			}
+	#else
+			return std::string();
+	#endif
+		}
+		else
+		{
+			auto result = std::to_string(microseconds);
+			return fmt::format("{}µs", result.substr(0, 5));
+		}
 #else
 		return std::string();
 #endif

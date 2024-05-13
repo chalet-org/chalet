@@ -11,7 +11,7 @@ namespace chalet
 {
 class Timer
 {
-	using clock = std::chrono::steady_clock;
+	using clock = std::chrono::high_resolution_clock;
 
 public:
 	Timer();
