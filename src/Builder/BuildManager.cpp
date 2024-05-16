@@ -844,9 +844,6 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 
 	bool result = runProcess(cmd, inTarget.path(), inRunCommand);
 
-	if (!result)
-		Output::lineBreak();
-
 	if (!inRunCommand && result)
 		stopTimerAndShowBenchmark(buildTimer);
 
