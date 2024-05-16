@@ -58,7 +58,7 @@ static PoolState* state = nullptr;
 /*****************************************************************************/
 bool printCommand(std::string inText)
 {
-	std::lock_guard<std::mutex> lock(state->mutex);
+	std::lock_guard lock(state->mutex);
 	String::replaceAll(inText, '#', std::to_string(state->index));
 
 	std::cout.write(inText.data(), inText.size());
@@ -98,7 +98,7 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 
 	if (!output.empty())
 	{
-		std::lock_guard<std::mutex> lock(state->mutex);
+		std::lock_guard lock(state->mutex);
 
 		std::string toPrint;
 
@@ -194,7 +194,7 @@ bool executeCommand(size_t inIndex, StringList inCommand)
 
 	if (!output.empty())
 	{
-		std::lock_guard<std::mutex> lock(state->mutex);
+		std::lock_guard lock(state->mutex);
 		auto eol = String::eol();
 		if (Shell::isMicrosoftTerminalOrWindowsBash())
 		{

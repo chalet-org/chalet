@@ -40,14 +40,14 @@ struct
 /*****************************************************************************/
 void addProcess(SubProcess& inProcess)
 {
-	std::lock_guard<std::mutex> lock(state.mutex);
+	std::lock_guard lock(state.mutex);
 	state.procesess.push_back(&inProcess);
 }
 
 /*****************************************************************************/
 void removeProcess(const SubProcess& inProcess)
 {
-	std::lock_guard<std::mutex> lock(state.mutex);
+	std::lock_guard lock(state.mutex);
 	if (!state.procesess.empty())
 	{
 		auto it = state.procesess.end();
@@ -70,7 +70,7 @@ void removeProcess(const SubProcess& inProcess)
 /*****************************************************************************/
 void subProcessSignalHandler(i32 inSignal)
 {
-	std::lock_guard<std::mutex> lock(state.mutex);
+	std::lock_guard lock(state.mutex);
 	if (!state.procesess.empty())
 	{
 		auto it = state.procesess.end();
@@ -229,7 +229,7 @@ bool SubProcessController::commandIsValid(const StringList& inCmd)
 #if defined(CHALET_WIN32)
 	if (!state.initialized)
 	{
-		std::lock_guard<std::mutex> lock(state.mutex);
+		std::lock_guard lock(state.mutex);
 
 		SignalHandler::add(SIGINT, subProcessSignalHandler);
 		// SignalHandler::add(SIGTERM, subProcessSignalHandler);
