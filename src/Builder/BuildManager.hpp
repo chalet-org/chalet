@@ -58,7 +58,7 @@ private:
 	bool cmdClean();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
-	bool runProcessTarget(const ProcessBuildTarget& inTarget);
+	bool runProcessTarget(const ProcessBuildTarget& inTarget, const bool inRunCommand);
 	bool runValidationTarget(const ValidationBuildTarget& inTarget);
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject, const std::string& outFolder) const;
