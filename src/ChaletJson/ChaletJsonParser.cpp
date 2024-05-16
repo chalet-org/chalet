@@ -933,7 +933,7 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
-				outTarget.setDependsOn(std::move(val));
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -942,6 +942,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -979,7 +981,7 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
-				outTarget.setDependsOn(std::move(val));
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}
@@ -988,6 +990,8 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 			StringList val;
 			if (valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArguments(std::move(val));
+			else if (valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
+				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
 				return false;
 		}

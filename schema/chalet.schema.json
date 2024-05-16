@@ -400,7 +400,7 @@
 					"$ref": "#/definitions/dist-condition"
 				},
 				"dependsOn": {
-					"$ref": "#/definitions/target-script-dependsOn"
+					"$ref": "#/definitions/dist-script-dependsOn"
 				},
 				"kind": {
 					"type": "string",
@@ -420,12 +420,17 @@
 					"$ref": "#/definitions/target-script-arguments"
 				},
 				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-script-dependsOn"
+					"$ref": "#/definitions/dist-script-dependsOn"
 				},
 				"^file\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
 				}
 			}
+		},
+		"dist-script-dependsOn": {
+			"type": "string",
+			"description": "A distribution target this script depends on in order to run.",
+			"minLength": 1
 		},
 		"dist-process": {
 			"type": "object",
@@ -443,7 +448,7 @@
 					"$ref": "#/definitions/dist-condition"
 				},
 				"dependsOn": {
-					"$ref": "#/definitions/target-process-dependsOn"
+					"$ref": "#/definitions/dist-process-dependsOn"
 				},
 				"kind": {
 					"type": "string",
@@ -463,12 +468,17 @@
 					"$ref": "#/definitions/target-process-arguments"
 				},
 				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
-					"$ref": "#/definitions/target-process-dependsOn"
+					"$ref": "#/definitions/dist-process-dependsOn"
 				},
 				"^path\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-path"
 				}
 			}
+		},
+		"dist-process-dependsOn": {
+			"type": "string",
+			"description": "A distribution target this process depends on in order to run.",
+			"minLength": 1
 		},
 		"dist-validation": {
 			"type": "object",
@@ -2336,9 +2346,22 @@
 			]
 		},
 		"target-script-dependsOn": {
-			"type": "string",
-			"description": "A target this script depends on in order to run.",
-			"minLength": 1
+			"description": "A build target or file(s) this script depends on in order to run.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-process": {
 			"type": "object",
@@ -2407,9 +2430,22 @@
 			]
 		},
 		"target-process-dependsOn": {
-			"type": "string",
-			"description": "A target this process depends on in order to run.",
-			"minLength": 1
+			"description": "A build target or file(s) this process depends on in order to run.",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
 		},
 		"target-validation": {
 			"type": "object",

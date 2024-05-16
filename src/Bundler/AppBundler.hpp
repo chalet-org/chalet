@@ -19,6 +19,7 @@ struct MacosDiskImageTarget;
 struct ValidationDistTarget;
 class BinaryDependencyMap;
 struct IAppBundler;
+struct SourceCache;
 
 struct AppBundler
 {

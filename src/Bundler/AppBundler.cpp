@@ -13,6 +13,7 @@
 #include "Bundler/FileArchiver.hpp"
 #include "Bundler/IAppBundler.hpp"
 #include "Bundler/MacosDiskImageCreator.hpp"
+#include "Cache/SourceCache.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
@@ -464,15 +465,23 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	const auto& arguments = inTarget.arguments();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
-	if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
-	{
-		Diagnostic::printErrors(true);
-		Output::previousLine();
 
-		Output::lineBreak();
-		Output::msgBuildFail();
-		Output::lineBreak();
-		return false;
+	if (scriptRunner.shouldRun(m_state.cache.file().sources(), StringList{}))
+	{
+		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
+		{
+			Diagnostic::printErrors(true);
+			Output::previousLine();
+
+			Output::lineBreak();
+			Output::msgBuildFail();
+			Output::lineBreak();
+			return false;
+		}
+	}
+	else
+	{
+		Output::msgTargetUpToDate(m_state.distribution.size() > 1, inTarget.name());
 	}
 
 	return true;

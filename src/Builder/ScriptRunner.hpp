@@ -12,6 +12,7 @@ namespace chalet
 struct AncillaryTools;
 struct ColorTheme;
 struct CommandLineInputs;
+struct SourceCache;
 
 struct ScriptRunner
 {
@@ -19,6 +20,7 @@ struct ScriptRunner
 
 	bool run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inShowExitCode);
 	StringList getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments);
+	bool shouldRun(SourceCache& inSourceCache, const StringList& inDepends) const;
 
 private:
 	const CommandLineInputs& m_inputs;

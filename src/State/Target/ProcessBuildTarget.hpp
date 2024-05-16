@@ -24,13 +24,14 @@ struct ProcessBuildTarget final : public IBuildTarget
 	void addArguments(StringList&& inList);
 	void addArgument(std::string&& inValue);
 
-	const std::string& dependsOn() const noexcept;
-	void setDependsOn(std::string&& inValue) noexcept;
+	const StringList& dependsOn() const noexcept;
+	void addDependsOn(StringList&& inList);
+	void addDependsOn(std::string&& inValue);
 
 private:
 	std::string m_path;
 	StringList m_arguments;
 
-	std::string m_dependsOn;
+	StringList m_dependsOn;
 };
 }

@@ -472,6 +472,20 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson;
 
 	//
+	defs[Defs::DistributionScriptDependsOn] = R"json({
+		"type": "string",
+		"description": "A distribution target this script depends on in order to run.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
+	defs[Defs::DistributionProcessDependsOn] = R"json({
+		"type": "string",
+		"description": "A distribution target this process depends on in order to run.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
 	// externalDependency
 	// git, local, script
 	//
@@ -1350,11 +1364,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
-	defs[Defs::TargetScriptDependsOn] = R"json({
+	defs[Defs::TargetScriptDependsOn] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A target this script depends on in order to run.",
+		"description": "A build target or file(s) this script depends on in order to run.",
 		"minLength": 1
-	})json"_ojson;
+	})json"_ojson);
 
 	//
 
@@ -1371,11 +1385,11 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
-	defs[Defs::TargetProcessDependsOn] = R"json({
+	defs[Defs::TargetProcessDependsOn] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A target this process depends on in order to run.",
+		"description": "A build target or file(s) this process depends on in order to run.",
 		"minLength": 1
-	})json"_ojson;
+	})json"_ojson);
 
 	//
 
@@ -1641,7 +1655,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(distScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(distScript, "condition", Defs::DistributionCondition);
-		addPropertyAndPattern(distScript, "dependsOn", Defs::TargetScriptDependsOn, kPatternConditions);
+		addPropertyAndPattern(distScript, "dependsOn", Defs::DistributionScriptDependsOn, kPatternConditions);
 		addKind(distScript, defs, Defs::DistributionKind, "script");
 		addPropertyAndPattern(distScript, "file", Defs::TargetScriptFile, kPatternConditions);
 		addProperty(distScript, "outputDescription", Defs::TargetOutputDescription);
@@ -1659,7 +1673,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		})json"_ojson;
 		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
 		addProperty(distProcess, "condition", Defs::DistributionCondition);
-		addPropertyAndPattern(distProcess, "dependsOn", Defs::TargetProcessDependsOn, kPatternConditions);
+		addPropertyAndPattern(distProcess, "dependsOn", Defs::DistributionProcessDependsOn, kPatternConditions);
 		addKind(distProcess, defs, Defs::DistributionKind, "process");
 		addProperty(distProcess, "outputDescription", Defs::TargetOutputDescription);
 		addPropertyAndPattern(distProcess, "path", Defs::TargetProcessPath, kPatternConditions);
@@ -2071,8 +2085,10 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::DistributionBundleLinuxDesktopEntry: return "dist-bundle-linuxDesktopEntry";
 		//
 		case Defs::DistributionScript: return "dist-script";
+		case Defs::DistributionScriptDependsOn: return "dist-script-dependsOn";
 		//
 		case Defs::DistributionProcess: return "dist-process";
+		case Defs::DistributionProcessDependsOn: return "dist-process-dependsOn";
 		//
 		case Defs::DistributionValidation: return "dist-validation";
 		//

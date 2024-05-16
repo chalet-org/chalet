@@ -7,7 +7,10 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -30,10 +33,20 @@ bool ScriptBuildTarget::initialize()
 
 	Path::toUnix(m_file);
 
+	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+	if (!expandGlobPatternsInList(m_dependsOn, GlobMatch::Files))
+	{
+		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+
 	if (!m_state.replaceVariablesInString(m_file, this))
 		return false;
 
 	if (!replaceVariablesInPathList(m_arguments))
+		return false;
+
+	if (!replaceVariablesInPathList(m_dependsOn))
 		return false;
 
 	return true;
@@ -49,34 +62,65 @@ bool ScriptBuildTarget::validate()
 	m_file = std::move(pathResult.file);
 	m_scriptType = pathResult.type;
 
-	if (!m_dependsOn.empty())
+	bool dependsOnTargets = false;
+	for (auto it = m_dependsOn.begin(); it != m_dependsOn.end();)
 	{
-		if (String::equals(this->name(), m_dependsOn))
+		auto& depends = *it;
+		if (Files::pathExists(depends))
 		{
-			Diagnostic::error("The script target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
+			it++;
+			continue;
+		}
+
+		if (depends.find_first_of("/\\") != std::string::npos)
+		{
+			Diagnostic::error("The script target '{}' depends on a path that was not found: {}", this->name(), depends);
+			return false;
+		}
+
+		if (String::equals(this->name(), depends))
+		{
+			Diagnostic::error("The script target '{}' depends on itself. Remove it from 'dependsOn'.", this->name());
 			return false;
 		}
 
 		bool found = false;
+		bool erase = true;
 		for (auto& target : m_state.targets)
 		{
 			if (String::equals(target->name(), this->name()))
 				break;
 
-			if (String::equals(target->name(), m_dependsOn))
+			if (String::equals(target->name(), depends))
 			{
+				if (target->isSources())
+				{
+					depends = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(*target));
+					erase = !depends.empty();
+				}
+				else if (target->isCMake())
+				{
+					depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
+					erase = !depends.empty();
+				}
+				dependsOnTargets = true;
 				found = true;
 				break;
 			}
 		}
 		if (!found)
 		{
-			Diagnostic::error("The script target '{}' depends on the '{}' target which either doesn't exist or is sequenced later.", this->name(), m_dependsOn);
+			Diagnostic::error("The script target '{}' depends on the '{}' target which either doesn't exist or is sequenced later.", this->name(), depends);
 			return false;
 		}
+
+		if (erase)
+			it = m_dependsOn.erase(it);
+		else
+			it++;
 	}
 
-	if (m_dependsOn.empty() && !Files::pathExists(m_file))
+	if (!Files::pathExists(m_file) && !dependsOnTargets)
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", this->name(), m_file);
 		return false;
@@ -139,14 +183,18 @@ void ScriptBuildTarget::addArgument(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& ScriptBuildTarget::dependsOn() const noexcept
+const StringList& ScriptBuildTarget::dependsOn() const noexcept
 {
 	return m_dependsOn;
 }
 
-void ScriptBuildTarget::setDependsOn(std::string&& inValue) noexcept
+void ScriptBuildTarget::addDependsOn(StringList&& inList)
 {
-	m_dependsOn = std::move(inValue);
+	List::forEach(inList, this, &ScriptBuildTarget::addDependsOn);
 }
 
+void ScriptBuildTarget::addDependsOn(std::string&& inValue)
+{
+	m_dependsOn.emplace_back(std::move(inValue));
+}
 }

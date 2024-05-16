@@ -20,6 +20,7 @@ struct AssemblyDumper;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct ValidationBuildTarget;
+struct SourceCache;
 
 class BuildManager
 {
@@ -62,7 +63,8 @@ private:
 	bool runValidationTarget(const ValidationBuildTarget& inTarget);
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject, const std::string& outFolder) const;
-	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist);
+	bool canProcessRun(SourceCache& inSourceCache, const StringList& inDepends) const;
+	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	bool runFullBuild();

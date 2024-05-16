@@ -13,6 +13,7 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
+#include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/AssemblyDumper.hpp"
 #include "Compile/CompileToolchainController.hpp"
@@ -800,14 +801,22 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 		Output::lineBreak();
 
 	const auto& arguments = inTarget.arguments();
+	const auto& dependsOn = inTarget.dependsOn();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
-	if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
+	if (scriptRunner.shouldRun(m_state.cache.file().sources(), dependsOn))
 	{
-		if (!inRunCommand)
-			Output::previousLine();
+		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
+		{
+			if (!inRunCommand)
+				Output::previousLine();
 
-		Diagnostic::printErrors(true);
-		result = false;
+			Diagnostic::printErrors(true);
+			result = false;
+		}
+	}
+	else
+	{
+		Output::msgTargetUpToDate(m_buildTargets.size() > 1, inTarget.name());
 	}
 
 	if (!inRunCommand && result)
@@ -842,7 +851,15 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 		cmd.push_back(arg);
 	}
 
-	bool result = runProcess(cmd, inTarget.path(), inRunCommand);
+	bool result = true;
+	if (canProcessRun(m_state.cache.file().sources(), inTarget.dependsOn()))
+	{
+		result = runProcess(cmd, inTarget.path(), inRunCommand);
+	}
+	else
+	{
+		Output::msgTargetUpToDate(m_buildTargets.size() > 1, inTarget.name());
+	}
 
 	if (!inRunCommand && result)
 		stopTimerAndShowBenchmark(buildTimer);
@@ -1106,9 +1123,21 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inFromDist)
+bool BuildManager::canProcessRun(SourceCache& inSourceCache, const StringList& inDepends) const
 {
-	if (inFromDist)
+	bool ret = inDepends.empty();
+	for (auto& depends : inDepends)
+	{
+		ret |= inSourceCache.fileChangedOrDoesNotExist(depends);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand)
+{
+	if (inRunCommand)
 	{
 		Output::printSeparator();
 
@@ -1151,11 +1180,11 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 		}
 	}
 
-	if (lastExitCode != 0 || inFromDist)
+	if (lastExitCode != 0 || inRunCommand)
 	{
 		auto message = fmt::format("{} exited with code: {}", outputFile, lastExitCode);
 
-		if (inFromDist)
+		if (inRunCommand)
 			Output::printSeparator();
 
 		Output::print(result ? Output::theme().info : Output::theme().error, message);
