@@ -7,6 +7,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 
+#include "Cache/SourceCache.hpp"
 #include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
 #include "State/AncillaryTools.hpp"
@@ -83,6 +84,18 @@ StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& 
 	for (const auto& arg : inArguments)
 	{
 		ret.emplace_back(arg);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+bool ScriptRunner::shouldRun(SourceCache& inSourceCache, const StringList& inDepends) const
+{
+	bool ret = inDepends.empty();
+	for (auto& depends : inDepends)
+	{
+		ret |= inSourceCache.fileChangedOrDoesNotExist(depends);
 	}
 
 	return ret;

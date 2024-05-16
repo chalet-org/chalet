@@ -5,7 +5,10 @@
 
 #include "State/Target/ProcessBuildTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/CMakeTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
@@ -28,10 +31,20 @@ bool ProcessBuildTarget::initialize()
 
 	Path::toUnix(m_path);
 
+	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+	if (!expandGlobPatternsInList(m_dependsOn, GlobMatch::Files))
+	{
+		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+
 	if (!m_state.replaceVariablesInString(m_path, this))
 		return false;
 
 	if (!replaceVariablesInPathList(m_arguments))
+		return false;
+
+	if (!replaceVariablesInPathList(m_dependsOn))
 		return false;
 
 	return true;
@@ -40,37 +53,68 @@ bool ProcessBuildTarget::initialize()
 /*****************************************************************************/
 bool ProcessBuildTarget::validate()
 {
-	if (!m_dependsOn.empty())
+	bool dependsOnTargets = false;
+	for (auto it = m_dependsOn.begin(); it != m_dependsOn.end();)
 	{
-		if (String::equals(this->name(), m_dependsOn))
+		auto& depends = *it;
+		if (Files::pathExists(depends))
 		{
-			Diagnostic::error("The distribution process target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
+			it++;
+			continue;
+		}
+
+		if (depends.find_first_of("/\\") != std::string::npos)
+		{
+			Diagnostic::error("The process target '{}' depends on a path that was not found: {}", this->name(), depends);
+			return false;
+		}
+
+		if (String::equals(this->name(), depends))
+		{
+			Diagnostic::error("The process target '{}' depends on itself. Remove it from 'dependsOn'.", this->name());
 			return false;
 		}
 
 		bool found = false;
+		bool erase = true;
 		for (auto& target : m_state.targets)
 		{
 			if (String::equals(target->name(), this->name()))
 				break;
 
-			if (String::equals(target->name(), m_dependsOn))
+			if (String::equals(target->name(), depends))
 			{
+				if (target->isSources())
+				{
+					depends = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(*target));
+					erase = !depends.empty();
+				}
+				else if (target->isCMake())
+				{
+					depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
+					erase = !depends.empty();
+				}
+				dependsOnTargets = true;
 				found = true;
 				break;
 			}
 		}
 		if (!found)
 		{
-			Diagnostic::error("The distribution process target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), m_dependsOn);
+			Diagnostic::error("The process target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), depends);
 			return false;
 		}
+
+		if (erase)
+			it = m_dependsOn.erase(it);
+		else
+			it++;
 	}
 
 	if (!Files::pathExists(m_path))
 	{
 		auto resolved = Files::which(m_path);
-		if (resolved.empty() && m_dependsOn.empty())
+		if (resolved.empty() && !dependsOnTargets)
 		{
 			Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);
 			return false;
@@ -125,13 +169,18 @@ void ProcessBuildTarget::addArgument(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const std::string& ProcessBuildTarget::dependsOn() const noexcept
+const StringList& ProcessBuildTarget::dependsOn() const noexcept
 {
 	return m_dependsOn;
 }
 
-void ProcessBuildTarget::setDependsOn(std::string&& inValue) noexcept
+void ProcessBuildTarget::addDependsOn(StringList&& inList)
 {
-	m_dependsOn = std::move(inValue);
+	List::forEach(inList, this, &ProcessBuildTarget::addDependsOn);
+}
+
+void ProcessBuildTarget::addDependsOn(std::string&& inValue)
+{
+	m_dependsOn.emplace_back(std::move(inValue));
 }
 }

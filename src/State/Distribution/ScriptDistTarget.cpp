@@ -131,5 +131,4 @@ void ScriptDistTarget::setDependsOn(std::string&& inValue) noexcept
 {
 	m_dependsOn = std::move(inValue);
 }
-
 }

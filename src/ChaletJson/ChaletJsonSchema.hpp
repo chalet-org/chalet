@@ -45,8 +45,10 @@ class ChaletJsonSchema
 		DistributionBundleLinuxDesktopEntry,
 		//
 		DistributionScript,
+		DistributionScriptDependsOn,
 		//
 		DistributionProcess,
+		DistributionProcessDependsOn,
 		//
 		DistributionValidation,
 		//
