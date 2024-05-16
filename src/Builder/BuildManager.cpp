@@ -260,7 +260,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		}
 		else if (target->isProcess())
 		{
-			result = runProcessTarget(static_cast<const ProcessBuildTarget&>(*target));
+			result = runProcessTarget(static_cast<const ProcessBuildTarget&>(*target), false);
 		}
 		else if (target->isValidation())
 		{
@@ -376,7 +376,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		else if (runTarget->isProcess())
 		{
 			Output::lineBreak();
-			return runProcessTarget(static_cast<const ProcessBuildTarget&>(*runTarget));
+			return runProcessTarget(static_cast<const ProcessBuildTarget&>(*runTarget), true);
 		}
 		else
 		{
@@ -817,7 +817,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 }
 
 /*****************************************************************************/
-bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
+bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bool inRunCommand)
 {
 	const auto& path = inTarget.path();
 	if (path.empty())
@@ -825,7 +825,15 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 
 	Timer buildTimer;
 
-	displayHeader("Process", inTarget);
+	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
+
+	if (!inTarget.outputDescription().empty())
+		Output::msgTargetDescription(inTarget.outputDescription(), color);
+	else
+		Output::msgTargetOfType("Process", inTarget.name(), color);
+
+	if (!inRunCommand)
+		Output::lineBreak();
 
 	StringList cmd;
 	cmd.push_back(inTarget.path());
@@ -834,12 +842,13 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget)
 		cmd.push_back(arg);
 	}
 
-	bool result = runProcess(cmd, inTarget.path(), false);
+	bool result = runProcess(cmd, inTarget.path(), inRunCommand);
 
 	if (!result)
 		Output::lineBreak();
 
-	stopTimerAndShowBenchmark(buildTimer);
+	if (!inRunCommand && result)
+		stopTimerAndShowBenchmark(buildTimer);
 
 	return result;
 }
