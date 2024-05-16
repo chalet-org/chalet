@@ -16,8 +16,6 @@ jobs:
       run:
         shell: bash
     env:
-      CC: gcc-11
-      CXX: g++-11
       UBUNTU_VERSION: focal
       CI: 1
     steps:
@@ -38,7 +36,7 @@ jobs:
       - name: "Get Packages"
         run: |
           sudo apt update
-          sudo apt install gcc-11 g++-11 zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+          sudo apt install zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
