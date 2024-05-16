@@ -126,7 +126,7 @@ bool Spinner::sleepWithContext(const std::chrono::milliseconds& inLength)
 		auto finish = clock::now();
 		ms = std::chrono::duration_cast<std::chrono::milliseconds>(finish - start);
 
-		if (!m_running)
+		if (!m_running && !m_cancelled)
 			return false;
 
 		std::this_thread::sleep_for(step);
