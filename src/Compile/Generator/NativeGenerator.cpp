@@ -84,7 +84,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 		const auto& toCache = outputs->target;
 		if (m_linkTarget && m_fileCache.find(toCache) == m_fileCache.end())
 		{
-			m_fileCache.emplace(toCache, true);
+			m_fileCache.insert(toCache);
 
 			Files::removeIfExists(outputs->target);
 
@@ -199,7 +199,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					auto toCache = fmt::format("{}/{}", objDir, intermediateSource);
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace(std::move(toCache), true);
+						m_fileCache.insert(std::move(toCache));
 
 						Files::removeIfExists(outObject);
 
@@ -222,7 +222,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 				auto toCache = fmt::format("{}/{}", objDir, source);
 				if (m_fileCache.find(toCache) == m_fileCache.end())
 				{
-					m_fileCache.emplace(std::move(toCache), true);
+					m_fileCache.insert(std::move(toCache));
 
 					Files::removeIfExists(pchTarget);
 
@@ -284,7 +284,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 					auto toCache = fmt::format("{}/{}", objDir, source);
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace(std::move(toCache), true);
+						m_fileCache.insert(std::move(toCache));
 
 						Files::removeIfExists(target);
 
@@ -310,7 +310,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 					auto toCache = fmt::format("{}/{}", objDir, source);
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
-						m_fileCache.emplace(std::move(toCache), true);
+						m_fileCache.insert(std::move(toCache));
 
 						Files::removeIfExists(target);
 
@@ -421,7 +421,7 @@ bool NativeGenerator::fileChangedOrDependentChanged(const std::string& source, c
 				return true;
 
 			// Cache the filename if it didn't change
-			m_dependencyCache.emplace(line, true);
+			m_dependencyCache.insert(line);
 		}
 	}
 

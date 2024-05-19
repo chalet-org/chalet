@@ -1798,7 +1798,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	auto& macosBundleIcon = inTarget.macosBundleIcon();
 #endif
 
-	if (!m_generatedBundleFiles[targetName])
+	if (m_generatedBundleFiles.find(targetName) == m_generatedBundleFiles.end())
 	{
 		m_infoPlistJson.clear();
 
@@ -1818,7 +1818,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 			bundler.createEntitlementsPropertyList(entitlementsPlist);
 #endif
 
-		m_generatedBundleFiles[targetName] = true;
+		m_generatedBundleFiles.insert(targetName);
 	}
 
 	std::string bundleId;

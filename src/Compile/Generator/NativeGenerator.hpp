@@ -56,8 +56,8 @@ private:
 
 	StringList m_targetsChanged;
 
-	std::unordered_map<std::string, bool> m_fileCache;
-	std::unordered_map<std::string, bool> m_dependencyCache;
+	std::unordered_set<std::string> m_fileCache;
+	std::unordered_set<std::string> m_dependencyCache;
 
 	std::unordered_map<SourceType, bool> m_commandsChanged;
 	bool m_targetCommandChanged = false;
