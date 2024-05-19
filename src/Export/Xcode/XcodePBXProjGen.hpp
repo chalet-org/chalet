@@ -74,6 +74,6 @@ private:
 	std::string m_xcodeNamespaceGuid;
 	std::string m_projectGuid;
 
-	mutable std::unordered_map<std::string, bool> m_generatedBundleFiles;
+	mutable std::unordered_set<std::string> m_generatedBundleFiles;
 };
 }

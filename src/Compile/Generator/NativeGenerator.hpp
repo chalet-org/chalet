@@ -50,7 +50,7 @@ private:
 	const SourceTarget* m_project = nullptr;
 	CompileToolchainController* m_toolchain = nullptr;
 
-	std::unordered_map<std::string, bool> m_fileCache;
+	std::unordered_set<std::string> m_fileCache;
 
 	std::unordered_map<SourceType, bool> m_commandsChanged;
 	bool m_targetCommandChanged = false;

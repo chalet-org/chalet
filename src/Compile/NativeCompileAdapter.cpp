@@ -149,7 +149,7 @@ bool NativeCompileAdapter::anyDependenciesChanged(const std::string& dependency)
 				return true;
 
 			// Cache the filename if it didn't change
-			m_dependencyCache.emplace(line, true);
+			m_dependencyCache.insert(line);
 		}
 	}
 

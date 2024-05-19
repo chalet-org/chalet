@@ -39,6 +39,6 @@ private:
 
 	StringList m_targetsChanged;
 
-	std::unordered_map<std::string, bool> m_dependencyCache;
+	std::unordered_set<std::string> m_dependencyCache;
 };
 }
