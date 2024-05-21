@@ -274,6 +274,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		m_dependencyMap->populateToList(dependenciesToCopy, excludes);
 		for (auto& dep : dependenciesToCopy)
 		{
+			dep = Files::getCanonicalPath(dep);
 			String::replaceAll(dep, cwd, "");
 		}
 
