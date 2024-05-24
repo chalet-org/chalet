@@ -1837,8 +1837,7 @@
 						"executable"
 					]
 				}
-			],
-			"default": true
+			]
 		},
 		"target-source-cxx-fastMath": {
 			"type": "boolean",
