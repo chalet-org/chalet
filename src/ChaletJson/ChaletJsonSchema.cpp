@@ -887,10 +887,10 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetSourceCxxPositionIndependent] = R"json({
 		"description": "true to use position independent code. In MSVC, this does nothing. in GCC/Clang, `-fPIC` will be added to shared libraries and static libraries that link to shared libraries (within the workspace). `-fPIE` will be added to executables and static libraries that link to executables (within the workspace). Executables in GCC will be linked with `-pie`. This behavior can be set manually with `shared` or `executable` instead. false to disable (default).",
+		"default": false,
 		"oneOf": [
 			{
-				"type": "boolean",
-				"default": false
+				"type": "boolean"
 			},
 			{
 				"type": "string",
