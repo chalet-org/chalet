@@ -900,8 +900,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 					"executable"
 				]
 			}
-		],
-		"default": true
+		]
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxFastMath] = R"json({
