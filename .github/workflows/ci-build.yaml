@@ -26,17 +26,20 @@ jobs:
       - name: "arm setup"
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf,arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
           sudo dpkg --add-architecture armhf
+          sudo dpkg --add-architecture arm64
       - name: "Get Packages"
         run: |
           sudo apt update
-          sudo apt install zip debhelper uuid-dev uuid-dev:armhf ninja-build gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+          sudo apt install zip debhelper uuid-dev ninja-build
+          sudo apt install uuid-dev:armhf gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+          sudo apt install uuid-dev:arm64 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build: Debug"
@@ -45,6 +48,17 @@ jobs:
         run: build/Debug/chalet-debug configure
       - name: "Color Test"
         run: build/Debug/chalet-debug termtest
+      - name: "Build: Release (arm64)"
+        run: build/Debug/chalet-debug -c Release -t aarch64-linux-gnu-gcc -b native bundle
+      - name: "Upload assets (arm64)"
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./dist/chalet-aarch64-linux-gnu.zip
+            ./dist/chalet-aarch64-linux-debian.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
       - name: "Build: Release (arm)"
         run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native bundle
       - name: "Upload assets (arm)"
