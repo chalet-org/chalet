@@ -644,7 +644,7 @@ void CompilerCxxGCC::addLanguageStandard(StringList& outArgList, const SourceTyp
 			String::replaceAll(yearOnly, "gnu++", "");
 			String::replaceAll(yearOnly, "c++", "");
 
-			if (String::equals("26", yearOnly) && (isGcc /* && m_versionMajorMinor < 1300 */))
+			if (String::equals("26", yearOnly) && (isGcc && m_versionMajorMinor < 1400))
 			{
 				String::replaceAll(ret, "26", "2c");
 			}

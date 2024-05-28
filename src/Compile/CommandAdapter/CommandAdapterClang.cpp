@@ -41,7 +41,11 @@ std::string CommandAdapterClang::getLanguageStandardCpp() const
 		String::replaceAll(yearOnly, "gnu++", "");
 		String::replaceAll(yearOnly, "c++", "");
 
-		if (String::equals("26", yearOnly) && (isClang /* && m_versionMajorMinor < 1700 */))
+		// Notes:
+		//   Clang 17: c++26 flag was added from the start (2c is also available)
+		//   Clang 17: c++23 flag was added, 2b before that
+
+		if (String::equals("26", yearOnly) && (isClang && m_versionMajorMinor < 1700))
 		{
 			String::replaceAll(ret, "26", "2c");
 		}
