@@ -164,19 +164,32 @@ void AppBundler::reportErrors()
 
 	std::sort(m_notCopied.rbegin(), m_notCopied.rend());
 
+	bool containsApiSet = false;
 	bool validNotCopiedDeps = false;
 	StringList excludes{ "msvcrt.dll", "kernel32.dll" };
 	for (auto& dep : m_notCopied)
 	{
-		if (String::equals(excludes, String::toLowerCase(dep)))
+		auto lower = String::toLowerCase(dep);
+		if (String::equals(excludes, lower))
 			continue;
+
+		if (!containsApiSet && String::startsWith("api-ms-win-", lower))
+			containsApiSet = true;
 
 		Diagnostic::warn("{}", String::getPathFilename(dep));
 		validNotCopiedDeps = true;
 	}
 
 	if (validNotCopiedDeps)
+	{
+		if (containsApiSet)
+		{
+			Diagnostic::warn("    https://learn.microsoft.com/en-us/windows/win32/apiindex/api-set-loader-operation");
+			Diagnostic::warn("    https://learn.microsoft.com/en-us/windows/win32/apiindex/windows-apisets");
+			Diagnostic::warn("  At least one of these may be a Windows API set:");
+		}
 		Diagnostic::warn("Dependencies not copied:");
+	}
 }
 
 /*****************************************************************************/
