@@ -118,6 +118,15 @@ bool BuildState::initialize()
 	if (!initializeToolchain())
 		return false;
 
+	if (!isBuildConfigurationSupported())
+		return false;
+
+	if (!configuration.validate(*this))
+	{
+		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
+		return false;
+	}
+
 	if (!parseChaletJson())
 		return false;
 
@@ -243,6 +252,12 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 bool BuildState::isSubChaletTarget() const noexcept
 {
 	return m_isSubChaletTarget;
+}
+
+/*****************************************************************************/
+bool BuildState::isBuildConfigurationSupported() const
+{
+	return configuration.isSupported(*this);
 }
 
 /*****************************************************************************/
@@ -493,12 +508,6 @@ bool BuildState::initializeToolchain()
 
 	if (!toolchain.initialize(*m_impl->environment))
 		return onError();
-
-	if (!configuration.validate(*this))
-	{
-		Diagnostic::error("The build configuration '{}' can not be built.", configuration.name());
-		return false;
-	}
 
 	return true;
 }

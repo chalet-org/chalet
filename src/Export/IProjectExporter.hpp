@@ -44,7 +44,7 @@ protected:
 
 	const std::string& workingDirectory() const noexcept;
 
-	bool makeStateAndValidate(CentralState& inCentralState, const std::string& configName);
+	bool makeStateAndValidate(CentralState& inCentralState, const std::string& configName, bool& added);
 	bool makeExportAdapter();
 	bool validateDebugState();
 

@@ -18,7 +18,8 @@ struct BuildConfiguration
 	static std::string getDefaultReleaseConfigurationName();
 	static bool makeDefaultConfiguration(BuildConfiguration& outConfig, const std::string& inName);
 
-	bool validate(const BuildState& inState);
+	bool isSupported(const BuildState& inState) const;
+	bool validate(const BuildState& inState, const bool inErrors = true) const;
 
 	std::string getHash() const;
 
@@ -59,7 +60,7 @@ private:
 
 	std::string m_name;
 
-	SanitizeOptions::Type m_sanitizeOptions = SanitizeOptions::None;
+	mutable SanitizeOptions::Type m_sanitizeOptions = SanitizeOptions::None;
 
 	OptimizationLevel m_optimizationLevel = OptimizationLevel::None;
 

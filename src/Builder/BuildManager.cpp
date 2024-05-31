@@ -1209,6 +1209,8 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	}
 	else if (lastExitCode != 0)
 	{
+		Output::setShowCommandOverride(false);
+
 		BinaryDependencyMap tmpMap(m_state);
 		StringList dependencies;
 		StringList dependenciesNotFound;
@@ -1221,6 +1223,8 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 				Output::print(Output::theme().info, fmt::format("Error: Cannot open shared object file: {}: No such file or directory.", dep));
 			}
 		}
+
+		Output::setShowCommandOverride(true);
 	}
 
 	return result;

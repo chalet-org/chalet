@@ -52,6 +52,7 @@ public:
 	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;
 
 	bool isSubChaletTarget() const noexcept;
+	bool isBuildConfigurationSupported() const;
 
 	CentralState& getCentralState();
 	const CentralState& getCentralState() const;

@@ -166,13 +166,23 @@ bool BuildConfiguration::makeDefaultConfiguration(BuildConfiguration& outConfig,
 }
 
 /*****************************************************************************/
-bool BuildConfiguration::validate(const BuildState& inState)
+// Used to check if a build configuration can be exported
+//
+bool BuildConfiguration::isSupported(const BuildState& inState) const
+{
+	return validate(inState, false);
+}
+
+/*****************************************************************************/
+bool BuildConfiguration::validate(const BuildState& inState, const bool inErrors) const
 {
 	bool result = true;
 
 	if (sanitizeAddress() && sanitizeHardwareAddress())
 	{
-		Diagnostic::error("Sanitizer 'address' cannot be combined with 'hwaddress'");
+		if (inErrors)
+			Diagnostic::error("Sanitizer 'address' cannot be combined with 'hwaddress'");
+
 		result = false;
 	}
 
@@ -186,7 +196,9 @@ bool BuildConfiguration::validate(const BuildState& inState)
 
 	if (sanitizeThread() && (asan || sanitizeLeaks()))
 	{
-		Diagnostic::error("Sanitizer 'thread' cannot be combined with 'address', 'hwaddress' or 'leak'");
+		if (inErrors)
+			Diagnostic::error("Sanitizer 'thread' cannot be combined with 'address', 'hwaddress' or 'leak'");
+
 		result = false;
 	}
 
@@ -194,7 +206,9 @@ bool BuildConfiguration::validate(const BuildState& inState)
 	{
 		if (sanitizeHardwareAddress() && inState.info.targetArchitecture() != Arch::Cpu::ARM64)
 		{
-			Diagnostic::error("The 'hwaddress' sanitizer is only supported with 'arm64' targets.");
+			if (inErrors)
+				Diagnostic::error("The 'hwaddress' sanitizer is only supported with 'arm64' targets.");
+
 			result = false;
 		}
 
@@ -202,14 +216,18 @@ bool BuildConfiguration::validate(const BuildState& inState)
 		{
 			if (!sanitizeAddress())
 			{
-				Diagnostic::error("Only the 'address' sanitizer is supported on MSVC.");
+				if (inErrors)
+					Diagnostic::error("Only the 'address' sanitizer is supported on MSVC.");
+
 				result = false;
 			}
 
 			u32 versionMajorMinor = inState.toolchain.compilerCxxAny().versionMajorMinor;
 			if (versionMajorMinor < 1928)
 			{
-				Diagnostic::error("The 'address' sanitizer is only supported in MSVC >= 19.28 (found {})", inState.toolchain.compilerCxxAny().version);
+				if (inErrors)
+					Diagnostic::error("The 'address' sanitizer is only supported in MSVC >= 19.28 (found {})", inState.toolchain.compilerCxxAny().version);
+
 				result = false;
 			}
 		}
@@ -217,7 +235,9 @@ bool BuildConfiguration::validate(const BuildState& inState)
 		{
 			if (!sanitizeAddress() && !sanitizeUndefinedBehavior())
 			{
-				Diagnostic::error("Only the 'address' and 'undefined' sanitizers are supported on Windows clang.");
+				if (inErrors)
+					Diagnostic::error("Only the 'address' and 'undefined' sanitizers are supported on Windows clang.");
+
 				result = false;
 			}
 		}
@@ -225,29 +245,49 @@ bool BuildConfiguration::validate(const BuildState& inState)
 		{
 			if (sanitizeHardwareAddress())
 			{
-				Diagnostic::error("The 'hwaddress' sanitizer is not yet supported on Apple clang.");
+				if (inErrors)
+					Diagnostic::error("The 'hwaddress' sanitizer is not yet supported on Apple clang.");
+
 				result = false;
 			}
 			if (sanitizeMemory())
 			{
-				Diagnostic::error("The 'memory' sanitizer is not supported on Apple clang.");
+				if (inErrors)
+					Diagnostic::error("The 'memory' sanitizer is not supported on Apple clang.");
+
 				result = false;
 			}
 			if (sanitizeLeaks())
 			{
-				Diagnostic::error("The 'leak' sanitizer is not supported on Apple clang.");
+				if (inErrors)
+					Diagnostic::error("The 'leak' sanitizer is not supported on Apple clang.");
+
 				result = false;
 			}
 		}
 		else if (inState.environment->isMingw())
 		{
-			Diagnostic::error("Sanitizers are not yet supported in MinGW.");
+			if (inErrors)
+				Diagnostic::error("Sanitizers are not yet supported in MinGW.");
+
 			result = false;
 		}
 		else if (inState.environment->isIntelClassic())
 		{
-			Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic.");
+			if (inErrors)
+				Diagnostic::error("Sanitizers are not supported on Intel Compiler Classic.");
+
 			result = false;
+		}
+		else if (inState.environment->isEmscripten())
+		{
+			if (!sanitizeAddress() && !sanitizeUndefinedBehavior())
+			{
+				if (inErrors)
+					Diagnostic::error("Only the 'address' and 'undefined' sanitizers are supported with Emscripten.");
+
+				result = false;
+			}
 		}
 	}
 
