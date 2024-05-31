@@ -794,9 +794,11 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			{
 				it = fs::recursive_directory_iterator(basePath);
 			}
+			else
+				it++;
 		}
-
-		it++;
+		else
+			it++;
 	}
 
 	return true;
@@ -835,7 +837,7 @@ bool Files::forEachGlobMatch(const std::string& inPath, const StringList& inPatt
 /*****************************************************************************/
 bool Files::addPathToListWithGlob(const std::string& inValue, StringList& outList, const GlobMatch inSettings)
 {
-	if (inValue.find_first_of("*{") != std::string::npos)
+	if (inValue.find_first_of("*{") != std::string::npos && inValue != "*")
 	{
 		if (!Files::forEachGlobMatch(inValue, inSettings, [&outList](const std::string& inPath) {
 				outList.emplace_back(inPath);
