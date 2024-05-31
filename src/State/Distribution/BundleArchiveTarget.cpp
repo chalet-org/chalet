@@ -35,8 +35,12 @@ BundleArchiveTarget::BundleArchiveTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool BundleArchiveTarget::initialize()
 {
-	if (!replaceVariablesInPathList(m_includes))
+	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+	if (!expandGlobPatternsInList(m_includes, GlobMatch::FilesAndFolders))
+	{
+		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
+	}
 
 #if defined(CHALET_MACOS)
 	if (!m_state.replaceVariablesInString(m_macosNotarizationProfile, this))
