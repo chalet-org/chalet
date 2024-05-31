@@ -21,14 +21,14 @@ namespace chalet
 /*****************************************************************************/
 const char* Environment::get(const char* inName)
 {
-	const char* result = std::getenv(inName);
+	const char* result = ::getenv(inName);
 	return result;
 }
 
 /*****************************************************************************/
 std::string Environment::getString(const char* inName)
 {
-	const char* result = std::getenv(inName);
+	const char* result = ::getenv(inName);
 	if (result != nullptr)
 		return std::string(result);
 
@@ -38,7 +38,7 @@ std::string Environment::getString(const char* inName)
 /*****************************************************************************/
 std::string Environment::getString(const char* inName, const std::string& inFallback)
 {
-	const char* result = std::getenv(inName);
+	const char* result = ::getenv(inName);
 	if (result != nullptr)
 		return std::string(result);
 
@@ -51,13 +51,13 @@ void Environment::set(const char* inName, const std::string& inValue)
 #if defined(CHALET_WIN32)
 	std::string outValue = fmt::format("{}={}", inName, inValue);
 	// LOG(outValue);
-	i32 result = putenv(outValue.c_str());
+	i32 result = ::putenv(outValue.c_str());
 #else
 	i32 result = 0;
 	if (!inValue.empty())
-		result = setenv(inName, inValue.c_str(), true);
+		result = ::setenv(inName, inValue.c_str(), true);
 	else
-		unsetenv(inName);
+		::unsetenv(inName);
 #endif
 	if (result != 0)
 	{
