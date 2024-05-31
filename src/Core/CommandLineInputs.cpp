@@ -436,7 +436,10 @@ void CommandLineInputs::setExportBuildConfigurations(StringList&& inValue) noexc
 }
 void CommandLineInputs::setExportBuildConfigurations(std::string&& inValue) noexcept
 {
-	m_exportBuildConfigurations = String::split(inValue, ',');
+	if (String::contains(',', inValue))
+	{
+		m_exportBuildConfigurations = String::split(inValue, ',');
+	}
 }
 
 /*****************************************************************************/

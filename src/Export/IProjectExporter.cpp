@@ -171,7 +171,8 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 
 	Output::setShowCommandOverride(false);
 
-	if (inForBuild && !makeStateAndValidate(inCentralState, inCentralState.inputs().buildConfiguration()))
+	bool added = false;
+	if (inForBuild && !makeStateAndValidate(inCentralState, inCentralState.inputs().buildConfiguration(), added))
 		return false;
 
 	auto& cacheFile = inCentralState.cache.file();
@@ -248,10 +249,12 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 {
 	m_states.clear();
 
+	const auto& configMap = inCentralState.buildConfigurations();
+
 	StringList buildConfigurations = m_inputs.exportBuildConfigurations();
 	if (buildConfigurations.empty())
 	{
-		for (const auto& [name, _] : inCentralState.buildConfigurations())
+		for (const auto& [name, _] : configMap)
 		{
 			buildConfigurations.emplace_back(name);
 		}
@@ -259,21 +262,24 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 
 	for (auto& name : buildConfigurations)
 	{
-		auto& configList = inCentralState.buildConfigurations();
-		if (configList.find(name) == configList.end())
+		if (configMap.find(name) == configMap.end())
 			continue;
 
-		auto& config = configList.at(name);
+		auto& config = configMap.at(name);
 
 		// skip configurations with sanitizers for now
-		if (config.enableSanitizers())
-			continue;
+		// if (config.enableSanitizers())
+		// 	continue;
 
 		if (m_debugConfiguration.empty() && config.debugSymbols())
 			m_debugConfiguration = name;
 
-		if (!makeStateAndValidate(inCentralState, name))
+		bool added = false;
+		if (!makeStateAndValidate(inCentralState, name, added))
 			return false;
+
+		if (!added)
+			continue;
 	}
 
 	if (m_states.empty())
@@ -286,7 +292,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 }
 
 /*****************************************************************************/
-bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& configName)
+bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& configName, bool& added)
 {
 	for (auto& state : m_states)
 	{
@@ -301,10 +307,18 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 	inputs.setBuildConfiguration(std::string(configName));
 	inputs.setRoute(CommandRoute(RouteType::Export));
 
-	auto& state = m_states.emplace_back(std::make_unique<BuildState>(std::move(inputs), inCentralState));
+	auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
 	state->setCacheEnabled(false);
 	if (!state->initialize())
+	{
+		if (!state->isBuildConfigurationSupported())
+		{
+			Output::setQuietNonBuild(quiet);
+			return true;
+		}
+
 		return false;
+	}
 
 	for (auto& target : state->targets)
 	{
@@ -327,6 +341,9 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 			}
 		}
 	}
+
+	m_states.emplace_back(std::move(state));
+	added = true;
 
 	Output::setQuietNonBuild(quiet);
 
