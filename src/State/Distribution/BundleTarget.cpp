@@ -56,8 +56,12 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool BundleTarget::initialize()
 {
-	if (!replaceVariablesInPathList(m_rawIncludes))
+	const auto globMessage = "Check that they exist and glob patterns can be resolved";
+	if (!expandGlobPatternsInList(m_rawIncludes, GlobMatch::FilesAndFolders))
+	{
+		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
+	}
 
 	if (!replaceVariablesInPathList(m_excludes))
 		return false;
