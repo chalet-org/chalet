@@ -248,8 +248,23 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 {
 	m_states.clear();
 
-	for (const auto& [name, config] : inCentralState.buildConfigurations())
+	StringList buildConfigurations = m_inputs.exportBuildConfigurations();
+	if (buildConfigurations.empty())
 	{
+		for (const auto& [name, _] : inCentralState.buildConfigurations())
+		{
+			buildConfigurations.emplace_back(name);
+		}
+	}
+
+	for (auto& name : buildConfigurations)
+	{
+		auto& configList = inCentralState.buildConfigurations();
+		if (configList.find(name) == configList.end())
+			continue;
+
+		auto& config = configList.at(name);
+
 		// skip configurations with sanitizers for now
 		if (config.enableSanitizers())
 			continue;

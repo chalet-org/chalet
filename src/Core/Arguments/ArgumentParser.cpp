@@ -1267,6 +1267,12 @@ void ArgumentParser::addBuildConfigurationArg()
 	arg.setHelp("The build configuration to use. [default: \"Release\"]");
 }
 
+void ArgumentParser::addExportBuildConfigurationsArg()
+{
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportBuildConfigurations, "-c", "--configurations");
+	arg.setHelp("The build configurations to export, separated by comma.");
+}
+
 /*****************************************************************************/
 void ArgumentParser::addBuildTargetArg()
 {
@@ -1476,6 +1482,7 @@ void ArgumentParser::populateExportArguments()
 	addExternalDirArg();
 	addOutputDirArg();
 	addDistributionDirArg();
+	addExportBuildConfigurationsArg();
 	addToolchainArg();
 	addArchArg();
 	addBuildPathStyleArg();
