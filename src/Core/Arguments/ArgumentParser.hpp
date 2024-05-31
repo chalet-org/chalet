@@ -79,6 +79,7 @@ private:
 	void addMaxJobsArg();
 	void addEnvFileArg();
 	void addBuildConfigurationArg();
+	void addExportBuildConfigurationsArg();
 	void addBuildTargetArg();
 	void addRunTargetArg();
 	void addRunArgumentsArg();

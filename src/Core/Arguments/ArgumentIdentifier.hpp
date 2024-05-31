@@ -57,6 +57,7 @@ enum class ArgumentIdentifier : u16
 	// Export
 	ExportKind,
 	ExportOpen,
+	ExportBuildConfigurations,
 	//
 	// Other
 	RouteString,

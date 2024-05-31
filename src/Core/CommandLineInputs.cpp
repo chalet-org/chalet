@@ -426,6 +426,20 @@ void CommandLineInputs::setBuildConfiguration(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const StringList& CommandLineInputs::exportBuildConfigurations() const noexcept
+{
+	return m_exportBuildConfigurations;
+}
+void CommandLineInputs::setExportBuildConfigurations(StringList&& inValue) noexcept
+{
+	m_exportBuildConfigurations = std::move(inValue);
+}
+void CommandLineInputs::setExportBuildConfigurations(std::string&& inValue) noexcept
+{
+	m_exportBuildConfigurations = String::split(inValue, ',');
+}
+
+/*****************************************************************************/
 const std::string& CommandLineInputs::lastTarget() const noexcept
 {
 	return m_lastTarget;
