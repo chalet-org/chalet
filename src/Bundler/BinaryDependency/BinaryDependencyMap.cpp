@@ -163,9 +163,10 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 
 	--levels;
 
+	bool ignoreApiSet = !m_includeWinUCRT;
 	for (auto it = dependencies.begin(); it != dependencies.end();)
 	{
-		if (!resolveDependencyPath(*it, inPath))
+		if (!resolveDependencyPath(*it, inPath, ignoreApiSet))
 		{
 			m_notCopied.push_back(*it);
 			it = dependencies.erase(it);
@@ -188,7 +189,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep, const std::string& inParentDep)
+bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep, const std::string& inParentDep, const bool inIgnoreApiSet)
 {
 	const auto filename = String::getPathFilename(outDep);
 	if (outDep.empty()
@@ -227,8 +228,20 @@ bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep, const std::
 			}
 		}
 
-		return false; // don't attempt to copy these from anywhere else
+		// Note: If one of these dlls can't be resolved, it's probably an API set loader, so we don't care about it
+		// Example: api-ms-win-shcore-scaling-l1-1-1.dll -> Shcore.dll
+		//
+		// Info:
+		//   https://learn.microsoft.com/en-us/windows/win32/apiindex/windows-apisets
+		//   https://learn.microsoft.com/en-us/windows/win32/apiindex/api-set-loader-operation
+		if (inIgnoreApiSet)
+		{
+			outDep = std::string();
+		}
+		return false;
 	}
+#else
+	UNUSED(inIgnoreApiSet);
 #endif
 
 	if (Files::pathExists(outDep))

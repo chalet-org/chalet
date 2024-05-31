@@ -37,7 +37,7 @@ public:
 
 private:
 	bool gatherDependenciesOf(const std::string& inPath, i32 levels);
-	bool resolveDependencyPath(std::string& outDep, const std::string& inParentDep);
+	bool resolveDependencyPath(std::string& outDep, const std::string& inParentDep, const bool inIgnoreApiSet);
 
 	const BuildState& m_state;
 
