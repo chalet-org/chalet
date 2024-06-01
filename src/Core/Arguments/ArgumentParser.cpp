@@ -662,6 +662,8 @@ std::string ArgumentParser::getHelp()
 		auto getToolchainPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("llvm", preset))
 				return "The LLVM Compiler Infrastructure Project";
+			else if (String::equals("emscripten", preset))
+				return "Emscripten compiler toolchain for WebAssembly";
 #if defined(CHALET_WIN32)
 			else if (String::equals("gcc", preset))
 				return "MinGW: Minimalist GNU Compiler Collection for Windows";
@@ -823,18 +825,17 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nExport project types:\n";
-		StringList exportPresets
-		{
+		StringList exportPresets{
 			"vscode",
 #if defined(CHALET_WIN32)
-				"vssolution",
-				"vsjson",
+			"vssolution",
+			"vsjson",
 #elif defined(CHALET_MACOS)
-				"xcode",
+			"xcode",
 #endif
-				"clion",
-				"fleet",
-				"codeblocks",
+			"clion",
+			"fleet",
+			"codeblocks",
 		};
 
 		for (auto& preset : exportPresets)
