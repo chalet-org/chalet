@@ -91,7 +91,7 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	auto targetGuids = getTargetGuids(projectTypeGUID, allBuildTargetName);
 
 	auto& debugState = m_exportAdapter->getDebugState();
-	VSSolutionGen slnGen(m_states, projectTypeGUID, targetGuids);
+	VSSolutionGen slnGen(*m_exportAdapter, projectTypeGUID, targetGuids);
 	if (!slnGen.saveToFile(solution))
 	{
 		auto project = getProjectName(debugState);
