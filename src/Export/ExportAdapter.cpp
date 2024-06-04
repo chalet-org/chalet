@@ -42,7 +42,14 @@ bool ExportAdapter::initialize()
 	m_toolchain = getToolchain();
 	m_arches = getArchitectures(m_toolchain);
 
-	return true;
+	bool result = true;
+	for (auto& arch : m_invalidArches)
+	{
+		Diagnostic::error("Architecture not found for this toolchain: {}", arch);
+		result = false;
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -400,6 +407,7 @@ const std::string& ExportAdapter::getToolchain() const
 StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 {
 	auto& debugState = getDebugState();
+	const auto& exportArchitectures = debugState.inputs.exportArchitectures();
 
 	StringList excludes{ "auto" };
 #if defined(CHALET_WIN32)
@@ -426,12 +434,23 @@ StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 		if (String::equals(excludes, arch))
 			continue;
 
+		if (!exportArchitectures.empty() && !List::contains(exportArchitectures, arch))
+			continue;
+
 		ret.emplace_back(std::move(arch));
 	}
 
 	if (ret.empty())
 	{
 		ret.emplace_back(debugState.info.hostArchitectureString());
+	}
+
+	for (auto& arch : exportArchitectures)
+	{
+		if (List::contains(ret, arch))
+			continue;
+
+		m_invalidArches.emplace_back(arch);
 	}
 
 	return ret;

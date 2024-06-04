@@ -69,6 +69,10 @@ struct CommandLineInputs
 	void setExportBuildConfigurations(StringList&& inValue) noexcept;
 	void setExportBuildConfigurations(std::string&& inValue) noexcept;
 
+	const StringList& exportArchitectures() const noexcept;
+	void setExportArchitectures(StringList&& inValue) noexcept;
+	void setExportArchitectures(std::string&& inValue) noexcept;
+
 	const std::string& lastTarget() const noexcept;
 	void setLastTarget(std::string&& inValue) const noexcept;
 	StringList getBuildTargets() const;
@@ -212,6 +216,7 @@ private:
 	StringList m_commandList;
 	StringList m_queryData;
 	StringList m_exportBuildConfigurations;
+	StringList m_exportArchitectures;
 	mutable StringList m_universalArches;
 	mutable StringList m_archOptions;
 

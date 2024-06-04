@@ -825,17 +825,18 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nExport project types:\n";
-		StringList exportPresets{
+		StringList exportPresets
+		{
 			"vscode",
 #if defined(CHALET_WIN32)
-			"vssolution",
-			"vsjson",
+				"vssolution",
+				"vsjson",
 #elif defined(CHALET_MACOS)
-			"xcode",
+				"xcode",
 #endif
-			"clion",
-			"fleet",
-			"codeblocks",
+				"clion",
+				"fleet",
+				"codeblocks",
 		};
 
 		for (auto& preset : exportPresets)
@@ -1268,10 +1269,18 @@ void ArgumentParser::addBuildConfigurationArg()
 	arg.setHelp("The build configuration to use. [default: \"Release\"]");
 }
 
+/*****************************************************************************/
 void ArgumentParser::addExportBuildConfigurationsArg()
 {
 	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportBuildConfigurations, "-c", "--configurations");
-	arg.setHelp("The build configurations to export, separated by comma.");
+	arg.setHelp("The build configuration(s) to export, separated by comma.");
+}
+
+/*****************************************************************************/
+void ArgumentParser::addExportArchitecturesArg()
+{
+	auto& arg = addTwoStringArguments(ArgumentIdentifier::ExportArchitectures, "-a", "--architectures");
+	arg.setHelp("The architecture(s) to export, separated by comma.");
 }
 
 /*****************************************************************************/
@@ -1477,7 +1486,7 @@ void ArgumentParser::populateExportArguments()
 	addDistributionDirArg();
 	addExportBuildConfigurationsArg();
 	addToolchainArg();
-	addArchArg();
+	addExportArchitecturesArg();
 	addBuildPathStyleArg();
 	addEnvFileArg();
 	addOsTargetNameArg();
