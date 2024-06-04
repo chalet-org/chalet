@@ -61,10 +61,6 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						buildConfiguration = variant.asString();
 						break;
 
-					case ArgumentIdentifier::ExportBuildConfigurations:
-						inputs->setExportBuildConfigurations(variant.asString());
-						break;
-
 					case ArgumentIdentifier::InputFile:
 						inputFile = variant.asString();
 						break;
@@ -151,6 +147,14 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 
 					case ArgumentIdentifier::ConvertFormat:
 						inputs->setSettingsKey(variant.asString());
+						break;
+
+					case ArgumentIdentifier::ExportBuildConfigurations:
+						inputs->setExportBuildConfigurations(variant.asString());
+						break;
+
+					case ArgumentIdentifier::ExportArchitectures:
+						inputs->setExportArchitectures(variant.asString());
 						break;
 
 					default: break;

@@ -80,6 +80,7 @@ private:
 	void addEnvFileArg();
 	void addBuildConfigurationArg();
 	void addExportBuildConfigurationsArg();
+	void addExportArchitecturesArg();
 	void addBuildTargetArg();
 	void addRunTargetArg();
 	void addRunArgumentsArg();

@@ -436,9 +436,31 @@ void CommandLineInputs::setExportBuildConfigurations(StringList&& inValue) noexc
 }
 void CommandLineInputs::setExportBuildConfigurations(std::string&& inValue) noexcept
 {
-	if (String::contains(',', inValue))
+	m_exportBuildConfigurations = String::split(inValue, ',');
+}
+
+/*****************************************************************************/
+const StringList& CommandLineInputs::exportArchitectures() const noexcept
+{
+	return m_exportArchitectures;
+}
+void CommandLineInputs::setExportArchitectures(StringList&& inValue) noexcept
+{
+	m_exportArchitectures = std::move(inValue);
+}
+void CommandLineInputs::setExportArchitectures(std::string&& inValue) noexcept
+{
+	if (inValue.empty())
+		return;
+
+	m_exportArchitectures = String::split(inValue, ',');
+	if (!m_exportArchitectures.empty())
 	{
-		m_exportBuildConfigurations = String::split(inValue, ',');
+		for (auto& arch : m_exportArchitectures)
+		{
+			arch = Arch::toGnuArch(arch);
+		}
+		List::removeDuplicates(m_exportArchitectures);
 	}
 }
 

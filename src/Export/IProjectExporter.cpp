@@ -195,13 +195,22 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 			return false;
 
 		if (!generateStatesAndValidate(inCentralState))
+		{
+			Diagnostic::error("There was a problem initializing the project exporter.");
 			return false;
+		}
 
 		if (!makeExportAdapter())
+		{
+			Diagnostic::error("There was a problem initializing the project exporter.");
 			return false;
+		}
 
 		if (!validateDebugState())
+		{
+			Diagnostic::error("There was a problem validating the project exporter.");
 			return false;
+		}
 
 		if (!generateProjectFiles())
 			return false;
@@ -260,11 +269,21 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		}
 	}
 
+	bool result = true;
 	for (auto& name : buildConfigurations)
 	{
 		if (configMap.find(name) == configMap.end())
-			continue;
+		{
+			Diagnostic::error("Build configuration not found for this project: {}", name);
+			result = false;
+		}
+	}
 
+	if (!result)
+		return false;
+
+	for (auto& name : buildConfigurations)
+	{
 		auto& config = configMap.at(name);
 
 		// skip configurations with sanitizers for now
@@ -355,10 +374,7 @@ bool IProjectExporter::makeExportAdapter()
 {
 	m_exportAdapter = std::make_unique<ExportAdapter>(m_states, m_debugConfiguration, getAllBuildTargetName());
 	if (!m_exportAdapter->initialize())
-	{
-		Diagnostic::error("There was a problem initializing the project exporter.");
 		return false;
-	}
 
 	return true;
 }

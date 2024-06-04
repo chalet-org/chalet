@@ -59,6 +59,7 @@ private:
 	const std::string m_allBuildName;
 
 	StringList m_arches;
+	mutable StringList m_invalidArches;
 
 	std::string m_toolchain;
 	std::string m_cwd;

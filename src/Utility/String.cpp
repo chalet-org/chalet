@@ -297,6 +297,9 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 {
 	StringList ret;
 
+	if (inString.empty())
+		return ret;
+
 	std::string sub;
 
 	size_t itr = 0;
@@ -322,7 +325,7 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 		}
 
 		if (sub.size() >= inMinLength)
-			ret.push_back(sub);
+			ret.emplace_back(sub);
 	}
 
 	return ret;
@@ -332,6 +335,9 @@ StringList String::split(std::string inString, const char inSeparator, const siz
 StringList String::split(std::string inString, const std::string_view inSeparator, const size_t inMinLength)
 {
 	StringList ret;
+
+	if (inString.empty())
+		return ret;
 
 	std::string sub;
 
@@ -358,7 +364,7 @@ StringList String::split(std::string inString, const std::string_view inSeparato
 		}
 
 		if (sub.size() >= inMinLength)
-			ret.push_back(sub);
+			ret.emplace_back(sub);
 	}
 
 	return ret;
@@ -420,7 +426,7 @@ StringList String::filterIf(const StringList& inFind, const StringList& inList)
 			continue;
 
 		if (List::contains(inList, item))
-			ret.push_back(item);
+			ret.emplace_back(item);
 	}
 	return ret;
 }
@@ -435,7 +441,7 @@ StringList String::excludeIf(const StringList& inFind, const StringList& inList)
 			continue;
 
 		if (!List::contains(inFind, item))
-			ret.push_back(item);
+			ret.emplace_back(item);
 	}
 	return ret;
 }
