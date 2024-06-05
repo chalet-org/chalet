@@ -55,7 +55,7 @@ jobs:
         with:
           files: |
             ./dist/chalet-aarch64-linux-gnu.zip
-            ./dist/chalet-aarch64-linux-debian.zip
+            ./dist/chalet-arm64-linux-debian.zip
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: false
