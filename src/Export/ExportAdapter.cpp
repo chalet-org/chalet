@@ -408,6 +408,7 @@ const std::string& ExportAdapter::getToolchain() const
 StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 {
 	auto& debugState = getDebugState();
+	auto& centralState = debugState.getCentralState();
 	const auto& exportArchitectures = debugState.inputs.exportArchitectures();
 
 	StringList excludes{ "auto" };
@@ -427,6 +428,8 @@ StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 	}
 #endif
 
+	auto& archSuffix = debugState.info.targetArchitectureTripleSuffix();
+
 	StringList ret;
 	QueryController query(debugState.getCentralState());
 	auto arches = query.getArchitectures(inToolchain);
@@ -436,6 +439,10 @@ StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 			continue;
 
 		if (!exportArchitectures.empty() && !List::contains(exportArchitectures, arch))
+			continue;
+
+		auto triple = fmt::format("{}{}", arch, archSuffix);
+		if (!centralState.isAllowedArchitecture(triple, false))
 			continue;
 
 		ret.emplace_back(std::move(arch));

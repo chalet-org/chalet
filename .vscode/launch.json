@@ -12,7 +12,9 @@
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
 				"export",
-				"vssolution"
+				"vssolution",
+				"-c",
+				"Debug,Release"
 			]
 		},
 		{

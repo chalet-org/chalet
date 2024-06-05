@@ -604,22 +604,18 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 			}
 		}
 	}
-	else if (inType == BuildTargetType::Script)
-	{
-		outNode.addElement("PropertyGroup", [&inName](XmlElement& node) {
-			node.addElementWithText("TargetName", inName);
-			node.addElementWithText("OutDir", fmt::format("logs/{}/", inName));
-			node.addElementWithText("IntDir", fmt::format("logs/{}/", inName));
-		});
-	}
-	else if (inType == BuildTargetType::Unknown)
+	else if (inType == BuildTargetType::Script || inType == BuildTargetType::Unknown)
 	{
 		for (auto& conf : m_vsConfigs)
 		{
 			outNode.addElement("PropertyGroup", [&inName, &conf](XmlElement& node) {
 				node.addAttribute("Condition", conf.condition);
-				node.addElementWithText("OutDir", fmt::format("logs/{}/", inName));
-				node.addElementWithText("IntDir", fmt::format("logs/{}/", inName));
+				node.addElementWithText("TargetName", inName);
+
+				auto buildOutputDir = Files::getCanonicalPath(conf.state->paths.buildOutputDir());
+				auto logDir = fmt::format("{}/logs/{}/", buildOutputDir, inName);
+				node.addElementWithText("OutDir", logDir);
+				node.addElementWithText("IntDir", logDir);
 			});
 		}
 	}
