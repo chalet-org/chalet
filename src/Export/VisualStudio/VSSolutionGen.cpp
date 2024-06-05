@@ -16,6 +16,7 @@
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -23,14 +24,16 @@ namespace
 {
 struct VisualStudioConfig
 {
-	std::string name;
+	RunConfiguration* runConfig = nullptr;
 	std::string arch;
+	std::string vsArch;
+	bool allTarget = false;
 };
 }
 
 /*****************************************************************************/
-VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
-	m_states(inStates),
+VSSolutionGen::VSSolutionGen(const ExportAdapter& inExportAdapter, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
+	m_exportAdapter(inExportAdapter),
 	m_projectTypeGuid(inProjectTypeGuid),
 	m_targetGuids(inTargetGuids)
 {
@@ -39,30 +42,33 @@ VSSolutionGen::VSSolutionGen(const std::vector<Unique<BuildState>>& inStates, co
 /*****************************************************************************/
 bool VSSolutionGen::saveToFile(const std::string& inFilename)
 {
-	if (m_states.empty())
+	auto runConfigs = m_exportAdapter.getBasicRunConfigs();
+	if (runConfigs.empty())
 		return false;
 
 	std::vector<VisualStudioConfig> vsConfigs;
-	for (auto& state : m_states)
+	for (auto& runConfig : runConfigs)
 	{
-		// std::string arch = Arch::toVSArch(state->info.targetArchitecture());
-		std::string arch = Arch::toVSArch2(state->info.targetArchitecture());
+		auto arch2 = Arch::from(runConfig.arch);
 
 		vsConfigs.emplace_back(VisualStudioConfig{
-			state->configuration.name(),
-			std::move(arch),
+			&runConfig,
+			Arch::toVSArch(arch2.val),
+			Arch::toVSArch2(arch2.val),
+			String::equals(Values::All, runConfig.name),
 		});
 	}
 
 	std::string minimumVisualStudioVersion{ "10.0.40219.1" };
 
-	const auto& firstState = *m_states.front();
-	const auto& workspaceName = firstState.workspace.metadata().name();
-	auto& visualStudioVersion = firstState.environment->detectedVersion();
+	const auto& debugState = m_exportAdapter.getDebugState();
+
+	const auto& workspaceName = debugState.workspace.metadata().name();
+	auto& visualStudioVersion = debugState.environment->detectedVersion();
 
 	auto solutionGUID = Uuid::v5(fmt::format("{}_SOLUTION", workspaceName), m_projectTypeGuid).toUpperCase();
 
-	const auto visualStudioVersionMajor = firstState.environment->getMajorVersion();
+	const auto visualStudioVersionMajor = debugState.environment->getMajorVersion();
 
 	std::string vsConfigString;
 	std::string vsProjectsString;
@@ -72,9 +78,14 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		std::string configs;
 		std::string projectConfigs;
 
-		for (auto& [name, arch] : vsConfigs)
+		for (auto& conf : vsConfigs)
 		{
-			configs += fmt::format("\n\t\t{name}|{arch} = {name}|{arch}", FMT_ARG(name), FMT_ARG(arch));
+			if (conf.allTarget)
+				continue;
+
+			const auto& config = conf.runConfig->config;
+			const auto& arch = conf.arch;
+			configs += fmt::format("\n\t\t{config}|{arch} = {config}|{arch}", FMT_ARG(config), FMT_ARG(arch));
 		}
 
 		for (auto& [name, guid] : m_targetGuids)
@@ -87,21 +98,32 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 			vsProjectsString += "EndProject\n";
 
-			for (auto& [conf, arch] : vsConfigs)
+			for (auto& conf : vsConfigs)
 			{
-				bool includedInBuild = projectWillBuild(name, conf);
+				if (conf.allTarget)
+					continue;
 
-				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.ActiveCfg = {conf}|{arch}",
+				const auto& config = conf.runConfig->config;
+				const auto& arch = conf.arch;
+				const auto& vsArch = conf.vsArch;
+
+				auto state = m_exportAdapter.getStateFromRunConfig(*conf.runConfig);
+				bool includedInBuild = projectWillBuild(name, *state);
+				// bool includedInBuild = !allTarget;
+
+				projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{config}|{arch}.ActiveCfg = {config}|{vsArch}",
 					FMT_ARG(projectGUID),
-					FMT_ARG(conf),
-					FMT_ARG(arch));
+					FMT_ARG(config),
+					FMT_ARG(arch),
+					FMT_ARG(vsArch));
 
 				if (includedInBuild)
 				{
-					projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{conf}|{arch}.Build.0 = {conf}|{arch}",
+					projectConfigs += fmt::format("\n\t\t{{{projectGUID}}}.{config}|{arch}.Build.0 = {config}|{vsArch}",
 						FMT_ARG(projectGUID),
-						FMT_ARG(conf),
-						FMT_ARG(arch));
+						FMT_ARG(config),
+						FMT_ARG(arch),
+						FMT_ARG(vsArch));
 				}
 			}
 		}
@@ -140,18 +162,12 @@ EndGlobal)sln",
 }
 
 /*****************************************************************************/
-bool VSSolutionGen::projectWillBuild(const std::string& inName, const std::string& inConfigName) const
+bool VSSolutionGen::projectWillBuild(const std::string& inName, const BuildState& inState) const
 {
-	for (auto& state : m_states)
+	for (auto& target : inState.targets)
 	{
-		if (String::equals(inConfigName, state->configuration.name()))
-		{
-			for (auto& target : state->targets)
-			{
-				if (String::equals(inName, target->name()))
-					return true;
-			}
-		}
+		if (String::equals(inName, target->name()))
+			return true;
 	}
 
 	return false;

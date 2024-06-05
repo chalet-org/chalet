@@ -41,6 +41,23 @@ VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, cons
 VSVCXProjGen::~VSVCXProjGen() = default;
 
 /*****************************************************************************/
+std::vector<VSVCXProjGen::VisualStudioConfig> VSVCXProjGen::getVisualStudioConfigs() const
+{
+	std::vector<VisualStudioConfig> ret;
+
+	for (auto& state : m_states)
+	{
+		ret.emplace_back(VisualStudioConfig{
+			state.get(),
+			getDictionaryKey(*state),
+			getCondition(*state),
+		});
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 {
 	if (m_targetGuids.find(name) == m_targetGuids.end())
@@ -49,19 +66,19 @@ bool VSVCXProjGen::saveSourceTargetProjectFiles(const std::string& name)
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
 
+	m_vsConfigs = getVisualStudioConfigs();
+
 	m_adapters.clear();
 
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		auto project = getProjectFromStateContext(*state, name);
+		auto project = getProjectFromStateContext(*conf.state, name);
 		if (project != nullptr)
 		{
-			const auto& config = state->configuration.name();
-
 			StringList fileCache;
-			m_outputs.emplace(config, state->paths.getOutputs(*project, fileCache));
+			m_outputs.emplace(conf.key, conf.state->paths.getOutputs(*project, fileCache));
 
-			auto [it, _] = m_adapters.emplace(config, std::make_unique<ProjectAdapterVCXProj>(*state, *project));
+			auto [it, _] = m_adapters.emplace(conf.key, std::make_unique<ProjectAdapterVCXProj>(*conf.state, *project));
 			if (!it->second->createPrecompiledHeaderSource())
 			{
 				Diagnostic::error("Error generating the precompiled header.");
@@ -105,15 +122,16 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
 
+	m_vsConfigs = getVisualStudioConfigs();
+
 	m_targetAdapters.clear();
 
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		auto target = getTargetFromStateContext(*state, name);
+		auto target = getTargetFromStateContext(*conf.state, name);
 		if (target != nullptr)
 		{
-			const auto& config = state->configuration.name();
-			m_targetAdapters.emplace(config, std::make_unique<TargetExportAdapter>(*state, *target));
+			m_targetAdapters.emplace(conf.key, std::make_unique<TargetExportAdapter>(*conf.state, *target));
 		}
 	}
 
@@ -147,15 +165,16 @@ bool VSVCXProjGen::saveAllBuildTargetProjectFiles(const std::string& name)
 	m_currentTarget = name;
 	m_currentGuid = m_targetGuids.at(name).str();
 
+	m_vsConfigs = getVisualStudioConfigs();
+
 	// m_targetAdapters.clear();
 
-	// for (auto& state : m_states)
+	// for (auto& conf : m_vsConfigs)
 	// {
-	// 	auto target = getTargetFromStateContext(*state, name);
+	// 	auto target = getTargetFromStateContext(*conf.state, name);
 	// 	if (target != nullptr)
 	// 	{
-	// 		const auto& config = state->configuration.name();
-	// 		m_targetAdapters.emplace(config, std::make_unique<TargetExportAdapter>(*state, *target));
+	// 		m_targetAdapters.emplace(conf.key, std::make_unique<TargetExportAdapter>(*conf.state, *target));
 	// 	}
 	// }
 
@@ -375,10 +394,10 @@ void VSVCXProjGen::addProjectConfiguration(XmlElement& outNode) const
 {
 	outNode.addElement("ItemGroup", [this](XmlElement& node) {
 		node.addAttribute("Label", "ProjectConfigurations");
-		for (auto& state : m_states)
+		for (auto& conf : m_vsConfigs)
 		{
-			const auto& name = state->configuration.name();
-			auto arch = Arch::toVSArch2(state->info.targetArchitecture());
+			const auto& name = conf.state->configuration.name();
+			auto arch = Arch::toVSArch2(conf.state->info.targetArchitecture());
 
 			node.addElement("ProjectConfiguration", [&name, &arch](XmlElement& node2) {
 				node2.addAttribute("Include", fmt::format("{}|{}", name, arch));
@@ -431,17 +450,14 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 {
 	if (inType == BuildTargetType::Source)
 	{
-		for (auto& state : m_states)
+		for (auto& conf : m_vsConfigs)
 		{
-			const auto& config = state->configuration.name();
-			auto condition = getCondition(config);
-
-			if (m_adapters.find(config) != m_adapters.end())
+			if (m_adapters.find(conf.key) != m_adapters.end())
 			{
-				const auto& vcxprojAdapter = *m_adapters.at(config);
+				const auto& vcxprojAdapter = *m_adapters.at(conf.key);
 
-				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-					node.addAttribute("Condition", condition);
+				outNode.addElement("PropertyGroup", [&conf, &vcxprojAdapter](XmlElement& node) {
+					node.addAttribute("Condition", conf.condition);
 					node.addAttribute("Label", "Configuration");
 
 					// General Tab
@@ -464,12 +480,11 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 			}
 			else
 			{
-				auto& st = *m_states.front();
-				outNode.addElement("PropertyGroup", [&condition, &st](XmlElement& node) {
-					node.addAttribute("Condition", condition);
+				outNode.addElement("PropertyGroup", [&conf](XmlElement& node) {
+					node.addAttribute("Condition", conf.condition);
 					node.addAttribute("Label", "Configuration");
 
-					auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(st));
+					auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(*conf.state));
 					node.addElementWithTextIfNotEmpty("PlatformToolset", toolset);
 				});
 			}
@@ -478,11 +493,11 @@ void VSVCXProjGen::addConfigurationProperties(XmlElement& outNode, const BuildTa
 	else if (inType == BuildTargetType::Script || inType == BuildTargetType::Unknown)
 	{
 		auto& state = *m_states.front();
-		outNode.addElement("PropertyGroup", [&state](XmlElement& node) {
+		auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(state));
+		outNode.addElement("PropertyGroup", [&toolset](XmlElement& node) {
 			node.addAttribute("Label", "Configuration");
 
 			// General Tab
-			auto toolset = fmt::format("v{}", CommandAdapterMSVC::getPlatformToolset(state));
 			node.addElementWithTextIfNotEmpty("ConfigurationType", "Utility");
 			node.addElementWithTextIfNotEmpty("PlatformToolset", toolset);
 		});
@@ -521,13 +536,11 @@ void VSVCXProjGen::addShared(XmlElement& outNode) const
 /*****************************************************************************/
 void VSVCXProjGen::addPropertySheets(XmlElement& outNode) const
 {
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		const auto& name = state->configuration.name();
-		auto condition = getCondition(name);
-		outNode.addElement("ImportGroup", [&condition](XmlElement& node) {
+		outNode.addElement("ImportGroup", [&conf](XmlElement& node) {
 			node.addAttribute("Label", "PropertySheets");
-			node.addAttribute("Condition", condition);
+			node.addAttribute("Condition", conf.condition);
 			node.addElement("Import", [](XmlElement& node2) {
 				node2.addAttribute("Project", "$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props");
 				node2.addAttribute("Condition", "exists('$(UserRootDir)\\Microsoft.Cpp.$(Platform).user.props')");
@@ -550,17 +563,14 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 {
 	if (inType == BuildTargetType::Source)
 	{
-		for (auto& state : m_states)
+		for (auto& conf : m_vsConfigs)
 		{
-			const auto& config = state->configuration.name();
-			auto condition = getCondition(config);
-
-			if (m_adapters.find(config) != m_adapters.end())
+			if (m_adapters.find(conf.key) != m_adapters.end())
 			{
-				const auto& vcxprojAdapter = *m_adapters.at(config);
+				const auto& vcxprojAdapter = *m_adapters.at(conf.key);
 
-				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-					node.addAttribute("Condition", condition);
+				outNode.addElement("PropertyGroup", [&conf, &vcxprojAdapter](XmlElement& node) {
+					node.addAttribute("Condition", conf.condition);
 					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
 					node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
@@ -585,8 +595,8 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 			else
 			{
 				const auto& vcxprojAdapter = *m_adapters.begin()->second;
-				outNode.addElement("PropertyGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-					node.addAttribute("Condition", condition);
+				outNode.addElement("PropertyGroup", [&conf, &vcxprojAdapter](XmlElement& node) {
+					node.addAttribute("Condition", conf.condition);
 					node.addElementWithText("TargetName", vcxprojAdapter.getTargetName());
 					node.addElementWithText("OutDir", vcxprojAdapter.getBuildDir());
 					node.addElementWithText("IntDir", vcxprojAdapter.getObjectDir());
@@ -604,13 +614,10 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 	}
 	else if (inType == BuildTargetType::Unknown)
 	{
-		for (auto& state : m_states)
+		for (auto& conf : m_vsConfigs)
 		{
-			const auto& config = state->configuration.name();
-			auto condition = getCondition(config);
-
-			outNode.addElement("PropertyGroup", [&inName, &condition](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("PropertyGroup", [&inName, &conf](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 				node.addElementWithText("OutDir", fmt::format("logs/{}/", inName));
 				node.addElementWithText("IntDir", fmt::format("logs/{}/", inName));
 			});
@@ -621,17 +628,14 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 /*****************************************************************************/
 void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 {
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		const auto& config = state->configuration.name();
-		auto condition = getCondition(config);
-
-		if (m_adapters.find(config) != m_adapters.end())
+		if (m_adapters.find(conf.key) != m_adapters.end())
 		{
-			const auto& vcxprojAdapter = *m_adapters.at(config);
+			const auto& vcxprojAdapter = *m_adapters.at(conf.key);
 
-			outNode.addElement("ItemDefinitionGroup", [&condition, &vcxprojAdapter](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemDefinitionGroup", [&conf, &vcxprojAdapter](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 				node.addElement("ClCompile", [&vcxprojAdapter](XmlElement& node2) {
 					node2.addElementWithTextIfNotEmpty("ConformanceMode", vcxprojAdapter.getConformanceMode());
 					node2.addElementWithTextIfNotEmpty("LanguageStandard", vcxprojAdapter.getLanguageStandardCpp());
@@ -738,8 +742,8 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 		}
 		else
 		{
-			outNode.addElement("ItemDefinitionGroup", [&condition](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemDefinitionGroup", [&conf](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 			});
 		}
 	}
@@ -748,21 +752,18 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 /*****************************************************************************/
 void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 {
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		const auto& config = state->configuration.name();
-		auto condition = getCondition(config);
-
-		if (m_targetAdapters.find(config) != m_targetAdapters.end())
+		if (m_targetAdapters.find(conf.key) != m_targetAdapters.end())
 		{
-			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
+			const auto& vcxprojAdapter = *m_targetAdapters.at(conf.key);
 			auto command = vcxprojAdapter.getCommand();
 			auto outCommand = fmt::format(R"batch(if "%BUILD_FROM_CHALET%"=="1" echo *== script start ==*
 {command}if "%BUILD_FROM_CHALET%"=="1" echo *== script end ==*)batch",
 				FMT_ARG(command));
 
-			outNode.addElement("ItemDefinitionGroup", [&condition, &outCommand](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemDefinitionGroup", [&conf, &outCommand](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 
 				node.addElement("PreBuildEvent", [&outCommand](XmlElement& node2) {
 					node2.addElementWithText("Command", outCommand);
@@ -771,8 +772,8 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 		}
 		else
 		{
-			outNode.addElement("ItemDefinitionGroup", [&condition](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemDefinitionGroup", [&conf](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 			});
 		}
 	}
@@ -784,24 +785,23 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 	OrderedDictionary<bool> headers;
 	OrderedDictionary<StringList> sources;
 	OrderedDictionary<StringList> resources;
+	OrderedDictionary<StringList> pchSource;
 	std::pair<std::string, StringList> manifest;
 	std::pair<std::string, StringList> icon;
 	std::string pchFile;
-	std::string pchSource;
-	StringList allConfigs;
+	std::vector<BuildState*> tempStates;
 
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		auto projectPtr = getProjectFromStateContext(*state, inName);
+		auto projectPtr = getProjectFromStateContext(*conf.state, inName);
 		if (projectPtr != nullptr)
 		{
 			const auto& project = *projectPtr;
-			const auto& config = state->configuration.name();
-			if (m_adapters.find(config) != m_adapters.end())
+			if (m_adapters.find(conf.key) != m_adapters.end())
 			{
-				const auto& vcxprojAdapter = *m_adapters.at(config);
+				const auto& vcxprojAdapter = *m_adapters.at(conf.key);
 
-				allConfigs.emplace_back(config);
+				tempStates.emplace_back(conf.state);
 
 				auto headerFiles = project.getHeaderFiles();
 				const auto& pch = project.precompiledHeader();
@@ -812,10 +812,12 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 					{
 						pchFile = vcxprojAdapter.getPrecompiledHeaderFile();
 					}
-					if (pchSource.empty())
-					{
-						pchSource = vcxprojAdapter.getPrecompiledHeaderSourceFile();
-					}
+
+					const auto& pchSourceFile = vcxprojAdapter.getPrecompiledHeaderSourceFile();
+					if (pchSource.find(pchSourceFile) == pchSource.end())
+						pchSource[pchSourceFile] = StringList{ conf.key };
+					else
+						pchSource[pchSourceFile].emplace_back(conf.key);
 				}
 
 				bool isModulesTarget = project.cppModules();
@@ -831,7 +833,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 						headers[header] = true;
 				}
 
-				SourceOutputs& outputs = *m_outputs.at(config).get();
+				SourceOutputs& outputs = *m_outputs.at(conf.key).get();
 
 				for (auto& group : outputs.groups)
 				{
@@ -844,17 +846,17 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 						case SourceType::C:
 						case SourceType::CPlusPlus: {
 							if (sources.find(file) == sources.end())
-								sources[file] = StringList{ config };
+								sources[file] = StringList{ conf.key };
 							else
-								sources[file].emplace_back(config);
+								sources[file].emplace_back(conf.key);
 
 							break;
 						}
 						case SourceType::WindowsResource: {
 							if (resources.find(file) == resources.end())
-								resources[file] = StringList{ config };
+								resources[file] = StringList{ conf.key };
 							else
-								resources[file].emplace_back(config);
+								resources[file].emplace_back(conf.key);
 
 							break;
 						}
@@ -863,14 +865,14 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 					}
 				}
 
-				manifest.first = state->paths.getWindowsManifestFilename(project);
+				manifest.first = conf.state->paths.getWindowsManifestFilename(project);
 				if (!manifest.first.empty())
 				{
 					auto file = Files::getCanonicalPath(manifest.first);
 					if (Files::pathExists(file))
 						manifest.first = file;
 
-					manifest.second.emplace_back(config);
+					manifest.second.emplace_back(conf.key);
 				}
 
 				icon.first = project.windowsApplicationIcon();
@@ -880,7 +882,7 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 					if (Files::pathExists(file))
 						icon.first = file;
 
-					icon.second.emplace_back(config);
+					icon.second.emplace_back(conf.key);
 				}
 
 				/*const auto& projectFiles = project.files();
@@ -936,39 +938,61 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 	if (!pchSource.empty())
 	{
 		filters.addElement("ItemGroup", [&pchSource](XmlElement& node) {
-			node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
-				node2.addAttribute("Include", pchSource);
-				node2.addElementWithText("Filter", "Precompile Header Files");
-			});
+			for (auto& it : pchSource)
+			{
+				const auto& file = it.first;
+
+				node.addElement("ClCompile", [&file](XmlElement& node2) {
+					node2.addAttribute("Include", file);
+					node2.addElementWithText("Filter", "Precompile Header Files");
+				});
+			}
 		});
 	}
 
 	if (!pchSource.empty() || !sources.empty())
 	{
-		outNode.addElement("ItemGroup", [this, &allConfigs, &sources, &pchSource](XmlElement& node) {
-			if (!pchSource.empty())
+		outNode.addElement("ItemGroup", [this, &tempStates, &sources, &pchSource](XmlElement& node) {
+			for (auto& it : pchSource)
 			{
-				node.addElement("ClCompile", [&pchSource](XmlElement& node2) {
-					node2.addAttribute("Include", pchSource);
+				const auto& file = it.first;
+				const auto& keys = it.second;
+
+				node.addElement("ClCompile", [this, &file, &tempStates, &keys](XmlElement& node2) {
+					node2.addAttribute("Include", file);
 					node2.addElementWithText("PrecompiledHeader", "Create");
 					node2.addElementWithText("ForcedIncludeFiles", std::string());
 					node2.addElementWithText("ObjectFileName", "$(IntDir)");
+
+					for (auto& state : tempStates)
+					{
+						auto key = getDictionaryKey(*state);
+						if (!List::contains(keys, key))
+						{
+							auto condition = getCondition(*state);
+							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
+								node3.addAttribute("Condition", condition);
+								node3.setText("true");
+							});
+						}
+					}
 				});
 			}
 
 			for (auto& it : sources)
 			{
 				const auto& file = it.first;
-				const auto& configs = it.second;
+				const auto& keys = it.second;
 
-				node.addElement("ClCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+				node.addElement("ClCompile", [this, &file, &tempStates, &keys](XmlElement& node2) {
 					node2.addAttribute("Include", file);
 
-					for (auto& config : allConfigs)
+					for (auto& state : tempStates)
 					{
-						if (!List::contains(configs, config))
+						auto key = getDictionaryKey(*state);
+						if (!List::contains(keys, key))
 						{
-							auto condition = getCondition(config);
+							auto condition = getCondition(*state);
 							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
 								node3.addAttribute("Condition", condition);
 								node3.setText("true");
@@ -993,21 +1017,22 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 	if (!resources.empty())
 	{
-		outNode.addElement("ItemGroup", [this, &allConfigs, &resources](XmlElement& node) {
+		outNode.addElement("ItemGroup", [this, &tempStates, &resources](XmlElement& node) {
 			for (auto& it : resources)
 			{
 				const auto& file = it.first;
-				const auto& configs = it.second;
+				const auto& keys = it.second;
 
-				node.addElement("ResourceCompile", [this, &file, &allConfigs, &configs](XmlElement& node2) {
+				node.addElement("ResourceCompile", [this, &file, &tempStates, &keys](XmlElement& node2) {
 					node2.addAttribute("Include", file);
 					node2.addElementWithText("PrecompiledHeader", "NotUsing");
 
-					for (auto& config : allConfigs)
+					for (auto& state : tempStates)
 					{
-						if (!List::contains(configs, config))
+						auto key = getDictionaryKey(*state);
+						if (!List::contains(keys, key))
 						{
-							auto condition = getCondition(config);
+							auto condition = getCondition(*state);
 							node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
 								node3.addAttribute("Condition", condition);
 								node3.setText("true");
@@ -1032,15 +1057,16 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 	if (!manifest.first.empty())
 	{
-		outNode.addElement("ItemGroup", [this, &manifest, &allConfigs](XmlElement& node) {
-			node.addElement("Manifest", [this, &manifest, &allConfigs](XmlElement& node2) {
+		outNode.addElement("ItemGroup", [this, &manifest, &tempStates](XmlElement& node) {
+			node.addElement("Manifest", [this, &manifest, &tempStates](XmlElement& node2) {
 				node2.addAttribute("Include", manifest.first);
 
-				for (auto& config : allConfigs)
+				for (auto& state : tempStates)
 				{
-					if (!List::contains(manifest.second, config))
+					auto key = getDictionaryKey(*state);
+					if (!List::contains(manifest.second, key))
 					{
-						auto condition = getCondition(config);
+						auto condition = getCondition(*state);
 						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
 							node3.addAttribute("Condition", condition);
 							node3.setText("true");
@@ -1059,15 +1085,16 @@ void VSVCXProjGen::addSourceFiles(XmlElement& outNode, const std::string& inName
 
 	if (!icon.first.empty())
 	{
-		outNode.addElement("ItemGroup", [this, &icon, &allConfigs](XmlElement& node) {
-			node.addElement("Image", [this, &icon, &allConfigs](XmlElement& node2) {
+		outNode.addElement("ItemGroup", [this, &icon, &tempStates](XmlElement& node) {
+			node.addElement("Image", [this, &icon, &tempStates](XmlElement& node2) {
 				node2.addAttribute("Include", icon.first);
 
-				for (auto& config : allConfigs)
+				for (auto& state : tempStates)
 				{
-					if (!List::contains(icon.second, config))
+					auto key = getDictionaryKey(*state);
+					if (!List::contains(icon.second, key))
 					{
-						auto condition = getCondition(config);
+						auto condition = getCondition(*state);
 						node2.addElement("ExcludedFromBuild", [&condition](XmlElement& node3) {
 							node3.addAttribute("Condition", condition);
 							node3.setText("true");
@@ -1091,25 +1118,24 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 	UNUSED(inName);
 
 	OrderedDictionary<StringList> sources;
-	StringList allConfigs;
+	std::vector<BuildState*> tempStates;
 
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
-		const auto& config = state->configuration.name();
-		if (m_targetAdapters.find(config) != m_targetAdapters.end())
+		if (m_targetAdapters.find(conf.key) != m_targetAdapters.end())
 		{
-			const auto& vcxprojAdapter = *m_targetAdapters.at(config);
+			const auto& vcxprojAdapter = *m_targetAdapters.at(conf.key);
 
-			allConfigs.emplace_back(config);
+			tempStates.emplace_back(conf.state);
 
 			auto targetFiles = vcxprojAdapter.getFiles();
 
 			for (auto& file : targetFiles)
 			{
 				if (sources.find(file) == sources.end())
-					sources[file] = StringList{ config };
+					sources[file] = StringList{ conf.key };
 				else
-					sources[file].emplace_back(config);
+					sources[file].emplace_back(conf.key);
 			}
 		}
 	}
@@ -1160,18 +1186,15 @@ void VSVCXProjGen::addAllTargetFiles(XmlElement& outNode) const
 /*****************************************************************************/
 void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& inName) const
 {
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
 		StringList dependsList;
-		state->getTargetDependencies(dependsList, inName, false);
+		conf.state->getTargetDependencies(dependsList, inName, false);
 
 		if (!dependsList.empty())
 		{
-			const auto& config = state->configuration.name();
-			auto condition = getCondition(config);
-
-			outNode.addElement("ItemGroup", [this, &dependsList, &condition](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemGroup", [this, &dependsList, &conf](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 
 				for (auto& tgt : dependsList)
 				{
@@ -1193,20 +1216,17 @@ void VSVCXProjGen::addProjectReferences(XmlElement& outNode, const std::string& 
 /*****************************************************************************/
 void VSVCXProjGen::addAllProjectReferences(XmlElement& outNode) const
 {
-	for (auto& state : m_states)
+	for (auto& conf : m_vsConfigs)
 	{
 		StringList list;
-		for (auto& target : state->targets)
+		for (auto& target : conf.state->targets)
 		{
 			list.emplace_back(target->name());
 		}
 		if (!list.empty())
 		{
-			const auto& config = state->configuration.name();
-			auto condition = getCondition(config);
-
-			outNode.addElement("ItemGroup", [this, &list, &condition](XmlElement& node) {
-				node.addAttribute("Condition", condition);
+			outNode.addElement("ItemGroup", [this, &list, &conf](XmlElement& node) {
+				node.addAttribute("Condition", conf.condition);
 
 				for (auto& tgt : list)
 				{
@@ -1307,10 +1327,19 @@ std::string VSVCXProjGen::getVisualStudioVersion() const
 }
 
 /*****************************************************************************/
-std::string VSVCXProjGen::getCondition(const std::string& inConfig) const
+std::string VSVCXProjGen::getCondition(const BuildState& inState) const
 {
-	auto arch = Arch::toVSArch2(m_states.front()->info.targetArchitecture());
-	return fmt::format("'$(Configuration)|$(Platform)'=='{}|{}'", inConfig, arch);
+	const auto& config = inState.configuration.name();
+	auto arch = Arch::toVSArch2(inState.info.targetArchitecture());
+	return fmt::format("'$(Configuration)|$(Platform)'=='{}|{}'", config, arch);
+}
+
+/*****************************************************************************/
+std::string VSVCXProjGen::getDictionaryKey(const BuildState& inState) const
+{
+	const auto& config = inState.configuration.name();
+	const auto& arch = inState.info.targetArchitectureString();
+	return fmt::format("{}|{}", config, arch);
 }
 
 /*****************************************************************************/

@@ -16,6 +16,7 @@
 #include "Export/VSSolutionProjectExporter.hpp"
 #include "Export/XcodeProjectExporter.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -171,8 +172,12 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 
 	Output::setShowCommandOverride(false);
 
+	const auto& inputs = inCentralState.inputs();
+	const auto& buildConfig = inputs.buildConfiguration();
+	const auto& architecture = inputs.targetArchitecture();
+
 	bool added = false;
-	if (inForBuild && !makeStateAndValidate(inCentralState, inCentralState.inputs().buildConfiguration(), added))
+	if (inForBuild && !makeStateAndValidate(inCentralState, architecture, buildConfig, added))
 		return false;
 
 	auto& cacheFile = inCentralState.cache.file();
@@ -220,7 +225,6 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 
 	Output::setShowCommandOverride(true);
 
-	const auto& inputs = inCentralState.inputs();
 	if (inputs.route().isExport())
 	{
 		const auto color = Output::getAnsiStyle(Output::theme().build);
@@ -282,6 +286,9 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 	if (!result)
 		return false;
 
+	const auto& inputs = inCentralState.inputs();
+	const auto& architecture = inputs.targetArchitecture();
+
 	for (auto& name : buildConfigurations)
 	{
 		auto& config = configMap.at(name);
@@ -294,7 +301,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 			m_debugConfiguration = name;
 
 		bool added = false;
-		if (!makeStateAndValidate(inCentralState, name, added))
+		if (!makeStateAndValidate(inCentralState, architecture, name, added))
 			return false;
 
 		if (!added)
@@ -311,20 +318,26 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 }
 
 /*****************************************************************************/
-bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& configName, bool& added)
+bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName, bool& added)
 {
 	for (auto& state : m_states)
 	{
-		if (String::equals(state->configuration.name(), configName))
+		bool matchesConfig = String::equals(state->configuration.name(), configName);
+		bool matchesArch = String::equals(state->info.targetArchitectureString(), architecture);
+		if (matchesConfig && matchesArch)
 			return true;
 	}
 
 	bool quiet = Output::quietNonBuild();
 	Output::setQuietNonBuild(true);
 
+	const auto& toolchainPreference = m_inputs.toolchainPreferenceName();
+
 	CommandLineInputs inputs = m_inputs;
-	inputs.setBuildConfiguration(std::string(configName));
 	inputs.setRoute(CommandRoute(RouteType::Export));
+	inputs.setBuildConfiguration(std::string(configName));
+	inputs.setArchitectureRaw(std::string(architecture));
+	inputs.setToolchainPreference(std::string(toolchainPreference));
 
 	auto state = std::make_unique<BuildState>(std::move(inputs), inCentralState);
 	state->setCacheEnabled(false);
