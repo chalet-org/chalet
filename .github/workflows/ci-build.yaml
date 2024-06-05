@@ -51,7 +51,7 @@ jobs:
       - name: "Build: Release (arm64)"
         run: build/Debug/chalet-debug -c Release -t aarch64-linux-gnu-gcc -b native bundle
       - name: "Upload assets (arm64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./dist/chalet-aarch64-linux-gnu.zip
@@ -62,7 +62,7 @@ jobs:
       - name: "Build: Release (arm)"
         run: build/Debug/chalet-debug -c Release -t arm-linux-gnueabihf-gcc -b native bundle
       - name: "Upload assets (arm)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./dist/chalet-arm-linux-gnueabihf.zip
@@ -73,7 +73,7 @@ jobs:
       - name: "Build: Release (x86_64)"
         run: build/Debug/chalet-debug -c Release -t x86_64-linux-gnu-gcc -b native bundle
       - name: "Upload assets (x86_64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./dist/chalet-x86_64-linux-gnu.zip
@@ -121,7 +121,7 @@ jobs:
         run: |
           xcrun notarytool submit ./dist/chalet-x86_64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (x86_64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ./dist/chalet-x86_64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -133,7 +133,7 @@ jobs:
         run: |
           xcrun notarytool submit ./dist/chalet-arm64-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (arm64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ./dist/chalet-arm64-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -145,7 +145,7 @@ jobs:
         run: |
           xcrun notarytool submit ./dist/chalet-universal-apple-darwin.zip --keychain-profile "ChaletProfile" --wait
       - name: "Upload assets (universal)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: ./dist/chalet-universal-apple-darwin.zip
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -181,7 +181,7 @@ jobs:
       - name: "Build: Release (x64)"
         run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a x64 -b native bundle
       - name: "Upload assets (x64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./dist/chalet-x86_64-pc-windows-msvc.zip
@@ -198,7 +198,7 @@ jobs:
       - name: "Build: Release (arm64)"
         run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a arm64 -b native bundle
       - name: "Upload assets (arm64)"
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             ./dist/chalet-arm64-pc-windows-msvc.zip
