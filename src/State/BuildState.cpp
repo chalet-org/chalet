@@ -130,8 +130,11 @@ bool BuildState::initialize()
 		return false;
 
 	// Update settings after toolchain & chalet.json have been parsed
-	if (!cache.updateSettingsFromToolchain(inputs, m_impl->centralState, toolchain))
-		return false;
+	if (!inputs.route().isExport())
+	{
+		if (!cache.updateSettingsFromToolchain(inputs, m_impl->centralState, toolchain))
+			return false;
+	}
 
 	if (!initializeBuild())
 		return false;
