@@ -46,7 +46,7 @@ struct CentralState
 
 	bool shouldPerformUpdateCheck() const;
 
-	bool isAllowedArchitecture(const std::string& inArch) const;
+	bool isAllowedArchitecture(const std::string& inArch, const bool inError = true) const;
 
 	bool replaceVariablesInString(std::string& outString, const IExternalDependency* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
 

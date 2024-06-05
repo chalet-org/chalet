@@ -543,14 +543,16 @@ void CentralState::addBuildConfiguration(const std::string& inName, BuildConfigu
 }
 
 /*****************************************************************************/
-bool CentralState::isAllowedArchitecture(const std::string& inArch) const
+bool CentralState::isAllowedArchitecture(const std::string& inArch, const bool inError) const
 {
 	if (m_allowedArchitectures.empty())
 		return true;
 
 	if (!List::contains(m_allowedArchitectures, inArch))
 	{
-		Diagnostic::error("{}: Architecture '{}' is not supported by this project.", m_filename, inArch);
+		if (inError)
+			Diagnostic::error("{}: Architecture '{}' is not supported by this project.", m_filename, inArch);
+
 		return false;
 	}
 

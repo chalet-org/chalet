@@ -126,12 +126,12 @@ bool BuildState::initialize()
 	if (!parseChaletJson())
 		return false;
 
-	if (!m_impl->centralState.isAllowedArchitecture(info.targetArchitectureTriple()))
-		return false;
-
 	// Update settings after toolchain & chalet.json have been parsed
 	if (!inputs.route().isExport())
 	{
+		if (!m_impl->centralState.isAllowedArchitecture(info.targetArchitectureTriple()))
+			return false;
+
 		if (!cache.updateSettingsFromToolchain(inputs, m_impl->centralState, toolchain))
 			return false;
 	}
