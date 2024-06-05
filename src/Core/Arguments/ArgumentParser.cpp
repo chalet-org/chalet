@@ -937,9 +937,33 @@ std::string ArgumentParser::getHelp()
 
 		help += "\nBuild file formats:\n";
 
-		StringList exportPresets = m_inputs.getConvertFormatPresets();
+		StringList convertPresets = m_inputs.getConvertFormatPresets();
+		for (auto& preset : convertPresets)
+		{
+			std::string line = preset;
+			while (line.size() < kColumnSize)
+				line += ' ';
+			line += '\t';
+			line += getFormatDescription(preset);
 
-		for (auto& preset : exportPresets)
+			help += fmt::format("{}\n", line);
+		}
+	}
+	else if (m_route == RouteType::Init)
+	{
+		auto getFormatDescription = [](const std::string& preset) -> std::string {
+			if (String::equals("chalet", preset))
+				return "A chalet.json with a single executable target";
+			else if (String::equals("cmake", preset))
+				return "A chalet.json with a single CMake target and CMakeLists.txt";
+
+			return std::string();
+		};
+
+		help += "\nProject templates:\n";
+
+		StringList initPresets = m_inputs.getProjectInitializationPresets();
+		for (auto& preset : initPresets)
 		{
 			std::string line = preset;
 			while (line.size() < kColumnSize)
@@ -1477,7 +1501,7 @@ void ArgumentParser::populateInitArguments()
 {
 	const auto templates = m_inputs.getProjectInitializationPresets();
 	auto& arg1 = addTwoStringArguments(ArgumentIdentifier::InitTemplate, "-t", "--template");
-	arg1.setHelp(fmt::format("The project template to use during initialization. (ex: {})", String::join(templates, ", ")));
+	arg1.setHelp(fmt::format("The project template to use during initialization. [default: \"{}\"]", templates.front()));
 
 	auto& arg2 = addTwoStringArguments(ArgumentIdentifier::InitPath, Positional::Argument2, Arg::InitPath, ".");
 	arg2.setHelp("The path of the project to initialize. [default: \".\"]");
