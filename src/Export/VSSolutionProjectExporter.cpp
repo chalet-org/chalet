@@ -12,6 +12,7 @@
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -83,6 +84,45 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	if (solution.empty())
 		return false;
 
+	auto& debugState = m_exportAdapter->getDebugState();
+
+	{
+		auto& centralState = debugState.getCentralState();
+		const auto& baseArch = debugState.info.targetArchitectureString();
+		const auto& arches = m_exportAdapter->arches();
+
+		auto oldStates = std::move(m_states);
+		for (auto&& statePtr : oldStates)
+		{
+			if (String::equals(baseArch, statePtr->info.targetArchitectureString()))
+			{
+				auto state = statePtr.get();
+				const auto& buildConfig = state->inputs.buildConfiguration();
+				for (auto& arch : arches)
+				{
+					if (String::equals(baseArch, arch))
+					{
+						m_states.emplace_back(std::move(statePtr));
+					}
+					else
+					{
+						bool added = false;
+						if (!makeStateAndValidate(centralState, arch, buildConfig, added))
+							return false;
+
+						if (!added)
+						{
+							Diagnostic::error("Internal error adding: {} / {}", buildConfig, arch);
+							return false;
+						}
+					}
+				}
+
+				// baseStates.emplace_back(state.get());
+			}
+		}
+	}
+
 	auto allBuildTargetName = getAllBuildTargetName();
 
 	// Details: https://www.codeproject.com/Reference/720512/List-of-Visual-Studio-Project-Type-GUIDs
@@ -90,7 +130,6 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 	const std::string projectTypeGUID{ "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942" }; // Visual C++
 	auto targetGuids = getTargetGuids(projectTypeGUID, allBuildTargetName);
 
-	auto& debugState = m_exportAdapter->getDebugState();
 	VSSolutionGen slnGen(*m_exportAdapter, projectTypeGUID, targetGuids);
 	if (!slnGen.saveToFile(solution))
 	{
