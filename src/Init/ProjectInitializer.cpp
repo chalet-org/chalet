@@ -62,7 +62,7 @@ bool ProjectInitializer::run()
 	auto initTemplate = m_inputs.initTemplate();
 	if (initTemplate == InitTemplateType::Unknown)
 	{
-		Diagnostic::error("The specified initialization template was not recognized");
+		Diagnostic::error("The specified project template was not recognized");
 		return false;
 	}
 

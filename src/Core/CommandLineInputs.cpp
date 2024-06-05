@@ -24,6 +24,7 @@ namespace
 Dictionary<InitTemplateType> getInitTemplates()
 {
 	return {
+		{ "chalet", InitTemplateType::None },
 		{ "cmake", InitTemplateType::CMake },
 	};
 }
