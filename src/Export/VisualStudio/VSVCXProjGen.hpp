@@ -32,6 +32,14 @@ struct VSVCXProjGen
 	bool saveAllBuildTargetProjectFiles(const std::string& inProjectName);
 
 private:
+	struct VisualStudioConfig
+	{
+		BuildState* state = nullptr;
+		std::string key;
+		std::string condition;
+	};
+	std::vector<VisualStudioConfig> getVisualStudioConfigs() const;
+
 	std::string makeSubDirectoryAndGetProjectFile(const std::string& inName) const;
 
 	bool saveSourceTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
@@ -66,7 +74,8 @@ private:
 	const IBuildTarget* getTargetFromStateContext(const BuildState& inState, const std::string& inName) const;
 	std::string getWindowsTargetPlatformVersion() const;
 	std::string getVisualStudioVersion() const;
-	std::string getCondition(const std::string& inConfig) const;
+	std::string getCondition(const BuildState& inState) const;
+	std::string getDictionaryKey(const BuildState& inState) const;
 
 	std::string getResolvedInputFile() const;
 
@@ -74,6 +83,8 @@ private:
 	const std::string& m_exportDir;
 	const std::string& m_projectTypeGuid;
 	const OrderedDictionary<Uuid>& m_targetGuids;
+
+	std::vector<VisualStudioConfig> m_vsConfigs;
 
 	HeapDictionary<ProjectAdapterVCXProj> m_adapters;
 	HeapDictionary<TargetExportAdapter> m_targetAdapters;
