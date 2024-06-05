@@ -287,15 +287,15 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		return false;
 
 	const auto& inputs = inCentralState.inputs();
-	const auto& architecture = inputs.targetArchitecture();
+	std::string architecture = inputs.targetArchitecture();
+	if (!inputs.exportArchitectures().empty())
+	{
+		architecture = inputs.exportArchitectures().front();
+	}
 
 	for (auto& name : buildConfigurations)
 	{
 		auto& config = configMap.at(name);
-
-		// skip configurations with sanitizers for now
-		// if (config.enableSanitizers())
-		// 	continue;
 
 		if (m_debugConfiguration.empty() && config.debugSymbols())
 			m_debugConfiguration = name;
