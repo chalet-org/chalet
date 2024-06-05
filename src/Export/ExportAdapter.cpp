@@ -22,6 +22,7 @@
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -447,6 +448,9 @@ StringList ExportAdapter::getArchitectures(const std::string& inToolchain) const
 
 	for (auto& arch : exportArchitectures)
 	{
+		if (String::equals(Values::Auto, arch))
+			continue;
+
 		if (List::contains(ret, arch))
 			continue;
 
