@@ -52,7 +52,7 @@ void UpdateNotifier::checkForUpdates()
 		if (output.empty())
 			return;
 
-		StringList versions;
+		std::vector<Version> versions;
 		std::istringstream input(output);
 		for (std::string line; std::getline(input, line);)
 		{
@@ -62,17 +62,19 @@ void UpdateNotifier::checkForUpdates()
 			auto search = line.find_last_of("refs/tags/v");
 			if (search != std::string::npos)
 			{
-				versions.emplace_back(line.substr(search + 1));
+				auto ver = line.substr(search + 1);
+				versions.emplace_back(Version::fromString(ver));
 			}
 		}
 
 		if (!versions.empty())
 		{
-			std::sort(versions.begin(), versions.end());
+			std::sort(versions.begin(), versions.end(), [](Version& a, Version& b) {
+				return a < b;
+			});
 
-			auto lat = Version::fromString(versions.back());
-			// auto lat = Version::fromString("0.5.0");
 			auto ver = Version::fromString(std::string(CHALET_VERSION));
+			auto& lat = versions.back();
 			if (ver < lat)
 			{
 				showUpdateMessage(ver.asString(), lat.asString());
