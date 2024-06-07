@@ -367,10 +367,24 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 			"CMAKE_OSX_ARCHITECTURES",
 #endif
 	};
+
+	bool forMsBuild = (m_state.inputs.route().isExport() && m_state.inputs.exportKind() == ExportKind::VisualStudioSolution)
+		|| (m_state.toolchain.strategy() == StrategyType::MSBuild);
+
 	std::map<const char*, bool, CharMapCompare> isDefined;
 	for (auto& define : m_target.defines())
 	{
-		outList.emplace_back("-D" + define);
+		auto& lastDefine = outList.emplace_back("-D" + define);
+		if (forMsBuild && lastDefine.back() == '\'' && String::contains("='", lastDefine))
+		{
+			lastDefine.back() = '"';
+			String::replaceAll(lastDefine, "='", "=\"");
+		}
+		else if (!forMsBuild && lastDefine.back() == '"' && String::contains("=\"", lastDefine))
+		{
+			lastDefine.back() = '\'';
+			String::replaceAll(lastDefine, "=\"", "='");
+		}
 
 		for (auto& var : checkVariables)
 		{
