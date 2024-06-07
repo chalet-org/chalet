@@ -37,11 +37,13 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 	// Timer timer;
 	bool result = true;
+	m_failure = false;
 
 	auto onReplaceContents = [this](std::string& fileContents) {
 		auto onReplace = [this](auto match) {
 			return this->getReplaceValue(std::move(match));
 		};
+		replaceEmbeddableFiles(fileContents);
 		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
 		m_state.replaceVariablesInString(fileContents, &m_project, false, onReplace);
 
@@ -99,8 +101,16 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				result = false;
 				continue;
 			}
+
+			if (m_failure)
+			{
+				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
+			}
 		}
 	}
+
+	if (m_failure)
+		return false;
 
 	// LOG("completed in:", timer.asString());
 
@@ -175,4 +185,122 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 
 	return std::string();
 }
+
+/*****************************************************************************/
+void ConfigureFileParser::replaceEmbeddableFiles(std::string& outContent)
+{
+	// const std::string kEmbedTextToken = "${embedText:";
+
+	using namespace std::placeholders;
+
+	replaceEmbeddable(outContent, "", std::bind(&ConfigureFileParser::generateBytesForFile, this, _1, _2));
+
+	// replaceEmbeddable(outContent, "Chars", std::bind(&ConfigureFileParser::generateCharsForFile, this, _1, _2));
+	// replaceEmbeddable(outContent, "String", std::bind(&ConfigureFileParser::generateStringForFile, this, _1, _2));
+}
+
+/*****************************************************************************/
+void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::string& inKeyword, const std::function<bool(std::string&, const std::string&)>& inGenerator)
+{
+	auto kToken = fmt::format("${{embed{}:", inKeyword);
+	size_t embedPos = outContent.find(kToken, 0);
+	while (embedPos != std::string::npos)
+	{
+		embedPos += kToken.size();
+		auto closingBrace = outContent.find('}', embedPos);
+		bool valid = closingBrace != std::string::npos;
+		if (valid)
+		{
+			auto file = outContent.substr(embedPos, closingBrace - embedPos);
+			auto resolvedFile = Files::getCanonicalPath(file);
+			if (Files::pathExists(resolvedFile))
+			{
+				std::string text{ "'\\0'" };
+				if (inGenerator(text, resolvedFile))
+				{
+					String::replaceAll(outContent, fmt::format("{}{}}}", kToken, file), text);
+				}
+				else
+				{
+					Diagnostic::error("Error reading the embedded file: {}", file);
+					m_failure = true;
+				}
+			}
+			else
+			{
+				Diagnostic::error("Embedded file not found: {}", file);
+				m_failure = true;
+			}
+		}
+		embedPos = outContent.find(kToken, valid ? closingBrace + 1 : embedPos);
+	}
+}
+
+/*****************************************************************************/
+bool ConfigureFileParser::generateBytesForFile(std::string& outText, const std::string& inFile) const
+{
+	std::error_code ec;
+	size_t fileSize = static_cast<size_t>(fs::file_size(inFile, ec));
+	constexpr size_t maxSize = 1000000000; // cap the max embedded size at a GB for now
+	if (fileSize > maxSize)
+	{
+		Diagnostic::error("File too large: {}", inFile);
+		return false;
+	}
+
+	std::ifstream in(inFile, std::ios_base::binary);
+
+	std::vector<int> bytes(fileSize);
+
+	size_t idx = 0;
+	while (in)
+	{
+		int value = in.get();
+		if (in.fail())
+			break;
+
+		if (idx >= fileSize)
+			return false;
+
+		bytes[idx] = value;
+		idx++;
+	};
+
+	if (bytes.empty())
+		return false;
+
+	outText.clear();
+
+	constexpr size_t numColumns = 20;
+	for (size_t i = 0; i < bytes.size(); ++i)
+	{
+		outText += fmt::format("{:#04x}, ", std::byte(bytes.at(i)));
+		if (i % numColumns == numColumns - 1)
+		{
+			outText += '\n';
+			outText += '\t';
+		}
+	}
+
+	if (outText.back() == ' ')
+		outText.pop_back();
+
+	return true;
+}
+
+/*****************************************************************************/
+/*bool ConfigureFileParser::generateCharsForFile(std::string& outText, const std::string& inFile) const
+{
+	UNUSED(outText, inFile);
+	return true;
+}*/
+
+/*****************************************************************************/
+/*bool ConfigureFileParser::generateStringForFile(std::string& outText, const std::string& inFile) const
+{
+	UNUSED(inFile);
+
+	outText.clear();
+	return true;
+}*/
 }

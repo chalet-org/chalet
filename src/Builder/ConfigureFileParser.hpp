@@ -20,8 +20,16 @@ struct ConfigureFileParser
 private:
 	std::string getReplaceValue(std::string inKey) const;
 	std::string getReplaceValueFromSubString(const std::string& inKey, const bool isTarget = false) const;
+	void replaceEmbeddableFiles(std::string& outContent);
+	void replaceEmbeddable(std::string& outContent, const std::string& inKeyword, const std::function<bool(std::string&, const std::string&)>& inGenerator);
+
+	bool generateBytesForFile(std::string& outText, const std::string& inFile) const;
+	// bool generateCharsForFile(std::string& outText, const std::string& inFile) const;
+	// bool generateStringForFile(std::string& outText, const std::string& inFile) const;
 
 	const BuildState& m_state;
 	const SourceTarget& m_project;
+
+	bool m_failure = false;
 };
 }
