@@ -223,18 +223,19 @@ clean:
 					{
 						if (String::equals(config, state->configuration.name()))
 						{
-							dependency = getResolvedPath(fmt::format("{}/cache", state->paths.intermediateDir()));
+							dependency = getResolvedPath(fmt::format("{}/logs", state->paths.buildOutputDir()));
 							break;
 						}
 					}
 					if (!Files::pathExists(dependency))
 						Files::makeDirectory(dependency);
 
-					dependency += fmt::format("/{}", Hash::string(fmt::format("{}_{}", name, config)));
+					dependency += fmt::format("/{}.log", name);
 
 					auto& script = group.scripts.at(index);
 					auto split = String::split(script, '\n');
-					split.emplace_back(fmt::format("echo Generated > {}", dependency));
+					chalet_assert(split.size() > 2, "unexpected script generated");
+					split.at(split.size() - 2) += fmt::format(" | tee \"{}\"", dependency);
 #if defined(CHALET_WIN32)
 					std::string removeFile{ "del" };
 					Path::toWindows(dependency);
@@ -405,7 +406,6 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 							continue;
 						}
 
-						state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
 						addSourceTarget(node, *state, sourceTarget, *toolchain);
 					}
 					else
@@ -426,6 +426,8 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 /*****************************************************************************/
 void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
+	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
+
 	outNode.addElement("Option", [&inState, &inTarget](XmlElement& node2) {
 		auto outputFile = Files::getCanonicalPath(inState.paths.getTargetFilename(inTarget));
 		node2.addAttribute("output", outputFile);
@@ -493,7 +495,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 /*****************************************************************************/
 void CodeBlocksCBPGen::addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
-	UNUSED(outNode, inTarget, inToolchain, inState);
+	UNUSED(inState);
 
 	// Compiler Options
 	{

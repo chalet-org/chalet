@@ -28,7 +28,7 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 /*****************************************************************************/
 bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
 {
-	auto command = getCommand(inType, inScript, inArguments);
+	auto command = getCommand(inType, inScript, inArguments, false);
 	if (command.empty())
 		return false;
 
@@ -55,7 +55,7 @@ bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, con
 }
 
 /*****************************************************************************/
-StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments)
+StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inQuotePaths)
 {
 	StringList ret;
 
@@ -79,7 +79,10 @@ StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& 
 		ret.emplace_back("-f");
 	}
 
-	ret.emplace_back(inScript);
+	if (inQuotePaths)
+		ret.emplace_back(fmt::format("\"{}\"", inScript));
+	else
+		ret.emplace_back(inScript);
 
 	for (const auto& arg : inArguments)
 	{

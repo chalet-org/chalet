@@ -34,7 +34,7 @@ protected:
 	virtual ToolchainType getToolchainTypeFromMacros(const std::string& inMacros) const final;
 	virtual bool populateSupportedFlags(const std::string& inExecutable) final;
 
-	virtual std::string getPrecompiledHeaderSourceFile(const std::string& inSource) const final;
+	virtual std::string getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const final;
 
 private:
 	std::string makeToolchainName(const std::string& inArch) const;

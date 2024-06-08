@@ -94,6 +94,12 @@ bool IProjectExporter::shouldCleanOnReExport() const
 }
 
 /*****************************************************************************/
+bool IProjectExporter::requiresConfigureFiles() const
+{
+	return false;
+}
+
+/*****************************************************************************/
 const std::string& IProjectExporter::workingDirectory() const noexcept
 {
 	return m_inputs.workingDirectory();
@@ -352,24 +358,27 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 		return false;
 	}
 
-	for (auto& target : state->targets)
+	if (requiresConfigureFiles())
 	{
-		if (target->isSources())
+		for (auto& target : state->targets)
 		{
-			const auto& project = static_cast<const SourceTarget&>(*target);
-
-			// Generate the configure files upfront - TODO: kind of a brittle solution
-			//
-			if (!project.configureFiles().empty())
+			if (target->isSources())
 			{
-				auto outFolder = state->paths.intermediateDir();
-				// if (m_kind == ExportKind::Xcode)
-				// {
-				// 	outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
-				// }
-				ConfigureFileParser confFileParser(*state, project);
-				if (!confFileParser.run(outFolder))
-					return false;
+				const auto& project = static_cast<const SourceTarget&>(*target);
+
+				// Generate the configure files upfront - TODO: kind of a brittle solution
+				//
+				if (!project.configureFiles().empty())
+				{
+					auto outFolder = state->paths.intermediateIncludeDir(project);
+					// if (m_kind == ExportKind::Xcode)
+					// {
+					// 	outFolder = fmt::format("{}/obj.{}", state->paths.buildOutputDir(), project.name());
+					// }
+					ConfigureFileParser confFileParser(*state, project);
+					if (!confFileParser.run(outFolder))
+						return false;
+				}
 			}
 		}
 	}

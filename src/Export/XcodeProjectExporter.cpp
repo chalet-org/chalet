@@ -142,4 +142,10 @@ bool XcodeProjectExporter::shouldCleanOnReExport() const
 {
 	return false;
 }
+
+/*****************************************************************************/
+bool XcodeProjectExporter::requiresConfigureFiles() const
+{
+	return false;
+}
 }

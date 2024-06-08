@@ -104,8 +104,8 @@ StringList BuildEnvironmentLLVM::getSystemIncludeDirectories(const std::string& 
 	if (!Files::pathExists(systemDirsFile))
 	{
 		exists = false;
-		const auto& intermediateDir = m_state.paths.intermediateDir();
-		auto tempFile = fmt::format("{}/temp.cpp", intermediateDir);
+		const auto& buildOutputDir = m_state.paths.buildOutputDir();
+		auto tempFile = fmt::format("{}/temp.cpp", buildOutputDir);
 		Files::createFileWithContents(tempFile, "int main(){return 0;}");
 
 		auto clangOutput = getSystemIncludeOutputFromClang(inExecutable, tempFile, systemDirsFile);

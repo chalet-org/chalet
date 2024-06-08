@@ -15,6 +15,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/RegexPatterns.hpp"
@@ -340,19 +341,16 @@ bool BuildEnvironmentIntel::populateSupportedFlags(const std::string& inExecutab
 }
 
 /*****************************************************************************/
-std::string BuildEnvironmentIntel::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+std::string BuildEnvironmentIntel::getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const
 {
 	if (m_type == ToolchainType::IntelClassic)
 	{
-		const auto& cxxExt = m_state.paths.cxxExtension();
-		if (cxxExt.empty())
-			return std::string();
-
-		return fmt::format("{}/{}.{}", m_state.paths.objDir(), m_state.paths.getNormalizedOutputPath(inSource), cxxExt);
+		auto pchName = String::getPathBaseName(inProject.precompiledHeader());
+		return fmt::format("{}/{}.cxx", m_state.paths.intermediateDir(inProject), pchName);
 	}
 	else
 	{
-		return IBuildEnvironment::getPrecompiledHeaderSourceFile(inSource);
+		return IBuildEnvironment::getPrecompiledHeaderSourceFile(inProject);
 	}
 }
 }

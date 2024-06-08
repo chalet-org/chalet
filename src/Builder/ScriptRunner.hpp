@@ -19,7 +19,7 @@ struct ScriptRunner
 	explicit ScriptRunner(const CommandLineInputs& inInputs, const AncillaryTools& inTools);
 
 	bool run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inShowExitCode);
-	StringList getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments);
+	StringList getCommand(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inQuotePaths);
 	bool shouldRun(SourceCache& inSourceCache, const StringList& inDepends) const;
 
 private:

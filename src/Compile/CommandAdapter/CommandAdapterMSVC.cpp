@@ -800,17 +800,15 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 /*****************************************************************************/
 bool CommandAdapterMSVC::createPrecompiledHeaderSource(const std::string& inSourcePath, const std::string& inPchPath)
 {
-	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (cxxExt.empty())
-		return false;
-
 	if (m_project.usesPrecompiledHeader())
 	{
 		const auto& pch = m_project.precompiledHeader();
 
 		auto ext = m_state.environment->getPrecompiledHeaderExtension();
 
-		m_pchSource = fmt::format("{}{}.{}", inSourcePath, pch, cxxExt);
+		auto pchName = String::getPathBaseName(pch);
+
+		m_pchSource = fmt::format("{}{}.cxx", inSourcePath, pchName);
 		m_pchTarget = fmt::format("{}{}{}", inPchPath, pch, ext);
 		m_pchMinusLocation = String::getPathFilename(pch);
 

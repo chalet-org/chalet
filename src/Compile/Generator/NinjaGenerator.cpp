@@ -480,22 +480,6 @@ std::string NinjaGenerator::getObjBuildRules(const SourceFileGroupList& inGroups
 		}
 	}
 
-	/*std::string configureFilesDeps;
-	if (!m_project->configureFiles().empty())
-	{
-		std::string deps;
-		auto configureFiles = m_state.paths.getConfigureFiles(*m_project);
-		for (auto& file : configureFiles)
-		{
-			deps += getSafeNinjaPath(file);
-			deps += ' ';
-		}
-		if (deps.back() == ' ')
-			deps.pop_back();
-
-		configureFilesDeps = fmt::format(" | {}", deps);
-	}*/
-
 	const bool objectiveCxx = m_project->objectiveCxx();
 	for (auto& group : inGroups)
 	{

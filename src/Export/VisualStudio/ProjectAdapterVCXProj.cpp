@@ -111,7 +111,7 @@ std::string ProjectAdapterVCXProj::getObjectDir() const
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getIntermediateDir() const
 {
-	return Path::getWithSeparatorSuffix(Files::getCanonicalPath(m_state.paths.intermediateDir()));
+	return Path::getWithSeparatorSuffix(Files::getCanonicalPath(m_state.paths.intermediateDir(m_project)));
 }
 
 /*****************************************************************************/

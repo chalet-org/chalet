@@ -43,7 +43,7 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 	{
 		Files::removeIfExists(windowsManifestResourceFile);
 
-		if (String::startsWith(m_state.paths.intermediateDir(), windowsManifestFile) || !Files::pathExists(windowsManifestFile))
+		if (String::startsWith(m_state.paths.intermediateDir(m_project), windowsManifestFile) || !Files::pathExists(windowsManifestFile))
 		{
 			std::string manifestContents;
 			if (m_project.windowsApplicationManifest().empty())

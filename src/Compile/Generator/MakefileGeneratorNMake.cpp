@@ -332,23 +332,15 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 	{
 		const auto compilerEcho = getCompileEchoSources(source);
 
-		std::string configureFilesDeps;
-		if (!m_project->configureFiles().empty())
-		{
-			auto deps = String::join(m_state.paths.getConfigureFiles(*m_project));
-			configureFilesDeps = fmt::format(" {}", deps);
-		}
-
 		auto nul = Shell::getNull();
 
 		ret = fmt::format(R"makefile(
-{object}: {source}{configureFilesDeps}
+{object}: {source}
 	{compilerEcho}
 	{quietFlag}{rcCompile} 1>{nul}
 )makefile",
 			FMT_ARG(object),
 			FMT_ARG(source),
-			FMT_ARG(configureFilesDeps),
 			FMT_ARG(compilerEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(rcCompile),

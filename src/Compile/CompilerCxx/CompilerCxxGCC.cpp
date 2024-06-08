@@ -58,8 +58,8 @@ bool CompilerCxxGCC::initialize()
 			return true;
 		};
 
-		const auto& pch = m_project.precompiledHeader();
-		auto pchIntermediate = m_state.environment->getPrecompiledHeaderIntermediateFile(pch);
+		auto& pch = m_project.precompiledHeader();
+		auto pchIntermediate = m_state.environment->getPrecompiledHeaderIntermediateFile(m_project);
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)

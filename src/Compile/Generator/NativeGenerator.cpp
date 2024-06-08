@@ -223,9 +223,9 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 					out.output = m_state.paths.getBuildOutputPath(source);
 					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, dependency, std::string());
 
-					const auto& cxxExt = m_state.paths.cxxExtension();
-					if (!cxxExt.empty())
-						out.reference = fmt::format("{}.{}", source, cxxExt);
+					auto pchSource = m_state.environment->getPrecompiledHeaderSourceFile(*m_project);
+
+					out.reference = String::getPathFilename(pchSource);
 
 #if defined(CHALET_WIN32)
 					if (m_state.environment->isMsvc())
