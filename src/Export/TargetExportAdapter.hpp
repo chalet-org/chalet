@@ -15,6 +15,7 @@ struct TargetExportAdapter
 	explicit TargetExportAdapter(const BuildState& inState, const IBuildTarget& inTarget);
 
 	StringList getFiles() const;
+	StringList getOutputFiles() const;
 	std::string getCommand() const;
 
 private:

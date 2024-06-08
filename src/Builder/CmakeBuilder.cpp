@@ -71,6 +71,17 @@ std::string CmakeBuilder::getBuildFile(const bool inForce) const
 }
 
 /*****************************************************************************/
+std::string CmakeBuilder::getCacheFile() const
+{
+	std::string ret;
+
+	auto location = m_target.targetFolder();
+	ret = fmt::format("{}/CMakeCache.txt", location);
+
+	return ret;
+}
+
+/*****************************************************************************/
 bool CmakeBuilder::dependencyHasUpdated() const
 {
 	if (m_target.hashChanged())

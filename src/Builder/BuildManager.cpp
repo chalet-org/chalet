@@ -71,11 +71,10 @@ BuildManager::~BuildManager() = default;
 /*****************************************************************************/
 void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 {
-	UNUSED(inRoute);
 	m_buildTargets.clear();
 
 	auto buildTargets = m_state.inputs.getBuildTargets();
-	const bool addAllTargets = List::contains(buildTargets, std::string(Values::All)) || !m_state.info.onlyRequired();
+	const bool addAllTargets = List::contains(buildTargets, std::string(Values::All)) || !m_state.info.onlyRequired() || inRoute.isClean();
 
 	StringList requiredTargets;
 	if (!addAllTargets)

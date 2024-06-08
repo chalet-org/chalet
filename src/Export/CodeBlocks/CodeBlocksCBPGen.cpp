@@ -20,7 +20,6 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
-#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
@@ -261,7 +260,7 @@ clean{config}:
 				}
 			}
 
-			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
+			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, name);
 			Files::createFileWithContents(outPath, makefileContents);
 		}
 	}
@@ -589,7 +588,7 @@ void CodeBlocksCBPGen::addScriptTarget(XmlElement& outNode, const BuildState& in
 		node.addAttribute("type", "4");
 	});
 	outNode.addElement("MakeCommands", [this, &inName](XmlElement& node) {
-		auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(inName));
+		auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, inName);
 
 		auto command = fmt::format("$make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $target TARGET_CC=$(TARGET_CC) TARGET_CPP=$(TARGET_CPP) TARGET_LD=$(TARGET_LD) TARGET_LIB=$(TARGET_LIB) WINDRES=$(WINDRES)", makefilePath);
 
@@ -641,7 +640,7 @@ void CodeBlocksCBPGen::addAllBuildTarget(XmlElement& outNode, const BuildState& 
 	});
 
 	outNode.addElement("MakeCommands", [this](XmlElement& node) {
-		auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(m_allBuildName));
+		auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, m_allBuildName);
 
 		auto command = fmt::format("$make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory build TARGET_CC=$(TARGET_CC) TARGET_CPP=$(TARGET_CPP) TARGET_LD=$(TARGET_LD) TARGET_LIB=$(TARGET_LIB) WINDRES=$(WINDRES)", makefilePath);
 
