@@ -112,6 +112,8 @@ bool VSJsonProjectExporter::generateProjectFiles()
 			Diagnostic::error("There was a problem copying the .vs directory to the workspace.");
 			return false;
 		}
+
+		Files::removeRecursively(m_directory);
 	}
 	else
 	{

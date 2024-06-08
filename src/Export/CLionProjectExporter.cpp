@@ -78,6 +78,8 @@ bool CLionProjectExporter::generateProjectFiles()
 			Diagnostic::error("There was a problem copying the .idea directory to the workspace.");
 			return false;
 		}
+
+		Files::removeRecursively(m_directory);
 	}
 	else
 	{
