@@ -181,14 +181,15 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 	};
 
 #if defined(CHALET_MACOS)
-	if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
+	// Xcode build paths - if the strategy is xcodebuild,
+	//   or if the project was exported, followed by a 'chalet clean' command
 	{
 		ret.emplace_back(fmt::format("{}/obj.{}", buildDir, inProject.name()));
 		ret.emplace_back(fmt::format("{}/obj.{}-normal", buildDir, inProject.name()));
 		ret.emplace_back(fmt::format("{}/EagerLinkingTBDs", buildDir));
 		ret.emplace_back(fmt::format("{}/SharedPrecompiledHeaders", buildDir));
 		ret.emplace_back(fmt::format("{}/XCBuildData", buildDir));
-		// EagerLinkingTBDs
+		ret.emplace_back(fmt::format("{}/{}.dSYM", buildDir, inProject.name()));
 	}
 #endif
 	return ret;

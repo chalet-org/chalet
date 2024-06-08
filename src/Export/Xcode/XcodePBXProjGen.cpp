@@ -325,7 +325,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 					if (groups.find(name) == groups.end())
 					{
-						auto bundleDirectory = fmt::format("{}/{}", m_exportPath, bundle.name());
+						auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, bundle.name());
 
 						groups.emplace(name, TargetGroup{});
 						groups[name].kind = TargetGroupKind::AppBundle;
@@ -451,7 +451,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					ruleCommand);
 			}
 
-			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::string(name));
+			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, name);
 			Files::createFileWithContents(outPath, makefileContents);
 		}
 	}
@@ -962,7 +962,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			if (!pbxGroup.others.empty())
 			{
-				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::string(target));
+				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, target);
 				auto shellScript = fmt::format(R"shell(set -e
 if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script start ==*"; fi
 make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
@@ -1786,7 +1786,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	AppBundlerMacOS bundler(inState, inTarget, dependencyMap);
 
 	auto objectDirectory = Files::getCanonicalPath(inState.paths.bundleObjDir(inTarget.name()));
-	auto bundleDirectory = fmt::format("{}/{}", m_exportPath, targetName);
+	auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, targetName);
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
 	auto assetsPath = fmt::format("{}/Assets.xcassets", bundleDirectory);
