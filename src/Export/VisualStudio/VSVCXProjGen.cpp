@@ -22,6 +22,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
+#include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Xml/XmlFile.hpp"
@@ -29,9 +30,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inExportDir, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
+VSVCXProjGen::VSVCXProjGen(const std::vector<Unique<BuildState>>& inStates, const std::string& inExportPath, const std::string& inProjectTypeGuid, const OrderedDictionary<Uuid>& inTargetGuids) :
 	m_states(inStates),
-	m_exportDir(inExportDir),
+	m_exportPath(inExportPath),
 	m_projectTypeGuid(inProjectTypeGuid),
 	m_targetGuids(inTargetGuids)
 {
@@ -202,7 +203,7 @@ bool VSVCXProjGen::saveAllBuildTargetProjectFiles(const std::string& name)
 /*****************************************************************************/
 std::string VSVCXProjGen::makeSubDirectoryAndGetProjectFile(const std::string& inName) const
 {
-	auto path = fmt::format("{}/vcxproj", m_exportDir);
+	auto path = fmt::format("{}/vcxproj", m_exportPath);
 	if (!Files::pathExists(path))
 		Files::makeDirectory(path);
 
@@ -752,17 +753,33 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 	{
 		if (m_targetAdapters.find(conf.key) != m_targetAdapters.end())
 		{
-			const auto& vcxprojAdapter = *m_targetAdapters.at(conf.key);
-			auto command = vcxprojAdapter.getCommand();
+			const auto& config = conf.state->configuration.name();
+			auto arch = Arch::toVSArch(conf.state->info.targetArchitecture());
+			auto outPath = fmt::format("{}/scripts/{}-{}_{}.bat", m_exportPath, m_currentTarget, arch, config);
+
+			const auto& targetAdapter = *m_targetAdapters.at(conf.key);
+			auto command = targetAdapter.getCommand();
+
+			std::string outputChecks;
+			// Revisit
+			/*auto files = targetAdapter.getOutputFiles();
+			for (auto& file : files)
+			{
+				outputChecks += fmt::format("if exist \"{}\" ( exit /b 0 )\n", file);
+			}*/
+
 			auto outCommand = fmt::format(R"batch(if "%BUILD_FROM_CHALET%"=="1" echo *== script start ==*
-{command}if "%BUILD_FROM_CHALET%"=="1" echo *== script end ==*)batch",
+{outputChecks}{command}if "%BUILD_FROM_CHALET%"=="1" echo *== script end ==*)batch",
+				FMT_ARG(outputChecks),
 				FMT_ARG(command));
 
-			outNode.addElement("ItemDefinitionGroup", [&conf, &outCommand](XmlElement& node) {
+			Files::createFileWithContents(outPath, outCommand);
+
+			outNode.addElement("ItemDefinitionGroup", [&conf, &outPath](XmlElement& node) {
 				node.addAttribute("Condition", conf.condition);
 
-				node.addElement("PreBuildEvent", [&outCommand](XmlElement& node2) {
-					node2.addElementWithText("Command", outCommand);
+				node.addElement("PreBuildEvent", [&outPath](XmlElement& node2) {
+					node2.addElementWithText("Command", fmt::format("call \"{}\"", outPath));
 				});
 			});
 		}
@@ -1120,11 +1137,11 @@ void VSVCXProjGen::addTargetFiles(XmlElement& outNode, const std::string& inName
 	{
 		if (m_targetAdapters.find(conf.key) != m_targetAdapters.end())
 		{
-			const auto& vcxprojAdapter = *m_targetAdapters.at(conf.key);
+			const auto& targetAdapter = *m_targetAdapters.at(conf.key);
 
 			tempStates.emplace_back(conf.state);
 
-			auto targetFiles = vcxprojAdapter.getFiles();
+			auto targetFiles = targetAdapter.getFiles();
 
 			for (auto& file : targetFiles)
 			{
@@ -1348,5 +1365,4 @@ std::string VSVCXProjGen::getResolvedInputFile() const
 
 	return inputFile;
 }
-
 }

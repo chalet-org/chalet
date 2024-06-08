@@ -451,7 +451,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					ruleCommand);
 			}
 
-			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(name));
+			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::string(name));
 			Files::createFileWithContents(outPath, makefileContents);
 		}
 	}
@@ -962,7 +962,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			if (!pbxGroup.others.empty())
 			{
-				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::uint64(target));
+				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, Hash::string(target));
 				auto shellScript = fmt::format(R"shell(set -e
 if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script start ==*"; fi
 make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION

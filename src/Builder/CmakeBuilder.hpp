@@ -18,6 +18,7 @@ public:
 	bool run();
 
 	std::string getBuildFile(const bool inForce = false) const;
+	std::string getCacheFile() const;
 
 	StringList getGeneratorCommand();
 	StringList getBuildCommand() const;

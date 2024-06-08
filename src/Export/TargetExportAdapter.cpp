@@ -78,6 +78,32 @@ StringList TargetExportAdapter::getFiles() const
 }
 
 /*****************************************************************************/
+StringList TargetExportAdapter::getOutputFiles() const
+{
+	StringList ret;
+
+	if (m_target.isScript())
+	{
+	}
+	else if (m_target.isCMake())
+	{
+		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
+		bool quotedPaths = true;
+		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
+
+		ret.emplace_back(Files::getCanonicalPath(builder.getCacheFile()));
+	}
+	else if (m_target.isSubChalet())
+	{
+	}
+	else if (m_target.isValidation())
+	{
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
 std::string TargetExportAdapter::getCommand() const
 {
 	std::string ret;
