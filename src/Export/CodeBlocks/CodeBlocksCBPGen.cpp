@@ -233,8 +233,19 @@ clean:
 
 					auto& script = group.scripts.at(index);
 					auto split = String::split(script, '\n');
-					chalet_assert(split.size() > 2, "unexpected script generated");
-					split.at(split.size() - 2) += fmt::format(" | tee \"{}\"", dependency);
+					chalet_assert(split.size() >= 3, "unexpected script generated");
+
+					size_t i = 0;
+					for (auto& line : split)
+					{
+						if (line.empty())
+							continue;
+
+						line += fmt::format(" | tee {}\"{}\"", i > 0 ? "-a " : "", dependency);
+
+						i++;
+					}
+
 #if defined(CHALET_WIN32)
 					std::string removeFile{ "del" };
 					Path::toWindows(dependency);
