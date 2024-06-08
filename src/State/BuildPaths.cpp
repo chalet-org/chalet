@@ -169,10 +169,15 @@ std::string BuildPaths::currentCompileCommands() const
 StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 {
 	const auto& buildDir = buildOutputDir();
+	auto intDir = fmt::format("{}/int", buildDir, inProject.buildSuffix());
+	auto intDirProject = fmt::format("{}/{}", intDir, inProject.buildSuffix());
+
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/int/{}", buildDir, inProject.buildSuffix()),
+		fmt::format("{}/include", intDirProject, inProject.buildSuffix()),
+		intDirProject,
+		intDir,
 	};
 
 #if defined(CHALET_MACOS)
