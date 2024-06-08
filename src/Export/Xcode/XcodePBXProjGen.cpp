@@ -1750,7 +1750,9 @@ Json XcodePBXProjGen::getGenericBuildSettings(BuildState& inState, const IBuildT
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
+	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true); // Xcode recommended setting
 	ret["CONFIGURATION_TEMP_DIR"] = buildOutputDir;
+	ret["DEAD_CODE_STRIPPING"] = getBoolString(true); // Xcode recommended setting
 	ret["OBJECT_FILE_DIR"] = buildOutputDir;
 	ret["TARGET_TEMP_DIR"] = buildOutputDir;
 
@@ -1769,8 +1771,10 @@ Json XcodePBXProjGen::getExcludedBuildSettings(BuildState& inState, const std::s
 
 	ret["ALWAYS_SEARCH_USER_PATHS"] = getBoolString(false);
 
+	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true); // Xcode recommended setting
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
-	ret["EXCLUDED_ARCHS"] = "$(ARCHS)"; // Excludes the target on this arch (and configuration)
+	ret["DEAD_CODE_STRIPPING"] = getBoolString(true); // Xcode recommended setting
+	ret["EXCLUDED_ARCHS"] = "$(ARCHS)";				  // Excludes the target on this arch (and configuration)
 	ret["OBJECT_FILE_DIR"] = objectDirectory;
 	ret["TARGET_TEMP_DIR"] = objectDirectory;
 
@@ -1847,6 +1851,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	ret["BUILD_OUTPUT_DIR"] = inState.paths.buildOutputDir();
 
+	ret["CLANG_ENABLE_OBJC_WEAK"] = getBoolString(true); // Xcode recommended setting
+
 	// auto& signingIdentity = inState.tools.signingIdentity();
 	std::string signingIdentity;
 #if defined(CHALET_MACOS)
@@ -1874,6 +1880,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	ret["CONFIGURATION_TEMP_DIR"] = objectDirectory;
 	ret["COPY_PHASE_STRIP"] = getBoolString(false);
 	ret["CURRENT_PROJECT_VERSION"] = inState.workspace.metadata().versionString();
+
+	ret["DEAD_CODE_STRIPPING"] = getBoolString(true); // Xcode recommended setting
 
 	if (!sdk.empty())
 		ret[fmt::format("DEVELOPMENT_TEAM[sdk={}*]", sdk)] = inState.tools.signingDevelopmentTeam();
