@@ -252,6 +252,6 @@ bool VSSolutionProjectExporter::shouldCleanOnReExport() const
 /*****************************************************************************/
 bool VSSolutionProjectExporter::requiresConfigureFiles() const
 {
-	return false;
+	return true;
 }
 }

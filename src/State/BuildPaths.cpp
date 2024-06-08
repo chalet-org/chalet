@@ -172,7 +172,7 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/int.{}", buildDir, inProject.buildSuffix()),
+		fmt::format("{}/int/{}", buildDir, inProject.buildSuffix()),
 	};
 
 #if defined(CHALET_MACOS)
