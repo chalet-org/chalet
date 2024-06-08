@@ -564,7 +564,10 @@ bool BuildState::initializeBuild()
 			if (target->isSources())
 			{
 				auto& project = static_cast<SourceTarget&>(*target);
-				project.addIncludeDir(std::string(paths.intermediateDir()));
+				if (!project.configureFiles().empty())
+				{
+					project.addIncludeDir(paths.intermediateIncludeDir(project));
+				}
 
 				if (!inputs.route().isExport())
 				{

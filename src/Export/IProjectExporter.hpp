@@ -41,6 +41,7 @@ protected:
 	virtual bool openProjectFilesInEditor(const std::string& inProject) = 0;
 
 	virtual bool shouldCleanOnReExport() const;
+	virtual bool requiresConfigureFiles() const;
 
 	const std::string& workingDirectory() const noexcept;
 

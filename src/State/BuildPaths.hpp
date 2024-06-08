@@ -28,7 +28,8 @@ struct BuildPaths
 	const std::string& objDir() const;
 	const std::string& depDir() const;
 	const std::string& asmDir() const;
-	const std::string& intermediateDir() const;
+	std::string intermediateDir(const SourceTarget& inProject) const;
+	std::string intermediateIncludeDir(const SourceTarget& inProject) const;
 	std::string bundleObjDir(const std::string& inName) const;
 	std::string currentCompileCommands() const;
 	StringList getBuildDirectories(const SourceTarget& inProject) const;
@@ -36,7 +37,6 @@ struct BuildPaths
 	std::string getExternalDir(const std::string& inName) const;
 	std::string getExternalBuildDir(const std::string& inName) const;
 
-	const std::string& cxxExtension() const;
 	const StringList& windowsResourceExtensions() const noexcept;
 	const StringList& objectiveCExtensions() const noexcept;
 	const std::string& objectiveCppExtension() const;
@@ -52,7 +52,6 @@ struct BuildPaths
 	std::string getWindowsManifestResourceFilename(const SourceTarget& inProject) const;
 	std::string getWindowsIconResourceFilename(const SourceTarget& inProject) const;
 	std::string getUnityBuildSourceFilename(const SourceTarget& inProject) const;
-	StringList getConfigureFiles(const SourceTarget& inProject) const;
 
 	std::string getNormalizedOutputPath(const std::string& inPath) const;
 	std::string getNormalizedDirectoryPath(const std::string& inPath) const;
@@ -75,8 +74,6 @@ private:
 		std::string pch;
 		StringList list;
 	};
-
-	const std::string& intermediateDirWithPathSep() const;
 
 	void normalizedPath(std::string& outPath) const;
 
@@ -105,8 +102,6 @@ private:
 	std::string m_intermediateDirWithPathSep;
 
 	std::string m_parentCwd;
-
-	mutable std::string m_cxxExtension;
 
 	bool m_initialized = false;
 };

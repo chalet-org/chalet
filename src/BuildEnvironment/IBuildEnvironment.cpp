@@ -14,6 +14,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/String.hpp"
@@ -372,17 +373,18 @@ std::string IBuildEnvironment::getAssemblyFile(const std::string& inSource) cons
 }
 
 /*****************************************************************************/
-std::string IBuildEnvironment::getPrecompiledHeaderIntermediateFile(const std::string& inSource) const
+std::string IBuildEnvironment::getPrecompiledHeaderIntermediateFile(const SourceTarget& inProject) const
 {
-	return fmt::format("{}/{}", m_state.paths.intermediateDir(), m_state.paths.getNormalizedOutputPath(inSource));
+	auto pchName = String::getPathFilename(inProject.precompiledHeader());
+	return fmt::format("{}/{}", m_state.paths.intermediateDir(inProject), pchName);
 }
 
 /*****************************************************************************/
-std::string IBuildEnvironment::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+std::string IBuildEnvironment::getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const
 {
 	// Most compilers don't use this, so return an empty string
 
-	UNUSED(inSource);
+	UNUSED(inProject);
 	return std::string();
 }
 

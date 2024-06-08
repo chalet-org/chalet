@@ -15,6 +15,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Unicode.hpp"
@@ -270,13 +271,10 @@ std::string BuildEnvironmentVisualStudio::getAssemblyFile(const std::string& inS
 }
 
 /*****************************************************************************/
-std::string BuildEnvironmentVisualStudio::getPrecompiledHeaderSourceFile(const std::string& inSource) const
+std::string BuildEnvironmentVisualStudio::getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const
 {
-	const auto& cxxExt = m_state.paths.cxxExtension();
-	if (cxxExt.empty())
-		return std::string();
-
-	return fmt::format("{}/{}.{}", m_state.paths.intermediateDir(), m_state.paths.getNormalizedOutputPath(inSource), cxxExt);
+	auto pchName = String::getPathBaseName(inProject.precompiledHeader());
+	return fmt::format("{}/{}.cxx", m_state.paths.intermediateDir(inProject), pchName);
 }
 
 /*****************************************************************************/

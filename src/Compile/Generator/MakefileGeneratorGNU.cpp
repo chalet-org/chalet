@@ -326,22 +326,14 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 			makeDependency = fmt::format("\n\t@{}", getFallbackMakeDependsCommand(dependency, object, source));
 		}
 
-		std::string configureFilesDeps;
-		if (!m_project->configureFiles().empty())
-		{
-			auto deps = String::join(m_state.paths.getConfigureFiles(*m_project));
-			configureFilesDeps = fmt::format(" {}", deps);
-		}
-
 		ret += fmt::format(R"makefile(
-{object}: {source} | {dependency}{configureFilesDeps}
+{object}: {source} | {dependency}
 	{compileEcho}
 	{quietFlag}{rcCompile}{makeDependency}
 )makefile",
 			FMT_ARG(object),
 			FMT_ARG(source),
 			FMT_ARG(dependency),
-			FMT_ARG(configureFilesDeps),
 			FMT_ARG(compileEcho),
 			FMT_ARG(quietFlag),
 			FMT_ARG(rcCompile),

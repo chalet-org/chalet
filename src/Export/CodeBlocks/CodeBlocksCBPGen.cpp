@@ -222,7 +222,6 @@ clean:
 					{
 						if (String::equals(config, state->configuration.name()))
 						{
-
 							dependency = getResolvedPath(fmt::format("{}/logs", state->paths.buildOutputDir()));
 							break;
 						}
@@ -506,7 +505,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 /*****************************************************************************/
 void CodeBlocksCBPGen::addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
-	UNUSED(outNode, inTarget, inToolchain, inState);
+	UNUSED(inState);
 
 	// Compiler Options
 	{

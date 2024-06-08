@@ -26,7 +26,7 @@ struct BuildEnvironmentVisualStudio final : IBuildEnvironment
 
 	virtual std::string getObjectFile(const std::string& inSource) const final;
 	virtual std::string getAssemblyFile(const std::string& inSource) const final;
-	virtual std::string getPrecompiledHeaderSourceFile(const std::string& inSource) const final;
+	virtual std::string getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const final;
 	virtual std::string getDependencyFile(const std::string& inSource) const final;
 	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const final;
 	virtual std::string getModuleBinaryInterfaceFile(const std::string& inSource) const final;

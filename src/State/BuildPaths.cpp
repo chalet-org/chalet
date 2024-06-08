@@ -142,17 +142,15 @@ const std::string& BuildPaths::asmDir() const
 	return m_asmDir;
 }
 
-const std::string& BuildPaths::intermediateDir() const
-{
-	chalet_assert(!m_intermediateDir.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
-	return m_intermediateDir;
-}
-
 /*****************************************************************************/
-const std::string& BuildPaths::intermediateDirWithPathSep() const
+std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 {
-	chalet_assert(!m_intermediateDirWithPathSep.empty(), "BuildPaths::asmDir() called before BuildPaths::setBuildDirectoriesBasedOnProjectKind().");
-	return m_intermediateDirWithPathSep;
+	return fmt::format("{}/{}", m_intermediateDir, inProject.buildSuffix());
+}
+std::string BuildPaths::intermediateIncludeDir(const SourceTarget& inProject) const
+{
+	auto intDir = intermediateDir(inProject);
+	return fmt::format("{}/include", intDir);
 }
 
 /*****************************************************************************/
@@ -174,7 +172,7 @@ StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/int", buildDir),
+		fmt::format("{}/int.{}", buildDir, inProject.buildSuffix()),
 	};
 
 #if defined(CHALET_MACOS)
@@ -237,15 +235,6 @@ std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
 }
 
 /*****************************************************************************/
-const std::string& BuildPaths::cxxExtension() const
-{
-	if (m_cxxExtension.empty())
-		m_cxxExtension = "cxx";
-
-	return m_cxxExtension;
-}
-
-/*****************************************************************************/
 const StringList& BuildPaths::windowsResourceExtensions() const noexcept
 {
 	return m_resourceExts;
@@ -266,7 +255,7 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 	m_asmDir = fmt::format("{}/asm.{}", m_buildOutputDir, inProject.buildSuffix());
 	m_intermediateDir = fmt::format("{}/int", m_buildOutputDir);
 
-	m_intermediateDirWithPathSep = m_intermediateDir + '/';
+	m_intermediateDirWithPathSep = intermediateDir(inProject) + '/';
 
 	m_depDir = m_objDir;
 }
@@ -314,7 +303,7 @@ Unique<SourceOutputs> BuildPaths::getOutputs(const SourceTarget& inProject, Stri
 
 	ret->directories.push_back(m_buildOutputDir);
 	ret->directories.push_back(objDir());
-	ret->directories.push_back(intermediateDir());
+	ret->directories.push_back(intermediateDir(inProject));
 
 	ret->directories.insert(ret->directories.end(), objSubDirs.begin(), objSubDirs.end());
 
@@ -436,7 +425,7 @@ std::string BuildPaths::getWindowsManifestFilename(const SourceTarget& inProject
 			return manifest;
 
 		// https://docs.microsoft.com/en-us/windows/win32/sbscs/application-manifests#file-name-syntax
-		return fmt::format("{}/{}.manifest", intermediateDir(), inProject.outputFile());
+		return fmt::format("{}/{}.manifest", intermediateDir(inProject), inProject.outputFile());
 	}
 
 	return std::string();
@@ -449,7 +438,7 @@ std::string BuildPaths::getWindowsManifestResourceFilename(const SourceTarget& i
 	if (canUseManifest && inProject.windowsApplicationManifestGenerationEnabled())
 	{
 		const auto& name = inProject.name();
-		return fmt::format("{}/{}_manifest.rc", intermediateDir(), name);
+		return fmt::format("{}/{}_manifest.rc", intermediateDir(inProject), name);
 	}
 
 	return std::string();
@@ -461,7 +450,7 @@ std::string BuildPaths::getWindowsIconResourceFilename(const SourceTarget& inPro
 	if (inProject.isExecutable() && !inProject.windowsApplicationIcon().empty())
 	{
 		const auto& name = inProject.name();
-		return fmt::format("{}/{}_icon.rc", intermediateDir(), name);
+		return fmt::format("{}/{}_icon.rc", intermediateDir(inProject), name);
 	}
 
 	return std::string();
@@ -473,29 +462,10 @@ std::string BuildPaths::getUnityBuildSourceFilename(const SourceTarget& inProjec
 	if (inProject.unityBuild())
 	{
 		const auto& name = inProject.name();
-		return fmt::format("{}/{}_unity.{}", intermediateDir(), name, cxxExtension());
+		return fmt::format("{}/{}_unity.cxx", intermediateDir(inProject), name);
 	}
 
 	return std::string();
-}
-
-/*****************************************************************************/
-StringList BuildPaths::getConfigureFiles(const SourceTarget& inProject) const
-{
-	StringList ret;
-
-	if (!inProject.configureFiles().empty())
-	{
-		auto& outFolder = objDir();
-		for (const auto& configureFile : inProject.configureFiles())
-		{
-			auto outFile = String::getPathFilename(getNormalizedOutputPath(configureFile));
-			outFile = outFile.substr(0, outFile.size() - 3);
-
-			ret.emplace_back(fmt::format("{}/{}", outFolder, outFile));
-		}
-	}
-	return ret;
 }
 
 /*****************************************************************************/
@@ -537,9 +507,8 @@ std::string BuildPaths::getBuildOutputPath(std::string path) const
 //
 void BuildPaths::normalizedPath(std::string& outPath) const
 {
-	auto& intDir = intermediateDirWithPathSep();
-	if (String::startsWith(intDir, outPath))
-		outPath = outPath.substr(intDir.size());
+	if (String::startsWith(m_intermediateDirWithPathSep, outPath))
+		outPath = outPath.substr(m_intermediateDirWithPathSep.size());
 
 	String::replaceAll(outPath, "/../", "/p/");
 
@@ -609,7 +578,7 @@ SourceFileGroupList BuildPaths::getSourceFileGroupList(const SourceGroup& inFile
 			group->objectFile = getPrecompiledHeaderTarget(inProject);
 			group->dependencyFile = m_state.environment->getDependencyFile(file);
 			group->sourceFile = file;
-			group->otherFile = m_state.environment->getPrecompiledHeaderSourceFile(file);
+			group->otherFile = m_state.environment->getPrecompiledHeaderSourceFile(inProject);
 			return group;
 		};
 
@@ -656,9 +625,6 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 	{
 		if (String::equals('c', ext))
 		{
-			if (m_cxxExtension.empty())
-				m_cxxExtension = ext;
-
 			return SourceType::C;
 		}
 		else if (String::equals(m_resourceExts, ext))
@@ -675,9 +641,6 @@ SourceType BuildPaths::getSourceType(const std::string& inSource) const
 		}
 		else
 		{
-			if (m_cxxExtension.empty())
-				m_cxxExtension = ext;
-
 			return SourceType::CPlusPlus;
 		}
 	}
@@ -715,8 +678,9 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const
 {
 	StringList ret = inDirectoryList.list;
-	std::for_each(ret.begin(), ret.end(), [this, &inFolder](std::string& str) {
-		if (String::startsWith(intermediateDir(), str))
+	auto intDir = fmt::format("{}/int", buildOutputDir());
+	std::for_each(ret.begin(), ret.end(), [&inFolder, &intDir](std::string& str) {
+		if (String::startsWith(intDir, str))
 			str = fmt::format("{}/int", inFolder); // obj.(name)/int
 		else
 			str = fmt::format("{}/{}", inFolder, str);

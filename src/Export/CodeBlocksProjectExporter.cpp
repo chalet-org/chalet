@@ -114,4 +114,15 @@ std::string CodeBlocksProjectExporter::getProjectName(const BuildState& inState)
 	return !workspaceName.empty() ? workspaceName : std::string("project");
 }
 
+/*****************************************************************************/
+bool CodeBlocksProjectExporter::shouldCleanOnReExport() const
+{
+	return false;
+}
+
+/*****************************************************************************/
+bool CodeBlocksProjectExporter::requiresConfigureFiles() const
+{
+	return true;
+}
 }

@@ -117,7 +117,7 @@ std::string TargetExportAdapter::getCommand() const
 		ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 		const auto& script = static_cast<const ScriptBuildTarget&>(m_target);
 
-		auto cmd = scriptRunner.getCommand(script.scriptType(), script.file(), script.arguments());
+		auto cmd = scriptRunner.getCommand(script.scriptType(), script.file(), script.arguments(), true);
 		if (!cmd.empty())
 		{
 			cmd.front() = fmt::format("\"{}\"", cmd.front());

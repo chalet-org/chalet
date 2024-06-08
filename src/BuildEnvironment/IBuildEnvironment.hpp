@@ -12,6 +12,7 @@
 namespace chalet
 {
 class BuildState;
+struct SourceTarget;
 
 struct IBuildEnvironment;
 using BuildEnvironment = Unique<IBuildEnvironment>;
@@ -52,8 +53,8 @@ struct IBuildEnvironment
 
 	virtual std::string getObjectFile(const std::string& inSource) const;
 	virtual std::string getAssemblyFile(const std::string& inSource) const;
-	virtual std::string getPrecompiledHeaderIntermediateFile(const std::string& inSource) const;
-	virtual std::string getPrecompiledHeaderSourceFile(const std::string& inSource) const;
+	virtual std::string getPrecompiledHeaderIntermediateFile(const SourceTarget& inProject) const;
+	virtual std::string getPrecompiledHeaderSourceFile(const SourceTarget& inProject) const;
 	virtual std::string getWindowsResourceObjectFile(const std::string& inSource) const;
 	virtual std::string getDependencyFile(const std::string& inSource) const;
 	virtual std::string getModuleDirectivesDependencyFile(const std::string& inSource) const;

@@ -518,7 +518,7 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 
 		if (!inProject.configureFiles().empty())
 		{
-			if (!runConfigureFileParser(inProject, m_state.paths.intermediateDir()))
+			if (!runConfigureFileParser(inProject, m_state.paths.intermediateIncludeDir(inProject)))
 				return false;
 		}
 	}
@@ -713,7 +713,7 @@ bool BuildManager::checkIntermediateFiles() const
 		const auto& project = static_cast<const SourceTarget&>(*target);
 		if (isPlatformProjectBuild && !project.configureFiles().empty())
 		{
-			auto outFolder = m_state.paths.intermediateDir();
+			auto outFolder = m_state.paths.intermediateDir(project);
 			// #if defined(CHALET_MACOS)
 			// 			if (m_strategy->isXcodeBuild())
 			// 			{

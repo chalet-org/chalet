@@ -65,8 +65,7 @@ bool CompilerCxxVisualStudioCL::initialize()
 bool CompilerCxxVisualStudioCL::createPrecompiledHeaderSource()
 {
 	auto& objDir = m_state.paths.objDir();
-	auto intDir = m_state.paths.intermediateDir();
-	intDir.push_back('/');
+	auto intDir = m_state.paths.intermediateDir(m_project) + '/';
 
 	return m_msvcAdapter.createPrecompiledHeaderSource(intDir, objDir);
 }
