@@ -98,7 +98,6 @@ private:
 	std::string m_objDir;
 	std::string m_depDir;
 	std::string m_asmDir;
-	std::string m_intermediateDir;
 	std::string m_intermediateDirWithPathSep;
 
 	std::string m_parentCwd;
