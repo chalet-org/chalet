@@ -145,7 +145,7 @@ const std::string& BuildPaths::asmDir() const
 /*****************************************************************************/
 std::string BuildPaths::intermediateDir(const SourceTarget& inProject) const
 {
-	return fmt::format("{}/{}", m_intermediateDir, inProject.buildSuffix());
+	return fmt::format("{}/int.{}", buildOutputDir(), inProject.buildSuffix());
 }
 std::string BuildPaths::intermediateIncludeDir(const SourceTarget& inProject) const
 {
@@ -169,14 +169,12 @@ std::string BuildPaths::currentCompileCommands() const
 StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
 {
 	const auto& buildDir = buildOutputDir();
-	auto intDir = fmt::format("{}/int", buildDir, inProject.buildSuffix());
-	auto intDirProject = fmt::format("{}/{}", intDir, inProject.buildSuffix());
+	auto intDir = fmt::format("{}/int.{}", buildDir, inProject.buildSuffix());
 
 	StringList ret{
 		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
 		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/include", intDirProject, inProject.buildSuffix()),
-		intDirProject,
+		fmt::format("{}/include", intDir, inProject.buildSuffix()),
 		intDir,
 	};
 
@@ -258,7 +256,6 @@ void BuildPaths::setBuildDirectoriesBasedOnProjectKind(const SourceTarget& inPro
 {
 	m_objDir = fmt::format("{}/obj.{}", m_buildOutputDir, inProject.buildSuffix());
 	m_asmDir = fmt::format("{}/asm.{}", m_buildOutputDir, inProject.buildSuffix());
-	m_intermediateDir = fmt::format("{}/int", m_buildOutputDir);
 
 	m_intermediateDirWithPathSep = intermediateDir(inProject) + '/';
 
@@ -685,12 +682,8 @@ StringList BuildPaths::getObjectFilesList(const StringList& inFiles, const Sourc
 StringList BuildPaths::getOutputDirectoryList(const SourceGroup& inDirectoryList, const std::string& inFolder) const
 {
 	StringList ret = inDirectoryList.list;
-	auto intDir = fmt::format("{}/int", buildOutputDir());
-	std::for_each(ret.begin(), ret.end(), [&inFolder, &intDir](std::string& str) {
-		if (String::startsWith(intDir, str))
-			str = fmt::format("{}/int", inFolder); // obj.(name)/int
-		else
-			str = fmt::format("{}/{}", inFolder, str);
+	std::for_each(ret.begin(), ret.end(), [&inFolder](std::string& str) {
+		str = fmt::format("{}/{}", inFolder, str);
 	});
 
 	return ret;
