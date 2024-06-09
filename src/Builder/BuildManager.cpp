@@ -181,7 +181,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 				return false;
 		}
 
-		for (auto& target : m_state.targets)
+		for (auto& target : m_buildTargets)
 		{
 			if (target->isSources())
 			{
@@ -700,7 +700,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 bool BuildManager::checkIntermediateFiles() const
 {
 	bool isPlatformProjectBuild = m_strategy->isXcodeBuild() || m_strategy->isMSBuild();
-	for (auto& target : m_state.targets)
+	for (auto& target : m_buildTargets)
 	{
 		if (!target->isSources())
 			continue;

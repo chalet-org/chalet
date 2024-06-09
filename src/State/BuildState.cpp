@@ -612,14 +612,14 @@ bool BuildState::initializeBuild()
 		initializeCache();
 	}
 
+	Output::setShowCommandOverride(true); // call this before generateUniqueIdForState()
+
 	if (m_cacheEnabled || !m_impl->centralState.cache.file().sourceCacheAvailable())
 	{
 		generateUniqueIdForState();
 	}
 
 	Diagnostic::printDone(timer.asString());
-
-	Output::setShowCommandOverride(true);
 
 	return true;
 }
@@ -1671,13 +1671,8 @@ void BuildState::generateUniqueIdForState()
 	const auto& targetOsName = inputs.osTargetName();
 	const auto& targetOsVersion = inputs.osTargetVersion();
 
-	bool showCmds = false;
-	// if (toolchain.strategy() == StrategyType::Makefile)
-	// 	showCmds = Output::showCommands();
-
-	bool dumpAssembly = false;
-	// if (m_impl->environment->type() == ToolchainType::VisualStudio)
-	// 	dumpAssembly = info.dumpAssembly();
+	bool showCmds = Output::showCommands();
+	bool onlyRequired = info.onlyRequired();
 
 	std::string targetHash;
 	for (auto& target : targets)
@@ -1695,11 +1690,11 @@ void BuildState::generateUniqueIdForState()
 	auto hashableToolchain = Hash::getHashableString(compilerCpp, compilerC, compilerWindowsResource, linker, archiver, profiler, disassembler);
 
 	// Note: no targetHash
-	auto hashable = Hash::getHashableString(hostArch, targetArch, targetOsName, targetOsVersion, envId, buildConfig, showCmds, dumpAssembly);
+	auto hashable = Hash::getHashableString(hostArch, targetArch, targetOsName, targetOsVersion, envId, buildConfig);
 	m_cachePathId = Hash::string(hashable);
 
 	// Unique ID is used by the internal cache to determine if the build files need to be updated
-	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, hashableToolchain);
+	auto hashableTargets = Hash::getHashableString(m_cachePathId, targetHash, hashableToolchain, showCmds, onlyRequired);
 	auto buildHash = Hash::string(hashableTargets);
 
 	auto& cacheFile = m_impl->centralState.cache.file();

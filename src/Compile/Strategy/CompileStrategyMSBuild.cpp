@@ -162,7 +162,7 @@ StringList CompileStrategyMSBuild::getMsBuildCommand(const std::string& msbuild,
 
 	cmd.emplace_back(fmt::format("-target:{}", getMsBuildTarget()));
 
-	if (String::equals(Values::All, inProjectName))
+	if (String::equals(Values::All, inProjectName) || !m_state.info.onlyRequired())
 	{
 		cmd.emplace_back(m_solution);
 	}

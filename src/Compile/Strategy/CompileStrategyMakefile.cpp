@@ -33,6 +33,7 @@ bool CompileStrategyMakefile::initialize()
 		return false;
 
 	const auto& cachePathId = m_state.cachePathId();
+
 	auto& cacheFile = m_state.cache.file();
 	m_cacheFolder = m_state.cache.getCachePath(cachePathId);
 
