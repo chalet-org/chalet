@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 #include "Yaml/YamlFile.hpp"
 #include "Json/JsonComments.hpp"
@@ -37,6 +38,12 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			sourceCache = &m_state->cache.file().sources();
 		}
+
+		auto cwd = Files::getWorkingDirectory();
+		Path::toUnix(cwd);
+		cwd += '/';
+		m_schemaFile = Files::getCanonicalPath(m_schemaFile);
+		String::replaceAll(m_schemaFile, cwd, "");
 
 		bool schemaChanged = !inCache || (sourceCache && sourceCache->fileChangedOrDoesNotExistWithCache(m_schemaFile));
 
@@ -91,6 +98,10 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 
 		for (auto& file : files)
 		{
+			Path::toUnix(file);
+			file = Files::getCanonicalPath(file);
+			String::replaceAll(file, cwd, "");
+
 			Diagnostic::subInfoEllipsis("{}", file);
 
 			Json jsonFile;

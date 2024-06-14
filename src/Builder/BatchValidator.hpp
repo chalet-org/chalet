@@ -24,6 +24,6 @@ private:
 	void showErrorMessage(const std::string& inMessage) const;
 
 	const BuildState* m_state = nullptr;
-	const std::string& m_schemaFile;
+	std::string m_schemaFile;
 };
 }
