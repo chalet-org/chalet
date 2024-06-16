@@ -74,6 +74,12 @@ bool SourceTarget::initialize()
 		return false;
 	}
 
+	if (!expandGlobPatternsInList(m_configureFiles, GlobMatch::Files))
+	{
+		Diagnostic::error("There was a problem resolving the files for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+
 	// LOG("--", this->name(), timer.asString());
 
 	if (!expandGlobPatternsInList(m_fileExcludes, GlobMatch::FilesAndFolders))
@@ -89,9 +95,6 @@ bool SourceTarget::initialize()
 	}
 
 	if (!replaceVariablesInPathList(m_defines))
-		return false;
-
-	if (!replaceVariablesInPathList(m_configureFiles))
 		return false;
 
 	if (!m_state.replaceVariablesInString(m_precompiledHeader, this))
