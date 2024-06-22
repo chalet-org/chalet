@@ -390,6 +390,13 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 				}
 			}
 		}
+		else if (String::startsWith("GatherProvisioningInputs", inLine))
+		{
+			auto output = fmt::format("   {}Gathering provisioning inputs{}\n", color, reset);
+			std::cout.write(output.data(), output.size());
+			std::cout.flush();
+			printed = true;
+		}
 		// PhaseScriptExecution
 		else if (String::startsWith("*== script start ==*", inLine))
 		{
