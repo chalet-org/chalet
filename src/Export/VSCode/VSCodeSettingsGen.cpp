@@ -20,6 +20,9 @@ VSCodeSettingsGen::VSCodeSettingsGen(const BuildState& inState) :
 /*****************************************************************************/
 bool VSCodeSettingsGen::saveToFile(const std::string& inFilename) const
 {
+	// TODO: This just assumes a .clang-format file is present
+	//   The check is made in VSCodeProjectExporter - maybe rework?
+
 	Json jRoot;
 	jRoot = Json::object();
 
@@ -27,6 +30,7 @@ bool VSCodeSettingsGen::saveToFile(const std::string& inFilename) const
 	bool hasCpp = false;
 	bool hasObjectiveC = false;
 	bool hasObjectiveCpp = false;
+	bool hasGeneric = false;
 
 	for (auto& target : m_state.targets)
 	{
@@ -43,8 +47,17 @@ bool VSCodeSettingsGen::saveToFile(const std::string& inFilename) const
 				default: break;
 			}
 		}
+		else if (target->isCMake() || target->isSubChalet())
+		{
+			// TODO: Detect project source type (maybe via filenames?)
+			hasGeneric = true;
+		}
 	}
 
+	if (hasGeneric)
+	{
+		jRoot["editor.formatOnSave"] = true;
+	}
 	if (hasC)
 	{
 		jRoot["[c]"] = R"json({
