@@ -342,19 +342,17 @@ std::string BuildPaths::getTargetFilename(const SourceTarget& inProject) const
 /*****************************************************************************/
 std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 {
-	const auto& filename = inProject.runExecutable();
+	auto filename = inProject.runExecutable();
 	if (filename.empty())
 		return std::string();
-
-	auto outputPath = fmt::format("{}/{}/{}", buildOutputDir(), inProject.targetFolder(), filename);
 
 	// Ignore the extension and enforce the one from the environment
 	//   If it was anything else, we wouldn't recognize it anyway
 	//
-	outputPath = String::getPathFolderBaseName(outputPath);
-	outputPath += m_state.environment->getExecutableExtension();
+	filename = String::getPathFolderBaseName(filename);
+	filename += m_state.environment->getExecutableExtension();
 
-	return outputPath;
+	return fmt::format("{}/{}", inProject.targetFolder(), filename);
 }
 
 /*****************************************************************************/
