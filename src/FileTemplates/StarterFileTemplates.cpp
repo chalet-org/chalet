@@ -351,7 +351,7 @@ Json StarterFileTemplates::getCMakeStarterChaletJson(const ChaletJsonProps& inPr
 	ret[Keys::Distribution][project] = Json::object();
 	ret[Keys::Distribution][project][Keys::Kind] = "bundle";
 	ret[Keys::Distribution][project]["include"] = Json::array();
-	ret[Keys::Distribution][project]["include"][0] = fmt::format("${{buildDir}}/{}", project);
+	ret[Keys::Distribution][project]["include"][0] = fmt::format("${{externalBuild:{}}}/${{exe:{}}}", project, project);
 
 	return ret;
 }
