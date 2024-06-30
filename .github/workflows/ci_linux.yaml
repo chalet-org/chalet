@@ -11,7 +11,7 @@ env:
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
   BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ github.sha }}
-  RELEASE_NAME: ${{ github.ref_type == 'branch' && ${{ env.BRANCH_RELEASE_NAME }} || github.ref_name }}
+  IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
 defaults:
@@ -41,8 +41,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.RELEASE_NAME }}
-          tag: ${{ env.RELEASE_NAME }}
+          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
@@ -82,8 +82,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.RELEASE_NAME }}
-          tag: ${{ env.RELEASE_NAME }}
+          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
@@ -123,8 +123,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.RELEASE_NAME }}
-          tag: ${{ env.RELEASE_NAME }}
+          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
