@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ env.github.ref }}
       - name: "Setup"
-        if: matrix.crossBuild == 'true'
+        if: matrix.crossBuild == true
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
           echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
@@ -59,7 +59,7 @@ jobs:
           sudo apt update
           sudo apt install ${{ env.DEFAULT_PACKAGES }}
       - name: "Get Packages (${{ matrix.arch }})"
-        if: matrix.crossBuild == 'true'
+        if: matrix.crossBuild == true
         run: sudo apt install uuid-dev:${{ matrix.arch }} gcc-${{ matrix.triplet }} g++-${{ matrix.triplet }} binutils-${{ matrix.triplet }}
       - name: "Color Test"
         run: ${{ env.CHALET_BIN }} termtest
@@ -68,7 +68,7 @@ jobs:
       - name: "Build"
         run: ${{ env.CHALET_BIN }} -c Release -t ${{ matrix.triplet }}-gcc -b native bundle
       - name: "Run: Tests"
-        if: matrix.crossBuild != 'true'
+        if: matrix.crossBuild != true
         run: ${{ env.CHALET_BIN }} run tests
       - name: "Upload"
         uses: ncipollo/release-action@v1
