@@ -359,14 +359,21 @@ bool VSVCXProjGen::saveUserFile(const std::string& inFilename, const std::string
 	xmlRoot.addAttribute("ToolsVersion", "Current");
 	xmlRoot.addAttribute("xmlns", "http://schemas.microsoft.com/developer/msbuild/2003");
 
-	auto& firstState = *m_states.front();
-	auto& runArgumentMap = firstState.getCentralState().runArgumentMap();
-
-	if (runArgumentMap.find(name) != runArgumentMap.end())
+	StringList arguments;
+	for (auto& conf : m_vsConfigs)
 	{
-		auto& args = runArgumentMap.at(name);
-		xmlRoot.addElement("PropertyGroup", [&args](XmlElement& node2) {
-			node2.addElementWithText("LocalDebuggerCommandArguments", String::join(args));
+		auto project = getProjectFromStateContext(*conf.state, name);
+		if (project != nullptr)
+		{
+			if (!conf.state->getRunTargetArguments(arguments, project))
+				return false;
+		}
+	}
+
+	if (!arguments.empty())
+	{
+		xmlRoot.addElement("PropertyGroup", [&arguments](XmlElement& node2) {
+			node2.addElementWithText("LocalDebuggerCommandArguments", String::join(arguments));
 			node2.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
 		});
 	}

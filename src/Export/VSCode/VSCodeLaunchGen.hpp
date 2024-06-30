@@ -20,13 +20,13 @@ struct VSCodeLaunchGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
-	Json getConfiguration(const BuildState& inState) const;
+	bool getConfiguration(Json& outConfiguration, const BuildState& inState) const;
 	std::string getName(const BuildState& inState) const;
 	std::string getType(const BuildState& inState) const;
 	std::string getDebuggerPath(const BuildState& inState) const;
 	void setOptions(Json& outJson, const BuildState& inState) const;
 	void setPreLaunchTask(Json& outJson) const;
-	void setProgramPath(Json& outJson, const BuildState& inState) const;
+	bool setProgramPath(Json& outJson, const BuildState& inState) const;
 	void setEnvFilePath(Json& outJson, const BuildState& inState) const;
 
 	bool willUseMSVC(const BuildState& inState) const;

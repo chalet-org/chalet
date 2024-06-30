@@ -63,7 +63,11 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 
 		for (auto target : executableTargets)
 		{
-			configurations.emplace_back(getConfiguration(runConfig, state->getCentralState(), *target));
+			Json configuration;
+			if (!getConfiguration(configuration, runConfig, *state, *target))
+				return false;
+
+			configurations.emplace_back(std::move(configuration));
 		}
 	}
 
@@ -71,33 +75,28 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-Json VSLaunchGen::getConfiguration(const RunConfiguration& runConfig, const CentralState& inCentralState, const IBuildTarget& inTarget) const
+bool VSLaunchGen::getConfiguration(Json& outConfiguration, const RunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const
 {
-	const auto& targetName = inTarget.name();
-	const auto& runArgumentMap = inCentralState.runArgumentMap();
-
 	StringList arguments;
-	if (runArgumentMap.find(targetName) != runArgumentMap.end())
-	{
-		arguments = runArgumentMap.at(targetName);
-	}
+	if (!inState.getRunTargetArguments(arguments, &inTarget))
+		return false;
 
-	Json ret = Json::object();
+	outConfiguration = Json::object();
 
-	ret["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
-	ret["project"] = Files::getCanonicalPath(runConfig.outputFile);
-	ret["args"] = arguments;
+	outConfiguration["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
+	outConfiguration["project"] = Files::getCanonicalPath(runConfig.outputFile);
+	outConfiguration["args"] = arguments;
 
-	ret["currentDir"] = "${workspaceRoot}";
-	ret["debugType"] = "native";
-	ret["stopOnEntry"] = true;
+	outConfiguration["currentDir"] = "${workspaceRoot}";
+	outConfiguration["debugType"] = "native";
+	outConfiguration["stopOnEntry"] = true;
 
-	ret["env"] = getEnvironment(inTarget);
-	ret["inheritEnvironments"] = {
+	outConfiguration["env"] = getEnvironment(inTarget);
+	outConfiguration["inheritEnvironments"] = {
 		"${cpp.activeConfiguration}",
 	};
 
-	return ret;
+	return true;
 }
 
 /*****************************************************************************/

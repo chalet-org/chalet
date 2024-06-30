@@ -280,7 +280,7 @@ const Dictionary<StringList>& CentralState::runArgumentMap() const noexcept
 }
 
 /*****************************************************************************/
-const std::optional<StringList>& CentralState::getRunTargetArguments(const std::string& inTarget)
+const std::optional<StringList>& CentralState::getRunTargetArguments(const std::string& inTarget) const
 {
 	if (!inTarget.empty())
 	{

@@ -41,7 +41,7 @@ struct CentralState
 	void setRunArguments(const std::string& inKey, StringList&& inValue);
 	void addRunArgumentsIfNew(const std::string& inKey, StringList&& inValue);
 	const Dictionary<StringList>& runArgumentMap() const noexcept;
-	const std::optional<StringList>& getRunTargetArguments(const std::string& inTarget);
+	const std::optional<StringList>& getRunTargetArguments(const std::string& inTarget) const;
 	void clearRunArgumentMap();
 
 	bool shouldPerformUpdateCheck() const;

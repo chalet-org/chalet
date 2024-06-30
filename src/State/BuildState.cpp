@@ -252,6 +252,29 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 }
 
 /*****************************************************************************/
+bool BuildState::getRunTargetArguments(StringList& outList, const IBuildTarget* inTarget) const
+{
+	if (inTarget == nullptr)
+		return true;
+
+	const auto& runArguments = m_impl->centralState.getRunTargetArguments(inTarget->name());
+	if (runArguments.has_value())
+	{
+		outList = *runArguments;
+		for (auto& dir : outList)
+		{
+			if (!replaceVariablesInString(dir, inTarget))
+			{
+				Diagnostic::error("There was an error parsing the run argument variables for: {}", inTarget->name());
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 bool BuildState::isSubChaletTarget() const noexcept
 {
 	return m_isSubChaletTarget;
