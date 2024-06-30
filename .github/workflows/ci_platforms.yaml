@@ -156,7 +156,7 @@ jobs:
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build"
-        run: ${{ env.CHALET_BIN }} configure --os-target-version 11.0 --signing-identity "$MACOS_SIGNING_IDENTITY" -c Release -t ${{ matrix.arch }} -b native bundle
+        run: ${{ env.CHALET_BIN }} configure --os-target-version 11.0 --signing-identity "$MACOS_SIGNING_IDENTITY" -c Release -t apple-llvm -a ${{ matrix.arch }} -b native bundle
       - name: "Notarize"
         run: |
           xcrun notarytool submit ./dist/chalet-${{ matrix.triplet }}.zip --keychain-profile "ChaletProfile" --wait
