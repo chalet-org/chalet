@@ -10,7 +10,6 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${date +"%Y%m%d%H%M"}
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -21,8 +20,13 @@ jobs:
   test-name:
     runs-on: ubuntu-20.04
     steps:
+      - name: "Create Timestamp"
+        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        id: timestamp
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
@@ -34,6 +38,9 @@ jobs:
   x86_64-linux-gnu:
     runs-on: ubuntu-20.04
     steps:
+      - name: "Create Timestamp"
+        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
@@ -52,6 +59,8 @@ jobs:
         run: $CHALET_BIN run tests
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
@@ -66,6 +75,9 @@ jobs:
   arm64-linux-gnu:
     runs-on: ubuntu-20.04
     steps:
+      - name: "Create Timestamp"
+        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
@@ -93,6 +105,8 @@ jobs:
         run: $CHALET_BIN -c Release -t aarch64-linux-gnu-gcc -b native bundle
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
@@ -107,6 +121,9 @@ jobs:
   arm-linux-gnueabihf:
     runs-on: ubuntu-20.04
     steps:
+      - name: "Create Timestamp"
+        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
@@ -134,6 +151,8 @@ jobs:
         run: $CHALET_BIN -c Release -t arm-linux-gnueabihf-gcc -b native bundle
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
