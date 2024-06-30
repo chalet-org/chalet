@@ -10,7 +10,8 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  RELEASE_NAME: ${{ github.ref_name }}-${{ github.run_id }}
+  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ github.sha }}
+  RELEASE_NAME: ${{ github.ref_type == 'branch' && $BRANCH_RELEASE_NAME || github.ref_name }}
   IS_PRERELEASE: true
   CI: 1
 defaults:
