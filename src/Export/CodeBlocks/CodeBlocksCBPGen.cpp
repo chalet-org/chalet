@@ -463,10 +463,12 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 		node.addAttribute("type", getOutputType(inTarget));
 	});
 
-	const auto& runArgumentMap = inState.getCentralState().runArgumentMap();
-	if (runArgumentMap.find(inTarget.name()) != runArgumentMap.end())
+	StringList arguments;
+	inState.getRunTargetArguments(arguments, &inTarget);
+
+	if (!arguments.empty())
 	{
-		auto args = String::join(runArgumentMap.at(inTarget.name()));
+		auto args = String::join(arguments);
 		outNode.addElement("Option", [&args](XmlElement& node) {
 			node.addAttribute("parameters", args);
 		});

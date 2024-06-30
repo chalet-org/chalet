@@ -50,6 +50,7 @@ public:
 	const std::string& cachePathId() const noexcept;
 
 	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;
+	bool getRunTargetArguments(StringList& outList, const IBuildTarget* inTarget) const;
 
 	bool isSubChaletTarget() const noexcept;
 	bool isBuildConfigurationSupported() const;

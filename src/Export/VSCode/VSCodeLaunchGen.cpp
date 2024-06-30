@@ -11,6 +11,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -29,34 +30,42 @@ VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter) :
 /*****************************************************************************/
 bool VSCodeLaunchGen::saveToFile(const std::string& inFilename) const
 {
-	Json jRoot;
-	jRoot = Json::object();
+	Json jRoot = Json::object();
 	jRoot["version"] = "0.2.0";
 	jRoot["configurations"] = Json::array();
 	auto& configurations = jRoot.at("configurations");
 
 	auto& debugState = m_exportAdapter.getDebugState();
-	configurations.push_back(getConfiguration(debugState));
+	Json configuration;
+	if (!getConfiguration(configuration, debugState))
+	{
+		Diagnostic::error("There was an error creating the launch.json configuration: {}", inFilename);
+		return false;
+	}
+
+	configurations.emplace_back(std::move(configuration));
 
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
 
 /*****************************************************************************/
-Json VSCodeLaunchGen::getConfiguration(const BuildState& inState) const
+bool VSCodeLaunchGen::getConfiguration(Json& outConfiguration, const BuildState& inState) const
 {
-	Json ret = Json::object();
-	ret["name"] = getName(inState);
-	ret["type"] = getType(inState);
-	ret["request"] = "launch";
-	ret["stopAtEntry"] = true;
-	ret["cwd"] = "${workspaceFolder}";
+	outConfiguration = Json::object();
+	outConfiguration["name"] = getName(inState);
+	outConfiguration["type"] = getType(inState);
+	outConfiguration["request"] = "launch";
+	outConfiguration["stopAtEntry"] = true;
+	outConfiguration["cwd"] = "${workspaceFolder}";
 
-	setOptions(ret, inState);
-	setPreLaunchTask(ret);
-	setProgramPath(ret, inState);
-	setEnvFilePath(ret, inState);
+	setOptions(outConfiguration, inState);
+	setPreLaunchTask(outConfiguration);
+	if (!setProgramPath(outConfiguration, inState))
+		return false;
 
-	return ret;
+	setEnvFilePath(outConfiguration, inState);
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -132,7 +141,7 @@ void VSCodeLaunchGen::setPreLaunchTask(Json& outJson) const
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) const
+bool VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) const
 {
 	constexpr bool executablesOnly = true;
 	auto target = inState.getFirstValidRunTarget(executablesOnly);
@@ -144,14 +153,13 @@ void VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) c
 		outJson["program"] = fmt::format("${{workspaceFolder}}/{}", program);
 	}
 
-	if (inState.inputs.runArguments().has_value())
-	{
-		outJson["args"] = *inState.inputs.runArguments();
-	}
-	else
-	{
-		outJson["args"] = Json::array();
-	}
+	StringList arguments;
+	if (!inState.getRunTargetArguments(arguments, target))
+		return false;
+
+	outJson["args"] = arguments;
+
+	return true;
 }
 
 /*****************************************************************************/

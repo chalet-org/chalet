@@ -1027,8 +1027,6 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		return false;
 	}
 
-	const auto& runArguments = m_state.inputs.runArguments();
-
 	auto file = Files::getAbsolutePath(outputFile);
 	if (!Files::pathExists(file))
 	{
@@ -1055,6 +1053,10 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 				break;
 		}
 	}
+
+	StringList runArguments;
+	if (!m_state.getRunTargetArguments(runArguments, &inTarget))
+		return false;
 
 	if (copied > 0)
 		Output::lineBreak();
@@ -1099,7 +1101,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		else
 			cmd.emplace_back(file);
 
-		if (runArguments.has_value() && !runArguments->empty())
+		if (!runArguments.empty())
 			cmd.emplace_back("--");
 	}
 	else
@@ -1107,10 +1109,10 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		cmd.emplace_back(file);
 	}
 
-	if (runArguments.has_value())
+	if (!runArguments.empty())
 	{
-		for (auto& arg : *runArguments)
-			cmd.push_back(arg);
+		for (auto& arg : runArguments)
+			cmd.emplace_back(std::move(arg));
 	}
 
 	if (inTarget.isSources() && m_state.configuration.enableProfiling())

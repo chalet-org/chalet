@@ -108,6 +108,27 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 	auto& firstState = *m_states.front();
 	auto runArgumentMap = firstState.getCentralState().runArgumentMap();
+
+	// Note: If a run argument has subtitution variables, we're only parsing them from this one state for now
+	//   Maybe rework this later, but it's a relatively small use-case anyway - it really only affects build-specific variables
+	//
+	for (auto& target : firstState.targets)
+	{
+		auto& targetName = target->name();
+		if (runArgumentMap.find(targetName) != runArgumentMap.end())
+		{
+			auto& arguments = runArgumentMap.at(targetName);
+			for (auto& dir : arguments)
+			{
+				if (!firstState.replaceVariablesInString(dir, target.get()))
+				{
+					Diagnostic::error("There was an error parsing the run argument variables for: {}", target->name());
+					return false;
+				}
+			}
+		}
+	}
+
 	Dictionary<OrderedDictionary<std::string>> envMap;
 	StringList noEnvs;
 

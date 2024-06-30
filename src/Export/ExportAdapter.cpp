@@ -292,7 +292,15 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					runConfig.outputFile = std::move(outputFile);
 
 					if (runArgumentMap.find(targetName) != runArgumentMap.end())
-						runConfig.args = runArgumentMap.at(targetName);
+					{
+						auto arguments = runArgumentMap.at(targetName);
+						for (auto& dir : arguments)
+						{
+							state->replaceVariablesInString(dir, target.get());
+						}
+
+						runConfig.args = std::move(arguments);
+					}
 
 					if (!path.empty())
 						runConfig.env.emplace(Environment::getPathKey(), path);

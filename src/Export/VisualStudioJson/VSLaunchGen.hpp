@@ -10,7 +10,6 @@
 
 namespace chalet
 {
-struct CentralState;
 class BuildState;
 struct IBuildTarget;
 
@@ -21,7 +20,7 @@ struct VSLaunchGen
 	bool saveToFile(const std::string& inFilename);
 
 private:
-	Json getConfiguration(const RunConfiguration& runConfig, const CentralState& inCentralState, const IBuildTarget& inTarget) const;
+	bool getConfiguration(Json& outConfiguration, const RunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const;
 	Json getEnvironment(const IBuildTarget& inTarget) const;
 
 	const ExportAdapter& m_exportAdapter;
