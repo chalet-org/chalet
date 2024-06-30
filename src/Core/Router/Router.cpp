@@ -215,7 +215,10 @@ bool Router::routeBundle(BuildState& inState)
 	for (auto& target : inState.distribution)
 	{
 		if (!bundler.run(target))
+		{
+			Diagnostic::error("The bundler ran into a problem on the distribution target: {}", target->name());
 			return false;
+		}
 	}
 
 	bundler.reportErrors();

@@ -5,7 +5,9 @@
 
 #include "State/Distribution/ProcessDistTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/Target/IBuildTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
@@ -68,11 +70,26 @@ bool ProcessDistTarget::validate()
 		auto resolved = Files::which(m_path);
 		if (resolved.empty() && m_dependsOn.empty())
 		{
-			Diagnostic::error("The process path for the distribution target '{}' doesn't exist: {}", this->name(), m_path);
-			return false;
+			bool inBuild = String::startsWith(m_state.paths.buildOutputDir(), m_path);
+			if (!inBuild)
+			{
+				Diagnostic::error("The process path for the distribution target '{}' doesn't exist: {}", this->name(), m_path);
+				return false;
+			}
+			else
+			{
+#if defined(CHALET_WIN32)
+				auto exe = Files::getPlatformExecutableExtension();
+				if (!exe.empty() && !String::endsWith(exe, m_path))
+				{
+					m_path += exe;
+				}
+#endif
+			}
 		}
 
-		m_path = std::move(resolved);
+		if (!resolved.empty())
+			m_path = std::move(resolved);
 	}
 
 	return true;
