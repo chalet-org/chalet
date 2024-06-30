@@ -10,8 +10,8 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  RELEASE_NAME: ${{ github.ref }}-test
-  RELEASE_IS_PRE: true
+  RELEASE_NAME: ${{ github.ref_name }}-${{ github.run_id }}
+  IS_PRERELEASE: true
   CI: 1
 defaults:
   run:
@@ -41,9 +41,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
           artifacts: dist/chalet-*.zip
           draft: true
-          prerelease: ${{ env.RELEASE_IS_PRE == 'true' }}
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
@@ -81,9 +82,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
           artifacts: dist/chalet-*.zip
           draft: true
-          prerelease: ${{ env.RELEASE_IS_PRE == 'true' }}
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
@@ -121,9 +123,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
           artifacts: dist/chalet-*.zip
           draft: true
-          prerelease: ${{ env.RELEASE_IS_PRE == 'true' }}
+          prerelease: ${{ env.IS_PRERELEASE }}
           omitBodyDuringUpdate: true
           omitDraftDuringUpdate: true
           omitNameDuringUpdate: true
