@@ -11,7 +11,7 @@ env:
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: "zip debhelper uuid-dev ninja-build"
   GENERATE_TIMESTAMP: "echo \"timestamp=$(date +'%Y%m%d%H%M')\" >> $GITHUB_OUTPUT"
-  RELEASE_OWNER: rewrking
+  RELEASE_PREFIX: "Chalet"
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -31,9 +31,8 @@ jobs:
           BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ github.ref_name }}
-          owner: ${{ env.RELEASE_OWNER }}
           allowUpdates: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
@@ -44,6 +43,9 @@ jobs:
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   x86_64-linux-gnu:
     runs-on: ubuntu-20.04
+    env:
+      ARCH: amd64
+      TRIPLET: x86_64-linux-gnu
     steps:
       - name: "Create Timestamp"
         run: ${{ env.GENERATE_TIMESTAMP }}
@@ -60,8 +62,8 @@ jobs:
         run: ${{ env.CHALET_BIN }} termtest
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-      - name: "Build: x86_64"
-        run: ${{ env.CHALET_BIN }} -c Release -t x86_64-linux-gnu-gcc -b native bundle
+      - name: "Build"
+        run: ${{ env.CHALET_BIN }} -c Release -t ${{ env.TRIPLET }}-gcc -b native bundle
       - name: "Run: Tests"
         run: ${{ env.CHALET_BIN }} run tests
       - name: "Upload"
@@ -70,9 +72,8 @@ jobs:
           BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ github.ref_name }}
-          owner: ${{ env.RELEASE_OWNER }}
           allowUpdates: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
@@ -80,12 +81,16 @@ jobs:
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
           artifacts: |
-            dist/chalet-x86_64-linux-gnu.zip
+            dist/chalet-*-linux-gnu*.zip
             dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   arm64-linux-gnu:
     runs-on: ubuntu-20.04
+    env:
+      ARCH: arm64
+      TRIPLET: aarch64-linux-gnu
+      CROSS_BUILD: true
     steps:
       - name: "Create Timestamp"
         run: ${{ env.GENERATE_TIMESTAMP }}
@@ -95,35 +100,37 @@ jobs:
         with:
           ref: ${{ env.github.ref }}
       - name: "Setup"
+        if: ${{ env.CROSS_BUILD == 'true' }}
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
-          sudo dpkg --add-architecture arm64
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture ${{ env.ARCH }}
       - name: "Get Packages"
         run: |
           sudo apt update
           sudo apt install ${{ env.DEFAULT_PACKAGES }}
-          sudo apt install uuid-dev:arm64 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+      - name: "Get Packages (${{ env.ARCH }})"
+        if: ${{ env.CROSS_BUILD == 'true' }}
+        run: sudo apt install uuid-dev:${{ env.ARCH }} gcc-${{ env.TRIPLET }} g++-${{ env.TRIPLET }} binutils-${{ env.TRIPLET }}
       - name: "Color Test"
         run: ${{ env.CHALET_BIN }} termtest
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-      - name: "Build: arm64"
-        run: ${{ env.CHALET_BIN }} -c Release -t aarch64-linux-gnu-gcc -b native bundle
+      - name: "Build"
+        run: ${{ env.CHALET_BIN }} -c Release -t ${{ env.TRIPLET }}-gcc -b native bundle
       - name: "Upload"
         uses: ncipollo/release-action@v1
         env:
           BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ github.ref_name }}
-          owner: ${{ env.RELEASE_OWNER }}
           allowUpdates: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
@@ -131,12 +138,16 @@ jobs:
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
           artifacts: |
-            dist/chalet-aarch64-linux-gnu.zip
+            dist/chalet-*-linux-gnu*.zip
             dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   arm-linux-gnueabihf:
     runs-on: ubuntu-20.04
+    env:
+      ARCH: armhf
+      TRIPLET: arm-linux-gnueabihf
+      CROSS_BUILD: true
     steps:
       - name: "Create Timestamp"
         run: ${{ env.GENERATE_TIMESTAMP }}
@@ -146,35 +157,37 @@ jobs:
         with:
           ref: ${{ env.github.ref }}
       - name: "Setup"
+        if: ${{ env.CROSS_BUILD == 'true' }}
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
-          sudo dpkg --add-architecture armhf
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ env.ARCH }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture ${{ env.ARCH }}
       - name: "Get Packages"
         run: |
           sudo apt update
           sudo apt install ${{ env.DEFAULT_PACKAGES }}
-          sudo apt install uuid-dev:armhf gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+      - name: "Get Packages (${{ env.ARCH }})"
+        if: ${{ env.CROSS_BUILD == 'true' }}
+        run: sudo apt install uuid-dev:${{ env.ARCH }} gcc-${{ env.TRIPLET }} g++-${{ env.TRIPLET }} binutils-${{ env.TRIPLET }}
       - name: "Color Test"
         run: ${{ env.CHALET_BIN }} termtest
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
-      - name: "Build: armhf"
-        run: ${{ env.CHALET_BIN }} -c Release -t arm-linux-gnueabihf-gcc -b native bundle
+      - name: "Build"
+        run: ${{ env.CHALET_BIN }} -c Release -t ${{ env.TRIPLET }}-gcc -b native bundle
       - name: "Upload"
         uses: ncipollo/release-action@v1
         env:
           BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ github.ref_name }}
-          owner: ${{ env.RELEASE_OWNER }}
           allowUpdates: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
@@ -182,7 +195,7 @@ jobs:
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
           artifacts: |
-            dist/chalet-arm-linux-gnueabihf.zip
+            dist/chalet-*-linux-gnu*.zip
             dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
