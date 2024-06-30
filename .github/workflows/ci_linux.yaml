@@ -10,6 +10,7 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
+  GENERATE_TIMESTAMP: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -21,7 +22,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Create Timestamp"
-        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        run: $GENERATE_TIMESTAMP
         id: timestamp
       - name: "Upload"
         uses: ncipollo/release-action@v1
@@ -39,7 +40,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Create Timestamp"
-        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        run: $GENERATE_TIMESTAMP
         id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -76,7 +77,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Create Timestamp"
-        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        run: $GENERATE_TIMESTAMP
         id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
@@ -122,7 +123,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: "Create Timestamp"
-        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
+        run: $GENERATE_TIMESTAMP
         id: timestamp
       - name: "Checkout"
         uses: actions/checkout@v4
