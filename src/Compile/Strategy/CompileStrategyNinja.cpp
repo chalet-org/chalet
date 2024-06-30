@@ -58,21 +58,24 @@ bool CompileStrategyNinja::initialize()
 /*****************************************************************************/
 bool CompileStrategyNinja::addProject(const SourceTarget& inProject)
 {
-	if (!m_initialized)
-		return false;
-
-	auto& name = inProject.name();
-	const auto& outputs = m_outputs.at(name);
-	if (m_hashes.find(name) == m_hashes.end())
+	if (inProject.willBuild())
 	{
-		m_hashes.emplace(name, Hash::string(outputs->target));
-	}
+		if (!m_initialized)
+			return false;
 
-	if (m_cacheNeedsUpdate)
-	{
-		auto& hash = m_hashes.at(name);
-		auto& toolchain = m_toolchains.at(name);
-		m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
+		auto& name = inProject.name();
+		const auto& outputs = m_outputs.at(name);
+		if (m_hashes.find(name) == m_hashes.end())
+		{
+			m_hashes.emplace(name, Hash::string(outputs->target));
+		}
+
+		if (m_cacheNeedsUpdate)
+		{
+			auto& hash = m_hashes.at(name);
+			auto& toolchain = m_toolchains.at(name);
+			m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
+		}
 	}
 
 	return ICompileStrategy::addProject(inProject);

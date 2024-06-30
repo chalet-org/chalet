@@ -91,6 +91,7 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
 			continue;
 
+		target->setWillBuild(true);
 		m_buildTargets.emplace_back(target.get());
 	}
 }
@@ -181,7 +182,8 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 				return false;
 		}
 
-		for (auto& target : m_buildTargets)
+		// Note: We must iterate over all targets so compile_command.json gets generated correctly
+		for (auto& target : m_state.targets)
 		{
 			if (target->isSources())
 			{
@@ -505,17 +507,20 @@ bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 
-	// Note: no output from this for now
-	if (!Files::makeDirectories(outputs->directories))
+	if (inProject.willBuild())
 	{
-		Diagnostic::error("Error creating paths for project: {}", inProject.name());
-		return false;
-	}
-
-	if (!inProject.configureFiles().empty())
-	{
-		if (!runConfigureFileParser(inProject, m_state.paths.intermediateDir()))
+		// Note: no output from this for now
+		if (!Files::makeDirectories(outputs->directories))
+		{
+			Diagnostic::error("Error creating paths for project: {}", inProject.name());
 			return false;
+		}
+
+		if (!inProject.configureFiles().empty())
+		{
+			if (!runConfigureFileParser(inProject, m_state.paths.intermediateDir()))
+				return false;
+		}
 	}
 
 	if (!buildToolchain->initialize(m_state))
