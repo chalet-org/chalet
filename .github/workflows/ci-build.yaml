@@ -84,7 +84,7 @@ jobs:
       - name: "Run: Tests"
         run: build/Debug/chalet-debug run tests
   MacOS:
-    runs-on: macos-11
+    runs-on: macos-12
     defaults:
       run:
         shell: bash
