@@ -218,7 +218,7 @@ jobs:
       - name: "Fetch Dependencies"
         run: bash ./fetch_externals.sh
       - name: "Build"
-        run: build/msvc_Debug/chalet-debug -c Release -t vs-stable -a ${{ matrix.arch }} -b native bundle
+        run: ${{ env.CHALET_BIN }} -c Release -t vs-stable -a ${{ matrix.arch }} -b native bundle
       - name: "Run: Tests"
         if: matrix.crossBuild != true
         run: ${{ env.CHALET_BIN }} run tests
