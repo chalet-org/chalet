@@ -143,9 +143,19 @@ bool IBuildTarget::includeInBuild() const noexcept
 	return m_includeInBuild;
 }
 
-void IBuildTarget::setIncludeInBuild(const bool inValue)
+void IBuildTarget::setIncludeInBuild(const bool inValue) noexcept
 {
 	m_includeInBuild &= inValue;
+}
+
+/*****************************************************************************/
+bool IBuildTarget::willBuild() const noexcept
+{
+	return m_willBuild;
+}
+void IBuildTarget::setWillBuild(const bool inValue) noexcept
+{
+	m_willBuild = inValue;
 }
 
 }

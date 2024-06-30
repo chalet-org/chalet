@@ -42,7 +42,10 @@ struct IBuildTarget
 	void setOutputDescription(std::string&& inValue) noexcept;
 
 	bool includeInBuild() const noexcept;
-	void setIncludeInBuild(const bool inValue);
+	void setIncludeInBuild(const bool inValue) noexcept;
+
+	bool willBuild() const noexcept;
+	void setWillBuild(const bool inValue) noexcept;
 
 protected:
 	bool replaceVariablesInPathList(StringList& outList) const;
@@ -58,5 +61,6 @@ private:
 
 	BuildTargetType m_type = BuildTargetType::Unknown;
 	bool m_includeInBuild = true;
+	bool m_willBuild = true;
 };
 }
