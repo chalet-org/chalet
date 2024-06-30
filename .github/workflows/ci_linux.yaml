@@ -10,7 +10,7 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-$(date +"%Y%m%d%H%M")
+  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${date +"%Y%m%d%H%M"}
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -18,6 +18,19 @@ defaults:
   run:
     shell: bash
 jobs:
+  test-name:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Upload"
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          allowUpdates: true
+          generateReleaseNotes: true
+          draft: true
+          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   x86_64-linux-gnu:
     runs-on: ubuntu-20.04
     steps:
@@ -45,7 +58,9 @@ jobs:
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
-          artifacts: dist/chalet-*.zip
+          artifacts: |
+            dist/chalet-x86_64-linux-gnu.zip
+            dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   arm64-linux-gnu:
@@ -84,7 +99,9 @@ jobs:
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
-          artifacts: dist/chalet-*.zip
+          artifacts: |
+            dist/chalet-aarch64-linux-gnu.zip
+            dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   arm-linux-gnueabihf:
@@ -123,6 +140,8 @@ jobs:
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
-          artifacts: dist/chalet-*.zip
+          artifacts: |
+            dist/chalet-arm-linux-gnueabihf.zip
+            dist/chalet_*.deb
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
