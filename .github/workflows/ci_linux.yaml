@@ -18,24 +18,6 @@ defaults:
   run:
     shell: bash
 jobs:
-  test-name:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: "Create Timestamp"
-        run: ${{ env.GENERATE_TIMESTAMP }}
-        id: timestamp
-      - name: "Upload"
-        uses: ncipollo/release-action@v1
-        env:
-          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
-          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
-          allowUpdates: true
-          generateReleaseNotes: true
-          draft: true
-          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
   x86_64-linux-gnu:
     runs-on: ubuntu-20.04
     steps:
@@ -65,7 +47,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
-          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
           artifacts: |
@@ -111,7 +93,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
-          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
           artifacts: |
@@ -157,7 +139,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
-          tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
           allowUpdates: true
           generateReleaseNotes: true
           artifacts: |
