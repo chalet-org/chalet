@@ -29,6 +29,8 @@ jobs:
           sudo apt install $DEFAULT_PACKAGES
       - name: "Color Test"
         run: $CHALET_BIN termtest
+      - name: "Fetch Dependencies"
+        run: bash ./fetch_externals.sh
       - name: "Build: x86_64"
         run: $CHALET_BIN -c Release -t x86_64-linux-gnu-gcc -b native bundle
       - name: "Upload"
@@ -68,6 +70,8 @@ jobs:
           sudo apt install uuid-dev:arm64 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
       - name: "Color Test"
         run: $CHALET_BIN termtest
+      - name: "Fetch Dependencies"
+        run: bash ./fetch_externals.sh
       - name: "Build: arm64"
         run: $CHALET_BIN -c Release -t aarch64-linux-gnu-gcc -b native bundle
       - name: "Upload"
@@ -105,6 +109,8 @@ jobs:
           sudo apt install uuid-dev:armhf gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
       - name: "Color Test"
         run: $CHALET_BIN termtest
+      - name: "Fetch Dependencies"
+        run: bash ./fetch_externals.sh
       - name: "Build: armhf"
         run: $CHALET_BIN -c Release -t arm-linux-gnueabihf-gcc -b native bundle
       - name: "Upload"
