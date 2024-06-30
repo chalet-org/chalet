@@ -1,0 +1,183 @@
+# Note: Before creating a new major/minor release, update CURRENT_RELEASE_BRANCH
+
+name: Chalet Snapshot
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+env:
+  RELEASE_PREFIX: "Chalet"
+  GENERATE_TIMESTAMP: "echo \"timestamp=$(date +'%Y%m%d%H%M')\" >> $GITHUB_OUTPUT"
+  IS_BRANCH: ${{ github.ref_type == 'branch' }}
+  IS_PRERELEASE: true
+  CI: 1
+defaults:
+  run:
+    shell: bash
+jobs:
+  create-release:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Create Timestamp"
+        run: ${{ env.GENERATE_TIMESTAMP }}
+        id: timestamp
+      - name: "Upload"
+        uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
+          commit: ${{ github.sha }}
+          allowUpdates: true
+          generateReleaseNotes: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          draft: true
+          prerelease: ${{ env.IS_PRERELEASE }}
+  all-linux:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]
+        triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
+        include:
+          - os: ubuntu-20.04
+            osId: focal
+          - triplet: x86_64-linux-gnu
+            arch: amd64
+          - triplet: aarch64-linux-gnu
+            arch: arm64
+            crossBuild: true
+          - triplet: arm-linux-gnueabihf
+            arch: armhf
+            crossBuild: true
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.triplet }}
+    env:
+      CHALET_BIN: bin/x64-linux/chalet
+      DEFAULT_PACKAGES: "zip debhelper uuid-dev ninja-build"
+    steps:
+      - name: "Create Timestamp"
+        run: ${{ env.GENERATE_TIMESTAMP }}
+        id: timestamp
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.github.ref }}
+      - name: "Setup"
+        if: matrix.crossBuild == true
+        run: |
+          sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture ${{ matrix.arch }}
+      - name: "Get Packages"
+        run: |
+          sudo apt update
+          sudo apt install ${{ env.DEFAULT_PACKAGES }}
+      - name: "Get Packages (${{ matrix.arch }})"
+        if: matrix.crossBuild == true
+        run: sudo apt install uuid-dev:${{ matrix.arch }} gcc-${{ matrix.triplet }} g++-${{ matrix.triplet }} binutils-${{ matrix.triplet }}
+      - name: "Color Test"
+        run: ${{ env.CHALET_BIN }} termtest
+      - name: "Fetch Dependencies"
+        run: bash ./fetch_externals.sh
+      - name: "Build"
+        run: ${{ env.CHALET_BIN }} -c Release -t ${{ matrix.triplet }}-gcc -b native bundle
+      - name: "Run: Tests"
+        if: matrix.crossBuild != true
+        run: ${{ env.CHALET_BIN }} run tests
+      - name: "Upload"
+        uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
+          commit: ${{ github.sha }}
+          allowUpdates: true
+          generateReleaseNotes: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          artifacts: |
+            dist/chalet-*-linux-gnu*.zip
+            dist/chalet_*.deb
+          draft: true
+          prerelease: ${{ env.IS_PRERELEASE }}
+  all-macos:
+    strategy:
+      matrix:
+        os: [macos-12]
+        triplet: [arm64-apple-darwin, x86_64-apple-darwin, universal-apple-darwin]
+        include:
+          - triplet: arm64-apple-darwin
+            arch: arm64
+          - triplet: x86_64-apple-darwin
+            arch: x86_64
+          - triplet: universal-apple-darwin
+            arch: universal
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.triplet }}
+    env:
+      CHALET_BIN: bin/universal-macos/chalet
+      MACOS_TEAM_ID: ${{ secrets.MACOS_TEAM_ID }}
+      MACOS_APPLE_ID: ${{ secrets.MACOS_APPLE_ID }}
+      MACOS_CHALET_APP_PWD: ${{ secrets.MACOS_CHALET_APP_PWD }}
+      MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+      MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+      MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+    steps:
+      - name: "Prepare Environment for Signing"
+        uses: apple-actions/import-codesign-certs@v2
+        with:
+          p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
+          p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+      - name: "Create Keychain profile"
+        run: xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: "Get Packages"
+        run: brew install ninja
+      - name: "Color Test"
+        run: ${{ env.CHALET_BIN }} termtest
+      - name: "Fetch Dependencies"
+        run: bash ./fetch_externals.sh
+      - name: "Build"
+        run: ${{ env.CHALET_BIN }} configure --os-target-version 11.0 --signing-identity "$MACOS_SIGNING_IDENTITY" -c Release -t ${{ matrix.arch }} -b native bundle
+      - name: "Notarize"
+        run: |
+          xcrun notarytool submit ./dist/chalet-${{ matrix.triplet }}.zip --keychain-profile "ChaletProfile" --wait
+      - name: "Run: Tests"
+        if: matrix.crossBuild != true
+        run: ${{ env.CHALET_BIN }} run tests
+      - name: "Upload"
+        uses: ncipollo/release-action@v1
+        env:
+          BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          name: ${{ env.RELEASE_PREFIX }} ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          tag: ${{ github.ref_name }}
+          commit: ${{ github.sha }}
+          allowUpdates: true
+          generateReleaseNotes: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          artifacts: dist/chalet-${{ matrix.triplet }}.zip
+          draft: true
+          prerelease: ${{ env.IS_PRERELEASE }}
