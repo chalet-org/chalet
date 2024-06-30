@@ -10,7 +10,7 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ github.event.repository.updated_at }}
+  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-$(date +"%Y%m%d%H%M")
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -43,6 +43,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          allowUpdates: true
+          generateReleaseNotes: true
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
@@ -80,6 +82,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          allowUpdates: true
+          generateReleaseNotes: true
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
@@ -117,6 +121,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
           tag: ${{ env.IS_BRANCH && env.BRANCH_RELEASE_NAME || github.ref_name }}
+          allowUpdates: true
+          generateReleaseNotes: true
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
