@@ -7,13 +7,9 @@ on:
     branches:
       - main
 env:
-  CHALET_BIN: bin/x64-linux/chalet
-  UBUNTU_VERSION: focal
-  DEFAULT_PACKAGES: "zip debhelper uuid-dev ninja-build"
-  GENERATE_TIMESTAMP: "echo \"timestamp=$(date +'%Y%m%d%H%M')\" >> $GITHUB_OUTPUT"
   RELEASE_PREFIX: "Chalet"
+  GENERATE_TIMESTAMP: "echo \"timestamp=$(date +'%Y%m%d%H%M')\" >> $GITHUB_OUTPUT"
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
-  IS_PRERELEASE: true
   CI: 1
 defaults:
   run:
@@ -25,6 +21,8 @@ jobs:
         os: [ubuntu-20.04]
         triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
         include:
+          - os: ubuntu-20.04
+            osId: focal
           - triplet: x86_64-linux-gnu
             arch: amd64
           - triplet: aarch64-linux-gnu
@@ -35,6 +33,9 @@ jobs:
             crossBuild: true
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.triplet }}
+    env:
+      CHALET_BIN: bin/x64-linux/chalet
+      DEFAULT_PACKAGES: "zip debhelper uuid-dev ninja-build"
     steps:
       - name: "Create Timestamp"
         run: ${{ env.GENERATE_TIMESTAMP }}
@@ -47,12 +48,12 @@ jobs:
         if: matrix.crossBuild == true
         run: |
           sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
-          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates multiverse" | sudo tee -a /etc/apt/sources.list
           sudo dpkg --add-architecture ${{ matrix.arch }}
       - name: "Get Packages"
         run: |
@@ -89,4 +90,4 @@ jobs:
             dist/chalet-*-linux-gnu*.zip
             dist/chalet_*.deb
           draft: true
-          prerelease: ${{ env.IS_PRERELEASE == 'true' }}
+          prerelease: true
