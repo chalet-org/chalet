@@ -10,7 +10,7 @@ env:
   CHALET_BIN: bin/x64-linux/chalet
   UBUNTU_VERSION: focal
   DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
-  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ github.sha }}
+  BRANCH_RELEASE_NAME: ${{ github.ref_name }}-${{ github.event.repository.updated_at }}
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: true
   CI: 1
@@ -46,10 +46,6 @@ jobs:
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
   arm64-linux-gnu:
     runs-on: ubuntu-20.04
     steps:
@@ -87,10 +83,6 @@ jobs:
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE == 'true' }}
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
   arm-linux-gnueabihf:
     runs-on: ubuntu-20.04
     steps:
@@ -128,7 +120,3 @@ jobs:
           artifacts: dist/chalet-*.zip
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
-          omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
-          omitNameDuringUpdate: true
-          omitPrereleaseDuringUpdate: true
