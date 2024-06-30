@@ -12,6 +12,9 @@
 	"files.encoding": "utf8",
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
+	"files.exclude": {
+		// "bin": true
+	},
 	"search.exclude": {
 		".chaletrc": false,
 		"external": true,

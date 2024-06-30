@@ -1,0 +1,120 @@
+# Note: Before creating a new major/minor release, update CURRENT_RELEASE_BRANCH
+
+name: Chalet Release
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+env:
+  CHALET_BIN: bin/x64-linux/chalet
+  UBUNTU_VERSION: focal
+  DEFAULT_PACKAGES: zip debhelper uuid-dev ninja-build
+  RELEASE_NAME: ${{ github.ref }}-test
+  CI: 1
+defaults:
+  run:
+    shell: bash
+jobs:
+  x86_64-linux-gnu:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      - name: "Get Packages"
+        run: |
+          sudo apt update
+          sudo apt install $DEFAULT_PACKAGES
+      - name: "Color Test"
+        run: $CHALET_BIN termtest
+      - name: "Build: x86_64"
+        run: $CHALET_BIN -c Release -t x86_64-linux-gnu-gcc -b native bundle
+      - name: "Upload"
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
+          files: |
+            ./dist/chalet-x86_64-linux-gnu.zip
+            ./dist/chalet-amd64-linux-debian.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
+      - name: "Run: Tests"
+        run: $CHALET_BIN run tests
+  arm64-linux-gnu:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.github.ref }}
+      - name: "Setup"
+        run: |
+          sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=arm64] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture arm64
+      - name: "Get Packages"
+        run: |
+          sudo apt update
+          sudo apt install $DEFAULT_PACKAGES
+          sudo apt install uuid-dev:arm64 gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+      - name: "Color Test"
+        run: $CHALET_BIN termtest
+      - name: "Build: arm64"
+        run: $CHALET_BIN -c Release -t aarch64-linux-gnu-gcc -b native bundle
+      - name: "Upload"
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
+          files: |
+            ./dist/chalet-aarch64-linux-gnu.zip
+            ./dist/chalet-arm64-linux-debian.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
+  arm-linux-gnueabihf:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.github.ref }}
+      - name: "Setup"
+        run: |
+          sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates main restricted" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates universe" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION multiverse" | sudo tee -a /etc/apt/sources.list
+          echo "deb [arch=armhf] http://ports.ubuntu.com/ $UBUNTU_VERSION-updates multiverse" | sudo tee -a /etc/apt/sources.list
+          sudo dpkg --add-architecture armhf
+      - name: "Get Packages"
+        run: |
+          sudo apt update
+          sudo apt install $DEFAULT_PACKAGES
+          sudo apt install uuid-dev:armhf gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf binutils-arm-linux-gnueabihf
+      - name: "Color Test"
+        run: $CHALET_BIN termtest
+      - name: "Build: armhf"
+        run: $CHALET_BIN -c Release -t arm-linux-gnueabihf-gcc -b native bundle
+      - name: "Upload"
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.RELEASE_NAME }}
+          files: |
+            ./dist/chalet-arm-linux-gnueabihf.zip
+            ./dist/chalet-arm-linux-debian.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          prerelease: false
