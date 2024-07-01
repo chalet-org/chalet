@@ -16,30 +16,32 @@ jobs:
   get-timestamp:
     runs-on: ubuntu-20.04
     env:
-      GENERATE_TIMESTAMP: "echo \"timestamp=$(date +'%Y%m%d%H%M')\" >> $GITHUB_OUTPUT"
       IS_BRANCH: ${{ github.ref_type == 'branch' }}
     outputs:
-      release: ${{ steps.timestamp.outputs.release }}
+      release: ${{ steps.release.outputs.release }}
     steps:
-      - name: "Create Timestamp"
-        run: ${{ env.GENERATE_TIMESTAMP }}
+      - name: "Generate Timestamp"
+        run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
         id: timestamp
-      - run: echo "branchRelease=${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
+      - name: "Generate Branch Release Name"
+        run: echo "branchRelease=${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
         id: branchRelease
-      - run: echo "release=Chalet ${{ env.IS_BRANCH && steps.timestamp.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
+      - name: "Generate Release Name"
+        run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
         id: release
   create-release:
     runs-on: ubuntu-20.04
     needs: get-timestamp
     outputs:
       release: ${{ needs.get-timestamp.outputs.release }}
+      tag: ${{ github.ref_name }}.${{ github.run_number }}
     steps:
       - name: "Create Release"
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          name: ${{ needs.get-timestamp.outputs.release }}
-          tag: ${{ github.ref_name }}
+          name: ${{ outputs.release }}
+          tag: ${{ outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
@@ -109,7 +111,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
-          tag: ${{ github.ref_name }}
+          tag: ${{ needs.create-release.outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
@@ -180,7 +182,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
-          tag: ${{ github.ref_name }}
+          tag: ${{ needs.create-release.outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
@@ -235,7 +237,7 @@ jobs:
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
-          tag: ${{ github.ref_name }}
+          tag: ${{ needs.create-release.outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
