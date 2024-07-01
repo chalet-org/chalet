@@ -1,4 +1,4 @@
-name: ${{ github.ref_type == 'branch' && 'Chalet Snapshot' || 'Chalet Release' }}
+name: Chalet Snapshot
 on:
   pull_request:
   push:
