@@ -24,7 +24,7 @@ jobs:
         run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
         id: timestamp
       - name: "Generate Branch Release Name"
-        run: echo "branchRelease=${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
+        run: echo "branchRelease=Snapshot (${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }})" >> $GITHUB_OUTPUT
         id: branchRelease
       - name: "Generate Release Name"
         run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
@@ -34,7 +34,7 @@ jobs:
     needs: get-timestamp
     env:
       RELEASE_NAME: ${{ needs.get-timestamp.outputs.release }}
-      TAG_NAME: ${{ github.ref_name }}.${{ github.run_number }}
+      TAG_NAME: ""
     outputs:
       release: ${{ env.RELEASE_NAME }}
       tag: ${{ env.TAG_NAME }}
