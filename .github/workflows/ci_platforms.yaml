@@ -19,6 +19,7 @@ jobs:
       IS_BRANCH: ${{ github.ref_type == 'branch' }}
     outputs:
       release: ${{ steps.release.outputs.release }}
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
       - name: "Generate Timestamp"
         run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
@@ -26,19 +27,31 @@ jobs:
       - name: "Generate Branch Release Name"
         run: echo "branchRelease=Snapshot (${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }})" >> $GITHUB_OUTPUT
         id: branchRelease
+      - name: "Generate Branch Release Tag"
+        run: echo "branchTag=snapshot-${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
+        id: branchTag
       - name: "Generate Release Name"
         run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
         id: release
+      - name: "Generate Tag Name"
+        run: echo "tag=Chalet ${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
+        id: tag
   create-release:
     runs-on: ubuntu-20.04
     needs: get-timestamp
     env:
       RELEASE_NAME: ${{ needs.get-timestamp.outputs.release }}
-      TAG_NAME: ${{ github.ref }}
+      TAG_NAME: ${{ needs.get-timestamp.outputs.tag }}
     outputs:
       release: ${{ env.RELEASE_NAME }}
       tag: ${{ env.TAG_NAME }}
     steps:
+      - name: "Create Tag"
+        if: github.ref_type == 'branch'
+        uses: laputansoft/github-tag-action@v4.6
+        with:
+          github_token: ${{ env.github-token }}
+          tag: ${{ env.TAG_NAME }}
       - name: "Create Release"
         uses: ncipollo/release-action@v1
         with:
