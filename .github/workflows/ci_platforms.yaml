@@ -32,16 +32,19 @@ jobs:
   create-release:
     runs-on: ubuntu-20.04
     needs: get-timestamp
+    env:
+      RELEASE_NAME: ${{ needs.get-timestamp.outputs.release }}
+      TAG_NAME: ${{ github.ref_name }}.${{ github.run_number }}
     outputs:
-      release: ${{ needs.get-timestamp.outputs.release }}
-      tag: ${{ github.ref_name }}.${{ github.run_number }}
+      release: ${{ env.RELEASE_NAME }}
+      tag: ${{ env.TAG_NAME }}
     steps:
       - name: "Create Release"
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          name: ${{ outputs.release }}
-          tag: ${{ outputs.tag }}
+          name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.TAG_NAME }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
