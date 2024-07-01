@@ -34,7 +34,7 @@ jobs:
     needs: get-timestamp
     env:
       RELEASE_NAME: ${{ needs.get-timestamp.outputs.release }}
-      TAG_NAME: ""
+      TAG_NAME: ${{ github.ref }}
     outputs:
       release: ${{ env.RELEASE_NAME }}
       tag: ${{ env.TAG_NAME }}
