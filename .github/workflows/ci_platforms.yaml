@@ -25,7 +25,7 @@ jobs:
         run: echo "timestamp=$(date +'%Y%m%d%H%M')" >> $GITHUB_OUTPUT
         id: timestamp
       - name: "Generate Branch Release Name"
-        run: echo "branchRelease=Snapshot (${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }})" >> $GITHUB_OUTPUT
+        run: echo "branchRelease=snapshot (${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }})" >> $GITHUB_OUTPUT
         id: branchRelease
       - name: "Generate Branch Release Tag"
         run: echo "branchTag=snapshot-${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
@@ -34,7 +34,7 @@ jobs:
         run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
         id: release
       - name: "Generate Tag Name"
-        run: echo "tag=Chalet ${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
+        run: echo "tag=${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
         id: tag
   create-release:
     runs-on: ubuntu-20.04
