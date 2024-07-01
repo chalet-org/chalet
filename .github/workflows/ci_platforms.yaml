@@ -1,6 +1,4 @@
-# Note: Before creating a new major/minor release, update CURRENT_RELEASE_BRANCH
-
-name: Chalet Snapshot
+name: ${{ github.ref_type == 'branch' && 'Chalet Snapshot' || 'Chalet Release' }}
 on:
   pull_request:
   push:
