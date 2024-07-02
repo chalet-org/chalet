@@ -118,16 +118,11 @@ bool IDistTarget::resolveDependentTargets(std::string& outDepends, std::string& 
 	if (!Files::pathExists(outPath))
 	{
 		auto resolved = Files::which(outPath);
-		if (resolved.empty() && outDepends.empty())
+		if (resolved.empty())
 		{
-			bool inBuild = String::startsWith(m_state.paths.buildOutputDir(), outPath);
-			if (!inBuild)
+			if (String::startsWith(m_state.paths.buildOutputDir(), outPath))
 			{
-				Diagnostic::error("The path for the distribution target '{}' doesn't exist: {}", this->name(), outPath);
-				return false;
-			}
-			else
-			{
+				// Assume it gets created somewhere during the build
 #if defined(CHALET_WIN32)
 				auto exe = Files::getPlatformExecutableExtension();
 				if (!exe.empty() && !String::endsWith(exe, outPath))
@@ -135,6 +130,12 @@ bool IDistTarget::resolveDependentTargets(std::string& outDepends, std::string& 
 					outPath += exe;
 				}
 #endif
+				outPath = Files::getCanonicalPath(outPath);
+			}
+			else
+			{
+				Diagnostic::error("The path for the distribution target '{}' doesn't exist: {}", this->name(), outPath);
+				return false;
 			}
 		}
 

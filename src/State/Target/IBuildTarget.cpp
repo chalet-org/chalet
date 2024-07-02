@@ -141,23 +141,21 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 		auto resolved = Files::which(outPath);
 		if (resolved.empty())
 		{
-			if (!dependsOnTargets && !dependsOnBuiltFile)
+			if (dependsOnTargets || dependsOnBuiltFile)
 			{
-				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
-				return false;
+#if defined(CHALET_WIN32)
+				auto exe = Files::getPlatformExecutableExtension();
+				if (!exe.empty() && !String::endsWith(exe, outPath))
+				{
+					outPath += exe;
+				}
+#endif
+				outPath = Files::getCanonicalPath(outPath);
 			}
 			else
 			{
-#if defined(CHALET_WIN32)
-				if (!dependsOnBuiltFile)
-				{
-					auto exe = Files::getPlatformExecutableExtension();
-					if (!exe.empty() && !String::endsWith(exe, outPath))
-					{
-						outPath += exe;
-					}
-				}
-#endif
+				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
+				return false;
 			}
 		}
 		else
