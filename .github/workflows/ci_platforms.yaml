@@ -270,3 +270,22 @@ jobs:
             dist/chalet-*-installer.exe
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
+  do-release:
+    runs-on: ubuntu-20.04
+    needs: [create-release, all-linux, all-macos, all-windows]
+    steps:
+      - name: "Release"
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          name: ${{ needs.create-release.outputs.release }}
+          tag: ${{ needs.create-release.outputs.tag }}
+          commit: ${{ github.sha }}
+          allowUpdates: true
+          generateReleaseNotes: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          draft: false
+          prerelease: ${{ env.IS_PRERELEASE }}
