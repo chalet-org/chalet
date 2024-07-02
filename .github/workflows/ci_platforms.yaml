@@ -48,10 +48,13 @@ jobs:
           git push --tags
       - name: "Create Release"
         uses: ncipollo/release-action@v1
+        env:
+          RELEASE_NAME: ${{ steps.release.outputs.release }}
+          TAG_NAME: ${{ steps.tag.outputs.tag }}
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          name: ${{ steps.release.outputs.release }}
-          tag: ${{ steps.tag.outputs.tag }}
+          name: ${{ env.RELEASE_NAME }}
+          tag: ${{ env.TAG_NAME }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
