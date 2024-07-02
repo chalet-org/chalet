@@ -14,7 +14,7 @@ defaults:
   run:
     shell: bash
 jobs:
-  get-timestamp:
+  create-release:
     runs-on: ubuntu-20.04
     outputs:
       release: ${{ steps.release.outputs.release }}
@@ -35,16 +35,6 @@ jobs:
       - name: "Generate Tag Name"
         run: echo "tag=${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
         id: tag
-  create-release:
-    runs-on: ubuntu-20.04
-    needs: get-timestamp
-    env:
-      RELEASE_NAME: ${{ needs.get-timestamp.outputs.release }}
-      TAG_NAME: ${{ needs.get-timestamp.outputs.tag }}
-    outputs:
-      release: ${{ env.RELEASE_NAME }}
-      tag: ${{ env.TAG_NAME }}
-    steps:
       - name: "Checkout"
         uses: actions/checkout@v4
         with:
@@ -60,8 +50,8 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
-          name: ${{ env.RELEASE_NAME }}
-          tag: ${{ env.TAG_NAME }}
+          name: ${{ steps.release.outputs.release }}
+          tag: ${{ steps.tag.outputs.tag }}
           commit: ${{ github.sha }}
           allowUpdates: true
           generateReleaseNotes: true
@@ -273,7 +263,7 @@ jobs:
   do-release:
     runs-on: ubuntu-20.04
     needs: [create-release, all-linux, all-macos, all-windows]
-    if: ${{ github.ref_type == 'branch' }}
+    if: github.ref_type == 'branch'
     steps:
       - name: "Release"
         uses: ncipollo/release-action@v1
