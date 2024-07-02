@@ -878,7 +878,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 /*****************************************************************************/
 bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bool inRunCommand)
 {
-	std::string path = inTarget.path();
+	const auto& path = inTarget.path();
 	if (path.empty())
 	{
 		Diagnostic::error("There was an internal error running the process target: {}", inTarget.name());

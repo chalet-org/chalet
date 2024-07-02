@@ -63,8 +63,10 @@ bool IBuildTarget::initialize()
 bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& outPath, const char* inKey) const
 {
 	bool dependsOnTargets = false;
+	bool dependsOnBuiltFile = false;
 	if (!outDepends.empty())
 	{
+		const auto& buildDir = m_state.paths.buildOutputDir();
 		for (auto it = outDepends.begin(); it != outDepends.end();)
 		{
 			auto& depends = *it;
@@ -74,7 +76,9 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 				continue;
 			}
 
-			if (depends.find_first_of("/\\") != std::string::npos)
+			bool startsWithBuildDir = String::startsWith(buildDir, depends);
+
+			if (!startsWithBuildDir && depends.find_first_of("/\\") != std::string::npos)
 			{
 				Diagnostic::error("The target '{}' depends on a path that was not found: {}", this->name(), depends);
 				return false;
@@ -110,6 +114,15 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 					break;
 				}
 			}
+
+			if (startsWithBuildDir)
+			{
+				// Assume it gets created somewhere during the build
+				erase = false;
+				dependsOnBuiltFile = true;
+				found = true;
+			}
+
 			if (!found)
 			{
 				Diagnostic::error("The target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), depends);
@@ -128,7 +141,7 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 		auto resolved = Files::which(outPath);
 		if (resolved.empty())
 		{
-			if (!dependsOnTargets)
+			if (!dependsOnTargets && !dependsOnBuiltFile)
 			{
 				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
 				return false;
@@ -136,10 +149,13 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 			else
 			{
 #if defined(CHALET_WIN32)
-				auto exe = Files::getPlatformExecutableExtension();
-				if (!exe.empty() && !String::endsWith(exe, outPath))
+				if (!dependsOnBuiltFile)
 				{
-					outPath += exe;
+					auto exe = Files::getPlatformExecutableExtension();
+					if (!exe.empty() && !String::endsWith(exe, outPath))
+					{
+						outPath += exe;
+					}
 				}
 #endif
 			}
