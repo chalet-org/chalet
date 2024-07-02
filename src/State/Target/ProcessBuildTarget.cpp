@@ -87,12 +87,12 @@ bool ProcessBuildTarget::validate()
 				if (target->isSources())
 				{
 					depends = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(*target));
-					erase = !depends.empty();
+					erase = depends.empty();
 				}
 				else if (target->isCMake())
 				{
 					depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
-					erase = !depends.empty();
+					erase = depends.empty();
 				}
 				dependsOnTargets = true;
 				found = true;
@@ -114,13 +114,18 @@ bool ProcessBuildTarget::validate()
 	if (!Files::pathExists(m_path))
 	{
 		auto resolved = Files::which(m_path);
-		if (resolved.empty() && !dependsOnTargets)
+		if (resolved.empty())
 		{
-			Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);
-			return false;
+			if (!dependsOnTargets)
+			{
+				Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);
+				return false;
+			}
 		}
-
-		m_path = std::move(resolved);
+		else
+		{
+			m_path = std::move(resolved);
+		}
 	}
 
 	return true;

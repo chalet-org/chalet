@@ -787,7 +787,10 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 {
 	const auto& file = inTarget.file();
 	if (file.empty())
+	{
+		Diagnostic::error("There was an internal error running the script target: {}", inTarget.name());
 		return false;
+	}
 
 	Timer buildTimer;
 	bool result = true;
@@ -834,7 +837,10 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 {
 	const auto& path = inTarget.path();
 	if (path.empty())
+	{
+		Diagnostic::error("There was an internal error running the process target: {}", inTarget.name());
 		return false;
+	}
 
 	Timer buildTimer;
 
@@ -876,7 +882,10 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 {
 	const auto& schema = inTarget.schema();
 	if (schema.empty())
+	{
+		Diagnostic::error("There was an internal error running the validation target: {}", inTarget.name());
 		return false;
+	}
 
 	Timer buildTimer;
 
