@@ -284,7 +284,7 @@ jobs:
           allowUpdates: true
           generateReleaseNotes: true
           omitBodyDuringUpdate: true
-          omitDraftDuringUpdate: true
+          omitDraftDuringUpdate: false
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
           draft: false
