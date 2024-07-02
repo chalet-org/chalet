@@ -273,6 +273,7 @@ jobs:
   do-release:
     runs-on: ubuntu-20.04
     needs: [create-release, all-linux, all-macos, all-windows]
+    if: env.IS_BRANCH
     steps:
       - name: "Release"
         uses: ncipollo/release-action@v1
