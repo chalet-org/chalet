@@ -43,6 +43,7 @@ struct IDistTarget
 	void setIncludeInDistribution(const bool inValue);
 
 protected:
+	bool resolveDependentTargets(std::string& outDepends, std::string& outPath, const char* inKey) const;
 	bool replaceVariablesInPathList(StringList& outList) const;
 	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
 	bool processIncludeExceptions(StringList& outList) const;

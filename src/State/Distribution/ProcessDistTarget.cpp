@@ -38,59 +38,8 @@ bool ProcessDistTarget::initialize()
 /*****************************************************************************/
 bool ProcessDistTarget::validate()
 {
-	if (!m_dependsOn.empty())
-	{
-		if (String::equals(this->name(), m_dependsOn))
-		{
-			Diagnostic::error("The process target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
-			return false;
-		}
-
-		bool found = false;
-		for (auto& target : m_state.distribution)
-		{
-			if (String::equals(target->name(), this->name()))
-				break;
-
-			if (String::equals(target->name(), m_dependsOn))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			Diagnostic::error("The distribution target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), m_dependsOn);
-			return false;
-		}
-	}
-
-	if (!Files::pathExists(m_path))
-	{
-		auto resolved = Files::which(m_path);
-		if (resolved.empty() && m_dependsOn.empty())
-		{
-			bool inBuild = String::startsWith(m_state.paths.buildOutputDir(), m_path);
-			if (!inBuild)
-			{
-				Diagnostic::error("The process path for the distribution target '{}' doesn't exist: {}", this->name(), m_path);
-				return false;
-			}
-			else
-			{
-#if defined(CHALET_WIN32)
-				auto exe = Files::getPlatformExecutableExtension();
-				if (!exe.empty() && !String::endsWith(exe, m_path))
-				{
-					m_path += exe;
-				}
-#endif
-			}
-		}
-
-		if (!resolved.empty())
-			m_path = std::move(resolved);
-	}
+	if (!resolveDependentTargets(m_dependsOn, m_path, "dependsOn"))
+		return false;
 
 	return true;
 }

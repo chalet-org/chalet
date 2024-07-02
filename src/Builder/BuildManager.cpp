@@ -76,6 +76,7 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	auto buildTargets = m_state.inputs.getBuildTargets();
 	const bool addAllTargets = List::contains(buildTargets, std::string(Values::All)) || !m_state.info.onlyRequired() || inRoute.isClean();
 
+	StringList dependsOn;
 	StringList requiredTargets;
 	if (!addAllTargets)
 	{
@@ -83,12 +84,54 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 		{
 			m_state.getTargetDependencies(requiredTargets, target, true);
 		}
+
+		// If a non-source target depends on a source target to be built,
+		//   but it's excluded via onlyRequired, we have to add it in here
+		//
+		const auto& buildDir = m_state.paths.buildOutputDir();
+		for (auto& target : m_state.targets)
+		{
+			if (target->isProcess())
+			{
+				auto& process = static_cast<const ProcessBuildTarget&>(*target);
+				auto& depends = process.dependsOn();
+				for (auto& dep : depends)
+				{
+					if (String::startsWith(buildDir, dep))
+					{
+						List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
+					}
+				}
+			}
+		}
 	}
 
 	for (auto& target : m_state.targets)
 	{
 		auto& targetName = target->name();
-		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
+		const bool isSources = target->isSources();
+		bool notIncluded = !addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName);
+
+		if (!dependsOn.empty() && notIncluded)
+		{
+			if (isSources)
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (String::contains(dependsOn, project.outputFile()))
+					notIncluded = false;
+			}
+			else if (target->isCMake())
+			{
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				for (auto& depends : dependsOn)
+				{
+					if (String::endsWith(project.runExecutable(), depends))
+						notIncluded = false;
+				}
+			}
+		}
+
+		if (notIncluded)
 			continue;
 
 		target->setWillBuild(true);
@@ -835,7 +878,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 /*****************************************************************************/
 bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bool inRunCommand)
 {
-	const auto& path = inTarget.path();
+	std::string path = inTarget.path();
 	if (path.empty())
 	{
 		Diagnostic::error("There was an internal error running the process target: {}", inTarget.name());
@@ -855,7 +898,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 		Output::lineBreak();
 
 	StringList cmd;
-	cmd.push_back(inTarget.path());
+	cmd.push_back(path);
 	for (auto& arg : inTarget.arguments())
 	{
 		cmd.push_back(arg);
@@ -864,7 +907,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	bool result = true;
 	if (canProcessRun(m_state.cache.file().sources(), inTarget.dependsOn()))
 	{
-		result = runProcess(cmd, inTarget.path(), inRunCommand);
+		result = runProcess(cmd, path, inRunCommand);
 	}
 	else
 	{

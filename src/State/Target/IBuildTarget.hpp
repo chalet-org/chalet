@@ -48,6 +48,7 @@ struct IBuildTarget
 	void setWillBuild(const bool inValue) noexcept;
 
 protected:
+	bool resolveDependentTargets(StringList& outDepends, std::string& outPath, const char* inKey) const;
 	bool replaceVariablesInPathList(StringList& outList) const;
 	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
 

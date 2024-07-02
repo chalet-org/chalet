@@ -31,6 +31,7 @@
 #include "State/PackageManager.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -220,24 +221,26 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 	{
 		bool isSources = target->isSources();
 		bool isTarget = String::equals(inTargetName, target->name());
-		if (isSources && isTarget)
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			for (auto& link : project.projectSharedLinks())
-			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(outList, link, true);
-			}
-
-			for (auto& link : project.projectStaticLinks())
-			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(outList, link, true);
-			}
-		}
-
 		if (isTarget)
+		{
+			if (isSources)
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				for (auto& link : project.projectSharedLinks())
+				{
+					if (List::addIfDoesNotExist(outList, link))
+						getTargetDependencies(outList, link, true);
+				}
+
+				for (auto& link : project.projectStaticLinks())
+				{
+					if (List::addIfDoesNotExist(outList, link))
+						getTargetDependencies(outList, link, true);
+				}
+			}
+
 			break;
+		}
 
 		if (!isSources && !inWithSelf)
 		{

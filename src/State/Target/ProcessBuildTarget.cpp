@@ -53,80 +53,8 @@ bool ProcessBuildTarget::initialize()
 /*****************************************************************************/
 bool ProcessBuildTarget::validate()
 {
-	bool dependsOnTargets = false;
-	for (auto it = m_dependsOn.begin(); it != m_dependsOn.end();)
-	{
-		auto& depends = *it;
-		if (Files::pathExists(depends))
-		{
-			it++;
-			continue;
-		}
-
-		if (depends.find_first_of("/\\") != std::string::npos)
-		{
-			Diagnostic::error("The process target '{}' depends on a path that was not found: {}", this->name(), depends);
-			return false;
-		}
-
-		if (String::equals(this->name(), depends))
-		{
-			Diagnostic::error("The process target '{}' depends on itself. Remove it from 'dependsOn'.", this->name());
-			return false;
-		}
-
-		bool found = false;
-		bool erase = true;
-		for (auto& target : m_state.targets)
-		{
-			if (String::equals(target->name(), this->name()))
-				break;
-
-			if (String::equals(target->name(), depends))
-			{
-				if (target->isSources())
-				{
-					depends = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(*target));
-					erase = depends.empty();
-				}
-				else if (target->isCMake())
-				{
-					depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
-					erase = depends.empty();
-				}
-				dependsOnTargets = true;
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			Diagnostic::error("The process target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), depends);
-			return false;
-		}
-
-		if (erase)
-			it = m_dependsOn.erase(it);
-		else
-			it++;
-	}
-
-	if (!Files::pathExists(m_path))
-	{
-		auto resolved = Files::which(m_path);
-		if (resolved.empty())
-		{
-			if (!dependsOnTargets)
-			{
-				Diagnostic::error("The process path for the target '{}' doesn't exist: {}", this->name(), m_path);
-				return false;
-			}
-		}
-		else
-		{
-			m_path = std::move(resolved);
-		}
-	}
+	if (!resolveDependentTargets(m_dependsOn, m_path, "dependsOn"))
+		return false;
 
 	return true;
 }

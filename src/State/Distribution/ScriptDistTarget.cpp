@@ -38,8 +38,6 @@ bool ScriptDistTarget::initialize()
 /*****************************************************************************/
 bool ScriptDistTarget::validate()
 {
-	const auto& targetName = this->name();
-
 	auto pathResult = m_state.tools.scriptAdapter().getScriptTypeFromPath(m_file, m_state.inputs.inputFile());
 	if (pathResult.type == ScriptType::None)
 		return false;
@@ -47,38 +45,8 @@ bool ScriptDistTarget::validate()
 	m_file = std::move(pathResult.file);
 	m_scriptType = pathResult.type;
 
-	if (!m_dependsOn.empty())
-	{
-		if (String::equals(this->name(), m_dependsOn))
-		{
-			Diagnostic::error("The distribution script target '{}' depends on itself. Remove the 'dependsOn' key.", this->name());
-			return false;
-		}
-
-		bool found = false;
-		for (auto& target : m_state.distribution)
-		{
-			if (String::equals(target->name(), this->name()))
-				break;
-
-			if (String::equals(target->name(), m_dependsOn))
-			{
-				found = true;
-				break;
-			}
-		}
-		if (!found)
-		{
-			Diagnostic::error("The distribution script target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), m_dependsOn);
-			return false;
-		}
-	}
-
-	if (m_dependsOn.empty() && !Files::pathExists(m_file))
-	{
-		Diagnostic::error("File for the distribution script target '{}' doesn't exist: {}", targetName, m_file);
+	if (!resolveDependentTargets(m_dependsOn, m_file, "dependsOn"))
 		return false;
-	}
 
 	return true;
 }

@@ -6,6 +6,7 @@
 #include "State/Distribution/IDistTarget.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -84,6 +85,65 @@ bool IDistTarget::isValidation() const noexcept
 	return m_type == DistTargetType::Validation;
 }
 
+/*****************************************************************************/
+bool IDistTarget::resolveDependentTargets(std::string& outDepends, std::string& outPath, const char* inKey) const
+{
+	if (!outDepends.empty())
+	{
+		if (String::equals(this->name(), outDepends))
+		{
+			Diagnostic::error("The distribution target '{}' depends on itself. Remove it from '{}'", this->name(), inKey);
+			return false;
+		}
+
+		bool found = false;
+		for (auto& target : m_state.distribution)
+		{
+			if (String::equals(target->name(), this->name()))
+				break;
+
+			if (String::equals(target->name(), outDepends))
+			{
+				found = true;
+				break;
+			}
+		}
+		if (!found)
+		{
+			Diagnostic::error("The distribution target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), outDepends);
+			return false;
+		}
+	}
+
+	if (!Files::pathExists(outPath))
+	{
+		auto resolved = Files::which(outPath);
+		if (resolved.empty() && outDepends.empty())
+		{
+			bool inBuild = String::startsWith(m_state.paths.buildOutputDir(), outPath);
+			if (!inBuild)
+			{
+				Diagnostic::error("The path for the distribution target '{}' doesn't exist: {}", this->name(), outPath);
+				return false;
+			}
+			else
+			{
+#if defined(CHALET_WIN32)
+				auto exe = Files::getPlatformExecutableExtension();
+				if (!exe.empty() && !String::endsWith(exe, outPath))
+				{
+					outPath += exe;
+				}
+#endif
+			}
+		}
+
+		if (!resolved.empty())
+			outPath = std::move(resolved);
+	}
+
+	return true;
+}
 /*****************************************************************************/
 bool IDistTarget::replaceVariablesInPathList(StringList& outList) const
 {

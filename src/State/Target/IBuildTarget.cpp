@@ -5,6 +5,7 @@
 
 #include "State/Target/IBuildTarget.hpp"
 
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -55,6 +56,99 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 /*****************************************************************************/
 bool IBuildTarget::initialize()
 {
+	return true;
+}
+
+/*****************************************************************************/
+bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& outPath, const char* inKey) const
+{
+	bool dependsOnTargets = false;
+	if (!outDepends.empty())
+	{
+		for (auto it = outDepends.begin(); it != outDepends.end();)
+		{
+			auto& depends = *it;
+			if (Files::pathExists(depends))
+			{
+				it++;
+				continue;
+			}
+
+			if (depends.find_first_of("/\\") != std::string::npos)
+			{
+				Diagnostic::error("The target '{}' depends on a path that was not found: {}", this->name(), depends);
+				return false;
+			}
+
+			if (String::equals(this->name(), depends))
+			{
+				Diagnostic::error("The target '{}' depends on itself. Remove it from '{}'.", this->name(), inKey);
+				return false;
+			}
+
+			bool found = false;
+			bool erase = true;
+			for (auto& target : m_state.targets)
+			{
+				if (String::equals(target->name(), this->name()))
+					break;
+
+				if (String::equals(target->name(), depends))
+				{
+					if (target->isSources())
+					{
+						depends = m_state.paths.getTargetFilename(static_cast<const SourceTarget&>(*target));
+						erase = depends.empty();
+					}
+					else if (target->isCMake())
+					{
+						depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
+						erase = depends.empty();
+					}
+					dependsOnTargets = true;
+					found = true;
+					break;
+				}
+			}
+			if (!found)
+			{
+				Diagnostic::error("The target '{}' depends on the '{}' target which either doesn't exist or sequenced later.", this->name(), depends);
+				return false;
+			}
+
+			if (erase)
+				it = outDepends.erase(it);
+			else
+				it++;
+		}
+	}
+
+	if (!Files::pathExists(outPath))
+	{
+		auto resolved = Files::which(outPath);
+		if (resolved.empty())
+		{
+			if (!dependsOnTargets)
+			{
+				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
+				return false;
+			}
+			else
+			{
+#if defined(CHALET_WIN32)
+				auto exe = Files::getPlatformExecutableExtension();
+				if (!exe.empty() && !String::endsWith(exe, outPath))
+				{
+					outPath += exe;
+				}
+#endif
+			}
+		}
+		else
+		{
+			outPath = std::move(resolved);
+		}
+	}
 	return true;
 }
 
