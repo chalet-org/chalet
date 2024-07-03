@@ -76,7 +76,6 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	auto buildTargets = m_state.inputs.getBuildTargets();
 	const bool addAllTargets = List::contains(buildTargets, std::string(Values::All)) || !m_state.info.onlyRequired() || inRoute.isClean();
 
-	StringList dependsOn;
 	StringList requiredTargets;
 	if (!addAllTargets)
 	{
@@ -84,54 +83,12 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 		{
 			m_state.getTargetDependencies(requiredTargets, target, true);
 		}
-
-		// If a non-source target depends on a source target to be built,
-		//   but it's excluded via onlyRequired, we have to add it in here
-		//
-		const auto& buildDir = m_state.paths.buildOutputDir();
-		for (auto& target : m_state.targets)
-		{
-			if (target->isProcess())
-			{
-				auto& process = static_cast<const ProcessBuildTarget&>(*target);
-				auto& depends = process.dependsOn();
-				for (auto& dep : depends)
-				{
-					if (String::startsWith(buildDir, dep))
-					{
-						List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
-					}
-				}
-			}
-		}
 	}
 
 	for (auto& target : m_state.targets)
 	{
 		auto& targetName = target->name();
-		const bool isSources = target->isSources();
-		bool notIncluded = !addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName);
-
-		if (!dependsOn.empty() && notIncluded)
-		{
-			if (isSources)
-			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				if (String::contains(dependsOn, project.outputFile()))
-					notIncluded = false;
-			}
-			else if (target->isCMake())
-			{
-				auto& project = static_cast<const CMakeTarget&>(*target);
-				for (auto& depends : dependsOn)
-				{
-					if (String::endsWith(project.runExecutable(), depends))
-						notIncluded = false;
-				}
-			}
-		}
-
-		if (notIncluded)
+		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
 			continue;
 
 		target->setWillBuild(true);

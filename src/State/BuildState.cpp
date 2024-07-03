@@ -217,8 +217,23 @@ const CentralState& BuildState::getCentralState() const
 /*****************************************************************************/
 void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
 {
+	StringList dependsOn;
+	const auto& buildDir = paths.buildOutputDir();
 	for (auto& target : targets)
 	{
+		if (target->isProcess())
+		{
+			auto& process = static_cast<const ProcessBuildTarget&>(*target);
+			auto& depends = process.dependsOn();
+			for (auto& dep : depends)
+			{
+				if (String::startsWith(buildDir, dep))
+				{
+					List::addIfDoesNotExist(dependsOn, dep.substr(buildDir.size() + 1));
+				}
+			}
+		}
+
 		bool isSources = target->isSources();
 		bool isTarget = String::equals(inTargetName, target->name());
 		if (isTarget)
@@ -245,6 +260,28 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 		if (!isSources && !inWithSelf)
 		{
 			List::addIfDoesNotExist(outList, target->name());
+		}
+	}
+
+	if (!dependsOn.empty())
+	{
+		for (auto& target : targets)
+		{
+			if (target->isSources())
+			{
+				auto& project = static_cast<const SourceTarget&>(*target);
+				if (String::contains(dependsOn, project.outputFile()))
+					outList.emplace_back(target->name());
+			}
+			else if (target->isCMake())
+			{
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				for (auto& depends : dependsOn)
+				{
+					if (String::endsWith(project.runExecutable(), depends))
+						outList.emplace_back(target->name());
+				}
+			}
 		}
 	}
 
