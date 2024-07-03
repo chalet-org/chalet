@@ -779,9 +779,9 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 				String::replaceAll(link, sharedExt, archiveExt);
 
 			if (String::endsWith(archiveExt, link))
-				List::addIfDoesNotExist(ret, std::move(link));
+				List::addIfDoesNotExist(ret, Files::getCanonicalPath(link));
 			else
-				List::addIfDoesNotExist(ret, fmt::format("{}{}", link, archiveExt));
+				List::addIfDoesNotExist(ret, Files::getCanonicalPath(fmt::format("{}{}", link, archiveExt)));
 		}
 	}
 
