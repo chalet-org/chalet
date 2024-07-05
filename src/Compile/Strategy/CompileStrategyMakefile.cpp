@@ -115,16 +115,16 @@ bool CompileStrategyMakefile::buildProject(const SourceTarget& inProject)
 		result = buildMake(inProject);
 	}
 
-	if (!result)
+	if (result)
 	{
-		m_filesUpdated = true;
+		checkIfTargetWasUpdated(inProject);
+		return ICompileStrategy::buildProject(inProject);
 	}
 	else
 	{
-		checkIfTargetWasUpdated(inProject);
+		m_filesUpdated = true;
+		return false;
 	}
-
-	return result && ICompileStrategy::buildProject(inProject);
 }
 
 /*****************************************************************************/

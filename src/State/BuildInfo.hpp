@@ -25,10 +25,6 @@ struct BuildInfo
 	void addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue);
 	void addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue);
 
-	const std::string& buildConfiguration() const noexcept;
-	const std::string& buildConfigurationNoAssert() const noexcept;
-	void setBuildConfiguration(const std::string& inValue) noexcept;
-
 	Arch::Cpu hostArchitecture() const noexcept;
 	const std::string& hostArchitectureTriple() const noexcept;
 	const std::string& hostArchitectureString() const noexcept;
@@ -55,7 +51,6 @@ private:
 
 	Unique<PlatformDependencyManager> m_platformDeps;
 
-	std::string m_buildConfiguration;
 	std::string m_hostArchTriple;
 
 	Arch m_hostArchitecture;

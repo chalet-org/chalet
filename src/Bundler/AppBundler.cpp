@@ -82,8 +82,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 			}
 		}
 
-		Output::lineBreak();
-
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
 		m_dependencyMap->setIncludeWinUCRT(bundle.windowsIncludeRuntimeDlls());
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap);
@@ -146,11 +144,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 	}
 
-	auto res = timer.stop();
-	if (res > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", timer.asString()));
-	}
+	stopTimerAndShowBenchmark(timer);
 	Output::lineBreak();
 
 	return true;
@@ -495,7 +489,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	}
 	else
 	{
-		Output::msgTargetUpToDate(m_state.distribution.size() > 1, inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name());
 	}
 
 	return true;
@@ -604,7 +598,7 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& out
 	auto buildFolder = String::getPathFolder(m_state.paths.buildOutputDir());
 	String::replaceAll(outName, "${targetTriple}", m_state.info.targetArchitectureTriple());
 	String::replaceAll(outName, "${toolchainName}", m_state.inputs.toolchainPreferenceName());
-	String::replaceAll(outName, "${configuration}", m_state.info.buildConfiguration());
+	String::replaceAll(outName, "${configuration}", m_state.configuration.name());
 	String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
 	String::replaceAll(outName, "${buildDir}", buildFolder);
 
@@ -628,14 +622,15 @@ void AppBundler::stopTimerAndShowBenchmark(Timer& outTimer)
 }
 
 /*****************************************************************************/
-void AppBundler::displayHeader(const std::string& inLabel, const IDistTarget& inTarget, const std::string& inName) const
+void AppBundler::displayHeader(const char* inLabel, const IDistTarget& inTarget, const std::string& inName) const
 {
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
+	auto& description = inTarget.outputDescription();
+	if (!description.empty())
+		Output::msgTargetDescription(description, Output::theme().header);
 	else
 		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), Output::theme().header);
 
-	Output::lineBreak();
+	// Output::lineBreak();
 }
 
 /*****************************************************************************/

@@ -54,7 +54,7 @@ bool BuildPaths::initialize()
 		Files::makeDirectory(outputDirectory);
 	}
 
-	const auto& buildConfig = m_state.info.buildConfiguration();
+	const auto& buildConfig = m_state.configuration.name();
 	const auto& toolchainPreference = m_state.inputs.toolchainPreferenceName();
 	const auto& arch = m_state.info.targetArchitectureString();
 

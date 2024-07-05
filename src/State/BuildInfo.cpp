@@ -101,23 +101,6 @@ void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, StringL
 }
 
 /*****************************************************************************/
-const std::string& BuildInfo::buildConfiguration() const noexcept
-{
-	chalet_assert(!m_buildConfiguration.empty(), "Build configuration is empty");
-	return m_buildConfiguration;
-}
-
-const std::string& BuildInfo::buildConfigurationNoAssert() const noexcept
-{
-	return m_buildConfiguration;
-}
-
-void BuildInfo::setBuildConfiguration(const std::string& inValue) noexcept
-{
-	m_buildConfiguration = inValue;
-}
-
-/*****************************************************************************/
 Arch::Cpu BuildInfo::hostArchitecture() const noexcept
 {
 	return m_hostArchitecture.val;
