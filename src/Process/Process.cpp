@@ -272,8 +272,6 @@ bool Process::runNinjaBuild(const StringList& inCmd, std::string inCwd)
 		std::string noWork = fmt::format("ninja: no work to do.{}", cap.endlineReplace);
 		if (String::endsWith(noWork, capData))
 			Output::previousLine(true);
-		else
-			Output::lineBreak(true);
 	}
 
 	return result == EXIT_SUCCESS;
