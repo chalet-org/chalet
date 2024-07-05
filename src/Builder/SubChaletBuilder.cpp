@@ -25,6 +25,7 @@
 #include "Utility/Hash.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -79,6 +80,8 @@ bool SubChaletBuilder::dependencyHasUpdated() const
 /*****************************************************************************/
 bool SubChaletBuilder::run()
 {
+	Timer buildTimer;
+
 	const auto& name = m_target.name();
 
 	const auto oldPath = Environment::getPath();
@@ -129,7 +132,7 @@ bool SubChaletBuilder::run()
 		bool clean = m_state.inputs.route().isClean() && m_target.clean();
 		if (!clean)
 		{
-			Output::msgTargetUpToDate(name);
+			Output::msgTargetUpToDate(name, &buildTimer);
 		}
 	}
 	else

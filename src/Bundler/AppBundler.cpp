@@ -34,6 +34,7 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -144,7 +145,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 	}
 
-	stopTimerAndShowBenchmark(timer);
+	Output::stopTimerAndShowBenchmark(timer);
 	Output::lineBreak();
 
 	return true;
@@ -489,7 +490,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	}
 	else
 	{
-		Output::msgTargetUpToDate(inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name(), nullptr);
 	}
 
 	return true;
@@ -609,16 +610,6 @@ bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& out
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-void AppBundler::stopTimerAndShowBenchmark(Timer& outTimer)
-{
-	int64_t result = outTimer.stop();
-	if (result > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
-	}
 }
 
 /*****************************************************************************/

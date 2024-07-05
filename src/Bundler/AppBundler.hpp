@@ -6,7 +6,6 @@
 #pragma once
 
 #include "State/Distribution/IDistTarget.hpp"
-#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -46,7 +45,6 @@ private:
 	bool isTargetNameValid(const IDistTarget& inTarget) const;
 	bool isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const;
 
-	void stopTimerAndShowBenchmark(Timer& outTimer);
 	void displayHeader(const char* inLabel, const IDistTarget& inTarget, const std::string& inName = std::string()) const;
 	bool removeOldFiles(IAppBundler& inBundler);
 	bool makeBundlePath(const std::string& inBundlePath, const std::string& inExecutablePath, const std::string& inFrameworksPath, const std::string& inResourcePath);
