@@ -69,7 +69,6 @@ private:
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
 	bool runFullBuild();
-	void stopTimerAndShowBenchmark(Timer& outTimer);
 
 	void displayHeader(const char* inLabel, const IBuildTarget& inTarget, const Color inColor, const std::string& inName = std::string()) const;
 

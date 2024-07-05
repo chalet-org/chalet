@@ -27,6 +27,7 @@
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 #include "Utility/Version.hpp"
 
 namespace chalet
@@ -96,6 +97,8 @@ bool CmakeBuilder::dependencyHasUpdated() const
 /*****************************************************************************/
 bool CmakeBuilder::run()
 {
+	Timer buildTimer;
+
 	const auto& name = m_target.name();
 
 	// TODO: add doxygen to path?
@@ -164,7 +167,7 @@ bool CmakeBuilder::run()
 	}
 
 	//
-	Output::msgTargetUpToDate(name);
+	Output::msgTargetUpToDate(name, &buildTimer);
 
 	return true;
 }

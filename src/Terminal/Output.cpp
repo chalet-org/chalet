@@ -12,6 +12,7 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -463,6 +464,16 @@ void Output::printSeparator(const char inChar)
 }
 
 /*****************************************************************************/
+void Output::stopTimerAndShowBenchmark(Timer& outTimer)
+{
+	i64 result = outTimer.stop();
+	if (result > 0 && Output::showBenchmarks())
+	{
+		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
+	}
+}
+
+/*****************************************************************************/
 void Output::msgFetchingDependency(const std::string& inPath)
 {
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
@@ -487,8 +498,8 @@ void Output::msgBuildSuccess()
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = Output::getAnsiStyle(state.theme.success);
-		const auto reset = Output::getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.success);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto symbol = Unicode::checkmark();
 		auto message = fmt::format("{}{}  Succeeded!{}\n", color, symbol, reset);
 		std::cout.write(message.data(), message.size());
@@ -497,11 +508,21 @@ void Output::msgBuildSuccess()
 }
 
 /*****************************************************************************/
-void Output::msgTargetUpToDate(const std::string& inProjectName)
+void Output::msgTargetUpToDate(const std::string& inProjectName, Timer* outTimer)
 {
 	if (!state.quietNonBuild)
 	{
-		print(state.theme.build, fmt::format("   {}: Up to date.", inProjectName));
+		i64 result = outTimer != nullptr ? outTimer->stop() : 0;
+		bool benchmark = result > 0 && Output::showBenchmarks();
+		if (!benchmark || outTimer == nullptr)
+		{
+			print(state.theme.build, fmt::format("   {}: Up to date.", inProjectName));
+		}
+		else
+		{
+			const auto& color = Output::getAnsiStyle(state.theme.flair);
+			print(state.theme.build, fmt::format("   {}: Up to date. {}({})", inProjectName, color, outTimer->asString()));
+		}
 	}
 }
 

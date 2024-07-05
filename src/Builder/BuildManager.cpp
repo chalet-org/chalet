@@ -270,8 +270,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 			if (result)
 			{
-				Output::msgTargetUpToDate(target->name());
-				stopTimerAndShowBenchmark(buildTimer);
+				Output::msgTargetUpToDate(target->name(), &buildTimer);
 			}
 		}
 
@@ -689,7 +688,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 
 	if (inShowMessage)
 	{
-		stopTimerAndShowBenchmark(timer);
+		Output::stopTimerAndShowBenchmark(timer);
 	}
 
 	return true;
@@ -792,13 +791,10 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 	displayHeader("Script", inTarget, color);
 
-	if (inRunCommand)
-		Output::printSeparator();
-
 	const auto& arguments = inTarget.arguments();
 	const auto& dependsOn = inTarget.dependsOn();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
-	if (scriptRunner.shouldRun(m_state.cache.file().sources(), dependsOn))
+	if (inRunCommand || scriptRunner.shouldRun(m_state.cache.file().sources(), dependsOn))
 	{
 		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
 		{
@@ -808,14 +804,14 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 			Diagnostic::printErrors(true);
 			result = false;
 		}
+
+		if (!inRunCommand && result)
+			Output::stopTimerAndShowBenchmark(buildTimer);
 	}
 	else
 	{
-		Output::msgTargetUpToDate(inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 	}
-
-	if (!inRunCommand && result)
-		stopTimerAndShowBenchmark(buildTimer);
 
 	return result;
 }
@@ -835,9 +831,6 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 	displayHeader("Process", inTarget, color);
 
-	if (inRunCommand)
-		Output::printSeparator();
-
 	StringList cmd;
 	cmd.push_back(path);
 	for (auto& arg : inTarget.arguments())
@@ -846,17 +839,16 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	}
 
 	bool result = true;
-	if (canProcessRun(m_state.cache.file().sources(), inTarget.dependsOn()))
+	if (inRunCommand || canProcessRun(m_state.cache.file().sources(), inTarget.dependsOn()))
 	{
 		result = runProcess(cmd, path, inRunCommand);
+		if (!inRunCommand && result)
+			Output::stopTimerAndShowBenchmark(buildTimer);
 	}
 	else
 	{
-		Output::msgTargetUpToDate(inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 	}
-
-	if (!inRunCommand && result)
-		stopTimerAndShowBenchmark(buildTimer);
 
 	return result;
 }
@@ -878,7 +870,7 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files());
 
-	stopTimerAndShowBenchmark(buildTimer);
+	Output::stopTimerAndShowBenchmark(buildTimer);
 
 	// if (!result)
 	// 	Output::lineBreak();
@@ -1246,15 +1238,11 @@ bool BuildManager::cmdClean()
 /*****************************************************************************/
 bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
-	Timer buildTimer;
-
 	displayHeader("Chalet", inTarget, Output::theme().header);
 
 	SubChaletBuilder subChalet(m_state, inTarget);
 	if (!subChalet.run())
 		return false;
-
-	stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
 }
@@ -1270,7 +1258,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 	if (!cmake.run())
 		return false;
 
-	stopTimerAndShowBenchmark(buildTimer);
+	Output::stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
 }
@@ -1292,18 +1280,8 @@ bool BuildManager::runFullBuild()
 	if (!m_strategy->doFullBuild())
 		return false;
 
-	// stopTimerAndShowBenchmark(buildTimer);
+	// Output::stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
-}
-
-/*****************************************************************************/
-void BuildManager::stopTimerAndShowBenchmark(Timer& outTimer)
-{
-	int64_t result = outTimer.stop();
-	if (result > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
-	}
 }
 }
