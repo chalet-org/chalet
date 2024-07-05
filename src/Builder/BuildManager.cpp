@@ -139,6 +139,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	if (!checkIntermediateFiles())
 	{
+		Output::lineBreak();
 		Diagnostic::error("Failed to generate needed intermediate files");
 		return false;
 	}
@@ -217,16 +218,9 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	m_strategy->doPreBuild();
 	m_fileCache.clear();
 
-	if (inRoute.isRebuild())
-	{
-		if (Output::showCommands())
-			Output::lineBreak();
-	}
-
 	bool error = false;
 
 	bool buildAll = m_strategy->isMSBuild() || m_strategy->isXcodeBuild();
-	bool multiTarget = m_buildTargets.size() > 1;
 	for (auto& target : m_buildTargets)
 	{
 		if (routeWillRun)
@@ -276,7 +270,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 			if (result)
 			{
-				Output::msgTargetUpToDate(multiTarget, target->name());
+				Output::msgTargetUpToDate(target->name());
 				stopTimerAndShowBenchmark(buildTimer);
 			}
 		}
@@ -449,7 +443,7 @@ void BuildManager::printBuildInformation()
 
 	const auto strategy = getBuildStrategyName();
 	Diagnostic::info("Strategy: {}", strategy);
-	Diagnostic::info("Configuration: {}", m_state.info.buildConfiguration());
+	Diagnostic::info("Configuration: {}", m_state.configuration.name());
 }
 
 /*****************************************************************************/
@@ -591,9 +585,9 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 
 	Timer timer;
 
-	if (inShowMessage && Output::cleanOutput())
+	if (inShowMessage)
 	{
-		Diagnostic::stepInfoEllipsis("Removing build files & folders");
+		Output::print(Output::theme().build, "   Removing build files & folders");
 	}
 
 	bool didClean = false;
@@ -652,6 +646,8 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 
 	bool dirExists = Files::pathExists(dirToClean);
 	bool nothingToClean = !dirExists && !didClean;
+	UNUSED(nothingToClean);
+
 	if (dirExists)
 	{
 		fs::recursive_directory_iterator it(dirToClean);
@@ -691,11 +687,9 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 	if (Files::pathIsEmpty(buildOutputDir))
 		Files::removeIfExists(buildOutputDir);
 
-	if (inShowMessage && Output::cleanOutput())
+	if (inShowMessage)
 	{
-		Diagnostic::printDone(timer.asString());
-		UNUSED(nothingToClean);
-		Output::lineBreak();
+		stopTimerAndShowBenchmark(timer);
 	}
 
 	return true;
@@ -796,16 +790,10 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	bool result = true;
 
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
-
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), color);
-	else
-		Output::msgTargetOfType("Script", inTarget.name(), color);
+	displayHeader("Script", inTarget, color);
 
 	if (inRunCommand)
 		Output::printSeparator();
-	else
-		Output::lineBreak();
 
 	const auto& arguments = inTarget.arguments();
 	const auto& dependsOn = inTarget.dependsOn();
@@ -823,7 +811,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	}
 	else
 	{
-		Output::msgTargetUpToDate(m_buildTargets.size() > 1, inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name());
 	}
 
 	if (!inRunCommand && result)
@@ -845,14 +833,10 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	Timer buildTimer;
 
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
+	displayHeader("Process", inTarget, color);
 
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), color);
-	else
-		Output::msgTargetOfType("Process", inTarget.name(), color);
-
-	if (!inRunCommand)
-		Output::lineBreak();
+	if (inRunCommand)
+		Output::printSeparator();
 
 	StringList cmd;
 	cmd.push_back(path);
@@ -868,7 +852,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	}
 	else
 	{
-		Output::msgTargetUpToDate(m_buildTargets.size() > 1, inTarget.name());
+		Output::msgTargetUpToDate(inTarget.name());
 	}
 
 	if (!inRunCommand && result)
@@ -889,7 +873,7 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 
 	Timer buildTimer;
 
-	displayHeader("Validation", inTarget);
+	displayHeader("Validation", inTarget, Output::theme().header);
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files());
@@ -903,14 +887,15 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 }
 
 /*****************************************************************************/
-void BuildManager::displayHeader(const std::string& inLabel, const IBuildTarget& inTarget, const std::string& inName) const
+void BuildManager::displayHeader(const char* inLabel, const IBuildTarget& inTarget, const Color inColor, const std::string& inName) const
 {
-	if (!inTarget.outputDescription().empty())
-		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().header);
+	auto& description = inTarget.outputDescription();
+	if (!description.empty())
+		Output::msgTargetDescription(description, inColor);
 	else
-		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), Output::theme().header);
+		Output::msgTargetOfType(inLabel, !inName.empty() ? inName : inTarget.name(), inColor);
 
-	Output::lineBreak();
+	// Output::lineBreak();
 }
 
 /*****************************************************************************/
@@ -918,7 +903,7 @@ bool BuildManager::cmdBuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	displayHeader("Build", inProject, outputFile);
+	displayHeader("Build", inProject, Output::theme().header, outputFile);
 
 	if (inProject.cppModules())
 	{
@@ -983,7 +968,7 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 {
 	const auto& outputFile = inProject.outputFile();
 
-	displayHeader("Rebuild", inProject, outputFile);
+	displayHeader("Rebuild", inProject, Output::theme().header, outputFile);
 
 	if (inProject.cppModules())
 	{
@@ -1032,7 +1017,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 
 	if (outputFile.empty() || !Files::pathExists(outputFile))
 	{
-		Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.info.buildConfiguration(), inTarget.name());
+		Diagnostic::error("Requested configuration '{}' must be built for run target: '{}'", m_state.configuration.name(), inTarget.name());
 		return false;
 	}
 
@@ -1075,7 +1060,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	if (!inTarget.outputDescription().empty())
 		Output::msgTargetDescription(inTarget.outputDescription(), Output::theme().success);
 	else
-		Output::msgRun(outputFile);
+		Output::msgTargetOfType("Run", outputFile, Output::theme().success);
 
 	StringList cmd;
 	if (m_state.environment->isEmscripten())
@@ -1248,17 +1233,12 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 /*****************************************************************************/
 bool BuildManager::cmdClean()
 {
-	const auto& inputBuild = m_state.inputs.buildConfiguration();
-	const auto& buildConfiguration = m_state.info.buildConfiguration();
-
-	Output::msgClean(inputBuild.empty() ? inputBuild : buildConfiguration);
-	Output::lineBreak();
+	Output::msgClean(m_state.configuration.name());
 
 	if (!doFullBuildFolderClean(true, true))
 		return true;
 
-	if (Output::showCommands())
-		Output::lineBreak();
+	Output::lineBreak();
 
 	return true;
 }
@@ -1268,17 +1248,13 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
-	displayHeader("Build", inTarget);
+	displayHeader("Build", inTarget, Output::theme().header);
 
 	SubChaletBuilder subChalet(m_state, inTarget);
 	if (!subChalet.run())
 		return false;
 
-	auto result = buildTimer.stop();
-	if (result > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", buildTimer.asString()));
-	}
+	stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
 }
@@ -1288,7 +1264,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
-	displayHeader("Build", inTarget);
+	displayHeader("Build", inTarget, Output::theme().header);
 
 	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
@@ -1311,7 +1287,7 @@ bool BuildManager::runFullBuild()
 	else
 		Output::msgTargetOfType("Build", workspace, Output::theme().header);
 
-	Output::lineBreak();
+	// Output::lineBreak();
 
 	if (!m_strategy->doFullBuild())
 		return false;

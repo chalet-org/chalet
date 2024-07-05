@@ -7,6 +7,7 @@
 
 #include "Compile/Strategy/ICompileStrategy.hpp"
 #include "Core/Router/CommandRoute.hpp"
+#include "Terminal/Color.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -70,7 +71,7 @@ private:
 	bool runFullBuild();
 	void stopTimerAndShowBenchmark(Timer& outTimer);
 
-	void displayHeader(const std::string& inLabel, const IBuildTarget& inTarget, const std::string& inName = std::string()) const;
+	void displayHeader(const char* inLabel, const IBuildTarget& inTarget, const Color inColor, const std::string& inName = std::string()) const;
 
 	BuildState& m_state;
 

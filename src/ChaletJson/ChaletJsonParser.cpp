@@ -87,7 +87,7 @@ bool ChaletJsonParser::serialize()
 
 	if (!validBuildRequested())
 	{
-		const auto& buildConfiguration = m_state.info.buildConfigurationNoAssert();
+		const auto& buildConfiguration = m_state.configuration.name();
 		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of 'condition' property", m_chaletJson.filename(), buildConfiguration);
 		return false;
 	}

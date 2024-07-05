@@ -149,8 +149,6 @@ bool CmakeBuilder::run()
 				return onRunFailure();
 		}
 
-		Output::lineBreak();
-
 		command = getBuildCommand(outputLocation());
 
 		// this will control ninja output, and other build outputs should be unaffected
@@ -166,7 +164,7 @@ bool CmakeBuilder::run()
 	}
 
 	//
-	Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+	Output::msgTargetUpToDate(name);
 
 	return true;
 }
@@ -648,7 +646,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 /*****************************************************************************/
 std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 {
-	std::string ret = m_state.info.buildConfiguration();
+	std::string ret = m_state.configuration.name();
 
 	if (m_state.configuration.isMinSizeRelease())
 	{

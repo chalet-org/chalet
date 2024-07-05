@@ -422,7 +422,6 @@ bool BuildState::initializeBuildConfiguration()
 	}
 
 	configuration = buildConfigurations.at(buildConfiguration);
-	info.setBuildConfiguration(buildConfiguration);
 
 	return true;
 }
@@ -1761,7 +1760,7 @@ void BuildState::generateUniqueIdForState()
 	const auto& hostArch = info.hostArchitectureString();
 	const auto targetArch = inputs.getArchWithOptionsAsString(info.targetArchitectureTriple());
 	const auto envId = m_impl->environment->identifier() + toolchain.version();
-	const auto& buildConfig = info.buildConfiguration();
+	const auto& buildConfig = configuration.name();
 	const auto& targetOsName = inputs.osTargetName();
 	const auto& targetOsVersion = inputs.osTargetVersion();
 

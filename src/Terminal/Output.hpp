@@ -57,7 +57,7 @@ void msgRemovedUnusedDependency(const std::string& inDependencyName);
 
 void msgConfigureCompleted(const std::string& inWorkspaceName);
 void msgBuildSuccess();
-void msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName);
+void msgTargetUpToDate(const std::string& inProjectName);
 void msgCommandPoolError(const std::string& inMessage);
 void msgBuildFail();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);
@@ -65,9 +65,8 @@ void msgProfilerStartedSample(const std::string& inExecutable, const u32 inDurat
 void msgProfilerDone(const std::string& inProfileAnalysis);
 void msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, const std::string& inApplication);
 void msgClean(const std::string& inBuildConfiguration);
-void msgTargetOfType(const std::string& inLabel, const std::string& inName, const Color inColor);
+void msgTargetOfType(const char* inLabel, const std::string& inName, const Color inColor);
 void msgTargetDescription(const std::string& inDescription, const Color inColor);
-void msgRun(const std::string& inName);
 void msgScanningForModuleDependencies();
 void msgBuildingRequiredHeaderUnits();
 void msgModulesCompiling();

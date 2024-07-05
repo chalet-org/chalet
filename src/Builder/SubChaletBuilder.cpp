@@ -12,6 +12,7 @@
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/AncillaryTools.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -128,7 +129,7 @@ bool SubChaletBuilder::run()
 		bool clean = m_state.inputs.route().isClean() && m_target.clean();
 		if (!clean)
 		{
-			Output::msgTargetUpToDate(m_state.targets.size() > 1, name);
+			Output::msgTargetUpToDate(name);
 		}
 	}
 	else
@@ -190,7 +191,7 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 	cmd.emplace_back(getQuotedPath(outputDirectory));
 
 	cmd.emplace_back("--configuration");
-	cmd.push_back(m_state.info.buildConfiguration());
+	cmd.push_back(m_state.configuration.name());
 
 	if (!m_state.inputs.toolchainPreferenceName().empty())
 	{

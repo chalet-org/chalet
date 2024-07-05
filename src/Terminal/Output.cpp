@@ -35,12 +35,6 @@ static struct
 } state;
 
 /*****************************************************************************/
-std::string getFormattedBuildTarget(const std::string& inName)
-{
-	return fmt::format(": {}", inName);
-}
-
-/*****************************************************************************/
 constexpr char getEscapeChar()
 {
 	return '\x1b';
@@ -300,8 +294,8 @@ void Output::displayStyledSymbol(const Color inColor, const std::string_view inS
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(inColor);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(inColor);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto message = fmt::format("{}{}  {}{}\n", color, inSymbol, inMessage, reset);
 		std::cout.write(message.data(), message.size());
 		std::cout.flush();
@@ -313,7 +307,7 @@ void Output::lineBreak(const bool inForce)
 {
 	if (!state.quietNonBuild || inForce)
 	{
-		auto reset = getAnsiStyle(state.theme.reset);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		std::cout.write(reset.data(), reset.size());
 		std::cout.put('\n');
 		std::cout.flush();
@@ -326,7 +320,7 @@ void Output::lineBreakStderr()
 	if (!state.quietNonBuild)
 	{
 		auto& errStream = getErrStream();
-		auto reset = getAnsiStyle(state.theme.reset);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		errStream.write(reset.data(), reset.size());
 		errStream.write("\n", 1);
 		errStream.flush();
@@ -357,7 +351,7 @@ void Output::print(const Color inColor, const std::string& inText)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		std::string output;
 		if (inColor == Color::Reset)
 		{
@@ -365,7 +359,7 @@ void Output::print(const Color inColor, const std::string& inText)
 		}
 		else
 		{
-			const auto color = getAnsiStyle(inColor);
+			const auto& color = Output::getAnsiStyle(inColor);
 			output = fmt::format("{}{}{}\n", color, inText, reset);
 		}
 
@@ -379,7 +373,7 @@ void Output::print(const Color inColor, const StringList& inList)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		if (inColor == Color::Reset)
 		{
 			auto output = fmt::format("{}{}\n", reset, String::join(inList));
@@ -389,7 +383,7 @@ void Output::print(const Color inColor, const StringList& inList)
 		}
 		else
 		{
-			const auto color = getAnsiStyle(inColor);
+			const auto& color = Output::getAnsiStyle(inColor);
 			auto output = fmt::format("{}{}{}\n", color, String::join(inList), reset);
 
 			std::cout.write(output.data(), output.size());
@@ -403,8 +397,8 @@ void Output::printCommand(const std::string& inText)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(state.theme.build);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.build);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -417,8 +411,8 @@ void Output::printCommand(const StringList& inList)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(state.theme.build);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.build);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}\n", color, String::join(inList), reset);
 
 		std::cout.write(output.data(), output.size());
@@ -431,8 +425,8 @@ void Output::printInfo(const std::string& inText)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(state.theme.info);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.info);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -445,8 +439,8 @@ void Output::printFlair(const std::string& inText)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(state.theme.flair);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.flair);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}\n", color, inText, reset);
 
 		std::cout.write(output.data(), output.size());
@@ -459,8 +453,8 @@ void Output::printSeparator(const char inChar)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto color = getAnsiStyle(state.theme.flair);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& color = Output::getAnsiStyle(state.theme.flair);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}{}{}\n", color, std::string(80, inChar), reset);
 
 		std::cout.write(output.data(), output.size());
@@ -491,20 +485,23 @@ void Output::msgConfigureCompleted(const std::string& inWorkspaceName)
 /*****************************************************************************/
 void Output::msgBuildSuccess()
 {
-	auto symbol = Unicode::checkmark();
-	displayStyledSymbol(state.theme.success, symbol, "Succeeded!");
+	if (!state.quietNonBuild)
+	{
+		const auto color = Output::getAnsiStyle(state.theme.success);
+		const auto reset = Output::getAnsiStyle(state.theme.reset);
+		auto symbol = Unicode::checkmark();
+		auto message = fmt::format("{}{}  Succeeded!{}\n", color, symbol, reset);
+		std::cout.write(message.data(), message.size());
+		std::cout.flush();
+	}
 }
 
 /*****************************************************************************/
-void Output::msgTargetUpToDate(const bool inMultiTarget, const std::string& inProjectName)
+void Output::msgTargetUpToDate(const std::string& inProjectName)
 {
 	if (!state.quietNonBuild)
 	{
-		std::string successText = "Target is up to date.";
-		if (inMultiTarget)
-			print(state.theme.build, fmt::format("   {}: {}", inProjectName, successText));
-		else
-			print(state.theme.build, fmt::format("   {}", successText));
+		print(state.theme.build, fmt::format("   {}: Up to date.", inProjectName));
 	}
 }
 
@@ -513,8 +510,8 @@ void Output::msgCommandPoolError(const std::string& inMessage)
 {
 	if (!state.quietNonBuild)
 	{
-		const auto colorError = getAnsiStyle(state.theme.error);
-		const auto reset = getAnsiStyle(state.theme.reset);
+		const auto& colorError = Output::getAnsiStyle(state.theme.error);
+		const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		auto output = fmt::format("{}FAILED: {}{}\n", colorError, reset, inMessage);
 
 		std::cout.write(output.data(), output.size());
@@ -529,8 +526,8 @@ void Output::msgBuildFail()
 	//
 	auto symbol = Unicode::heavyBallotX();
 
-	const auto color = getAnsiStyle(state.theme.error);
-	const auto reset = getAnsiStyle(state.theme.reset);
+	const auto& color = Output::getAnsiStyle(state.theme.error);
+	const auto& reset = Output::getAnsiStyle(state.theme.reset);
 
 	auto output = fmt::format("{}{}  Failed!\n   Review the errors above.{}\n", color, symbol, reset);
 
@@ -573,15 +570,13 @@ void Output::msgProfilerDoneAndLaunching(const std::string& inProfileAnalysis, c
 
 void Output::msgClean(const std::string& inBuildConfiguration)
 {
+	const char* label = inBuildConfiguration.empty() ? "All" : inBuildConfiguration.c_str();
 	auto symbol = Unicode::triangle();
-	if (!inBuildConfiguration.empty())
-		displayStyledSymbol(state.theme.header, symbol, "Clean: " + inBuildConfiguration);
-	else
-		displayStyledSymbol(state.theme.header, symbol, "Clean: All");
+	displayStyledSymbol(state.theme.header, symbol, fmt::format("Clean: ", label));
 }
 
 /*****************************************************************************/
-void Output::msgTargetOfType(const std::string& inLabel, const std::string& inName, const Color inColor)
+void Output::msgTargetOfType(const char* inLabel, const std::string& inName, const Color inColor)
 {
 	auto symbol = Unicode::triangle();
 	displayStyledSymbol(inColor, symbol, fmt::format("{}: {}", inLabel, inName));
@@ -592,13 +587,6 @@ void Output::msgTargetDescription(const std::string& inDescription, const Color 
 {
 	auto symbol = Unicode::triangle();
 	displayStyledSymbol(inColor, symbol, inDescription);
-}
-
-/*****************************************************************************/
-void Output::msgRun(const std::string& inName)
-{
-	auto symbol = Unicode::triangle();
-	displayStyledSymbol(state.theme.success, symbol, "Run" + getFormattedBuildTarget(inName));
 }
 
 /*****************************************************************************/
@@ -628,9 +616,9 @@ void Output::msgCopying(const std::string& inFrom, const std::string& inTo)
 /*****************************************************************************/
 void Output::msgAction(const std::string& inLabel, const std::string& inTo)
 {
-	const auto reset = getAnsiStyle(state.theme.reset);
-	const auto flair = getAnsiStyle(state.theme.flair);
-	const auto build = getAnsiStyle(state.theme.build);
+	const auto& reset = Output::getAnsiStyle(state.theme.reset);
+	const auto& flair = Output::getAnsiStyle(state.theme.flair);
+	const auto& build = Output::getAnsiStyle(state.theme.build);
 
 	Diagnostic::stepInfo("{}{}{} -> {}{}", build, inLabel, flair, reset, inTo);
 }
@@ -638,9 +626,9 @@ void Output::msgAction(const std::string& inLabel, const std::string& inTo)
 /*****************************************************************************/
 void Output::msgActionEllipsis(const std::string& inLabel, const std::string& inTo)
 {
-	const auto reset = getAnsiStyle(state.theme.reset);
-	const auto flair = getAnsiStyle(state.theme.flair);
-	const auto build = getAnsiStyle(state.theme.build);
+	const auto& reset = Output::getAnsiStyle(state.theme.reset);
+	const auto& flair = Output::getAnsiStyle(state.theme.flair);
+	const auto& build = Output::getAnsiStyle(state.theme.build);
 
 	Diagnostic::stepInfoEllipsis("{}{}{} -> {}{}", build, inLabel, flair, reset, inTo);
 }

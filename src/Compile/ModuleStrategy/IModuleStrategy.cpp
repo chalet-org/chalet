@@ -13,6 +13,7 @@
 #include "Compile/ModuleStrategy/ModuleStrategyGCC.hpp"
 #include "Compile/ModuleStrategy/ModuleStrategyMSVC.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -716,7 +717,7 @@ std::string IModuleStrategy::getModuleId() const
 	const auto& hostArch = m_state.info.hostArchitectureString();
 	const auto targetArch = m_state.info.targetArchitectureTriple();
 	const auto envId = m_state.environment->identifier() + m_state.toolchain.version();
-	const auto& buildConfig = m_state.info.buildConfiguration();
+	const auto& buildConfig = m_state.configuration.name();
 
 	ret = fmt::format("{}_{}_{}_{}", hostArch, targetArch, envId, buildConfig);
 
