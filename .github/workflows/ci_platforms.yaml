@@ -1,6 +1,5 @@
 name: Chalet Snapshot
 on:
-  pull_request:
   push:
     tags:
       - "v*"
