@@ -105,7 +105,7 @@ void MakefileGeneratorNMake::reset()
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& inFile) const
+std::string MakefileGeneratorNMake::getCompileEcho(const std::string& inFile) const
 {
 	// const auto& color = Output::getAnsiStyle(Output::theme().build);
 	// const auto& reset = Output::getAnsiStyle(Color::Reset);
@@ -131,7 +131,7 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& inF
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& inFile) const
+std::string MakefileGeneratorNMake::getLinkerEcho(const std::string& inFile) const
 {
 	// const auto& color = Output::getAnsiStyle(Output::theme().build);
 	// const auto& reset = Output::getAnsiStyle(Color::Reset);
@@ -257,21 +257,18 @@ std::string MakefileGeneratorNMake::getTargetRecipe(const std::string& linkerTar
 
 	if (!linkerCommand.empty())
 	{
-		const auto compileEcho = getCompileEchoLinker(linkerTarget);
-		const auto printer = getPrinter("\\n");
+		const auto linkerEcho = getLinkerEcho(linkerTarget);
 
 		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
-	{compileEcho}
+	{linkerEcho}
 	{quietFlag}{linkerCommand}
-	@{printer}
 )makefile",
 			FMT_ARG(linkerTarget),
 			FMT_ARG(preReqs),
-			FMT_ARG(compileEcho),
+			FMT_ARG(linkerEcho),
 			FMT_ARG(quietFlag),
-			FMT_ARG(linkerCommand),
-			FMT_ARG(printer));
+			FMT_ARG(linkerCommand));
 	}
 
 	return ret;
@@ -301,7 +298,7 @@ std::string MakefileGeneratorNMake::getPchRecipe(const std::string& source, cons
 			std::string compilerEcho;
 			if (m_state.environment->type() != ToolchainType::VisualStudio)
 			{
-				compilerEcho = getCompileEchoSources(object) + "\n\t";
+				compilerEcho = getCompileEcho(object) + "\n\t";
 			}
 
 			ret = fmt::format(R"makefile(
@@ -330,7 +327,7 @@ std::string MakefileGeneratorNMake::getRcRecipe(const std::string& source, const
 	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, dependency));
 	if (!rcCompile.empty())
 	{
-		const auto compilerEcho = getCompileEchoSources(source);
+		const auto compilerEcho = getCompileEcho(source);
 
 		auto nul = Shell::getNull();
 
@@ -366,7 +363,7 @@ std::string MakefileGeneratorNMake::getCxxRecipe(const std::string& source, cons
 		std::string compilerEcho;
 		if (m_state.environment->type() != ToolchainType::VisualStudio)
 		{
-			compilerEcho = getCompileEchoSources(source) + "\n\t";
+			compilerEcho = getCompileEcho(source) + "\n\t";
 		}
 
 		ret = fmt::format(R"makefile(

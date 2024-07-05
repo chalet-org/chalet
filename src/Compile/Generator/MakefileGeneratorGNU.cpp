@@ -170,7 +170,7 @@ std::string MakefileGeneratorGNU::getObjBuildRecipes(const SourceFileGroupList& 
 }
 
 /*****************************************************************************/
-std::string MakefileGeneratorGNU::getCompileEchoSources(const std::string& inFile) const
+std::string MakefileGeneratorGNU::getCompileEcho(const std::string& inFile) const
 {
 	const auto& color = Output::getAnsiStyle(Output::theme().build);
 	const auto& reset = Output::getAnsiStyle(Color::Reset);
@@ -261,7 +261,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 					auto pch = String::getPathFolderBaseName(object);
 					String::replaceAll(pch, fmt::format("{}/", objDir), "");
 					pch += fmt::format(" ({})", arch);
-					const auto compileEcho = getCompileEchoSources(pch);
+					const auto compileEcho = getCompileEcho(pch);
 
 					ret += fmt::format(R"makefile(
 {outObject}: {dependencies} | {dependency}
@@ -286,7 +286,7 @@ std::string MakefileGeneratorGNU::getPchRecipe(const std::string& source, const 
 			{
 				auto pch = String::getPathFolderBaseName(object);
 				String::replaceAll(pch, fmt::format("{}/", objDir), "");
-				const auto compileEcho = getCompileEchoSources(pch);
+				const auto compileEcho = getCompileEcho(pch);
 
 				ret += fmt::format(R"makefile(
 {object}: {source} | {dependency}
@@ -315,7 +315,7 @@ std::string MakefileGeneratorGNU::getRcRecipe(const std::string& source, const s
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto compileEcho = getCompileEchoSources(source);
+	const auto compileEcho = getCompileEcho(source);
 
 	auto rcCompile = String::join(m_toolchain->compilerWindowsResource->getCommand(source, object, dependency));
 	if (!rcCompile.empty())
@@ -352,7 +352,7 @@ std::string MakefileGeneratorGNU::getCxxRecipe(const std::string& source, const 
 	std::string ret;
 
 	const auto quietFlag = getQuietFlag();
-	const auto compileEcho = getCompileEchoSources(source);
+	const auto compileEcho = getCompileEcho(source);
 
 	auto cppCompile = String::join(m_toolchain->compilerCxx->getCommand(source, object, dependency, derivative));
 	if (!cppCompile.empty())
@@ -406,20 +406,17 @@ std::string MakefileGeneratorGNU::getTargetRecipe(const std::string& linkerTarge
 	if (!linkerCommand.empty())
 	{
 		const auto linkerEcho = getLinkerEcho(linkerTarget);
-		const auto printer = getPrinter("\\n");
 
 		ret = fmt::format(R"makefile(
 {linkerTarget}: {preReqs}
 	{linkerEcho}
 	{quietFlag}{linkerCommand}
-	@{printer}
 )makefile",
 			FMT_ARG(linkerTarget),
 			FMT_ARG(preReqs),
 			FMT_ARG(linkerEcho),
 			FMT_ARG(quietFlag),
-			FMT_ARG(linkerCommand),
-			FMT_ARG(printer));
+			FMT_ARG(linkerCommand));
 	}
 
 	return ret;

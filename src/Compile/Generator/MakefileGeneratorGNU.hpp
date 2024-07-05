@@ -24,7 +24,7 @@ private:
 	std::string getBuildRecipes(const SourceOutputs& inOutputs);
 	std::string getObjBuildRecipes(const SourceFileGroupList& inGroups);
 
-	std::string getCompileEchoSources(const std::string& inFile) const;
+	std::string getCompileEcho(const std::string& inFile) const;
 	std::string getLinkerEcho(const std::string& inFile) const;
 
 	std::string getPchRecipe(const std::string& source, const std::string& object, const std::string& dependency);
