@@ -12,6 +12,7 @@
 #include "System/Files.hpp"
 #include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
+#include "Terminal/Shell.hpp"
 
 #if defined(CHALET_WIN32)
 	#include "Terminal/WindowsTerminal.hpp"
@@ -75,6 +76,8 @@ void Application::initializeTerminal()
 		Diagnostic::printErrors();
 		this->cleanup();
 	});
+
+	Shell::detectTerminalType();
 }
 
 /*****************************************************************************/

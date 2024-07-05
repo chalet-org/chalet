@@ -20,7 +20,7 @@ struct ProjectAdapterVCXProj
 	bool createWindowsResources();
 
 	bool usesPrecompiledHeader() const;
-	bool usesLibrarian() const;
+	bool usesLibManager() const;
 	bool usesModules() const;
 
 	std::string getBoolean(const bool inValue) const;

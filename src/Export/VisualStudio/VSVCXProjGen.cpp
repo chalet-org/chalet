@@ -696,7 +696,7 @@ void VSVCXProjGen::addCompileProperties(XmlElement& outNode) const
 					node2.addElementWithText("AdditionalOptions", vcxprojAdapter.getAdditionalCompilerOptions());
 				});
 
-				if (vcxprojAdapter.usesLibrarian())
+				if (vcxprojAdapter.usesLibManager())
 				{
 					node.addElement("Lib", [&vcxprojAdapter](XmlElement& node2) {
 						node2.addElementWithTextIfNotEmpty("LinkTimeCodeGeneration", vcxprojAdapter.getLinkTimeCodeGeneration());

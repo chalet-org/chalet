@@ -60,7 +60,7 @@ bool ProjectAdapterVCXProj::usesPrecompiledHeader() const
 	return m_project.usesPrecompiledHeader();
 }
 
-bool ProjectAdapterVCXProj::usesLibrarian() const
+bool ProjectAdapterVCXProj::usesLibManager() const
 {
 	return m_project.isStaticLibrary();
 }

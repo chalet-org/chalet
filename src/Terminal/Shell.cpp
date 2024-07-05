@@ -31,36 +31,6 @@ namespace chalet
 {
 namespace
 {
-enum class ShellType
-{
-	Unset,
-	Subprocess,
-	Bourne, // /bin/sh or /sbin/sh
-	Bash,	// /bin/bash
-	CShell, // /bin/csh
-	TShell, // /bin/tcsh
-	Korn,	// /bin/ksh
-	Zsh,	// /bin/zsh
-	Fish,	// /usr/bin/fish, /usr/local/bin/fish
-	WindowsTerminal,
-	GenericColorTerm,
-	CommandPrompt,
-	CommandPromptVisualStudio,
-	CommandPromptJetBrains,
-	Powershell,
-	PowershellIse,
-	PowershellOpenSource, // 6+
-	PowershellOpenSourceNonWindows,
-	WindowsSubsystemForLinux,
-};
-
-struct
-{
-	ShellType terminalType = ShellType::Unset;
-	i16 hasTerm = -1;
-	i16 isContinuousIntegrationServer = -1;
-} state;
-
 #if defined(CHALET_WIN32)
 DWORD getParentProcessId(DWORD inPid = 0)
 {
@@ -179,86 +149,90 @@ bool isRunningWindowsSubsystemForLinux()
 	return String::contains({ "microsoft", "wsl2" }, lowercase);
 }
 #endif
+}
 
 /*****************************************************************************/
-void printTermType()
+Shell::State Shell::state;
+
+/*****************************************************************************/
+void Shell::printTermType()
 {
 	std::string term;
 	switch (state.terminalType)
 	{
-		case ShellType::Bourne:
+		case Type::Bourne:
 			term = "Bourne Shell";
 			break;
 
-		case ShellType::Bash:
+		case Type::Bash:
 			term = "Bash";
 			break;
 
-		case ShellType::CShell:
+		case Type::CShell:
 			term = "C Shell";
 			break;
 
-		case ShellType::TShell:
+		case Type::TShell:
 			term = "TENEX C Shell";
 			break;
 
-		case ShellType::Korn:
+		case Type::Korn:
 			term = "Korn Shell";
 			break;
 
-		case ShellType::Zsh:
+		case Type::Zsh:
 			term = "Z Shell";
 			break;
 
-		case ShellType::Fish:
+		case Type::Fish:
 			term = "Fish";
 			break;
 
-		case ShellType::Subprocess:
+		case Type::Subprocess:
 			term = "Subprocess";
 			break;
 
-		case ShellType::WindowsTerminal:
+		case Type::WindowsTerminal:
 			term = "Windows Terminal (2019)";
 			break;
 
-		case ShellType::GenericColorTerm:
+		case Type::GenericColorTerm:
 			term = "Generic (w/ COLORTERM set)";
 			break;
 
-		case ShellType::CommandPrompt:
+		case Type::CommandPrompt:
 			term = "Command Prompt";
 			break;
 
-		case ShellType::CommandPromptJetBrains:
+		case Type::CommandPromptJetBrains:
 			term = "Command Prompt (CLion / JetBrains)";
 			break;
 
-		case ShellType::CommandPromptVisualStudio:
+		case Type::CommandPromptVisualStudio:
 			term = "Command Prompt (Visual Studio)";
 			break;
 
-		case ShellType::Powershell:
+		case Type::Powershell:
 			term = "Powershell (Windows built-in)";
 			break;
 
-		case ShellType::PowershellIse:
+		case Type::PowershellIse:
 			term = "Powershell ISE";
 			break;
 
-		case ShellType::PowershellOpenSource:
+		case Type::PowershellOpenSource:
 			term = "Powershell (Open Source)";
 			break;
 
-		case ShellType::PowershellOpenSourceNonWindows:
+		case Type::PowershellOpenSourceNonWindows:
 			term = "Powershell (Open Source)";
 			break;
 
-		case ShellType::WindowsSubsystemForLinux:
+		case Type::WindowsSubsystemForLinux:
 			term = "Windows Subsystem for Linux (1 or 2)";
 			break;
 
-		case ShellType::Unset:
+		case Type::Unset:
 		default:
 			term = "Unset";
 			break;
@@ -268,7 +242,7 @@ void printTermType()
 	UNUSED(term);
 }
 /*****************************************************************************/
-void setTerminalType()
+void Shell::detectTerminalType()
 {
 #if defined(CHALET_WIN32)
 	// TOOD: Cygwin, Windows Terminal
@@ -276,7 +250,7 @@ void setTerminalType()
 	auto result = Environment::getString("VSAPPIDDIR");
 	if (!result.empty())
 	{
-		state.terminalType = ShellType::CommandPromptVisualStudio;
+		state.terminalType = Type::CommandPromptVisualStudio;
 		return printTermType();
 	}
 
@@ -285,7 +259,7 @@ void setTerminalType()
 	auto parentPath = getParentProcessPath(pid);
 	if (String::endsWith("clion64.exe", parentPath) || String::contains("JetBrains", parentPath))
 	{
-		state.terminalType = ShellType::CommandPromptJetBrains;
+		state.terminalType = Type::CommandPromptJetBrains;
 		return printTermType();
 	}
 
@@ -293,7 +267,7 @@ void setTerminalType()
 	result = Environment::getString("MSYSTEM");
 	if (!result.empty())
 	{
-		state.terminalType = ShellType::Bash;
+		state.terminalType = Type::Bash;
 		return printTermType();
 	}
 
@@ -305,27 +279,27 @@ void setTerminalType()
 		auto parentParentPath = getParentParentProcessPath(pid);
 		if (String::endsWith("WindowsTerminal.exe", parentParentPath))
 		{
-			state.terminalType = ShellType::WindowsTerminal;
+			state.terminalType = Type::WindowsTerminal;
 			return printTermType();
 		}
 		else if (String::endsWith("pwsh.exe", parentPath))
 		{
-			state.terminalType = ShellType::PowershellOpenSource;
+			state.terminalType = Type::PowershellOpenSource;
 			return printTermType();
 		}
 		else if (String::endsWith("powershell_ise.exe", parentPath))
 		{
-			state.terminalType = ShellType::PowershellIse;
+			state.terminalType = Type::PowershellIse;
 			return printTermType();
 		}
 		else if (String::endsWith("powershell.exe", parentPath))
 		{
-			state.terminalType = ShellType::Powershell;
+			state.terminalType = Type::Powershell;
 			return printTermType();
 		}
 		else if (String::endsWith("cmd.exe", parentPath))
 		{
-			state.terminalType = ShellType::CommandPrompt;
+			state.terminalType = Type::CommandPrompt;
 			return printTermType();
 		}
 	}
@@ -333,7 +307,7 @@ void setTerminalType()
 	result = Environment::getString("COLORTERM");
 	if (!result.empty())
 	{
-		state.terminalType = ShellType::GenericColorTerm;
+		state.terminalType = Type::GenericColorTerm;
 		return printTermType();
 	}
 
@@ -341,14 +315,14 @@ void setTerminalType()
 	result = Environment::getString("PROMPT");
 	if (!result.empty())
 	{
-		state.terminalType = ShellType::CommandPrompt;
+		state.terminalType = Type::CommandPrompt;
 		return printTermType();
 	}
 #else
 	#if defined(CHALET_LINUX)
 	if (isRunningWindowsSubsystemForLinux())
 	{
-		state.terminalType = ShellType::WindowsSubsystemForLinux;
+		state.terminalType = Type::WindowsSubsystemForLinux;
 		return printTermType();
 	}
 	#endif
@@ -357,135 +331,50 @@ void setTerminalType()
 
 	if (String::endsWith("/bash", parentPath))
 	{
-		state.terminalType = ShellType::Bash;
+		state.terminalType = Type::Bash;
 		return printTermType();
 	}
 	else if (String::endsWith("/zsh", parentPath))
 	{
-		state.terminalType = ShellType::Zsh;
+		state.terminalType = Type::Zsh;
 		return printTermType();
 	}
 	else if (String::endsWith(StringList{ "/pwsh", "powershell" }, parentPath))
 	{
-		state.terminalType = ShellType::PowershellOpenSourceNonWindows;
+		state.terminalType = Type::PowershellOpenSourceNonWindows;
 		return printTermType();
 	}
 	else if (String::endsWith("/tcsh", parentPath))
 	{
-		state.terminalType = ShellType::TShell;
+		state.terminalType = Type::TShell;
 		return printTermType();
 	}
 	else if (String::endsWith("/csh", parentPath))
 	{
-		state.terminalType = ShellType::CShell;
+		state.terminalType = Type::CShell;
 		return printTermType();
 	}
 	else if (String::endsWith("/ksh", parentPath))
 	{
-		state.terminalType = ShellType::Korn;
+		state.terminalType = Type::Korn;
 		return printTermType();
 	}
 	else if (String::endsWith("/fish", parentPath))
 	{
-		state.terminalType = ShellType::Fish;
+		state.terminalType = Type::Fish;
 		return printTermType();
 	}
 	else if (String::endsWith("/sh", parentPath))
 	{
-		state.terminalType = ShellType::Bourne;
+		state.terminalType = Type::Bourne;
 		return printTermType();
 	}
 #endif
 
-	state.terminalType = ShellType::Subprocess;
+	state.terminalType = Type::Subprocess;
 
 	printTermType();
 }
-}
-
-/*****************************************************************************/
-bool Shell::isSubprocess()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-	return state.terminalType == ShellType::Subprocess;
-}
-
-/*****************************************************************************/
-bool Shell::isBash()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_WIN32)
-	return state.terminalType == ShellType::Bash;
-#else
-	return state.terminalType != ShellType::Subprocess && state.terminalType != ShellType::Unset; // isBash() just looks for a bash-like
-#endif
-}
-
-/*****************************************************************************/
-bool Shell::isBashGenericColorTermOrWindowsTerminal()
-{
-#if defined(CHALET_WIN32)
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-	return state.terminalType == ShellType::Bash
-		|| state.terminalType == ShellType::GenericColorTerm
-		|| state.terminalType == ShellType::WindowsTerminal;
-#else
-	return isBash();
-#endif
-}
-
-/*****************************************************************************/
-bool Shell::isMicrosoftTerminalOrWindowsBash()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_WIN32)
-	return state.terminalType == ShellType::CommandPrompt
-		|| state.terminalType == ShellType::CommandPromptVisualStudio
-		|| state.terminalType == ShellType::CommandPromptJetBrains
-		|| state.terminalType == ShellType::Powershell
-		|| state.terminalType == ShellType::PowershellOpenSource
-		|| state.terminalType == ShellType::PowershellIse
-		|| state.terminalType == ShellType::WindowsTerminal
-		|| state.terminalType == ShellType::Bash;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool Shell::isWindowsSubsystemForLinux()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_LINUX)
-	return state.terminalType == ShellType::WindowsSubsystemForLinux;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool Shell::isCommandPromptOrPowerShell()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-	return state.terminalType == ShellType::CommandPrompt
-		|| state.terminalType == ShellType::CommandPromptVisualStudio
-		|| state.terminalType == ShellType::CommandPromptJetBrains
-		|| state.terminalType == ShellType::Powershell
-		|| state.terminalType == ShellType::PowershellOpenSource
-		|| state.terminalType == ShellType::PowershellIse;
-}
-
 /*****************************************************************************/
 bool Shell::isContinuousIntegrationServer()
 {
@@ -497,41 +386,4 @@ bool Shell::isContinuousIntegrationServer()
 
 	return state.hasTerm == 1;
 }
-
-/*****************************************************************************/
-bool Shell::isVisualStudioOutput()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_WIN32)
-	return state.terminalType == ShellType::CommandPromptVisualStudio;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-bool Shell::isJetBrainsOutput()
-{
-	if (state.terminalType == ShellType::Unset)
-		setTerminalType();
-
-#if defined(CHALET_WIN32)
-	return state.terminalType == ShellType::CommandPromptJetBrains;
-#else
-	return false;
-#endif
-}
-
-/*****************************************************************************/
-std::string Shell::getNull()
-{
-#if defined(CHALET_WIN32)
-	return "nul";
-#else
-	return "/dev/null";
-#endif
-}
-
 }
