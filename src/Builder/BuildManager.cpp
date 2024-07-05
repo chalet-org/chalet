@@ -1248,7 +1248,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	Timer buildTimer;
 
-	displayHeader("Build", inTarget, Output::theme().header);
+	displayHeader("Chalet", inTarget, Output::theme().header);
 
 	SubChaletBuilder subChalet(m_state, inTarget);
 	if (!subChalet.run())
@@ -1264,7 +1264,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
 	Timer buildTimer;
 
-	displayHeader("Build", inTarget, Output::theme().header);
+	displayHeader("CMake", inTarget, Output::theme().header);
 
 	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
