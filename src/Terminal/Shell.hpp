@@ -13,18 +13,18 @@ struct Shell
 
 	static void detectTerminalType();
 
-	static constexpr bool isSubprocess();
-	static constexpr bool isBash();
-	static constexpr bool isBashGenericColorTermOrWindowsTerminal();
-	static constexpr bool isMicrosoftTerminalOrWindowsBash();
-	static constexpr bool isWindowsSubsystemForLinux();
-	static constexpr bool isCommandPromptOrPowerShell();
-	static constexpr bool isVisualStudioOutput();
-	static constexpr bool isJetBrainsOutput();
+	static inline bool isSubprocess();
+	static inline bool isBash();
+	static inline bool isBashGenericColorTermOrWindowsTerminal();
+	static inline bool isMicrosoftTerminalOrWindowsBash();
+	static inline bool isWindowsSubsystemForLinux();
+	static inline bool isCommandPromptOrPowerShell();
+	static inline bool isVisualStudioOutput();
+	static inline bool isJetBrainsOutput();
 
 	static bool isContinuousIntegrationServer();
 
-	static constexpr const char* getNull();
+	static inline const char* getNull();
 
 private:
 	static void printTermType();

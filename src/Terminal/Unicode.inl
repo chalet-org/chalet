@@ -10,7 +10,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr const char* Unicode::triangle()
+inline const char* Unicode::triangle()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
@@ -23,7 +23,7 @@ constexpr const char* Unicode::triangle()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::diamond()
+inline const char* Unicode::diamond()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
@@ -35,7 +35,7 @@ constexpr const char* Unicode::diamond()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::checkmark()
+inline const char* Unicode::checkmark()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
@@ -54,7 +54,7 @@ constexpr const char* Unicode::checkmark()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::heavyBallotX()
+inline const char* Unicode::heavyBallotX()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isCommandPromptOrPowerShell())
@@ -65,7 +65,7 @@ constexpr const char* Unicode::heavyBallotX()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::warning()
+inline const char* Unicode::warning()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
@@ -79,7 +79,7 @@ constexpr const char* Unicode::warning()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::heavyCurvedDownRightArrow()
+inline const char* Unicode::heavyCurvedDownRightArrow()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
@@ -92,7 +92,7 @@ constexpr const char* Unicode::heavyCurvedDownRightArrow()
 }
 
 /*****************************************************************************/
-constexpr const char* Unicode::registered()
+inline const char* Unicode::registered()
 {
 #if defined(CHALET_WIN32)
 	if (Shell::isCommandPromptOrPowerShell())

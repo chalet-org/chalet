@@ -8,13 +8,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-constexpr bool Shell::isSubprocess()
+inline bool Shell::isSubprocess()
 {
 	return state.terminalType == Type::Subprocess;
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isBash()
+inline bool Shell::isBash()
 {
 #if defined(CHALET_WIN32)
 	return state.terminalType == Type::Bash;
@@ -24,7 +24,7 @@ constexpr bool Shell::isBash()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isBashGenericColorTermOrWindowsTerminal()
+inline bool Shell::isBashGenericColorTermOrWindowsTerminal()
 {
 #if defined(CHALET_WIN32)
 	return state.terminalType == Type::Bash
@@ -36,7 +36,7 @@ constexpr bool Shell::isBashGenericColorTermOrWindowsTerminal()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isMicrosoftTerminalOrWindowsBash()
+inline bool Shell::isMicrosoftTerminalOrWindowsBash()
 {
 #if defined(CHALET_WIN32)
 	return state.terminalType == Type::CommandPrompt
@@ -53,7 +53,7 @@ constexpr bool Shell::isMicrosoftTerminalOrWindowsBash()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isWindowsSubsystemForLinux()
+inline bool Shell::isWindowsSubsystemForLinux()
 {
 #if defined(CHALET_LINUX)
 	return state.terminalType == Type::WindowsSubsystemForLinux;
@@ -63,7 +63,7 @@ constexpr bool Shell::isWindowsSubsystemForLinux()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isCommandPromptOrPowerShell()
+inline bool Shell::isCommandPromptOrPowerShell()
 {
 	return state.terminalType == Type::CommandPrompt
 		|| state.terminalType == Type::CommandPromptVisualStudio
@@ -74,7 +74,7 @@ constexpr bool Shell::isCommandPromptOrPowerShell()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isVisualStudioOutput()
+inline bool Shell::isVisualStudioOutput()
 {
 #if defined(CHALET_WIN32)
 	return state.terminalType == Type::CommandPromptVisualStudio;
@@ -84,7 +84,7 @@ constexpr bool Shell::isVisualStudioOutput()
 }
 
 /*****************************************************************************/
-constexpr bool Shell::isJetBrainsOutput()
+inline bool Shell::isJetBrainsOutput()
 {
 #if defined(CHALET_WIN32)
 	return state.terminalType == Type::CommandPromptJetBrains;
@@ -94,7 +94,7 @@ constexpr bool Shell::isJetBrainsOutput()
 }
 
 /*****************************************************************************/
-constexpr const char* Shell::getNull()
+inline const char* Shell::getNull()
 {
 #if defined(CHALET_WIN32)
 	return "nul";

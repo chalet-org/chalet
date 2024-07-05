@@ -9,13 +9,13 @@ namespace chalet
 {
 namespace Unicode
 {
-constexpr const char* triangle();
-constexpr const char* diamond();
-constexpr const char* checkmark();
-constexpr const char* heavyBallotX();
-constexpr const char* warning();
-constexpr const char* heavyCurvedDownRightArrow();
-constexpr const char* registered();
+inline const char* triangle();
+inline const char* diamond();
+inline const char* checkmark();
+inline const char* heavyBallotX();
+inline const char* warning();
+inline const char* heavyCurvedDownRightArrow();
+inline const char* registered();
 }
 }
 
