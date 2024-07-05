@@ -20,6 +20,9 @@ namespace
 /*****************************************************************************/
 static struct
 {
+	std::string kEmpty;
+	std::unordered_map<Color, std::string> colorCache;
+
 	ColorTheme theme;
 
 	bool quietNonBuild = false;
@@ -232,38 +235,45 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 }
 
 /*****************************************************************************/
-std::string Output::getAnsiStyle(const Color inColor)
+const std::string& Output::getAnsiStyle(const Color inColor)
 {
+	static auto getAnsiStyleInternal = [](const Color inCol) {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput())
-		return std::string();
+		if (Shell::isVisualStudioOutput())
+			return std::string();
 #endif
 
-	if (inColor == Color::None)
-		return std::string();
+		if (inCol == Color::None)
+			return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
-	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
-		return std::string();
+		bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
+		if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
+			return std::string();
 #endif
 
-	constexpr char esc = getEscapeChar();
-	if (inColor == Color::Reset)
-		return fmt::format("{}[0m", esc);
+		constexpr char esc = getEscapeChar();
+		if (inCol == Color::Reset)
+			return fmt::format("{}[0m", esc);
 
-	using ColorType = std::underlying_type_t<Color>;
-	ColorType color = static_cast<ColorType>(inColor);
-	ColorType style = color / static_cast<ColorType>(100);
-	if (color > 100)
-		color -= (style * static_cast<ColorType>(100));
+		using ColorType = std::underlying_type_t<Color>;
+		ColorType color = static_cast<ColorType>(inCol);
+		ColorType style = color / static_cast<ColorType>(100);
+		if (color > 100)
+			color -= (style * static_cast<ColorType>(100));
 
 #if defined(CHALET_WIN32)
-	if (isCmdPromptLike)
-		return fmt::format("{}[{}m{}[{}m", esc, style, esc, color);
+		if (isCmdPromptLike)
+			return fmt::format("{}[{}m{}[{}m", esc, style, esc, color);
 #endif
 
-	return fmt::format("{}[{};{}m", esc, style, color);
+		return fmt::format("{}[{};{}m", esc, style, color);
+	};
+
+	if (state.colorCache.find(inColor) == state.colorCache.end())
+		state.colorCache.emplace(inColor, getAnsiStyleInternal(inColor));
+
+	return state.colorCache.at(inColor);
 }
 
 /*****************************************************************************/
@@ -293,30 +303,6 @@ std::string Output::getAnsiStyleRaw(const Color inColor)
 		color -= (style * static_cast<ColorType>(100));
 
 	return fmt::format("{};{}", style, color);
-}
-
-/*****************************************************************************/
-std::string Output::getAnsiStyleForMakefile(const Color inColor)
-{
-#if defined(CHALET_WIN32)
-	return getAnsiStyle(inColor);
-#else
-	auto ret = getAnsiStyle(inColor);
-	String::replaceAll(ret, getEscapeChar(), "\\033");
-	return ret;
-#endif
-}
-
-/*****************************************************************************/
-std::string Output::getAnsiStyleForceFormatting(const Color inColor, const Formatting inFormatting)
-{
-	using ColorType = std::underlying_type_t<Color>;
-	ColorType color = static_cast<ColorType>(inColor);
-	ColorType baseColor = color % static_cast<ColorType>(100);
-	ColorType style = static_cast<ColorType>(inFormatting);
-	color = style + baseColor;
-
-	return getAnsiStyle(static_cast<Color>(color));
 }
 
 /*****************************************************************************/

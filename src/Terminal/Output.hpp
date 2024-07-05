@@ -37,10 +37,8 @@ bool getUserInput(
 	const std::function<bool(std::string&)>& onValidate = [](std::string& input) {UNUSED(input);return true; }, const bool inFailOnFalse = true);
 bool getUserInputYesNo(const std::string& inUserQuery, const bool inDefaultYes, std::string inNote = std::string());
 
-std::string getAnsiStyle(const Color inColor);
+const std::string& getAnsiStyle(const Color inColor);
 std::string getAnsiStyleRaw(const Color inColor);
-std::string getAnsiStyleForMakefile(const Color inColor);
-std::string getAnsiStyleForceFormatting(const Color inColor, const Formatting inFormatting);
 
 void displayStyledSymbol(const Color inColor, const std::string_view inSymbol, const std::string& inMessage);
 void lineBreak(const bool inForce = false);
