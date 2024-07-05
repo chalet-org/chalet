@@ -73,8 +73,7 @@ std::string getAnsiStyleInternal(const Color inColor)
 #endif
 
 	return fmt::format("{}[{};{}m", esc, style, color);
-};
-
+}
 }
 
 #if defined(CHALET_WIN32)
