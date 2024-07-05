@@ -213,8 +213,8 @@ bool BatchValidator::parse(Json& outJson, const std::string& inFilename, const b
 /*****************************************************************************/
 void BatchValidator::showErrorMessage(const std::string& inMessage) const
 {
-	const auto color = Output::getAnsiStyle(Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().error);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::cout << fmt::format("{}ERROR: {}{}\n", color, reset, inMessage);
 }

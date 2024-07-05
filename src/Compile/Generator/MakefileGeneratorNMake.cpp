@@ -107,8 +107,8 @@ void MakefileGeneratorNMake::reset()
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& inFile) const
 {
-	// const auto color = Output::getAnsiStyle(Output::theme().build);
-	// const auto reset = Output::getAnsiStyle(Color::Reset);
+	// const auto& color = Output::getAnsiStyle(Output::theme().build);
+	// const auto& reset = Output::getAnsiStyle(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())
@@ -133,8 +133,8 @@ std::string MakefileGeneratorNMake::getCompileEchoSources(const std::string& inF
 /*****************************************************************************/
 std::string MakefileGeneratorNMake::getCompileEchoLinker(const std::string& inFile) const
 {
-	// const auto color = Output::getAnsiStyle(Output::theme().build);
-	// const auto reset = Output::getAnsiStyle(Color::Reset);
+	// const auto& color = Output::getAnsiStyle(Output::theme().build);
+	// const auto& reset = Output::getAnsiStyle(Color::Reset);
 	std::string printer;
 
 	if (Output::cleanOutput())

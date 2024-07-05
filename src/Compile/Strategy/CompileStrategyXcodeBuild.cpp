@@ -280,8 +280,8 @@ bool CompileStrategyXcodeBuild::subprocessXcodeBuild(const StringList& inCmd, st
 		return std::string();
 	};
 
-	const auto color = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().build);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	const auto cwd = fmt::format("{}/", inCwd);
 

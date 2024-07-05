@@ -45,6 +45,36 @@ constexpr char getEscapeChar()
 {
 	return '\x1b';
 }
+
+std::string getAnsiStyleInternal(const Color inColor)
+{
+	if (inColor == Color::None)
+		return std::string();
+
+#if defined(CHALET_WIN32)
+	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
+	if (Shell::isVisualStudioOutput() || (isCmdPromptLike && !Output::ansiColorsSupportedInComSpec()))
+		return std::string();
+#endif
+
+	constexpr char esc = getEscapeChar();
+	if (inColor == Color::Reset)
+		return fmt::format("{}[0m", esc);
+
+	using ColorType = std::underlying_type_t<Color>;
+	ColorType color = static_cast<ColorType>(inColor);
+	ColorType style = color / static_cast<ColorType>(100);
+	if (color > 100)
+		color -= (style * static_cast<ColorType>(100));
+
+#if defined(CHALET_WIN32)
+	if (isCmdPromptLike)
+		return fmt::format("{}[{}m{}[{}m", esc, style, esc, color);
+#endif
+
+	return fmt::format("{}[{};{}m", esc, style, color);
+};
+
 }
 
 #if defined(CHALET_WIN32)
@@ -140,10 +170,10 @@ std::ostream& Output::getErrStream()
 /*****************************************************************************/
 bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult, std::string note, const std::function<bool(std::string&)>& onValidate, const bool inFailOnFalse)
 {
-	const auto color = Output::getAnsiStyle(state.theme.flair);
-	const auto noteColor = Output::getAnsiStyle(state.theme.build);
-	const auto answerColor = Output::getAnsiStyle(state.theme.note);
-	const auto reset = Output::getAnsiStyle(state.theme.reset);
+	const auto& color = Output::getAnsiStyle(state.theme.flair);
+	const auto& noteColor = Output::getAnsiStyle(state.theme.build);
+	const auto& answerColor = Output::getAnsiStyle(state.theme.note);
+	const auto& reset = Output::getAnsiStyle(state.theme.reset);
 	const char symbol = '>';
 
 	const auto lineUp = fmt::format("{}[F", getEscapeChar());
@@ -182,7 +212,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 	bool result = onValidate(input);
 	if (!result && inFailOnFalse)
 	{
-		const auto error = Output::getAnsiStyle(state.theme.error);
+		const auto& error = Output::getAnsiStyle(state.theme.error);
 		auto invalid = fmt::format("{cleanLine}{lineUp}{output}{input}{color} -- {error}invalid entry{reset}\n",
 			FMT_ARG(cleanLine),
 			FMT_ARG(lineUp),
@@ -237,39 +267,6 @@ bool Output::getUserInputYesNo(const std::string& inUserQuery, const bool inDefa
 /*****************************************************************************/
 const std::string& Output::getAnsiStyle(const Color inColor)
 {
-	static auto getAnsiStyleInternal = [](const Color inCol) {
-#if defined(CHALET_WIN32)
-		if (Shell::isVisualStudioOutput())
-			return std::string();
-#endif
-
-		if (inCol == Color::None)
-			return std::string();
-
-#if defined(CHALET_WIN32)
-		bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
-		if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
-			return std::string();
-#endif
-
-		constexpr char esc = getEscapeChar();
-		if (inCol == Color::Reset)
-			return fmt::format("{}[0m", esc);
-
-		using ColorType = std::underlying_type_t<Color>;
-		ColorType color = static_cast<ColorType>(inCol);
-		ColorType style = color / static_cast<ColorType>(100);
-		if (color > 100)
-			color -= (style * static_cast<ColorType>(100));
-
-#if defined(CHALET_WIN32)
-		if (isCmdPromptLike)
-			return fmt::format("{}[{}m{}[{}m", esc, style, esc, color);
-#endif
-
-		return fmt::format("{}[{};{}m", esc, style, color);
-	};
-
 	if (state.colorCache.find(inColor) == state.colorCache.end())
 		state.colorCache.emplace(inColor, getAnsiStyleInternal(inColor));
 
@@ -279,17 +276,11 @@ const std::string& Output::getAnsiStyle(const Color inColor)
 /*****************************************************************************/
 std::string Output::getAnsiStyleRaw(const Color inColor)
 {
-#if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput())
-		return std::string();
-#endif
-
 	if (inColor == Color::None)
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
-	if (isCmdPromptLike && !ansiColorsSupportedInComSpec())
+	if (Shell::isVisualStudioOutput() || (Shell::isCommandPromptOrPowerShell() && !ansiColorsSupportedInComSpec()))
 		return std::string();
 #endif
 

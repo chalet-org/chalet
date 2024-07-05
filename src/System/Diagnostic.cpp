@@ -75,7 +75,7 @@ void Diagnostic::cancelEllipsis()
 	if (!Spinner::instanceCreated())
 		return;
 
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	if (destroySpinnerThread(true))
 	{
@@ -91,8 +91,8 @@ void Diagnostic::printDone(const std::string& inTime)
 	if (!spinnerDestroyed || Output::quietNonBuild())
 		return;
 
-	const auto color = Output::getAnsiStyle(Output::theme().flair);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().flair);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto word{ "done" };
 	std::string output;
@@ -117,8 +117,8 @@ void Diagnostic::printValid(const bool inValid)
 	if (!spinnerDestroyed || Output::quietNonBuild())
 		return;
 
-	const auto color = Output::getAnsiStyle(inValid ? Output::theme().flair : Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(inValid ? Output::theme().flair : Output::theme().error);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto valid = inValid ? "valid" : "FAILED";
 	auto output = fmt::format("{}{}{}{}", reset, color, valid, reset);
@@ -135,8 +135,8 @@ void Diagnostic::printFound(const bool inFound, const std::string& inTime)
 	if (!spinnerDestroyed || Output::quietNonBuild())
 		return;
 
-	const auto color = Output::getAnsiStyle(inFound ? Output::theme().flair : Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(inFound ? Output::theme().flair : Output::theme().error);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto words = inFound ? "found" : "not found";
 	std::string output;
@@ -162,9 +162,9 @@ void Diagnostic::showInfo(std::string&& inMessage, const bool inLineBreak)
 		return;
 
 	const auto& theme = Output::theme();
-	const auto color = Output::getAnsiStyle(theme.flair);
-	const auto infoColor = Output::getAnsiStyle(theme.info);
-	const auto reset = Output::getAnsiStyle(theme.reset);
+	const auto& color = Output::getAnsiStyle(theme.flair);
+	const auto& infoColor = Output::getAnsiStyle(theme.info);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
 	const auto symbol = '>';
 
 	auto output = fmt::format("{}{}  {}{}", color, symbol, infoColor, inMessage);
@@ -204,9 +204,9 @@ void Diagnostic::showSubInfo(std::string&& inMessage, const bool inLineBreak)
 		return;
 
 	const auto& theme = Output::theme();
-	const auto color = Output::getAnsiStyle(theme.flair);
-	const auto infoColor = Output::getAnsiStyle(theme.info);
-	const auto reset = Output::getAnsiStyle(theme.reset);
+	const auto& color = Output::getAnsiStyle(theme.flair);
+	const auto& infoColor = Output::getAnsiStyle(theme.info);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
 
 	auto output = fmt::format("{}   + {}{}", color, infoColor, inMessage);
 	std::cout.write(output.data(), output.size());
@@ -231,9 +231,9 @@ void Diagnostic::showStepInfo(std::string&& inMessage, const bool inLineBreak)
 	if (Output::quietNonBuild())
 		return;
 
-	const auto color = Output::getAnsiStyle(Output::theme().flair);
-	const auto infoColor = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().flair);
+	const auto& infoColor = Output::getAnsiStyle(Output::theme().build);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto output = fmt::format("{}   {}{}", color, infoColor, inMessage);
 	std::cout.write(output.data(), output.size());
@@ -273,7 +273,7 @@ void Diagnostic::showErrorAndAbort(std::string&& inMessage)
 
 	if (Shell::isBashGenericColorTermOrWindowsTerminal())
 	{
-		const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
+		const auto& boldBlack = Output::getAnsiStyle(Output::theme().flair);
 		Output::getErrStream().write(boldBlack.data(), boldBlack.size());
 	}
 
@@ -299,10 +299,10 @@ void Diagnostic::customAssertion(const std::string_view inExpression, const std:
 		destroySpinnerThread();
 	}
 
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	const auto boldBlack = Output::getAnsiStyle(Output::theme().flair);
-	const auto blue = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& boldRed = Output::getAnsiStyle(Output::theme().error);
+	const auto& boldBlack = Output::getAnsiStyle(Output::theme().flair);
+	const auto& blue = Output::getAnsiStyle(Output::theme().build);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::string output = fmt::format("\n{}Assertion Failed:\n  at {}{} {}{}:{}{}", boldRed, reset, inExpression, blue, inFile, inLineNumber, reset);
 
@@ -340,8 +340,8 @@ void Diagnostic::showHeader(const Type inType, std::string&& inTitle)
 		destroySpinnerThread();
 	}
 
-	const auto color = Output::getAnsiStyle(inType == Type::Error || inType == Type::ErrorStdOut ? Output::theme().error : Output::theme().warning);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(inType == Type::Error || inType == Type::ErrorStdOut ? Output::theme().error : Output::theme().warning);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	out << fmt::format("{}{}: {}", color, inTitle, reset);
 }
@@ -400,7 +400,7 @@ void Diagnostic::printErrors(const bool inForceStdOut)
 			errors.emplace_back(std::move(err.message));
 	}
 
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 	std::cout.write(reset.data(), reset.size());
 
 	bool hasWarnings = false;

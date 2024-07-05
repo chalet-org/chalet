@@ -321,7 +321,7 @@ bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::s
 		}
 
 		// Note: std::cerr outputs after std::cout on windows (which we don't want)
-		auto reset = Output::getAnsiStyle(Output::theme().reset);
+		const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 #if defined(CHALET_WIN32)
 		if (result == EXIT_SUCCESS)
 #endif

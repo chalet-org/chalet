@@ -180,7 +180,7 @@ bool CommandPoolAlt::run(const Job& inJob, const Settings& inSettings)
 	}
 
 	m_reset = Output::getAnsiStyle(Output::theme().reset);
-	auto color = Output::getAnsiStyle(cmdColor);
+	const auto& color = Output::getAnsiStyle(cmdColor);
 
 	bool haltOnError = !keepGoing;
 
@@ -423,8 +423,8 @@ void CommandPoolAlt::RunningProcess::printOutput()
 			if (state->errorCode == CommandPoolErrorCode::None)
 				state->errorCode = CommandPoolErrorCode::BuildFailure;
 
-			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Output::theme().reset);
+			const auto& error = Output::getAnsiStyle(Output::theme().error);
+			const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(*command);
 
 			auto failure = fmt::format("{}FAILED: {}{}{}", error, reset, cmdString, eol);
@@ -506,8 +506,8 @@ void CommandPoolAlt::RunningProcess::printMsvcOutput()
 			if (state->errorCode == CommandPoolErrorCode::None)
 				state->errorCode = CommandPoolErrorCode::BuildFailure;
 
-			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Output::theme().reset);
+			const auto& error = Output::getAnsiStyle(Output::theme().error);
+			const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 			auto cmdString = String::join(*command);
 
 			auto failure = fmt::format("{}FAILED: {}{}\r\n", error, reset, cmdString);

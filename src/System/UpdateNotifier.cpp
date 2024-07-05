@@ -87,10 +87,10 @@ void UpdateNotifier::checkForUpdates()
 void UpdateNotifier::showUpdateMessage(const std::string& inOld, const std::string& inNew) const
 {
 	auto& theme = Output::theme();
-	auto dim = Output::getAnsiStyle(theme.flair);
-	auto colOld = Output::getAnsiStyle(theme.build);
-	auto colNew = Output::getAnsiStyle(theme.success);
-	auto reset = Output::getAnsiStyle(theme.reset);
+	const auto& dim = Output::getAnsiStyle(theme.flair);
+	const auto& colOld = Output::getAnsiStyle(theme.build);
+	const auto& colNew = Output::getAnsiStyle(theme.success);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
 
 	const auto& route = m_centralState.inputs().route();
 	if (route.isBuildRun() || route.isRun())

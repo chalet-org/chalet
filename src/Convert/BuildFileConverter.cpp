@@ -72,9 +72,9 @@ bool BuildFileConverter::convert(const std::string& format, const std::string& i
 		return false;
 	}
 
-	const auto color = Output::getAnsiStyle(Output::theme().build);
-	const auto flair = Output::getAnsiStyle(Output::theme().flair);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().build);
+	const auto& flair = Output::getAnsiStyle(Output::theme().flair);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto output = fmt::format("   {} {}\u2192 {}{}{}\n", inputFile, flair, color, outputFile, reset);
 	std::cout.write(output.data(), output.size());

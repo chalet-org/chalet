@@ -136,7 +136,7 @@ void TerminalTest::printUnicodeCharacters()
 
 	printBanner("Supported Unicode Characters");
 
-	const auto bold = Output::getAnsiStyle(Color::WhiteBold);
+	const auto& bold = Output::getAnsiStyle(Color::WhiteBold);
 
 	std::string output = m_separator + bold;
 	for (auto& character : characters)

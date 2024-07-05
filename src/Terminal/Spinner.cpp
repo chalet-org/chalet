@@ -26,7 +26,7 @@ void signalHandler(i32 inSignal)
 	{
 		if (spinner->cancel())
 		{
-			auto output = Output::getAnsiStyle(Output::theme().reset);
+			const auto& output = Output::getAnsiStyle(Output::theme().reset);
 			std::cout.write(output.data(), output.size());
 		}
 	}

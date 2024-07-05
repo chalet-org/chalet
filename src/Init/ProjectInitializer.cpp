@@ -395,8 +395,8 @@ bool ProjectInitializer::makeDotEnv()
 std::string ProjectInitializer::getBannerV1() const
 {
 	auto& theme = Output::theme();
-	auto color = Output::getAnsiStyle(theme.header);
-	auto reset = Output::getAnsiStyle(theme.reset);
+	const auto& color = Output::getAnsiStyle(theme.header);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
 	return fmt::format(R"art(
 .    `     .     .  `   ,    .    `    .   .    '       `    .   ,    '  .   ,
     .     `    .   ,  '    .   ,   .         ,   .    '   `    .       .   .
@@ -411,10 +411,10 @@ std::string ProjectInitializer::getBannerV1() const
 std::string ProjectInitializer::getBannerV2() const
 {
 	auto& theme = Output::theme();
-	auto c1 = Output::getAnsiStyle(theme.header);
-	auto c2 = Output::getAnsiStyle(theme.flair);
-	auto c3 = Output::getAnsiStyle(theme.info);
-	auto reset = Output::getAnsiStyle(theme.reset);
+	const auto& c1 = Output::getAnsiStyle(theme.header);
+	const auto& c2 = Output::getAnsiStyle(theme.flair);
+	const auto& c3 = Output::getAnsiStyle(theme.info);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
 	return fmt::format(R"art(
                                       {c1}./\.{reset}
                                    {c1}./J/''\L\.{reset}
@@ -726,8 +726,8 @@ void ProjectInitializer::printFileNameAndContents(const bool inCondition, const 
 	Output::lineBreak();
 
 	std::string contents = inGetContents();
-	auto buildColor = Output::getAnsiStyle(Output::theme().build);
-	auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& buildColor = Output::getAnsiStyle(Output::theme().build);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	std::cout.write(buildColor.data(), buildColor.size());
 	std::cout.write(contents.data(), contents.size());

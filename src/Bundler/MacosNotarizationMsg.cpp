@@ -21,9 +21,9 @@ MacosNotarizationMsg::MacosNotarizationMsg(const BuildState& inState) :
 /*****************************************************************************/
 void MacosNotarizationMsg::showMessage(const std::string& inFile)
 {
-	auto color = Output::getAnsiStyle(Output::theme().build);
-	auto dim = Output::getAnsiStyle(Output::theme().flair);
-	auto reset = Output::getAnsiStyle(Color::Reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().build);
+	const auto& dim = Output::getAnsiStyle(Output::theme().flair);
+	const auto& reset = Output::getAnsiStyle(Color::Reset);
 
 	if (m_state.tools.xcodeVersionMajor() < 13)
 	{

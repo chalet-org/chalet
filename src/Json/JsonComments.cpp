@@ -61,9 +61,9 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 
 	outOutput = fmt::format("{}\n", error);
 
-	auto colorGray = Output::getAnsiStyle(Output::theme().flair);
-	auto colorError = Output::getAnsiStyle(Output::theme().error);
-	auto colorReset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& colorGray = Output::getAnsiStyle(Output::theme().flair);
+	const auto& colorError = Output::getAnsiStyle(Output::theme().error);
+	const auto& colorReset = Output::getAnsiStyle(Output::theme().reset);
 
 	i32 i = 0;
 	for (std::string line; std::getline(inContents, line); ++i)

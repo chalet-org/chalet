@@ -30,8 +30,8 @@ struct
 
 void printError(const std::string& inType, const std::string& inDescription)
 {
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& boldRed = Output::getAnsiStyle(Output::theme().error);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 	auto output = fmt::format("{}Signal: {}{} [{}]\n", reset, inDescription, boldRed, inType);
 
 	Output::getErrStream().write(output.data(), output.size());
@@ -147,8 +147,8 @@ void SignalHandler::exitHandler(const i32 inSignal)
 	bool exceptionThrown = std::current_exception() != nullptr;
 	bool assertionFailure = Diagnostic::assertionFailure();
 
-	const auto boldRed = Output::getAnsiStyle(Output::theme().error);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& boldRed = Output::getAnsiStyle(Output::theme().error);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto& errStream = Output::getErrStream();
 	errStream.put('\n');

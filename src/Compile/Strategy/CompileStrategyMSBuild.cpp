@@ -194,8 +194,8 @@ bool CompileStrategyMSBuild::subprocessMsBuild(const StringList& inCmd, std::str
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	const auto color = Output::getAnsiStyle(Output::theme().build);
-	const auto reset = Output::getAnsiStyle(Output::theme().reset);
+	const auto& color = Output::getAnsiStyle(Output::theme().build);
+	const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 	auto cwd = inCwd;
 	Path::toUnix(cwd);

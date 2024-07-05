@@ -687,8 +687,8 @@ bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const Module
 		// LOG(m_previousSource, outModule.source, inModule.source);
 		if (!m_previousSource.empty() && String::equals(otherModule.source, m_previousSource))
 		{
-			auto error = Output::getAnsiStyle(Output::theme().error);
-			auto reset = Output::getAnsiStyle(Output::theme().reset);
+			const auto& error = Output::getAnsiStyle(Output::theme().error);
+			const auto& reset = Output::getAnsiStyle(Output::theme().reset);
 
 			auto failure = fmt::format("{}FAILED: {}Cannot build the following source file due to a cyclical dependency: {} depends on {} depends on {}", error, reset, inModule.source, m_previousSource, inModule.source);
 			std::cout.write(failure.data(), failure.size());
