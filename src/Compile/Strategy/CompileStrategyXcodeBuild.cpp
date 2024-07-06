@@ -34,6 +34,12 @@ CompileStrategyXcodeBuild::CompileStrategyXcodeBuild(BuildState& inState) :
 }
 
 /*****************************************************************************/
+std::string CompileStrategyXcodeBuild::name() const noexcept
+{
+	return "XcodeBuild";
+}
+
+/*****************************************************************************/
 bool CompileStrategyXcodeBuild::initialize()
 {
 	if (m_initialized)

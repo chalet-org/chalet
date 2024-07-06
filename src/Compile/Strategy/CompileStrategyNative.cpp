@@ -20,6 +20,12 @@ CompileStrategyNative::CompileStrategyNative(BuildState& inState) :
 }
 
 /*****************************************************************************/
+std::string CompileStrategyNative::name() const noexcept
+{
+	return "Native";
+}
+
+/*****************************************************************************/
 bool CompileStrategyNative::initialize()
 {
 	if (m_initialized)

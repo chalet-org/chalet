@@ -28,6 +28,12 @@ CompileStrategyNinja::CompileStrategyNinja(BuildState& inState) :
 }
 
 /*****************************************************************************/
+std::string CompileStrategyNinja::name() const noexcept
+{
+	return "Ninja";
+}
+
+/*****************************************************************************/
 bool CompileStrategyNinja::initialize()
 {
 	if (m_initialized)

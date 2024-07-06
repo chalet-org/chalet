@@ -134,7 +134,7 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 		{
 			if (files.empty())
 			{
-				Output::printCommand("   No files changed. Skipping.");
+				// Output::printCommand("   No files changed. Skipping.");
 			}
 			else
 			{

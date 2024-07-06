@@ -513,16 +513,19 @@ void Output::msgTargetUpToDate(const std::string& inProjectName, Timer* outTimer
 	if (!state.quietNonBuild)
 	{
 		i64 result = outTimer != nullptr ? outTimer->stop() : 0;
+		std::string output;
 		bool benchmark = result > 0 && Output::showBenchmarks();
+		// const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		if (!benchmark || outTimer == nullptr)
 		{
-			print(state.theme.build, fmt::format("   {}: Up to date.", inProjectName));
+			output = fmt::format("   {}: done\n", inProjectName);
 		}
 		else
 		{
-			const auto& color = Output::getAnsiStyle(state.theme.flair);
-			print(state.theme.build, fmt::format("   {}: Up to date. {}({})", inProjectName, color, outTimer->asString()));
+			output = fmt::format("   {}: {}\n", inProjectName, outTimer->asString());
 		}
+		std::cout.write(output.data(), output.size());
+		std::cout.flush();
 	}
 }
 

@@ -33,6 +33,7 @@ struct ICompileStrategy
 	void setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs);
 	void setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain);
 
+	virtual std::string name() const noexcept = 0;
 	virtual bool initialize() = 0;
 	virtual bool addProject(const SourceTarget& inProject);
 

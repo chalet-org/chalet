@@ -34,6 +34,12 @@ CompileStrategyMSBuild::CompileStrategyMSBuild(BuildState& inState) :
 }
 
 /*****************************************************************************/
+std::string CompileStrategyMSBuild::name() const noexcept
+{
+	return "MSBuild";
+}
+
+/*****************************************************************************/
 bool CompileStrategyMSBuild::initialize()
 {
 	if (m_initialized)

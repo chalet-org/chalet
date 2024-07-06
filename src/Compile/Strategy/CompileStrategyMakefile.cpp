@@ -27,6 +27,24 @@ CompileStrategyMakefile::CompileStrategyMakefile(BuildState& inState) :
 }
 
 /*****************************************************************************/
+std::string CompileStrategyMakefile::name() const noexcept
+{
+#if defined(CHALET_WIN32)
+	if (m_state.toolchain.makeIsNMake())
+	{
+		if (m_state.toolchain.makeIsJom())
+			return "NMAKE (Qt Jom)";
+		else
+			return "NMAKE";
+	}
+	else
+#endif
+	{
+		return "GNU Make";
+	}
+}
+
+/*****************************************************************************/
 bool CompileStrategyMakefile::initialize()
 {
 	if (m_initialized)

@@ -19,6 +19,7 @@ class CompileStrategyNative final : public ICompileStrategy
 public:
 	explicit CompileStrategyNative(BuildState& inState);
 
+	virtual std::string name() const noexcept final;
 	virtual bool initialize() final;
 	virtual bool addProject(const SourceTarget& inProject) final;
 

@@ -22,6 +22,7 @@ struct ProcessBuildTarget;
 struct ScriptBuildTarget;
 struct ValidationBuildTarget;
 struct SourceCache;
+struct CompilerInfo;
 
 class BuildManager
 {
@@ -39,8 +40,8 @@ private:
 	void populateBuildTargets(const CommandRoute& inRoute);
 	const IBuildTarget* getRunTarget(const CommandRoute& inRoute);
 
-	void printBuildInformation();
-	std::string getBuildStrategyName() const;
+	void printCompiler(const CompilerInfo& inInfo, const char* inLang) const;
+	void printBuildInformation() const;
 
 	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);

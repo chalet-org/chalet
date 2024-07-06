@@ -775,8 +775,20 @@ bool CmakeBuilder::usesNinja() const
 		|| strategy == StrategyType::XcodeBuild)
 		return true;
 
-	auto& ninjaExec = m_state.toolchain.ninja();
-	return !ninjaExec.empty() && Files::pathExists(ninjaExec);
+	if (strategy == StrategyType::Native
+#if defined(CHALET_WIN32)
+		|| m_state.environment->isMsvc()
+#endif
+	)
+	{
+		auto& ninjaExec = m_state.toolchain.ninja();
+		if (!ninjaExec.empty() && Files::pathExists(ninjaExec))
+			return true;
+	}
+
+	auto& makeExec = m_state.toolchain.make();
+	bool makeExists = !makeExec.empty() && Files::pathExists(makeExec);
+	return !makeExists;
 }
 
 /*****************************************************************************/

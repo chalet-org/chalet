@@ -384,7 +384,16 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 }
 
 /*****************************************************************************/
-void BuildManager::printBuildInformation()
+void BuildManager::printCompiler(const CompilerInfo& inInfo, const char* inLang) const
+{
+	if (inInfo.description.empty())
+		return;
+
+	Diagnostic::info("{} Compiler: {}", inLang, inInfo.description);
+}
+
+/*****************************************************************************/
+void BuildManager::printBuildInformation() const
 {
 	bool usingObjectiveCpp = false;
 	bool usingObjectiveC = false;
@@ -404,24 +413,17 @@ void BuildManager::printBuildInformation()
 		}
 	}
 
-	auto printDetailsImpl = [](const CompilerInfo& inInfo, const std::string& inLang) -> void {
-		if (inInfo.description.empty())
-			return;
-
-		Diagnostic::info("{} Compiler: {}", inLang, inInfo.description);
-	};
-
 	if (usingObjectiveCpp)
-		printDetailsImpl(m_state.toolchain.compilerCpp(), "Objective-C++");
+		printCompiler(m_state.toolchain.compilerCpp(), "Objective-C++");
 
 	if (usingObjectiveC)
-		printDetailsImpl(m_state.toolchain.compilerCpp(), "Objective-C");
+		printCompiler(m_state.toolchain.compilerCpp(), "Objective-C");
 
 	if (usingCpp)
-		printDetailsImpl(m_state.toolchain.compilerCpp(), "C++");
+		printCompiler(m_state.toolchain.compilerCpp(), "C++");
 
 	if (usingC)
-		printDetailsImpl(m_state.toolchain.compilerC(), "C");
+		printCompiler(m_state.toolchain.compilerC(), "C");
 
 	auto& machineArch = m_state.inputs.hostArchitecture();
 	const auto& hostArch = m_state.info.hostArchitectureString();
@@ -440,57 +442,8 @@ void BuildManager::printBuildInformation()
 	else
 		Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.inputs.universalArches(), " / "));
 
-	const auto strategy = getBuildStrategyName();
-	Diagnostic::info("Strategy: {}", strategy);
+	Diagnostic::info("Strategy: {}", m_strategy->name());
 	Diagnostic::info("Configuration: {}", m_state.configuration.name());
-}
-
-/*****************************************************************************/
-std::string BuildManager::getBuildStrategyName() const
-{
-	std::string ret;
-
-	auto strategy = m_state.toolchain.strategy();
-	switch (strategy)
-	{
-		case StrategyType::Native:
-			ret = "Native";
-			break;
-
-		case StrategyType::Ninja:
-			ret = "Ninja";
-			break;
-
-#if defined(CHALET_WIN32)
-		case StrategyType::MSBuild:
-			ret = "MSBuild";
-			break;
-#elif defined(CHALET_MACOS)
-		case StrategyType::XcodeBuild:
-			ret = "XcodeBuild";
-			break;
-#endif
-
-		case StrategyType::Makefile: {
-#if defined(CHALET_WIN32)
-			if (m_state.toolchain.makeIsNMake())
-			{
-				if (m_state.toolchain.makeIsJom())
-					ret = "NMAKE (Qt Jom)";
-				else
-					ret = "NMAKE";
-			}
-			else
-#endif
-			{
-				ret = "GNU Make";
-			}
-			break;
-		}
-		default: break;
-	}
-
-	return ret;
 }
 
 /*****************************************************************************/
@@ -806,7 +759,7 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 		}
 
 		if (!inRunCommand && result)
-			Output::stopTimerAndShowBenchmark(buildTimer);
+			Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 	}
 	else
 	{
@@ -843,7 +796,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	{
 		result = runProcess(cmd, path, inRunCommand);
 		if (!inRunCommand && result)
-			Output::stopTimerAndShowBenchmark(buildTimer);
+			Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 	}
 	else
 	{
@@ -870,7 +823,7 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files());
 
-	Output::stopTimerAndShowBenchmark(buildTimer);
+	Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 
 	// if (!result)
 	// 	Output::lineBreak();
@@ -1250,15 +1203,11 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 /*****************************************************************************/
 bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 {
-	Timer buildTimer;
-
 	displayHeader("CMake", inTarget, Output::theme().header);
 
 	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
 		return false;
-
-	Output::stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
 }
@@ -1266,8 +1215,6 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 /*****************************************************************************/
 bool BuildManager::runFullBuild()
 {
-	// Timer buildTimer;
-
 	const auto& workspace = m_state.workspace.metadata().name();
 
 	if (m_state.inputs.route().isRebuild())
@@ -1275,12 +1222,8 @@ bool BuildManager::runFullBuild()
 	else
 		Output::msgTargetOfType("Build", workspace, Output::theme().header);
 
-	// Output::lineBreak();
-
 	if (!m_strategy->doFullBuild())
 		return false;
-
-	// Output::stopTimerAndShowBenchmark(buildTimer);
 
 	return true;
 }
