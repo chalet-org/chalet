@@ -87,7 +87,7 @@ bool BuildPaths::initialize()
 		m_buildOutputDir = outputDirectory;
 	}
 
-	m_externalBuildDir = fmt::format("{}/ext", m_buildOutputDir, m_state.inputs.externalDirectory());
+	m_externalBuildDir = fmt::format("{}/ext", m_buildOutputDir);
 
 	m_initialized = true;
 
@@ -202,7 +202,7 @@ std::string BuildPaths::getExternalDir(const std::string& inName) const
 		{
 			if (dep->isGit())
 			{
-				return fmt::format("{}/{}", m_state.inputs.externalDirectory(), dep->name());
+				return fmt::format("{}/{}", m_state.inputs.externalDirectory(), inName);
 			}
 			else if (dep->isScript())
 			{
