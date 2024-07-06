@@ -5,6 +5,9 @@ on:
       - "v*"
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 env:
   IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: ${{ github.ref_type == 'branch' }}
@@ -35,17 +38,19 @@ jobs:
         run: echo "tag=${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
         id: tag
       - name: "Checkout"
+        if: github.event_name != 'pull_request'
         uses: actions/checkout@v4
         with:
           ref: ${{ env.github.ref }}
       - name: "Create Tag"
-        if: github.ref_type == 'branch'
+        if: github.ref_type == 'branch' && github.event_name != 'pull_request'
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
         run: |
           git tag ${{ steps.tag.outputs.tag }}
           git push --tags
       - name: "Create Release"
+        if: github.event_name != 'pull_request'
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
@@ -117,6 +122,7 @@ jobs:
         run: ${{ env.CHALET_BIN }} run tests
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        if: github.event_name != 'pull_request'
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
@@ -188,6 +194,7 @@ jobs:
         run: ${{ env.CHALET_BIN }} run tests
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        if: github.event_name != 'pull_request'
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
@@ -243,6 +250,7 @@ jobs:
         run: mv dist/chalet-windows-installer.exe dist/chalet-${{ matrix.triplet }}-installer.exe
       - name: "Upload"
         uses: ncipollo/release-action@v1
+        if: github.event_name != 'pull_request'
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
@@ -266,6 +274,7 @@ jobs:
     steps:
       - name: "Release"
         uses: ncipollo/release-action@v1
+        if: github.event_name != 'pull_request'
         with:
           token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           name: ${{ needs.create-release.outputs.release }}
