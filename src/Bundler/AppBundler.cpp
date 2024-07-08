@@ -526,7 +526,7 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 	if (schema.empty())
 		return false;
 
-	displayHeader("Validation", inTarget);
+	displayHeader("Validate", inTarget);
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files(), false);
