@@ -24,6 +24,8 @@ struct IAppBundler
 	bool copyIncludedPath(const std::string& inDep, const std::string& inOutPath);
 	const std::string& workingDirectoryWithTrailingPathSeparator();
 
+	virtual bool initialize(const std::string& inOutputDir = std::string());
+
 	virtual bool removeOldFiles() = 0;
 	virtual bool bundleForPlatform() = 0;
 	virtual bool quickBundleForPlatform();

@@ -1791,6 +1791,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	AppBundlerMacOS bundler(inState, inTarget, dependencyMap);
 
 	auto objectDirectory = Files::getCanonicalPath(inState.paths.bundleObjDir(inTarget.name()));
+	bundler.initialize(objectDirectory);
+
 	auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, targetName);
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
@@ -1806,8 +1808,6 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	if (m_generatedBundleFiles.find(targetName) == m_generatedBundleFiles.end())
 	{
 		m_infoPlistJson.clear();
-
-		bundler.initializeState(objectDirectory);
 
 #if defined(CHALET_MACOS)
 		if (String::endsWith(".iconset", macosBundleIcon))

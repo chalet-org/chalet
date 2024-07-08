@@ -60,6 +60,13 @@ const BundleTarget& IAppBundler::bundle() const noexcept
 }
 
 /*****************************************************************************/
+bool IAppBundler::initialize(const std::string& inOutputDir)
+{
+	UNUSED(inOutputDir);
+	return true;
+}
+
+/*****************************************************************************/
 bool IAppBundler::quickBundleForPlatform()
 {
 	return false;

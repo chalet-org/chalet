@@ -41,7 +41,7 @@ AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBund
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::initializeState(const std::string& inOutputDir)
+bool AppBundlerMacOS::initialize(const std::string& inOutputDir)
 {
 #if defined(CHALET_MACOS)
 	m_outputDirectory = inOutputDir;
@@ -85,9 +85,6 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 	// If we got this far, the app bundle was built through Xcode
 	// so we only need to copy it
 
-	if (!initializeState())
-		return false;
-
 	auto appPath = String::getPathFolder(m_bundlePath);
 	if (appPath.empty())
 		return false;
@@ -115,9 +112,6 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 bool AppBundlerMacOS::bundleForPlatform()
 {
 #if defined(CHALET_MACOS)
-	if (!initializeState())
-		return true; // No executable. we don't care
-
 	{
 		auto executables = getAllExecutables();
 		m_executableOutputPaths.clear();

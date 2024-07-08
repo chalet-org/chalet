@@ -86,6 +86,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
 		m_dependencyMap->setIncludeWinUCRT(bundle.windowsIncludeRuntimeDlls());
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap);
+		if (!bundler->initialize())
+		{
+			Diagnostic::error("There was an error initializing the bundler for: {}", inTarget->name());
+			return false;
+		}
 
 		if (!removeOldFiles(*bundler))
 		{
