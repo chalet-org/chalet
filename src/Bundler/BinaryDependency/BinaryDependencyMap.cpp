@@ -43,19 +43,6 @@ void BinaryDependencyMap::setIncludeWinUCRT(const bool inValue)
 }
 
 /*****************************************************************************/
-void BinaryDependencyMap::addExcludesFromList(const StringList& inList)
-{
-	m_excludes.clear();
-	for (auto& item : inList)
-	{
-		if (!Files::pathExists(item))
-			continue;
-
-		List::addIfDoesNotExist(m_excludes, item);
-	}
-}
-
-/*****************************************************************************/
 void BinaryDependencyMap::clearSearchDirs() noexcept
 {
 	m_searchDirs.clear();
@@ -168,7 +155,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 	{
 		if (!resolveDependencyPath(*it, inPath, ignoreApiSet))
 		{
-			m_notCopied.push_back(*it);
+			m_notCopied.emplace_back(*it);
 			it = dependencies.erase(it);
 			continue;
 		}
@@ -192,9 +179,7 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 bool BinaryDependencyMap::resolveDependencyPath(std::string& outDep, const std::string& inParentDep, const bool inIgnoreApiSet)
 {
 	const auto filename = String::getPathFilename(outDep);
-	if (outDep.empty()
-		|| List::contains(m_excludes, outDep)
-		|| List::contains(m_excludes, filename))
+	if (outDep.empty() || filename.empty())
 		return false;
 
 #if defined(CHALET_WIN32)

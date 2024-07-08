@@ -350,7 +350,6 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 
 	auto buildTargets = inTarget.getRequiredBuildTargets();
 
-	m_dependencyMap->addExcludesFromList(inTarget.includes());
 	m_dependencyMap->clearSearchDirs();
 
 	for (auto& target : m_state.targets)

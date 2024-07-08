@@ -23,8 +23,6 @@ public:
 
 	void setIncludeWinUCRT(const bool inValue);
 
-	void addExcludesFromList(const StringList& inList);
-
 	void clearSearchDirs() noexcept;
 	void addSearchDirsFromList(const StringList& inList);
 
@@ -44,7 +42,6 @@ private:
 	InnerMap m_map;
 	StringList m_list;
 
-	StringList m_excludes;
 	StringList m_searchDirs;
 
 	StringList m_notCopied;

@@ -190,18 +190,15 @@ bool BundleTarget::validate()
 /*****************************************************************************/
 bool BundleTarget::resolveIncludes()
 {
-	const auto addInclude = [this](std::string in) {
-		Path::toUnix(in);
-		List::addIfDoesNotExist(m_includes, std::move(in));
-	};
-
 	// LOG(Environment::getPath());
 
 	for (const auto& path : m_rawIncludes)
 	{
 		if (Files::pathExists(path))
 		{
-			addInclude(path);
+			std::string includedPath(path);
+			Path::toUnix(includedPath);
+			List::addIfDoesNotExist(m_includes, std::move(includedPath));
 		}
 		else
 		{
@@ -209,7 +206,8 @@ bool BundleTarget::resolveIncludes()
 			auto resolved = Files::which(path);
 			if (!resolved.empty())
 			{
-				addInclude(std::move(resolved));
+				Path::toUnix(resolved);
+				List::addIfDoesNotExist(m_includes, std::move(resolved));
 			}
 			else
 			{
