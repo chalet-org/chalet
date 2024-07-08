@@ -608,16 +608,13 @@ bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 	const auto& color = Output::getAnsiStyle(theme.build);
 	const auto& reset = Output::getAnsiStyle(theme.reset);
 
-	size_t count = 0;
 	size_t total = buildPaths.size();
 	for (size_t i = 0; i < total; ++i)
 	{
 		const auto& path = buildPaths.at(i);
-
-		count++;
 		if (!inForRebuild && !Output::showCommands())
 		{
-			Output::print(theme.reset, fmt::format("   [{}/{}] {}Removing {}{}", count, total, color, path, reset));
+			Output::print(theme.reset, fmt::format("   [{}/{}] {}Removing {}{}", i + 1, total, color, path, reset));
 		}
 
 		if (Files::pathExists(path))
@@ -807,7 +804,7 @@ bool BuildManager::runValidationTarget(const ValidationBuildTarget& inTarget)
 
 	Timer buildTimer;
 
-	displayHeader("Validation", inTarget, Output::theme().header);
+	displayHeader("Validate", inTarget, Output::theme().header);
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files());
