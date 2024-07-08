@@ -54,14 +54,12 @@ void printInfo(const std::string& inText);
 void printFlair(const std::string& inText);
 void printSeparator(const char inChar = '-');
 
-void stopTimerAndShowBenchmark(Timer& outTimer);
-
 void msgFetchingDependency(const std::string& inPath);
 void msgRemovedUnusedDependency(const std::string& inDependencyName);
 
 void msgConfigureCompleted(const std::string& inWorkspaceName);
 void msgBuildSuccess();
-void msgTargetUpToDate(const std::string& inProjectName, Timer* outTimer);
+void msgTargetUpToDate(const std::string& inContext, Timer* outTimer);
 void msgCommandPoolError(const std::string& inMessage);
 void msgBuildFail();
 void msgProfilerStartedGprof(const std::string& inProfileAnalysis);

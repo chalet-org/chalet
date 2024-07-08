@@ -464,16 +464,6 @@ void Output::printSeparator(const char inChar)
 }
 
 /*****************************************************************************/
-void Output::stopTimerAndShowBenchmark(Timer& outTimer)
-{
-	i64 result = outTimer.stop();
-	if (result > 0 && Output::showBenchmarks())
-	{
-		Output::printInfo(fmt::format("   Time: {}", outTimer.asString()));
-	}
-}
-
-/*****************************************************************************/
 void Output::msgFetchingDependency(const std::string& inPath)
 {
 	auto symbol = Unicode::heavyCurvedDownRightArrow();
@@ -508,7 +498,7 @@ void Output::msgBuildSuccess()
 }
 
 /*****************************************************************************/
-void Output::msgTargetUpToDate(const std::string& inProjectName, Timer* outTimer)
+void Output::msgTargetUpToDate(const std::string& inContext, Timer* outTimer)
 {
 	if (!state.quietNonBuild)
 	{
@@ -518,11 +508,11 @@ void Output::msgTargetUpToDate(const std::string& inProjectName, Timer* outTimer
 		// const auto& reset = Output::getAnsiStyle(state.theme.reset);
 		if (!benchmark || outTimer == nullptr)
 		{
-			output = fmt::format("   {}: done\n", inProjectName);
+			output = fmt::format("   {}: done\n", inContext);
 		}
 		else
 		{
-			output = fmt::format("   {}: {}\n", inProjectName, outTimer->asString());
+			output = fmt::format("   {}: {}\n", inContext, outTimer->asString());
 		}
 		std::cout.write(output.data(), output.size());
 		std::cout.flush();
@@ -596,7 +586,7 @@ void Output::msgClean(const std::string& inBuildConfiguration)
 {
 	const char* label = inBuildConfiguration.empty() ? "All" : inBuildConfiguration.c_str();
 	auto symbol = Unicode::triangle();
-	displayStyledSymbol(state.theme.header, symbol, fmt::format("Clean: ", label));
+	displayStyledSymbol(state.theme.header, symbol, fmt::format("Clean: {}", label));
 }
 
 /*****************************************************************************/

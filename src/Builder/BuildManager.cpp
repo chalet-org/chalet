@@ -134,7 +134,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	else if (inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doFullBuildFolderClean(false, false);
+		doFullBuildFolderClean(false);
 	}
 
 	if (!checkIntermediateFiles())
@@ -529,18 +529,11 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject, const s
 }
 
 /*****************************************************************************/
-bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool inCleanExternals)
+bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
 {
 	auto buildOutputDir = m_state.paths.buildOutputDir();
 
 	auto dirToClean = buildOutputDir;
-
-	Timer timer;
-
-	if (inShowMessage)
-	{
-		Output::print(Output::theme().build, "   Removing build files & folders");
-	}
 
 	bool didClean = false;
 
@@ -596,6 +589,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 		String::replaceAll(location, buildOutputDir, "");
 	}
 
+	bool result = true;
 	bool dirExists = Files::pathExists(dirToClean);
 	bool nothingToClean = !dirExists && !didClean;
 	UNUSED(nothingToClean);
@@ -630,21 +624,18 @@ bool BuildManager::doFullBuildFolderClean(const bool inShowMessage, const bool i
 	for (auto& dir : buildDirs)
 	{
 		if (Files::pathExists(dir))
-			Files::removeRecursively(dir);
+			result &= Files::removeRecursively(dir);
 	}
 
 	auto ccmdsJson = m_state.paths.currentCompileCommands();
-	Files::removeIfExists(ccmdsJson);
+	result &= Files::removeIfExists(ccmdsJson);
 
 	if (Files::pathIsEmpty(buildOutputDir))
-		Files::removeIfExists(buildOutputDir);
+		result &= Files::removeIfExists(buildOutputDir);
 
-	if (inShowMessage)
-	{
-		Output::stopTimerAndShowBenchmark(timer);
-	}
+	result &= !Files::pathExists(buildOutputDir);
 
-	return true;
+	return result;
 }
 
 /*****************************************************************************/
@@ -1178,11 +1169,26 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 /*****************************************************************************/
 bool BuildManager::cmdClean()
 {
-	Output::msgClean(m_state.configuration.name());
+	Timer timer;
 
-	if (!doFullBuildFolderClean(true, true))
-		return true;
+	const auto& configuration = m_state.configuration.name();
 
+	Output::msgClean(configuration);
+
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	bool hasOutput = Files::pathExists(buildOutputDir);
+	if (hasOutput)
+	{
+		Output::print(Output::theme().build, "   Removing build files & folders...");
+	}
+
+	if (!doFullBuildFolderClean(true) && hasOutput)
+	{
+		Diagnostic::warn("There was an issue cleaning the build configuration: {}", configuration);
+		return false;
+	}
+
+	Output::msgTargetUpToDate(configuration, nullptr);
 	Output::lineBreak();
 
 	return true;

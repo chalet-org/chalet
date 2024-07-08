@@ -145,7 +145,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 	}
 
-	Output::stopTimerAndShowBenchmark(timer);
+	Output::msgTargetUpToDate(inTarget->name(), &timer);
 	Output::lineBreak();
 
 	return true;
