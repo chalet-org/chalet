@@ -17,7 +17,7 @@ class AppBundlerMacOS : public IAppBundler
 public:
 	explicit AppBundlerMacOS(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
 
-	virtual bool initialize(const std::string& inOutputDir) final;
+	virtual bool initialize(const std::string& inOutputDir = std::string()) final;
 
 	const std::string& mainExecutable() const noexcept;
 
