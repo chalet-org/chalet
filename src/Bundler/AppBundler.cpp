@@ -339,9 +339,6 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 /*****************************************************************************/
 bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 {
-	if (!inTarget.resolveIncludes())
-		return false;
-
 	if (!inTarget.includeDependentSharedLibraries())
 		return true;
 
@@ -371,9 +368,6 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 
 #if defined(CHALET_MACOS)
 	auto dylib = Files::getPlatformSharedLibraryExtension();
-#endif
-
-#if defined(CHALET_MACOS)
 	for (auto& dep : inTarget.includes())
 	{
 		if (String::endsWith(dylib, dep))

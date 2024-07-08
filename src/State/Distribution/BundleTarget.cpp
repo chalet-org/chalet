@@ -58,7 +58,7 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 bool BundleTarget::initialize()
 {
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!expandGlobPatternsInList(m_rawIncludes, GlobMatch::FilesAndFolders))
+	if (!expandGlobPatternsInList(m_includes, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -96,7 +96,7 @@ bool BundleTarget::validate()
 {
 	bool result = true;
 
-	if (m_buildTargets.empty() && m_rawIncludes.empty())
+	if (m_buildTargets.empty() && m_includes.empty())
 	{
 		Diagnostic::error("bundle.include or bundle.buildTargets must be defined, but neither were found.");
 		result = false;
@@ -185,39 +185,6 @@ bool BundleTarget::validate()
 #endif
 
 	return result;
-}
-
-/*****************************************************************************/
-bool BundleTarget::resolveIncludes()
-{
-	// LOG(Environment::getPath());
-
-	for (const auto& path : m_rawIncludes)
-	{
-		if (Files::pathExists(path))
-		{
-			std::string includedPath(path);
-			Path::toUnix(includedPath);
-			List::addIfDoesNotExist(m_includes, std::move(includedPath));
-		}
-		else
-		{
-			// At this point, everything we need to resolve the path should be in the PATH environment variable
-			auto resolved = Files::which(path);
-			if (!resolved.empty())
-			{
-				Path::toUnix(resolved);
-				List::addIfDoesNotExist(m_includes, std::move(resolved));
-			}
-			else
-			{
-				Diagnostic::warn("Included path '{}' for distribution target '{}' was not found.", path, this->name());
-			}
-		}
-	}
-
-	m_includesResolved = true;
-	return true;
 }
 
 /*****************************************************************************/
@@ -345,7 +312,6 @@ void BundleTarget::addExclude(std::string&& inValue)
 /*****************************************************************************/
 const StringList& BundleTarget::includes() const noexcept
 {
-	chalet_assert(m_includesResolved, "BundleTarget includes not resolved");
 	return m_includes;
 }
 
@@ -357,7 +323,7 @@ void BundleTarget::addIncludes(StringList&& inList)
 void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::toUnix(inValue);
-	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
+	List::addIfDoesNotExist(m_includes, std::move(inValue));
 }
 
 /*****************************************************************************/

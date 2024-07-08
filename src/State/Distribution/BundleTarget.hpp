@@ -21,8 +21,6 @@ struct BundleTarget final : public IDistTarget
 	virtual bool initialize() final;
 	virtual bool validate() final;
 
-	bool resolveIncludes();
-
 	std::vector<const SourceTarget*> getRequiredBuildTargets() const;
 
 	bool updateRPaths() const noexcept;
@@ -102,7 +100,6 @@ struct BundleTarget final : public IDistTarget
 
 private:
 	StringList m_buildTargets;
-	StringList m_rawIncludes;
 	StringList m_includes;
 	StringList m_excludes;
 
@@ -133,7 +130,6 @@ private:
 	bool m_windowsIncludeRuntimeDlls = false;
 	bool m_hasAllBuildTargets = false;
 	bool m_includeDependentSharedLibraries = true;
-	bool m_includesResolved = false;
 	bool m_updateRPaths = true;
 };
 }
