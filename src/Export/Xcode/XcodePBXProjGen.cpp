@@ -369,7 +369,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						if (hasInfo)
 							groups[name].children.emplace_back(fmt::format("{}/Info.plist", bundleDirectory));
 
-						if (bundle.resolveIncludesFromState(*state))
+						if (bundle.resolveIncludes())
 						{
 							auto& includes = bundle.includes();
 							for (auto& file : includes)
@@ -379,9 +379,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 							}
 						}
 
-						auto& buildTargets = bundle.buildTargets();
-						for (auto& tgt : buildTargets)
+						auto buildTargets = bundle.getRequiredBuildTargets();
+						for (auto& project : buildTargets)
 						{
+							auto& tgt = project->name();
 							List::addIfDoesNotExist(m_appBuildTargets, tgt);
 
 							if (List::contains(sourceTargets, tgt))
@@ -1806,8 +1807,7 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	{
 		m_infoPlistJson.clear();
 
-		bundler.setOutputDirectory(objectDirectory);
-		bundler.initializeState();
+		bundler.initializeState(objectDirectory);
 
 #if defined(CHALET_MACOS)
 		if (String::endsWith(".iconset", macosBundleIcon))

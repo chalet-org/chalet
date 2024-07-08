@@ -11,6 +11,7 @@
 
 namespace chalet
 {
+struct SourceTarget;
 class BuildState;
 
 struct BundleTarget final : public IDistTarget
@@ -20,7 +21,9 @@ struct BundleTarget final : public IDistTarget
 	virtual bool initialize() final;
 	virtual bool validate() final;
 
-	bool resolveIncludesFromState(const BuildState& inState);
+	bool resolveIncludes();
+
+	std::vector<const SourceTarget*> getRequiredBuildTargets() const;
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;

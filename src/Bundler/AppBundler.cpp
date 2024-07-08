@@ -106,9 +106,6 @@ bool AppBundler::run(const DistTarget& inTarget)
 		else
 #endif
 		{
-			if (!bundle.resolveIncludesFromState(m_state))
-				return false;
-
 			if (!gatherDependencies(bundle))
 				return false;
 
@@ -191,7 +188,8 @@ void AppBundler::reportErrors()
 bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 {
 	auto& bundle = inBundler.bundle();
-	const auto& buildTargets = bundle.buildTargets();
+	auto buildTargets = bundle.getRequiredBuildTargets();
+	const auto& bundleIncludes = bundle.includes();
 
 	const auto bundlePath = inBundler.getBundlePath();
 	const auto executablePath = inBundler.getExecutablePath();
@@ -207,7 +205,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	auto framework = Files::getPlatformFrameworkExtension();
 #endif
 
-	for (auto& dep : bundle.includes())
+	for (auto& dep : bundleIncludes)
 	{
 #if defined(CHALET_MACOS)
 		if (String::endsWith(framework, dep))
@@ -233,48 +231,40 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	StringList dependenciesToCopy;
 	StringList excludes;
 
-	for (auto& target : m_state.targets)
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
+		auto outputFilePath = m_state.paths.getTargetFilename(*project);
+		if (!project->copyFilesOnRun().empty())
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-
-			if (!List::contains(buildTargets, project.name()))
-				continue;
-
-			if (!project.copyFilesOnRun().empty())
+			StringList runDeps = project->getResolvedRunDependenciesList();
+			for (auto& dep : runDeps)
 			{
-				StringList runDeps = project.getResolvedRunDependenciesList();
-				for (auto& dep : runDeps)
-				{
-					List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));
-				}
+				List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));
 			}
-			auto outputFilePath = m_state.paths.getTargetFilename(project);
-			if (project.isStaticLibrary())
-			{
-				List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
-				continue;
-			}
-			else if (project.isExecutable())
-			{
-				std::string outTarget = outputFilePath;
-				List::addIfDoesNotExist(executables, std::move(outTarget));
-			}
-
-			if (project.isSharedLibrary())
-			{
-				if (!inBundler.copyIncludedPath(outputFilePath, frameworksPath))
-					continue;
-			}
-			else
-			{
-				if (!inBundler.copyIncludedPath(outputFilePath, executablePath))
-					continue;
-			}
-
-			excludes.emplace_back(std::move(outputFilePath));
 		}
+		if (project->isStaticLibrary())
+		{
+			List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
+			continue;
+		}
+		else if (project->isExecutable())
+		{
+			std::string outTarget = outputFilePath;
+			List::addIfDoesNotExist(executables, std::move(outTarget));
+		}
+
+		if (project->isSharedLibrary())
+		{
+			if (!inBundler.copyIncludedPath(outputFilePath, frameworksPath))
+				continue;
+		}
+		else
+		{
+			if (!inBundler.copyIncludedPath(outputFilePath, executablePath))
+				continue;
+		}
+
+		excludes.emplace_back(std::move(outputFilePath));
 	}
 
 	{
@@ -342,15 +332,18 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 }
 
 /*****************************************************************************/
-bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
+bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 {
+	if (!inTarget.resolveIncludes())
+		return false;
+
 	if (!inTarget.includeDependentSharedLibraries())
 		return true;
 
 	if (m_state.environment->isEmscripten())
 		return true;
 
-	const auto& buildTargets = inTarget.buildTargets();
+	auto buildTargets = inTarget.getRequiredBuildTargets();
 
 	m_dependencyMap->addExcludesFromList(inTarget.includes());
 	m_dependencyMap->clearSearchDirs();
@@ -379,21 +372,13 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 	}
 #endif
 
-	for (auto& target : m_state.targets)
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
+		auto outputFilePath = m_state.paths.getTargetFilename(*project);
+		if (project->isStaticLibrary())
+			continue;
 
-			if (!List::contains(buildTargets, project.name()))
-				continue;
-
-			auto outputFilePath = m_state.paths.getTargetFilename(project);
-			if (project.isStaticLibrary())
-				continue;
-
-			List::addIfDoesNotExist(allDependencies, std::move(outputFilePath));
-		}
+		List::addIfDoesNotExist(allDependencies, std::move(outputFilePath));
 	}
 
 	i32 levels = 2;

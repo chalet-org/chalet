@@ -28,11 +28,11 @@ struct AppBundler
 
 	bool run(const DistTarget& inTarget);
 
-	bool gatherDependencies(const BundleTarget& inTarget);
-
 	void reportErrors();
 
 private:
+	bool gatherDependencies(BundleTarget& inTarget);
+
 	bool runBundleTarget(IAppBundler& inBundler);
 	bool runArchiveTarget(const BundleArchiveTarget& inTarget);
 	bool runMacosDiskImageTarget(const MacosDiskImageTarget& inTarget);

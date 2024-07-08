@@ -70,34 +70,27 @@ bool IAppBundler::quickBundleForPlatform()
 //
 bool IAppBundler::getMainExecutable(std::string& outMainExecutable)
 {
-	auto& buildTargets = m_bundle.buildTargets();
+	auto buildTargets = m_bundle.getRequiredBuildTargets();
 	auto& mainExecutable = m_bundle.mainExecutable();
 	std::string lastOutput;
 
 	// Match mainExecutable if defined, otherwise get first executable
-	for (auto& target : m_state.targets)
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (!List::contains(buildTargets, project.name()))
-				continue;
+		if (project->isStaticLibrary())
+			continue;
 
-			if (project.isStaticLibrary())
-				continue;
+		lastOutput = project->outputFile();
 
-			lastOutput = project.outputFile();
+		if (!project->isExecutable())
+			continue;
 
-			if (!project.isExecutable())
-				continue;
+		if (!mainExecutable.empty() && !String::equals(mainExecutable, project->name()))
+			continue;
 
-			if (!mainExecutable.empty() && !String::equals(mainExecutable, project.name()))
-				continue;
-
-			// LOG("Main exec:", project.name());
-			outMainExecutable = project.outputFile();
-			break;
-		}
+		// LOG("Main exec:", project.name());
+		outMainExecutable = project->outputFile();
+		break;
 	}
 
 	if (outMainExecutable.empty())
@@ -114,20 +107,13 @@ StringList IAppBundler::getAllExecutables() const
 {
 	StringList ret;
 
-	auto& buildTargets = m_bundle.buildTargets();
-	for (auto& target : m_state.targets)
+	auto buildTargets = m_bundle.getRequiredBuildTargets();
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (!List::contains(buildTargets, project.name()))
-				continue;
+		if (!project->isExecutable())
+			continue;
 
-			if (!project.isExecutable())
-				continue;
-
-			ret.emplace_back(project.outputFile());
-		}
+		ret.emplace_back(project->outputFile());
 	}
 
 	return ret;
@@ -148,4 +134,29 @@ const std::string& IAppBundler::workingDirectoryWithTrailingPathSeparator()
 	}
 	return m_cwd;
 }
+
+/*****************************************************************************/
+std::string IAppBundler::getBundlePath() const
+{
+	return m_bundle.subdirectory();
+}
+
+/*****************************************************************************/
+std::string IAppBundler::getExecutablePath() const
+{
+	return m_bundle.subdirectory();
+}
+
+/*****************************************************************************/
+std::string IAppBundler::getResourcePath() const
+{
+	return m_bundle.subdirectory();
+}
+
+/*****************************************************************************/
+std::string IAppBundler::getFrameworksPath() const
+{
+	return m_bundle.subdirectory();
+}
+
 }
