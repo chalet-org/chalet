@@ -48,17 +48,9 @@ DotEnvFileGenerator DotEnvFileGenerator::make(const BuildState& inState)
 		}
 	}
 
-	std::string rootPath;
-
-#if defined(CHALET_LINUX)
 	const auto& sysroot = inState.environment->sysroot();
-	if (!sysroot.empty())
-	{
-		rootPath = inState.environment->sysroot();
-	}
-#endif
 
-	StringList allPaths = List::combineRemoveDuplicates(libDirs, frameworks, rootPath);
+	StringList allPaths = List::combineRemoveDuplicates(libDirs, frameworks, sysroot);
 	addEnvironmentPath("PATH", allPaths);
 
 	env.setRunPaths(inState.workspace.makePathVariable(std::string(), allPaths));

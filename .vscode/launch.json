@@ -35,7 +35,7 @@
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"stopAtEntry": false,
 			"args": [
-				"run"
+				"bundle"
 			],
 			"externalConsole": false,
 			"setupCommands": [

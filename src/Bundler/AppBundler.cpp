@@ -357,11 +357,13 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 		if (target->isSources())
 		{
 			auto& project = static_cast<const SourceTarget&>(*target);
-
-			const auto& compilerPathBin = m_state.toolchain.compilerCxx(project.language()).binDir;
-			m_dependencyMap->addSearchDirsFromList(StringList{ compilerPathBin });
 			m_dependencyMap->addSearchDirsFromList(project.libDirs());
 		}
+	}
+	const auto& sysroot = m_state.environment->sysroot();
+	if (!sysroot.empty())
+	{
+		m_dependencyMap->addSearchDirsFromList(StringList{ m_state.environment->sysroot() });
 	}
 	m_dependencyMap->addSearchDirsFromList(m_state.workspace.searchPaths());
 
