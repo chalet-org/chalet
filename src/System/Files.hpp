@@ -35,6 +35,7 @@ i64 getLastWriteTime(const std::string& inFile);
 bool makeDirectory(const std::string& inPath);
 bool makeDirectories(const StringList& inPaths);
 
+bool remove(const std::string& inPath);
 bool removeIfExists(const std::string& inPath);
 bool removeRecursively(const std::string& inPath);
 

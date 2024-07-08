@@ -46,7 +46,7 @@ private:
 	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
-	bool doFullBuildFolderClean(const bool inCleanExternals);
+	bool doFullBuildFolderClean(const bool inForRebuild);
 
 	bool addProjectToBuild(const SourceTarget& inProject);
 
@@ -55,10 +55,10 @@ private:
 	bool checkIntermediateFiles() const;
 
 	// commands
+	bool cmdClean();
 	bool cmdBuild(const SourceTarget& inProject);
 	bool cmdRebuild(const SourceTarget& inProject);
 	bool cmdRun(const IBuildTarget& inTarget);
-	bool cmdClean();
 
 	bool runScriptTarget(const ScriptBuildTarget& inScript, const bool inRunCommand);
 	bool runProcessTarget(const ProcessBuildTarget& inTarget, const bool inRunCommand);

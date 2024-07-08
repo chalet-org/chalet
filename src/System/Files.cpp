@@ -370,6 +370,20 @@ bool Files::makeDirectories(const StringList& inPaths)
 }
 
 /*****************************************************************************/
+bool Files::remove(const std::string& inPath)
+{
+	if (Output::showCommands())
+		Output::printCommand(fmt::format("remove path: {}", inPath));
+
+	std::error_code error;
+	bool result = fs::remove(inPath, error);
+	if (error)
+		Diagnostic::error(error.message());
+
+	return !error && result;
+}
+
+/*****************************************************************************/
 bool Files::removeIfExists(const std::string& inPath)
 {
 	if (!Files::pathExists(inPath))

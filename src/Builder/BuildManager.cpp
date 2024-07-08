@@ -134,7 +134,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	else if (inRoute.isRebuild())
 	{
 		// Don't produce any output from this
-		doFullBuildFolderClean(false);
+		doFullBuildFolderClean(true);
 	}
 
 	if (!checkIntermediateFiles())
@@ -158,19 +158,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 	if (runTarget != nullptr)
 		runTargetName = runTarget->name();
 
-	if (!runRoute && m_state.toolchain.strategy() != StrategyType::Native)
-	{
-		printBuildInformation();
-		Output::lineBreak();
-	}
-
 	// Note: We still have to initialize the build when the command is "run"
 	if (!m_strategy->initialize())
 		return false;
 
 	if (!runRoute)
 	{
-		Timer prepTimer;
 		if (m_state.toolchain.strategy() == StrategyType::Native)
 		{
 			Diagnostic::infoEllipsis("Resolving source file dependencies");
@@ -208,11 +201,12 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 		if (m_state.toolchain.strategy() == StrategyType::Native)
 		{
-			Diagnostic::printDone(prepTimer.asString());
-			printBuildInformation();
-			Output::lineBreak();
+			Diagnostic::printDone(m_timer.asString());
 			m_timer.restart();
 		}
+
+		printBuildInformation();
+		Output::lineBreak();
 	}
 
 	m_strategy->doPreBuild();
@@ -529,30 +523,26 @@ bool BuildManager::runConfigureFileParser(const SourceTarget& inProject, const s
 }
 
 /*****************************************************************************/
-bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
+bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 {
-	auto buildOutputDir = m_state.paths.buildOutputDir();
-
-	auto dirToClean = buildOutputDir;
+	const auto& dirToClean = m_state.paths.buildOutputDir();
+	auto buildOutputDir = dirToClean;
 
 	bool didClean = false;
 
-	StringList buildDirs;
+	StringList buildPaths;
+	auto addBuildPathIfExists = [&buildPaths](std::string&& inPath) {
+		if (Files::pathExists(inPath))
+			List::addIfDoesNotExist(buildPaths, std::move(inPath));
+	};
+
 	StringList externalLocations;
 	for (const auto& target : m_buildTargets)
 	{
-		if (target->isSources())
-		{
-			auto dirs = m_state.paths.getBuildDirectories(static_cast<const SourceTarget&>(*target));
-			for (auto&& dir : dirs)
-			{
-				List::addIfDoesNotExist(buildDirs, std::move(dir));
-			}
-		}
-		else if (target->isSubChalet())
+		if (target->isSubChalet())
 		{
 			auto& subChaletTarget = static_cast<const SubChaletTarget&>(*target);
-			if (inCleanExternals)
+			if (!inForRebuild)
 				didClean |= doSubChaletClean(subChaletTarget);
 
 			List::addIfDoesNotExist(externalLocations, subChaletTarget.targetFolder());
@@ -560,23 +550,25 @@ bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
 		else if (target->isCMake())
 		{
 			auto& cmakeTarget = static_cast<const CMakeTarget&>(*target);
-			if (inCleanExternals)
+			if (!inForRebuild)
 				didClean |= doCMakeClean(cmakeTarget);
 
 			List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
 		}
 	}
 
+	addBuildPathIfExists(m_state.paths.currentCompileCommands());
+
 	for (const auto& target : m_state.distribution)
 	{
 		if (target->isDistributionBundle())
 		{
-			List::addIfDoesNotExist(buildDirs, m_state.paths.bundleObjDir(target->name()));
+			addBuildPathIfExists(m_state.paths.bundleObjDir(target->name()));
 
 #if defined(CHALET_MACOS)
 			if (m_state.toolchain.strategy() == StrategyType::XcodeBuild)
 			{
-				List::addIfDoesNotExist(buildDirs, fmt::format("{}/{}.app", buildOutputDir, target->name()));
+				addBuildPathIfExists(fmt::format("{}/{}.app", buildOutputDir, target->name()));
 			}
 #endif
 		}
@@ -584,12 +576,6 @@ bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
 
 	buildOutputDir += '/';
 
-	for (auto& location : externalLocations)
-	{
-		String::replaceAll(location, buildOutputDir, "");
-	}
-
-	bool result = true;
 	bool dirExists = Files::pathExists(dirToClean);
 	bool nothingToClean = !dirExists && !didClean;
 	UNUSED(nothingToClean);
@@ -601,18 +587,13 @@ bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
 
 		while (it != itEnd)
 		{
-			auto shortPath = it->path().string();
-			Path::toUnix(shortPath);
+			auto path = it->path().string();
+			Path::toUnix(path);
 
-			String::replaceAll(shortPath, buildOutputDir, "");
-
-			if (!String::startsWith(externalLocations, shortPath))
+			if (!String::contains(externalLocations, path))
 			{
-				auto pth = it->path();
+				buildPaths.emplace_back(std::move(path));
 				++it;
-
-				std::error_code ec;
-				fs::remove(pth, ec);
 			}
 			else
 			{
@@ -621,21 +602,38 @@ bool BuildManager::doFullBuildFolderClean(const bool inCleanExternals)
 		}
 	}
 
-	for (auto& dir : buildDirs)
+	std::sort(buildPaths.rbegin(), buildPaths.rend());
+
+	const auto& theme = Output::theme();
+	const auto& color = Output::getAnsiStyle(theme.build);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
+
+	size_t count = 0;
+	size_t total = buildPaths.size();
+	for (size_t i = 0; i < total; ++i)
 	{
-		if (Files::pathExists(dir))
-			result &= Files::removeRecursively(dir);
+		const auto& path = buildPaths.at(i);
+
+		count++;
+		if (!inForRebuild && !Output::showCommands())
+		{
+			Output::print(theme.reset, fmt::format("   [{}/{}] {}Removing {}{}", count, total, color, path, reset));
+		}
+
+		if (Files::pathExists(path))
+			Files::remove(path);
 	}
 
-	auto ccmdsJson = m_state.paths.currentCompileCommands();
-	result &= Files::removeIfExists(ccmdsJson);
+	if (Files::pathIsEmpty(dirToClean))
+		Files::removeIfExists(dirToClean);
 
-	if (Files::pathIsEmpty(buildOutputDir))
-		result &= Files::removeIfExists(buildOutputDir);
+	if (!inForRebuild && Files::pathExists(dirToClean))
+	{
+		Diagnostic::warn("There was an issue cleaning the build path: {}", dirToClean);
+		return false;
+	}
 
-	result &= !Files::pathExists(buildOutputDir);
-
-	return result;
+	return true;
 }
 
 /*****************************************************************************/
@@ -835,36 +833,6 @@ void BuildManager::displayHeader(const char* inLabel, const IBuildTarget& inTarg
 }
 
 /*****************************************************************************/
-bool BuildManager::cmdBuild(const SourceTarget& inProject)
-{
-	const auto& outputFile = inProject.outputFile();
-
-	displayHeader("Build", inProject, Output::theme().header, outputFile);
-
-	if (inProject.cppModules())
-	{
-		if (!m_strategy->buildProjectModules(inProject))
-			return false;
-	}
-	else
-	{
-		if (!m_strategy->buildProject(inProject))
-			return false;
-	}
-
-	if (m_state.info.dumpAssembly())
-	{
-		chalet_assert(m_asmDumper != nullptr, "");
-
-		StringList fileCache;
-		if (!m_asmDumper->dumpProject(inProject, fileCache))
-			return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 {
 	UNUSED(inProject);
@@ -894,6 +862,59 @@ bool BuildManager::onFinishBuild(const SourceTarget& inProject) const
 				++it;
 			}
 		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::cmdClean()
+{
+	Timer timer;
+
+	const auto& configuration = m_state.configuration.name();
+
+	Output::msgClean(configuration);
+
+	const auto& buildOutputDir = m_state.paths.buildOutputDir();
+	bool hasOutput = Files::pathExists(buildOutputDir);
+	if (!doFullBuildFolderClean(false) && hasOutput)
+	{
+		Diagnostic::warn("There was an issue cleaning the build configuration: {}", configuration);
+		return false;
+	}
+
+	Output::msgTargetUpToDate(configuration, nullptr);
+	Output::lineBreak();
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::cmdBuild(const SourceTarget& inProject)
+{
+	const auto& outputFile = inProject.outputFile();
+
+	displayHeader("Build", inProject, Output::theme().header, outputFile);
+
+	if (inProject.cppModules())
+	{
+		if (!m_strategy->buildProjectModules(inProject))
+			return false;
+	}
+	else
+	{
+		if (!m_strategy->buildProject(inProject))
+			return false;
+	}
+
+	if (m_state.info.dumpAssembly())
+	{
+		chalet_assert(m_asmDumper != nullptr, "");
+
+		StringList fileCache;
+		if (!m_asmDumper->dumpProject(inProject, fileCache))
+			return false;
 	}
 
 	return true;
@@ -1164,34 +1185,6 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	}
 
 	return result;
-}
-
-/*****************************************************************************/
-bool BuildManager::cmdClean()
-{
-	Timer timer;
-
-	const auto& configuration = m_state.configuration.name();
-
-	Output::msgClean(configuration);
-
-	const auto& buildOutputDir = m_state.paths.buildOutputDir();
-	bool hasOutput = Files::pathExists(buildOutputDir);
-	if (hasOutput)
-	{
-		Output::print(Output::theme().build, "   Removing build files & folders...");
-	}
-
-	if (!doFullBuildFolderClean(true) && hasOutput)
-	{
-		Diagnostic::warn("There was an issue cleaning the build configuration: {}", configuration);
-		return false;
-	}
-
-	Output::msgTargetUpToDate(configuration, nullptr);
-	Output::lineBreak();
-
-	return true;
 }
 
 /*****************************************************************************/

@@ -32,7 +32,6 @@ struct BuildPaths
 	std::string intermediateIncludeDir(const SourceTarget& inProject) const;
 	std::string bundleObjDir(const std::string& inName) const;
 	std::string currentCompileCommands() const;
-	StringList getBuildDirectories(const SourceTarget& inProject) const;
 
 	std::string getExternalDir(const std::string& inName) const;
 	std::string getExternalBuildDir(const std::string& inName) const;

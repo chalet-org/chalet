@@ -166,34 +166,6 @@ std::string BuildPaths::currentCompileCommands() const
 }
 
 /*****************************************************************************/
-StringList BuildPaths::getBuildDirectories(const SourceTarget& inProject) const
-{
-	const auto& buildDir = buildOutputDir();
-	auto intDir = fmt::format("{}/int.{}", buildDir, inProject.buildSuffix());
-
-	StringList ret{
-		fmt::format("{}/obj.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/asm.{}", buildDir, inProject.buildSuffix()),
-		fmt::format("{}/include", intDir, inProject.buildSuffix()),
-		intDir,
-	};
-
-#if defined(CHALET_MACOS)
-	// Xcode build paths - if the strategy is xcodebuild,
-	//   or if the project was exported, followed by a 'chalet clean' command
-	{
-		ret.emplace_back(fmt::format("{}/obj.{}", buildDir, inProject.name()));
-		ret.emplace_back(fmt::format("{}/obj.{}-normal", buildDir, inProject.name()));
-		ret.emplace_back(fmt::format("{}/EagerLinkingTBDs", buildDir));
-		ret.emplace_back(fmt::format("{}/SharedPrecompiledHeaders", buildDir));
-		ret.emplace_back(fmt::format("{}/XCBuildData", buildDir));
-		ret.emplace_back(fmt::format("{}/{}.dSYM", buildDir, inProject.name()));
-	}
-#endif
-	return ret;
-}
-
-/*****************************************************************************/
 std::string BuildPaths::getExternalDir(const std::string& inName) const
 {
 	for (auto& dep : m_state.externalDependencies)
