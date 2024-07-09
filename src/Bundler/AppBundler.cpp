@@ -219,12 +219,19 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string()) {
 		auto dep = Files::getCanonicalPath(path);
+		if (!Files::pathExists(dep))
+		{
+			dep = Files::which(dep);
+			if (dep.empty())
+				return;
+		}
+
 		String::replaceAll(dep, cwd, "");
 
 		FileToCopy* found = nullptr;
 		for (auto& file : filesToCopy)
 		{
-			if (String::equals(file.from, path))
+			if (String::equals(file.from, dep))
 			{
 				found = &file;
 				break;
@@ -273,21 +280,6 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		}
 	}
 
-	{
-		StringList detectedDependencies;
-		m_dependencyMap->populateToList(detectedDependencies, excludes);
-
-		for (auto& dep : detectedDependencies)
-		{
-#if defined(CHALET_MACOS)
-			if (String::endsWith(framework, dep) || String::endsWith(dylib, dep))
-				addMapping(dep, frameworksPath);
-			else
-#endif
-				addMapping(dep, executablePath);
-		}
-	}
-
 	for (auto& [path, mapping] : bundleIncludes)
 	{
 #if defined(CHALET_MACOS)
@@ -302,6 +294,28 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 #endif
 		{
 			addMapping(path, resourcePath, mapping);
+		}
+	}
+
+	{
+		std::map<std::string, std::string> detectedDependencies;
+		m_dependencyMap->populateToList(detectedDependencies, excludes);
+
+		for (auto& [path, mapping] : detectedDependencies)
+		{
+#if defined(CHALET_MACOS)
+			if (bundle.isMacosAppBundle())
+			{
+				if (String::endsWith(framework, path) || String::endsWith(dylib, path))
+					addMapping(path, frameworksPath);
+				else
+					addMapping(path, executablePath);
+			}
+			else
+#endif
+			{
+				addMapping(path, executablePath, mapping);
+			}
 		}
 	}
 
@@ -368,17 +382,24 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 	}
 	m_dependencyMap->addSearchDirsFromList(m_state.workspace.searchPaths());
 
-	StringList allDependencies;
+	std::map<std::string, std::string> allDependencies;
 
-#if defined(CHALET_MACOS)
-	auto dylib = Files::getPlatformSharedLibraryExtension();
 	const auto& bundleIncludes = inTarget.includes();
-	for (auto&& [path, _] : bundleIncludes)
+
+	auto exe = Files::getPlatformExecutableExtension();
+	auto so = Files::getPlatformSharedLibraryExtension();
+	for (auto&& [path, mapping] : bundleIncludes)
 	{
-		if (String::endsWith(dylib, path))
-			List::addIfDoesNotExist(allDependencies, path);
+		if (!Files::pathIsFile(path))
+			continue;
+
+		auto extension = String::getPathSuffix(path);
+		if (extension.empty() || String::endsWith(extension, so) || String::endsWith(extension, exe))
+		{
+			if (allDependencies.find(path) == allDependencies.end())
+				allDependencies.emplace(path, mapping);
+		}
 	}
-#endif
 
 	for (auto& project : buildTargets)
 	{
@@ -386,7 +407,8 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 		if (project->isStaticLibrary())
 			continue;
 
-		List::addIfDoesNotExist(allDependencies, std::move(outputFilePath));
+		if (allDependencies.find(outputFilePath) == allDependencies.end())
+			allDependencies.emplace(outputFilePath, std::string());
 	}
 
 	i32 levels = 2;

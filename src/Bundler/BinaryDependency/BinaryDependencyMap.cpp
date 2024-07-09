@@ -78,28 +78,29 @@ void BinaryDependencyMap::log() const
 }
 
 /*****************************************************************************/
-void BinaryDependencyMap::populateToList(StringList& outList, const StringList& inExclusions) const
+void BinaryDependencyMap::populateToList(std::map<std::string, std::string>& outMap, const StringList& inExclusions) const
 {
-	for (auto& item : m_list)
+	for (auto& [item, mapping] : m_list)
 	{
 		if (List::contains(inExclusions, item))
 			continue;
 
-		List::addIfDoesNotExist(outList, item);
+		if (outMap.find(item) == outMap.end())
+			outMap.emplace(item, mapping);
 	}
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::gatherFromList(const StringList& inList, i32 levels)
+bool BinaryDependencyMap::gatherFromList(const std::map<std::string, std::string>& inMap, i32 levels)
 {
 	m_map.clear();
 	m_list.clear();
 
 	if (levels > 0)
 	{
-		for (auto& outputFilePath : inList)
+		for (auto& [outputFilePath, mapping] : inMap)
 		{
-			if (!gatherDependenciesOf(outputFilePath, levels))
+			if (!gatherDependenciesOf(outputFilePath, mapping, levels))
 				return false;
 		}
 	}
@@ -130,7 +131,7 @@ const StringList& BinaryDependencyMap::notCopied() const noexcept
 }
 
 /*****************************************************************************/
-bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 levels)
+bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, const std::string& inMapping, i32 levels)
 {
 #if defined(CHALET_MACOS)
 	auto framework = Files::getPlatformFrameworkExtension();
@@ -161,10 +162,12 @@ bool BinaryDependencyMap::gatherDependenciesOf(const std::string& inPath, i32 le
 		}
 		else
 		{
-			List::addIfDoesNotExist(m_list, *it);
+			if (m_list.find(*it) == m_list.end())
+				m_list.emplace(*it, inMapping);
+
 			if (levels > 0)
 			{
-				if (!gatherDependenciesOf(*it, levels))
+				if (!gatherDependenciesOf(*it, inMapping, levels))
 					return false;
 			}
 			++it;

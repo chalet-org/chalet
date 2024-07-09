@@ -91,6 +91,7 @@ private:
 
 	template <typename T>
 	bool valueMatchesSearchKeyPattern(T& outVariable, const Json& inNode, const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
+	bool valueMatchesSearchKeyPattern(const std::string& inKey, const char* inSearch, JsonNodeReadStatus& inStatus) const;
 
 	JsonFile& m_chaletJson;
 	BuildState& m_state;

@@ -207,7 +207,8 @@ StringList FileArchiver::getResolvedIncludes(const BundleArchiveTarget& inTarget
 
 	for (auto& include : tmp)
 	{
-		List::addIfDoesNotExist(ret, include.substr(m_outputDirectory.size() + 1));
+		auto path = include.substr(m_outputDirectory.size() + 1);
+		List::addIfDoesNotExist(ret, std::move(path));
 	}
 
 	return ret;
