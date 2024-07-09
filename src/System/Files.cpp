@@ -486,6 +486,9 @@ bool Files::copy(const std::string& inFrom, const std::string& inTo, const fs::c
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
+		if (inOptions == fs::copy_options::skip_existing && fs::exists(to))
+			return true;
+
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 		else

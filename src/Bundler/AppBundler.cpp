@@ -214,8 +214,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 		if (dependenciesToCopy.find(dep) == dependenciesToCopy.end())
 			dependenciesToCopy.emplace(dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping));
-		else if (destPath.empty() && !mapping.empty())
-			dependenciesToCopy[dep] = fmt::format("{}/{}", dependenciesToCopy.at(dep), mapping);
+		else if (!mapping.empty())
+			dependenciesToCopy[dep] = fmt::format("{}/{}", destPath, mapping);
 	};
 
 #if defined(CHALET_MACOS)
@@ -261,27 +261,36 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		for (auto& dep : detectedDependencies)
 		{
 #if defined(CHALET_MACOS)
-			if (String::endsWith(framework, dep))
-				continue;
-
-			if (String::endsWith(dylib, dep))
-			{
+			if (String::endsWith(framework, dep) || String::endsWith(dylib, dep))
 				addMapping(dep, frameworksPath);
-			}
 			else
 #endif
-			{
 				addMapping(dep, executablePath);
-			}
 		}
 	}
 
 	for (auto& [path, mapping] : bundleIncludes)
 	{
-		addMapping(path, std::string(), mapping);
+#if defined(CHALET_MACOS)
+		if (bundle.isMacosAppBundle())
+		{
+			if (String::endsWith(framework, path) || String::endsWith(dylib, path))
+				addMapping(path, frameworksPath);
+			else
+				addMapping(path, resourcePath);
+		}
+		else
+#endif
+		{
+			addMapping(path, resourcePath, mapping);
+		}
 	}
 
+#if defined(CHALET_MSVC)
 	for (auto it = dependenciesToCopy.rbegin(); it != dependenciesToCopy.rend(); ++it)
+#else
+	for (auto it = dependenciesToCopy.begin(); it != dependenciesToCopy.end(); ++it)
+#endif
 	{
 		auto&& [dep, destination] = *it;
 		if (!inBundler.copyIncludedPath(dep, destination))
