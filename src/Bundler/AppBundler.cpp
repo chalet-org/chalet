@@ -306,7 +306,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 #if defined(CHALET_MACOS)
 			if (bundle.isMacosAppBundle())
 			{
-				if (String::endsWith(framework, path) || String::endsWith(dylib, path))
+				if (String::endsWith(framework, path))
+					continue;
+
+				if (String::endsWith(dylib, path))
 					addMapping(path, frameworksPath);
 				else
 					addMapping(path, executablePath);
@@ -317,6 +320,17 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 				addMapping(path, executablePath, mapping);
 			}
 		}
+
+#if defined(CHALET_MACOS)
+		if (bundle.isMacosAppBundle())
+		{
+			for (auto& dep : detectedDependencies)
+			{
+				if (String::endsWith(framework, dep))
+					addMapping(dep, frameworksPath);
+			}
+		}
+#endif
 	}
 
 	for (auto& file : filesToCopy)
