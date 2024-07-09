@@ -324,10 +324,10 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 #if defined(CHALET_MACOS)
 		if (bundle.isMacosAppBundle())
 		{
-			for (auto& dep : detectedDependencies)
+			for (auto& [path, _] : detectedDependencies)
 			{
-				if (String::endsWith(framework, dep))
-					addMapping(dep, frameworksPath);
+				if (String::endsWith(framework, path))
+					addMapping(path, frameworksPath);
 			}
 		}
 #endif
