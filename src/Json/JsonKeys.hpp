@@ -135,6 +135,7 @@ CHALET_CONSTANT(Examples) = "examples";
 CHALET_CONSTANT(AnyOf) = "anyOf";
 CHALET_CONSTANT(AllOf) = "allOf";
 CHALET_CONSTANT(OneOf) = "oneOf";
+CHALET_CONSTANT(MinLength) = "minLength";
 }
 
 namespace CacheKeys

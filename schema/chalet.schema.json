@@ -352,8 +352,7 @@
 					"minItems": 1,
 					"patternProperties": {
 						"^[\\w\\-+./\\\\]{3,}$": {
-							"type": "string",
-							"minLength": 1
+							"type": "string"
 						}
 					}
 				}
@@ -599,8 +598,7 @@
 					"minItems": 1,
 					"patternProperties": {
 						"^[\\w\\-+./\\\\]{3,}$": {
-							"type": "string",
-							"minLength": 1
+							"type": "string"
 						}
 					}
 				}

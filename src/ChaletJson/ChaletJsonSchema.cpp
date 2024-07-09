@@ -2322,6 +2322,7 @@ Json ChaletJsonSchema::makeArrayStringOrObject(const Json inString, const bool i
 		ret[SKeys::OneOf][0].erase(SKeys::Description);
 		ret[SKeys::OneOf][1][SKeys::Items].erase(SKeys::Description);
 		ret[SKeys::OneOf][2][SKeys::PatternProperties][kPathProperty].erase(SKeys::Description);
+		ret[SKeys::OneOf][2][SKeys::PatternProperties][kPathProperty].erase(SKeys::MinLength);
 	}
 
 	return ret;

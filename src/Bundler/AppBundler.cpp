@@ -240,8 +240,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 		if (found == nullptr)
 			filesToCopy.emplace_back(FileToCopy{ dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping) });
-		else if (!mapping.empty())
-			found->to = fmt::format("{}/{}", destPath, mapping);
+		// else
+		// 	found->to = fmt::format("{}/{}", destPath, mapping);
 	};
 
 #if defined(CHALET_MACOS)
