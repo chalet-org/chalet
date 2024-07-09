@@ -591,16 +591,6 @@
 						"type": "string",
 						"minLength": 1
 					}
-				},
-				{
-					"type": "object",
-					"uniqueItems": true,
-					"minItems": 1,
-					"patternProperties": {
-						"^[\\w\\-+./\\\\]{3,}$": {
-							"type": "string"
-						}
-					}
 				}
 			]
 		},

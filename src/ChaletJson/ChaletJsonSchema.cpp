@@ -348,7 +348,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "zip"
 	})json"_ojson;
 
-	defs[Defs::DistributionArchiveInclude] = makeArrayStringOrObject(R"json({
+	defs[Defs::DistributionArchiveInclude] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of `*` will archive everything in the bundle directory.",
 		"minLength": 1

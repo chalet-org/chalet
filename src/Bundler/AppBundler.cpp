@@ -217,7 +217,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	};
 	std::vector<FileToCopy> filesToCopy; // Vector to retain the order
 
-	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string()) {
+	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string(), const bool force = false) {
 		auto dep = Files::getCanonicalPath(path);
 		if (!Files::pathExists(dep))
 		{
@@ -240,8 +240,8 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 		if (found == nullptr)
 			filesToCopy.emplace_back(FileToCopy{ dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping) });
-		// else
-		// 	found->to = fmt::format("{}/{}", destPath, mapping);
+		else if (force)
+			found->to = fmt::format("{}/{}", destPath, mapping);
 	};
 
 #if defined(CHALET_MACOS)
@@ -293,7 +293,7 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		else
 #endif
 		{
-			addMapping(path, resourcePath, mapping);
+			addMapping(path, resourcePath, mapping, true);
 		}
 	}
 
