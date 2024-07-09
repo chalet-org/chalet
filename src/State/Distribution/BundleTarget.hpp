@@ -11,6 +11,7 @@
 
 namespace chalet
 {
+struct SourceTarget;
 class BuildState;
 
 struct BundleTarget final : public IDistTarget
@@ -20,7 +21,7 @@ struct BundleTarget final : public IDistTarget
 	virtual bool initialize() final;
 	virtual bool validate() final;
 
-	bool resolveIncludesFromState(const BuildState& inState);
+	std::vector<const SourceTarget*> getRequiredBuildTargets() const;
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;
@@ -43,9 +44,10 @@ struct BundleTarget final : public IDistTarget
 	void addExcludes(StringList&& inList);
 	void addExclude(std::string&& inValue);
 
-	const StringList& includes() const noexcept;
+	const IncludeMap& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
+	void addInclude(const std::string& inKey, std::string&& inValue);
 
 	bool windowsIncludeRuntimeDlls() const noexcept;
 	void setWindowsIncludeRuntimeDlls(const bool inValue) noexcept;
@@ -98,9 +100,9 @@ struct BundleTarget final : public IDistTarget
 #endif
 
 private:
+	IncludeMap m_includes;
+
 	StringList m_buildTargets;
-	StringList m_rawIncludes;
-	StringList m_includes;
 	StringList m_excludes;
 
 	std::string m_subdirectory;
@@ -130,7 +132,6 @@ private:
 	bool m_windowsIncludeRuntimeDlls = false;
 	bool m_hasAllBuildTargets = false;
 	bool m_includeDependentSharedLibraries = true;
-	bool m_includesResolved = false;
 	bool m_updateRPaths = true;
 };
 }

@@ -1073,21 +1073,16 @@ bool BuildState::validateDistribution()
 		if (target->isDistributionBundle())
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);
-
-			/*if (bundle.buildTargets().empty())
-			{
-				Diagnostic::error("{}: Distribution bundle '{}' was found without 'buildTargets'", m_filename, bundle.name());
-				return false;
-			}*/
-
 			if (!distributionDirectory.empty())
 			{
 				auto& subdirectory = bundle.subdirectory();
 				bundle.setSubdirectory(fmt::format("{}/{}", distributionDirectory, subdirectory));
 			}
 
-			for (auto& targetName : bundle.buildTargets())
+			auto buildTargets = bundle.getRequiredBuildTargets();
+			for (auto& project : buildTargets)
 			{
+				const auto& targetName = project->name();
 				auto res = locations.find(targetName);
 				if (res != locations.end())
 				{

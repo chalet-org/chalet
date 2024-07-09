@@ -214,7 +214,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 				BinaryDependencyMap dependencyMap(firstState);
 				AppBundlerMacOS bundler(firstState, bundle, dependencyMap);
-				if (bundler.initializeState())
+				if (bundler.initialize())
 				{
 					auto& mainExecutable = bundler.mainExecutable();
 					if (!mainExecutable.empty())

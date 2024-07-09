@@ -30,26 +30,18 @@ bool AppBundlerWeb::removeOldFiles()
 /*****************************************************************************/
 bool AppBundlerWeb::bundleForPlatform()
 {
-	const auto& buildTargets = m_bundle.buildTargets();
+	auto buildTargets = m_bundle.getRequiredBuildTargets();
 
 	StringList wasmFiles;
 	StringList jsFiles;
-	for (auto& target : m_state.targets)
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
+		auto outputFilePath = m_state.paths.getTargetFilename(*project);
+		if (project->isExecutable())
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-
-			if (!List::contains(buildTargets, project.name()))
-				continue;
-
-			auto outputFilePath = m_state.paths.getTargetFilename(project);
-			if (project.isExecutable())
-			{
-				auto noExtension = String::getPathFolderBaseName(outputFilePath);
-				wasmFiles.emplace_back(fmt::format("{}.wasm", noExtension));
-				jsFiles.emplace_back(fmt::format("{}.js", noExtension));
-			}
+			auto noExtension = String::getPathFolderBaseName(outputFilePath);
+			wasmFiles.emplace_back(fmt::format("{}.wasm", noExtension));
+			jsFiles.emplace_back(fmt::format("{}.js", noExtension));
 		}
 	}
 
@@ -67,29 +59,4 @@ bool AppBundlerWeb::bundleForPlatform()
 
 	return true;
 }
-
-/*****************************************************************************/
-std::string AppBundlerWeb::getBundlePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWeb::getExecutablePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWeb::getResourcePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWeb::getFrameworksPath() const
-{
-	return m_bundle.subdirectory();
-}
-
 }

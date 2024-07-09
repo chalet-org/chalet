@@ -41,9 +41,13 @@ AppBundlerMacOS::AppBundlerMacOS(BuildState& inState, const BundleTarget& inBund
 }
 
 /*****************************************************************************/
-bool AppBundlerMacOS::initializeState()
+bool AppBundlerMacOS::initialize(const std::string& inOutputDir)
 {
 #if defined(CHALET_MACOS)
+	m_outputDirectory = inOutputDir;
+	if (m_outputDirectory.empty())
+		m_outputDirectory = m_bundle.subdirectory();
+
 	m_bundlePath = getBundlePath();
 	m_frameworksPath = getFrameworksPath();
 	m_resourcePath = getResourcePath();
@@ -52,11 +56,9 @@ bool AppBundlerMacOS::initializeState()
 	m_infoFile = getPlistFile();
 	m_entitlementsFile = getEntitlementsFilePath();
 
-	if (!getMainExecutable(m_mainExecutable))
-		return false; // No executable. we don't care
-
 	return true;
 #else
+	UNUSED(inOutputDir);
 	return false;
 #endif
 }
@@ -65,16 +67,6 @@ bool AppBundlerMacOS::initializeState()
 const std::string& AppBundlerMacOS::mainExecutable() const noexcept
 {
 	return m_mainExecutable;
-}
-
-/*****************************************************************************/
-void AppBundlerMacOS::setOutputDirectory(const std::string& inPath) const
-{
-#if defined(CHALET_MACOS)
-	m_outputDirectory = inPath;
-#else
-	UNUSED(inPath);
-#endif
 }
 
 /*****************************************************************************/
@@ -90,7 +82,7 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 	// If we got this far, the app bundle was built through Xcode
 	// so we only need to copy it
 
-	if (!initializeState())
+	if (!getMainExecutable(m_mainExecutable))
 		return false;
 
 	auto appPath = String::getPathFolder(m_bundlePath);
@@ -120,7 +112,7 @@ bool AppBundlerMacOS::quickBundleForPlatform()
 bool AppBundlerMacOS::bundleForPlatform()
 {
 #if defined(CHALET_MACOS)
-	if (!initializeState())
+	if (!getMainExecutable(m_mainExecutable))
 		return true; // No executable. we don't care
 
 	{
@@ -192,15 +184,12 @@ bool AppBundlerMacOS::bundleForPlatform()
 std::string AppBundlerMacOS::getBundlePath() const
 {
 #if defined(CHALET_MACOS)
-	if (m_outputDirectory.empty())
-		setOutputDirectory(m_bundle.subdirectory());
-
 	if (m_bundle.isMacosAppBundle())
 		return fmt::format("{}/{}.app/Contents", m_outputDirectory, m_bundle.name());
 	else
 		return m_outputDirectory;
 #else
-	return std::string();
+	return IAppBundler::getBundlePath();
 #endif
 }
 
@@ -213,7 +202,7 @@ std::string AppBundlerMacOS::getExecutablePath() const
 	else
 		return m_outputDirectory;
 #else
-	return std::string();
+	return IAppBundler::getExecutablePath();
 #endif
 }
 
@@ -226,7 +215,7 @@ std::string AppBundlerMacOS::getResourcePath() const
 	else
 		return m_outputDirectory;
 #else
-	return std::string();
+	return IAppBundler::getResourcePath();
 #endif
 }
 
@@ -239,7 +228,7 @@ std::string AppBundlerMacOS::getFrameworksPath() const
 	else
 		return m_outputDirectory;
 #else
-	return std::string();
+	return IAppBundler::getFrameworksPath();
 #endif
 }
 

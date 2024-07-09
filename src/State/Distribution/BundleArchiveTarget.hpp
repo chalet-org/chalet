@@ -19,9 +19,10 @@ struct BundleArchiveTarget final : public IDistTarget
 
 	std::string getOutputFilename(const std::string& inBaseName) const;
 
-	const StringList& includes() const noexcept;
+	const IncludeMap& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
+	void addInclude(const std::string& inKey, std::string&& inValue);
 
 	const std::string& macosNotarizationProfile() const noexcept;
 	void setMacosNotarizationProfile(std::string&& inValue);
@@ -32,7 +33,7 @@ struct BundleArchiveTarget final : public IDistTarget
 private:
 	ArchiveFormat getFormatFromString(const std::string& inValue) const;
 
-	StringList m_includes;
+	IncludeMap m_includes;
 
 	std::string m_macosNotarizationProfile;
 

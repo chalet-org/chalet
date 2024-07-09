@@ -369,19 +369,17 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						if (hasInfo)
 							groups[name].children.emplace_back(fmt::format("{}/Info.plist", bundleDirectory));
 
-						if (bundle.resolveIncludesFromState(*state))
+						auto& bundleIncludes = bundle.includes();
+						for (auto& [path, _] : bundleIncludes)
 						{
-							auto& includes = bundle.includes();
-							for (auto& file : includes)
-							{
-								groups[name].children.emplace_back(file);
-								groups[name].resources.emplace_back(file);
-							}
+							groups[name].children.emplace_back(path);
+							groups[name].resources.emplace_back(path);
 						}
 
-						auto& buildTargets = bundle.buildTargets();
-						for (auto& tgt : buildTargets)
+						auto buildTargets = bundle.getRequiredBuildTargets();
+						for (auto& project : buildTargets)
 						{
+							auto& tgt = project->name();
 							List::addIfDoesNotExist(m_appBuildTargets, tgt);
 
 							if (List::contains(sourceTargets, tgt))
@@ -1790,6 +1788,8 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	AppBundlerMacOS bundler(inState, inTarget, dependencyMap);
 
 	auto objectDirectory = Files::getCanonicalPath(inState.paths.bundleObjDir(inTarget.name()));
+	bundler.initialize(objectDirectory);
+
 	auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, targetName);
 	auto infoPlist = fmt::format("{}/Info.plist", bundleDirectory);
 	auto entitlementsPlist = fmt::format("{}/App.entitlements", bundleDirectory);
@@ -1805,9 +1805,6 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 	if (m_generatedBundleFiles.find(targetName) == m_generatedBundleFiles.end())
 	{
 		m_infoPlistJson.clear();
-
-		bundler.setOutputDirectory(objectDirectory);
-		bundler.initializeState();
 
 #if defined(CHALET_MACOS)
 		if (String::endsWith(".iconset", macosBundleIcon))

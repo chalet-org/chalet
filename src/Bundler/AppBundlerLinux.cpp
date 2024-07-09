@@ -48,23 +48,14 @@ AppBundlerLinux::AppBundlerLinux(BuildState& inState, const BundleTarget& inBund
 bool AppBundlerLinux::removeOldFiles()
 {
 #if defined(CHALET_LINUX)
-	auto& buildTargets = m_bundle.buildTargets();
-
-	for (auto& target : m_state.targets)
+	auto buildTargets = m_bundle.getRequiredBuildTargets();
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
-		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			if (!List::contains(buildTargets, project.name()))
-				continue;
+		if (!project->isExecutable())
+			continue;
 
-			if (!project.isExecutable())
-				continue;
-
-			const auto outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, String::getPathBaseName(project.outputFile()));
-
-			static_cast<void>(Files::removeIfExists(outputFile));
-		}
+		const auto outputFile = fmt::format("{}/{}.desktop", m_applicationsPath, String::getPathBaseName(project->outputFile()));
+		Files::removeIfExists(outputFile);
 	}
 
 	return true;
@@ -134,29 +125,4 @@ bool AppBundlerLinux::bundleForPlatform()
 	return false;
 #endif
 }
-
-/*****************************************************************************/
-std::string AppBundlerLinux::getBundlePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerLinux::getExecutablePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerLinux::getResourcePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerLinux::getFrameworksPath() const
-{
-	return m_bundle.subdirectory();
-}
-
 }

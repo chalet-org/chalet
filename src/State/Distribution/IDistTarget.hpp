@@ -17,6 +17,8 @@ using DistTarget = Unique<IDistTarget>;
 
 struct IDistTarget
 {
+	using IncludeMap = std::map<std::string, std::string>;
+
 	explicit IDistTarget(const BuildState& inState, const DistTargetType inType);
 	virtual ~IDistTarget() = default;
 
@@ -46,7 +48,8 @@ protected:
 	bool resolveDependentTargets(std::string& outDepends, std::string& outPath, const char* inKey) const;
 	bool replaceVariablesInPathList(StringList& outList) const;
 	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
-	bool processIncludeExceptions(StringList& outList) const;
+	bool expandGlobPatternsInMap(IncludeMap& outMap, GlobMatch inSettings) const;
+	bool processIncludeExceptions(IncludeMap& outMap) const;
 
 	const BuildState& m_state;
 

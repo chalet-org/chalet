@@ -8,6 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "FileTemplates/PlatformFileTemplates.hpp"
 #include "Process/Environment.hpp"
+#include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -57,7 +58,7 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 bool BundleTarget::initialize()
 {
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!expandGlobPatternsInList(m_rawIncludes, GlobMatch::FilesAndFolders))
+	if (!expandGlobPatternsInMap(m_includes, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -95,7 +96,7 @@ bool BundleTarget::validate()
 {
 	bool result = true;
 
-	if (m_buildTargets.empty() && m_rawIncludes.empty())
+	if (m_buildTargets.empty() && m_includes.empty())
 	{
 		Diagnostic::error("bundle.include or bundle.buildTargets must be defined, but neither were found.");
 		result = false;
@@ -187,86 +188,27 @@ bool BundleTarget::validate()
 }
 
 /*****************************************************************************/
-bool BundleTarget::resolveIncludesFromState(const BuildState& inState)
+std::vector<const SourceTarget*> BundleTarget::getRequiredBuildTargets() const
 {
-	const auto add = [this](std::string in) {
-		Path::toUnix(in);
-		List::addIfDoesNotExist(m_includes, std::move(in));
-	};
+	std::vector<const SourceTarget*> ret;
 
-	for (auto& dependency : m_rawIncludes)
+	for (auto& target : m_state.targets)
 	{
-		if (Files::pathExists(dependency))
+		if (target->isSources())
 		{
-			add(dependency);
-			continue;
-		}
-
-		/*std::string resolved = fmt::format("{}/{}", inState.paths.buildOutputDir(), inValue);
-		if (Files::pathExists(resolved))
-		{
-			add(resolved);
-			continue;
-		}*/
-
-		std::string resolved;
-		bool found = false;
-		for (auto& target : inState.targets)
-		{
-			if (target->isSources())
+			auto project = static_cast<const SourceTarget*>(target.get());
+			if (!List::contains(m_buildTargets, project->name()))
 			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-
-				const auto& compilerPathBin = inState.toolchain.compilerCxx(project.language()).binDir;
-
-				resolved = fmt::format("{}/{}", compilerPathBin, dependency);
-				if (Files::pathExists(resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
-
-				// LOG(resolved, ' ', project.outputFile());
-				if (String::contains(project.outputFile(), resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
+				auto outputFilePath = m_state.paths.getTargetFilename(*project);
+				if (m_includes.find(outputFilePath) == m_includes.end())
+					continue;
 			}
-		}
 
-		if (!found)
-		{
-			const auto& searchPaths = inState.workspace.searchPaths();
-			for (auto& path : searchPaths)
-			{
-				resolved = fmt::format("{}/{}", path, dependency);
-				if (Files::pathExists(resolved))
-				{
-					add(std::move(resolved));
-					found = true;
-					break;
-				}
-			}
-		}
-		if (!found)
-		{
-			resolved = Files::which(dependency);
-			if (!resolved.empty())
-			{
-				add(std::move(resolved));
-			}
-			else
-			{
-				Diagnostic::warn("Included path '{}' for distribution target '{}' was not found.", dependency, this->name());
-			}
+			ret.emplace_back(project);
 		}
 	}
 
-	m_includesResolved = true;
-	return true;
+	return ret;
 }
 
 /*****************************************************************************/
@@ -362,9 +304,8 @@ void BundleTarget::addExclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& BundleTarget::includes() const noexcept
+const IDistTarget::IncludeMap& BundleTarget::includes() const noexcept
 {
-	chalet_assert(m_includesResolved, "BundleTarget includes not resolved");
 	return m_includes;
 }
 
@@ -376,7 +317,18 @@ void BundleTarget::addIncludes(StringList&& inList)
 void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::toUnix(inValue);
-	List::addIfDoesNotExist(m_rawIncludes, std::move(inValue));
+
+	if (m_includes.find(inValue) == m_includes.end())
+		m_includes.emplace(inValue, std::string());
+}
+
+void BundleTarget::addInclude(const std::string& inKey, std::string&& inValue)
+{
+	std::string key = inKey;
+	Path::toUnix(key);
+
+	if (m_includes.find(key) == m_includes.end())
+		m_includes.emplace(key, std::move(inValue));
 }
 
 /*****************************************************************************/

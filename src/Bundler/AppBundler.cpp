@@ -86,6 +86,11 @@ bool AppBundler::run(const DistTarget& inTarget)
 		m_dependencyMap = std::make_unique<BinaryDependencyMap>(m_state);
 		m_dependencyMap->setIncludeWinUCRT(bundle.windowsIncludeRuntimeDlls());
 		auto bundler = IAppBundler::make(m_state, bundle, *m_dependencyMap);
+		if (!bundler->initialize())
+		{
+			Diagnostic::error("There was an error initializing the bundler for: {}", inTarget->name());
+			return false;
+		}
 
 		if (!removeOldFiles(*bundler))
 		{
@@ -106,13 +111,13 @@ bool AppBundler::run(const DistTarget& inTarget)
 		else
 #endif
 		{
-			if (!bundle.resolveIncludesFromState(m_state))
-				return false;
-
 			if (!gatherDependencies(bundle))
 				return false;
 
 			if (!runBundleTarget(*bundler))
+				return false;
+
+			if (!bundler->bundleForPlatform())
 				return false;
 		}
 	}
@@ -191,7 +196,8 @@ void AppBundler::reportErrors()
 bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 {
 	auto& bundle = inBundler.bundle();
-	const auto& buildTargets = bundle.buildTargets();
+	auto buildTargets = bundle.getRequiredBuildTargets();
+	const auto& bundleIncludes = bundle.includes();
 
 	const auto bundlePath = inBundler.getBundlePath();
 	const auto executablePath = inBundler.getExecutablePath();
@@ -202,127 +208,151 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	// Timer timer;
 
+	auto& cwd = inBundler.workingDirectoryWithTrailingPathSeparator();
+
+	struct FileToCopy
+	{
+		std::string from;
+		std::string to;
+	};
+	std::vector<FileToCopy> filesToCopy; // Vector to retain the order
+
+	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string(), const bool force = false) {
+		auto dep = Files::getCanonicalPath(path);
+		if (!Files::pathExists(dep))
+		{
+			dep = Files::which(dep);
+			if (dep.empty())
+				return;
+		}
+
+		String::replaceAll(dep, cwd, "");
+
+		FileToCopy* found = nullptr;
+		for (auto& file : filesToCopy)
+		{
+			if (String::equals(file.from, dep))
+			{
+				found = &file;
+				break;
+			}
+		}
+
+		if (found == nullptr)
+			filesToCopy.emplace_back(FileToCopy{ dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping) });
+		else if (force)
+			found->to = fmt::format("{}/{}", destPath, mapping);
+	};
+
 #if defined(CHALET_MACOS)
 	auto dylib = Files::getPlatformSharedLibraryExtension();
 	auto framework = Files::getPlatformFrameworkExtension();
 #endif
 
-	for (auto& dep : bundle.includes())
-	{
-#if defined(CHALET_MACOS)
-		if (String::endsWith(framework, dep))
-			continue;
-
-		if (String::endsWith(dylib, dep))
-		{
-			if (!inBundler.copyIncludedPath(dep, frameworksPath))
-				return false;
-
-			// auto filename = String::getPathFilename(dep);
-			// auto dylib = fmt::format("{}/{}", executablePath);
-		}
-		else
-#endif
-		{
-			if (!inBundler.copyIncludedPath(dep, resourcePath))
-				return false;
-		}
-	}
-
 	StringList executables;
-	StringList dependenciesToCopy;
 	StringList excludes;
 
-	for (auto& target : m_state.targets)
+	for (auto& project : buildTargets)
 	{
-		if (target->isSources())
+		auto outputFilePath = m_state.paths.getTargetFilename(*project);
+		if (!project->copyFilesOnRun().empty())
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
+			StringList runDeps = project->getResolvedRunDependenciesList();
+			for (auto& dep : runDeps)
+				addMapping(dep, executablePath);
+		}
 
-			if (!List::contains(buildTargets, project.name()))
-				continue;
-
-			if (!project.copyFilesOnRun().empty())
-			{
-				StringList runDeps = project.getResolvedRunDependenciesList();
-				for (auto& dep : runDeps)
-				{
-					List::addIfDoesNotExist(dependenciesToCopy, std::move(dep));
-				}
-			}
-			auto outputFilePath = m_state.paths.getTargetFilename(project);
-			if (project.isStaticLibrary())
-			{
-				List::addIfDoesNotExist(dependenciesToCopy, outputFilePath);
-				continue;
-			}
-			else if (project.isExecutable())
-			{
-				std::string outTarget = outputFilePath;
-				List::addIfDoesNotExist(executables, std::move(outTarget));
-			}
-
-			if (project.isSharedLibrary())
-			{
-				if (!inBundler.copyIncludedPath(outputFilePath, frameworksPath))
-					continue;
-			}
-			else
-			{
-				if (!inBundler.copyIncludedPath(outputFilePath, executablePath))
-					continue;
-			}
-
+		if (project->isStaticLibrary())
+		{
+			addMapping(outputFilePath, resourcePath);
+			continue;
+		}
+		else if (project->isSharedLibrary())
+		{
+			addMapping(outputFilePath, frameworksPath);
+			excludes.emplace_back(std::move(outputFilePath));
+		}
+		else if (project->isExecutable())
+		{
+			addMapping(outputFilePath, executablePath);
+			executables.emplace_back(outputFilePath);
 			excludes.emplace_back(std::move(outputFilePath));
 		}
 	}
 
+	for (auto& [path, mapping] : bundleIncludes)
 	{
-		auto& cwd = inBundler.workingDirectoryWithTrailingPathSeparator();
-		m_dependencyMap->populateToList(dependenciesToCopy, excludes);
-		for (auto& dep : dependenciesToCopy)
+#if defined(CHALET_MACOS)
+		if (bundle.isMacosAppBundle())
 		{
-			dep = Files::getCanonicalPath(dep);
-			String::replaceAll(dep, cwd, "");
+			if (String::endsWith(framework, path) || String::endsWith(dylib, path))
+				addMapping(path, frameworksPath);
+			else
+				addMapping(path, resourcePath);
 		}
+		else
+#endif
+		{
+			addMapping(path, resourcePath, mapping, true);
+		}
+	}
 
-		std::sort(dependenciesToCopy.begin(), dependenciesToCopy.end(), [this](const auto& inA, const auto& inB) {
-			UNUSED(inB);
-			return String::startsWith(m_state.paths.buildOutputDir(), inA);
-		});
+	{
+		std::map<std::string, std::string> detectedDependencies;
+		m_dependencyMap->populateToList(detectedDependencies, excludes);
 
-		for (auto& dep : dependenciesToCopy)
+		for (auto& [path, mapping] : detectedDependencies)
 		{
 #if defined(CHALET_MACOS)
-			if (String::endsWith(framework, dep))
-				continue;
-
-			if (String::endsWith(dylib, dep))
+			if (bundle.isMacosAppBundle())
 			{
-				if (!inBundler.copyIncludedPath(dep, frameworksPath))
+				if (String::endsWith(framework, path))
 					continue;
+
+				if (String::endsWith(dylib, path))
+					addMapping(path, frameworksPath);
+				else
+					addMapping(path, executablePath);
 			}
 			else
 #endif
 			{
-				if (!inBundler.copyIncludedPath(dep, executablePath))
-					continue;
+				addMapping(path, executablePath, mapping);
 			}
 		}
+
+#if defined(CHALET_MACOS)
+		if (bundle.isMacosAppBundle())
+		{
+			for (auto& [path, _] : detectedDependencies)
+			{
+				if (String::endsWith(framework, path))
+					addMapping(path, frameworksPath);
+			}
+		}
+#endif
 	}
 
-	if (!m_state.environment->isEmscripten())
+	for (auto& file : filesToCopy)
 	{
-#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
-		for (auto& exec : executables)
-		{
-			const auto filename = String::getPathFilename(exec);
-			const auto executable = fmt::format("{}/{}", executablePath, filename);
+		const auto& dep = file.from;
+		const auto& destination = file.to;
 
-			if (!Files::setExecutableFlag(executable))
+		if (!inBundler.copyIncludedPath(dep, destination))
+			continue;
+
+#if defined(CHALET_MACOS) || defined(CHALET_LINUX)
+		if (!m_state.environment->isEmscripten())
+		{
+			if (String::contains(executables, dep))
 			{
-				Diagnostic::warn("Executable flag could not be set for: {}", executable);
-				continue;
+				const auto filename = String::getPathFilename(dep);
+				const auto executable = fmt::format("{}/{}", destination, filename);
+				if (!Files::setExecutableFlag(executable))
+				{
+					Diagnostic::warn("Executable flag could not be set for: {}", executable);
+					continue;
+				}
 			}
 		}
 #endif
@@ -335,14 +365,11 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		}))
 		return false;
 
-	if (!inBundler.bundleForPlatform())
-		return false;
-
 	return true;
 }
 
 /*****************************************************************************/
-bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
+bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 {
 	if (!inTarget.includeDependentSharedLibraries())
 		return true;
@@ -350,9 +377,8 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 	if (m_state.environment->isEmscripten())
 		return true;
 
-	const auto& buildTargets = inTarget.buildTargets();
+	auto buildTargets = inTarget.getRequiredBuildTargets();
 
-	m_dependencyMap->addExcludesFromList(inTarget.includes());
 	m_dependencyMap->clearSearchDirs();
 
 	for (auto& target : m_state.targets)
@@ -363,37 +389,40 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 			m_dependencyMap->addSearchDirsFromList(project.libDirs());
 		}
 	}
+	const auto& sysroot = m_state.environment->sysroot();
+	if (!sysroot.empty())
+	{
+		m_dependencyMap->addSearchDirsFromList(StringList{ m_state.environment->sysroot() });
+	}
 	m_dependencyMap->addSearchDirsFromList(m_state.workspace.searchPaths());
 
-	StringList allDependencies;
+	std::map<std::string, std::string> allDependencies;
 
-#if defined(CHALET_MACOS)
-	auto dylib = Files::getPlatformSharedLibraryExtension();
-#endif
+	const auto& bundleIncludes = inTarget.includes();
 
-#if defined(CHALET_MACOS)
-	for (auto& dep : inTarget.includes())
+	auto exe = Files::getPlatformExecutableExtension();
+	auto so = Files::getPlatformSharedLibraryExtension();
+	for (auto&& [path, mapping] : bundleIncludes)
 	{
-		if (String::endsWith(dylib, dep))
-			List::addIfDoesNotExist(allDependencies, dep);
-	}
-#endif
+		if (!Files::pathIsFile(path))
+			continue;
 
-	for (auto& target : m_state.targets)
-	{
-		if (target->isSources())
+		auto extension = String::getPathSuffix(path);
+		if (extension.empty() || String::endsWith(extension, so) || String::endsWith(extension, exe))
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-
-			if (!List::contains(buildTargets, project.name()))
-				continue;
-
-			auto outputFilePath = m_state.paths.getTargetFilename(project);
-			if (project.isStaticLibrary())
-				continue;
-
-			List::addIfDoesNotExist(allDependencies, std::move(outputFilePath));
+			if (allDependencies.find(path) == allDependencies.end())
+				allDependencies.emplace(path, mapping);
 		}
+	}
+
+	for (auto& project : buildTargets)
+	{
+		auto outputFilePath = m_state.paths.getTargetFilename(*project);
+		if (project->isStaticLibrary())
+			continue;
+
+		if (allDependencies.find(outputFilePath) == allDependencies.end())
+			allDependencies.emplace(outputFilePath, std::string());
 	}
 
 	i32 levels = 2;
@@ -409,8 +438,8 @@ bool AppBundler::gatherDependencies(const BundleTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 {
-	const auto& includes = inTarget.includes();
-	if (includes.empty())
+	const auto& archiveIncludes = inTarget.includes();
+	if (archiveIncludes.empty())
 		return false;
 
 	auto baseName = inTarget.name();
@@ -426,7 +455,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	Diagnostic::stepInfoEllipsis("Compressing files");
 
 	FileArchiver archiver(m_state);
-	if (!archiver.archive(inTarget, baseName, inTarget.includes(), m_archives))
+	if (!archiver.archive(inTarget, baseName, m_archives))
 		return false;
 
 	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));
@@ -532,7 +561,7 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 	if (schema.empty())
 		return false;
 
-	displayHeader("Validation", inTarget);
+	displayHeader("Validate", inTarget);
 
 	BatchValidator validator(&m_state, inTarget.schema());
 	bool result = validator.validate(inTarget.files(), false);

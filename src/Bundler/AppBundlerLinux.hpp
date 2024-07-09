@@ -20,11 +20,6 @@ public:
 	virtual bool removeOldFiles() final;
 	virtual bool bundleForPlatform() final;
 
-	virtual std::string getBundlePath() const final;
-	virtual std::string getExecutablePath() const final;
-	virtual std::string getResourcePath() const final;
-	virtual std::string getFrameworksPath() const final;
-
 private:
 #if defined(CHALET_LINUX)
 	std::string m_home;

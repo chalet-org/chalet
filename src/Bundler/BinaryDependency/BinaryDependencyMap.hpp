@@ -23,28 +23,25 @@ public:
 
 	void setIncludeWinUCRT(const bool inValue);
 
-	void addExcludesFromList(const StringList& inList);
-
 	void clearSearchDirs() noexcept;
 	void addSearchDirsFromList(const StringList& inList);
 
 	void log() const;
 
-	void populateToList(StringList& outList, const StringList& inExclusions) const;
-	bool gatherFromList(const StringList& inList, i32 levels = 2);
+	void populateToList(std::map<std::string, std::string>& outMap, const StringList& inExclusions) const;
+	bool gatherFromList(const std::map<std::string, std::string>& inMap, i32 levels = 2);
 
 	const StringList& notCopied() const noexcept;
 
 private:
-	bool gatherDependenciesOf(const std::string& inPath, i32 levels);
+	bool gatherDependenciesOf(const std::string& inPath, const std::string& inMapping, i32 levels);
 	bool resolveDependencyPath(std::string& outDep, const std::string& inParentDep, const bool inIgnoreApiSet);
 
 	const BuildState& m_state;
 
 	InnerMap m_map;
-	StringList m_list;
+	std::map<std::string, std::string> m_list;
 
-	StringList m_excludes;
 	StringList m_searchDirs;
 
 	StringList m_notCopied;

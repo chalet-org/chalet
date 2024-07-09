@@ -27,29 +27,4 @@ bool AppBundlerWindows::bundleForPlatform()
 {
 	return true;
 }
-
-/*****************************************************************************/
-std::string AppBundlerWindows::getBundlePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWindows::getExecutablePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWindows::getResourcePath() const
-{
-	return m_bundle.subdirectory();
-}
-
-/*****************************************************************************/
-std::string AppBundlerWindows::getFrameworksPath() const
-{
-	return m_bundle.subdirectory();
-}
-
 }

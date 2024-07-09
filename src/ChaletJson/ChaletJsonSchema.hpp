@@ -213,6 +213,7 @@ private:
 	std::string getDefinitionName(const Defs inDef);
 	Json getDefinition(const Defs inDef);
 	Json makeArrayOrString(const Json inString, const bool inUniqueItems = true);
+	Json makeArrayStringOrObject(const Json inString, const bool inUniqueItems = true);
 
 	void addProperty(Json& outJson, const char* inKey, const Defs inDef, const bool inIndexed = true);
 	void addPropertyAndPattern(Json& outJson, const char* inKey, const Defs inDef, const std::string& inPattern);

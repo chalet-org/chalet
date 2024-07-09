@@ -24,14 +24,16 @@ struct IAppBundler
 	bool copyIncludedPath(const std::string& inDep, const std::string& inOutPath);
 	const std::string& workingDirectoryWithTrailingPathSeparator();
 
+	virtual bool initialize(const std::string& inOutputDir = std::string());
+
 	virtual bool removeOldFiles() = 0;
 	virtual bool bundleForPlatform() = 0;
 	virtual bool quickBundleForPlatform();
 
-	virtual std::string getBundlePath() const = 0;
-	virtual std::string getExecutablePath() const = 0;
-	virtual std::string getResourcePath() const = 0;
-	virtual std::string getFrameworksPath() const = 0;
+	virtual std::string getBundlePath() const;
+	virtual std::string getExecutablePath() const;
+	virtual std::string getResourcePath() const;
+	virtual std::string getFrameworksPath() const;
 
 	[[nodiscard]] static Unique<IAppBundler> make(BuildState& inState, const BundleTarget& inBundle, BinaryDependencyMap& inDependencyMap);
 

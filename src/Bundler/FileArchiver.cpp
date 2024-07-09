@@ -25,7 +25,7 @@ FileArchiver::FileArchiver(const BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes)
+bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inExcludes)
 {
 	auto format = inTarget.format();
 	auto exactpath = Files::getAbsolutePath(Files::getCanonicalPath(m_outputDirectory));
@@ -33,7 +33,7 @@ bool FileArchiver::archive(const BundleArchiveTarget& inTarget, const std::strin
 
 	Files::removeIfExists(m_outputFilename);
 
-	auto resolvedIncludes = getResolvedIncludes(inIncludes);
+	auto resolvedIncludes = getResolvedIncludes(inTarget);
 
 	m_tmpDirectory = makeTemporaryDirectory(inBaseName);
 
@@ -169,11 +169,13 @@ bool FileArchiver::tarIsValid() const
 }
 
 /*****************************************************************************/
-StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
+StringList FileArchiver::getResolvedIncludes(const BundleArchiveTarget& inTarget) const
 {
+	const auto& archiveIncludes = inTarget.includes();
+
 	StringList ret;
 	StringList tmp;
-	for (auto& include : inIncludes)
+	for (auto& [include, _] : archiveIncludes)
 	{
 		if (String::equals('*', include))
 		{
@@ -205,7 +207,8 @@ StringList FileArchiver::getResolvedIncludes(const StringList& inIncludes) const
 
 	for (auto& include : tmp)
 	{
-		List::addIfDoesNotExist(ret, include.substr(m_outputDirectory.size() + 1));
+		auto path = include.substr(m_outputDirectory.size() + 1);
+		List::addIfDoesNotExist(ret, std::move(path));
 	}
 
 	return ret;

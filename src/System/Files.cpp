@@ -486,6 +486,9 @@ bool Files::copy(const std::string& inFrom, const std::string& inTo, const fs::c
 		fs::path from{ inFrom };
 		fs::path to{ inTo / from.filename() };
 
+		if (inOptions == fs::copy_options::skip_existing && fs::exists(to))
+			return true;
+
 		if (Output::showCommands())
 			Output::printCommand(fmt::format("copy to path: {} -> {}", inFrom, inTo));
 		else
@@ -552,25 +555,36 @@ bool Files::copyRename(const std::string& inFrom, const std::string& inTo, const
 /*****************************************************************************/
 bool Files::copyIfDoesNotExistWithoutPrintingWorkingDirectory(const std::string& inFrom, const std::string& inTo, const std::string& cwd)
 {
-	if (Files::pathExists(inFrom))
+	const auto filename = String::getPathFilename(inFrom);
+	if (!filename.empty())
 	{
-		const auto filename = String::getPathFilename(inFrom);
-		if (!filename.empty())
-		{
-			auto outputFile = fmt::format("{}/{}", inTo, filename);
-			if (Files::pathExists(outputFile))
-				return true; // Already copied - duplicate dependency
-		}
+		auto outputFile = fmt::format("{}/{}", inTo, filename);
+		if (Files::pathExists(outputFile))
+			return true; // Already copied - duplicate dependency
+	}
 
-		auto dep = inFrom;
-		String::replaceAll(dep, cwd, "");
-
-		if (!Files::copy(dep, inTo))
+	std::string dep = inFrom;
+	if (!Files::pathExists(dep))
+	{
+		dep = Files::which(dep);
+		if (dep.empty())
 		{
-			Diagnostic::warn("Dependency '{}' could not be copied to: {}", filename, inTo);
-			return false;
+			Diagnostic::warn("File does not exist: {}", inFrom);
+			return true;
 		}
 	}
+
+	String::replaceAll(dep, cwd, "");
+
+	if (!Files::pathExists(inTo))
+		Files::makeDirectory(inTo);
+
+	if (!Files::copy(dep, inTo))
+	{
+		Diagnostic::warn("File '{}' could not be copied to: {}", filename, inTo);
+		return false;
+	}
+
 	return true;
 }
 
@@ -863,6 +877,26 @@ bool Files::addPathToListWithGlob(const std::string& inValue, StringList& outLis
 	else
 	{
 		List::addIfDoesNotExist(outList, inValue);
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool Files::addPathToMapWithGlob(const std::string& inValue, std::string&& inMapping, std::map<std::string, std::string>& outMap, const GlobMatch inSettings)
+{
+	if (inValue.find_first_of("*{") != std::string::npos && inValue != "*")
+	{
+		if (!Files::forEachGlobMatch(inValue, inSettings, [&outMap, &inMapping](const std::string& inPath) {
+				if (outMap.find(inPath) == outMap.end())
+					outMap.emplace(inPath, inMapping); // Note: no move
+			}))
+			return false;
+	}
+	else
+	{
+		if (outMap.find(inValue) == outMap.end())
+			outMap.emplace(inValue, std::move(inMapping));
 	}
 
 	return true;
