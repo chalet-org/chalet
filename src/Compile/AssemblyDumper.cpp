@@ -107,7 +107,7 @@ bool AssemblyDumper::dumpProject(const SourceTarget& inTarget, StringList& outCa
 			return false;
 		}
 
-		Output::lineBreak();
+		// Output::lineBreak();
 	}
 
 	return true;
