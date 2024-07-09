@@ -44,7 +44,7 @@ struct BundleTarget final : public IDistTarget
 	void addExcludes(StringList&& inList);
 	void addExclude(std::string&& inValue);
 
-	const StringList& includes() const noexcept;
+	const IncludeMap& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
 
@@ -99,8 +99,9 @@ struct BundleTarget final : public IDistTarget
 #endif
 
 private:
+	IncludeMap m_includes;
+
 	StringList m_buildTargets;
-	StringList m_includes;
 	StringList m_excludes;
 
 	std::string m_subdirectory;

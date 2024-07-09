@@ -36,7 +36,7 @@ BundleArchiveTarget::BundleArchiveTarget(const BuildState& inState) :
 bool BundleArchiveTarget::initialize()
 {
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!expandGlobPatternsInList(m_includes, GlobMatch::FilesAndFolders))
+	if (!expandGlobPatternsInMap(m_includes, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -81,7 +81,7 @@ std::string BundleArchiveTarget::getOutputFilename(const std::string& inBaseName
 }
 
 /*****************************************************************************/
-const StringList& BundleArchiveTarget::includes() const noexcept
+const IDistTarget::IncludeMap& BundleArchiveTarget::includes() const noexcept
 {
 	return m_includes;
 }
@@ -96,7 +96,8 @@ void BundleArchiveTarget::addInclude(std::string&& inValue)
 	if (String::endsWith('/', inValue))
 		inValue.pop_back();
 
-	List::addIfDoesNotExist(m_includes, std::move(inValue));
+	if (m_includes.find(inValue) == m_includes.end())
+		m_includes.emplace(inValue, std::string());
 }
 
 /*****************************************************************************/

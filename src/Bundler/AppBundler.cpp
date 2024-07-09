@@ -210,24 +210,26 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	auto framework = Files::getPlatformFrameworkExtension();
 #endif
 
-	for (auto& dep : bundleIncludes)
+	for (auto& [path, mapping] : bundleIncludes)
 	{
 #if defined(CHALET_MACOS)
-		if (String::endsWith(framework, dep))
+		if (String::endsWith(framework, path))
 			continue;
 
-		if (String::endsWith(dylib, dep))
+		if (String::endsWith(dylib, path))
 		{
-			if (!inBundler.copyIncludedPath(dep, frameworksPath))
+			// Ignore mapping
+			if (!inBundler.copyIncludedPath(path, frameworksPath))
 				return false;
 
-			// auto filename = String::getPathFilename(dep);
+			// auto filename = String::getPathFilename(path);
 			// auto dylib = fmt::format("{}/{}", executablePath);
 		}
 		else
 #endif
 		{
-			if (!inBundler.copyIncludedPath(dep, resourcePath))
+			const auto& destination = mapping.empty() ? resourcePath : fmt::format("{}/{}", resourcePath, mapping);
+			if (!inBundler.copyIncludedPath(path, destination))
 				return false;
 		}
 	}
@@ -368,10 +370,11 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 
 #if defined(CHALET_MACOS)
 	auto dylib = Files::getPlatformSharedLibraryExtension();
-	for (auto& dep : inTarget.includes())
+	const auto& bundleIncludes = inTarget.includes();
+	for (auto&& [path, _] : bundleIncludes)
 	{
-		if (String::endsWith(dylib, dep))
-			List::addIfDoesNotExist(allDependencies, dep);
+		if (String::endsWith(dylib, path))
+			List::addIfDoesNotExist(allDependencies, path);
 	}
 #endif
 
@@ -397,8 +400,8 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 {
-	const auto& includes = inTarget.includes();
-	if (includes.empty())
+	const auto& archiveIncludes = inTarget.includes();
+	if (archiveIncludes.empty())
 		return false;
 
 	auto baseName = inTarget.name();
@@ -414,7 +417,7 @@ bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 	Diagnostic::stepInfoEllipsis("Compressing files");
 
 	FileArchiver archiver(m_state);
-	if (!archiver.archive(inTarget, baseName, inTarget.includes(), m_archives))
+	if (!archiver.archive(inTarget, baseName, m_archives))
 		return false;
 
 	m_archives.emplace_back(fmt::format("{}/{}", m_state.inputs.distributionDirectory(), filename));

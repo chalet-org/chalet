@@ -14,7 +14,7 @@ struct FileArchiver
 {
 	explicit FileArchiver(const BuildState& inState);
 
-	bool archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inIncludes, const StringList& inExcludes);
+	bool archive(const BundleArchiveTarget& inTarget, const std::string& inBaseName, const StringList& inExcludes);
 
 	bool notarize(const BundleArchiveTarget& inTarget);
 
@@ -23,7 +23,7 @@ private:
 	bool zipIsValid() const;
 	bool tarIsValid() const;
 
-	StringList getResolvedIncludes(const StringList& inIncludes) const;
+	StringList getResolvedIncludes(const BundleArchiveTarget& inTarget) const;
 	std::string makeTemporaryDirectory(const std::string& inBaseName) const;
 	bool copyIncludestoTemporaryDirectory(const StringList& inIncludes, const StringList& inExcludes, const std::string& inDirectory) const;
 

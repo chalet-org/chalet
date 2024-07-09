@@ -145,6 +145,7 @@ bool IDistTarget::resolveDependentTargets(std::string& outDepends, std::string& 
 
 	return true;
 }
+
 /*****************************************************************************/
 bool IDistTarget::replaceVariablesInPathList(StringList& outList) const
 {
@@ -175,24 +176,50 @@ bool IDistTarget::expandGlobPatternsInList(StringList& outList, GlobMatch inSett
 }
 
 /*****************************************************************************/
-bool IDistTarget::processIncludeExceptions(StringList& outList) const
+bool IDistTarget::expandGlobPatternsInMap(IncludeMap& outMap, GlobMatch inSettings) const
+{
+	IncludeMap tmpMap;
+	for (auto&& [path, mapping] : outMap)
+	{
+		std::string tempPath = path;
+		if (!m_state.replaceVariablesInString(tempPath, this))
+			return false;
+
+		tmpMap.emplace(tempPath, std::move(mapping));
+	}
+
+	outMap.clear();
+	for (auto&& [path, mapping] : tmpMap)
+	{
+		if (!Files::addPathToMapWithGlob(path, std::move(mapping), outMap, inSettings))
+			return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool IDistTarget::processIncludeExceptions(IncludeMap& outMap) const
 {
 	if (m_state.environment->isEmscripten())
 	{
-		StringList additions;
+		IncludeMap additions;
 		auto ext = m_state.environment->getExecutableExtension();
-		for (auto& file : outList)
+		for (auto& [path, mapping] : outMap)
 		{
-			if (String::endsWith(ext, file))
+			if (String::endsWith(ext, path))
 			{
-				auto noExtension = String::getPathFolderBaseName(file);
-				additions.emplace_back(fmt::format("{}.wasm", noExtension));
-				additions.emplace_back(fmt::format("{}.js", noExtension));
+				auto noExtension = String::getPathFolderBaseName(path);
+				additions.emplace(fmt::format("{}.wasm", noExtension), mapping);
+				additions.emplace(fmt::format("{}.js", noExtension), mapping);
 			}
 		}
 
-		for (auto& file : additions)
-			List::addIfDoesNotExist(outList, std::move(file));
+		for (auto& [path, mapping] : additions)
+		{
+			if (outMap.find(path) == outMap.end())
+				outMap.emplace(path, std::move(mapping));
+		}
 	}
 
 	return true;

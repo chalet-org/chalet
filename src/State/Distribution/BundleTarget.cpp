@@ -58,7 +58,7 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 bool BundleTarget::initialize()
 {
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
-	if (!expandGlobPatternsInList(m_includes, GlobMatch::FilesAndFolders))
+	if (!expandGlobPatternsInMap(m_includes, GlobMatch::FilesAndFolders))
 	{
 		Diagnostic::error("There was a problem resolving the included paths for the '{}' target. {}.", this->name(), globMessage);
 		return false;
@@ -192,7 +192,6 @@ std::vector<const SourceTarget*> BundleTarget::getRequiredBuildTargets() const
 {
 	std::vector<const SourceTarget*> ret;
 
-	const auto* includedDirs = &m_includes;
 	for (auto& target : m_state.targets)
 	{
 		if (target->isSources())
@@ -200,13 +199,8 @@ std::vector<const SourceTarget*> BundleTarget::getRequiredBuildTargets() const
 			auto project = static_cast<const SourceTarget*>(target.get());
 			if (!List::contains(m_buildTargets, project->name()))
 			{
-				if (includedDirs != nullptr)
-				{
-					auto outputFilePath = m_state.paths.getTargetFilename(*project);
-					if (!List::contains(*includedDirs, outputFilePath))
-						continue;
-				}
-				else
+				auto outputFilePath = m_state.paths.getTargetFilename(*project);
+				if (m_includes.find(outputFilePath) == m_includes.end())
 					continue;
 			}
 
@@ -310,7 +304,7 @@ void BundleTarget::addExclude(std::string&& inValue)
 }
 
 /*****************************************************************************/
-const StringList& BundleTarget::includes() const noexcept
+const IDistTarget::IncludeMap& BundleTarget::includes() const noexcept
 {
 	return m_includes;
 }
@@ -323,7 +317,8 @@ void BundleTarget::addIncludes(StringList&& inList)
 void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::toUnix(inValue);
-	List::addIfDoesNotExist(m_includes, std::move(inValue));
+	if (m_includes.find(inValue) == m_includes.end())
+		m_includes.emplace(inValue, std::string());
 }
 
 /*****************************************************************************/

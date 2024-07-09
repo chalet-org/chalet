@@ -370,10 +370,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 							groups[name].children.emplace_back(fmt::format("{}/Info.plist", bundleDirectory));
 
 						auto& bundleIncludes = bundle.includes();
-						for (auto& file : bundleIncludes)
+						for (auto& [path, _] : bundleIncludes)
 						{
-							groups[name].children.emplace_back(file);
-							groups[name].resources.emplace_back(file);
+							groups[name].children.emplace_back(path);
+							groups[name].resources.emplace_back(path);
 						}
 
 						auto buildTargets = bundle.getRequiredBuildTargets();

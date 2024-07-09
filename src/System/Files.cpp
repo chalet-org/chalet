@@ -877,6 +877,26 @@ bool Files::addPathToListWithGlob(const std::string& inValue, StringList& outLis
 }
 
 /*****************************************************************************/
+bool Files::addPathToMapWithGlob(const std::string& inValue, std::string&& inMapping, std::map<std::string, std::string>& outMap, const GlobMatch inSettings)
+{
+	if (inValue.find_first_of("*{") != std::string::npos && inValue != "*")
+	{
+		if (!Files::forEachGlobMatch(inValue, inSettings, [&outMap, &inMapping](const std::string& inPath) {
+				if (outMap.find(inPath) == outMap.end())
+					outMap.emplace(inPath, inMapping); // Note: no move
+			}))
+			return false;
+	}
+	else
+	{
+		if (outMap.find(inValue) == outMap.end())
+			outMap.emplace(inValue, std::move(inMapping));
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 // TODO: This doesn't quite fit here
 //
 bool Files::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
