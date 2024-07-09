@@ -18,7 +18,7 @@
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../chalet-example-sfml",
+			"cwd": "${workspaceFolder}/../chalet-example-sharedlib",
 			"preLaunchTask": "Build: Debug",
 			"stopOnEntry": false,
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
