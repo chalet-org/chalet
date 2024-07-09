@@ -185,6 +185,9 @@ bool IDistTarget::expandGlobPatternsInMap(IncludeMap& outMap, GlobMatch inSettin
 		if (!m_state.replaceVariablesInString(tempPath, this))
 			return false;
 
+		if (!mapping.empty() && !m_state.replaceVariablesInString(mapping, this))
+			return false;
+
 		tmpMap.emplace(tempPath, std::move(mapping));
 	}
 
