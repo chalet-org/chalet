@@ -317,8 +317,18 @@ void BundleTarget::addIncludes(StringList&& inList)
 void BundleTarget::addInclude(std::string&& inValue)
 {
 	Path::toUnix(inValue);
+
 	if (m_includes.find(inValue) == m_includes.end())
 		m_includes.emplace(inValue, std::string());
+}
+
+void BundleTarget::addInclude(const std::string& inKey, std::string&& inValue)
+{
+	std::string key = inKey;
+	Path::toUnix(key);
+
+	if (m_includes.find(key) == m_includes.end())
+		m_includes.emplace(key, std::move(inValue));
 }
 
 /*****************************************************************************/

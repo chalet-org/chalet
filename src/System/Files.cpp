@@ -573,6 +573,9 @@ bool Files::copyIfDoesNotExistWithoutPrintingWorkingDirectory(const std::string&
 
 	String::replaceAll(dep, cwd, "");
 
+	if (!Files::pathExists(inTo))
+		Files::makeDirectory(inTo);
+
 	if (!Files::copy(dep, inTo))
 	{
 		Diagnostic::warn("File '{}' could not be copied to: {}", filename, inTo);

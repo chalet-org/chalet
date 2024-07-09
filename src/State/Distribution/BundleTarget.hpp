@@ -47,6 +47,7 @@ struct BundleTarget final : public IDistTarget
 	const IncludeMap& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
+	void addInclude(const std::string& inKey, std::string&& inValue);
 
 	bool windowsIncludeRuntimeDlls() const noexcept;
 	void setWindowsIncludeRuntimeDlls(const bool inValue) noexcept;

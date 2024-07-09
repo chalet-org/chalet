@@ -154,7 +154,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
-	defs[Defs::DistributionBundleInclude] = makeArrayOrString(R"json({
+	defs[Defs::DistributionBundleInclude] = makeArrayStringOrObject(R"json({
 		"type": "string",
 		"description": "A list of files or folders to copy into the output directory of the bundle.\nIn MacOS, these will be placed into the `Resources` folder of the application bundle.",
 		"minLength": 1
@@ -348,7 +348,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": "zip"
 	})json"_ojson;
 
-	defs[Defs::DistributionArchiveInclude] = makeArrayOrString(R"json({
+	defs[Defs::DistributionArchiveInclude] = makeArrayStringOrObject(R"json({
 		"type": "string",
 		"description": "A list of files or folders to add to the archive, relative to the root distribution directory. Glob patterns are also accepted. A single string value of `*` will archive everything in the bundle directory.",
 		"minLength": 1
@@ -2284,6 +2284,44 @@ Json ChaletJsonSchema::makeArrayOrString(const Json inString, const bool inUniqu
 		ret[SKeys::Description] = inString.at(SKeys::Description);
 		ret[SKeys::OneOf][0].erase(SKeys::Description);
 		ret[SKeys::OneOf][1][SKeys::Items].erase(SKeys::Description);
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json ChaletJsonSchema::makeArrayStringOrObject(const Json inString, const bool inUniqueItems)
+{
+	Json ret = R"json({
+		"description": "",
+		"oneOf": [
+			{},
+			{
+				"type": "array",
+				"uniqueItems": true,
+				"minItems": 1,
+				"items": {}
+			},
+			{
+				"type": "object",
+				"uniqueItems": true,
+				"minItems": 1,
+				"patternProperties": {}
+			}
+		]
+	})json"_ojson;
+	ret[SKeys::OneOf][0] = inString;
+	ret[SKeys::OneOf][1][SKeys::UniqueItems] = inUniqueItems;
+	ret[SKeys::OneOf][1][SKeys::Items] = inString;
+
+	auto kPathProperty = R"regex(^[\w\-+./\\]{3,}$)regex";
+	ret[SKeys::OneOf][2][SKeys::PatternProperties][kPathProperty] = inString;
+	if (inString.contains(SKeys::Description))
+	{
+		ret[SKeys::Description] = inString.at(SKeys::Description);
+		ret[SKeys::OneOf][0].erase(SKeys::Description);
+		ret[SKeys::OneOf][1][SKeys::Items].erase(SKeys::Description);
+		ret[SKeys::OneOf][2][SKeys::PatternProperties][kPathProperty].erase(SKeys::Description);
 	}
 
 	return ret;

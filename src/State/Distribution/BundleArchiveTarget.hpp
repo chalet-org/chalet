@@ -22,6 +22,7 @@ struct BundleArchiveTarget final : public IDistTarget
 	const IncludeMap& includes() const noexcept;
 	void addIncludes(StringList&& inList);
 	void addInclude(std::string&& inValue);
+	void addInclude(const std::string& inKey, std::string&& inValue);
 
 	const std::string& macosNotarizationProfile() const noexcept;
 	void setMacosNotarizationProfile(std::string&& inValue);

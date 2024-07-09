@@ -11,6 +11,7 @@
 #include "System/Files.hpp"
 #include "Utility/GlobMatch.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -93,11 +94,19 @@ void BundleArchiveTarget::addIncludes(StringList&& inList)
 
 void BundleArchiveTarget::addInclude(std::string&& inValue)
 {
-	if (String::endsWith('/', inValue))
-		inValue.pop_back();
+	Path::toUnix(inValue);
 
 	if (m_includes.find(inValue) == m_includes.end())
 		m_includes.emplace(inValue, std::string());
+}
+
+void BundleArchiveTarget::addInclude(const std::string& inKey, std::string&& inValue)
+{
+	std::string key = inKey;
+	Path::toUnix(key);
+
+	if (m_includes.find(key) == m_includes.end())
+		m_includes.emplace(key, std::move(inValue));
 }
 
 /*****************************************************************************/

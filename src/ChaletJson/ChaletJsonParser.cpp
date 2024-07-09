@@ -1435,6 +1435,19 @@ bool ChaletJsonParser::parseDistributionArchive(BundleArchiveTarget& outTarget, 
 			else if (isInvalid(status))
 				return false;
 		}
+		else if (value.is_object())
+		{
+			if (String::equals("include", key))
+			{
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_string())
+					{
+						outTarget.addInclude(k, v.get<std::string>());
+					}
+				}
+			}
+		}
 	}
 
 	return true;
@@ -1448,18 +1461,19 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 		if (value.is_string())
 		{
-			if (String::equals("buildTargets", key))
-				outTarget.addBuildTarget(value.get<std::string>());
-			else if (String::equals("outputDescription", key))
-				outTarget.setOutputDescription(value.get<std::string>());
-			else if (String::equals("subdirectory", key))
-				outTarget.setSubdirectory(value.get<std::string>());
-			else if (String::equals("mainExecutable", key))
-				outTarget.setMainExecutable(value.get<std::string>());
-			else if (String::equals("include", key))
-				outTarget.addInclude(value.get<std::string>());
-			else if (String::equals("exclude", key))
-				outTarget.addExclude(value.get<std::string>());
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildTargets", status))
+				outTarget.addBuildTarget(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "subdirectory", status))
+				outTarget.setSubdirectory(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "mainExecutable", status))
+				outTarget.setMainExecutable(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "include", status))
+				outTarget.addInclude(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "exclude", status))
+				outTarget.addExclude(std::move(val));
 		}
 		else if (value.is_array())
 		{
@@ -1480,7 +1494,17 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 		}
 		else if (value.is_object())
 		{
-			if (String::equals("windows", key))
+			if (String::equals("include", key))
+			{
+				for (const auto& [k, v] : value.items())
+				{
+					if (v.is_string())
+					{
+						outTarget.addInclude(k, v.get<std::string>());
+					}
+				}
+			}
+			else if (String::equals("windows", key))
 			{
 				for (const auto& [k, v] : value.items())
 				{
