@@ -280,12 +280,23 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		for (auto& dep : detectedDependencies)
 		{
 #if defined(CHALET_MACOS)
-			if (String::endsWith(framework, dep) || String::endsWith(dylib, dep))
+			if (String::endsWith(framework, dep))
+				continue;
+
+			if (String::endsWith(dylib, dep))
 				addMapping(dep, frameworksPath);
 			else
 #endif
 				addMapping(dep, executablePath);
 		}
+
+#if defined(CHALET_MACOS)
+		for (auto& dep : detectedDependencies)
+		{
+			if (String::endsWith(framework, dep))
+				addMapping(dep, frameworksPath);
+		}
+#endif
 	}
 
 	for (auto& [path, mapping] : bundleIncludes)
