@@ -116,6 +116,9 @@ bool AppBundler::run(const DistTarget& inTarget)
 
 			if (!runBundleTarget(*bundler))
 				return false;
+
+			if (!bundler->bundleForPlatform())
+				return false;
 		}
 	}
 	else
@@ -206,16 +209,32 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	// Timer timer;
 
 	auto& cwd = inBundler.workingDirectoryWithTrailingPathSeparator();
-	std::map<std::string, std::string> dependenciesToCopy;
 
-	auto addMapping = [&dependenciesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string()) {
+	struct FileToCopy
+	{
+		std::string from;
+		std::string to;
+	};
+	std::vector<FileToCopy> filesToCopy; // Vector to retain the order
+
+	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string()) {
 		auto dep = Files::getCanonicalPath(path);
 		String::replaceAll(dep, cwd, "");
 
-		if (dependenciesToCopy.find(dep) == dependenciesToCopy.end())
-			dependenciesToCopy.emplace(dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping));
+		FileToCopy* found = nullptr;
+		for (auto& file : filesToCopy)
+		{
+			if (String::equals(file.from, path))
+			{
+				found = &file;
+				break;
+			}
+		}
+
+		if (found == nullptr)
+			filesToCopy.emplace_back(FileToCopy{ dep, mapping.empty() ? destPath : fmt::format("{}/{}", destPath, mapping) });
 		else if (!mapping.empty())
-			dependenciesToCopy[dep] = fmt::format("{}/{}", destPath, mapping);
+			found->to = fmt::format("{}/{}", destPath, mapping);
 	};
 
 #if defined(CHALET_MACOS)
@@ -286,13 +305,11 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 		}
 	}
 
-#if defined(CHALET_MSVC)
-	for (auto it = dependenciesToCopy.rbegin(); it != dependenciesToCopy.rend(); ++it)
-#else
-	for (auto it = dependenciesToCopy.begin(); it != dependenciesToCopy.end(); ++it)
-#endif
+	for (auto& file : filesToCopy)
 	{
-		auto&& [dep, destination] = *it;
+		const auto& dep = file.from;
+		const auto& destination = file.to;
+
 		if (!inBundler.copyIncludedPath(dep, destination))
 			continue;
 
@@ -318,9 +335,6 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 	if (!Files::forEachGlobMatch(resourcePath, bundle.excludes(), GlobMatch::FilesAndFolders, [](const std::string& inPath) {
 			Files::removeIfExists(inPath);
 		}))
-		return false;
-
-	if (!inBundler.bundleForPlatform())
 		return false;
 
 	return true;
