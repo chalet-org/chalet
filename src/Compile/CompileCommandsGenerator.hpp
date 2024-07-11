@@ -31,8 +31,8 @@ struct CompileCommandsGenerator
 	void addCompileCommand(const std::string& inFile, StringList&& inCommand);
 
 private:
-	const std::string& getSourceFile(const SourceFileGroup& inGroup) const;
-	StringList getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup) const;
+	std::string getSourceFile(const SourceFileGroup& inGroup, const std::string& inArch) const;
+	StringList getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup, const std::string& inArch) const;
 
 	const BuildState& m_state;
 

@@ -6,6 +6,7 @@
 #include "Compile/CompileCommandsGenerator.hpp"
 
 #include "Core/CommandLineInputs.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -45,9 +46,22 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 	inToolchain->setGenerateDependencies(false);
 	inToolchain->setForceActualPchPath(true);
 
+	std::string dummyArch;
 	for (auto& group : inOutputs.groups)
 	{
-		addCompileCommand(getSourceFile(*group), getCommand(inToolchain, *group));
+#if defined(CHALET_MACOS)
+		if (group->type == SourceType::CxxPrecompiledHeader && m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+		{
+			for (auto& arch : m_state.inputs.universalArches())
+			{
+				addCompileCommand(getSourceFile(*group, arch), getCommand(inToolchain, *group, arch));
+			}
+		}
+		else
+#endif
+		{
+			addCompileCommand(getSourceFile(*group, dummyArch), getCommand(inToolchain, *group, dummyArch));
+		}
 	}
 
 	inToolchain->setQuotedPaths(quotedPaths);
@@ -77,14 +91,31 @@ bool CompileCommandsGenerator::addCompileCommandsStubsFromState()
 	return true;
 }
 
-const std::string& CompileCommandsGenerator::getSourceFile(const SourceFileGroup& inGroup) const
+/*****************************************************************************/
+std::string CompileCommandsGenerator::getSourceFile(const SourceFileGroup& inGroup, const std::string& inArch) const
 {
 	if (inGroup.type == SourceType::CxxPrecompiledHeader)
 	{
 		if (!inGroup.otherFile.empty())
 			return inGroup.otherFile;
 		else
-			return inGroup.objectFile;
+		{
+#if !defined(CHALET_MACOS)
+			UNUSED(inArch);
+#endif
+#if defined(CHALET_MACOS)
+			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+			{
+				auto baseFolder = String::getPathFolder(inGroup.objectFile);
+				auto filename = String::getPathFilename(inGroup.objectFile);
+				return fmt::format("{}_{}/{}", baseFolder, inArch, filename);
+			}
+			else
+#endif
+			{
+				return inGroup.objectFile;
+			}
+		}
 	}
 	else
 	{
@@ -93,7 +124,7 @@ const std::string& CompileCommandsGenerator::getSourceFile(const SourceFileGroup
 }
 
 /*****************************************************************************/
-StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup) const
+StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, const SourceFileGroup& inGroup, const std::string& inArch) const
 {
 	const auto& source = inGroup.sourceFile;
 	const auto& object = inGroup.objectFile;
@@ -102,8 +133,21 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 
 	switch (inGroup.type)
 	{
-		case SourceType::CxxPrecompiledHeader:
-			return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, std::string());
+		case SourceType::CxxPrecompiledHeader: {
+#if defined(CHALET_MACOS)
+			if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
+			{
+				auto baseFolder = String::getPathFolder(object);
+				auto filename = String::getPathFilename(object);
+				auto outObject = fmt::format("{}_{}/{}", baseFolder, inArch, filename);
+				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dep, inArch);
+			}
+			else
+#endif
+			{
+				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, inArch);
+			}
+		}
 
 		case SourceType::C:
 		case SourceType::CPlusPlus:
@@ -231,5 +275,4 @@ bool CompileCommandsGenerator::fileExists() const
 
 	return Files::pathExists(outputCC) && Files::pathExists(buildCC);
 }
-
 }
