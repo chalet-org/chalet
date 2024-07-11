@@ -155,7 +155,7 @@ bool SettingsManager::runSettingsKeyQuery(Json& node)
 	Json* ptr = &node;
 
 	StringList subKeys = parseKey();
-	if (!subKeys.back().empty())
+	if (subKeys.empty() || !subKeys.back().empty())
 		subKeys.push_back(std::string()); // ensures object key w/o dot will get handled
 
 	std::string idxRaw;
