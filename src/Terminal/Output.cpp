@@ -8,6 +8,7 @@
 #include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
 #include "System/Files.hpp"
+#include "System/SignalHandler.hpp"
 #include "Terminal/Shell.hpp"
 #include "Terminal/Unicode.hpp"
 #include "Utility/Path.hpp"
@@ -34,6 +35,14 @@ static struct
 	i64 commandPromptVersion = -1;
 #endif
 } state;
+
+/*****************************************************************************/
+void signalHandler(i32)
+{
+	Output::lineBreak();
+	Output::lineBreak();
+	std::exit(1);
+}
 
 /*****************************************************************************/
 constexpr char getEscapeChar()
@@ -192,8 +201,13 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 	std::cout.write(withNote.data(), withNote.size());
 
+	SignalHandler::add(SIGINT, signalHandler);
+
 	std::string input;
 	std::getline(std::cin, input); // get up to first line break (if applicable)
+
+	SignalHandler::remove(SIGINT, signalHandler);
+
 	if (std::cin.fail() || std::cin.eof())
 	{
 		std::cin.clear();
