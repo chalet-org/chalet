@@ -5,7 +5,6 @@
 
 #include "System/Diagnostic.hpp"
 
-#include <csignal>
 #include <exception>
 
 #include "System/SignalHandler.hpp"

@@ -5,7 +5,6 @@
 
 #include "System/SignalHandler.hpp"
 
-#include <csignal>
 #include <stdio.h>
 #include <stdlib.h>
 

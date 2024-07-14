@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <csignal>
+
 namespace chalet
 {
 namespace SignalHandler

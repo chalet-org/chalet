@@ -7,8 +7,6 @@
 
 #if !CHALET_ALT_COMMAND_POOL
 
-	#include <csignal>
-
 	#include "Process/Environment.hpp"
 	#include "Process/SubProcessController.hpp"
 	#include "System/Files.hpp"
