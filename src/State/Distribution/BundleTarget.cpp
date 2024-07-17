@@ -64,6 +64,12 @@ bool BundleTarget::initialize()
 		return false;
 	}
 
+#if defined(CHALET_WIN32)
+	List::addIfDoesNotExist(m_excludes, "Thumbs.db");
+#elif defined(CHALET_MACOS)
+	List::addIfDoesNotExist(m_excludes, ".DS_Store");
+#endif
+
 	if (!replaceVariablesInPathList(m_excludes))
 		return false;
 
