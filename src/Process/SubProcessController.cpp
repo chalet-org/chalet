@@ -5,7 +5,6 @@
 
 #include "Process/SubProcessController.hpp"
 
-#include <array>
 #include <mutex>
 
 #include "Process/ProcessPipe.hpp"

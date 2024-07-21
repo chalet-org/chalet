@@ -10,7 +10,6 @@
 	#include <sys/wait.h>
 	#include <unistd.h>
 	#include <string.h>
-	#include <array>
 	#include <signal.h>
 #endif
 

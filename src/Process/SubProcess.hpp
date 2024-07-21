@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <array>
-
 #include "Process/ProcessOptions.hpp"
 #include "Process/ProcessPipe.hpp"
 #include "Process/ProcessTypes.hpp"

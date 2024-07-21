@@ -20,11 +20,9 @@
 	#include <unistd.h>
 	#include <sys/proc_info.h>
 	#include <libproc.h>
-	#include <array>
 #else
 	#include <sys/types.h>
 	#include <unistd.h>
-	#include <array>
 #endif
 
 namespace chalet

@@ -5,7 +5,6 @@
 
 #include "System/Files.hpp"
 
-#include <array>
 #include <chrono>
 #include <regex>
 #include <sys/stat.h>
