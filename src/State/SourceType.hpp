@@ -16,6 +16,8 @@ enum class SourceType : u16
 	ObjectiveC,
 	ObjectiveCPlusPlus,
 	WindowsResource,
+	//
+	Count,
 };
 
 using SourceTypeList = std::vector<SourceType>;

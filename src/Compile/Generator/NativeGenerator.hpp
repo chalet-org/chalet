@@ -52,7 +52,7 @@ private:
 
 	std::unordered_set<std::string> m_fileCache;
 
-	std::unordered_map<SourceType, bool> m_commandsChanged;
+	std::array<bool, static_cast<size_t>(SourceType::Count)> m_commandsChanged;
 	bool m_targetCommandChanged = false;
 
 	bool m_pchChanged = false;

@@ -171,7 +171,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 		auto dependency = m_state.environment->getDependencyFile(source);
 		const auto objDir = String::getPathFilename(m_state.paths.objDir());
 
-		bool pchCommandChanged = m_commandsChanged[SourceType::CxxPrecompiledHeader];
+		bool pchCommandChanged = m_commandsChanged[static_cast<size_t>(SourceType::CxxPrecompiledHeader)];
 
 #if defined(CHALET_MACOS)
 		if (m_state.info.targetArchitecture() == Arch::Cpu::UniversalMacOS)
@@ -182,12 +182,12 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 			for (auto& arch : m_state.inputs.universalArches())
 			{
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, arch, filename);
-				auto intermediateSource = String::getPathFolderBaseName(outObject);
 
 				bool pchChanged = pchCommandChanged || m_compileAdapter.fileChangedOrDependentChanged(source, outObject, dependency);
 				m_pchChanged |= pchChanged;
 				if (pchChanged)
 				{
+					auto intermediateSource = String::getPathFolderBaseName(outObject);
 					auto toCache = fmt::format("{}/{}", objDir, intermediateSource);
 					if (m_fileCache.find(toCache) == m_fileCache.end())
 					{
@@ -268,7 +268,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceChanged = m_commandsChanged[group->type] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[static_cast<size_t>(group->type)] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -293,7 +293,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceChanged = m_commandsChanged[group->type] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[static_cast<size_t>(group->type)] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -363,7 +363,7 @@ StringList NativeGenerator::getRcCompile(const std::string& source, const std::s
 /*****************************************************************************/
 void NativeGenerator::checkCommandsForChanges()
 {
-	m_commandsChanged.clear();
+	m_commandsChanged.fill(false);
 	m_targetCommandChanged = false;
 
 	auto& name = m_project->name();
@@ -402,7 +402,7 @@ void NativeGenerator::checkCommandsForChanges()
 				options = m_toolchain->compilerCxx->getCommand("cmd.cxx", "cmd.cxx.o", "cmd.cxx.d", derivative);
 
 			auto hash = Hash::string(String::join(options));
-			m_commandsChanged[type] = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
+			m_commandsChanged[static_cast<size_t>(type)] = sourceCache.dataCacheValueChanged(cxxHashKey, hash);
 		}
 
 		auto targetHashKey = Hash::string(fmt::format("{}_target", name));
