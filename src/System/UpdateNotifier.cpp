@@ -54,7 +54,9 @@ void UpdateNotifier::checkForUpdates()
 
 		std::vector<Version> versions;
 		std::istringstream input(output);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			if (line.empty())
 				continue;

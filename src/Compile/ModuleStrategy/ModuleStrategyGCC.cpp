@@ -108,7 +108,9 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 		std::string moduleName;
 
 		std::ifstream input(source);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			if (line.empty())
 				continue;

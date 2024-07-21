@@ -480,7 +480,9 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		}
 
 		std::ifstream input(infoPropertyList);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			infoPropertyListContent += line + "\n";
 		}
@@ -538,7 +540,9 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 		}
 
 		std::ifstream input(entitlements);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			entitlementsContent += line + "\n";
 		}

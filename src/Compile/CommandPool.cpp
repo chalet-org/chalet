@@ -103,7 +103,9 @@ bool executeCommandMsvc(size_t inIndex, StringList inCommand, std::string source
 		std::string dependencies;
 
 		std::istringstream input(output);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			if (String::startsWith(state->dependencySearch, line))
 			{
@@ -360,12 +362,12 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	if (totalCompiles <= 1 || inJob.threads == 1)
 	{
 		size_t index = 0;
-		for (auto& it : inJob.list)
+		for (auto& cmd : inJob.list)
 		{
-			if (it.command.empty())
+			if (cmd.command.empty())
 				continue;
 
-			if (!printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
+			if (!printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(cmd.command) : cmd.output)),
 					totalCompiles))
 				&& haltOnError)
 				break;
@@ -373,13 +375,13 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	#if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
-				if (!executeCommandMsvc(index, it.command, String::getPathFilename(it.reference), it.dependency) && haltOnError)
+				if (!executeCommandMsvc(index, cmd.command, String::getPathFilename(cmd.reference), cmd.dependency) && haltOnError)
 					break;
 			}
 			else
 	#endif
 			{
-				if (!executeCommand(index, it.command) && haltOnError)
+				if (!executeCommand(index, cmd.command) && haltOnError)
 					break;
 			}
 
@@ -390,25 +392,25 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	{
 		size_t index = 0;
 		std::vector<std::future<bool>> threadResults;
-		for (auto& it : inJob.list)
+		for (auto& cmd : inJob.list)
 		{
-			if (it.command.empty())
+			if (cmd.command.empty())
 				continue;
 
 			threadResults.emplace_back(m_threadPool.enqueue(
 				printCommand,
-				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(it.command) : it.output)),
+				getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(cmd.command) : cmd.output)),
 					totalCompiles)));
 
 	#if defined(CHALET_WIN32)
 			if (msvcCommand)
 			{
-				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, index, it.command, String::getPathFilename(it.reference), it.dependency));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommandMsvc, index, cmd.command, String::getPathFilename(cmd.reference), cmd.dependency));
 			}
 			else
 	#endif
 			{
-				threadResults.emplace_back(m_threadPool.enqueue(executeCommand, index, it.command));
+				threadResults.emplace_back(m_threadPool.enqueue(executeCommand, index, cmd.command));
 			}
 
 			++index;
@@ -449,11 +451,11 @@ bool CommandPool::run(const Job& inJob, const Settings& inSettings)
 	if (state->errorCode != CommandPoolErrorCode::None)
 	{
 		size_t index = 0;
-		for (auto& it : inJob.list)
+		for (auto& cmd : inJob.list)
 		{
 			if (List::contains(state->erroredOn, index))
 			{
-				m_failures.push_back(it.reference);
+				m_failures.push_back(cmd.reference);
 			}
 
 			++index;

@@ -198,16 +198,16 @@ bool CommandPoolAlt::run(const Job& inJob, const Settings& inSettings)
 				{
 					process = std::make_unique<RunningProcess>();
 
-					auto& job = inJob.list.at(index);
-					printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(job.command) : job.output)), totalCompiles));
+					auto& cmd = inJob.list.at(index);
+					printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(cmd.command) : cmd.output)), totalCompiles));
 
-					process->command = &job.command;
+					process->command = &cmd.command;
 					process->index = index;
 	#if defined(CHALET_WIN32)
 					if (msvcCommand)
 					{
-						process->reference = &job.reference;
-						process->dependencyFile = &job.dependency;
+						process->reference = &cmd.reference;
+						process->dependencyFile = &cmd.dependency;
 						process->filterMsvc = true;
 					}
 	#endif
@@ -259,11 +259,11 @@ bool CommandPoolAlt::run(const Job& inJob, const Settings& inSettings)
 		}
 
 		size_t index = 0;
-		for (auto& it : inJob.list)
+		for (auto& cmd : inJob.list)
 		{
 			if (List::contains(state->erroredOn, index))
 			{
-				m_failures.push_back(it.reference);
+				m_failures.push_back(cmd.reference);
 			}
 
 			++index;
@@ -450,7 +450,9 @@ void CommandPoolAlt::RunningProcess::printMsvcOutput()
 		std::string dependencies;
 
 		std::istringstream input(output);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			if (String::startsWith(state->dependencySearch, line))
 			{

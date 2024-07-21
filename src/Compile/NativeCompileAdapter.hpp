@@ -31,9 +31,11 @@ struct NativeCompileAdapter
 	bool anyDependenciesChanged(const std::string& dependency);
 
 	CommandPool::Settings getCommandPoolSettings() const;
-	CommandPool::CmdList getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
+	CommandPool::CmdList getLinkCommandList(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
 
 private:
+	CommandPool::Cmd getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
+
 	const BuildState& m_state;
 	SourceCache& m_sourceCache;
 

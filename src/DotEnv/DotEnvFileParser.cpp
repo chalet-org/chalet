@@ -53,7 +53,9 @@ bool DotEnvFileParser::readVariablesFromInputs()
 bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 {
 	std::ifstream input(inFile);
-	for (std::string line; std::getline(input, line);)
+	std::string line;
+	auto lineEnd = input.widen('\n');
+	while (std::getline(input, line, lineEnd))
 	{
 		if (line.empty() || String::startsWith('#', line))
 			continue;

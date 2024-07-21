@@ -165,7 +165,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 		{
 			auto job = std::make_unique<CommandPool::Job>();
-			job->list = m_compileAdapter.getLinkCommand(*m_project, *toolchain, *outputs);
+			job->list = m_compileAdapter.getLinkCommandList(*m_project, *toolchain, *outputs);
 			if (!job->list.empty())
 				buildJobs.emplace_back(std::move(job));
 		}
@@ -548,8 +548,8 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 		m_sourcesChanged |= sourceChanged;
 		if (sourceChanged)
 		{
-			CommandPool::Cmd out;
-			out.output = getBuildOutputForFile(*group, isObject);
+			CommandPool::Cmd cmd;
+			cmd.output = getBuildOutputForFile(*group, isObject);
 
 			std::string inputFile;
 			if (systemHeaderUnit && isGcc)
@@ -561,18 +561,18 @@ CommandPool::CmdList IModuleStrategy::getModuleCommands(const SourceFileGroupLis
 			{
 				const auto& module = inPayload.at(source);
 
-				out.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type);
+				cmd.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, module.moduleTranslations, module.headerUnitTranslations, type);
 			}
 			else
 			{
-				out.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, blankList, blankList, type);
+				cmd.command = toolchain->compilerCxx->getModuleCommand(inputFile, target, dependency, bmiFile, blankList, blankList, type);
 			}
-			out.reference = source;
+			cmd.reference = source;
 
-			if (out.command.empty())
+			if (cmd.command.empty())
 				continue;
 
-			ret.emplace_back(std::move(out));
+			ret.emplace_back(std::move(cmd));
 		}
 
 		setCompilerCache(source, sourceChanged);
@@ -642,13 +642,13 @@ void IModuleStrategy::addOtherBuildCommands(CommandPool::CmdList& outList)
 			m_sourcesChanged |= sourceChanged;
 			if (sourceChanged)
 			{
-				CommandPool::Cmd out;
-				out.output = source;
-				out.command = toolchain->compilerWindowsResource->getCommand(source, target, dependency);
+				CommandPool::Cmd cmd;
+				cmd.output = source;
+				cmd.command = toolchain->compilerWindowsResource->getCommand(source, target, dependency);
 
-				out.reference = String::getPathFilename(out.output);
+				cmd.reference = String::getPathFilename(cmd.output);
 
-				outList.emplace_back(std::move(out));
+				outList.emplace_back(std::move(cmd));
 			}
 			setCompilerCache(source, sourceChanged);
 		}

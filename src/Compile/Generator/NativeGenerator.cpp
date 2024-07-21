@@ -22,6 +22,7 @@
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
+#include "Utility/Timer.hpp"
 
 namespace chalet
 {
@@ -88,7 +89,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			Files::removeIfExists(outputs->target);
 
 			auto target = std::make_unique<CommandPool::Job>();
-			target->list = m_compileAdapter.getLinkCommand(*m_project, *m_toolchain, *outputs);
+			target->list = m_compileAdapter.getLinkCommandList(*m_project, *m_toolchain, *outputs);
 			if (!target->list.empty())
 			{
 				jobs.emplace_back(std::move(target));
@@ -168,7 +169,7 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 	{
 		const auto& source = m_project->precompiledHeader();
 		auto dependency = m_state.environment->getDependencyFile(source);
-		const auto& objDir = m_state.paths.objDir();
+		const auto objDir = String::getPathFilename(m_state.paths.objDir());
 
 		bool pchCommandChanged = m_commandsChanged[SourceType::CxxPrecompiledHeader];
 
@@ -194,11 +195,11 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 
 						Files::removeIfExists(outObject);
 
-						CommandPool::Cmd out;
-						out.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
-						out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch);
+						CommandPool::Cmd cmd;
+						cmd.output = fmt::format("{} ({})", m_state.paths.getBuildOutputPath(source), arch);
+						cmd.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dependency, arch);
 
-						ret.emplace_back(std::move(out));
+						ret.emplace_back(std::move(cmd));
 					}
 				}
 			}
@@ -217,20 +218,20 @@ CommandPool::CmdList NativeGenerator::getPchCommands(const std::string& pchTarge
 
 					Files::removeIfExists(pchTarget);
 
-					CommandPool::Cmd out;
-					out.output = m_state.paths.getBuildOutputPath(source);
-					out.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, dependency, std::string());
+					CommandPool::Cmd cmd;
+					cmd.output = m_state.paths.getBuildOutputPath(source);
+					cmd.command = m_toolchain->compilerCxx->getPrecompiledHeaderCommand(source, pchTarget, dependency, std::string());
 
 					auto pchSource = m_state.environment->getPrecompiledHeaderSourceFile(*m_project);
 
-					out.reference = String::getPathFilename(pchSource);
+					cmd.reference = String::getPathFilename(pchSource);
 
 #if defined(CHALET_WIN32)
 					if (m_state.environment->isMsvc())
-						out.dependency = std::move(dependency);
+						cmd.dependency = std::move(dependency);
 #endif
 
-					ret.emplace_back(std::move(out));
+					ret.emplace_back(std::move(cmd));
 				}
 			}
 		}
@@ -248,7 +249,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 
 	CommandPool::CmdList ret;
 
-	const auto& objDir = m_state.paths.objDir();
+	const auto objDir = String::getPathFilename(m_state.paths.objDir());
 
 	const bool objectiveCxx = m_project->objectiveCxx();
 
@@ -267,8 +268,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 		switch (group->type)
 		{
 			case SourceType::WindowsResource: {
-				bool sourceCmdChanged = m_commandsChanged[group->type];
-				bool sourceChanged = sourceCmdChanged || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[group->type] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged)
 				{
@@ -279,12 +279,12 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 
 						Files::removeIfExists(target);
 
-						CommandPool::Cmd out;
-						out.output = m_state.paths.getBuildOutputPath(source);
-						out.command = getRcCompile(source, target);
-						out.reference = source;
+						CommandPool::Cmd cmd;
+						cmd.output = m_state.paths.getBuildOutputPath(source);
+						cmd.command = getRcCompile(source, target);
+						cmd.reference = source;
 
-						ret.emplace_back(std::move(out));
+						ret.emplace_back(std::move(cmd));
 					}
 				}
 				break;
@@ -293,8 +293,7 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 			case SourceType::CPlusPlus:
 			case SourceType::ObjectiveC:
 			case SourceType::ObjectiveCPlusPlus: {
-				bool sourceCmdChanged = m_commandsChanged[group->type];
-				bool sourceChanged = sourceCmdChanged || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
+				bool sourceChanged = m_commandsChanged[group->type] || m_compileAdapter.fileChangedOrDependentChanged(source, target, dependency);
 				m_sourcesChanged |= sourceChanged;
 				if (sourceChanged || m_pchChanged)
 				{
@@ -305,16 +304,16 @@ CommandPool::CmdList NativeGenerator::getCompileCommands(const SourceFileGroupLi
 
 						Files::removeIfExists(target);
 
-						CommandPool::Cmd out;
-						out.output = m_state.paths.getBuildOutputPath(source);
-						out.command = getCxxCompile(source, target, group->type);
-						out.reference = source;
+						CommandPool::Cmd cmd;
+						cmd.output = m_state.paths.getBuildOutputPath(source);
+						cmd.command = getCxxCompile(source, target, group->type);
+						cmd.reference = source;
 
 #if defined(CHALET_WIN32)
 						if (m_state.environment->isMsvc())
-							out.dependency = m_state.environment->getDependencyFile(source);
+							cmd.dependency = m_state.environment->getDependencyFile(source);
 #endif
-						ret.emplace_back(std::move(out));
+						ret.emplace_back(std::move(cmd));
 					}
 				}
 				break;

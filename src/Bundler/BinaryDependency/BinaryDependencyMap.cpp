@@ -310,10 +310,11 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 #endif
 		std::string targetDeps = Process::runOutput(cmd);
 
-		std::string line;
-		std::istringstream stream(targetDeps);
+		std::istringstream input(targetDeps);
 
-		while (std::getline(stream, line))
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			size_t beg = 0;
 

@@ -66,7 +66,8 @@ bool JsonComments::printLinesWithError(std::basic_istream<char>& inContents, con
 	const auto& colorReset = Output::getAnsiStyle(Output::theme().reset);
 
 	i32 i = 0;
-	for (std::string line; std::getline(inContents, line); ++i)
+	auto lineEnd = inContents.widen('\n');
+	for (std::string line; std::getline(inContents, line, lineEnd); ++i)
 	{
 		if (i >= lineNo - 4 && i <= lineNo + 2)
 		{

@@ -221,7 +221,9 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 		std::string deltaVars((std::istreambuf_iterator<char>(afterVars)), std::istreambuf_iterator<char>());
 
 		std::ifstream beforeVars(inBeforeFile);
-		for (std::string line; std::getline(beforeVars, line);)
+		std::string line;
+		auto lineEnd = beforeVars.widen('\n');
+		while (std::getline(beforeVars, line, lineEnd))
 		{
 			String::replaceAll(deltaVars, line, "");
 		}
@@ -238,7 +240,9 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 	{
 		std::string outContents;
 		std::ifstream input(inDeltaFile);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			if (!line.empty())
 			{
@@ -256,7 +260,9 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 void Environment::readEnvFileToDictionary(const std::string& inFile, Dictionary<std::string>& outVariables)
 {
 	std::ifstream input(inFile);
-	for (std::string line; std::getline(input, line);)
+	std::string line;
+	auto lineEnd = input.widen('\n');
+	while (std::getline(input, line, lineEnd))
 	{
 		auto splitVar = String::split(line, '=');
 		if (splitVar.size() == 2 && splitVar.front().size() > 0 && splitVar.back().size() > 0)

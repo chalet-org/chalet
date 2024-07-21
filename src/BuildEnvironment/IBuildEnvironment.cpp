@@ -298,7 +298,9 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 	else
 	{
 		std::ifstream input(flagsFile);
-		for (std::string line; std::getline(input, line);)
+		std::string line;
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
 			m_supportedFlags[std::move(line)] = true;
 		}

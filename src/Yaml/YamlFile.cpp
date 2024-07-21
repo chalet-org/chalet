@@ -88,7 +88,9 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 	size_t indent = 0;
 	size_t lastIndent = 0;
 
-	for (std::string line; std::getline(stream, line);)
+	std::string line;
+	auto lineEnd = stream.widen('\n');
+	while (std::getline(stream, line, lineEnd))
 	{
 		if (line.empty())
 			continue;

@@ -121,22 +121,21 @@ bool NativeCompileAdapter::fileChangedOrDependentChanged(const std::string& sour
 	if (result)
 		return true;
 
-	return anyDependenciesChanged(dependency);
+	return !dependency.empty() && anyDependenciesChanged(dependency);
 }
 
 /*****************************************************************************/
 bool NativeCompileAdapter::anyDependenciesChanged(const std::string& dependency)
 {
 	// Read through all the dependencies
-	if (!dependency.empty() && Files::pathExists(dependency))
+	if (Files::pathExists(dependency))
 	{
+		std::string line;
 		std::ifstream input(dependency);
-		for (std::string line; std::getline(input, line);)
+		auto lineEnd = input.widen('\n');
+		while (std::getline(input, line, lineEnd))
 		{
-			if (line.empty())
-				continue;
-
-			if (line.back() != ':')
+			if (line.empty() || line.back() != ':')
 				continue;
 
 			line.pop_back();
@@ -160,6 +159,7 @@ bool NativeCompileAdapter::anyDependenciesChanged(const std::string& dependency)
 CommandPool::Settings NativeCompileAdapter::getCommandPoolSettings() const
 {
 	CommandPool::Settings settings;
+
 	settings.color = Output::theme().build;
 	settings.msvcCommand = m_state.environment->isMsvc();
 	settings.keepGoing = m_state.info.keepGoing();
@@ -170,21 +170,22 @@ CommandPool::Settings NativeCompileAdapter::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-CommandPool::CmdList NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
 {
 	CommandPool::CmdList ret;
-
-	{
-		CommandPool::Cmd out;
-		out.command = inToolchain.getOutputTargetCommand(inOutputs.target, inOutputs.objectListLinker);
-
-		auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
-		out.output = fmt::format("{} {}", label, inOutputs.target);
-
-		ret.emplace_back(std::move(out));
-	}
-
+	ret.emplace_back(getLinkCommand(inProject, inToolchain, inOutputs));
 	return ret;
 }
 
+/*****************************************************************************/
+CommandPool::Cmd NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+{
+	CommandPool::Cmd cmd;
+	cmd.command = inToolchain.getOutputTargetCommand(inOutputs.target, inOutputs.objectListLinker);
+
+	auto label = inProject.isStaticLibrary() ? "Archiving" : "Linking";
+	cmd.output = fmt::format("{} {}", label, inOutputs.target);
+
+	return cmd;
+}
 }
