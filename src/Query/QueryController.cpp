@@ -452,21 +452,34 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		}
 		else
 		{
+			// TODO: this is hacky. Would rather do this differently
+			auto year = ::atoi(inToolchain.substr(3, 4).c_str());
+			bool supportsArm = year == 0 || year >= 2019;
+
 			// Default gnu-style
 			ret.emplace_back("x86_64");
 			ret.emplace_back("i686");
-			ret.emplace_back("arm64");
-			ret.emplace_back("arm");
+			if (supportsArm)
+			{
+				ret.emplace_back("arm64");
+				ret.emplace_back("arm");
+			}
 			// x64 host arches
 			ret.emplace_back("x64_x64");
 			ret.emplace_back("x64_x86");
-			ret.emplace_back("x64_arm64");
-			ret.emplace_back("x64_arm");
+			if (supportsArm)
+			{
+				ret.emplace_back("x64_arm64");
+				ret.emplace_back("x64_arm");
+			}
 			//
 			ret.emplace_back("x86_x86");
 			ret.emplace_back("x86_x64");
-			ret.emplace_back("x86_arm64");
-			ret.emplace_back("x86_arm");
+			if (supportsArm)
+			{
+				ret.emplace_back("x86_arm64");
+				ret.emplace_back("x86_arm");
+			}
 			// aliases
 			ret.emplace_back("x64");
 			ret.emplace_back("x86");
