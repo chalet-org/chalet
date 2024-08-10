@@ -50,7 +50,8 @@ AppBundler::~AppBundler() = default;
 /*****************************************************************************/
 bool AppBundler::run(const DistTarget& inTarget)
 {
-	if (!inTarget->isArchive() && !isTargetNameValid(*inTarget))
+	auto targetName = inTarget->name();
+	if (!isTargetNameValid(*inTarget, targetName))
 		return false;
 
 	Timer timer;
@@ -150,7 +151,7 @@ bool AppBundler::run(const DistTarget& inTarget)
 		}
 	}
 
-	Output::msgTargetUpToDate(inTarget->name(), &timer);
+	Output::msgTargetUpToDate(targetName, &timer);
 	Output::lineBreak();
 
 	return true;
@@ -611,28 +612,19 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
 }
 
 /*****************************************************************************/
-bool AppBundler::isTargetNameValid(const IDistTarget& inTarget) const
-{
-	if (String::contains(StringList{ "$", "{", "}" }, inTarget.name()))
-	{
-		Diagnostic::error("Variable(s) not allowed in target '{}' of its type.", inTarget.name());
-		return false;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
 bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const
 {
-	auto buildFolder = String::getPathFolder(m_state.paths.buildOutputDir());
-	String::replaceAll(outName, "${targetTriple}", m_state.info.targetArchitectureTriple());
-	String::replaceAll(outName, "${toolchainName}", m_state.inputs.toolchainPreferenceName());
-	String::replaceAll(outName, "${configuration}", m_state.configuration.name());
-	String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
-	String::replaceAll(outName, "${buildDir}", buildFolder);
+	if (outName.find_first_of("${}") != std::string::npos)
+	{
+		auto buildFolder = String::getPathFolder(m_state.paths.buildOutputDir());
+		String::replaceAll(outName, "${targetTriple}", m_state.info.targetArchitectureTriple());
+		String::replaceAll(outName, "${toolchainName}", m_state.inputs.toolchainPreferenceName());
+		String::replaceAll(outName, "${configuration}", m_state.configuration.name());
+		String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
+		String::replaceAll(outName, "${buildDir}", buildFolder);
+	}
 
-	if (String::contains(StringList{ "$", "{", "}" }, outName))
+	if (outName.find_first_of("${}") != std::string::npos)
 	{
 		Diagnostic::error("Invalid variable(s) found in target '{}'", inTarget.name());
 		return false;
