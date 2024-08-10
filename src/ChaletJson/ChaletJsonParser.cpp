@@ -108,6 +108,8 @@ bool ChaletJsonParser::serialize()
 
 		if (hasRunTargetsFromInput)
 		{
+			// Update the inputs instance in central state
+			centralState.inputs().setRunArguments(*m_state.inputs.runArguments());
 			centralState.setRunArguments(runTarget, StringList(*m_state.inputs.runArguments()));
 		}
 	}
