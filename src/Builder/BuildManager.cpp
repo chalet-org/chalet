@@ -88,7 +88,7 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 	for (auto& target : m_state.targets)
 	{
 		auto& targetName = target->name();
-		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
+		if (!addAllTargets && !List::contains(requiredTargets, targetName))
 			continue;
 
 		target->setWillBuild(true);

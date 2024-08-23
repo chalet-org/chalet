@@ -215,6 +215,9 @@ const CentralState& BuildState::getCentralState() const
 }
 
 /*****************************************************************************/
+// TODO: Rework this when batch builds are tackled - should get this once per build state,
+//   and as optimized as possible
+//
 void BuildState::getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const
 {
 	StringList dependsOn;
@@ -235,27 +238,24 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 		}
 
 		bool isSources = target->isSources();
-		bool isTarget = String::equals(inTargetName, target->name());
-		if (isTarget)
+		if (isSources)
 		{
-			if (isSources)
+			auto& project = static_cast<const SourceTarget&>(*target);
+			for (auto& link : project.projectSharedLinks())
 			{
-				auto& project = static_cast<const SourceTarget&>(*target);
-				for (auto& link : project.projectSharedLinks())
-				{
-					if (List::addIfDoesNotExist(outList, link))
-						getTargetDependencies(outList, link, true);
-				}
-
-				for (auto& link : project.projectStaticLinks())
-				{
-					if (List::addIfDoesNotExist(outList, link))
-						getTargetDependencies(outList, link, true);
-				}
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(outList, link, true);
 			}
 
-			break;
+			for (auto& link : project.projectStaticLinks())
+			{
+				if (List::addIfDoesNotExist(outList, link))
+					getTargetDependencies(outList, link, true);
+			}
 		}
+
+		if (String::equals(inTargetName, target->name()))
+			break;
 
 		if (!isSources && !inWithSelf)
 		{
