@@ -282,6 +282,9 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 						outList.emplace_back(target->name());
 				}
 			}
+
+			if (String::equals(inTargetName, target->name()))
+				break;
 		}
 	}
 

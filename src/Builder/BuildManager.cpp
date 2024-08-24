@@ -85,14 +85,25 @@ void BuildManager::populateBuildTargets(const CommandRoute& inRoute)
 		}
 	}
 
+	std::string lastTargetName;
+	if (!addAllTargets)
+	{
+		auto lastTarget = m_state.getFirstValidRunTarget();
+		if (lastTarget != nullptr)
+			lastTargetName = lastTarget->name();
+	}
+
 	for (auto& target : m_state.targets)
 	{
 		auto& targetName = target->name();
-		if (!addAllTargets && !List::contains(requiredTargets, targetName))
+		if (!addAllTargets && target->isSources() && !List::contains(requiredTargets, targetName))
 			continue;
 
 		target->setWillBuild(true);
 		m_buildTargets.emplace_back(target.get());
+
+		if (!lastTargetName.empty() && String::equals(lastTargetName, targetName))
+			break;
 	}
 }
 
