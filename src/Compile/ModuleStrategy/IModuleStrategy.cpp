@@ -186,7 +186,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 			return onFailure();
 		}
 
-		Output::lineBreak();
+		// Output::lineBreak();
 	}
 
 	// Build in groups after dependencies / order have been resolved
