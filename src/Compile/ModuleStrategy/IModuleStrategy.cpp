@@ -67,6 +67,8 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 /*****************************************************************************/
 bool IModuleStrategy::initialize()
 {
+	m_toolchainType = m_state.environment->type();
+
 	const auto& compiler = m_state.toolchain.compilerCpp().path;
 	m_systemHeaderDirectories = m_state.environment->getSystemIncludeDirectories(compiler);
 
@@ -215,7 +217,6 @@ bool IModuleStrategy::addSystemModules()
 			StringList sysModList;
 			for (auto& module : systemModules)
 			{
-
 				sysModList.emplace_back(String::getPathBaseName(module->source));
 			}
 
@@ -334,8 +335,7 @@ bool IModuleStrategy::addAllHeaderUnits()
 			}
 
 			auto ifcFile = m_state.environment->getModuleBinaryInterfaceFile(file);
-
-			List::addIfDoesNotExist(m_modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", headerUnitName, ifcFile));
+			List::addIfDoesNotExist(m_modulePayload[module.source].headerUnitTranslations, fmt::format("{}={}", headerUnitName, Files::getAbsolutePath(ifcFile)));
 
 			if (List::contains(addedHeaderUnits, header))
 				continue;
@@ -675,7 +675,7 @@ bool IModuleStrategy::addModuleRecursively(ModuleLookup& outModule, const Module
 			ifcFile = m_state.environment->getModuleBinaryInterfaceFile(otherModule.source);
 		}
 
-		List::addIfDoesNotExist(m_modulePayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, ifcFile));
+		List::addIfDoesNotExist(m_modulePayload[outModule.source].moduleTranslations, fmt::format("{}={}", imported, Files::getAbsolutePath(ifcFile)));
 
 		for (auto& header : otherModule.importedHeaderUnits)
 		{

@@ -128,6 +128,22 @@ bool copyDirectory(const fs::path& source, const fs::path& dest, fs::copy_option
 
 	return true;
 }
+
+inline std::string getMessage(const std::error_code& ec)
+{
+	if (ec)
+	{
+		auto message = ec.message();
+		if (message.back() == '.')
+			message.pop_back();
+
+		return message;
+	}
+	else
+	{
+		return "Unknown error";
+	}
+}
 }
 
 /*****************************************************************************/
@@ -344,7 +360,10 @@ bool Files::makeDirectory(const std::string& inPath)
 		return false;
 
 	if (error)
-		Diagnostic::error(error.message());
+	{
+		Diagnostic::error("{}: {}", getMessage(error), inPath);
+		return false;
+	}
 
 	return !error;
 }
@@ -352,34 +371,40 @@ bool Files::makeDirectory(const std::string& inPath)
 /*****************************************************************************/
 bool Files::makeDirectories(const StringList& inPaths)
 {
-	bool result = true;
 	for (auto& path : inPaths)
 	{
 		if (Files::pathExists(path))
 			continue;
 
 		std::error_code error;
-		result &= fs::create_directories(path, error);
-
+		bool result = fs::create_directories(path, error);
+		UNUSED(result);
 		if (error)
-			Diagnostic::error(error.message());
+		{
+			Diagnostic::error("{}: {}", getMessage(error), path);
+			return false;
+		}
 	}
 
-	return result;
+	return true;
 }
 
 /*****************************************************************************/
-bool Files::remove(const std::string& inPath)
+bool Files::remove(const std::string& inPath, const bool inShowError)
 {
 	if (Output::showCommands())
 		Output::printCommand(fmt::format("remove path: {}", inPath));
 
 	std::error_code error;
 	bool result = fs::remove(inPath, error);
-	if (error)
-		Diagnostic::error(error.message());
+	UNUSED(result);
+	if (inShowError && error)
+	{
+		Diagnostic::error("{}: {}", getMessage(error), inPath);
+		return false;
+	}
 
-	return !error && result;
+	return true;
 }
 
 /*****************************************************************************/
@@ -393,10 +418,14 @@ bool Files::removeIfExists(const std::string& inPath)
 
 	std::error_code error;
 	bool result = fs::remove(inPath, error);
+	UNUSED(result);
 	if (error)
-		Diagnostic::error(error.message());
+	{
+		Diagnostic::error("{}: {}", getMessage(error), inPath);
+		return false;
+	}
 
-	return !error && result;
+	return true;
 }
 
 /*****************************************************************************/
@@ -407,10 +436,14 @@ bool Files::removeRecursively(const std::string& inPath)
 
 	std::error_code error;
 	bool result = fs::remove_all(inPath, error) > 0;
+	UNUSED(result);
 	if (error)
-		Diagnostic::error(error.message());
+	{
+		Diagnostic::error("{}: {}", getMessage(error), inPath);
+		return false;
+	}
 
-	return !error && result;
+	return result;
 }
 
 /*****************************************************************************/

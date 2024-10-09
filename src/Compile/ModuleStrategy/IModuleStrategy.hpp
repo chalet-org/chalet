@@ -117,6 +117,7 @@ private:
 	mutable Dictionary<bool> m_compileCache;
 	Dictionary<std::string> m_systemModules;
 
+	ToolchainType m_toolchainType = ToolchainType::Unknown;
 	StrategyType m_oldStrategy = StrategyType::None;
 
 	mutable bool m_sourcesChanged = false;

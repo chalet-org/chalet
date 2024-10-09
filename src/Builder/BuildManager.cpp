@@ -629,7 +629,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 		}
 
 		if (Files::pathExists(path))
-			Files::remove(path);
+			Files::remove(path, false);
 	}
 
 	if (Files::pathIsEmpty(dirToClean))
