@@ -41,6 +41,7 @@ public:
 	bool doBuild(const CommandRoute& inRoute, const bool inShowSuccess = true);
 	void setCacheEnabled(const bool inValue);
 
+	bool initializeDistribution();
 	void makeLibraryPathVariables();
 
 	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
@@ -86,7 +87,6 @@ private:
 	void initializeCache();
 
 	bool validateState();
-	bool validateDistribution();
 
 	void makePathVariable();
 	void makeCompilerDiagnosticsVariables();

@@ -212,6 +212,9 @@ bool Router::routeBundle(BuildState& inState)
 
 	inState.getCentralState().saveCaches();
 
+	if (!inState.initializeDistribution())
+		return false;
+
 	for (auto& target : inState.distribution)
 	{
 		if (!bundler.run(target))

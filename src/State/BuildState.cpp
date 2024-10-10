@@ -144,11 +144,14 @@ bool BuildState::initialize()
 	if (!initializeBuild())
 		return false;
 
-	if (!validateDistribution())
-		return false;
-
 	if (!validateState())
 		return false;
+
+	if (inputs.route().isExport())
+	{
+		if (!initializeDistribution())
+			return false;
+	}
 
 	// calls enforceArchitectureInPath 2nd time
 	makePathVariable();
@@ -697,12 +700,6 @@ bool BuildState::initializeBuild()
 				return false;
 		}
 
-		for (auto& target : distribution)
-		{
-			if (!target->initialize())
-				return false;
-		}
-
 		initializeCache();
 	}
 
@@ -1056,15 +1053,15 @@ bool BuildState::validateState()
 }
 
 /*****************************************************************************/
-bool BuildState::validateDistribution()
+bool BuildState::initializeDistribution()
 {
+	// Note: first loop is to initialize all the paths. Second loop might need them
+	//  when dependent targets are checked
+	//
 	for (auto& target : distribution)
 	{
-		if (!target->validate())
-		{
-			Diagnostic::error("Error validating the '{}' distribution target.", target->name());
+		if (!target->initialize())
 			return false;
-		}
 	}
 
 	auto& distributionDirectory = inputs.distributionDirectory();
@@ -1073,6 +1070,12 @@ bool BuildState::validateDistribution()
 	bool result = true;
 	for (auto& target : distribution)
 	{
+		if (!target->validate())
+		{
+			Diagnostic::error("Error validating the '{}' distribution target.", target->name());
+			return false;
+		}
+
 		if (target->isDistributionBundle())
 		{
 			auto& bundle = static_cast<BundleTarget&>(*target);

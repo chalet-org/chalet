@@ -570,6 +570,8 @@ bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 
 	addBuildPathIfExists(m_state.paths.currentCompileCommands());
 
+	// Note: does not require distribution targets to be initialized
+	//
 	for (const auto& target : m_state.distribution)
 	{
 		if (target->isDistributionBundle())
