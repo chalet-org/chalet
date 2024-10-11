@@ -6,8 +6,8 @@
 #pragma once
 
 #include "ChaletJson/ChaletJsonParserAdapter.hpp"
-#include "Platform/Platform.hpp"
 #include "Libraries/Json.hpp"
+#include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
@@ -19,6 +19,7 @@ namespace chalet
 struct CentralState;
 struct JsonFile;
 
+struct ArchiveDependency;
 struct GitDependency;
 struct LocalDependency;
 struct ScriptDependency;
@@ -46,6 +47,7 @@ private:
 	bool parseExternalDependencies(const Json& inNode) const;
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;
 	bool parseLocalDependency(LocalDependency& outDependency, const Json& inNode) const;
+	bool parseArchiveDependency(ArchiveDependency& outDependency, const Json& inNode) const;
 	bool parseScriptDependency(ScriptDependency& outDependency, const Json& inNode) const;
 
 	std::optional<bool> parseDependencyCondition(const Json& inNode) const;

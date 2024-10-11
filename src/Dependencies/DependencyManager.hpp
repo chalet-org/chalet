@@ -9,6 +9,7 @@ namespace chalet
 {
 struct CentralState;
 struct GitDependency;
+struct ArchiveDependency;
 struct ScriptDependency;
 
 class DependencyManager

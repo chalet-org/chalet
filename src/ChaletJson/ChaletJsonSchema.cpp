@@ -533,6 +533,18 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::ExternalDependencyArchiveUrl] = R"json({
+		"type": "string",
+		"description": "The url of an archive to download and extract.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::ExternalDependencyArchiveSubDirectory] = R"json({
+		"type": "string",
+		"description": "A sub-directory inside of the archive to treat as the root.",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 	// environment
 	//
@@ -1739,6 +1751,21 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::ExternalDependencyLocal] = std::move(externalLocal);
 	}
 	{
+		auto externalArchive = R"json({
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"url"
+			]
+		})json"_ojson;
+		addProperty(externalArchive, "condition", Defs::ExternalDependencyCondition);
+		addKind(externalArchive, defs, Defs::ExternalDependencyKind, "archive");
+		addProperty(externalArchive, "url", Defs::ExternalDependencyArchiveUrl);
+		addProperty(externalArchive, "subdirectory", Defs::ExternalDependencyArchiveSubDirectory);
+		defs[Defs::ExternalDependencyArchive] = std::move(externalArchive);
+	}
+	{
 		auto externalScript = R"json({
 			"type": "object",
 			"additionalProperties": false,
@@ -2117,6 +2144,10 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		//
 		case Defs::ExternalDependencyLocal: return "external-dependency-local";
 		case Defs::ExternalDependencyLocalPath: return "external-dependency-local-path";
+		//
+		case Defs::ExternalDependencyArchive: return "external-dependency-archive";
+		case Defs::ExternalDependencyArchiveUrl: return "external-dependency-archive-url";
+		case Defs::ExternalDependencyArchiveSubDirectory: return "external-dependency-archive-subdirectory";
 		//
 		case Defs::ExternalDependencyScript: return "external-dependency-script";
 		//
@@ -2511,11 +2542,13 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"git",
 		"local",
+		"archive",
 		"script"
 	])json"_ojson;
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
 	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyScript);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyArchive);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][3] = getDefinition(Defs::ExternalDependencyScript);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 	addPropertyAndPattern(ret, "packagePaths", Defs::EnvironmentPackagePaths, kPatternConditions);

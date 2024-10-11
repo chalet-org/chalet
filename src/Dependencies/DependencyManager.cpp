@@ -7,9 +7,11 @@
 
 #include "Builder/ScriptRunner.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Dependencies/ArchiveDependencyExtractor.hpp"
 #include "Dependencies/GitRunner.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
+#include "State/Dependency/ArchiveDependency.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Dependency/ScriptDependency.hpp"
 #include "System/Files.hpp"
@@ -56,6 +58,12 @@ bool DependencyManager::run()
 				Diagnostic::error("Git dependency '{}' requested, but git is not installed", dependency->name());
 				return false;
 			}
+		}
+		else if (dependency->isArchive())
+		{
+			ArchiveDependencyExtractor extractor(m_centralState);
+			if (!extractor.run(static_cast<ArchiveDependency&>(*dependency), m_depsChanged))
+				return false;
 		}
 		else if (dependency->isScript())
 		{
@@ -140,6 +148,11 @@ StringList DependencyManager::getUnusedDependencies() const
 		{
 			auto& gitDependency = static_cast<const GitDependency&>(*dependency);
 			destinationCache.push_back(gitDependency.destination());
+		}
+		else if (dependency->isArchive())
+		{
+			auto& archiveDependency = static_cast<const ArchiveDependency&>(*dependency);
+			destinationCache.push_back(archiveDependency.destination());
 		}
 		else if (dependency->isScript())
 		{

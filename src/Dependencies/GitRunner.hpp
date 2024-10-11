@@ -18,7 +18,7 @@ struct GitRunner
 	bool run(GitDependency& gitDependency, StringList& outChanged);
 
 private:
-	bool gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists);
+	bool localPathShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists);
 
 	bool fetchDependency(const GitDependency& inDependency, const bool inDestinationExists);
 	StringList getCloneCommand(const GitDependency& inDependency);
