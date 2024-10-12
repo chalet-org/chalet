@@ -13,6 +13,7 @@ namespace chalet
 IDependencyBuilder::IDependencyBuilder(ExternalDependencyCache& inDependencyCache) :
 	m_dependencyCache(inDependencyCache)
 {
+	UNUSED(m_dependencyCache);
 }
 
 }
