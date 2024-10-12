@@ -61,8 +61,8 @@ bool DependencyManager::run()
 		}
 		else if (dependency->isArchive())
 		{
-			ArchiveDependencyExtractor extractor(m_centralState);
-			if (!extractor.run(static_cast<ArchiveDependency&>(*dependency), m_depsChanged))
+			ArchiveDependencyExtractor extractor(m_centralState, static_cast<ArchiveDependency&>(*dependency));
+			if (!extractor.run(m_depsChanged))
 				return false;
 		}
 		else if (dependency->isScript())

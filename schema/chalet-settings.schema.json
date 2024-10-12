@@ -292,6 +292,11 @@
 					"description": "The executable path to Apple's codesign command-line utility. (MacOS)",
 					"default": "/usr/bin/codesign"
 				},
+				"curl": {
+					"type": "string",
+					"description": "The executable path to curl.",
+					"default": "/usr/bin/curl"
+				},
 				"git": {
 					"type": "string",
 					"description": "The executable path to Git.",
@@ -316,6 +321,11 @@
 					"type": "string",
 					"description": "The executable path to ldd.",
 					"default": "/usr/bin/ldd"
+				},
+				"openssl": {
+					"type": "string",
+					"description": "The executable path to openssl.",
+					"default": "/usr/bin/openssl"
 				},
 				"osascript": {
 					"type": "string",
@@ -356,6 +366,11 @@
 					"type": "string",
 					"description": "The executable path to Apple's tiffutil command-line utility. (MacOS)",
 					"default": "/usr/bin/tiffutil"
+				},
+				"unzip": {
+					"type": "string",
+					"description": "The executable path to unzip.",
+					"default": "/usr/bin/unzip"
 				},
 				"xcodebuild": {
 					"type": "string",

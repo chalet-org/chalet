@@ -37,15 +37,15 @@ bool ArchiveDependency::validate()
 {
 	if (m_url.empty())
 	{
-		Diagnostic::error("The local dependency path was blank for '{}'.", this->name());
+		Diagnostic::error("The archive url was blank for '{}'.", this->name());
 		return false;
 	}
 
-	// if (!Files::pathExists(m_url))
-	// {
-	// 	Diagnostic::error("The local dependency path for '{}' does not exist.", this->name());
-	// 	return false;
-	// }
+	if (m_format == ArchiveFormat::Unknown)
+	{
+		Diagnostic::error("The archive url for '{}' expected a zip or tar, but is an unsupported format: {}", this->name(), m_url);
+		return false;
+	}
 
 	return true;
 }
@@ -71,6 +71,13 @@ const std::string& ArchiveDependency::url() const noexcept
 void ArchiveDependency::setUrl(std::string&& inValue) noexcept
 {
 	m_url = std::move(inValue);
+
+	if (String::endsWith(".zip", m_url))
+		m_format = ArchiveFormat::Zip;
+	else if (String::endsWith({ ".tar", ".tar.gz" }, m_url))
+		m_format = ArchiveFormat::Tar;
+	else
+		m_format = ArchiveFormat::Unknown;
 }
 
 /*****************************************************************************/
@@ -88,6 +95,12 @@ void ArchiveDependency::setSubdirectory(std::string&& inValue) noexcept
 const std::string& ArchiveDependency::destination() const noexcept
 {
 	return m_destination;
+}
+
+/*****************************************************************************/
+ArchiveFormat ArchiveDependency::format() const noexcept
+{
+	return m_format;
 }
 
 /*****************************************************************************/

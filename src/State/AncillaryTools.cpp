@@ -289,6 +289,16 @@ void AncillaryTools::setCommandPrompt(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
+const std::string& AncillaryTools::curl() const noexcept
+{
+	return m_curl;
+}
+void AncillaryTools::setCurl(std::string&& inValue) noexcept
+{
+	m_curl = std::move(inValue);
+}
+
+/*****************************************************************************/
 const std::string& AncillaryTools::git() const noexcept
 {
 	return m_git;
@@ -336,6 +346,16 @@ const std::string& AncillaryTools::ldd() const noexcept
 void AncillaryTools::setLdd(std::string&& inValue) noexcept
 {
 	m_ldd = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& AncillaryTools::openssl() const noexcept
+{
+	return m_openssl;
+}
+void AncillaryTools::setOpenssl(std::string&& inValue) noexcept
+{
+	m_openssl = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -417,6 +437,16 @@ const std::string& AncillaryTools::tiffutil() const noexcept
 void AncillaryTools::setTiffutil(std::string&& inValue) noexcept
 {
 	m_tiffutil = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& AncillaryTools::unzip() const noexcept
+{
+	return m_unzip;
+}
+void AncillaryTools::setUnzip(std::string&& inValue) noexcept
+{
+	m_unzip = std::move(inValue);
 }
 
 /*****************************************************************************/

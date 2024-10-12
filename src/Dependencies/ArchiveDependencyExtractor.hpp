@@ -13,21 +13,29 @@ class ExternalDependencyCache;
 
 struct ArchiveDependencyExtractor
 {
-	ArchiveDependencyExtractor(CentralState& inCentralState);
+	ArchiveDependencyExtractor(CentralState& inCentralState, const ArchiveDependency& inDependency);
 
-	bool run(ArchiveDependency& dependency, StringList& outChanged);
+	bool run(StringList& outChanged);
 
 private:
-	bool localPathShouldUpdate(const ArchiveDependency& inDependency, const bool inDestinationExists);
-	bool fetchDependency(const ArchiveDependency& inDependency, const bool inDestinationExists);
+	bool localPathShouldUpdate(const bool inDestinationExists);
+	bool fetchDependency(const bool inDestinationExists);
 
-	bool needsUpdate(const ArchiveDependency& inDependency);
-	bool updateDependencyCache(const ArchiveDependency& inDependency);
+	bool needsUpdate();
+	bool updateDependencyCache();
 
 	void displayCheckingForUpdates(const std::string& inDestination);
-	void displayFetchingMessageStart(const ArchiveDependency& inDependency);
+	void displayFetchingMessageStart();
+
+	bool validateTools() const;
+	bool extractZipFile(const std::string& inFilename, const std::string& inDestination) const;
+	bool extractTarFile(const std::string& inFilename, const std::string& inDestination) const;
+	std::string getDestination() const noexcept;
+	std::string getOutputFile() const noexcept;
+	std::string getArchiveHash(const std::string& inFilename) const;
 
 	CentralState& m_centralState;
+	const ArchiveDependency& m_archiveDependency;
 	ExternalDependencyCache& m_dependencyCache;
 
 	std::string m_lastHash;

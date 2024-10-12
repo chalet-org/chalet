@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "State/ArchiveFormat.hpp"
 #include "State/Dependency/IExternalDependency.hpp"
 
 namespace chalet
@@ -26,11 +27,15 @@ struct ArchiveDependency final : public IExternalDependency
 
 	const std::string& destination() const noexcept;
 
+	ArchiveFormat format() const noexcept;
+
 private:
 	bool parseDestination();
 
 	std::string m_url;
 	std::string m_subdirectory;
 	std::string m_destination;
+
+	ArchiveFormat m_format = ArchiveFormat::Unknown;
 };
 }
