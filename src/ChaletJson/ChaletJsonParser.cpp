@@ -78,7 +78,7 @@ bool ChaletJsonParser::serialize()
 	// Timer timer;
 	// Diagnostic::infoEllipsis("Reading Build File [{}]", m_chaletJson.filename());
 
-	const Json& jRoot = m_chaletJson.json;
+	const Json& jRoot = m_chaletJson.root;
 	if (!serializeFromJsonRoot(jRoot))
 	{
 		Diagnostic::error("{}: There was an error parsing the file.", m_chaletJson.filename());
@@ -126,7 +126,7 @@ bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, co
 	if (!buildFile.load())
 		return false;
 
-	if (!parsePackage(buildFile.json, inRoot))
+	if (!parsePackage(buildFile.root, inRoot))
 		return false;
 
 	return true;
@@ -562,7 +562,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		}
 
 		BuildTargetType type = BuildTargetType::Unknown;
-		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
+		if (std::string val; json::assign(val, targetJson, "kind"))
 		{
 			if (String::equals(sourceTargets, val))
 			{
@@ -606,7 +606,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			std::string extends{ "*" };
 			if (targetJson.is_object())
 			{
-				m_chaletJson.assignFromKey(extends, targetJson, "extends");
+				json::assign(extends, targetJson, "extends");
 			}
 
 			if (m_abstractSourceTarget.find(extends) != m_abstractSourceTarget.end())
@@ -1315,7 +1315,7 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 		}
 
 		DistTargetType type = DistTargetType::Unknown;
-		if (std::string val; m_chaletJson.assignFromKey(val, targetJson, "kind"))
+		if (std::string val; json::assign(val, targetJson, "kind"))
 		{
 			if (String::equals("bundle", val))
 			{
@@ -1852,7 +1852,7 @@ bool ChaletJsonParser::parseDistributionValidation(ValidationDistTarget& outTarg
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
+	if (std::string val; json::assign(val, inNode, "condition"))
 	{
 		auto res = conditionIsValid(outTarget, val);
 		if (res.has_value())
@@ -1867,7 +1867,7 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarg
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
+	if (std::string val; json::assign(val, inNode, "condition"))
 	{
 		auto res = conditionIsValid(val);
 		if (res.has_value())

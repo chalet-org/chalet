@@ -29,7 +29,7 @@ bool GlobalSettingsJsonParser::serialize(IntermediateSettingsState& outState)
 	if (!makeCache(outState))
 		return false;
 
-	if (!serializeFromJsonRoot(m_jsonFile.json, outState))
+	if (!serializeFromJsonRoot(m_jsonFile.root, outState))
 	{
 		Diagnostic::error("There was an error parsing {}", m_jsonFile.filename());
 		return false;
@@ -52,7 +52,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 
 	initializeTheme();
 
-	Json& buildOptions = m_jsonFile.json.at(Keys::Options);
+	Json& buildOptions = m_jsonFile.root.at(Keys::Options);
 
 	{
 		// pre 6.0.0
@@ -112,10 +112,10 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 /*****************************************************************************/
 void GlobalSettingsJsonParser::initializeTheme()
 {
-	if (!m_jsonFile.json.contains(Keys::Theme))
+	if (!m_jsonFile.root.contains(Keys::Theme))
 		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
-	Json& themeJson = m_jsonFile.json.at(Keys::Theme);
+	Json& themeJson = m_jsonFile.root.at(Keys::Theme);
 	if (!themeJson.is_string() && !themeJson.is_object())
 		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
@@ -124,22 +124,16 @@ void GlobalSettingsJsonParser::initializeTheme()
 		auto preset = themeJson.get<std::string>();
 		if (!ColorTheme::isValidPreset(preset))
 		{
-			m_jsonFile.json[Keys::Theme] = ColorTheme::getDefaultPresetName();
+			m_jsonFile.root[Keys::Theme] = ColorTheme::getDefaultPresetName();
 		}
 	}
 	else if (themeJson.is_object())
 	{
 		const auto& theme = Output::theme();
-		auto makeThemeKeyValueFromTheme = [&themeJson, &theme](const std::string& inKey) {
-			if (!themeJson.contains(inKey) || !themeJson[inKey].is_string())
-			{
-				themeJson[inKey] = theme.getAsString(inKey);
-			}
-		};
-
 		for (const auto& key : ColorTheme::getKeys())
 		{
-			makeThemeKeyValueFromTheme(key);
+			if (!json::isValid<std::string>(themeJson, key.c_str()))
+				themeJson[key] = theme.getAsString(key);
 		}
 	}
 }
@@ -311,7 +305,7 @@ bool GlobalSettingsJsonParser::parseLastUpdate(Json& outNode)
 	{
 		if (outNode.at(Keys::LastUpdateCheck).is_number_unsigned())
 		{
-			lastUpdateCheck = m_jsonFile.json.at(Keys::LastUpdateCheck).get<time_t>();
+			lastUpdateCheck = m_jsonFile.root.at(Keys::LastUpdateCheck).get<time_t>();
 			m_centralState.shouldCheckForUpdate(lastUpdateCheck, currentTime);
 		}
 	}

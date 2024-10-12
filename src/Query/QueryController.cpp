@@ -179,12 +179,12 @@ const Json& QueryController::getSettingsJson() const
 	if (m_centralState.cache.exists(CacheType::Local))
 	{
 		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Local);
-		return settingsFile.json;
+		return settingsFile.root;
 	}
 	else if (m_centralState.cache.exists(CacheType::Global))
 	{
 		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Global);
-		return settingsFile.json;
+		return settingsFile.root;
 	}
 
 	return kEmptyJson;
@@ -204,7 +204,7 @@ StringList QueryController::getBuildConfigurationList() const
 	StringList ret;
 
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
-	const auto& chaletJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().root;
 
 	bool addedDefaults = false;
 	if (chaletJson.contains(Keys::DefaultConfigurations))
@@ -215,14 +215,11 @@ StringList QueryController::getBuildConfigurationList() const
 			addedDefaults = true;
 			for (auto& configJson : defaultConfigurations)
 			{
-				if (configJson.is_string())
-				{
-					auto name = configJson.get<std::string>();
-					if (name.empty() || !List::contains(defaultBuildConfigurations, name))
-						continue;
+				auto name = json::get<std::string>(configJson);
+				if (name.empty() || !List::contains(defaultBuildConfigurations, name))
+					continue;
 
-					ret.emplace_back(std::move(name));
-				}
+				ret.emplace_back(std::move(name));
 			}
 		}
 	}
@@ -304,17 +301,11 @@ StringList QueryController::getCurrentToolchainBuildStrategy() const
 				if (toolchains.contains(toolchain))
 				{
 					const auto& toolchainJson = toolchains.at(toolchain);
-					if (toolchainJson.is_object() && toolchainJson.contains(Keys::ToolchainBuildStrategy))
+					if (toolchainJson.is_object())
 					{
-						const auto& strategy = toolchainJson.at(Keys::ToolchainBuildStrategy);
-						if (strategy.is_string())
-						{
-							auto value = strategy.get<std::string>();
-							if (!value.empty())
-							{
-								ret.emplace_back(std::move(value));
-							}
-						}
+						auto strategy = json::get<std::string>(toolchainJson, Keys::ToolchainBuildStrategy);
+						if (!strategy.empty())
+							ret.emplace_back(std::move(strategy));
 					}
 				}
 			}
@@ -348,17 +339,11 @@ StringList QueryController::getCurrentToolchainBuildPathStyle() const
 				if (toolchains.contains(toolchain))
 				{
 					const auto& toolchainJson = toolchains.at(toolchain);
-					if (toolchainJson.is_object() && toolchainJson.contains(Keys::ToolchainBuildPathStyle))
+					if (toolchainJson.is_object())
 					{
-						const auto& style = toolchainJson.at(Keys::ToolchainBuildPathStyle);
-						if (style.is_string())
-						{
-							auto value = style.get<std::string>();
-							if (!value.empty())
-							{
-								ret.emplace_back(std::move(value));
-							}
-						}
+						auto style = json::get<std::string>(toolchainJson, Keys::ToolchainBuildPathStyle);
+						if (!style.empty())
+							ret.emplace_back(std::move(style));
 					}
 				}
 			}
@@ -559,17 +544,11 @@ StringList QueryController::getCurrentArchitecture() const
 		if (settingsFile.contains(Keys::Options))
 		{
 			const auto& options = settingsFile.at(Keys::Options);
-			if (options.is_object() && options.contains(Keys::OptionsArchitecture))
+			if (options.is_object())
 			{
-				const auto& arch = options.at(Keys::OptionsArchitecture);
-				if (arch.is_string())
-				{
-					auto value = arch.get<std::string>();
-					if (!value.empty())
-					{
-						ret.emplace_back(std::move(value));
-					}
-				}
+				auto arch = json::get<std::string>(options, Keys::OptionsArchitecture);
+				if (!arch.empty())
+					ret.emplace_back(std::move(arch));
 			}
 		}
 	}
@@ -593,17 +572,11 @@ StringList QueryController::getCurrentBuildConfiguration() const
 		if (settingsFile.contains(Keys::Options))
 		{
 			const auto& options = settingsFile.at(Keys::Options);
-			if (options.is_object() && options.contains(Keys::OptionsBuildConfiguration))
+			if (options.is_object())
 			{
-				const auto& configuration = options.at(Keys::OptionsBuildConfiguration);
-				if (configuration.is_string())
-				{
-					auto value = configuration.get<std::string>();
-					if (!value.empty())
-					{
-						ret.emplace_back(std::move(value));
-					}
-				}
+				auto configuration = json::get<std::string>(options, Keys::OptionsBuildConfiguration);
+				if (!configuration.empty())
+					ret.emplace_back(std::move(configuration));
 			}
 		}
 	}
@@ -622,17 +595,11 @@ StringList QueryController::getCurrentToolchain() const
 		if (settingsFile.contains(Keys::Options))
 		{
 			const auto& options = settingsFile.at(Keys::Options);
-			if (options.is_object() && options.contains(Keys::OptionsToolchain))
+			if (options.is_object())
 			{
-				const auto& toolchain = options.at(Keys::OptionsToolchain);
-				if (toolchain.is_string())
-				{
-					auto value = toolchain.get<std::string>();
-					if (!value.empty())
-					{
-						ret.emplace_back(std::move(value));
-					}
-				}
+				auto toolchain = json::get<std::string>(options, Keys::OptionsToolchain);
+				if (!toolchain.empty())
+					ret.emplace_back(std::move(toolchain));
 			}
 		}
 	}
@@ -650,7 +617,7 @@ StringList QueryController::getAllBuildTargets() const
 {
 	StringList ret{ Values::All };
 
-	const auto& chaletJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().root;
 
 	if (chaletJson.is_object())
 	{
@@ -659,11 +626,11 @@ StringList QueryController::getAllBuildTargets() const
 			const auto& targets = chaletJson.at(Keys::Targets);
 			for (auto& [key, target] : targets.items())
 			{
-				if (!target.is_object() || !target.contains(Keys::Kind))
+				if (!target.is_object())
 					continue;
 
-				const auto& kind = target.at(Keys::Kind);
-				if (!kind.is_string())
+				auto kind = json::get<std::string>(target, Keys::Kind);
+				if (kind.empty())
 					continue;
 
 				ret.push_back(key);
@@ -679,7 +646,7 @@ StringList QueryController::getAllRunTargets() const
 {
 	StringList ret;
 
-	const auto& chaletJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().root;
 
 	if (chaletJson.is_object())
 	{
@@ -688,19 +655,18 @@ StringList QueryController::getAllRunTargets() const
 			const auto& targets = chaletJson.at(Keys::Targets);
 			for (auto& [key, target] : targets.items())
 			{
-				if (!target.is_object() || !target.contains(Keys::Kind))
+				if (!target.is_object())
 					continue;
 
-				const auto& kind = target.at(Keys::Kind);
-				if (!kind.is_string())
+				auto kind = json::get<std::string>(target, Keys::Kind);
+				if (kind.empty())
 					continue;
 
-				auto kindValue = kind.get<std::string>();
-				if (!String::equals(StringList{ "executable", "script", "process", "cmakeProject" }, kindValue))
+				if (!String::equals(StringList{ "executable", "script", "process", "cmakeProject" }, kind))
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("cmakeProject", kindValue))
+				if (String::equals("cmakeProject", kind))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -726,17 +692,11 @@ StringList QueryController::getCurrentLastTarget() const
 		if (settingsFile.contains(Keys::Options))
 		{
 			const auto& options = settingsFile.at(Keys::Options);
-			if (options.is_object() && options.contains(Keys::OptionsLastTarget))
+			if (options.is_object())
 			{
-				const auto& lastTarget = options.at(Keys::OptionsLastTarget);
-				if (lastTarget.is_string())
-				{
-					auto value = lastTarget.get<std::string>();
-					if (!value.empty())
-					{
-						ret.emplace_back(std::move(value));
-					}
-				}
+				auto lastTarget = json::get<std::string>(options, Keys::OptionsLastTarget);
+				if (!lastTarget.empty())
+					ret.emplace_back(std::move(lastTarget));
 			}
 		}
 	}
@@ -744,7 +704,7 @@ StringList QueryController::getCurrentLastTarget() const
 	if (!ret.empty())
 		return ret;
 
-	const auto& chaletJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().root;
 
 	StringList executableProjects;
 	if (chaletJson.is_object())
@@ -754,19 +714,18 @@ StringList QueryController::getCurrentLastTarget() const
 			const auto& targets = chaletJson.at(Keys::Targets);
 			for (auto& [key, target] : targets.items())
 			{
-				if (!target.is_object() || !target.contains(Keys::Kind))
+				if (!target.is_object())
 					continue;
 
-				const auto& kind = target.at(Keys::Kind);
-				if (!kind.is_string())
+				auto kind = json::get<std::string>(target, Keys::Kind);
+				if (kind.empty())
 					continue;
 
-				auto kindValue = kind.get<std::string>();
-				if (!String::equals(StringList{ "executable", "script", "cmakeProject" }, kindValue))
+				if (!String::equals(StringList{ "executable", "script", "cmakeProject" }, kind))
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("cmakeProject", kindValue))
+				if (String::equals("cmakeProject", kind))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -866,7 +825,7 @@ Json QueryController::getBuildConfigurationDetails() const
 
 	Dictionary<Json> configMap;
 
-	const auto& chaletJson = m_centralState.chaletJson().json;
+	const auto& chaletJson = m_centralState.chaletJson().root;
 	if (chaletJson.contains(Keys::Configurations))
 	{
 		const Json& configurations = chaletJson.at(Keys::Configurations);

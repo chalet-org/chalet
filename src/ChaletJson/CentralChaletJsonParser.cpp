@@ -40,7 +40,7 @@ bool CentralChaletJsonParser::serialize() const
 	if (!validateAgainstSchema())
 		return false;
 
-	const Json& jRoot = m_chaletJson.json;
+	const Json& jRoot = m_chaletJson.root;
 	if (!serializeRequiredFromJsonRoot(jRoot))
 		return false;
 
@@ -324,7 +324,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		}
 
 		ExternalDependencyType type = ExternalDependencyType::Local;
-		if (std::string val; m_chaletJson.assignFromKey(val, dependencyJson, "kind"))
+		if (std::string val; json::assign(val, dependencyJson, "kind"))
 		{
 			if (String::equals("git", val))
 			{
@@ -511,7 +511,7 @@ bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDepende
 /*****************************************************************************/
 std::optional<bool> CentralChaletJsonParser::parseDependencyCondition(const Json& inNode) const
 {
-	if (std::string val; m_chaletJson.assignFromKey(val, inNode, "condition"))
+	if (std::string val; json::assign(val, inNode, "condition"))
 	{
 		auto res = conditionIsValid(val);
 		if (!res.has_value())

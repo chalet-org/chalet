@@ -37,10 +37,10 @@ bool ToolchainSettingsJsonParser::serialize()
 		return false;
 	};
 
-	auto& rootNode = m_jsonFile.json;
+	auto& jRoot = m_jsonFile.root;
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 
-	auto& toolchains = rootNode[Keys::Toolchains];
+	auto& toolchains = jRoot[Keys::Toolchains];
 
 	auto envToolchainName = Environment::getString("CHALET_TOOLCHAIN_NAME");
 	m_isCustomToolchain = !envToolchainName.empty() && String::equals(preferenceName, envToolchainName);
@@ -71,40 +71,36 @@ bool ToolchainSettingsJsonParser::serialize()
 }
 
 /*****************************************************************************/
+// This is called from BuildState::checkForExceptionalToolchainCases()
+//   If a (Visual Studio) toolchain no longer exists, we want to refresh it
+//
 bool ToolchainSettingsJsonParser::validatePathsWithoutFullParseAndEraseToolchainOnFailure()
 {
 	bool result = true;
 
 	Output::setShowCommandOverride(false);
 
-	auto& rootNode = m_jsonFile.json;
+	auto& jRoot = m_jsonFile.root;
 
-	auto& toolchains = rootNode[Keys::Toolchains];
+	auto& toolchains = jRoot[Keys::Toolchains];
 	if (!toolchains.empty())
 	{
 		auto& toolchain = getToolchainNode(toolchains);
 		if (!toolchain.empty())
 		{
-			auto pathFromKeyIsInvalid = [&toolchain](const char* inKey) {
-				bool jsonInvalid = !toolchain.contains(inKey) || !toolchain[inKey].is_string();
-				if (jsonInvalid)
-					return true;
-
-				auto value = toolchain[inKey].get<std::string>();
-				if (value.empty())
-					return true;
-
-				return Files::pathExists(value);
+			auto pathFromKeyIsValid = [&toolchain](const char* inKey) {
+				auto value = json::get<std::string>(toolchain, inKey);
+				return !value.empty() && Files::pathExists(value);
 			};
 
-			// We only want to wipe the toolchain of ALL of these are not found
+			// We only want to wipe the toolchain if ALL of these are not found
 
 			result = false;
-			result |= pathFromKeyIsInvalid(Keys::ToolchainCompilerCpp);
-			result |= pathFromKeyIsInvalid(Keys::ToolchainCompilerC);
-			result |= pathFromKeyIsInvalid(Keys::ToolchainLinker);
-			result |= pathFromKeyIsInvalid(Keys::ToolchainArchiver);
-			result |= pathFromKeyIsInvalid(Keys::ToolchainDisassembler);
+			result |= pathFromKeyIsValid(Keys::ToolchainCompilerCpp);
+			result |= pathFromKeyIsValid(Keys::ToolchainCompilerC);
+			result |= pathFromKeyIsValid(Keys::ToolchainLinker);
+			result |= pathFromKeyIsValid(Keys::ToolchainArchiver);
+			result |= pathFromKeyIsValid(Keys::ToolchainDisassembler);
 
 			if (!result)
 			{
@@ -241,20 +237,14 @@ bool ToolchainSettingsJsonParser::validatePaths()
 /*****************************************************************************/
 bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
 {
-	if (!toolchain.contains(Keys::ToolchainVersion) || !toolchain[Keys::ToolchainVersion].is_string() || toolchain[Keys::ToolchainVersion].get<std::string>().empty())
-	{
+	if (!json::isValid<std::string>(toolchain, Keys::ToolchainVersion))
 		toolchain[Keys::ToolchainVersion] = std::string();
-	}
 
-	if (!toolchain.contains(Keys::ToolchainBuildStrategy) || !toolchain[Keys::ToolchainBuildStrategy].is_string() || toolchain[Keys::ToolchainBuildStrategy].get<std::string>().empty())
-	{
+	if (!json::isValid<std::string>(toolchain, Keys::ToolchainBuildStrategy))
 		toolchain[Keys::ToolchainBuildStrategy] = std::string();
-	}
 
-	if (!toolchain.contains(Keys::ToolchainBuildPathStyle) || !toolchain[Keys::ToolchainBuildPathStyle].is_string() || toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
-	{
+	if (!json::isValid<std::string>(toolchain, Keys::ToolchainBuildPathStyle))
 		toolchain[Keys::ToolchainBuildPathStyle] = std::string();
-	}
 
 	bool isLLVM = preference.type == ToolchainType::LLVM
 		|| preference.type == ToolchainType::AppleLLVM
@@ -266,7 +256,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	std::string cpp;
 	std::string cc;
-	if (!toolchain.contains(Keys::ToolchainCompilerCpp) || !toolchain[Keys::ToolchainCompilerCpp].is_string() || toolchain[Keys::ToolchainCompilerCpp].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerCpp))
 	{
 		if (cpp.empty())
 			cpp = Files::which(preference.cpp);
@@ -275,7 +265,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainCompilerC) || !toolchain[Keys::ToolchainCompilerC].is_string() || toolchain[Keys::ToolchainCompilerC].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerC))
 	{
 		if (cc.empty())
 			cc = Files::which(preference.cc);
@@ -284,7 +274,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainCompilerWindowsResource) || !toolchain[Keys::ToolchainCompilerWindowsResource].is_string() || toolchain[Keys::ToolchainCompilerWindowsResource].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerWindowsResource))
 	{
 		std::string rc;
 		StringList searches;
@@ -325,7 +315,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainLinker) || !toolchain[Keys::ToolchainLinker].is_string() || toolchain[Keys::ToolchainLinker].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainLinker))
 	{
 		std::string link;
 		StringList searches;
@@ -392,7 +382,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainArchiver) || !toolchain[Keys::ToolchainArchiver].is_string() || toolchain[Keys::ToolchainArchiver].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainArchiver))
 	{
 		std::string ar;
 		StringList searches;
@@ -443,7 +433,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainProfiler) || !toolchain[Keys::ToolchainProfiler].is_string() || toolchain[Keys::ToolchainProfiler].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainProfiler))
 	{
 		std::string prof;
 		StringList searches;
@@ -480,7 +470,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		m_jsonFile.setDirty(true);
 	}
 
-	if (!toolchain.contains(Keys::ToolchainDisassembler) || !toolchain[Keys::ToolchainDisassembler].is_string() || toolchain[Keys::ToolchainDisassembler].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainDisassembler))
 	{
 		std::string disasm;
 		StringList searches;
@@ -540,8 +530,8 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	// 	toolchain.erase(Keys::ToolchainCompilerWindowsResource);
 	// }
 
-	auto whichAdd = [this](Json& inNode, const std::string& inKey) -> bool {
-		if (!inNode.contains(inKey) || !inNode.at(inKey).is_string() || inNode.at(inKey).get<std::string>().empty())
+	auto whichAdd = [this](Json& inNode, const char* inKey) -> bool {
+		if (json::isStringInvalidOrEmpty(inNode, inKey))
 		{
 			auto path = Files::which(inKey);
 			bool res = !path.empty();
@@ -557,7 +547,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	};
 	whichAdd(toolchain, Keys::ToolchainCMake);
 
-	if (!toolchain.contains(Keys::ToolchainMake) || !toolchain[Keys::ToolchainMake].is_string() || toolchain[Keys::ToolchainMake].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainMake))
 	{
 #if defined(CHALET_WIN32)
 		std::string make;
@@ -643,30 +633,20 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		return false;
 	}
 
-	if (toolchain[Keys::ToolchainBuildPathStyle].get<std::string>().empty())
+	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainBuildPathStyle))
 	{
 		// Note: this is only for validation. it gets changed later
 		if (!buildPathStyleFromInput.empty())
-		{
 			toolchain[Keys::ToolchainBuildPathStyle] = buildPathStyleFromInput;
-		}
 
 		else if (preference.buildPathStyle == BuildPathStyle::TargetTriple)
-		{
 			toolchain[Keys::ToolchainBuildPathStyle] = "target-triple";
-		}
 		else if (preference.buildPathStyle == BuildPathStyle::ToolchainName)
-		{
 			toolchain[Keys::ToolchainBuildPathStyle] = "toolchain-name";
-		}
 		else if (preference.buildPathStyle == BuildPathStyle::Configuration)
-		{
 			toolchain[Keys::ToolchainBuildPathStyle] = "configuration";
-		}
 		else if (preference.buildPathStyle == BuildPathStyle::ArchConfiguration)
-		{
 			toolchain[Keys::ToolchainBuildPathStyle] = "architecture";
-		}
 
 		m_jsonFile.setDirty(true);
 	}

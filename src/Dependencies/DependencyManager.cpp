@@ -7,8 +7,8 @@
 
 #include "Builder/ScriptRunner.hpp"
 #include "Core/CommandLineInputs.hpp"
-#include "Dependencies/ArchiveDependencyExtractor.hpp"
-#include "Dependencies/GitRunner.hpp"
+#include "Dependencies/ArchiveDependencyBuilder.hpp"
+#include "Dependencies/GitDependencyBuilder.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/ArchiveDependency.hpp"
@@ -49,8 +49,8 @@ bool DependencyManager::run()
 		{
 			if (!m_centralState.tools.git().empty())
 			{
-				GitRunner git(m_centralState);
-				if (!git.run(static_cast<GitDependency&>(*dependency), m_depsChanged))
+				GitDependencyBuilder git(m_centralState, static_cast<GitDependency&>(*dependency));
+				if (!git.run(m_depsChanged))
 					return false;
 			}
 			else
@@ -61,7 +61,7 @@ bool DependencyManager::run()
 		}
 		else if (dependency->isArchive())
 		{
-			ArchiveDependencyExtractor extractor(m_centralState, static_cast<ArchiveDependency&>(*dependency));
+			ArchiveDependencyBuilder extractor(m_centralState, static_cast<ArchiveDependency&>(*dependency));
 			if (!extractor.run(m_depsChanged))
 				return false;
 		}
@@ -105,14 +105,14 @@ bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency
 	auto& dependencyCache = m_centralState.cache.file().externalDependencies();
 	if (dependencyCache.contains(cachedName))
 	{
-		Json json = dependencyCache.get(cachedName);
-		if (!json.is_object())
-			json = Json::object();
+		Json jRoot = dependencyCache.get(cachedName);
+		if (!jRoot.is_object())
+			jRoot = Json::object();
 
 		auto args = String::join(inDependency.arguments());
 
-		const auto lastCachedFile = json["f"].is_string() ? json["f"].get<std::string>() : std::string();
-		const auto lastCachedArgs = json["a"].is_string() ? json["a"].get<std::string>() : std::string();
+		const auto lastCachedFile = json::get<std::string>(jRoot, "f");
+		const auto lastCachedArgs = json::get<std::string>(jRoot, "a");
 
 		bool fileNeedsUpdate = lastCachedFile != file;
 		bool argsNeedsUpdate = lastCachedArgs != args;
@@ -122,11 +122,11 @@ bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency
 	}
 	else
 	{
-		Json json;
-		json["f"] = file;
-		json["a"] = String::join(inDependency.arguments());
+		Json jRoot;
+		jRoot["f"] = file;
+		jRoot["a"] = String::join(inDependency.arguments());
 
-		dependencyCache.emplace(cachedName, std::move(json));
+		dependencyCache.emplace(cachedName, std::move(jRoot));
 	}
 
 	const auto& arguments = inDependency.arguments();

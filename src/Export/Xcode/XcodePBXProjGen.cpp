@@ -1822,15 +1822,9 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 		m_generatedBundleFiles.insert(targetName);
 	}
 
-	std::string bundleId;
-	if (m_infoPlistJson.contains("CFBundleIdentifier") && m_infoPlistJson["CFBundleIdentifier"].is_string())
-	{
-		bundleId = m_infoPlistJson["CFBundleIdentifier"].get<std::string>();
-	}
-	else
-	{
+	auto bundleId = json::get<std::string>(m_infoPlistJson, "CFBundleIdentifier");
+	if (bundleId.empty())
 		bundleId = "com.developer.application";
-	}
 
 	//
 

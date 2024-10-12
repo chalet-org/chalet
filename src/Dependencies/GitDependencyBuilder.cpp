@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Dependencies/GitRunner.hpp"
+#include "Dependencies/GitDependencyBuilder.hpp"
 
 #include <thread>
 
@@ -22,8 +22,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-GitRunner::GitRunner(CentralState& inCentralState) :
+GitDependencyBuilder::GitDependencyBuilder(CentralState& inCentralState, const GitDependency& inDependency) :
 	m_centralState(inCentralState),
+	m_gitDependency(inDependency),
 	m_dependencyCache(m_centralState.cache.file().externalDependencies()),
 #if defined(CHALET_WIN32)
 	m_commandPrompt(m_centralState.tools.commandPrompt()),
@@ -33,40 +34,40 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 }
 
 /*****************************************************************************/
-bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
+bool GitDependencyBuilder::run(StringList& outChanged)
 {
-	bool destinationExists = Files::pathExists(gitDependency.destination());
-	if (!localPathShouldUpdate(gitDependency, destinationExists))
+	const auto& destination = m_gitDependency.destination();
+
+	bool destinationExists = Files::pathExists(destination);
+	if (!localPathShouldUpdate(destinationExists))
 		return true;
 
-	destinationExists = Files::pathExists(gitDependency.destination());
-	if (fetchDependency(gitDependency, destinationExists))
+	destinationExists = Files::pathExists(destination);
+	if (fetchDependency(destinationExists))
 	{
-		if (!updateDependencyCache(gitDependency))
+		if (!updateDependencyCache())
 		{
-			Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
+			Diagnostic::error("Error fetching git dependency: {}", m_gitDependency.name());
 			return false;
 		}
 
-		outChanged.emplace_back(Files::getCanonicalPath(gitDependency.destination()));
+		outChanged.emplace_back(Files::getCanonicalPath(destination));
 		return true;
 	}
 	else
 	{
-		const auto& destination = gitDependency.destination();
-
 		if (Files::pathExists(destination))
 			Files::removeRecursively(destination);
 	}
 
-	Diagnostic::error("Error fetching git dependency: {}", gitDependency.name());
+	Diagnostic::error("Error fetching git dependency: {}", m_gitDependency.name());
 	return false;
 }
 
 /*****************************************************************************/
-bool GitRunner::localPathShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists)
+bool GitDependencyBuilder::localPathShouldUpdate(const bool inDestinationExists)
 {
-	const auto& destination = inDependency.destination();
+	const auto& destination = m_gitDependency.destination();
 	if (!m_dependencyCache.contains(destination))
 	{
 		if (inDestinationExists)
@@ -78,23 +79,24 @@ bool GitRunner::localPathShouldUpdate(const GitDependency& inDependency, const b
 	if (!inDestinationExists)
 		return true;
 
-	return needsUpdate(inDependency);
+	return needsUpdate();
 }
 
 /*****************************************************************************/
-bool GitRunner::fetchDependency(const GitDependency& inDependency, const bool inDestinationExists)
+bool GitDependencyBuilder::fetchDependency(const bool inDestinationExists)
 {
-	if (inDestinationExists && m_dependencyCache.contains(inDependency.destination()))
+	const auto& destination = m_gitDependency.destination();
+
+	if (inDestinationExists && m_dependencyCache.contains(destination))
 		return true;
 
-	displayFetchingMessageStart(inDependency);
+	displayFetchingMessageStart();
 
-	StringList cmd = getCloneCommand(inDependency);
+	StringList cmd = getCloneCommand();
 	if (!Process::run(cmd))
 		return false;
 
-	const auto& commit = inDependency.commit();
-	const auto& destination = inDependency.destination();
+	const auto& commit = m_gitDependency.commit();
 
 	if (!commit.empty())
 	{
@@ -106,16 +108,16 @@ bool GitRunner::fetchDependency(const GitDependency& inDependency, const bool in
 }
 
 /*****************************************************************************/
-StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
+StringList GitDependencyBuilder::getCloneCommand()
 {
 	StringList ret;
 
-	const auto& destination = inDependency.destination();
-	const auto& repository = inDependency.repository();
-	const auto& branch = inDependency.branch();
-	const auto& tag = inDependency.tag();
-	const auto& commit = inDependency.commit();
-	const bool submodules = inDependency.submodules();
+	const auto& destination = m_gitDependency.destination();
+	const auto& repository = m_gitDependency.repository();
+	const auto& branch = m_gitDependency.branch();
+	const auto& tag = m_gitDependency.tag();
+	const auto& commit = m_gitDependency.commit();
+	const bool submodules = m_gitDependency.submodules();
 
 	const auto& checkoutTo = !tag.empty() ? tag : branch;
 
@@ -163,26 +165,26 @@ StringList GitRunner::getCloneCommand(const GitDependency& inDependency)
 }
 
 /*****************************************************************************/
-bool GitRunner::needsUpdate(const GitDependency& inDependency)
+bool GitDependencyBuilder::needsUpdate()
 {
-	const auto& destination = inDependency.destination();
-	const auto& repository = inDependency.repository();
-	const auto& commit = inDependency.commit();
-	const auto& branch = inDependency.branch();
-	const auto& tag = inDependency.tag();
+	const auto& destination = m_gitDependency.destination();
+	const auto& repository = m_gitDependency.repository();
+	const auto& commit = m_gitDependency.commit();
+	const auto& branch = m_gitDependency.branch();
+	const auto& tag = m_gitDependency.tag();
 
 	if (!m_dependencyCache.contains(destination))
 		return true;
 
-	Json json = m_dependencyCache.get(destination);
-	if (!json.is_object())
-		json = Json::object();
+	Json jRoot = m_dependencyCache.get(destination);
+	if (!jRoot.is_object())
+		jRoot = Json::object();
 
-	const auto lastCachedCommit = json["lc"].is_string() ? json["lc"].get<std::string>() : std::string();
-	const auto lastCachedBranch = json["lb"].is_string() ? json["lb"].get<std::string>() : std::string();
-	const auto cachedCommit = json["c"].is_string() ? json["c"].get<std::string>() : std::string();
-	const auto cachedBranch = json["b"].is_string() ? json["b"].get<std::string>() : std::string();
-	const auto cachedTag = json["t"].is_string() ? json["t"].get<std::string>() : std::string();
+	const auto lastCachedCommit = json::get<std::string>(jRoot, "lc");
+	const auto lastCachedBranch = json::get<std::string>(jRoot, "lb");
+	const auto cachedCommit = json::get<std::string>(jRoot, "c");
+	const auto cachedBranch = json::get<std::string>(jRoot, "b");
+	const auto cachedTag = json::get<std::string>(jRoot, "t");
 
 	const bool commitNeedsUpdate = (!commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit))) || (commit.empty() && !cachedCommit.empty());
 	const bool branchNeedsUpdate = cachedBranch != branch;
@@ -217,19 +219,19 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 }
 
 /*****************************************************************************/
-void GitRunner::displayCheckingForUpdates(const std::string& inDestination)
+void GitDependencyBuilder::displayCheckingForUpdates(const std::string& inDestination)
 {
 	Diagnostic::infoEllipsis("Checking remote for updates: {}", inDestination);
 }
 
 /*****************************************************************************/
-void GitRunner::displayFetchingMessageStart(const GitDependency& inDependency)
+void GitDependencyBuilder::displayFetchingMessageStart()
 {
-	const auto& branch = inDependency.branch();
-	const auto& tag = inDependency.tag();
+	const auto& branch = m_gitDependency.branch();
+	const auto& tag = m_gitDependency.tag();
 	const auto& checkoutTo = !tag.empty() ? tag : branch;
 
-	const auto& repository = inDependency.repository();
+	const auto& repository = m_gitDependency.repository();
 
 	auto path = getCleanGitPath(repository);
 	if (!checkoutTo.empty() && !String::equals("HEAD", checkoutTo))
@@ -239,27 +241,27 @@ void GitRunner::displayFetchingMessageStart(const GitDependency& inDependency)
 }
 
 /*****************************************************************************/
-bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
+bool GitDependencyBuilder::updateDependencyCache()
 {
-	const auto& destination = inDependency.destination();
-	const auto& commit = inDependency.commit();
-	const auto& branch = inDependency.branch();
-	const auto& tag = inDependency.tag();
+	const auto& destination = m_gitDependency.destination();
+	const auto& commit = m_gitDependency.commit();
+	const auto& branch = m_gitDependency.branch();
+	const auto& tag = m_gitDependency.tag();
 
-	Json json;
-	json["lc"] = getCurrentGitRepositoryHash(destination);
-	json["lb"] = getCurrentGitRepositoryBranch(destination);
-	json["c"] = commit;
-	json["b"] = branch;
-	json["t"] = tag;
+	Json data;
+	data["lc"] = getCurrentGitRepositoryHash(destination);
+	data["lb"] = getCurrentGitRepositoryBranch(destination);
+	data["c"] = commit;
+	data["b"] = branch;
+	data["t"] = tag;
 
 	if (m_dependencyCache.contains(destination))
 	{
-		m_dependencyCache.set(destination, std::move(json));
+		m_dependencyCache.set(destination, std::move(data));
 	}
 	else
 	{
-		m_dependencyCache.emplace(destination, std::move(json));
+		m_dependencyCache.emplace(destination, std::move(data));
 	}
 
 	// Note: Some repos have source files in the root. using that as an include path
@@ -295,34 +297,34 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 }
 
 /*****************************************************************************/
-std::string GitRunner::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
+std::string GitDependencyBuilder::getCurrentGitRepositoryBranch(const std::string& inRepoPath) const
 {
 	std::string branch = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--abbrev-ref", "HEAD" });
 	return branch;
 }
 
 /*****************************************************************************/
-std::string GitRunner::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
+std::string GitDependencyBuilder::getCurrentGitRepositoryTag(const std::string& inRepoPath) const
 {
 	std::string tag = Process::runOutput({ m_git, "-C", inRepoPath, "describe", "--tags", "--exact-match", "--abbrev=0" }, PipeOption::Pipe, PipeOption::Close);
 	return tag;
 }
 
 /*****************************************************************************/
-std::string GitRunner::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
+std::string GitDependencyBuilder::getCurrentGitRepositoryHash(const std::string& inRepoPath) const
 {
 	std::string hash = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", "HEAD" });
 	return hash;
 }
 
 /*****************************************************************************/
-std::string GitRunner::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
+std::string GitDependencyBuilder::getCurrentGitRepositoryHashFromOrigin(const std::string& inRepoPath, const std::string& inBranch) const
 {
 	std::string originHash = Process::runOutput({ m_git, "-C", inRepoPath, "rev-parse", "--verify", "--quiet", fmt::format("origin/{}", inBranch) });
 	return originHash;
 }
 
-std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
+std::string GitDependencyBuilder::getLatestGitRepositoryHashWithoutClone(const std::string& inRepoPath, const std::string& inBranch) const
 {
 	std::string result = Process::runOutput({ m_git, "ls-remote", inRepoPath, inBranch });
 	if (result.empty())
@@ -337,19 +339,19 @@ std::string GitRunner::getLatestGitRepositoryHashWithoutClone(const std::string&
 }
 
 /*****************************************************************************/
-bool GitRunner::updateGitRepositoryShallow(const std::string& inRepoPath) const
+bool GitDependencyBuilder::updateGitRepositoryShallow(const std::string& inRepoPath) const
 {
 	return Process::run({ m_git, "-C", inRepoPath, "pull", "--quiet", "--update-shallow" });
 }
 
 /*****************************************************************************/
-bool GitRunner::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
+bool GitDependencyBuilder::resetGitRepositoryToCommit(const std::string& inRepoPath, const std::string& inCommit) const
 {
 	return Process::run({ m_git, "-C", inRepoPath, "reset", "--quiet", "--hard", inCommit });
 }
 
 /*****************************************************************************/
-std::string GitRunner::getCleanGitPath(const std::string& inPath) const
+std::string GitDependencyBuilder::getCleanGitPath(const std::string& inPath) const
 {
 	std::string ret = inPath;
 

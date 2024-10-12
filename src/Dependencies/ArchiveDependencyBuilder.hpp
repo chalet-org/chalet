@@ -11,9 +11,9 @@ struct CentralState;
 struct ArchiveDependency;
 class ExternalDependencyCache;
 
-struct ArchiveDependencyExtractor
+struct ArchiveDependencyBuilder
 {
-	ArchiveDependencyExtractor(CentralState& inCentralState, const ArchiveDependency& inDependency);
+	ArchiveDependencyBuilder(CentralState& inCentralState, const ArchiveDependency& inDependency);
 
 	bool run(StringList& outChanged);
 
@@ -30,7 +30,7 @@ private:
 	bool validateTools() const;
 	bool extractZipFile(const std::string& inFilename, const std::string& inDestination) const;
 	bool extractTarFile(const std::string& inFilename, const std::string& inDestination) const;
-	std::string getDestination() const noexcept;
+	std::string getTempDestination() const noexcept;
 	std::string getOutputFile() const noexcept;
 	std::string getArchiveHash(const std::string& inFilename) const;
 

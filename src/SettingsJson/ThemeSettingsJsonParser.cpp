@@ -36,7 +36,7 @@ bool ThemeSettingsJsonParser::serialize()
 		if (!jsonFile.load(inFile))
 			Diagnostic::clearErrors();
 
-		UNUSED(serializeFromJsonRoot(jsonFile.json, outTheme, inGlobal));
+		UNUSED(serializeFromJsonRoot(jsonFile.root, outTheme, inGlobal));
 	};
 
 	// Keys that aren't valid will get ingored,

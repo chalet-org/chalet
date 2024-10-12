@@ -48,11 +48,11 @@ bool JsonFile::load(const bool inError)
 	chalet_assert(!m_filename.empty(), "JsonFile::load(): No file to load");
 	if (String::endsWith(".yaml", m_filename))
 	{
-		return YamlFile::parse(json, m_filename, inError);
+		return YamlFile::parse(root, m_filename, inError);
 	}
 	else
 	{
-		return JsonComments::parse(json, m_filename, inError);
+		return JsonComments::parse(root, m_filename, inError);
 	}
 }
 
@@ -69,7 +69,7 @@ bool JsonFile::save(const i32 inIndent)
 {
 	if (!m_filename.empty() && m_dirty)
 	{
-		bool result = JsonFile::saveToFile(json, m_filename, inIndent);
+		bool result = JsonFile::saveToFile(root, m_filename, inIndent);
 		m_dirty = false;
 		return result;
 	}
@@ -91,7 +91,7 @@ void JsonFile::setDirty(const bool inValue) noexcept
 /*****************************************************************************/
 void JsonFile::resetAndSave()
 {
-	json = Json::object();
+	root = Json::object();
 	setDirty(true);
 	save();
 }
@@ -99,7 +99,7 @@ void JsonFile::resetAndSave()
 /*****************************************************************************/
 void JsonFile::dumpToTerminal()
 {
-	auto output = json.dump(1, '\t');
+	auto output = root.dump(1, '\t');
 	std::cout.write(output.data(), output.size());
 	std::cout.put('\n');
 	std::cout.flush();
@@ -110,18 +110,18 @@ bool JsonFile::saveAs(const std::string& inFilename, const i32 inIndent) const
 {
 	if (String::endsWith(".yaml", inFilename))
 	{
-		return YamlFile::saveToFile(json, inFilename);
+		return YamlFile::saveToFile(root, inFilename);
 	}
 	else
 	{
-		return JsonFile::saveToFile(json, inFilename, inIndent);
+		return JsonFile::saveToFile(root, inFilename, inIndent);
 	}
 }
 
 /*****************************************************************************/
 void JsonFile::setContents(Json&& inJson)
 {
-	json = std::move(inJson);
+	root = std::move(inJson);
 }
 
 /*****************************************************************************/
@@ -133,13 +133,13 @@ const std::string& JsonFile::filename() const noexcept
 /*****************************************************************************/
 void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
 {
-	if (json.contains(inKey))
+	if (root.contains(inKey))
 	{
-		if (json.at(inKey).type() == inType)
+		if (root.at(inKey).type() == inType)
 			return;
 	}
 
-	json[inKey] = initializeDataType(inType);
+	root[inKey] = initializeDataType(inType);
 	setDirty(true);
 }
 
@@ -187,12 +187,12 @@ std::string JsonFile::getSchema()
 	std::string ret;
 
 	// don't think this even worked...
-	if (json.contains("$schema"))
+	if (root.contains("$schema"))
 	{
-		if (json.at("$schema").is_string())
+		if (root.at("$schema").is_string())
 		{
-			ret = json.get<std::string>();
-			// json.erase("$schema");
+			ret = root.get<std::string>();
+			// data.erase("$schema");
 		}
 	}
 
@@ -211,7 +211,7 @@ bool JsonFile::validate(const Json& inSchemaJson)
 
 	JsonValidationErrors errors;
 	// false if any errors
-	if (!validator.validate(json, m_filename, errors))
+	if (!validator.validate(root, m_filename, errors))
 	{
 		// false if fatal error
 		if (!validator.printErrors(errors))

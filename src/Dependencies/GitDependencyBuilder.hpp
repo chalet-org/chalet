@@ -11,23 +11,23 @@ struct CentralState;
 struct GitDependency;
 class ExternalDependencyCache;
 
-struct GitRunner
+struct GitDependencyBuilder
 {
-	explicit GitRunner(CentralState& inCentralState);
+	explicit GitDependencyBuilder(CentralState& inCentralState, const GitDependency& inDependency);
 
-	bool run(GitDependency& gitDependency, StringList& outChanged);
+	bool run(StringList& outChanged);
 
 private:
-	bool localPathShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists);
+	bool localPathShouldUpdate(const bool inDestinationExists);
 
-	bool fetchDependency(const GitDependency& inDependency, const bool inDestinationExists);
-	StringList getCloneCommand(const GitDependency& inDependency);
+	bool fetchDependency(const bool inDestinationExists);
+	StringList getCloneCommand();
 
-	bool needsUpdate(const GitDependency& inDependency);
-	bool updateDependencyCache(const GitDependency& inDependency);
+	bool needsUpdate();
+	bool updateDependencyCache();
 
 	void displayCheckingForUpdates(const std::string& inDestination);
-	void displayFetchingMessageStart(const GitDependency& inDependency);
+	void displayFetchingMessageStart();
 
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
 	std::string getCurrentGitRepositoryTag(const std::string& inRepoPath) const;
@@ -40,6 +40,7 @@ private:
 	std::string getCleanGitPath(const std::string& inPath) const;
 
 	CentralState& m_centralState;
+	const GitDependency& m_gitDependency;
 	ExternalDependencyCache& m_dependencyCache;
 
 #if defined(CHALET_WIN32)

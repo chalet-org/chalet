@@ -9,19 +9,7 @@ namespace chalet
 {
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const
-{
-	if (!containsKeyForType<T>(inNode, inKey))
-		return false;
-
-	using Type = std::decay_t<T>;
-	outVariable = inNode.at(inKey).template get<Type>();
-	return true;
-}
-
-/*****************************************************************************/
-template <typename T>
-bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue)
+inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue)
 {
 	bool result = false;
 	bool notFound = !outNode.contains(inKey);
@@ -82,10 +70,10 @@ bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inVa
 
 /*****************************************************************************/
 template <typename T>
-bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB)
+inline bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB)
 {
 	bool result = false;
-	bool valid = containsKeyForType<T>(outNode, inKey) && !inValueA.has_value();
+	bool valid = json::isValid<T>(outNode, inKey) && !inValueA.has_value();
 
 	if (!valid)
 	{
@@ -101,60 +89,5 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, c
 	}
 
 	return result;
-}
-
-/*****************************************************************************/
-template <typename T>
-bool JsonFile::containsKeyForType(const Json& inNode, const char* inKey) const
-{
-	if (!inNode.contains(inKey))
-		return false;
-
-	if (inNode.at(inKey).is_null())
-	{
-		return false;
-	}
-	else if (inNode.at(inKey).is_object())
-	{
-		return false;
-	}
-	else if (inNode.at(inKey).is_array())
-	{
-		return false;
-	}
-
-	using Type = std::decay_t<T>;
-	if constexpr (std::is_same_v<Type, std::string>)
-	{
-		if (!inNode.at(inKey).is_string())
-			return false;
-	}
-	else if constexpr (std::is_same_v<Type, bool>)
-	{
-		if (!inNode.at(inKey).is_boolean())
-			return false;
-	}
-	else if constexpr (std::is_unsigned_v<Type>)
-	{
-		if (!inNode.at(inKey).is_number_unsigned())
-			return false;
-	}
-	else if constexpr (std::is_floating_point_v<Type>)
-	{
-		if (!inNode.at(inKey).is_number_float())
-			return false;
-	}
-	else if constexpr (std::is_integral_v<Type>)
-	{
-		if (!inNode.at(inKey).is_number_integer())
-			return false;
-	}
-	else
-	{
-		chalet_assert(false, "JsonFile::containsKeyForType - invalid type");
-		return false;
-	}
-
-	return true;
 }
 }

@@ -43,22 +43,22 @@ bool SettingsManager::run(const SettingsAction inAction)
 	switch (m_action)
 	{
 		case SettingsAction::Get:
-			if (!runSettingsGet(settings.json))
+			if (!runSettingsGet(settings.root))
 				return false;
 			break;
 
 		case SettingsAction::Set:
-			if (!runSettingsSet(settings.json))
+			if (!runSettingsSet(settings.root))
 				return false;
 			break;
 
 		case SettingsAction::Unset:
-			if (!runSettingsUnset(settings.json))
+			if (!runSettingsUnset(settings.root))
 				return false;
 			break;
 
 		case SettingsAction::QueryKeys:
-			if (!runSettingsKeyQuery(settings.json))
+			if (!runSettingsKeyQuery(settings.root))
 				return false;
 			break;
 
@@ -100,10 +100,10 @@ bool SettingsManager::initialize()
 	if (String::endsWith(".yaml", filename))
 		m_yamlOutput = true;
 
-	Json& node = settings.json;
-	if (!node.is_object())
+	Json& root = settings.root;
+	if (!root.is_object())
 	{
-		node = Json::object();
+		root = Json::object();
 		settings.setDirty(true);
 	}
 
@@ -322,7 +322,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 	{
 		if (String::endsWith(m_inputs.globalSettingsFile(), settings.filename()))
 		{
-			doSettingsCorrections(settings.json);
+			doSettingsCorrections(settings.root);
 		}
 		else if (String::endsWith(m_inputs.defaultSettingsFile(), settings.filename()))
 		{

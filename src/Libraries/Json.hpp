@@ -46,4 +46,35 @@ using Json = nlohmann::ordered_json;
 using JsonDataType = nlohmann::detail::value_t;
 namespace JsonSchema = nlohmann::json_schema;
 using JsonSchemaError = JsonSchema::error_descriptor;
+
+// JSON helper functions
+namespace json
+{
+template <typename T>
+constexpr bool isValid(const Json& inNode);
+
+template <typename T>
+inline bool isValid(const Json& inNode, const char* inKey);
+
+inline bool isNull(const Json& inNode, const char* inKey);
+inline bool isArray(const Json& inNode, const char* inKey);
+inline bool isObject(const Json& inNode, const char* inKey);
+
+template <typename T>
+inline T get(const Json& inNode);
+
+template <typename T>
+inline T get(const Json& inNode, const char* inKey);
+
+template <typename T>
+inline bool assign(T& outVariable, const Json& inNode);
+
+template <typename T>
+inline bool assign(T& outVariable, const Json& inNode, const char* inKey);
+
+inline bool isStringInvalidOrEmpty(const Json& inNode);
+inline bool isStringInvalidOrEmpty(const Json& inNode, const char* inKey);
 }
+}
+
+#include "Libraries/Json.inl"

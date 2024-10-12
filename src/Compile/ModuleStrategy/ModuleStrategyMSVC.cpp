@@ -84,46 +84,46 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 		if (!Files::pathExists(group->dependencyFile))
 			continue;
 
-		Json json;
-		if (!JsonComments::parse(json, group->dependencyFile))
+		Json jRoot;
+		if (!JsonComments::parse(jRoot, group->dependencyFile))
 		{
 			Diagnostic::error("Failed to parse: {}", group->dependencyFile);
 			return false;
 		}
 
-		if (!json.contains(MSVCKeys::Version) || !json.at(MSVCKeys::Version).is_string())
+		const auto version = json::get<std::string>(jRoot, MSVCKeys::Version);
+		if (version.empty())
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::Version);
 			return false;
 		}
 
-		std::string version = json.at(MSVCKeys::Version).get<std::string>();
 		if (!String::equals("1.1", version))
 		{
 			Diagnostic::error("{}: Found version '{}', but only '1.1' is supported", group->dependencyFile, version);
 			return false;
 		}
 
-		if (!json.contains(MSVCKeys::Data) || !json.at(MSVCKeys::Data).is_object())
+		if (!json::isObject(jRoot, MSVCKeys::Data))
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::Data);
 			return false;
 		}
 
-		const auto& data = json.at(MSVCKeys::Data);
-		if (!data.contains(MSVCKeys::ProvidedModule) || !data.at(MSVCKeys::ProvidedModule).is_string())
+		const auto& data = jRoot.at(MSVCKeys::Data);
+		if (!json::isValid<std::string>(data, MSVCKeys::ProvidedModule))
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ProvidedModule);
 			return false;
 		}
 
-		if (!data.contains(MSVCKeys::ImportedModules) || !data.at(MSVCKeys::ImportedModules).is_array())
+		if (!json::isArray(data, MSVCKeys::ImportedModules))
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ImportedModules);
 			return false;
 		}
 
-		if (!data.contains(MSVCKeys::ImportedHeaderUnits) || !data.at(MSVCKeys::ImportedHeaderUnits).is_array())
+		if (!json::isArray(data, MSVCKeys::ImportedHeaderUnits))
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ImportedHeaderUnits);
 			return false;
@@ -137,9 +137,9 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 
 		m_modules[name].source = group->sourceFile;
 
-		for (auto& moduleItr : data.at(MSVCKeys::ImportedModules).items())
+		const auto& importedModules = data.at(MSVCKeys::ImportedModules);
+		for (auto& mod : importedModules)
 		{
-			auto& mod = moduleItr.value();
 			if (!mod.is_string())
 			{
 				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, MSVCKeys::ImportedModules);
@@ -154,9 +154,9 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 			List::addIfDoesNotExist(m_modules[name].importedModules, std::move(moduleName));
 		}
 
-		for (auto& fileItr : data.at(MSVCKeys::ImportedHeaderUnits).items())
+		const auto& importedHeaderUnits = data.at(MSVCKeys::ImportedHeaderUnits);
+		for (auto& file : importedHeaderUnits)
 		{
-			auto& file = fileItr.value();
 			if (!file.is_string())
 			{
 				Diagnostic::error("{}: Unexpected structure for '{}'", group->dependencyFile, MSVCKeys::ImportedHeaderUnits);
@@ -201,42 +201,42 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 /*****************************************************************************/
 bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFile, StringList& outList)
 {
-	Json json;
-	if (!JsonComments::parse(json, inFile))
+	Json jRoot;
+	if (!JsonComments::parse(jRoot, inFile))
 	{
 		Diagnostic::error("Failed to parse: {}", inFile);
 		return false;
 	}
 
-	if (!json.contains(MSVCKeys::Version) || !json.at(MSVCKeys::Version).is_string())
+	if (!json::isValid<std::string>(jRoot, MSVCKeys::Version))
 	{
 		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Version);
 		return false;
 	}
 
-	std::string version = json.at(MSVCKeys::Version).get<std::string>();
+	const auto version = json::get<std::string>(jRoot, MSVCKeys::Version);
 	if (!String::equals("1.2", version))
 	{
 		Diagnostic::error("{}: Found version '{}', but only '1.2' is supported", inFile, version);
 		return false;
 	}
 
-	if (!json.contains(MSVCKeys::Data) || !json.at(MSVCKeys::Data).is_object())
+	if (!json::isObject(jRoot, MSVCKeys::Data))
 	{
 		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Data);
 		return false;
 	}
 
-	const auto& data = json.at(MSVCKeys::Data);
-	if (!data.contains(MSVCKeys::Includes) || !data.at(MSVCKeys::Includes).is_array())
+	const auto& data = jRoot.at(MSVCKeys::Data);
+	if (!json::isArray(data, MSVCKeys::Includes))
 	{
 		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Includes);
 		return false;
 	}
 
-	for (auto& includeItr : data.at(MSVCKeys::Includes).items())
+	const auto& includes = data.at(MSVCKeys::Includes);
+	for (auto& include : includes)
 	{
-		auto& include = includeItr.value();
 		if (!include.is_string())
 		{
 			Diagnostic::error("{}: Unexpected structure for '{}'", inFile, MSVCKeys::Includes);
@@ -293,13 +293,13 @@ Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
 		if (!Files::pathExists(modulesJsonPath))
 			return ret;
 
-		Json json;
-		if (!JsonComments::parse(json, modulesJsonPath))
+		Json jRoot;
+		if (!JsonComments::parse(jRoot, modulesJsonPath))
 			return ret;
 
-		if (json.contains("module-sources"))
+		if (jRoot.contains("module-sources"))
 		{
-			const auto& sources = json.at("module-sources");
+			const auto& sources = jRoot.at("module-sources");
 			if (sources.is_array())
 			{
 				for (auto& value : sources)

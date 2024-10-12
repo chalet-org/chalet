@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Dependencies/ArchiveDependencyExtractor.hpp"
+#include "Dependencies/ArchiveDependencyBuilder.hpp"
 
 #include "Cache/ExternalDependencyCache.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -20,7 +20,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-ArchiveDependencyExtractor::ArchiveDependencyExtractor(CentralState& inCentralState, const ArchiveDependency& inDependency) :
+ArchiveDependencyBuilder::ArchiveDependencyBuilder(CentralState& inCentralState, const ArchiveDependency& inDependency) :
 	m_centralState(inCentralState),
 	m_archiveDependency(inDependency),
 	m_dependencyCache(m_centralState.cache.file().externalDependencies())
@@ -28,7 +28,7 @@ ArchiveDependencyExtractor::ArchiveDependencyExtractor(CentralState& inCentralSt
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::run(StringList& outChanged)
+bool ArchiveDependencyBuilder::run(StringList& outChanged)
 {
 	const auto& destination = m_archiveDependency.destination();
 
@@ -59,7 +59,7 @@ bool ArchiveDependencyExtractor::run(StringList& outChanged)
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::localPathShouldUpdate(const bool inDestinationExists)
+bool ArchiveDependencyBuilder::localPathShouldUpdate(const bool inDestinationExists)
 {
 	const auto& destination = m_archiveDependency.destination();
 	if (!m_dependencyCache.contains(destination))
@@ -77,7 +77,7 @@ bool ArchiveDependencyExtractor::localPathShouldUpdate(const bool inDestinationE
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::fetchDependency(const bool inDestinationExists)
+bool ArchiveDependencyBuilder::fetchDependency(const bool inDestinationExists)
 {
 	if (inDestinationExists && m_dependencyCache.contains(m_archiveDependency.destination()))
 		return true;
@@ -87,7 +87,7 @@ bool ArchiveDependencyExtractor::fetchDependency(const bool inDestinationExists)
 	if (!validateTools())
 		return false;
 
-	const auto destination = getDestination();
+	const auto destination = getTempDestination();
 
 	const auto& url = m_archiveDependency.url();
 	const auto& subdirectory = m_archiveDependency.subdirectory();
@@ -139,7 +139,7 @@ bool ArchiveDependencyExtractor::fetchDependency(const bool inDestinationExists)
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::needsUpdate()
+bool ArchiveDependencyBuilder::needsUpdate()
 {
 	const auto& destination = m_archiveDependency.destination();
 	const auto& url = m_archiveDependency.url();
@@ -148,13 +148,13 @@ bool ArchiveDependencyExtractor::needsUpdate()
 	if (!m_dependencyCache.contains(destination))
 		return true;
 
-	Json json = m_dependencyCache.get(destination);
-	if (!json.is_object())
-		json = Json::object();
+	Json jRoot = m_dependencyCache.get(destination);
+	if (!jRoot.is_object())
+		jRoot = Json::object();
 
-	const auto hash = json["h"].is_string() ? json["h"].get<std::string>() : std::string();
-	const auto cachedUrl = json["u"].is_string() ? json["u"].get<std::string>() : std::string();
-	const auto cachedSubdirectory = json["s"].is_string() ? json["s"].get<std::string>() : std::string();
+	const auto hash = json::get<std::string>(jRoot, "h");
+	const auto cachedUrl = json::get<std::string>(jRoot, "u");
+	const auto cachedSubdirectory = json::get<std::string>(jRoot, "s");
 
 	const bool urlNeedsUpdate = cachedUrl != url;
 	const bool subdirectoryNeedsUpdate = cachedSubdirectory != subdirectory;
@@ -181,24 +181,24 @@ bool ArchiveDependencyExtractor::needsUpdate()
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::updateDependencyCache()
+bool ArchiveDependencyBuilder::updateDependencyCache()
 {
 	const auto& destination = m_archiveDependency.destination();
 	const auto& url = m_archiveDependency.url();
 	const auto& subdirectory = m_archiveDependency.subdirectory();
 
-	Json json;
-	json["h"] = m_lastHash;
-	json["u"] = url;
-	json["s"] = subdirectory;
+	Json data;
+	data["h"] = m_lastHash;
+	data["u"] = url;
+	data["s"] = subdirectory;
 
 	if (m_dependencyCache.contains(destination))
 	{
-		m_dependencyCache.set(destination, std::move(json));
+		m_dependencyCache.set(destination, std::move(data));
 	}
 	else
 	{
-		m_dependencyCache.emplace(destination, std::move(json));
+		m_dependencyCache.emplace(destination, std::move(data));
 	}
 
 	// Do any cleanup here
@@ -207,13 +207,13 @@ bool ArchiveDependencyExtractor::updateDependencyCache()
 }
 
 /*****************************************************************************/
-void ArchiveDependencyExtractor::displayCheckingForUpdates(const std::string& inDestination)
+void ArchiveDependencyBuilder::displayCheckingForUpdates(const std::string& inDestination)
 {
 	Diagnostic::infoEllipsis("Checking remote for updates: {}", inDestination);
 }
 
 /*****************************************************************************/
-void ArchiveDependencyExtractor::displayFetchingMessageStart()
+void ArchiveDependencyBuilder::displayFetchingMessageStart()
 {
 	const auto& url = m_archiveDependency.url();
 
@@ -223,7 +223,7 @@ void ArchiveDependencyExtractor::displayFetchingMessageStart()
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::validateTools() const
+bool ArchiveDependencyBuilder::validateTools() const
 {
 	const auto& curl = m_centralState.tools.curl();
 	if (curl.empty())
@@ -274,7 +274,7 @@ bool ArchiveDependencyExtractor::validateTools() const
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::extractZipFile(const std::string& inFilename, const std::string& inDestination) const
+bool ArchiveDependencyBuilder::extractZipFile(const std::string& inFilename, const std::string& inDestination) const
 {
 #if defined(CHALET_WIN32)
 	StringList pwshCmd{
@@ -310,7 +310,7 @@ bool ArchiveDependencyExtractor::extractZipFile(const std::string& inFilename, c
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyExtractor::extractTarFile(const std::string& inFilename, const std::string& inDestination) const
+bool ArchiveDependencyBuilder::extractTarFile(const std::string& inFilename, const std::string& inDestination) const
 {
 	StringList cmd;
 
@@ -340,7 +340,7 @@ bool ArchiveDependencyExtractor::extractTarFile(const std::string& inFilename, c
 }
 
 /*****************************************************************************/
-std::string ArchiveDependencyExtractor::getDestination() const noexcept
+std::string ArchiveDependencyBuilder::getTempDestination() const noexcept
 {
 	const auto& destination = m_archiveDependency.destination();
 
@@ -351,7 +351,7 @@ std::string ArchiveDependencyExtractor::getDestination() const noexcept
 }
 
 /*****************************************************************************/
-std::string ArchiveDependencyExtractor::getOutputFile() const noexcept
+std::string ArchiveDependencyBuilder::getOutputFile() const noexcept
 {
 	const auto& url = m_archiveDependency.url();
 	const auto& destination = m_archiveDependency.destination();
@@ -361,7 +361,7 @@ std::string ArchiveDependencyExtractor::getOutputFile() const noexcept
 }
 
 /*****************************************************************************/
-std::string ArchiveDependencyExtractor::getArchiveHash(const std::string& inFilename) const
+std::string ArchiveDependencyBuilder::getArchiveHash(const std::string& inFilename) const
 {
 #if defined(CHALET_WIN32)
 	StringList pwshCmd{

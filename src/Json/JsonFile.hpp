@@ -38,21 +38,15 @@ struct JsonFile
 	bool validate(const Json& inSchemaJson);
 
 	template <typename T>
-	bool assignFromKey(T& outVariable, const Json& inNode, const char* inKey) const;
+	inline bool assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue);
 
 	template <typename T>
-	bool assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue);
-
-	template <typename T>
-	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
+	inline bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
 
 	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
 	bool assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
 
-	template <typename T>
-	bool containsKeyForType(const Json& inNode, const char* inKey) const;
-
-	Json json;
+	Json root;
 
 private:
 	Json initializeDataType(const JsonDataType inType);

@@ -17,13 +17,12 @@ bool ExternalDependencyCache::loadFromPath(const std::string& inPath)
 	m_filename = fmt::format("{}/.chaletext", inPath);
 
 	JsonFile jsonFile(m_filename);
-	if (!jsonFile.load(false))
-		jsonFile.json = Json::object();
+	jsonFile.load(false);
 
-	if (!jsonFile.json.is_object())
-		jsonFile.json = Json::object();
+	if (!jsonFile.root.is_object())
+		jsonFile.root = Json::object();
 
-	for (const auto& [key, value] : jsonFile.json.items())
+	for (const auto& [key, value] : jsonFile.root.items())
 	{
 		m_cache.emplace(key, value);
 	}
@@ -52,10 +51,10 @@ bool ExternalDependencyCache::save() const
 	else
 	{
 		JsonFile jsonFile(m_filename);
-		jsonFile.json = Json::object();
+		jsonFile.root = Json::object();
 		for (auto& [key, value] : m_cache)
 		{
-			jsonFile.json[key] = value;
+			jsonFile.root[key] = value;
 		}
 		jsonFile.setDirty(true);
 		jsonFile.save(-1);

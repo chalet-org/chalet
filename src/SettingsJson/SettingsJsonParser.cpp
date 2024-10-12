@@ -57,7 +57,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 	if (!m_jsonFile.validate(schema))
 		return false;
 
-	if (!serializeFromJsonRoot(m_jsonFile.json))
+	if (!serializeFromJsonRoot(m_jsonFile.root))
 	{
 		Diagnostic::error("There was an error parsing {}", m_jsonFile.filename());
 		return false;
@@ -105,7 +105,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 		if (!detectAppleSdks(true))
 			return false;
 
-		if (!parseAppleSdks(m_jsonFile.json))
+		if (!parseAppleSdks(m_jsonFile.root))
 			return false;
 	}
 #endif
@@ -131,50 +131,53 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	// Create the json cache
 	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
 
-	if (!m_jsonFile.json.contains(Keys::Toolchains) || !m_jsonFile.json[Keys::Toolchains].is_object())
+	auto& jRoot = m_jsonFile.root;
+	if (!json::isObject(jRoot, Keys::Toolchains))
 	{
-		m_jsonFile.json[Keys::Toolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
+		jRoot[Keys::Toolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
 	}
 
-	if (!m_jsonFile.json.contains(Keys::Tools) || !m_jsonFile.json[Keys::Tools].is_object())
+	if (!json::isObject(jRoot, Keys::Tools))
 	{
-		m_jsonFile.json[Keys::Tools] = inState.tools.is_object() ? inState.tools : Json::object();
+		jRoot[Keys::Tools] = inState.tools.is_object() ? inState.tools : Json::object();
 	}
 	else
 	{
 		if (inState.tools.is_object())
 		{
+			auto& tools = jRoot.at(Keys::Tools);
 			for (auto& [key, value] : inState.tools.items())
 			{
-				if (!m_jsonFile.json[Keys::Tools].contains(key))
+				if (!tools.contains(key))
 				{
-					m_jsonFile.json[Keys::Tools][key] = value;
+					tools[key] = value;
 				}
 			}
 		}
 	}
 
 #if defined(CHALET_MACOS)
-	if (!m_jsonFile.json.contains(Keys::AppleSdks) || !m_jsonFile.json[Keys::AppleSdks].is_object())
+	if (!json::isObject(jRoot, Keys::AppleSdks))
 	{
-		m_jsonFile.json[Keys::AppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
+		jRoot[Keys::AppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
 	}
 	else
 	{
 		if (inState.appleSdks.is_object())
 		{
+			auto& sdks = jRoot.at(Keys::AppleSdks);
 			for (auto& [key, value] : inState.appleSdks.items())
 			{
-				if (!m_jsonFile.json[Keys::AppleSdks].contains(key))
+				if (!sdks.contains(key))
 				{
-					m_jsonFile.json[Keys::AppleSdks][key] = value;
+					sdks[key] = value;
 				}
 			}
 		}
 	}
 #endif
 
-	Json& buildOptions = m_jsonFile.json[Keys::Options];
+	Json& buildOptions = jRoot.at(Keys::Options);
 
 	{
 		// pre 6.0.0
@@ -261,7 +264,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		return true;
 	};
 
-	Json& tools = m_jsonFile.json[Keys::Tools];
+	Json& tools = jRoot.at(Keys::Tools);
 
 	whichAdd(tools, Keys::ToolsBash);
 	whichAdd(tools, Keys::ToolsCcache);
@@ -380,10 +383,8 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		return false;
 #endif
 
-	if (m_jsonFile.json.contains(Keys::LastUpdateCheck))
-	{
-		m_jsonFile.json.erase(Keys::LastUpdateCheck);
-	}
+	if (jRoot.contains(Keys::LastUpdateCheck))
+		jRoot.erase(Keys::LastUpdateCheck);
 
 	return true;
 }
@@ -709,10 +710,10 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	// WatchSimulator.platform
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
-	Json& appleSkdsJson = m_jsonFile.json[Keys::AppleSdks];
+	Json& appleSkdsJson = m_jsonFile.root[Keys::AppleSdks];
 
-	chalet_assert(m_jsonFile.json.contains(Keys::Tools), "tools structure was not found");
-	auto& tools = m_jsonFile.json.at(Keys::Tools);
+	chalet_assert(m_jsonFile.root.contains(Keys::Tools), "tools structure was not found");
+	auto& tools = m_jsonFile.root.at(Keys::Tools);
 
 	chalet_assert(tools.contains(Keys::ToolsXcrun), "xcrun not found in tools structure");
 
