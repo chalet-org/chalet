@@ -121,7 +121,7 @@ Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 	auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
-	if (!inToolchainsNode.contains(preferenceName) || !inToolchainsNode.at(preferenceName).is_object())
+	if (!json::isObject(inToolchainsNode, preferenceName.c_str()))
 		inToolchainsNode[preferenceName] = Json::object();
 
 	auto& node = inToolchainsNode.at(preferenceName);

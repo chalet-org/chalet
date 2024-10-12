@@ -29,7 +29,7 @@ constexpr bool json::isValid(const Json& inNode)
 	}
 	else
 	{
-		static_assert(false, "json::isValid - type not implemented");
+		chalet_assert(false, "json::isValid - type not implemented");
 		return false;
 	}
 }

@@ -223,7 +223,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLastTarget, m_inputs.lastTarget(), inState.lastTarget);
 
-	if (!buildOptions.contains(Keys::OptionsRunArguments) || !buildOptions[Keys::OptionsRunArguments].is_object())
+	if (!json::isObject(buildOptions, Keys::OptionsRunArguments))
 	{
 		buildOptions[Keys::OptionsRunArguments] = Json::object();
 		m_jsonFile.setDirty(true);
