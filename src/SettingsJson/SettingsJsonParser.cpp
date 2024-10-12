@@ -291,7 +291,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	whichAdd(tools, Keys::ToolsLdd);
 
 #if !defined(CHALET_WIN32)
-	whichAdd(tools, Keys::ToolsOpenSSL);
+	whichAdd(tools, Keys::ToolsShasum);
 #endif
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsOsascript, HostPlatform::MacOS);
@@ -655,19 +655,18 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setInstruments(value.get<std::string>());
 			else if (String::equals(Keys::ToolsLdd, key))
 				m_centralState.tools.setLdd(value.get<std::string>());
-			else if (String::equals(Keys::ToolsOpenSSL, key))
-				m_centralState.tools.setOpenssl(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOsascript, key))
 				m_centralState.tools.setOsascript(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOtool, key))
 				m_centralState.tools.setOtool(value.get<std::string>());
-
 			else if (String::equals(Keys::ToolsPlutil, key))
 				m_centralState.tools.setPlutil(value.get<std::string>());
 			else if (String::equals(Keys::ToolsPowershell, key))
 				m_centralState.tools.setPowershell(value.get<std::string>());
 			else if (String::equals(Keys::ToolsSample, key))
 				m_centralState.tools.setSample(value.get<std::string>());
+			else if (String::equals(Keys::ToolsShasum, key))
+				m_centralState.tools.setShasum(value.get<std::string>());
 			else if (String::equals(Keys::ToolsSips, key))
 				m_centralState.tools.setSips(value.get<std::string>());
 			else if (String::equals(Keys::ToolsTar, key))

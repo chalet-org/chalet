@@ -322,10 +322,10 @@
 					"description": "The executable path to ldd.",
 					"default": "/usr/bin/ldd"
 				},
-				"openssl": {
+				"shasum": {
 					"type": "string",
-					"description": "The executable path to openssl.",
-					"default": "/usr/bin/openssl"
+					"description": "The executable path to shasum.",
+					"default": "/usr/bin/shasum"
 				},
 				"osascript": {
 					"type": "string",

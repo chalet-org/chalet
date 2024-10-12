@@ -184,13 +184,11 @@ bool ArchiveDependencyBuilder::needsUpdate()
 bool ArchiveDependencyBuilder::updateDependencyCache()
 {
 	const auto& destination = m_archiveDependency.destination();
-	const auto& url = m_archiveDependency.url();
-	const auto& subdirectory = m_archiveDependency.subdirectory();
 
 	Json data;
 	data["h"] = m_lastHash;
-	data["u"] = url;
-	data["s"] = subdirectory;
+	data["u"] = m_archiveDependency.url();
+	data["s"] = m_archiveDependency.subdirectory();
 
 	if (m_dependencyCache.contains(destination))
 	{
@@ -262,10 +260,10 @@ bool ArchiveDependencyBuilder::validateTools() const
 		return false;
 	}
 #else
-	const auto& openssl = m_centralState.tools.openssl();
-	if (openssl.empty())
+	const auto& shasum = m_centralState.tools.shasum();
+	if (shasum.empty())
 	{
-		Diagnostic::error("archive dependency requires openssl: {}", m_archiveDependency.name());
+		Diagnostic::error("archive dependency requires shasum: {}", m_archiveDependency.name());
 		return false;
 	}
 #endif
@@ -373,8 +371,8 @@ std::string ArchiveDependencyBuilder::getArchiveHash(const std::string& inFilena
 	const auto& powershell = m_centralState.tools.powershell();
 	auto shaOutput = Process::runOutput({ powershell, String::join(pwshCmd) });
 #else
-	const auto& openssl = m_centralState.tools.openssl();
-	auto shaOutput = Process::runOutput({ openssl, "sha1", inFilename });
+	const auto& shasum = m_centralState.tools.shasum();
+	auto shaOutput = Process::runOutput({ shasum, "-a", "256", inFilename });
 #endif
 	return Hash::string(shaOutput);
 }

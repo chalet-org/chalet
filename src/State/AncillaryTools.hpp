@@ -63,9 +63,6 @@ struct AncillaryTools
 	const std::string& ldd() const noexcept;
 	void setLdd(std::string&& inValue) noexcept;
 
-	const std::string& openssl() const noexcept;
-	void setOpenssl(std::string&& inValue) noexcept;
-
 	const std::string osascript() const noexcept;
 	void setOsascript(std::string&& inValue) noexcept;
 
@@ -80,6 +77,9 @@ struct AncillaryTools
 
 	const std::string& sample() const noexcept;
 	void setSample(std::string&& inValue) noexcept;
+
+	const std::string& shasum() const noexcept;
+	void setShasum(std::string&& inValue) noexcept;
 
 	const std::string& sips() const noexcept;
 	void setSips(std::string&& inValue) noexcept;
@@ -144,7 +144,6 @@ private:
 	std::string m_ldd;
 	std::string m_lipo;
 	std::string m_lua;
-	std::string m_openssl;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_perl;
@@ -154,6 +153,7 @@ private:
 	std::string m_python3;
 	std::string m_ruby;
 	std::string m_sample;
+	std::string m_shasum;
 	std::string m_sips;
 	std::string m_tar;
 	std::string m_tiffutil;

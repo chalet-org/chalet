@@ -30,12 +30,12 @@ enum class Defs : u16
 	InstallNameTool,
 	Instruments,
 	Ldd,
-	OpenSSL,
 	OsaScript,
 	Otool,
 	PlUtil,
 	Powershell,
 	Sample,
+	Shasum,
 	Sips,
 	Tar,
 	TiffUtil,
@@ -165,10 +165,10 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"default": "/usr/bin/ldd"
 	})json"_ojson;
 
-	defs[Defs::OpenSSL] = R"json({
+	defs[Defs::Shasum] = R"json({
 		"type": "string",
-		"description": "The executable path to openssl.",
-		"default": "/usr/bin/openssl"
+		"description": "The executable path to shasum.",
+		"default": "/usr/bin/shasum"
 	})json"_ojson;
 
 	defs[Defs::OsaScript] = R"json({
@@ -599,7 +599,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstallNameTool] = defs[Defs::InstallNameTool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstruments] = defs[Defs::Instruments];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsLdd] = defs[Defs::Ldd];
-	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOpenSSL] = defs[Defs::OpenSSL];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsShasum] = defs[Defs::Shasum];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOsascript] = defs[Defs::OsaScript];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOtool] = defs[Defs::Otool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPlutil] = defs[Defs::PlUtil];

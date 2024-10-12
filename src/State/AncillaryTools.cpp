@@ -349,13 +349,13 @@ void AncillaryTools::setLdd(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& AncillaryTools::openssl() const noexcept
+const std::string& AncillaryTools::shasum() const noexcept
 {
-	return m_openssl;
+	return m_shasum;
 }
-void AncillaryTools::setOpenssl(std::string&& inValue) noexcept
+void AncillaryTools::setShasum(std::string&& inValue) noexcept
 {
-	m_openssl = std::move(inValue);
+	m_shasum = std::move(inValue);
 }
 
 /*****************************************************************************/
