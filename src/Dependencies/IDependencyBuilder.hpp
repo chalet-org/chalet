@@ -12,7 +12,7 @@ class ExternalDependencyCache;
 struct IDependencyBuilder
 {
 	IDependencyBuilder(ExternalDependencyCache& inDependencyCache);
-	CHALET_DEFAULT_COPY_MOVE(IDependencyBuilder);
+	CHALET_DISALLOW_COPY_MOVE(IDependencyBuilder);
 	virtual ~IDependencyBuilder() = default;
 
 	virtual bool localPathShouldUpdate(const std::string& inDestination) = 0;
