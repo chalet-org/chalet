@@ -8,6 +8,7 @@
 #include "State/CentralState.hpp"
 #include "Utility/String.hpp"
 
+#include "State/Dependency/ArchiveDependency.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Dependency/ScriptDependency.hpp"
@@ -30,9 +31,10 @@ IExternalDependency::IExternalDependency(const CentralState& inCentralState, con
 			return std::make_unique<GitDependency>(inCentralState);
 		case ExternalDependencyType::Local:
 			return std::make_unique<LocalDependency>(inCentralState);
+		case ExternalDependencyType::Archive:
+			return std::make_unique<ArchiveDependency>(inCentralState);
 		case ExternalDependencyType::Script:
 			return std::make_unique<ScriptDependency>(inCentralState);
-		// case ExternalDependencyType::SVN:
 		default:
 			break;
 	}
@@ -52,14 +54,14 @@ bool IExternalDependency::isGit() const noexcept
 {
 	return m_type == ExternalDependencyType::Git;
 }
-
-/*****************************************************************************/
 bool IExternalDependency::isLocal() const noexcept
 {
 	return m_type == ExternalDependencyType::Local;
 }
-
-/*****************************************************************************/
+bool IExternalDependency::isArchive() const noexcept
+{
+	return m_type == ExternalDependencyType::Archive;
+}
 bool IExternalDependency::isScript() const noexcept
 {
 	return m_type == ExternalDependencyType::Script;

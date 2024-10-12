@@ -11,19 +11,19 @@
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"getkeys"
+				"build"
 			]
 		},
 		{
 			"name": "LLDB",
 			"type": "lldb",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../chalet-example-sharedlib",
+			"cwd": "${workspaceFolder}/../new-project",
 			"preLaunchTask": "Build: Debug",
 			"stopOnEntry": false,
 			"program": "${workspaceFolder}/build/Debug/chalet-debug",
 			"args": [
-				"bundle"
+				"build"
 			],
 		},
 		{

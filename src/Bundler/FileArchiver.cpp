@@ -312,14 +312,18 @@ bool FileArchiver::getTarFormatCommand(StringList& outCmd, const std::string& in
 
 	UNUSED(inBaseName);
 
-#if defined(CHALET_WIN32)
-	const auto& powershell = m_state.tools.powershell();
-	outCmd.emplace_back(powershell);
-	outCmd.emplace_back("tar");
-#else
+	// #if defined(CHALET_WIN32)
+	// 	const auto& powershell = m_state.tools.powershell();
+	// 	outCmd.emplace_back(powershell);
+	// 	outCmd.emplace_back("tar");
+	// #else
+	// 	const auto& tar = m_state.tools.tar();
+	// 	outCmd.emplace_back(tar);
+	// #endif
+
 	const auto& tar = m_state.tools.tar();
 	outCmd.emplace_back(tar);
-#endif
+
 	outCmd.emplace_back("-c");
 	outCmd.emplace_back("-z");
 	outCmd.emplace_back("-f");

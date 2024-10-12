@@ -242,6 +242,9 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 			if (inPlatform == HostPlatform::Any || inPlatform == platform)
 			{
 				auto path = Files::which(inKey);
+#if defined(CHALET_WIN32)
+				String::replaceAll(path, "WINDOWS/SYSTEM32", "Windows/System32");
+#endif
 				bool res = !path.empty();
 				inNode[inKey] = std::move(path);
 				m_jsonFile.setDirty(true);
@@ -269,13 +272,13 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #if defined(CHALET_WIN32)
 	if (!tools.contains(Keys::ToolsCommandPrompt))
 	{
-		auto res = Files::which("cmd");
-		String::replaceAll(res, "WINDOWS/SYSTEM32", "Windows/System32");
-		tools[Keys::ToolsCommandPrompt] = std::move(res);
+		auto path = Files::which("cmd");
+		String::replaceAll(path, "WINDOWS/SYSTEM32", "Windows/System32");
+		tools[Keys::ToolsCommandPrompt] = std::move(path);
 		m_jsonFile.setDirty(true);
 	}
 #endif
-
+	whichAdd(tools, Keys::ToolsCurl);
 	whichAdd(tools, Keys::ToolsGit);
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsHdiutil, HostPlatform::MacOS);
@@ -284,6 +287,9 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #endif
 	whichAdd(tools, Keys::ToolsLdd);
 
+#if !defined(CHALET_WIN32)
+	whichAdd(tools, Keys::ToolsOpenSSL);
+#endif
 #if defined(CHALET_MACOS)
 	whichAdd(tools, Keys::ToolsOsascript, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsOtool, HostPlatform::MacOS);
@@ -310,11 +316,12 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	whichAdd(tools, Keys::ToolsTiffutil, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsXcodebuild, HostPlatform::MacOS);
 	whichAdd(tools, Keys::ToolsXcrun, HostPlatform::MacOS);
-#elif defined(CHALET_LINUX)
+#else
 	whichAdd(tools, Keys::ToolsTar);
 #endif
 
 #if !defined(CHALET_WIN32)
+	whichAdd(tools, Keys::ToolsUnzip);
 	whichAdd(tools, Keys::ToolsZip);
 #endif
 
@@ -635,6 +642,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setCodesign(value.get<std::string>());
 			else if (String::equals(Keys::ToolsCommandPrompt, key))
 				m_centralState.tools.setCommandPrompt(value.get<std::string>());
+			else if (String::equals(Keys::ToolsCurl, key))
+				m_centralState.tools.setCurl(value.get<std::string>());
 			else if (String::equals(Keys::ToolsGit, key))
 				m_centralState.tools.setGit(value.get<std::string>());
 			else if (String::equals(Keys::ToolsHdiutil, key))
@@ -645,6 +654,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setInstruments(value.get<std::string>());
 			else if (String::equals(Keys::ToolsLdd, key))
 				m_centralState.tools.setLdd(value.get<std::string>());
+			else if (String::equals(Keys::ToolsOpenSSL, key))
+				m_centralState.tools.setOpenssl(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOsascript, key))
 				m_centralState.tools.setOsascript(value.get<std::string>());
 			else if (String::equals(Keys::ToolsOtool, key))
@@ -662,6 +673,8 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 				m_centralState.tools.setTar(value.get<std::string>());
 			else if (String::equals(Keys::ToolsTiffutil, key))
 				m_centralState.tools.setTiffutil(value.get<std::string>());
+			else if (String::equals(Keys::ToolsUnzip, key))
+				m_centralState.tools.setUnzip(value.get<std::string>());
 			else if (String::equals(Keys::ToolsXcodebuild, key))
 				m_centralState.tools.setXcodebuild(value.get<std::string>());
 			else if (String::equals(Keys::ToolsXcrun, key))

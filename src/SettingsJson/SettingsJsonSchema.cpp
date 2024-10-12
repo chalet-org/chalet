@@ -24,11 +24,13 @@ enum class Defs : u16
 	Ccache,
 	CommandPrompt,
 	CodeSign,
+	Curl,
 	Git,
 	HdiUtil,
 	InstallNameTool,
 	Instruments,
 	Ldd,
+	OpenSSL,
 	OsaScript,
 	Otool,
 	PlUtil,
@@ -37,6 +39,7 @@ enum class Defs : u16
 	Sips,
 	Tar,
 	TiffUtil,
+	Unzip,
 	XcodeBuild,
 	XcRun,
 	Zip,
@@ -126,6 +129,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"default": "/usr/bin/codesign"
 	})json"_ojson;
 
+	defs[Defs::Curl] = R"json({
+		"type": "string",
+		"description": "The executable path to curl.",
+		"default": "/usr/bin/curl"
+	})json"_ojson;
+
 	defs[Defs::Git] = R"json({
 		"type": "string",
 		"description": "The executable path to Git.",
@@ -154,6 +163,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"type": "string",
 		"description": "The executable path to ldd.",
 		"default": "/usr/bin/ldd"
+	})json"_ojson;
+
+	defs[Defs::OpenSSL] = R"json({
+		"type": "string",
+		"description": "The executable path to openssl.",
+		"default": "/usr/bin/openssl"
 	})json"_ojson;
 
 	defs[Defs::OsaScript] = R"json({
@@ -202,6 +217,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"type": "string",
 		"description": "The executable path to Apple's tiffutil command-line utility. (MacOS)",
 		"default": "/usr/bin/tiffutil"
+	})json"_ojson;
+
+	defs[Defs::Unzip] = R"json({
+		"type": "string",
+		"description": "The executable path to unzip.",
+		"default": "/usr/bin/unzip"
 	})json"_ojson;
 
 	defs[Defs::XcodeBuild] = R"json({
@@ -572,11 +593,13 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCcache] = defs[Defs::Ccache];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCommandPrompt] = defs[Defs::CommandPrompt];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCodesign] = defs[Defs::CodeSign];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsCurl] = defs[Defs::Curl];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsGit] = defs[Defs::Git];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsHdiutil] = defs[Defs::HdiUtil];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstallNameTool] = defs[Defs::InstallNameTool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsInstruments] = defs[Defs::Instruments];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsLdd] = defs[Defs::Ldd];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOpenSSL] = defs[Defs::OpenSSL];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOsascript] = defs[Defs::OsaScript];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsOtool] = defs[Defs::Otool];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsPlutil] = defs[Defs::PlUtil];
@@ -585,6 +608,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsSips] = defs[Defs::Sips];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTar] = defs[Defs::Tar];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsTiffutil] = defs[Defs::TiffUtil];
+	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsUnzip] = defs[Defs::Unzip];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcodebuild] = defs[Defs::XcodeBuild];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsXcrun] = defs[Defs::XcRun];
 	ret[SKeys::Properties][Keys::Tools][SKeys::Properties][Keys::ToolsZip] = defs[Defs::Zip];

@@ -861,6 +861,41 @@
 			"description": "The local path to a dependency to build from. Can take `env` and `var` substitution variables. (ie. `${env:SOME_PATH}`)",
 			"minLength": 1
 		},
+		"external-dependency-archive": {
+			"type": "object",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"url"
+			],
+			"properties": {
+				"condition": {
+					"$ref": "#/definitions/external-dependency-condition"
+				},
+				"kind": {
+					"type": "string",
+					"description": "Whether the external dependency is a git repository, local folder, or script.",
+					"minLength": 1,
+					"const": "archive"
+				},
+				"url": {
+					"$ref": "#/definitions/external-dependency-archive-url"
+				},
+				"subdirectory": {
+					"$ref": "#/definitions/external-dependency-archive-subdirectory"
+				}
+			}
+		},
+		"external-dependency-archive-url": {
+			"type": "string",
+			"description": "The url of an archive to download and extract.",
+			"minLength": 1
+		},
+		"external-dependency-archive-subdirectory": {
+			"type": "string",
+			"description": "A sub-directory inside of the archive to treat as the root.",
+			"minLength": 1
+		},
 		"external-dependency-script": {
 			"type": "object",
 			"additionalProperties": false,
@@ -3294,6 +3329,7 @@
 							"enum": [
 								"git",
 								"local",
+								"archive",
 								"script"
 							]
 						}
@@ -3304,6 +3340,9 @@
 						},
 						{
 							"$ref": "#/definitions/external-dependency-local"
+						},
+						{
+							"$ref": "#/definitions/external-dependency-archive"
 						},
 						{
 							"$ref": "#/definitions/external-dependency-script"

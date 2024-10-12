@@ -27,6 +27,7 @@ struct IExternalDependency
 	ExternalDependencyType type() const noexcept;
 	bool isGit() const noexcept;
 	bool isLocal() const noexcept;
+	bool isArchive() const noexcept;
 	bool isScript() const noexcept;
 
 	const std::string& name() const noexcept;

@@ -79,6 +79,10 @@ class ChaletJsonSchema
 		ExternalDependencyLocal,
 		ExternalDependencyLocalPath,
 		//
+		ExternalDependencyArchive,
+		ExternalDependencyArchiveUrl,
+		ExternalDependencyArchiveSubDirectory,
+		//
 		ExternalDependencyScript,
 		//
 		// EnumPlatform,

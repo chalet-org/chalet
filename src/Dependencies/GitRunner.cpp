@@ -36,7 +36,7 @@ GitRunner::GitRunner(CentralState& inCentralState) :
 bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
 {
 	bool destinationExists = Files::pathExists(gitDependency.destination());
-	if (!gitRepositoryShouldUpdate(gitDependency, destinationExists))
+	if (!localPathShouldUpdate(gitDependency, destinationExists))
 		return true;
 
 	destinationExists = Files::pathExists(gitDependency.destination());
@@ -64,7 +64,7 @@ bool GitRunner::run(GitDependency& gitDependency, StringList& outChanged)
 }
 
 /*****************************************************************************/
-bool GitRunner::gitRepositoryShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists)
+bool GitRunner::localPathShouldUpdate(const GitDependency& inDependency, const bool inDestinationExists)
 {
 	const auto& destination = inDependency.destination();
 	if (!m_dependencyCache.contains(destination))
@@ -184,14 +184,14 @@ bool GitRunner::needsUpdate(const GitDependency& inDependency)
 	const auto cachedBranch = json["b"].is_string() ? json["b"].get<std::string>() : std::string();
 	const auto cachedTag = json["t"].is_string() ? json["t"].get<std::string>() : std::string();
 
-	bool commitNeedsUpdate = (!commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit))) || (commit.empty() && !cachedCommit.empty());
-	bool branchNeedsUpdate = cachedBranch != branch;
-	bool tagNeedsUpdate = cachedTag != tag;
+	const bool commitNeedsUpdate = (!commit.empty() && (!String::startsWith(commit, cachedCommit) || !String::startsWith(commit, lastCachedCommit))) || (commit.empty() && !cachedCommit.empty());
+	const bool branchNeedsUpdate = cachedBranch != branch;
+	const bool tagNeedsUpdate = cachedTag != tag;
 
 	// LOG(commitNeedsUpdate, branchNeedsUpdate, tagNeedsUpdate, destination);
 
+	const bool isConfigure = m_centralState.inputs().route().isConfigure();
 	bool update = commitNeedsUpdate || branchNeedsUpdate || tagNeedsUpdate;
-	bool isConfigure = m_centralState.inputs().route().isConfigure();
 	if (!update && !lastCachedBranch.empty() && isConfigure)
 	{
 		Timer timer;
@@ -262,7 +262,7 @@ bool GitRunner::updateDependencyCache(const GitDependency& inDependency)
 		m_dependencyCache.emplace(destination, std::move(json));
 	}
 
-	// Note: Some (bad) repos have source files in the root. using that as an include path
+	// Note: Some repos have source files in the root. using that as an include path
 	//   could result in trouble...
 	for (auto& path : {
 			 ".git",

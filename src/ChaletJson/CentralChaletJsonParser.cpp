@@ -15,6 +15,7 @@
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
 
+#include "State/Dependency/ArchiveDependency.hpp"
 #include "State/Dependency/GitDependency.hpp"
 #include "State/Dependency/LocalDependency.hpp"
 #include "State/Dependency/ScriptDependency.hpp"
@@ -333,6 +334,10 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 			{
 				type = ExternalDependencyType::Local;
 			}
+			else if (String::equals("archive", val))
+			{
+				type = ExternalDependencyType::Archive;
+			}
 			else if (String::equals("script", val))
 			{
 				type = ExternalDependencyType::Script;
@@ -370,6 +375,14 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 			if (!parseLocalDependency(static_cast<LocalDependency&>(*dependency), dependencyJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'local'.", m_chaletJson.filename(), name);
+				return false;
+			}
+		}
+		else if (dependency->isArchive())
+		{
+			if (!parseArchiveDependency(static_cast<ArchiveDependency&>(*dependency), dependencyJson))
+			{
+				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'archive'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -433,6 +446,30 @@ bool CentralChaletJsonParser::parseLocalDependency(LocalDependency& outDependenc
 	if (!hasPath)
 	{
 		Diagnostic::error("{}: 'path' is required for local dependencies.", m_chaletJson.filename());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralChaletJsonParser::parseArchiveDependency(ArchiveDependency& outDependency, const Json& inNode) const
+{
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals("url", key))
+				outDependency.setUrl(value.get<std::string>());
+			else if (String::equals("subdirectory", key))
+				outDependency.setSubdirectory(value.get<std::string>());
+		}
+	}
+
+	bool hasPath = !outDependency.url().empty();
+	if (!hasPath)
+	{
+		Diagnostic::error("{}: 'url' is required for archive dependencies.", m_chaletJson.filename());
 		return false;
 	}
 

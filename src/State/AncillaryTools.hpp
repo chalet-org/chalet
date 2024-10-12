@@ -45,6 +45,9 @@ struct AncillaryTools
 	const std::string& commandPrompt() const noexcept;
 	void setCommandPrompt(std::string&& inValue) noexcept;
 
+	const std::string& curl() const noexcept;
+	void setCurl(std::string&& inValue) noexcept;
+
 	const std::string& git() const noexcept;
 	void setGit(std::string&& inValue) noexcept;
 
@@ -59,6 +62,9 @@ struct AncillaryTools
 
 	const std::string& ldd() const noexcept;
 	void setLdd(std::string&& inValue) noexcept;
+
+	const std::string& openssl() const noexcept;
+	void setOpenssl(std::string&& inValue) noexcept;
 
 	const std::string osascript() const noexcept;
 	void setOsascript(std::string&& inValue) noexcept;
@@ -83,6 +89,9 @@ struct AncillaryTools
 
 	const std::string& tiffutil() const noexcept;
 	void setTiffutil(std::string&& inValue) noexcept;
+
+	const std::string& unzip() const noexcept;
+	void setUnzip(std::string&& inValue) noexcept;
 
 	const std::string& xcodebuild() const noexcept;
 	void setXcodebuild(std::string&& inValue) noexcept;
@@ -126,6 +135,7 @@ private:
 	std::string m_ccache;
 	std::string m_codesign;
 	std::string m_commandPrompt;
+	std::string m_curl;
 	std::string m_git;
 	std::string m_gprof;
 	std::string m_hdiutil;
@@ -134,6 +144,7 @@ private:
 	std::string m_ldd;
 	std::string m_lipo;
 	std::string m_lua;
+	std::string m_openssl;
 	std::string m_osascript;
 	std::string m_otool;
 	std::string m_perl;
@@ -146,6 +157,7 @@ private:
 	std::string m_sips;
 	std::string m_tar;
 	std::string m_tiffutil;
+	std::string m_unzip;
 	std::string m_xcodebuild;
 	std::string m_xcrun;
 	std::string m_zip;

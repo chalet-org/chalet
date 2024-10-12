@@ -9,6 +9,7 @@ namespace chalet
 {
 enum class ArchiveFormat : u16
 {
+	Unknown,
 	Zip,
 	Tar,
 };
