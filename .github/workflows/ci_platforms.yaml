@@ -288,3 +288,26 @@ jobs:
           omitPrereleaseDuringUpdate: true
           draft: false
           prerelease: ${{ env.IS_PRERELEASE }}
+  homebrew-release:
+    runs-on: macos-12
+    needs: [create-release, all-linux, all-macos, all-windows]
+    steps:
+      - name: "Checkout chalet-org/homebrew-chalet"
+        uses: actions/checkout@v4
+        with:
+          path: homebrew
+          ref: 'main'
+          repository: chalet-org/homebrew-chalet
+          token: ${{ secrets.RELEASE_GITHUB_TOKEN }}
+          fetch-depth: 0
+          persist-credentials: true
+      - name: "Update Casks"
+        working-directory: homebrew
+        run: |
+          ./make_cask.sh ${{ needs.create-release.outputs.tag }}
+          git config --global user.name "chalet [bot]"
+          git config --global user.email "${{ secrets.RELEASE_BOT_EMAIL }}"
+          git add -A
+          git commit -m "Update Casks from release: ${{ needs.create-release.outputs.tag }}"
+          git push
+
