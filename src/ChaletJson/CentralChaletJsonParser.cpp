@@ -366,7 +366,6 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 
 		if (dependency->isGit())
 		{
-			// A script could be only for a specific platform
 			if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 				return false;
 		}

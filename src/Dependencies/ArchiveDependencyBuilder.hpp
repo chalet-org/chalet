@@ -5,17 +5,20 @@
 
 #pragma once
 
+#include "Dependencies/IDependencyBuilder.hpp"
+
 namespace chalet
 {
 struct CentralState;
 struct ArchiveDependency;
 class ExternalDependencyCache;
 
-struct ArchiveDependencyBuilder
+struct ArchiveDependencyBuilder final : public IDependencyBuilder
 {
 	ArchiveDependencyBuilder(CentralState& inCentralState, const ArchiveDependency& inDependency);
 
-	bool run(StringList& outChanged);
+	virtual bool validateRequiredTools() const final;
+	virtual bool resolveDependency(StringList& outChanged) final;
 
 private:
 	bool localPathShouldUpdate(const bool inDestinationExists);
@@ -24,19 +27,15 @@ private:
 	bool needsUpdate();
 	bool updateDependencyCache();
 
-	void displayCheckingForUpdates(const std::string& inDestination);
 	void displayFetchingMessageStart();
 
-	bool validateTools() const;
 	bool extractZipFile(const std::string& inFilename, const std::string& inDestination) const;
 	bool extractTarFile(const std::string& inFilename, const std::string& inDestination) const;
 	std::string getTempDestination() const noexcept;
 	std::string getOutputFile() const noexcept;
 	std::string getArchiveHash(const std::string& inFilename) const;
 
-	CentralState& m_centralState;
 	const ArchiveDependency& m_archiveDependency;
-	ExternalDependencyCache& m_dependencyCache;
 
 	std::string m_lastHash;
 };

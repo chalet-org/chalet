@@ -5,17 +5,20 @@
 
 #pragma once
 
+#include "Dependencies/IDependencyBuilder.hpp"
+
 namespace chalet
 {
 struct CentralState;
 struct GitDependency;
 class ExternalDependencyCache;
 
-struct GitDependencyBuilder
+struct GitDependencyBuilder final : public IDependencyBuilder
 {
 	explicit GitDependencyBuilder(CentralState& inCentralState, const GitDependency& inDependency);
 
-	bool run(StringList& outChanged);
+	virtual bool validateRequiredTools() const final;
+	virtual bool resolveDependency(StringList& outChanged) final;
 
 private:
 	bool localPathShouldUpdate(const bool inDestinationExists);
@@ -26,7 +29,6 @@ private:
 	bool needsUpdate();
 	bool updateDependencyCache();
 
-	void displayCheckingForUpdates(const std::string& inDestination);
 	void displayFetchingMessageStart();
 
 	std::string getCurrentGitRepositoryBranch(const std::string& inRepoPath) const;
@@ -39,9 +41,7 @@ private:
 
 	std::string getCleanGitPath(const std::string& inPath) const;
 
-	CentralState& m_centralState;
 	const GitDependency& m_gitDependency;
-	ExternalDependencyCache& m_dependencyCache;
 
 #if defined(CHALET_WIN32)
 	const std::string m_commandPrompt;

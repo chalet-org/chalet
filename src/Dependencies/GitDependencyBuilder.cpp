@@ -23,9 +23,8 @@ namespace chalet
 {
 /*****************************************************************************/
 GitDependencyBuilder::GitDependencyBuilder(CentralState& inCentralState, const GitDependency& inDependency) :
-	m_centralState(inCentralState),
+	IDependencyBuilder(inCentralState),
 	m_gitDependency(inDependency),
-	m_dependencyCache(m_centralState.cache.file().externalDependencies()),
 #if defined(CHALET_WIN32)
 	m_commandPrompt(m_centralState.tools.commandPrompt()),
 #endif
@@ -34,7 +33,19 @@ GitDependencyBuilder::GitDependencyBuilder(CentralState& inCentralState, const G
 }
 
 /*****************************************************************************/
-bool GitDependencyBuilder::run(StringList& outChanged)
+bool GitDependencyBuilder::validateRequiredTools() const
+{
+	if (m_git.empty())
+	{
+		Diagnostic::error("Git dependency '{}' requested, but git is not installed", m_gitDependency.name());
+		return false;
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool GitDependencyBuilder::resolveDependency(StringList& outChanged)
 {
 	const auto& destination = m_gitDependency.destination();
 
@@ -121,7 +132,7 @@ StringList GitDependencyBuilder::getCloneCommand()
 
 	const auto& checkoutTo = !tag.empty() ? tag : branch;
 
-	ret.push_back(m_centralState.tools.git());
+	ret.push_back(m_git);
 	ret.emplace_back("clone");
 	ret.emplace_back("--quiet");
 
@@ -216,12 +227,6 @@ bool GitDependencyBuilder::needsUpdate()
 	}
 
 	return update;
-}
-
-/*****************************************************************************/
-void GitDependencyBuilder::displayCheckingForUpdates(const std::string& inDestination)
-{
-	Diagnostic::infoEllipsis("Checking remote for updates: {}", inDestination);
 }
 
 /*****************************************************************************/

@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/ArchiveDependencyBuilder.hpp"
 #include "Dependencies/GitDependencyBuilder.hpp"
+#include "Dependencies/IDependencyBuilder.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/CentralState.hpp"
 #include "State/Dependency/ArchiveDependency.hpp"
@@ -45,24 +46,13 @@ bool DependencyManager::run()
 			return false;
 		}
 
-		if (dependency->isGit())
+		if (dependency->isGit() || dependency->isArchive())
 		{
-			if (!m_centralState.tools.git().empty())
-			{
-				GitDependencyBuilder git(m_centralState, static_cast<GitDependency&>(*dependency));
-				if (!git.run(m_depsChanged))
-					return false;
-			}
-			else
-			{
-				Diagnostic::error("Git dependency '{}' requested, but git is not installed", dependency->name());
+			auto builder = IDependencyBuilder::make(m_centralState, *dependency);
+			if (!builder->validateRequiredTools())
 				return false;
-			}
-		}
-		else if (dependency->isArchive())
-		{
-			ArchiveDependencyBuilder extractor(m_centralState, static_cast<ArchiveDependency&>(*dependency));
-			if (!extractor.run(m_depsChanged))
+
+			if (!builder->resolveDependency(m_depsChanged))
 				return false;
 		}
 		else if (dependency->isScript())

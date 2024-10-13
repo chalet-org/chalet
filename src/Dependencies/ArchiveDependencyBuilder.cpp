@@ -21,14 +21,64 @@ namespace chalet
 {
 /*****************************************************************************/
 ArchiveDependencyBuilder::ArchiveDependencyBuilder(CentralState& inCentralState, const ArchiveDependency& inDependency) :
-	m_centralState(inCentralState),
-	m_archiveDependency(inDependency),
-	m_dependencyCache(m_centralState.cache.file().externalDependencies())
+	IDependencyBuilder(inCentralState),
+	m_archiveDependency(inDependency)
 {
 }
 
 /*****************************************************************************/
-bool ArchiveDependencyBuilder::run(StringList& outChanged)
+bool ArchiveDependencyBuilder::validateRequiredTools() const
+{
+	const auto& curl = m_centralState.tools.curl();
+	if (curl.empty())
+	{
+		Diagnostic::error("archive dependency requires curl: {}", m_archiveDependency.name());
+		return false;
+	}
+
+	auto format = m_archiveDependency.format();
+	if (format == ArchiveFormat::Zip)
+	{
+#if !defined(CHALET_WIN32)
+		const auto& unzip = m_centralState.tools.unzip();
+		if (unzip.empty())
+		{
+			Diagnostic::error("archive dependency requires unzip: {}", m_archiveDependency.name());
+			return false;
+		}
+#endif
+	}
+	else if (format == ArchiveFormat::Tar)
+	{
+		const auto& tar = m_centralState.tools.tar();
+		if (tar.empty())
+		{
+			Diagnostic::error("archive dependency requires tar: {}", m_archiveDependency.name());
+			return false;
+		}
+	}
+
+#if defined(CHALET_WIN32)
+	const auto& powershell = m_centralState.tools.powershell();
+	if (powershell.empty())
+	{
+		Diagnostic::error("archive dependency requires powershell: {}", m_archiveDependency.name());
+		return false;
+	}
+#else
+	const auto& shasum = m_centralState.tools.shasum();
+	if (shasum.empty())
+	{
+		Diagnostic::error("archive dependency requires shasum: {}", m_archiveDependency.name());
+		return false;
+	}
+#endif
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ArchiveDependencyBuilder::resolveDependency(StringList& outChanged)
 {
 	const auto& destination = m_archiveDependency.destination();
 
@@ -83,9 +133,6 @@ bool ArchiveDependencyBuilder::fetchDependency(const bool inDestinationExists)
 		return true;
 
 	displayFetchingMessageStart();
-
-	if (!validateTools())
-		return false;
 
 	const auto destination = getTempDestination();
 
@@ -205,12 +252,6 @@ bool ArchiveDependencyBuilder::updateDependencyCache()
 }
 
 /*****************************************************************************/
-void ArchiveDependencyBuilder::displayCheckingForUpdates(const std::string& inDestination)
-{
-	Diagnostic::infoEllipsis("Checking remote for updates: {}", inDestination);
-}
-
-/*****************************************************************************/
 void ArchiveDependencyBuilder::displayFetchingMessageStart()
 {
 	const auto& url = m_archiveDependency.url();
@@ -218,57 +259,6 @@ void ArchiveDependencyBuilder::displayFetchingMessageStart()
 	auto path = url;
 
 	Output::msgFetchingDependency(path);
-}
-
-/*****************************************************************************/
-bool ArchiveDependencyBuilder::validateTools() const
-{
-	const auto& curl = m_centralState.tools.curl();
-	if (curl.empty())
-	{
-		Diagnostic::error("archive dependency requires curl: {}", m_archiveDependency.name());
-		return false;
-	}
-
-	auto format = m_archiveDependency.format();
-	if (format == ArchiveFormat::Zip)
-	{
-#if !defined(CHALET_WIN32)
-		const auto& unzip = m_centralState.tools.unzip();
-		if (unzip.empty())
-		{
-			Diagnostic::error("archive dependency requires unzip: {}", m_archiveDependency.name());
-			return false;
-		}
-#endif
-	}
-	else if (format == ArchiveFormat::Tar)
-	{
-		const auto& tar = m_centralState.tools.tar();
-		if (tar.empty())
-		{
-			Diagnostic::error("archive dependency requires tar: {}", m_archiveDependency.name());
-			return false;
-		}
-	}
-
-#if defined(CHALET_WIN32)
-	const auto& powershell = m_centralState.tools.powershell();
-	if (powershell.empty())
-	{
-		Diagnostic::error("archive dependency requires powershell: {}", m_archiveDependency.name());
-		return false;
-	}
-#else
-	const auto& shasum = m_centralState.tools.shasum();
-	if (shasum.empty())
-	{
-		Diagnostic::error("archive dependency requires shasum: {}", m_archiveDependency.name());
-		return false;
-	}
-#endif
-
-	return true;
 }
 
 /*****************************************************************************/
@@ -320,6 +310,7 @@ bool ArchiveDependencyBuilder::extractTarFile(const std::string& inFilename, con
 	// 	const auto& tar = m_centralState.tools.tar();
 	// 	cmd.emplace_back(tar);
 	// #endif
+
 	const auto& tar = m_centralState.tools.tar();
 	cmd.emplace_back(tar);
 
