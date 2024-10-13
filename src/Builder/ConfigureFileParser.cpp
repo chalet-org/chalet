@@ -43,9 +43,9 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 		auto onReplace = [this](auto match) {
 			return this->getReplaceValue(std::move(match));
 		};
-		replaceEmbeddableFiles(fileContents);
 		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
 		m_state.replaceVariablesInString(fileContents, &m_project, false, onReplace);
+		replaceEmbeddableFiles(fileContents);
 
 		if (fileContents.back() != '\n')
 			fileContents += '\n';
@@ -193,7 +193,7 @@ void ConfigureFileParser::replaceEmbeddableFiles(std::string& outContent)
 
 	using namespace std::placeholders;
 
-	replaceEmbeddable(outContent, "", std::bind(&ConfigureFileParser::generateBytesForFile, this, _1, _2));
+	replaceEmbeddable(outContent, std::string(), std::bind(&ConfigureFileParser::generateBytesForFile, this, _1, _2));
 
 	// replaceEmbeddable(outContent, "Chars", std::bind(&ConfigureFileParser::generateCharsForFile, this, _1, _2));
 	// replaceEmbeddable(outContent, "String", std::bind(&ConfigureFileParser::generateStringForFile, this, _1, _2));
@@ -202,15 +202,21 @@ void ConfigureFileParser::replaceEmbeddableFiles(std::string& outContent)
 /*****************************************************************************/
 void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::string& inKeyword, const std::function<bool(std::string&, const std::string&)>& inGenerator)
 {
-	auto kToken = fmt::format("${{embed{}:", inKeyword);
+	UNUSED(inKeyword);
+
+	std::string kToken{ "$embed(\"" };
 	size_t embedPos = outContent.find(kToken, 0);
 	while (embedPos != std::string::npos)
 	{
+		auto beforeText = outContent.substr(0, embedPos);
+
 		embedPos += kToken.size();
-		auto closingBrace = outContent.find('}', embedPos);
+		auto closingBrace = outContent.find("\")", embedPos);
 		bool valid = closingBrace != std::string::npos;
 		if (valid)
 		{
+			auto afterText = outContent.substr(closingBrace + 2);
+
 			auto file = outContent.substr(embedPos, closingBrace - embedPos);
 			auto resolvedFile = Files::getCanonicalPath(file);
 			if (Files::pathExists(resolvedFile))
@@ -218,7 +224,8 @@ void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::
 				std::string text{ "'\\0'" };
 				if (inGenerator(text, resolvedFile))
 				{
-					String::replaceAll(outContent, fmt::format("{}{}}}", kToken, file), text);
+					outContent = beforeText + "{\n\t// clang-format off\n\t" + text + "\n\t// clang-format on\n}" + afterText;
+					// String::replaceAll(outContent, fmt::format("{}{}\")", kToken, file), text);
 				}
 				else
 				{
