@@ -290,8 +290,8 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	const auto& preference = inInputs.toolchainPreferenceName();
 	const auto& arch = inInputs.getResolvedTargetArchitecture();
 
-	auto& jSettingsRoot = settingsJson.root;
-	auto& jGlobalRoot = settingsJson.root;
+	Json& jSettingsRoot = settingsJson.root;
+	Json& jGlobalRoot = settingsJson.root;
 	if (!jSettingsRoot.contains(Keys::Options))
 	{
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Options);
@@ -313,7 +313,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		return false;
 	}
 
-	auto& toolchains = jSettingsRoot.at(Keys::Toolchains);
+	Json& toolchains = jSettingsRoot[Keys::Toolchains];
 	if (!toolchains.contains(preference))
 	{
 		Diagnostic::error("{}: '{}' did not correctly initialize.", settingsFile, Keys::Toolchains);
@@ -322,17 +322,17 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	auto fetchToolchain = [&toolchains, &preference, &arch]() -> Json& {
 		auto arch2 = Arch::from(arch);
-		auto& rootToolchain = toolchains.at(preference);
+		Json& rootToolchain = toolchains[preference];
 		if (rootToolchain.contains(arch2.str))
-			return rootToolchain.at(arch2.str);
+			return rootToolchain[arch2.str];
 		else
 			return rootToolchain;
 	};
 
-	auto& optionsJson = jSettingsRoot.at(Keys::Options);
+	Json& optionsJson = jSettingsRoot[Keys::Options];
 	if (optionsJson.contains(Keys::OptionsToolchain))
 	{
-		auto& toolchainSetting = optionsJson.at(Keys::OptionsToolchain);
+		auto& toolchainSetting = optionsJson[Keys::OptionsToolchain];
 		if (toolchainSetting.is_string() && toolchainSetting.get<std::string>() != preference)
 		{
 			optionsJson[Keys::OptionsToolchain] = preference;
@@ -355,7 +355,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 				archString = inInputs.targetArchitecture();
 			}
 		}
-		auto& archJson = optionsJson.at(Keys::OptionsArchitecture);
+		Json& archJson = optionsJson[Keys::OptionsArchitecture];
 		if (archJson.is_string() && archJson.get<std::string>() != archString)
 		{
 			optionsJson[Keys::OptionsArchitecture] = archString;
@@ -366,7 +366,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 	if (optionsJson.contains(Keys::OptionsLastTarget))
 	{
 		auto& lastTarget = inInputs.lastTarget();
-		auto& lastTargetNode = optionsJson.at(Keys::OptionsLastTarget);
+		Json& lastTargetNode = optionsJson[Keys::OptionsLastTarget];
 		if (lastTargetNode.is_string() && lastTargetNode.get<std::string>() != lastTarget)
 		{
 			optionsJson[Keys::OptionsLastTarget] = lastTarget;
@@ -376,7 +376,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	if (optionsJson.contains(Keys::OptionsRunArguments))
 	{
-		auto& runArgsJson = optionsJson.at(Keys::OptionsRunArguments);
+		Json& runArgsJson = optionsJson[Keys::OptionsRunArguments];
 		if (runArgsJson.is_object())
 		{
 			const auto& argumentMap = inCentralState.runArgumentMap();
@@ -384,7 +384,7 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 			{
 				if (runArgsJson.find(key) != runArgsJson.end())
 				{
-					auto& existing = runArgsJson.at(key);
+					Json& existing = runArgsJson[key];
 					if (existing.is_array())
 					{
 						auto listAsString = String::join(existing.get<StringList>());
@@ -410,11 +410,11 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 		}
 	}
 
-	auto& toolchain = fetchToolchain();
+	Json& toolchain = fetchToolchain();
 	if (toolchain.contains(Keys::ToolchainVersion))
 	{
 		const auto& versionString = inToolchain.version();
-		auto& version = toolchain.at(Keys::ToolchainVersion);
+		Json& version = toolchain[Keys::ToolchainVersion];
 		if (version.is_string() && version.get<std::string>() != versionString)
 		{
 			toolchain[Keys::ToolchainVersion] = versionString;
@@ -424,10 +424,10 @@ bool WorkspaceCache::updateSettingsFromToolchain(const CommandLineInputs& inInpu
 
 	if (inInputs.saveUserToolchainGlobally())
 	{
-		auto& globalToolchains = globalSettingsJson.root.at(Keys::Toolchains);
+		Json& globalToolchains = globalSettingsJson.root[Keys::Toolchains];
 		globalToolchains[preference] = toolchain;
 
-		auto& globalOptionsJson = settingsJson.root.at(Keys::Options);
+		Json& globalOptionsJson = settingsJson.root[Keys::Options];
 		globalOptionsJson[Keys::OptionsToolchain] = preference;
 
 		globalSettingsJson.setDirty(true);

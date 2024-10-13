@@ -245,7 +245,7 @@ SubProcess::CmdPtrArray SubProcess::getCmdVector(const StringList& inCmd)
 	cmd.reserve(inCmd.size() + 1);
 	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
-		cmd.emplace_back(const_cast<char*>(inCmd.at(i).data()));
+		cmd.emplace_back(const_cast<char*>(inCmd[i].data()));
 	}
 	cmd.push_back(nullptr);
 

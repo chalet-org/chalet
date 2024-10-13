@@ -583,7 +583,7 @@ void SettingsManager::doSettingsCorrections(Json& node)
 	bool isTheme = String::equals(Keys::Theme, m_key);
 	if (isTheme && node.contains(Keys::Theme))
 	{
-		auto& theme = node.at(Keys::Theme);
+		auto& theme = node[Keys::Theme];
 		if (theme.is_number_integer())
 		{
 			theme = m_value;

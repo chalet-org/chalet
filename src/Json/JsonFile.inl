@@ -17,7 +17,7 @@ inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const 
 	using Type = std::decay_t<T>;
 	if constexpr (std::is_same_v<Type, std::string>)
 	{
-		if (notFound || !outNode.at(inKey).is_string() || outNode.at(inKey).get<std::string>().empty())
+		if (notFound || !outNode[inKey].is_string() || outNode[inKey].get<std::string>().empty())
 		{
 			outNode[inKey] = inValue;
 			result = true;
@@ -25,7 +25,7 @@ inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const 
 	}
 	else if constexpr (std::is_same_v<Type, bool>)
 	{
-		if (notFound || !outNode.at(inKey).is_boolean())
+		if (notFound || !outNode[inKey].is_boolean())
 		{
 			outNode[inKey] = inValue;
 			result = true;
@@ -33,7 +33,7 @@ inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const 
 	}
 	else if constexpr (std::is_unsigned_v<Type>)
 	{
-		if (notFound || !outNode.at(inKey).is_number_unsigned())
+		if (notFound || !outNode[inKey].is_number_unsigned())
 		{
 			outNode[inKey] = inValue;
 			result = true;
@@ -41,7 +41,7 @@ inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const 
 	}
 	else if constexpr (std::is_floating_point_v<Type>)
 	{
-		if (notFound || !outNode.at(inKey).is_number_float())
+		if (notFound || !outNode[inKey].is_number_float())
 		{
 			outNode[inKey] = inValue;
 			result = true;
@@ -49,7 +49,7 @@ inline bool JsonFile::assignNodeIfEmpty(Json& outNode, const char* inKey, const 
 	}
 	else if constexpr (std::is_integral_v<Type>)
 	{
-		if (notFound || !outNode.at(inKey).is_number_integer())
+		if (notFound || !outNode[inKey].is_number_integer())
 		{
 			outNode[inKey] = inValue;
 			result = true;

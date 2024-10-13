@@ -72,9 +72,9 @@ bool BatchValidator::validate(const StringList& inFiles, const bool inCache)
 			if (!res)
 				return false;
 
-			if (schema.contains("$schema") && schema.at("$schema").is_string())
+			auto schemaUrl = json::get<std::string>(schema, "$schema");
+			if (!schemaUrl.empty())
 			{
-				auto schemaUrl = schema.at("$schema").get<std::string>();
 				auto draft07 = "http://json-schema.org/draft-07/schema";
 				if (!String::equals(draft07, schemaUrl))
 				{

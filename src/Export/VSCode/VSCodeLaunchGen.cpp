@@ -32,8 +32,7 @@ bool VSCodeLaunchGen::saveToFile(const std::string& inFilename) const
 {
 	Json jRoot = Json::object();
 	jRoot["version"] = "0.2.0";
-	jRoot["configurations"] = Json::array();
-	auto& configurations = jRoot.at("configurations");
+	auto& configurations = jRoot["configurations"] = Json::array();
 
 	auto& debugState = m_exportAdapter.getDebugState();
 	Json configuration;

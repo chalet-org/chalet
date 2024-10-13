@@ -135,7 +135,7 @@ void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
 {
 	if (root.contains(inKey))
 	{
-		if (root.at(inKey).type() == inType)
+		if (root[inKey].type() == inType)
 			return;
 	}
 
@@ -146,13 +146,13 @@ void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
 /*****************************************************************************/
 bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
 {
-	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
+	if (!outNode.contains(inKey) || !outNode[inKey].is_string())
 	{
 		outNode[inKey] = inValueB;
 		setDirty(true);
 	}
 
-	auto value = outNode.at(inKey).get<std::string>();
+	auto value = outNode[inKey].get<std::string>();
 	if (!inValueA.empty() && inValueA != value)
 	{
 		outNode[inKey] = inValueA;
@@ -165,13 +165,13 @@ bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, c
 /*****************************************************************************/
 bool JsonFile::assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
 {
-	if (!outNode.contains(inKey) || !outNode.at(inKey).is_string())
+	if (!outNode.contains(inKey) || !outNode[inKey].is_string())
 	{
 		outNode[inKey] = inValueB;
 		setDirty(true);
 	}
 
-	auto value = outNode.at(inKey).get<std::string>();
+	auto value = outNode[inKey].get<std::string>();
 	if (!inValueA.empty() && !value.empty() && inValueA != value)
 	{
 		outNode[inKey] = inValueA;
@@ -187,12 +187,13 @@ std::string JsonFile::getSchema()
 	std::string ret;
 
 	// don't think this even worked...
-	if (root.contains("$schema"))
+	const char* kSchemaId = "$schema";
+	if (root.contains(kSchemaId))
 	{
-		if (root.at("$schema").is_string())
+		if (root[kSchemaId].is_string())
 		{
 			ret = root.get<std::string>();
-			// data.erase("$schema");
+			// data.erase(kSchemaId);
 		}
 	}
 

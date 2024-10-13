@@ -56,7 +56,7 @@ bool ChaletJsonParserAdapter::matchConditionVariables(const std::string& inText,
 
 		if (propSplit.size() > 1)
 		{
-			auto& inner = propSplit.at(1);
+			auto& inner = propSplit[1];
 			if (inner.front() == '{' && inner.back() == '}')
 			{
 				inner = inner.substr(1);

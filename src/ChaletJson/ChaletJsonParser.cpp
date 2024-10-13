@@ -244,7 +244,7 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 	if (!inNode.contains(Keys::PlatformRequires))
 		return true;
 
-	const Json& platformRequires = inNode.at(Keys::PlatformRequires);
+	const Json& platformRequires = inNode[Keys::PlatformRequires];
 	for (const auto& [key, value] : platformRequires.items())
 	{
 		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
@@ -316,7 +316,7 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 	if (!inNode.contains(Keys::Package))
 		return true;
 
-	const Json& packageRoot = inNode.at(Keys::Package);
+	const Json& packageRoot = inNode[Keys::Package];
 	if (!packageRoot.is_object() || packageRoot.size() == 0)
 	{
 		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Package);
@@ -470,7 +470,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		return false;
 	}
 
-	const Json& targets = inNode.at(Keys::Targets);
+	const Json& targets = inNode[Keys::Targets];
 	if (!targets.is_object() || targets.size() == 0)
 	{
 		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Targets);
@@ -479,7 +479,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 
 	if (inNode.contains(Keys::Abstracts))
 	{
-		const Json& abstracts = inNode.at(Keys::Abstracts);
+		const Json& abstracts = inNode[Keys::Abstracts];
 		for (auto& [name, templateJson] : abstracts.items())
 		{
 			if (m_abstractSourceTarget.find(name) == m_abstractSourceTarget.end())
@@ -775,10 +775,10 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		const auto compilerSettings{ "settings" };
 		if (inNode.contains(compilerSettings))
 		{
-			const Json& jCompilerSettings = inNode.at(compilerSettings);
+			const Json& jCompilerSettings = inNode[compilerSettings];
 			if (jCompilerSettings.contains("Cxx"))
 			{
-				const Json& node = jCompilerSettings.at("Cxx");
+				const Json& node = jCompilerSettings["Cxx"];
 				if (!parseCompilerSettingsCxx(outTarget, node))
 					return false;
 			}
@@ -787,7 +787,7 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		const auto compilerSettingsCpp = fmt::format("{}:Cxx", compilerSettings);
 		if (inNode.contains(compilerSettingsCpp))
 		{
-			const Json& node = inNode.at(compilerSettingsCpp);
+			const Json& node = inNode[compilerSettingsCpp];
 			if (!parseCompilerSettingsCxx(outTarget, node))
 				return false;
 		}
@@ -797,7 +797,7 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 		const auto metadata{ "metadata" };
 		if (inNode.contains(metadata))
 		{
-			const Json& node = inNode.at(metadata);
+			const Json& node = inNode[metadata];
 			if (!parseSourceTargetMetadata(outTarget, node))
 				return false;
 		}
@@ -1299,7 +1299,7 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 	if (!inNode.contains(Keys::Distribution))
 		return true;
 
-	const Json& distributionJson = inNode.at(Keys::Distribution);
+	const Json& distributionJson = inNode[Keys::Distribution];
 	if (!distributionJson.is_object() || distributionJson.size() == 0)
 	{
 		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_chaletJson.filename(), Keys::Distribution);
@@ -1586,7 +1586,7 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 	{
 		if (inRoot.contains(Keys::Targets))
 		{
-			const Json& targetsJson = inRoot.at(Keys::Targets);
+			const Json& targetsJson = inRoot[Keys::Targets];
 			if (targetsJson.is_object())
 			{
 				const StringList validKinds{ "executable", "sharedLibrary", "staticLibrary" };
@@ -1595,7 +1595,7 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 				{
 					if (targetJson.is_object() && targetJson.contains(Keys::Kind))
 					{
-						const Json& targetKind = targetJson.at(Keys::Kind);
+						const Json& targetKind = targetJson[Keys::Kind];
 						if (targetKind.is_string())
 						{
 							auto kind = targetKind.get<std::string>();
@@ -1620,7 +1620,7 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 		const auto& buildTargets = outTarget.buildTargets();
 		if (inRoot.contains(Keys::Targets))
 		{
-			const Json& targetsJson = inRoot.at(Keys::Targets);
+			const Json& targetsJson = inRoot[Keys::Targets];
 			if (targetsJson.is_object())
 			{
 				for (auto& [name, _] : targetsJson.items())

@@ -110,7 +110,7 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 			return false;
 		}
 
-		const auto& data = jRoot.at(MSVCKeys::Data);
+		const auto& data = jRoot[MSVCKeys::Data];
 		if (!json::isValid<std::string>(data, MSVCKeys::ProvidedModule))
 		{
 			Diagnostic::error("{}: Missing expected key '{}'", group->dependencyFile, MSVCKeys::ProvidedModule);
@@ -129,7 +129,7 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 			return false;
 		}
 
-		auto name = data.at(MSVCKeys::ProvidedModule).get<std::string>();
+		auto name = data[MSVCKeys::ProvidedModule].get<std::string>();
 		if (name.empty())
 		{
 			m_modules[name].implementationUnit = true;
@@ -137,7 +137,7 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 
 		m_modules[name].source = group->sourceFile;
 
-		const auto& importedModules = data.at(MSVCKeys::ImportedModules);
+		const auto& importedModules = data[MSVCKeys::ImportedModules];
 		for (auto& mod : importedModules)
 		{
 			if (!mod.is_string())
@@ -154,7 +154,7 @@ bool ModuleStrategyMSVC::readModuleDependencies()
 			List::addIfDoesNotExist(m_modules[name].importedModules, std::move(moduleName));
 		}
 
-		const auto& importedHeaderUnits = data.at(MSVCKeys::ImportedHeaderUnits);
+		const auto& importedHeaderUnits = data[MSVCKeys::ImportedHeaderUnits];
 		for (auto& file : importedHeaderUnits)
 		{
 			if (!file.is_string())
@@ -227,14 +227,14 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 		return false;
 	}
 
-	const auto& data = jRoot.at(MSVCKeys::Data);
+	const auto& data = jRoot[MSVCKeys::Data];
 	if (!json::isArray(data, MSVCKeys::Includes))
 	{
 		Diagnostic::error("{}: Missing expected key '{}'", inFile, MSVCKeys::Includes);
 		return false;
 	}
 
-	const auto& includes = data.at(MSVCKeys::Includes);
+	const auto& includes = data[MSVCKeys::Includes];
 	for (auto& include : includes)
 	{
 		if (!include.is_string())
@@ -299,7 +299,7 @@ Dictionary<std::string> ModuleStrategyMSVC::getSystemModules() const
 
 		if (jRoot.contains("module-sources"))
 		{
-			const auto& sources = jRoot.at("module-sources");
+			const auto& sources = jRoot["module-sources"];
 			if (sources.is_array())
 			{
 				for (auto& value : sources)

@@ -21,9 +21,7 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["version"] = "0.2.1";
-	jRoot["tasks"] = Json::array();
-
-	auto& tasks = jRoot.at("tasks");
+	auto& tasks = jRoot["tasks"] = Json::array();
 
 	auto makeTask = [this](const char* inLabel, const char* inContextType, const char* inChaletCmd) {
 		Json task = Json::object();

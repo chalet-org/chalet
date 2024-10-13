@@ -64,7 +64,7 @@ bool ExternalDependencyCache::save() const
 }
 
 /*****************************************************************************/
-const Json& ExternalDependencyCache::get(const std::string& inKey)
+const Json& ExternalDependencyCache::get(const std::string& inKey) const
 {
 	return m_cache.at(inKey);
 }

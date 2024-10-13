@@ -148,7 +148,7 @@ bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
 {
 	if (inNode.contains(Keys::Variables))
 	{
-		const Json& variables = inNode.at(Keys::Variables);
+		const Json& variables = inNode[Keys::Variables];
 		if (variables.is_object())
 		{
 			auto& vars = m_centralState.tools.variables;
@@ -177,7 +177,7 @@ bool CentralChaletJsonParser::parseAllowedArchitectures(const Json& inNode) cons
 {
 	if (inNode.contains(Keys::AllowedArchitectures))
 	{
-		const Json& allowedArchitectures = inNode.at(Keys::AllowedArchitectures);
+		const Json& allowedArchitectures = inNode[Keys::AllowedArchitectures];
 		if (allowedArchitectures.is_array())
 		{
 			for (auto& archJson : allowedArchitectures)
@@ -206,7 +206,7 @@ bool CentralChaletJsonParser::parseDefaultConfigurations(const Json& inNode) con
 	bool addedDefaults = false;
 	if (inNode.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = inNode.at(Keys::DefaultConfigurations);
+		const Json& defaultConfigurations = inNode[Keys::DefaultConfigurations];
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -248,7 +248,7 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 {
 	if (inNode.contains(Keys::Configurations))
 	{
-		const Json& configurations = inNode.at(Keys::Configurations);
+		const Json& configurations = inNode[Keys::Configurations];
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -308,7 +308,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 	if (!inNode.contains(Keys::ExternalDependencies))
 		return true;
 
-	const Json& externalDependencies = inNode.at(Keys::ExternalDependencies);
+	const Json& externalDependencies = inNode[Keys::ExternalDependencies];
 	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
 	{
 		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_chaletJson.filename(), Keys::ExternalDependencies);

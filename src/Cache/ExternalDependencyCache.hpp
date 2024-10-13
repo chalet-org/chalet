@@ -29,7 +29,7 @@ public:
 	bool contains(const std::string& inKey);
 	bool save() const;
 
-	const Json& get(const std::string& inKey);
+	const Json& get(const std::string& inKey) const;
 	void set(const std::string& inKey, Json&& inValue);
 
 	void emplace(const std::string& inKey, const Json& inValue);
@@ -46,4 +46,3 @@ private:
 	bool m_dirty = false;
 };
 }
-

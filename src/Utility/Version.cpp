@@ -31,19 +31,19 @@ bool Version::setFromString(const std::string& inVersion)
 
 	m_segments = static_cast<u32>(split.size());
 
-	m_major = static_cast<u32>(atoi(split.at(0).c_str()));
+	m_major = static_cast<u32>(atoi(split[0].c_str()));
 
 	if (split.size() > 1)
 	{
-		m_minor = static_cast<u32>(atoi(split.at(1).c_str()));
+		m_minor = static_cast<u32>(atoi(split[1].c_str()));
 
 		if (split.size() > 2)
 		{
-			m_patch = static_cast<u32>(atoi(split.at(2).c_str()));
+			m_patch = static_cast<u32>(atoi(split[2].c_str()));
 
 			if (split.size() > 3)
 			{
-				m_tweak = static_cast<u32>(atoi(split.at(3).c_str()));
+				m_tweak = static_cast<u32>(atoi(split[3].c_str()));
 			}
 		}
 	}

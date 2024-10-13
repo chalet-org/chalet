@@ -624,7 +624,7 @@ bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 	size_t total = buildPaths.size();
 	for (size_t i = 0; i < total; ++i)
 	{
-		const auto& path = buildPaths.at(i);
+		const auto& path = buildPaths[i];
 		if (!inForRebuild && !Output::showCommands())
 		{
 			Output::print(theme.reset, fmt::format("   [{}/{}] {}Removing {}{}", i + 1, total, color, path, reset));

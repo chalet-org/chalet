@@ -30,8 +30,7 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 	jRoot = Json::object();
 	jRoot["version"] = "3.0.0";
 	jRoot["defaults"] = Json::object();
-	jRoot["configurations"] = Json::array();
-	auto& configurations = jRoot.at("configurations");
+	auto& configurations = jRoot["configurations"] = Json::array();
 
 	auto& allTarget = m_exportAdapter.allBuildName();
 	for (auto& runConfig : m_runConfigs)

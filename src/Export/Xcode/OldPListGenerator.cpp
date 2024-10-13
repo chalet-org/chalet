@@ -29,7 +29,7 @@ std::string OldPListGenerator::getContents(const StringList& inSingleLineSection
 	auto rootObject = m_json["rootObject"].get<std::string>();
 
 	std::string sections;
-	const auto& objects = m_json.at("objects");
+	const auto& objects = m_json["objects"];
 	for (auto& [key, value] : objects.items())
 	{
 		const auto& section = key;
@@ -87,7 +87,7 @@ std::string OldPListGenerator::getNodeAsPListFormat(const Json& inJson, const si
 
 		if (inJson.contains("isa"))
 		{
-			const auto value = inJson.at("isa").get<std::string>();
+			const auto value = inJson["isa"].get<std::string>();
 			ret += std::string(indent + 1, '\t');
 			ret += fmt::format("isa = {};\n", value);
 		}

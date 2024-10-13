@@ -209,7 +209,7 @@ StringList QueryController::getBuildConfigurationList() const
 	bool addedDefaults = false;
 	if (chaletJson.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = chaletJson.at(Keys::DefaultConfigurations);
+		const Json& defaultConfigurations = chaletJson[Keys::DefaultConfigurations];
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -231,7 +231,7 @@ StringList QueryController::getBuildConfigurationList() const
 
 	if (chaletJson.contains(Keys::Configurations))
 	{
-		const Json& configurations = chaletJson.at(Keys::Configurations);
+		const Json& configurations = chaletJson[Keys::Configurations];
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -257,7 +257,7 @@ StringList QueryController::getUserToolchainList() const
 	{
 		if (settingsFile.contains(Keys::Toolchains))
 		{
-			const auto& toolchains = settingsFile.at(Keys::Toolchains);
+			const auto& toolchains = settingsFile[Keys::Toolchains];
 			for (auto& [key, _] : toolchains.items())
 			{
 				ret.emplace_back(key);
@@ -297,10 +297,10 @@ StringList QueryController::getCurrentToolchainBuildStrategy() const
 		{
 			if (settingsFile.contains(Keys::Toolchains))
 			{
-				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				const auto& toolchains = settingsFile[Keys::Toolchains];
 				if (toolchains.contains(toolchain))
 				{
-					const auto& toolchainJson = toolchains.at(toolchain);
+					const auto& toolchainJson = toolchains[toolchain];
 					if (toolchainJson.is_object())
 					{
 						auto strategy = json::get<std::string>(toolchainJson, Keys::ToolchainBuildStrategy);
@@ -335,10 +335,10 @@ StringList QueryController::getCurrentToolchainBuildPathStyle() const
 		{
 			if (settingsFile.contains(Keys::Toolchains))
 			{
-				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				const auto& toolchains = settingsFile[Keys::Toolchains];
 				if (toolchains.contains(toolchain))
 				{
-					const auto& toolchainJson = toolchains.at(toolchain);
+					const auto& toolchainJson = toolchains[toolchain];
 					if (toolchainJson.is_object())
 					{
 						auto style = json::get<std::string>(toolchainJson, Keys::ToolchainBuildPathStyle);
@@ -498,10 +498,10 @@ StringList QueryController::getArchitectures(const std::string& inToolchain) con
 		{
 			if (settingsFile.contains(Keys::Toolchains))
 			{
-				const auto& toolchains = settingsFile.at(Keys::Toolchains);
+				const auto& toolchains = settingsFile[Keys::Toolchains];
 				if (toolchains.contains(inToolchain))
 				{
-					const auto& toolchain = toolchains.at(inToolchain);
+					const auto& toolchain = toolchains[inToolchain];
 					for (auto& [key, item] : toolchain.items())
 					{
 						if (item.is_object())
@@ -543,7 +543,7 @@ StringList QueryController::getCurrentArchitecture() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& options = settingsFile.at(Keys::Options);
+			const auto& options = settingsFile[Keys::Options];
 			if (options.is_object())
 			{
 				auto arch = json::get<std::string>(options, Keys::OptionsArchitecture);
@@ -571,7 +571,7 @@ StringList QueryController::getCurrentBuildConfiguration() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& options = settingsFile.at(Keys::Options);
+			const auto& options = settingsFile[Keys::Options];
 			if (options.is_object())
 			{
 				auto configuration = json::get<std::string>(options, Keys::OptionsBuildConfiguration);
@@ -594,7 +594,7 @@ StringList QueryController::getCurrentToolchain() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& options = settingsFile.at(Keys::Options);
+			const auto& options = settingsFile[Keys::Options];
 			if (options.is_object())
 			{
 				auto toolchain = json::get<std::string>(options, Keys::OptionsToolchain);
@@ -623,7 +623,7 @@ StringList QueryController::getAllBuildTargets() const
 	{
 		if (chaletJson.contains(Keys::Targets))
 		{
-			const auto& targets = chaletJson.at(Keys::Targets);
+			const auto& targets = chaletJson[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -652,7 +652,7 @@ StringList QueryController::getAllRunTargets() const
 	{
 		if (chaletJson.contains(Keys::Targets))
 		{
-			const auto& targets = chaletJson.at(Keys::Targets);
+			const auto& targets = chaletJson[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -691,7 +691,7 @@ StringList QueryController::getCurrentLastTarget() const
 	{
 		if (settingsFile.contains(Keys::Options))
 		{
-			const auto& options = settingsFile.at(Keys::Options);
+			const auto& options = settingsFile[Keys::Options];
 			if (options.is_object())
 			{
 				auto lastTarget = json::get<std::string>(options, Keys::OptionsLastTarget);
@@ -711,7 +711,7 @@ StringList QueryController::getCurrentLastTarget() const
 	{
 		if (chaletJson.contains(Keys::Targets))
 		{
-			const auto& targets = chaletJson.at(Keys::Targets);
+			const auto& targets = chaletJson[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -828,7 +828,7 @@ Json QueryController::getBuildConfigurationDetails() const
 	const auto& chaletJson = m_centralState.chaletJson().root;
 	if (chaletJson.contains(Keys::Configurations))
 	{
-		const Json& configurations = chaletJson.at(Keys::Configurations);
+		const Json& configurations = chaletJson[Keys::Configurations];
 		if (configurations.is_object())
 		{
 			for (const auto& [name, config] : configurations.items())

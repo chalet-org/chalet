@@ -60,7 +60,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 {
 	if (inJson.is_object() && inJson.contains(Keys::Theme))
 	{
-		const auto& themeJson = inJson.at(Keys::Theme);
+		const auto& themeJson = inJson[Keys::Theme];
 		if (themeJson.is_string())
 		{
 			auto preset = themeJson.get<std::string>();

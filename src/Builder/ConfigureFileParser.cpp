@@ -274,7 +274,7 @@ bool ConfigureFileParser::generateBytesForFile(std::string& outText, const std::
 	constexpr size_t numColumns = 20;
 	for (size_t i = 0; i < bytes.size(); ++i)
 	{
-		outText += fmt::format("{:#04x}, ", std::byte(bytes.at(i)));
+		outText += fmt::format("{:#04x}, ", std::byte(bytes[i]));
 		if (i % numColumns == numColumns - 1)
 		{
 			outText += '\n';

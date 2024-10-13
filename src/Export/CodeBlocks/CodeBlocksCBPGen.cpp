@@ -231,7 +231,7 @@ clean:
 
 					dependency += fmt::format("/{}.log", name);
 
-					auto& script = group.scripts.at(index);
+					auto& script = group.scripts[index];
 					auto split = String::split(script, '\n');
 					chalet_assert(split.size() >= 3, "unexpected script generated");
 

@@ -124,7 +124,7 @@ Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
 	if (!json::isObject(inToolchainsNode, preferenceName.c_str()))
 		inToolchainsNode[preferenceName] = Json::object();
 
-	auto& node = inToolchainsNode.at(preferenceName);
+	auto& node = inToolchainsNode[preferenceName];
 	bool isDefined = false;
 	StringList keys{
 		Keys::ToolchainCompilerC,
@@ -155,7 +155,7 @@ Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
 		}
 		m_state.inputs.setMultiArchToolchainPreset(true);
 
-		return node.at(arch2.str);
+		return node[arch2.str];
 	}
 	else
 	{
@@ -535,7 +535,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		{
 			auto path = Files::which(inKey);
 			bool res = !path.empty();
-			if (res || !inNode[inKey].is_string() || inNode.at(inKey).get<std::string>().empty())
+			if (res || !inNode[inKey].is_string() || inNode[inKey].get<std::string>().empty())
 			{
 				inNode[inKey] = std::move(path);
 				m_jsonFile.setDirty(true);
@@ -591,8 +591,8 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 	if (toolchain[Keys::ToolchainBuildStrategy].get<std::string>().empty())
 	{
-		auto make = toolchain.at(Keys::ToolchainMake).get<std::string>();
-		auto ninja = toolchain.at(Keys::ToolchainNinja).get<std::string>();
+		auto make = toolchain[Keys::ToolchainMake].get<std::string>();
+		auto ninja = toolchain[Keys::ToolchainNinja].get<std::string>();
 		bool notNative = preference.strategy != StrategyType::Native;
 
 		// Note: this is only for validation. it gets changed later

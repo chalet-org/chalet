@@ -145,7 +145,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	{
 		if (inState.tools.is_object())
 		{
-			auto& tools = jRoot.at(Keys::Tools);
+			auto& tools = jRoot[Keys::Tools];
 			for (auto& [key, value] : inState.tools.items())
 			{
 				if (!tools.contains(key))
@@ -165,7 +165,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	{
 		if (inState.appleSdks.is_object())
 		{
-			auto& sdks = jRoot.at(Keys::AppleSdks);
+			auto& sdks = jRoot[Keys::AppleSdks];
 			for (auto& [key, value] : inState.appleSdks.items())
 			{
 				if (!sdks.contains(key))
@@ -177,7 +177,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	}
 #endif
 
-	Json& buildOptions = jRoot.at(Keys::Options);
+	Json& buildOptions = jRoot[Keys::Options];
 
 	{
 		// pre 6.0.0
@@ -264,7 +264,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		return true;
 	};
 
-	Json& tools = jRoot.at(Keys::Tools);
+	Json& tools = jRoot[Keys::Tools];
 
 	whichAdd(tools, Keys::ToolsBash);
 	whichAdd(tools, Keys::ToolsCcache);
@@ -332,7 +332,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	{
 		// Try really hard to find these tools
 
-		auto& gitNode = tools.at(Keys::ToolsGit);
+		auto& gitNode = tools[Keys::ToolsGit];
 		auto gitPath = gitNode.get<std::string>();
 		if (gitPath.empty())
 		{
@@ -351,7 +351,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 			const auto gitBinFolder = String::getPathFolder(gitPath);
 			const auto gitRoot = String::getPathFolder(gitBinFolder);
 
-			auto& bashNode = tools.at(Keys::ToolsBash);
+			auto& bashNode = tools[Keys::ToolsBash];
 			auto bashPath = bashNode.get<std::string>();
 
 			// We need to ignore WSL bash
@@ -364,7 +364,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 				}
 			}
 
-			auto& lddNode = tools.at(Keys::ToolsLdd);
+			auto& lddNode = tools[Keys::ToolsLdd];
 			auto lddPath = lddNode.get<std::string>();
 			if (lddPath.empty() && !gitPath.empty())
 			{
@@ -411,7 +411,7 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 		return false;
 	}
 
-	Json& toolchains = inNode.at(Keys::CompilerTools);
+	Json& toolchains = inNode[Keys::CompilerTools];
 	if (!toolchains.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::CompilerTools);
@@ -435,7 +435,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 		return false;
 	}
 
-	Json& buildOptions = inNode.at(Keys::Options);
+	Json& buildOptions = inNode[Keys::Options];
 	if (!buildOptions.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
@@ -623,7 +623,7 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 		return false;
 	}
 
-	Json& tools = inNode.at(Keys::Tools);
+	Json& tools = inNode[Keys::Tools];
 	if (!tools.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Tools);
@@ -712,11 +712,11 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	Json& appleSkdsJson = m_jsonFile.root[Keys::AppleSdks];
 
 	chalet_assert(m_jsonFile.root.contains(Keys::Tools), "tools structure was not found");
-	auto& tools = m_jsonFile.root.at(Keys::Tools);
+	auto& tools = m_jsonFile.root[Keys::Tools];
 
 	chalet_assert(tools.contains(Keys::ToolsXcrun), "xcrun not found in tools structure");
 
-	auto xcrun = tools.at(Keys::ToolsXcrun).get<std::string>();
+	auto xcrun = tools[Keys::ToolsXcrun].get<std::string>();
 	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
@@ -738,7 +738,7 @@ bool SettingsJsonParser::parseAppleSdks(Json& inNode)
 		return false;
 	}
 
-	Json& appleSdks = inNode.at(Keys::AppleSdks);
+	Json& appleSdks = inNode[Keys::AppleSdks];
 	for (auto& [key, pathJson] : appleSdks.items())
 	{
 		if (!pathJson.is_string())

@@ -105,8 +105,8 @@ bool BaseArgumentParser::parse(StringList&& args, const u32 inPositionalArgs)
 	std::string blankArg;
 	for (size_t i = 1; i < args.size(); ++i)
 	{
-		auto& arg = args.at(i);
-		auto& nextArg = i + 1 < args.size() ? args.at(i + 1) : blankArg;
+		auto& arg = args[i];
+		auto& nextArg = i + 1 < args.size() ? args[i + 1] : blankArg;
 		parseArgumentValue(nextArg);
 
 		if (parseArgument(i, arg, nextArg))
@@ -130,7 +130,7 @@ bool BaseArgumentParser::parse(StringList&& args, const u32 inPositionalArgs)
 			++i;
 			while (i < args.size())
 			{
-				m_remainingArguments.emplace_back(std::move(args.at(i)));
+				m_remainingArguments.emplace_back(std::move(args[i]));
 				++i;
 			}
 		}

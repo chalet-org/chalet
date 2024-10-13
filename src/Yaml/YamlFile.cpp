@@ -148,7 +148,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 
 			auto& node = *nodes.back();
 			node[line] = Json();
-			nodes.push_back(&node.at(line));
+			nodes.push_back(&node[line]);
 			continue;
 		}
 		else if (startOfObjectArray)

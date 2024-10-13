@@ -52,7 +52,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 
 	initializeTheme();
 
-	Json& buildOptions = m_jsonFile.root.at(Keys::Options);
+	Json& buildOptions = m_jsonFile.root[Keys::Options];
 
 	{
 		// pre 6.0.0
@@ -115,7 +115,7 @@ void GlobalSettingsJsonParser::initializeTheme()
 	if (!m_jsonFile.root.contains(Keys::Theme))
 		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
-	Json& themeJson = m_jsonFile.root.at(Keys::Theme);
+	Json& themeJson = m_jsonFile.root[Keys::Theme];
 	if (!themeJson.is_string() && !themeJson.is_object())
 		m_jsonFile.makeNode(Keys::Theme, JsonDataType::string);
 
@@ -173,7 +173,7 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 	if (!inNode.contains(Keys::Options))
 		return true;
 
-	const Json& buildOptions = inNode.at(Keys::Options);
+	const Json& buildOptions = inNode[Keys::Options];
 	if (!buildOptions.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
@@ -246,7 +246,7 @@ bool GlobalSettingsJsonParser::parseToolchains(const Json& inNode, IntermediateS
 	if (!inNode.contains(Keys::Toolchains))
 		return true;
 
-	const Json& toolchains = inNode.at(Keys::Toolchains);
+	const Json& toolchains = inNode[Keys::Toolchains];
 	if (!toolchains.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Toolchains);
@@ -264,7 +264,7 @@ bool GlobalSettingsJsonParser::parseAncillaryTools(const Json& inNode, Intermedi
 	if (!inNode.contains(Keys::Tools))
 		return true;
 
-	const Json& tools = inNode.at(Keys::Tools);
+	const Json& tools = inNode[Keys::Tools];
 	if (!tools.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Tools);
@@ -283,7 +283,7 @@ bool GlobalSettingsJsonParser::parseApplePlatformSdks(const Json& inNode, Interm
 	if (!inNode.contains(Keys::AppleSdks))
 		return true;
 
-	const Json& sdks = inNode.at(Keys::AppleSdks);
+	const Json& sdks = inNode[Keys::AppleSdks];
 	if (!sdks.is_object())
 	{
 		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::AppleSdks);
@@ -303,9 +303,9 @@ bool GlobalSettingsJsonParser::parseLastUpdate(Json& outNode)
 	time_t currentTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 	if (outNode.contains(Keys::LastUpdateCheck))
 	{
-		if (outNode.at(Keys::LastUpdateCheck).is_number_unsigned())
+		if (outNode[Keys::LastUpdateCheck].is_number_unsigned())
 		{
-			lastUpdateCheck = m_jsonFile.root.at(Keys::LastUpdateCheck).get<time_t>();
+			lastUpdateCheck = m_jsonFile.root[Keys::LastUpdateCheck].get<time_t>();
 			m_centralState.shouldCheckForUpdate(lastUpdateCheck, currentTime);
 		}
 	}

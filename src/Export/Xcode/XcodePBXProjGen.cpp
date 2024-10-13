@@ -458,8 +458,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	pbxproj["archiveVersion"] = 1;
 	pbxproj["classes"] = Json::array();
 	pbxproj["objectVersion"] = kMinimumObjectVersion;
-	pbxproj["objects"] = Json::object();
-	auto& objects = pbxproj.at("objects");
+	auto& objects = pbxproj["objects"] = Json::object();
 
 	auto mainGroup = Uuid::v5("mainGroup", m_xcodeNamespaceGuid).toAppleHash();
 	const std::string group{ "SOURCE_ROOT" };
@@ -467,8 +466,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXAggregateTarget
 	{
 		const std::string section{ "PBXAggregateTarget" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			if (pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle)
@@ -496,8 +494,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXBuildFile
 	{
 		const std::string section{ "PBXBuildFile" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			if (pbxGroup.kind == TargetGroupKind::Source)
@@ -554,8 +551,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXBuildStyle
 	{
 		const std::string section{ "PBXBuildStyle" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (auto& [configName, _] : configToTargets)
 		{
 			auto key = getSectionKeyForTarget(configName, configName);
@@ -569,8 +565,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXFileReference
 	{
 		const std::string section{ "PBXFileReference" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		std::map<std::string, ProjectFileSet> projectFileList;
 		for (const auto& [target, pbxGroup] : groups)
 		{
@@ -685,8 +680,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXContainerItemProxy
 	{
 		const std::string section{ "PBXContainerItemProxy" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			auto hash = getTargetHash(target);
@@ -702,8 +696,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXCopyFilesBuildPhase
 	{
 		const std::string section{ "PBXCopyFilesBuildPhase" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			if (pbxGroup.kind == TargetGroupKind::AppBundle)
@@ -744,8 +737,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXGroup
 	{
 		const std::string section{ "PBXGroup" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 
 		StringList childNodes;
 		for (const auto& [target, pbxGroup] : groups)
@@ -819,8 +811,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXTargetDependency
 	{
 		const std::string section{ "PBXTargetDependency" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 
 		for (auto& [target, pbxGroup] : groups)
 		{
@@ -834,8 +825,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXNativeTarget
 	{
 		const std::string section{ "PBXNativeTarget" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
@@ -888,8 +878,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 		const std::string section{ "PBXProject" };
 		const std::string region{ "en" };
 		auto name = getProjectName();
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		auto key = getHashWithLabel(m_projectUUID, "Project object");
 		node[key]["isa"] = section;
 		node[key]["attributes"] = Json::object();
@@ -926,8 +915,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXResourcesBuildPhase
 	{
 		const std::string section{ "PBXResourcesBuildPhase" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			if (pbxGroup.kind == TargetGroupKind::Source || pbxGroup.kind == TargetGroupKind::AppBundle)
@@ -950,8 +938,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	// PBXShellScriptBuildPhase
 	{
 		const std::string section{ "PBXShellScriptBuildPhase" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 
 		for (const auto& [target, pbxGroup] : groups)
 		{
@@ -991,8 +978,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 	// PBXSourcesBuildPhase
 	{
 		const std::string section{ "PBXSourcesBuildPhase" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (const auto& [target, pbxGroup] : groups)
 		{
 			bool isSource = pbxGroup.kind == TargetGroupKind::Source;
@@ -1019,8 +1005,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 	// XCBuildConfiguration
 	{
 		const std::string section{ "XCBuildConfiguration" };
-		objects[section] = Json::object();
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		for (auto& state : m_states)
 		{
 			auto& configName = state->configuration.name();
@@ -1096,9 +1081,8 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 	{
 		auto project = getProjectName();
 		const std::string section{ "XCConfigurationList" };
-		objects[section] = Json::object();
 
-		auto& node = objects.at(section);
+		auto& node = objects[section] = Json::object();
 		{
 			StringList configurations;
 			for (auto& [configName, _] : configToTargets)

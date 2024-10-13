@@ -30,8 +30,7 @@ bool VSCodeTasksGen::saveToFile(const std::string& inFilename)
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["version"] = "2.0.0";
-	jRoot["tasks"] = Json::array();
-	auto& tasks = jRoot.at("tasks");
+	auto& tasks = jRoot["tasks"] = Json::array();
 
 	for (auto& runConfig : m_runConfigs)
 	{

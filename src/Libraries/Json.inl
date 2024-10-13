@@ -41,21 +41,21 @@ inline bool json::isValid(const Json& inNode, const char* inKey)
 	if (/* !inNode.is_object() || */ !inNode.contains(inKey))
 		return false;
 
-	return json::isValid<T>(inNode.at(inKey));
+	return json::isValid<T>(inNode[inKey]);
 }
 
 /*****************************************************************************/
 inline bool json::isNull(const Json& inNode, const char* inKey)
 {
-	return inNode.contains(inKey) && inNode.at(inKey).is_null();
+	return inNode.contains(inKey) && inNode[inKey].is_null();
 }
 inline bool json::isArray(const Json& inNode, const char* inKey)
 {
-	return inNode.contains(inKey) && inNode.at(inKey).is_array();
+	return inNode.contains(inKey) && inNode[inKey].is_array();
 }
 inline bool json::isObject(const Json& inNode, const char* inKey)
 {
-	return inNode.contains(inKey) && inNode.at(inKey).is_object();
+	return inNode.contains(inKey) && inNode[inKey].is_object();
 }
 
 /*****************************************************************************/
@@ -73,7 +73,7 @@ template <typename T>
 inline T json::get(const Json& inNode, const char* inKey)
 {
 	if (json::isValid<T>(inNode, inKey))
-		return inNode.at(inKey).template get<T>();
+		return inNode[inKey].template get<T>();
 
 	return T{};
 }
@@ -98,7 +98,7 @@ bool json::assign(T& outVariable, const Json& inNode, const char* inKey)
 		return false;
 
 	using Type = std::decay_t<T>;
-	outVariable = inNode.at(inKey).template get<Type>();
+	outVariable = inNode[inKey].template get<Type>();
 	return true;
 }
 
@@ -115,6 +115,6 @@ inline bool json::isStringInvalidOrEmpty(const Json& inNode, const char* inKey)
 	if (!json::isValid<std::string>(inNode, inKey))
 		return true;
 
-	return inNode.at(inKey).get<std::string>().empty();
+	return inNode[inKey].get<std::string>().empty();
 }
 }

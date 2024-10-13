@@ -59,10 +59,10 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 		auto& rootNode = m_dataFile->root;
 		if (rootNode.contains(CacheKeys::Builds))
 		{
-			auto& builds = rootNode.at(CacheKeys::Builds);
+			const Json& builds = rootNode[CacheKeys::Builds];
 			if (builds.is_object() && builds.contains(inId))
 			{
-				auto& value = builds.at(inId);
+				const auto& value = builds[inId];
 				if (value.is_object())
 				{
 					if (std::string rawValue; json::assign(rawValue, value, CacheKeys::BuildLastBuilt))
@@ -85,7 +85,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 
 						if (value.contains(CacheKeys::HashDataCache))
 						{
-							auto& dataJson = value.at(CacheKeys::HashDataCache);
+							const auto& dataJson = value[CacheKeys::HashDataCache];
 							if (dataJson.is_object())
 							{
 								for (auto& [key, val] : dataJson.items())
@@ -100,7 +100,7 @@ bool WorkspaceInternalCacheFile::setSourceCache(const std::string& inId, const S
 
 						if (value.contains(CacheKeys::BuildFiles))
 						{
-							auto& files = value.at(CacheKeys::BuildFiles);
+							const auto& files = value[CacheKeys::BuildFiles];
 							if (files.is_array())
 							{
 								for (auto& hash : files)
@@ -145,18 +145,18 @@ bool WorkspaceInternalCacheFile::removeSourceCache(const std::string& inId)
 	auto& rootNode = m_dataFile->root;
 	if (rootNode.contains(CacheKeys::Builds))
 	{
-		auto& builds = rootNode.at(CacheKeys::Builds);
+		Json& builds = rootNode[CacheKeys::Builds];
 		if (builds.is_object())
 		{
 			if (builds.contains(inId))
 			{
 				bool removeId = false;
 				{
-					auto& build = builds.at(inId);
+					const auto& build = builds[inId];
 					i32 lastStrategy = 0;
 					if (build.contains(CacheKeys::BuildLastBuildStrategy))
 					{
-						auto& strat = build.at(CacheKeys::BuildLastBuildStrategy);
+						const auto& strat = build[CacheKeys::BuildLastBuildStrategy];
 						if (strat.is_number())
 							lastStrategy = strat.get<i32>();
 					}
@@ -324,10 +324,10 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 	if (!m_dataFile->root.is_object())
 		m_dataFile->root = Json::object();
 
-	auto& rootNode = m_dataFile->root;
+	const auto& rootNode = m_dataFile->root;
 	if (rootNode.contains(CacheKeys::Hashes))
 	{
-		auto& hashes = rootNode.at(CacheKeys::Hashes);
+		const auto& hashes = rootNode[CacheKeys::Hashes];
 		if (hashes.is_object())
 		{
 			if (std::string val; json::assign(val, hashes, CacheKeys::HashBuild))
@@ -347,7 +347,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 
 			if (hashes.contains(CacheKeys::HashPathCache))
 			{
-				auto& pathCache = hashes.at(CacheKeys::HashPathCache);
+				const auto& pathCache = hashes[CacheKeys::HashPathCache];
 				if (pathCache.is_object())
 				{
 					for (auto& [key, value] : pathCache.items())
@@ -359,7 +359,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 
 			if (hashes.contains(CacheKeys::HashDataCache))
 			{
-				auto& dataCache = hashes.at(CacheKeys::HashDataCache);
+				const auto& dataCache = hashes[CacheKeys::HashDataCache];
 				if (dataCache.is_object())
 				{
 					for (auto& [key, value] : dataCache.items())
@@ -371,7 +371,7 @@ bool WorkspaceInternalCacheFile::initialize(const std::string& inFilename, const
 
 			if (hashes.contains(CacheKeys::HashExtra))
 			{
-				auto& extra = hashes.at(CacheKeys::HashExtra);
+				const auto& extra = hashes[CacheKeys::HashExtra];
 				if (extra.is_array())
 				{
 					for (auto& item : extra)
@@ -452,10 +452,10 @@ bool WorkspaceInternalCacheFile::save()
 
 		rootNode[CacheKeys::LastChaletJsonWriteTime] = std::to_string(m_lastBuildFileWrite);
 
-		if (!m_dataFile->root.contains(CacheKeys::Builds))
-			rootNode[CacheKeys::Builds] = Json::object();
+		if (m_dataFile->root.contains(CacheKeys::Builds))
+			rootNode[CacheKeys::Builds] = m_dataFile->root[CacheKeys::Builds];
 		else
-			rootNode[CacheKeys::Builds] = m_dataFile->root.at(CacheKeys::Builds);
+			rootNode[CacheKeys::Builds] = Json::object();
 
 		for (auto& [id, sourceCache] : m_sourceCaches)
 		{
@@ -622,10 +622,10 @@ StringList WorkspaceInternalCacheFile::getCacheIdsToNotRemove() const
 		List::addIfDoesNotExist(ret, id);
 	}
 
-	auto& rootNode = m_dataFile->root;
+	const auto& rootNode = m_dataFile->root;
 	if (rootNode.contains(CacheKeys::Builds))
 	{
-		auto& builds = rootNode.at(CacheKeys::Builds);
+		const auto& builds = rootNode[CacheKeys::Builds];
 		if (builds.is_object())
 		{
 			for (auto [id, _] : builds.items())

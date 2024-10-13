@@ -40,11 +40,10 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 	Json jRoot;
 	jRoot = Json::object();
 	jRoot["environments"] = getGlobalEnvironments(debugState);
-	jRoot["configurations"] = Json::array();
+	auto& configurations = jRoot["configurations"] = Json::array();
 
 	auto cwd = Path::getWithSeparatorSuffix(debugState.inputs.workingDirectory());
 
-	auto& configurations = jRoot.at("configurations");
 	for (auto& runConfig : m_runConfigs)
 	{
 		Json config;
@@ -133,9 +132,7 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 				return false;
 			}
 
-			config["compilers"] = Json::object();
-
-			auto& compilers = config.at("compilers");
+			auto& compilers = config["compilers"] = Json::object();
 
 			auto language = sourceTarget.language();
 			if (language == CodeLanguage::C || language == CodeLanguage::CPlusPlus)

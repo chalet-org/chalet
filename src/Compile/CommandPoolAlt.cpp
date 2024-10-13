@@ -198,7 +198,7 @@ bool CommandPoolAlt::run(const Job& inJob, const Settings& inSettings)
 				{
 					process = std::make_unique<RunningProcess>();
 
-					auto& cmd = inJob.list.at(index);
+					auto& cmd = inJob.list[index];
 					printCommand(getPrintedText(fmt::format("{}{}", color, (showCommmands ? String::join(cmd.command) : cmd.output)), totalCompiles));
 
 					process->command = &cmd.command;
