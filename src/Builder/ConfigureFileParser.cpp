@@ -55,7 +55,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	auto& sources = m_state.cache.file().sources();
 	const auto& configureFiles = m_project.configureFiles();
 
-	constexpr char kConfigureFiles[] = "configureFiles";
+	constexpr char kEmbeddedFiles[] = "embeddedFiles";
 	std::unordered_set<std::string> localCache;
 	auto intermediateDir = m_state.paths.intermediateDir(m_project);
 	m_cacheFile = fmt::format("{}/{}_cache.json", intermediateDir, m_project.name());
@@ -68,17 +68,22 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 			if (!jRoot.is_object())
 				jRoot = Json::object();
 
-			auto& jConfFiles = jRoot[kConfigureFiles];
+			auto& jConfFiles = jRoot[kEmbeddedFiles];
 			if (!jConfFiles.is_object())
 				jConfFiles = Json::object();
 
-			for (auto&& [name, jValue] : jConfFiles.items())
+			for (auto&& [name, jArray] : jConfFiles.items())
 			{
-				auto value = json::get<std::string>(jValue);
-				if (!value.empty())
+				if (jArray.is_array() && sources.fileChangedOrDoesNotExist(name))
 				{
-					if (sources.fileChangedOrDoesNotExist(name))
-						localCache.insert(value);
+					for (auto& jValue : jArray)
+					{
+						auto value = json::get<std::string>(jValue);
+						if (!value.empty())
+						{
+							localCache.insert(value);
+						}
+					}
 				}
 			}
 		}
@@ -149,10 +154,27 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 	if (!m_embeddedFiles.empty())
 	{
-		auto& jConfFiles = jsonFile.root[kConfigureFiles];
+		auto& jConfFiles = jsonFile.root[kEmbeddedFiles];
 		for (auto&& [file, depends] : m_embeddedFiles)
 		{
-			jConfFiles[file] = depends;
+			if (!jConfFiles[file].is_array())
+				jConfFiles[file] = Json::array();
+
+			bool found = false;
+			for (auto& jConfFile : jConfFiles[file])
+			{
+				auto confFile = json::get<std::string>(jConfFile);
+				if (!confFile.empty() && String::equals(confFile, depends))
+				{
+					found = true;
+					break;
+				}
+			}
+
+			if (!found)
+			{
+				jConfFiles[file].push_back(depends);
+			}
 		}
 		jsonFile.setDirty(true);
 		jsonFile.save();
@@ -265,8 +287,7 @@ void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::
 			auto resolvedFile = Files::getCanonicalPath(file);
 			if (Files::pathExists(resolvedFile))
 			{
-				if (m_embeddedFiles.find(file) == m_embeddedFiles.end())
-					m_embeddedFiles.emplace(file, m_currentFile);
+				m_embeddedFiles.emplace(file, m_currentFile);
 
 				std::string text{ "'\\0'" };
 				if (inGenerator(text, resolvedFile))
