@@ -13,6 +13,7 @@
 #include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
+#include "Utility/List.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
@@ -41,12 +42,12 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	m_failure = false;
 
 	auto onReplaceContents = [this](std::string& fileContents) {
-		auto onReplace = [this](auto match) {
+		auto onReplace = [this](std::string match) {
 			return this->getReplaceValue(std::move(match));
 		};
 		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
 		m_state.replaceVariablesInString(fileContents, &m_project, false, onReplace);
-		replaceEmbeddableFiles(fileContents);
+		replaceEmbeddable(fileContents, m_embedFileCache);
 
 		if (fileContents.back() != '\n')
 			fileContents += '\n';
@@ -55,34 +56,32 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	auto& sources = m_state.cache.file().sources();
 	const auto& configureFiles = m_project.configureFiles();
 
-	constexpr char kEmbeddedFiles[] = "embeddedFiles";
-	std::unordered_set<std::string> localCache;
+	constexpr char kConfigureFiles[] = "configureFiles";
+	Dictionary<StringList> embeddedFileCache;
 	auto intermediateDir = m_state.paths.intermediateDir(m_project);
 	m_cacheFile = fmt::format("{}/{}_cache.json", intermediateDir, m_project.name());
 	JsonFile jsonFile(m_cacheFile);
-	if (Files::pathExists(m_cacheFile))
+	if (!Files::pathExists(m_cacheFile) || jsonFile.load())
 	{
-		if (!Files::pathExists(m_cacheFile) || jsonFile.load())
+		Json& jRoot = jsonFile.root;
+		if (!jRoot.is_object())
+			jRoot = Json::object();
+
+		auto& jConfFiles = jRoot[kConfigureFiles];
+		if (!jConfFiles.is_object())
+			jConfFiles = Json::object();
+
+		for (const auto& [name, jArray] : jConfFiles.items())
 		{
-			Json& jRoot = jsonFile.root;
-			if (!jRoot.is_object())
-				jRoot = Json::object();
-
-			auto& jConfFiles = jRoot[kEmbeddedFiles];
-			if (!jConfFiles.is_object())
-				jConfFiles = Json::object();
-
-			for (auto&& [name, jArray] : jConfFiles.items())
+			if (jArray.is_array())
 			{
-				if (jArray.is_array() && sources.fileChangedOrDoesNotExist(name))
+				for (auto& jValue : jArray)
 				{
-					for (auto& jValue : jArray)
+					auto value = json::get<std::string>(jValue);
+					if (!value.empty() && sources.fileChangedOrDoesNotExist(value))
 					{
-						auto value = json::get<std::string>(jValue);
-						if (!value.empty())
-						{
-							localCache.insert(value);
-						}
+						if (embeddedFileCache.find(name) == embeddedFileCache.end())
+							embeddedFileCache.emplace(name, StringList{});
 					}
 				}
 			}
@@ -95,6 +94,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	if (!Files::pathExists(inOutputFolder))
 		Files::makeDirectory(inOutputFolder);
 
+	bool failure = false;
 	for (const auto& configureFile : configureFiles)
 	{
 		if (!Files::pathExists(configureFile))
@@ -118,7 +118,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
 		bool pathExists = Files::pathExists(outPath);
-		bool dependentChanged = localCache.find(configureFile) != localCache.end();
+		bool dependentChanged = embeddedFileCache.find(configureFile) != embeddedFileCache.end();
 		if (configFileChanged || metadataChanged || !pathExists || dependentChanged)
 		{
 			if (configFileChanged || pathExists)
@@ -131,8 +131,6 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				continue;
 			}
 
-			m_currentFile = configureFile;
-
 			if (!Files::readFileAndReplace(outPath, onReplaceContents))
 			{
 				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
@@ -140,45 +138,33 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				continue;
 			}
 
+			embeddedFileCache[configureFile] = m_embedFileCache;
+			m_embedFileCache.clear();
+
 			if (m_failure)
 			{
 				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
+				failure |= m_failure;
+				m_failure = false;
 			}
 		}
 	}
 
-	if (m_failure)
+	if (failure)
 		return false;
 
-	// LOG("completed in:", timer.asString());
-
-	if (!m_embeddedFiles.empty())
+	if (!embeddedFileCache.empty())
 	{
-		auto& jConfFiles = jsonFile.root[kEmbeddedFiles];
-		for (auto&& [file, depends] : m_embeddedFiles)
+		auto& jConfFiles = jsonFile.root[kConfigureFiles];
+		for (auto&& [file, depends] : embeddedFileCache)
 		{
-			if (!jConfFiles[file].is_array())
-				jConfFiles[file] = Json::array();
-
-			bool found = false;
-			for (auto& jConfFile : jConfFiles[file])
-			{
-				auto confFile = json::get<std::string>(jConfFile);
-				if (!confFile.empty() && String::equals(confFile, depends))
-				{
-					found = true;
-					break;
-				}
-			}
-
-			if (!found)
-			{
-				jConfFiles[file].push_back(depends);
-			}
+			jConfFiles[file] = depends;
 		}
 		jsonFile.setDirty(true);
 		jsonFile.save();
 	}
+
+	// LOG("completed in:", timer.asString());
 
 	return result;
 }
@@ -253,23 +239,8 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 }
 
 /*****************************************************************************/
-void ConfigureFileParser::replaceEmbeddableFiles(std::string& outContent)
+void ConfigureFileParser::replaceEmbeddable(std::string& outContent, StringList& outCache)
 {
-	// const std::string kEmbedTextToken = "${embedText:";
-
-	using namespace std::placeholders;
-
-	replaceEmbeddable(outContent, std::string(), std::bind(&ConfigureFileParser::generateBytesForFile, this, _1, _2));
-
-	// replaceEmbeddable(outContent, "Chars", std::bind(&ConfigureFileParser::generateCharsForFile, this, _1, _2));
-	// replaceEmbeddable(outContent, "String", std::bind(&ConfigureFileParser::generateStringForFile, this, _1, _2));
-}
-
-/*****************************************************************************/
-void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::string& inKeyword, const std::function<bool(std::string&, const std::string&)>& inGenerator)
-{
-	UNUSED(inKeyword);
-
 	std::string kToken{ "$embed(\"" };
 	size_t embedPos = outContent.find(kToken, 0);
 	while (embedPos != std::string::npos)
@@ -287,10 +258,12 @@ void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::
 			auto resolvedFile = Files::getCanonicalPath(file);
 			if (Files::pathExists(resolvedFile))
 			{
-				m_embeddedFiles.emplace(file, m_currentFile);
+				List::addIfDoesNotExist(outCache, file);
 
+				// Note: at the moment, we only generate as bytes
+				//
 				std::string text{ "'\\0'" };
-				if (inGenerator(text, resolvedFile))
+				if (generateBytesForFile(text, resolvedFile))
 				{
 					outContent = beforeText + "{\n\t// clang-format off\n\t" + text + "\n\t// clang-format on\n}" + afterText;
 					// String::replaceAll(outContent, fmt::format("{}{}\")", kToken, file), text);
@@ -362,20 +335,4 @@ bool ConfigureFileParser::generateBytesForFile(std::string& outText, const std::
 
 	return true;
 }
-
-/*****************************************************************************/
-/*bool ConfigureFileParser::generateCharsForFile(std::string& outText, const std::string& inFile) const
-{
-	UNUSED(outText, inFile);
-	return true;
-}*/
-
-/*****************************************************************************/
-/*bool ConfigureFileParser::generateStringForFile(std::string& outText, const std::string& inFile) const
-{
-	UNUSED(inFile);
-
-	outText.clear();
-	return true;
-}*/
 }
