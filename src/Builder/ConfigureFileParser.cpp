@@ -15,6 +15,7 @@
 #include "System/Files.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonFile.hpp"
 // #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -54,6 +55,35 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 	auto& sources = m_state.cache.file().sources();
 	const auto& configureFiles = m_project.configureFiles();
 
+	constexpr char kConfigureFiles[] = "configureFiles";
+	std::unordered_set<std::string> localCache;
+	auto intermediateDir = m_state.paths.intermediateDir(m_project);
+	m_cacheFile = fmt::format("{}/{}_cache.json", intermediateDir, m_project.name());
+	JsonFile jsonFile(m_cacheFile);
+	if (Files::pathExists(m_cacheFile))
+	{
+		if (!Files::pathExists(m_cacheFile) || jsonFile.load())
+		{
+			Json& jRoot = jsonFile.root;
+			if (!jRoot.is_object())
+				jRoot = Json::object();
+
+			auto& jConfFiles = jRoot[kConfigureFiles];
+			if (!jConfFiles.is_object())
+				jConfFiles = Json::object();
+
+			for (auto&& [name, jValue] : jConfFiles.items())
+			{
+				auto value = json::get<std::string>(jValue);
+				if (!value.empty())
+				{
+					if (sources.fileChangedOrDoesNotExist(name))
+						localCache.insert(value);
+				}
+			}
+		}
+	}
+
 	bool metadataChanged = m_state.cache.file().metadataChanged();
 
 	std::string suffix(".in");
@@ -83,7 +113,8 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 
 		bool configFileChanged = sources.fileChangedOrDoesNotExist(configureFile);
 		bool pathExists = Files::pathExists(outPath);
-		if (configFileChanged || metadataChanged || !pathExists)
+		bool dependentChanged = localCache.find(configureFile) != localCache.end();
+		if (configFileChanged || metadataChanged || !pathExists || dependentChanged)
 		{
 			if (configFileChanged || pathExists)
 				Files::removeIfExists(outPath);
@@ -94,6 +125,8 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				result = false;
 				continue;
 			}
+
+			m_currentFile = configureFile;
 
 			if (!Files::readFileAndReplace(outPath, onReplaceContents))
 			{
@@ -113,6 +146,17 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 		return false;
 
 	// LOG("completed in:", timer.asString());
+
+	if (!m_embeddedFiles.empty())
+	{
+		auto& jConfFiles = jsonFile.root[kConfigureFiles];
+		for (auto&& [file, depends] : m_embeddedFiles)
+		{
+			jConfFiles[file] = depends;
+		}
+		jsonFile.setDirty(true);
+		jsonFile.save();
+	}
 
 	return result;
 }
@@ -221,6 +265,9 @@ void ConfigureFileParser::replaceEmbeddable(std::string& outContent, const std::
 			auto resolvedFile = Files::getCanonicalPath(file);
 			if (Files::pathExists(resolvedFile))
 			{
+				if (m_embeddedFiles.find(file) == m_embeddedFiles.end())
+					m_embeddedFiles.emplace(file, m_currentFile);
+
 				std::string text{ "'\\0'" };
 				if (inGenerator(text, resolvedFile))
 				{

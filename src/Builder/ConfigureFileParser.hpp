@@ -30,6 +30,10 @@ private:
 	const BuildState& m_state;
 	const SourceTarget& m_project;
 
+	Dictionary<std::string> m_embeddedFiles;
+	std::string m_cacheFile;
+	std::string m_currentFile;
+
 	bool m_failure = false;
 };
 }
