@@ -11,9 +11,9 @@ constexpr bool json::isValid(const Json& inNode)
 	{
 		return inNode.is_string();
 	}
-	else if constexpr (std::is_integral_v<Type>)
+	else if constexpr (std::is_same_v<Type, bool>)
 	{
-		return inNode.is_number_integer();
+		return inNode.is_boolean();
 	}
 	else if constexpr (std::is_unsigned_v<Type>)
 	{
@@ -23,9 +23,9 @@ constexpr bool json::isValid(const Json& inNode)
 	{
 		return inNode.is_number_float();
 	}
-	else if constexpr (std::is_same_v<Type, bool>)
+	else if constexpr (std::is_integral_v<Type>)
 	{
-		return inNode.is_boolean();
+		return inNode.is_number_integer();
 	}
 	else
 	{
