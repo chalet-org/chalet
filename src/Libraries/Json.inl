@@ -17,15 +17,15 @@ constexpr bool json::isValid(const Json& inNode)
 	}
 	else if constexpr (std::is_unsigned_v<Type>)
 	{
-		return inNode.is_number_unsigned();
+		return inNode.is_number_unsigned() || inNode.is_number_integer();
 	}
 	else if constexpr (std::is_floating_point_v<Type>)
 	{
-		return inNode.is_number_float();
+		return inNode.is_number_float() || inNode.is_number_integer() || inNode.is_number_unsigned();
 	}
 	else if constexpr (std::is_integral_v<Type>)
 	{
-		return inNode.is_number_integer();
+		return inNode.is_number_integer() || inNode.is_number_unsigned();
 	}
 	else
 	{
