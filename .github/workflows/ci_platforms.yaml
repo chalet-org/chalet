@@ -289,7 +289,7 @@ jobs:
           draft: false
           prerelease: ${{ env.IS_PRERELEASE }}
   homebrew-release:
-    runs-on: macos-12
+    runs-on: macos-13
     needs: [create-release, all-linux, all-macos, all-windows]
     steps:
       - name: "Checkout chalet-org/homebrew-chalet"
