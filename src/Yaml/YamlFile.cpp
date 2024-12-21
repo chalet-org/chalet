@@ -63,7 +63,13 @@ bool YamlFile::parseAsJson(Json& outJson) const
 		return false;
 
 	std::ifstream stream(m_filename);
-	return parseAsJson(outJson, stream);
+	if (!parseAsJson(outJson, stream))
+	{
+		Diagnostic::error("There was a problem reading: {}", m_filename);
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -73,7 +79,13 @@ bool YamlFile::parseAsJson(Json& outJson, const std::string& inContents) const
 		return false;
 
 	std::stringstream stream(inContents);
-	return parseAsJson(outJson, stream);
+	if (!parseAsJson(outJson, stream))
+	{
+		Diagnostic::error("There was a problem reading the yaml contents");
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -88,10 +100,15 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 	size_t indent = 0;
 	size_t lastIndent = 0;
 
+	const std::string kExpectedIndent{ "  " };
+
+	size_t lineNo = 0;
 	std::string line;
 	auto lineEnd = stream.widen('\n');
 	while (std::getline(stream, line, lineEnd))
 	{
+		lineNo++;
+
 		if (line.empty())
 			continue;
 
@@ -99,13 +116,25 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 
 		indent = 0;
 
-		while (String::startsWith("  ", line))
+		while (String::startsWith(kExpectedIndent, line))
 		{
 			line = line.substr(2);
 			indent++;
 		}
 
-		bool arrayIsh = String::startsWith("- ", line);
+		if (String::startsWith('\t', line))
+		{
+			Diagnostic::error("Tabs are not allowed as indentation, but were found on line: {}", lineNo);
+			return false;
+		}
+
+		bool arrayIsh = String::startsWith('-', line);
+		if (arrayIsh && line.size() >= 2 && line[1] != ' ' && line[1] != '\t')
+		{
+			Diagnostic::error("Found invalid item indentation on line: {}", lineNo);
+			return false;
+		}
+
 		if (arrayIsh && indent >= lastIndent - 1)
 			indent = lastIndent + 1;
 		else
@@ -128,10 +157,12 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		bool objectIsh = firstKeyValue != std::string::npos;
 		bool startOfObjectArray = arrayIsh && objectIsh;
 
-		while (nodes.size() > indent + 1)
+		while (!nodes.empty() && nodes.size() - 1 > indent)
 			nodes.pop_back();
 
 		chalet_assert(!nodes.empty(), "");
+
+		// LOG(lineNo, indent, objectIsh, arrayIsh, startOfObjectArray, line);
 
 		// Start of object or array - just the key
 		bool startOfArrayOrObject = line.back() == ':';
@@ -140,7 +171,10 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			line.pop_back();
 
 			if (nodes.back()->is_array())
+			{
+				Diagnostic::error("Found an object key, but expected an array item on line: {}", lineNo);
 				return false;
+			}
 
 			// We got here because the previous node was an object
 			if (nodes.back()->is_null())
@@ -154,7 +188,12 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		else if (startOfObjectArray)
 		{
 			if (nodes.back()->is_object())
-				nodes.pop_back();
+			{
+				if (nodes.size() > 1)
+					nodes.pop_back();
+				else
+					(*nodes.back()) = Json::array();
+			}
 
 			if (nodes.back()->is_null())
 				(*nodes.back()) = Json::array();
@@ -172,7 +211,10 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 				(*nodes.back()) = Json::array();
 
 			if (!nodes.back()->is_array())
+			{
+				Diagnostic::error("Could not interpret type. Found a trailing ':' on line: {}", lineNo);
 				return false;
+			}
 		}
 
 		if (objectIsh && nodes.back()->is_array())
@@ -189,7 +231,10 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			}
 
 			if (!validObjectArray)
+			{
+				Diagnostic::error("Found an object key/value, but expected an array item on line: {}", lineNo);
 				return false;
+			}
 		}
 
 		auto& node = *nodes.back();
