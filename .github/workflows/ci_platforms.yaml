@@ -144,7 +144,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-12]
+        os: [macos-13]
         triplet: [arm64-apple-darwin, x86_64-apple-darwin, universal-apple-darwin]
         include:
           - triplet: arm64-apple-darwin
