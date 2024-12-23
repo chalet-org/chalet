@@ -94,6 +94,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 	outJson = Json::object();
 
 	std::vector<Json*> nodes;
+	std::vector<Json*> objectArrayNodes;
 
 	nodes.push_back(&outJson);
 
@@ -114,6 +115,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 
 		// LOG(line);
 
+		lastIndent = indent;
 		indent = 0;
 
 		while (String::startsWith(kExpectedIndent, line))
@@ -135,11 +137,6 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			return false;
 		}
 
-		if (arrayIsh && indent >= lastIndent - 1)
-			indent = lastIndent + 1;
-		else
-			lastIndent = indent;
-
 		if (arrayIsh)
 			line = line.substr(2);
 
@@ -153,16 +150,26 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		if (line.front() == '#')
 			continue;
 
+		// ignore trailing comments
+		auto hasHash = line.find(" #");
+		if (hasHash != std::string::npos)
+			line = line.substr(0, hasHash);
+
 		auto firstKeyValue = line.find(": ");
 		bool objectIsh = firstKeyValue != std::string::npos;
 		bool startOfObjectArray = arrayIsh && objectIsh;
 
 		while (!nodes.empty() && nodes.size() - 1 > indent)
+		{
+			if (!objectArrayNodes.empty() && nodes.back() == objectArrayNodes.back())
+				objectArrayNodes.pop_back();
+
 			nodes.pop_back();
+		}
 
 		chalet_assert(!nodes.empty(), "");
 
-		// LOG(lineNo, indent, objectIsh, arrayIsh, startOfObjectArray, line);
+		// LOG(lineNo, indent, lastIndent, objectIsh, arrayIsh, startOfObjectArray, line);
 
 		// Start of object or array - just the key
 		bool startOfArrayOrObject = line.back() == ':';
@@ -172,8 +179,28 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 
 			if (nodes.back()->is_array())
 			{
-				Diagnostic::error("Found an object key, but expected an array item on line: {}", lineNo);
-				return false;
+				if (!arrayIsh)
+				{
+					Diagnostic::error("Found an object key, but expected an array item on line: {}", lineNo);
+					return false;
+				}
+				else
+				{
+					if (lastIndent == indent + 1 && !objectArrayNodes.empty())
+						nodes.back() = objectArrayNodes.back();
+
+					if (!nodes.back()->is_array())
+					{
+						Diagnostic::error("Could not interpret type. Found a trailing ':' on line: {}", lineNo);
+						return false;
+					}
+
+					auto& newNode = nodes.back()->emplace_back(Json::object());
+					newNode[line] = Json::array();
+					objectArrayNodes.emplace_back(nodes.back());
+					nodes.back() = &newNode[line];
+					continue;
+				}
 			}
 
 			// We got here because the previous node was an object
@@ -190,9 +217,16 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			if (nodes.back()->is_object())
 			{
 				if (nodes.size() > 1)
+				{
+					if (!objectArrayNodes.empty() && nodes.back() == objectArrayNodes.back())
+						objectArrayNodes.pop_back();
+
 					nodes.pop_back();
+				}
 				else
+				{
 					(*nodes.back()) = Json::array();
+				}
 			}
 
 			if (nodes.back()->is_null())
@@ -204,8 +238,16 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		}
 		else if (arrayIsh)
 		{
+			if (lastIndent == indent + 1 && !objectArrayNodes.empty())
+				nodes.back() = objectArrayNodes.back();
+
 			if (nodes.back()->is_object())
+			{
+				if (!objectArrayNodes.empty() && nodes.back() == objectArrayNodes.back())
+					objectArrayNodes.pop_back();
+
 				nodes.pop_back();
+			}
 
 			if (nodes.back()->is_null())
 				(*nodes.back()) = Json::array();
@@ -274,10 +316,6 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 					continue;
 				}
 			}
-
-			auto hasHash = value.find(" #");
-			if (hasHash != std::string::npos)
-				value = value.substr(0, hasHash);
 
 			if (String::equals("false", value))
 			{
