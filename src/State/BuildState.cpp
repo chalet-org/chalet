@@ -78,6 +78,9 @@ struct BuildState::Impl
 };
 
 /*****************************************************************************/
+const BuildState::VariableOptions BuildState::kDefaultVariableOptions;
+
+/*****************************************************************************/
 BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState) :
 	m_impl(std::make_unique<Impl>(std::move(inInputs), inCentralState, *this)),
 	tools(m_impl->centralState.tools),
@@ -144,13 +147,16 @@ bool BuildState::initialize()
 	if (!initializeBuild())
 		return false;
 
-	if (!validateState())
-		return false;
-
-	if (inputs.route().isExport())
+	if (!inputs.route().isCheck())
 	{
-		if (!initializeDistribution())
+		if (!validateState())
 			return false;
+
+		if (inputs.route().isExport())
+		{
+			if (!initializeDistribution())
+				return false;
+		}
 	}
 
 	// calls enforceArchitectureInPath 2nd time
@@ -590,7 +596,10 @@ bool BuildState::initializeBuild()
 
 	Output::setShowCommandOverride(false);
 
-	Diagnostic::infoEllipsis("Configuring build");
+	if (!inputs.route().isCheck())
+	{
+		Diagnostic::infoEllipsis("Configuring build");
+	}
 
 	auto chaletTarget = Environment::getString("__CHALET_TARGET");
 	m_isSubChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
@@ -710,7 +719,10 @@ bool BuildState::initializeBuild()
 		generateUniqueIdForState();
 	}
 
-	Diagnostic::printDone(timer.asString());
+	if (!inputs.route().isCheck())
+	{
+		Diagnostic::printDone(timer.asString());
+	}
 
 	return true;
 }
@@ -1422,12 +1434,12 @@ void BuildState::enforceArchitectureInPath(std::string& outPathVariable)
 }
 
 /*****************************************************************************/
-bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const VariableOptions& inOptions) const
 {
 	if (outString.empty())
 		return true;
 
-	if (inCheckHome)
+	if (inOptions.checkHome)
 	{
 		const auto& homeDirectory = inputs.homeDirectory();
 		Environment::replaceCommonVariables(outString, homeDirectory);
@@ -1435,8 +1447,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required);
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
+				auto result = replaceVariablesInMatch(match, required, inOptions.validateExternals);
 				if (!result.empty())
 					return result;
 
@@ -1477,7 +1489,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					auto var = Environment::getString(match.c_str());
 					if (!var.empty())
 					{
-						if (inTarget->isSources())
+						if (inTarget != nullptr && inTarget->isSources())
 						{
 							auto& project = static_cast<const SourceTarget&>(*inTarget);
 							const auto& defines = project.defines();
@@ -1491,8 +1503,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 					return std::string(!var.empty() ? "true" : "false");
 				}
 
-				if (onFail != nullptr)
-					return onFail(std::move(match));
+				if (inOptions.onFail != nullptr)
+					return inOptions.onFail(std::move(match));
 
 				return std::string();
 			}))
@@ -1507,12 +1519,12 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 }
 
 /*****************************************************************************/
-bool BuildState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+bool BuildState::replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const VariableOptions& inOptions) const
 {
 	if (outString.empty())
 		return true;
 
-	if (inCheckHome)
+	if (inOptions.checkHome)
 	{
 		const auto& homeDirectory = inputs.homeDirectory();
 		Environment::replaceCommonVariables(outString, homeDirectory);
@@ -1520,8 +1532,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required);
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
+				auto result = replaceVariablesInMatch(match, required, inOptions.validateExternals);
 				if (!result.empty())
 					return result;
 
@@ -1557,8 +1569,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 					return std::string(!var.empty() ? "true" : "false");
 				}
 
-				if (onFail != nullptr)
-					return onFail(std::move(match));
+				if (inOptions.onFail != nullptr)
+					return inOptions.onFail(std::move(match));
 
 				return std::string();
 			}))
@@ -1573,12 +1585,12 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 }
 
 /*****************************************************************************/
-bool BuildState::replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const bool inCheckHome, const std::function<std::string(std::string)>& onFail) const
+bool BuildState::replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const VariableOptions& inOptions) const
 {
 	if (outString.empty())
 		return true;
 
-	if (inCheckHome)
+	if (inOptions.checkHome)
 	{
 		const auto& homeDirectory = inputs.homeDirectory();
 		Environment::replaceCommonVariables(outString, homeDirectory);
@@ -1586,7 +1598,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 
 	if (String::contains("${", outString))
 	{
-		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &onFail](std::string match, bool& required) {
+		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
 				auto result = replaceVariablesInMatch(match, required, false);
 				if (!result.empty())
 					return result;
@@ -1628,8 +1640,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 					return std::string(!var.empty() ? "true" : "false");
 				}
 
-				if (onFail != nullptr)
-					return onFail(std::move(match));
+				if (inOptions.onFail != nullptr)
+					return inOptions.onFail(std::move(match));
 
 				return std::string();
 			}))

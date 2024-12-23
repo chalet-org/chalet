@@ -27,6 +27,7 @@ struct AppBundler
 	~AppBundler();
 
 	bool run(const DistTarget& inTarget);
+	bool isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const;
 
 	void reportErrors();
 
@@ -41,8 +42,6 @@ private:
 	bool runValidationTarget(const ValidationDistTarget& inTarget);
 
 	bool runProcess(const StringList& inCmd, std::string outputFile);
-
-	bool isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const;
 
 	void displayHeader(const char* inLabel, const IDistTarget& inTarget, const std::string& inName = std::string()) const;
 	bool removeOldFiles(IAppBundler& inBundler);

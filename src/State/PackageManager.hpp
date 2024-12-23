@@ -20,6 +20,8 @@ struct PackageManager
 
 	bool add(const std::string& inName, Ref<SourcePackage>&& inValue);
 
+	SourcePackage* getSourcePackage(const std::string& inName);
+
 	const StringList& packagePaths() const noexcept;
 	void addPackagePaths(StringList&& inList);
 	void addPackagePath(std::string&& inValue);

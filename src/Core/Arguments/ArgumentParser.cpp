@@ -60,6 +60,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::Clean, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Bundle, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Configure, &ArgumentParser::populateCommonBuildArguments },
+		{ RouteType::Check, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Init, &ArgumentParser::populateInitArguments },
 		{ RouteType::Export, &ArgumentParser::populateExportArguments },
 		{ RouteType::SettingsGet, &ArgumentParser::populateSettingsGetArguments },
@@ -79,6 +80,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::Clean, "Unceremoniously clean the build folder." },
 		{ RouteType::Bundle, "Bundle a project for distribution." },
 		{ RouteType::Configure, "Create a project configuration and fetch external dependencies." },
+		{ RouteType::Check, "Outputs the processed build file for the platform and selected toolchain." },
 		{ RouteType::Export, "Export the project to another project format." },
 		{ RouteType::Init, "Initialize a project in either the current directory or a subdirectory." },
 		{ RouteType::SettingsGet, "If the given property is valid, display its JSON node." },
@@ -100,6 +102,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ "clean", RouteType::Clean },
 		{ "bundle", RouteType::Bundle },
 		{ "configure", RouteType::Configure },
+		{ "check", RouteType::Check },
 		{ "c", RouteType::Configure },
 		{ "export", RouteType::Export },
 		{ "init", RouteType::Init },
@@ -825,18 +828,17 @@ std::string ArgumentParser::getHelp()
 		};
 
 		help += "\nExport project types:\n";
-		StringList exportPresets
-		{
+		StringList exportPresets{
 			"vscode",
 #if defined(CHALET_WIN32)
-				"vssolution",
-				"vsjson",
+			"vssolution",
+			"vsjson",
 #elif defined(CHALET_MACOS)
-				"xcode",
+			"xcode",
 #endif
-				"clion",
-				"fleet",
-				"codeblocks",
+			"clion",
+			"fleet",
+			"codeblocks",
 		};
 
 		for (auto& preset : exportPresets)
@@ -1071,6 +1073,9 @@ void ArgumentParser::populateMainArguments()
 
 	subcommands.push_back(fmt::format("init [{}]", Arg::InitPath));
 	descriptions.push_back(fmt::format("{}\n", m_routeDescriptions.at(RouteType::Init)));
+
+	subcommands.push_back("check");
+	descriptions.push_back(m_routeDescriptions.at(RouteType::Check));
 
 	subcommands.push_back("configure,c");
 	descriptions.push_back(m_routeDescriptions.at(RouteType::Configure));

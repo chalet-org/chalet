@@ -32,6 +32,14 @@ class BuildState
 	Unique<Impl> m_impl;
 
 public:
+	struct VariableOptions
+	{
+		std::function<std::string(std::string)> onFail = nullptr;
+		bool checkHome = true;
+		bool validateExternals = true;
+	};
+	static const VariableOptions kDefaultVariableOptions;
+
 	explicit BuildState(CommandLineInputs inInputs, CentralState& inCentralState);
 	CHALET_DISALLOW_COPY_MOVE(BuildState);
 	~BuildState();
@@ -44,9 +52,9 @@ public:
 	bool initializeDistribution();
 	void makeLibraryPathVariables();
 
-	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
-	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
-	bool replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const bool inCheckHome = true, const std::function<std::string(std::string)>& onFail = nullptr) const;
+	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
+	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
+	bool replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
 	std::string replaceVariablesInMatch(std::string& inMatch, bool& required, const bool inValidateExternals = true) const;
 	const std::string& cachePathId() const noexcept;
 

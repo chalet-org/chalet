@@ -57,6 +57,7 @@ constexpr bool isInvalid(JsonNodeReadStatus& inStatus)
 {
 	return inStatus == JsonNodeReadStatus::Invalid;
 }
+constexpr const char kCondition[] = "condition";
 }
 
 /*****************************************************************************/
@@ -88,7 +89,7 @@ bool ChaletJsonParser::serialize()
 	if (!validBuildRequested())
 	{
 		const auto& buildConfiguration = m_state.configuration.name();
-		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of 'condition' property", m_chaletJson.filename(), buildConfiguration);
+		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of '_+' property", m_chaletJson.filename(), buildConfiguration, kCondition);
 		return false;
 	}
 
@@ -317,7 +318,7 @@ bool ChaletJsonParser::parsePackage(const Json& inNode, const std::string& inRoo
 		return true;
 
 	const Json& packageRoot = inNode[Keys::Package];
-	if (!packageRoot.is_object() || packageRoot.size() == 0)
+	if (!packageRoot.is_object() || packageRoot.empty())
 	{
 		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Package);
 		return false;
@@ -471,7 +472,7 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 	}
 
 	const Json& targets = inNode[Keys::Targets];
-	if (!targets.is_object() || targets.size() == 0)
+	if (!targets.is_object() || targets.empty())
 	{
 		Diagnostic::error("{}: '{}' must contain at least one target.", m_chaletJson.filename(), Keys::Targets);
 		return false;
@@ -1300,7 +1301,7 @@ bool ChaletJsonParser::parseDistribution(const Json& inNode) const
 		return true;
 
 	const Json& distributionJson = inNode[Keys::Distribution];
-	if (!distributionJson.is_object() || distributionJson.size() == 0)
+	if (!distributionJson.is_object() || distributionJson.empty())
 	{
 		Diagnostic::error("{}: '{}' must contain at least one bundle or script.", m_chaletJson.filename(), Keys::Distribution);
 		return false;
@@ -1852,9 +1853,9 @@ bool ChaletJsonParser::parseDistributionValidation(ValidationDistTarget& outTarg
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; json::assign(val, inNode, "condition"))
+	if (std::string val; json::assign(val, inNode, kCondition))
 	{
-		auto res = conditionIsValid(outTarget, val);
+		auto res = conditionIsValid(outTarget.name(), val);
 		if (res.has_value())
 			outTarget.setIncludeInBuild(*res);
 		else
@@ -1867,7 +1868,7 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IBuildTarget& outTarg
 /*****************************************************************************/
 std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarget, const Json& inNode) const
 {
-	if (std::string val; json::assign(val, inNode, "condition"))
+	if (std::string val; json::assign(val, inNode, kCondition))
 	{
 		auto res = conditionIsValid(val);
 		if (res.has_value())
@@ -1880,10 +1881,10 @@ std::optional<bool> ChaletJsonParser::parseTargetCondition(IDistTarget& outTarge
 }
 
 /*****************************************************************************/
-std::optional<bool> ChaletJsonParser::conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const
+std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inTargetName, const std::string& inContent) const
 {
-	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent, &outTarget](const std::string& key, const std::string& value, bool negate) {
-			auto res = checkConditionVariable(outTarget, inContent, key, value, negate);
+	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent, &inTargetName](const std::string& key, const std::string& value, bool negate) {
+			auto res = checkConditionVariable(inTargetName, inContent, key, value, negate);
 			return res == ConditionResult::Pass;
 		}))
 	{
@@ -1920,7 +1921,7 @@ std::optional<bool> ChaletJsonParser::conditionIsValid(const std::string& inCont
 }
 
 /*****************************************************************************/
-ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+ConditionResult ChaletJsonParser::checkConditionVariable(const std::string& inTargetName, const std::string& inString, const std::string& key, const std::string& value, bool negate) const
 {
 	if (key.empty())
 	{
@@ -1937,12 +1938,12 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 
 			if (negate)
 			{
-				if (String::equals(buildTargets, outTarget.name()))
+				if (String::equals(buildTargets, inTargetName))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(buildTargets, outTarget.name()))
+				if (!String::equals(buildTargets, inTargetName))
 					return ConditionResult::Fail;
 			}
 
@@ -1965,12 +1966,12 @@ ConditionResult ChaletJsonParser::checkConditionVariable(IBuildTarget& outTarget
 
 			if (negate)
 			{
-				if (String::equals(buildTargets, outTarget.name()))
+				if (String::equals(buildTargets, inTargetName))
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (!String::equals(buildTargets, outTarget.name()))
+				if (!String::equals(buildTargets, inTargetName))
 					return ConditionResult::Fail;
 			}
 
