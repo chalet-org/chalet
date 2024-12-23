@@ -153,7 +153,7 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 			return fmt::format("All of the subschemas are required for '{}' (per 'allOf'), but at least one of them did not match.", parentKey);
 
 		case JsonSchemaError::logical_combination_one_of:
-			return fmt::format("One of the subschemas are required for '{}' (per 'oneOf'), but none matched.", parentKey);
+			return fmt::format("One of the subschemas is required for '{}' (per 'oneOf'), but none matched.", parentKey);
 
 		case JsonSchemaError::type_instance_unexpected_type: {
 			if (String::equals(kRootKey, parentKey) && String::equals("null", outError.typeName))
