@@ -108,7 +108,9 @@ bool BuildFileChecker::run()
 		output += getOutputLineFor("ar:foo");
 		output += getOutputLineFor("exe:foo");
 
+#if defined(CHALET_WIN32)
 		bool comspec = false;
+#endif
 		auto shell = getOutputLineFor("env:SHELL");
 #if defined(CHALET_WIN32)
 		if (shell.empty() && Shell::isMicrosoftTerminalOrWindowsBash())
