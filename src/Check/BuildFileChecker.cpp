@@ -70,7 +70,7 @@ bool BuildFileChecker::run()
 		const auto& buildColor = Output::getAnsiStyle(theme.build);
 		const auto& reset = Output::getAnsiStyle(theme.reset);
 
-		std::string output{ "Subtitutions\n\n" };
+		std::string output{ "Substitutions\n\n" };
 
 		BuildState::VariableOptions options;
 		options.validateExternals = false;
