@@ -329,7 +329,7 @@ bool JsonValidator::validate(const Json& inJsonContent, const std::string& inFil
 		ErrorHandler errorHandler{ errors, inFile };
 		m_impl->validator.validate(inJsonContent, errorHandler);
 
-		return errors.size() == 0;
+		return errors.empty();
 	}
 	CHALET_CATCH(const std::exception& err)
 	{
@@ -341,7 +341,7 @@ bool JsonValidator::validate(const Json& inJsonContent, const std::string& inFil
 /*****************************************************************************/
 bool JsonValidator::printErrors(JsonValidationErrors& errors)
 {
-	if (errors.size() == 0)
+	if (errors.empty())
 		return true;
 
 	for (auto& error : errors)

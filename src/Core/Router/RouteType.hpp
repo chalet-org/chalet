@@ -18,6 +18,7 @@ enum class RouteType : u16
 	Bundle,
 	Clean,
 	Configure,
+	Check,
 	Init,
 	Export,
 	SettingsGet,

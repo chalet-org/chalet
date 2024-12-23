@@ -46,7 +46,11 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 			return this->getReplaceValue(std::move(match));
 		};
 		RegexPatterns::matchAndReplaceConfigureFileVariables(fileContents, onReplace);
-		m_state.replaceVariablesInString(fileContents, &m_project, false, onReplace);
+
+		BuildState::VariableOptions options;
+		options.checkHome = false;
+		options.onFail = onReplace;
+		m_state.replaceVariablesInString(fileContents, &m_project, options);
 		replaceEmbeddable(fileContents, m_embedFileCache);
 
 		if (fileContents.back() != '\n')

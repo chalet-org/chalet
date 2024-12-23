@@ -66,7 +66,7 @@ private:
 	bool parseEnvFile();
 	bool parseGlobalSettingsJson(IntermediateSettingsState& outState);
 	bool parseLocalSettingsJson(const IntermediateSettingsState& inState);
-	bool parseChaletJson();
+	bool parseBuildFile();
 
 	bool validateOsTarget();
 	bool validateConfigurations();

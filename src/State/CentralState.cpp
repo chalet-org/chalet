@@ -126,7 +126,7 @@ bool CentralState::initialize()
 
 	if (route.isConfigure())
 	{
-		if (!parseChaletJson())
+		if (!parseBuildFile())
 			return false;
 
 		// if (!externalDependencies.empty())
@@ -138,12 +138,26 @@ bool CentralState::initialize()
 				return false;
 		}
 	}
+	else if (route.isCheck())
+	{
+		if (!parseBuildFile())
+			return false;
+
+		if (!createCache())
+			return false;
+
+		if (!validateAncillaryTools())
+			return false;
+
+		if (!validate())
+			return false;
+	}
 	else
 	{
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
-		if (!parseChaletJson())
+		if (!parseBuildFile())
 			return false;
 
 		if (!createCache())
@@ -160,7 +174,7 @@ bool CentralState::initialize()
 
 	Output::setShowCommandOverride(true);
 
-	if (!route.isClean())
+	if (!route.isClean() && !route.isCheck())
 	{
 		if (!runDependencyManager())
 			return false;
@@ -503,7 +517,7 @@ bool CentralState::parseLocalSettingsJson(const IntermediateSettingsState& inSta
 }
 
 /*****************************************************************************/
-bool CentralState::parseChaletJson()
+bool CentralState::parseBuildFile()
 {
 	CentralChaletJsonParser parser(*this);
 	return parser.serialize();
