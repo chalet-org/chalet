@@ -56,7 +56,7 @@ bool AppBundlerMacOS::initialize(const std::string& inOutputDir)
 	m_infoFile = getPlistFile();
 	m_entitlementsFile = getEntitlementsFilePath();
 
-	getMainExecutable(m_mainExecutable);
+	m_mainExecutable = m_bundle.getMainExecutable();
 
 	return true;
 #else
@@ -449,9 +449,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		String::replaceAll(outContent, "${icon}", getResolvedIconName());
 		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
 		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
-
-		// TODO: This uses the workspace version, but should be the same version as the mainExecutable
-		String::replaceAll(outContent, "${version}", m_state.workspace.metadata().versionString());
+		String::replaceAll(outContent, "${version}", m_bundle.getMainExecutableVersion());
 	};
 
 	std::string tmpPlist = fmt::format("{}.json", inOutFile);

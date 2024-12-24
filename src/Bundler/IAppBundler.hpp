@@ -18,7 +18,6 @@ struct IAppBundler
 	virtual ~IAppBundler() = default;
 
 	const BundleTarget& bundle() const noexcept;
-	bool getMainExecutable(std::string& outMainExecutable);
 	StringList getAllExecutables() const;
 
 	bool copyIncludedPath(const std::string& inDep, const std::string& inOutPath);

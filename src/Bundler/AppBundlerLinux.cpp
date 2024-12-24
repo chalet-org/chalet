@@ -71,7 +71,8 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!m_bundle.hasLinuxDesktopEntry())
 		return true; // Nothing to do
 
-	if (!getMainExecutable(m_mainExecutable))
+	m_mainExecutable = m_bundle.getMainExecutable();
+	if (m_mainExecutable.empty())
 		return true; // No executable -- we don't care
 
 	Timer timer;

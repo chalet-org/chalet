@@ -12,6 +12,7 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
 #include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -215,6 +216,67 @@ std::vector<const SourceTarget*> BundleTarget::getRequiredBuildTargets() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string BundleTarget::getMainExecutable() const
+{
+	std::string result;
+
+	auto buildTargets = getRequiredBuildTargets();
+	auto& mainExec = this->mainExecutable();
+
+	// Match mainExecutable if defined, otherwise get first executable
+	for (auto& project : buildTargets)
+	{
+		if (project->isStaticLibrary())
+			continue;
+
+		result = project->outputFile();
+
+		if (!project->isExecutable())
+			continue;
+
+		if (!mainExec.empty() && !String::equals(mainExec, project->name()))
+			continue;
+
+		return project->outputFile();
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
+std::string BundleTarget::getMainExecutableVersion() const
+{
+	std::string result;
+
+	auto buildTargets = getRequiredBuildTargets();
+	auto& mainExec = this->mainExecutable();
+
+	// Match mainExecutable if defined, otherwise get first executable
+	for (auto& project : buildTargets)
+	{
+		if (!project->isExecutable())
+			continue;
+
+		bool hasMetadata = project->hasMetadata();
+		if (hasMetadata)
+			result = project->metadata().versionString();
+
+		if (!mainExec.empty() && !String::equals(mainExec, project->name()))
+			continue;
+
+		if (hasMetadata)
+			return result;
+		else
+			break;
+	}
+
+	if (result.empty())
+		return m_state.workspace.metadata().versionString();
+	else
+		return result;
 }
 
 /*****************************************************************************/
