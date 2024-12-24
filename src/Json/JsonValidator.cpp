@@ -271,10 +271,10 @@ std::string ErrorHandler::parseRawError(JsonValidationError& outError)
 		}
 
 		case JsonSchemaError::object_too_many_properties:
-			return "Too many properties";
+			return fmt::format("The '{}' object contains too many properties.", key);
 
 		case JsonSchemaError::object_too_few_properties:
-			return "Too few properties";
+			return fmt::format("The '{}' object contains too few properties.", key);
 
 		case JsonSchemaError::object_required_property_not_found: {
 			auto property = std::any_cast<std::string>(data);
