@@ -20,6 +20,7 @@ namespace chalet
 {
 struct CentralState;
 class BuildState;
+struct BuildFileChecker;
 
 struct IBuildTarget;
 struct SourceTarget;
@@ -49,6 +50,8 @@ struct ChaletJsonParser
 	bool readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot);
 
 private:
+	friend struct BuildFileChecker;
+
 	const StringList& getBuildTargets() const;
 
 	bool serializeFromJsonRoot(const Json& inJson);
@@ -84,9 +87,9 @@ private:
 
 	bool validBuildRequested() const;
 	std::string getValidRunTargetFromInput() const;
-	std::optional<bool> conditionIsValid(IBuildTarget& outTarget, const std::string& inContent) const;
+	std::optional<bool> conditionIsValid(const std::string& inTargetName, const std::string& inContent) const;
 	std::optional<bool> conditionIsValid(const std::string& inContent) const;
-	ConditionResult checkConditionVariable(IBuildTarget& outTarget, const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
+	ConditionResult checkConditionVariable(const std::string& inTargetName, const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 	ConditionResult checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const;
 
 	template <typename T>

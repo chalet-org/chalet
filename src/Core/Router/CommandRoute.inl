@@ -66,6 +66,12 @@ constexpr bool CommandRoute::isBuildRun() const noexcept
 }
 
 /*****************************************************************************/
+constexpr bool CommandRoute::isCheck() const noexcept
+{
+	return m_route == RouteType::Check;
+}
+
+/*****************************************************************************/
 constexpr bool CommandRoute::isExport() const noexcept
 {
 	return m_route == RouteType::Export;

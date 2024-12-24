@@ -12,6 +12,7 @@
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Builder/BatchValidator.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
+#include "Check/BuildFileChecker.hpp"
 #include "Convert/BuildFileConverter.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
@@ -147,6 +148,12 @@ bool Router::runRoutesThatRequireState()
 			break;
 		}
 
+		case RouteType::Check: {
+			// Note: we don't want to save the cache
+			chalet_assert(buildState != nullptr, "");
+			return routeCheck(*buildState);
+		}
+
 		case RouteType::BuildRun:
 		case RouteType::Build:
 		case RouteType::Rebuild:
@@ -230,6 +237,15 @@ bool Router::routeBundle(BuildState& inState)
 	Output::lineBreak();
 
 	return true;
+}
+
+/*****************************************************************************/
+bool Router::routeCheck(BuildState& inState)
+{
+	Output::lineBreak();
+
+	BuildFileChecker checker(inState);
+	return checker.run();
 }
 
 /*****************************************************************************/

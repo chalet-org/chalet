@@ -21,7 +21,6 @@ enum class ConditionResult
 };
 struct ChaletJsonParserAdapter
 {
-
 	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 
 	mutable ConditionOp lastOp = ConditionOp::And;

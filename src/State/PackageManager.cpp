@@ -62,8 +62,13 @@ bool PackageManager::initialize()
 			return false;
 	}
 
-	// Clear packages at this point. in theory, we should no longer need them
-	m_impl.reset();
+	auto& route = m_state.inputs.route();
+
+	if (!route.isCheck())
+	{
+		// Clear packages at this point. in theory, we should no longer need them
+		m_impl.reset();
+	}
 
 	return true;
 }
@@ -76,6 +81,15 @@ bool PackageManager::add(const std::string& inName, Ref<SourcePackage>&& inValue
 
 	m_impl->packages.emplace(inName, std::move(inValue));
 	return true;
+}
+
+/*****************************************************************************/
+SourcePackage* PackageManager::getSourcePackage(const std::string& inName)
+{
+	if (m_impl->packages.find(inName) != m_impl->packages.end())
+		return m_impl->packages.at(inName).get();
+
+	return nullptr;
 }
 
 /*****************************************************************************/

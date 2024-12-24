@@ -309,7 +309,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		return true;
 
 	const Json& externalDependencies = inNode[Keys::ExternalDependencies];
-	if (!externalDependencies.is_object() || externalDependencies.size() == 0)
+	if (!externalDependencies.is_object() || externalDependencies.empty())
 	{
 		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_chaletJson.filename(), Keys::ExternalDependencies);
 		return false;

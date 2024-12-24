@@ -743,10 +743,13 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	const Color color = inRunCommand ? Output::theme().success : Output::theme().header;
 	displayHeader("Script", inTarget, color);
 
+	auto& sourceCache = m_state.cache.file().sources();
+	auto& hash = inTarget.getHash();
+
 	const auto& arguments = inTarget.arguments();
 	const auto& dependsOn = inTarget.dependsOn();
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
-	if (inRunCommand || scriptRunner.shouldRun(m_state.cache.file().sources(), dependsOn))
+	if (inRunCommand || scriptRunner.shouldRun(sourceCache, hash, dependsOn))
 	{
 		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
 		{
@@ -757,8 +760,13 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 			result = false;
 		}
 
-		if (!inRunCommand && result)
-			Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
+		sourceCache.addDataCache(hash, result);
+
+		if (!inRunCommand)
+		{
+			if (result)
+				Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
+		}
 	}
 	else
 	{
@@ -790,10 +798,15 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 		cmd.push_back(arg);
 	}
 
+	auto& sourceCache = m_state.cache.file().sources();
+	auto& hash = inTarget.getHash();
+
 	bool result = true;
-	if (inRunCommand || canProcessRun(m_state.cache.file().sources(), inTarget.dependsOn()))
+	if (inRunCommand || canProcessRun(sourceCache, hash, inTarget.dependsOn()))
 	{
 		result = runProcess(cmd, path, inRunCommand);
+		sourceCache.addDataCache(hash, result);
+
 		if (!inRunCommand && result)
 			Output::msgTargetUpToDate(inTarget.name(), &buildTimer);
 	}
@@ -1090,8 +1103,12 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::canProcessRun(SourceCache& inSourceCache, const StringList& inDepends) const
+bool BuildManager::canProcessRun(SourceCache& inSourceCache, const std::string& inHash, const StringList& inDepends) const
 {
+	bool lastBuildFailed = inSourceCache.dataCacheValueIsFalse(inHash);
+	if (lastBuildFailed)
+		return true;
+
 	bool ret = inDepends.empty();
 	for (auto& depends : inDepends)
 	{
