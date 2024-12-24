@@ -58,7 +58,7 @@ bool forEachGlobMatch(const std::string& inPath, const StringList& inPatterns, c
 bool addPathToListWithGlob(const std::string& inValue, StringList& outList, const GlobMatch inSettings);
 bool addPathToMapWithGlob(const std::string& inValue, std::string&& inMapping, std::map<std::string, std::string>& outMap, const GlobMatch inSettings);
 
-bool readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
+bool readAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace);
 void sleep(const f64 inSeconds);
 
 bool openWithDefaultApplication(const std::string& inFile);

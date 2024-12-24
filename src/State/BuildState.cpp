@@ -503,8 +503,6 @@ bool BuildState::parseToolchainFromSettingsJson()
 	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
 	if (preference.type != ToolchainType::Unknown && preference.type != type)
 	{
-		// TODO: If using intel clang on windows, and another clang.exe is found in Path, this gets triggered
-		//
 		const auto& name = inputs.toolchainPreferenceName();
 		std::string details;
 		if (String::equals("llvm", name))

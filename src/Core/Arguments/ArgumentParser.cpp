@@ -444,7 +444,6 @@ bool ArgumentParser::assignArgumentListFromArgumentsAndValidate()
 
 	StringList allArguments;
 
-	// TODO: Check invalid
 	for (auto& mapped : m_argumentList)
 	{
 		bool isRemaining = String::equals(Positional::RemainingArguments, mapped.key());
@@ -1282,11 +1281,6 @@ void ArgumentParser::addSaveUserToolchainGloballyArg()
 /*****************************************************************************/
 void ArgumentParser::addQuietArgs()
 {
-	// TODO: other quiet flags
-	// --quiet = build & initialization output (no descriptions or flare)
-	// --quieter = just build output
-	// --quietest = no output
-
 	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::Quieter, "--quieter");
 	arg.setHelp("Show only the build output.");
 }

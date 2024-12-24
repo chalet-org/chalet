@@ -96,7 +96,7 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!Files::copyRename(desktopEntry, desktopEntryFile))
 		return false;
 
-	if (!Files::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
+	if (!Files::readAndReplace(desktopEntryFile, [&](std::string& fileContents) {
 			String::replaceAll(fileContents, "${mainExecutable}", Files::getAbsolutePath(filename));
 			String::replaceAll(fileContents, "${path}", Files::getAbsolutePath(bundlePath));
 			String::replaceAll(fileContents, "${name}", m_bundle.name());

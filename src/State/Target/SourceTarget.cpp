@@ -857,21 +857,6 @@ void SourceTarget::addFiles(StringList&& inList)
 
 void SourceTarget::addFile(std::string&& inValue)
 {
-	// TODO: This would auto-include the root of the glob pattern, but it might be confusing to people
-	/*auto lastStar = inValue.find_first_of('*');
-	if (lastStar != std::string::npos)
-	{
-		auto end = inValue.find_last_of('/', lastStar);
-		if (end != std::string::npos)
-		{
-			std::string basePath = inValue.substr(0, end);
-			if (!basePath.empty())
-			{
-				addIncludeDir(std::move(basePath));
-			}
-		}
-	}*/
-
 	List::addIfDoesNotExist(m_files, std::move(inValue));
 }
 
@@ -1398,8 +1383,6 @@ StringList SourceTarget::getResolvedRunDependenciesList() const
 }
 
 /*****************************************************************************/
-// TODO: These will need numerous discussions as to how they can be categorized
-//
 ProjectWarningPresets SourceTarget::parseWarnings(const std::string& inValue)
 {
 	if (String::equals("none", inValue))

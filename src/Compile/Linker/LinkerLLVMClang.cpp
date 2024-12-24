@@ -54,7 +54,6 @@ void LinkerLLVMClang::addThreadModelLinks(StringList& outArgList) const
 /*****************************************************************************/
 void LinkerLLVMClang::addProfileInformation(StringList& outArgList) const
 {
-	// TODO: isExecutable or !isSharedLibrary
 	if (m_state.configuration.enableProfiling() && m_project.isExecutable())
 	{
 		std::string profileInfo{ "-pg" };
@@ -83,8 +82,6 @@ void LinkerLLVMClang::addStaticCompilerLibraries(StringList& outArgList) const
 {
 	if (m_project.staticRuntimeLibrary())
 	{
-		// TODO: Investigate for other -static candidates on clang/mac
-
 		if (m_state.configuration.sanitizeAddress())
 		{
 			std::string flag{ "-static-libsan" };
