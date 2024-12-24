@@ -101,8 +101,6 @@ bool CmakeBuilder::run()
 
 	const auto& name = m_target.name();
 
-	// TODO: add doxygen to path?
-
 	const bool isNinja = usesNinja();
 
 	static const char kNinjaStatus[] = "NINJA_STATUS";
@@ -739,14 +737,23 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 /*****************************************************************************/
 std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) const
 {
-	// Full-ish list here: https://gitlab.kitware.com/cmake/cmake/-/issues/21489#note_1077167
-	// TODO: Android, iOS, etc.
+	// Full list here: https://cmake.org/cmake/help/latest/variable/CMAKE_SYSTEM_NAME.html
 
 	std::string ret;
 	if (String::contains({ "windows", "mingw" }, inTargetTriple))
 		ret = "Windows";
-	else if (String::contains({ "apple", "darwin" }, inTargetTriple))
+	else if (String::contains("-darwin", inTargetTriple))
 		ret = "Darwin";
+	else if (String::contains("-ios", inTargetTriple))
+		ret = "iOS";
+	else if (String::contains("-tvos", inTargetTriple))
+		ret = "tvOS";
+	else if (String::contains("-watchos", inTargetTriple))
+		ret = "watchOS";
+	else if (String::contains("-visionos", inTargetTriple))
+		ret = "visionOS";
+	else if (String::contains("-android", inTargetTriple))
+		ret = "Android";
 	else
 		ret = "Linux";
 
