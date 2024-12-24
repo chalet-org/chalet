@@ -65,7 +65,7 @@ private:
 	bool runValidationTarget(const ValidationBuildTarget& inTarget);
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject, const std::string& outFolder) const;
-	bool canProcessRun(SourceCache& inSourceCache, const StringList& inDepends) const;
+	bool canProcessRun(SourceCache& inSourceCache, const std::string& inHash, const StringList& inDepends) const;
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);

@@ -93,8 +93,12 @@ StringList ScriptRunner::getCommand(const ScriptType inType, const std::string& 
 }
 
 /*****************************************************************************/
-bool ScriptRunner::shouldRun(SourceCache& inSourceCache, const StringList& inDepends) const
+bool ScriptRunner::shouldRun(SourceCache& inSourceCache, const std::string& inHash, const StringList& inDepends) const
 {
+	bool lastBuildFailed = !inHash.empty() && inSourceCache.dataCacheValueIsFalse(inHash);
+	if (lastBuildFailed)
+		return true;
+
 	bool ret = inDepends.empty();
 	for (auto& depends : inDepends)
 	{

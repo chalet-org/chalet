@@ -505,7 +505,7 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
 
-	if (scriptRunner.shouldRun(m_state.cache.file().sources(), StringList{}))
+	if (scriptRunner.shouldRun(m_state.cache.file().sources(), std::string(), StringList{}))
 	{
 		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
 		{
