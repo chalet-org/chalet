@@ -83,11 +83,9 @@ std::string CommandAdapterClang::getLanguageStandardC() const
 		String::replaceAll(yearOnly, "gnu", "");
 		String::replaceAll(yearOnly, "c", "");
 
-		// TODO: determine correct revision where 23 can be used
-		if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1600))
-		{
+		// Reference: https://clang.llvm.org/c_status.html
+		if (String::equals("23", yearOnly) && (isClang && m_versionMajorMinor < 1800))
 			String::replaceAll(ret, "23", "2x");
-		}
 
 		return ret;
 	}

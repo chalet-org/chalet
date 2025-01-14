@@ -77,13 +77,6 @@ bool CompileStrategyMSBuild::doFullBuild()
 	VSSolutionProjectExporter exporter(m_state.inputs);
 	m_solution = exporter.getMainProjectOutput(m_state);
 
-	// TODO: In a recent version of MSBuild (observed in 17.6.3),
-	//   there's an extra line break in minimal verbosity mode.
-	//   Unsure if it's intentional, or a bug, but we'll handle it for now
-	//
-	// if (m_state.toolchain.versionMajorMinor() >= 1706 && !Output::showCommands())
-	// 	Output::previousLine();
-
 	auto buildTargets = m_state.inputs.getBuildTargets();
 	if (buildTargets.empty())
 		buildTargets.emplace_back(Values::All);

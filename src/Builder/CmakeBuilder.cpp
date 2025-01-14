@@ -101,8 +101,6 @@ bool CmakeBuilder::run()
 
 	const auto& name = m_target.name();
 
-	// TODO: add doxygen to path?
-
 	const bool isNinja = usesNinja();
 
 	static const char kNinjaStatus[] = "NINJA_STATUS";
@@ -375,6 +373,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 #if defined(CHALET_WIN32)
 	// "CMAKE_SH",
 #elif defined(CHALET_MACOS)
+		"CMAKE_OSX_SYSROOT",
+		"CMAKE_OSX_DEPLOYMENT_TARGET",
 		"CMAKE_OSX_ARCHITECTURES",
 #endif
 	};
@@ -418,10 +418,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!usingToolchainFile && m_state.info.generateCompileCommands())
 	{
-		if (!isDefined["EXPORT_COMPILE_COMMANDS"])
-		{
+		if (!isDefined["CMAKE_EXPORT_COMPILE_COMMANDS"] && !isDefined["EXPORT_COMPILE_COMMANDS"])
 			outList.emplace_back("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON");
-		}
 	}
 
 	if (crossCompile)
@@ -491,14 +489,10 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	}
 
 	if (!usingToolchainFile && !isDefined["CMAKE_LIBRARY_ARCHITECTURE"])
-	{
 		outList.emplace_back(fmt::format("-DCMAKE_LIBRARY_ARCHITECTURE={}", targetTriple));
-	}
 
 	if (!usingToolchainFile && !isDefined["CMAKE_BUILD_WITH_INSTALL_RPATH"])
-	{
 		outList.emplace_back("-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON");
-	}
 
 	if (crossCompile)
 	{
@@ -529,32 +523,24 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		}
 
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PROGRAM"])
-		{
 			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER");
-		}
+
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_LIBRARY"])
-		{
 			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY");
-		}
+
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_INCLUDE"])
-		{
 			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY");
-		}
+
 		if (!isDefined["CMAKE_FIND_ROOT_PATH_MODE_PACKAGE"])
-		{
 			outList.emplace_back("-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY");
-		}
 
 		if (m_state.environment->isClang())
 		{
 			if (!isDefined["CMAKE_C_COMPILER_TARGET"])
-			{
 				outList.emplace_back(fmt::format("-DCMAKE_C_COMPILER_TARGET={}", targetTriple));
-			}
+
 			if (!isDefined["CMAKE_CXX_COMPILER_TARGET"])
-			{
 				outList.emplace_back(fmt::format("-DCMAKE_CXX_COMPILER_TARGET={}", targetTriple));
-			}
 		}
 	}
 
@@ -739,14 +725,23 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 /*****************************************************************************/
 std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) const
 {
-	// Full-ish list here: https://gitlab.kitware.com/cmake/cmake/-/issues/21489#note_1077167
-	// TODO: Android, iOS, etc.
+	// Full list here: https://cmake.org/cmake/help/latest/variable/CMAKE_SYSTEM_NAME.html
 
 	std::string ret;
 	if (String::contains({ "windows", "mingw" }, inTargetTriple))
 		ret = "Windows";
-	else if (String::contains({ "apple", "darwin" }, inTargetTriple))
+	else if (String::contains("-darwin", inTargetTriple))
 		ret = "Darwin";
+	else if (String::contains("-ios", inTargetTriple))
+		ret = "iOS";
+	else if (String::contains("-tvos", inTargetTriple))
+		ret = "tvOS";
+	else if (String::contains("-watchos", inTargetTriple))
+		ret = "watchOS";
+	else if (String::contains("-visionos", inTargetTriple))
+		ret = "visionOS";
+	else if (String::contains("-android", inTargetTriple))
+		ret = "Android";
 	else
 		ret = "Linux";
 

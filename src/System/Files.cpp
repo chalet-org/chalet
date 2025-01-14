@@ -935,9 +935,7 @@ bool Files::addPathToMapWithGlob(const std::string& inValue, std::string&& inMap
 }
 
 /*****************************************************************************/
-// TODO: This doesn't quite fit here
-//
-bool Files::readFileAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
+bool Files::readAndReplace(const std::string& inFile, const std::function<void(std::string&)>& onReplace)
 {
 	if (!Files::pathExists(inFile))
 		return false;

@@ -366,7 +366,7 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 			{
 				const auto& project = static_cast<const SourceTarget&>(*target);
 
-				// Generate the configure files upfront - TODO: kind of a brittle solution
+				// Generate the configure files upfront
 				//
 				if (!project.configureFiles().empty())
 				{

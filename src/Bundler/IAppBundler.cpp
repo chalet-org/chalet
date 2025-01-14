@@ -73,43 +73,6 @@ bool IAppBundler::quickBundleForPlatform()
 }
 
 /*****************************************************************************/
-// TODO: Move this to BundleTarget
-//
-bool IAppBundler::getMainExecutable(std::string& outMainExecutable)
-{
-	auto buildTargets = m_bundle.getRequiredBuildTargets();
-	auto& mainExecutable = m_bundle.mainExecutable();
-	std::string lastOutput;
-
-	// Match mainExecutable if defined, otherwise get first executable
-	for (auto& project : buildTargets)
-	{
-		if (project->isStaticLibrary())
-			continue;
-
-		lastOutput = project->outputFile();
-
-		if (!project->isExecutable())
-			continue;
-
-		if (!mainExecutable.empty() && !String::equals(mainExecutable, project->name()))
-			continue;
-
-		// LOG("Main exec:", project.name());
-		outMainExecutable = project->outputFile();
-		break;
-	}
-
-	if (outMainExecutable.empty())
-	{
-		outMainExecutable = std::move(lastOutput);
-		// return false;
-	}
-
-	return !outMainExecutable.empty();
-}
-
-/*****************************************************************************/
 StringList IAppBundler::getAllExecutables() const
 {
 	StringList ret;

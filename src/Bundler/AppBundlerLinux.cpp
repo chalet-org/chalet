@@ -71,7 +71,8 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!m_bundle.hasLinuxDesktopEntry())
 		return true; // Nothing to do
 
-	if (!getMainExecutable(m_mainExecutable))
+	m_mainExecutable = m_bundle.getMainExecutable();
+	if (m_mainExecutable.empty())
 		return true; // No executable -- we don't care
 
 	Timer timer;
@@ -95,7 +96,7 @@ bool AppBundlerLinux::bundleForPlatform()
 	if (!Files::copyRename(desktopEntry, desktopEntryFile))
 		return false;
 
-	if (!Files::readFileAndReplace(desktopEntryFile, [&](std::string& fileContents) {
+	if (!Files::readAndReplace(desktopEntryFile, [&](std::string& fileContents) {
 			String::replaceAll(fileContents, "${mainExecutable}", Files::getAbsolutePath(filename));
 			String::replaceAll(fileContents, "${path}", Files::getAbsolutePath(bundlePath));
 			String::replaceAll(fileContents, "${name}", m_bundle.name());

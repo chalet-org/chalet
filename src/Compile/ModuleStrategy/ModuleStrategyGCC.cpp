@@ -233,7 +233,7 @@ bool ModuleStrategyGCC::readIncludesFromDependencyFile(const std::string& inFile
 {
 	UNUSED(inFile, outList);
 
-	// TODO - the module dependency files are kind of incomplete when you use import <MyHeader.hpp>
+	// TODO - the module dependency files are incomplete when you use import <MyHeader.hpp>
 
 	return true;
 }

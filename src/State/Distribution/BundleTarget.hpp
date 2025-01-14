@@ -22,6 +22,8 @@ struct BundleTarget final : public IDistTarget
 	virtual bool validate() final;
 
 	std::vector<const SourceTarget*> getRequiredBuildTargets() const;
+	std::string getMainExecutable() const;
+	std::string getMainExecutableVersion() const;
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;

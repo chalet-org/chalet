@@ -135,7 +135,7 @@ bool ConfigureFileParser::run(const std::string& inOutputFolder)
 				continue;
 			}
 
-			if (!Files::readFileAndReplace(outPath, onReplaceContents))
+			if (!Files::readAndReplace(outPath, onReplaceContents))
 			{
 				Diagnostic::error("There was a problem parsing the file: {}", configureFile);
 				result = false;
