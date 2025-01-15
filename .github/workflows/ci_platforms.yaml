@@ -9,7 +9,7 @@ on:
     branches:
       - main
 env:
-  IS_BRANCH: ${{ github.ref_type == 'branch' }}
+  # IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: ${{ github.ref_type == 'branch' }}
   CI: 1
 defaults:
@@ -32,10 +32,12 @@ jobs:
         run: echo "branchTag=snapshot-${{ github.ref_name }}-${{ steps.timestamp.outputs.timestamp }}" >> $GITHUB_OUTPUT
         id: branchTag
       - name: "Generate Release Name"
-        run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
+        # run: echo "release=Chalet ${{ env.IS_BRANCH && steps.branchRelease.outputs.branchRelease || github.ref_name }}" >> $GITHUB_OUTPUT
+        run: echo "release=Chalet ${{ github.ref_name }}" >> $GITHUB_OUTPUT
         id: release
       - name: "Generate Tag Name"
-        run: echo "tag=${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
+        # run: echo "tag=${{ env.IS_BRANCH && steps.branchTag.outputs.branchTag || github.ref_name }}" >> $GITHUB_OUTPUT
+        run: echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
         id: tag
       - name: "Checkout"
         if: github.event_name != 'pull_request'
