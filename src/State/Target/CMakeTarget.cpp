@@ -61,6 +61,31 @@ bool CMakeTarget::initialize()
 #endif
 	}
 
+	// This prevents some irritating duplications the user would have to write otherwise
+	{
+		const bool isMsvc = m_state.environment->isMsvc();
+		StringList kFlagsInit{
+			"CMAKE_C_FLAGS_INIT=",
+			"CMAKE_CXX_FLAGS_INIT="
+		};
+		for (auto& define : m_defines)
+		{
+			if (String::startsWith(kFlagsInit, define))
+			{
+				if (isMsvc)
+				{
+					String::replaceAll(define, "-D", "/D");
+					String::replaceAll(define, "-I", "/I");
+				}
+				else
+				{
+					String::replaceAll(define, "/D", "-D");
+					String::replaceAll(define, "/I", "-I");
+				}
+			}
+		}
+	}
+
 	return true;
 }
 
