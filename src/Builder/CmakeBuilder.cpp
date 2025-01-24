@@ -370,6 +370,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		"CMAKE_TOOLCHAIN_FILE",
 		"CMAKE_CROSSCOMPILING_EMULATOR",
 		"CMAKE_EXECUTABLE_SUFFIX",
+		"CMAKE_PLATFORM_NO_VERSIONED_SONAME",
 #if defined(CHALET_WIN32)
 	// "CMAKE_SH",
 #elif defined(CHALET_MACOS)
@@ -383,7 +384,8 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		|| (m_state.toolchain.strategy() == StrategyType::MSBuild);
 
 	std::map<const char*, bool, CharMapCompare> isDefined;
-	for (auto& define : m_target.defines())
+	const auto& defines = m_target.defines();
+	for (auto& define : defines)
 	{
 		auto& lastDefine = outList.emplace_back("-D" + define);
 		if (forMsBuild && lastDefine.back() == '\'' && String::contains("='", lastDefine))
@@ -401,6 +403,32 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 		{
 			if (String::contains(var.c_str(), define))
 				isDefined[var.c_str()] = true;
+		}
+	}
+
+	for (auto& define : outList)
+	{
+		if (String::contains(' ', define))
+		{
+			auto insertStart = define.find_first_of('=');
+			if (insertStart != std::string::npos)
+			{
+				insertStart += 1;
+				if (insertStart != std::string::npos)
+				{
+					char after = define[insertStart];
+					if (after != '\'' && after != '"')
+					{
+						auto lastChar = define.back();
+						if (lastChar != '\'' && lastChar != '"')
+						{
+							char toInsert = forMsBuild ? '"' : '\'';
+							define.insert(insertStart, 1, toInsert);
+							define += toInsert;
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -493,6 +521,9 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 
 	if (!usingToolchainFile && !isDefined["CMAKE_BUILD_WITH_INSTALL_RPATH"])
 		outList.emplace_back("-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON");
+
+	if (!usingToolchainFile && !isDefined["CMAKE_PLATFORM_NO_VERSIONED_SONAME"])
+		outList.emplace_back("-DCMAKE_PLATFORM_NO_VERSIONED_SONAME=ON");
 
 	if (crossCompile)
 	{
