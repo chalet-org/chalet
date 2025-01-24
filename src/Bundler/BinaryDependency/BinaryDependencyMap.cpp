@@ -405,8 +405,11 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 				continue;
 			}
 
-#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
+#if defined(CHALET_LINUX)
 			if (String::startsWith("/lib/", dependency))
+				continue;
+#elif defined(CHALET_MACOS)
+			if (String::startsWith("/usr/lib/", dependency))
 				continue;
 #endif
 
