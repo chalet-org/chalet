@@ -312,6 +312,11 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 
 		std::istringstream input(targetDeps);
 
+#if defined(CHALET_LINUX)
+		auto librarySearchPathString = Environment::getString(Environment::getLibraryPathKey());
+		auto librarySearchPaths = String::split(librarySearchPathString, ':');
+#endif
+
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))
@@ -363,7 +368,27 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 					dependency = dependency.substr(lastSlash + 1);
 			}
 			dependencyFile = String::getPathFilename(dependency);
-#else
+#elif defined(CHALET_LINUX)
+			dependencyFile = String::getPathFilename(dependency);
+			{
+				auto space = dependencyFile.find(' ');
+				if (space != std::string::npos)
+					dependencyFile = dependencyFile.substr(0, space);
+			}
+
+			dependency.clear();
+
+			// We only want our search paths
+			for (auto& path : librarySearchPaths)
+			{
+				auto resolved = fmt::format("{}/{}", path, dependencyFile);
+				if (Files::pathExists(resolved))
+				{
+					dependency = std::move(resolved);
+					break;
+				}
+			}
+#else // Windows
 			dependencyFile = String::getPathFilename(dependency);
 			dependency = Files::which(dependencyFile);
 #endif
@@ -378,7 +403,7 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			}
 
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
-			if (String::startsWith("/usr/lib/", dependency))
+			if (String::startsWith("/lib/", dependency))
 				continue;
 #endif
 
