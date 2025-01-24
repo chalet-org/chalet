@@ -124,7 +124,7 @@ const std::string& CMakeTarget::getHash() const
 		auto defines = String::join(m_defines);
 		auto targets = String::join(m_targets);
 
-		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, defines, targets);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_install);
 
 		m_hash = Hash::string(hashable);
 	}
@@ -255,6 +255,16 @@ bool CMakeTarget::clean() const noexcept
 void CMakeTarget::setClean(const bool inValue) noexcept
 {
 	m_clean = inValue;
+}
+
+/*****************************************************************************/
+bool CMakeTarget::install() const noexcept
+{
+	return m_install;
+}
+void CMakeTarget::setInstall(const bool inValue) noexcept
+{
+	m_install = inValue;
 }
 
 }

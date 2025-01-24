@@ -122,18 +122,20 @@ bool CmakeBuilder::run()
 		return false;
 	};
 
+	auto& buildDir = outputLocation();
+
 	auto& sourceCache = m_state.cache.file().sources();
-	auto outputHash = Hash::string(outputLocation());
+	auto outputHash = Hash::string(buildDir);
 	bool lastBuildFailed = sourceCache.dataCacheValueIsFalse(outputHash);
 	bool dependencyUpdated = dependencyHasUpdated();
 
-	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
+	bool outDirectoryDoesNotExist = !Files::pathExists(buildDir);
 	bool recheckCmake = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
 	if (outDirectoryDoesNotExist || recheckCmake)
 	{
 		if (outDirectoryDoesNotExist)
-			Files::makeDirectory(outputLocation());
+			Files::makeDirectory(buildDir);
 
 		if (isNinja)
 		{
@@ -144,16 +146,21 @@ bool CmakeBuilder::run()
 		StringList command;
 		command = getGeneratorCommand();
 
-		{
-			std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : outputLocation();
-			if (!Process::run(command, cwd))
-				return onRunFailure();
-		}
+		std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : buildDir;
 
-		command = getBuildCommand(outputLocation());
+		if (!Process::run(command, cwd))
+			return onRunFailure();
+
+		command = getBuildCommand(buildDir);
 
 		// this will control ninja output, and other build outputs should be unaffected
 		bool result = Process::runNinjaBuild(command);
+		if (result && m_target.install())
+		{
+			command = getInstallCommand(buildDir);
+			result = Process::run(command, cwd);
+		}
+
 		sourceCache.addDataCache(outputHash, result);
 		if (!result)
 			return onRunFailure(false);
@@ -753,6 +760,34 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	return ret;
 }
 
+/*****************************************************************************/
+StringList CmakeBuilder::getInstallCommand() const
+{
+	auto outputLocation = m_target.targetFolder();
+	return getInstallCommand(outputLocation);
+}
+
+/*****************************************************************************/
+StringList CmakeBuilder::getInstallCommand(const std::string& inOutputLocation) const
+{
+	auto& cmake = m_state.toolchain.cmake();
+	auto installLocation = Files::getAbsolutePath(inOutputLocation);
+	auto buildConfiguration = getCMakeCompatibleBuildConfiguration();
+
+	StringList ret{
+		getQuotedPath(cmake),
+		"--install",
+		getQuotedPath(installLocation),
+		"--config",
+		buildConfiguration,
+		"--prefix",
+		getQuotedPath(fmt::format("{}/install", installLocation)),
+	};
+
+	// LOG(String::join(ret));
+
+	return ret;
+}
 /*****************************************************************************/
 std::string CmakeBuilder::getCmakeSystemName(const std::string& inTargetTriple) const
 {

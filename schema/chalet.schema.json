@@ -2592,6 +2592,9 @@
 				"clean": {
 					"$ref": "#/definitions/target-cmake-clean"
 				},
+				"install": {
+					"$ref": "#/definitions/target-cmake-install"
+				},
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
@@ -2608,6 +2611,9 @@
 				},
 				"^defines\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-defines"
+				},
+				"^install\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-cmake-install"
 				},
 				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
@@ -2680,6 +2686,11 @@
 			"type": "boolean",
 			"description": "If true (default), the CMake build folder will be cleaned when a clean is requested.",
 			"default": true
+		},
+		"target-cmake-install": {
+			"type": "boolean",
+			"description": "If true, the --install command will be run, and files will be placed in the 'installPath' (ie. ${externalBuild:target}/install)",
+			"default": false
 		},
 		"target-cmake-toolset": {
 			"type": "string",

@@ -23,6 +23,8 @@ public:
 	StringList getGeneratorCommand();
 	StringList getBuildCommand() const;
 	StringList getBuildCommand(const std::string& inOutputLocation) const;
+	StringList getInstallCommand() const;
+	StringList getInstallCommand(const std::string& inOutputLocation) const;
 
 private:
 	bool dependencyHasUpdated() const;

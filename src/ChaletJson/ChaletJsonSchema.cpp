@@ -1460,6 +1460,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetCMakeInstall] = R"json({
+		"type": "boolean",
+		"description": "If true, the --install command will be run, and files will be placed in the 'installPath' (ie. ${externalBuild:target}/install)",
+		"default": false
+	})json"_ojson;
+
 	defs[Defs::TargetCMakeToolset] = R"json({
 		"type": "string",
 		"description": "A toolset file to be passed to CMake (`-T` option).",
@@ -1984,6 +1990,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "recheck", Defs::TargetCMakeRecheck);
 		addProperty(targetCMake, "rebuild", Defs::TargetCMakeRebuild);
 		addProperty(targetCMake, "clean", Defs::TargetCMakeClean);
+		addPropertyAndPattern(targetCMake, "install", Defs::TargetCMakeInstall, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "targets", Defs::TargetCMakeTargetNames, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConditions);
@@ -2241,6 +2248,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCMakeRecheck: return "target-cmake-recheck";
 		case Defs::TargetCMakeRebuild: return "target-cmake-rebuild";
 		case Defs::TargetCMakeClean: return "target-cmake-clean";
+		case Defs::TargetCMakeInstall: return "target-cmake-install";
 		case Defs::TargetCMakeTargetNames: return "target-cmake-targets";
 		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
 		case Defs::TargetCMakeRunExecutable: return "target-cmake-runExecutable";

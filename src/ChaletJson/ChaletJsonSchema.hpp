@@ -177,6 +177,7 @@ class ChaletJsonSchema
 		TargetCMakeRecheck,
 		TargetCMakeRebuild,
 		TargetCMakeClean,
+		TargetCMakeInstall,
 		TargetCMakeToolset,
 		TargetCMakeRunExecutable,
 		//
