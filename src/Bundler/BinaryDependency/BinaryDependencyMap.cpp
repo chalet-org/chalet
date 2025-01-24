@@ -381,6 +381,9 @@ bool BinaryDependencyMap::getExecutableDependencies(const std::string& inPath, S
 			// We only want our search paths
 			for (auto& path : librarySearchPaths)
 			{
+				if (String::startsWith("/usr/lib", path))
+					continue;
+
 				auto resolved = fmt::format("{}/{}", path, dependencyFile);
 				if (Files::pathExists(resolved))
 				{
