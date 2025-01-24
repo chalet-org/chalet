@@ -223,6 +223,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					for (auto& path : workspaceSearchPaths)
 						List::addIfDoesNotExist(libDirs, path);
 
+					// TODO: This is very flawed - it needs to happen after the build and before
+					//   the app bundle gets made. we can't search the resolved directory here,
+					//   because it might not exist yet. This code is meant as a stopgap
+					//
 					for (auto& dir : libDirs)
 					{
 						if (String::startsWith(buildOutputDir, dir))
@@ -1414,6 +1418,7 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	ret["CONFIGURATION_BUILD_DIR"] = buildOutputDir;
 	ret["DSTROOT"] = distDir;
 	ret["EAGER_LINKING"] = getBoolString(false);
+	ret["LD_RUNPATH_SEARCH_PATHS"] = inState.workspace.searchPaths();
 	ret["OBJROOT"] = buildOutputDir;
 	ret["PROJECT_RUN_PATH"] = inState.inputs.workingDirectory();
 	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
@@ -1867,6 +1872,9 @@ Json XcodePBXProjGen::getAppBundleBuildSettings(BuildState& inState, const Bundl
 
 	// always set
 	ret["INFOPLIST_FILE"] = infoPlist;
+
+	// we don't want search paths when the bundle runs
+	ret["LD_RUNPATH_SEARCH_PATHS"] = "";
 
 	ret["MACOSX_DEPLOYMENT_TARGET"] = inState.inputs.osTargetVersion();
 	ret["MARKETING_VERSION"] = inState.workspace.metadata().versionString();

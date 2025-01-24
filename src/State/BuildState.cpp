@@ -53,7 +53,7 @@ struct BuildState::Impl
 	CentralState& centralState;
 
 	BuildInfo info;
-	// WorkspaceEnvironment workspace;
+	WorkspaceEnvironment workspace;
 	CompilerTools toolchain;
 	BuildPaths paths;
 	PackageManager packages;
@@ -70,7 +70,7 @@ struct BuildState::Impl
 		inputs(std::move(inInputs)),
 		centralState(inCentralState),
 		info(inState, inputs),
-		// workspace(centralState.workspace), // copy
+		workspace(centralState.workspace), // copy
 		paths(inState),
 		packages(inState)
 	{
@@ -86,7 +86,7 @@ BuildState::BuildState(CommandLineInputs inInputs, CentralState& inCentralState)
 	tools(m_impl->centralState.tools),
 	cache(m_impl->centralState.cache),
 	info(m_impl->info),
-	workspace(m_impl->centralState.workspace),
+	workspace(m_impl->workspace),
 	toolchain(m_impl->toolchain),
 	paths(m_impl->paths),
 	packages(m_impl->packages),
