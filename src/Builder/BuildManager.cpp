@@ -222,6 +222,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 
 	m_strategy->doPreBuild();
 	m_fileCache.clear();
+	m_state.makeLibraryPathVariables();
 
 	bool error = false;
 
@@ -346,8 +347,6 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		if (!inRoute.isBuildRun())
 			Output::lineBreak();
 	}
-
-	m_state.makeLibraryPathVariables();
 
 	if (routeWillRun)
 	{
