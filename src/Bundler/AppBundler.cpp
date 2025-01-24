@@ -220,6 +220,18 @@ bool AppBundler::runBundleTarget(IAppBundler& inBundler)
 
 	auto addMapping = [&filesToCopy, &cwd](const std::string& path, const std::string& destPath, const std::string& mapping = std::string(), const bool force = false) {
 		auto dep = Files::getCanonicalPath(path);
+
+		// We need to retain the filename of the symlinked dependency
+		if (Files::pathIsSymLink(path))
+		{
+			auto folder = String::getPathFolder(dep);
+			if (!folder.empty())
+			{
+				auto file = String::getPathFilename(path);
+				dep = fmt::format("{}/{}", folder, file);
+			}
+		}
+
 		if (!Files::pathExists(dep))
 		{
 			dep = Files::which(dep);
