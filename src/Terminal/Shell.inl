@@ -74,12 +74,13 @@ inline bool Shell::isCommandPromptOrPowerShell()
 }
 
 /*****************************************************************************/
-inline bool Shell::isVisualStudioOutput()
+inline bool Shell::isBasicOutput()
 {
 #if defined(CHALET_WIN32)
-	return state.terminalType == Type::CommandPromptVisualStudio;
+	return state.terminalType == Type::CommandPromptVisualStudio
+		|| state.terminalType == Type::UnknownOutput;
 #else
-	return false;
+	return state.terminalType == Type::UnknownOutput;
 #endif
 }
 

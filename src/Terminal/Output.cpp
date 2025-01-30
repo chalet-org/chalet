@@ -52,12 +52,12 @@ constexpr char getEscapeChar()
 
 std::string getAnsiStyleInternal(const Color inColor)
 {
-	if (inColor == Color::None)
+	if (inColor == Color::None || Shell::isBasicOutput())
 		return std::string();
 
 #if defined(CHALET_WIN32)
 	bool isCmdPromptLike = Shell::isCommandPromptOrPowerShell();
-	if (Shell::isVisualStudioOutput() || (isCmdPromptLike && !Output::ansiColorsSupportedInComSpec()))
+	if (isCmdPromptLike && !Output::ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
 
@@ -162,10 +162,8 @@ void Output::setShowBenchmarks(const bool inValue)
 
 std::ostream& Output::getErrStream()
 {
-#if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput())
+	if (Shell::isBasicOutput())
 		return std::cout;
-#endif
 
 	return std::cerr;
 }
@@ -284,11 +282,11 @@ const std::string& Output::getAnsiStyle(const Color inColor)
 /*****************************************************************************/
 std::string Output::getAnsiStyleRaw(const Color inColor)
 {
-	if (inColor == Color::None)
+	if (inColor == Color::None || Shell::isBasicOutput())
 		return std::string();
 
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || (Shell::isCommandPromptOrPowerShell() && !ansiColorsSupportedInComSpec()))
+	if (Shell::isCommandPromptOrPowerShell() && !ansiColorsSupportedInComSpec())
 		return std::string();
 #endif
 
@@ -347,9 +345,7 @@ void Output::previousLine(const bool inForce)
 {
 	if ((!state.quietNonBuild || inForce))
 	{
-#if defined(CHALET_WIN32)
-		if (!Shell::isVisualStudioOutput())
-#endif
+		if (!Shell::isBasicOutput())
 		{
 			std::string eraser(80, ' ');
 			auto prevLine = fmt::format("{}[F{}\n", getEscapeChar(), eraser);

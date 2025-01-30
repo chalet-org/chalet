@@ -19,7 +19,7 @@ struct Shell
 	static inline bool isMicrosoftTerminalOrWindowsBash();
 	static inline bool isWindowsSubsystemForLinux();
 	static inline bool isCommandPromptOrPowerShell();
-	static inline bool isVisualStudioOutput();
+	static inline bool isBasicOutput();
 	static inline bool isJetBrainsOutput();
 
 	static bool isContinuousIntegrationServer();
@@ -50,6 +50,7 @@ private:
 		PowershellOpenSource, // 6+
 		PowershellOpenSourceNonWindows,
 		WindowsSubsystemForLinux,
+		UnknownOutput,
 	};
 
 	struct State

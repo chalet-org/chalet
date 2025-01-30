@@ -13,7 +13,7 @@ namespace chalet
 inline const char* Unicode::triangle()
 {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
+	if (Shell::isBasicOutput() || Shell::isJetBrainsOutput())
 		return "*";
 	else if (Shell::isCommandPromptOrPowerShell())
 		return "»";
@@ -26,7 +26,7 @@ inline const char* Unicode::triangle()
 inline const char* Unicode::diamond()
 {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
+	if (Shell::isBasicOutput() || Shell::isJetBrainsOutput())
 		return "+";
 	else if (Shell::isCommandPromptOrPowerShell())
 		return "•";
@@ -38,7 +38,7 @@ inline const char* Unicode::diamond()
 inline const char* Unicode::checkmark()
 {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
+	if (Shell::isBasicOutput() || Shell::isJetBrainsOutput())
 		return "<";
 	else if (Shell::isCommandPromptOrPowerShell())
 		return "√";
@@ -68,7 +68,7 @@ inline const char* Unicode::heavyBallotX()
 inline const char* Unicode::warning()
 {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
+	if (Shell::isBasicOutput() || Shell::isJetBrainsOutput())
 		return ">";
 	else if (Shell::isCommandPromptOrPowerShell())
 		return "»";
@@ -82,7 +82,7 @@ inline const char* Unicode::warning()
 inline const char* Unicode::heavyCurvedDownRightArrow()
 {
 #if defined(CHALET_WIN32)
-	if (Shell::isVisualStudioOutput() || Shell::isJetBrainsOutput())
+	if (Shell::isBasicOutput() || Shell::isJetBrainsOutput())
 		return "-";
 	else if (Shell::isCommandPromptOrPowerShell())
 		return "¬";

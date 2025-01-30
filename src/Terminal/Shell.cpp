@@ -16,10 +16,10 @@
 	#include <tlhelp32.h>
 
 #elif defined(CHALET_MACOS)
+	#include <libproc.h>
+	#include <sys/proc_info.h>
 	#include <sys/types.h>
 	#include <unistd.h>
-	#include <sys/proc_info.h>
-	#include <libproc.h>
 #else
 	#include <sys/types.h>
 	#include <unistd.h>
@@ -300,6 +300,11 @@ void Shell::detectTerminalType()
 			state.terminalType = Type::CommandPrompt;
 			return printTermType();
 		}
+		else if (String::endsWith("make.exe", parentPath))
+		{
+			state.terminalType = Type::UnknownOutput;
+			return printTermType();
+		}
 	}
 
 	result = Environment::getString("COLORTERM");
@@ -365,6 +370,12 @@ void Shell::detectTerminalType()
 	else if (String::endsWith("/sh", parentPath))
 	{
 		state.terminalType = Type::Bourne;
+		return printTermType();
+	}
+	else if (String::endsWith("/make", parentPath))
+	{
+		// ie. Xcode output
+		state.terminalType = Type::UnknownOutput;
 		return printTermType();
 	}
 #endif

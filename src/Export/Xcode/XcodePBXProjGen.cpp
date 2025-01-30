@@ -325,7 +325,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				{
 					auto name = bundle.name();
 					if (List::contains(sourceTargets, name))
-						name += '_';
+						name += '_'; // TODO: This is a hack, and it breaks things
 
 					if (groups.find(name) == groups.end())
 					{
