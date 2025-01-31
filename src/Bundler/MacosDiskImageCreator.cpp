@@ -38,11 +38,7 @@ bool MacosDiskImageCreator::make(const MacosDiskImageTarget& inDiskImage)
 	auto& tiffutil = m_state.tools.tiffutil();
 	const std::string volumePath = fmt::format("/Volumes/{}", m_diskName);
 
-	if (!Process::runNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath) }))
-	{
-		Diagnostic::error("Volume '{}/' is currently busy. Please eject it first.", volumePath);
-		return false;
-	}
+	Process::runNoOutput({ hdiutil, "detach", fmt::format("{}/", volumePath), "-force" });
 
 	Timer timer;
 
