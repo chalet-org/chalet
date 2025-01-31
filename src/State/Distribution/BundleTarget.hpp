@@ -13,6 +13,7 @@ namespace chalet
 {
 struct SourceTarget;
 class BuildState;
+struct TargetMetadata;
 
 struct BundleTarget final : public IDistTarget
 {
@@ -24,6 +25,7 @@ struct BundleTarget final : public IDistTarget
 	std::vector<const SourceTarget*> getRequiredBuildTargets() const;
 	std::string getMainExecutable() const;
 	std::string getMainExecutableVersion() const;
+	std::string getMainExecutableVersionShort() const;
 
 	bool updateRPaths() const noexcept;
 	void setUpdateRPaths(const bool inValue) noexcept;
@@ -102,6 +104,8 @@ struct BundleTarget final : public IDistTarget
 #endif
 
 private:
+	const TargetMetadata& getMainExecutableMetadata() const;
+
 	IncludeMap m_includes;
 
 	StringList m_buildTargets;

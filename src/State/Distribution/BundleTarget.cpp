@@ -247,10 +247,8 @@ std::string BundleTarget::getMainExecutable() const
 }
 
 /*****************************************************************************/
-std::string BundleTarget::getMainExecutableVersion() const
+const TargetMetadata& BundleTarget::getMainExecutableMetadata() const
 {
-	std::string result;
-
 	auto buildTargets = getRequiredBuildTargets();
 	auto& mainExec = this->mainExecutable();
 
@@ -261,22 +259,30 @@ std::string BundleTarget::getMainExecutableVersion() const
 			continue;
 
 		bool hasMetadata = project->hasMetadata();
-		if (hasMetadata)
-			result = project->metadata().versionString();
-
 		if (!mainExec.empty() && !String::equals(mainExec, project->name()))
 			continue;
 
 		if (hasMetadata)
-			return result;
+			return project->metadata();
 		else
 			break;
 	}
 
-	if (result.empty())
-		return m_state.workspace.metadata().versionString();
-	else
-		return result;
+	return m_state.workspace.metadata();
+}
+
+/*****************************************************************************/
+std::string BundleTarget::getMainExecutableVersion() const
+{
+	const auto& metadata = getMainExecutableMetadata();
+	return metadata.versionString();
+}
+
+/*****************************************************************************/
+std::string BundleTarget::getMainExecutableVersionShort() const
+{
+	const auto& version = getMainExecutableMetadata().version();
+	return version.majorMinor();
 }
 
 /*****************************************************************************/

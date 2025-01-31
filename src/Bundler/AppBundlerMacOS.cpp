@@ -450,6 +450,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 		String::replaceAll(outContent, "${bundleName}", m_bundle.macosBundleName());
 		String::replaceAll(outContent, "${osTargetVersion}", m_state.inputs.osTargetVersion());
 		String::replaceAll(outContent, "${version}", m_bundle.getMainExecutableVersion());
+		String::replaceAll(outContent, "${versionShort}", m_bundle.getMainExecutableVersionShort());
 	};
 
 	std::string tmpPlist = fmt::format("{}.json", inOutFile);
