@@ -172,6 +172,8 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 /*****************************************************************************/
 bool ChaletJsonParser::validBuildRequested() const
 {
+	StringList targetNamesLowerCase;
+
 	i32 count = 0;
 	for (auto& target : m_state.targets)
 	{
@@ -185,6 +187,15 @@ bool ChaletJsonParser::validBuildRequested() const
 				Diagnostic::error("{}: All targets must have 'language' defined, but '{}' was found without one.", m_chaletJson.filename(), project.name());
 				return false;
 			}
+
+			auto nameLowerCase = String::toLowerCase(project.name());
+			if (List::contains(targetNamesLowerCase, nameLowerCase))
+			{
+				Diagnostic::error("{}: Targets must have unique case-insensitive names, but '{}' matched a target that was previously declared.", m_chaletJson.filename(), project.name());
+				return false;
+			}
+
+			targetNamesLowerCase.emplace_back(std::move(nameLowerCase));
 		}
 	}
 	return count > 0;
