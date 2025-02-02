@@ -192,18 +192,13 @@ std::string TargetExportAdapter::getCommand() const
 
 	if (!ret.empty())
 	{
-#if defined(CHALET_WIN32)
-		auto exprt = "set";
-#else
-		auto exprt = "export";
-#endif
-
 		ret += eol;
 
 		std::string searchPaths;
 #if defined(CHALET_LINUX) || defined(CHALET_MACOS)
 		if (m_target.isProcess())
 		{
+			auto exprt = "export";
 			searchPaths = m_state.workspace.makePathVariable(std::string(), StringList{});
 			if (!searchPaths.empty())
 			{
