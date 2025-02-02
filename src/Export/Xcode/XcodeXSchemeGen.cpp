@@ -187,18 +187,27 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			if (target->isSources())
 				sourceTargets.emplace_back(target->name());
 		}
+
+#if defined(CHALET_MACOS)
+		StringList sourceTargetsLowerCase;
+		for (auto& target : sourceTargets)
+			sourceTargetsLowerCase.emplace_back(String::toLowerCase(target));
+
 		for (auto& target : state->distribution)
 		{
 			if (!target->isDistributionBundle())
 				continue;
 
-#if defined(CHALET_MACOS)
 			auto& bundle = static_cast<BundleTarget&>(*target);
 			if (bundle.isMacosAppBundle())
 			{
 				auto name = bundle.name();
-				if (List::contains(sourceTargets, name))
+				auto nameLowerCase = String::toLowerCase(name);
+				while (List::contains(sourceTargetsLowerCase, nameLowerCase))
+				{
 					name += '_';
+					nameLowerCase += '_';
+				}
 
 				if (List::addIfDoesNotExist(targetNames, name))
 				{
@@ -231,8 +240,8 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 				List::addIfDoesNotExist(noEnvs, name);
 			}
-#endif
 		}
+#endif
 	}
 
 	if (!foundRelease && !otherRelease.empty())

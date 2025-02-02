@@ -143,6 +143,18 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	std::map<std::string, StringList> embedLibraries;
 
 	StringList sourceTargets;
+	StringList sourceTargetsLowerCase;
+
+	auto getSafeDistTargetName = [&sourceTargetsLowerCase](const std::string& inName) {
+		std::string name = inName;
+		auto nameLowerCase = String::toLowerCase(name);
+		while (List::contains(sourceTargetsLowerCase, nameLowerCase))
+		{
+			name += '_';
+			nameLowerCase += '_';
+		}
+		return name;
+	};
 
 	for (auto& state : m_states)
 	{
@@ -158,6 +170,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (target->isSources())
 			{
 				List::addIfDoesNotExist(sourceTargets, target->name());
+				List::addIfDoesNotExist(sourceTargetsLowerCase, String::toLowerCase(target->name()));
 
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 				state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
@@ -315,18 +328,15 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			}
 		}
 
+#if defined(CHALET_MACOS)
 		for (auto& target : state->distribution)
 		{
 			if (target->isDistributionBundle())
 			{
-#if defined(CHALET_MACOS)
 				auto& bundle = static_cast<BundleTarget&>(*target);
 				if (bundle.isMacosAppBundle())
 				{
-					auto name = bundle.name();
-					if (List::contains(sourceTargets, name))
-						name += '_'; // TODO: This is a hack, and it breaks things
-
+					auto name = getSafeDistTargetName(bundle.name());
 					if (groups.find(name) == groups.end())
 					{
 						auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, bundle.name());
@@ -402,9 +412,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 						}
 					}
 				}
-#endif
 			}
 		}
+#endif
 	}
 
 	{
@@ -1059,6 +1069,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 				}
 			}
 		}
+
 		for (auto& state : m_states)
 		{
 			const auto& configName = state->configuration.name();
@@ -1066,10 +1077,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			{
 				if (target->isDistributionBundle())
 				{
-					auto name = target->name();
-					if (List::contains(sourceTargets, name))
-						name += '_';
-
+					auto name = getSafeDistTargetName(target->name());
 					auto hash = getTargetConfigurationHash(configName, name, true);
 					auto key = getHashWithLabel(hash, configName);
 					node[key]["isa"] = section;
