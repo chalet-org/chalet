@@ -87,11 +87,7 @@ bool ChaletJsonParser::serialize()
 	}
 
 	if (!validBuildRequested())
-	{
-		const auto& buildConfiguration = m_state.configuration.name();
-		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of '_+' property", m_chaletJson.filename(), buildConfiguration, kCondition);
 		return false;
-	}
 
 	if (m_state.inputs.route().willRun())
 	{
@@ -198,7 +194,15 @@ bool ChaletJsonParser::validBuildRequested() const
 			targetNamesLowerCase.emplace_back(std::move(nameLowerCase));
 		}
 	}
-	return count > 0;
+
+	if (count == 0)
+	{
+		const auto& buildConfiguration = m_state.configuration.name();
+		Diagnostic::error("{}: No valid targets to build for '{}' configuration. Check usage of '_+' property", m_chaletJson.filename(), buildConfiguration, kCondition);
+		return false;
+	}
+
+	return true;
 }
 
 /*****************************************************************************/
