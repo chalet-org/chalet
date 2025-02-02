@@ -264,6 +264,10 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 								{
 									if (String::endsWith(file, path))
 									{
+										auto dsym = fmt::format("{}.dSYM/Contents/Resources/DWARF{}", file, file);
+										if (String::endsWith(dsym, path))
+											continue;
+
 										if (embedLibraries.find(name) == embedLibraries.end())
 											embedLibraries.emplace(name, StringList{});
 
@@ -455,12 +459,12 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 					ruleCommand = String::join(split, "\n\t@");
 				}
 
-				makefileContents += fmt::format(R"shell({}:
-	@{}
+				makefileContents += fmt::format(R"shell({configName}:
+	@{ruleCommand}
 
 )shell",
-					configName,
-					ruleCommand);
+					FMT_ARG(configName),
+					FMT_ARG(ruleCommand));
 			}
 
 			auto outPath = fmt::format("{}/scripts/{}.mk", m_exportPath, name);

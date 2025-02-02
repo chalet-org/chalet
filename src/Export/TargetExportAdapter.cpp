@@ -9,6 +9,7 @@
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Process/Environment.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -17,6 +18,7 @@
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "State/Target/ValidationBuildTarget.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
 
@@ -190,15 +192,48 @@ std::string TargetExportAdapter::getCommand() const
 
 	if (!ret.empty())
 	{
+#if defined(CHALET_WIN32)
+		auto exprt = "set";
+#else
+		auto exprt = "export";
+#endif
+
 		ret += eol;
 
+		std::string searchPaths;
+#if defined(CHALET_LINUX) || defined(CHALET_MACOS)
+		if (m_target.isProcess())
+		{
+			searchPaths = m_state.workspace.makePathVariable(std::string(), StringList{});
+			if (!searchPaths.empty())
+			{
+				auto key = Environment::getLibraryPathKey();
+				auto sep = Environment::getPathSeparator();
+				searchPaths = fmt::format("{exprt} {key}=\"{searchPaths}{sep}{key}\" && ",
+					FMT_ARG(exprt),
+					FMT_ARG(key),
+					FMT_ARG(sep),
+					FMT_ARG(searchPaths));
+			}
+		}
+		UNUSED(scriptType);
+#elif defined(CHALET_WIN32)
 		if (scriptType == ScriptType::Python)
 		{
-			ret = fmt::format("cd {cwd}{eol}set PYTHONIOENCODING=utf-8{eol}set PYTHONLEGACYWINDOWSSTDIO=utf-8{eol}{ret}", FMT_ARG(cwd), FMT_ARG(eol), FMT_ARG(ret));
+			ret = fmt::format("cd {cwd}{eol}set PYTHONIOENCODING=utf-8{eol}set PYTHONLEGACYWINDOWSSTDIO=utf-8{eol}{searchPaths}{ret}",
+				FMT_ARG(cwd),
+				FMT_ARG(eol),
+				FMT_ARG(ret),
+				FMT_ARG(searchPaths));
 		}
 		else
+#endif
 		{
-			ret = fmt::format("cd {}{}{}", cwd, eol, ret);
+			ret = fmt::format("cd {cwd}{eol}{searchPaths}{ret}",
+				FMT_ARG(cwd),
+				FMT_ARG(eol),
+				FMT_ARG(ret),
+				FMT_ARG(searchPaths));
 		}
 	}
 
