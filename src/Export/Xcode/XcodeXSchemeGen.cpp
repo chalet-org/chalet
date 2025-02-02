@@ -9,6 +9,7 @@
 #include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "DotEnv/DotEnvFileGenerator.hpp"
 #include "Process/Environment.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -137,6 +138,13 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 	{
 		auto& config = state->configuration;
 		auto& configName = config.name();
+		auto& buildDir = state->paths.buildOutputDir();
+		auto& arch = state->info.targetArchitectureString();
+
+		auto buildDirReplace = buildDir;
+		String::replaceAll(buildDirReplace, configName, "$CONFIGURATION");
+		String::replaceAll(buildDirReplace, arch, "$ARCHS");
+
 		if (config.enableProfiling())
 			profileConfig = configName;
 
@@ -153,6 +161,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto path = env.getRunPaths();
 		if (!path.empty())
 		{
+			String::replaceAll(path, buildDir, buildDirReplace);
 			path = fmt::format("{}:${}", path, Environment::getPathKey());
 			environment.emplace(Environment::getPathKey(), path);
 		}
@@ -160,6 +169,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto libraryPath = env.getLibraryPath();
 		if (!libraryPath.empty())
 		{
+			String::replaceAll(path, buildDir, buildDirReplace);
 			libraryPath = fmt::format("{}:${}", libraryPath, Environment::getLibraryPathKey());
 			environment.emplace(Environment::getLibraryPathKey(), libraryPath);
 		}
@@ -167,6 +177,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		auto frameworkPath = env.getFrameworkPath();
 		if (!frameworkPath.empty())
 		{
+			String::replaceAll(path, buildDir, buildDirReplace);
 			frameworkPath = fmt::format("{}:${}", frameworkPath, Environment::getFrameworkPathKey());
 			environment.emplace(Environment::getFrameworkPathKey(), frameworkPath);
 		}
