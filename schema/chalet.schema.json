@@ -2341,6 +2341,9 @@
 				"dependsOn": {
 					"$ref": "#/definitions/target-script-dependsOn"
 				},
+				"dependsOnSelf": {
+					"$ref": "#/definitions/target-script-dependsOnSelf"
+				},
 				"kind": {
 					"type": "string",
 					"description": "The type of the target's compiled binary, a script or external project.",
@@ -2360,6 +2363,9 @@
 				},
 				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-dependsOn"
+				},
+				"^dependsOnSelf\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-script-dependsOnSelf"
 				},
 				"^file\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-script-file"
@@ -2390,7 +2396,7 @@
 			]
 		},
 		"target-script-dependsOn": {
-			"description": "A build target or file(s) this script depends on in order to run.",
+			"description": "A build target or file(s) this script depends on in order to run. If any of these change, this target will re-run. If the same value as 'file' is added to this list, it is equivalent to setting 'dependsOnSelf' to true.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2406,6 +2412,11 @@
 					}
 				}
 			]
+		},
+		"target-script-dependsOnSelf": {
+			"type": "boolean",
+			"description": "If true, the script target will re-run if the 'file' property changes.",
+			"default": false
 		},
 		"target-process": {
 			"type": "object",

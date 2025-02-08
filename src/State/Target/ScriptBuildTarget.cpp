@@ -49,6 +49,9 @@ bool ScriptBuildTarget::initialize()
 	if (!replaceVariablesInPathList(m_dependsOn))
 		return false;
 
+	if (m_dependsOnSelf && !m_file.empty())
+		m_dependsOn.push_back(m_file);
+
 	return true;
 }
 
@@ -135,5 +138,11 @@ void ScriptBuildTarget::addDependsOn(StringList&& inList)
 void ScriptBuildTarget::addDependsOn(std::string&& inValue)
 {
 	m_dependsOn.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+void ScriptBuildTarget::setDependsOnSelf(const bool inValue)
+{
+	m_dependsOnSelf = inValue;
 }
 }

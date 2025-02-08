@@ -957,6 +957,12 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 			else if (isInvalid(status))
 				return false;
 		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "dependsOnSelf", status))
+				outTarget.setDependsOnSelf(val);
+		}
 		else if (value.is_array())
 		{
 			StringList val;

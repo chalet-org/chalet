@@ -32,6 +32,8 @@ struct ScriptBuildTarget final : public IBuildTarget
 	void addDependsOn(StringList&& inList);
 	void addDependsOn(std::string&& inValue);
 
+	void setDependsOnSelf(const bool inValue);
+
 private:
 	std::string m_file;
 	StringList m_arguments;
@@ -39,5 +41,7 @@ private:
 	StringList m_dependsOn;
 
 	ScriptType m_scriptType = ScriptType::None;
+
+	bool m_dependsOnSelf = false;
 };
 }

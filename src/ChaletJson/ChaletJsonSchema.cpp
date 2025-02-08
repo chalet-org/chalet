@@ -1377,9 +1377,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetScriptDependsOn] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "A build target or file(s) this script depends on in order to run.",
+		"description": "A build target or file(s) this script depends on in order to run. If any of these change, this target will re-run. If the same value as 'file' is added to this list, it is equivalent to setting 'dependsOnSelf' to true.",
 		"minLength": 1
 	})json"_ojson);
+
+	defs[Defs::TargetScriptDependsOnSelf] = R"json({
+		"type": "boolean",
+		"description": "If true, the script target will re-run if the 'file' property changes.",
+		"default": false
+	})json"_ojson;
 
 	//
 
@@ -1929,6 +1935,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(targetScript, "arguments", Defs::TargetScriptArguments, kPatternConditions);
 		addProperty(targetScript, "condition", Defs::TargetCondition);
 		addPropertyAndPattern(targetScript, "dependsOn", Defs::TargetScriptDependsOn, kPatternConditions);
+		addPropertyAndPattern(targetScript, "dependsOnSelf", Defs::TargetScriptDependsOnSelf, kPatternConditions);
 		addKind(targetScript, defs, Defs::TargetKind, "script");
 		// addProperty(targetScript, "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addPropertyAndPattern(targetScript, "file", Defs::TargetScriptFile, kPatternConditions);
@@ -2231,6 +2238,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetScriptFile: return "target-script-file";
 		case Defs::TargetScriptArguments: return "target-script-arguments";
 		case Defs::TargetScriptDependsOn: return "target-script-dependsOn";
+		case Defs::TargetScriptDependsOnSelf: return "target-script-dependsOnSelf";
 		//
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";
