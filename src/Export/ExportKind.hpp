@@ -13,6 +13,7 @@ enum class ExportKind : u16
 	VisualStudioCodeJSON,
 	VisualStudioJSON,
 	VisualStudioSolution,
+	VSCodiumJSON,
 	Xcode,
 	CLion,
 	Fleet,
