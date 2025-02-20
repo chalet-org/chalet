@@ -31,18 +31,18 @@ Dictionary<InitTemplateType> getInitTemplates()
 
 OrderedDictionary<ExportKind> getExportKinds()
 {
-	return
-	{
+	return {
 		{ "vscode", ExportKind::VisualStudioCodeJSON },
 #if defined(CHALET_WIN32)
-			{ "vsjson", ExportKind::VisualStudioJSON },
-			{ "vssolution", ExportKind::VisualStudioSolution },
+		{ "vsjson", ExportKind::VisualStudioJSON },
+		{ "vssolution", ExportKind::VisualStudioSolution },
 #elif defined(CHALET_MACOS)
-			{ "xcode", ExportKind::Xcode },
+		{ "xcode", ExportKind::Xcode },
+		{ "codeedit", ExportKind::CodeEdit },
 #endif
-			{ "clion", ExportKind::CLion },
-			{ "fleet", ExportKind::Fleet },
-			{ "codeblocks", ExportKind::CodeBlocks },
+		{ "clion", ExportKind::CLion },
+		{ "fleet", ExportKind::Fleet },
+		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }
 

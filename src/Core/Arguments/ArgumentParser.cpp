@@ -811,6 +811,8 @@ std::string ArgumentParser::getHelp()
 #elif defined(CHALET_MACOS)
 			else if (String::equals("xcode", preset))
 				return fmt::format("Apple{} Xcode project format (*.xcodeproj)", Unicode::registered());
+			else if (String::equals("codeedit", preset))
+				return "CodeEdit for macOS (.codeedit)";
 #endif
 			else if (String::equals("clion", preset))
 				return "Jetbrains CLion (.idea)";
@@ -834,6 +836,7 @@ std::string ArgumentParser::getHelp()
 			"vsjson",
 #elif defined(CHALET_MACOS)
 			"xcode",
+			"codeedit",
 #endif
 			"clion",
 			"fleet",

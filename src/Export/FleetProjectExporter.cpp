@@ -69,8 +69,8 @@ bool FleetProjectExporter::generateProjectFiles()
 	}
 
 	const auto& cwd = workingDirectory();
-	auto ideaDirectory = fmt::format("{}/.fleet", cwd);
-	if (!Files::pathExists(ideaDirectory) && Files::pathExists(m_directory))
+	auto fleetDirectory = fmt::format("{}/.fleet", cwd);
+	if (!Files::pathExists(fleetDirectory) && Files::pathExists(m_directory))
 	{
 		if (!Files::copySilent(m_directory, cwd))
 		{
