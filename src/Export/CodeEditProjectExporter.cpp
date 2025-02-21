@@ -45,6 +45,7 @@ std::string CodeEditProjectExporter::getProjectTypeName() const
 bool CodeEditProjectExporter::validate(const BuildState& inState)
 {
 	UNUSED(inState);
+
 #if defined(CHALET_MACOS)
 	return true;
 #else
@@ -99,14 +100,32 @@ bool CodeEditProjectExporter::generateProjectFiles()
 bool CodeEditProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
 	UNUSED(inProject);
+
 #if defined(CHALET_MACOS)
 	const auto& cwd = workingDirectory();
 	auto shell = Environment::getShell();
-	auto codeEdit = fmt::format("/Applications/CodeEdit.app");
+	auto codeEdit = Files::which("codeedit");
+	if (!codeEdit.empty())
+	{
+		return Process::runMinimalOutputWithoutWait({ codeEdit, cwd });
+	}
+	else
+	{
+		codeEdit = fmt::format("/Applications/CodeEdit.app");
 
-	// This has to be called through system for some reason...
-	i32 result = std::system(fmt::format("{} -c \"open {} {}\"", shell, codeEdit, cwd).c_str());
-	return result == 0;
+		if (Files::pathExists(codeEdit))
+		{
+			Diagnostic::warn("Opening a workspace directly in CodeEdit requires the CLI app.\nInstall it via: brew install codeeditapp/formulae/codeedit-cli");
+
+			// This has to be called through system for some reason...
+			i32 result = std::system(fmt::format("{} -c \"open {} {}\"", shell, codeEdit, cwd).c_str());
+			return result == 0;
+		}
+		else
+		{
+			return false;
+		}
+	}
 #else
 	return false;
 #endif

@@ -236,7 +236,6 @@ void Shell::printTermType()
 			break;
 	}
 
-	// LOG("Terminal:", term);
 	UNUSED(term);
 }
 /*****************************************************************************/
@@ -378,6 +377,13 @@ void Shell::detectTerminalType()
 		state.terminalType = Type::UnknownOutput;
 		return printTermType();
 	}
+	#if defined(CHALET_MACOS)
+	else if (String::endsWith("/CodeEdit", parentPath))
+	{
+		state.terminalType = Type::UnknownOutput;
+		return printTermType();
+	}
+	#endif
 #endif
 
 	state.terminalType = Type::Subprocess;
