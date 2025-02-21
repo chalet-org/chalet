@@ -39,6 +39,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 		{ "vssolution", ExportKind::VisualStudioSolution },
 #elif defined(CHALET_MACOS)
 		{ "xcode", ExportKind::Xcode },
+		{ "codeedit", ExportKind::CodeEdit },
 #endif
 		{ "clion", ExportKind::CLion },
 		{ "fleet", ExportKind::Fleet },

@@ -10,6 +10,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/CLionProjectExporter.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
+#include "Export/CodeEditProjectExporter.hpp"
 #include "Export/FleetProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
@@ -62,6 +63,8 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<CLionProjectExporter>(inInputs);
 		case ExportKind::Fleet:
 			return std::make_unique<FleetProjectExporter>(inInputs);
+		case ExportKind::CodeEdit:
+			return std::make_unique<CodeEditProjectExporter>(inInputs);
 		default:
 			break;
 	}

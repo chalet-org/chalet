@@ -17,6 +17,7 @@ enum class ExportKind : u16
 	Xcode,
 	CLion,
 	Fleet,
+	CodeEdit,
 	CodeBlocks,
 };
 }
