@@ -773,7 +773,9 @@ bool BuildState::validateState()
 	{
 		bool isExport = inputs.route().isExport();
 		auto exportKind = inputs.exportKind();
-		bool allowedExportKind = exportKind == ExportKind::VisualStudioCodeJSON || exportKind == ExportKind::Fleet;
+		bool allowedExportKind = exportKind == ExportKind::VisualStudioCodeJSON
+			|| exportKind == ExportKind::VSCodiumJSON
+			|| exportKind == ExportKind::Fleet;
 		if (isExport && !allowedExportKind)
 		{
 			Diagnostic::error("The '{}' toolchain cannot be exported to the project type: {}", inputs.toolchainPreferenceName(), inputs.exportKindRaw());

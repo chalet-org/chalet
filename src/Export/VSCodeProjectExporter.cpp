@@ -24,7 +24,8 @@ namespace chalet
 {
 /*****************************************************************************/
 VSCodeProjectExporter::VSCodeProjectExporter(const CommandLineInputs& inInputs) :
-	IProjectExporter(inInputs, ExportKind::VisualStudioCodeJSON)
+	IProjectExporter(inInputs, inInputs.exportKind()),
+	m_vscodium(inInputs.exportKind() == ExportKind::VSCodiumJSON)
 {
 }
 
@@ -43,7 +44,10 @@ std::string VSCodeProjectExporter::getMainProjectOutput()
 /*****************************************************************************/
 std::string VSCodeProjectExporter::getProjectTypeName() const
 {
-	return std::string("Visual Studio Code");
+	if (m_vscodium)
+		return std::string("VSCodium");
+	else
+		return std::string("Visual Studio Code");
 }
 
 /*****************************************************************************/
@@ -131,20 +135,26 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	UNUSED(inProject);
 	const auto& cwd = workingDirectory();
 
+	auto codeShell = m_vscodium ? "codium" : "code";
+
 	// auto project = Files::getCanonicalPath(inProject);
-	auto code = Files::which("code");
+	auto code = Files::which(codeShell);
 #if defined(CHALET_WIN32)
 	if (code.empty())
 	{
-		auto appData = Environment::get("APPDATA");
-		code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
-		if (!Files::pathExists(code))
+		if (m_vscodium)
 		{
 			auto programFiles = Environment::getProgramFiles();
 			code = Files::getCanonicalPath(fmt::format("{}/VSCodium/VSCodium.exe", programFiles));
-			if (!Files::pathExists(code))
-				code.clear();
 		}
+		else
+		{
+			auto appData = Environment::get("APPDATA");
+			code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
+		}
+
+		if (!Files::pathExists(code))
+			code.clear();
 	}
 #endif
 	if (!code.empty())

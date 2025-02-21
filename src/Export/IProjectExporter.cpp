@@ -51,6 +51,7 @@ IProjectExporter::~IProjectExporter() = default;
 		case ExportKind::CodeBlocks:
 			return std::make_unique<CodeBlocksProjectExporter>(inInputs);
 		case ExportKind::VisualStudioCodeJSON:
+		case ExportKind::VSCodiumJSON:
 			return std::make_unique<VSCodeProjectExporter>(inInputs);
 		case ExportKind::VisualStudioSolution:
 			return std::make_unique<VSSolutionProjectExporter>(inInputs);

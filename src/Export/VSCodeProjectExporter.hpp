@@ -21,6 +21,6 @@ protected:
 	virtual bool openProjectFilesInEditor(const std::string& inProject) final;
 
 private:
-	//
+	bool m_vscodium = false;
 };
 }

@@ -803,6 +803,8 @@ std::string ArgumentParser::getHelp()
 		auto getExportPresetDescription = [](const std::string& preset) -> std::string {
 			if (String::equals("vscode", preset))
 				return "Visual Studio Code (.vscode)";
+			if (String::equals("vscodium", preset))
+				return "VSCodium - Open Source Binaries of VSCode (.vscode)";
 #if defined(CHALET_WIN32)
 			else if (String::equals("vssolution", preset))
 				return "Visual Studio Solution format (*.sln, *.vcxproj)";
@@ -831,6 +833,7 @@ std::string ArgumentParser::getHelp()
 		help += "\nExport project types:\n";
 		StringList exportPresets{
 			"vscode",
+			"vscodium",
 #if defined(CHALET_WIN32)
 			"vssolution",
 			"vsjson",

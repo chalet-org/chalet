@@ -33,6 +33,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 {
 	return {
 		{ "vscode", ExportKind::VisualStudioCodeJSON },
+		{ "vscodium", ExportKind::VSCodiumJSON },
 #if defined(CHALET_WIN32)
 		{ "vsjson", ExportKind::VisualStudioJSON },
 		{ "vssolution", ExportKind::VisualStudioSolution },
