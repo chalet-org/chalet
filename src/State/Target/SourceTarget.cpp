@@ -309,8 +309,13 @@ bool SourceTarget::generateUnityBuildFile(std::string& sourceFile) const
 	if (Files::pathExists(sourceFile))
 	{
 		existingContents = Files::getFileContents(sourceFile);
-		if (!existingContents.empty())
+		if (!existingContents.empty() && existingContents.back() == '\n')
 			existingContents.pop_back(); // last '\n'
+
+#if defined(CHALET_WIN32)
+		if (!existingContents.empty() && existingContents.back() == '\r')
+			existingContents.pop_back(); // last '\r'
+#endif
 
 		generateFile = existingContents.empty() || !String::equals(m_unityBuildContents, existingContents);
 	}
