@@ -556,7 +556,7 @@ std::string StarterFileTemplates::getMesonStarter(const ChaletJsonProps& inProps
 	std::string ret = fmt::format(R"python(project('{workspaceName}', '{language}',
 	version: '{version}',
 	license: 'NONE',
-	meson_version: '>=1.4.0',
+	meson_version: '>=0.5.0',
 	default_options: ['b_pch={pchBool}', '{languageStandard}'])
 
 sources = [

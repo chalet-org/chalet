@@ -146,7 +146,7 @@ bool MesonBuilder::run()
 		StringList command;
 		command = getSetupCommand();
 
-		std::string cwd = m_mesonVersionMajorMinor >= 313 ? std::string() : buildDir;
+		auto& cwd = buildDir;
 
 		if (!Process::run(command, cwd))
 			return onRunFailure();
