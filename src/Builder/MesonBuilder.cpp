@@ -259,10 +259,18 @@ StringList MesonBuilder::getBuildCommand() const
 StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) const
 {
 	auto& meson = m_state.toolchain.meson();
-	// const auto maxJobs = m_state.info.maxJobs();
+	const auto maxJobs = m_state.info.maxJobs();
+	const bool isNinja = usesNinja();
 
 	auto buildLocation = Files::getAbsolutePath(inOutputLocation);
-	StringList ret{ getQuotedPath(meson), "compile", "-C", getQuotedPath(buildLocation) };
+	StringList ret{
+		getQuotedPath(meson),
+		"compile",
+		"-C",
+		getQuotedPath(buildLocation),
+		"--jobs",
+		std::to_string(maxJobs),
+	};
 
 	// const auto& targets = m_target.targets();
 	// if (!targets.empty())
@@ -274,16 +282,20 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	// 	}
 	// }
 
-	// if (isNinja)
-	// {
-	// 	ret.emplace_back("--");
+	if (isNinja)
+	{
+		ret.emplace_back("--ninja-args");
 
-	// 	if (Output::showCommands())
-	// 		ret.emplace_back("-v");
+		std::string ninjaArgs;
 
-	// 	ret.emplace_back("-k");
-	// 	ret.emplace_back(m_state.info.keepGoing() ? "0" : "1");
-	// }
+		if (Output::showCommands())
+			ninjaArgs += "-v ";
+
+		ninjaArgs += "-k ";
+		ninjaArgs += (m_state.info.keepGoing() ? "0" : "1");
+
+		ret.emplace_back(std::move(ninjaArgs));
+	}
 
 	// LOG(String::join(ret));
 
