@@ -45,7 +45,7 @@ private:
 	std::string getRootSourceDirectory() const;
 	std::string getMainSourceFile(const CodeLanguage inLang) const;
 	std::string getCxxPrecompiledHeaderFile(const CodeLanguage inLang) const;
-	CodeLanguage getCodeLanguage(const bool inObjectiveCxx = true) const;
+	CodeLanguage getCodeLanguage() const;
 	StringList getSourceExtensions(const CodeLanguage inLang, const bool inModules) const;
 	std::string getLanguageStandard(const CodeLanguage inLang) const;
 

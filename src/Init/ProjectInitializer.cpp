@@ -247,7 +247,7 @@ bool ProjectInitializer::initializeMesonWorkspace(ChaletJsonProps& outProps)
 	outProps.workspaceName = getWorkspaceName();
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
-	outProps.language = getCodeLanguage(false);
+	outProps.language = getCodeLanguage();
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
 	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
@@ -644,20 +644,15 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 }
 
 /*****************************************************************************/
-CodeLanguage ProjectInitializer::getCodeLanguage(const bool inObjectiveCxx) const
+CodeLanguage ProjectInitializer::getCodeLanguage() const
 {
 	CodeLanguage ret = CodeLanguage::None;
 
 	StringList allowedLangs{ "C++", "C" };
 
 #if defined(CHALET_MACOS)
-	if (inObjectiveCxx)
-	{
-		allowedLangs.emplace_back("Objective-C");
-		allowedLangs.emplace_back("Objective-C++");
-	}
-#else
-	UNUSED(inObjectiveCxx);
+	allowedLangs.emplace_back("Objective-C");
+	allowedLangs.emplace_back("Objective-C++");
 #endif
 	std::string language = allowedLangs.front();
 
@@ -670,11 +665,11 @@ CodeLanguage ProjectInitializer::getCodeLanguage(const bool inObjectiveCxx) cons
 		ret = CodeLanguage::C;
 	}
 #if defined(CHALET_MACOS)
-	else if (inObjectiveCxx && String::equals("Objective-C", language))
+	else if (String::equals("Objective-C", language))
 	{
 		ret = CodeLanguage::ObjectiveC;
 	}
-	else if (inObjectiveCxx && String::equals("Objective-C++", language))
+	else if (String::equals("Objective-C++", language))
 	{
 		ret = CodeLanguage::ObjectiveCPlusPlus;
 	}
