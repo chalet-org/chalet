@@ -182,6 +182,15 @@ class ChaletJsonSchema
 		TargetCMakeToolset,
 		TargetCMakeRunExecutable,
 		//
+		TargetMeson,
+		TargetMesonLocation,
+		TargetMesonBuildFile,
+		TargetMesonTargetNames,
+		TargetMesonRecheck,
+		TargetMesonRebuild,
+		TargetMesonClean,
+		TargetMesonRunExecutable,
+		//
 		TargetChalet,
 		TargetChaletLocation,
 		TargetChaletBuildFile,

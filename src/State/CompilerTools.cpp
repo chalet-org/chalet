@@ -260,6 +260,34 @@ bool CompilerTools::fetchCmakeVersion(WorkspaceInternalCacheFile& inCache)
 }
 
 /*****************************************************************************/
+bool CompilerTools::fetchMesonVersion(WorkspaceInternalCacheFile& inCache)
+{
+	if (!m_meson.empty() && m_mesonVersionMajor == 0 && m_mesonVersionMinor == 0)
+	{
+		m_mesonAvailable = false;
+
+		auto version = inCache.getDataValueFromPath(m_meson, [this]() {
+			auto ret = Process::runOutput({ m_meson, "--version" });
+			return Files::isolateVersion(ret);
+		});
+
+		if (!version.empty())
+		{
+			auto vals = String::split(version, '.');
+			if (vals.size() == 3)
+			{
+				m_mesonAvailable = true;
+				m_mesonVersionMajor = std::stoi(vals[0]);
+				m_mesonVersionMinor = std::stoi(vals[1]);
+				m_mesonVersionPatch = std::stoi(vals[2]);
+			}
+		}
+	}
+
+	return m_mesonAvailable;
+}
+
+/*****************************************************************************/
 void CompilerTools::fetchNinjaVersion(WorkspaceInternalCacheFile& inCache)
 {
 	if (!m_ninja.empty() && m_ninjaVersionMajor == 0 && m_ninjaVersionMinor == 0)
@@ -482,6 +510,32 @@ u32 CompilerTools::cmakeVersionPatch() const noexcept
 bool CompilerTools::cmakeAvailable() const noexcept
 {
 	return m_cmakeAvailable;
+}
+
+/*****************************************************************************/
+const std::string& CompilerTools::meson() const noexcept
+{
+	return m_meson;
+}
+void CompilerTools::setMeson(std::string&& inValue) noexcept
+{
+	m_meson = std::move(inValue);
+}
+u32 CompilerTools::mesonVersionMajor() const noexcept
+{
+	return m_mesonVersionMajor;
+}
+u32 CompilerTools::mesonVersionMinor() const noexcept
+{
+	return m_mesonVersionMinor;
+}
+u32 CompilerTools::mesonVersionPatch() const noexcept
+{
+	return m_mesonVersionPatch;
+}
+bool CompilerTools::mesonAvailable() const noexcept
+{
+	return m_mesonAvailable;
 }
 
 /*****************************************************************************/

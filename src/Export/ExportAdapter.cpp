@@ -17,6 +17,7 @@
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -219,6 +220,19 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 
 					runConfigs.emplace_back(std::move(runConfig));
 				}
+				else if (target->isMeson())
+				{
+					auto& project = static_cast<const MesonTarget&>(*target);
+					if (project.runExecutable().empty())
+						continue;
+
+					RunConfiguration runConfig;
+					runConfig.name = targetName;
+					runConfig.config = config;
+					runConfig.arch = arch;
+
+					runConfigs.emplace_back(std::move(runConfig));
+				}
 			}
 
 			{
@@ -316,6 +330,36 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 				else if (target->isCMake())
 				{
 					auto& project = static_cast<const CMakeTarget&>(*target);
+					if (project.runExecutable().empty())
+						continue;
+
+					auto outputFile = state->paths.getTargetFilename(project);
+					String::replaceAll(outputFile, thisBuildDir, buildDir);
+
+					RunConfiguration runConfig;
+					runConfig.name = targetName;
+					runConfig.config = config;
+					runConfig.arch = arch;
+
+					runConfig.outputFile = std::move(outputFile);
+
+					if (runArgumentMap.find(targetName) != runArgumentMap.end())
+						runConfig.args = runArgumentMap.at(targetName);
+
+					if (!path.empty())
+						runConfig.env.emplace(Environment::getPathKey(), path);
+
+					if (!libraryPath.empty())
+						runConfig.env.emplace(Environment::getLibraryPathKey(), libraryPath);
+
+					if (!frameworkPath.empty())
+						runConfig.env.emplace(Environment::getFrameworkPathKey(), frameworkPath);
+
+					runConfigs.emplace_back(std::move(runConfig));
+				}
+				else if (target->isMeson())
+				{
+					auto& project = static_cast<const MesonTarget&>(*target);
 					if (project.runExecutable().empty())
 						continue;
 

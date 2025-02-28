@@ -13,6 +13,7 @@ enum class BuildTargetType
 	Source,
 	SubChalet,
 	CMake,
+	Meson,
 	Script,
 	Process,
 	Validation,

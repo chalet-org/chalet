@@ -9,6 +9,7 @@
 #include "State/CentralState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
@@ -46,17 +47,19 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 			{
 				const auto& project = static_cast<const SourceTarget&>(*target);
 				if (project.isExecutable())
-				{
 					executableTargets.emplace_back(target.get());
-				}
 			}
 			else if (target->isCMake())
 			{
-				const auto& cmakeProject = static_cast<const CMakeTarget&>(*target);
-				if (!cmakeProject.runExecutable().empty())
-				{
+				const auto& project = static_cast<const CMakeTarget&>(*target);
+				if (!project.runExecutable().empty())
 					executableTargets.emplace_back(target.get());
-				}
+			}
+			else if (target->isMeson())
+			{
+				const auto& project = static_cast<const MesonTarget&>(*target);
+				if (!project.runExecutable().empty())
+					executableTargets.emplace_back(target.get());
 			}
 		}
 

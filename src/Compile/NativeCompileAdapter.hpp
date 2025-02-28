@@ -23,7 +23,7 @@ struct NativeCompileAdapter
 
 	bool checkDependentTargets(const SourceTarget& inProject) const;
 	bool rebuildRequiredFromLinks(const SourceTarget& inProject) const;
-	bool anyCmakeOrSubChaletTargetsChanged() const;
+	bool anySubProjectTargetsChanged() const;
 
 	void setDependencyCacheSize(const size_t inSize);
 	void clearDependencyCache();

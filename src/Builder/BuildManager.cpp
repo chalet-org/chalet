@@ -9,6 +9,7 @@
 #include "Builder/BatchValidator.hpp"
 #include "Builder/CmakeBuilder.hpp"
 #include "Builder/ConfigureFileParser.hpp"
+#include "Builder/MesonBuilder.hpp"
 #include "Builder/ProfilerRunner.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
@@ -30,6 +31,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -202,6 +204,11 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 					if (!doCMakeClean(static_cast<const CMakeTarget&>(*target)))
 						return false;
 				}
+				else if (target->isMeson())
+				{
+					if (!doMesonClean(static_cast<const MesonTarget&>(*target)))
+						return false;
+				}
 				else if (target->isSubChalet())
 				{
 					if (!doSubChaletClean(static_cast<const SubChaletTarget&>(*target)))
@@ -255,6 +262,10 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		else if (target->isCMake())
 		{
 			result = runCMakeTarget(static_cast<const CMakeTarget&>(*target));
+		}
+		else if (target->isMeson())
+		{
+			result = runMesonTarget(static_cast<const MesonTarget&>(*target));
 		}
 		else if (target->isScript())
 		{
@@ -362,7 +373,7 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		//
 		m_state.getCentralState().saveCaches();
 
-		if (runTarget->isSources() || runTarget->isCMake())
+		if (runTarget->isSources() || runTarget->isCMake() || runTarget->isMeson())
 		{
 			Output::lineBreak();
 			return cmdRun(*runTarget);
@@ -403,6 +414,7 @@ void BuildManager::printBuildInformation() const
 	bool usingObjectiveC = false;
 	bool usingCpp = false;
 	bool usingC = false;
+	bool hasSourceTarget = false;
 	for (auto& target : m_buildTargets)
 	{
 		if (target->isSources())
@@ -414,6 +426,7 @@ void BuildManager::printBuildInformation() const
 			usingObjectiveC |= language == CodeLanguage::ObjectiveC;
 			usingCpp |= project.language() == CodeLanguage::CPlusPlus;
 			usingC |= project.language() == CodeLanguage::C;
+			hasSourceTarget = true;
 		}
 	}
 
@@ -446,7 +459,10 @@ void BuildManager::printBuildInformation() const
 	else
 		Diagnostic::info("Target Architecture: {} ({})", arch, String::join(m_state.inputs.universalArches(), " / "));
 
-	Diagnostic::info("Strategy: {}", m_strategy->name());
+	if (hasSourceTarget)
+	{
+		Diagnostic::info("Strategy: {}", m_strategy->name());
+	}
 	Diagnostic::info("Configuration: {}", m_state.configuration.name());
 }
 
@@ -564,6 +580,14 @@ bool BuildManager::doFullBuildFolderClean(const bool inForRebuild)
 				didClean |= doCMakeClean(cmakeTarget);
 
 			List::addIfDoesNotExist(externalLocations, cmakeTarget.targetFolder());
+		}
+		else if (target->isMeson())
+		{
+			auto& mesonTarget = static_cast<const MesonTarget&>(*target);
+			if (!inForRebuild)
+				didClean |= doMesonClean(mesonTarget);
+
+			List::addIfDoesNotExist(externalLocations, mesonTarget.targetFolder());
 		}
 	}
 
@@ -719,6 +743,27 @@ bool BuildManager::doCMakeClean(const CMakeTarget& inTarget)
 		if (!Files::removeRecursively(targetFolder))
 		{
 			Diagnostic::error("There was an error cleaning the '{}' CMake project.", inTarget.name());
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::doMesonClean(const MesonTarget& inTarget)
+{
+	auto targetFolder = inTarget.targetFolder();
+	Path::toUnix(targetFolder);
+
+	bool clean = m_state.inputs.route().isClean() && inTarget.clean();
+	bool rebuild = m_state.inputs.route().isRebuild() && inTarget.rebuild();
+
+	if ((clean || rebuild) && Files::pathExists(targetFolder))
+	{
+		if (!Files::removeRecursively(targetFolder))
+		{
+			Diagnostic::error("There was an error cleaning the '{}' Meson project.", inTarget.name());
 			return false;
 		}
 	}
@@ -987,6 +1032,11 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		auto& project = static_cast<const CMakeTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
 	}
+	else if (inTarget.isMeson())
+	{
+		auto& project = static_cast<const MesonTarget&>(inTarget);
+		outputFile = m_state.paths.getTargetFilename(project);
+	}
 
 	if (Files::pathIsDirectory(outputFile))
 	{
@@ -1232,6 +1282,18 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 
 	CmakeBuilder cmake(m_state, inTarget);
 	if (!cmake.run())
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool BuildManager::runMesonTarget(const MesonTarget& inTarget)
+{
+	displayHeader("Meson", inTarget, Output::theme().header);
+
+	MesonBuilder meson(m_state, inTarget);
+	if (!meson.run())
 		return false;
 
 	return true;

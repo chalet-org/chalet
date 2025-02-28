@@ -963,6 +963,8 @@ std::string ArgumentParser::getHelp()
 				return "A chalet.json with a single executable target";
 			else if (String::equals("cmake", preset))
 				return "A chalet.json with a single CMake target and CMakeLists.txt";
+			else if (String::equals("meson", preset))
+				return "A chalet.json with a single Meson target and meson.build";
 
 			return std::string();
 		};

@@ -93,7 +93,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 
 	checkCommandsForChanges();
 
-	bool otherTargetsChanged = m_compileAdapter.anyCmakeOrSubChaletTargetsChanged();
+	bool otherTargetsChanged = m_compileAdapter.anySubProjectTargetsChanged();
 
 	CommandPool::Job target;
 

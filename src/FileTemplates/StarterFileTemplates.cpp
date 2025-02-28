@@ -412,7 +412,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
 )cmake";
 	}
 #endif
-	else
+	else // CPlusPlus
 	{
 		if (String::equals("26", inProps.langStandard))
 			minimumCMakeVersion = "3.25";
@@ -465,6 +465,76 @@ target_include_directories(${{TARGET_NAME}} PRIVATE {location}/){extraProperties
 		FMT_ARG(precompiledHeader),
 		FMT_ARG(location),
 		FMT_ARG(extraProperties));
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json StarterFileTemplates::getMesonStarterChaletJson(const ChaletJsonProps& inProps)
+{
+	const auto& project = inProps.projectName;
+
+	Json ret;
+	ret[Keys::WorkspaceName] = inProps.workspaceName;
+	ret[Keys::WorkspaceVersion] = inProps.version;
+
+	ret[Keys::DefaultConfigurations] = Json::array();
+	ret[Keys::DefaultConfigurations] = {
+		"Release",
+		"Debug",
+		"MinSizeRel",
+		"RelWithDebInfo",
+	};
+
+	ret[Keys::Targets] = Json::object();
+	ret[Keys::Targets][project] = Json::object();
+	ret[Keys::Targets][project][Keys::Kind] = "mesonProject";
+	ret[Keys::Targets][project]["location"] = ".";
+	ret[Keys::Targets][project]["recheck"] = true;
+	ret[Keys::Targets][project]["runExecutable"] = project;
+
+	ret[Keys::Distribution] = Json::object();
+	ret[Keys::Distribution][project] = Json::object();
+	ret[Keys::Distribution][project][Keys::Kind] = "bundle";
+	ret[Keys::Distribution][project]["include"] = Json::array();
+	ret[Keys::Distribution][project]["include"][0] = fmt::format("${{externalBuild:{}}}/${{exe:{}}}", project, project);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string StarterFileTemplates::getMesonStarter(const ChaletJsonProps& inProps)
+{
+	UNUSED(inProps);
+	const auto& version = inProps.version;
+	const auto& workspaceName = inProps.workspaceName;
+	const auto& projectName = inProps.projectName;
+	const auto& location = inProps.location;
+	auto main = fmt::format("{}/{}", location, inProps.mainSource);
+	// auto pch = fmt::format("{}/{}", location, inProps.precompiledHeader);
+	// auto sourceExt = String::getPathSuffix(inProps.mainSource);
+
+	std::string language;
+	if (inProps.language == CodeLanguage::C)
+	{
+		language = "c";
+	}
+	else // CPlusPlus
+	{
+		language = "cpp";
+	}
+
+	std::string ret = fmt::format(R"cmake(project('{workspaceName}', '{language}', version: '{version}')
+sources = [
+	'{main}'
+]
+executable('{projectName}', sources))cmake",
+		FMT_ARG(workspaceName),
+		FMT_ARG(version),
+		FMT_ARG(language),
+		FMT_ARG(projectName),
+		FMT_ARG(main),
+		FMT_ARG(location));
 
 	return ret;
 }

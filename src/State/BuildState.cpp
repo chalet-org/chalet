@@ -31,6 +31,7 @@
 #include "State/PackageManager.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -291,6 +292,15 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 						outList.emplace_back(target->name());
 				}
 			}
+			else if (target->isMeson())
+			{
+				auto& project = static_cast<const MesonTarget&>(*target);
+				for (auto& depends : dependsOn)
+				{
+					if (String::endsWith(project.runExecutable(), depends))
+						outList.emplace_back(target->name());
+				}
+			}
 
 			if (String::equals(inTargetName, target->name()))
 				break;
@@ -364,6 +374,12 @@ const IBuildTarget* BuildState::getFirstValidRunTarget(const bool inExecutablesO
 		else if (target->isCMake())
 		{
 			auto& project = static_cast<const CMakeTarget&>(*target);
+			if (!project.runExecutable().empty())
+				return target.get();
+		}
+		else if (target->isMeson())
+		{
+			auto& project = static_cast<const MesonTarget&>(*target);
 			if (!project.runExecutable().empty())
 				return target.get();
 		}
@@ -960,17 +976,28 @@ bool BuildState::validateState()
 	toolchain.fetchMakeVersion(cacheFile);
 	toolchain.fetchNinjaVersion(cacheFile);
 
-	bool hasCMakeTargets = false;
 	bool hasSubChaletTargets = false;
+	bool hasCMakeTargets = false;
+	bool hasMesonTargets = false;
 	for (auto& target : targets)
 	{
-		hasSubChaletTargets |= target->isSubChalet();
-		hasCMakeTargets |= target->isCMake();
+		if (target->isSubChalet())
+			hasSubChaletTargets = true;
+		else if (target->isCMake())
+			hasCMakeTargets = true;
+		else if (target->isMeson())
+			hasMesonTargets = true;
 	}
 
 	if (hasCMakeTargets && !toolchain.fetchCmakeVersion(cacheFile))
 	{
-		Diagnostic::error("The path to the CMake executable could not be resolved: {}", toolchain.cmake());
+		Diagnostic::error("The path to CMake could not be resolved: {}", toolchain.cmake());
+		return false;
+	}
+
+	if (hasMesonTargets && !toolchain.fetchMesonVersion(cacheFile))
+	{
+		Diagnostic::error("The path to Meson could not be resolved: {}", toolchain.meson());
 		return false;
 	}
 

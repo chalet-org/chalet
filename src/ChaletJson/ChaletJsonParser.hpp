@@ -26,6 +26,7 @@ struct IBuildTarget;
 struct SourceTarget;
 struct SubChaletTarget;
 struct CMakeTarget;
+struct MesonTarget;
 struct ScriptBuildTarget;
 struct ProcessBuildTarget;
 struct ValidationBuildTarget;
@@ -67,6 +68,7 @@ private:
 	bool parseSourceTarget(SourceTarget& outTarget, const Json& inNode) const;
 	bool parseSubChaletTarget(SubChaletTarget& outTarget, const Json& inNode) const;
 	bool parseCMakeTarget(CMakeTarget& outTarget, const Json& inNode) const;
+	bool parseMesonTarget(MesonTarget& outTarget, const Json& inNode) const;
 	bool parseScriptTarget(ScriptBuildTarget& outTarget, const Json& inNode) const;
 	bool parseProcessTarget(ProcessBuildTarget& outTarget, const Json& inNode) const;
 	bool parseValidationTarget(ValidationBuildTarget& outTarget, const Json& inNode) const;

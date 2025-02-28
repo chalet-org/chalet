@@ -46,7 +46,7 @@ bool VSCodeSettingsGen::saveToFile(const std::string& inFilename) const
 				default: break;
 			}
 		}
-		else if (target->isCMake() || target->isSubChalet())
+		else if (target->isSubChalet() || target->isCMake() || target->isMeson())
 		{
 			// We'll leave it up to the user to configure further
 			hasGeneric = true;

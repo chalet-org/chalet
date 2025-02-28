@@ -45,7 +45,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 
 	checkCommandsForChanges();
 
-	bool otherTargetsChanged = m_compileAdapter.anyCmakeOrSubChaletTargetsChanged();
+	bool otherTargetsChanged = m_compileAdapter.anySubProjectTargetsChanged();
 
 	m_sourcesChanged = m_pchChanged = false;
 

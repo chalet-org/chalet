@@ -6,6 +6,7 @@
 #include "Export/TargetExportAdapter.hpp"
 
 #include "Builder/CmakeBuilder.hpp"
+#include "Builder/MesonBuilder.hpp"
 #include "Builder/ScriptRunner.hpp"
 #include "Builder/SubChaletBuilder.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -14,6 +15,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
@@ -46,16 +48,6 @@ StringList TargetExportAdapter::getFiles() const
 
 		ret.emplace_back(std::move(file));
 	}
-	else if (m_target.isCMake())
-	{
-		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
-		bool quotedPaths = true;
-		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
-
-		auto buildFile = builder.getBuildFile(true);
-
-		ret.emplace_back(std::move(buildFile));
-	}
 	else if (m_target.isSubChalet())
 	{
 		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
@@ -63,6 +55,26 @@ StringList TargetExportAdapter::getFiles() const
 		SubChaletBuilder builder(m_state, subChaletTarget, quotedPaths);
 
 		auto buildFile = builder.getBuildFile();
+
+		ret.emplace_back(std::move(buildFile));
+	}
+	else if (m_target.isCMake())
+	{
+		const auto& project = static_cast<const CMakeTarget&>(m_target);
+		bool quotedPaths = true;
+		CmakeBuilder builder(m_state, project, quotedPaths);
+
+		auto buildFile = builder.getBuildFile(true);
+
+		ret.emplace_back(std::move(buildFile));
+	}
+	else if (m_target.isMeson())
+	{
+		const auto& project = static_cast<const MesonTarget&>(m_target);
+		bool quotedPaths = true;
+		MesonBuilder builder(m_state, project, quotedPaths);
+
+		auto buildFile = builder.getBuildFile(true);
 
 		ret.emplace_back(std::move(buildFile));
 	}
@@ -89,9 +101,17 @@ StringList TargetExportAdapter::getOutputFiles() const
 	}
 	else if (m_target.isCMake())
 	{
-		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
+		const auto& project = static_cast<const CMakeTarget&>(m_target);
 		bool quotedPaths = true;
-		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
+		CmakeBuilder builder(m_state, project, quotedPaths);
+
+		ret.emplace_back(Files::getCanonicalPath(builder.getCacheFile()));
+	}
+	else if (m_target.isMeson())
+	{
+		const auto& project = static_cast<const MesonTarget&>(m_target);
+		bool quotedPaths = true;
+		MesonBuilder builder(m_state, project, quotedPaths);
 
 		ret.emplace_back(Files::getCanonicalPath(builder.getCacheFile()));
 	}
@@ -144,9 +164,9 @@ std::string TargetExportAdapter::getCommand() const
 	}
 	else if (m_target.isCMake())
 	{
-		const auto& cmakeTarget = static_cast<const CMakeTarget&>(m_target);
+		const auto& project = static_cast<const CMakeTarget&>(m_target);
 		bool quotedPaths = true;
-		CmakeBuilder builder(m_state, cmakeTarget, quotedPaths);
+		CmakeBuilder builder(m_state, project, quotedPaths);
 
 		auto genCmd = builder.getGeneratorCommand();
 		// genCmd.front() = fmt::format("\"{}\"", genCmd.front());
@@ -156,11 +176,25 @@ std::string TargetExportAdapter::getCommand() const
 
 		ret = fmt::format("{}{}{}", String::join(genCmd), eol, String::join(buildCmd));
 
-		if (cmakeTarget.install())
+		if (project.install())
 		{
 			auto installCmd = builder.getInstallCommand();
 			ret += fmt::format("{}{}", eol, String::join(installCmd));
 		}
+	}
+	else if (m_target.isMeson())
+	{
+		const auto& project = static_cast<const MesonTarget&>(m_target);
+		bool quotedPaths = true;
+		MesonBuilder builder(m_state, project, quotedPaths);
+
+		auto genCmd = builder.getSetupCommand();
+		// genCmd.front() = fmt::format("\"{}\"", genCmd.front());
+
+		auto buildCmd = builder.getBuildCommand();
+		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
+
+		ret = fmt::format("{}{}{}", String::join(genCmd), eol, String::join(buildCmd));
 	}
 	else if (m_target.isSubChalet())
 	{

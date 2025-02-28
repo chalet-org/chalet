@@ -13,6 +13,7 @@
 #include "State/BuildState.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "System/Files.hpp"
@@ -77,22 +78,28 @@ bool NativeCompileAdapter::rebuildRequiredFromLinks(const SourceTarget& inProjec
 }
 
 /*****************************************************************************/
-bool NativeCompileAdapter::anyCmakeOrSubChaletTargetsChanged() const
+bool NativeCompileAdapter::anySubProjectTargetsChanged() const
 {
 	// Note: At the moment, this forces any sources targets to re-link if the below returns true
 	//  In the future, it would be better to figure out which libraries are where
 	//
 	for (auto& target : m_state.targets)
 	{
-		if (target->isCMake())
+		if (target->isSubChalet())
+		{
+			auto& project = static_cast<const SubChaletTarget&>(*target);
+			if (project.hashChanged())
+				return true;
+		}
+		else if (target->isCMake())
 		{
 			auto& project = static_cast<const CMakeTarget&>(*target);
 			if (project.hashChanged())
 				return true;
 		}
-		else if (target->isSubChalet())
+		else if (target->isMeson())
 		{
-			auto& project = static_cast<const SubChaletTarget&>(*target);
+			auto& project = static_cast<const MesonTarget&>(*target);
 			if (project.hashChanged())
 				return true;
 		}

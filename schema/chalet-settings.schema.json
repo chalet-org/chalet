@@ -128,6 +128,11 @@
 					"description": "The executable path to GNU make, or NMAKE/Qt Jom with Visual Studio.",
 					"default": "/usr/bin/make"
 				},
+				"meson": {
+					"type": "string",
+					"description": "The path to Meson.",
+					"default": "/usr/local/bin/meson"
+				},
 				"ninja": {
 					"type": "string",
 					"description": "The executable path to Ninja."

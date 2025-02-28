@@ -31,6 +31,7 @@ struct IBuildTarget
 	bool isSources() const noexcept;
 	bool isSubChalet() const noexcept;
 	bool isCMake() const noexcept;
+	bool isMeson() const noexcept;
 	bool isScript() const noexcept;
 	bool isProcess() const noexcept;
 	bool isValidation() const noexcept;

@@ -2713,6 +2713,112 @@
 			"description": "The path to an executable to run, relative to the build directory.",
 			"minLength": 1
 		},
+		"target-meson": {
+			"type": "object",
+			"description": "Build target(s) utilizing Meson.",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"location"
+			],
+			"properties": {
+				"buildFile": {
+					"$ref": "#/definitions/target-meson-buildFile"
+				},
+				"condition": {
+					"$ref": "#/definitions/target-condition"
+				},
+				"defaultRunArguments": {
+					"$ref": "#/definitions/target-defaultRunArguments"
+				},
+				"kind": {
+					"type": "string",
+					"description": "The type of the target's compiled binary, a script or external project.",
+					"minLength": 1,
+					"const": "mesonProject"
+				},
+				"location": {
+					"$ref": "#/definitions/target-meson-location"
+				},
+				"outputDescription": {
+					"$ref": "#/definitions/target-outputDescription"
+				},
+				"recheck": {
+					"$ref": "#/definitions/target-meson-recheck"
+				},
+				"rebuild": {
+					"$ref": "#/definitions/target-meson-rebuild"
+				},
+				"clean": {
+					"$ref": "#/definitions/target-meson-clean"
+				},
+				"runExecutable": {
+					"$ref": "#/definitions/target-meson-runExecutable"
+				},
+				"targets": {
+					"$ref": "#/definitions/target-meson-targets"
+				}
+			},
+			"patternProperties": {
+				"^buildFile\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-meson-buildFile"
+				},
+				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-meson-runExecutable"
+				},
+				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-meson-targets"
+				}
+			}
+		},
+		"target-meson-location": {
+			"type": "string",
+			"description": "The folder path of the root meson.build for the project.",
+			"minLength": 1
+		},
+		"target-meson-buildFile": {
+			"type": "string",
+			"description": "The build file to use, if not meson.build, relative to the location.",
+			"minLength": 1
+		},
+		"target-meson-targets": {
+			"description": "A specific Meson target, or targets to build instead of the default (all).",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-meson-recheck": {
+			"type": "boolean",
+			"description": "If true (default), Meson will be invoked each time during the build.",
+			"default": true
+		},
+		"target-meson-rebuild": {
+			"type": "boolean",
+			"description": "If true (default), the Meson build folder will be cleaned and rebuilt when a rebuild is requested.",
+			"default": true
+		},
+		"target-meson-clean": {
+			"type": "boolean",
+			"description": "If true (default), the Meson build folder will be cleaned when a clean is requested.",
+			"default": true
+		},
+		"target-meson-runExecutable": {
+			"type": "string",
+			"description": "The path to an executable to run, relative to the build directory.",
+			"minLength": 1
+		},
 		"target-chalet": {
 			"type": "object",
 			"description": "Build target(s) utilizing separate Chalet projects.",
@@ -3392,7 +3498,7 @@
 		"targets": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "A sequential list of build targets, cmake targets, or scripts.",
+			"description": "A sequential list of build targets, cmake targets, meson targets, or scripts.",
 			"patternProperties": {
 				"^[\\w\\-+.]{3,}$": {
 					"type": "object",
@@ -3406,8 +3512,9 @@
 								"staticLibrary",
 								"sharedLibrary",
 								"executable",
-								"cmakeProject",
 								"chaletProject",
+								"cmakeProject",
+								"mesonProject",
 								"script",
 								"process",
 								"validation"
@@ -3422,10 +3529,13 @@
 							"$ref": "#/definitions/target-source-library"
 						},
 						{
+							"$ref": "#/definitions/target-chalet"
+						},
+						{
 							"$ref": "#/definitions/target-cmake"
 						},
 						{
-							"$ref": "#/definitions/target-chalet"
+							"$ref": "#/definitions/target-meson"
 						},
 						{
 							"$ref": "#/definitions/target-script"

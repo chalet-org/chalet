@@ -15,6 +15,7 @@
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/List.hpp"
@@ -197,7 +198,7 @@ std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
 {
 	for (auto& target : m_state.targets)
 	{
-		if (!target->isCMake() && !target->isSubChalet())
+		if (!target->isSubChalet() && !target->isCMake() && !target->isMeson())
 			continue;
 
 		if (String::equals(target->name(), inName))
@@ -328,6 +329,22 @@ std::string BuildPaths::getTargetFilename(const CMakeTarget& inProject) const
 }
 
 /*****************************************************************************/
+std::string BuildPaths::getTargetFilename(const MesonTarget& inProject) const
+{
+	auto filename = inProject.runExecutable();
+	if (filename.empty())
+		return std::string();
+
+	// Ignore the extension and enforce the one from the environment
+	//   If it was anything else, we wouldn't recognize it anyway
+	//
+	filename = String::getPathFolderBaseName(filename);
+	filename += m_state.environment->getExecutableExtension();
+
+	return fmt::format("{}/{}", inProject.targetFolder(), filename);
+}
+
+/*****************************************************************************/
 std::string BuildPaths::getTargetBasename(const SourceTarget& inProject) const
 {
 	auto base = String::getPathFolderBaseName(inProject.outputFile());
@@ -344,6 +361,10 @@ std::string BuildPaths::getExecutableTargetPath(const IBuildTarget& inTarget) co
 	else if (inTarget.isCMake())
 	{
 		return getTargetFilename(static_cast<const CMakeTarget&>(inTarget));
+	}
+	else if (inTarget.isMeson())
+	{
+		return getTargetFilename(static_cast<const MesonTarget&>(inTarget));
 	}
 
 	return std::string();
