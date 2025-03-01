@@ -375,16 +375,6 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		std::to_string(maxJobs),
 	};
 
-	// const auto& targets = m_target.targets();
-	// if (!targets.empty())
-	// {
-	// 	ret.emplace_back("-t");
-	// 	for (const auto& name : targets)
-	// 	{
-	// 		ret.emplace_back(name);
-	// 	}
-	// }
-
 	if (isNinja)
 	{
 		std::string ninjaArgs{ "--ninja-args=" };
@@ -396,6 +386,13 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		ninjaArgs += (m_state.info.keepGoing() ? "0" : "1");
 
 		ret.emplace_back(std::move(ninjaArgs));
+	}
+
+	const auto& targets = m_target.targets();
+	if (!targets.empty())
+	{
+		for (const auto& name : targets)
+			ret.emplace_back(name);
 	}
 
 	// LOG(String::join(ret));

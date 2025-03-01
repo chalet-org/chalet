@@ -46,6 +46,10 @@ private:
 	StringList getChaletSchema() const;
 	StringList getSettingsSchema() const;
 
+	//
+	StringList getRunnableTargetKinds() const;
+	StringList getMetaBuildKinds() const;
+
 	const CentralState& m_centralState;
 
 	const Json kEmptyJson;
