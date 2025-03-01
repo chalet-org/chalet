@@ -133,6 +133,9 @@ bool VSVCXProjGen::saveScriptTargetProjectFiles(const std::string& name)
 		if (target != nullptr)
 		{
 			m_targetAdapters.emplace(conf.key, std::make_unique<TargetExportAdapter>(*conf.state, *target));
+			// auto& adapter = m_targetAdapters.at(conf.key);
+			// if (!adapter->generateRequiredFiles(m_exportPath))
+			// 	return false;
 		}
 	}
 
@@ -765,6 +768,8 @@ void VSVCXProjGen::addScriptProperties(XmlElement& outNode) const
 			auto outPath = fmt::format("{}/scripts/{}-{}_{}.bat", m_exportPath, m_currentTarget, arch, config);
 
 			const auto& targetAdapter = *m_targetAdapters.at(conf.key);
+			targetAdapter.generateRequiredFiles(m_exportPath);
+
 			auto command = targetAdapter.getCommand();
 
 			std::string outputChecks;

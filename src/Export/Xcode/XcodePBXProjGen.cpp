@@ -306,6 +306,9 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			else
 			{
 				TargetExportAdapter adapter(*state, *target);
+				if (!adapter.generateRequiredFiles(m_exportPath))
+					return false;
+
 				auto command = adapter.getCommand();
 				if (!command.empty())
 				{

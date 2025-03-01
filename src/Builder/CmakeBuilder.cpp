@@ -143,13 +143,19 @@ bool CmakeBuilder::run()
 			Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 		}
 
+		bool runCMakeGenerator = outDirectoryDoesNotExist || lastBuildFailed || dependencyUpdated;
+
 		StringList command;
-		command = getGeneratorCommand();
 
 		std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : buildDir;
 
-		if (!Process::run(command, cwd))
-			return onRunFailure();
+		if (runCMakeGenerator)
+		{
+			command = getGeneratorCommand();
+
+			if (!Process::run(command, cwd))
+				return onRunFailure();
+		}
 
 		command = getBuildCommand(buildDir);
 
@@ -166,9 +172,7 @@ bool CmakeBuilder::run()
 			return onRunFailure(false);
 
 		if (isNinja)
-		{
 			Environment::set(kNinjaStatus, oldNinjaStatus);
-		}
 	}
 
 	//

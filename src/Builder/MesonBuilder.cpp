@@ -137,35 +137,98 @@ bool MesonBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Files::makeDirectory(buildDir);
 
-		if (isNinja)
-		{
-			const auto& color = Output::getAnsiStyle(Output::theme().build);
-			Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
-		}
+		bool runMesonSetup = outDirectoryDoesNotExist || lastBuildFailed || dependencyUpdated;
+
+		// if (isNinja)
+		// {
+		// 	const auto& color = Output::getAnsiStyle(Output::theme().build);
+		// 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
+		// }
 
 		StringList command;
-		command = getSetupCommand();
+		if (runMesonSetup)
+		{
+			if (!createNativeFile())
+				return onRunFailure();
 
-		auto& cwd = buildDir;
+			command = getSetupCommand();
 
-		if (!Process::run(command, cwd))
-			return onRunFailure();
+			if (!Process::run(command))
+				return onRunFailure();
+		}
 
 		command = getBuildCommand(buildDir);
 
-		bool result = Process::runNinjaBuild(command);
+		// bool result = Process::runNinjaBuild(command);
+		bool result = Process::run(command);
 		sourceCache.addDataCache(outputHash, result);
 		if (!result)
 			return onRunFailure(false);
 
 		if (isNinja)
-		{
 			Environment::set(kNinjaStatus, oldNinjaStatus);
-		}
 	}
 
 	//
 	Output::msgTargetUpToDate(name, &buildTimer);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool MesonBuilder::createNativeFile() const
+{
+	// 		Environment::set("CC", toolchain.compilerC().path);
+	// 		Environment::set("CXX", toolchain.compilerCpp().path);
+	// 		// Environment::set("CC_LD", toolchain.linker());
+	// 		// Environment::set("CXX_LD", toolchain.linker());
+	// #if defined(CHALET_MACOS)
+	// 		Environment::set("OBJC", toolchain.compilerC().path);
+	// 		Environment::set("OBJCXX", toolchain.compilerCpp().path);
+	// 		// Environment::set("OBJC_LD", toolchain.linker());
+	// 		// Environment::set("OBJCXX_LD", toolchain.linker());
+	// #endif
+	// 		Environment::set("AR", toolchain.archiver());
+
+	auto nativeFile = getNativeFileOutputPath();
+
+	auto& toolchain = m_state.toolchain;
+	auto& compilerC = toolchain.compilerC().path;
+	auto& compilerCpp = toolchain.compilerCpp().path;
+	// auto& linker = toolchain.linker();
+	auto& archiver = toolchain.archiver();
+
+#if defined(CHALET_MACOS)
+	auto contents = fmt::format(R"ini([binaries]
+c = '{compilerC}'
+cpp = '{compilerCpp}'
+objc = '{compilerC}'
+objcpp = '{compilerCpp}'
+ar = '{archiver}'
+)ini",
+		FMT_ARG(compilerC),
+		FMT_ARG(compilerCpp),
+		FMT_ARG(archiver));
+#else
+	auto contents = fmt::format(R"ini([binaries]
+c = '{compilerC}'
+cpp = '{compilerCpp}'
+ar = '{archiver}'
+)ini",
+		FMT_ARG(compilerC),
+		FMT_ARG(compilerCpp),
+		FMT_ARG(archiver));
+#endif
+
+	// #if defined(CHALET_WIN32)
+	// 				String::replaceAll(contents, "/", "\\\\");
+	// #endif
+
+	if (!Files::createFileWithContents(nativeFile, contents))
+	{
+		Diagnostic::error("Error creating toolchain file for Meson: {}", nativeFile);
+		return false;
+	}
 
 	return true;
 }
@@ -203,21 +266,34 @@ StringList MesonBuilder::getSetupCommand()
 StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const std::string& inBuildFile) const
 {
 	auto& meson = m_state.toolchain.meson();
+	auto buildDir = Files::getCanonicalPath(outputLocation());
 
 	auto backend = getBackend();
 	chalet_assert(!backend.empty(), "Meson Backend is empty");
 
-	StringList ret{ getQuotedPath(meson), "setup", "--backend", backend };
+	auto nativeFile = getNativeFileOutputPath();
+
+	StringList ret{
+		getQuotedPath(meson),
+		"setup",
+		"--backend",
+		backend,
+		"--native-file",
+		getQuotedPath(Files::getCanonicalPath(nativeFile)),
+	};
 
 	if (Output::showCommands())
 		ret.emplace_back("--errorlogs");
 
+	ret.emplace_back(getQuotedPath(buildDir));
+
 	ret.emplace_back(getQuotedPath(inLocation));
 
-	if (!inBuildFile.empty())
-	{
-		ret.emplace_back(getQuotedPath(inBuildFile));
-	}
+	UNUSED(inBuildFile);
+	// if (!inBuildFile.empty())
+	// {
+	// 	ret.emplace_back(getQuotedPath(inBuildFile));
+	// }
 	return ret;
 }
 
@@ -284,14 +360,12 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 
 	if (isNinja)
 	{
-		ret.emplace_back("--ninja-args");
-
-		std::string ninjaArgs;
+		std::string ninjaArgs{ "--ninja-args=" };
 
 		if (Output::showCommands())
-			ninjaArgs += "-v ";
+			ninjaArgs += "-v,";
 
-		ninjaArgs += "-k ";
+		ninjaArgs += "-k,";
 		ninjaArgs += (m_state.info.keepGoing() ? "0" : "1");
 
 		ret.emplace_back(std::move(ninjaArgs));
@@ -300,6 +374,33 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	// LOG(String::join(ret));
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getNativeFileOutputPath() const
+{
+	auto filename = fmt::format("meson_{}.ini", m_state.info.targetArchitectureTriple());
+
+	if (m_state.inputs.route().isExport())
+	{
+		auto kind = m_state.inputs.exportKind();
+		if (kind == ExportKind::VisualStudioSolution)
+		{
+			auto& outputDirectory = m_state.paths.outputDirectory();
+			return fmt::format("{}/.vssolution/meson/{}", outputDirectory, filename);
+		}
+		else if (kind == ExportKind::CodeBlocks)
+		{
+			auto& outputDirectory = m_state.paths.outputDirectory();
+			return fmt::format("{}/.codeblocks/meson/{}", outputDirectory, filename);
+		}
+		else if (kind == ExportKind::Xcode)
+		{
+			auto& outputDirectory = m_state.paths.outputDirectory();
+			return fmt::format("{}/.xcode/meson/{}", outputDirectory, filename);
+		}
+	}
+	return fmt::format("{}/{}", outputLocation(), filename);
 }
 
 /*****************************************************************************/
@@ -327,5 +428,4 @@ const std::string& MesonBuilder::outputLocation() const
 {
 	return m_target.targetFolder();
 }
-
 }

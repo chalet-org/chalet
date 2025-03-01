@@ -24,6 +24,8 @@ public:
 	StringList getBuildCommand() const;
 	StringList getBuildCommand(const std::string& inOutputLocation) const;
 
+	bool createNativeFile() const;
+
 private:
 	bool dependencyHasUpdated() const;
 	StringList getSetupCommand(const std::string& inLocation, const std::string& inBuildFile) const;
@@ -32,6 +34,7 @@ private:
 
 	std::string getBackend() const;
 	std::string getMesonCompatibleBuildConfiguration() const;
+	std::string getNativeFileOutputPath() const;
 
 	std::string getQuotedPath(const std::string& inPath) const;
 
