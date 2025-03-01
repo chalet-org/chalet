@@ -677,8 +677,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 /*****************************************************************************/
 std::string CmakeBuilder::getCMakeCompatibleBuildConfiguration() const
 {
-	std::string ret = m_state.configuration.name();
-
+	std::string ret;
 	if (m_state.configuration.isMinSizeRelease())
 	{
 		ret = "MinSizeRel";

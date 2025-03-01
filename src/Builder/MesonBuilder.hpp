@@ -36,6 +36,7 @@ private:
 
 	std::string getBackend() const;
 	std::string getMesonCompatibleBuildConfiguration() const;
+	std::string getMesonCompatibleOptimizationFlag() const;
 	std::string getNativeFileOutputPath() const;
 	std::string getCpuFamily() const;
 

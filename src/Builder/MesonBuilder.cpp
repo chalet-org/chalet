@@ -300,6 +300,7 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 {
 	auto& meson = m_state.toolchain.meson();
 	auto buildDir = Files::getCanonicalPath(outputLocation());
+	auto optimization = getMesonCompatibleOptimizationFlag();
 
 	auto backend = getBackend();
 	chalet_assert(!backend.empty(), "Meson Backend is empty");
@@ -313,7 +314,13 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 		backend,
 		"--native-file",
 		getQuotedPath(Files::getCanonicalPath(nativeFile)),
+		"--optimization",
+		optimization,
 	};
+	if (m_state.configuration.debugSymbols())
+		ret.emplace_back("--debug");
+	else
+		ret.emplace_back("--strip");
 
 	auto& defines = m_target.defines();
 
@@ -341,8 +348,7 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 /*****************************************************************************/
 std::string MesonBuilder::getMesonCompatibleBuildConfiguration() const
 {
-	std::string ret = m_state.configuration.name();
-
+	std::string ret;
 	if (m_state.configuration.isMinSizeRelease())
 	{
 		ret = "minsize";
@@ -363,6 +369,32 @@ std::string MesonBuilder::getMesonCompatibleBuildConfiguration() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getMesonCompatibleOptimizationFlag() const
+{
+	// plain,0,g,1,2,3,s
+	auto optimizationLevel = m_state.configuration.optimizationLevel();
+	switch (optimizationLevel)
+	{
+		case OptimizationLevel::None:
+			return "0";
+		case OptimizationLevel::L1:
+			return "1";
+		case OptimizationLevel::L2:
+			return "2";
+		case OptimizationLevel::L3:
+		case OptimizationLevel::Fast:
+			return "3";
+		case OptimizationLevel::Debug:
+			return "g";
+		case OptimizationLevel::Size:
+			return "s";
+		case OptimizationLevel::CompilerDefault:
+		default:
+			return "plain";
+	}
 }
 
 /*****************************************************************************/
