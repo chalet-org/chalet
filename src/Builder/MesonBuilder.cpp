@@ -178,47 +178,69 @@ bool MesonBuilder::run()
 /*****************************************************************************/
 bool MesonBuilder::createNativeFile() const
 {
-	// 		Environment::set("CC", toolchain.compilerC().path);
-	// 		Environment::set("CXX", toolchain.compilerCpp().path);
-	// 		// Environment::set("CC_LD", toolchain.linker());
-	// 		// Environment::set("CXX_LD", toolchain.linker());
-	// #if defined(CHALET_MACOS)
-	// 		Environment::set("OBJC", toolchain.compilerC().path);
-	// 		Environment::set("OBJCXX", toolchain.compilerCpp().path);
-	// 		// Environment::set("OBJC_LD", toolchain.linker());
-	// 		// Environment::set("OBJCXX_LD", toolchain.linker());
-	// #endif
-	// 		Environment::set("AR", toolchain.archiver());
-
 	auto nativeFile = getNativeFileOutputPath();
 
-	auto& toolchain = m_state.toolchain;
-	auto& compilerC = toolchain.compilerC().path;
-	auto& compilerCpp = toolchain.compilerCpp().path;
-	// auto& linker = toolchain.linker();
-	auto& archiver = toolchain.archiver();
+	const auto& toolchain = m_state.toolchain;
+	const auto& compilerC = toolchain.compilerC().path;
+	const auto& compilerCpp = toolchain.compilerCpp().path;
+	const auto& archiver = toolchain.archiver();
+	const auto& archTriple = m_state.info.targetArchitectureTriple();
+
+	auto arch = m_state.info.targetArchitectureString();
+	auto cpuFamily = getCpuFamily();
+
+	std::string optionsHeading = m_mesonVersionMajorMinor > 56 ? "built-in options" : "properties";
+
+	std::string targetArg;
+	if (m_state.environment->isClang())
+	{
+		targetArg = fmt::format("'--target={}'", archTriple);
+	}
+
+	std::string otherBinaries;
+	std::string otherProperties;
 
 #if defined(CHALET_MACOS)
-	auto contents = fmt::format(R"ini([binaries]
-c = '{compilerC}'
-cpp = '{compilerCpp}'
+	otherBinaries = fmt::format(R"ini(
 objc = '{compilerC}'
-objcpp = '{compilerCpp}'
-ar = '{archiver}'
-)ini",
+objcpp = '{compilerCpp}')ini",
+		FMT_ARG(compilerC),
+		FMT_ARG(compilerCpp));
+
+	otherProperties = fmt::format(R"ini(
+objc_args = [{targetArg}]
+objcpp_args = [{targetArg}]
+objc_link_args = [{targetArg}]
+objcpp_link_args = [{targetArg}])ini",
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
-		FMT_ARG(archiver));
-#else
+		FMT_ARG(targetArg));
+#endif
+
 	auto contents = fmt::format(R"ini([binaries]
 c = '{compilerC}'
-cpp = '{compilerCpp}'
+cpp = '{compilerCpp}'{otherBinaries}
 ar = '{archiver}'
+
+[{optionsHeading}]
+c_args = [{targetArg}]
+cpp_args = [{targetArg}]
+c_link_args = [{targetArg}]
+cpp_link_args = [{targetArg}]{otherProperties}
+
+[target_machine]
+cpu_family = '{cpuFamily}'
+cpu = '{arch}'
 )ini",
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
-		FMT_ARG(archiver));
-#endif
+		FMT_ARG(otherBinaries),
+		FMT_ARG(otherProperties),
+		FMT_ARG(archiver),
+		FMT_ARG(optionsHeading),
+		FMT_ARG(targetArg),
+		FMT_ARG(cpuFamily),
+		FMT_ARG(arch));
 
 	// #if defined(CHALET_WIN32)
 	// 				String::replaceAll(contents, "/", "\\\\");
@@ -401,6 +423,27 @@ std::string MesonBuilder::getNativeFileOutputPath() const
 		}
 	}
 	return fmt::format("{}/{}", outputLocation(), filename);
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getCpuFamily() const
+{
+	auto arch = m_state.info.targetArchitecture();
+	switch (arch)
+	{
+		case Arch::Cpu::ARM:
+		case Arch::Cpu::ARMHF:
+			return "arm";
+		case Arch::Cpu::ARM64:
+			return "aarch64";
+		case Arch::Cpu::WASM32:
+			return "wasm32";
+		case Arch::Cpu::X86:
+			return "x86";
+		case Arch::Cpu::X64:
+		default:
+			return "x86_64";
+	}
 }
 
 /*****************************************************************************/
