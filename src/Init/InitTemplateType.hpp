@@ -11,6 +11,7 @@ enum class InitTemplateType : u16
 {
 	None,
 	CMake,
+	Meson,
 	Unknown,
 };
 }

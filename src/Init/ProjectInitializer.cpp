@@ -80,17 +80,21 @@ bool ProjectInitializer::run()
 		std::cout.flush();
 	}
 
-	bool isCmakeTemplate = initTemplate == InitTemplateType::CMake;
-
 	bool result = false;
 	ChaletJsonProps props;
-	if (isCmakeTemplate)
+
+	switch (initTemplate)
 	{
-		result = initializeCMakeWorkspace(props);
-	}
-	else
-	{
-		result = initializeNormalWorkspace(props);
+		case InitTemplateType::CMake:
+			result = initializeCMakeWorkspace(props);
+			break;
+		case InitTemplateType::Meson:
+			result = initializeMesonWorkspace(props);
+			break;
+		case InitTemplateType::None:
+		default:
+			result = initializeNormalWorkspace(props);
+			break;
 	}
 
 	if (!result)
@@ -123,10 +127,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 	outProps.workspaceName = getWorkspaceName();
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
-
-	auto language = getCodeLanguage();
-	outProps.language = language;
-
+	outProps.language = getCodeLanguage();
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
 	outProps.modules = getUseCxxModules(outProps.language, outProps.langStandard);
@@ -187,10 +188,7 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 	outProps.workspaceName = getWorkspaceName();
 	outProps.version = getWorkspaceVersion();
 	outProps.projectName = getProjectName(outProps.workspaceName);
-
-	auto language = getCodeLanguage();
-	outProps.language = language;
-
+	outProps.language = getCodeLanguage();
 	outProps.langStandard = getLanguageStandard(outProps.language);
 
 	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
@@ -242,6 +240,65 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 }
 
 /*****************************************************************************/
+bool ProjectInitializer::initializeMesonWorkspace(ChaletJsonProps& outProps)
+{
+	Diagnostic::info("Template: Meson");
+
+	outProps.workspaceName = getWorkspaceName();
+	outProps.version = getWorkspaceVersion();
+	outProps.projectName = getProjectName(outProps.workspaceName);
+	outProps.language = getCodeLanguage();
+	outProps.langStandard = getLanguageStandard(outProps.language);
+
+	m_sourceExts = getSourceExtensions(outProps.language, outProps.modules);
+
+	outProps.useLocation = false;
+	outProps.location = getRootSourceDirectory();
+	outProps.mainSource = getMainSourceFile(outProps.language);
+	outProps.precompiledHeader = getCxxPrecompiledHeaderFile(outProps.language);
+	// outProps.defaultConfigs = getIncludeDefaultBuildConfigurations();
+	outProps.envFile = getMakeEnvFile();
+	outProps.inputFile = getInputFileFormat();
+	outProps.makeGitRepository = getMakeGitRepository();
+
+	outProps.isYaml = String::endsWith(".yaml", outProps.inputFile);
+
+	printUserInputSplit();
+
+	printFileNameAndContents(true, fmt::format("{}/{}", outProps.location, outProps.mainSource), [&outProps]() {
+		auto mainCpp = StarterFileTemplates::getMainCxx(outProps.language, outProps.langStandard, outProps.modules);
+		String::replaceAll(mainCpp, '\t', "   ");
+		return mainCpp;
+	});
+
+	printFileNameAndContents(!outProps.precompiledHeader.empty(), fmt::format("{}/{}", outProps.location, outProps.precompiledHeader), [&outProps]() {
+		return StarterFileTemplates::getPch(outProps.precompiledHeader, outProps.language);
+	});
+
+	printFileNameAndContents(outProps.makeGitRepository, ".gitignore", [this]() {
+		return StarterFileTemplates::getGitIgnore(m_inputs.defaultOutputDirectory(), m_inputs.settingsFile());
+	});
+
+	printFileNameAndContents(outProps.envFile, m_inputs.platformEnv(), []() {
+		return StarterFileTemplates::getDotEnv();
+	});
+
+	printFileNameAndContents(true, outProps.inputFile, [&outProps]() {
+		auto jsonFile = StarterFileTemplates::getMesonStarterChaletJson(outProps);
+		if (outProps.isYaml)
+			return YamlFile::asString(jsonFile);
+		else
+			return jsonFile.dump(3, ' ');
+	});
+
+	printFileNameAndContents(true, "meson.build", [&outProps]() {
+		return StarterFileTemplates::getMesonStarter(outProps);
+	});
+
+	return true;
+}
+
+/*****************************************************************************/
 bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 {
 	Diagnostic::infoEllipsis("Initializing a new workspace called '{}'", inProps.workspaceName);
@@ -278,10 +335,19 @@ bool ProjectInitializer::doRun(const ChaletJsonProps& inProps)
 				result = false;
 		}
 
-		if (m_inputs.initTemplate() == InitTemplateType::CMake)
+		auto initTemplate = m_inputs.initTemplate();
+		switch (initTemplate)
 		{
-			if (!makeCMakeLists(inProps))
-				result = false;
+			case InitTemplateType::CMake:
+				if (!makeCMakeLists(inProps))
+					result = false;
+				break;
+			case InitTemplateType::Meson:
+				if (!makeMesonBuild(inProps))
+					result = false;
+				break;
+			default:
+				break;
 		}
 
 		if (inProps.makeGitRepository)
@@ -335,10 +401,19 @@ bool ProjectInitializer::makeChaletJson(const ChaletJsonProps& inProps)
 	const auto filePath = fmt::format("{}/{}", m_rootPath, inProps.inputFile);
 
 	Json jsonFile;
-	if (m_inputs.initTemplate() == InitTemplateType::CMake)
-		jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(inProps);
-	else
-		jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
+	auto initTemplate = m_inputs.initTemplate();
+	switch (initTemplate)
+	{
+		case InitTemplateType::CMake:
+			jsonFile = StarterFileTemplates::getCMakeStarterChaletJson(inProps);
+			break;
+		case InitTemplateType::Meson:
+			jsonFile = StarterFileTemplates::getMesonStarterChaletJson(inProps);
+			break;
+		default:
+			jsonFile = StarterFileTemplates::getStandardChaletJson(inProps);
+			break;
+	}
 
 	if (inProps.isYaml)
 		return YamlFile::saveToFile(jsonFile, filePath);
@@ -369,6 +444,15 @@ bool ProjectInitializer::makeCMakeLists(const ChaletJsonProps& inProps)
 {
 	const auto outFile = fmt::format("{}/CMakeLists.txt", m_rootPath);
 	const auto contents = StarterFileTemplates::getCMakeStarter(inProps);
+
+	return Files::createFileWithContents(outFile, contents);
+}
+
+/*****************************************************************************/
+bool ProjectInitializer::makeMesonBuild(const ChaletJsonProps& inProps)
+{
+	const auto outFile = fmt::format("{}/meson.build", m_rootPath);
+	const auto contents = StarterFileTemplates::getMesonStarter(inProps);
 
 	return Files::createFileWithContents(outFile, contents);
 }
@@ -564,10 +648,11 @@ CodeLanguage ProjectInitializer::getCodeLanguage() const
 {
 	CodeLanguage ret = CodeLanguage::None;
 
-#if defined(CHALET_MACOS)
-	StringList allowedLangs{ "C++", "C", "Objective-C", "Objective-C++" };
-#else
 	StringList allowedLangs{ "C++", "C" };
+
+#if defined(CHALET_MACOS)
+	allowedLangs.emplace_back("Objective-C");
+	allowedLangs.emplace_back("Objective-C++");
 #endif
 	std::string language = allowedLangs.front();
 

@@ -39,7 +39,7 @@ private:
 		TargetGroupKind kind = TargetGroupKind::Script;
 	};
 
-	bool initialize();
+	bool initialize(const std::string& inDirectory);
 
 	bool saveSourceTargetProjectFiles(const std::string& inFilename, const std::string& inName, const TargetGroup& inGroup);
 

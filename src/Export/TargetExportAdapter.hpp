@@ -14,6 +14,8 @@ struct TargetExportAdapter
 {
 	explicit TargetExportAdapter(const BuildState& inState, const IBuildTarget& inTarget);
 
+	bool generateRequiredFiles(const std::string& inLocation) const;
+
 	StringList getFiles() const;
 	StringList getOutputFiles() const;
 	std::string getCommand() const;

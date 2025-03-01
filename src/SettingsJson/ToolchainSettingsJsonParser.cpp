@@ -135,6 +135,7 @@ Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
 		Keys::ToolchainBuildStrategy,
 		Keys::ToolchainBuildPathStyle,
 		Keys::ToolchainCMake,
+		Keys::ToolchainMeson,
 		Keys::ToolchainMake,
 		Keys::ToolchainNinja,
 		Keys::ToolchainProfiler,
@@ -546,6 +547,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		return true;
 	};
 	whichAdd(toolchain, Keys::ToolchainCMake);
+	whichAdd(toolchain, Keys::ToolchainMeson);
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainMake))
 	{
@@ -693,6 +695,8 @@ bool ToolchainSettingsJsonParser::parseToolchain(Json& inNode)
 			//
 			else if (String::equals(Keys::ToolchainCMake, key))
 				m_state.toolchain.setCmake(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainMeson, key))
+				m_state.toolchain.setMeson(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainMake, key))
 				m_state.toolchain.setMake(value.get<std::string>());
 			else if (String::equals(Keys::ToolchainNinja, key))

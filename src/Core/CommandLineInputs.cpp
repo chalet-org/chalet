@@ -21,11 +21,12 @@ namespace chalet
 {
 namespace
 {
-Dictionary<InitTemplateType> getInitTemplates()
+OrderedDictionary<InitTemplateType> getInitTemplates()
 {
 	return {
 		{ "chalet", InitTemplateType::None },
 		{ "cmake", InitTemplateType::CMake },
+		{ "meson", InitTemplateType::Meson },
 	};
 }
 

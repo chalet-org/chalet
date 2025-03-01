@@ -57,6 +57,7 @@ enum class Defs : u16
 	Disassembler,
 	Make,
 	CMake,
+	Meson,
 	Ninja,
 
 	/* Settings */
@@ -291,6 +292,12 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"type": "string",
 		"description": "The executable path to CMake.",
 		"default": "/usr/local/bin/cmake"
+	})json"_ojson;
+
+	defs[Defs::Meson] = R"json({
+		"type": "string",
+		"description": "The path to Meson.",
+		"default": "/usr/local/bin/meson"
 	})json"_ojson;
 
 	defs[Defs::Linker] = R"json({
@@ -539,6 +546,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	toolchain[SKeys::Properties][Keys::ToolchainDisassembler] = defs[Defs::Disassembler];
 	toolchain[SKeys::Properties][Keys::ToolchainLinker] = defs[Defs::Linker];
 	toolchain[SKeys::Properties][Keys::ToolchainMake] = defs[Defs::Make];
+	toolchain[SKeys::Properties][Keys::ToolchainMeson] = defs[Defs::Meson];
 	toolchain[SKeys::Properties][Keys::ToolchainNinja] = defs[Defs::Ninja];
 	toolchain[SKeys::Properties][Keys::ToolchainProfiler] = defs[Defs::Profiler];
 	toolchain[SKeys::Properties][Keys::ToolchainBuildStrategy] = defs[Defs::ToolchainBuildStrategy];

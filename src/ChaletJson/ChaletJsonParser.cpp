@@ -30,6 +30,7 @@
 #include "Json/JsonValues.hpp"
 
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -592,6 +593,10 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			{
 				type = BuildTargetType::CMake;
 			}
+			else if (String::equals("mesonProject", val))
+			{
+				type = BuildTargetType::Meson;
+			}
 			else if (String::equals("script", val))
 			{
 				type = BuildTargetType::Script;
@@ -666,6 +671,14 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 			if (!parseCMakeTarget(static_cast<CMakeTarget&>(*target), targetJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' target of type 'cmakeProject'.", m_chaletJson.filename(), name);
+				return false;
+			}
+		}
+		else if (target->isMeson())
+		{
+			if (!parseMesonTarget(static_cast<MesonTarget&>(*target), targetJson))
+			{
+				Diagnostic::error("{}: Error parsing the '{}' target of type 'mesonTarget'.", m_chaletJson.filename(), name);
 				return false;
 			}
 		}
@@ -922,6 +935,60 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setClean(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "install", status))
 				outTarget.setInstall(val);
+			else if (isInvalid(status))
+				return false;
+		}
+	}
+
+	if (!parseRunTargetProperties(outTarget, inNode))
+		return false;
+
+	return valid;
+}
+
+/*****************************************************************************/
+bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNode) const
+{
+	bool valid = false;
+	for (const auto& [key, value] : inNode.items())
+	{
+		JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
+		if (value.is_string())
+		{
+			std::string val;
+			if (String::equals("location", key))
+			{
+				outTarget.setLocation(value.get<std::string>());
+				valid = true;
+			}
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
+			else if (isUnread(status) && String::equals("buildFile", key))
+				outTarget.setBuildFile(value.get<std::string>());
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
+				outTarget.setRunExecutable(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))
+				outTarget.addTarget(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_array())
+		{
+			StringList val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "targets", status))
+				outTarget.addTargets(std::move(val));
+			else if (isInvalid(status))
+				return false;
+		}
+		else if (value.is_boolean())
+		{
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "recheck", status))
+				outTarget.setRecheck(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "rebuild", status))
+				outTarget.setRebuild(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "clean", status))
+				outTarget.setClean(val);
 			else if (isInvalid(status))
 				return false;
 		}

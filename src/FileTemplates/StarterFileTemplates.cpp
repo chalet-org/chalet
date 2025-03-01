@@ -412,7 +412,7 @@ target_link_libraries(${TARGET_NAME} PRIVATE "-framework Foundation")
 )cmake";
 	}
 #endif
-	else
+	else // CPlusPlus
 	{
 		if (String::equals("26", inProps.langStandard))
 			minimumCMakeVersion = "3.25";
@@ -465,6 +465,113 @@ target_include_directories(${{TARGET_NAME}} PRIVATE {location}/){extraProperties
 		FMT_ARG(precompiledHeader),
 		FMT_ARG(location),
 		FMT_ARG(extraProperties));
+
+	return ret;
+}
+
+/*****************************************************************************/
+Json StarterFileTemplates::getMesonStarterChaletJson(const ChaletJsonProps& inProps)
+{
+	const auto& project = inProps.projectName;
+
+	Json ret;
+	ret[Keys::WorkspaceName] = inProps.workspaceName;
+	ret[Keys::WorkspaceVersion] = inProps.version;
+
+	ret[Keys::DefaultConfigurations] = Json::array();
+	ret[Keys::DefaultConfigurations] = {
+		"Release",
+		"Debug",
+		"MinSizeRel",
+		"RelWithDebInfo",
+	};
+
+	ret[Keys::Targets] = Json::object();
+	ret[Keys::Targets][project] = Json::object();
+	ret[Keys::Targets][project][Keys::Kind] = "mesonProject";
+	ret[Keys::Targets][project]["location"] = ".";
+	ret[Keys::Targets][project]["recheck"] = true;
+	ret[Keys::Targets][project]["runExecutable"] = project;
+
+	ret[Keys::Distribution] = Json::object();
+	ret[Keys::Distribution][project] = Json::object();
+	ret[Keys::Distribution][project][Keys::Kind] = "bundle";
+	ret[Keys::Distribution][project]["include"] = Json::array();
+	ret[Keys::Distribution][project]["include"][0] = fmt::format("${{externalBuild:{}}}/${{exe:{}}}", project, project);
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string StarterFileTemplates::getMesonStarter(const ChaletJsonProps& inProps)
+{
+	UNUSED(inProps);
+	const auto& version = inProps.version;
+	const auto& workspaceName = inProps.workspaceName;
+	const auto& projectName = inProps.projectName;
+	const auto& location = inProps.location;
+	auto main = fmt::format("{}/{}", location, inProps.mainSource);
+	auto pch = fmt::format("{}/{}", location, inProps.precompiledHeader);
+	// auto sourceExt = String::getPathSuffix(inProps.mainSource);
+
+	const bool hasPch = !inProps.precompiledHeader.empty();
+	std::string precompiledHeader;
+	std::string pchBool = hasPch ? "true" : "false";
+
+	std::string language;
+	std::string languageStandard;
+	if (inProps.language == CodeLanguage::C)
+	{
+		language = "c";
+		languageStandard = fmt::format("c_std=c{}", inProps.langStandard);
+		if (hasPch)
+			precompiledHeader = fmt::format(", c_pch: '{}'", pch);
+	}
+#if defined(CHALET_MACOS)
+	else if (inProps.language == CodeLanguage::ObjectiveCPlusPlus)
+	{
+		language = "objcpp";
+		languageStandard = fmt::format("cpp_std=c++{}", inProps.langStandard);
+		if (hasPch)
+			precompiledHeader = fmt::format(", cpp_pch: '{}'", pch);
+	}
+	else if (inProps.language == CodeLanguage::ObjectiveC)
+	{
+		language = "objc";
+		languageStandard = fmt::format("c_std=c{}", inProps.langStandard);
+		if (hasPch)
+			precompiledHeader = fmt::format(", c_pch: '{}'", pch);
+	}
+#endif
+	else // CPlusPlus
+	{
+		language = "cpp";
+		languageStandard = fmt::format("cpp_std=c++{}", inProps.langStandard);
+		if (hasPch)
+			precompiledHeader = fmt::format(", cpp_pch: '{}'", pch);
+	}
+
+	// TODO: Meson needs the .cpp for the PCH on MSVC
+
+	std::string ret = fmt::format(R"python(project('{workspaceName}', '{language}',
+	version: '{version}',
+	license: 'NONE',
+	meson_version: '>=0.5.0',
+	default_options: ['b_pch={pchBool}', '{languageStandard}'])
+
+sources = [
+	'{main}'
+]
+executable('{projectName}', sources{precompiledHeader}))python",
+		FMT_ARG(workspaceName),
+		FMT_ARG(version),
+		FMT_ARG(language),
+		FMT_ARG(languageStandard),
+		FMT_ARG(projectName),
+		FMT_ARG(main),
+		FMT_ARG(pchBool),
+		FMT_ARG(precompiledHeader),
+		FMT_ARG(location));
 
 	return ret;
 }

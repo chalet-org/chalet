@@ -13,5 +13,8 @@ void toUnix(std::string& outValue, const bool inRemoveNewLine = false);
 void toWindows(std::string& outValue, const bool inRemoveNewLine = false);
 void capitalizeDriveLetter(std::string& outValue);
 std::string getWithSeparatorSuffix(const std::string& inPath);
+#if defined(CHALET_MACOS)
+void stripXcodeToolchain(std::string& outValue);
+#endif
 }
 }

@@ -27,6 +27,7 @@ struct CompilerTools
 
 	void fetchMakeVersion(WorkspaceInternalCacheFile& inCache);
 	bool fetchCmakeVersion(WorkspaceInternalCacheFile& inCache);
+	bool fetchMesonVersion(WorkspaceInternalCacheFile& inCache);
 	void fetchNinjaVersion(WorkspaceInternalCacheFile& inCache);
 
 	StrategyType strategy() const noexcept;
@@ -72,6 +73,13 @@ struct CompilerTools
 	u32 cmakeVersionPatch() const noexcept;
 	bool cmakeAvailable() const noexcept;
 
+	const std::string& meson() const noexcept;
+	void setMeson(std::string&& inValue) noexcept;
+	u32 mesonVersionMajor() const noexcept;
+	u32 mesonVersionMinor() const noexcept;
+	u32 mesonVersionPatch() const noexcept;
+	bool mesonAvailable() const noexcept;
+
 	const std::string& linker() const noexcept;
 	void setLinker(std::string&& inValue) noexcept;
 
@@ -110,6 +118,7 @@ private:
 	std::string m_disassembler;
 	std::string m_linker;
 	std::string m_make;
+	std::string m_meson;
 	std::string m_ninja;
 	std::string m_profiler;
 
@@ -125,6 +134,10 @@ private:
 	u32 m_cmakeVersionMajor = 0;
 	u32 m_cmakeVersionMinor = 0;
 	u32 m_cmakeVersionPatch = 0;
+
+	u32 m_mesonVersionMajor = 0;
+	u32 m_mesonVersionMinor = 0;
+	u32 m_mesonVersionPatch = 0;
 
 	u32 m_makeVersionMajor = 0;
 	u32 m_makeVersionMinor = 0;
@@ -143,6 +156,7 @@ private:
 	bool m_isWindowsTarget = false;
 	bool m_isCompilerWindowsResourceLLVMRC = false;
 	bool m_cmakeAvailable = false;
+	bool m_mesonAvailable = false;
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;

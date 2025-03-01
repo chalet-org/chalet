@@ -673,6 +673,7 @@ void LinkerGCC::addPositionIndependentCodeOption(StringList& outArgList) const
 			// Try to guess based on the project name
 			cmakeProjects.push_back(target->name());
 		}
+		// meson?
 	}
 
 	StringList libDirs;

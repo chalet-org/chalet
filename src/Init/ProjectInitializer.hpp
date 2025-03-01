@@ -22,6 +22,7 @@ private:
 	void showExit();
 	bool initializeNormalWorkspace(ChaletJsonProps& outProps);
 	bool initializeCMakeWorkspace(ChaletJsonProps& outProps);
+	bool initializeMesonWorkspace(ChaletJsonProps& outProps);
 
 	bool doRun(const ChaletJsonProps& inProps);
 
@@ -29,6 +30,7 @@ private:
 	bool makeMainCpp(const ChaletJsonProps& inProps);
 	bool makePch(const ChaletJsonProps& inProps);
 	bool makeCMakeLists(const ChaletJsonProps& inProps);
+	bool makeMesonBuild(const ChaletJsonProps& inProps);
 	bool makeGitIgnore();
 	bool makeDotEnv();
 

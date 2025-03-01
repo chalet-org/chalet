@@ -652,6 +652,9 @@ StringList QueryController::getAllRunTargets() const
 	{
 		if (chaletJson.contains(Keys::Targets))
 		{
+			auto runnableTargets = getRunnableTargetKinds();
+			auto metaBuildProjects = getMetaBuildKinds();
+
 			const auto& targets = chaletJson[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
@@ -662,11 +665,11 @@ StringList QueryController::getAllRunTargets() const
 				if (kind.empty())
 					continue;
 
-				if (!String::equals(StringList{ "executable", "script", "process", "cmakeProject" }, kind))
+				if (!String::equals(runnableTargets, kind))
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("cmakeProject", kind))
+				if (String::equals(metaBuildProjects, kind))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -711,6 +714,9 @@ StringList QueryController::getCurrentLastTarget() const
 	{
 		if (chaletJson.contains(Keys::Targets))
 		{
+			auto runnableTargets = getRunnableTargetKinds();
+			auto metaBuildProjects = getMetaBuildKinds();
+
 			const auto& targets = chaletJson[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
@@ -721,11 +727,11 @@ StringList QueryController::getCurrentLastTarget() const
 				if (kind.empty())
 					continue;
 
-				if (!String::equals(StringList{ "executable", "script", "cmakeProject" }, kind))
+				if (!String::equals(runnableTargets, kind))
 					continue;
 
 				bool isExecutable = true;
-				if (String::equals("cmakeProject", kind))
+				if (String::equals(metaBuildProjects, kind))
 				{
 					if (!target.contains(Keys::RunExecutable))
 						isExecutable = false;
@@ -891,5 +897,17 @@ StringList QueryController::getSettingsSchema() const
 	ret.emplace_back(schema.dump());
 
 	return ret;
+}
+
+/*****************************************************************************/
+StringList QueryController::getRunnableTargetKinds() const
+{
+	return StringList{ "executable", "script", "process", "cmakeProject", "mesonProject" };
+}
+
+/*****************************************************************************/
+StringList QueryController::getMetaBuildKinds() const
+{
+	return StringList{ "cmakeProject", "mesonProject" };
 }
 }

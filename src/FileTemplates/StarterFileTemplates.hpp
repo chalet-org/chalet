@@ -20,5 +20,8 @@ std::string getDotEnv();
 //
 Json getCMakeStarterChaletJson(const ChaletJsonProps& inProps);
 std::string getCMakeStarter(const ChaletJsonProps& inProps);
+//
+Json getMesonStarterChaletJson(const ChaletJsonProps& inProps);
+std::string getMesonStarter(const ChaletJsonProps& inProps);
 }
 }

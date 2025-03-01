@@ -13,6 +13,7 @@ struct CompilerTools;
 struct BuildInfo;
 struct SourceTarget;
 struct CMakeTarget;
+struct MesonTarget;
 struct WorkspaceEnvironment;
 class BuildState;
 struct IBuildTarget;
@@ -42,6 +43,7 @@ struct BuildPaths
 
 	std::string getTargetFilename(const SourceTarget& inProject) const;
 	std::string getTargetFilename(const CMakeTarget& inProject) const;
+	std::string getTargetFilename(const MesonTarget& inProject) const;
 	std::string getTargetBasename(const SourceTarget& inProject) const;
 	std::string getExecutableTargetPath(const IBuildTarget& inTarget) const;
 	std::string getPrecompiledHeaderTarget(const SourceTarget& inProject) const;

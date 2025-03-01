@@ -686,7 +686,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceImportPackages] = makeArrayOrString(std::move(importPackages));
 	}
 
-	// staticLibrary, sharedLibrary, executable, cmakeProject, chaletProject, script, process
+	// staticLibrary, sharedLibrary, executable, chaletProject, cmakeProject, mesonProject, script, process
 	//
 	defs[Defs::TargetKind] = R"json({
 		"type": "string",
@@ -1478,6 +1478,56 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson;
 
+	defs[Defs::TargetCMakeRunExecutable] = R"json({
+		"type": "string",
+		"description": "The path to an executable to run, relative to the build directory.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
+
+	defs[Defs::TargetMesonLocation] = R"json({
+		"type": "string",
+		"description": "The folder path of the root meson.build for the project.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetMesonBuildFile] = R"json({
+		"type": "string",
+		"description": "The build file to use, if not meson.build, relative to the location.",
+		"minLength": 1
+	})json"_ojson;
+
+	defs[Defs::TargetMesonTargetNames] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A specific Meson target, or targets to build instead of the default (all).",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetMesonRecheck] = R"json({
+		"type": "boolean",
+		"description": "If true (default), Meson will be invoked each time during the build.",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetMesonRebuild] = R"json({
+		"type": "boolean",
+		"description": "If true (default), the Meson build folder will be cleaned and rebuilt when a rebuild is requested.",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetMesonClean] = R"json({
+		"type": "boolean",
+		"description": "If true (default), the Meson build folder will be cleaned when a clean is requested.",
+		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetMesonRunExecutable] = R"json({
+		"type": "string",
+		"description": "The path to an executable to run, relative to the build directory.",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 	defs[Defs::TargetChaletLocation] = R"json({
 		"type": "string",
@@ -1515,12 +1565,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "boolean",
 		"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 		"default": true
-	})json"_ojson;
-
-	defs[Defs::TargetCMakeRunExecutable] = R"json({
-		"type": "string",
-		"description": "The path to an executable to run, relative to the build directory.",
-		"minLength": 1
 	})json"_ojson;
 
 	//
@@ -2005,6 +2049,30 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	}
 
 	{
+		auto targetMeson = R"json({
+			"type": "object",
+			"description": "Build target(s) utilizing Meson.",
+			"additionalProperties": false,
+			"required": [
+				"kind",
+				"location"
+			]
+		})json"_ojson;
+		addPropertyAndPattern(targetMeson, "buildFile", Defs::TargetMesonBuildFile, kPatternConditions);
+		addProperty(targetMeson, "condition", Defs::TargetCondition);
+		addProperty(targetMeson, "defaultRunArguments", Defs::TargetDefaultRunArguments);
+		addKind(targetMeson, defs, Defs::TargetKind, "mesonProject");
+		addProperty(targetMeson, "location", Defs::TargetMesonLocation);
+		addProperty(targetMeson, "outputDescription", Defs::TargetOutputDescription);
+		addProperty(targetMeson, "recheck", Defs::TargetMesonRecheck);
+		addProperty(targetMeson, "rebuild", Defs::TargetMesonRebuild);
+		addProperty(targetMeson, "clean", Defs::TargetMesonClean);
+		addPropertyAndPattern(targetMeson, "runExecutable", Defs::TargetMesonRunExecutable, kPatternConditions);
+		addPropertyAndPattern(targetMeson, "targets", Defs::TargetMesonTargetNames, kPatternConditions);
+		defs[Defs::TargetMeson] = std::move(targetMeson);
+	}
+
+	{
 		auto targetChalet = R"json({
 			"type": "object",
 			"description": "Build target(s) utilizing separate Chalet projects.",
@@ -2260,6 +2328,15 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCMakeTargetNames: return "target-cmake-targets";
 		case Defs::TargetCMakeToolset: return "target-cmake-toolset";
 		case Defs::TargetCMakeRunExecutable: return "target-cmake-runExecutable";
+		//
+		case Defs::TargetMeson: return "target-meson";
+		case Defs::TargetMesonLocation: return "target-meson-location";
+		case Defs::TargetMesonBuildFile: return "target-meson-buildFile";
+		case Defs::TargetMesonRecheck: return "target-meson-recheck";
+		case Defs::TargetMesonRebuild: return "target-meson-rebuild";
+		case Defs::TargetMesonClean: return "target-meson-clean";
+		case Defs::TargetMesonTargetNames: return "target-meson-targets";
+		case Defs::TargetMesonRunExecutable: return "target-meson-runExecutable";
 		//
 		case Defs::TargetChalet: return "target-chalet";
 		case Defs::TargetChaletLocation: return "target-chalet-location";
@@ -2583,7 +2660,7 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties][targets] = R"json({
 		"type": "object",
 		"additionalProperties": false,
-		"description": "A sequential list of build targets, cmake targets, or scripts."
+		"description": "A sequential list of build targets, cmake targets, meson targets, or scripts."
 	})json"_ojson;
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
@@ -2596,19 +2673,21 @@ Json ChaletJsonSchema::get()
 		"staticLibrary",
 		"sharedLibrary",
 		"executable",
-		"cmakeProject",
 		"chaletProject",
+		"cmakeProject",
+		"mesonProject",
 		"script",
 		"process",
 		"validation"
 	])json"_ojson;
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::TargetSourceExecutable);
 	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::TargetSourceLibrary);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::TargetCMake);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetChalet);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetScript);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetProcess);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][6] = getDefinition(Defs::TargetValidation);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::TargetChalet);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetCMake);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetMeson);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetScript);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][6] = getDefinition(Defs::TargetProcess);
+	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][7] = getDefinition(Defs::TargetValidation);
 
 	return ret;
 }

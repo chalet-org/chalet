@@ -39,7 +39,7 @@ bool CodeBlocksCBPGen::saveProjectFiles(const std::string& inDirectory)
 {
 	m_exportPath = String::getPathFolder(inDirectory);
 
-	if (!initialize())
+	if (!initialize(inDirectory))
 		return false;
 
 	for (auto& [name, group] : m_groups)
@@ -57,7 +57,7 @@ bool CodeBlocksCBPGen::saveProjectFiles(const std::string& inDirectory)
 }
 
 /*****************************************************************************/
-bool CodeBlocksCBPGen::initialize()
+bool CodeBlocksCBPGen::initialize(const std::string& inDirectory)
 {
 	if (m_states.empty())
 		return false;
@@ -138,6 +138,9 @@ bool CodeBlocksCBPGen::initialize()
 			else
 			{
 				TargetExportAdapter adapter(*state, *target);
+				if (!adapter.generateRequiredFiles(inDirectory))
+					return false;
+
 				auto command = adapter.getCommand();
 				if (!command.empty())
 				{
@@ -217,19 +220,17 @@ clean:
 			{
 				for (auto& [config, _] : m_configToTargets)
 				{
-					std::string dependency;
+					std::string logFolder;
 					for (auto& state : m_states)
 					{
 						if (String::equals(config, state->configuration.name()))
 						{
-							dependency = getResolvedPath(fmt::format("{}/logs", state->paths.buildOutputDir()));
+							logFolder = getResolvedPath(fmt::format("{}/logs", state->paths.buildOutputDir()));
 							break;
 						}
 					}
-					if (!Files::pathExists(dependency))
-						Files::makeDirectory(dependency);
 
-					dependency += fmt::format("/{}.log", name);
+					auto dependency = fmt::format("{}/{}.log", logFolder, name);
 
 					auto& script = group.scripts[index];
 					auto split = String::split(script, '\n');
@@ -246,13 +247,9 @@ clean:
 						i++;
 					}
 
-#if defined(CHALET_WIN32)
-					std::string removeFile{ "del" };
-					Path::toWindows(dependency);
-#else
-					std::string removeFile{ "rm -f" };
-#endif
+					std::string removeFile{ "rm -f" }; // Note: even on Windows
 					makefileContents += fmt::format(R"shell({dependency}:
+	-mkdir -p "{logFolder}"
 	@{cmd}
 
 {config}: {dependency}
@@ -260,10 +257,12 @@ clean:
 
 clean{config}:
 	-{removeFile} "{dependency}"
+	-{removeFile} "{logFolder}"
 .PHONY: clean{config}
 
 )shell",
 						FMT_ARG(dependency),
+						FMT_ARG(logFolder),
 						FMT_ARG(config),
 						FMT_ARG(removeFile),
 						fmt::arg("cmd", String::join(split, "\n\t@")));
@@ -726,6 +725,9 @@ std::string CodeBlocksCBPGen::getVirtualFolder(const std::string& inFile, const 
 
 	if (String::endsWith("CMakeLists.txt", inFile))
 		return "CMake";
+
+	if (String::endsWith("meson.build", inFile))
+		return "Meson";
 
 	auto ext = String::getPathSuffix(inFile);
 	if (!ext.empty())

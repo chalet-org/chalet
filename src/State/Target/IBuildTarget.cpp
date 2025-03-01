@@ -14,6 +14,7 @@
 #include "Utility/String.hpp"
 
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -41,6 +42,8 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 			return std::make_unique<SubChaletTarget>(inState);
 		case BuildTargetType::CMake:
 			return std::make_unique<CMakeTarget>(inState);
+		case BuildTargetType::Meson:
+			return std::make_unique<MesonTarget>(inState);
 		case BuildTargetType::Process:
 			return std::make_unique<ProcessBuildTarget>(inState);
 		case BuildTargetType::Validation:
@@ -107,6 +110,11 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 					else if (target->isCMake())
 					{
 						depends = m_state.paths.getTargetFilename(static_cast<const CMakeTarget&>(*target));
+						erase = depends.empty();
+					}
+					else if (target->isMeson())
+					{
+						depends = m_state.paths.getTargetFilename(static_cast<const MesonTarget&>(*target));
 						erase = depends.empty();
 					}
 					dependsOnTargets = true;
@@ -211,6 +219,10 @@ bool IBuildTarget::isSubChalet() const noexcept
 bool IBuildTarget::isCMake() const noexcept
 {
 	return m_type == BuildTargetType::CMake;
+}
+bool IBuildTarget::isMeson() const noexcept
+{
+	return m_type == BuildTargetType::Meson;
 }
 bool IBuildTarget::isScript() const noexcept
 {

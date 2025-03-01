@@ -86,6 +86,7 @@ CHALET_CONSTANT(ToolchainLinker) = "linker";
 CHALET_CONSTANT(ToolchainProfiler) = "profiler";
 CHALET_CONSTANT(ToolchainDisassembler) = "disassembler";
 CHALET_CONSTANT(ToolchainCMake) = "cmake";
+CHALET_CONSTANT(ToolchainMeson) = "meson";
 CHALET_CONSTANT(ToolchainMake) = "make";
 CHALET_CONSTANT(ToolchainNinja) = "ninja";
 //

@@ -14,9 +14,10 @@ namespace chalet
 {
 class BuildState;
 struct IBuildTarget;
+struct SourceTarget;
 struct SubChaletTarget;
 struct CMakeTarget;
-struct SourceTarget;
+struct MesonTarget;
 struct AssemblyDumper;
 struct ProcessBuildTarget;
 struct ScriptBuildTarget;
@@ -46,6 +47,7 @@ private:
 	bool copyRunDependencies(const IBuildTarget& inProject, u32& outCopied);
 	bool doSubChaletClean(const SubChaletTarget& inTarget);
 	bool doCMakeClean(const CMakeTarget& inTarget);
+	bool doMesonClean(const MesonTarget& inTarget);
 	bool doFullBuildFolderClean(const bool inForRebuild);
 
 	bool addProjectToBuild(const SourceTarget& inProject);
@@ -69,6 +71,7 @@ private:
 	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand);
 	bool runSubChaletTarget(const SubChaletTarget& inTarget);
 	bool runCMakeTarget(const CMakeTarget& inTarget);
+	bool runMesonTarget(const MesonTarget& inTarget);
 	bool runFullBuild();
 
 	void displayHeader(const char* inLabel, const IBuildTarget& inTarget, const Color inColor, const std::string& inName = std::string()) const;

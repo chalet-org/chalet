@@ -12,6 +12,7 @@
 #include "State/CompilerTools.hpp"
 #include "State/SourceOutputs.hpp"
 #include "State/Target/CMakeTarget.hpp"
+#include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Path.hpp"
@@ -215,17 +216,23 @@ bool CompileCommandsGenerator::save() const
 	}
 	else
 	{
-		const CMakeTarget* lastTarget = nullptr;
+		std::string targetFolder;
 		for (auto& target : m_state.targets)
 		{
 			if (target->isCMake())
 			{
-				lastTarget = static_cast<const CMakeTarget*>(target.get());
+				auto& project = static_cast<const CMakeTarget&>(*target);
+				targetFolder = project.targetFolder();
+			}
+			else if (target->isMeson())
+			{
+				auto& project = static_cast<const MesonTarget&>(*target);
+				targetFolder = project.targetFolder();
 			}
 		}
-		if (lastTarget != nullptr)
+		if (!targetFolder.empty())
 		{
-			auto lastCompileCommands = fmt::format("{}/{}/{}", buildOutputDir, lastTarget->targetFolder(), kCompileCommandsJson);
+			auto lastCompileCommands = fmt::format("{}/{}/{}", buildOutputDir, targetFolder, kCompileCommandsJson);
 			if (Files::pathExists(lastCompileCommands))
 			{
 				if (!Files::copySilent(lastCompileCommands, outputDirectory))
