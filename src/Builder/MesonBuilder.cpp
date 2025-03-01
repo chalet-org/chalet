@@ -319,7 +319,7 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 	};
 	if (m_state.configuration.debugSymbols())
 		ret.emplace_back("--debug");
-	else
+	else if (!m_state.environment->isMsvc())
 		ret.emplace_back("--strip");
 
 	auto& defines = m_target.defines();
