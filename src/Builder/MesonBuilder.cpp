@@ -181,10 +181,15 @@ bool MesonBuilder::createNativeFile() const
 	auto nativeFile = getNativeFileOutputPath();
 
 	const auto& toolchain = m_state.toolchain;
-	const auto& compilerC = toolchain.compilerC().path;
-	const auto& compilerCpp = toolchain.compilerCpp().path;
-	const auto& archiver = toolchain.archiver();
+	const auto& ninja = toolchain.ninja();
 	const auto& archTriple = m_state.info.targetArchitectureTriple();
+
+	auto compilerC = toolchain.compilerC().path;
+	auto compilerCpp = toolchain.compilerCpp().path;
+#if defined(CHALET_MACOS)
+	Path::stripXcodeToolchain(compilerC);
+	Path::stripXcodeToolchain(compilerCpp);
+#endif
 
 	auto arch = m_state.info.targetArchitectureString();
 	auto cpuFamily = getCpuFamily();
@@ -218,9 +223,9 @@ objcpp_link_args = [{targetArg}])ini",
 #endif
 
 	auto contents = fmt::format(R"ini([binaries]
+ninja = '{ninja}'
 c = '{compilerC}'
 cpp = '{compilerCpp}'{otherBinaries}
-ar = '{archiver}'
 
 [{optionsHeading}]
 c_args = [{targetArg}]
@@ -232,11 +237,11 @@ cpp_link_args = [{targetArg}]{otherProperties}
 cpu_family = '{cpuFamily}'
 cpu = '{arch}'
 )ini",
+		FMT_ARG(ninja),
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
 		FMT_ARG(otherBinaries),
 		FMT_ARG(otherProperties),
-		FMT_ARG(archiver),
 		FMT_ARG(optionsHeading),
 		FMT_ARG(targetArg),
 		FMT_ARG(cpuFamily),

@@ -89,4 +89,13 @@ std::string Path::getWithSeparatorSuffix(const std::string& inPath)
 
 	return path;
 }
+/*****************************************************************************/
+#if defined(CHALET_MACOS)
+void Path::stripXcodeToolchain(std::string& outValue)
+{
+	const auto& xcodePath = Files::getXcodePath();
+	String::replaceAll(outValue, xcodePath, "");
+	String::replaceAll(outValue, "/Toolchains/XcodeDefault.xctoolchain", "");
+}
+#endif
 }

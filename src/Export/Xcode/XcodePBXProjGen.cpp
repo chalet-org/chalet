@@ -19,6 +19,7 @@
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
+#include "State/CompilerTools.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Distribution/IDistTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
@@ -968,13 +969,16 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 
 			if (!pbxGroup.others.empty())
 			{
+				const auto& ninjaPath = firstState.toolchain.ninja();
 				auto makefilePath = fmt::format("{}/scripts/{}.mk", m_exportPath, target);
 				auto shellScript = fmt::format(R"shell(set -e
+export NINJA="{ninjaPath}"
 if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script start ==*"; fi
-make -f {} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
+make -f {makefilePath} --no-builtin-rules --no-builtin-variables --no-print-directory $CONFIGURATION
 if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 )shell",
-					makefilePath);
+					FMT_ARG(ninjaPath),
+					FMT_ARG(makefilePath));
 
 				auto key = getHashWithLabel(target);
 				node[key]["isa"] = section;

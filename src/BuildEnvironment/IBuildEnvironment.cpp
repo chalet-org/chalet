@@ -17,6 +17,7 @@
 #include "State/Target/SourceTarget.hpp"
 #include "System/Files.hpp"
 #include "Utility/Hash.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 #include "BuildEnvironment/BuildEnvironmentAppleLLVM.hpp"
@@ -478,9 +479,7 @@ bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 				m_state.info.setHostArchitecture("arm64");
 		}
 #elif defined(CHALET_MACOS)
-		const auto& xcodePath = Files::getXcodePath();
-		String::replaceAll(path, xcodePath, "");
-		String::replaceAll(path, "/Toolchains/XcodeDefault.xctoolchain", "");
+		Path::stripXcodeToolchain(path);
 #endif
 		outInfo.binDir = path + binDir;
 		outInfo.libDir = path + libDir;

@@ -210,9 +210,7 @@ std::string VSCodeCCppPropertiesGen::getCompilerPath() const
 		ret = m_state.toolchain.compilerC().path;
 
 #if defined(CHALET_MACOS)
-	const auto& xcodePath = Files::getXcodePath();
-	String::replaceAll(ret, xcodePath, "");
-	String::replaceAll(ret, "/Toolchains/XcodeDefault.xctoolchain", "");
+	Path::stripXcodeToolchain(ret);
 #endif
 
 	return ret;
