@@ -1468,7 +1468,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeInstall] = R"json({
 		"type": "boolean",
-		"description": "If true, the --install command will be run, and files will be placed in the 'installPath' (ie. ${externalBuild:target}/install)",
+		"description": "If true, the --install command will be run, and files will be placed in: ${externalBuild:target}/install",
 		"default": false
 	})json"_ojson;
 
@@ -1526,6 +1526,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "boolean",
 		"description": "If true (default), the Meson build folder will be cleaned when a clean is requested.",
 		"default": true
+	})json"_ojson;
+
+	defs[Defs::TargetMesonInstall] = R"json({
+		"type": "boolean",
+		"description": "If true, the install command will be run, and files will be placed in: ${externalBuild:target}/install",
+		"default": false
 	})json"_ojson;
 
 	defs[Defs::TargetMesonRunExecutable] = R"json({
@@ -2074,6 +2080,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetMeson, "recheck", Defs::TargetMesonRecheck);
 		addProperty(targetMeson, "rebuild", Defs::TargetMesonRebuild);
 		addProperty(targetMeson, "clean", Defs::TargetMesonClean);
+		addPropertyAndPattern(targetMeson, "install", Defs::TargetMesonInstall, kPatternConditions);
 		addPropertyAndPattern(targetMeson, "runExecutable", Defs::TargetMesonRunExecutable, kPatternConditions);
 		addPropertyAndPattern(targetMeson, "targets", Defs::TargetMesonTargetNames, kPatternConditions);
 		defs[Defs::TargetMeson] = std::move(targetMeson);
@@ -2339,10 +2346,11 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetMeson: return "target-meson";
 		case Defs::TargetMesonLocation: return "target-meson-location";
 		case Defs::TargetMesonBuildFile: return "target-meson-buildFile";
-		case Defs::TargetMesonDefines: return "target-cmake-defines";
+		case Defs::TargetMesonDefines: return "target-meson-defines";
 		case Defs::TargetMesonRecheck: return "target-meson-recheck";
 		case Defs::TargetMesonRebuild: return "target-meson-rebuild";
 		case Defs::TargetMesonClean: return "target-meson-clean";
+		case Defs::TargetMesonInstall: return "target-meson-install";
 		case Defs::TargetMesonTargetNames: return "target-meson-targets";
 		case Defs::TargetMesonRunExecutable: return "target-meson-runExecutable";
 		//

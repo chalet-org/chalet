@@ -775,17 +775,17 @@ StringList CmakeBuilder::getInstallCommand() const
 StringList CmakeBuilder::getInstallCommand(const std::string& inOutputLocation) const
 {
 	auto& cmake = m_state.toolchain.cmake();
-	auto installLocation = Files::getAbsolutePath(inOutputLocation);
+	auto buildLocation = Files::getAbsolutePath(inOutputLocation);
 	auto buildConfiguration = getCMakeCompatibleBuildConfiguration();
 
 	StringList ret{
 		getQuotedPath(cmake),
 		"--install",
-		getQuotedPath(installLocation),
+		getQuotedPath(buildLocation),
 		"--config",
 		buildConfiguration,
 		"--prefix",
-		getQuotedPath(fmt::format("{}/install", installLocation)),
+		getQuotedPath(fmt::format("{}/install", buildLocation)),
 	};
 
 	// LOG(String::join(ret));

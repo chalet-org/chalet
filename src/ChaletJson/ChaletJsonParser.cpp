@@ -993,6 +993,8 @@ bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNo
 				outTarget.setRebuild(val);
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "clean", status))
 				outTarget.setClean(val);
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "install", status))
+				outTarget.setInstall(val);
 			else if (isInvalid(status))
 				return false;
 		}

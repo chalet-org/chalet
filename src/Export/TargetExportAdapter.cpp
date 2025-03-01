@@ -209,6 +209,12 @@ std::string TargetExportAdapter::getCommand() const
 		// buildCmd.front() = fmt::format("\"{}\"", buildCmd.front());
 
 		ret = fmt::format("{}{}{}", String::join(genCmd), eol, String::join(buildCmd));
+
+		if (project.install())
+		{
+			auto installCmd = builder.getInstallCommand();
+			ret += fmt::format("{}{}", eol, String::join(installCmd));
+		}
 	}
 	else if (m_target.isSubChalet())
 	{

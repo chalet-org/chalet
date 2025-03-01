@@ -190,6 +190,7 @@ class ChaletJsonSchema
 		TargetMesonRecheck,
 		TargetMesonRebuild,
 		TargetMesonClean,
+		TargetMesonInstall,
 		TargetMesonRunExecutable,
 		//
 		TargetChalet,

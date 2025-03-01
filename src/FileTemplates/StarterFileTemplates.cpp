@@ -562,7 +562,7 @@ std::string StarterFileTemplates::getMesonStarter(const ChaletJsonProps& inProps
 sources = [
 	'{main}'
 ]
-executable('{projectName}', sources{precompiledHeader}))python",
+executable('{projectName}', sources{precompiledHeader}, install: true))python",
 		FMT_ARG(workspaceName),
 		FMT_ARG(version),
 		FMT_ARG(language),

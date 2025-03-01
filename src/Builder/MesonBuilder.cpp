@@ -161,6 +161,12 @@ bool MesonBuilder::run()
 
 		// bool result = Process::runNinjaBuild(command);
 		bool result = Process::run(command);
+		if (result && m_target.install())
+		{
+			command = getInstallCommand(buildDir);
+			result = Process::run(command);
+		}
+
 		sourceCache.addDataCache(outputHash, result);
 		if (!result)
 			return onRunFailure(false);
@@ -408,6 +414,33 @@ StringList MesonBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	return ret;
 }
 
+/*****************************************************************************/
+StringList MesonBuilder::getInstallCommand() const
+{
+	auto outputLocation = m_target.targetFolder();
+	return getInstallCommand(outputLocation);
+}
+
+/*****************************************************************************/
+StringList MesonBuilder::getInstallCommand(const std::string& inOutputLocation) const
+{
+	auto& meson = m_state.toolchain.meson();
+
+	auto buildLocation = Files::getAbsolutePath(inOutputLocation);
+
+	StringList ret{
+		getQuotedPath(meson),
+		"install",
+		"-C",
+		getQuotedPath(buildLocation),
+		"--destdir",
+		getQuotedPath(fmt::format("{}/install", buildLocation)),
+	};
+
+	// LOG(String::join(ret));
+
+	return ret;
+}
 /*****************************************************************************/
 std::string MesonBuilder::getNativeFileOutputPath() const
 {
