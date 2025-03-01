@@ -2666,7 +2666,7 @@
 			]
 		},
 		"target-cmake-defines": {
-			"description": "Macro definitions to be passed into CMake. (`-D` options)",
+			"description": "Additional defines to pass to `meason setup` (`-D` options). These must be in 'key=value' format",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2740,6 +2740,9 @@
 				"location": {
 					"$ref": "#/definitions/target-meson-location"
 				},
+				"defines": {
+					"$ref": "#/definitions/target-cmake-defines"
+				},
 				"outputDescription": {
 					"$ref": "#/definitions/target-outputDescription"
 				},
@@ -2762,6 +2765,9 @@
 			"patternProperties": {
 				"^buildFile\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-meson-buildFile"
+				},
+				"^defines\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-cmake-defines"
 				},
 				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-meson-runExecutable"

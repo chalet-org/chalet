@@ -42,6 +42,9 @@ bool MesonTarget::initialize()
 	if (!m_state.replaceVariablesInString(m_location, this))
 		return false;
 
+	if (!replaceVariablesInPathList(m_defines))
+		return false;
+
 	if (!m_state.replaceVariablesInString(m_runExecutable, this))
 		return false;
 
@@ -79,9 +82,18 @@ bool MesonTarget::validate()
 		result = false;
 	}
 
+	for (auto& define : m_defines)
+	{
+		if (!String::contains('=', define))
+		{
+			Diagnostic::error("define '{}' for Meson target '{}' must use the format 'key=value'", define, targetName);
+			result = false;
+		}
+	}
+
 	if (!m_state.toolchain.mesonAvailable())
 	{
-		Diagnostic::error("Meson was requsted for the project '{}' but was not found.", this->name());
+		Diagnostic::error("Meson was required for the project '{}' but was not found.", this->name());
 		result = false;
 	}
 
@@ -93,9 +105,10 @@ const std::string& MesonTarget::getHash() const
 {
 	if (m_hash.empty())
 	{
+		auto defines = String::join(m_defines);
 		auto targets = String::join(m_targets);
 
-		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, targets);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, defines, targets);
 
 		m_hash = Hash::string(hashable);
 	}
@@ -117,6 +130,22 @@ bool MesonTarget::hashChanged() const noexcept
 		m_hashChanged = static_cast<i32>(cacheChanged);
 	}
 	return m_hashChanged == 1;
+}
+
+/*****************************************************************************/
+const StringList& MesonTarget::defines() const noexcept
+{
+	return m_defines;
+}
+
+void MesonTarget::addDefines(StringList&& inList)
+{
+	List::forEach(inList, this, &MesonTarget::addDefine);
+}
+
+void MesonTarget::addDefine(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_defines, std::move(inValue));
 }
 
 /*****************************************************************************/

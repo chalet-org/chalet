@@ -309,6 +309,14 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 		getQuotedPath(Files::getCanonicalPath(nativeFile)),
 	};
 
+	auto& defines = m_target.defines();
+
+	for (auto& define : defines)
+	{
+		ret.emplace_back("-D");
+		ret.emplace_back(define);
+	}
+
 	if (Output::showCommands())
 		ret.emplace_back("--errorlogs");
 

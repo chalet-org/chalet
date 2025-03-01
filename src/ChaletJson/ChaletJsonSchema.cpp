@@ -1504,6 +1504,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);
 
+	defs[Defs::TargetMesonDefines] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "Additional defines to pass to `meason setup` (`-D` options). These must be in 'key=value' format",
+		"minLength": 1
+	})json"_ojson);
+
 	defs[Defs::TargetMesonRecheck] = R"json({
 		"type": "boolean",
 		"description": "If true (default), Meson will be invoked each time during the build.",
@@ -2063,6 +2069,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetMeson, "defaultRunArguments", Defs::TargetDefaultRunArguments);
 		addKind(targetMeson, defs, Defs::TargetKind, "mesonProject");
 		addProperty(targetMeson, "location", Defs::TargetMesonLocation);
+		addPropertyAndPattern(targetMeson, "defines", Defs::TargetMesonDefines, kPatternConditions);
 		addProperty(targetMeson, "outputDescription", Defs::TargetOutputDescription);
 		addProperty(targetMeson, "recheck", Defs::TargetMesonRecheck);
 		addProperty(targetMeson, "rebuild", Defs::TargetMesonRebuild);
@@ -2332,6 +2339,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetMeson: return "target-meson";
 		case Defs::TargetMesonLocation: return "target-meson-location";
 		case Defs::TargetMesonBuildFile: return "target-meson-buildFile";
+		case Defs::TargetMesonDefines: return "target-cmake-defines";
 		case Defs::TargetMesonRecheck: return "target-meson-recheck";
 		case Defs::TargetMesonRebuild: return "target-meson-rebuild";
 		case Defs::TargetMesonClean: return "target-meson-clean";

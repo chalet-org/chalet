@@ -19,6 +19,10 @@ struct MesonTarget final : public IBuildTarget
 
 	bool hashChanged() const noexcept;
 
+	const StringList& defines() const noexcept;
+	void addDefines(StringList&& inList);
+	void addDefine(std::string&& inValue);
+
 	const StringList& targets() const noexcept;
 	void addTargets(StringList&& inList);
 	void addTarget(std::string&& inValue);
@@ -43,6 +47,7 @@ struct MesonTarget final : public IBuildTarget
 	void setClean(const bool inValue) noexcept;
 
 private:
+	StringList m_defines;
 	StringList m_targets;
 	std::string m_location;
 	std::string m_targetFolder;

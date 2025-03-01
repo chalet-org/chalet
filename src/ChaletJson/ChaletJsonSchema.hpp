@@ -186,6 +186,7 @@ class ChaletJsonSchema
 		TargetMesonLocation,
 		TargetMesonBuildFile,
 		TargetMesonTargetNames,
+		TargetMesonDefines,
 		TargetMesonRecheck,
 		TargetMesonRebuild,
 		TargetMesonClean,

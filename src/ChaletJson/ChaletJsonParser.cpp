@@ -967,6 +967,8 @@ bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNo
 				outTarget.setBuildFile(value.get<std::string>());
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
 				outTarget.setRunExecutable(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
+				outTarget.addDefine(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))
 				outTarget.addTarget(std::move(val));
 			else if (isInvalid(status))
@@ -975,7 +977,9 @@ bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNo
 		else if (value.is_array())
 		{
 			StringList val;
-			if (valueMatchesSearchKeyPattern(val, value, key, "targets", status))
+			if (valueMatchesSearchKeyPattern(val, value, key, "defines", status))
+				outTarget.addDefines(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))
 				outTarget.addTargets(std::move(val));
 			else if (isInvalid(status))
 				return false;

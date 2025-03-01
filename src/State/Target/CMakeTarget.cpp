@@ -109,7 +109,7 @@ bool CMakeTarget::validate()
 
 	if (!m_state.toolchain.cmakeAvailable())
 	{
-		Diagnostic::error("CMake was requsted for the project '{}' but was not found.", this->name());
+		Diagnostic::error("CMake was required for the project '{}' but was not found.", this->name());
 		result = false;
 	}
 
