@@ -119,7 +119,10 @@ bool VSCppPropertiesGen::saveToFile(const std::string& inFilename)
 		}
 
 		if (!hasProjects)
+		{
+			Diagnostic::error("Visual Studio JSON export requires at least one source target.");
 			return false;
+		}
 
 		const SourceTarget* signifcantTarget = getSignificantTarget(*state);
 		if (signifcantTarget != nullptr)
