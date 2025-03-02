@@ -1506,7 +1506,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetMesonDefines] = makeArrayOrString(R"json({
 		"type": "string",
-		"description": "Additional defines to pass to `meason setup` (`-D` options). These must be in 'key=value' format",
+		"description": "Additional defines to pass to `meson setup` (`-D` options). These must be in 'key=value' format",
 		"minLength": 1
 	})json"_ojson);
 
