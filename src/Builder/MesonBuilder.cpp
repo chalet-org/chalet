@@ -196,6 +196,17 @@ bool MesonBuilder::createNativeFile() const
 	Path::stripXcodeToolchain(compilerC);
 	Path::stripXcodeToolchain(compilerCpp);
 #endif
+	if (m_state.info.compilerCache())
+	{
+		auto& ccache = m_state.tools.ccache();
+		compilerC = fmt::format("['{}', '{}']", ccache, compilerC);
+		compilerCpp = fmt::format("['{}', '{}']", ccache, compilerCpp);
+	}
+	else
+	{
+		compilerC = fmt::format("'{}'", compilerC);
+		compilerCpp = fmt::format("'{}'", compilerCpp);
+	}
 
 	auto arch = m_state.info.targetArchitectureString();
 	auto cpuFamily = getCpuFamily();
@@ -213,8 +224,8 @@ bool MesonBuilder::createNativeFile() const
 
 #if defined(CHALET_MACOS)
 	otherBinaries = fmt::format(R"ini(
-objc = '{compilerC}'
-objcpp = '{compilerCpp}')ini",
+objc = {compilerC}
+objcpp = {compilerCpp})ini",
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp));
 
@@ -223,15 +234,13 @@ objc_args = [{targetArg}]
 objcpp_args = [{targetArg}]
 objc_link_args = [{targetArg}]
 objcpp_link_args = [{targetArg}])ini",
-		FMT_ARG(compilerC),
-		FMT_ARG(compilerCpp),
 		FMT_ARG(targetArg));
 #endif
 
 	auto contents = fmt::format(R"ini([binaries]
 ninja = '{ninja}'
-c = '{compilerC}'
-cpp = '{compilerCpp}'{otherBinaries}
+c = {compilerC}
+cpp = {compilerCpp}{otherBinaries}
 
 [{optionsHeading}]
 c_args = [{targetArg}]
