@@ -140,6 +140,8 @@ StringList ArgumentParser::getTruthyArguments() const
 		"--no-generate-compile-commands",
 		"--only-required",
 		"--no-only-required",
+		"--compiler-cache",
+		"--no-compiler-cache",
 		"--save-user-toolchain-globally",
 		"--save-schema",
 		"--quieter",
