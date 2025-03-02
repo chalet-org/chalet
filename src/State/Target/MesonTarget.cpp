@@ -12,6 +12,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
+#include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
@@ -108,7 +109,9 @@ const std::string& MesonTarget::getHash() const
 		auto defines = String::join(m_defines);
 		auto targets = String::join(m_targets);
 
-		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, defines, targets, m_install);
+		bool compilerCache = m_state.info.compilerCache(); // we also need to re-configure meson if the compilerCache flag was changed
+
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, m_install, defines, targets, compilerCache);
 
 		m_hash = Hash::string(hashable);
 	}
