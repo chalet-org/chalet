@@ -227,17 +227,37 @@ std::string ConfigureFileParser::getReplaceValueFromSubString(const std::string&
 
 	const auto& version = metadata.version();
 
-	if (String::equals("VERSION_MAJOR", inKey) && version.hasMajor())
-		return std::to_string(version.major());
+	if (String::equals("VERSION_MAJOR", inKey))
+	{
+		if (version.hasMajor())
+			return std::to_string(version.major());
+		else
+			return std::to_string(0);
+	}
 
-	if (String::equals("VERSION_MINOR", inKey) && version.hasMinor())
-		return std::to_string(version.minor());
+	if (String::equals("VERSION_MINOR", inKey))
+	{
+		if (version.hasMinor())
+			return std::to_string(version.minor());
+		else
+			return std::to_string(0);
+	}
 
-	if (String::equals("VERSION_PATCH", inKey) && version.hasPatch())
-		return std::to_string(version.patch());
+	if (String::equals("VERSION_PATCH", inKey))
+	{
+		if (version.hasPatch())
+			return std::to_string(version.patch());
+		else
+			return std::to_string(0);
+	}
 
-	if (String::equals("VERSION_TWEAK", inKey) && version.hasTweak())
-		return std::to_string(version.tweak());
+	if (String::equals("VERSION_TWEAK", inKey))
+	{
+		if (version.hasTweak())
+			return std::to_string(version.tweak());
+		else
+			return std::to_string(0);
+	}
 
 	return std::string();
 }
