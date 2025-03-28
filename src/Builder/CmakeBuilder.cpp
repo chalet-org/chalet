@@ -163,6 +163,11 @@ bool CmakeBuilder::run()
 		bool result = Process::runNinjaBuild(command);
 		if (result && m_target.install())
 		{
+			// In older versions of CMake, the install path has to be created beforehand
+			auto installPath = getQuotedPath(fmt::format("{}/install", Files::getAbsolutePath(buildDir)));
+			if (!Files::pathExists(installPath))
+				Files::makeDirectory(installPath);
+
 			command = getInstallCommand(buildDir);
 			result = Process::run(command, cwd);
 		}
@@ -721,10 +726,18 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 	const auto& targets = m_target.targets();
 	if (!targets.empty())
 	{
-		ret.emplace_back("-t");
-		for (const auto& name : targets)
+		if (m_cmakeVersionMajorMinor >= 315)
 		{
-			ret.emplace_back(name);
+			ret.emplace_back("-t");
+			for (const auto& name : targets)
+			{
+				ret.emplace_back(name);
+			}
+		}
+		else // only the first target is supported
+		{
+			ret.emplace_back("--target");
+			ret.emplace_back(targets.front());
 		}
 	}
 
