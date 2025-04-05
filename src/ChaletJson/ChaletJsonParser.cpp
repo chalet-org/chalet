@@ -778,6 +778,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.addImportPackage(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
+				outTarget.setWorkingDirectory(std::move(val));
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());
 			else if (isInvalid(status))

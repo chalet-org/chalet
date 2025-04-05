@@ -773,6 +773,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
+	defs[Defs::TargetSourceWorkingDirectory] = R"json({
+		"type": "string",
+		"description": "The working directory to use when the project runs, relative to the project root.",
+		"minLength": 1
+	})json"_ojson;
+
 	defs[Defs::TargetSourceCxxCStandard] = R"json({
 		"type": "string",
 		"description": "The C standard to use in the compilation",
@@ -1976,6 +1982,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		addKind(defs[Defs::TargetSourceExecutable], defs, Defs::TargetKind, "executable");
 		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
+		addProperty(defs[Defs::TargetSourceExecutable], "workingDirectory", Defs::TargetSourceWorkingDirectory);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 	}
 
@@ -2263,6 +2270,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceImportPackages: return "target-source-importPackages";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
+		case Defs::TargetSourceWorkingDirectory: return "target-source-workingDirectory";
 		//
 		case Defs::TargetAbstract: return "target-abstract";
 		case Defs::TargetSourceExecutable: return "target-source-executable";

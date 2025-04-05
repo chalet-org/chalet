@@ -848,7 +848,8 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	bool result = true;
 	if (inRunCommand || canProcessRun(sourceCache, hash, inTarget.dependsOn()))
 	{
-		result = runProcess(cmd, path, inRunCommand);
+		std::string cwd;
+		result = runProcess(cmd, path, cwd, inRunCommand);
 		sourceCache.addDataCache(hash, result);
 
 		if (!inRunCommand && result)
@@ -1022,10 +1023,12 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 {
 	std::string outputFile;
+	std::string cwd;
 	if (inTarget.isSources())
 	{
 		auto& project = static_cast<const SourceTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.workingDirectory();
 	}
 	else if (inTarget.isCMake())
 	{
@@ -1147,7 +1150,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
-		return runProcess(cmd, outputFile, true);
+		return runProcess(cmd, outputFile, cwd, true);
 	}
 }
 
@@ -1168,7 +1171,7 @@ bool BuildManager::canProcessRun(SourceCache& inSourceCache, const std::string& 
 }
 
 /*****************************************************************************/
-bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand)
+bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd, const bool inRunCommand)
 {
 	if (inRunCommand)
 	{
@@ -1191,7 +1194,8 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	WindowsTerminal::cleanup();
 #endif
 
-	bool result = Process::runWithInput(inCmd);
+	// bool result = Process::runWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
