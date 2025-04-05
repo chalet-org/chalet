@@ -7,6 +7,7 @@
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/TargetExportAdapter.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -55,13 +56,13 @@ bool VSCodeLaunchGen::getConfiguration(Json& outConfiguration, const BuildState&
 	outConfiguration["type"] = getType(inState);
 	outConfiguration["request"] = "launch";
 	outConfiguration["stopAtEntry"] = true;
-	outConfiguration["cwd"] = "${workspaceFolder}";
 
 	setOptions(outConfiguration, inState);
 	setPreLaunchTask(outConfiguration);
 	if (!setProgramPath(outConfiguration, inState))
 		return false;
 
+	setWorkingDirectory(outConfiguration, inState);
 	setEnvFilePath(outConfiguration, inState);
 
 	return true;
@@ -157,6 +158,24 @@ bool VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) c
 		return false;
 
 	outJson["args"] = arguments;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool VSCodeLaunchGen::setWorkingDirectory(Json& outJson, const BuildState& inState) const
+{
+	constexpr bool executablesOnly = true;
+	auto target = inState.getFirstValidRunTarget(executablesOnly);
+	if (target != nullptr)
+	{
+		TargetExportAdapter adapter(inState, *target);
+		outJson["cwd"] = adapter.getRunWorkingDirectoryWithCurrentWorkingDirectoryAs("${workspaceFolder}");
+	}
+	else
+	{
+		outJson["cwd"] = "${workspaceFolder}";
+	}
 
 	return true;
 }

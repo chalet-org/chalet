@@ -21,7 +21,7 @@ struct VSCodeTasksGen
 private:
 	bool initialize();
 
-	Json makeRunConfiguration(const RunConfiguration& inRunConfig) const;
+	Json makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const;
 
 	std::string getProblemMatcher() const;
 
@@ -29,7 +29,7 @@ private:
 
 	const ExportAdapter& m_exportAdapter;
 
-	RunConfigurationList m_runConfigs;
+	ExportRunConfigurationList m_runConfigs;
 
 	bool m_usesMsvc = false;
 };

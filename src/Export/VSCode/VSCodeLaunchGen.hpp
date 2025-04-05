@@ -26,6 +26,7 @@ private:
 	std::string getDebuggerPath(const BuildState& inState) const;
 	void setOptions(Json& outJson, const BuildState& inState) const;
 	void setPreLaunchTask(Json& outJson) const;
+	bool setWorkingDirectory(Json& outJson, const BuildState& inState) const;
 	bool setProgramPath(Json& outJson, const BuildState& inState) const;
 	void setEnvFilePath(Json& outJson, const BuildState& inState) const;
 

@@ -110,7 +110,7 @@ std::string ExportAdapter::getDefaultTargetName() const
 	if (target == nullptr)
 		return std::string();
 
-	RunConfiguration runConfig;
+	ExportRunConfiguration runConfig;
 	runConfig.name = target->name();
 	runConfig.config = debugState.configuration.name();
 	runConfig.arch = debugState.info.hostArchitectureString();
@@ -123,7 +123,7 @@ std::string ExportAdapter::getAllTargetName() const
 {
 	auto& debugState = getDebugState();
 
-	RunConfiguration runConfig;
+	ExportRunConfiguration runConfig;
 	runConfig.name = m_allBuildName;
 	runConfig.config = debugState.configuration.name();
 	runConfig.arch = debugState.info.targetArchitectureString();
@@ -132,13 +132,13 @@ std::string ExportAdapter::getAllTargetName() const
 }
 
 /*****************************************************************************/
-std::string ExportAdapter::getRunConfigLabel(const RunConfiguration& inRunConfig) const
+std::string ExportAdapter::getRunConfigLabel(const ExportRunConfiguration& inRunConfig) const
 {
 	return fmt::format("{} [{} {}]", inRunConfig.name, getLabelArchitecture(inRunConfig), inRunConfig.config);
 }
 
 /*****************************************************************************/
-std::string ExportAdapter::getLabelArchitecture(const RunConfiguration& inRunConfig) const
+std::string ExportAdapter::getLabelArchitecture(const ExportRunConfiguration& inRunConfig) const
 {
 	std::string arch = inRunConfig.arch;
 	String::replaceAll(arch, "x86_64", "x64");
@@ -153,7 +153,7 @@ std::string ExportAdapter::getRunConfigExec() const
 }
 
 /*****************************************************************************/
-StringList ExportAdapter::getRunConfigArguments(const RunConfiguration& inRunConfig, std::string cmd, const bool inWithRun) const
+StringList ExportAdapter::getRunConfigArguments(const ExportRunConfiguration& inRunConfig, std::string cmd, const bool inWithRun) const
 {
 	bool isAll = String::equals(m_allBuildName, inRunConfig.name);
 	auto required = isAll ? "--no-only-required" : "--only-required";
@@ -181,9 +181,9 @@ StringList ExportAdapter::getRunConfigArguments(const RunConfiguration& inRunCon
 }
 
 /*****************************************************************************/
-RunConfigurationList ExportAdapter::getBasicRunConfigs() const
+ExportRunConfigurationList ExportAdapter::getBasicRunConfigs() const
 {
-	RunConfigurationList runConfigs;
+	ExportRunConfigurationList runConfigs;
 
 	for (auto& state : m_states)
 	{
@@ -200,7 +200,7 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 					if (!project.isExecutable())
 						continue;
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
@@ -213,7 +213,7 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 					if (project.runExecutable().empty())
 						continue;
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
@@ -226,7 +226,7 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 					if (project.runExecutable().empty())
 						continue;
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
@@ -236,7 +236,7 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 			}
 
 			{
-				RunConfiguration runConfig;
+				ExportRunConfiguration runConfig;
 				runConfig.name = m_allBuildName;
 				runConfig.config = config;
 				runConfig.arch = arch;
@@ -249,9 +249,9 @@ RunConfigurationList ExportAdapter::getBasicRunConfigs() const
 }
 
 /*****************************************************************************/
-RunConfigurationList ExportAdapter::getFullRunConfigs() const
+ExportRunConfigurationList ExportAdapter::getFullRunConfigs() const
 {
-	RunConfigurationList runConfigs;
+	ExportRunConfigurationList runConfigs;
 
 	for (auto& state : m_states)
 	{
@@ -299,7 +299,7 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					auto outputFile = state->paths.getTargetFilename(project);
 					String::replaceAll(outputFile, thisBuildDir, buildDir);
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
@@ -336,11 +336,10 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					auto outputFile = state->paths.getTargetFilename(project);
 					String::replaceAll(outputFile, thisBuildDir, buildDir);
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
-
 					runConfig.outputFile = std::move(outputFile);
 
 					if (runArgumentMap.find(targetName) != runArgumentMap.end())
@@ -366,11 +365,10 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 					auto outputFile = state->paths.getTargetFilename(project);
 					String::replaceAll(outputFile, thisBuildDir, buildDir);
 
-					RunConfiguration runConfig;
+					ExportRunConfiguration runConfig;
 					runConfig.name = targetName;
 					runConfig.config = config;
 					runConfig.arch = arch;
-
 					runConfig.outputFile = std::move(outputFile);
 
 					if (runArgumentMap.find(targetName) != runArgumentMap.end())
@@ -390,7 +388,7 @@ RunConfigurationList ExportAdapter::getFullRunConfigs() const
 			}
 
 			{
-				RunConfiguration runConfig;
+				ExportRunConfiguration runConfig;
 				runConfig.name = m_allBuildName;
 				runConfig.config = config;
 				runConfig.arch = arch;
@@ -435,7 +433,7 @@ BuildState& ExportAdapter::getDebugState() const
 }
 
 /*****************************************************************************/
-BuildState* ExportAdapter::getStateFromRunConfig(const RunConfiguration& inRunConfig) const
+BuildState* ExportAdapter::getStateFromRunConfig(const ExportRunConfiguration& inRunConfig) const
 {
 	// Note: only reference the configuration here
 	for (auto& state : m_states)

@@ -20,10 +20,10 @@ struct VSLaunchGen
 	bool saveToFile(const std::string& inFilename);
 
 private:
-	bool getConfiguration(Json& outConfiguration, const RunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const;
+	bool getConfiguration(Json& outConfiguration, const ExportRunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const;
 	Json getEnvironment(const IBuildTarget& inTarget) const;
 
 	const ExportAdapter& m_exportAdapter;
-	RunConfigurationList m_runConfigs;
+	ExportRunConfigurationList m_runConfigs;
 };
 }

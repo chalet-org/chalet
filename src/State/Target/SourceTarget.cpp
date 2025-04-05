@@ -147,6 +147,112 @@ bool SourceTarget::initialize()
 }
 
 /*****************************************************************************/
+bool SourceTarget::validate()
+{
+	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
+	chalet_assert(m_picType != PositionIndependentCodeType::Auto, "SourceTarget picType was not initialized");
+
+	bool result = true;
+
+	if (m_kind == SourceKind::None)
+	{
+		Diagnostic::error("A valid 'kind' was not found.");
+		result = false;
+	}
+
+	if (m_files.empty())
+	{
+		const auto& targetName = this->name();
+		Diagnostic::error("Either no 'files' were specified, or their resolved path(s) in do not exist. Check to make sure they are correct.", targetName);
+		result = false;
+	}
+
+	if (!m_precompiledHeader.empty())
+	{
+		auto pch = getPrecompiledHeaderResolvedToRoot();
+		if (!Files::pathExists(pch))
+		{
+			Diagnostic::error("Precompiled header '{}' was not found.", pch);
+			result = false;
+		}
+
+		auto rootPath = String::getPathFolder(m_precompiledHeader);
+		if (rootPath.empty() || String::startsWith("..", rootPath))
+		{
+			Diagnostic::error("Precompiled header '{}' must be placed in a child directory (such as 'src').", m_precompiledHeader);
+			result = false;
+		}
+	}
+
+	if (m_configureFiles.size() > 1)
+	{
+		StringList tmpList;
+		for (const auto& configureFile : m_configureFiles)
+		{
+			auto file = String::getPathFilename(configureFile);
+			if (!List::contains(tmpList, file))
+			{
+				tmpList.push_back(std::move(file));
+			}
+			else
+			{
+				Diagnostic::error("Configure files in the same source target must have unique names. Found more than one: {}", file);
+				result = false;
+			}
+		}
+	}
+
+	/*for (auto& option : m_compileOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'compileOptions' (options with '-W')");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'compileOptions' list must begin with '-'");
+			result = false;
+		}
+	}
+
+	for (auto& option : m_linkerOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'linkerOptions' (options with '-W'");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
+			result = false;
+		}
+	}*/
+
+	if (!m_workingDirectory.empty())
+	{
+		m_workingDirectory = Files::getCanonicalPath(m_workingDirectory);
+		if (!Files::pathExists(m_workingDirectory))
+		{
+			const auto& targetName = this->name();
+			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_workingDirectory);
+			result = false;
+		}
+	}
+
+	if (m_invalidWarningPreset)
+	{
+		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
+		result = false;
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 bool SourceTarget::removeExcludedFiles()
 {
 	if (!m_fileExcludes.empty())
@@ -333,111 +439,6 @@ bool SourceTarget::generateUnityBuildFile(std::string& sourceFile) const
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-bool SourceTarget::validate()
-{
-	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
-	chalet_assert(m_picType != PositionIndependentCodeType::Auto, "SourceTarget picType was not initialized");
-
-	bool result = true;
-
-	if (m_kind == SourceKind::None)
-	{
-		Diagnostic::error("A valid 'kind' was not found.");
-		result = false;
-	}
-
-	if (m_files.empty())
-	{
-		const auto& targetName = this->name();
-		Diagnostic::error("Either no 'files' were specified, or their resolved path(s) in do not exist. Check to make sure they are correct.", targetName);
-		result = false;
-	}
-
-	if (!m_precompiledHeader.empty())
-	{
-		auto pch = getPrecompiledHeaderResolvedToRoot();
-		if (!Files::pathExists(pch))
-		{
-			Diagnostic::error("Precompiled header '{}' was not found.", pch);
-			result = false;
-		}
-
-		auto rootPath = String::getPathFolder(m_precompiledHeader);
-		if (rootPath.empty() || String::startsWith("..", rootPath))
-		{
-			Diagnostic::error("Precompiled header '{}' must be placed in a child directory (such as 'src').", m_precompiledHeader);
-			result = false;
-		}
-	}
-
-	if (m_configureFiles.size() > 1)
-	{
-		StringList tmpList;
-		for (const auto& configureFile : m_configureFiles)
-		{
-			auto file = String::getPathFilename(configureFile);
-			if (!List::contains(tmpList, file))
-			{
-				tmpList.push_back(std::move(file));
-			}
-			else
-			{
-				Diagnostic::error("Configure files in the same source target must have unique names. Found more than one: {}", file);
-				result = false;
-			}
-		}
-	}
-
-	/*for (auto& option : m_compileOptions)
-	{
-		if (String::equals(option.substr(0, 2), "-W"))
-		{
-			Diagnostic::error("'warnings' found in 'compileOptions' (options with '-W')");
-			result = false;
-		}
-
-		if (!option.empty() && option.front() != '-')
-		{
-			Diagnostic::error("Contents of 'compileOptions' list must begin with '-'");
-			result = false;
-		}
-	}
-
-	for (auto& option : m_linkerOptions)
-	{
-		if (String::equals(option.substr(0, 2), "-W"))
-		{
-			Diagnostic::error("'warnings' found in 'linkerOptions' (options with '-W'");
-			result = false;
-		}
-
-		if (!option.empty() && option.front() != '-')
-		{
-			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
-			result = false;
-		}
-	}*/
-
-	if (!m_workingDirectory.empty())
-	{
-		if (!Files::pathExists(m_workingDirectory))
-		{
-			const auto& targetName = this->name();
-			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_workingDirectory);
-			result = false;
-		}
-	}
-
-	if (m_invalidWarningPreset)
-	{
-		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
-		result = false;
-	}
-
-	return result;
 }
 
 /*****************************************************************************/

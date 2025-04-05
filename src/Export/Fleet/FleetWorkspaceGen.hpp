@@ -22,10 +22,10 @@ private:
 	bool createRunJsonFile(const std::string& inFilename);
 	bool createSettingsJsonFile(const std::string& inFilename);
 
-	Json makeRunConfiguration(const RunConfiguration& inRunConfig) const;
+	Json makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const;
 
 	const ExportAdapter& m_exportAdapter;
 
-	RunConfigurationList m_runConfigs;
+	ExportRunConfigurationList m_runConfigs;
 };
 }

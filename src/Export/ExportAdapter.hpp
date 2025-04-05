@@ -5,21 +5,11 @@
 
 #pragma once
 
+#include "Export/ExportRunConfiguration.hpp"
+
 namespace chalet
 {
 class BuildState;
-
-struct RunConfiguration
-{
-	std::string name;
-	std::string config;
-	std::string arch;
-	std::string outputFile;
-	StringList args;
-	std::map<std::string, std::string> env;
-};
-
-using RunConfigurationList = std::vector<RunConfiguration>;
 
 struct ExportAdapter
 {
@@ -37,18 +27,18 @@ struct ExportAdapter
 
 	std::string getDefaultTargetName() const;
 	std::string getAllTargetName() const;
-	std::string getRunConfigLabel(const RunConfiguration& inRunConfig) const;
-	std::string getLabelArchitecture(const RunConfiguration& inRunConfig) const;
+	std::string getRunConfigLabel(const ExportRunConfiguration& inRunConfig) const;
+	std::string getLabelArchitecture(const ExportRunConfiguration& inRunConfig) const;
 	std::string getRunConfigExec() const;
-	StringList getRunConfigArguments(const RunConfiguration& inRunConfig, std::string cmd = std::string(), const bool inWithRun = true) const;
+	StringList getRunConfigArguments(const ExportRunConfiguration& inRunConfig, std::string cmd = std::string(), const bool inWithRun = true) const;
 
-	RunConfigurationList getBasicRunConfigs() const;
-	RunConfigurationList getFullRunConfigs() const;
+	ExportRunConfigurationList getBasicRunConfigs() const;
+	ExportRunConfigurationList getFullRunConfigs() const;
 
 	std::string getPathVariableForState(const BuildState& inState) const;
 
 	BuildState& getDebugState() const;
-	BuildState* getStateFromRunConfig(const RunConfiguration& inRunConfig) const;
+	BuildState* getStateFromRunConfig(const ExportRunConfiguration& inRunConfig) const;
 
 private:
 	const std::string& getToolchain() const;

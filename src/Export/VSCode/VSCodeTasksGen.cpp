@@ -41,17 +41,19 @@ bool VSCodeTasksGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-Json VSCodeTasksGen::makeRunConfiguration(const RunConfiguration& inRunConfig) const
+// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
+//
+Json VSCodeTasksGen::makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const
 {
 	Json ret = Json::object();
 	ret["label"] = m_exportAdapter.getRunConfigLabel(inRunConfig);
 	ret["type"] = "process";
-	ret["command"] = m_exportAdapter.getRunConfigExec();
-	ret["args"] = m_exportAdapter.getRunConfigArguments(inRunConfig);
 	ret["group"] = "build";
 	ret["problemMatcher"] = {
 		getProblemMatcher(),
 	};
+	ret["command"] = m_exportAdapter.getRunConfigExec();
+	ret["args"] = m_exportAdapter.getRunConfigArguments(inRunConfig);
 
 	return ret;
 }

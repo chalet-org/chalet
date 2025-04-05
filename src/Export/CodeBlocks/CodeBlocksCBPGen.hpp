@@ -48,7 +48,7 @@ private:
 	void addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
 	void addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
 	void addSourceLinkerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const;
-	void addScriptTarget(XmlElement& outNode, const BuildState& inState, const std::string& inName) const;
+	void addScriptTarget(XmlElement& outNode, const BuildState& inState, const IBuildTarget& inTarget, const std::string& inName) const;
 	void addAllBuildTarget(XmlElement& outNode, const BuildState& inState) const;
 	std::string getOutputType(const SourceTarget& inTarget) const;
 	std::string getResolvedPath(const std::string& inFile) const;
@@ -66,7 +66,6 @@ private:
 	std::map<std::string, std::vector<const IBuildTarget*>> m_configToTargets;
 
 	std::string m_compiler;
-	std::string m_cwd;
 	std::string m_exportPath;
 	std::string m_defaultInputFile;
 	std::string m_yamlInputFile;

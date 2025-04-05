@@ -74,24 +74,8 @@ bool CodeEditProjectExporter::generateProjectFiles()
 		}
 	}
 
-	const auto& cwd = workingDirectory();
-	auto codeEditDirectory = fmt::format("{}/.codeedit", cwd);
-	if (!Files::pathExists(codeEditDirectory) && Files::pathExists(m_directory))
-	{
-		if (!Files::copySilent(m_directory, cwd))
-		{
-			Diagnostic::error("There was a problem copying the .codeedit directory to the workspace.");
-			return false;
-		}
-
-		Files::removeRecursively(m_directory);
-	}
-	else
-	{
-		auto directory = m_directory;
-		String::replaceAll(directory, fmt::format("{}/", cwd), "");
-		Diagnostic::warn("The .codeedit directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
-	}
+	if (!copyExportedDirectoryToRootWithOutput(".codeedit"))
+		return false;
 
 	return true;
 }

@@ -69,7 +69,6 @@ bool CodeBlocksCBPGen::initialize(const std::string& inDirectory)
 
 	m_resourceExtensions = firstState.paths.windowsResourceExtensions();
 	m_resourceExtensions.emplace_back("manifest");
-	m_cwd = Files::getCanonicalPath(firstState.inputs.workingDirectory());
 	m_defaultInputFile = firstState.inputs.defaultInputFile();
 	m_yamlInputFile = firstState.inputs.yamlInputFile();
 
@@ -419,7 +418,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 					}
 					else
 					{
-						addScriptTarget(node, *state, inName);
+						addScriptTarget(node, *state, *target, inName);
 					}
 					found = true;
 					break;
@@ -435,6 +434,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 /*****************************************************************************/
 void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
 {
+	TargetExportAdapter adapter(inState, inTarget);
 	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
 
 	outNode.addElement("Option", [&inState, &inTarget](XmlElement& node2) {
@@ -443,8 +443,8 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 		node2.addAttribute("prefix_auto", "0");
 		node2.addAttribute("extension_auto", "0");
 	});
-	outNode.addElement("Option", [this](XmlElement& node2) {
-		node2.addAttribute("working_dir", m_cwd);
+	outNode.addElement("Option", [&adapter](XmlElement& node2) {
+		node2.addAttribute("working_dir", adapter.getRunWorkingDirectory());
 	});
 
 	outNode.addElement("Option", [this, &inState](XmlElement& node2) {
@@ -589,12 +589,12 @@ void CodeBlocksCBPGen::addSourceLinkerOptions(XmlElement& outNode, const BuildSt
 }
 
 /*****************************************************************************/
-void CodeBlocksCBPGen::addScriptTarget(XmlElement& outNode, const BuildState& inState, const std::string& inName) const
+void CodeBlocksCBPGen::addScriptTarget(XmlElement& outNode, const BuildState& inState, const IBuildTarget& inTarget, const std::string& inName) const
 {
-	UNUSED(inState);
+	TargetExportAdapter adapter(inState, inTarget);
 
-	outNode.addElement("Option", [this](XmlElement& node2) {
-		node2.addAttribute("working_dir", m_cwd);
+	outNode.addElement("Option", [&adapter](XmlElement& node2) {
+		node2.addAttribute("working_dir", adapter.getRunWorkingDirectory());
 	});
 	outNode.addElement("Option", [](XmlElement& node) {
 		node.addAttribute("type", "4");
@@ -628,7 +628,6 @@ void CodeBlocksCBPGen::addScriptTarget(XmlElement& outNode, const BuildState& in
 /*****************************************************************************/
 void CodeBlocksCBPGen::addAllBuildTarget(XmlElement& outNode, const BuildState& inState) const
 {
-	UNUSED(inState);
 
 	// outNode.addElement("Option", [this, &inState](XmlElement& node2) {
 	// 	auto outputFile = fmt::format("{}/{}", m_cwd, inState.paths.objDir());
@@ -636,8 +635,8 @@ void CodeBlocksCBPGen::addAllBuildTarget(XmlElement& outNode, const BuildState& 
 	// 	node2.addAttribute("prefix_auto", "0");
 	// 	node2.addAttribute("extension_auto", "0");
 	// });
-	outNode.addElement("Option", [this](XmlElement& node2) {
-		node2.addAttribute("working_dir", m_cwd);
+	outNode.addElement("Option", [&inState](XmlElement& node2) {
+		node2.addAttribute("working_dir", inState.inputs.workingDirectory());
 	});
 
 	// outNode.addElement("Option", [this, &inState](XmlElement& node2) {

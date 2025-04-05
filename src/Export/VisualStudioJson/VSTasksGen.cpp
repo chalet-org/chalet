@@ -24,6 +24,8 @@ bool VSTasksGen::saveToFile(const std::string& inFilename)
 	auto& tasks = jRoot["tasks"] = Json::array();
 
 	auto makeTask = [this](const char* inLabel, const char* inContextType, const char* inChaletCmd) {
+		// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
+		//
 		Json task = Json::object();
 		task["taskLabel"] = inLabel;
 		task["appliesTo"] = "*";

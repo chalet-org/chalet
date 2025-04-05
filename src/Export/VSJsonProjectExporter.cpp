@@ -9,7 +9,6 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Export/VisualStudioJson/VSCppPropertiesGen.hpp"
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"
-#include "Export/VisualStudioJson/VSProjectSettingsGen.hpp"
 #include "Export/VisualStudioJson/VSTasksGen.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
@@ -85,13 +84,6 @@ bool VSJsonProjectExporter::generateProjectFiles()
 		return false;
 	}
 
-	VSProjectSettingsGen projectSettingsJson(*m_exportAdapter);
-	if (!projectSettingsJson.saveToFile(fmt::format("{}/ProjectSettings.json", m_directory)))
-	{
-		Diagnostic::error("There was a problem saving the ProjectSettings.json file.");
-		return false;
-	}
-
 	auto& debugState = m_exportAdapter->getDebugState();
 	if (debugState.configuration.debugSymbols())
 	{
@@ -103,24 +95,8 @@ bool VSJsonProjectExporter::generateProjectFiles()
 		}
 	}
 
-	const auto& cwd = workingDirectory();
-	auto vsDirectory = fmt::format("{}/.vs", cwd);
-	if (!Files::pathExists(vsDirectory) && Files::pathExists(m_directory))
-	{
-		if (!Files::copySilent(m_directory, cwd))
-		{
-			Diagnostic::error("There was a problem copying the .vs directory to the workspace.");
-			return false;
-		}
-
-		Files::removeRecursively(m_directory);
-	}
-	else
-	{
-		auto directory = m_directory;
-		String::replaceAll(directory, fmt::format("{}/", cwd), "");
-		Diagnostic::warn("The .vs directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
-	}
+	if (!copyExportedDirectoryToRootWithOutput(".vs"))
+		return false;
 
 	return true;
 }
@@ -128,6 +104,7 @@ bool VSJsonProjectExporter::generateProjectFiles()
 /*****************************************************************************/
 bool VSJsonProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
+	const auto& cwd = workingDirectory();
 	std::string devEnvDir;
 	auto visualStudio = Files::which("devenv");
 	if (visualStudio.empty())
@@ -146,7 +123,6 @@ bool VSJsonProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	}
 
 	// auto project = Files::getCanonicalPath(inProject);
-	const auto& cwd = workingDirectory();
 	return Process::runMinimalOutputWithoutWait({ visualStudio, cwd }, devEnvDir);
 
 	// UNUSED(inProject);

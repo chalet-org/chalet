@@ -59,7 +59,9 @@ bool CodeEditWorkspaceGen::createSettingsJsonFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-Json CodeEditWorkspaceGen::makeRunTask(const RunConfiguration& inRunConfig) const
+// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
+//
+Json CodeEditWorkspaceGen::makeRunTask(const ExportRunConfiguration& inRunConfig) const
 {
 	Json ret;
 	ret["name"] = m_exportAdapter.getRunConfigLabel(inRunConfig);
