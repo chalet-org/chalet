@@ -47,16 +47,23 @@ bool ProcessBuildTarget::initialize()
 	if (!replaceVariablesInPathList(m_dependsOn))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_workingDirectory, this))
+		return false;
+
 	return true;
 }
 
 /*****************************************************************************/
 bool ProcessBuildTarget::validate()
 {
+	bool result = true;
 	if (!resolveDependentTargets(m_dependsOn, m_path, "dependsOn"))
-		return false;
+		result = false;
 
-	return true;
+	if (!validateWorkingDirectory(m_workingDirectory))
+		result = false;
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -99,6 +106,16 @@ void ProcessBuildTarget::addArguments(StringList&& inList)
 void ProcessBuildTarget::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ProcessBuildTarget::workingDirectory() const noexcept
+{
+	return m_workingDirectory;
+}
+void ProcessBuildTarget::setWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_workingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -50,6 +50,7 @@ protected:
 	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
 	bool expandGlobPatternsInMap(IncludeMap& outMap, GlobMatch inSettings) const;
 	bool processIncludeExceptions(IncludeMap& outMap) const;
+	bool validateWorkingDirectory(std::string& outPath) const;
 
 	const BuildState& m_state;
 

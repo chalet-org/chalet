@@ -165,6 +165,7 @@ class ChaletJsonSchema
 		TargetProcess,
 		TargetProcessPath,
 		TargetProcessArguments,
+		TargetProcessWorkingDirectory,
 		TargetProcessDependsOn,
 		//
 		TargetValidation,

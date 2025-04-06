@@ -232,16 +232,8 @@ bool SourceTarget::validate()
 		}
 	}*/
 
-	if (!m_runWorkingDirectory.empty())
-	{
-		m_runWorkingDirectory = Files::getCanonicalPath(m_runWorkingDirectory);
-		if (!Files::pathExists(m_runWorkingDirectory))
-		{
-			const auto& targetName = this->name();
-			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_runWorkingDirectory);
-			result = false;
-		}
-	}
+	if (!validateWorkingDirectory(m_runWorkingDirectory))
+		result = false;
 
 	if (m_invalidWarningPreset)
 	{

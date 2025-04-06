@@ -101,15 +101,8 @@ bool MesonTarget::validate()
 		result = false;
 	}
 
-	if (!m_runWorkingDirectory.empty())
-	{
-		m_runWorkingDirectory = Files::getCanonicalPath(m_runWorkingDirectory);
-		if (!Files::pathExists(m_runWorkingDirectory))
-		{
-			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_runWorkingDirectory);
-			result = false;
-		}
-	}
+	if (!validateWorkingDirectory(m_runWorkingDirectory))
+		result = false;
 
 	return result;
 }

@@ -554,7 +554,8 @@ bool AppBundler::runProcessTarget(const ProcessDistTarget& inTarget)
 		cmd.push_back(arg);
 	}
 
-	bool result = runProcess(cmd, inTarget.path());
+	auto cwd = inTarget.workingDirectory();
+	bool result = runProcess(cmd, inTarget.path(), cwd);
 
 	if (!result)
 	{
@@ -585,9 +586,9 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
+bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd)
 {
-	bool result = Process::runWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 

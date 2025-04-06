@@ -611,7 +611,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"minLength": 1
 	})json"_ojson);*/
 	defs[Defs::TargetSourceFiles] = R"json({
-		"description": "Define the source files, relative to the working directory.",
+		"description": "Define the source files, relative to the project root.",
 		"oneOf": [
 			{
 				"type": "string",
@@ -1408,6 +1408,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
+	defs[Defs::TargetProcessWorkingDirectory] = R"json({
+		"type": "string",
+		"description": "The working directory to use when the process runs, relative to the project root.",
+		"minLength": 1
+	})json"_ojson;
+
 	defs[Defs::TargetProcessDependsOn] = makeArrayOrString(R"json({
 		"type": "string",
 		"description": "A build target or file(s) this process depends on in order to run.",
@@ -1757,6 +1763,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		addPropertyAndPattern(distProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
+		addPropertyAndPattern(distProcess, "workingDirectory", Defs::TargetProcessWorkingDirectory, kPatternConditions);
 		addProperty(distProcess, "condition", Defs::DistributionCondition);
 		addPropertyAndPattern(distProcess, "dependsOn", Defs::DistributionProcessDependsOn, kPatternConditions);
 		addKind(distProcess, defs, Defs::DistributionKind, "process");
@@ -1982,7 +1989,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		addKind(defs[Defs::TargetSourceExecutable], defs, Defs::TargetKind, "executable");
 		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
-		addProperty(defs[Defs::TargetSourceExecutable], "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
+		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "runWorkingDirectory", Defs::TargetRunWorkingDirectory, kPatternConditions);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 	}
 
@@ -2016,6 +2023,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		addPropertyAndPattern(targetProcess, "arguments", Defs::TargetProcessArguments, kPatternConditions);
+		addPropertyAndPattern(targetProcess, "workingDirectory", Defs::TargetProcessWorkingDirectory, kPatternConditions);
 		addProperty(targetProcess, "condition", Defs::TargetCondition);
 		addPropertyAndPattern(targetProcess, "dependsOn", Defs::TargetProcessDependsOn, kPatternConditions);
 		addKind(targetProcess, defs, Defs::TargetKind, "process");
@@ -2062,7 +2070,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "clean", Defs::TargetCMakeClean);
 		addPropertyAndPattern(targetCMake, "install", Defs::TargetCMakeInstall, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConditions);
-		addProperty(targetCMake, "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
+		addPropertyAndPattern(targetCMake, "runWorkingDirectory", Defs::TargetRunWorkingDirectory, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "targets", Defs::TargetCMakeTargetNames, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConditions);
 		defs[Defs::TargetCMake] = std::move(targetCMake);
@@ -2090,7 +2098,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetMeson, "clean", Defs::TargetMesonClean);
 		addPropertyAndPattern(targetMeson, "install", Defs::TargetMesonInstall, kPatternConditions);
 		addPropertyAndPattern(targetMeson, "runExecutable", Defs::TargetMesonRunExecutable, kPatternConditions);
-		addProperty(targetMeson, "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
+		addPropertyAndPattern(targetMeson, "runWorkingDirectory", Defs::TargetRunWorkingDirectory, kPatternConditions);
 		addPropertyAndPattern(targetMeson, "targets", Defs::TargetMesonTargetNames, kPatternConditions);
 		defs[Defs::TargetMeson] = std::move(targetMeson);
 	}
@@ -2335,6 +2343,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetProcess: return "target-process";
 		case Defs::TargetProcessPath: return "target-process-path";
 		case Defs::TargetProcessArguments: return "target-process-arguments";
+		case Defs::TargetProcessWorkingDirectory: return "target-process-workingDirectory";
 		case Defs::TargetProcessDependsOn: return "target-process-dependsOn";
 		//
 		case Defs::TargetValidation: return "target-validation";

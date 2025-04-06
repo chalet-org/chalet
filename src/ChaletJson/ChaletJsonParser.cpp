@@ -49,12 +49,12 @@ namespace chalet
 namespace
 {
 /*****************************************************************************/
-constexpr bool isUnread(JsonNodeReadStatus& inStatus)
+constexpr bool isUnread(const JsonNodeReadStatus& inStatus)
 {
 	return inStatus == JsonNodeReadStatus::Unread;
 }
 /*****************************************************************************/
-constexpr bool isInvalid(JsonNodeReadStatus& inStatus)
+constexpr bool isInvalid(const JsonNodeReadStatus& inStatus)
 {
 	return inStatus == JsonNodeReadStatus::Invalid;
 }
@@ -1085,6 +1085,8 @@ bool ChaletJsonParser::parseProcessTarget(ProcessBuildTarget& outTarget, const J
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
+				outTarget.setWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
 				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
@@ -1892,6 +1894,8 @@ bool ChaletJsonParser::parseDistributionProcess(ProcessDistTarget& outTarget, co
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
+				outTarget.setWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
 				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))

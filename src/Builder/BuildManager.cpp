@@ -848,7 +848,7 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	bool result = true;
 	if (inRunCommand || canProcessRun(sourceCache, hash, inTarget.dependsOn()))
 	{
-		std::string cwd;
+		auto cwd = inTarget.workingDirectory();
 		result = runProcess(cmd, path, cwd, inRunCommand);
 		sourceCache.addDataCache(hash, result);
 

@@ -454,6 +454,9 @@
 				"arguments": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
+				"workingDirectory": {
+					"$ref": "#/definitions/target-process-workingDirectory"
+				},
 				"condition": {
 					"$ref": "#/definitions/dist-condition"
 				},
@@ -476,6 +479,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^workingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-workingDirectory"
 				},
 				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/dist-process-dependsOn"
@@ -1126,6 +1132,9 @@
 				"^language\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-language"
 				},
+				"^runWorkingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
+				},
 				"^copyFilesOnRun\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
 				}
@@ -1206,7 +1215,7 @@
 			"default": "*"
 		},
 		"target-source-files": {
-			"description": "Define the source files, relative to the working directory.",
+			"description": "Define the source files, relative to the project root.",
 			"oneOf": [
 				{
 					"type": "string",
@@ -2438,6 +2447,9 @@
 				"arguments": {
 					"$ref": "#/definitions/target-process-arguments"
 				},
+				"workingDirectory": {
+					"$ref": "#/definitions/target-process-workingDirectory"
+				},
 				"condition": {
 					"$ref": "#/definitions/target-condition"
 				},
@@ -2460,6 +2472,9 @@
 			"patternProperties": {
 				"^arguments\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-arguments"
+				},
+				"^workingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-process-workingDirectory"
 				},
 				"^dependsOn\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-process-dependsOn"
@@ -2491,6 +2506,11 @@
 					}
 				}
 			]
+		},
+		"target-process-workingDirectory": {
+			"type": "string",
+			"description": "The working directory to use when the process runs, relative to the project root.",
+			"minLength": 1
 		},
 		"target-process-dependsOn": {
 			"description": "A build target or file(s) this process depends on in order to run.",
@@ -2639,6 +2659,9 @@
 				},
 				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
+				},
+				"^runWorkingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
 				},
 				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-cmake-targets"
@@ -2791,6 +2814,9 @@
 				},
 				"^runExecutable\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-meson-runExecutable"
+				},
+				"^runWorkingDirectory\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
 				},
 				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-meson-targets"

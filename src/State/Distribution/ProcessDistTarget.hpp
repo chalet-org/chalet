@@ -23,13 +23,17 @@ struct ProcessDistTarget final : public IDistTarget
 	void addArguments(StringList&& inList);
 	void addArgument(std::string&& inValue);
 
+	const std::string& workingDirectory() const noexcept;
+	void setWorkingDirectory(std::string&& inValue) noexcept;
+
 	const std::string& dependsOn() const noexcept;
 	void setDependsOn(std::string&& inValue) noexcept;
 
 private:
+	std::string m_workingDirectory;
 	std::string m_path;
-	StringList m_arguments;
 
+	StringList m_arguments;
 	std::string m_dependsOn;
 };
 }

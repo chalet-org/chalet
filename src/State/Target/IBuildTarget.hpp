@@ -52,6 +52,7 @@ protected:
 	bool resolveDependentTargets(StringList& outDepends, std::string& outPath, const char* inKey) const;
 	bool replaceVariablesInPathList(StringList& outList) const;
 	bool expandGlobPatternsInList(StringList& outList, GlobMatch inSettings) const;
+	bool validateWorkingDirectory(std::string& outPath) const;
 
 	const BuildState& m_state;
 

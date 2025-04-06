@@ -204,6 +204,23 @@ bool IBuildTarget::expandGlobPatternsInList(StringList& outList, GlobMatch inSet
 }
 
 /*****************************************************************************/
+bool IBuildTarget::validateWorkingDirectory(std::string& outPath) const
+{
+	if (!outPath.empty())
+	{
+		outPath = Files::getCanonicalPath(outPath);
+		if (!Files::pathExists(outPath))
+		{
+			const auto& targetName = this->name();
+			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, outPath);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 BuildTargetType IBuildTarget::type() const noexcept
 {
 	return m_type;
