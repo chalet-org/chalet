@@ -237,7 +237,7 @@ bool IDistTarget::validateWorkingDirectory(std::string& outPath) const
 		if (!Files::pathExists(outPath))
 		{
 			const auto& targetName = this->name();
-			Diagnostic::error("Working directory used by distribution target '{}' does not exist: {}", targetName, outPath);
+			Diagnostic::error("Working directory requested by distribution target '{}' does not exist: {}", targetName, outPath);
 			return false;
 		}
 	}

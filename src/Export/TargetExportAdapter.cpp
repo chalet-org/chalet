@@ -141,7 +141,7 @@ std::string TargetExportAdapter::getCommand() const
 	auto eol = String::eol();
 
 	// Note: Could be the cwd for script execution, or the project's main cwd
-	const auto& cwd = m_state.inputs.workingDirectory();
+	std::string cwd = m_state.inputs.workingDirectory();
 
 	ScriptType scriptType = ScriptType::None;
 	if (m_target.isScript())
@@ -168,6 +168,10 @@ std::string TargetExportAdapter::getCommand() const
 			cmd.emplace_back(arg);
 		}
 		ret = String::join(cmd);
+
+		auto& customCwd = process.workingDirectory();
+		if (!customCwd.empty())
+			cwd = customCwd;
 
 		if (String::contains("python", process.path()))
 			scriptType = ScriptType::Python;

@@ -120,9 +120,10 @@ bool DependencyManager::runScriptDependency(const ScriptDependency& inDependency
 	}
 
 	const auto& arguments = inDependency.arguments();
+	const auto& cwd = inDependency.workingDirectory();
 	ScriptRunner scriptRunner(m_centralState.inputs(), m_centralState.tools);
 	bool showExitCode = false;
-	if (!scriptRunner.run(inDependency.scriptType(), file, arguments, showExitCode))
+	if (!scriptRunner.run(inDependency.scriptType(), file, arguments, cwd, showExitCode))
 		return false;
 
 	return true;

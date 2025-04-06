@@ -514,12 +514,14 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	displayHeader("Script", inTarget);
 
 	const auto& arguments = inTarget.arguments();
+
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
 
 	if (scriptRunner.shouldRun(m_state.cache.file().sources(), std::string(), StringList{}))
 	{
-		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
+		const auto& cwd = inTarget.workingDirectory();
+		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, cwd, showExitCode))
 		{
 			Diagnostic::printErrors(true);
 			Output::previousLine();

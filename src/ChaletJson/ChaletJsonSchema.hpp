@@ -159,6 +159,7 @@ class ChaletJsonSchema
 		TargetScript,
 		TargetScriptFile,
 		TargetScriptArguments,
+		TargetScriptWorkingDirectory,
 		TargetScriptDependsOn,
 		TargetScriptDependsOnSelf,
 		//

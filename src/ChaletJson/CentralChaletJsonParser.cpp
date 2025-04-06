@@ -490,6 +490,8 @@ bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDepende
 			}
 			else if (String::equals("arguments", key))
 				outDependency.addArgument(value.get<std::string>());
+			else if (String::equals("workingDirectory", key))
+				outDependency.setWorkingDirectory(value.get<std::string>());
 		}
 		else if (value.is_array())
 		{

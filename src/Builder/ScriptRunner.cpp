@@ -26,13 +26,13 @@ ScriptRunner::ScriptRunner(const CommandLineInputs& inInputs, const AncillaryToo
 }
 
 /*****************************************************************************/
-bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const bool inShowExitCode)
+bool ScriptRunner::run(const ScriptType inType, const std::string& inScript, const StringList& inArguments, const std::string& inCwd, const bool inShowExitCode)
 {
 	auto command = getCommand(inType, inScript, inArguments, false);
 	if (command.empty())
 		return false;
 
-	bool result = Process::run(command);
+	bool result = Process::run(command, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 	auto exitCode = SubProcessController::getLastExitCode();
 
 	// std::string script = inScript;

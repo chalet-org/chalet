@@ -65,11 +65,12 @@ bool IBuildTarget::initialize()
 /*****************************************************************************/
 bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& outPath, const char* inKey) const
 {
+	const auto& buildDir = m_state.paths.buildOutputDir();
+
 	bool dependsOnTargets = false;
 	bool dependsOnBuiltFile = false;
 	if (!outDepends.empty())
 	{
-		const auto& buildDir = m_state.paths.buildOutputDir();
 		for (auto it = outDepends.begin(); it != outDepends.end();)
 		{
 			auto& depends = *it;
@@ -80,7 +81,6 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 			}
 
 			bool startsWithBuildDir = String::startsWith(buildDir, depends);
-
 			if (!startsWithBuildDir && depends.find_first_of("/\\") != std::string::npos)
 			{
 				Diagnostic::error("The target '{}' depends on a path that was not found: {}", this->name(), depends);
@@ -146,6 +146,7 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 
 	if (!Files::pathExists(outPath))
 	{
+		bool startsWithBuildDir = String::startsWith(buildDir, outPath);
 		auto resolved = Files::which(outPath);
 		if (resolved.empty())
 		{
@@ -160,7 +161,7 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 #endif
 				outPath = Files::getCanonicalPath(outPath);
 			}
-			else
+			else if (!startsWithBuildDir)
 			{
 				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
 				return false;
@@ -208,11 +209,14 @@ bool IBuildTarget::validateWorkingDirectory(std::string& outPath) const
 {
 	if (!outPath.empty())
 	{
+		const auto& buildDir = m_state.paths.buildOutputDir();
+		bool startsWithBuildDir = String::startsWith(buildDir, outPath);
+
 		outPath = Files::getCanonicalPath(outPath);
-		if (!Files::pathExists(outPath))
+		if (!startsWithBuildDir && !Files::pathExists(outPath))
 		{
 			const auto& targetName = this->name();
-			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, outPath);
+			Diagnostic::error("Working directory requested by target '{}' does not exist: {}", targetName, outPath);
 			return false;
 		}
 	}

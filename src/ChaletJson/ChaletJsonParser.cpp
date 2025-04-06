@@ -896,14 +896,14 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 		if (value.is_string())
 		{
 			std::string val;
-			if (String::equals("location", key))
+			if (valueMatchesSearchKeyPattern(val, value, key, "location", status))
 			{
-				outTarget.setLocation(value.get<std::string>());
+				outTarget.setLocation(std::move(val));
 				valid = true;
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
 				outTarget.setOutputDescription(std::move(val));
-			else if (isUnread(status) && String::equals("buildFile", key))
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildFile", status))
 				outTarget.setBuildFile(value.get<std::string>());
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "toolset", status))
 				outTarget.setToolset(std::move(val));
@@ -960,15 +960,15 @@ bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNo
 		if (value.is_string())
 		{
 			std::string val;
-			if (String::equals("location", key))
+			if (valueMatchesSearchKeyPattern(val, value, key, "location", status))
 			{
-				outTarget.setLocation(value.get<std::string>());
+				outTarget.setLocation(std::move(val));
 				valid = true;
 			}
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
 				outTarget.setOutputDescription(std::move(val));
-			else if (isUnread(status) && String::equals("buildFile", key))
-				outTarget.setBuildFile(value.get<std::string>());
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "buildFile", status))
+				outTarget.setBuildFile(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
 				outTarget.setRunExecutable(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
@@ -1031,6 +1031,8 @@ bool ChaletJsonParser::parseScriptTarget(ScriptBuildTarget& outTarget, const Jso
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
+				outTarget.setWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
 				outTarget.addDependsOn(std::move(val));
 			else if (isInvalid(status))
@@ -1596,8 +1598,9 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 		}
 		else if (value.is_boolean())
 		{
-			if (String::equals("includeDependentSharedLibraries", key))
-				outTarget.setIncludeDependentSharedLibraries(value.get<bool>());
+			bool val = false;
+			if (valueMatchesSearchKeyPattern(val, value, key, "includeDependentSharedLibraries", status))
+				outTarget.setIncludeDependentSharedLibraries(val);
 		}
 		else if (value.is_object())
 		{
@@ -1754,12 +1757,14 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 /*****************************************************************************/
 bool ChaletJsonParser::parseMacosDiskImage(MacosDiskImageTarget& outTarget, const Json& inNode) const
 {
+	JsonNodeReadStatus status = JsonNodeReadStatus::Unread;
 	for (const auto& [key, value] : inNode.items())
 	{
 		if (value.is_string())
 		{
-			if (String::equals("outputDescription", key))
-				outTarget.setOutputDescription(value.get<std::string>());
+			std::string val;
+			if (valueMatchesSearchKeyPattern(val, value, key, "outputDescription", status))
+				outTarget.setOutputDescription(std::move(val));
 			else if (String::equals("background", key))
 				outTarget.setBackground1x(value.get<std::string>());
 		}
@@ -1857,6 +1862,8 @@ bool ChaletJsonParser::parseDistributionScript(ScriptDistTarget& outTarget, cons
 				outTarget.setOutputDescription(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "arguments", status))
 				outTarget.addArgument(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
+				outTarget.setWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "dependsOn", status))
 				outTarget.setDependsOn(std::move(val));
 			else if (isInvalid(status))
