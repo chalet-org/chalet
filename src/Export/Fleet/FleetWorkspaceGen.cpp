@@ -81,7 +81,9 @@ bool FleetWorkspaceGen::createSettingsJsonFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-Json FleetWorkspaceGen::makeRunConfiguration(const RunConfiguration& inRunConfig) const
+// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
+//
+Json FleetWorkspaceGen::makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const
 {
 	Json ret;
 	ret["type"] = "command";

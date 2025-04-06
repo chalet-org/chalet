@@ -228,7 +228,7 @@ bool CLionWorkspaceGen::createExternalToolsFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const RunConfiguration& inRunConfig)
+bool CLionWorkspaceGen::createRunConfigurationFile(const std::string& inPath, const ExportRunConfiguration& inRunConfig)
 {
 	auto targetName = m_exportAdapter.getRunConfigLabel(inRunConfig);
 
@@ -575,21 +575,21 @@ std::string CLionWorkspaceGen::getBoolString(const bool inValue) const
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getNodeIdentifier(const std::string& inName, const RunConfiguration& inRunConfig) const
+std::string CLionWorkspaceGen::getNodeIdentifier(const std::string& inName, const ExportRunConfiguration& inRunConfig) const
 {
 	auto targetName = m_exportAdapter.getRunConfigLabel(inRunConfig);
 	return Uuid::v5(fmt::format("{}_{}", inName, targetName), m_clionNamespaceGuid).str();
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getToolName(const std::string& inLabel, const RunConfiguration& inRunConfig) const
+std::string CLionWorkspaceGen::getToolName(const std::string& inLabel, const ExportRunConfiguration& inRunConfig) const
 {
 	auto target = getTargetFolderName(inRunConfig);
 	return fmt::format("[{}] [{}] {}", inLabel, target, inRunConfig.name);
 }
 
 /*****************************************************************************/
-std::string CLionWorkspaceGen::getTargetFolderName(const RunConfiguration& inRunConfig) const
+std::string CLionWorkspaceGen::getTargetFolderName(const ExportRunConfiguration& inRunConfig) const
 {
 	auto arch = m_exportAdapter.getLabelArchitecture(inRunConfig);
 	return fmt::format("{} {}", arch, inRunConfig.config);

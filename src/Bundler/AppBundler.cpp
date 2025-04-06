@@ -514,12 +514,14 @@ bool AppBundler::runScriptTarget(const ScriptDistTarget& inTarget)
 	displayHeader("Script", inTarget);
 
 	const auto& arguments = inTarget.arguments();
+
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	bool showExitCode = false;
 
 	if (scriptRunner.shouldRun(m_state.cache.file().sources(), std::string(), StringList{}))
 	{
-		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, showExitCode))
+		const auto& cwd = inTarget.workingDirectory();
+		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, cwd, showExitCode))
 		{
 			Diagnostic::printErrors(true);
 			Output::previousLine();
@@ -554,7 +556,8 @@ bool AppBundler::runProcessTarget(const ProcessDistTarget& inTarget)
 		cmd.push_back(arg);
 	}
 
-	bool result = runProcess(cmd, inTarget.path());
+	auto cwd = inTarget.workingDirectory();
+	bool result = runProcess(cmd, inTarget.path(), cwd);
 
 	if (!result)
 	{
@@ -585,9 +588,9 @@ bool AppBundler::runValidationTarget(const ValidationDistTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile)
+bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd)
 {
-	bool result = Process::runWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 
 	m_state.inputs.clearWorkingDirectory(outputFile);
 

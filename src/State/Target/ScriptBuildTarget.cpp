@@ -49,6 +49,9 @@ bool ScriptBuildTarget::initialize()
 	if (!replaceVariablesInPathList(m_dependsOn))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_workingDirectory, this))
+		return false;
+
 	if (m_dependsOnSelf && !m_file.empty())
 		m_dependsOn.push_back(m_file);
 
@@ -65,10 +68,14 @@ bool ScriptBuildTarget::validate()
 	m_file = std::move(pathResult.file);
 	m_scriptType = pathResult.type;
 
-	if (!resolveDependentTargets(m_dependsOn, m_file, "dependsOn"))
-		return false;
+	bool result = true;
+	if (!validateWorkingDirectory(m_workingDirectory))
+		result = false;
 
-	return true;
+	if (!resolveDependentTargets(m_dependsOn, m_file, "dependsOn"))
+		result = false;
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -77,7 +84,6 @@ const std::string& ScriptBuildTarget::getHash() const
 	if (m_hash.empty())
 	{
 		auto args = String::join(m_arguments);
-
 		auto hashable = Hash::getHashableString(this->name(), m_file, args);
 
 		m_hash = Hash::string(hashable);
@@ -122,6 +128,16 @@ void ScriptBuildTarget::addArguments(StringList&& inList)
 void ScriptBuildTarget::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ScriptBuildTarget::workingDirectory() const noexcept
+{
+	return m_workingDirectory;
+}
+void ScriptBuildTarget::setWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_workingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

@@ -96,6 +96,7 @@ class ChaletJsonSchema
 		TargetKind,
 		TargetCondition,
 		TargetDefaultRunArguments,
+		TargetRunWorkingDirectory,
 		//
 		TargetAbstract,
 		TargetSourceExecutable,
@@ -158,12 +159,14 @@ class ChaletJsonSchema
 		TargetScript,
 		TargetScriptFile,
 		TargetScriptArguments,
+		TargetScriptWorkingDirectory,
 		TargetScriptDependsOn,
 		TargetScriptDependsOnSelf,
 		//
 		TargetProcess,
 		TargetProcessPath,
 		TargetProcessArguments,
+		TargetProcessWorkingDirectory,
 		TargetProcessDependsOn,
 		//
 		TargetValidation,

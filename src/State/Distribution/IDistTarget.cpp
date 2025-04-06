@@ -229,6 +229,23 @@ bool IDistTarget::processIncludeExceptions(IncludeMap& outMap) const
 }
 
 /*****************************************************************************/
+bool IDistTarget::validateWorkingDirectory(std::string& outPath) const
+{
+	if (!outPath.empty())
+	{
+		outPath = Files::getCanonicalPath(outPath);
+		if (!Files::pathExists(outPath))
+		{
+			const auto& targetName = this->name();
+			Diagnostic::error("Working directory requested by distribution target '{}' does not exist: {}", targetName, outPath);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
 const std::string& IDistTarget::name() const noexcept
 {
 	return m_name;

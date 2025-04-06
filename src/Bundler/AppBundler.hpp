@@ -41,7 +41,7 @@ private:
 	bool runProcessTarget(const ProcessDistTarget& inTarget);
 	bool runValidationTarget(const ValidationDistTarget& inTarget);
 
-	bool runProcess(const StringList& inCmd, std::string outputFile);
+	bool runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd);
 
 	void displayHeader(const char* inLabel, const IDistTarget& inTarget, const std::string& inName = std::string()) const;
 	bool removeOldFiles(IAppBundler& inBundler);

@@ -107,24 +107,8 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		}
 	}
 
-	const auto& cwd = workingDirectory();
-	auto vscodeDirectory = fmt::format("{}/.vscode", cwd);
-	if (!Files::pathExists(vscodeDirectory) && Files::pathExists(m_directory))
-	{
-		if (!Files::copySilent(m_directory, cwd))
-		{
-			Diagnostic::error("There was a problem copying the .vscode directory to the workspace.");
-			return false;
-		}
-
-		Files::removeRecursively(m_directory);
-	}
-	else
-	{
-		auto directory = m_directory;
-		String::replaceAll(directory, fmt::format("{}/", cwd), "");
-		Diagnostic::warn("The .vscode directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
-	}
+	if (!copyExportedDirectoryToRootWithOutput(".vscode"))
+		return false;
 
 	return true;
 }
@@ -133,8 +117,8 @@ bool VSCodeProjectExporter::generateProjectFiles()
 bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
 	UNUSED(inProject);
-	const auto& cwd = workingDirectory();
 
+	const auto& cwd = workingDirectory();
 	auto codeShell = m_vscodium ? "codium" : "code";
 
 	// auto project = Files::getCanonicalPath(inProject);

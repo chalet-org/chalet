@@ -21,10 +21,10 @@ struct CodeEditWorkspaceGen
 private:
 	bool createSettingsJsonFile(const std::string& inFilename);
 
-	Json makeRunTask(const RunConfiguration& inRunConfig) const;
+	Json makeRunTask(const ExportRunConfiguration& inRunConfig) const;
 
 	const ExportAdapter& m_exportAdapter;
 
-	RunConfigurationList m_runConfigs;
+	ExportRunConfigurationList m_runConfigs;
 };
 }

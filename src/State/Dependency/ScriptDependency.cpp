@@ -33,6 +33,9 @@ bool ScriptDependency::initialize()
 	if (!replaceVariablesInPathList(m_arguments))
 		return false;
 
+	if (!m_centralState.replaceVariablesInString(m_workingDirectory, this))
+		return false;
+
 	return true;
 }
 
@@ -52,6 +55,16 @@ bool ScriptDependency::validate()
 	{
 		Diagnostic::error("File for the script target '{}' doesn't exist: {}", targetName, m_file);
 		return false;
+	}
+
+	if (!m_workingDirectory.empty())
+	{
+		m_workingDirectory = Files::getCanonicalPath(m_workingDirectory);
+		if (!Files::pathExists(m_workingDirectory))
+		{
+			Diagnostic::error("Working directory requested by external dependency '{}' does not exist: {}", targetName, m_workingDirectory);
+			return false;
+		}
 	}
 
 	return true;
@@ -106,6 +119,16 @@ void ScriptDependency::addArguments(StringList&& inList)
 void ScriptDependency::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ScriptDependency::workingDirectory() const noexcept
+{
+	return m_workingDirectory;
+}
+void ScriptDependency::setWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_workingDirectory = std::move(inValue);
 }
 
 }

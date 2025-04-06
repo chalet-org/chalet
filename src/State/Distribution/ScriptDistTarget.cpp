@@ -32,6 +32,9 @@ bool ScriptDistTarget::initialize()
 	if (!replaceVariablesInPathList(m_arguments))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_workingDirectory, this))
+		return false;
+
 	return true;
 }
 
@@ -45,10 +48,14 @@ bool ScriptDistTarget::validate()
 	m_file = std::move(pathResult.file);
 	m_scriptType = pathResult.type;
 
-	if (!resolveDependentTargets(m_dependsOn, m_file, "dependsOn"))
-		return false;
+	bool result = true;
+	if (!validateWorkingDirectory(m_workingDirectory))
+		result = false;
 
-	return true;
+	if (!resolveDependentTargets(m_dependsOn, m_file, "dependsOn"))
+		result = false;
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -87,6 +94,16 @@ void ScriptDistTarget::addArguments(StringList&& inList)
 void ScriptDistTarget::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ScriptDistTarget::workingDirectory() const noexcept
+{
+	return m_workingDirectory;
+}
+void ScriptDistTarget::setWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_workingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

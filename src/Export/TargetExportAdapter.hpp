@@ -19,6 +19,8 @@ struct TargetExportAdapter
 	StringList getFiles() const;
 	StringList getOutputFiles() const;
 	std::string getCommand() const;
+	std::string getRunWorkingDirectory() const;
+	std::string getRunWorkingDirectoryWithCurrentWorkingDirectoryAs(const std::string& inAlias) const;
 
 private:
 	const BuildState& m_state;

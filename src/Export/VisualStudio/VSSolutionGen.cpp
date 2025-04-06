@@ -24,7 +24,7 @@ namespace
 {
 struct VisualStudioConfig
 {
-	RunConfiguration* runConfig = nullptr;
+	ExportRunConfiguration* runConfig = nullptr;
 	std::string arch;
 	std::string vsArch;
 	bool allTarget = false;

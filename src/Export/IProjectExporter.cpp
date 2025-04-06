@@ -108,6 +108,36 @@ const std::string& IProjectExporter::workingDirectory() const noexcept
 {
 	return m_inputs.workingDirectory();
 }
+std::string IProjectExporter::getProjectOutputDirectory(const std::string& inFolder) const
+{
+	chalet_assert(!inFolder.empty(), "Export output folder can't be empty");
+	return fmt::format("{}/{}", workingDirectory(), inFolder);
+}
+
+/*****************************************************************************/
+bool IProjectExporter::copyExportedDirectoryToRootWithOutput(const std::string& inFolder) const
+{
+	const auto& cwd = workingDirectory();
+	auto rootDirectory = getProjectOutputDirectory(inFolder);
+	if (!Files::pathExists(rootDirectory) && Files::pathExists(m_directory))
+	{
+		if (!Files::copySilent(m_directory, cwd))
+		{
+			Diagnostic::error("There was a problem copying the {} directory to the workspace.", inFolder);
+			return false;
+		}
+
+		Files::removeRecursively(m_directory);
+	}
+	else
+	{
+		auto directory = m_directory;
+		String::replaceAll(directory, fmt::format("{}/", cwd), "");
+		Diagnostic::warn("The {} directory already exists in the workspace root. Copy the files from the following directory to update them: {}", inFolder, directory);
+	}
+
+	return true;
+}
 
 /*****************************************************************************/
 bool IProjectExporter::saveSchemasToDirectory(const std::string& inDirectory) const
@@ -145,7 +175,7 @@ bool IProjectExporter::useDirectory(const std::string& inDirectory)
 		}
 	}
 
-	m_directory = fmt::format("{}/{}", workingDirectory(), inDirectory);
+	m_directory = getProjectOutputDirectory(inDirectory);
 
 	// Note: Exported projects should be cleaned if they don't have a build strategy
 	//

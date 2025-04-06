@@ -126,11 +126,6 @@ const std::string& ProjectAdapterVCXProj::getTargetName() const noexcept
 	return m_project.name();
 }
 
-const std::string& ProjectAdapterVCXProj::workingDirectory() const noexcept
-{
-	return m_state.inputs.workingDirectory();
-}
-
 /*****************************************************************************/
 std::string ProjectAdapterVCXProj::getConfigurationType() const
 {
@@ -882,6 +877,17 @@ std::string ProjectAdapterVCXProj::getAdditionalLinkerOptions() const
 }
 
 /*****************************************************************************/
+const std::string& ProjectAdapterVCXProj::getLocalDebuggerWorkingDirectory() const
+{
+	if (m_project.isExecutable())
+	{
+		auto& cwd = m_project.runWorkingDirectory();
+		if (!cwd.empty())
+			return cwd;
+	}
+
+	return m_state.inputs.workingDirectory();
+}
 std::string ProjectAdapterVCXProj::getLocalDebuggerEnvironment() const
 {
 	auto gen = DotEnvFileGenerator::make(m_state);

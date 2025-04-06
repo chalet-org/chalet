@@ -32,7 +32,6 @@ struct ProjectAdapterVCXProj
 	std::string getIntermediateDir() const;
 	std::string getEmbedManifest() const;
 	const std::string& getTargetName() const noexcept;
-	const std::string& workingDirectory() const noexcept;
 
 	// General
 	std::string getConfigurationType() const;
@@ -106,6 +105,7 @@ struct ProjectAdapterVCXProj
 	std::string getProfile() const;
 	std::string getAdditionalLinkerOptions() const;
 
+	const std::string& getLocalDebuggerWorkingDirectory() const;
 	std::string getLocalDebuggerEnvironment() const;
 
 private:

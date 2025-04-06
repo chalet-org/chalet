@@ -257,15 +257,15 @@ bool BuildManager::run(const CommandRoute& inRoute, const bool inShowSuccess)
 		bool result = false;
 		if (target->isSubChalet())
 		{
-			result = runSubChaletTarget(static_cast<const SubChaletTarget&>(*target));
+			result = buildSubChaletTarget(static_cast<const SubChaletTarget&>(*target));
 		}
 		else if (target->isCMake())
 		{
-			result = runCMakeTarget(static_cast<const CMakeTarget&>(*target));
+			result = buildCMakeTarget(static_cast<const CMakeTarget&>(*target));
 		}
 		else if (target->isMeson())
 		{
-			result = runMesonTarget(static_cast<const MesonTarget&>(*target));
+			result = buildMesonTarget(static_cast<const MesonTarget&>(*target));
 		}
 		else if (target->isScript())
 		{
@@ -795,7 +795,8 @@ bool BuildManager::runScriptTarget(const ScriptBuildTarget& inTarget, const bool
 	ScriptRunner scriptRunner(m_state.inputs, m_state.tools);
 	if (inRunCommand || scriptRunner.shouldRun(sourceCache, hash, dependsOn))
 	{
-		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, inRunCommand))
+		const auto& cwd = inTarget.workingDirectory();
+		if (!scriptRunner.run(inTarget.scriptType(), file, arguments, cwd, inRunCommand))
 		{
 			if (!inRunCommand)
 				Output::previousLine();
@@ -848,7 +849,8 @@ bool BuildManager::runProcessTarget(const ProcessBuildTarget& inTarget, const bo
 	bool result = true;
 	if (inRunCommand || canProcessRun(sourceCache, hash, inTarget.dependsOn()))
 	{
-		result = runProcess(cmd, path, inRunCommand);
+		auto cwd = inTarget.workingDirectory();
+		result = runProcess(cmd, path, cwd, inRunCommand);
 		sourceCache.addDataCache(hash, result);
 
 		if (!inRunCommand && result)
@@ -1022,20 +1024,24 @@ bool BuildManager::cmdRebuild(const SourceTarget& inProject)
 bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 {
 	std::string outputFile;
+	std::string cwd;
 	if (inTarget.isSources())
 	{
 		auto& project = static_cast<const SourceTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.runWorkingDirectory();
 	}
 	else if (inTarget.isCMake())
 	{
 		auto& project = static_cast<const CMakeTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.runWorkingDirectory();
 	}
 	else if (inTarget.isMeson())
 	{
 		auto& project = static_cast<const MesonTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.runWorkingDirectory();
 	}
 
 	if (Files::pathIsDirectory(outputFile))
@@ -1147,7 +1153,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	}
 	else
 	{
-		return runProcess(cmd, outputFile, true);
+		return runProcess(cmd, outputFile, cwd, true);
 	}
 }
 
@@ -1168,7 +1174,7 @@ bool BuildManager::canProcessRun(SourceCache& inSourceCache, const std::string& 
 }
 
 /*****************************************************************************/
-bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand)
+bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd, const bool inRunCommand)
 {
 	if (inRunCommand)
 	{
@@ -1191,7 +1197,8 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	WindowsTerminal::cleanup();
 #endif
 
-	bool result = Process::runWithInput(inCmd);
+	// bool result = Process::runWithInput(inCmd);
+	bool result = Process::runWithInput(inCmd, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 
 #if defined(CHALET_WIN32)
 	WindowsTerminal::initialize();
@@ -1264,7 +1271,7 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 }
 
 /*****************************************************************************/
-bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
+bool BuildManager::buildSubChaletTarget(const SubChaletTarget& inTarget)
 {
 	displayHeader("Chalet", inTarget, Output::theme().header);
 
@@ -1276,7 +1283,7 @@ bool BuildManager::runSubChaletTarget(const SubChaletTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
+bool BuildManager::buildCMakeTarget(const CMakeTarget& inTarget)
 {
 	displayHeader("CMake", inTarget, Output::theme().header);
 
@@ -1288,7 +1295,7 @@ bool BuildManager::runCMakeTarget(const CMakeTarget& inTarget)
 }
 
 /*****************************************************************************/
-bool BuildManager::runMesonTarget(const MesonTarget& inTarget)
+bool BuildManager::buildMesonTarget(const MesonTarget& inTarget)
 {
 	displayHeader("Meson", inTarget, Output::theme().header);
 

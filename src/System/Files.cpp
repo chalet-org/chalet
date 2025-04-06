@@ -824,6 +824,9 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 		return isRegularFile || isDirectory;
 	};
 
+	if (pattern.back() != '$')
+		pattern.push_back('$');
+
 	constexpr auto reOptions = std::regex_constants::match_default;
 	std::regex re(pattern);
 

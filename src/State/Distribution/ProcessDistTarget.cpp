@@ -32,16 +32,23 @@ bool ProcessDistTarget::initialize()
 	if (!replaceVariablesInPathList(m_arguments))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_workingDirectory, this))
+		return false;
+
 	return true;
 }
 
 /*****************************************************************************/
 bool ProcessDistTarget::validate()
 {
+	bool result = true;
 	if (!resolveDependentTargets(m_dependsOn, m_path, "dependsOn"))
-		return false;
+		result = false;
 
-	return true;
+	if (!validateWorkingDirectory(m_workingDirectory))
+		result = false;
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -69,6 +76,16 @@ void ProcessDistTarget::addArguments(StringList&& inList)
 void ProcessDistTarget::addArgument(std::string&& inValue)
 {
 	m_arguments.emplace_back(std::move(inValue));
+}
+
+/*****************************************************************************/
+const std::string& ProcessDistTarget::workingDirectory() const noexcept
+{
+	return m_workingDirectory;
+}
+void ProcessDistTarget::setWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_workingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

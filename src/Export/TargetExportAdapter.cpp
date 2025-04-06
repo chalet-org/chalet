@@ -18,6 +18,7 @@
 #include "State/Target/MesonTarget.hpp"
 #include "State/Target/ProcessBuildTarget.hpp"
 #include "State/Target/ScriptBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "State/Target/SubChaletTarget.hpp"
 #include "State/Target/ValidationBuildTarget.hpp"
 #include "State/WorkspaceEnvironment.hpp"
@@ -114,10 +115,7 @@ StringList TargetExportAdapter::getOutputFiles() const
 {
 	StringList ret;
 
-	if (m_target.isScript())
-	{
-	}
-	else if (m_target.isCMake())
+	if (m_target.isCMake())
 	{
 		const auto& project = static_cast<const CMakeTarget&>(m_target);
 		CmakeBuilder builder(m_state, project, kQuotedPaths);
@@ -131,12 +129,6 @@ StringList TargetExportAdapter::getOutputFiles() const
 
 		ret.emplace_back(Files::getCanonicalPath(builder.getCacheFile()));
 	}
-	else if (m_target.isSubChalet())
-	{
-	}
-	else if (m_target.isValidation())
-	{
-	}
 
 	return ret;
 }
@@ -148,7 +140,9 @@ std::string TargetExportAdapter::getCommand() const
 
 	auto eol = String::eol();
 
-	const auto& cwd = m_state.inputs.workingDirectory();
+	// Note: Could be the cwd for script execution, or the project's main cwd
+	std::string cwd = m_state.inputs.workingDirectory();
+
 	ScriptType scriptType = ScriptType::None;
 	if (m_target.isScript())
 	{
@@ -174,6 +168,10 @@ std::string TargetExportAdapter::getCommand() const
 			cmd.emplace_back(arg);
 		}
 		ret = String::join(cmd);
+
+		auto& customCwd = process.workingDirectory();
+		if (!customCwd.empty())
+			cwd = customCwd;
 
 		if (String::contains("python", process.path()))
 			scriptType = ScriptType::Python;
@@ -286,5 +284,45 @@ std::string TargetExportAdapter::getCommand() const
 	}
 
 	return ret;
+}
+
+/*****************************************************************************/
+std::string TargetExportAdapter::getRunWorkingDirectory() const
+{
+	if (m_target.isSources())
+	{
+		const auto& project = static_cast<const SourceTarget&>(m_target);
+		if (project.isExecutable())
+		{
+			auto& cwd = project.runWorkingDirectory();
+			if (!cwd.empty())
+				return cwd;
+		}
+	}
+	else if (m_target.isCMake())
+	{
+		const auto& project = static_cast<const CMakeTarget&>(m_target);
+		auto& cwd = project.runWorkingDirectory();
+		if (!cwd.empty())
+			return cwd;
+	}
+	else if (m_target.isMeson())
+	{
+		const auto& project = static_cast<const MesonTarget&>(m_target);
+		auto& cwd = project.runWorkingDirectory();
+		if (!cwd.empty())
+			return cwd;
+	}
+
+	return m_state.inputs.workingDirectory();
+}
+
+/*****************************************************************************/
+std::string TargetExportAdapter::getRunWorkingDirectoryWithCurrentWorkingDirectoryAs(const std::string& inAlias) const
+{
+	const auto& cwd = m_state.inputs.workingDirectory();
+	auto path = getRunWorkingDirectory();
+	String::replaceAll(path, cwd, inAlias);
+	return path;
 }
 }

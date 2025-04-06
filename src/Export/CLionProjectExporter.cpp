@@ -69,24 +69,8 @@ bool CLionProjectExporter::generateProjectFiles()
 		}
 	}
 
-	const auto& cwd = workingDirectory();
-	auto ideaDirectory = fmt::format("{}/.idea", cwd);
-	if (!Files::pathExists(ideaDirectory) && Files::pathExists(m_directory))
-	{
-		if (!Files::copySilent(m_directory, cwd))
-		{
-			Diagnostic::error("There was a problem copying the .idea directory to the workspace.");
-			return false;
-		}
-
-		Files::removeRecursively(m_directory);
-	}
-	else
-	{
-		auto directory = m_directory;
-		String::replaceAll(directory, fmt::format("{}/", cwd), "");
-		Diagnostic::warn("The .idea directory already exists in the workspace root. Copy the files from the following directory to update them: {}", directory);
-	}
+	if (!copyExportedDirectoryToRootWithOutput(".idea"))
+		return false;
 
 	return true;
 }
@@ -95,7 +79,6 @@ bool CLionProjectExporter::generateProjectFiles()
 bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject)
 {
 	UNUSED(inProject);
-	const auto& cwd = workingDirectory();
 
 	// auto project = Files::getCanonicalPath(inProject);
 	auto clion = Files::which("clion");
@@ -149,7 +132,7 @@ bool CLionProjectExporter::openProjectFilesInEditor(const std::string& inProject
 #endif
 
 	if (!clion.empty())
-		return Process::runMinimalOutputWithoutWait({ clion, cwd });
+		return Process::runMinimalOutputWithoutWait({ clion, workingDirectory() });
 	else
 		return false;
 }

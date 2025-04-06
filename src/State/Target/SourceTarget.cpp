@@ -115,6 +115,9 @@ bool SourceTarget::initialize()
 	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_runWorkingDirectory, this))
+		return false;
+
 	if (!removeExcludedFiles())
 		return false;
 
@@ -141,6 +144,104 @@ bool SourceTarget::initialize()
 	}
 
 	return true;
+}
+
+/*****************************************************************************/
+bool SourceTarget::validate()
+{
+	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
+	chalet_assert(m_picType != PositionIndependentCodeType::Auto, "SourceTarget picType was not initialized");
+
+	bool result = true;
+
+	if (m_kind == SourceKind::None)
+	{
+		Diagnostic::error("A valid 'kind' was not found.");
+		result = false;
+	}
+
+	if (m_files.empty())
+	{
+		const auto& targetName = this->name();
+		Diagnostic::error("Either no 'files' were specified, or their resolved path(s) in do not exist. Check to make sure they are correct.", targetName);
+		result = false;
+	}
+
+	if (!m_precompiledHeader.empty())
+	{
+		auto pch = getPrecompiledHeaderResolvedToRoot();
+		if (!Files::pathExists(pch))
+		{
+			Diagnostic::error("Precompiled header '{}' was not found.", pch);
+			result = false;
+		}
+
+		auto rootPath = String::getPathFolder(m_precompiledHeader);
+		if (rootPath.empty() || String::startsWith("..", rootPath))
+		{
+			Diagnostic::error("Precompiled header '{}' must be placed in a child directory (such as 'src').", m_precompiledHeader);
+			result = false;
+		}
+	}
+
+	if (m_configureFiles.size() > 1)
+	{
+		StringList tmpList;
+		for (const auto& configureFile : m_configureFiles)
+		{
+			auto file = String::getPathFilename(configureFile);
+			if (!List::contains(tmpList, file))
+			{
+				tmpList.push_back(std::move(file));
+			}
+			else
+			{
+				Diagnostic::error("Configure files in the same source target must have unique names. Found more than one: {}", file);
+				result = false;
+			}
+		}
+	}
+
+	/*for (auto& option : m_compileOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'compileOptions' (options with '-W')");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'compileOptions' list must begin with '-'");
+			result = false;
+		}
+	}
+
+	for (auto& option : m_linkerOptions)
+	{
+		if (String::equals(option.substr(0, 2), "-W"))
+		{
+			Diagnostic::error("'warnings' found in 'linkerOptions' (options with '-W'");
+			result = false;
+		}
+
+		if (!option.empty() && option.front() != '-')
+		{
+			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
+			result = false;
+		}
+	}*/
+
+	if (!validateWorkingDirectory(m_runWorkingDirectory))
+		result = false;
+
+	if (m_invalidWarningPreset)
+	{
+		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
+		result = false;
+	}
+
+	return result;
 }
 
 /*****************************************************************************/
@@ -330,101 +431,6 @@ bool SourceTarget::generateUnityBuildFile(std::string& sourceFile) const
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-bool SourceTarget::validate()
-{
-	chalet_assert(m_kind != SourceKind::None, "SourceTarget msut be executable, sharedLibrary or staticLibrary");
-	chalet_assert(m_picType != PositionIndependentCodeType::Auto, "SourceTarget picType was not initialized");
-
-	bool result = true;
-
-	if (m_kind == SourceKind::None)
-	{
-		Diagnostic::error("A valid 'kind' was not found.");
-		result = false;
-	}
-
-	if (m_files.empty())
-	{
-		const auto& targetName = this->name();
-		Diagnostic::error("Either no 'files' were specified, or their resolved path(s) in do not exist. Check to make sure they are correct.", targetName);
-		result = false;
-	}
-
-	if (!m_precompiledHeader.empty())
-	{
-		auto pch = getPrecompiledHeaderResolvedToRoot();
-		if (!Files::pathExists(pch))
-		{
-			Diagnostic::error("Precompiled header '{}' was not found.", pch);
-			result = false;
-		}
-
-		auto rootPath = String::getPathFolder(m_precompiledHeader);
-		if (rootPath.empty() || String::startsWith("..", rootPath))
-		{
-			Diagnostic::error("Precompiled header '{}' must be placed in a child directory (such as 'src').", m_precompiledHeader);
-			result = false;
-		}
-	}
-
-	if (m_configureFiles.size() > 1)
-	{
-		StringList tmpList;
-		for (const auto& configureFile : m_configureFiles)
-		{
-			auto file = String::getPathFilename(configureFile);
-			if (!List::contains(tmpList, file))
-			{
-				tmpList.push_back(std::move(file));
-			}
-			else
-			{
-				Diagnostic::error("Configure files in the same source target must have unique names. Found more than one: {}", file);
-				result = false;
-			}
-		}
-	}
-
-	/*for (auto& option : m_compileOptions)
-	{
-		if (String::equals(option.substr(0, 2), "-W"))
-		{
-			Diagnostic::error("'warnings' found in 'compileOptions' (options with '-W')");
-			result = false;
-		}
-
-		if (!option.empty() && option.front() != '-')
-		{
-			Diagnostic::error("Contents of 'compileOptions' list must begin with '-'");
-			result = false;
-		}
-	}
-
-	for (auto& option : m_linkerOptions)
-	{
-		if (String::equals(option.substr(0, 2), "-W"))
-		{
-			Diagnostic::error("'warnings' found in 'linkerOptions' (options with '-W'");
-			result = false;
-		}
-
-		if (!option.empty() && option.front() != '-')
-		{
-			Diagnostic::error("Contents of 'linkerOptions' list must begin with '-'");
-			result = false;
-		}
-	}*/
-
-	if (m_invalidWarningPreset)
-	{
-		Diagnostic::error("Unrecognized or invalid preset for 'warnings': {}", m_warningsPresetString);
-		result = false;
-	}
-
-	return result;
 }
 
 /*****************************************************************************/
@@ -1000,6 +1006,16 @@ const std::string& SourceTarget::buildSuffix() const noexcept
 void SourceTarget::setBuildSuffix(std::string&& inValue) noexcept
 {
 	m_buildSuffix = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SourceTarget::runWorkingDirectory() const noexcept
+{
+	return m_runWorkingDirectory;
+}
+void SourceTarget::setRunWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_runWorkingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

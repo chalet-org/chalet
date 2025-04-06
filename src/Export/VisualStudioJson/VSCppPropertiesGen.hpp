@@ -30,6 +30,6 @@ private:
 	const SourceTarget* getSignificantTarget(const BuildState& inState) const;
 
 	const ExportAdapter& m_exportAdapter;
-	RunConfigurationList m_runConfigs;
+	ExportRunConfigurationList m_runConfigs;
 };
 }

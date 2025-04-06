@@ -44,6 +44,7 @@ protected:
 	virtual bool requiresConfigureFiles() const;
 
 	const std::string& workingDirectory() const noexcept;
+	bool copyExportedDirectoryToRootWithOutput(const std::string& inFolder) const;
 
 	bool makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName, bool& added);
 	bool makeExportAdapter();
@@ -66,6 +67,7 @@ protected:
 	Unique<ExportAdapter> m_exportAdapter;
 
 private:
+	std::string getProjectOutputDirectory(const std::string& inFolder) const;
 	bool generateStatesAndValidate(CentralState& inCentralState);
 
 	ExportKind m_kind;

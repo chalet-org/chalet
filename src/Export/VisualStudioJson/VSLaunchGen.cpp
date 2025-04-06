@@ -5,6 +5,7 @@
 
 #include "Export/VisualStudioJson/VSLaunchGen.hpp"
 
+#include "Export/TargetExportAdapter.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/Target/CMakeTarget.hpp"
@@ -77,19 +78,20 @@ bool VSLaunchGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-bool VSLaunchGen::getConfiguration(Json& outConfiguration, const RunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const
+bool VSLaunchGen::getConfiguration(Json& outConfiguration, const ExportRunConfiguration& runConfig, const BuildState& inState, const IBuildTarget& inTarget) const
 {
 	StringList arguments;
 	if (!inState.getRunTargetArguments(arguments, &inTarget))
 		return false;
 
+	TargetExportAdapter adapter(inState, inTarget);
 	outConfiguration = Json::object();
 
 	outConfiguration["name"] = m_exportAdapter.getRunConfigLabel(runConfig);
 	outConfiguration["project"] = Files::getCanonicalPath(runConfig.outputFile);
 	outConfiguration["args"] = arguments;
 
-	outConfiguration["currentDir"] = "${workspaceRoot}";
+	outConfiguration["currentDir"] = adapter.getRunWorkingDirectoryWithCurrentWorkingDirectoryAs("${workspaceRoot}");
 	outConfiguration["debugType"] = "native";
 	outConfiguration["stopOnEntry"] = true;
 

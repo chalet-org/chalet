@@ -68,10 +68,10 @@ private:
 	bool runProfiler(const SourceTarget& inProject, const StringList& inCommand, const std::string& inExecutable);
 	bool runConfigureFileParser(const SourceTarget& inProject, const std::string& outFolder) const;
 	bool canProcessRun(SourceCache& inSourceCache, const std::string& inHash, const StringList& inDepends) const;
-	bool runProcess(const StringList& inCmd, std::string outputFile, const bool inRunCommand);
-	bool runSubChaletTarget(const SubChaletTarget& inTarget);
-	bool runCMakeTarget(const CMakeTarget& inTarget);
-	bool runMesonTarget(const MesonTarget& inTarget);
+	bool runProcess(const StringList& inCmd, std::string outputFile, const std::string& inCwd, const bool inRunCommand);
+	bool buildSubChaletTarget(const SubChaletTarget& inTarget);
+	bool buildCMakeTarget(const CMakeTarget& inTarget);
+	bool buildMesonTarget(const MesonTarget& inTarget);
 	bool runFullBuild();
 
 	void displayHeader(const char* inLabel, const IBuildTarget& inTarget, const Color inColor, const std::string& inName = std::string()) const;

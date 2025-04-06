@@ -599,7 +599,7 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 					// Explicitly add to disable default manifest generation from linker cli
 					node.addElement("GenerateManifest");
 					node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
-					node.addElementWithText("LocalDebuggerWorkingDirectory", vcxprojAdapter.workingDirectory());
+					node.addElementWithText("LocalDebuggerWorkingDirectory", vcxprojAdapter.getLocalDebuggerWorkingDirectory());
 					node.addElementWithTextIfNotEmpty("LocalDebuggerEnvironment", vcxprojAdapter.getLocalDebuggerEnvironment());
 				});
 			}

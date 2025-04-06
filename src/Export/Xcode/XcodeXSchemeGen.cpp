@@ -8,6 +8,7 @@
 #include "Bundler/AppBundlerMacOS.hpp"
 #include "Bundler/BinaryDependency/BinaryDependencyMap.hpp"
 #include "DotEnv/DotEnvFileGenerator.hpp"
+#include "Export/TargetExportAdapter.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -15,6 +16,7 @@
 #include "State/CentralState.hpp"
 #include "State/Distribution/BundleTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
+#include "State/Target/SourceTarget.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
 #include "Utility/Uuid.hpp"
@@ -295,7 +297,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
 			node.addAttribute("launchStyle", "0");
 			node.addAttribute("useCustomWorkingDirectory", getBoolString(true));
-			node.addAttribute("customWorkingDirectory", "$(PROJECT_RUN_PATH)");
+			node.addAttribute("customWorkingDirectory", this->getRunWorkingDirectoryForTargetWithCurrentDirectoryAs(target, "$(PROJECT_RUN_PATH)"));
 			node.addAttribute("ignoresPersistentStateOnLaunch", getBoolString(false));
 			node.addAttribute("debugDocumentVersioning", getBoolString(false));
 			node.addAttribute("debugServiceExtension", "internal");
@@ -392,4 +394,26 @@ std::string XcodeXSchemeGen::getBoolString(const bool inValue) const
 	return inValue ? "YES" : "NO";
 }
 
+/*****************************************************************************/
+std::string XcodeXSchemeGen::getRunWorkingDirectoryForTargetWithCurrentDirectoryAs(const std::string& inTarget, const std::string& inCwdAlias) const
+{
+	for (auto& state : m_states)
+	{
+		if (!String::equals(m_debugConfiguration, state->configuration.name()))
+			continue;
+
+		for (auto& target : state->targets)
+		{
+			if (String::equals(inTarget, target->name()))
+			{
+				TargetExportAdapter adapter(*state, *target);
+				return adapter.getRunWorkingDirectoryWithCurrentWorkingDirectoryAs(inCwdAlias);
+			}
+		}
+
+		break;
+	}
+
+	return inCwdAlias;
+}
 }

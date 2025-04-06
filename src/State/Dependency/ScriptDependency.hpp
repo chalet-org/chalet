@@ -29,7 +29,11 @@ struct ScriptDependency final : public IExternalDependency
 	void addArguments(StringList&& inList);
 	void addArgument(std::string&& inValue);
 
+	const std::string& workingDirectory() const noexcept;
+	void setWorkingDirectory(std::string&& inValue) noexcept;
+
 private:
+	std::string m_workingDirectory;
 	std::string m_file;
 	StringList m_arguments;
 
