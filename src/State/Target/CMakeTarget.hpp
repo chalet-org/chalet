@@ -40,6 +40,9 @@ struct CMakeTarget final : public IBuildTarget
 	const std::string& runExecutable() const noexcept;
 	void setRunExecutable(std::string&& inValue) noexcept;
 
+	const std::string& runWorkingDirectory() const noexcept;
+	void setRunWorkingDirectory(std::string&& inValue) noexcept;
+
 	bool recheck() const noexcept;
 	void setRecheck(const bool inValue) noexcept;
 
@@ -60,6 +63,7 @@ private:
 	std::string m_buildFile;
 	std::string m_toolset;
 	std::string m_runExecutable;
+	std::string m_runWorkingDirectory;
 
 	mutable i32 m_hashChanged = -1;
 

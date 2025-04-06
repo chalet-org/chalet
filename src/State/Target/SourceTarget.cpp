@@ -115,7 +115,7 @@ bool SourceTarget::initialize()
 	if (!replaceVariablesInPathList(m_staticLinks))
 		return false;
 
-	if (!m_state.replaceVariablesInString(m_workingDirectory, this))
+	if (!m_state.replaceVariablesInString(m_runWorkingDirectory, this))
 		return false;
 
 	if (!removeExcludedFiles())
@@ -232,13 +232,13 @@ bool SourceTarget::validate()
 		}
 	}*/
 
-	if (!m_workingDirectory.empty())
+	if (!m_runWorkingDirectory.empty())
 	{
-		m_workingDirectory = Files::getCanonicalPath(m_workingDirectory);
-		if (!Files::pathExists(m_workingDirectory))
+		m_runWorkingDirectory = Files::getCanonicalPath(m_runWorkingDirectory);
+		if (!Files::pathExists(m_runWorkingDirectory))
 		{
 			const auto& targetName = this->name();
-			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_workingDirectory);
+			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_runWorkingDirectory);
 			result = false;
 		}
 	}
@@ -1017,13 +1017,13 @@ void SourceTarget::setBuildSuffix(std::string&& inValue) noexcept
 }
 
 /*****************************************************************************/
-const std::string& SourceTarget::workingDirectory() const noexcept
+const std::string& SourceTarget::runWorkingDirectory() const noexcept
 {
-	return m_workingDirectory;
+	return m_runWorkingDirectory;
 }
-void SourceTarget::setWorkingDirectory(std::string&& inValue) noexcept
+void SourceTarget::setRunWorkingDirectory(std::string&& inValue) noexcept
 {
-	m_workingDirectory = std::move(inValue);
+	m_runWorkingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/

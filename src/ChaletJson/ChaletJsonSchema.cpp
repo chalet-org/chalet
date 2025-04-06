@@ -773,7 +773,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	})json"_ojson,
 		false);
 
-	defs[Defs::TargetSourceWorkingDirectory] = R"json({
+	defs[Defs::TargetRunWorkingDirectory] = R"json({
 		"type": "string",
 		"description": "The working directory to use when the project runs, relative to the project root.",
 		"minLength": 1
@@ -1982,7 +1982,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		defs[Defs::TargetSourceExecutable] = defs[Defs::TargetSourceLibrary];
 		addKind(defs[Defs::TargetSourceExecutable], defs, Defs::TargetKind, "executable");
 		addProperty(defs[Defs::TargetSourceExecutable], "defaultRunArguments", Defs::TargetDefaultRunArguments);
-		addProperty(defs[Defs::TargetSourceExecutable], "workingDirectory", Defs::TargetSourceWorkingDirectory);
+		addProperty(defs[Defs::TargetSourceExecutable], "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
 		addPropertyAndPattern(defs[Defs::TargetSourceExecutable], "copyFilesOnRun", Defs::TargetSourceCopyFilesOnRun, kPatternConditions);
 	}
 
@@ -2062,6 +2062,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetCMake, "clean", Defs::TargetCMakeClean);
 		addPropertyAndPattern(targetCMake, "install", Defs::TargetCMakeInstall, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "runExecutable", Defs::TargetCMakeRunExecutable, kPatternConditions);
+		addProperty(targetCMake, "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
 		addPropertyAndPattern(targetCMake, "targets", Defs::TargetCMakeTargetNames, kPatternConditions);
 		addPropertyAndPattern(targetCMake, "toolset", Defs::TargetCMakeToolset, kPatternConditions);
 		defs[Defs::TargetCMake] = std::move(targetCMake);
@@ -2089,6 +2090,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addProperty(targetMeson, "clean", Defs::TargetMesonClean);
 		addPropertyAndPattern(targetMeson, "install", Defs::TargetMesonInstall, kPatternConditions);
 		addPropertyAndPattern(targetMeson, "runExecutable", Defs::TargetMesonRunExecutable, kPatternConditions);
+		addProperty(targetMeson, "runWorkingDirectory", Defs::TargetRunWorkingDirectory);
 		addPropertyAndPattern(targetMeson, "targets", Defs::TargetMesonTargetNames, kPatternConditions);
 		defs[Defs::TargetMeson] = std::move(targetMeson);
 	}
@@ -2264,13 +2266,13 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetCondition: return "target-condition";
 		case Defs::TargetDefaultRunArguments: return "target-defaultRunArguments";
 		case Defs::TargetSourceCopyFilesOnRun: return "target-copyFilesOnRun";
+		case Defs::TargetRunWorkingDirectory: return "target-runWorkingDirectory";
 		//
 		case Defs::TargetSourceExtends: return "target-source-extends";
 		case Defs::TargetSourceFiles: return "target-source-files";
 		case Defs::TargetSourceImportPackages: return "target-source-importPackages";
 		case Defs::TargetSourceLanguage: return "target-source-language";
 		case Defs::TargetSourceConfigureFiles: return "target-source-configureFiles";
-		case Defs::TargetSourceWorkingDirectory: return "target-source-workingDirectory";
 		//
 		case Defs::TargetAbstract: return "target-abstract";
 		case Defs::TargetSourceExecutable: return "target-source-executable";

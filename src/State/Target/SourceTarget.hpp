@@ -141,8 +141,8 @@ struct SourceTarget final : public IBuildTarget
 	const std::string& buildSuffix() const noexcept;
 	void setBuildSuffix(std::string&& inValue) noexcept;
 
-	const std::string& workingDirectory() const noexcept;
-	void setWorkingDirectory(std::string&& inValue) noexcept;
+	const std::string& runWorkingDirectory() const noexcept;
+	void setRunWorkingDirectory(std::string&& inValue) noexcept;
 
 	//
 	SourceKind kind() const noexcept;
@@ -258,7 +258,7 @@ private:
 	std::string m_windowsApplicationIcon;
 	std::string m_buildSuffix;
 	std::string m_unityBuildContents;
-	std::string m_workingDirectory;
+	std::string m_runWorkingDirectory;
 
 	SourceKind m_kind = SourceKind::None;
 	CodeLanguage m_language = CodeLanguage::None;

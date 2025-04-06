@@ -881,7 +881,7 @@ const std::string& ProjectAdapterVCXProj::getLocalDebuggerWorkingDirectory() con
 {
 	if (m_project.isExecutable())
 	{
-		auto& cwd = m_project.workingDirectory();
+		auto& cwd = m_project.runWorkingDirectory();
 		if (!cwd.empty())
 			return cwd;
 	}

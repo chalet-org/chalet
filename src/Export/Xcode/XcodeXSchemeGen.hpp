@@ -18,6 +18,7 @@ struct XcodeXSchemeGen
 private:
 	std::string getTargetHash(const std::string& inTarget) const;
 	std::string getBoolString(const bool inValue) const;
+	std::string getRunWorkingDirectoryForTargetWithCurrentDirectoryAs(const std::string& inTarget, const std::string& inCwdAlias) const;
 
 	std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_xcodeProj;

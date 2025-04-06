@@ -96,6 +96,7 @@ class ChaletJsonSchema
 		TargetKind,
 		TargetCondition,
 		TargetDefaultRunArguments,
+		TargetRunWorkingDirectory,
 		//
 		TargetAbstract,
 		TargetSourceExecutable,
@@ -106,7 +107,6 @@ class ChaletJsonSchema
 		TargetSourceConfigureFiles,
 		TargetSourceCopyFilesOnRun,
 		TargetSourceImportPackages,
-		TargetSourceWorkingDirectory,
 		//
 		TargetSourceMetadata,
 		TargetSourceMetadataName,

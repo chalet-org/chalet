@@ -778,8 +778,8 @@ bool ChaletJsonParser::parseSourceTarget(SourceTarget& outTarget, const Json& in
 				outTarget.addImportPackage(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "language", status))
 				outTarget.setLanguage(value.get<std::string>());
-			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "workingDirectory", status))
-				outTarget.setWorkingDirectory(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
+				outTarget.setRunWorkingDirectory(std::move(val));
 			else if (isUnread(status) && String::equals("kind", key))
 				outTarget.setKind(value.get<std::string>());
 			else if (isInvalid(status))
@@ -909,6 +909,8 @@ bool ChaletJsonParser::parseCMakeTarget(CMakeTarget& outTarget, const Json& inNo
 				outTarget.setToolset(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
 				outTarget.setRunExecutable(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
+				outTarget.setRunWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))
@@ -969,6 +971,8 @@ bool ChaletJsonParser::parseMesonTarget(MesonTarget& outTarget, const Json& inNo
 				outTarget.setBuildFile(value.get<std::string>());
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runExecutable", status))
 				outTarget.setRunExecutable(std::move(val));
+			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "runWorkingDirectory", status))
+				outTarget.setRunWorkingDirectory(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "defines", status))
 				outTarget.addDefine(std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "targets", status))

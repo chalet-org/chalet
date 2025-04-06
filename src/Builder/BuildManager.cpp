@@ -1028,17 +1028,19 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 	{
 		auto& project = static_cast<const SourceTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
-		cwd = project.workingDirectory();
+		cwd = project.runWorkingDirectory();
 	}
 	else if (inTarget.isCMake())
 	{
 		auto& project = static_cast<const CMakeTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.runWorkingDirectory();
 	}
 	else if (inTarget.isMeson())
 	{
 		auto& project = static_cast<const MesonTarget&>(inTarget);
 		outputFile = m_state.paths.getTargetFilename(project);
+		cwd = project.runWorkingDirectory();
 	}
 
 	if (Files::pathIsDirectory(outputFile))

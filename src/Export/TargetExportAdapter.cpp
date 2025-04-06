@@ -290,10 +290,24 @@ std::string TargetExportAdapter::getRunWorkingDirectory() const
 		const auto& project = static_cast<const SourceTarget&>(m_target);
 		if (project.isExecutable())
 		{
-			auto& cwd = project.workingDirectory();
+			auto& cwd = project.runWorkingDirectory();
 			if (!cwd.empty())
 				return cwd;
 		}
+	}
+	else if (m_target.isCMake())
+	{
+		const auto& project = static_cast<const CMakeTarget&>(m_target);
+		auto& cwd = project.runWorkingDirectory();
+		if (!cwd.empty())
+			return cwd;
+	}
+	else if (m_target.isMeson())
+	{
+		const auto& project = static_cast<const MesonTarget&>(m_target);
+		auto& cwd = project.runWorkingDirectory();
+		if (!cwd.empty())
+			return cwd;
 	}
 
 	return m_state.inputs.workingDirectory();

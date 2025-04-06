@@ -1005,6 +1005,11 @@
 				}
 			]
 		},
+		"target-runWorkingDirectory": {
+			"type": "string",
+			"description": "The working directory to use when the project runs, relative to the project root.",
+			"minLength": 1
+		},
 		"target-abstract": {
 			"type": "object",
 			"additionalProperties": false,
@@ -1104,8 +1109,8 @@
 				"defaultRunArguments": {
 					"$ref": "#/definitions/target-defaultRunArguments"
 				},
-				"workingDirectory": {
-					"$ref": "#/definitions/target-source-workingDirectory"
+				"runWorkingDirectory": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
 				},
 				"copyFilesOnRun": {
 					"$ref": "#/definitions/target-copyFilesOnRun"
@@ -1364,11 +1369,6 @@
 					}
 				}
 			]
-		},
-		"target-source-workingDirectory": {
-			"type": "string",
-			"description": "The working directory to use when the project runs, relative to the project root.",
-			"minLength": 1
 		},
 		"target-source-metadata": {
 			"description": "Metadata to assign to source targets that can be retrieved with the `PROJECT_` prefix within configure files.\n(See: `configureFiles`)",
@@ -2617,6 +2617,9 @@
 				"runExecutable": {
 					"$ref": "#/definitions/target-cmake-runExecutable"
 				},
+				"runWorkingDirectory": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
+				},
 				"targets": {
 					"$ref": "#/definitions/target-cmake-targets"
 				},
@@ -2768,6 +2771,9 @@
 				},
 				"runExecutable": {
 					"$ref": "#/definitions/target-meson-runExecutable"
+				},
+				"runWorkingDirectory": {
+					"$ref": "#/definitions/target-runWorkingDirectory"
 				},
 				"targets": {
 					"$ref": "#/definitions/target-meson-targets"

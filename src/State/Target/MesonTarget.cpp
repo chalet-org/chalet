@@ -49,6 +49,9 @@ bool MesonTarget::initialize()
 	if (!m_state.replaceVariablesInString(m_runExecutable, this))
 		return false;
 
+	if (!m_state.replaceVariablesInString(m_runWorkingDirectory, this))
+		return false;
+
 	m_targetFolder = m_state.paths.getExternalBuildDir(this->name());
 	Path::toUnix(m_targetFolder);
 
@@ -96,6 +99,16 @@ bool MesonTarget::validate()
 	{
 		Diagnostic::error("Meson was required for the project '{}' but was not found.", this->name());
 		result = false;
+	}
+
+	if (!m_runWorkingDirectory.empty())
+	{
+		m_runWorkingDirectory = Files::getCanonicalPath(m_runWorkingDirectory);
+		if (!Files::pathExists(m_runWorkingDirectory))
+		{
+			Diagnostic::error("Working directory used by target '{}' does not exist: {}", targetName, m_runWorkingDirectory);
+			result = false;
+		}
 	}
 
 	return result;
@@ -201,6 +214,16 @@ const std::string& MesonTarget::runExecutable() const noexcept
 void MesonTarget::setRunExecutable(std::string&& inValue) noexcept
 {
 	m_runExecutable = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& MesonTarget::runWorkingDirectory() const noexcept
+{
+	return m_runWorkingDirectory;
+}
+void MesonTarget::setRunWorkingDirectory(std::string&& inValue) noexcept
+{
+	m_runWorkingDirectory = std::move(inValue);
 }
 
 /*****************************************************************************/
