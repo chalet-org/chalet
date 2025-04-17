@@ -66,8 +66,8 @@ bool openWithDefaultApplication(const std::string& inFile);
 bool pathExists(const std::string& inFile);
 bool pathIsEmpty(const std::string& inPath, const std::vector<fs::path>& inExceptions = {});
 
-std::ofstream ofstream(const std::string& inFile, std::ios_base::openmode inMode = 2);
-std::ifstream ifstream(const std::string& inFile, std::ios_base::openmode inMode = 1);
+std::ofstream ofstream(const std::string& inFile, std::ios_base::openmode inMode = std::ios::out);
+std::ifstream ifstream(const std::string& inFile, std::ios_base::openmode inMode = std::ios::in);
 bool createFileWithContents(const std::string& inFile, const std::string& inContents, const bool inUnixEol = false);
 std::string getFileContents(const std::string& inFile);
 
