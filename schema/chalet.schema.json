@@ -742,6 +742,11 @@
 				"textSize": {
 					"$ref": "#/definitions/dist-macos-disk-image-textSize"
 				}
+			},
+			"patternProperties": {
+				"^outputDescription\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-outputDescription"
+				}
 			}
 		},
 		"dist-macos-disk-image-pathbarVisible": {

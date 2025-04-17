@@ -380,13 +380,13 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	Json root = R"json({
 		"info" : { "author" : "xcode", "version" : 1 }
 	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", inOutPath)) << root.dump(1, '\t') << std::endl;
+	std::ofstream(fmt::format("{}/Contents.json", inOutPath)) << json::dump(root, 1, '\t') << std::endl;
 
 	Json accentColorJson = R"json({
 		"colors" : [{ "idiom" : "universal" }],
 		"info" : { "author" : "xcode", "version" : 1 }
 	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << accentColorJson.dump(1, '\t') << std::endl;
+	std::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << json::dump(accentColorJson, 1, '\t') << std::endl;
 
 	Json appIconJson = R"json({
 		"images" : [],
@@ -424,7 +424,7 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	}
 
 	std::ofstream(fmt::format("{}/Contents.json", appIconPath))
-		<< appIconJson.dump(1, '\t') << std::endl;
+		<< json::dump(appIconJson, 1, '\t') << std::endl;
 
 	return true;
 

@@ -370,7 +370,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 		}
 	}
 
-	// LOG(outJson.dump(3, ' '));
+	// LOG(json::dump(outJson, 3, ' '));
 
 	return true;
 }

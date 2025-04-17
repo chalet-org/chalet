@@ -173,7 +173,7 @@ bool ToolchainSettingsJsonParser::serialize(Json& inNode)
 	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference()))
 		return false;
 
-	// LOG(inNode.dump(1, '\t'));
+	// LOG(json::dump(inNode, 1, '\t'));
 
 	if (!parseToolchain(inNode))
 		return false;

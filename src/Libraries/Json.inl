@@ -117,4 +117,12 @@ inline bool json::isStringInvalidOrEmpty(const Json& inNode, const char* inKey)
 
 	return inNode[inKey].get<std::string>().empty();
 }
+
+/*****************************************************************************/
+inline std::string json::dump(const Json& inNode, int indent, char indentChar)
+{
+	constexpr bool ensureAscii = false;
+	constexpr auto errorHandler = nlohmann::detail::error_handler_t::strict;
+	return inNode.dump(indent, indentChar, ensureAscii, errorHandler);
+}
 }

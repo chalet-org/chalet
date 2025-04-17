@@ -174,7 +174,7 @@ bool ProjectInitializer::initializeNormalWorkspace(ChaletJsonProps& outProps)
 		if (outProps.isYaml)
 			return YamlFile::asString(jsonFile);
 		else
-			return jsonFile.dump(3, ' ');
+			return json::dump(jsonFile, 3, ' ');
 	});
 
 	return true;
@@ -229,7 +229,7 @@ bool ProjectInitializer::initializeCMakeWorkspace(ChaletJsonProps& outProps)
 		if (outProps.isYaml)
 			return YamlFile::asString(jsonFile);
 		else
-			return jsonFile.dump(3, ' ');
+			return json::dump(jsonFile, 3, ' ');
 	});
 
 	printFileNameAndContents(true, "CMakeLists.txt", [&outProps]() {
@@ -288,7 +288,7 @@ bool ProjectInitializer::initializeMesonWorkspace(ChaletJsonProps& outProps)
 		if (outProps.isYaml)
 			return YamlFile::asString(jsonFile);
 		else
-			return jsonFile.dump(3, ' ');
+			return json::dump(jsonFile, 3, ' ');
 	});
 
 	printFileNameAndContents(true, "meson.build", [&outProps]() {

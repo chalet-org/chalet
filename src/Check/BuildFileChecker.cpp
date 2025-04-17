@@ -50,7 +50,7 @@ bool BuildFileChecker::run()
 		if (String::endsWith(".yaml", buildFile.filename()))
 			contents = YamlFile::asString(checked);
 		else
-			contents = checked.dump(3, ' ');
+			contents = json::dump(checked, 3, ' ');
 
 		const auto& buildColor = Output::getAnsiStyle(theme.build);
 		const auto& reset = Output::getAnsiStyle(theme.reset);

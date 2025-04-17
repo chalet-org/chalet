@@ -1672,11 +1672,11 @@ bool ChaletJsonParser::parseDistributionBundle(BundleTarget& outTarget, const Js
 					{
 						if (String::equals("infoPropertyList", k))
 						{
-							outTarget.setMacosBundleInfoPropertyListContent(v.dump());
+							outTarget.setMacosBundleInfoPropertyListContent(json::dump(v));
 						}
 						else if (String::equals("entitlementsPropertyList", k))
 						{
-							outTarget.setMacosBundleEntitlementsPropertyListContent(v.dump());
+							outTarget.setMacosBundleEntitlementsPropertyListContent(json::dump(v));
 						}
 					}
 					else if (v.is_boolean())

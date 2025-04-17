@@ -68,7 +68,7 @@ void ErrorHandler::error(const nlohmann::json_pointer<nlohmann::json>& pointer, 
 	error.typeName = instance.type_name();
 	error.type = type;
 	error.data = std::move(data);
-	error.value = instance.dump();
+	error.value = json::dump(instance);
 
 	const auto treeReference = pointer.to_string();
 	if (treeReference.size() > 0)

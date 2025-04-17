@@ -12,7 +12,7 @@ namespace chalet
 /*****************************************************************************/
 void OldPListGenerator::dumpToTerminal()
 {
-	auto output = m_json.dump(2, ' ');
+	auto output = json::dump(m_json, 2, ' ');
 	std::cout.write(output.data(), output.size());
 	std::cout.put('\n');
 	std::cout.flush();

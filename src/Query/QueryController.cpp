@@ -766,7 +766,7 @@ StringList QueryController::getChaletJsonState() const
 	if (!lastTargetRes.empty())
 		output["defaultRunTarget"] = std::move(lastTargetRes.front());
 
-	ret.emplace_back(output.dump());
+	ret.emplace_back(json::dump(output));
 
 	return ret;
 }
@@ -819,7 +819,7 @@ StringList QueryController::getSettingsJsonState() const
 		output["lastBuildTarget"] = lastTargetRes.front();
 	}
 
-	ret.emplace_back(output.dump());
+	ret.emplace_back(json::dump(output));
 
 	return ret;
 }
@@ -883,7 +883,7 @@ StringList QueryController::getChaletSchema() const
 	StringList ret;
 
 	Json schema = ChaletJsonSchema::get(m_centralState.inputs());
-	ret.emplace_back(schema.dump());
+	ret.emplace_back(json::dump(schema));
 
 	return ret;
 }
@@ -894,7 +894,7 @@ StringList QueryController::getSettingsSchema() const
 	StringList ret;
 
 	Json schema = SettingsJsonSchema::get(m_centralState.inputs());
-	ret.emplace_back(schema.dump());
+	ret.emplace_back(json::dump(schema));
 
 	return ret;
 }

@@ -74,6 +74,8 @@ inline bool assign(T& outVariable, const Json& inNode, const char* inKey);
 
 inline bool isStringInvalidOrEmpty(const Json& inNode);
 inline bool isStringInvalidOrEmpty(const Json& inNode, const char* inKey);
+
+inline std::string dump(const Json& inNode, int indent = -1, char indentChar = (char)32);
 }
 }
 
