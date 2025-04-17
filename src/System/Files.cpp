@@ -771,9 +771,20 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 	if (!Files::pathIsDirectory(basePath))
 		return false;
 
-	auto pattern = inPattern;
-	String::replaceAll(pattern, '(', "\\(");
-	String::replaceAll(pattern, ')', "\\)");
+	std::string pattern;
+	for (size_t i = 0; i < inPattern.size(); ++i)
+	{
+		switch (inPattern[i])
+		{
+			case '(':
+			case ')':
+				pattern += '\\';
+				break;
+			default: break;
+		}
+
+		pattern += inPattern[i];
+	}
 
 	size_t start = 0;
 	start = pattern.find("{", start);
@@ -794,17 +805,36 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 	}
 
 	Path::toUnix(pattern);
-	String::replaceAll(pattern, '{', "\\{");
-	String::replaceAll(pattern, '}', "\\}");
-	String::replaceAll(pattern, '[', "\\[");
-	String::replaceAll(pattern, '[', "\\]");
-	String::replaceAll(pattern, '.', "\\.");
-	String::replaceAll(pattern, '+', "\\+");
-	String::replaceAll(pattern, '?', '.');
+
+	std::string patternSwap = std::move(pattern);
+	pattern.clear();
+	for (size_t i = 0; i < patternSwap.size(); ++i)
+	{
+		switch (patternSwap[i])
+		{
+			case '{':
+			case '}':
+			case '[':
+			case ']':
+			case '.':
+			case '+':
+				pattern += '\\';
+				break;
+			case '?':
+				pattern += '.';
+				continue;
+			default: break;
+		}
+
+		pattern += patternSwap[i];
+	}
 	String::replaceAll(pattern, "**/*", "(.+)");
 	String::replaceAll(pattern, "**", "(.+)");
 	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
 	String::replaceAll(pattern, "(.+)", "(.*)");
+
+	if (pattern.back() != '$')
+		pattern.push_back('$');
 
 	bool exactMatch = inSettings == GlobMatch::FilesAndFoldersExact;
 	if (exactMatch)
@@ -824,9 +854,6 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 
 		return isRegularFile || isDirectory;
 	};
-
-	if (pattern.back() != '$')
-		pattern.push_back('$');
 
 	constexpr auto reOptions = std::regex_constants::match_default;
 	std::regex re(pattern);
