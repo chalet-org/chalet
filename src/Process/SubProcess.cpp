@@ -7,13 +7,14 @@
 
 #if defined(CHALET_WIN32)
 #else
+	#include <signal.h>
+	#include <string.h>
 	#include <sys/wait.h>
 	#include <unistd.h>
-	#include <string.h>
-	#include <signal.h>
 #endif
 
 #include "Utility/String.hpp"
+#include "Utility/StringWinApi.hpp"
 
 #if !defined(CHALET_MSVC)
 extern char** environ;
@@ -45,15 +46,15 @@ std::string escapeShellArgument(const std::string& inArg)
 }
 
 /*****************************************************************************/
-std::string getWindowsArguments(const StringList& inCmd)
+USTRING getWindowsArguments(const StringList& inCmd)
 {
-	std::string args;
+	USTRING args;
 	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
 		if (i > 0)
 			args += ' ';
 
-		args += escapeShellArgument(inCmd[i]);
+		args += TO_WIDE(escapeShellArgument(inCmd[i]));
 	}
 
 	return args;
@@ -164,17 +165,17 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 	if (messageId == 0)
 		return std::string();
 
-	LPSTR messageBuffer = NULL;
+	WINSTR_PTR messageBuffer = NULL;
 	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-	DWORD size = FormatMessageA(dwFlags,
+	DWORD size = FormatMessage(dwFlags,
 		NULL,
 		messageId,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPSTR)&messageBuffer,
+		messageBuffer,
 		0,
 		NULL);
 
-	std::string message(messageBuffer, static_cast<size_t>(size));
+	auto message = FROM_WIDE(USTRING(messageBuffer, static_cast<size_t>(size)));
 
 	LocalFree(messageBuffer);
 
@@ -500,7 +501,7 @@ bool SubProcess::operator==(const SubProcess& inProcess)
 bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions)
 {
 #if defined(CHALET_WIN32)
-	STARTUPINFOA startupInfo;
+	STARTUPINFO startupInfo;
 	::ZeroMemory(&startupInfo, sizeof(startupInfo));
 
 	PROCESS_INFORMATION processInfo;
@@ -541,8 +542,9 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 	}
 
 	{
-		const char* cwd = inOptions.cwd.empty() ? nullptr : inOptions.cwd.c_str();
-		std::string args = getWindowsArguments(inCmd);
+		auto wcwd = TO_WIDE(inOptions.cwd);
+		auto cwd = wcwd.empty() ? nullptr : wcwd.c_str();
+		auto args = getWindowsArguments(inCmd);
 
 		DWORD processFlags = NORMAL_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
 
@@ -553,7 +555,7 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 			processFlags |= CREATE_NO_WINDOW;
 		}
 
-		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
+		BOOL success = ::CreateProcess(TO_WIDE(inCmd.front()).c_str(),
 			args.data(),   // program arguments
 			NULL,		   // process security attributes
 			NULL,		   // thread security attributes
@@ -781,7 +783,7 @@ void SubProcess::read(const HandleInput& inFileNo, OutputBuffer& dataBuffer, con
 		if (readOnce(inFileNo, dataBuffer, bytesRead))
 		{
 			if (onRead != nullptr)
-				onRead(std::string(dataBuffer.data(), bytesRead));
+				onRead(std::string(dataBuffer.data(), static_cast<size_t>(bytesRead)));
 		}
 		else
 			break;
@@ -794,7 +796,7 @@ bool SubProcess::readOnce(const HandleInput& inFileNo, OutputBuffer& dataBuffer,
 	auto& pipe = inFileNo == FileNo::StdErr ? m_err : m_out;
 
 #if defined(CHALET_WIN32)
-	bool result = ::ReadFile(pipe.m_read, static_cast<LPVOID>(dataBuffer.data()), static_cast<DWORD>(dataBuffer.size()), static_cast<LPDWORD>(&bytesRead), NULL) == TRUE;
+	bool result = ::ReadFile(pipe.m_read, dataBuffer.data(), (DWORD)dataBuffer.size(), &bytesRead, NULL) == TRUE;
 	if (!result)
 		bytesRead = 0;
 #else

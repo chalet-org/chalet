@@ -15,6 +15,9 @@
 	#if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
 		#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 	#endif
+	#if !defined(ENABLE_PROCESSED_OUTPUT)
+		#define ENABLE_PROCESSED_OUTPUT 0x0001
+	#endif
 #endif
 
 namespace chalet
@@ -117,7 +120,7 @@ void WindowsTerminal::reset()
 			DWORD dwMode = 0;
 			if (GetConsoleMode(hOut, &dwMode))
 			{
-				dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+				dwMode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 				SetConsoleMode(hOut, dwMode);
 			}
 		}

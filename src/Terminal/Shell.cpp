@@ -11,6 +11,7 @@
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
 #include "Utility/String.hpp"
+#include "Utility/StringWinApi.hpp"
 
 #if defined(CHALET_WIN32)
 	#include <tlhelp32.h>
@@ -74,10 +75,10 @@ std::string getProcessPath(DWORD inPid)
 		{
 			std::string processPath;
 			DWORD buffSize = 1024;
-			CHAR buffer[1024];
-			if (QueryFullProcessImageNameA(parentHandle, 0, buffer, &buffSize))
+			USTRING buffer(buffSize, 0);
+			if (QueryFullProcessImageName(parentHandle, 0, buffer.data(), &buffSize))
 			{
-				processPath = std::string(buffer);
+				processPath = FROM_WIDE(buffer);
 			}
 			CloseHandle(parentHandle);
 

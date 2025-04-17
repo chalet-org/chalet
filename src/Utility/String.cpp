@@ -5,6 +5,7 @@
 
 #include "Utility/String.hpp"
 
+#include "Libraries/WindowsApi.hpp"
 #include "Process/Environment.hpp"
 #include "Utility/List.hpp"
 
@@ -508,6 +509,46 @@ bool String::isWrapped(const std::string& inString, const std::string_view inSta
 
 	return true;
 }
+
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+std::wstring String::toWideString(const std::string& inValue)
+{
+	if (!inValue.empty())
+	{
+		UINT acp = GetACP();
+		i32 size = (i32)inValue.size();
+		i32 requiredSize = MultiByteToWideChar(acp, 0, inValue.data(), size, nullptr, 0);
+		if (requiredSize > 0)
+		{
+			std::wstring result(requiredSize, 0);
+			MultiByteToWideChar(acp, 0, inValue.data(), size, result.data(), requiredSize);
+			return result;
+		}
+	}
+
+	return std::wstring();
+}
+
+/*****************************************************************************/
+std::string String::fromWideString(const std::wstring& inValue)
+{
+	if (!inValue.empty())
+	{
+		DWORD flags = 0;
+		i32 size = (i32)inValue.size();
+		i32 requiredSize = WideCharToMultiByte(CP_UTF8, flags, inValue.data(), size, NULL, 0, NULL, NULL);
+		if (requiredSize > 0)
+		{
+			std::string result(requiredSize, 0);
+			WideCharToMultiByte(CP_UTF8, flags, inValue.data(), size, result.data(), requiredSize, NULL, NULL);
+			return result;
+		}
+	}
+
+	return std::string();
+}
+#endif
 
 /*****************************************************************************/
 std::string String::eol()

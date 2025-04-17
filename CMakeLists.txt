@@ -123,7 +123,7 @@ if(MSVC)
 
 	target_compile_options(${TARGET_NAME}
 		PRIVATE
-			/W4 /WX /utf-8 /GR- /MP
+			/W4 /WX /source-charset:UTF-8 /execution-charset:UTF-8 /validate-charset /GR- /MP
 	)
 else()
 	target_compile_options(${TARGET_NAME}

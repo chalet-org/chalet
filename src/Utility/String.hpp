@@ -54,6 +54,11 @@ std::string getPathFilename(const std::string& inPath);
 std::string getPathFolderBaseName(const std::string& inPath);
 bool isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd);
 
+#if defined(CHALET_WIN32)
+std::wstring toWideString(const std::string& inValue);
+std::string fromWideString(const std::wstring& inValue);
+#endif
+
 std::string eol();
 
 }

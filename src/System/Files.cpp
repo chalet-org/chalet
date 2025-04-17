@@ -23,6 +23,7 @@
 #include "Utility/List.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/StringWinApi.hpp"
 #include "Utility/Timer.hpp"
 
 #if defined(CHALET_MSVC)
@@ -681,7 +682,7 @@ bool Files::pathExists(const std::string& inFile)
 #if defined(CHALET_WIN32)
 	// std::error_code ec;
 	// return fs::exists(inFile, ec);
-	return ::GetFileAttributesA(inFile.c_str()) != INVALID_FILE_ATTRIBUTES;
+	return ::GetFileAttributes(TO_WIDE(inFile).c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
 	return ::stat(inFile.c_str(), &statBuffer) == 0;
 #endif
@@ -969,7 +970,7 @@ void Files::sleep(const f64 inSeconds)
 bool Files::openWithDefaultApplication(const std::string& inFile)
 {
 #if defined(CHALET_WIN32)
-	HINSTANCE result = ::ShellExecuteA(nullptr, "open", inFile.c_str(), "", nullptr, SW_SHOW);
+	HINSTANCE result = ::ShellExecute(NULL, TEXT("open"), TO_WIDE(inFile).c_str(), TEXT(""), NULL, SW_SHOW);
 	return INT_PTR(result) > 32;
 
 #elif defined(CHALET_MACOS)
@@ -1083,8 +1084,8 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 
 	std::string result;
 #if defined(CHALET_WIN32)
-	LPSTR lpFilePart;
-	char filename[MAX_PATH];
+	WINSTR_PTR lpFilePart = NULL;
+	USTRING filename(MAX_PATH, 0);
 
 	auto exe = Files::getPlatformExecutableExtension();
 	if (String::contains('.', inExecutable))
@@ -1093,9 +1094,9 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 		exe = inExecutable.substr(pos);
 	}
 
-	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart) > 0)
+	if (SearchPath(NULL, TO_WIDE(inExecutable).c_str(), TO_WIDE(exe).c_str(), MAX_PATH, filename.data(), &lpFilePart) > 0)
 	{
-		result = std::string(filename);
+		result = FROM_WIDE(filename);
 		Path::toUnix(result);
 	}
 #else

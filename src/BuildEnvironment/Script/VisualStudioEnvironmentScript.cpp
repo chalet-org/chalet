@@ -118,6 +118,9 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	{
 		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) -> std::string {
 			auto temp = Process::runOutput(inCmd);
+			if (temp.empty())
+				return temp;
+
 			auto split = String::split(temp, "\n");
 			return split.front();
 		};
