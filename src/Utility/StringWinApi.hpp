@@ -7,11 +7,13 @@
 		#define TO_WIDE(x) String::toWideString(x)
 		#define FROM_WIDE(x) String::fromWideString(x)
 		#define USTRING std::wstring
+		#define WINSTR_CHAR WCHAR
 		#define WINSTR_PTR LPWSTR
 	#else
 		#define TO_WIDE(x) x
 		#define FROM_WIDE(x) x
 		#define USTRING std::string
+		#define WINSTR_CHAR CHAR
 		#define WINSTR_PTR LPSTR
 	#endif
 #endif
