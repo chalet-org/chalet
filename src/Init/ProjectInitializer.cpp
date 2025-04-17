@@ -32,83 +32,94 @@ ProjectInitializer::ProjectInitializer(const CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool ProjectInitializer::run()
 {
-	const auto& path = m_inputs.initPath();
-	if (!Files::pathExists(path))
+	CHALET_TRY
 	{
-		if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), true))
+		const auto& path = m_inputs.initPath();
+		if (!Files::pathExists(path))
 		{
-			if (!Files::makeDirectory(path))
+			if (Output::getUserInputYesNo(fmt::format("Directory '{}' does not exist. Create it?", path), true))
 			{
-				Diagnostic::error("Error creating directory '{}'", path);
-				return false;
+				if (!Files::makeDirectory(path))
+				{
+					Diagnostic::error("Error creating directory '{}'", path);
+					return false;
+				}
 			}
+			else
+				return false;
 		}
-		else
+
+		// At the moment, only initialize an empty path
+		m_rootPath = Files::getCanonicalPath(path);
+		m_stepTime = 0.1;
+
+		if (!Files::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
+		{
+			Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
 			return false;
-	}
+		}
 
-	// At the moment, only initialize an empty path
-	m_rootPath = Files::getCanonicalPath(path);
-	m_stepTime = 0.1;
+		Path::toUnix(m_rootPath);
 
-	if (!Files::pathIsEmpty(m_rootPath, { ".git", ".gitignore", "README.md", "LICENSE" }))
-	{
-		Diagnostic::error("Path '{}' is not empty. Please choose a different path, or clean this one first.", m_rootPath);
-		return false;
-	}
+		auto initTemplate = m_inputs.initTemplate();
+		if (initTemplate == InitTemplateType::Unknown)
+		{
+			Diagnostic::error("The specified project template was not recognized");
+			return false;
+		}
 
-	Path::toUnix(m_rootPath);
-
-	auto initTemplate = m_inputs.initTemplate();
-	if (initTemplate == InitTemplateType::Unknown)
-	{
-		Diagnostic::error("The specified project template was not recognized");
-		return false;
-	}
-
-	{
-		/*auto banner = String::split(getBannerV2(), '\n');
+		{
+			/*auto banner = String::split(getBannerV2(), '\n');
 		for (auto& line : banner)
 		{
 			std::cout.write(line.data(), line.size());
 			std::cout.put('\n');
 			std::cout.flush();
 		}*/
-		auto banner = getBannerV2();
-		std::cout.write(banner.data(), banner.size());
-		std::cout.put('\n');
-		std::cout.flush();
+			auto banner = getBannerV2();
+			std::cout.write(banner.data(), banner.size());
+			std::cout.put('\n');
+			std::cout.flush();
+		}
+
+		bool result = false;
+		ChaletJsonProps props;
+
+		switch (initTemplate)
+		{
+			case InitTemplateType::CMake:
+				result = initializeCMakeWorkspace(props);
+				break;
+			case InitTemplateType::Meson:
+				result = initializeMesonWorkspace(props);
+				break;
+			case InitTemplateType::None:
+			default:
+				result = initializeNormalWorkspace(props);
+				break;
+		}
+
+		if (!result)
+			return false;
+
+		Output::lineBreak();
+
+		if (Output::getUserInputYesNo("Does everything look okay?", true))
+		{
+			return doRun(props);
+		}
+		else
+		{
+			showExit();
+			return false;
+		}
 	}
-
-	bool result = false;
-	ChaletJsonProps props;
-
-	switch (initTemplate)
+	CHALET_CATCH(const std::exception& err)
 	{
-		case InitTemplateType::CMake:
-			result = initializeCMakeWorkspace(props);
-			break;
-		case InitTemplateType::Meson:
-			result = initializeMesonWorkspace(props);
-			break;
-		case InitTemplateType::None:
-		default:
-			result = initializeNormalWorkspace(props);
-			break;
-	}
-
-	if (!result)
-		return false;
-
-	Output::lineBreak();
-
-	if (Output::getUserInputYesNo("Does everything look okay?", true))
-	{
-		return doRun(props);
-	}
-	else
-	{
-		showExit();
+		if (::strcmp(err.what(), "SIGINT") != 0)
+		{
+			Diagnostic::error("Uncaught exception: {}", err.what());
+		}
 		return false;
 	}
 }
