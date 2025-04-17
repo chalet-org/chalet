@@ -13,6 +13,7 @@
 #include "Terminal/Unicode.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Utility/StringWinApi.hpp"
 #include "Utility/Timer.hpp"
 
 namespace chalet
@@ -41,7 +42,12 @@ void signalHandler(i32)
 {
 	Output::lineBreak();
 	Output::lineBreak();
+
+#if defined(CHALET_WIN32)
+	throw std::runtime_error("SIGINT");
+#else
 	std::exit(1);
+#endif
 }
 
 /*****************************************************************************/
@@ -199,9 +205,40 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 
 	std::cout.write(withNote.data(), withNote.size());
 
+	std::string input;
+#if defined(CHALET_WIN32)
+	{
+		HANDLE kInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
+
+		DWORD bufferSize = 256;
+		WINSTR_CHAR buffer[256];
+		DWORD numberCharactersRead = 0;
+		auto readResult = ::ReadConsole(kInputHandle, buffer, bufferSize, &numberCharactersRead, NULL);
+		if (readResult == 0)
+		{
+			// cin clear?
+			return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
+		}
+
+		// CRLF
+		// if (numberCharactersRead >= 2)
+		// 	numberCharactersRead -= 2;
+
+		auto result = USTRING(buffer, static_cast<size_t>(numberCharactersRead));
+		input = FROM_WIDE(result);
+		if (String::endsWith("\r\n", input))
+		{
+			input.pop_back();
+			input.pop_back();
+		}
+		else if (readResult == 1)
+		{
+			signalHandler(SIGINT);
+		}
+	}
+#else
 	SignalHandler::add(SIGINT, signalHandler);
 
-	std::string input;
 	std::getline(std::cin, input); // get up to first line break (if applicable)
 
 	SignalHandler::remove(SIGINT, signalHandler);
@@ -211,6 +248,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		std::cin.clear();
 		return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
 	}
+#endif
 
 	if (input.empty())
 		input = outResult;

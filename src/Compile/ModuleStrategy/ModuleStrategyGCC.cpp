@@ -107,7 +107,7 @@ bool ModuleStrategyGCC::scanSourcesForModuleDependencies(CommandPool::Job& outJo
 		auto name = String::getPathBaseName(source);
 		std::string moduleName;
 
-		std::ifstream input(source);
+		auto input = Files::ifstream(source);
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))

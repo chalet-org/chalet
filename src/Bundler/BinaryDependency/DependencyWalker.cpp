@@ -282,7 +282,7 @@ bool DependencyWalker::parseFile(const std::string& inFile, StringList& outList,
 /*****************************************************************************/
 std::vector<char> DependencyWalker::readAllBytes(const std::string& inFile)
 {
-	std::ifstream ifs(inFile, std::ios::binary | std::ios::ate);
+	auto ifs = Files::ifstream(inFile, std::ios::binary | std::ios::ate);
 	size_t length = ifs.tellg();
 
 	std::vector<char> buffer(length);

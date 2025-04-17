@@ -12,7 +12,7 @@
 			"type": "string",
 			"description": "Metadata: A name to describe the entire workspace.",
 			"minLength": 1,
-			"pattern": "^[\\w\\-+ ]+$"
+			"pattern": "^[^<>:\"/\\\\\\|\\?\\*]+$"
 		},
 		"workspace-version": {
 			"type": "string",

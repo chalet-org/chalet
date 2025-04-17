@@ -94,8 +94,8 @@ bool CompileStrategyNinja::doPreBuild()
 	{
 		if (m_cacheNeedsUpdate)
 		{
-			std::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFolder)
-									   << std::endl;
+			Files::ofstream(m_cacheFile) << m_generator->getContents(m_cacheFolder)
+										 << std::endl;
 		}
 	}
 

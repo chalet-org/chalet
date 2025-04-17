@@ -30,9 +30,9 @@ bool XmlFile::saveToFile(const Xml& inXml, const std::string& outFilename, const
 	}
 
 	if ((inIndent < -1 || inIndent > 4) || inIndent == 1)
-		std::ofstream(outFilename) << inXml.dump(1, '\t') << std::endl;
+		Files::ofstream(outFilename) << inXml.dump(1, '\t') << std::endl;
 	else
-		std::ofstream(outFilename) << inXml.dump(inIndent) << std::endl;
+		Files::ofstream(outFilename) << inXml.dump(inIndent) << std::endl;
 
 	return true;
 }

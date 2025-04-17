@@ -132,7 +132,7 @@ bool DotEnvFileGenerator::save(const std::string& inFilename)
 		contents += std::move(line);
 	}
 
-	std::ofstream(inFilename) << contents;
+	Files::ofstream(inFilename) << contents;
 
 	return true;
 }

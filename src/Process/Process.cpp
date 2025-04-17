@@ -171,7 +171,7 @@ bool Process::runOutputToFile(const StringList& inCmd, const std::string& inOutp
 	if (Output::showCommands())
 		Output::printCommand(inCmd);
 
-	std::ofstream outputStream(inOutputFile);
+	auto outputStream = Files::ofstream(inOutputFile);
 
 	ProcessOptions options;
 	options.cwd = Files::getWorkingDirectory();

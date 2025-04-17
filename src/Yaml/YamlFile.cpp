@@ -62,7 +62,7 @@ bool YamlFile::parseAsJson(Json& outJson) const
 	if (!Files::pathExists(m_filename))
 		return false;
 
-	std::ifstream stream(m_filename);
+	auto stream = Files::ifstream(m_filename);
 	if (!parseAsJson(outJson, stream))
 	{
 		Diagnostic::error("There was a problem reading: {}", m_filename);
@@ -432,7 +432,7 @@ bool YamlFile::save(const Json& inJson)
 	auto contents = getNodeAsString(std::string(), inJson);
 	// LOG(contents);
 
-	std::ofstream(m_filename) << contents << std::endl;
+	Files::ofstream(m_filename) << contents << std::endl;
 
 	return true;
 }

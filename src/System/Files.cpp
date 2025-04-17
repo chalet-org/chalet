@@ -975,14 +975,14 @@ bool Files::readAndReplace(const std::string& inFile, const std::function<void(s
 		return false;
 
 	std::ostringstream buffer;
-	std::ifstream file{ inFile };
+	auto file = Files::ifstream(inFile);
 	buffer << file.rdbuf();
 
 	std::string fileContents{ buffer.str() };
 
 	onReplace(fileContents);
 
-	std::ofstream(inFile) << fileContents;
+	Files::ofstream(inFile) << fileContents;
 
 	return true;
 }
@@ -1023,6 +1023,30 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 }
 
 /*****************************************************************************/
+std::ofstream Files::ofstream(const std::string& inFile, std::ios_base::openmode inMode)
+{
+#if defined(CHALET_WIN32)
+	auto file = TO_WIDE(inFile);
+#else
+	auto& file = inFile;
+#endif
+
+	return std::ofstream(file, inMode);
+}
+
+/*****************************************************************************/
+std::ifstream Files::ifstream(const std::string& inFile, std::ios_base::openmode inMode)
+{
+#if defined(CHALET_WIN32)
+	auto file = TO_WIDE(inFile);
+#else
+	auto& file = inFile;
+#endif
+
+	return std::ifstream(file, inMode);
+}
+
+/*****************************************************************************/
 bool Files::createFileWithContents(const std::string& inFile, const std::string& inContents, const bool inUnixEol)
 {
 	auto folder = String::getPathFolder(inFile);
@@ -1037,9 +1061,9 @@ bool Files::createFileWithContents(const std::string& inFile, const std::string&
 
 	auto eol = String::eol();
 	if (inUnixEol)
-		std::ofstream(inFile, std::ios_base::binary | std::ios_base::out) << inContents + '\n';
+		Files::ofstream(inFile, std::ios_base::binary | std::ios_base::out) << inContents + '\n';
 	else
-		std::ofstream(inFile) << inContents + eol;
+		Files::ofstream(inFile) << inContents + eol;
 
 	return true;
 }
@@ -1051,7 +1075,7 @@ std::string Files::getFileContents(const std::string& inFile)
 		return std::string();
 
 	std::stringstream buffer;
-	std::ifstream file{ inFile };
+	auto file = Files::ifstream(inFile);
 	buffer << file.rdbuf();
 
 	return buffer.str();

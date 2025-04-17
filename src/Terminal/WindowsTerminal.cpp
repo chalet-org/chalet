@@ -50,27 +50,27 @@ void WindowsTerminal::initialize()
 	state.consoleCp = GetConsoleCP();
 	state.consoleOutputCp = GetConsoleOutputCP();
 
-	HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-	if (hOut != INVALID_HANDLE_VALUE)
-	{
-		GetConsoleMode(hOut, &state.consoleMode);
-	}
-
-	{
-		auto result = SetConsoleOutputCP(CP_UTF8);
-		result &= SetConsoleCP(CP_UTF8);
-		chalet_assert(result, "Failed to set Console encoding.");
-		UNUSED(result);
-	}
-
-	{
-		// auto result = std::system("cmd -v");
-		// LOG("GetConsoleScreenBufferInfo", result);
-		// UNUSED(result);
-	}
-
 	if (!state.firstCall)
 	{
+		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+		if (hOut != INVALID_HANDLE_VALUE)
+		{
+			GetConsoleMode(hOut, &state.consoleMode);
+		}
+
+		{
+			auto result = SetConsoleOutputCP(CP_UTF8);
+			result &= SetConsoleCP(CP_UTF8);
+			chalet_assert(result, "Failed to set Console encoding.");
+			UNUSED(result);
+		}
+
+		{
+			// auto result = std::system("cmd -v");
+			// LOG("GetConsoleScreenBufferInfo", result);
+			// UNUSED(result);
+		}
+
 		SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
 		// SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 		// SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);

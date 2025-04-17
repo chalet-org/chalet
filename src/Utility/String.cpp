@@ -516,13 +516,12 @@ std::wstring String::toWideString(const std::string& inValue)
 {
 	if (!inValue.empty())
 	{
-		UINT acp = GetACP();
 		i32 size = (i32)inValue.size();
-		i32 requiredSize = MultiByteToWideChar(acp, 0, inValue.data(), size, nullptr, 0);
+		i32 requiredSize = MultiByteToWideChar(CP_UTF8, 0, inValue.data(), size, nullptr, 0);
 		if (requiredSize > 0)
 		{
 			std::wstring result(requiredSize, 0);
-			MultiByteToWideChar(acp, 0, inValue.data(), size, result.data(), requiredSize);
+			MultiByteToWideChar(CP_UTF8, 0, inValue.data(), size, result.data(), requiredSize);
 			return result;
 		}
 	}

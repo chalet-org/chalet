@@ -48,7 +48,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"type": "string",
 		"description": "Metadata: A name to describe the entire workspace.",
 		"minLength": 1,
-		"pattern": "^[\\w\\-+ ]+$"
+		"pattern": "^[^<>:\"/\\\\\\|\\?\\*]+$"
 	})json"_ojson;
 
 	defs[Defs::WorkspaceVersion] = R"json({

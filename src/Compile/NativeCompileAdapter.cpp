@@ -138,7 +138,7 @@ bool NativeCompileAdapter::anyDependenciesChanged(const std::string& dependency)
 	if (Files::pathExists(dependency))
 	{
 		std::string line;
-		std::ifstream input(dependency);
+		auto input = Files::ifstream(dependency);
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))
 		{

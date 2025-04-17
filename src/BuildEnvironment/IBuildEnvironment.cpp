@@ -291,14 +291,14 @@ bool IBuildEnvironment::makeSupportedCompilerFlags(const std::string& inExecutab
 				outContents += flag + "\n";
 			}
 
-			std::ofstream(flagsFile) << outContents;
+			Files::ofstream(flagsFile) << outContents;
 
 			m_state.cache.file().addExtraHash(String::getPathFilename(flagsFile));
 		}
 	}
 	else
 	{
-		std::ifstream input(flagsFile);
+		auto input = Files::ifstream(flagsFile);
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))

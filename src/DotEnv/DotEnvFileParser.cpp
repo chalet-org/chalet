@@ -52,7 +52,7 @@ bool DotEnvFileParser::readVariablesFromInputs()
 /*****************************************************************************/
 bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 {
-	std::ifstream input(inFile);
+	auto input = Files::ifstream(inFile);
 	std::string line;
 	auto lineEnd = input.widen('\n');
 	while (std::getline(input, line, lineEnd))

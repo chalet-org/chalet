@@ -24,6 +24,9 @@
 		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2017/WindowsSettings">
 			<gdiScaling>false</gdiScaling>
 		</windowsSettings>
+		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">
+			<activeCodePage>UTF-8</activeCodePage>
+		</windowsSettings>
 		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">
 			<heapType>SegmentHeap</heapType>
 		</windowsSettings>

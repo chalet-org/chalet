@@ -380,13 +380,13 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 	Json root = R"json({
 		"info" : { "author" : "xcode", "version" : 1 }
 	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", inOutPath)) << json::dump(root, 1, '\t') << std::endl;
+	Files::ofstream(fmt::format("{}/Contents.json", inOutPath)) << json::dump(root, 1, '\t') << std::endl;
 
 	Json accentColorJson = R"json({
 		"colors" : [{ "idiom" : "universal" }],
 		"info" : { "author" : "xcode", "version" : 1 }
 	})json"_ojson;
-	std::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << json::dump(accentColorJson, 1, '\t') << std::endl;
+	Files::ofstream(fmt::format("{}/Contents.json", accentColorPath)) << json::dump(accentColorJson, 1, '\t') << std::endl;
 
 	Json appIconJson = R"json({
 		"images" : [],
@@ -423,7 +423,7 @@ bool AppBundlerMacOS::createAssetsXcassets(const std::string& inOutPath)
 		addIdiom(2, size);
 	}
 
-	std::ofstream(fmt::format("{}/Contents.json", appIconPath))
+	Files::ofstream(fmt::format("{}/Contents.json", appIconPath))
 		<< json::dump(appIconJson, 1, '\t') << std::endl;
 
 	return true;
@@ -478,7 +478,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 			return true;
 		}
 
-		std::ifstream input(infoPropertyList);
+		auto input = Files::ifstream(infoPropertyList);
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))
@@ -489,7 +489,7 @@ bool AppBundlerMacOS::createInfoPropertyListAndReplaceVariables(const std::strin
 	}
 
 	replacePlistVariables(infoPropertyListContent);
-	std::ofstream(tmpPlist) << infoPropertyListContent << std::endl;
+	Files::ofstream(tmpPlist) << infoPropertyListContent << std::endl;
 
 	if (outJson != nullptr)
 	{
@@ -538,7 +538,7 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 			return true;
 		}
 
-		std::ifstream input(entitlements);
+		auto input = Files::ifstream(entitlements);
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))
@@ -548,7 +548,7 @@ bool AppBundlerMacOS::createEntitlementsPropertyList(const std::string& inOutFil
 		input.close();
 	}
 
-	std::ofstream(tmpPlist) << entitlementsContent << std::endl;
+	Files::ofstream(tmpPlist) << entitlementsContent << std::endl;
 
 	if (!m_state.tools.plistConvertToXml(tmpPlist, inOutFile))
 		return false;

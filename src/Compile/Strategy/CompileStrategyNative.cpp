@@ -67,8 +67,8 @@ bool CompileStrategyNative::doPreBuild()
 	if (m_initialized && m_cacheNeedsUpdate)
 	{
 		std::string contents;
-		std::ofstream(m_cacheFile) << contents
-								   << std::endl;
+		Files::ofstream(m_cacheFile) << contents
+									 << std::endl;
 	}
 
 	return ICompileStrategy::doPreBuild();

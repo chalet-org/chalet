@@ -320,7 +320,7 @@ bool ConfigureFileParser::generateBytesForFile(std::string& outText, const std::
 		return false;
 	}
 
-	std::ifstream in(inFile, std::ios_base::binary);
+	auto in = Files::ifstream(inFile, std::ios_base::binary);
 
 	std::vector<int> bytes(fileSize);
 

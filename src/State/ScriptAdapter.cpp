@@ -447,7 +447,7 @@ std::string ScriptAdapter::readShebangFromFile(const std::string& inFile) const
 
 	if (Files::pathExists(inFile))
 	{
-		std::ifstream file{ inFile };
+		auto file = Files::ifstream(inFile);
 		std::getline(file, ret); // get the first line in the file
 
 		if (String::startsWith("#!", ret))

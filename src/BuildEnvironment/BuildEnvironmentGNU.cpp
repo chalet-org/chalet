@@ -461,12 +461,12 @@ std::string BuildEnvironmentGNU::getCompilerMacros(const std::string& inCompiler
 
 		if (!result.empty())
 		{
-			std::ofstream(macrosFile) << result;
+			Files::ofstream(macrosFile) << result;
 		}
 	}
 	else
 	{
-		std::ifstream input(macrosFile);
+		auto input = Files::ifstream(macrosFile);
 		result = std::string((std::istreambuf_iterator<char>(input)), std::istreambuf_iterator<char>());
 	}
 

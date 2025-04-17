@@ -109,7 +109,7 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename, const boo
 	}
 
 	std::string lines;
-	std::ifstream fileStream(inFilename);
+	auto fileStream = Files::ifstream(inFilename);
 
 	CHALET_TRY
 	{
@@ -127,7 +127,7 @@ bool JsonComments::parse(Json& outJson, const std::string& inFilename, const boo
 			auto error = err.what();
 			{
 				auto msg = "There was a problem reading the json file";
-				std::ifstream jsonFile(inFilename);
+				auto jsonFile = Files::ifstream(inFilename);
 				std::string output;
 				auto firstMessage = fmt::format("{}: {}", msg, inFilename);
 				bool printResult = printLinesWithError(jsonFile, error, output);

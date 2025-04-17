@@ -95,8 +95,8 @@ bool CompileStrategyMakefile::addProject(const SourceTarget& inProject)
 		auto& toolchain = m_toolchains.at(name);
 		m_generator->addProjectRecipes(inProject, *outputs, toolchain, hash);
 
-		std::ofstream(buildFile) << m_generator->getContents(buildFile)
-								 << std::endl;
+		Files::ofstream(buildFile) << m_generator->getContents(buildFile)
+								   << std::endl;
 
 		m_generator->reset();
 	}

@@ -416,6 +416,6 @@ void BuildEnvironmentLLVM::parseSupportedFlagsFromHelpList(const StringList& inC
 	// {
 	// 	supported += flag + '\n';
 	// }
-	// std::ofstream("clang_flags.txt") << supported;
+	// Files::ofstream("clang_flags.txt") << supported;
 }
 }

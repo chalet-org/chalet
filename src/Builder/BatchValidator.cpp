@@ -173,7 +173,7 @@ bool BatchValidator::parse(Json& outJson, const std::string& inFilename, const b
 	}
 
 	std::string lines;
-	std::ifstream fileStream(inFilename);
+	auto fileStream = Files::ifstream(inFilename);
 
 	CHALET_TRY
 	{
@@ -188,7 +188,7 @@ bool BatchValidator::parse(Json& outJson, const std::string& inFilename, const b
 	{
 		auto error = err.what();
 		{
-			std::ifstream jsonFile(inFilename);
+			auto jsonFile = Files::ifstream(inFilename);
 			std::string output;
 			bool printResult = JsonComments::printLinesWithError(jsonFile, error, output);
 

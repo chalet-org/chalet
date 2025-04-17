@@ -525,13 +525,15 @@ std::string ProjectInitializer::getWorkspaceName() const
 	std::string result = String::getPathBaseName(m_rootPath);
 
 	auto onValidate = [](std::string& input) {
-		std::string validChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-_";
-		auto search = input.find_first_not_of(validChars.c_str());
+		std::string invalidChars = "<>:\"/\\|?*";
+		auto search = input.find_first_of(invalidChars.c_str());
 		if (search != std::string::npos)
 		{
-			std::transform(input.begin(), input.end(), input.begin(), [&validChars](uchar c) -> uchar {
-				return String::contains(c, validChars) ? c : '_';
-			});
+			for (char c : input)
+			{
+				if (c < 32 || String::contains(c, invalidChars))
+					return false;
+			}
 		}
 		return true;
 	};

@@ -140,7 +140,7 @@ bool BundleTarget::validate()
 			}
 			else
 			{
-				std::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist();
+				Files::ofstream(m_macosBundleInfoPropertyList) << PlatformFileTemplates::macosInfoPlist();
 			}
 		}
 	}
@@ -186,7 +186,7 @@ bool BundleTarget::validate()
 		}
 		else if (!Files::pathExists(m_linuxDesktopEntryTemplate))
 		{
-			std::ofstream(m_linuxDesktopEntryTemplate) << PlatformFileTemplates::linuxDesktopEntry();
+			Files::ofstream(m_linuxDesktopEntryTemplate) << PlatformFileTemplates::linuxDesktopEntry();
 		}
 	}
 #endif

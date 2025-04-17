@@ -217,10 +217,10 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 		return;
 
 	{
-		std::ifstream afterVars(inAfterFile);
+		auto afterVars = Files::ifstream(inAfterFile);
 		std::string deltaVars((std::istreambuf_iterator<char>(afterVars)), std::istreambuf_iterator<char>());
 
-		std::ifstream beforeVars(inBeforeFile);
+		auto beforeVars = Files::ifstream(inBeforeFile);
 		std::string line;
 		auto lineEnd = beforeVars.widen('\n');
 		while (std::getline(beforeVars, line, lineEnd))
@@ -228,7 +228,7 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 			String::replaceAll(deltaVars, line, "");
 		}
 
-		std::ofstream(inDeltaFile) << deltaVars;
+		Files::ofstream(inDeltaFile) << deltaVars;
 
 		afterVars.close();
 		beforeVars.close();
@@ -239,7 +239,7 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 
 	{
 		std::string outContents;
-		std::ifstream input(inDeltaFile);
+		auto input = Files::ifstream(inDeltaFile);
 		std::string line;
 		auto lineEnd = input.widen('\n');
 		while (std::getline(input, line, lineEnd))
@@ -252,14 +252,14 @@ void Environment::createDeltaEnvFile(const std::string& inBeforeFile, const std:
 		}
 		input.close();
 
-		std::ofstream(inDeltaFile) << outContents;
+		Files::ofstream(inDeltaFile) << outContents;
 	}
 }
 
 /*****************************************************************************/
 void Environment::readEnvFileToDictionary(const std::string& inFile, Dictionary<std::string>& outVariables)
 {
-	std::ifstream input(inFile);
+	auto input = Files::ifstream(inFile);
 	std::string line;
 	auto lineEnd = input.widen('\n');
 	while (std::getline(input, line, lineEnd))
