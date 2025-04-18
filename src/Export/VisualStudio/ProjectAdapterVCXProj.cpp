@@ -281,6 +281,7 @@ std::string ProjectAdapterVCXProj::getLanguageStandardCpp() const
 		return standard;
 
 	String::replaceAll(standard, '+', 'p');
+	String::replaceAll(standard, "preview", "");
 	return fmt::format("std{}", standard);
 }
 
