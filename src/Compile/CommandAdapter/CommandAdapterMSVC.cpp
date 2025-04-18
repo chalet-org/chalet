@@ -381,19 +381,20 @@ std::string CommandAdapterMSVC::getLanguageStandardCpp() const
 		String::replaceAll(langStandard, "gnu++", "");
 		String::replaceAll(langStandard, "c++", "");
 
-		if (String::equals(StringList{ "20", "2a" }, langStandard))
+		if (String::equals(StringList{ "23", "2b" }, langStandard))
+		{
+			if (m_versionMajorMinor >= 1943)
+				return "c++23preview";
+		}
+		else if (String::equals(StringList{ "20", "2a" }, langStandard))
 		{
 			if (m_versionMajorMinor >= 1929)
-			{
 				return "c++20";
-			}
 		}
 		else if (String::equals(StringList{ "17", "1z" }, langStandard))
 		{
 			if (m_versionMajorMinor >= 1911)
-			{
 				return "c++17";
-			}
 		}
 		else if (String::equals(StringList{ "14", "1y", "11", "0x", "03", "98" }, langStandard))
 		{
