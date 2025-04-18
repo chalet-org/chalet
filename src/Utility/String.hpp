@@ -55,8 +55,8 @@ std::string getPathFolderBaseName(const std::string& inPath);
 bool isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd);
 
 #if defined(CHALET_WIN32)
-std::wstring toWideString(const std::string& inValue);
-std::string fromWideString(const std::wstring& inValue);
+std::wstring toWideString(const std::string& inValue, u32 codePage = 0);
+std::string fromWideString(const std::wstring& inValue, u32 codePage = 0);
 #endif
 
 std::string eol();

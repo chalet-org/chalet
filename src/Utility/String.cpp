@@ -512,16 +512,21 @@ bool String::isWrapped(const std::string& inString, const std::string_view inSta
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-std::wstring String::toWideString(const std::string& inValue)
+std::wstring String::toWideString(const std::string& inValue, u32 codePage)
 {
 	if (!inValue.empty())
 	{
+		if (codePage == 0)
+			codePage = CP_UTF8;
+
+		// LOG("codePage:", codePage, inValue);
 		i32 size = (i32)inValue.size();
-		i32 requiredSize = MultiByteToWideChar(CP_UTF8, 0, inValue.data(), size, nullptr, 0);
+		i32 requiredSize = MultiByteToWideChar(codePage, 0, inValue.data(), size, nullptr, 0);
 		if (requiredSize > 0)
 		{
 			std::wstring result(requiredSize, 0);
-			MultiByteToWideChar(CP_UTF8, 0, inValue.data(), size, result.data(), requiredSize);
+			MultiByteToWideChar(codePage, 0, inValue.data(), size, result.data(), requiredSize);
+
 			return result;
 		}
 	}
@@ -530,17 +535,21 @@ std::wstring String::toWideString(const std::string& inValue)
 }
 
 /*****************************************************************************/
-std::string String::fromWideString(const std::wstring& inValue)
+std::string String::fromWideString(const std::wstring& inValue, u32 codePage)
 {
 	if (!inValue.empty())
 	{
+		if (codePage == 0)
+			codePage = CP_UTF8;
+
 		DWORD flags = 0;
 		i32 size = (i32)inValue.size();
-		i32 requiredSize = WideCharToMultiByte(CP_UTF8, flags, inValue.data(), size, NULL, 0, NULL, NULL);
+		i32 requiredSize = WideCharToMultiByte(codePage, flags, inValue.data(), size, NULL, 0, NULL, NULL);
 		if (requiredSize > 0)
 		{
 			std::string result(requiredSize, 0);
-			WideCharToMultiByte(CP_UTF8, flags, inValue.data(), size, result.data(), requiredSize, NULL, NULL);
+			WideCharToMultiByte(codePage, flags, inValue.data(), size, result.data(), requiredSize, NULL, NULL);
+			// LOG("codePage:", codePage, result);
 			return result;
 		}
 	}
