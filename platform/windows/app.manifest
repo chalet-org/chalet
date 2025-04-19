@@ -6,9 +6,9 @@
 		version="1.0.0.0"
 		processorArchitecture="*" />
 	<description>A JSON-based project &amp; build tool</description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
-			<requestedPrivileges>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
 			</requestedPrivileges>
 		</security>

@@ -75,9 +75,9 @@ std::string PlatformFileTemplates::minimumWindowsAppManifest()
 {
 	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
-			<requestedPrivileges>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
 			</requestedPrivileges>
 		</security>
@@ -91,9 +91,9 @@ std::string PlatformFileTemplates::minimumWindowsAppManifestWithCompatibility()
 {
 	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
-			<requestedPrivileges>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
 			</requestedPrivileges>
 		</security>
@@ -123,9 +123,9 @@ std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& 
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
 	<description></description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
-			<requestedPrivileges>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
 			</requestedPrivileges>
 		</security>
@@ -153,9 +153,9 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
 	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
 	<description></description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
 		<security>
-			<requestedPrivileges>
+			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
 				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
 			</requestedPrivileges>
 		</security>
