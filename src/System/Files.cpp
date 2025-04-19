@@ -682,7 +682,7 @@ bool Files::pathExists(const std::string& inFile)
 #if defined(CHALET_WIN32)
 	// std::error_code ec;
 	// return fs::exists(inFile, ec);
-	return ::GetFileAttributes(TO_WIDE(inFile).c_str()) != INVALID_FILE_ATTRIBUTES;
+	return ::GetFileAttributesA(inFile.c_str()) != INVALID_FILE_ATTRIBUTES;
 #else
 	return ::stat(inFile.c_str(), &statBuffer) == 0;
 #endif
@@ -997,7 +997,7 @@ void Files::sleep(const f64 inSeconds)
 bool Files::openWithDefaultApplication(const std::string& inFile)
 {
 #if defined(CHALET_WIN32)
-	HINSTANCE result = ::ShellExecute(NULL, TEXT("open"), TO_WIDE(inFile).c_str(), TEXT(""), NULL, SW_SHOW);
+	HINSTANCE result = ::ShellExecuteA(NULL, "open", inFile.c_str(), "", NULL, SW_SHOW);
 	return INT_PTR(result) > 32;
 
 #elif defined(CHALET_MACOS)
@@ -1025,25 +1025,11 @@ bool Files::openWithDefaultApplication(const std::string& inFile)
 /*****************************************************************************/
 std::ofstream Files::ofstream(const std::string& inFile, std::ios_base::openmode inMode)
 {
-#if defined(CHALET_WIN32)
-	auto file = TO_WIDE(inFile);
-#else
-	auto& file = inFile;
-#endif
-
-	return std::ofstream(file, inMode);
+	return std::ofstream(inFile, inMode);
 }
-
-/*****************************************************************************/
 std::ifstream Files::ifstream(const std::string& inFile, std::ios_base::openmode inMode)
 {
-#if defined(CHALET_WIN32)
-	auto file = TO_WIDE(inFile);
-#else
-	auto& file = inFile;
-#endif
-
-	return std::ifstream(file, inMode);
+	return std::ifstream(inFile, inMode);
 }
 
 /*****************************************************************************/
@@ -1135,8 +1121,8 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 
 	std::string result;
 #if defined(CHALET_WIN32)
-	PTCHAR lpFilePart = NULL;
-	TCHAR filename[MAX_PATH];
+	PCHAR lpFilePart = NULL;
+	char filename[MAX_PATH];
 
 	auto exe = Files::getPlatformExecutableExtension();
 	if (String::contains('.', inExecutable))
@@ -1145,9 +1131,9 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 		exe = inExecutable.substr(pos);
 	}
 
-	if (SearchPath(NULL, TO_WIDE(inExecutable).c_str(), TO_WIDE(exe).c_str(), MAX_PATH, filename, &lpFilePart) > 0)
+	if (SearchPathA(NULL, inExecutable.c_str(), exe.c_str(), MAX_PATH, filename, &lpFilePart) > 0)
 	{
-		result = FROM_WIDE(TSTRING(filename));
+		result = std::string(filename);
 		Path::toUnix(result);
 	}
 #else

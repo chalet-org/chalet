@@ -46,15 +46,15 @@ std::string escapeShellArgument(const std::string& inArg)
 }
 
 /*****************************************************************************/
-TSTRING getWindowsArguments(const StringList& inCmd)
+std::string getWindowsArguments(const StringList& inCmd)
 {
-	TSTRING args;
+	std::string args;
 	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
 		if (i > 0)
 			args += ' ';
 
-		args += TO_WIDE(escapeShellArgument(inCmd[i]));
+		args += escapeShellArgument(inCmd[i]);
 	}
 
 	return args;
@@ -165,9 +165,9 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 	if (messageId == 0)
 		return std::string();
 
-	PTCHAR messageBuffer = NULL;
+	PCHAR messageBuffer = NULL;
 	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-	DWORD size = FormatMessage(dwFlags,
+	DWORD size = FormatMessageA(dwFlags,
 		NULL,
 		messageId,
 		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
@@ -175,7 +175,7 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 		0,
 		NULL);
 
-	auto message = FROM_WIDE(TSTRING(messageBuffer, static_cast<size_t>(size)));
+	auto message = std::string(messageBuffer, static_cast<size_t>(size));
 
 	LocalFree(messageBuffer);
 
@@ -501,7 +501,7 @@ bool SubProcess::operator==(const SubProcess& inProcess)
 bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions)
 {
 #if defined(CHALET_WIN32)
-	STARTUPINFO startupInfo;
+	STARTUPINFOA startupInfo;
 	::ZeroMemory(&startupInfo, sizeof(startupInfo));
 
 	PROCESS_INFORMATION processInfo;
@@ -542,8 +542,7 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 	}
 
 	{
-		auto wcwd = TO_WIDE(inOptions.cwd);
-		auto cwd = wcwd.empty() ? nullptr : wcwd.c_str();
+		auto cwd = inOptions.cwd.empty() ? nullptr : inOptions.cwd.c_str();
 		auto args = getWindowsArguments(inCmd);
 
 		DWORD processFlags = NORMAL_PRIORITY_CLASS | CREATE_UNICODE_ENVIRONMENT;
@@ -555,7 +554,7 @@ bool SubProcess::create(const StringList& inCmd, const ProcessOptions& inOptions
 			processFlags |= CREATE_NO_WINDOW;
 		}
 
-		BOOL success = ::CreateProcess(TO_WIDE(inCmd.front()).c_str(),
+		BOOL success = ::CreateProcessA(inCmd.front().c_str(),
 			args.data(),   // program arguments
 			NULL,		   // process security attributes
 			NULL,		   // thread security attributes
