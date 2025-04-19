@@ -219,7 +219,21 @@ int main(int argc, const char* argv[])
 std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLanguage inLanguage)
 {
 	auto file = String::toUpperCase(String::getPathFilename(inFile));
-	String::replaceAll(file, '.', '_');
+	file.erase(std::remove_if(file.begin(), file.end(), [](char c) {
+		return !isalpha(c) && c != '.';
+	}),
+		file.end());
+
+	auto baseName = String::getPathBaseName(file);
+	if (baseName.empty())
+	{
+		auto suffix = String::getPathSuffix(file);
+		file = fmt::format("PCH_{}", suffix);
+	}
+	else
+	{
+		String::replaceAll(file, '.', '_');
+	}
 
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
