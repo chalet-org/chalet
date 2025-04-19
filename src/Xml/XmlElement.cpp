@@ -235,7 +235,7 @@ std::string XmlElement::getValidKey(const std::string_view& inKey) const
 	for (size_t i = 0; i < inKey.size(); ++i)
 	{
 		char c = inKey[i];
-		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+		if ((c >= 0 && c < 32) && !(c == 0x09 || c == 0x0A || c == 0x0F))
 			continue;
 
 		switch (c)
@@ -264,7 +264,7 @@ std::string XmlElement::getValidAttributeValue(const std::string_view& inValue) 
 	for (size_t i = 0; i < inValue.size(); ++i)
 	{
 		char c = inValue[i];
-		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+		if ((c >= 0 && c < 32) && !(c == 0x09 || c == 0x0A || c == 0x0F))
 			continue;
 
 		switch (c)
@@ -302,7 +302,7 @@ std::string XmlElement::getValidValue(const std::string_view& inValue) const
 	for (size_t i = 0; i < inValue.size(); ++i)
 	{
 		char c = inValue[i];
-		if (c < 32 && !(c == 0x09 || c == 0x0A || c == 0x0F))
+		if ((c >= 0 && c < 32) && !(c == 0x09 || c == 0x0A || c == 0x0F))
 			continue;
 
 		switch (c)

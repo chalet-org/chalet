@@ -545,7 +545,7 @@ bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
 	{
 		for (char c : input)
 		{
-			if (c < 32 || String::contains(c, invalidChars))
+			if ((c >= 0 && c < 32) || String::contains(c, invalidChars))
 				return false;
 		}
 	}

@@ -220,10 +220,6 @@ std::string StarterFileTemplates::getPch(const std::string& inFile, const CodeLa
 {
 	auto file = String::toUpperCase(String::getPathFilename(inFile));
 	String::replaceAll(file, '.', '_');
-	file.erase(std::remove_if(file.begin(), file.end(), [](char c) {
-		return !isalpha(c) && c != '_';
-	}),
-		file.end());
 
 	std::string ret;
 	if (inLanguage == CodeLanguage::CPlusPlus)
