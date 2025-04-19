@@ -38,6 +38,7 @@ private:
 	std::string getBannerV2() const;
 
 	bool checkForInvalidPathCharacters(std::string& input) const;
+	void ensureFileExtension(std::string& input, const StringList& inExts, const CodeLanguage inLang) const;
 
 	// questionaire
 	std::string getWorkspaceName() const;

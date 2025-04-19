@@ -533,6 +533,12 @@ std::string ProjectInitializer::getBannerV2() const
 /*****************************************************************************/
 bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
 {
+	if (input.empty())
+		return false;
+
+	if (input.front() == '.' || input.back() == '.')
+		return false;
+
 	std::string invalidChars = "<>:\"/\\|?*";
 	auto search = input.find_first_of(invalidChars.c_str());
 	if (search != std::string::npos)
@@ -544,6 +550,15 @@ bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
 		}
 	}
 	return true;
+}
+
+void ProjectInitializer::ensureFileExtension(std::string& input, const StringList& inExts, const CodeLanguage inLang) const
+{
+	const bool isC = inLang == CodeLanguage::C;
+	if ((isC && !String::endsWith(inExts, input)) || input.find('.') == std::string::npos)
+	{
+		input = String::getPathBaseName(input) + inExts.front();
+	}
 }
 
 /*****************************************************************************/
@@ -609,14 +624,11 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 
 	const bool isC = inLang == CodeLanguage::C;
 	auto label = isC ? "Must end in" : "Recommended extensions";
-	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("{}: {}", label, String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
+	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("{}: {}", label, String::join(m_sourceExts, " ")), [this, inLang](std::string& input) {
 		if (!checkForInvalidPathCharacters(input))
 			return false;
 
-		if (isC && !String::endsWith(m_sourceExts, input))
-		{
-			input = String::getPathBaseName(input) + m_sourceExts.front();
-		}
+		ensureFileExtension(input, m_sourceExts, inLang);
 		return true;
 	});
 
@@ -639,22 +651,19 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 		else
 		{
 			headerExts.emplace_back(".hpp");
+			headerExts.emplace_back(".h");
 			headerExts.emplace_back(".hxx");
 			headerExts.emplace_back(".hh");
-			headerExts.emplace_back(".h");
 		}
 
 		result = fmt::format("pch{}", headerExts.front());
 
 		auto label = isC ? "Must end in" : "Recommended extensions";
-		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [this, &headerExts, isC = isC](std::string& input) {
+		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [this, &headerExts, inLang](std::string& input) {
 			if (!checkForInvalidPathCharacters(input))
 				return false;
 
-			if (isC && !String::endsWith(headerExts, input))
-			{
-				input = String::getPathBaseName(input) + headerExts.front();
-			}
+			ensureFileExtension(input, headerExts, inLang);
 			return true;
 		});
 	}
