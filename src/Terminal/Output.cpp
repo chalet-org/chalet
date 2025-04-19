@@ -211,7 +211,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 		HANDLE kInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
 
 		DWORD bufferSize = 256;
-		WINSTR_CHAR buffer[256];
+		TCHAR buffer[256];
 		DWORD numberCharactersRead = 0;
 		auto readResult = ::ReadConsole(kInputHandle, buffer, bufferSize, &numberCharactersRead, NULL);
 		if (readResult == 0)
@@ -220,11 +220,7 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 			return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
 		}
 
-		// CRLF
-		// if (numberCharactersRead >= 2)
-		// 	numberCharactersRead -= 2;
-
-		auto result = USTRING(buffer, static_cast<size_t>(numberCharactersRead));
+		auto result = TSTRING(buffer, static_cast<size_t>(numberCharactersRead));
 		input = FROM_WIDE(result);
 		if (String::endsWith("\r\n", input))
 		{

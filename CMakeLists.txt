@@ -125,6 +125,11 @@ if(MSVC)
 		PRIVATE
 			/W4 /WX /source-charset:UTF-8 /execution-charset:UTF-8 /validate-charset /GR- /MP
 	)
+	target_link_options(${TARGET_NAME}
+		PRIVATE
+			"/MANIFEST:EMBED"
+			"/MANIFESTINPUT:${CMAKE_CURRENT_SOURCE_DIR}/platform/windows/app.manifest"
+	)
 else()
 	target_compile_options(${TARGET_NAME}
 		PRIVATE

@@ -46,9 +46,9 @@ std::string escapeShellArgument(const std::string& inArg)
 }
 
 /*****************************************************************************/
-USTRING getWindowsArguments(const StringList& inCmd)
+TSTRING getWindowsArguments(const StringList& inCmd)
 {
-	USTRING args;
+	TSTRING args;
 	for (size_t i = 0; i < inCmd.size(); ++i)
 	{
 		if (i > 0)
@@ -165,7 +165,7 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 	if (messageId == 0)
 		return std::string();
 
-	WINSTR_PTR messageBuffer = NULL;
+	PTCHAR messageBuffer = NULL;
 	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
 	DWORD size = FormatMessage(dwFlags,
 		NULL,
@@ -175,7 +175,7 @@ std::string SubProcess::getErrorMessageFromCode(const i32 inCode)
 		0,
 		NULL);
 
-	auto message = FROM_WIDE(USTRING(messageBuffer, static_cast<size_t>(size)));
+	auto message = FROM_WIDE(TSTRING(messageBuffer, static_cast<size_t>(size)));
 
 	LocalFree(messageBuffer);
 

@@ -11,11 +11,6 @@
 /*****************************************************************************/
 // Defines
 //
-#if defined(_DEBUG) || defined(DEBUG)
-	#define WIN32_MANIFEST 1
-#endif
-
-#define WIN32_ICON_MAIN 2
 
 #ifndef VOS_NT_WINDOWS32
 	#define VOS_NT_WINDOWS32 0x00040004L
@@ -61,11 +56,11 @@
 /*****************************************************************************/
 // Declare the location of the manifest & icon
 //
-#if defined(_DEBUG) || defined(DEBUG)
-WIN32_MANIFEST RT_MANIFEST "platform/windows/app.manifest"
-#endif
+// #if defined(_DEBUG) || defined(DEBUG)
+// 1 24 "platform/windows/app.manifest"
+// #endif
 
-WIN32_ICON_MAIN ICON "platform/windows/chalet.ico"
+2 ICON "platform/windows/chalet.ico"
 
 /*****************************************************************************/
 // Declare Version Info

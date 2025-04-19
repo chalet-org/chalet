@@ -52,6 +52,13 @@ void WindowsTerminal::initialize()
 
 	if (!state.firstCall)
 	{
+		auto ansiCodePage = GetACP();
+		if (ansiCodePage != CP_UTF8)
+		{
+			Diagnostic::warn("Many parts of the application will fail if using non-ASCII characters.");
+			Diagnostic::warn("Expected the Process code page to be 65001 (UTF-8), but it was: {}", ansiCodePage);
+		}
+
 		HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
 		if (hOut != INVALID_HANDLE_VALUE)
 		{
@@ -59,8 +66,9 @@ void WindowsTerminal::initialize()
 		}
 
 		{
-			auto result = SetConsoleOutputCP(CP_UTF8);
-			result &= SetConsoleCP(CP_UTF8);
+			auto result = SetConsoleOutputCP(CP_UTF8); // stdout
+			result &= SetConsoleCP(CP_UTF8);		   // stdin
+
 			chalet_assert(result, "Failed to set Console encoding.");
 			UNUSED(result);
 		}

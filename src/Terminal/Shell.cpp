@@ -75,10 +75,10 @@ std::string getProcessPath(DWORD inPid)
 		{
 			std::string processPath;
 			DWORD buffSize = 1024;
-			WINSTR_CHAR buffer[1024];
+			TCHAR buffer[1024];
 			if (QueryFullProcessImageName(parentHandle, 0, buffer, &buffSize))
 			{
-				processPath = FROM_WIDE(USTRING(buffer));
+				processPath = FROM_WIDE(TSTRING(buffer));
 			}
 			CloseHandle(parentHandle);
 

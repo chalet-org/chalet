@@ -517,9 +517,8 @@ std::wstring String::toWideString(const std::string& inValue, u32 codePage)
 	if (!inValue.empty())
 	{
 		if (codePage == 0)
-			codePage = CP_UTF8;
+			codePage = GetACP();
 
-		// LOG("codePage:", codePage, inValue);
 		i32 size = (i32)inValue.size();
 		i32 requiredSize = MultiByteToWideChar(codePage, 0, inValue.data(), size, nullptr, 0);
 		if (requiredSize > 0)
@@ -549,7 +548,6 @@ std::string String::fromWideString(const std::wstring& inValue, u32 codePage)
 		{
 			std::string result(requiredSize, 0);
 			WideCharToMultiByte(codePage, flags, inValue.data(), size, result.data(), requiredSize, NULL, NULL);
-			// LOG("codePage:", codePage, result);
 			return result;
 		}
 	}

@@ -1135,8 +1135,8 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 
 	std::string result;
 #if defined(CHALET_WIN32)
-	WINSTR_PTR lpFilePart = NULL;
-	WINSTR_CHAR filename[MAX_PATH];
+	PTCHAR lpFilePart = NULL;
+	TCHAR filename[MAX_PATH];
 
 	auto exe = Files::getPlatformExecutableExtension();
 	if (String::contains('.', inExecutable))
@@ -1145,9 +1145,9 @@ std::string Files::which(const std::string& inExecutable, const bool inOutput)
 		exe = inExecutable.substr(pos);
 	}
 
-	if (SearchPath(NULL, TO_WIDE(inExecutable, GetACP()).c_str(), TO_WIDE(exe).c_str(), MAX_PATH, filename, &lpFilePart) > 0)
+	if (SearchPath(NULL, TO_WIDE(inExecutable).c_str(), TO_WIDE(exe).c_str(), MAX_PATH, filename, &lpFilePart) > 0)
 	{
-		result = FROM_WIDE(USTRING(filename));
+		result = FROM_WIDE(TSTRING(filename));
 		Path::toUnix(result);
 	}
 #else

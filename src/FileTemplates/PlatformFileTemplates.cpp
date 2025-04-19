@@ -161,18 +161,13 @@ std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& i
 		</security>
 	</trustInfo>
 	<application xmlns="urn:schemas-microsoft-com:asm.v3">
-		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2011/WindowsSettings">
-			<disableWindowFiltering>true</disableWindowFiltering>
-		</windowsSettings>
-		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">
-			<dpiAwareness>permonitorv2, permonitor, unaware</dpiAwareness>
-      		<longPathAware>true</longPathAware>
-		</windowsSettings>
-		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2017/WindowsSettings">
-			<gdiScaling>false</gdiScaling>
-		</windowsSettings>
-		<windowsSettings xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">
-			<heapType>SegmentHeap</heapType>
+		<windowsSettings>
+			<disableWindowFiltering xmlns="http://schemas.microsoft.com/SMI/2011/WindowsSettings">true</disableWindowFiltering>
+			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">permonitorv2, permonitor, unaware</dpiAwareness>
+      		<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
+			<gdiScaling xmlns="http://schemas.microsoft.com/SMI/2017/WindowsSettings">false</gdiScaling>
+			<activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">UTF-8</activeCodePage>
+			<heapType xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">SegmentHeap</heapType>
 		</windowsSettings>
 	</application>
 	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
