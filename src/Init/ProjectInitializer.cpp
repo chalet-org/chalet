@@ -531,22 +531,28 @@ std::string ProjectInitializer::getBannerV2() const
 }
 
 /*****************************************************************************/
+bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
+{
+	std::string invalidChars = "<>:\"/\\|?*";
+	auto search = input.find_first_of(invalidChars.c_str());
+	if (search != std::string::npos)
+	{
+		for (char c : input)
+		{
+			if (c < 32 || String::contains(c, invalidChars))
+				return false;
+		}
+	}
+	return true;
+}
+
+/*****************************************************************************/
 std::string ProjectInitializer::getWorkspaceName() const
 {
 	std::string result = String::getPathBaseName(m_rootPath);
 
-	auto onValidate = [](std::string& input) {
-		std::string invalidChars = "<>:\"/\\|?*";
-		auto search = input.find_first_of(invalidChars.c_str());
-		if (search != std::string::npos)
-		{
-			for (char c : input)
-			{
-				if (c < 32 || String::contains(c, invalidChars))
-					return false;
-			}
-		}
-		return true;
+	auto onValidate = [this](std::string& input) {
+		return checkForInvalidPathCharacters(input);
 	};
 
 	onValidate(result);
@@ -587,10 +593,8 @@ std::string ProjectInitializer::getRootSourceDirectory() const
 {
 	std::string result{ "src" };
 
-	Output::getUserInput("Root source directory:", result, "The primary location for source files.", [](std::string& input) {
-		auto lower = String::toLowerCase(input);
-		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-") == std::string::npos;
-		return validChars && input.size() >= 3;
+	Output::getUserInput("Root source directory:", result, "The primary location for source files.", [this](std::string& input) {
+		return checkForInvalidPathCharacters(input);
 	});
 
 	return result;
@@ -606,13 +610,14 @@ std::string ProjectInitializer::getMainSourceFile(const CodeLanguage inLang) con
 	const bool isC = inLang == CodeLanguage::C;
 	auto label = isC ? "Must end in" : "Recommended extensions";
 	Output::getUserInput(fmt::format("Main source file:"), result, fmt::format("{}: {}", label, String::join(m_sourceExts, " ")), [this, isC = isC](std::string& input) {
-		auto lower = String::toLowerCase(input);
-		bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-		if (validChars && (isC && !String::endsWith(m_sourceExts, input)))
+		if (!checkForInvalidPathCharacters(input))
+			return false;
+
+		if (isC && !String::endsWith(m_sourceExts, input))
 		{
 			input = String::getPathBaseName(input) + m_sourceExts.front();
 		}
-		return validChars;
+		return true;
 	});
 
 	return result;
@@ -642,14 +647,15 @@ std::string ProjectInitializer::getCxxPrecompiledHeaderFile(const CodeLanguage i
 		result = fmt::format("pch{}", headerExts.front());
 
 		auto label = isC ? "Must end in" : "Recommended extensions";
-		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [&headerExts, isC = isC](std::string& input) {
-			auto lower = String::toLowerCase(input);
-			bool validChars = input.size() >= 3 && lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-			if (validChars && (isC && !String::endsWith(headerExts, input)))
+		Output::getUserInput(fmt::format("Precompiled header file:"), result, fmt::format("{}: {}", label, String::join(headerExts, " ")), [this, &headerExts, isC = isC](std::string& input) {
+			if (!checkForInvalidPathCharacters(input))
+				return false;
+
+			if (isC && !String::endsWith(headerExts, input))
 			{
 				input = String::getPathBaseName(input) + headerExts.front();
 			}
-			return validChars;
+			return true;
 		});
 	}
 

@@ -37,6 +37,8 @@ private:
 	std::string getBannerV1() const;
 	std::string getBannerV2() const;
 
+	bool checkForInvalidPathCharacters(std::string& input) const;
+
 	// questionaire
 	std::string getWorkspaceName() const;
 	std::string getWorkspaceVersion() const;
