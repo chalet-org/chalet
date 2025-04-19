@@ -463,7 +463,11 @@ set(TARGET_NAME {projectName})
 
 add_executable(${{TARGET_NAME}} ${{SOURCES}})
 {precompiledHeader}
-target_include_directories(${{TARGET_NAME}} PRIVATE {location}/){extraProperties})cmake",
+target_include_directories(${{TARGET_NAME}} PRIVATE {location}/){extraProperties}
+
+if(MSVC)
+	target_compile_options(${{TARGET_NAME}} PRIVATE /utf-8)
+endif())cmake",
 		FMT_ARG(minimumCMakeVersion),
 		FMT_ARG(workspaceName),
 		FMT_ARG(version),
