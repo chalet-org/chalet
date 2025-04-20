@@ -2347,12 +2347,14 @@
 					"type": "boolean",
 					"const": false
 				}
-			]
+			],
+			"default": "app.manifest"
 		},
 		"target-source-cxx-windowsAppIcon": {
 			"type": "string",
-			"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
-			"minLength": 1
+			"description": "The windows icon to use for the project (.ico format). Only applies to executable targets (kind=executable)",
+			"minLength": 1,
+			"default": "app.ico"
 		},
 		"target-source-cxx-mingwUnixSharedLibraryNamingConvention": {
 			"type": "boolean",

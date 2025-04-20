@@ -19,6 +19,7 @@ namespace chalet
 /*****************************************************************************/
 ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
+	// kPatternTargetName(R"regex(^[^<>:\"/\\\\\\|\\?\\*]+$)regex"),
 	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
 	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
 	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{3,})?$)regex"),
@@ -1307,13 +1308,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				"type": "boolean",
 				"const": false
 			}
-		]
+		],
+		"default": "app.manifest"
 	})json"_ojson;
 
 	defs[Defs::TargetSourceCxxWindowsAppIcon] = R"json({
 		"type": "string",
-		"description": "The windows icon to use for the project. Only applies to executable targets (kind=executable)",
-		"minLength": 1
+		"description": "The windows icon to use for the project (.ico format). Only applies to executable targets (kind=executable)",
+		"minLength": 1,
+		"default": "app.ico"
 	})json"_ojson;
 
 	/*defs[Defs::TargetSourceCxxWindowsOutputDef] = R"json({
