@@ -13,6 +13,7 @@ namespace chalet
 struct WindowsManifestGenSettings
 {
 	std::string name;
+	std::string description;
 	Version version;
 	Arch::Cpu cpu = Arch::Cpu::Unknown;
 
@@ -23,5 +24,7 @@ struct WindowsManifestGenSettings
 	bool unicode = false;
 	bool segmentHeap = false;
 	bool compatibility = false;
+
+	bool prettify = false;
 };
 }

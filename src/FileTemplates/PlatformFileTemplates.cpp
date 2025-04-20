@@ -98,7 +98,7 @@ std::string PlatformFileTemplates::windowsAppManifest(const WindowsManifestGenSe
 			node.addAttribute("version", inSettings.version.majorMinorPatchTweak());
 			node.addAttribute("processorArchitecture", getWindowsManifestArch(inSettings.cpu));
 		});
-		root.addElementWithText("description", "");
+		root.addElementWithText("description", inSettings.description);
 	}
 
 	/*
@@ -206,7 +206,10 @@ std::string PlatformFileTemplates::windowsAppManifest(const WindowsManifestGenSe
 		});
 	}
 
-	return manifest.dump(1, ' ');
+	if (inSettings.prettify)
+		return manifest.dump(1, '\t');
+	else
+		return manifest.dump();
 }
 
 /*****************************************************************************/

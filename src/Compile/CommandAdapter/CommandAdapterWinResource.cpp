@@ -52,15 +52,22 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 			manifestSettings.cpu = m_state.info.targetArchitecture();
 			manifestSettings.unicode = m_project.executionCharsetIsUnicode();
 			manifestSettings.compatibility = true;
+			manifestSettings.prettify = !m_project.windowsApplicationManifest().empty();
 
 			if (m_project.hasMetadata())
+			{
 				manifestSettings.version = m_project.metadata().version();
+				manifestSettings.description = m_project.metadata().description();
+			}
 
 			if (!manifestSettings.version)
 				manifestSettings.version = m_state.workspace.metadata().version();
 
 			if (!manifestSettings.version)
 				manifestSettings.version = Version::fromString("1.0.0.0");
+
+			if (!manifestSettings.description.empty())
+				manifestSettings.description = m_state.workspace.metadata().description();
 
 			auto manifestContents = PlatformFileTemplates::windowsAppManifest(manifestSettings);
 			if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
