@@ -964,6 +964,10 @@ void SourceTarget::setExecutionCharset(std::string&& inValue) noexcept
 
 	m_executionCharset = std::move(inValue);
 }
+bool SourceTarget::executionCharsetIsUnicode() const noexcept
+{
+	return String::equals("UTF-8", m_executionCharset);
+}
 
 /*****************************************************************************/
 const std::string& SourceTarget::windowsApplicationManifest() const noexcept

@@ -128,6 +128,7 @@ struct SourceTarget final : public IBuildTarget
 
 	const std::string& executionCharset() const noexcept;
 	void setExecutionCharset(std::string&& inValue) noexcept;
+	bool executionCharsetIsUnicode() const noexcept;
 
 	const std::string& windowsApplicationManifest() const noexcept;
 	void setWindowsApplicationManifest(std::string&& inValue) noexcept;

@@ -9,6 +9,11 @@
 
 namespace chalet
 {
+Version::operator bool() const noexcept
+{
+	return m_segments > 0;
+}
+
 /*****************************************************************************/
 Version Version::fromString(const std::string& inVersion)
 {
@@ -119,6 +124,12 @@ std::string Version::majorMinor() const
 std::string Version::majorMinorPatch() const
 {
 	return fmt::format("{}.{}.{}", m_major, m_minor, m_patch);
+}
+
+/*****************************************************************************/
+std::string Version::majorMinorPatchTweak() const
+{
+	return fmt::format("{}.{}.{}.{}", m_major, m_minor, m_patch, m_tweak);
 }
 
 /*****************************************************************************/

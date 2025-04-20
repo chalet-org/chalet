@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "FileTemplates/WindowsManifestGenSettings.hpp"
 #include "Platform/Arch.hpp"
 
 namespace chalet
@@ -13,10 +14,7 @@ namespace PlatformFileTemplates
 {
 std::string linuxDesktopEntry();
 std::string macosInfoPlist();
-std::string minimumWindowsAppManifest();
-std::string minimumWindowsAppManifestWithCompatibility();
-std::string generalWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu);
-std::string loadedWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu);
+std::string windowsAppManifest(const WindowsManifestGenSettings& inSettings);
 std::string windowsManifestResource(const std::string& inManifestFile, const bool inDllPrivateDeps = false);
 std::string windowsIconResource(const std::string& inIconFile);
 }

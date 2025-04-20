@@ -57,9 +57,9 @@ const std::string& Xml::version() const noexcept
 	return m_version;
 }
 
-void Xml::setVersion(const std::string& inVersion)
+void Xml::setVersion(const std::string& inValue)
 {
-	m_version = inVersion;
+	m_version = inValue;
 }
 
 /*****************************************************************************/
@@ -68,9 +68,9 @@ const std::string& Xml::encoding() const noexcept
 	return m_encoding;
 }
 
-void Xml::setEncoding(const std::string& inVersion)
+void Xml::setEncoding(const std::string& inValue)
 {
-	m_encoding = inVersion;
+	m_encoding = inValue;
 }
 
 /*****************************************************************************/

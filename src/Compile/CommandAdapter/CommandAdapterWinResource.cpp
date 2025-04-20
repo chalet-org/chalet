@@ -13,6 +13,8 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "State/TargetMetadata.hpp"
+#include "State/WorkspaceEnvironment.hpp"
 #include "System/Files.hpp"
 #include "Utility/String.hpp"
 
@@ -45,14 +47,22 @@ bool CommandAdapterWinResource::createWindowsApplicationManifest()
 
 		if (String::startsWith(m_state.paths.intermediateDir(m_project), windowsManifestFile) || !Files::pathExists(windowsManifestFile))
 		{
-			std::string manifestContents;
-			if (m_project.windowsApplicationManifest().empty())
-				manifestContents = PlatformFileTemplates::minimumWindowsAppManifest();
-			else
-				manifestContents = PlatformFileTemplates::generalWindowsAppManifest(m_project.name(), m_state.info.targetArchitecture());
+			WindowsManifestGenSettings manifestSettings;
+			manifestSettings.name = m_project.name();
+			manifestSettings.cpu = m_state.info.targetArchitecture();
+			manifestSettings.unicode = m_project.executionCharsetIsUnicode();
+			manifestSettings.compatibility = true;
 
-			String::replaceAll(manifestContents, '\t', ' ');
+			if (m_project.hasMetadata())
+				manifestSettings.version = m_project.metadata().version();
 
+			if (!manifestSettings.version)
+				manifestSettings.version = m_state.workspace.metadata().version();
+
+			if (!manifestSettings.version)
+				manifestSettings.version = Version::fromString("1.0.0.0");
+
+			auto manifestContents = PlatformFileTemplates::windowsAppManifest(manifestSettings);
 			if (!Files::createFileWithContents(windowsManifestFile, manifestContents))
 			{
 				Diagnostic::error("Error creating windows manifest file: {}", windowsManifestFile);

@@ -26,6 +26,9 @@ public:
 	const std::string& name() const noexcept;
 	void setName(std::string_view inName);
 
+	const std::string& comment() const noexcept;
+	void setComment(std::string_view inName);
+
 	XmlElement& getNode(std::string_view inKey);
 
 	bool hasAttributes() const;
@@ -51,6 +54,7 @@ private:
 	void allocateChild();
 
 	std::string m_name;
+	std::string m_comment;
 	Unique<XmlTagAttributeList> m_attributes;
 	Unique<XmlElementChild> m_child;
 

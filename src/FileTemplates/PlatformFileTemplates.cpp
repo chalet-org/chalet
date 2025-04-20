@@ -6,6 +6,7 @@
 #include "FileTemplates/PlatformFileTemplates.hpp"
 
 #include "System/Files.hpp"
+#include "Xml/Xml.hpp"
 
 namespace chalet
 {
@@ -26,8 +27,10 @@ const char* getWindowsManifestArch(const Arch::Cpu inCpu)
 			return "arm";
 
 		case Arch::Cpu::X64:
-		default:
 			return "amd64";
+		case Arch::Cpu::Unknown:
+		default:
+			return "*";
 	}
 }
 }
@@ -69,120 +72,141 @@ std::string PlatformFileTemplates::macosInfoPlist()
 }
 
 /*****************************************************************************/
-// Note: This is the default for Visual Studio projects
+// Note: The default for Visual Studio projects only has trustInfo -> security
 //
-std::string PlatformFileTemplates::minimumWindowsAppManifest()
-{
-	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-		<security>
-			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
-			</requestedPrivileges>
-		</security>
-	</trustInfo>
-</assembly>
-)xml";
-}
-
-/*****************************************************************************/
-std::string PlatformFileTemplates::minimumWindowsAppManifestWithCompatibility()
-{
-	return R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-		<security>
-			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
-			</requestedPrivileges>
-		</security>
-	</trustInfo>
-	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-		<application>
-			<supportedOS Id="{e2011457-1546-43c5-a5fe-008deee3d3f0}" /> <!-- Windows Vista/Server 2008 -->
-			<supportedOS Id="{35138b9a-5d96-4fbd-8e2d-a2440225f93a}" /> <!-- Windows 7/Server 2008 R2 -->
-			<supportedOS Id="{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}" /> <!-- Windows 8/Server 2012 -->
-			<supportedOS Id="{1f676c76-80e1-4239-95bb-83d0f6d0da78}" /> <!-- Windows 8.1/Server 2012 R2 -->
-			<supportedOS Id="{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}" /> <!-- Windows 10 -->
-		</application>
-	</compatibility>
-</assembly>
-)xml";
-}
-
-/*****************************************************************************/
-// Note: The default for Visual Studio projects omits assemblyIdentity & description
-//   The msys2 package 'mingw-w64-x86_64-windows-default-manifest' also includes
+// Note: The msys2 package 'mingw-w64-x86_64-windows-default-manifest' also includes
 //   supportedOS
 //
-std::string PlatformFileTemplates::generalWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu)
+std::string PlatformFileTemplates::windowsAppManifest(const WindowsManifestGenSettings& inSettings)
 {
-	auto arch = getWindowsManifestArch(inCpu);
-	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
-	<description></description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-		<security>
-			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
-			</requestedPrivileges>
-		</security>
-	</trustInfo>
-	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-		<application>
-			<supportedOS Id="{{e2011457-1546-43c5-a5fe-008deee3d3f0}}" /> <!-- Windows Vista/Server 2008 -->
-			<supportedOS Id="{{35138b9a-5d96-4fbd-8e2d-a2440225f93a}}" /> <!-- Windows 7/Server 2008 R2 -->
-			<supportedOS Id="{{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}}" /> <!-- Windows 8/Server 2012 -->
-			<supportedOS Id="{{1f676c76-80e1-4239-95bb-83d0f6d0da78}}" /> <!-- Windows 8.1/Server 2012 R2 -->
-			<supportedOS Id="{{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}}" /> <!-- Windows 10 -->
-		</application>
-	</compatibility>
-</assembly>
-)xml",
-		fmt::arg("name", inName),
-		FMT_ARG(arch));
-}
+	static const char kXmlns[] = "xmlns";
 
-/*****************************************************************************/
-std::string PlatformFileTemplates::loadedWindowsAppManifest(const std::string& inName, const Arch::Cpu inCpu)
-{
-	auto arch = getWindowsManifestArch(inCpu);
-	return fmt::format(R"xml(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
-	<description></description>
-	<trustInfo xmlns="urn:schemas-microsoft-com:asm.v2">
-		<security>
-			<requestedPrivileges xmlns="urn:schemas-microsoft-com:asm.v3">
-				<requestedExecutionLevel level="asInvoker" uiAccess="false" />
-			</requestedPrivileges>
-		</security>
-	</trustInfo>
-	<application xmlns="urn:schemas-microsoft-com:asm.v3">
-		<windowsSettings>
-			<disableWindowFiltering xmlns="http://schemas.microsoft.com/SMI/2011/WindowsSettings">true</disableWindowFiltering>
-			<dpiAwareness xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">permonitorv2, permonitor, unaware</dpiAwareness>
-      		<longPathAware xmlns="http://schemas.microsoft.com/SMI/2016/WindowsSettings">true</longPathAware>
-			<gdiScaling xmlns="http://schemas.microsoft.com/SMI/2017/WindowsSettings">false</gdiScaling>
-			<activeCodePage xmlns="http://schemas.microsoft.com/SMI/2019/WindowsSettings">UTF-8</activeCodePage>
-			<heapType xmlns="http://schemas.microsoft.com/SMI/2020/WindowsSettings">SegmentHeap</heapType>
-		</windowsSettings>
-	</application>
-	<compatibility xmlns="urn:schemas-microsoft-com:compatibility.v1">
-		<application>
-			<supportedOS Id="{{e2011457-1546-43c5-a5fe-008deee3d3f0}}" /> <!-- Windows Vista/Server 2008 -->
-			<supportedOS Id="{{35138b9a-5d96-4fbd-8e2d-a2440225f93a}}" /> <!-- Windows 7/Server 2008 R2 -->
-			<supportedOS Id="{{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}}" /> <!-- Windows 8/Server 2012 -->
-			<supportedOS Id="{{1f676c76-80e1-4239-95bb-83d0f6d0da78}}" /> <!-- Windows 8.1/Server 2012 R2 -->
-			<supportedOS Id="{{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}}" /> <!-- Windows 10 -->
-		</application>
-	</compatibility>
-</assembly>
-)xml",
-		fmt::arg("name", inName),
-		FMT_ARG(arch));
+	Xml manifest;
+	manifest.setEncoding("UTF-8");
+	manifest.setStandalone(true);
+
+	auto& root = manifest.root();
+	root.setName("assembly");
+	root.addAttribute(kXmlns, "urn:schemas-microsoft-com:asm.v1");
+	root.addAttribute("manifestVersion", "1.0");
+
+	if (!inSettings.name.empty())
+	{
+		root.addElement("assemblyIdentity", [&inSettings](XmlElement& node) {
+			node.addAttribute("name", inSettings.name);
+			node.addAttribute("type", "win32");
+			node.addAttribute("version", inSettings.version.majorMinorPatchTweak());
+			node.addAttribute("processorArchitecture", getWindowsManifestArch(inSettings.cpu));
+		});
+		root.addElementWithText("description", "");
+	}
+
+	/*
+		<assemblyIdentity name="{name}" processorArchitecture="{arch}" version="1.0.0.0" type="win32" />
+		<description></description>
+	*/
+
+	root.addElement("trustInfo", [](XmlElement& node) {
+		node.addAttribute(kXmlns, "urn:schemas-microsoft-com:asm.v2");
+		node.addElement("security", [](XmlElement& node2) {
+			node2.addElement("requestedPrivileges", [](XmlElement& node3) {
+				node3.addAttribute(kXmlns, "urn:schemas-microsoft-com:asm.v3");
+				node3.addElement("requestedExecutionLevel", [](XmlElement& node4) {
+					node4.addAttribute("level", "asInvoker");
+					node4.addAttribute("uiAccess", "false");
+				});
+			});
+		});
+	});
+
+	bool hasWindowsSettings = inSettings.disableWindowFiltering
+		|| inSettings.dpiAwareness
+		|| inSettings.longPathAware
+		|| inSettings.disableGdiScaling
+		|| inSettings.unicode
+		|| inSettings.segmentHeap;
+
+	if (hasWindowsSettings)
+	{
+		root.addElement("application", [&inSettings](XmlElement& node) {
+			node.addAttribute(kXmlns, "urn:schemas-microsoft-com:asm.v3");
+			node.addElement("windowsSettings", [&inSettings](XmlElement& node2) {
+				if (inSettings.disableWindowFiltering)
+				{
+					node2.addElement("disableWindowFiltering", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2011/WindowsSettings");
+						node3.setText("true");
+					});
+				}
+				if (inSettings.dpiAwareness)
+				{
+					node2.addElement("dpiAwareness", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2016/WindowsSettings");
+						node3.setText("permonitorv2, permonitor, unaware");
+					});
+				}
+				if (inSettings.longPathAware)
+				{
+					node2.addElement("longPathAware", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2016/WindowsSettings");
+						node3.setText("true");
+					});
+				}
+				if (inSettings.disableGdiScaling)
+				{
+					node2.addElement("gdiScaling", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2017/WindowsSettings");
+						node3.setText("false");
+					});
+				}
+				if (inSettings.unicode)
+				{
+					node2.addElement("activeCodePage", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2019/WindowsSettings");
+						node3.setText("UTF-8");
+					});
+				}
+				if (inSettings.segmentHeap)
+				{
+					node2.addElement("heapType", [](XmlElement& node3) {
+						node3.addAttribute(kXmlns, "http://schemas.microsoft.com/SMI/2020/WindowsSettings");
+						node3.setText("SegmentHeap");
+					});
+				}
+			});
+		});
+	}
+
+	if (inSettings.compatibility)
+	{
+		root.addElement("compatibility", [](XmlElement& node) {
+			node.addAttribute(kXmlns, "urn:schemas-microsoft-com:compatibility.v1");
+			node.addElement("application", [](XmlElement& node2) {
+				node2.addElement("supportedOS", [](XmlElement& node3) {
+					node3.addAttribute("Id", "{e2011457-1546-43c5-a5fe-008deee3d3f0}");
+					node3.setComment("Windows Vista/Server 2008");
+				});
+				node2.addElement("supportedOS", [](XmlElement& node3) {
+					node3.addAttribute("Id", "{35138b9a-5d96-4fbd-8e2d-a2440225f93a}");
+					node3.setComment("Windows 7/Server 2008 R2");
+				});
+				node2.addElement("supportedOS", [](XmlElement& node3) {
+					node3.addAttribute("Id", "{4a2f28e3-53b9-4441-ba9c-d69d4a4a6e38}");
+					node3.setComment("Windows 8/Server 2012");
+				});
+				node2.addElement("supportedOS", [](XmlElement& node3) {
+					node3.addAttribute("Id", "{1f676c76-80e1-4239-95bb-83d0f6d0da78}");
+					node3.setComment("Windows 8.1/Server 2012 R2");
+				});
+				node2.addElement("supportedOS", [](XmlElement& node3) {
+					node3.addAttribute("Id", "{8e0f7a12-bfb3-4fe8-b9a5-48fd50a15a9a}");
+					node3.setComment("Windows 10");
+				});
+			});
+		});
+	}
+
+	return manifest.dump(1, ' ');
 }
 
 /*****************************************************************************/

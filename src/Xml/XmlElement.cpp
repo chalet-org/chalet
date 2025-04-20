@@ -83,6 +83,13 @@ std::string XmlElement::dump(const u32 inIndent, const i32 inIndentSize, const c
 	if (m_commented)
 		ret += "-->";
 
+	if (!m_comment.empty())
+	{
+		ret += "<!-- ";
+		ret += m_comment;
+		ret += " -->";
+	}
+
 	if (inIndentSize >= 0)
 		ret += '\n';
 
@@ -98,6 +105,16 @@ const std::string& XmlElement::name() const noexcept
 void XmlElement::setName(std::string_view inName)
 {
 	m_name = XmlElement::getValidKey(inName);
+}
+
+/*****************************************************************************/
+const std::string& XmlElement::comment() const noexcept
+{
+	return m_comment;
+}
+void XmlElement::setComment(std::string_view inValue)
+{
+	m_comment = XmlElement::getValidKey(inValue);
 }
 
 /*****************************************************************************/

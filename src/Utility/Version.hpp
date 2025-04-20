@@ -11,6 +11,8 @@ struct Version
 {
 	static Version fromString(const std::string& inVersion);
 
+	operator bool() const noexcept;
+
 	bool setFromString(const std::string& inVersion);
 
 	bool hasMajor() const noexcept;
@@ -28,6 +30,7 @@ struct Version
 	std::string asString() const;
 	std::string majorMinor() const;
 	std::string majorMinorPatch() const;
+	std::string majorMinorPatchTweak() const;
 
 	bool operator<(const Version& rhs) const noexcept;
 

@@ -19,10 +19,10 @@ struct Xml
 	void addRawHeader(std::string inHeader);
 
 	const std::string& version() const noexcept;
-	void setVersion(const std::string& inVersion);
+	void setVersion(const std::string& inValue);
 
 	const std::string& encoding() const noexcept;
-	void setEncoding(const std::string& inVersion);
+	void setEncoding(const std::string& inValue);
 
 	bool standalone() const noexcept;
 	void setStandalone(const bool inValue) noexcept;
