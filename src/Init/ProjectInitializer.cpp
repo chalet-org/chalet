@@ -21,6 +21,12 @@
 #include "Yaml/YamlFile.hpp"
 #include "Json/JsonFile.hpp"
 
+#if defined(CHALET_MSVC)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -543,7 +549,7 @@ bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
 	auto search = input.find_first_of(invalidChars.c_str());
 	if (search != std::string::npos)
 	{
-		for (char c : input)
+		for (auto c : input)
 		{
 			if ((c >= 0 && c < 32) || String::contains(c, invalidChars))
 				return false;
@@ -866,3 +872,8 @@ void ProjectInitializer::printUserInputSplit() const
 	Output::printSeparator();
 }
 }
+
+#if defined(CHALET_MSVC)
+#else
+	#pragma GCC diagnostic pop
+#endif

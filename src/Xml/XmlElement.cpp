@@ -9,6 +9,12 @@
 
 #include "Utility/String.hpp"
 
+#if defined(CHALET_MSVC)
+#else
+	#pragma GCC diagnostic push
+	#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
+
 namespace chalet
 {
 /*****************************************************************************/
@@ -345,3 +351,8 @@ void XmlElement::allocateChild()
 }
 
 }
+
+#if defined(CHALET_MSVC)
+#else
+	#pragma GCC diagnostic pop
+#endif
