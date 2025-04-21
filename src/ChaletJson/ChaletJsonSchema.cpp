@@ -19,7 +19,7 @@ namespace chalet
 /*****************************************************************************/
 ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
-	// kPatternTargetName(R"regex(^[^<>:\"/\\\\\\|\\?\\*]+$)regex"),
+	// kPatternTargetName(R"regex(^[^<>:"/\\\|\?\*]+$)regex"),
 	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
 	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
 	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{3,})?$)regex"),
@@ -2610,7 +2610,8 @@ Json ChaletJsonSchema::get()
 				"i686-pc-linux-gnu",
 				"aarch64-linux-gnu",
 				"aarch64-pc-linux-gnu",
-				"arm-linux-gnueabihf"
+				"arm-linux-gnueabihf",
+				"wasm32-unknown-emscripten"
 			]
 		}
 	})json"_ojson;
