@@ -2597,20 +2597,22 @@ Json ChaletJsonSchema::get()
 			"minLength": 1,
 			"examples": [
 				"x86_64-pc-windows-msvc",
-				"i686-pc-windows-msvc",
-				"arm64-pc-windows-msvc",
 				"x86_64-w64-mingw32",
-				"i686-w64-mingw32",
-				"arm64-apple-darwin",
+				"x86_64-w64-windows-gnu",
 				"x86_64-apple-darwin",
-				"universal-apple-darwin",
 				"x86_64-linux-gnu",
 				"x86_64-pc-linux-gnu",
+				"i686-pc-windows-msvc",
+				"i686-w64-mingw32",
+				"i686-w64-windows-gnu",
 				"i686-linux-gnu",
 				"i686-pc-linux-gnu",
+				"arm64-pc-windows-msvc",
+				"arm64-apple-darwin",
 				"aarch64-linux-gnu",
 				"aarch64-pc-linux-gnu",
 				"arm-linux-gnueabihf",
+				"universal-apple-darwin",
 				"wasm32-unknown-emscripten"
 			]
 		}
