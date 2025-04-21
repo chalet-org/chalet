@@ -2605,6 +2605,7 @@ Json ChaletJsonSchema::get()
 				"i686-pc-windows-msvc",
 				"i686-w64-mingw32",
 				"i686-w64-windows-gnu",
+				"i686-pc-mingw32",
 				"i686-linux-gnu",
 				"i686-pc-linux-gnu",
 				"arm64-pc-windows-msvc",
