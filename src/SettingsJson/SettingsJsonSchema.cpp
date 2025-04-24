@@ -263,7 +263,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 
 	defs[Defs::ToolchainBuildPathStyle] = R"json({
 		"type": "string",
-		"description": "The build path style, with the configuration appended by an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x86_64_Debug\ntarget-triple: build/x64-linux-gnu_Debug\ntoolchain-name: build/my-cool-toolchain_name_Debug",
+		"description": "The build path style, with the configuration appended by an underscore. Examples:\nconfiguration: build/Debug\narchitecture: build/x86_64_Debug\ntarget-triple: build/x86_64-linux-gnu_Debug\ntoolchain-name: build/my-toolchain_Debug",
 		"enum": [],
 		"default": "target-triple"
 	})json"_ojson;
