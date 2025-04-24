@@ -198,10 +198,13 @@ Json BuildFileChecker::getExpandedBuildFile()
 			const auto& name = target->name();
 			if (distributionJson.contains(name))
 			{
+				auto tname = target->name();
+				m_state.replaceVariablesInString(tname, target.get());
+
 				newNode = std::move(distributionJson[name]);
 
-				newJson[name] = std::move(newNode);
-				checkNodeWithTargetPtr(newJson[name], target.get());
+				newJson[tname] = std::move(newNode);
+				checkNodeWithTargetPtr(newJson[tname], target.get());
 			}
 		}
 		checked[kDistribution] = std::move(newJson);
