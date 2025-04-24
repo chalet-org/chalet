@@ -53,6 +53,7 @@ std::string getRootFolder(const std::string& inPath);
 std::string getPathFilename(const std::string& inPath);
 std::string getPathFolderBaseName(const std::string& inPath);
 bool isWrapped(const std::string& inString, const std::string_view inStart, const std::string_view inEnd);
+std::string withByteOrderMark(const std::string& inString);
 
 #if defined(CHALET_WIN32)
 std::wstring toWideString(const std::string& inValue, u32 codePage = 0);

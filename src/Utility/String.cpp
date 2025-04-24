@@ -510,6 +510,15 @@ bool String::isWrapped(const std::string& inString, const std::string_view inSta
 	return true;
 }
 
+/*****************************************************************************/
+std::string String::withByteOrderMark(const std::string& inString)
+{
+	const char* kByteOrderMark = "\xEF\xBB\xBF";
+	std::string result{ kByteOrderMark };
+	result += inString;
+	return result;
+}
+
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
 std::wstring String::toWideString(const std::string& inValue, u32 codePage)

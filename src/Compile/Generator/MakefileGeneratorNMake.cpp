@@ -84,7 +84,7 @@ std::string MakefileGeneratorNMake::getContents(const std::string& inPath) const
 	//
 	//
 	// ==============================================================================
-	std::string makefileTemplate = fmt::format(R"makefile(
+	std::string makefileTemplate = String::withByteOrderMark(fmt::format(R"makefile(
 .SUFFIXES:
 
 SHELL = {shell}
@@ -93,7 +93,7 @@ SHELL = {shell}
 		// FMT_ARG(suffixes),
 		FMT_ARG(shell),
 		FMT_ARG(recipes),
-		FMT_ARG(depDirs));
+		FMT_ARG(depDirs)));
 
 	return makefileTemplate;
 }

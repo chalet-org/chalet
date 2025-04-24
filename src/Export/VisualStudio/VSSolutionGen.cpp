@@ -132,7 +132,7 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		vsConfigString += fmt::format("\n\tGlobalSection(ProjectConfigurationPlatforms) = postSolution{projectConfigs}\n\tEndGlobalSection", FMT_ARG(projectConfigs));
 	}
 
-	std::string contents = fmt::format(R"sln(
+	std::string contents = String::withByteOrderMark(fmt::format(R"sln(
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version {visualStudioVersionMajor}
 VisualStudioVersion = {visualStudioVersion}
@@ -150,7 +150,7 @@ EndGlobal)sln",
 		FMT_ARG(minimumVisualStudioVersion),
 		FMT_ARG(vsProjectsString),
 		FMT_ARG(solutionGUID),
-		FMT_ARG(vsConfigString));
+		FMT_ARG(vsConfigString)));
 
 	if (!Files::createFileWithContents(inFilename, contents))
 	{
