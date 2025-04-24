@@ -124,6 +124,9 @@ default makebuild
 		FMT_ARG(msvcDepsPrefix),
 		FMT_ARG(recipes));
 
+	String::replaceAll(ninjaTemplate, "\"$out\"", "$out");
+	String::replaceAll(ninjaTemplate, "\"$in\"", "$in");
+
 	return ninjaTemplate;
 }
 
