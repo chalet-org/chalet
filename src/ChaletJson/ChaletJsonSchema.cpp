@@ -19,13 +19,11 @@ namespace chalet
 /*****************************************************************************/
 ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
-	// kPatternTargetName(R"regex(^[^<>:"/\\\|\?\*]+$)regex"),
-	kPatternTargetName(R"regex(^[\w\-+.]{3,}$)regex"),
+	kPatternTargetName(R"regex(^[^<>:"/\\\|\?\*\{\}\$]{2,}$)regex"),
 	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
 	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{3,})?$)regex"),
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
-	kPatternDistributionName(R"regex(^(([\w\-+. ()]+)|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
-	kPatternDistributionNameSimple(R"regex(^[\w\-+. ()]{2,}$)regex"),
+	kPatternDistributionName(R"regex(^([^<>:"/\\\|\?\*\{\}\$]{2,}|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
 	kPatternConditions(R"regex(\[(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\}))([\+\|](\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\})))*\])regex") // https://regexr.com/6jni8
 {
 }
@@ -446,7 +444,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"description": "Icon positions for the root disk image paths.\nSpecifying the name of a bundle will include it in the image. Specifying `Applications` will include a symbolic link to the `/Applications` path.\nAdditionally, if there is a bundle named `Applications`, it will be ignored, and an error will be displayed.",
 		"additionalProperties": false
 	})json"_ojson;
-	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][SKeys::PatternProperties][kPatternDistributionNameSimple] = R"json({
+	m_nonIndexedDefs[Defs::DistributionMacosDiskImagePositions][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "An icon position in the root disk image.",
 		"additionalProperties": false,

@@ -393,7 +393,7 @@
 				}
 			],
 			"items": {
-				"pattern": "^[\\w\\-+.]{3,}$"
+				"pattern": "^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$"
 			}
 		},
 		"dist-bundle-includeDependentSharedLibraries": {
@@ -687,7 +687,7 @@
 					"description": "Icon positions for the root disk image paths.\nSpecifying the name of a bundle will include it in the image. Specifying `Applications` will include a symbolic link to the `/Applications` path.\nAdditionally, if there is a bundle named `Applications`, it will be ignored, and an error will be displayed.",
 					"additionalProperties": false,
 					"patternProperties": {
-						"^[\\w\\-+. ()]{2,}$": {
+						"^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$": {
 							"type": "object",
 							"description": "An icon position in the root disk image.",
 							"additionalProperties": false,
@@ -1980,7 +1980,7 @@
 			"type": "string",
 			"description": "Describes a suffix used to differentiate targets within build folders. If the same suffix is used between multiple targets, they can share objects and a precompiled header. By default, the suffix is the name of the target, so setting this to the name of another target will share its objects.\nAffected paths:\n`${buildOutputDir}/obj.${suffix}`\n`${buildOutputDir}/asm.${suffix}`",
 			"minLength": 1,
-			"pattern": "^[\\w\\-+.]{3,}$"
+			"pattern": "^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$"
 		},
 		"target-source-cxx-staticRuntimeLibrary": {
 			"description": "true to statically link against compiler runtime libraries (libc++, MS UCRT, etc.). false to dynamically link them (default).",
@@ -3602,7 +3602,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of distribution targets to be created during the bundle phase.",
 			"patternProperties": {
-				"^(([\\w\\-+. ()]+)|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
+				"^([^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}|(\\$\\{(targetTriple|toolchainName|configuration|architecture|buildDir)\\}))+$": {
 					"type": "object",
 					"description": "A single distribution target.",
 					"properties": {
@@ -3695,7 +3695,7 @@
 			"additionalProperties": false,
 			"description": "The interface describing importable packages from this workspace.",
 			"patternProperties": {
-				"^[\\w\\-+.]{3,}$": {
+				"^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$": {
 					"$ref": "#/definitions/package"
 				}
 			}
@@ -3705,7 +3705,7 @@
 			"additionalProperties": false,
 			"description": "A sequential list of build targets, cmake targets, meson targets, or scripts.",
 			"patternProperties": {
-				"^[\\w\\-+.]{3,}$": {
+				"^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$": {
 					"type": "object",
 					"description": "A single build target or script.",
 					"properties": {

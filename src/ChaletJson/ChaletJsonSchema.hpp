@@ -249,7 +249,6 @@ private:
 	const std::string kPatternPackageName;
 	const std::string kPatternTargetSourceLinks;
 	const std::string kPatternDistributionName;
-	const std::string kPatternDistributionNameSimple;
 	const std::string kPatternConditions;
 
 	DefinitionMap m_defs;
