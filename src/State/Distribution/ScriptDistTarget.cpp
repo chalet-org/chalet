@@ -24,6 +24,9 @@ ScriptDistTarget::ScriptDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ScriptDistTarget::initialize()
 {
+	if (!IDistTarget::initialize())
+		return false;
+
 	Path::toUnix(m_file);
 
 	if (!m_state.replaceVariablesInString(m_file, this))

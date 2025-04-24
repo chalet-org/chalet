@@ -50,9 +50,7 @@ AppBundler::~AppBundler() = default;
 /*****************************************************************************/
 bool AppBundler::run(const DistTarget& inTarget)
 {
-	auto targetName = inTarget->name();
-	if (!isTargetNameValid(*inTarget, targetName))
-		return false;
+	const auto& targetName = inTarget->name();
 
 	Timer timer;
 
@@ -451,12 +449,9 @@ bool AppBundler::gatherDependencies(BundleTarget& inTarget)
 /*****************************************************************************/
 bool AppBundler::runArchiveTarget(const BundleArchiveTarget& inTarget)
 {
+	const auto& baseName = inTarget.name();
 	const auto& archiveIncludes = inTarget.includes();
 	if (archiveIncludes.empty())
-		return false;
-
-	auto baseName = inTarget.name();
-	if (!isTargetNameValid(inTarget, baseName))
 		return false;
 
 	auto filename = inTarget.getOutputFilename(baseName);
@@ -624,28 +619,6 @@ bool AppBundler::runProcess(const StringList& inCmd, std::string outputFile, con
 	}
 
 	return result;
-}
-
-/*****************************************************************************/
-bool AppBundler::isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const
-{
-	if (outName.find_first_of("${}") != std::string::npos)
-	{
-		auto buildFolder = String::getPathFolder(m_state.paths.buildOutputDir());
-		String::replaceAll(outName, "${targetTriple}", m_state.info.targetArchitectureTriple());
-		String::replaceAll(outName, "${toolchainName}", m_state.inputs.toolchainPreferenceName());
-		String::replaceAll(outName, "${configuration}", m_state.configuration.name());
-		String::replaceAll(outName, "${architecture}", m_state.info.targetArchitectureString());
-		String::replaceAll(outName, "${buildDir}", buildFolder);
-	}
-
-	if (outName.find_first_of("${}") != std::string::npos)
-	{
-		Diagnostic::error("Invalid variable(s) found in target '{}'", inTarget.name());
-		return false;
-	}
-
-	return true;
 }
 
 /*****************************************************************************/

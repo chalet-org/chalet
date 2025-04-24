@@ -5,7 +5,6 @@
 
 #include "Check/BuildFileChecker.hpp"
 
-#include "Bundler/AppBundler.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
@@ -191,8 +190,6 @@ Json BuildFileChecker::getExpandedBuildFile()
 
 	if (checked.contains(kDistribution))
 	{
-		AppBundler bundler(m_state);
-
 		auto& distributionJson = checked[kDistribution];
 		auto newJson = Json::object();
 		for (auto& target : m_state.distribution)
@@ -203,12 +200,8 @@ Json BuildFileChecker::getExpandedBuildFile()
 			{
 				newNode = std::move(distributionJson[name]);
 
-				std::string tname = name;
-				if (!bundler.isTargetNameValid(*target, tname))
-					return false;
-
-				newJson[tname] = std::move(newNode);
-				checkNodeWithTargetPtr(newJson[tname], target.get());
+				newJson[name] = std::move(newNode);
+				checkNodeWithTargetPtr(newJson[name], target.get());
 			}
 		}
 		checked[kDistribution] = std::move(newJson);

@@ -7,8 +7,8 @@
 
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
-#include "Utility/Path.hpp"
 #include "Utility/List.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/String.hpp"
 
 namespace chalet
@@ -22,6 +22,9 @@ MacosDiskImageTarget::MacosDiskImageTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool MacosDiskImageTarget::initialize()
 {
+	if (!IDistTarget::initialize())
+		return false;
+
 	if (!m_state.replaceVariablesInString(m_background1x, this))
 		return false;
 

@@ -58,6 +58,9 @@ BundleTarget::BundleTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool BundleTarget::initialize()
 {
+	if (!IDistTarget::initialize())
+		return false;
+
 	const auto globMessage = "Check that they exist and glob patterns can be resolved";
 	if (!expandGlobPatternsInMap(m_includes, GlobMatch::FilesAndFolders))
 	{

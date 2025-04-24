@@ -24,6 +24,9 @@ ValidationDistTarget::ValidationDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ValidationDistTarget::initialize()
 {
+	if (!IDistTarget::initialize())
+		return false;
+
 	Path::toUnix(m_schema);
 
 	if (!m_state.replaceVariablesInString(m_schema, this))

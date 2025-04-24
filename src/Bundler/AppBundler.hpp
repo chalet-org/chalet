@@ -27,7 +27,6 @@ struct AppBundler
 	~AppBundler();
 
 	bool run(const DistTarget& inTarget);
-	bool isTargetNameValid(const IDistTarget& inTarget, std::string& outName) const;
 
 	void reportErrors();
 

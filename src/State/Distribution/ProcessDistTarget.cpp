@@ -24,6 +24,9 @@ ProcessDistTarget::ProcessDistTarget(const BuildState& inState) :
 /*****************************************************************************/
 bool ProcessDistTarget::initialize()
 {
+	if (!IDistTarget::initialize())
+		return false;
+
 	Path::toUnix(m_path);
 
 	if (!m_state.replaceVariablesInString(m_path, this))

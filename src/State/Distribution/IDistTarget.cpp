@@ -56,6 +56,15 @@ IDistTarget::IDistTarget(const BuildState& inState, const DistTargetType inType)
 }
 
 /*****************************************************************************/
+bool IDistTarget::initialize()
+{
+	if (!m_state.replaceVariablesInString(m_name, this))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
 DistTargetType IDistTarget::type() const noexcept
 {
 	return m_type;
