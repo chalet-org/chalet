@@ -265,8 +265,8 @@ bool CompileStrategyMakefile::buildNMake(const SourceTarget& inProject) const
 /*****************************************************************************/
 bool CompileStrategyMakefile::subprocessMakefile(const StringList& inCmd, std::string inCwd) const
 {
-	// if (Output::showCommands())
-	// 	Output::print(Output::theme().build, inCmd);
+	if (Output::showCommands())
+		Output::print(Output::theme().build, inCmd);
 
 	std::string errorOutput;
 	// static ProcessOptions::PipeFunc onStdErr = [](std::string inData) {
