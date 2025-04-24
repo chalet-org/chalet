@@ -9,6 +9,7 @@
 
 #include "Core/CommandLineInputs.hpp"
 #include "Core/Router/RouteType.hpp"
+#include "Platform/Arch.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/DefinesVersion.hpp"
 #include "Terminal/Output.hpp"
@@ -773,12 +774,20 @@ std::string ArgumentParser::getHelp()
 	if (String::contains("--build-path-style", help))
 	{
 		auto getBuildPathStylePresetDescription = [](const std::string& preset) -> std::string {
+			auto hostArch = Arch::getHostCpuArchitecture();
+#if defined(CHALET_MACOS)
+			auto tripleSuffix = "apple-darwin";
+#elif defined(CHALET_WIN32)
+			auto tripleSuffix = "pc-windows-msvc";
+#else
+			auto tripleSuffix = "linux-gnu";
+#endif
 			if (String::equals("target-triple", preset))
-				return "The target architecture's triple - ex: build/x64-linux-gnu_Debug";
+				return fmt::format("The target architecture's triple - ex: build/{}-{}_Debug", hostArch, tripleSuffix);
 			else if (String::equals("toolchain-name", preset))
-				return "The toolchain's name - ex: build/my-cool-toolchain_name_Debug";
+				return "The toolchain's name - ex: build/my-toolchain_Debug";
 			else if (String::equals("architecture", preset))
-				return "The architecture's identifier - ex: build/x86_64_Debug";
+				return fmt::format("The architecture's identifier - ex: build/{}_Debug", hostArch);
 			else if (String::equals("configuration", preset))
 				return "Just the build configuration - ex: build/Debug";
 
