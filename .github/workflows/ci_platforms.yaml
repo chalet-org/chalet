@@ -17,7 +17,7 @@ defaults:
     shell: bash
 jobs:
   create-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     outputs:
       release: ${{ steps.release.outputs.release }}
       tag: ${{ steps.tag.outputs.tag }}
@@ -72,11 +72,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04]
+        os: [ubuntu-20.04]
         triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
         include:
-          - os: ubuntu-22.04
-            osId: jammy
+          - os: ubuntu-20.04
+            osId: focal
           - triplet: x86_64-linux-gnu
             arch: amd64
           - triplet: aarch64-linux-gnu
@@ -270,7 +270,7 @@ jobs:
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
   do-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     needs: [create-release, all-linux, all-macos, all-windows]
     steps:
       - name: "Release"
