@@ -114,12 +114,17 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
 #if defined(CHALET_WIN32)
+	if (Output::showCommands())
+		Output::printCommand(inCommand);
+
 	WindowsTerminal::cleanup();
+	Output::setShowCommandOverride(false);
 #endif
 
 	bool result = Process::runWithInput(inCommand);
 
 #if defined(CHALET_WIN32)
+	Output::setShowCommandOverride(true);
 	WindowsTerminal::initialize();
 #endif
 
@@ -243,12 +248,17 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 
 	// Run the command
 	#if defined(CHALET_WIN32)
+	if (Output::showCommands())
+		Output::printCommand(inCommand);
+
 	WindowsTerminal::cleanup();
+	Output::setShowCommandOverride(false);
 	#endif
 
 	bool result = Process::runWithInput(inCommand);
 
 	#if defined(CHALET_WIN32)
+	Output::setShowCommandOverride(true);
 	WindowsTerminal::initialize();
 	#endif
 

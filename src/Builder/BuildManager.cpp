@@ -1194,13 +1194,18 @@ bool BuildManager::runProcess(const StringList& inCmd, std::string outputFile, c
 	}
 
 #if defined(CHALET_WIN32)
+	if (Output::showCommands())
+		Output::printCommand(inCmd);
+
 	WindowsTerminal::cleanup();
+	Output::setShowCommandOverride(false);
 #endif
 
 	// bool result = Process::runWithInput(inCmd);
 	bool result = Process::runWithInput(inCmd, inCwd, nullptr, PipeOption::StdOut, PipeOption::StdErr);
 
 #if defined(CHALET_WIN32)
+	Output::setShowCommandOverride(true);
 	WindowsTerminal::initialize();
 #endif
 
