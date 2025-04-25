@@ -17,7 +17,7 @@ defaults:
     shell: bash
 jobs:
   create-release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       release: ${{ steps.release.outputs.release }}
       tag: ${{ steps.tag.outputs.tag }}
@@ -72,19 +72,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
+        os: [ubuntu-22.04]
+        # See http://azure.archive.ubuntu.com/ubuntu/dists/jammy/main/
+        # triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
+        triplet: [x86_64-linux-gnu]
         include:
-          - os: ubuntu-20.04
-            osId: focal
+          - os: ubuntu-22.04
+            osId: jammy
           - triplet: x86_64-linux-gnu
             arch: amd64
-          - triplet: aarch64-linux-gnu
-            arch: arm64
-            crossBuild: true
-          - triplet: arm-linux-gnueabihf
-            arch: armhf
-            crossBuild: true
+          # - triplet: aarch64-linux-gnu
+          #   arch: arm64
+          #   crossBuild: true
+          # - triplet: arm-linux-gnueabihf
+          #   arch: armhf
+          #   crossBuild: true
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.triplet }}
     env:
@@ -95,6 +97,8 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ env.github.ref }}
+      - name: "Check sources.list"
+        run: cat /etc/apt/sources.list
       - name: "Setup"
         if: matrix.crossBuild == true
         run: |
@@ -270,7 +274,7 @@ jobs:
           draft: true
           prerelease: ${{ env.IS_PRERELEASE }}
   do-release:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [create-release, all-linux, all-macos, all-windows]
     steps:
       - name: "Release"
