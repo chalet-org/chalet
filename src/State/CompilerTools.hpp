@@ -89,6 +89,7 @@ struct CompilerTools
 	u32 makeVersionMinor() const noexcept;
 	bool makeIsNMake() const noexcept;
 	bool makeIsJom() const noexcept;
+	bool makeIsMinGW() const noexcept;
 
 	const std::string& profiler() const noexcept;
 	void setProfiler(std::string&& inValue) noexcept;
@@ -160,5 +161,6 @@ private:
 	bool m_ninjaAvailable = false;
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
+	bool m_makeIsMinGW = false;
 };
 }

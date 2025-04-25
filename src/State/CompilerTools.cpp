@@ -560,6 +560,7 @@ void CompilerTools::setMake(std::string&& inValue) noexcept
 	auto lower = String::toLowerCase(m_make);
 	m_makeIsJom = String::endsWith("jom.exe", lower);
 	m_makeIsNMake = String::endsWith("nmake.exe", lower) || m_makeIsJom;
+	m_makeIsMinGW = String::endsWith("mingw32-make.exe", lower);
 }
 
 u32 CompilerTools::makeVersionMajor() const noexcept
@@ -575,10 +576,13 @@ bool CompilerTools::makeIsNMake() const noexcept
 {
 	return m_makeIsNMake;
 }
-
 bool CompilerTools::makeIsJom() const noexcept
 {
 	return m_makeIsJom;
+}
+bool CompilerTools::makeIsMinGW() const noexcept
+{
+	return m_makeIsMinGW;
 }
 
 /*****************************************************************************/
