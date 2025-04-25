@@ -74,19 +74,18 @@ jobs:
       matrix:
         os: [ubuntu-22.04]
         # See http://azure.archive.ubuntu.com/ubuntu/dists/jammy/main/
-        # triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
-        triplet: [x86_64-linux-gnu]
+        triplet: [x86_64-linux-gnu, aarch64-linux-gnu, arm-linux-gnueabihf]
         include:
           - os: ubuntu-22.04
             osId: jammy
           - triplet: x86_64-linux-gnu
             arch: amd64
-          # - triplet: aarch64-linux-gnu
-          #   arch: arm64
-          #   crossBuild: true
-          # - triplet: arm-linux-gnueabihf
-          #   arch: armhf
-          #   crossBuild: true
+          - triplet: aarch64-linux-gnu
+            arch: arm64
+            crossBuild: true
+          - triplet: arm-linux-gnueabihf
+            arch: armhf
+            crossBuild: true
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.triplet }}
     env:
@@ -102,7 +101,7 @@ jobs:
       - name: "Setup"
         if: matrix.crossBuild == true
         run: |
-          sudo sed -i "s|deb mirror|deb [arch=amd64,i386] mirror|g" /etc/apt/sources.list
+          sudo sed -i "s|deb |deb [arch=amd64,i386] |g" /etc/apt/sources.list
           echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }}-updates main restricted" | sudo tee -a /etc/apt/sources.list
           echo "deb [arch=${{ matrix.arch }}] http://ports.ubuntu.com/ ${{ matrix.osId }} universe" | sudo tee -a /etc/apt/sources.list
