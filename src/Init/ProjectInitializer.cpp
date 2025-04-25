@@ -558,6 +558,29 @@ bool ProjectInitializer::checkForInvalidPathCharacters(std::string& input) const
 	return true;
 }
 
+/*****************************************************************************/
+bool ProjectInitializer::checkForInvalidTargetNameCharacters(std::string& input) const
+{
+	if (input.empty())
+		return false;
+
+	if (input.front() == '.' || input.back() == '.')
+		return false;
+
+	std::string invalidChars = "<>:\"/\\|?*{}$";
+	auto search = input.find_first_of(invalidChars.c_str());
+	if (search != std::string::npos)
+	{
+		for (auto c : input)
+		{
+			if ((c >= 0 && c < 32) || String::contains(c, invalidChars))
+				return false;
+		}
+	}
+	return input.size() >= 2;
+}
+
+/*****************************************************************************/
 void ProjectInitializer::ensureFileExtension(std::string& input, const StringList& inExts, const CodeLanguage inLang) const
 {
 	const bool isC = inLang == CodeLanguage::C;
@@ -600,10 +623,8 @@ std::string ProjectInitializer::getProjectName(const std::string& inWorkspaceNam
 {
 	std::string result = inWorkspaceName;
 
-	Output::getUserInput("Project target name:", result, "Allowed characters: A-Z a-z 0-9 _+-.", [](std::string& input) {
-		auto lower = String::toLowerCase(input);
-		bool validChars = lower.find_first_not_of("abcdefghijklmnopqrstuvwxyz0123456789_+-.") == std::string::npos;
-		return validChars && input.size() >= 3;
+	Output::getUserInput("Project target name:", result, "The name of the executable", [this](std::string& input) {
+		return checkForInvalidTargetNameCharacters(input);
 	});
 
 	return result;

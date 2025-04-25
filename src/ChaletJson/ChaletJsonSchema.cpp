@@ -21,7 +21,7 @@ ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	kPatternTargetName(R"regex(^[^<>:"/\\\|\?\*\{\}\$]{2,}$)regex"),
 	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
-	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{3,})?$)regex"),
+	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{2,})?$)regex"),
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
 	kPatternDistributionName(R"regex(^([^<>:"/\\\|\?\*\{\}\$]{2,}|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
 	kPatternConditions(R"regex(\[(\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\}))([\+\|](\w*:(!?[\w\-]+|\{!?[\w\-]+(,!?[\w\-]+)*\})))*\])regex") // https://regexr.com/6jni8
