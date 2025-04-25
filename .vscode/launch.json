@@ -5,13 +5,14 @@
 			"name": "MSVC",
 			"type": "cppvsdbg",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/../new-project",
+			"cwd": "${workspaceFolder}/../new-project2",
 			"preLaunchTask": "Build: Debug",
 			"stopAtEntry": false,
 			"console": "integratedTerminal",
 			"program": "${workspaceFolder}/build/msvc_Debug/chalet-debug.exe",
 			"args": [
-				"build"
+				"export",
+				"vssolution"
 			]
 		},
 		{

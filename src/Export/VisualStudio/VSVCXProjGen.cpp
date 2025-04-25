@@ -17,6 +17,7 @@
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
+#include "State/Target/CMakeTarget.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
 #include "State/TargetMetadata.hpp"
@@ -619,14 +620,43 @@ void VSVCXProjGen::addGeneralProperties(XmlElement& outNode, const std::string& 
 	{
 		for (auto& conf : m_vsConfigs)
 		{
-			outNode.addElement("PropertyGroup", [&inName, &conf](XmlElement& node) {
+			std::string buildDir;
+			std::string outputFile;
+			for (auto& target : conf.state->targets)
+			{
+				if (String::equals(inName, target->name()))
+				{
+					auto outputFilePath = conf.state->paths.getExecutableTargetPath(*target);
+					if (!outputFilePath.empty())
+					{
+						buildDir = Files::getCanonicalPath(String::getPathFolder(outputFilePath));
+						outputFile = String::getPathFilename(outputFilePath);
+					}
+					break;
+				}
+			}
+
+			outNode.addElement("PropertyGroup", [&inName, &conf, &buildDir, &outputFile](XmlElement& node) {
 				node.addAttribute("Condition", conf.condition);
-				node.addElementWithText("TargetName", inName);
+
+				const bool needsDebugger = !buildDir.empty();
+				if (outputFile.empty())
+					outputFile = inName;
+
+				node.addElementWithText("TargetName", outputFile);
 
 				auto buildOutputDir = Files::getCanonicalPath(conf.state->paths.buildOutputDir());
 				auto logDir = fmt::format("{}/logs/{}/", buildOutputDir, inName);
-				node.addElementWithText("OutDir", logDir);
+				if (buildDir.empty())
+					buildDir = logDir;
+
+				node.addElementWithText("OutDir", buildDir);
 				node.addElementWithText("IntDir", logDir);
+
+				if (needsDebugger)
+				{
+					node.addElementWithText("DebuggerFlavor", "WindowsLocalDebugger");
+				}
 			});
 		}
 	}
