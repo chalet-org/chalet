@@ -519,6 +519,20 @@ std::string String::withByteOrderMark(const std::string& inString)
 	return result;
 }
 
+/*****************************************************************************/
+std::string String::convertUnicodeToHex(const std::string& inString)
+{
+	std::string result;
+	for (char c : inString)
+	{
+		if (c >= 32)
+			result += c;
+		else
+			result += fmt::format("{:x}", c);
+	}
+	return result;
+}
+
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
 std::wstring String::toWideString(const std::string& inValue, u32 codePage)
