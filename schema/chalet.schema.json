@@ -1260,7 +1260,7 @@
 		"target-source-extends": {
 			"type": "string",
 			"description": "An abstract source target template to extend from. Defaults to `*` implicitly.\n If `abstracts:*` is not defined, then effectively, nothing is extended.",
-			"pattern": "^(\\*|[A-Za-z\\-_]+)$",
+			"pattern": "^(\\*|[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,})$",
 			"minLength": 1,
 			"default": "*"
 		},
@@ -3507,7 +3507,7 @@
 			"additionalProperties": false,
 			"description": "A list of abstract build targets",
 			"patternProperties": {
-				"^(\\*|[A-Za-z\\-_]+)$": {
+				"^(\\*|[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,})$": {
 					"$ref": "#/definitions/target-abstract",
 					"description": "An abstract build target. '*' is a special target that gets implicitely added to each project."
 				}
@@ -3549,7 +3549,7 @@
 			"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
 			"additionalProperties": false,
 			"patternProperties": {
-				"^[A-Za-z]{3,}$": {
+				"^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$": {
 					"$ref": "#/definitions/configuration"
 				}
 			}
@@ -3757,7 +3757,7 @@
 		}
 	},
 	"patternProperties": {
-		"^abstracts:(\\*|[A-Za-z\\-_]+)$": {
+		"^abstracts:(\\*|[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,})$": {
 			"$ref": "#/definitions/target-abstract",
 			"description": "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project"
 		},

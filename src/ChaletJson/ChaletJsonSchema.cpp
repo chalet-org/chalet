@@ -20,7 +20,7 @@ namespace chalet
 ChaletJsonSchema::ChaletJsonSchema(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs),
 	kPatternTargetName(R"regex(^[^<>:"/\\\|\?\*\{\}\$]{2,}$)regex"),
-	kPatternAbstractName(R"regex((\*|[A-Za-z\-_]+))regex"),
+	kPatternAbstractName(R"regex((\*|[^<>:"/\\\|\?\*\{\}\$]{2,}))regex"),
 	kPatternPackageName(R"regex(^[\w\-+]{3,}(\.[\w\-+]{2,})?$)regex"),
 	kPatternTargetSourceLinks(R"regex(^[\w\-+./\{\}\$:]+$)regex"),
 	kPatternDistributionName(R"regex(^([^<>:"/\\\|\?\*\{\}\$]{2,}|(\$\{(targetTriple|toolchainName|configuration|architecture|buildDir)\}))+$)regex"),
@@ -2622,7 +2622,7 @@ Json ChaletJsonSchema::get()
 		"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
 		"additionalProperties": false
 	})json"_ojson;
-	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][R"(^[A-Za-z]{3,}$)"] = getDefinition(Defs::Configuration);
+	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][kPatternTargetName] = getDefinition(Defs::Configuration);
 
 	ret[SKeys::Properties]["defaultConfigurations"] = R"json({
 		"type": "array",
