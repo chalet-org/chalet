@@ -103,12 +103,10 @@ bool RegexPatterns::matchAndReplaceConfigureFileVariables(std::string& outText, 
 /*****************************************************************************/
 bool RegexPatterns::matchAndReplacePathVariables(std::string& outText, const std::function<std::string(std::string, bool&)>& onMatch)
 {
-	// note: must at least match ChaletJsonSchema::kPatternTargetName
-	// ^[^<>:"/\\\|\?\*\{\}\$]{2,}$
-	// ^[\w\-+.]{3,}$
-	// static std::regex re("\\$\\{([\\w\\-+.:]+)\\}");
-	static std::regex re("\\$\\{([^\\}]+)\\}");
-	// static std::regex re("\\$\\{([^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]+)\\}");
+	// Note: must at least match ChaletJsonSchema::kPatternTargetName
+	// https://regexr.com/8ebpq
+	//
+	static std::regex re("\\$\\{([^<>/\"\\\\\\|\\?\\*\\{\\}\\$]+)\\}");
 	std::smatch sm;
 	while (std::regex_search(outText, sm, re))
 	{
