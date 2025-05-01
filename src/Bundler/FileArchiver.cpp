@@ -179,7 +179,7 @@ StringList FileArchiver::getResolvedIncludes(const BundleArchiveTarget& inTarget
 	{
 		if (String::equals('*', include))
 		{
-			Files::addPathToListWithGlob(fmt::format("{}/*", m_outputDirectory), tmp, GlobMatch::FilesAndFoldersExact);
+			Files::addPathToListWithGlob(fmt::format("{}/**", m_outputDirectory), tmp, GlobMatch::FilesAndFoldersExact);
 		}
 		else
 		{
@@ -296,12 +296,11 @@ bool FileArchiver::getZipFormatCommand(StringList& outCmd, const std::string& in
 	outCmd.emplace_back("-i");
 
 	auto files = getIncludesForCommand(inIncludes);
-	for (auto& file : files)
-	{
-		outCmd.emplace_back(file);
-	}
+	bool result = !files.empty();
+	for (auto&& file : files)
+		outCmd.emplace_back(std::move(file));
 
-	return !files.empty();
+	return result;
 #endif
 }
 
@@ -331,12 +330,11 @@ bool FileArchiver::getTarFormatCommand(StringList& outCmd, const std::string& in
 	// outCmd.emplace_back(fmt::format("--directory={}", inBaseName));
 
 	auto files = getIncludesForCommand(inIncludes);
-	for (auto& file : files)
-	{
-		outCmd.emplace_back(file);
-	}
+	bool result = !files.empty();
+	for (auto&& file : files)
+		outCmd.emplace_back(std::move(file));
 
-	return !files.empty();
+	return result;
 }
 
 /*****************************************************************************/
@@ -352,7 +350,7 @@ StringList FileArchiver::getIncludesForCommand(const StringList& inIncludes) con
 		auto filename = String::getPathFilename(file);
 		if (Files::pathIsDirectory(filename))
 		{
-			Files::addPathToListWithGlob(fmt::format("{}/*", filename), ret, GlobMatch::FilesAndFolders);
+			Files::addPathToListWithGlob(fmt::format("{}/**", filename), ret, GlobMatch::FilesAndFolders);
 		}
 		else
 		{
