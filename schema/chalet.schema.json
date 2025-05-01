@@ -1852,7 +1852,7 @@
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
+					"pattern": "^[^<>\\\"\\|\\?\\*]+$"
 				},
 				{
 					"type": "array",
@@ -1861,7 +1861,7 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
+						"pattern": "^[^<>\\\"\\|\\?\\*]+$"
 					}
 				}
 			]
@@ -1993,7 +1993,7 @@
 				{
 					"type": "string",
 					"minLength": 1,
-					"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
+					"pattern": "^[^<>\\\"\\|\\?\\*]+$"
 				},
 				{
 					"type": "array",
@@ -2002,7 +2002,7 @@
 					"items": {
 						"type": "string",
 						"minLength": 1,
-						"pattern": "^[\\w\\-+./\\{\\}\\$:]+$"
+						"pattern": "^[^<>\\\"\\|\\?\\*]+$"
 					}
 				}
 			]
