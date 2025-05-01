@@ -2669,29 +2669,28 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties]["variables"] = getDefinition(Defs::EnvironmentVariables);
 
 	const auto externalDependencies = "externalDependencies";
-	const std::string patternExternalName{ "^[\\w\\-+.]{3,100}$" };
 	ret[SKeys::Properties][externalDependencies] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "Dependencies to resolve prior to building or via the configure command, that are considered external to this project. The object key will be used as a reference to the resulting location via '${external:(key)}'."
 	})json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName] = R"json({
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single external dependency or script.",
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::Properties]["kind"]["enum"] = R"json([
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"git",
 		"local",
 		"archive",
 		"script"
 	])json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyArchive);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][patternExternalName][SKeys::OneOf][3] = getDefinition(Defs::ExternalDependencyScript);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyArchive);
+	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::ExternalDependencyScript);
 
 	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
 	addPropertyAndPattern(ret, "packagePaths", Defs::EnvironmentPackagePaths, kPatternConditions);

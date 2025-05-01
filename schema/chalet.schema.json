@@ -3651,7 +3651,7 @@
 			"additionalProperties": false,
 			"description": "Dependencies to resolve prior to building or via the configure command, that are considered external to this project. The object key will be used as a reference to the resulting location via '${external:(key)}'.",
 			"patternProperties": {
-				"^[\\w\\-+.]{3,100}$": {
+				"^[^<>:\"/\\\\\\|\\?\\*\\{\\}\\$]{2,}$": {
 					"type": "object",
 					"description": "A single external dependency or script.",
 					"properties": {
