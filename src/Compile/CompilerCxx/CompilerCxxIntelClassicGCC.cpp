@@ -74,6 +74,19 @@ StringList CompilerCxxIntelClassicGCC::getWarningExclusions() const
 }
 
 /*****************************************************************************/
+void CompilerCxxIntelClassicGCC::addPchInclude(StringList& outArgList, const SourceType derivative) const
+{
+	if (precompiledHeaderAllowedForSourceType(derivative))
+	{
+		outArgList.emplace_back("-include");
+
+		auto pchIntermediate = m_state.environment->getPrecompiledHeaderIntermediateFile(m_project);
+		// const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
+		outArgList.emplace_back(getPathCommand("", pchIntermediate));
+	}
+}
+
+/*****************************************************************************/
 void CompilerCxxIntelClassicGCC::addCharsets(StringList& outArgList) const
 {
 	UNUSED(outArgList);
