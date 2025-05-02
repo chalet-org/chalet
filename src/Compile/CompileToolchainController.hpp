@@ -23,7 +23,6 @@ struct CompileToolchainController
 
 	void setQuotedPaths(const bool inValue) noexcept;
 	void setGenerateDependencies(const bool inValue) noexcept;
-	void setForceActualPchPath(const bool inValue) noexcept;
 
 	StringList getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs);
 

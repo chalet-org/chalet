@@ -27,9 +27,6 @@ struct ICompilerCxx : public IToolchainExecutableBase
 
 	virtual void addLanguageStandard(StringList& outArgList, const SourceType derivative) const;
 
-	bool forceActualPchPath() const noexcept;
-	void setForceActualPchPath(const bool inValue) noexcept;
-
 protected:
 	virtual bool addExecutable(StringList& outArgList) const;
 
@@ -56,7 +53,5 @@ protected:
 
 	u32 m_versionMajorMinor = 0;
 	u32 m_versionPatch = 0;
-
-	bool m_forceActualPchPath = false;
 };
 }
