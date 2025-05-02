@@ -1809,7 +1809,6 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		auto externalGit = R"json({
 			"type": "object",
 			"additionalProperties": false,
-			"description": "An external git dependency",
 			"required": [
 				"kind",
 				"repository"

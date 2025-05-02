@@ -810,7 +810,6 @@
 		"external-dependency-git": {
 			"type": "object",
 			"additionalProperties": false,
-			"description": "An external git dependency",
 			"required": [
 				"kind",
 				"repository"
