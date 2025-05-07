@@ -84,6 +84,13 @@ void CompileToolchainController::setGenerateDependencies(const bool inValue) noe
 }
 
 /*****************************************************************************/
+void CompileToolchainController::setForceActualPchPath(const bool inValue) noexcept
+{
+	if (compilerCxx)
+		compilerCxx->setForceActualPchPath(inValue);
+}
+
+/*****************************************************************************/
 StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	chalet_assert(archiver != nullptr, "");

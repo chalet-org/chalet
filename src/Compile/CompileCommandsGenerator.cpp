@@ -45,6 +45,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	inToolchain->setQuotedPaths(false);
 	inToolchain->setGenerateDependencies(false);
+	inToolchain->setForceActualPchPath(true);
 
 	std::string dummyArch;
 	for (auto& group : inOutputs.groups)
@@ -66,6 +67,7 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 
 	inToolchain->setQuotedPaths(quotedPaths);
 	inToolchain->setGenerateDependencies(generateDependencies);
+	inToolchain->setForceActualPchPath(false);
 
 	return true;
 }

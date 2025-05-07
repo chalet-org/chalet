@@ -554,8 +554,20 @@ void CompilerCxxGCC::addPchInclude(StringList& outArgList, const SourceType deri
 	{
 		outArgList.emplace_back("-include");
 
-		const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
-		outArgList.emplace_back(getPathCommand("", objDirPch));
+		// Note: m_forceActualPchPath is for compile_commands.json. This fixes an odd issue
+		//   where it points to the PCH object (which is correct in GCC/Clang)
+		//   but incorrect in the compile_commands.json - the interpreting tool
+		//   won't be able to find the PCH otherwise
+		//
+		if (m_forceActualPchPath)
+		{
+			outArgList.emplace_back(getPathCommand("", m_project.precompiledHeader()));
+		}
+		else
+		{
+			const auto objDirPch = m_state.paths.getPrecompiledHeaderInclude(m_project);
+			outArgList.emplace_back(getPathCommand("", objDirPch));
+		}
 	}
 }
 

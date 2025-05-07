@@ -147,6 +147,16 @@ StringList ICompilerCxx::getModuleCommand(const std::string& inputFile, const st
 }
 
 /*****************************************************************************/
+bool ICompilerCxx::forceActualPchPath() const noexcept
+{
+	return m_forceActualPchPath;
+}
+void ICompilerCxx::setForceActualPchPath(const bool inValue) noexcept
+{
+	m_forceActualPchPath = inValue;
+}
+
+/*****************************************************************************/
 bool ICompilerCxx::addExecutable(StringList& outArgList) const
 {
 	auto& executable = m_state.toolchain.compilerCxx(m_project.language()).path;
