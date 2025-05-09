@@ -144,18 +144,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 	std::map<std::string, StringList> embedLibraries;
 
 	StringList sourceTargets;
-	StringList sourceTargetsLowerCase;
-
-	auto getSafeDistTargetName = [&sourceTargetsLowerCase](const std::string& inName) {
-		std::string name = inName;
-		auto nameLowerCase = String::toLowerCase(name);
-		while (List::contains(sourceTargetsLowerCase, nameLowerCase))
-		{
-			name += '_';
-			nameLowerCase += '_';
-		}
-		return name;
-	};
 
 	for (auto& state : m_states)
 	{
@@ -171,7 +159,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (target->isSources())
 			{
 				List::addIfDoesNotExist(sourceTargets, target->name());
-				List::addIfDoesNotExist(sourceTargetsLowerCase, String::toLowerCase(target->name()));
+				// List::addIfDoesNotExist(sourceTargetsLowerCase, String::toLowerCase(target->name()));
 
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 				state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);
@@ -344,7 +332,7 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 				auto& bundle = static_cast<BundleTarget&>(*target);
 				if (bundle.isMacosAppBundle())
 				{
-					auto name = getSafeDistTargetName(bundle.name());
+					const auto& name = bundle.name();
 					if (groups.find(name) == groups.end())
 					{
 						auto bundleDirectory = fmt::format("{}/dist/{}", m_exportPath, bundle.name());
@@ -1088,7 +1076,7 @@ if [ -n "$BUILD_FROM_CHALET" ]; then echo "*== script end ==*"; fi
 			{
 				if (target->isDistributionBundle())
 				{
-					auto name = getSafeDistTargetName(target->name());
+					const auto& name = target->name();
 					auto hash = getTargetConfigurationHash(configName, name, true);
 					auto key = getHashWithLabel(hash, configName);
 					node[key]["isa"] = section;

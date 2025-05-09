@@ -214,14 +214,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			auto& bundle = static_cast<BundleTarget&>(*target);
 			if (bundle.isMacosAppBundle())
 			{
-				auto name = bundle.name();
-				auto nameLowerCase = String::toLowerCase(name);
-				while (List::contains(sourceTargetsLowerCase, nameLowerCase))
-				{
-					name += '_';
-					nameLowerCase += '_';
-				}
-
+				const auto& name = bundle.name();
 				if (List::addIfDoesNotExist(targetNames, name))
 				{
 					if (!String::equals(m_debugConfiguration, configName))
@@ -266,7 +259,8 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 
 	for (auto& target : targetNames)
 	{
-		auto filename = fmt::format("{}/{}.xcscheme", inSchemePath, target);
+		auto targetHash = this->getTargetHash(target);
+		auto filename = fmt::format("{}/{}/{}.xcscheme", inSchemePath, targetHash, target);
 		XmlFile xmlFile(filename);
 
 		auto& xmlRoot = xmlFile.getRoot();
@@ -291,7 +285,7 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("shouldAutocreateTestPlan", getBoolString(true));
 		});
-		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &envMap, &target, &noEnvs](XmlElement& node) {
+		xmlRoot.addElement("LaunchAction", [this, &launchConfig, &runArgumentMap, &envMap, &target, &targetHash, &noEnvs](XmlElement& node) {
 			node.addAttribute("buildConfiguration", launchConfig);
 			node.addAttribute("selectedDebuggerIdentifier", "Xcode.DebuggerFoundation.Debugger.LLDB");
 			node.addAttribute("selectedLauncherIdentifier", "Xcode.DebuggerFoundation.Launcher.LLDB");
@@ -303,11 +297,11 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 			node.addAttribute("debugServiceExtension", "internal");
 			node.addAttribute("allowLocationSimulation", getBoolString(true));
 			node.addAttribute("viewDebuggingEnabled", "No");
-			node.addElement("BuildableProductRunnable", [this, &target](XmlElement& node2) {
+			node.addElement("BuildableProductRunnable", [this, &target, &targetHash](XmlElement& node2) {
 				node2.addAttribute("runnableDebuggingMode", "0");
-				node2.addElement("BuildableReference", [this, &target](XmlElement& node3) {
+				node2.addElement("BuildableReference", [this, &target, &targetHash](XmlElement& node3) {
 					node3.addAttribute("BuildableIdentifier", "primary");
-					node3.addAttribute("BlueprintIdentifier", this->getTargetHash(target));
+					node3.addAttribute("BlueprintIdentifier", targetHash);
 					node3.addAttribute("BuildableName", target);
 					node3.addAttribute("BlueprintName", target);
 					node3.addAttribute("ReferencedContainer", fmt::format("container:{}", m_xcodeProj));
@@ -346,18 +340,18 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 				});
 			}
 		});
-		xmlRoot.addElement("ProfileAction", [this, &profileConfig, &target](XmlElement& node) {
+		xmlRoot.addElement("ProfileAction", [this, &profileConfig, &target, &targetHash](XmlElement& node) {
 			node.addAttribute("buildConfiguration", profileConfig);
 			node.addAttribute("shouldUseLaunchSchemeArgsEnv", getBoolString(true));
 			node.addAttribute("savedToolIdentifier", "");
 			node.addAttribute("useCustomWorkingDirectory", getBoolString(true));
 			node.addAttribute("customWorkingDirectory", "$(PROJECT_RUN_PATH)");
 			node.addAttribute("debugDocumentVersioning", getBoolString(false));
-			node.addElement("BuildableProductRunnable", [this, &target](XmlElement& node2) {
+			node.addElement("BuildableProductRunnable", [this, &target, &targetHash](XmlElement& node2) {
 				node2.addAttribute("runnableDebuggingMode", "0");
-				node2.addElement("BuildableReference", [this, &target](XmlElement& node3) {
+				node2.addElement("BuildableReference", [this, &target, &targetHash](XmlElement& node3) {
 					node3.addAttribute("BuildableIdentifier", "primary");
-					node3.addAttribute("BlueprintIdentifier", this->getTargetHash(target));
+					node3.addAttribute("BlueprintIdentifier", targetHash);
 					node3.addAttribute("BuildableName", target);
 					node3.addAttribute("BlueprintName", target);
 					node3.addAttribute("ReferencedContainer", fmt::format("container:{}", m_xcodeProj));
