@@ -159,7 +159,6 @@ bool XcodePBXProjGen::saveToFile(const std::string& inFilename)
 			if (target->isSources())
 			{
 				List::addIfDoesNotExist(sourceTargets, target->name());
-				// List::addIfDoesNotExist(sourceTargetsLowerCase, String::toLowerCase(target->name()));
 
 				const auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 				state->paths.setBuildDirectoriesBasedOnProjectKind(sourceTarget);

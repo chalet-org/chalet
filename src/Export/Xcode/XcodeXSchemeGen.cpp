@@ -187,15 +187,15 @@ bool XcodeXSchemeGen::createSchemes(const std::string& inSchemePath)
 		StringList sourceTargets;
 		for (auto& target : state->targets)
 		{
-			auto& targetName = target->name();
-			if (List::addIfDoesNotExist(targetNames, targetName))
+			auto& name = target->name();
+			if (List::addIfDoesNotExist(targetNames, name))
 			{
 				if (!String::equals(m_debugConfiguration, configName))
-					configs[targetName] = configName;
+					configs[name] = configName;
 			}
 
-			if (configs.find(targetName) != configs.end() && isRelease)
-				configs[targetName] = configName;
+			if (configs.find(name) != configs.end() && isRelease)
+				configs[name] = configName;
 
 			if (target->isSources())
 				sourceTargets.emplace_back(target->name());
