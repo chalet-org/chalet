@@ -23,9 +23,11 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter) :
-	m_exportAdapter(inExportAdapter)
+VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const bool inVsCodium) :
+	m_exportAdapter(inExportAdapter),
+	m_vscodium(inVsCodium)
 {
+	UNUSED(m_vscodium);
 }
 
 /*****************************************************************************/
@@ -49,27 +51,29 @@ bool VSCodeLaunchGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::getConfiguration(Json& outConfiguration, const BuildState& inState) const
+// Note: The C/C++ is not licensed to run inside of VSCodium, so we must use CodeLLDB instead
+//   CodeLLDB also works on Windows with binaries generated from MSVC
+//
+bool VSCodeLaunchGen::getConfiguration(Json& outJson, const BuildState& inState) const
 {
-	outConfiguration = Json::object();
-	outConfiguration["name"] = getName(inState);
-	outConfiguration["type"] = getType(inState);
-	outConfiguration["request"] = "launch";
-	outConfiguration["stopAtEntry"] = true;
+	outJson = Json::object();
 
-	setOptions(outConfiguration, inState);
-	setPreLaunchTask(outConfiguration);
-	if (!setProgramPath(outConfiguration, inState))
-		return false;
-
-	setWorkingDirectory(outConfiguration, inState);
-	setEnvFilePath(outConfiguration, inState);
+	if (m_vscodium)
+	{
+		if (!setCodeLLDBOptions(outJson, inState))
+			return false;
+	}
+	else
+	{
+		if (!setCppToolsDebugOptions(outJson, inState))
+			return false;
+	}
 
 	return true;
 }
 
 /*****************************************************************************/
-std::string VSCodeLaunchGen::getName(const BuildState& inState) const
+std::string VSCodeLaunchGen::getCppToolsDebugName(const BuildState& inState) const
 {
 	if (willUseLLDB(inState))
 		return std::string("LLDB");
@@ -80,7 +84,7 @@ std::string VSCodeLaunchGen::getName(const BuildState& inState) const
 }
 
 /*****************************************************************************/
-std::string VSCodeLaunchGen::getType(const BuildState& inState) const
+std::string VSCodeLaunchGen::getCppToolsDebugType(const BuildState& inState) const
 {
 	if (willUseMSVC(inState))
 		return std::string("cppvsdbg");
@@ -111,8 +115,35 @@ std::string VSCodeLaunchGen::getDebuggerPath(const BuildState& inState) const
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setOptions(Json& outJson, const BuildState& inState) const
+bool VSCodeLaunchGen::setCodeLLDBOptions(Json& outJson, const BuildState& inState) const
 {
+	outJson["name"] = "CodeLLDB";
+	outJson["type"] = "lldb";
+	outJson["request"] = "launch";
+
+	// Note: stopOnEntry seems to be buggy in CodeLLDB
+	//   looks like it's the entry of the runtime vs the program's entry?
+	//
+	outJson["stopOnEntry"] = false;
+
+	setPreLaunchTask(outJson);
+	if (!setProgramPathAndArguments(outJson, inState))
+		return false;
+
+	outJson["cwd"] = getWorkingDirectory(inState);
+	outJson["envFile"] = getEnvFilePath(inState);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool VSCodeLaunchGen::setCppToolsDebugOptions(Json& outJson, const BuildState& inState) const
+{
+	outJson["name"] = getCppToolsDebugName(inState);
+	outJson["type"] = getCppToolsDebugType(inState);
+	outJson["request"] = "launch";
+	outJson["stopAtEntry"] = true;
+
 	if (willUseMSVC(inState))
 	{
 		outJson["console"] = "integratedTerminal";
@@ -132,6 +163,15 @@ void VSCodeLaunchGen::setOptions(Json& outJson, const BuildState& inState) const
 			outJson["miDebuggerPath"] = getDebuggerPath(inState);
 		}
 	}
+
+	setPreLaunchTask(outJson);
+	if (!setProgramPathAndArguments(outJson, inState))
+		return false;
+
+	outJson["cwd"] = getWorkingDirectory(inState);
+	outJson["envFile"] = getEnvFilePath(inState);
+
+	return true;
 }
 
 /*****************************************************************************/
@@ -141,7 +181,7 @@ void VSCodeLaunchGen::setPreLaunchTask(Json& outJson) const
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) const
+bool VSCodeLaunchGen::setProgramPathAndArguments(Json& outJson, const BuildState& inState) const
 {
 	constexpr bool executablesOnly = true;
 	auto target = inState.getFirstValidRunTarget(executablesOnly);
@@ -163,27 +203,25 @@ bool VSCodeLaunchGen::setProgramPath(Json& outJson, const BuildState& inState) c
 }
 
 /*****************************************************************************/
-bool VSCodeLaunchGen::setWorkingDirectory(Json& outJson, const BuildState& inState) const
+std::string VSCodeLaunchGen::getWorkingDirectory(const BuildState& inState) const
 {
 	constexpr bool executablesOnly = true;
 	auto target = inState.getFirstValidRunTarget(executablesOnly);
 	if (target != nullptr)
 	{
 		TargetExportAdapter adapter(inState, *target);
-		outJson["cwd"] = adapter.getRunWorkingDirectoryWithCurrentWorkingDirectoryAs("${workspaceFolder}");
+		return adapter.getRunWorkingDirectoryWithCurrentWorkingDirectoryAs("${workspaceFolder}");
 	}
 	else
 	{
-		outJson["cwd"] = "${workspaceFolder}";
+		return std::string("${workspaceFolder}");
 	}
-
-	return true;
 }
 
 /*****************************************************************************/
-void VSCodeLaunchGen::setEnvFilePath(Json& outJson, const BuildState& inState) const
+std::string VSCodeLaunchGen::getEnvFilePath(const BuildState& inState) const
 {
-	outJson["envFile"] = fmt::format("${{workspaceFolder}}/{}/run.env", inState.paths.buildOutputDir());
+	return fmt::format("${{workspaceFolder}}/{}/run.env", inState.paths.buildOutputDir());
 }
 
 /*****************************************************************************/
