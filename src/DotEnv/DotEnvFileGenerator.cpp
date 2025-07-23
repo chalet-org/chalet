@@ -128,9 +128,7 @@ bool DotEnvFileGenerator::save(const std::string& inFilename)
 	for (const auto& [name, var] : m_variables)
 	{
 		auto line = fmt::format("{}={}\n", name, var);
-#if defined(CHALET_WIN32)
 		String::replaceAll(line, ' ', "\\ ");
-#endif
 		contents += std::move(line);
 	}
 
