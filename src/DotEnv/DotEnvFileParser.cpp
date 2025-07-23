@@ -63,6 +63,8 @@ bool DotEnvFileParser::readVariablesFromFile(const std::string& inFile) const
 		if (!String::contains('=', line))
 			continue;
 
+		String::replaceAll(line, "\\ ", " ");
+
 		auto splitVar = String::split(line, '=');
 		if (splitVar.size() != 2 || splitVar.front().empty())
 			continue;
