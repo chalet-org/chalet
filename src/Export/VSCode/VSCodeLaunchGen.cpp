@@ -126,6 +126,8 @@ bool VSCodeLaunchGen::setCodeLLDBOptions(Json& outJson, const BuildState& inStat
 	//
 	outJson["stopOnEntry"] = false;
 
+	outJson["console"] = "integratedTerminal";
+
 	setPreLaunchTask(outJson);
 	if (!setProgramPathAndArguments(outJson, inState))
 		return false;
