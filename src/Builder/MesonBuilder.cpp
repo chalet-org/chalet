@@ -32,6 +32,16 @@
 
 namespace chalet
 {
+struct EnvironmentState
+{
+	std::string ninjaExec;
+	std::string ninjaStatus;
+#if defined(CHALET_MACOS)
+	std::string macosDeployTarget;
+	std::string iphoneDeployTarget;
+#endif
+};
+
 /*****************************************************************************/
 MesonBuilder::MesonBuilder(const BuildState& inState, const MesonTarget& inTarget, const bool inQuotedPaths) :
 	m_state(inState),
@@ -103,10 +113,35 @@ bool MesonBuilder::run()
 
 	const bool isNinja = usesNinja();
 
+	static const char kNinjaExec[] = "NINJA";
 	static const char kNinjaStatus[] = "NINJA_STATUS";
-	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
+#if defined(CHALET_MACOS)
+	static const char kMacDeploymentTarget[] = "MACOSX_DEPLOYMENT_TARGET";
+	static const char kIPhoneDeploymentTarget[] = "IPHONEOS_DEPLOYMENT_TARGET";
+#endif
 
-	auto onRunFailure = [this, &oldNinjaStatus, &isNinja](const bool inRemoveDir = true) -> bool {
+	LOG(m_state.inputs.osTargetName(), m_state.inputs.osTargetVersion());
+
+	EnvironmentState oldEnv;
+	oldEnv.ninjaExec = Environment::getString(kNinjaExec);
+	oldEnv.ninjaStatus = Environment::getString(kNinjaStatus);
+#if defined(CHALET_MACOS)
+	oldEnv.macosDeployTarget = Environment::getString(kMacDeploymentTarget);
+	oldEnv.iphoneDeployTarget = Environment::getString(kIPhoneDeploymentTarget);
+
+	auto& osTargetName = m_state.inputs.osTargetName();
+	auto& osTargetVersion = m_state.inputs.osTargetVersion();
+	if (String::equals("macosx", osTargetName))
+	{
+		Environment::set(kMacDeploymentTarget, osTargetVersion);
+	}
+	else if (String::equals("iphoneos", osTargetName))
+	{
+		Environment::set(kIPhoneDeploymentTarget, osTargetVersion);
+	}
+#endif
+
+	auto onRunFailure = [this, &oldEnv, &isNinja](const bool inRemoveDir = true) -> bool {
 #if defined(CHALET_WIN32)
 		Output::previousLine();
 #endif
@@ -117,8 +152,15 @@ bool MesonBuilder::run()
 		Output::lineBreak();
 
 		if (isNinja)
-			Environment::set(kNinjaStatus, oldNinjaStatus);
+		{
+			Environment::set(kNinjaExec, oldEnv.ninjaExec);
+			Environment::set(kNinjaStatus, oldEnv.ninjaStatus);
+		}
 
+#if defined(CHALET_MACOS)
+		Environment::set(kMacDeploymentTarget, oldEnv.macosDeployTarget);
+		Environment::set(kIPhoneDeploymentTarget, oldEnv.iphoneDeployTarget);
+#endif
 		return false;
 	};
 
@@ -139,11 +181,12 @@ bool MesonBuilder::run()
 
 		bool runMesonSetup = outDirectoryDoesNotExist || lastBuildFailed || dependencyUpdated;
 
-		// if (isNinja)
-		// {
-		// 	const auto& color = Output::getAnsiStyle(Output::theme().build);
-		// 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
-		// }
+		if (isNinja)
+		{
+			Environment::set(kNinjaExec, m_state.toolchain.ninja());
+			// 	const auto& color = Output::getAnsiStyle(Output::theme().build);
+			// 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
+		}
 
 		StringList command;
 		if (runMesonSetup)
@@ -172,7 +215,15 @@ bool MesonBuilder::run()
 			return onRunFailure(false);
 
 		if (isNinja)
-			Environment::set(kNinjaStatus, oldNinjaStatus);
+		{
+			Environment::set(kNinjaExec, oldEnv.ninjaExec);
+			Environment::set(kNinjaStatus, oldEnv.ninjaStatus);
+		}
+
+#if defined(CHALET_MACOS)
+		Environment::set(kMacDeploymentTarget, oldEnv.macosDeployTarget);
+		Environment::set(kIPhoneDeploymentTarget, oldEnv.iphoneDeployTarget);
+#endif
 	}
 
 	//
