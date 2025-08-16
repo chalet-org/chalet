@@ -262,6 +262,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 		firstDash = suffix.find_first_of('-', 1);
 		suffix = suffix.substr(firstDash);
 	}
+
 	Arch::Cpu arch = m_state.info.targetArchitecture();
 	if (arch == Arch::Cpu::ARMHF)
 	{
@@ -283,6 +284,7 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	}
 	else if (targetArch.find_first_of('-') != std::string::npos)
 	{
+		LOG("clearing suffix:", suffix);
 		suffix.clear();
 	}
 #endif
@@ -306,7 +308,8 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 
 	if (!found)
 	{
-		cachedArch.clear();
+		// If it's not found, let it fail later
+		cachedArch = fmt::format("{}{}", targetArch, suffix);
 	}
 #endif
 #if defined(CHALET_MACOS)
