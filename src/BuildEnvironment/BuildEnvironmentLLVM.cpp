@@ -284,7 +284,6 @@ bool BuildEnvironmentLLVM::readArchitectureTripleFromCompiler()
 	}
 	else if (targetArch.find_first_of('-') != std::string::npos)
 	{
-		LOG("clearing suffix:", suffix);
 		suffix.clear();
 	}
 #endif
