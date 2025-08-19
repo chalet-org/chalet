@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "Platform/Arch.hpp"
+
 namespace chalet
 {
 class BuildState;
@@ -38,7 +40,10 @@ private:
 	std::string getMesonCompatibleBuildConfiguration() const;
 	std::string getMesonCompatibleOptimizationFlag() const;
 	std::string getNativeFileOutputPath() const;
-	std::string getCpuFamily() const;
+	std::string getPlatform(const bool isTarget) const;
+	std::string getCpuFamily(const Arch::Cpu inArch) const;
+	std::string getCpuEndianness(const bool isTarget) const;
+	std::string getStripBinary() const;
 
 	std::string getQuotedPath(const std::string& inPath) const;
 

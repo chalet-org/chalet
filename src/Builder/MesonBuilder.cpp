@@ -10,6 +10,7 @@
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "Process/SubProcessController.hpp"
@@ -258,29 +259,50 @@ bool MesonBuilder::createNativeFile() const
 		compilerC = fmt::format("'{}'", compilerC);
 		compilerCpp = fmt::format("'{}'", compilerCpp);
 	}
+	auto strip = getStripBinary();
 
-	auto arch = m_state.info.targetArchitectureString();
-	auto cpuFamily = getCpuFamily();
-
-	std::string optionsHeading = m_mesonVersionMajorMinor > 56 ? "built-in options" : "properties";
-
-	std::string targetArg;
-	if (m_state.environment->isClang())
+	auto hostPlatform = getPlatform(false);
+	auto targetPlatform = getPlatform(true);
+	if (hostPlatform.empty() || targetPlatform.empty())
 	{
-		targetArg = fmt::format("'--target={}'", archTriple);
+		Diagnostic::error("Error creating toolchain file for Meson: {}", nativeFile);
+		return false;
 	}
+
+	auto hostArch = m_state.info.hostArchitectureString();
+	auto hostCpuFamily = getCpuFamily(m_state.info.hostArchitecture());
+	auto hostEndianness = getCpuEndianness(false);
+
+	auto targetArch = m_state.info.targetArchitectureString();
+	auto targetCpuFamily = getCpuFamily(m_state.info.targetArchitecture());
+	auto targetEndianness = getCpuEndianness(true);
+
+	bool useBuiltInOptions = m_mesonVersionMajorMinor > 56;
+	std::string optionsHeading = useBuiltInOptions ? "built-in options" : "properties";
 
 	std::string otherBinaries;
 	std::string otherProperties;
 
+	std::string targetArg;
+
+	if (m_state.environment->isClang())
+	{
+		auto llvmConfig = Files::which("llvm-config");
+		otherBinaries = fmt::format(R"ini(
+llvm-config = '{}')ini",
+			llvmConfig);
+
+		targetArg = fmt::format("'--target={}'", archTriple);
+	}
+
 #if defined(CHALET_MACOS)
-	otherBinaries = fmt::format(R"ini(
+	otherBinaries += fmt::format(R"ini(
 objc = {compilerC}
 objcpp = {compilerCpp})ini",
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp));
 
-	otherProperties = fmt::format(R"ini(
+	otherProperties += fmt::format(R"ini(
 objc_args = [{targetArg}]
 objcpp_args = [{targetArg}]
 objc_link_args = [{targetArg}]
@@ -288,8 +310,45 @@ objcpp_link_args = [{targetArg}])ini",
 		FMT_ARG(targetArg));
 #endif
 
+	if (m_state.environment->isWindowsTarget())
+	{
+		if (toolchain.canCompileWindowsResources())
+		{
+			auto compilerWindRes = toolchain.compilerWindowsResource();
+
+			otherBinaries += fmt::format(R"ini(
+windres = '{compilerWindRes}')ini",
+				FMT_ARG(compilerWindRes));
+		}
+
+		if (m_state.info.targetArchitecture() == Arch::Cpu::X64)
+		{
+			otherBinaries += fmt::format(R"ini(
+exe_wrapper = 'wine64')ini");
+		}
+		else
+		{
+			otherBinaries += fmt::format(R"ini(
+exe_wrapper = 'wine')ini");
+		}
+	}
+
+	if (useBuiltInOptions)
+	{
+		otherProperties += fmt::format(R"ini(
+
+[properties]
+needs_exe_wrapper = false)ini");
+	}
+	else
+	{
+		otherProperties += fmt::format(R"ini(
+needs_exe_wrapper = false)ini");
+	}
+
 	auto contents = fmt::format(R"ini([binaries]
 ninja = '{ninja}'
+strip = '{strip}'
 c = {compilerC}
 cpp = {compilerCpp}{otherBinaries}
 
@@ -299,19 +358,34 @@ cpp_args = [{targetArg}]
 c_link_args = [{targetArg}]
 cpp_link_args = [{targetArg}]{otherProperties}
 
+[host_machine]
+system = '{hostPlatform}'
+cpu_family = '{hostCpuFamily}'
+cpu = '{hostArch}'
+endian = '{hostEndianness}'
+
 [target_machine]
-cpu_family = '{cpuFamily}'
-cpu = '{arch}'
+system = '{targetPlatform}'
+cpu_family = '{targetCpuFamily}'
+cpu = '{targetArch}'
+endian = '{targetEndianness}'
 )ini",
 		FMT_ARG(ninja),
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
+		FMT_ARG(strip),
 		FMT_ARG(otherBinaries),
 		FMT_ARG(otherProperties),
 		FMT_ARG(optionsHeading),
 		FMT_ARG(targetArg),
-		FMT_ARG(cpuFamily),
-		FMT_ARG(arch));
+		FMT_ARG(hostPlatform),
+		FMT_ARG(hostCpuFamily),
+		FMT_ARG(hostArch),
+		FMT_ARG(hostEndianness),
+		FMT_ARG(targetPlatform),
+		FMT_ARG(targetCpuFamily),
+		FMT_ARG(targetArch),
+		FMT_ARG(targetEndianness));
 
 	// #if defined(CHALET_WIN32)
 	// 				String::replaceAll(contents, "/", "\\\\");
@@ -367,12 +441,14 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 
 	auto nativeFile = getNativeFileOutputPath();
 
+	bool isNative = m_state.info.hostArchitecture() == m_state.info.targetArchitecture();
+
 	StringList ret{
 		getQuotedPath(meson),
 		"setup",
 		"--backend",
 		backend,
-		"--native-file",
+		isNative ? "--native-file" : "--cross-file",
 		getQuotedPath(Files::getCanonicalPath(nativeFile)),
 		"--optimization",
 		optimization,
@@ -561,10 +637,37 @@ std::string MesonBuilder::getNativeFileOutputPath() const
 }
 
 /*****************************************************************************/
-std::string MesonBuilder::getCpuFamily() const
+std::string MesonBuilder::getPlatform(const bool isTarget) const
 {
-	auto arch = m_state.info.targetArchitecture();
-	switch (arch)
+	if (isTarget)
+	{
+		if (m_state.environment->isEmscripten())
+			return "emscripten";
+
+		if (m_state.environment->isWindowsTarget())
+		{
+			if (m_state.environment->isMingw())
+				return "cygwin";
+			else
+				return "windows";
+		}
+	}
+
+#if defined(CHALET_WIN32)
+	return "windows";
+#elif defined(CHALET_MACOS)
+	return "darwin";
+#elif defined(CHALET_LINUX)
+	return "linux";
+#else
+	return std::string();
+#endif
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getCpuFamily(const Arch::Cpu inArch) const
+{
+	switch (inArch)
 	{
 		case Arch::Cpu::ARM:
 		case Arch::Cpu::ARMHF:
@@ -579,6 +682,30 @@ std::string MesonBuilder::getCpuFamily() const
 		default:
 			return "x86_64";
 	}
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getCpuEndianness(const bool isTarget) const
+{
+	if (isTarget)
+	{
+		// Assume little for now
+		return "little";
+	}
+
+	if (Platform::isLittleEndian())
+		return "little";
+	else
+		return "big";
+}
+
+/*****************************************************************************/
+std::string MesonBuilder::getStripBinary() const
+{
+	if (m_state.environment->isClang())
+		return Files::which("llvm-strip");
+	else
+		return Files::which("strip");
 }
 
 /*****************************************************************************/

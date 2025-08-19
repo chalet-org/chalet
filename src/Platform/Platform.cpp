@@ -83,4 +83,15 @@ StringList Platform::getDefaultPlatformDefines()
 
 	return ret;
 }
+
+/*****************************************************************************/
+bool Platform::isLittleEndian() noexcept
+{
+	i32 n = 1;
+	return *(char*)&n == 1;
+}
+bool Platform::isBigEndian() noexcept
+{
+	return !isLittleEndian();
+}
 }
