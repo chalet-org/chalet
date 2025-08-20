@@ -6,7 +6,6 @@
 #include "Cache/SourceCache.hpp"
 
 #include "System/Files.hpp"
-#include "Utility/EnumIterator.hpp"
 #include "Utility/Hash.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
