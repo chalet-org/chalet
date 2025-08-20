@@ -248,7 +248,13 @@ bool MesonBuilder::createNativeFile() const
 	Path::stripXcodeToolchain(compilerC);
 	Path::stripXcodeToolchain(compilerCpp);
 #endif
-	if (m_state.info.compilerCache())
+	if (m_state.environment->isEmscripten())
+	{
+		auto& python = m_state.environment->commandInvoker();
+		compilerC = fmt::format("['{}', '{}']", python, compilerC);
+		compilerCpp = fmt::format("['{}', '{}']", python, compilerCpp);
+	}
+	else if (m_state.info.compilerCache())
 	{
 		auto& ccache = m_state.tools.ccache();
 		compilerC = fmt::format("['{}', '{}']", ccache, compilerC);
