@@ -570,13 +570,20 @@ std::string StarterFileTemplates::getMesonStarter(const ChaletJsonProps& inProps
 	std::string ret = fmt::format(R"python(project('{workspaceName}', '{language}',
 	version: '{version}',
 	license: 'NONE',
-	meson_version: '>=0.5.0',
+	meson_version: '>=1.3.0',
 	default_options: ['b_pch={pchBool}', '{languageStandard}'])
 
 sources = [
 	'{main}'
 ]
-executable('{projectName}', sources{precompiledHeader}, install: true))python",
+
+name_suffix = []
+compiler = meson.get_compiler('cpp')
+if compiler.has_define('__EMSCRIPTEN__')
+	name_suffix = 'html'
+endif
+
+executable('{projectName}', sources{precompiledHeader}, name_suffix: name_suffix, install: true))python",
 		FMT_ARG(workspaceName),
 		FMT_ARG(version),
 		FMT_ARG(language),
