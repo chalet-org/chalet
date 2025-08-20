@@ -41,7 +41,7 @@ jobs:
         id: tag
       - name: "Checkout"
         if: github.event_name != 'pull_request'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env.github.ref }}
       - name: "Create Tag"
@@ -93,7 +93,7 @@ jobs:
       DEFAULT_PACKAGES: "zip debhelper uuid-dev ninja-build"
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ env.github.ref }}
       - name: "Check sources.list"
@@ -180,7 +180,7 @@ jobs:
       - name: "Create Keychain profile"
         run: xcrun notarytool store-credentials "ChaletProfile" --apple-id "$MACOS_APPLE_ID" --password "$MACOS_CHALET_APP_PWD" --team-id "$MACOS_TEAM_ID"
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.ref }}
       - name: "Get Packages"
@@ -235,7 +235,7 @@ jobs:
       CHALET_BIN: bin/x64-windows/chalet
     steps:
       - name: "Checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ github.ref }}
       - name: "Get MSVC Environment"
@@ -297,7 +297,7 @@ jobs:
     needs: [create-release, all-linux, all-macos, all-windows]
     steps:
       - name: "Checkout chalet-org/homebrew-chalet"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: homebrew
           ref: 'main'
