@@ -244,6 +244,8 @@ bool MesonBuilder::createNativeFile() const
 
 	auto compilerC = toolchain.compilerC().path;
 	auto compilerCpp = toolchain.compilerCpp().path;
+	auto linker = toolchain.linker();
+	auto archiver = toolchain.archiver();
 #if defined(CHALET_MACOS)
 	Path::stripXcodeToolchain(compilerC);
 	Path::stripXcodeToolchain(compilerCpp);
@@ -265,6 +267,10 @@ bool MesonBuilder::createNativeFile() const
 		compilerC = fmt::format("'{}'", compilerC);
 		compilerCpp = fmt::format("'{}'", compilerCpp);
 	}
+
+	linker = fmt::format("'{}'", linker);
+	archiver = fmt::format("'{}'", archiver);
+
 	auto strip = getStripBinary();
 
 	auto hostPlatform = getPlatform(false);
@@ -304,9 +310,12 @@ llvm-config = '{}')ini",
 #if defined(CHALET_MACOS)
 	otherBinaries += fmt::format(R"ini(
 objc = {compilerC}
-objcpp = {compilerCpp})ini",
+objcpp = {compilerCpp}
+objc_ld = {linker}
+objcpp_ld = {linker})ini",
 		FMT_ARG(compilerC),
-		FMT_ARG(compilerCpp));
+		FMT_ARG(compilerCpp),
+		FMT_ARG(linker));
 
 	otherProperties += fmt::format(R"ini(
 objc_args = [{targetArg}]
@@ -356,7 +365,10 @@ needs_exe_wrapper = false)ini");
 ninja = '{ninja}'
 strip = '{strip}'
 c = {compilerC}
-cpp = {compilerCpp}{otherBinaries}
+cpp = {compilerCpp}
+c_ld = {linker}
+cpp_ld = {linker}
+ar = {archiver}{otherBinaries}
 
 [{optionsHeading}]
 c_args = [{targetArg}]
@@ -379,6 +391,8 @@ endian = '{targetEndianness}'
 		FMT_ARG(ninja),
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
+		FMT_ARG(linker),
+		FMT_ARG(archiver),
 		FMT_ARG(strip),
 		FMT_ARG(otherBinaries),
 		FMT_ARG(otherProperties),
