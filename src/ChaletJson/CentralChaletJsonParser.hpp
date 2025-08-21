@@ -32,6 +32,8 @@ struct CentralChaletJsonParser
 
 	bool serialize() const;
 
+	bool parseExternalDependencies(const Json& inNode) const;
+
 private:
 	bool validateAgainstSchema() const;
 	bool serializeRequiredFromJsonRoot(const Json& inNode) const;
@@ -44,7 +46,6 @@ private:
 	bool parseDefaultConfigurations(const Json& inNode) const;
 	bool parseConfigurations(const Json& inNode) const;
 
-	bool parseExternalDependencies(const Json& inNode) const;
 	bool parseGitDependency(GitDependency& outDependency, const Json& inNode) const;
 	bool parseLocalDependency(LocalDependency& outDependency, const Json& inNode) const;
 	bool parseArchiveDependency(ArchiveDependency& outDependency, const Json& inNode) const;

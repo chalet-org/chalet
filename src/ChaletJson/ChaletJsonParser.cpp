@@ -8,6 +8,7 @@
 #include "Json/JsonFile.hpp"
 //
 #include "BuildEnvironment/IBuildEnvironment.hpp"
+#include "ChaletJson/CentralChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonParser.hpp"
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/ToolchainTypes.hpp"
@@ -122,6 +123,11 @@ bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, co
 {
 	JsonFile buildFile(inFilename);
 	if (!buildFile.load())
+		return false;
+
+	CentralChaletJsonParser centralParser(m_state.getCentralState());
+
+	if (!centralParser.parseExternalDependencies(buildFile.root))
 		return false;
 
 	if (!parsePackage(buildFile.root, inRoot))
