@@ -72,7 +72,6 @@ bool BuildFileChecker::run()
 		std::string output{ "Substitutions\n\n" };
 
 		BuildState::VariableOptions options;
-		options.validateExternals = false;
 		auto getOutputLineFor = [this, &options, &flair, &buildColor, &reset](const char* key) {
 			auto value = fmt::format("${{{}}}", key);
 			std::string dots(27 - value.size(), '.');
@@ -101,8 +100,8 @@ bool BuildFileChecker::run()
 		output += getSimulatedOutputLine("name", "foo");
 		output += getOutputLineFor("meta:name");
 		output += getOutputLineFor("meta:version");
-		output += getOutputLineFor("external:foo");
-		output += getOutputLineFor("externalBuild:foo");
+		output += getSimulatedOutputLine("external:foo", fmt::format("{}/foo", m_state.inputs.externalDirectory()));
+		output += getSimulatedOutputLine("externalBuild:foo", fmt::format("{}/foo", m_state.paths.externalBuildDir()));
 		output += getOutputLineFor("so:foo");
 		output += getOutputLineFor("ar:foo");
 		output += getOutputLineFor("exe:foo");

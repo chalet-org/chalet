@@ -36,7 +36,6 @@ public:
 	{
 		std::function<std::string(std::string)> onFail = nullptr;
 		bool checkHome = true;
-		bool validateExternals = true;
 	};
 	static const VariableOptions kDefaultVariableOptions;
 
@@ -55,7 +54,7 @@ public:
 	bool replaceVariablesInString(std::string& outString, const IBuildTarget* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
 	bool replaceVariablesInString(std::string& outString, const IDistTarget* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
 	bool replaceVariablesInString(std::string& outString, const SourcePackage* inTarget, const VariableOptions& inOptions = kDefaultVariableOptions) const;
-	std::string replaceVariablesInMatch(std::string& inMatch, bool& required, const bool inValidateExternals = true) const;
+	std::string replaceVariablesInMatch(std::string& inMatch, bool& required) const;
 	const std::string& cachePathId() const noexcept;
 
 	void getTargetDependencies(StringList& outList, const std::string& inTargetName, const bool inWithSelf) const;

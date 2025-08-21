@@ -1475,7 +1475,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required, inOptions.validateExternals);
+				auto result = replaceVariablesInMatch(match, required);
 				if (!result.empty())
 					return result;
 
@@ -1560,7 +1560,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required, inOptions.validateExternals);
+				auto result = replaceVariablesInMatch(match, required);
 				if (!result.empty())
 					return result;
 
@@ -1626,7 +1626,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
-				auto result = replaceVariablesInMatch(match, required, false);
+				auto result = replaceVariablesInMatch(match, required);
 				if (!result.empty())
 					return result;
 
@@ -1686,7 +1686,7 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 }
 
 /*****************************************************************************/
-std::string BuildState::replaceVariablesInMatch(std::string& match, bool& required, const bool inValidateExternals) const
+std::string BuildState::replaceVariablesInMatch(std::string& match, bool& required) const
 {
 	if (String::equals("cwd", match))
 		return inputs.workingDirectory();
@@ -1733,37 +1733,25 @@ std::string BuildState::replaceVariablesInMatch(std::string& match, bool& requir
 	if (String::startsWith("external:", match))
 	{
 		match = match.substr(9);
-		if (inValidateExternals)
+
+		auto val = paths.getExternalDir(match);
+		if (val.empty())
 		{
-			auto val = paths.getExternalDir(match);
-			if (val.empty())
-			{
-				Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-			}
-			return val;
+			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 		}
-		else
-		{
-			return fmt::format("{}/{}", inputs.externalDirectory(), match);
-		}
+		return val;
 	}
 
 	if (String::startsWith("externalBuild:", match))
 	{
 		match = match.substr(14);
-		if (inValidateExternals)
+
+		auto val = paths.getExternalBuildDir(match);
+		if (val.empty())
 		{
-			auto val = paths.getExternalBuildDir(match);
-			if (val.empty())
-			{
-				Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
-			}
-			return val;
+			Diagnostic::error("{}: External dependency '{}' does not exist.", inputs.inputFile(), match);
 		}
-		else
-		{
-			return fmt::format("{}.{}", paths.externalBuildDir(), match);
-		}
+		return val;
 	}
 
 	if (String::startsWith("so:", match))
