@@ -6,18 +6,6 @@
 		"name",
 		"version"
 	],
-	"oneOf": [
-		{
-			"required": [
-				"targets"
-			]
-		},
-		{
-			"required": [
-				"package"
-			]
-		}
-	],
 	"definitions": {
 		"workspace-name": {
 			"type": "string",

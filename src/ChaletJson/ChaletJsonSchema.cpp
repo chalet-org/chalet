@@ -2544,18 +2544,6 @@ Json ChaletJsonSchema::get()
 		"name",
 		"version"
 	};
-	ret["oneOf"] = R"json([
-		{
-			"required": [
-				"targets"
-			]
-		},
-		{
-			"required": [
-				"package"
-			]
-		}
-	])json"_ojson;
 
 	if (m_defs.empty())
 		m_defs = getDefinitions();
