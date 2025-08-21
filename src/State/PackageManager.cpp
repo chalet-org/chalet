@@ -203,7 +203,10 @@ bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 	for (auto&& pkg : packages)
 	{
 		if (!add(pkg.first, std::move(pkg.second)))
+		{
+			Diagnostic::error("Found duplicate package in included packagePaths: {}", pkg.first);
 			return false;
+		}
 	}
 
 	return true;
