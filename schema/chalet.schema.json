@@ -4,8 +4,19 @@
 	"additionalProperties": false,
 	"required": [
 		"name",
-		"version",
-		"targets"
+		"version"
+	],
+	"oneOf": [
+		{
+			"required": [
+				"targets"
+			]
+		},
+		{
+			"required": [
+				"package"
+			]
+		}
 	],
 	"definitions": {
 		"workspace-name": {
