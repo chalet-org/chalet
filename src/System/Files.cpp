@@ -749,6 +749,12 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 	if (onFound == nullptr)
 		return false;
 
+	if (Files::pathIsFile(inPattern))
+	{
+		onFound(inPattern);
+		return true;
+	}
+
 	if (String::contains("${", inPattern))
 		return false;
 
@@ -764,13 +770,20 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 
 	if (basePath.empty())
 	{
-		basePath = Files::getWorkingDirectory();
+		basePath = String::getPathFolder(inPattern);
+
+		if (basePath.empty())
+		{
+			basePath = Files::getWorkingDirectory();
+		}
+
 		Path::toUnix(basePath);
 	}
 
 	if (!Files::pathIsDirectory(basePath))
 		return false;
 
+	size_t start = 0;
 	std::string pattern;
 	for (size_t i = 0; i < inPattern.size(); ++i)
 	{
@@ -780,14 +793,19 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			case ')':
 				pattern += '\\';
 				break;
+			case '{': {
+				if (start == 0)
+				{
+					start = pattern.size();
+				}
+				break;
+			}
 			default: break;
 		}
 
 		pattern += inPattern[i];
 	}
 
-	size_t start = 0;
-	start = pattern.find("{", start);
 	while (start != std::string::npos)
 	{
 		auto prefix = pattern.substr(0, start);
@@ -808,6 +826,7 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 
 	std::string patternSwap = std::move(pattern);
 	pattern.clear();
+	bool containsWildCard = false;
 	for (size_t i = 0; i < patternSwap.size(); ++i)
 	{
 		switch (patternSwap[i])
@@ -823,14 +842,20 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			case '?':
 				pattern += '.';
 				continue;
+			case '*':
+				containsWildCard = true;
+				break;
 			default: break;
 		}
 
 		pattern += patternSwap[i];
 	}
-	String::replaceAll(pattern, "**/*", "(.+)");
-	String::replaceAll(pattern, "**", "(.+)");
-	String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
+	if (containsWildCard)
+	{
+		String::replaceAll(pattern, "**/*", "(.+)");
+		String::replaceAll(pattern, "**", "(.+)");
+		String::replaceAll(pattern, '*', R"regex((((?!\/).)*))regex");
+	}
 	String::replaceAll(pattern, "(.+)", "(.*)");
 
 	if (pattern.back() != '$')
@@ -861,6 +886,7 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 	fs::recursive_directory_iterator it(basePath);
 	fs::recursive_directory_iterator itEnd;
 
+	bool found = false;
 	while (it != itEnd)
 	{
 		if (matchIsValid(*it, inSettings))
@@ -872,12 +898,18 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			if (exactMatch)
 			{
 				if (std::regex_match(p.begin(), p.end(), re, reOptions))
+				{
 					onFound(p);
+					found = true;
+				}
 			}
 			else
 			{
 				if (std::regex_search(p.begin(), p.end(), re, reOptions))
+				{
 					onFound(p);
+					found = true;
+				}
 			}
 
 			// if the path was removed during onFound
@@ -892,7 +924,7 @@ bool Files::forEachGlobMatch(const std::string& inPattern, const GlobMatch inSet
 			it++;
 	}
 
-	return true;
+	return found;
 }
 
 /*****************************************************************************/

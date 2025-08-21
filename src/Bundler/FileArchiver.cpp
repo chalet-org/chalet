@@ -194,13 +194,19 @@ StringList FileArchiver::getResolvedIncludes(const BundleArchiveTarget& inTarget
 			}
 			else
 			{
-				Files::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
+				bool result = false;
+				result |= Files::forEachGlobMatch(filePath, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
 					List::addIfDoesNotExist(ret, inPath);
 				});
 
-				Files::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
+				result |= Files::forEachGlobMatch(include, GlobMatch::FilesAndFoldersExact, [&ret](const std::string& inPath) {
 					List::addIfDoesNotExist(ret, inPath);
 				});
+
+				if (!result)
+				{
+					Diagnostic::warn("File not found: {}", include);
+				}
 			}
 		}
 	}
