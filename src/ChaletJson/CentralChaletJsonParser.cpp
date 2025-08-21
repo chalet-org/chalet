@@ -302,7 +302,7 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) const
+bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, const bool inForPackages) const
 {
 	// don't care if there aren't any dependencies
 	if (!inNode.contains(Keys::ExternalDependencies))
@@ -366,7 +366,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 
 		if (dependency->isGit())
 		{
-			if (!parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 				return false;
 		}
 		else if (dependency->isLocal())
@@ -379,7 +379,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		}
 		else if (dependency->isArchive())
 		{
-			if (!parseArchiveDependency(static_cast<ArchiveDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !parseArchiveDependency(static_cast<ArchiveDependency&>(*dependency), dependencyJson))
 			{
 				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'archive'.", m_chaletJson.filename(), name);
 				return false;
@@ -388,7 +388,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode) cons
 		else if (dependency->isScript())
 		{
 			// A script could be only for a specific platform
-			if (!parseScriptDependency(static_cast<ScriptDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !parseScriptDependency(static_cast<ScriptDependency&>(*dependency), dependencyJson))
 				return false;
 		}
 		else

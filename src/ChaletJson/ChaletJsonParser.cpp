@@ -127,7 +127,8 @@ bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, co
 
 	CentralChaletJsonParser centralParser(m_state.getCentralState());
 
-	if (!centralParser.parseExternalDependencies(buildFile.root))
+	constexpr bool forPackages = true;
+	if (!centralParser.parseExternalDependencies(buildFile.root, forPackages))
 		return false;
 
 	if (!parsePackage(buildFile.root, inRoot))
