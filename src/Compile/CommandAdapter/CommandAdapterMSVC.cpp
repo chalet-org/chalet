@@ -779,10 +779,16 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 			if (String::endsWith(sharedExt, link))
 				String::replaceAll(link, sharedExt, archiveExt);
 
-			if (String::endsWith(archiveExt, link))
-				List::addIfDoesNotExist(ret, Files::getCanonicalPath(link));
+			std::string toLink = Files::getCanonicalPath(link);
+
+			if (!String::endsWith(archiveExt, link))
+				toLink += archiveExt;
+
+			bool isPathLinkAndSame = link.size() == toLink.size();
+			if (isPathLinkAndSame)
+				List::addIfDoesNotExist(ret, std::string(link));
 			else
-				List::addIfDoesNotExist(ret, Files::getCanonicalPath(fmt::format("{}{}", link, archiveExt)));
+				List::addIfDoesNotExist(ret, std::move(toLink));
 		}
 	}
 
