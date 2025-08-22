@@ -121,8 +121,6 @@ bool MesonBuilder::run()
 	static const char kIPhoneDeploymentTarget[] = "IPHONEOS_DEPLOYMENT_TARGET";
 #endif
 
-	LOG(m_state.inputs.osTargetName(), m_state.inputs.osTargetVersion());
-
 	EnvironmentState oldEnv;
 	oldEnv.ninjaExec = Environment::getString(kNinjaExec);
 	oldEnv.ninjaStatus = Environment::getString(kNinjaStatus);
