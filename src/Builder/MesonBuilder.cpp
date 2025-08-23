@@ -287,6 +287,14 @@ bool MesonBuilder::createNativeFile() const
 	auto targetCpuFamily = getCpuFamily(m_state.info.targetArchitecture());
 	auto targetEndianness = getCpuEndianness(true);
 
+	if (m_state.environment->isEmscripten())
+	{
+		hostPlatform = targetPlatform;
+		hostArch = targetArch;
+		hostCpuFamily = targetCpuFamily;
+		hostEndianness = targetEndianness;
+	}
+
 	bool useBuiltInOptions = m_mesonVersionMajorMinor > 56;
 	std::string optionsHeading = useBuiltInOptions ? "built-in options" : "properties";
 
@@ -375,6 +383,12 @@ c_link_args = [{targetArg}]
 cpp_link_args = [{targetArg}]{otherProperties}
 
 [host_machine]
+system = '{hostPlatform}'
+cpu_family = '{hostCpuFamily}'
+cpu = '{hostArch}'
+endian = '{hostEndianness}'
+
+[build_machine]
 system = '{hostPlatform}'
 cpu_family = '{hostCpuFamily}'
 cpu = '{hostArch}'
