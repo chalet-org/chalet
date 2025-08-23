@@ -266,8 +266,6 @@ bool MesonBuilder::createNativeFile() const
 		compilerCpp = fmt::format("'{}'", compilerCpp);
 	}
 
-	archiver = fmt::format("'{}'", archiver);
-
 	auto strip = getStripBinary();
 
 	auto hostPlatform = getPlatform(false);
@@ -327,6 +325,13 @@ objcpp_link_args = [{targetArg}])ini",
 		FMT_ARG(targetArg));
 #endif
 
+	if (m_state.environment->isEmscripten())
+	{
+		otherBinaries += fmt::format(R"ini(
+ar = '{archiver}')ini",
+			FMT_ARG(archiver));
+	}
+
 	if (m_state.environment->isWindowsTarget())
 	{
 		if (toolchain.canCompileWindowsResources())
@@ -367,8 +372,7 @@ needs_exe_wrapper = false)ini");
 ninja = '{ninja}'
 strip = '{strip}'
 c = {compilerC}
-cpp = {compilerCpp}
-ar = {archiver}{otherBinaries}
+cpp = {compilerCpp}{otherBinaries}
 
 [{optionsHeading}]
 c_args = [{targetArg}]
@@ -391,7 +395,6 @@ endian = '{targetEndianness}'
 		FMT_ARG(ninja),
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
-		FMT_ARG(archiver),
 		FMT_ARG(strip),
 		FMT_ARG(otherBinaries),
 		FMT_ARG(otherProperties),
