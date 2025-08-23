@@ -242,12 +242,12 @@ bool MesonBuilder::createNativeFile() const
 
 	auto compilerC = toolchain.compilerC().path;
 	auto compilerCpp = toolchain.compilerCpp().path;
-	auto linker = toolchain.linker();
 	auto archiver = toolchain.archiver();
 #if defined(CHALET_MACOS)
 	Path::stripXcodeToolchain(compilerC);
 	Path::stripXcodeToolchain(compilerCpp);
 #endif
+
 	if (m_state.environment->isEmscripten())
 	{
 		auto& python = m_state.environment->commandInvoker();
@@ -266,7 +266,6 @@ bool MesonBuilder::createNativeFile() const
 		compilerCpp = fmt::format("'{}'", compilerCpp);
 	}
 
-	linker = fmt::format("'{}'", linker);
 	archiver = fmt::format("'{}'", archiver);
 
 	auto strip = getStripBinary();
@@ -316,12 +315,9 @@ llvm-config = '{}')ini",
 #if defined(CHALET_MACOS)
 	otherBinaries += fmt::format(R"ini(
 objc = {compilerC}
-objcpp = {compilerCpp}
-objc_ld = {linker}
-objcpp_ld = {linker})ini",
+objcpp = {compilerCpp})ini",
 		FMT_ARG(compilerC),
-		FMT_ARG(compilerCpp),
-		FMT_ARG(linker));
+		FMT_ARG(compilerCpp));
 
 	otherProperties += fmt::format(R"ini(
 objc_args = [{targetArg}]
@@ -372,8 +368,6 @@ ninja = '{ninja}'
 strip = '{strip}'
 c = {compilerC}
 cpp = {compilerCpp}
-c_ld = {linker}
-cpp_ld = {linker}
 ar = {archiver}{otherBinaries}
 
 [{optionsHeading}]
@@ -388,12 +382,6 @@ cpu_family = '{hostCpuFamily}'
 cpu = '{hostArch}'
 endian = '{hostEndianness}'
 
-[build_machine]
-system = '{hostPlatform}'
-cpu_family = '{hostCpuFamily}'
-cpu = '{hostArch}'
-endian = '{hostEndianness}'
-
 [target_machine]
 system = '{targetPlatform}'
 cpu_family = '{targetCpuFamily}'
@@ -403,7 +391,6 @@ endian = '{targetEndianness}'
 		FMT_ARG(ninja),
 		FMT_ARG(compilerC),
 		FMT_ARG(compilerCpp),
-		FMT_ARG(linker),
 		FMT_ARG(archiver),
 		FMT_ARG(strip),
 		FMT_ARG(otherBinaries),
