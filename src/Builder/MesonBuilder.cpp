@@ -724,7 +724,9 @@ std::string MesonBuilder::getCpuEndianness(const bool isTarget) const
 /*****************************************************************************/
 std::string MesonBuilder::getStripBinary() const
 {
-	if (m_state.environment->isClang())
+	if (m_state.environment->isMsvc())
+		return std::string();
+	else if (m_state.environment->isClang())
 		return Files::which("llvm-strip");
 	else
 		return Files::which("strip");
