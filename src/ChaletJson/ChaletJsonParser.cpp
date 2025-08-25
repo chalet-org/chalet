@@ -119,7 +119,7 @@ bool ChaletJsonParser::serialize()
 }
 
 /*****************************************************************************/
-bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot)
+bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot, StringList& outTargets)
 {
 	JsonFile buildFile(inFilename);
 	if (!buildFile.load())
@@ -129,6 +129,9 @@ bool ChaletJsonParser::readPackagesIfAvailable(const std::string& inFilename, co
 
 	constexpr bool forPackages = true;
 	if (!centralParser.parseExternalDependencies(buildFile.root, forPackages))
+		return false;
+
+	if (!centralParser.getExternalBuildTargets(buildFile.root, outTargets))
 		return false;
 
 	if (!parsePackage(buildFile.root, inRoot))

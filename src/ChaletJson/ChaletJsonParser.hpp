@@ -48,7 +48,7 @@ struct ChaletJsonParser
 	~ChaletJsonParser();
 
 	bool serialize();
-	bool readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot);
+	bool readPackagesIfAvailable(const std::string& inFilename, const std::string& inRoot, StringList& outTargets);
 
 private:
 	friend struct BuildFileChecker;

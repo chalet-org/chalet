@@ -23,6 +23,7 @@ namespace chalet
 struct PackageManager::Impl
 {
 	StringList packagePaths;
+	StringList packageExternalTargets;
 
 	Dictionary<StringList> packageDeps;
 	Dictionary<Ref<SourcePackage>> packages;
@@ -136,6 +137,12 @@ void PackageManager::addPackageDependency(const std::string& inName, std::string
 }
 
 /*****************************************************************************/
+bool PackageManager::doesBuildArtifactExist(const std::string& inName) const
+{
+	return String::contains(m_impl->packageExternalTargets, inName);
+}
+
+/*****************************************************************************/
 bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 {
 	Unique<ChaletJsonParser> chaletJsonParser;
@@ -162,7 +169,7 @@ bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 			chaletJsonParser = std::make_unique<ChaletJsonParser>(m_state);
 		}
 
-		if (!chaletJsonParser->readPackagesIfAvailable(resolved, location))
+		if (!chaletJsonParser->readPackagesIfAvailable(resolved, location, m_impl->packageExternalTargets))
 		{
 			Diagnostic::error("Error importing packages from: {}", resolved);
 			return false;

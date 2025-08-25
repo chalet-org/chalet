@@ -14,6 +14,8 @@
 #include "State/CompilerTools.hpp"
 #include "State/Dependency/IExternalDependency.hpp"
 #include "State/Distribution/BundleTarget.hpp"
+#include "State/Package/SourcePackage.hpp"
+#include "State/PackageManager.hpp"
 #include "State/Target/CMakeTarget.hpp"
 #include "State/Target/MesonTarget.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -206,6 +208,9 @@ std::string BuildPaths::getExternalBuildDir(const std::string& inName) const
 			return fmt::format("{}.{}", externalBuildDir(), inName);
 		}
 	}
+
+	if (m_state.packages.doesBuildArtifactExist(inName))
+		return fmt::format("{}.{}", externalBuildDir(), inName);
 
 	return std::string();
 }

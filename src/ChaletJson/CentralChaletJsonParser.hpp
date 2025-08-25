@@ -32,6 +32,7 @@ struct CentralChaletJsonParser
 
 	bool serialize() const;
 
+	bool getExternalBuildTargets(const Json& inNode, StringList& outTargets) const;
 	bool parseExternalDependencies(const Json& inNode, const bool inForPackages = false) const;
 
 private:

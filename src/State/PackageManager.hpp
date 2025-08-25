@@ -31,6 +31,8 @@ struct PackageManager
 	void addPackageDependencies(const std::string& inName, StringList&& inList);
 	void addPackageDependency(const std::string& inName, std::string&& inValue);
 
+	bool doesBuildArtifactExist(const std::string& inName) const;
+
 private:
 	bool resolvePackagesFromSubPackagePathsAndChaletTargets();
 	bool validatePackageDependencies();

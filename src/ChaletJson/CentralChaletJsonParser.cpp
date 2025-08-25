@@ -14,6 +14,7 @@
 #include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
+#include "Json/JsonValues.hpp"
 
 #include "State/Dependency/ArchiveDependency.hpp"
 #include "State/Dependency/GitDependency.hpp"
@@ -294,6 +295,44 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 				}
 
 				m_centralState.addBuildConfiguration(name, std::move(config));
+			}
+		}
+	}
+
+	return true;
+}
+
+/*****************************************************************************/
+// note: just return true here for now and ignore errors in dependent build files
+//
+bool CentralChaletJsonParser::getExternalBuildTargets(const Json& inNode, StringList& outTargets) const
+{
+	if (!inNode.contains(Keys::Targets))
+		return true; // We don't care
+
+	const Json& targets = inNode[Keys::Targets];
+	if (!targets.is_object() || targets.empty())
+		return true;
+
+	for (auto& [name, targetJson] : targets.items())
+	{
+		if (String::equals(Values::All, name))
+			continue;
+
+		if (!targetJson.is_object())
+			continue;
+
+		StringList externalTargets{
+			"chaletProject",
+			"cmakeProject",
+			"mesonProject",
+		};
+
+		if (std::string val; json::assign(val, targetJson, "kind"))
+		{
+			if (String::equals(externalTargets, val))
+			{
+				List::addIfDoesNotExist(outTargets, name);
 			}
 		}
 	}
