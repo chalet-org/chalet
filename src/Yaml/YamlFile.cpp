@@ -336,20 +336,27 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 					auto foundInteger = value.find_first_not_of("0123456789");
 					if (foundInteger == std::string::npos)
 					{
-						auto numValue = strtoll(value.c_str(), NULL, 0);
+						auto numValue = ::strtoll(value.c_str(), NULL, 0);
 						node[key] = numValue;
 						continue;
 					}
 
+					// Check if there's a floating point number
 					auto foundFloat = value.find_first_not_of("0123456789.");
 					if (foundFloat == std::string::npos)
 					{
-						auto firstDecimal = value.find('.');
-						if (value.find('.', firstDecimal + 1) == std::string::npos)
+						// If there's only decimals, we want to ignore it
+						auto foundNonDecimal = value.find_first_not_of(".");
+						if (foundNonDecimal != std::string::npos)
 						{
-							auto numValue = strtof(value.c_str(), NULL);
-							node[key] = numValue;
-							continue;
+							// If there's more than one decimal, it's a version string
+							auto firstDecimal = value.find('.');
+							if (value.find('.', firstDecimal + 1) == std::string::npos)
+							{
+								auto numValue = ::strtof(value.c_str(), NULL);
+								node[key] = numValue;
+								continue;
+							}
 						}
 					}
 				}
