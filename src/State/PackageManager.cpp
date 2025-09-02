@@ -68,7 +68,9 @@ bool PackageManager::initialize()
 	if (!route.isCheck())
 	{
 		// Clear packages at this point. in theory, we should no longer need them
-		m_impl.reset();
+		m_impl->packagePaths.clear();
+		m_impl->packageDeps.clear();
+		m_impl->packages.clear();
 	}
 
 	return true;
