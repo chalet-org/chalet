@@ -66,6 +66,14 @@ StringList LinkerAppleClang::getSharedLibTargetCommand(const std::string& output
 }
 
 /*****************************************************************************/
+void LinkerAppleClang::addLinkerOptions(StringList& outArgList) const
+{
+	outArgList.emplace_back("-headerpad_max_install_names");
+
+	LinkerLLVMClang::addLinkerOptions(outArgList);
+}
+
+/*****************************************************************************/
 void LinkerAppleClang::addStripSymbols(StringList& outArgList) const
 {
 	UNUSED(outArgList);
