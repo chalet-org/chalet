@@ -1391,7 +1391,11 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #else
 		ret.rc = fmt::format("llvm-rc{}", suffix);
 #endif
+#if defined(CHALET_MACOS)
 		ret.linker = isAppleClang ? "ld" : "lld";
+#else
+		ret.linker = "lld";
+#endif
 		ret.archiver = "ar";
 #if defined(CHALET_WIN32)
 		ret.profiler = isVisualStudioLLVM ? "vsinstr" : "gprof";
