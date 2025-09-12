@@ -51,6 +51,9 @@ enum class ArgumentIdentifier : u16
 	ValidateSchemaFile,
 	ValidateFilesRemainingArgs,
 	//
+	// Clean
+	CleanAll,
+	//
 	// Init
 	InitPath,
 	InitTemplate,

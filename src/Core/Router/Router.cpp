@@ -157,9 +157,17 @@ bool Router::runRoutesThatRequireState()
 		case RouteType::BuildRun:
 		case RouteType::Build:
 		case RouteType::Rebuild:
-		case RouteType::Run:
+		case RouteType::Run: {
+			chalet_assert(buildState != nullptr, "");
+			result = buildState->doBuild(m_inputs.route());
+			break;
+		}
 		case RouteType::Clean: {
 			chalet_assert(buildState != nullptr, "");
+			if (m_inputs.cleanAll())
+			{
+				LOG("Will clean all...");
+			}
 			result = buildState->doBuild(m_inputs.route());
 			break;
 		}

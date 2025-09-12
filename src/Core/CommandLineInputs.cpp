@@ -1185,6 +1185,16 @@ void CommandLineInputs::setOpenAfterExport(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
+bool CommandLineInputs::cleanAll() const noexcept
+{
+	return m_cleanAll;
+}
+void CommandLineInputs::setCleanAll(const bool inValue) noexcept
+{
+	m_cleanAll = inValue;
+}
+
+/*****************************************************************************/
 StringList CommandLineInputs::getToolchainPresets() const
 {
 	StringList ret;

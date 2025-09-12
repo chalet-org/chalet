@@ -260,6 +260,10 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						inputs->setSaveUserToolchainGlobally(value);
 						break;
 
+					case ArgumentIdentifier::CleanAll:
+						inputs->setCleanAll(value);
+						break;
+
 					case ArgumentIdentifier::Quieter:
 						Output::setQuietNonBuild(value);
 						break;
