@@ -308,7 +308,8 @@ bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand,
 		}
 	}
 
-	auto analysisFile = fmt::format("{}/{}.diagsession", buildDir, projectName);
+	auto executableName = String::getPathFilename(inExecutable);
+	auto analysisFile = fmt::format("{}/{}.diagsession", buildDir, executableName);
 	if (Files::pathExists(analysisFile))
 	{
 		if (!Files::removeRecursively(analysisFile))
@@ -347,6 +348,9 @@ bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand,
 
 	std::string sessionId{ "1" };
 
+	auto friendlyConfigName = String::getPathBaseName(configFile);
+	Output::print(Color::None, fmt::format("Starting diagnostics recording with the '{}' agent config. Launching process: {}", friendlyConfigName, projectName));
+
 	// Start the session itself, so that when the actual process starts, we can attach it immediately
 	bool result = Process::runMinimalOutput({
 		vsdiagnostics,
@@ -367,13 +371,18 @@ bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand,
 			});
 		});
 
+		Output::print(Color::None, "Recording completed. Saving output file...");
+
 		// Stop the session. Annoyingly, this doesn't remove the scratch path lock if there was a previous failure
-		Process::run({
+		Process::runMinimalOutput({
 			vsdiagnostics,
 			"stop",
 			sessionId,
 			fmt::format("/output:{}", analysisFile),
 		});
+
+		auto friendlyAnalysisFile = String::getPathFilename(analysisFile);
+		Output::print(Color::None, fmt::format("Output file saved as: {}", friendlyAnalysisFile));
 
 		printExitedWithCode(result);
 
@@ -405,6 +414,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	if (vsperfcmd.empty())
 		return false;
 
+	auto& projectName = m_project.name();
 	const auto& vsinstruments = m_state.toolchain.profiler();
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto executableName = String::getPathFilename(inExecutable);
@@ -438,6 +448,8 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		}
 	}
 
+	Output::print(Color::None, fmt::format("Starting diagnostics recording with VSPerfCmd. Launching process: {}", projectName));
+
 	// Start the trace service
 	if (!Process::runMinimalOutput({
 			vsperfcmd,
@@ -450,16 +462,18 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	}
 
 	// Run the command
-	if (Output::showCommands())
-		Output::printCommand(inCommand);
+	// if (Output::showCommands())
+	// 	Output::printCommand(inCommand);
 
-	WindowsTerminal::cleanup();
-	Output::setShowCommandOverride(false);
+	// WindowsTerminal::cleanup();
+	// Output::setShowCommandOverride(false);
 
 	bool result = Process::runWithInput(inCommand);
 
-	Output::setShowCommandOverride(true);
-	WindowsTerminal::initialize();
+	Output::print(Color::None, "Recording completed. Saving output file...");
+
+	// Output::setShowCommandOverride(true);
+	// WindowsTerminal::initialize();
 
 	// Shut down the service
 	if (!Process::runMinimalOutput({
@@ -470,6 +484,9 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		Diagnostic::error("Failed to shutdown trace: {}", analysisFile);
 		return false;
 	}
+
+	auto friendlyAnalysisFile = String::getPathFilename(analysisFile);
+	Output::print(Color::None, fmt::format("Output file saved as: {}", friendlyAnalysisFile));
 
 	printExitedWithCode(result);
 
@@ -511,7 +528,7 @@ bool ProfilerRunner::completeVisualStudioProfilingSession(const std::string& inE
 
 		Files::sleep(1.0);
 
-		Process::runMinimalOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+		Process::runMinimalOutputWithoutWait({ visualStudio, absAnalysisFile }, devEnvDir);
 	}
 	else
 	{
