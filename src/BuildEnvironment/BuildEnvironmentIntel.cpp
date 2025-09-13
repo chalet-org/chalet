@@ -243,13 +243,11 @@ std::string BuildEnvironmentIntel::makeToolchainName(const std::string& inArch) 
 		ret = "intel-llvm";
 
 #if defined(CHALET_WIN32)
-		const auto vsVersion = m_state.inputs.visualStudioVersion();
-		if (vsVersion == VisualStudioVersion::VisualStudio2022)
-			ret += "-vs-2022";
-		if (vsVersion == VisualStudioVersion::VisualStudio2019)
-			ret += "-vs-2019";
-		if (vsVersion == VisualStudioVersion::VisualStudio2017)
-			ret += "-vs-2017";
+		const u32 vsYear = m_state.inputs.getVisualStudioYear();
+		if (vsYear >= 2017u)
+		{
+			ret += fmt::format("-vs-{}", vsYear);
+		}
 #endif
 	}
 	else if (m_type == ToolchainType::IntelClassic)

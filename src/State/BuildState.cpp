@@ -123,7 +123,7 @@ bool BuildState::initialize()
 	if (!initializeToolchain())
 		return false;
 
-	if (!isBuildConfigurationSupported())
+	if (!isSupported())
 		return false;
 
 	if (!configuration.validate(*this))
@@ -343,9 +343,9 @@ bool BuildState::isSubChaletTarget() const noexcept
 }
 
 /*****************************************************************************/
-bool BuildState::isBuildConfigurationSupported() const
+bool BuildState::isSupported() const
 {
-	return configuration.isSupported(*this);
+	return toolchain.isSupported() && configuration.isSupported(*this);
 }
 
 /*****************************************************************************/
@@ -598,7 +598,15 @@ bool BuildState::initializeToolchain()
 		return onError();
 
 	if (!toolchain.initialize(*m_impl->environment))
+	{
+		if (inputs.route().isExport() && m_impl->environment->isMsvc())
+		{
+			Diagnostic::clearErrors();
+			return false;
+		}
+
 		return onError();
+	}
 
 	return true;
 }
@@ -1054,11 +1062,12 @@ bool BuildState::validateState()
 			auto vsperfcmd = Files::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
+				auto vsYear = inputs.getVisualStudioYear();
 				std::string vsVersion;
-				if (inputs.visualStudioVersion() == VisualStudioVersion::VisualStudio2022)
-					vsVersion = "vs2022";
-				else if (inputs.visualStudioVersion() == VisualStudioVersion::VisualStudio2019)
-					vsVersion = "vs2019";
+				if (vsYear >= 2019)
+				{
+					vsVersion = fmt::format("vs{}", vsYear);
+				}
 
 				if (!vsVersion.empty())
 				{

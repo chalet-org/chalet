@@ -105,6 +105,7 @@ struct CommandLineInputs
 	bool isToolchainPreset() const noexcept;
 	bool isMultiArchToolchainPreset() const noexcept;
 	void setMultiArchToolchainPreset(const bool inValue) const noexcept;
+	u32 getVisualStudioYear() const noexcept;
 
 	const std::string& initPath() const noexcept;
 	void setInitPath(std::string&& inValue) noexcept;

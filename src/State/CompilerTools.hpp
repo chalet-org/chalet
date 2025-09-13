@@ -110,6 +110,8 @@ struct CompilerTools
 	u32 ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
 
+	bool isSupported() const noexcept;
+
 private:
 	bool parseVersionString(CompilerInfo& outInfo);
 
@@ -162,5 +164,7 @@ private:
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
 	bool m_makeIsMinGW = false;
+
+	bool m_isSupported = true;
 };
 }

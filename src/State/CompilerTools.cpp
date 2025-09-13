@@ -91,6 +91,8 @@ StringList CompilerTools::getToolchainBuildPathStyles()
 /*****************************************************************************/
 bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 {
+	m_isSupported = false;
+
 	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())
 			return false;
@@ -134,6 +136,7 @@ bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 	}
 
 	m_isWindowsTarget = inEnvironment.isWindowsTarget();
+	m_isSupported = true;
 
 	return true;
 }
@@ -609,6 +612,12 @@ u32 CompilerTools::ninjaVersionPatch() const noexcept
 bool CompilerTools::ninjaAvailable() const noexcept
 {
 	return m_ninjaAvailable;
+}
+
+/*****************************************************************************/
+bool CompilerTools::isSupported() const noexcept
+{
+	return m_isSupported;
 }
 
 /*****************************************************************************/

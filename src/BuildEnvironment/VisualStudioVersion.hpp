@@ -19,5 +19,6 @@ enum class VisualStudioVersion : u16
 	VisualStudio2017 = 15,
 	VisualStudio2019 = 16,
 	VisualStudio2022 = 17,
+	VisualStudio2026 = 18,
 };
 }

@@ -106,21 +106,22 @@ bool VSSolutionProjectExporter::generateProjectFiles()
 					}
 					else
 					{
-						bool added = false;
-						if (!makeStateAndValidate(centralState, arch, buildConfig, added))
+						if (!makeStateAndValidate(centralState, arch, buildConfig))
 							return false;
-
-						if (!added)
-						{
-							Diagnostic::error("Internal error adding: {} / {}", buildConfig, arch);
-							return false;
-						}
 					}
 				}
 
 				// baseStates.emplace_back(state.get());
 			}
 		}
+	}
+
+	m_exportAdapter->removeArchitectures(m_architecturesNotFound);
+
+	if (m_states.empty())
+	{
+		Diagnostic::error("Invalid build tools were found for the Visual Studio installation.");
+		return false;
 	}
 
 	auto allBuildTargetName = getAllBuildTargetName();

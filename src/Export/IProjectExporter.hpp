@@ -46,7 +46,7 @@ protected:
 	const std::string& workingDirectory() const noexcept;
 	bool copyExportedDirectoryToRootWithOutput(const std::string& inFolder) const;
 
-	bool makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName, bool& added);
+	bool makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName);
 	bool makeExportAdapter();
 	bool validateDebugState();
 
@@ -61,6 +61,8 @@ protected:
 
 	std::string m_directory;
 	std::string m_debugConfiguration;
+
+	StringList m_architecturesNotFound;
 
 	std::vector<Unique<BuildState>> m_states;
 

@@ -31,6 +31,6 @@ private:
 	std::string m_intelSetVars;
 	std::string m_intelSetVarsArch;
 
-	VisualStudioVersion m_vsVersion = VisualStudioVersion::None;
+	u32 m_vsVersion = 0u;
 };
 }

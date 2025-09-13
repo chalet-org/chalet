@@ -687,7 +687,9 @@ std::string ArgumentParser::getHelp()
 			else if (String::equals("vs-stable", preset))
 				return fmt::format("Microsoft{} Visual Studio (latest installed stable release)", Unicode::registered());
 			else if (String::equals("vs-preview", preset))
-				return fmt::format("Microsoft{} Visual Studio (latest installed preview release)", Unicode::registered());
+				return fmt::format("Microsoft{} Visual Studio (latest installed preview/insiders release)", Unicode::registered());
+			else if (String::equals("vs-2026", preset))
+				return fmt::format("Microsoft{} Visual Studio 2026", Unicode::registered());
 			else if (String::equals("vs-2022", preset))
 				return fmt::format("Microsoft{} Visual Studio 2022", Unicode::registered());
 			else if (String::equals("vs-2019", preset))
@@ -697,7 +699,9 @@ std::string ArgumentParser::getHelp()
 			else if (String::equals("llvm-vs-stable", preset))
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio (latest stable)", Unicode::registered());
 			else if (String::equals("llvm-vs-preview", preset))
-				return fmt::format("LLVM/CLang in Microsoft{} Visual Studio (latest preview)", Unicode::registered());
+				return fmt::format("LLVM/CLang in Microsoft{} Visual Studio (latest preview/insiders)", Unicode::registered());
+			else if (String::equals("llvm-vs-2026", preset))
+				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2026", Unicode::registered());
 			else if (String::equals("llvm-vs-2022", preset))
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio 2022", Unicode::registered());
 			else if (String::equals("llvm-vs-2019", preset))

@@ -91,6 +91,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
 		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "vs-2026", VisualStudioVersion::VisualStudio2026 },
 		{ "vs-preview", VisualStudioVersion::Preview },
 		{ "vs-stable", VisualStudioVersion::Stable },
 	};
@@ -100,6 +101,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 	return {
 		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "llvm-vs-2026", VisualStudioVersion::VisualStudio2026 },
 		{ "llvm-vs-preview", VisualStudioVersion::Preview },
 		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
@@ -121,6 +123,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 		// { "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		// { "intel-llvm-vs-2026", VisualStudioVersion::VisualStudio2026 }, // TODO
 	};
 }
 	#endif
@@ -636,6 +639,20 @@ bool CommandLineInputs::isMultiArchToolchainPreset() const noexcept
 void CommandLineInputs::setMultiArchToolchainPreset(const bool inValue) const noexcept
 {
 	m_isMultiArchToolchainPreset = inValue;
+}
+u32 CommandLineInputs::getVisualStudioYear() const noexcept
+{
+	switch (m_visualStudioVersion)
+	{
+		case VisualStudioVersion::VisualStudio2026: return 2026;
+		case VisualStudioVersion::VisualStudio2022: return 2022;
+		case VisualStudioVersion::VisualStudio2019: return 2019;
+		case VisualStudioVersion::VisualStudio2017: return 2017;
+		case VisualStudioVersion::VisualStudio2015: return 2015;
+		case VisualStudioVersion::VisualStudio2013: return 2013;
+		case VisualStudioVersion::VisualStudio2010: return 2010;
+	}
+	return 0;
 }
 
 /*****************************************************************************/
