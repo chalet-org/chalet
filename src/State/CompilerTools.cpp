@@ -633,9 +633,11 @@ void CompilerTools::setProfiler(std::string&& inValue) noexcept
 #if defined(CHALET_WIN32)
 	m_isProfilerGprof = String::endsWith("gprof.exe", lower);
 	m_isProfilerVSInstruments = String::endsWith("vsinstr.exe", lower);
+	m_isProfilerVSDiagnostics = String::endsWith("vsdiagnostics.exe", lower);
 #else
 	m_isProfilerGprof = String::endsWith("gprof", lower);
 	m_isProfilerVSInstruments = false;
+	m_isProfilerVSDiagnostics = false;
 #endif
 }
 bool CompilerTools::isProfilerGprof() const noexcept
@@ -645,6 +647,10 @@ bool CompilerTools::isProfilerGprof() const noexcept
 bool CompilerTools::isProfilerVSInstruments() const noexcept
 {
 	return m_isProfilerVSInstruments;
+}
+bool CompilerTools::isProfilerVSDiagnostics() const noexcept
+{
+	return m_isProfilerVSDiagnostics;
 }
 
 /*****************************************************************************/

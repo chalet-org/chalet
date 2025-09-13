@@ -25,6 +25,8 @@
 namespace chalet
 {
 /*****************************************************************************/
+// TODO: This whole thing needs a proper refactor
+//
 ProfilerRunner::ProfilerRunner(BuildState& inState, const SourceTarget& inProject) :
 	m_state(inState),
 	m_project(inProject)
@@ -34,7 +36,8 @@ ProfilerRunner::ProfilerRunner(BuildState& inState, const SourceTarget& inProjec
 /*****************************************************************************/
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable)
 {
-	if (!m_state.toolchain.profiler().empty() && m_state.toolchain.isProfilerGprof())
+	const auto& profiler = m_state.toolchain.profiler();
+	if (!profiler.empty() && m_state.toolchain.isProfilerGprof())
 	{
 		return runWithGprof(inCommand, inExecutable);
 	}
@@ -86,9 +89,13 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 #endif
 
 #if defined(CHALET_WIN32)
-	if (!m_state.toolchain.profiler().empty() && m_state.environment->isMsvc() && m_state.toolchain.isProfilerVSInstruments())
+	if (!profiler.empty() && m_state.environment->isMsvc())
 	{
-		return runWithVisualStudioInstruments(inCommand, inExecutable);
+		if (m_state.toolchain.isProfilerVSDiagnostics())
+			return runWithVisualStudioDiagnostics(inCommand, inExecutable);
+
+		if (m_state.toolchain.isProfilerVSInstruments())
+			return runWithVisualStudioInstruments(inCommand, inExecutable);
 	}
 #endif
 
@@ -135,6 +142,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	auto executableName = String::getPathFilename(inExecutable);
 
+	const auto& profiler = m_state.toolchain.profiler();
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	const auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 	// Output::msgProfilerStartedGprof(profStatsFile);
@@ -142,7 +150,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	std::string gmonOut{ "gmon.out" };
 
-	if (!Process::runOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
+	if (!Process::runOutputToFile({ profiler, "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
@@ -189,19 +197,129 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
+// https://learn.microsoft.com/en-us/visualstudio/profiling/profile-apps-from-command-line?view=vs-2022
+// Note: this was added midway through VS 2022's lifecycle (some time in 2023?)
+//
+bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand, const std::string& inExecutable)
+{
+	auto& projectName = m_project.name();
+	const auto& buildDir = m_state.paths.buildOutputDir();
+
+	const auto& vsdiagnostics = m_state.toolchain.profiler();
+	auto collectorPath = String::getPathFolder(vsdiagnostics);
+	auto configFile = fmt::format("{}/AgentConfigs/CpuUsageWithCallCounts.json", collectorPath);
+	if (!Files::pathExists(configFile))
+	{
+		configFile = fmt::format("{}/AgentConfigs/CpuUsageBase.json", collectorPath);
+		if (!Files::pathExists(configFile))
+		{
+			Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find a usable agent configuration.");
+			return false;
+		}
+	}
+
+	auto analysisFile = fmt::format("{}/{}.diagsession", buildDir, projectName);
+	if (Files::pathExists(analysisFile))
+	{
+		if (!Files::removeRecursively(analysisFile))
+			return false;
+	}
+
+	// We want to use a timestamp here, because if a session stays open, the folder path
+	//   needs to be removed with elevated privalidges. Let the user handle it for now
+	//
+	time_t currentTimestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	const auto& outputDirectory = m_state.paths.outputDirectory();
+	auto vsdiagnosticsScratchPath = fmt::format("{}/.vsdiagnostics", outputDirectory);
+	auto scratchLocation = Files::getCanonicalPath(fmt::format("{}/session_{}", vsdiagnosticsScratchPath, currentTimestamp));
+	if (Files::pathExists(scratchLocation))
+	{
+		if (!Files::removeRecursively(scratchLocation))
+			return false;
+	}
+
+	Files::makeDirectory(vsdiagnosticsScratchPath);
+	Files::makeDirectory(scratchLocation);
+
+	// The VS Diagnostics Collector runs as an elevated service,
+	//   but there's some issues with it getting the default temp directory,
+	//   so we override it here with a path matching the current time.
+	//   It gets very crashy and doesn't clean up stale sessions, nor can we clean up
+	//   stale sessions due to the elevated path lock that the service uses
+	//
+	// https://developercommunity.visualstudio.com/t/cannot-run-performance-profiler/1325325
+	//
+	auto oldTemp1 = Environment::getString("TEMP");
+	auto oldTemp2 = Environment::getString("TMP");
+
+	Environment::set("TEMP", scratchLocation);
+	Environment::set("TMP", scratchLocation);
+
+	std::string sessionId{ "1" };
+
+	// Start the session itself, so that when the actual process starts, we can attach it immediately
+	bool result = Process::runMinimalOutput({
+		vsdiagnostics,
+		"start",
+		sessionId,
+		fmt::format("/loadConfig:{}", configFile),
+	});
+
+	if (result)
+	{
+		// attach the process, so we can still use stdin/stdout in our terminal environment
+		result = Process::runWithInput(inCommand, [&](i32 pid) -> void {
+			Process::runMinimalOutputWithoutWait({
+				vsdiagnostics,
+				"update",
+				sessionId,
+				fmt::format("/attach:{}", pid),
+			});
+		});
+
+		// Stop the session. Annoyingly, this doesn't remove the scratch path lock if there was a previous failure
+		Process::run({
+			vsdiagnostics,
+			"stop",
+			sessionId,
+			fmt::format("/output:{}", analysisFile),
+		});
+
+		printExitedWithCode(result);
+
+		result = Files::pathExists(analysisFile);
+	}
+	else
+	{
+
+		Diagnostic::error("Failed to start VSDiagnostics for: {}", inExecutable);
+	}
+
+	Environment::set("TEMP", oldTemp1);
+	Environment::set("TMP", oldTemp2);
+
+	Files::removeRecursively(scratchLocation);
+
+	if (Files::pathIsEmpty(vsdiagnosticsScratchPath))
+		Files::remove(vsdiagnosticsScratchPath);
+
+	return completeVisualStudioProfilingSession(inExecutable, analysisFile, result);
+}
+
+/*****************************************************************************/
+// https://docs.microsoft.com/en-us/visualstudio/profiling/how-to-instrument-a-native-component-and-collect-timing-data?view=vs-2017
+//
 bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand, const std::string& inExecutable)
 {
-	// https://docs.microsoft.com/en-us/visualstudio/profiling/how-to-instrument-a-native-component-and-collect-timing-data?view=vs-2017
-	//
-
 	const auto& vsperfcmd = m_state.tools.vsperfcmd();
 	chalet_assert(!vsperfcmd.empty(), "");
 	if (vsperfcmd.empty())
 		return false;
 
+	const auto& vsinstruments = m_state.toolchain.profiler();
+	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto executableName = String::getPathFilename(inExecutable);
 
-	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto analysisFile = fmt::format("{}/{}.vsp", buildDir, executableName);
 	if (Files::pathExists(analysisFile))
 	{
@@ -209,12 +327,10 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			return false;
 	}
 
-	/////////////
-
 	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
 	Process::runMinimalOutput({
-		m_state.toolchain.profiler(),
+		vsinstruments,
 		"/U",
 		inExecutable,
 	});
@@ -228,12 +344,10 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			if (project.isSharedLibrary())
 			{
 				auto file = m_state.paths.getTargetFilename(project);
-				Process::runMinimalOutput({ m_state.toolchain.profiler(), "/U", file });
+				Process::runMinimalOutput({ vsinstruments, "/U", file });
 			}
 		}
 	}
-
-	/////////////
 
 	// Start the trace service
 	if (!Process::runMinimalOutput({
@@ -247,20 +361,16 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	}
 
 	// Run the command
-	#if defined(CHALET_WIN32)
 	if (Output::showCommands())
 		Output::printCommand(inCommand);
 
 	WindowsTerminal::cleanup();
 	Output::setShowCommandOverride(false);
-	#endif
 
 	bool result = Process::runWithInput(inCommand);
 
-	#if defined(CHALET_WIN32)
 	Output::setShowCommandOverride(true);
 	WindowsTerminal::initialize();
-	#endif
 
 	// Shut down the service
 	if (!Process::runMinimalOutput({
@@ -272,16 +382,23 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		return false;
 	}
 
-	/////////////
-
 	printExitedWithCode(result);
 
-	if (!result)
+	return completeVisualStudioProfilingSession(inExecutable, analysisFile, result);
+}
+
+/*****************************************************************************/
+bool ProfilerRunner::completeVisualStudioProfilingSession(const std::string& inExecutable, const std::string& inAnalysisFile, const bool inResult)
+{
+	if (!inResult)
+	{
+		Diagnostic::error("Failed to run profiler for: {}", inExecutable);
 		return false;
+	}
 
 	if (m_state.info.launchProfiler())
 	{
-		auto absAnalysisFile = Files::getAbsolutePath(analysisFile);
+		auto absAnalysisFile = Files::getAbsolutePath(inAnalysisFile);
 
 		std::string devEnvDir;
 		auto visualStudio = Files::which("devenv");
@@ -291,7 +408,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
 			if (devEnvDir.empty() || !Files::pathExists(visualStudio))
 			{
-				Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+				Diagnostic::error("Failed to launch in Visual Studio: {}", inAnalysisFile);
 				return false;
 			}
 		}
@@ -300,7 +417,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			devEnvDir = String::getPathFolder(visualStudio);
 		}
 
-		Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
+		Output::msgProfilerDoneAndLaunching(inAnalysisFile, "Visual Studio");
 		Output::lineBreak();
 
 		Files::sleep(1.0);
@@ -309,7 +426,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	}
 	else
 	{
-		Output::msgProfilerDone(analysisFile);
+		Output::msgProfilerDone(inAnalysisFile);
 		Output::lineBreak();
 	}
 

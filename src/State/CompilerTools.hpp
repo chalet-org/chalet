@@ -95,6 +95,7 @@ struct CompilerTools
 	void setProfiler(std::string&& inValue) noexcept;
 	bool isProfilerGprof() const noexcept;
 	bool isProfilerVSInstruments() const noexcept;
+	bool isProfilerVSDiagnostics() const noexcept;
 
 	const std::string& disassembler() const noexcept;
 	void setDisassembler(std::string&& inValue) noexcept;
@@ -155,6 +156,7 @@ private:
 
 	bool m_isProfilerGprof = false;
 	bool m_isProfilerVSInstruments = false;
+	bool m_isProfilerVSDiagnostics = false;
 
 	bool m_isWindowsTarget = false;
 	bool m_isCompilerWindowsResourceLLVMRC = false;

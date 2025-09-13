@@ -1047,7 +1047,7 @@ bool BuildState::validateState()
 #if defined(CHALET_MACOS)
 		profilerAvailable |= environment->isAppleClang();
 #elif defined(CHALET_WIN32)
-		bool requiresVisualStudio = environment->isMsvc() && toolchain.isProfilerVSInstruments();
+		bool requiresVisualStudio = environment->isMsvc();
 		profilerAvailable |= requiresVisualStudio;
 #endif
 		profilerAvailable |= toolchain.isProfilerGprof();
@@ -1057,12 +1057,14 @@ bool BuildState::validateState()
 			return false;
 		}
 #if defined(CHALET_WIN32)
-		if (requiresVisualStudio)
+		if (requiresVisualStudio && toolchain.isProfilerVSInstruments())
 		{
+			auto vsYear = inputs.getVisualStudioYear();
 			auto vsperfcmd = Files::which("vsperfcmd");
 			if (vsperfcmd.empty())
 			{
-				auto vsYear = inputs.getVisualStudioYear();
+				// Note: in VS 2026, this path is "vs18" - but it no longer contains vsperf - can use VSDiagnostics instead
+
 				std::string vsVersion;
 				if (vsYear >= 2019)
 				{

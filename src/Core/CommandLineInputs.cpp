@@ -1317,6 +1317,8 @@ StringList CommandLineInputs::getCliQueryOptions() const
 }
 
 /*****************************************************************************/
+// TODO: This should be somewhere else
+//
 ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const std::string& inValue) const
 {
 	ToolchainPreference ret;
@@ -1358,7 +1360,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "rc";
 		ret.linker = "link";
 		ret.archiver = "lib";
-		ret.profiler = "vsinstr";
+		ret.profiler = "vs";
 		ret.disassembler = "dumpbin";
 	}
 	else
@@ -1416,7 +1418,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 		ret.archiver = "ar";
 #if defined(CHALET_WIN32)
-		ret.profiler = isVisualStudioLLVM ? "vsinstr" : "gprof";
+		ret.profiler = isVisualStudioLLVM ? "vs" : "gprof";
 #else
 		ret.profiler = "gprof";
 #endif

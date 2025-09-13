@@ -255,6 +255,9 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	bool isGNU = preference.type == ToolchainType::GNU
 		|| preference.type == ToolchainType::MingwGNU;
 
+	bool isMSVC = preference.type == ToolchainType::VisualStudio;
+	bool isVisualStudioLLVM = preference.type == ToolchainType::VisualStudioLLVM;
+
 	std::string cpp;
 	std::string cc;
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerCpp))
@@ -365,7 +368,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 
 #if defined(CHALET_WIN32)
 		// handles edge case w/ MSVC & MinGW in same path
-		if (preference.type == ToolchainType::VisualStudio)
+		if (isMSVC)
 		{
 			if (String::contains("/usr/bin/link", link))
 			{
@@ -438,21 +441,20 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string prof;
 		StringList searches;
-		searches.push_back(preference.profiler);
-		if (m_isCustomToolchain)
+
+		if (isMSVC || isVisualStudioLLVM)
+		{
+			searches.push_back("vsdiagnostics"); // VS 2022+
+			searches.push_back("vsinstr");		 // Early VS 2022 versions and prior
+
+			if (!String::equals("vs", preference.profiler))
+				searches.push_back(preference.profiler);
+		}
+		else if (m_isCustomToolchain || isGNU)
 		{
 			if (!preference.profiler.empty())
-			{
 				searches.push_back(preference.profiler);
-			}
-			else
-			{
-				searches.push_back("gprof");
-			}
-		}
-		else if (isGNU)
-		{
-			searches.push_back(preference.profiler);
+
 			searches.push_back("gprof");
 		}
 		else
