@@ -651,6 +651,7 @@ u32 CommandLineInputs::getVisualStudioYear() const noexcept
 		case VisualStudioVersion::VisualStudio2015: return 2015;
 		case VisualStudioVersion::VisualStudio2013: return 2013;
 		case VisualStudioVersion::VisualStudio2010: return 2010;
+		default: break;
 	}
 	return 0;
 }
