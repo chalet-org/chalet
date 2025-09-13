@@ -156,6 +156,7 @@ const std::string kToolchainPresetVisualStudioStable("vs-stable");
 const std::string kToolchainPresetAppleLLVM("apple-llvm");
 #endif
 const std::string kBuildStrategyNinja("ninja");
+const std::string kDefaultProfilerConfig(Values::Auto);
 #if defined(CHALET_MACOS)
 std::string kDefaultOsTarget;
 #endif
@@ -221,6 +222,12 @@ const std::string& CommandLineInputs::defaultToolchainPreset() const noexcept
 const std::string& CommandLineInputs::defaultBuildStrategy() const noexcept
 {
 	return kBuildStrategyNinja;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultProfilerConfig() const noexcept
+{
+	return kDefaultProfilerConfig;
 }
 
 /*****************************************************************************/
@@ -849,6 +856,16 @@ void CommandLineInputs::setSigningIdentity(std::string&& inValue) noexcept
 		return;
 
 	m_signingIdentity = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::profilerConfig() const noexcept
+{
+	return m_profilerConfig;
+}
+void CommandLineInputs::setProfilerConfig(std::string&& inValue) noexcept
+{
+	m_profilerConfig = std::move(inValue);
 }
 
 /*****************************************************************************/

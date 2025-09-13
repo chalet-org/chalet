@@ -25,6 +25,7 @@ struct CommandLineInputs
 	const std::string& defaultArchPreset() const noexcept;
 	const std::string& defaultToolchainPreset() const noexcept;
 	const std::string& defaultBuildStrategy() const noexcept;
+	const std::string& defaultProfilerConfig() const noexcept;
 
 	const std::string& workingDirectory() const noexcept;
 	const std::string& homeDirectory() const noexcept;
@@ -128,6 +129,9 @@ struct CommandLineInputs
 
 	const std::string& signingIdentity() const noexcept;
 	void setSigningIdentity(std::string&& inValue) noexcept;
+
+	const std::string& profilerConfig() const noexcept;
+	void setProfilerConfig(std::string&& inValue) noexcept;
 
 	const std::string& osTargetName() const noexcept;
 	void setOsTargetName(std::string&& inValue) noexcept;
@@ -240,6 +244,7 @@ private:
 	std::string m_buildStrategyPreference;
 	std::string m_buildPathStylePreference;
 	std::string m_signingIdentity;
+	std::string m_profilerConfig;
 	std::string m_osTargetName;
 	std::string m_osTargetVersion;
 

@@ -324,7 +324,6 @@ void ArgumentParser::checkRemainingArguments()
 		m_rawArguments.erase(Positional::RemainingArguments);
 	}
 
-	std::string blankArg;
 	size_t i = 0;
 	auto it = m_remainingArguments.begin();
 	while (it != m_remainingArguments.end())
@@ -347,8 +346,8 @@ void ArgumentParser::checkRemainingArguments()
 			size_t j = i;
 
 			{
-				auto& nextArg = next != m_remainingArguments.end() ? (*next) : blankArg;
-				parseArgumentValue(nextArg);
+				std::string* nextArg = next != m_remainingArguments.end() ? &(*next) : nullptr;
+				parseArgumentValue(*nextArg);
 				parseArgument(i, arg, nextArg);
 			}
 
@@ -1426,14 +1425,21 @@ void ArgumentParser::addSigningIdentityArg()
 }
 
 /*****************************************************************************/
+void ArgumentParser::addProfilerConfigArg()
+{
+	const auto& defaultValue = m_inputs.defaultProfilerConfig();
+	auto& arg = addStringArgument(ArgumentIdentifier::ProfilerConfig, "--profiler-config");
+	arg.setHelp(fmt::format("An optional profiler configuration name to give to the profiler during profiling. [default: \"{}\"]", defaultValue));
+}
+
+/*****************************************************************************/
 void ArgumentParser::addOsTargetNameArg()
 {
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
 #if defined(CHALET_MACOS)
 	const auto defaultValue = m_inputs.getDefaultOsTargetName();
-	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
 	arg.setHelp(fmt::format("The name of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
-	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetName, "--os-target-name");
 	arg.setHelp("The name of the operating system to target the build for.");
 #endif
 }
@@ -1441,12 +1447,11 @@ void ArgumentParser::addOsTargetNameArg()
 /*****************************************************************************/
 void ArgumentParser::addOsTargetVersionArg()
 {
+	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
 #if defined(CHALET_MACOS)
 	const auto defaultValue = m_inputs.getDefaultOsTargetVersion();
-	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
 	arg.setHelp(fmt::format("The version of the operating system to target the build for. [default: \"{}\"]", defaultValue));
 #else
-	auto& arg = addStringArgument(ArgumentIdentifier::OsTargetVersion, "--os-target-version");
 	arg.setHelp("The version of the operating system to target the build for.");
 #endif
 }
@@ -1495,6 +1500,7 @@ void ArgumentParser::populateCommonBuildArguments()
 	addOsTargetNameArg();
 	addOsTargetVersionArg();
 	addSigningIdentityArg();
+	addProfilerConfigArg();
 	addShowCommandsArg();
 	addDumpAssemblyArg();
 	addBenchmarkArg();

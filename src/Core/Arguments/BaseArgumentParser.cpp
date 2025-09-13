@@ -24,7 +24,7 @@ StringList BaseArgumentParser::getArgumentList(const i32 argc, const char* argv[
 }
 
 /*****************************************************************************/
-bool BaseArgumentParser::parseArgument(size_t& index, std::string& arg, const std::string& nextArg)
+bool BaseArgumentParser::parseArgument(size_t& index, std::string& arg, const std::string* nextArgPtr)
 {
 	if (arg.empty())
 		return true; // ignore it
@@ -52,15 +52,39 @@ bool BaseArgumentParser::parseArgument(size_t& index, std::string& arg, const st
 	}
 	else
 	{
-		if (!nextArg.empty() && nextArg.front() != '-')
+		if (nextArgPtr != nullptr)
 		{
-			m_rawArguments.emplace(arg, nextArg);
-			index++;
+			auto& nextArg = *nextArgPtr;
+			if ((!nextArg.empty() && nextArg.front() != '-') || nextArg.empty())
+			{
+				m_rawArguments.emplace(arg, nextArg);
+				index++;
+			}
 		}
 		else
 		{
-			m_rawArguments.emplace(arg, "1");
+			m_rawArguments.emplace(arg, std::string());
+			index++;
 		}
+
+		// Previous logic
+		// if (nextArgPtr != nullptr)
+		// {
+		// 	auto& nextArg = *nextArgPtr;
+		// 	if (!nextArg.empty() && nextArg.front() != '-')
+		// 	{
+		// 		m_rawArguments.emplace(arg, nextArg);
+		// 		index++;
+		// 	}
+		// 	else
+		// 	{
+		// 		m_rawArguments.emplace(arg, "1");
+		// 	}
+		// }
+		// else
+		// {
+		// 	m_rawArguments.emplace(arg, "1");
+		// }
 	}
 
 	return true;
@@ -102,12 +126,12 @@ bool BaseArgumentParser::parse(StringList&& args, const u32 inPositionalArgs)
 	m_truthyArguments = getTruthyArguments();
 
 	u32 j = 0;
-	std::string blankArg;
 	for (size_t i = 1; i < args.size(); ++i)
 	{
 		auto& arg = args[i];
-		auto& nextArg = i + 1 < args.size() ? args[i + 1] : blankArg;
-		parseArgumentValue(nextArg);
+		std::string* nextArg = i + 1 < args.size() ? &args[i + 1] : nullptr;
+		if (nextArg != nullptr)
+			parseArgumentValue(*nextArg);
 
 		if (parseArgument(i, arg, nextArg))
 		{

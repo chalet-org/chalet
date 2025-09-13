@@ -18,6 +18,7 @@ public:
 	bool run(const StringList& inCommand, const std::string& inExecutable);
 
 private:
+	std::string getProfilerConfig() const;
 	bool runWithGprof(const StringList& inCommand, const std::string& inExecutable);
 #if defined(CHALET_WIN32)
 	bool runWithVisualStudioDiagnostics(const StringList& inCommand, const std::string& inExecutable);

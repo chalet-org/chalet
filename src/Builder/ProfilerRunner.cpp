@@ -21,6 +21,8 @@
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonComments.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
@@ -118,6 +120,16 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 }
 
 /*****************************************************************************/
+std::string ProfilerRunner::getProfilerConfig() const
+{
+	const auto& profilerConfig = m_state.inputs.profilerConfig();
+	if (!String::equals(Values::Auto, profilerConfig))
+		return profilerConfig;
+
+	return std::string();
+}
+
+/*****************************************************************************/
 bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string& inExecutable)
 {
 #if defined(CHALET_WIN32)
@@ -204,17 +216,95 @@ bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand,
 {
 	auto& projectName = m_project.name();
 	const auto& buildDir = m_state.paths.buildOutputDir();
+	auto profilerConfig = getProfilerConfig();
 
 	const auto& vsdiagnostics = m_state.toolchain.profiler();
 	auto collectorPath = String::getPathFolder(vsdiagnostics);
-	auto configFile = fmt::format("{}/AgentConfigs/CpuUsageWithCallCounts.json", collectorPath);
-	if (!Files::pathExists(configFile))
+
+	// Example AgentConfigs path:
+	//   C:\Program Files\Microsoft Visual Studio\2022\Community\Team Tools\DiagnosticsHub\Collector\AgentConfigs
+	//
+	auto getAgentConfig = [&collectorPath](std::string presetName) {
+		if (String::endsWith(".json", presetName))
+			String::replaceAll(presetName, ".json", "");
+
+		return fmt::format("{}/AgentConfigs/{}.json", collectorPath, presetName);
+	};
+
+	std::string configFile;
+	if (!profilerConfig.empty())
 	{
-		configFile = fmt::format("{}/AgentConfigs/CpuUsageBase.json", collectorPath);
+		// Check if it's a .json path
+		if (String::endsWith(".json", profilerConfig) && Files::pathExists(profilerConfig))
+		{
+			configFile = Files::getCanonicalPath(profilerConfig);
+			// Check if the file can be parsed correctly before passing it onto VSDiagnostics...
+
+			Json jsonContents;
+			bool parseResult = JsonComments::parse(jsonContents, configFile);
+			if (!parseResult)
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics. The agent configuration could not be parsed: {}", profilerConfig);
+				return false;
+			}
+			bool formatValid = false;
+			if (jsonContents.is_object())
+			{
+				if (jsonContents.contains("Agents"))
+				{
+					const auto& jAgents = jsonContents.at("Agents");
+					if (jAgents.is_array())
+					{
+						size_t valid = 0;
+						size_t count = jAgents.size();
+						for (const auto& jNode : jAgents)
+						{
+							if (jNode.is_object())
+							{
+								if (jNode.contains("Name") && jNode.contains("CLSID"))
+									valid++;
+
+								// Note: there's an optional "Config" structure too
+							}
+						}
+
+						formatValid = count > 0 && valid == count;
+					}
+				}
+			}
+
+			if (!formatValid)
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics. The agent configuration was parsed correctly, but contained an unknown format: {}", profilerConfig);
+				return false;
+			}
+
+			Path::toWindows(configFile);
+		}
+		else
+		{
+			// Otherwise check if it's an agent config
+			configFile = getAgentConfig(profilerConfig);
+			if (!Files::pathExists(configFile))
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find the '{}' agent configuration.", profilerConfig);
+				return false;
+			}
+		}
+	}
+	else
+	{
+		// Default behavior
+		//
+		configFile = getAgentConfig("CpuUsageWithCallCounts");
 		if (!Files::pathExists(configFile))
 		{
-			Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find a usable agent configuration.");
-			return false;
+			configFile = getAgentConfig("CpuUsageBase");
+			if (!Files::pathExists(configFile))
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find a usable agent configuration.");
+				return false;
+			}
 		}
 	}
 
@@ -291,7 +381,6 @@ bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand,
 	}
 	else
 	{
-
 		Diagnostic::error("Failed to start VSDiagnostics for: {}", inExecutable);
 	}
 

@@ -97,6 +97,10 @@ Unique<CommandLineInputs> CommandLine::read(const i32 argc, const char* argv[], 
 						inputs->setSigningIdentity(variant.asString());
 						break;
 
+					case ArgumentIdentifier::ProfilerConfig:
+						inputs->setProfilerConfig(variant.asString());
+						break;
+
 					case ArgumentIdentifier::OsTargetName:
 						inputs->setOsTargetName(variant.asString());
 						break;

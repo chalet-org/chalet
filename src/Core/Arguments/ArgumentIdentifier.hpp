@@ -46,6 +46,7 @@ enum class ArgumentIdentifier : u16
 	CompilerCache,
 	SaveUserToolchainGlobally,
 	SigningIdentity,
+	ProfilerConfig,
 	OsTargetName,
 	OsTargetVersion,
 	ValidateSchemaFile,
