@@ -366,6 +366,7 @@ bool CentralState::cleanEntireProject()
 
 	if (result)
 	{
+		Output::msgTargetUpToDate("All", nullptr);
 		Output::lineBreak();
 
 		Output::msgBuildSuccess();
