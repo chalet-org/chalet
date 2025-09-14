@@ -3,11 +3,11 @@ on:
   push:
     tags:
       - "v*"
-    # branches:
-    #   - main
-  pull_request:
-    branches:
-      - main
+#     branches:
+#       - main
+#  pull_request:
+#    branches:
+#      - main
 env:
   # IS_BRANCH: ${{ github.ref_type == 'branch' }}
   IS_PRERELEASE: ${{ github.ref_type == 'branch' }}
@@ -219,7 +219,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest]
+        os: [windows-2022]
         triplet: [x86_64-pc-windows-msvc, arm64-pc-windows-msvc]
         include:
           - triplet: x86_64-pc-windows-msvc
