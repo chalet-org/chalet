@@ -347,7 +347,9 @@ void ArgumentParser::checkRemainingArguments()
 
 			{
 				std::string* nextArg = next != m_remainingArguments.end() ? &(*next) : nullptr;
-				parseArgumentValue(*nextArg);
+				if (nextArg != nullptr)
+					parseArgumentValue(*nextArg);
+
 				parseArgument(i, arg, nextArg);
 			}
 
