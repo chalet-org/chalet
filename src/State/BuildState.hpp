@@ -61,7 +61,7 @@ public:
 	bool getRunTargetArguments(StringList& outList, const IBuildTarget* inTarget) const;
 
 	bool isSubChaletTarget() const noexcept;
-	bool isBuildConfigurationSupported() const;
+	bool isSupported() const;
 
 	CentralState& getCentralState();
 	const CentralState& getCentralState() const;

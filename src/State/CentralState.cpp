@@ -85,6 +85,7 @@ bool CentralState::initialize()
 		state.externalDirectory = m_inputs.defaultExternalDirectory();
 		state.distributionDirectory = m_inputs.defaultDistributionDirectory();
 		// state.signingIdentity = std::string();
+		state.profilerConfig = Values::Auto;
 		state.osTargetName = m_inputs.getDefaultOsTargetName();
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
 		state.lastTarget = Values::All;

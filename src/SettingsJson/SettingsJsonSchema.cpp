@@ -74,6 +74,7 @@ enum class Defs : u16
 	LastToolchain,
 	LastArchitecture,
 	SigningIdentity,
+	ProfilerConfig,
 	OsTargetName,
 	OsTargetVersion,
 	InputFile,
@@ -426,6 +427,11 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 		"description": "The code-signing identity to use when bundling the application distribution."
 	})json"_ojson;
 
+	defs[Defs::ProfilerConfig] = R"json({
+		"type": "string",
+		"description": "An optional profiler configuration name to give to the profiler during profiling.\nOn macOS, this is the xctrace \"template\" - defaults to 'Time Profiler'.\nOn Windows, this is the Visual Studio Diagnostics agent config file. Can be either the name of one of the bundled configs in that VS version, or a path to a custom one (json format). Defaults to 'CpuUsageWithCallCounts.json' or 'CpuUsageBase.json', depending on if the former exists."
+	})json"_ojson;
+
 	defs[Defs::OsTargetName] = R"json({
 		"type": "string",
 		"description": "The name of the operating system to target the build for. On macOS, this corresponds to the lower-case identifier of the Apple SDK (see 'appleSdks')"
@@ -588,6 +594,7 @@ Json SettingsJsonSchema::get(const CommandLineInputs& inInputs)
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsRunArguments] = defs[Defs::RunArguments];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsShowCommands] = defs[Defs::ShowCommands];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsSigningIdentity] = defs[Defs::SigningIdentity];
+	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsProfilerConfig] = defs[Defs::ProfilerConfig];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOsTargetName] = defs[Defs::OsTargetName];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsOsTargetVersion] = defs[Defs::OsTargetVersion];
 	ret[SKeys::Properties][Keys::Options][SKeys::Properties][Keys::OptionsToolchain] = defs[Defs::LastToolchain];

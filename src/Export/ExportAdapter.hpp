@@ -40,6 +40,8 @@ struct ExportAdapter
 	BuildState& getDebugState() const;
 	BuildState* getStateFromRunConfig(const ExportRunConfiguration& inRunConfig) const;
 
+	void removeArchitectures(const StringList& inList);
+
 private:
 	const std::string& getToolchain() const;
 	StringList getArchitectures(const std::string& inToolchain) const;

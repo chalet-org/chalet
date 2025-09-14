@@ -33,6 +33,9 @@ CommandAdapterMSVC::CommandAdapterMSVC(const BuildState& inState, const SourceTa
 std::string CommandAdapterMSVC::getPlatformToolset(const BuildState& inState)
 {
 	const auto majorVersion = inState.toolchain.versionMajorMinor();
+	if (majorVersion >= 1800)
+		return "145"; // VS 2026
+
 	if (majorVersion >= 1700)
 		return "143"; // VS 2022
 

@@ -216,8 +216,7 @@ bool IProjectExporter::generate(CentralState& inCentralState, const bool inForBu
 	const auto& buildConfig = inputs.buildConfiguration();
 	const auto& architecture = inputs.targetArchitecture();
 
-	bool added = false;
-	if (inForBuild && !makeStateAndValidate(inCentralState, architecture, buildConfig, added))
+	if (inForBuild && !makeStateAndValidate(inCentralState, architecture, buildConfig))
 		return false;
 
 	auto& cacheFile = inCentralState.cache.file();
@@ -340,12 +339,8 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 		if (m_debugConfiguration.empty() && config.debugSymbols())
 			m_debugConfiguration = name;
 
-		bool added = false;
-		if (!makeStateAndValidate(inCentralState, architecture, name, added))
+		if (!makeStateAndValidate(inCentralState, architecture, name))
 			return false;
-
-		if (!added)
-			continue;
 	}
 
 	if (m_states.empty())
@@ -358,7 +353,7 @@ bool IProjectExporter::generateStatesAndValidate(CentralState& inCentralState)
 }
 
 /*****************************************************************************/
-bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName, bool& added)
+bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const std::string& architecture, const std::string& configName)
 {
 	for (auto& state : m_states)
 	{
@@ -383,9 +378,13 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 	state->setCacheEnabled(false);
 	if (!state->initialize())
 	{
-		if (!state->isBuildConfigurationSupported())
+		if (!state->isSupported())
 		{
 			Output::setQuietNonBuild(quiet);
+			if (!architecture.empty())
+			{
+				List::addIfDoesNotExist(m_architecturesNotFound, architecture);
+			}
 			return true;
 		}
 
@@ -418,7 +417,6 @@ bool IProjectExporter::makeStateAndValidate(CentralState& inCentralState, const 
 	}
 
 	m_states.emplace_back(std::move(state));
-	added = true;
 
 	Output::setQuietNonBuild(quiet);
 

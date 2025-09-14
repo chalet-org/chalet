@@ -448,6 +448,17 @@ BuildState* ExportAdapter::getStateFromRunConfig(const ExportRunConfiguration& i
 }
 
 /*****************************************************************************/
+// TODO: This is a band-aid to deal with Visual Studio build tools installations that don't exist
+//
+void ExportAdapter::removeArchitectures(const StringList& inList)
+{
+	for (const auto& arch : inList)
+	{
+		List::removeIfExists(m_arches, arch);
+	}
+}
+
+/*****************************************************************************/
 const std::string& ExportAdapter::getToolchain() const
 {
 	auto& debugState = getDebugState();

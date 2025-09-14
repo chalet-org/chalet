@@ -97,6 +97,7 @@ private:
 	void addKeepGoingArg();
 	void addCompilerCacheArg();
 	void addSigningIdentityArg();
+	void addProfilerConfigArg();
 	void addOsTargetNameArg();
 	void addOsTargetVersionArg();
 	void addExportOpenArg();

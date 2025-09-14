@@ -26,6 +26,7 @@ struct IntermediateSettingsState
 	std::string externalDirectory;
 	std::string distributionDirectory;
 	std::string signingIdentity;
+	std::string profilerConfig;
 	std::string osTargetName;
 	std::string osTargetVersion;
 	std::string lastTarget;

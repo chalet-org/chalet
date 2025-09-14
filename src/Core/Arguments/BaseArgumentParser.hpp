@@ -21,7 +21,7 @@ protected:
 
 	bool parse(StringList&& args, const u32 inPositionalArgs = 0);
 
-	bool parseArgument(size_t& index, std::string& arg, const std::string& nextArg);
+	bool parseArgument(size_t& index, std::string& arg, const std::string* nextArg);
 	void parseArgumentValue(std::string& arg);
 
 	virtual StringList getTruthyArguments() const = 0;

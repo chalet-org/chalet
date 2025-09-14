@@ -91,6 +91,8 @@ StringList CompilerTools::getToolchainBuildPathStyles()
 /*****************************************************************************/
 bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 {
+	m_isSupported = false;
+
 	auto getCompilerInfo = [&](CompilerInfo& outInfo) -> bool {
 		if (!outInfo.description.empty())
 			return false;
@@ -134,6 +136,7 @@ bool CompilerTools::initialize(IBuildEnvironment& inEnvironment)
 	}
 
 	m_isWindowsTarget = inEnvironment.isWindowsTarget();
+	m_isSupported = true;
 
 	return true;
 }
@@ -612,6 +615,12 @@ bool CompilerTools::ninjaAvailable() const noexcept
 }
 
 /*****************************************************************************/
+bool CompilerTools::isSupported() const noexcept
+{
+	return m_isSupported;
+}
+
+/*****************************************************************************/
 const std::string& CompilerTools::profiler() const noexcept
 {
 	return m_profiler;
@@ -624,9 +633,11 @@ void CompilerTools::setProfiler(std::string&& inValue) noexcept
 #if defined(CHALET_WIN32)
 	m_isProfilerGprof = String::endsWith("gprof.exe", lower);
 	m_isProfilerVSInstruments = String::endsWith("vsinstr.exe", lower);
+	m_isProfilerVSDiagnostics = String::endsWith("vsdiagnostics.exe", lower);
 #else
 	m_isProfilerGprof = String::endsWith("gprof", lower);
 	m_isProfilerVSInstruments = false;
+	m_isProfilerVSDiagnostics = false;
 #endif
 }
 bool CompilerTools::isProfilerGprof() const noexcept
@@ -636,6 +647,10 @@ bool CompilerTools::isProfilerGprof() const noexcept
 bool CompilerTools::isProfilerVSInstruments() const noexcept
 {
 	return m_isProfilerVSInstruments;
+}
+bool CompilerTools::isProfilerVSDiagnostics() const noexcept
+{
+	return m_isProfilerVSDiagnostics;
 }
 
 /*****************************************************************************/

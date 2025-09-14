@@ -21,10 +21,14 @@
 #include "Terminal/WindowsTerminal.hpp"
 #include "Utility/Path.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonComments.hpp"
+#include "Json/JsonValues.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
+// TODO: This whole thing needs a proper refactor
+//
 ProfilerRunner::ProfilerRunner(BuildState& inState, const SourceTarget& inProject) :
 	m_state(inState),
 	m_project(inProject)
@@ -34,7 +38,8 @@ ProfilerRunner::ProfilerRunner(BuildState& inState, const SourceTarget& inProjec
 /*****************************************************************************/
 bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecutable)
 {
-	if (!m_state.toolchain.profiler().empty() && m_state.toolchain.isProfilerGprof())
+	const auto& profiler = m_state.toolchain.profiler();
+	if (!profiler.empty() && m_state.toolchain.isProfilerGprof())
 	{
 		return runWithGprof(inCommand, inExecutable);
 	}
@@ -86,9 +91,13 @@ bool ProfilerRunner::run(const StringList& inCommand, const std::string& inExecu
 #endif
 
 #if defined(CHALET_WIN32)
-	if (!m_state.toolchain.profiler().empty() && m_state.environment->isMsvc() && m_state.toolchain.isProfilerVSInstruments())
+	if (!profiler.empty() && m_state.environment->isMsvc())
 	{
-		return runWithVisualStudioInstruments(inCommand, inExecutable);
+		if (m_state.toolchain.isProfilerVSDiagnostics())
+			return runWithVisualStudioDiagnostics(inCommand, inExecutable);
+
+		if (m_state.toolchain.isProfilerVSInstruments())
+			return runWithVisualStudioInstruments(inCommand, inExecutable);
 	}
 #endif
 
@@ -108,6 +117,16 @@ void ProfilerRunner::printExitedWithCode(const bool inResult) const
 	Output::printSeparator();
 	Output::print(inResult ? Output::theme().info : Output::theme().error, message);
 	Output::lineBreak();
+}
+
+/*****************************************************************************/
+std::string ProfilerRunner::getProfilerConfig() const
+{
+	const auto& profilerConfig = m_state.inputs.profilerConfig();
+	if (!String::equals(Values::Auto, profilerConfig))
+		return profilerConfig;
+
+	return std::string();
 }
 
 /*****************************************************************************/
@@ -135,6 +154,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	auto executableName = String::getPathFilename(inExecutable);
 
+	const auto& profiler = m_state.toolchain.profiler();
 	const auto& buildDir = m_state.paths.buildOutputDir();
 	const auto profStatsFile = fmt::format("{}/{}.stats", buildDir, executableName);
 	// Output::msgProfilerStartedGprof(profStatsFile);
@@ -142,7 +162,7 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 	std::string gmonOut{ "gmon.out" };
 
-	if (!Process::runOutputToFile({ m_state.toolchain.profiler(), "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
+	if (!Process::runOutputToFile({ profiler, "-Q", "-b", inExecutable, gmonOut }, profStatsFile, PipeOption::StdOut))
 	{
 		Diagnostic::error("{} failed to save.", profStatsFile);
 		return false;
@@ -189,19 +209,216 @@ bool ProfilerRunner::runWithGprof(const StringList& inCommand, const std::string
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
+// https://learn.microsoft.com/en-us/visualstudio/profiling/profile-apps-from-command-line?view=vs-2022
+// Note: this was added midway through VS 2022's lifecycle (some time in 2023?)
+//
+bool ProfilerRunner::runWithVisualStudioDiagnostics(const StringList& inCommand, const std::string& inExecutable)
+{
+	auto& projectName = m_project.name();
+	const auto& buildDir = m_state.paths.buildOutputDir();
+	auto profilerConfig = getProfilerConfig();
+
+	const auto& vsdiagnostics = m_state.toolchain.profiler();
+	auto collectorPath = String::getPathFolder(vsdiagnostics);
+
+	// Example AgentConfigs path:
+	//   C:\Program Files\Microsoft Visual Studio\2022\Community\Team Tools\DiagnosticsHub\Collector\AgentConfigs
+	//
+	auto getAgentConfig = [&collectorPath](std::string presetName) {
+		if (String::endsWith(".json", presetName))
+			String::replaceAll(presetName, ".json", "");
+
+		return fmt::format("{}/AgentConfigs/{}.json", collectorPath, presetName);
+	};
+
+	std::string configFile;
+	if (!profilerConfig.empty())
+	{
+		// Check if it's a .json path
+		if (String::endsWith(".json", profilerConfig) && Files::pathExists(profilerConfig))
+		{
+			configFile = Files::getCanonicalPath(profilerConfig);
+			// Check if the file can be parsed correctly before passing it onto VSDiagnostics...
+
+			Json jsonContents;
+			bool parseResult = JsonComments::parse(jsonContents, configFile);
+			if (!parseResult)
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics. The agent configuration could not be parsed: {}", profilerConfig);
+				return false;
+			}
+			bool formatValid = false;
+			if (jsonContents.is_object())
+			{
+				if (jsonContents.contains("Agents"))
+				{
+					const auto& jAgents = jsonContents.at("Agents");
+					if (jAgents.is_array())
+					{
+						size_t valid = 0;
+						size_t count = jAgents.size();
+						for (const auto& jNode : jAgents)
+						{
+							if (jNode.is_object())
+							{
+								if (jNode.contains("Name") && jNode.contains("CLSID"))
+									valid++;
+
+								// Note: there's an optional "Config" structure too
+							}
+						}
+
+						formatValid = count > 0 && valid == count;
+					}
+				}
+			}
+
+			if (!formatValid)
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics. The agent configuration was parsed correctly, but contained an unknown format: {}", profilerConfig);
+				return false;
+			}
+
+			Path::toWindows(configFile);
+		}
+		else
+		{
+			// Otherwise check if it's an agent config
+			configFile = getAgentConfig(profilerConfig);
+			if (!Files::pathExists(configFile))
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find the '{}' agent configuration.", profilerConfig);
+				return false;
+			}
+		}
+	}
+	else
+	{
+		// Default behavior
+		//
+		configFile = getAgentConfig("CpuUsageWithCallCounts");
+		if (!Files::pathExists(configFile))
+		{
+			configFile = getAgentConfig("CpuUsageBase");
+			if (!Files::pathExists(configFile))
+			{
+				Diagnostic::error("Failed to start diagnostic session with VSDiagnostics: Could not find a usable agent configuration.");
+				return false;
+			}
+		}
+	}
+
+	auto executableName = String::getPathFilename(inExecutable);
+	auto analysisFile = fmt::format("{}/{}.diagsession", buildDir, executableName);
+	if (Files::pathExists(analysisFile))
+	{
+		if (!Files::removeRecursively(analysisFile))
+			return false;
+	}
+
+	// We want to use a timestamp here, because if a session stays open, the folder path
+	//   needs to be removed with elevated privalidges. Let the user handle it for now
+	//
+	time_t currentTimestamp = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+	const auto& outputDirectory = m_state.paths.outputDirectory();
+	auto vsdiagnosticsScratchPath = fmt::format("{}/.vsdiagnostics", outputDirectory);
+	auto scratchLocation = Files::getCanonicalPath(fmt::format("{}/session_{}", vsdiagnosticsScratchPath, currentTimestamp));
+	if (Files::pathExists(scratchLocation))
+	{
+		if (!Files::removeRecursively(scratchLocation))
+			return false;
+	}
+
+	Files::makeDirectory(vsdiagnosticsScratchPath);
+	Files::makeDirectory(scratchLocation);
+
+	// The VS Diagnostics Collector runs as an elevated service,
+	//   but there's some issues with it getting the default temp directory,
+	//   so we override it here with a path matching the current time.
+	//   It gets very crashy and doesn't clean up stale sessions, nor can we clean up
+	//   stale sessions due to the elevated path lock that the service uses
+	//
+	// https://developercommunity.visualstudio.com/t/cannot-run-performance-profiler/1325325
+	//
+	auto oldTemp1 = Environment::getString("TEMP");
+	auto oldTemp2 = Environment::getString("TMP");
+
+	Environment::set("TEMP", scratchLocation);
+	Environment::set("TMP", scratchLocation);
+
+	std::string sessionId{ "1" };
+
+	auto friendlyConfigName = String::getPathBaseName(configFile);
+	Output::print(Color::None, fmt::format("Starting diagnostics recording with the '{}' agent config. Launching process: {}", friendlyConfigName, projectName));
+
+	// Start the session itself, so that when the actual process starts, we can attach it immediately
+	bool result = Process::runMinimalOutput({
+		vsdiagnostics,
+		"start",
+		sessionId,
+		fmt::format("/loadConfig:{}", configFile),
+	});
+
+	if (result)
+	{
+		// attach the process, so we can still use stdin/stdout in our terminal environment
+		result = Process::runWithInput(inCommand, [&](i32 pid) -> void {
+			Process::runMinimalOutputWithoutWait({
+				vsdiagnostics,
+				"update",
+				sessionId,
+				fmt::format("/attach:{}", pid),
+			});
+		});
+
+		Output::print(Color::None, "Recording completed. Saving output file...");
+
+		// Stop the session. Annoyingly, this doesn't remove the scratch path lock if there was a previous failure
+		Process::runMinimalOutput({
+			vsdiagnostics,
+			"stop",
+			sessionId,
+			fmt::format("/output:{}", analysisFile),
+		});
+
+		auto friendlyAnalysisFile = String::getPathFilename(analysisFile);
+		Output::print(Color::None, fmt::format("Output file saved as: {}", friendlyAnalysisFile));
+
+		printExitedWithCode(result);
+
+		result = Files::pathExists(analysisFile);
+	}
+	else
+	{
+		Diagnostic::error("Failed to start VSDiagnostics for: {}", inExecutable);
+	}
+
+	Environment::set("TEMP", oldTemp1);
+	Environment::set("TMP", oldTemp2);
+
+	Files::removeRecursively(scratchLocation);
+
+	if (Files::pathIsEmpty(vsdiagnosticsScratchPath))
+		Files::remove(vsdiagnosticsScratchPath);
+
+	return completeVisualStudioProfilingSession(inExecutable, analysisFile, result);
+}
+
+/*****************************************************************************/
+// https://docs.microsoft.com/en-us/visualstudio/profiling/how-to-instrument-a-native-component-and-collect-timing-data?view=vs-2017
+//
 bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand, const std::string& inExecutable)
 {
-	// https://docs.microsoft.com/en-us/visualstudio/profiling/how-to-instrument-a-native-component-and-collect-timing-data?view=vs-2017
-	//
-
 	const auto& vsperfcmd = m_state.tools.vsperfcmd();
 	chalet_assert(!vsperfcmd.empty(), "");
 	if (vsperfcmd.empty())
 		return false;
 
+	auto& projectName = m_project.name();
+	const auto& vsinstruments = m_state.toolchain.profiler();
+	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto executableName = String::getPathFilename(inExecutable);
 
-	const auto& buildDir = m_state.paths.buildOutputDir();
 	auto analysisFile = fmt::format("{}/{}.vsp", buildDir, executableName);
 	if (Files::pathExists(analysisFile))
 	{
@@ -209,12 +426,10 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			return false;
 	}
 
-	/////////////
-
 	// This returns false if the executable didn't change and the profiler *.instr.pdb already exists,
 	//   so we don't care about the result
 	Process::runMinimalOutput({
-		m_state.toolchain.profiler(),
+		vsinstruments,
 		"/U",
 		inExecutable,
 	});
@@ -228,12 +443,12 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			if (project.isSharedLibrary())
 			{
 				auto file = m_state.paths.getTargetFilename(project);
-				Process::runMinimalOutput({ m_state.toolchain.profiler(), "/U", file });
+				Process::runMinimalOutput({ vsinstruments, "/U", file });
 			}
 		}
 	}
 
-	/////////////
+	Output::print(Color::None, fmt::format("Starting diagnostics recording with VSPerfCmd. Launching process: {}", projectName));
 
 	// Start the trace service
 	if (!Process::runMinimalOutput({
@@ -247,20 +462,18 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 	}
 
 	// Run the command
-	#if defined(CHALET_WIN32)
-	if (Output::showCommands())
-		Output::printCommand(inCommand);
+	// if (Output::showCommands())
+	// 	Output::printCommand(inCommand);
 
-	WindowsTerminal::cleanup();
-	Output::setShowCommandOverride(false);
-	#endif
+	// WindowsTerminal::cleanup();
+	// Output::setShowCommandOverride(false);
 
 	bool result = Process::runWithInput(inCommand);
 
-	#if defined(CHALET_WIN32)
-	Output::setShowCommandOverride(true);
-	WindowsTerminal::initialize();
-	#endif
+	Output::print(Color::None, "Recording completed. Saving output file...");
+
+	// Output::setShowCommandOverride(true);
+	// WindowsTerminal::initialize();
 
 	// Shut down the service
 	if (!Process::runMinimalOutput({
@@ -272,16 +485,26 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 		return false;
 	}
 
-	/////////////
+	auto friendlyAnalysisFile = String::getPathFilename(analysisFile);
+	Output::print(Color::None, fmt::format("Output file saved as: {}", friendlyAnalysisFile));
 
 	printExitedWithCode(result);
 
-	if (!result)
+	return completeVisualStudioProfilingSession(inExecutable, analysisFile, result);
+}
+
+/*****************************************************************************/
+bool ProfilerRunner::completeVisualStudioProfilingSession(const std::string& inExecutable, const std::string& inAnalysisFile, const bool inResult)
+{
+	if (!inResult)
+	{
+		Diagnostic::error("Failed to run profiler for: {}", inExecutable);
 		return false;
+	}
 
 	if (m_state.info.launchProfiler())
 	{
-		auto absAnalysisFile = Files::getAbsolutePath(analysisFile);
+		auto absAnalysisFile = Files::getAbsolutePath(inAnalysisFile);
 
 		std::string devEnvDir;
 		auto visualStudio = Files::which("devenv");
@@ -291,7 +514,7 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			visualStudio = fmt::format("{}\\devenv.exe", devEnvDir);
 			if (devEnvDir.empty() || !Files::pathExists(visualStudio))
 			{
-				Diagnostic::error("Failed to launch in Visual Studio: {}", analysisFile);
+				Diagnostic::error("Failed to launch in Visual Studio: {}", inAnalysisFile);
 				return false;
 			}
 		}
@@ -300,16 +523,16 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 			devEnvDir = String::getPathFolder(visualStudio);
 		}
 
-		Output::msgProfilerDoneAndLaunching(analysisFile, "Visual Studio");
+		Output::msgProfilerDoneAndLaunching(inAnalysisFile, "Visual Studio");
 		Output::lineBreak();
 
 		Files::sleep(1.0);
 
-		Process::runMinimalOutput({ visualStudio, absAnalysisFile }, devEnvDir);
+		Process::runMinimalOutputWithoutWait({ visualStudio, absAnalysisFile }, devEnvDir);
 	}
 	else
 	{
-		Output::msgProfilerDone(analysisFile);
+		Output::msgProfilerDone(inAnalysisFile);
 		Output::lineBreak();
 	}
 
@@ -320,8 +543,9 @@ bool ProfilerRunner::runWithVisualStudioInstruments(const StringList& inCommand,
 /*****************************************************************************/
 bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace)
 {
-	// TOOD: profile could be defined elsewhere (maybe the cache json?)
-	std::string profile = "Time Profiler";
+	auto profilerConfig = getProfilerConfig();
+	if (profilerConfig.empty())
+		profilerConfig = "Time Profiler";
 
 	auto executableName = String::getPathFilename(inExecutable);
 
@@ -344,7 +568,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		StringList cmd{ m_state.tools.xcrun(), "xctrace", "record", "--output", instrumentsTrace };
 
 		cmd.emplace_back("--template");
-		cmd.emplace_back(std::move(profile));
+		cmd.emplace_back(profilerConfig);
 
 		// device
 
@@ -371,7 +595,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	}
 	else
 	{
-		StringList cmd{ m_state.tools.instruments(), "-t", std::move(profile), "-D", instrumentsTrace };
+		StringList cmd{ m_state.tools.instruments(), "-t", profilerConfig, "-D", instrumentsTrace };
 
 		cmd.emplace_back("-e");
 		cmd.emplace_back("DYLD_FALLBACK_LIBRARY_PATH");

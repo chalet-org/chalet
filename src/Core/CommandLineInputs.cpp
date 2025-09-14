@@ -91,6 +91,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
 		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "vs-2026", VisualStudioVersion::VisualStudio2026 },
 		{ "vs-preview", VisualStudioVersion::Preview },
 		{ "vs-stable", VisualStudioVersion::Stable },
 	};
@@ -100,6 +101,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioLLVMPresets()
 	return {
 		{ "llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		{ "llvm-vs-2026", VisualStudioVersion::VisualStudio2026 },
 		{ "llvm-vs-preview", VisualStudioVersion::Preview },
 		{ "llvm-vs-stable", VisualStudioVersion::Stable },
 	};
@@ -121,6 +123,7 @@ OrderedDictionary<VisualStudioVersion> getIntelClangVSPresets()
 		// { "intel-llvm-vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "intel-llvm-vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "intel-llvm-vs-2022", VisualStudioVersion::VisualStudio2022 },
+		// { "intel-llvm-vs-2026", VisualStudioVersion::VisualStudio2026 }, // TODO
 	};
 }
 	#endif
@@ -153,6 +156,7 @@ const std::string kToolchainPresetVisualStudioStable("vs-stable");
 const std::string kToolchainPresetAppleLLVM("apple-llvm");
 #endif
 const std::string kBuildStrategyNinja("ninja");
+const std::string kDefaultProfilerConfig(Values::Auto);
 #if defined(CHALET_MACOS)
 std::string kDefaultOsTarget;
 #endif
@@ -218,6 +222,12 @@ const std::string& CommandLineInputs::defaultToolchainPreset() const noexcept
 const std::string& CommandLineInputs::defaultBuildStrategy() const noexcept
 {
 	return kBuildStrategyNinja;
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::defaultProfilerConfig() const noexcept
+{
+	return kDefaultProfilerConfig;
 }
 
 /*****************************************************************************/
@@ -637,6 +647,21 @@ void CommandLineInputs::setMultiArchToolchainPreset(const bool inValue) const no
 {
 	m_isMultiArchToolchainPreset = inValue;
 }
+u32 CommandLineInputs::getVisualStudioYear() const noexcept
+{
+	switch (m_visualStudioVersion)
+	{
+		case VisualStudioVersion::VisualStudio2026: return 2026;
+		case VisualStudioVersion::VisualStudio2022: return 2022;
+		case VisualStudioVersion::VisualStudio2019: return 2019;
+		case VisualStudioVersion::VisualStudio2017: return 2017;
+		case VisualStudioVersion::VisualStudio2015: return 2015;
+		case VisualStudioVersion::VisualStudio2013: return 2013;
+		case VisualStudioVersion::VisualStudio2010: return 2010;
+		default: break;
+	}
+	return 0;
+}
 
 /*****************************************************************************/
 const std::string& CommandLineInputs::initPath() const noexcept
@@ -831,6 +856,16 @@ void CommandLineInputs::setSigningIdentity(std::string&& inValue) noexcept
 		return;
 
 	m_signingIdentity = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& CommandLineInputs::profilerConfig() const noexcept
+{
+	return m_profilerConfig;
+}
+void CommandLineInputs::setProfilerConfig(std::string&& inValue) noexcept
+{
+	m_profilerConfig = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -1309,6 +1344,8 @@ StringList CommandLineInputs::getCliQueryOptions() const
 }
 
 /*****************************************************************************/
+// TODO: This should be somewhere else
+//
 ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const std::string& inValue) const
 {
 	ToolchainPreference ret;
@@ -1350,7 +1387,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 		ret.rc = "rc";
 		ret.linker = "link";
 		ret.archiver = "lib";
-		ret.profiler = "vsinstr";
+		ret.profiler = "vs";
 		ret.disassembler = "dumpbin";
 	}
 	else
@@ -1408,7 +1445,7 @@ ToolchainPreference CommandLineInputs::getToolchainPreferenceFromString(const st
 #endif
 		ret.archiver = "ar";
 #if defined(CHALET_WIN32)
-		ret.profiler = isVisualStudioLLVM ? "vsinstr" : "gprof";
+		ret.profiler = isVisualStudioLLVM ? "vs" : "gprof";
 #else
 		ret.profiler = "gprof";
 #endif

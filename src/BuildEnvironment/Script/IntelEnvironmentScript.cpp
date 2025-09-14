@@ -32,7 +32,7 @@ bool IntelEnvironmentScript::makeEnvironment(const BuildState& inState)
 {
 	m_pathVariable = Environment::getPath();
 	m_intelSetVarsArch = inState.info.targetArchitectureString();
-	m_vsVersion = m_inputs.visualStudioVersion();
+	m_vsVersion = m_inputs.getVisualStudioYear();
 
 	if (!m_envVarsFileDeltaExists)
 	{
@@ -105,12 +105,10 @@ bool IntelEnvironmentScript::saveEnvironmentFromScript()
 
 	cmd.emplace_back(std::move(arch));
 
-	if (m_vsVersion == VisualStudioVersion::VisualStudio2022)
-		cmd.emplace_back("vs2022");
-	if (m_vsVersion == VisualStudioVersion::VisualStudio2019)
-		cmd.emplace_back("vs2019");
-	if (m_vsVersion == VisualStudioVersion::VisualStudio2017)
-		cmd.emplace_back("vs2017");
+	if (m_vsVersion >= 2017)
+	{
+		cmd.emplace_back(fmt::format("vs{}", m_vsVersion));
+	}
 
 	cmd.emplace_back(">");
 	cmd.emplace_back(Shell::getNull());

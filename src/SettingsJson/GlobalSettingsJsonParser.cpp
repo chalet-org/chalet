@@ -96,6 +96,7 @@ bool GlobalSettingsJsonParser::makeCache(const IntermediateSettingsState& inStat
 	assignSettingString(Keys::OptionsOsTargetName, inState.osTargetName);
 	assignSettingString(Keys::OptionsOsTargetVersion, inState.osTargetVersion);
 	assignSettingString(Keys::OptionsSigningIdentity, inState.signingIdentity);
+	assignSettingString(Keys::OptionsProfilerConfig, inState.profilerConfig);
 	assignSettingString(Keys::OptionsLastTarget, inState.lastTarget);
 
 	chalet_assert(inState.rootDirectory.empty(), "Root directory should never be set globally");
@@ -192,6 +193,8 @@ bool GlobalSettingsJsonParser::parseSettings(const Json& inNode, IntermediateSet
 				outState.architecturePreference = value.get<std::string>();
 			else if (String::equals(Keys::OptionsSigningIdentity, key))
 				outState.signingIdentity = value.get<std::string>();
+			else if (String::equals(Keys::OptionsProfilerConfig, key))
+				outState.profilerConfig = value.get<std::string>();
 			else if (String::equals(Keys::OptionsOsTargetName, key))
 				outState.osTargetName = value.get<std::string>();
 			else if (String::equals(Keys::OptionsOsTargetVersion, key))

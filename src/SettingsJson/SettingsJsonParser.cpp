@@ -213,6 +213,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
 
 	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsProfilerConfig, m_inputs.profilerConfig(), inState.profilerConfig);
 
 	// if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
 	// {
@@ -471,6 +472,11 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 			{
 				if (m_inputs.signingIdentity().empty())
 					m_inputs.setSigningIdentity(value.get<std::string>());
+			}
+			else if (String::equals(Keys::OptionsProfilerConfig, key))
+			{
+				if (m_inputs.profilerConfig().empty())
+					m_inputs.setProfilerConfig(value.get<std::string>());
 			}
 			else if (String::equals(Keys::OptionsOsTargetName, key))
 			{

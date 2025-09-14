@@ -95,6 +95,7 @@ struct CompilerTools
 	void setProfiler(std::string&& inValue) noexcept;
 	bool isProfilerGprof() const noexcept;
 	bool isProfilerVSInstruments() const noexcept;
+	bool isProfilerVSDiagnostics() const noexcept;
 
 	const std::string& disassembler() const noexcept;
 	void setDisassembler(std::string&& inValue) noexcept;
@@ -109,6 +110,8 @@ struct CompilerTools
 	u32 ninjaVersionMinor() const noexcept;
 	u32 ninjaVersionPatch() const noexcept;
 	bool ninjaAvailable() const noexcept;
+
+	bool isSupported() const noexcept;
 
 private:
 	bool parseVersionString(CompilerInfo& outInfo);
@@ -153,6 +156,7 @@ private:
 
 	bool m_isProfilerGprof = false;
 	bool m_isProfilerVSInstruments = false;
+	bool m_isProfilerVSDiagnostics = false;
 
 	bool m_isWindowsTarget = false;
 	bool m_isCompilerWindowsResourceLLVMRC = false;
@@ -162,5 +166,7 @@ private:
 	bool m_makeIsNMake = false;
 	bool m_makeIsJom = false;
 	bool m_makeIsMinGW = false;
+
+	bool m_isSupported = true;
 };
 }
