@@ -58,7 +58,7 @@ ArgumentParser::ArgumentParser(const CommandLineInputs& inInputs) :
 		{ RouteType::Run, &ArgumentParser::populateRunArguments },
 		{ RouteType::Build, &ArgumentParser::populateBuildArguments },
 		{ RouteType::Rebuild, &ArgumentParser::populateBuildArguments },
-		{ RouteType::Clean, &ArgumentParser::populateCommonBuildArguments },
+		{ RouteType::Clean, &ArgumentParser::populateCleanArguments },
 		{ RouteType::Bundle, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Configure, &ArgumentParser::populateCommonBuildArguments },
 		{ RouteType::Check, &ArgumentParser::populateCommonBuildArguments },
@@ -151,6 +151,7 @@ StringList ArgumentParser::getTruthyArguments() const
 		"-g",
 		"--global",
 		"--open",
+		"--all",
 	};
 }
 
@@ -1516,6 +1517,15 @@ void ArgumentParser::populateCommonBuildArguments()
 	addSaveSchemaArg();
 #endif
 	addQuietArgs();
+}
+
+/*****************************************************************************/
+void ArgumentParser::populateCleanArguments()
+{
+	populateCommonBuildArguments();
+
+	auto& arg = addOptionalBoolArgument(ArgumentIdentifier::CleanAll, "--all");
+	arg.setHelp("Remove the build folder, the settings file, and any chalet dependencies.");
 }
 
 /*****************************************************************************/

@@ -44,6 +44,8 @@ struct CentralState
 	const std::optional<StringList>& getRunTargetArguments(const std::string& inTarget) const;
 	void clearRunArgumentMap();
 
+	bool cleanEntireProject();
+
 	bool shouldPerformUpdateCheck() const;
 
 	bool isAllowedArchitecture(const std::string& inArch, const bool inError = true) const;

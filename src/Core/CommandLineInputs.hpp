@@ -204,6 +204,9 @@ struct CommandLineInputs
 	bool openAfterExport() const noexcept;
 	void setOpenAfterExport(const bool inValue) noexcept;
 
+	bool cleanAll() const noexcept;
+	void setCleanAll(const bool inValue) noexcept;
+
 	StringList getToolchainPresets() const;
 	StringList getExportKindPresets() const;
 	StringList getConvertFormatPresets() const;
@@ -282,5 +285,6 @@ private:
 	mutable bool m_isMultiArchToolchainPreset = false;
 	bool m_saveUserToolchainGlobally = false;
 	bool m_openAfterExport = false;
+	bool m_cleanAll = false;
 };
 }

@@ -105,6 +105,7 @@ private:
 	void populateBuildRunArguments();
 	void populateRunArguments();
 	void populateCommonBuildArguments();
+	void populateCleanArguments();
 	void populateBuildArguments();
 
 	void populateInitArguments();
