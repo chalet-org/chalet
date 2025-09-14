@@ -543,8 +543,9 @@ bool ProfilerRunner::completeVisualStudioProfilingSession(const std::string& inE
 /*****************************************************************************/
 bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::string& inExecutable, const bool inUseXcTrace)
 {
-	// TOOD: profile could be defined elsewhere (maybe the cache json?)
-	std::string profile = "Time Profiler";
+	auto profilerConfig = getProfilerConfig();
+	if (profilerConfig.empty())
+		profilerConfig = "Time Profiler";
 
 	auto executableName = String::getPathFilename(inExecutable);
 
@@ -567,7 +568,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 		StringList cmd{ m_state.tools.xcrun(), "xctrace", "record", "--output", instrumentsTrace };
 
 		cmd.emplace_back("--template");
-		cmd.emplace_back(std::move(profile));
+		cmd.emplace_back(profilerConfig);
 
 		// device
 
@@ -594,7 +595,7 @@ bool ProfilerRunner::runWithInstruments(const StringList& inCommand, const std::
 	}
 	else
 	{
-		StringList cmd{ m_state.tools.instruments(), "-t", std::move(profile), "-D", instrumentsTrace };
+		StringList cmd{ m_state.tools.instruments(), "-t", profilerConfig, "-D", instrumentsTrace };
 
 		cmd.emplace_back("-e");
 		cmd.emplace_back("DYLD_FALLBACK_LIBRARY_PATH");
