@@ -1432,7 +1432,7 @@ void ArgumentParser::addProfilerConfigArg()
 {
 	const auto& defaultValue = m_inputs.defaultProfilerConfig();
 	auto& arg = addStringArgument(ArgumentIdentifier::ProfilerConfig, "--profiler-config");
-	arg.setHelp(fmt::format("An optional profiler configuration name to give to the profiler during profiling. [default: \"{}\"]", defaultValue));
+	arg.setHelp(fmt::format("An optional config to give to the profiler during profiling. [default: \"{}\"]", defaultValue));
 }
 
 /*****************************************************************************/

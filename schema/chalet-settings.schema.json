@@ -262,7 +262,7 @@
 				},
 				"profilerConfig": {
 					"type": "string",
-					"description": "An optional profiler configuration name to give to the profiler during profiling.\nOn macOS, this is the xctrace \"template\" - defaults to 'Time Profiler'.\nOn Windows, this is the Visual Studio Diagnostics agent config file. Can be either the name of one of the bundled configs in that VS version, or a path to a custom one (json format). Defaults to 'CpuUsageWithCallCounts.json' or 'CpuUsageBase.json', depending on if the former exists."
+					"description": "An optional config to give to the profiler during profiling.\nOn macOS, this is the xctrace \"template\" - defaults to 'Time Profiler'.\nOn Windows, this is the Visual Studio Diagnostics agent config file. Can be either the name of one of the bundled configs in that VS version, or a path to a custom one (json format). Defaults to 'CpuUsageWithCallCounts.json' or 'CpuUsageBase.json', depending on if the former exists."
 				},
 				"osTargetName": {
 					"type": "string",
