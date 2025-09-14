@@ -30,6 +30,8 @@ class ChaletJsonSchema
 		ConfigurationOptimizationLevel,
 		ConfigurationSanitize,
 		//
+		DefaultRunTarget,
+		//
 		DistributionKind,
 		DistributionCondition,
 		//

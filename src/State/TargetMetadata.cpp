@@ -10,6 +10,7 @@
 #include "State/BuildState.hpp"
 #include "State/Target/IBuildTarget.hpp"
 #include "Utility/String.hpp"
+#include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
@@ -168,37 +169,37 @@ std::string TargetMetadata::getHash() const
 /*****************************************************************************/
 std::string TargetMetadata::getMetadataFromString(const std::string& inString) const
 {
-	if (String::equals("version", inString))
+	if (String::equals(Keys::MetaVersion, inString))
 		return m_versionString;
 
-	if (m_version.hasMajor() && String::equals("versionMajor", inString))
+	if (m_version.hasMajor() && String::equals(Keys::MetaVersionMajor, inString))
 		return std::to_string(m_version.major());
 
-	if (m_version.hasMinor() && String::equals("versionMinor", inString))
+	if (m_version.hasMinor() && String::equals(Keys::MetaVersionMinor, inString))
 		return std::to_string(m_version.minor());
 
-	if (m_version.hasPatch() && String::equals("versionPatch", inString))
+	if (m_version.hasPatch() && String::equals(Keys::MetaVersionPatch, inString))
 		return std::to_string(m_version.patch());
 
-	if (m_version.hasTweak() && String::equals("versionTweak", inString))
+	if (m_version.hasTweak() && String::equals(Keys::MetaVersionTweak, inString))
 		return std::to_string(m_version.tweak());
 
-	if (String::equals("name", inString))
+	if (String::equals(Keys::MetaName, inString))
 		return m_name;
 
-	if (String::equals("description", inString))
+	if (String::equals(Keys::MetaDescription, inString))
 		return m_description;
 
-	if (String::equals("homepage", inString))
+	if (String::equals(Keys::MetaHompage, inString))
 		return m_homepage;
 
-	if (String::equals("author", inString))
+	if (String::equals(Keys::MetaAuthor, inString))
 		return m_author;
 
-	if (String::equals("license", inString))
+	if (String::equals(Keys::MetaLicense, inString))
 		return m_license;
 
-	if (String::equals("readme", inString))
+	if (String::equals(Keys::MetaReadme, inString))
 		return m_readme;
 
 	return std::string();

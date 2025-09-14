@@ -729,6 +729,23 @@ bool ChaletJsonParser::parseTargets(const Json& inNode)
 		m_state.targets.emplace_back(std::move(target));
 	}
 
+	// If a default run target is defined, set it
+	//
+	if (inNode.contains(Keys::DefaultRunTarget))
+	{
+		const Json& defaultRunTarget = inNode[Keys::DefaultRunTarget];
+		if (defaultRunTarget.is_string())
+		{
+			auto& existingLastTarget = m_state.inputs.lastTarget();
+			if (existingLastTarget.empty() || String::equals(Values::All, existingLastTarget))
+			{
+				auto value = defaultRunTarget.get<std::string>();
+				if (!value.empty())
+					m_state.inputs.setLastTarget(std::move(value));
+			}
+		}
+	}
+
 	return true;
 }
 
@@ -1385,19 +1402,19 @@ bool ChaletJsonParser::parseSourceTargetMetadata(SourceTarget& outTarget, const 
 		{
 			hasMetadata = true;
 
-			if (String::equals("name", key))
+			if (String::equals(Keys::MetaName, key))
 				metadata->setName(value.get<std::string>());
-			else if (String::equals("version", key))
+			else if (String::equals(Keys::MetaVersion, key))
 				metadata->setVersion(value.get<std::string>());
-			else if (String::equals("description", key))
+			else if (String::equals(Keys::MetaDescription, key))
 				metadata->setDescription(value.get<std::string>());
-			else if (String::equals("homepage", key))
+			else if (String::equals(Keys::MetaHompage, key))
 				metadata->setHomepage(value.get<std::string>());
-			else if (String::equals("author", key))
+			else if (String::equals(Keys::MetaAuthor, key))
 				metadata->setAuthor(value.get<std::string>());
-			else if (String::equals("license", key))
+			else if (String::equals(Keys::MetaLicense, key))
 				metadata->setLicense(value.get<std::string>());
-			else if (String::equals("readme", key))
+			else if (String::equals(Keys::MetaReadme, key))
 				metadata->setReadme(value.get<std::string>());
 		}
 	}

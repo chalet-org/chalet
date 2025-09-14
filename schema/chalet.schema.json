@@ -134,6 +134,11 @@
 			],
 			"default": false
 		},
+		"defaultRunTarget": {
+			"type": "string",
+			"description": "The default run target to run, if one is not set by the cli otherwise.",
+			"minLength": 1
+		},
 		"dist-kind": {
 			"type": "string",
 			"description": "Whether the distribution target is a bundle, script, archive, or something platform-specific.",
@@ -3496,6 +3501,9 @@
 		},
 		"version": {
 			"$ref": "#/definitions/workspace-version"
+		},
+		"defaultRunTarget": {
+			"$ref": "#/definitions/defaultRunTarget"
 		},
 		"platformRequires": {
 			"$ref": "#/definitions/platform-requires"

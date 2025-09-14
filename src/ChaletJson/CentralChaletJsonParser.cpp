@@ -122,19 +122,19 @@ bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
 	{
 		if (value.is_string())
 		{
-			if (String::equals("name", key))
+			if (String::equals(Keys::MetaName, key))
 				metadata->setName(value.get<std::string>());
-			else if (String::equals("version", key))
+			else if (String::equals(Keys::MetaVersion, key))
 				metadata->setVersion(value.get<std::string>());
-			else if (String::equals("description", key))
+			else if (String::equals(Keys::MetaDescription, key))
 				metadata->setDescription(value.get<std::string>());
-			else if (String::equals("homepage", key))
+			else if (String::equals(Keys::MetaHompage, key))
 				metadata->setHomepage(value.get<std::string>());
-			else if (String::equals("author", key))
+			else if (String::equals(Keys::MetaAuthor, key))
 				metadata->setAuthor(value.get<std::string>());
-			else if (String::equals("license", key))
+			else if (String::equals(Keys::MetaLicense, key))
 				metadata->setLicense(value.get<std::string>());
-			else if (String::equals("readme", key))
+			else if (String::equals(Keys::MetaReadme, key))
 				metadata->setReadme(value.get<std::string>());
 		}
 	}

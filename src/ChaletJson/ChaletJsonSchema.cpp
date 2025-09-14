@@ -144,6 +144,15 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 	defs[Defs::ConfigurationSanitize][SKeys::Default] = false;
 
 	//
+	// default run target
+	//
+	defs[Defs::DefaultRunTarget] = R"json({
+		"type": "string",
+		"description": "The default run target to run, if one is not set by the cli otherwise.",
+		"minLength": 1
+	})json"_ojson;
+
+	//
 	// distribution
 	// bundle, script, process, archive, macosDiskImage
 	//
@@ -1931,13 +1940,13 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 				}
 			]
 		})json"_ojson;
-		addProperty(sourceMetadata[SKeys::OneOf][0], "author", Defs::TargetSourceMetadataAuthor);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "description", Defs::TargetSourceMetadataDescription);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "homepage", Defs::TargetSourceMetadataHomepage);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "license", Defs::TargetSourceMetadataLicense);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "name", Defs::TargetSourceMetadataName);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "readme", Defs::TargetSourceMetadataReadme);
-		addProperty(sourceMetadata[SKeys::OneOf][0], "version", Defs::TargetSourceMetadataVersion);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaAuthor, Defs::TargetSourceMetadataAuthor);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaDescription, Defs::TargetSourceMetadataDescription);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaHompage, Defs::TargetSourceMetadataHomepage);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaLicense, Defs::TargetSourceMetadataLicense);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaName, Defs::TargetSourceMetadataName);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaReadme, Defs::TargetSourceMetadataReadme);
+		addProperty(sourceMetadata[SKeys::OneOf][0], Keys::MetaVersion, Defs::TargetSourceMetadataVersion);
 
 		defs[Defs::TargetSourceMetadata] = std::move(sourceMetadata);
 	}
@@ -2217,6 +2226,8 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::ConfigurationInterproceduralOptimization: return "configuration-interproceduralOptimization";
 		case Defs::ConfigurationOptimizationLevel: return "configuration-optimizationLevel";
 		case Defs::ConfigurationSanitize: return "configuration-sanitize";
+		//
+		case Defs::DefaultRunTarget: return "defaultRunTarget";
 		//
 		case Defs::DistributionKind: return "dist-kind";
 		case Defs::DistributionCondition: return "dist-condition";
@@ -2541,8 +2552,8 @@ Json ChaletJsonSchema::get()
 	ret["type"] = "object";
 	ret["additionalProperties"] = false;
 	ret["required"] = {
-		"name",
-		"version"
+		Keys::MetaName,
+		Keys::MetaVersion,
 	};
 
 	if (m_defs.empty())
@@ -2562,28 +2573,30 @@ Json ChaletJsonSchema::get()
 	ret[SKeys::Properties] = Json::object();
 	ret[SKeys::PatternProperties] = Json::object();
 
-	ret[SKeys::Properties]["author"] = getDefinition(Defs::WorkspaceAuthor);
-	ret[SKeys::Properties]["description"] = getDefinition(Defs::WorkspaceDescription);
-	ret[SKeys::Properties]["homepage"] = getDefinition(Defs::WorkspaceHomepage);
-	ret[SKeys::Properties]["license"] = getDefinition(Defs::WorkspaceLicense);
-	ret[SKeys::Properties]["name"] = getDefinition(Defs::WorkspaceName);
-	ret[SKeys::Properties]["readme"] = getDefinition(Defs::WorkspaceReadme);
-	ret[SKeys::Properties]["version"] = getDefinition(Defs::WorkspaceVersion);
+	ret[SKeys::Properties][Keys::MetaAuthor] = getDefinition(Defs::WorkspaceAuthor);
+	ret[SKeys::Properties][Keys::MetaDescription] = getDefinition(Defs::WorkspaceDescription);
+	ret[SKeys::Properties][Keys::MetaHompage] = getDefinition(Defs::WorkspaceHomepage);
+	ret[SKeys::Properties][Keys::MetaLicense] = getDefinition(Defs::WorkspaceLicense);
+	ret[SKeys::Properties][Keys::MetaName] = getDefinition(Defs::WorkspaceName);
+	ret[SKeys::Properties][Keys::MetaReadme] = getDefinition(Defs::WorkspaceReadme);
+	ret[SKeys::Properties][Keys::MetaVersion] = getDefinition(Defs::WorkspaceVersion);
 
-	ret[SKeys::Properties]["platformRequires"] = getDefinition(Defs::PlatformRequires);
+	ret[SKeys::Properties][Keys::DefaultRunTarget] = getDefinition(Defs::DefaultRunTarget);
 
-	ret[SKeys::PatternProperties][fmt::format("^abstracts:{}$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
-	ret[SKeys::PatternProperties][fmt::format("^abstracts:{}$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. 'abstracts:*' is a special target that gets implicitely added to each project";
+	ret[SKeys::Properties][Keys::PlatformRequires] = getDefinition(Defs::PlatformRequires);
 
-	ret[SKeys::Properties]["abstracts"] = R"json({
+	ret[SKeys::PatternProperties][fmt::format("^{}:{}$", Keys::Abstracts, kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
+	ret[SKeys::PatternProperties][fmt::format("^{}:{}$", Keys::Abstracts, kPatternAbstractName)][SKeys::Description] = fmt::format("An abstract build target. '{}:*' is a special target that gets implicitely added to each project", Keys::Abstracts);
+
+	ret[SKeys::Properties][Keys::Abstracts] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A list of abstract build targets"
 	})json"_ojson;
-	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
-	ret[SKeys::Properties]["abstracts"][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
+	ret[SKeys::Properties][Keys::Abstracts][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)] = getDefinition(Defs::TargetAbstract);
+	ret[SKeys::Properties][Keys::Abstracts][SKeys::PatternProperties][fmt::format("^{}$", kPatternAbstractName)][SKeys::Description] = "An abstract build target. '*' is a special target that gets implicitely added to each project.";
 
-	ret[SKeys::Properties]["allowedArchitectures"] = R"json({
+	ret[SKeys::Properties][Keys::AllowedArchitectures] = R"json({
 		"type": "array",
 		"description": "An array of allowed target architecture triples supported by the project. Use this to limit which ones can be used to build the project.",
 		"uniqueItems": true,
@@ -2615,14 +2628,14 @@ Json ChaletJsonSchema::get()
 		}
 	})json"_ojson;
 
-	ret[SKeys::Properties]["configurations"] = R"json({
+	ret[SKeys::Properties][Keys::Configurations] = R"json({
 		"type": "object",
 		"description": "An object of custom build configurations. If one has the same name as a default build configuration, the default will be replaced.",
 		"additionalProperties": false
 	})json"_ojson;
 	ret[SKeys::Properties]["configurations"][SKeys::PatternProperties][kPatternTargetName] = getDefinition(Defs::Configuration);
 
-	ret[SKeys::Properties]["defaultConfigurations"] = R"json({
+	ret[SKeys::Properties][Keys::DefaultConfigurations] = R"json({
 		"type": "array",
 		"description": "An array of allowed default build configuration names.",
 		"uniqueItems": true,
@@ -2632,23 +2645,22 @@ Json ChaletJsonSchema::get()
 			"minLength": 1
 		}
 	})json"_ojson;
-	ret[SKeys::Properties]["defaultConfigurations"][SKeys::Default] = BuildConfiguration::getDefaultBuildConfigurationNames();
-	ret[SKeys::Properties]["defaultConfigurations"][SKeys::Items][SKeys::Enum] = BuildConfiguration::getDefaultBuildConfigurationNames();
+	ret[SKeys::Properties][Keys::DefaultConfigurations][SKeys::Default] = BuildConfiguration::getDefaultBuildConfigurationNames();
+	ret[SKeys::Properties][Keys::DefaultConfigurations][SKeys::Items][SKeys::Enum] = BuildConfiguration::getDefaultBuildConfigurationNames();
 
-	const auto distribution = "distribution";
-	ret[SKeys::Properties][distribution] = R"json({
+	ret[SKeys::Properties][Keys::Distribution] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of distribution targets to be created during the bundle phase."
 	})json"_ojson;
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName] = R"json({
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName] = R"json({
 		"type": "object",
 		"description": "A single distribution target.",
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"] = m_defs.at(Defs::DistributionKind);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"]["enum"] = R"json([
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"] = m_defs.at(Defs::DistributionKind);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"bundle",
 		"script",
 		"process",
@@ -2657,66 +2669,63 @@ Json ChaletJsonSchema::get()
 		"macosDiskImage"
 	])json"_ojson;
 	//
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][0] = getDefinition(Defs::DistributionBundle);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][1] = getDefinition(Defs::DistributionScript);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][2] = getDefinition(Defs::DistributionArchive);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][3] = getDefinition(Defs::DistributionMacosDiskImage);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][4] = getDefinition(Defs::DistributionProcess);
-	ret[SKeys::Properties][distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][5] = getDefinition(Defs::DistributionValidation);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][0] = getDefinition(Defs::DistributionBundle);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][1] = getDefinition(Defs::DistributionScript);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][2] = getDefinition(Defs::DistributionArchive);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][3] = getDefinition(Defs::DistributionMacosDiskImage);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][4] = getDefinition(Defs::DistributionProcess);
+	ret[SKeys::Properties][Keys::Distribution][SKeys::PatternProperties][kPatternDistributionName][SKeys::OneOf][5] = getDefinition(Defs::DistributionValidation);
 
 	ret[SKeys::Properties]["variables"] = getDefinition(Defs::EnvironmentVariables);
 
-	const auto externalDependencies = "externalDependencies";
-	ret[SKeys::Properties][externalDependencies] = R"json({
+	ret[SKeys::Properties][Keys::ExternalDependencies] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "Dependencies to resolve prior to building or via the configure command, that are considered external to this project. The object key will be used as a reference to the resulting location via '${external:(key)}'."
 	})json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName] = R"json({
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single external dependency or script.",
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::ExternalDependencyKind);
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"git",
 		"local",
 		"archive",
 		"script"
 	])json"_ojson;
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyArchive);
-	ret[SKeys::Properties][externalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::ExternalDependencyScript);
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::ExternalDependencyGit);
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::ExternalDependencyLocal);
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::ExternalDependencyArchive);
+	ret[SKeys::Properties][Keys::ExternalDependencies][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::ExternalDependencyScript);
 
-	addPropertyAndPattern(ret, "searchPaths", Defs::EnvironmentSearchPaths, kPatternConditions);
-	addPropertyAndPattern(ret, "packagePaths", Defs::EnvironmentPackagePaths, kPatternConditions);
+	addPropertyAndPattern(ret, Keys::SearchPaths, Defs::EnvironmentSearchPaths, kPatternConditions);
+	addPropertyAndPattern(ret, Keys::PackagePaths, Defs::EnvironmentPackagePaths, kPatternConditions);
 
 	//
-	const auto package = "package";
-	ret[SKeys::Properties][package] = R"json({
+	ret[SKeys::Properties][Keys::Package] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "The interface describing importable packages from this workspace."
 	})json"_ojson;
-	ret[SKeys::Properties][package][SKeys::PatternProperties][kPatternTargetName] = getDefinition(Defs::Package);
+	ret[SKeys::Properties][Keys::Package][SKeys::PatternProperties][kPatternTargetName] = getDefinition(Defs::Package);
 
 	//
-	const auto targets = "targets";
-	ret[SKeys::Properties][targets] = R"json({
+	ret[SKeys::Properties][Keys::Targets] = R"json({
 		"type": "object",
 		"additionalProperties": false,
 		"description": "A sequential list of build targets, cmake targets, meson targets, or scripts."
 	})json"_ojson;
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName] = R"json({
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName] = R"json({
 		"type": "object",
 		"description": "A single build target or script.",
 		"properties": {},
 		"oneOf": []
 	})json"_ojson;
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::TargetKind);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"] = m_defs.at(Defs::TargetKind);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::Properties]["kind"]["enum"] = R"json([
 		"staticLibrary",
 		"sharedLibrary",
 		"executable",
@@ -2727,14 +2736,14 @@ Json ChaletJsonSchema::get()
 		"process",
 		"validation"
 	])json"_ojson;
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::TargetSourceExecutable);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::TargetSourceLibrary);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::TargetChalet);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetCMake);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetMeson);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetScript);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][6] = getDefinition(Defs::TargetProcess);
-	ret[SKeys::Properties][targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][7] = getDefinition(Defs::TargetValidation);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][0] = getDefinition(Defs::TargetSourceExecutable);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][1] = getDefinition(Defs::TargetSourceLibrary);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][2] = getDefinition(Defs::TargetChalet);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][3] = getDefinition(Defs::TargetCMake);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][4] = getDefinition(Defs::TargetMeson);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][5] = getDefinition(Defs::TargetScript);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][6] = getDefinition(Defs::TargetProcess);
+	ret[SKeys::Properties][Keys::Targets][SKeys::PatternProperties][kPatternTargetName][SKeys::OneOf][7] = getDefinition(Defs::TargetValidation);
 
 	return ret;
 }

@@ -405,7 +405,7 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 	if (!parseTools(inJson))
 		return false;
 
-		/*
+	/*
 	if (!inNode.contains(Keys::CompilerTools))
 	{
 		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::CompilerTools);

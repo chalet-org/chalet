@@ -11,8 +11,21 @@ namespace Keys
 {
 //
 // chalet.json
-CHALET_CONSTANT(WorkspaceName) = "name";
-CHALET_CONSTANT(WorkspaceVersion) = "version";
+//
+// Metadata
+//
+CHALET_CONSTANT(MetaName) = "name";
+CHALET_CONSTANT(MetaVersion) = "version";
+CHALET_CONSTANT(MetaVersionMajor) = "versionMajor";
+CHALET_CONSTANT(MetaVersionMinor) = "versionMinor";
+CHALET_CONSTANT(MetaVersionPatch) = "versionPatch";
+CHALET_CONSTANT(MetaVersionTweak) = "versionTweak";
+CHALET_CONSTANT(MetaAuthor) = "author";
+CHALET_CONSTANT(MetaDescription) = "description";
+CHALET_CONSTANT(MetaHompage) = "homepage";
+CHALET_CONSTANT(MetaLicense) = "license";
+CHALET_CONSTANT(MetaReadme) = "readme";
+//
 CHALET_CONSTANT(PlatformRequires) = "platformRequires";
 CHALET_CONSTANT(Variables) = "variables";
 CHALET_CONSTANT(Package) = "package";
@@ -27,6 +40,7 @@ CHALET_CONSTANT(DefaultConfigurations) = "defaultConfigurations";
 CHALET_CONSTANT(ExternalDependencies) = "externalDependencies";
 CHALET_CONSTANT(SearchPaths) = "searchPaths";
 CHALET_CONSTANT(PackagePaths) = "packagePaths";
+CHALET_CONSTANT(DefaultRunTarget) = "defaultRunTarget";
 
 //
 CHALET_CONSTANT(Kind) = "kind";
