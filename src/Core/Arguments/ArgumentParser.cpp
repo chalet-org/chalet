@@ -151,6 +151,7 @@ StringList ArgumentParser::getTruthyArguments() const
 		"-g",
 		"--global",
 		"--open",
+		"--all",
 	};
 }
 

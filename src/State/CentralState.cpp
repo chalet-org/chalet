@@ -315,6 +315,74 @@ void CentralState::clearRunArgumentMap()
 }
 
 /*****************************************************************************/
+bool CentralState::cleanEntireProject()
+{
+	Output::lineBreak();
+	Output::msgClean(std::string());
+
+	StringList pathsToCheck{
+		m_inputs.settingsFile(),
+		m_inputs.outputDirectory(),
+		m_inputs.externalDirectory(),
+		m_inputs.distributionDirectory()
+	};
+
+	StringList pathsToRemove;
+
+	for (auto& path : pathsToCheck)
+	{
+		if (Files::pathExists(path))
+		{
+			pathsToRemove.emplace_back(path);
+		}
+	}
+
+	const auto& theme = Output::theme();
+	const auto& color = Output::getAnsiStyle(theme.build);
+	const auto& reset = Output::getAnsiStyle(theme.reset);
+
+	bool result = true;
+	size_t total = pathsToRemove.size();
+	for (size_t i = 0; i < total; ++i)
+	{
+		const auto& path = pathsToRemove[i];
+		if (!Output::showCommands())
+		{
+			Output::print(theme.reset, fmt::format("   [{}/{}] {}Removing {}{}", i + 1, total, color, path, reset));
+		}
+
+		if (Files::pathExists(path))
+		{
+			if (Files::pathIsDirectory(path))
+			{
+				result &= Files::removeRecursively(path);
+			}
+			else if (Files::pathIsFile(path))
+			{
+				result &= Files::remove(path);
+			}
+		}
+	}
+
+	if (result)
+	{
+		Output::lineBreak();
+
+		Output::msgBuildSuccess();
+		Output::lineBreak();
+	}
+	else
+	{
+		Diagnostic::printErrors(true);
+
+		Output::msgBuildFail();
+		Output::lineBreak();
+	}
+
+	return result;
+}
+
+/*****************************************************************************/
 StringList CentralState::getArgumentStringListFromString(const std::string& inValue)
 {
 	StringList argList;

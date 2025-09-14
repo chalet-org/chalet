@@ -123,7 +123,8 @@ bool Router::runRoutesThatRequireState()
 	if (!centralState->initialize())
 		return false;
 
-	if (!route.isExport())
+	bool cleanAll = route.isClean() && m_inputs.cleanAll();
+	if (!route.isExport() && !cleanAll)
 	{
 		buildState = std::make_unique<BuildState>(centralState->inputs(), *centralState);
 		if (!buildState->initialize())
@@ -163,12 +164,15 @@ bool Router::runRoutesThatRequireState()
 			break;
 		}
 		case RouteType::Clean: {
-			chalet_assert(buildState != nullptr, "");
-			if (m_inputs.cleanAll())
+			if (cleanAll)
 			{
-				LOG("Will clean all...");
+				result = centralState->cleanEntireProject();
 			}
-			result = buildState->doBuild(m_inputs.route());
+			else
+			{
+				chalet_assert(buildState != nullptr, "");
+				result = buildState->doBuild(m_inputs.route());
+			}
 			break;
 		}
 
@@ -185,7 +189,8 @@ bool Router::runRoutesThatRequireState()
 	{
 		UpdateNotifier::checkForUpdates(*centralState);
 
-		centralState->saveCaches();
+		if (!cleanAll)
+			centralState->saveCaches();
 	}
 
 	return result;
