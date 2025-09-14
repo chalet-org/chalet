@@ -125,6 +125,7 @@ bool CentralState::initialize()
 
 	Output::setShowCommandOverride(false);
 
+	bool cleanAll = route.isClean() && m_inputs.cleanAll();
 	if (route.isConfigure())
 	{
 		if (!parseBuildFile())
@@ -161,14 +162,17 @@ bool CentralState::initialize()
 		if (!parseBuildFile())
 			return false;
 
-		if (!createCache())
-			return false;
+		if (!cleanAll)
+		{
+			if (!createCache())
+				return false;
 
-		if (!validateAncillaryTools())
-			return false;
+			if (!validateAncillaryTools())
+				return false;
 
-		if (!validate())
-			return false;
+			if (!validate())
+				return false;
+		}
 
 		Diagnostic::printDone(timer.asString());
 	}
