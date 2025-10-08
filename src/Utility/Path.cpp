@@ -33,10 +33,7 @@ void Path::toUnix(std::string& outValue, const bool inRemoveNewLine)
 	}
 	else
 	{
-		while (outValue.back() == ' ')
-			outValue.pop_back();
-
-		while (outValue.back() == '/')
+		while (outValue.back() == ' ' || outValue.back() == '/')
 			outValue.pop_back();
 	}
 

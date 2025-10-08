@@ -13,6 +13,7 @@
 	"files.trimTrailingWhitespace": true,
 	"files.eol": "\n",
 	"files.exclude": {
+		".cache/": true
 		// "bin": true
 	},
 	"search.exclude": {

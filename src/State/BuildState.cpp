@@ -1483,6 +1483,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IBuildTa
 		Environment::replaceCommonVariables(outString, homeDirectory);
 	}
 
+	Path::toUnix(outString);
+
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
@@ -1568,6 +1570,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const IDistTar
 		Environment::replaceCommonVariables(outString, homeDirectory);
 	}
 
+	Path::toUnix(outString);
+
 	if (String::contains("${", outString))
 	{
 		if (!RegexPatterns::matchAndReplacePathVariables(outString, [this, &inTarget, &inOptions](std::string match, bool& required) {
@@ -1633,6 +1637,8 @@ bool BuildState::replaceVariablesInString(std::string& outString, const SourcePa
 		const auto& homeDirectory = inputs.homeDirectory();
 		Environment::replaceCommonVariables(outString, homeDirectory);
 	}
+
+	Path::toUnix(outString);
 
 	if (String::contains("${", outString))
 	{
