@@ -248,24 +248,27 @@ void BuildState::getTargetDependencies(StringList& outList, const std::string& i
 		}
 
 		bool isSources = target->isSources();
-		if (isSources)
+		bool isTarget = String::equals(inTargetName, target->name());
+		if (isTarget)
 		{
-			auto& project = static_cast<const SourceTarget&>(*target);
-			for (auto& link : project.projectSharedLinks())
+			if (isSources)
 			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(outList, link, true);
+				auto& project = static_cast<const SourceTarget&>(*target);
+				for (auto& link : project.projectSharedLinks())
+				{
+					if (List::addIfDoesNotExist(outList, link))
+						getTargetDependencies(outList, link, true);
+				}
+
+				for (auto& link : project.projectStaticLinks())
+				{
+					if (List::addIfDoesNotExist(outList, link))
+						getTargetDependencies(outList, link, true);
+				}
 			}
 
-			for (auto& link : project.projectStaticLinks())
-			{
-				if (List::addIfDoesNotExist(outList, link))
-					getTargetDependencies(outList, link, true);
-			}
-		}
-
-		if (String::equals(inTargetName, target->name()))
 			break;
+		}
 
 		if (!isSources && !inWithSelf)
 		{
