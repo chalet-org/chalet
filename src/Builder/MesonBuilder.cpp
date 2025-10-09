@@ -463,14 +463,14 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 
 	auto nativeFile = getNativeFileOutputPath();
 
-	bool isNative = m_state.info.hostArchitecture() == m_state.info.targetArchitecture();
+	bool needsNativeFile = m_state.info.hostArchitectureTriple() == m_state.info.targetArchitectureTriple();
 
 	StringList ret{
 		getQuotedPath(meson),
 		"setup",
 		"--backend",
 		backend,
-		isNative ? "--native-file" : "--cross-file",
+		needsNativeFile ? "--native-file" : "--cross-file",
 		getQuotedPath(Files::getCanonicalPath(nativeFile)),
 		"--optimization",
 		optimization,
