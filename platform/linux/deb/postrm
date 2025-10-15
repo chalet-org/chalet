@@ -1,0 +1,6 @@
+#/usr/bin/env bash
+
+# echo 'Post removal'
+
+# Remove symlink in /usr/bin
+rm -f /usr/bin/code

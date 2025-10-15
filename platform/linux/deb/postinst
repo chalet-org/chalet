@@ -1,3 +1,8 @@
 #/usr/bin/env bash
 
-echo 'Post installation'
+# echo 'Post installation'
+
+# Symlink to /usr/bin
+rm -f /usr/bin/chalet
+ln -s /usr/share/chalet/bin/chalet /usr/bin/chalet
+
