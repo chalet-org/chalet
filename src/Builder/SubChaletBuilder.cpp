@@ -82,8 +82,6 @@ bool SubChaletBuilder::run()
 {
 	Timer buildTimer;
 
-	LOG("install:", m_target.install());
-
 	const auto& name = m_target.name();
 
 	const auto oldPath = Environment::getPath();
