@@ -160,6 +160,10 @@ bool MesonBuilder::run()
 		Environment::set(kMacDeploymentTarget, oldEnv.macosDeployTarget);
 		Environment::set(kIPhoneDeploymentTarget, oldEnv.iphoneDeployTarget);
 #endif
+
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(true);
+
 		return false;
 	};
 
@@ -186,6 +190,18 @@ bool MesonBuilder::run()
 			// 	const auto& color = Output::getAnsiStyle(Output::theme().build);
 			// 	Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
 		}
+
+		// Call 'which' here
+		m_stripBinary = getStripBinary();
+		if (m_state.environment->isClang())
+		{
+			m_llvmConfig = Files::which("llvm-config");
+		}
+
+		// start commands
+
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(false);
 
 		StringList command;
 		if (runMesonSetup)
@@ -223,6 +239,9 @@ bool MesonBuilder::run()
 		Environment::set(kMacDeploymentTarget, oldEnv.macosDeployTarget);
 		Environment::set(kIPhoneDeploymentTarget, oldEnv.iphoneDeployTarget);
 #endif
+
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(true);
 	}
 
 	//
@@ -266,7 +285,7 @@ bool MesonBuilder::createNativeFile() const
 		compilerCpp = fmt::format("'{}'", compilerCpp);
 	}
 
-	auto strip = getStripBinary();
+	const auto& strip = m_stripBinary;
 
 	auto hostPlatform = getPlatform(false);
 	auto targetPlatform = getPlatform(true);
@@ -302,10 +321,9 @@ bool MesonBuilder::createNativeFile() const
 
 	if (m_state.environment->isClang())
 	{
-		auto llvmConfig = Files::which("llvm-config");
 		otherBinaries = fmt::format(R"ini(
 llvm-config = '{}')ini",
-			llvmConfig);
+			m_llvmConfig);
 
 		targetArg = fmt::format("'--target={}'", archTriple);
 	}

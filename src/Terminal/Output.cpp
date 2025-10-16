@@ -29,6 +29,7 @@ static struct
 	ColorTheme theme;
 
 	bool quietNonBuild = false;
+	bool allowQuietNonBuild = true;
 	bool showCommands = false;
 	bool allowCommandsToShow = true;
 	bool showBenchamrks = true;
@@ -128,6 +129,11 @@ void Output::setQuietNonBuild(const bool inValue)
 #else
 	state.quietNonBuild = inValue;
 #endif
+}
+
+void Output::setQuietNonBuildOverride(const bool inValue)
+{
+	state.allowQuietNonBuild = inValue;
 }
 
 /*****************************************************************************/
@@ -440,7 +446,7 @@ void Output::print(const Color inColor, const StringList& inList)
 /*****************************************************************************/
 void Output::printCommand(const std::string& inText)
 {
-	if (!state.quietNonBuild)
+	if (!(state.quietNonBuild && state.allowQuietNonBuild))
 	{
 		const auto& color = Output::getAnsiStyle(state.theme.build);
 		const auto& reset = Output::getAnsiStyle(state.theme.reset);
@@ -454,7 +460,7 @@ void Output::printCommand(const std::string& inText)
 /*****************************************************************************/
 void Output::printCommand(const StringList& inList)
 {
-	if (!state.quietNonBuild)
+	if (!(state.quietNonBuild && state.allowQuietNonBuild))
 	{
 		const auto& color = Output::getAnsiStyle(state.theme.build);
 		const auto& reset = Output::getAnsiStyle(state.theme.reset);

@@ -54,6 +54,9 @@ private:
 	const BuildState& m_state;
 	const MesonTarget& m_target;
 
+	std::string m_stripBinary;
+	std::string m_llvmConfig;
+
 	u32 m_mesonVersionMajorMinor = 0;
 
 	bool m_quotedPaths = false;

@@ -119,6 +119,9 @@ bool CmakeBuilder::run()
 		if (isNinja)
 			Environment::set(kNinjaStatus, oldNinjaStatus);
 
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(true);
+
 		return false;
 	};
 
@@ -149,6 +152,9 @@ bool CmakeBuilder::run()
 
 		std::string cwd = m_cmakeVersionMajorMinor >= 313 ? std::string() : buildDir;
 
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(false);
+
 		if (runCMakeGenerator)
 		{
 			command = getGeneratorCommand();
@@ -178,6 +184,9 @@ bool CmakeBuilder::run()
 
 		if (isNinja)
 			Environment::set(kNinjaStatus, oldNinjaStatus);
+
+		if (Output::quietNonBuild() && Output::showCommands())
+			Output::setQuietNonBuildOverride(true);
 	}
 
 	//

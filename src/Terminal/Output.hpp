@@ -23,6 +23,7 @@ const ColorTheme& theme();
 
 bool quietNonBuild();
 void setQuietNonBuild(const bool inValue);
+void setQuietNonBuildOverride(const bool inValue);
 
 bool cleanOutput();
 bool showCommands();
