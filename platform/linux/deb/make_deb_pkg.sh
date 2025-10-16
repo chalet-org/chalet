@@ -59,14 +59,13 @@ if [[ -d "$PKG_ROOT" ]]; then
 fi
 
 PKG_DEBIAN="$PKG_ROOT/DEBIAN"
-PKG_BIN="$PKG_ROOT/usr/bin"
-PKG_OPT="$PKG_ROOT/opt/chalet"
+PKG_OPT="$PKG_ROOT/usr/share/chalet"
 PKG_COMPLETIONS="$PKG_ROOT/usr/share/bash-completion/completions"
 
 mkdir -p "$PKG_ROOT"
 mkdir -p "$PKG_DEBIAN"
-mkdir -p "$PKG_BIN"
 mkdir -p "$PKG_OPT"
+mkdir -p "$PKG_OPT/bin"
 mkdir -p "$PKG_COMPLETIONS"
 
 cp "$DIST_FOLDER/chalet-completion-source.sh" "$PKG_COMPLETIONS/chalet-completion-source.sh"
@@ -74,7 +73,7 @@ cp "$DIST_FOLDER/chalet-completion.sh" "$PKG_COMPLETIONS/chalet-completion.sh"
 cp "$DIST_FOLDER/chalet-completion.bash" "$PKG_COMPLETIONS/chalet-completion.bash"
 cp "$DIST_FOLDER/chalet-completion.zsh" "$PKG_COMPLETIONS/chalet-completion.zsh"
 cp "$DIST_FOLDER/chalet-completion.fish" "$PKG_COMPLETIONS/chalet-completion.fish"
-cp "$DIST_FOLDER/chalet" "$PKG_OPT"
+cp "$DIST_FOLDER/chalet" "$PKG_OPT/bin"
 cp "$DIST_FOLDER/LICENSE.txt" "$PKG_OPT"
 cp "$DIST_FOLDER/README.md" "$PKG_OPT"
 
@@ -91,12 +90,9 @@ Description: $CHALET_DESCRIPTION
 Essential: no
 END
 
-cat << END > "$PKG_DEBIAN/chalet.links"
-opt/chalet/chalet usr/bin/chalet
-END
-
-cp "$PLATFORM_LINUX_PATH/preinst" "$PKG_DEBIAN"
+# cp "$PLATFORM_LINUX_PATH/preinst" "$PKG_DEBIAN"
 cp "$PLATFORM_LINUX_PATH/postinst" "$PKG_DEBIAN"
+cp "$PLATFORM_LINUX_PATH/postrm" "$PKG_DEBIAN"
 
 cd "$DIST_FOLDER"
 
