@@ -726,10 +726,15 @@ std::string MesonBuilder::getStripBinary() const
 {
 	if (m_state.environment->isMsvc())
 		return std::string();
-	else if (m_state.environment->isClang())
-		return Files::which("llvm-strip");
-	else
-		return Files::which("strip");
+
+	if (m_state.environment->isClang())
+	{
+		auto llvmStrip = Files::which("llvm-strip");
+		if (!llvmStrip.empty())
+			return llvmStrip;
+	}
+
+	return Files::which("strip");
 }
 
 /*****************************************************************************/
