@@ -205,6 +205,7 @@ class ChaletJsonSchema
 		TargetChaletRecheck,
 		TargetChaletRebuild,
 		TargetChaletClean,
+		TargetChaletInstall,
 		//
 		Package,
 		// PackageSearchPaths,

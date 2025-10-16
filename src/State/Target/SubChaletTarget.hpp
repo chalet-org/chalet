@@ -39,6 +39,9 @@ struct SubChaletTarget final : public IBuildTarget
 	bool clean() const noexcept;
 	void setClean(const bool inValue) noexcept;
 
+	bool install() const noexcept;
+	void setInstall(const bool inValue) noexcept;
+
 private:
 	StringList m_targets;
 	std::string m_location;
@@ -50,5 +53,6 @@ private:
 	bool m_recheck = true;
 	bool m_rebuild = true;
 	bool m_clean = true;
+	bool m_install = false;
 };
 }

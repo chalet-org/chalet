@@ -217,13 +217,19 @@ std::string TargetExportAdapter::getCommand() const
 	else if (m_target.isSubChalet())
 	{
 		// SubChaletTarget
-		const auto& subChaletTarget = static_cast<const SubChaletTarget&>(m_target);
+		const auto& project = static_cast<const SubChaletTarget&>(m_target);
 		constexpr bool hasSettings = false;
 
-		SubChaletBuilder builder(m_state, subChaletTarget, kQuotedPaths);
+		SubChaletBuilder builder(m_state, project, kQuotedPaths);
 
 		auto buildCmd = builder.getBuildCommand(hasSettings);
 		ret = String::join(buildCmd);
+
+		if (project.install())
+		{
+			auto installCmd = builder.getInstallCommand(hasSettings);
+			ret += fmt::format("{}{}", eol, String::join(installCmd));
+		}
 	}
 	else if (m_target.isValidation())
 	{

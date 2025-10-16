@@ -3044,6 +3044,9 @@
 				"clean": {
 					"$ref": "#/definitions/target-chalet-clean"
 				},
+				"install": {
+					"$ref": "#/definitions/target-chalet-install"
+				},
 				"targets": {
 					"$ref": "#/definitions/target-chalet-targets"
 				}
@@ -3066,6 +3069,9 @@
 				},
 				"^clean\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-chalet-clean"
+				},
+				"^install\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-chalet-install"
 				},
 				"^targets\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-chalet-targets"
@@ -3114,6 +3120,11 @@
 			"type": "boolean",
 			"description": "If true (default), the Chalet build folder will be cleaned when a clean is requested.",
 			"default": true
+		},
+		"target-chalet-install": {
+			"type": "boolean",
+			"description": "If true, the bundle command will be run, and files will be placed in: ${externalBuild:target}/install",
+			"default": false
 		},
 		"package": {
 			"type": "object",

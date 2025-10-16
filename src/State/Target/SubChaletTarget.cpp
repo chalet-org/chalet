@@ -181,4 +181,14 @@ void SubChaletTarget::setClean(const bool inValue) noexcept
 	m_clean = inValue;
 }
 
+/*****************************************************************************/
+bool SubChaletTarget::install() const noexcept
+{
+	return m_install;
+}
+void SubChaletTarget::setInstall(const bool inValue) noexcept
+{
+	m_install = inValue;
+}
+
 }

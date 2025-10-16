@@ -1607,6 +1607,12 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetChaletInstall] = R"json({
+		"type": "boolean",
+		"description": "If true, the bundle command will be run, and files will be placed in: ${externalBuild:target}/install",
+		"default": false
+	})json"_ojson;
+
 	//
 	// Package
 	//
@@ -2139,6 +2145,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(targetChalet, "recheck", Defs::TargetChaletRecheck, kPatternConditions);
 		addPropertyAndPattern(targetChalet, "rebuild", Defs::TargetChaletRebuild, kPatternConditions);
 		addPropertyAndPattern(targetChalet, "clean", Defs::TargetChaletClean, kPatternConditions);
+		addPropertyAndPattern(targetChalet, "install", Defs::TargetChaletInstall, kPatternConditions);
 		addPropertyAndPattern(targetChalet, "targets", Defs::TargetChaletTargetNames, kPatternConditions);
 		defs[Defs::TargetChalet] = std::move(targetChalet);
 	}
@@ -2401,6 +2408,7 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetChaletRecheck: return "target-chalet-recheck";
 		case Defs::TargetChaletRebuild: return "target-chalet-rebuild";
 		case Defs::TargetChaletClean: return "target-chalet-clean";
+		case Defs::TargetChaletInstall: return "target-chalet-install";
 		//
 		case Defs::Package: return "package";
 		case Defs::PackageSettingsCxx: return "package-settings-cxx";

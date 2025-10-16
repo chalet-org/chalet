@@ -82,6 +82,8 @@ bool SubChaletBuilder::run()
 {
 	Timer buildTimer;
 
+	LOG("install:", m_target.install());
+
 	const auto& name = m_target.name();
 
 	const auto oldPath = Environment::getPath();
@@ -125,6 +127,14 @@ bool SubChaletBuilder::run()
 		sourceCache.addDataCache(outputHash, result);
 	}
 
+	if (m_target.install() && result)
+	{
+		auto cmd = getInstallCommand();
+		result = Process::run(cmd);
+		if (!result)
+			return onRunFailure();
+	}
+
 	if (result)
 	{
 		Environment::setPath(oldPath);
@@ -154,16 +164,16 @@ void SubChaletBuilder::removeSettingsFile()
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const bool inInstall, const bool hasSettings) const
 {
 	auto location = getLocation();
 	auto buildFile = getBuildFile();
 
-	return getBuildCommand(location, buildFile, hasSettings);
+	return getBuildCommand(location, buildFile, inInstall, hasSettings);
 }
 
 /*****************************************************************************/
-StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings) const
+StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool inInstall, const bool hasSettings) const
 {
 	StringList cmd{ getQuotedPath(m_state.inputs.appPath()) };
 	cmd.emplace_back("--quieter");
@@ -192,6 +202,9 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	cmd.emplace_back("--output-dir");
 	cmd.emplace_back(getQuotedPath(outputDirectory));
+
+	cmd.emplace_back("--distribution-dir");
+	cmd.emplace_back(getQuotedPath(fmt::format("{}/install", outputDirectory)));
 
 	cmd.emplace_back("--configuration");
 	cmd.push_back(m_state.configuration.name());
@@ -229,23 +242,39 @@ StringList SubChaletBuilder::getBuildCommand(const std::string& inLocation, cons
 
 	cmd.emplace_back("--only-required");
 
-	bool rebuild = m_state.inputs.route().isRebuild() && m_target.rebuild();
-	bool clean = m_state.inputs.route().isClean() && m_target.clean();
-
-	if (rebuild)
-		cmd.emplace_back("rebuild");
-	else if (clean)
-		cmd.emplace_back("clean");
-	else
-		cmd.emplace_back("build");
-
-	if (!clean)
+	if (inInstall)
 	{
-		auto target = String::join(m_target.targets(), ',');
-		cmd.emplace_back(target);
+		cmd.emplace_back("bundle");
+	}
+	else
+	{
+		bool rebuild = m_state.inputs.route().isRebuild() && m_target.rebuild();
+		bool clean = m_state.inputs.route().isClean() && m_target.clean();
+
+		if (rebuild)
+			cmd.emplace_back("rebuild");
+		else if (clean)
+			cmd.emplace_back("clean");
+		else
+			cmd.emplace_back("build");
+
+		if (!clean)
+		{
+			auto target = String::join(m_target.targets(), ',');
+			cmd.emplace_back(target);
+		}
 	}
 
 	return cmd;
+}
+
+/*****************************************************************************/
+StringList SubChaletBuilder::getInstallCommand(const bool hasSettings) const
+{
+	auto location = getLocation();
+	auto buildFile = getBuildFile();
+
+	return getBuildCommand(location, buildFile, true, hasSettings);
 }
 
 /*****************************************************************************/

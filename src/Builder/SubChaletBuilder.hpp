@@ -21,8 +21,10 @@ public:
 
 	void removeSettingsFile();
 
-	StringList getBuildCommand(const bool hasSettings = true) const;
-	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool hasSettings = true) const;
+	StringList getBuildCommand(const bool inInstall = false, const bool hasSettings = true) const;
+	StringList getBuildCommand(const std::string& inLocation, const std::string& inBuildFile, const bool inInstall = false, const bool hasSettings = true) const;
+
+	StringList getInstallCommand(const bool hasSettings = true) const;
 
 private:
 	bool dependencyHasUpdated() const;
