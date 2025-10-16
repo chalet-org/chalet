@@ -473,8 +473,14 @@ StringList MesonBuilder::getSetupCommand(const std::string& inLocation, const st
 		needsNativeFile ? "--native-file" : "--cross-file",
 		getQuotedPath(Files::getCanonicalPath(nativeFile)),
 		"--optimization",
-		optimization,
+		optimization
 	};
+	if (m_target.install())
+	{
+		ret.emplace_back("--prefix");
+		ret.emplace_back("/");
+	}
+
 	if (m_state.configuration.debugSymbols())
 		ret.emplace_back("--debug");
 	else if (!m_state.environment->isMsvc())
