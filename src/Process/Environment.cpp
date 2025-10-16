@@ -113,8 +113,6 @@ const char* Environment::getFrameworkPathKey()
 /*****************************************************************************/
 std::string Environment::getPath()
 {
-	LOG("Environment::getPath()");
-
 	auto path = Environment::get("PATH");
 #if defined(CHALET_WIN32)
 	if (path == nullptr)
