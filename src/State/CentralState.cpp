@@ -56,6 +56,9 @@ bool CentralState::initialize()
 	if (!parseEnvFile())
 		return false;
 
+	if (!checkPathVariableForInvalidCharacters())
+		return false;
+
 	if (!cache.initializeSettings(m_inputs))
 		return false;
 
@@ -532,6 +535,22 @@ bool CentralState::validateAncillaryTools()
 		Diagnostic::error("Error validating ancillary tools.");
 		return false;
 	}
+
+	return true;
+}
+
+/*****************************************************************************/
+bool CentralState::checkPathVariableForInvalidCharacters()
+{
+#if defined(CHALET_WIN32)
+	auto pathVariable = Environment::getPath();
+	auto location = pathVariable.find_first_of("<>\"|*?");
+	if (location != std::string::npos)
+	{
+		Diagnostic::error("Found a syntax error in the system's Path variable. Please find and remove the following characters before running Chalet again: <>\"|*?");
+		return false;
+	}
+#endif
 
 	return true;
 }

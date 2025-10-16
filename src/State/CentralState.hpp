@@ -75,6 +75,8 @@ private:
 	bool validateExternalDependencies();
 	bool validateAncillaryTools();
 
+	bool checkPathVariableForInvalidCharacters();
+
 	bool runDependencyManager();
 
 	bool makeDefaultBuildConfigurations();
