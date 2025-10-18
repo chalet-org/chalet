@@ -22,8 +22,7 @@ struct BuildInfo
 	bool initialize();
 	bool validate();
 
-	void addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue);
-	void addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue);
+	PlatformDependencyManager& platformDeps() const noexcept;
 
 	Arch::Cpu hostArchitecture() const noexcept;
 	const std::string& hostArchitectureTriple() const noexcept;

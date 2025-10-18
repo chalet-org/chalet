@@ -13,6 +13,7 @@
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Compile/ToolchainTypes.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Dependencies/PlatformDependencyManager.hpp"
 #include "Platform/Platform.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildInfo.hpp"
@@ -160,8 +161,15 @@ bool ChaletJsonParser::serializeFromJsonRoot(const Json& inJson)
 
 	if (!m_state.getCentralState().inputs().route().isConfigure())
 	{
-		if (!parsePlatformRequires(inJson))
-			return false;
+		if (inJson.contains(Keys::PlatformRequires))
+		{
+			auto& platformDeps = m_state.info.platformDeps();
+			if (!platformDeps.initialize())
+				return false;
+
+			if (!parsePlatformRequires(inJson))
+				return false;
+		}
 
 		if (!parseDistribution(inJson))
 			return false;
@@ -268,9 +276,7 @@ bool ChaletJsonParser::parseRoot(const Json& inNode) const
 /*****************************************************************************/
 bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 {
-	if (!inNode.contains(Keys::PlatformRequires))
-		return true;
-
+	auto& platformDeps = m_state.info.platformDeps();
 	const Json& platformRequires = inNode[Keys::PlatformRequires];
 	for (const auto& [key, value] : platformRequires.items())
 	{
@@ -280,25 +286,25 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 			std::string val;
 #if defined(CHALET_WIN32)
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::ReqWindowsMSYS2, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqWindowsMSYS2, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqWindowsMSYS2, String::split(val));
 #elif defined(CHALET_MACOS)
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::ReqMacOSMacPorts, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqMacOSMacPorts, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqMacOSMacPorts, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqMacOSHomebrew, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqMacOSHomebrew, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqMacOSHomebrew, String::split(val));
 #else
 			if (valueMatchesSearchKeyPattern(val, value, key, Keys::ReqUbuntuSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqUbuntuSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqUbuntuSystem, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqDebianSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqDebianSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqDebianSystem, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqArchLinuxSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqArchLinuxSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqArchLinuxSystem, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqManjaroSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqManjaroSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqManjaroSystem, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqFedoraSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqFedoraSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqFedoraSystem, String::split(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, Keys::ReqRedHatSystem, status))
-				m_state.info.addRequiredPlatformDependency(Keys::ReqRedHatSystem, String::split(val));
+				platformDeps.addRequiredDependency(Keys::ReqRedHatSystem, String::split(val));
 #endif
 			else if (isInvalid(status))
 				return false;
@@ -308,25 +314,25 @@ bool ChaletJsonParser::parsePlatformRequires(const Json& inNode) const
 			StringList val;
 #if defined(CHALET_WIN32)
 			if (valueMatchesSearchKeyPattern(val, value, key, "windows.msys2", status))
-				m_state.info.addRequiredPlatformDependency("windows.msys2", std::move(val));
+				platformDeps.addRequiredDependency("windows.msys2", std::move(val));
 #elif defined(CHALET_MACOS)
 			if (valueMatchesSearchKeyPattern(val, value, key, "macos.macports", status))
-				m_state.info.addRequiredPlatformDependency("macos.macports", std::move(val));
+				platformDeps.addRequiredDependency("macos.macports", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "macos.homebrew", status))
-				m_state.info.addRequiredPlatformDependency("macos.homebrew", std::move(val));
+				platformDeps.addRequiredDependency("macos.homebrew", std::move(val));
 #else
 			if (valueMatchesSearchKeyPattern(val, value, key, "ubuntu.system", status))
-				m_state.info.addRequiredPlatformDependency("ubuntu.system", std::move(val));
+				platformDeps.addRequiredDependency("ubuntu.system", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "debian.system", status))
-				m_state.info.addRequiredPlatformDependency("debian.system", std::move(val));
+				platformDeps.addRequiredDependency("debian.system", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "archlinux.system", status))
-				m_state.info.addRequiredPlatformDependency("archlinux.system", std::move(val));
+				platformDeps.addRequiredDependency("archlinux.system", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "manjaro.system", status))
-				m_state.info.addRequiredPlatformDependency("manjaro.system", std::move(val));
+				platformDeps.addRequiredDependency("manjaro.system", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "fedora.system", status))
-				m_state.info.addRequiredPlatformDependency("fedora.system", std::move(val));
+				platformDeps.addRequiredDependency("fedora.system", std::move(val));
 			else if (isUnread(status) && valueMatchesSearchKeyPattern(val, value, key, "redhat.system", status))
-				m_state.info.addRequiredPlatformDependency("redhat.system", std::move(val));
+				platformDeps.addRequiredDependency("redhat.system", std::move(val));
 #endif
 
 			else if (isInvalid(status))

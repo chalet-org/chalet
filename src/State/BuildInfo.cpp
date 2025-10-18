@@ -20,7 +20,8 @@ namespace chalet
 /*****************************************************************************/
 BuildInfo::BuildInfo(const BuildState& inState, const CommandLineInputs& inInputs) :
 	m_state(inState),
-	m_inputs(inInputs)
+	m_inputs(inInputs),
+	m_platformDeps(std::make_unique<PlatformDependencyManager>(m_state))
 {
 	m_hostArchitecture.set(m_inputs.hostArchitecture());
 	setTargetArchitecture(m_inputs.getResolvedTargetArchitecture());
@@ -74,30 +75,19 @@ bool BuildInfo::initialize()
 /*****************************************************************************/
 bool BuildInfo::validate()
 {
-	if (m_platformDeps != nullptr && !m_platformDeps->hasRequired())
+	if (!m_platformDeps->validate())
 		return false;
 
+	// no longer needed
 	m_platformDeps.reset();
 
 	return true;
 }
 
 /*****************************************************************************/
-void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, std::string&& inValue)
+PlatformDependencyManager& BuildInfo::platformDeps() const noexcept
 {
-	if (m_platformDeps == nullptr)
-		m_platformDeps = std::make_unique<PlatformDependencyManager>(m_state);
-
-	m_platformDeps->addRequiredPlatformDependency(inKind, std::move(inValue));
-}
-
-/*****************************************************************************/
-void BuildInfo::addRequiredPlatformDependency(const std::string& inKind, StringList&& inValue)
-{
-	if (m_platformDeps == nullptr)
-		m_platformDeps = std::make_unique<PlatformDependencyManager>(m_state);
-
-	m_platformDeps->addRequiredPlatformDependency(inKind, std::move(inValue));
+	return *m_platformDeps;
 }
 
 /*****************************************************************************/
