@@ -86,6 +86,7 @@ bool PlatformDependencyManager::initialize()
 	m_archString = m_state.info.targetArchitectureString();
 #elif defined(CHALET_MACOS)
 	m_system = SupportedSystem::MacOS;
+	m_systemString = "macos";
 	m_archString = m_state.info.targetArchitectureString();
 #elif defined(CHALET_LINUX)
 	m_system = SupportedSystem::Unknown;
@@ -389,10 +390,7 @@ bool PlatformDependencyManager::checkDependenciesWithPacmanMSYS2(const StringLis
 
 	if (!notFound.empty())
 	{
-		for (auto& package : notFound)
-		{
-			errors.push_back(fmt::format("Run: sudo port install {}", package));
-		}
+		errors.push_back(fmt::format("Run: pacman -S {}", String::join(notFound)));
 	}
 
 	return true;
@@ -408,7 +406,12 @@ bool PlatformDependencyManager::checkDependenciesWithHomebrew(const StringList& 
 	}
 
 	auto brew = Files::which("brew");
-	if (brew.empty() || !Files::pathExists("/usr/local/Cellar"))
+	std::string cellarPath("/opt/homebrew/Cellar");
+	if (!Files::pathExists(cellarPath))
+	{
+		cellarPath = "/usr/local/Cellar";
+	}
+	if (brew.empty() || !Files::pathExists(cellarPath))
 	{
 		Diagnostic::error("Homebrew was required by the build, but was not detected.");
 		return false;
@@ -423,7 +426,7 @@ bool PlatformDependencyManager::checkDependenciesWithHomebrew(const StringList& 
 	{
 		Diagnostic::subInfoEllipsis("{}", item);
 
-		auto path = fmt::format("/usr/local/Cellar/{}", item);
+		auto path = fmt::format("{}/{}", cellarPath, item);
 		bool exists = Files::pathExists(path) && Files::pathIsDirectory(path);
 		Diagnostic::printFound(exists);
 
@@ -461,14 +464,27 @@ bool PlatformDependencyManager::checkDependenciesWithMacPorts(const StringList& 
 
 	showInfo("MacPorts");
 
-	auto installed = Process::runOutput({ port, "installed" });
-	Diagnostic::printDone(timer.asString());
+	std::string installed;
+	getDataWithCache(installed, inList, [&port]() {
+		if (Files::pathExists(port))
+		{
+			StringList cmd{ port, "installed" };
+			auto result = Process::runOutput(cmd);
+			return result;
+		}
+		else
+		{
+			return std::string();
+		}
+	});
 
 	if (installed.empty())
 	{
 		Diagnostic::error("There was a problem detecting the MacPorts dependencies.");
 		return false;
 	}
+
+	Diagnostic::printDone(timer.asString());
 
 	StringList notFound;
 	for (auto& item : inList)
@@ -488,7 +504,10 @@ bool PlatformDependencyManager::checkDependenciesWithMacPorts(const StringList& 
 
 	if (!notFound.empty())
 	{
-		errors.push_back(fmt::format("Run: pacman -S {}", String::join(notFound)));
+		for (auto& package : notFound)
+		{
+			errors.push_back(fmt::format("Run: sudo port install {}", package));
+		}
 	}
 
 	return true;
@@ -503,7 +522,7 @@ bool PlatformDependencyManager::checkDependenciesWithPacman(const StringList& in
 	showInfo("system");
 
 	std::string installed;
-	getDataWithCache(installed, inList, [this, &inList]() {
+	getDataWithCache(installed, inList, [&inList]() {
 		auto pacman = Files::which("pacman");
 		if (Files::pathExists(pacman))
 		{
@@ -562,7 +581,7 @@ bool PlatformDependencyManager::checkDependenciesWithApt(const StringList& inLis
 	showInfo("system");
 
 	std::string installed;
-	getDataWithCache(installed, inList, [this, &inList]() {
+	getDataWithCache(installed, inList, [&inList]() {
 		auto apt = Files::which("apt");
 		if (Files::pathExists(apt))
 		{
@@ -634,7 +653,7 @@ bool PlatformDependencyManager::checkDependenciesWithYum(const StringList& inLis
 	showInfo("system");
 
 	std::string installed;
-	getDataWithCache(installed, inList, [this, &inList]() {
+	getDataWithCache(installed, inList, [&inList]() {
 		auto yum = Files::which("yum");
 		if (Files::pathExists(yum))
 		{
