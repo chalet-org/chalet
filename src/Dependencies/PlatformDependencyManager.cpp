@@ -267,13 +267,13 @@ bool PlatformDependencyManager::isSupportedSystemValid(const SupportedSystem sup
 PlatformDependencyManager::SupportedSystem PlatformDependencyManager::getSupportedSystemFromString(const std::string& inKind) const noexcept
 {
 #if defined(CHALET_WIN32)
-	if (String::equals(Keys::ReqWindowsMSYS2, key))
+	if (String::equals(Keys::ReqWindowsMSYS2, inKind))
 		return SupportedSystem::WindowsMSYS2;
 #elif defined(CHALET_MACOS)
-	if (String::equals(Keys::ReqMacOSHomebrew, key))
+	if (String::equals(Keys::ReqMacOSHomebrew, inKind))
 		return SupportedSystem::MacOSHomebrew;
 
-	if (String::equals(Keys::ReqMacOSMacPorts, key))
+	if (String::equals(Keys::ReqMacOSMacPorts, inKind))
 		return SupportedSystem::MacOSMacPorts;
 #else
 	if (String::equals(Keys::ReqArchLinuxSystem, inKind))
