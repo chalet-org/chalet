@@ -293,6 +293,7 @@ dist/
 .vs/
 .vscode/
 .fleet/
+.zed/
 
 # Other
 .cache/
