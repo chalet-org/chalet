@@ -23,6 +23,7 @@ VSCodeExtensionAwarenessAdapter::VSCodeExtensionAwarenessAdapter(const bool inVs
 /*****************************************************************************/
 void VSCodeExtensionAwarenessAdapter::initialize()
 {
+	m_programPath = getProgramPath();
 	m_codePath = getCodePath();
 
 	auto extensions = getInstalledExtensions();
@@ -45,6 +46,10 @@ bool VSCodeExtensionAwarenessAdapter::vscodium() const noexcept
 }
 
 /*****************************************************************************/
+const std::string& VSCodeExtensionAwarenessAdapter::programPath() const noexcept
+{
+	return m_programPath;
+}
 const std::string& VSCodeExtensionAwarenessAdapter::codePath() const noexcept
 {
 	return m_codePath;
@@ -82,7 +87,7 @@ bool VSCodeExtensionAwarenessAdapter::installChaletExtension()
 }
 
 /*****************************************************************************/
-std::string VSCodeExtensionAwarenessAdapter::getCodePath() const
+std::string VSCodeExtensionAwarenessAdapter::getProgramPath() const
 {
 	auto codeShell = m_vscodium ? "codium" : "code";
 
@@ -100,6 +105,34 @@ std::string VSCodeExtensionAwarenessAdapter::getCodePath() const
 		{
 			auto appData = Environment::get("APPDATA");
 			code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
+		}
+
+		if (!Files::pathExists(code))
+			code.clear();
+	}
+#endif
+	return code;
+}
+
+/*****************************************************************************/
+std::string VSCodeExtensionAwarenessAdapter::getCodePath() const
+{
+	auto codeShell = m_vscodium ? "codium" : "code";
+
+	// auto project = Files::getCanonicalPath(inProject);
+	auto code = Files::which(codeShell);
+#if defined(CHALET_WIN32)
+	if (code.empty())
+	{
+		if (m_vscodium)
+		{
+			auto programFiles = Environment::getProgramFiles();
+			code = Files::getCanonicalPath(fmt::format("{}/VSCodium/bin/codium.cmd", programFiles));
+		}
+		else
+		{
+			auto appData = Environment::get("APPDATA");
+			code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/bin/code.cmd", appData));
 		}
 
 		if (!Files::pathExists(code))

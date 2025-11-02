@@ -14,6 +14,7 @@ struct VSCodeExtensionAwarenessAdapter
 	void initialize();
 
 	bool vscodium() const noexcept;
+	const std::string& programPath() const noexcept;
 	const std::string& codePath() const noexcept;
 
 	bool chaletExtensionInstalled() const noexcept;
@@ -22,9 +23,11 @@ struct VSCodeExtensionAwarenessAdapter
 private:
 	bool installChaletExtension();
 
+	std::string getProgramPath() const;
 	std::string getCodePath() const;
 	StringList getInstalledExtensions() const;
 
+	std::string m_programPath;
 	std::string m_codePath;
 
 	bool m_vscodium = false;

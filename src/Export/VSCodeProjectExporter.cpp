@@ -125,7 +125,7 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	UNUSED(inProject);
 
 	const auto& cwd = workingDirectory();
-	auto& code = m_extensionAdapter.codePath();
+	auto& code = m_extensionAdapter.programPath();
 	if (!code.empty())
 		return Process::runMinimalOutputWithoutWait({ code, cwd });
 	else
