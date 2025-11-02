@@ -5,7 +5,11 @@
 
 #include "Export/ZedProjectExporter.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
+#include "Export/Zed/ZedDebugGen.hpp"
+#include "Export/Zed/ZedSettingsGen.hpp"
+#include "Export/Zed/ZedTasksGen.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/BuildConfiguration.hpp"
@@ -58,13 +62,36 @@ bool ZedProjectExporter::generateProjectFiles()
 	if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
 		return false;
 
+	auto& debugState = m_exportAdapter->getDebugState();
+
+	bool allowedEnvironment = !debugState.environment->isEmscripten();
+	if (debugState.configuration.debugSymbols() && allowedEnvironment)
 	{
-		// FleetWorkspaceGen workspaceGen(*m_exportAdapter);
-		// if (!workspaceGen.saveToPath(m_directory))
-		// {
-		// 	Diagnostic::error("There was a problem creating the Fleet workspace files.");
-		// 	return false;
-		// }
+		constexpr bool executablesOnly = true;
+		const IBuildTarget* runnableTarget = debugState.getFirstValidRunTarget(executablesOnly);
+		if (runnableTarget != nullptr)
+		{
+			ZedDebugGen debugJson(*m_exportAdapter);
+			if (!debugJson.saveToFile(fmt::format("{}/debug.json", m_directory)))
+			{
+				Diagnostic::error("There was a problem saving the debug.json file.");
+				return false;
+			}
+		}
+	}
+
+	ZedTasksGen tasksJson(*m_exportAdapter);
+	if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the tasks.json file.");
+		return false;
+	}
+
+	ZedSettingsGen settingsJson(debugState);
+	if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
+	{
+		Diagnostic::error("There was a problem saving the settings.json file.");
+		return false;
 	}
 
 	if (!copyExportedDirectoryToRootWithOutput(".zed"))
