@@ -59,8 +59,8 @@ bool ZedProjectExporter::generateProjectFiles()
 	if (output.empty())
 		return false;
 
-	if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
-		return false;
+	// if (!saveSchemasToDirectory(fmt::format("{}/schema", m_directory)))
+	// 	return false;
 
 	auto& debugState = m_exportAdapter->getDebugState();
 

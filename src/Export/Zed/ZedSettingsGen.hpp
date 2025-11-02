@@ -16,6 +16,8 @@ struct ZedSettingsGen
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
+	std::string getRemoteSchemaPath(const std::string& inFile) const;
+
 	const BuildState& m_state;
 };
 }

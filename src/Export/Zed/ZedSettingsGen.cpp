@@ -8,6 +8,8 @@
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildState.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "System/DefinesGithub.hpp"
+#include "System/DefinesVersion.hpp"
 #include "System/Files.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -30,9 +32,10 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 		jJsonFileTypes.push_back(m_state.inputs.settingsFile());
 	}
 
+	// CHALET_VERSION
 	{
-		auto chaletJsonSchema = fmt::format(".zed/schema/chalet.schema.json");
-		auto chaletSettingsJsonSchema = fmt::format(".zed/schema/chalet-settings.schema.json");
+		auto chaletJsonSchema = getRemoteSchemaPath("chalet.schema.json");
+		auto chaletSettingsJsonSchema = getRemoteSchemaPath("chalet-settings.schema.json");
 
 		auto& jLsp = jRoot["lsp"] = Json::object();
 
@@ -45,19 +48,21 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 			auto& jJson = jSettings["json"] = Json::object();
 			auto& jSchemas = jJson["schemas"] = Json::array();
 
-			const auto& cwd = m_state.inputs.workingDirectory();
+			// const auto& cwd = m_state.inputs.workingDirectory();
 			{
 				auto jSettingsFile = Json::object();
 				auto& jFileMatch = jSettingsFile["fileMatch"] = Json::array();
-				jFileMatch.push_back("/.chaletrc");
-				jSettingsFile["url"] = fmt::format("..{}/{}", cwd, chaletSettingsJsonSchema);
+				jFileMatch.push_back(".chaletrc");
+				jSettingsFile["url"] = chaletSettingsJsonSchema;
+				// jSettingsFile["url"] = fmt::format("..{}/{}", cwd, chaletSettingsJsonSchema);
 				jSchemas.emplace_back(std::move(jSettingsFile));
 			}
 			{
 				auto jInputFile = Json::object();
 				auto& jFileMatch = jInputFile["fileMatch"] = Json::array();
-				jFileMatch.push_back("/chalet.json");
-				jInputFile["url"] = fmt::format("..{}/{}", cwd, chaletJsonSchema);
+				jFileMatch.push_back("chalet.json");
+				jInputFile["url"] = chaletJsonSchema;
+				// jInputFile["url"] = fmt::format("..{}/{}", cwd, chaletJsonSchema);
 				jSchemas.emplace_back(std::move(jInputFile));
 			}
 		}
@@ -70,7 +75,7 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 
 			{
 				auto& jArray = jSchemas[chaletJsonSchema] = Json::array();
-				jArray.emplace_back("/chalet.yaml");
+				jArray.emplace_back("chalet.yaml");
 			}
 		}
 	}
@@ -78,4 +83,9 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 	return JsonFile::saveToFile(jRoot, inFilename, 1);
 }
 
+/*****************************************************************************/
+std::string ZedSettingsGen::getRemoteSchemaPath(const std::string& inFile) const
+{
+	return fmt::format("{}/refs/tags/v{}/schema/{}", CHALET_GITHUB_RAW_ROOT, CHALET_VERSION, inFile);
+}
 }

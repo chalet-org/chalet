@@ -7,6 +7,7 @@
 
 #include "State/AncillaryTools.hpp"
 #include "State/BuildState.hpp"
+#include "System/DefinesGithub.hpp"
 #include "Terminal/Output.hpp"
 
 namespace chalet
@@ -27,6 +28,7 @@ void MacosNotarizationMsg::showMessage(const std::string& inFile)
 
 	if (m_state.tools.xcodeVersionMajor() < 13)
 	{
+		auto githubRoot = CHALET_GITHUB_ROOT;
 		auto message = fmt::format(R"text(
    {color}To notarize, please do the following:{reset}
    1. Make note of the bundle id used in your Info.plist (ie. com.company.myapp)
@@ -36,10 +38,11 @@ void MacosNotarizationMsg::showMessage(const std::string& inFile)
    5. Staple your ticket: {color}xcrun stapler staple {file}{reset}
 
    {dim}If the above is inaccurate or out of date, please open an issue:
-   https://github.com/chalet-org/chalet/issues{reset})text",
+   {githubRoot}/issues{reset})text",
 			fmt::arg("file", inFile),
 			FMT_ARG(color),
 			FMT_ARG(dim),
+			FMT_ARG(githubRoot),
 			FMT_ARG(reset));
 
 		Output::print(Color::Reset, message);

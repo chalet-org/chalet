@@ -9,6 +9,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Process.hpp"
 #include "State/CentralState.hpp"
+#include "System/DefinesGithub.hpp"
 #include "System/DefinesVersion.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
@@ -46,7 +47,7 @@ void UpdateNotifier::checkForUpdates()
 			"ls-remote",
 			"--refs",
 			"--tags",
-			"https://github.com/chalet-org/chalet",
+			CHALET_GITHUB_ROOT,
 		};
 		auto output = Process::runOutput(cmd);
 		if (output.empty())
