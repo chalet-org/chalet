@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Export/IProjectExporter.hpp"
+#include "Export/VSCode/VSCodeExtensionAwarenessAdapter.hpp"
 
 namespace chalet
 {
@@ -21,6 +22,6 @@ protected:
 	virtual bool openProjectFilesInEditor(const std::string& inProject) final;
 
 private:
-	bool m_vscodium = false;
+	VSCodeExtensionAwarenessAdapter m_extensionAdapter;
 };
 }

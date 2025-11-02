@@ -16,8 +16,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeTasksGen::VSCodeTasksGen(const ExportAdapter& inExportAdapter) :
-	m_exportAdapter(inExportAdapter)
+VSCodeTasksGen::VSCodeTasksGen(const ExportAdapter& inExportAdapter, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter) :
+	m_exportAdapter(inExportAdapter),
+	m_extensionAdapter(inExtensionAdapter)
 {
 }
 
@@ -47,9 +48,14 @@ Json VSCodeTasksGen::makeRunConfiguration(const ExportRunConfiguration& inRunCon
 	ret["label"] = m_exportAdapter.getRunConfigLabel(inRunConfig);
 	ret["type"] = "process";
 	ret["group"] = "build";
-	ret["problemMatcher"] = {
-		getProblemMatcher(),
-	};
+
+	if (m_extensionAdapter.cppToolsExtensionInstalled())
+	{
+		ret["problemMatcher"] = {
+			getProblemMatcher(),
+		};
+	}
+
 	ret["command"] = m_exportAdapter.getRunConfigExec();
 	ret["args"] = m_exportAdapter.getRunConfigArguments(inRunConfig);
 

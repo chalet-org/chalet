@@ -23,12 +23,10 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const bool inVsCodium) :
+VSCodeLaunchGen::VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter) :
 	m_exportAdapter(inExportAdapter),
-	m_vscodium(inVsCodium)
-{
-	UNUSED(m_vscodium);
-}
+	m_extensionAdapter(inExtensionAdapter)
+{}
 
 /*****************************************************************************/
 bool VSCodeLaunchGen::saveToFile(const std::string& inFilename) const
@@ -58,14 +56,14 @@ bool VSCodeLaunchGen::getConfiguration(Json& outJson, const BuildState& inState)
 {
 	outJson = Json::object();
 
-	if (m_vscodium)
+	if (m_extensionAdapter.cppToolsExtensionInstalled())
 	{
-		if (!setCodeLLDBOptions(outJson, inState))
+		if (!setCppToolsDebugOptions(outJson, inState))
 			return false;
 	}
 	else
 	{
-		if (!setCppToolsDebugOptions(outJson, inState))
+		if (!setCodeLLDBOptions(outJson, inState))
 			return false;
 	}
 

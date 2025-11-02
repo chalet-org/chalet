@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Export/ExportAdapter.hpp"
+#include "Export/VSCode/VSCodeExtensionAwarenessAdapter.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -15,7 +16,7 @@ struct IBuildTarget;
 
 struct VSCodeLaunchGen
 {
-	VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const bool inVsCodium);
+	VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter);
 
 	bool saveToFile(const std::string& inFilename) const;
 
@@ -36,7 +37,6 @@ private:
 	bool willUseGDB(const BuildState& inState) const;
 
 	const ExportAdapter& m_exportAdapter;
-
-	bool m_vscodium = false;
+	const VSCodeExtensionAwarenessAdapter& m_extensionAdapter;
 };
 }
