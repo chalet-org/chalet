@@ -47,9 +47,6 @@ bool ZedDebugGen::saveToFile(const std::string& inFilename) const
 }
 
 /*****************************************************************************/
-// Note: The C/C++ is not licensed to run inside of VSCodium, so we must use CodeLLDB instead
-//   CodeLLDB also works on Windows with binaries generated from MSVC
-//
 bool ZedDebugGen::getConfiguration(Json& outJson, const BuildState& inState) const
 {
 	outJson = Json::object();

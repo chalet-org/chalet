@@ -39,8 +39,6 @@ bool ZedTasksGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
-//
 Json ZedTasksGen::makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const
 {
 	Json ret = Json::object();
