@@ -25,7 +25,7 @@ namespace chalet
 /*****************************************************************************/
 VSCodeProjectExporter::VSCodeProjectExporter(const CommandLineInputs& inInputs) :
 	IProjectExporter(inInputs, inInputs.exportKind()),
-	m_vscodium(inInputs.exportKind() == ExportKind::VSCodiumJSON)
+	m_extensionAdapter(inInputs.exportKind() == ExportKind::VSCodiumJSON)
 {
 }
 
@@ -44,7 +44,7 @@ std::string VSCodeProjectExporter::getMainProjectOutput()
 /*****************************************************************************/
 std::string VSCodeProjectExporter::getProjectTypeName() const
 {
-	if (m_vscodium)
+	if (m_extensionAdapter.vscodium())
 		return std::string("VSCodium");
 	else
 		return std::string("Visual Studio Code");
@@ -66,11 +66,21 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		return false;
 
 	auto& debugState = m_exportAdapter->getDebugState();
-	VSCodeCCppPropertiesGen cCppProperties(debugState, *m_exportAdapter);
-	if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
+
+	// This is void because we don't ultimately care if VS Code is installed.
+	//   we should still be able to export most things
+	m_extensionAdapter.initialize();
+
+	if (m_extensionAdapter.cppToolsExtensionInstalled())
 	{
-		Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");
-		return false;
+		// This is only needed for the C/C++ extension
+
+		VSCodeCCppPropertiesGen cCppProperties(debugState, *m_exportAdapter);
+		if (!cCppProperties.saveToFile(fmt::format("{}/c_cpp_properties.json", m_directory)))
+		{
+			Diagnostic::error("There was a problem saving the c_cpp_properties.json file.");
+			return false;
+		}
 	}
 
 	bool allowedEnvironment = !debugState.environment->isEmscripten();
@@ -80,7 +90,7 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		const IBuildTarget* runnableTarget = debugState.getFirstValidRunTarget(executablesOnly);
 		if (runnableTarget != nullptr)
 		{
-			VSCodeLaunchGen launchJson(*m_exportAdapter, m_vscodium);
+			VSCodeLaunchGen launchJson(*m_exportAdapter, m_extensionAdapter);
 			if (!launchJson.saveToFile(fmt::format("{}/launch.json", m_directory)))
 			{
 				Diagnostic::error("There was a problem saving the launch.json file.");
@@ -89,22 +99,18 @@ bool VSCodeProjectExporter::generateProjectFiles()
 		}
 	}
 
-	VSCodeTasksGen tasksJson(*m_exportAdapter);
+	VSCodeTasksGen tasksJson(*m_exportAdapter, m_extensionAdapter);
 	if (!tasksJson.saveToFile(fmt::format("{}/tasks.json", m_directory)))
 	{
 		Diagnostic::error("There was a problem saving the tasks.json file.");
 		return false;
 	}
 
-	auto clangFormat = fmt::format("{}/.clang-format", debugState.inputs.workingDirectory());
-	if (Files::pathExists(clangFormat))
+	VSCodeSettingsGen settingsJson(debugState, m_extensionAdapter);
+	if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
 	{
-		VSCodeSettingsGen settingsJson(debugState);
-		if (!settingsJson.saveToFile(fmt::format("{}/settings.json", m_directory)))
-		{
-			Diagnostic::error("There was a problem saving the settings.json file.");
-			return false;
-		}
+		Diagnostic::error("There was a problem saving the settings.json file.");
+		return false;
 	}
 
 	if (!copyExportedDirectoryToRootWithOutput(".vscode"))
@@ -119,28 +125,7 @@ bool VSCodeProjectExporter::openProjectFilesInEditor(const std::string& inProjec
 	UNUSED(inProject);
 
 	const auto& cwd = workingDirectory();
-	auto codeShell = m_vscodium ? "codium" : "code";
-
-	// auto project = Files::getCanonicalPath(inProject);
-	auto code = Files::which(codeShell);
-#if defined(CHALET_WIN32)
-	if (code.empty())
-	{
-		if (m_vscodium)
-		{
-			auto programFiles = Environment::getProgramFiles();
-			code = Files::getCanonicalPath(fmt::format("{}/VSCodium/VSCodium.exe", programFiles));
-		}
-		else
-		{
-			auto appData = Environment::get("APPDATA");
-			code = Files::getCanonicalPath(fmt::format("{}/../Local/Programs/Microsoft VS Code/Code.exe", appData));
-		}
-
-		if (!Files::pathExists(code))
-			code.clear();
-	}
-#endif
+	auto& code = m_extensionAdapter.codePath();
 	if (!code.empty())
 		return Process::runMinimalOutputWithoutWait({ code, cwd });
 	else

@@ -16,8 +16,9 @@
 namespace chalet
 {
 /*****************************************************************************/
-VSCodeTasksGen::VSCodeTasksGen(const ExportAdapter& inExportAdapter) :
-	m_exportAdapter(inExportAdapter)
+VSCodeTasksGen::VSCodeTasksGen(const ExportAdapter& inExportAdapter, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter) :
+	m_exportAdapter(inExportAdapter),
+	m_extensionAdapter(inExtensionAdapter)
 {
 }
 
@@ -41,17 +42,20 @@ bool VSCodeTasksGen::saveToFile(const std::string& inFilename)
 }
 
 /*****************************************************************************/
-// Note: We're calling Chalet, so we don't need the target's working directory, we need the cwd
-//
 Json VSCodeTasksGen::makeRunConfiguration(const ExportRunConfiguration& inRunConfig) const
 {
 	Json ret = Json::object();
 	ret["label"] = m_exportAdapter.getRunConfigLabel(inRunConfig);
 	ret["type"] = "process";
 	ret["group"] = "build";
-	ret["problemMatcher"] = {
-		getProblemMatcher(),
-	};
+
+	if (m_extensionAdapter.cppToolsExtensionInstalled())
+	{
+		ret["problemMatcher"] = {
+			getProblemMatcher(),
+		};
+	}
+
 	ret["command"] = m_exportAdapter.getRunConfigExec();
 	ret["args"] = m_exportAdapter.getRunConfigArguments(inRunConfig);
 

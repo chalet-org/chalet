@@ -44,6 +44,7 @@ OrderedDictionary<ExportKind> getExportKinds()
 #endif
 		{ "clion", ExportKind::CLion },
 		{ "fleet", ExportKind::Fleet },
+		{ "zed", ExportKind::Zed },
 		{ "codeblocks", ExportKind::CodeBlocks },
 	};
 }

@@ -5,17 +5,26 @@
 
 #pragma once
 
+#include "Export/VSCode/VSCodeExtensionAwarenessAdapter.hpp"
+#include "Json/JsonFile.hpp"
+
 namespace chalet
 {
 class BuildState;
 
 struct VSCodeSettingsGen
 {
-	explicit VSCodeSettingsGen(const BuildState& inState);
+	VSCodeSettingsGen(const BuildState& inState, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter);
 
-	bool saveToFile(const std::string& inFilename) const;
+	bool saveToFile(const std::string& inFilename);
 
 private:
+	std::string getRemoteSchemaPath(const std::string& inFile) const;
+
+	void setFormatOnSave(Json& outJson) const;
+	void setFallbackSchemaSettings(Json& outJson) const;
+
 	const BuildState& m_state;
+	const VSCodeExtensionAwarenessAdapter& m_extensionAdapter;
 };
 }

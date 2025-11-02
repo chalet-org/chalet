@@ -6,13 +6,12 @@
 #pragma once
 
 #include "Export/IProjectExporter.hpp"
-#include "Export/VSCode/VSCodeExtensionAwarenessAdapter.hpp"
 
 namespace chalet
 {
-struct VSCodeProjectExporter final : public IProjectExporter
+struct ZedProjectExporter final : public IProjectExporter
 {
-	explicit VSCodeProjectExporter(const CommandLineInputs& inInputs);
+	explicit ZedProjectExporter(const CommandLineInputs& inInputs);
 
 protected:
 	virtual std::string getMainProjectOutput() final;
@@ -22,6 +21,6 @@ protected:
 	virtual bool openProjectFilesInEditor(const std::string& inProject) final;
 
 private:
-	VSCodeExtensionAwarenessAdapter m_extensionAdapter;
+	//
 };
 }

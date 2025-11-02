@@ -6,7 +6,6 @@
 #pragma once
 
 #include "Export/ExportAdapter.hpp"
-#include "Export/VSCode/VSCodeExtensionAwarenessAdapter.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -14,20 +13,15 @@ namespace chalet
 class BuildState;
 struct IBuildTarget;
 
-struct VSCodeLaunchGen
+struct ZedDebugGen
 {
-	VSCodeLaunchGen(const ExportAdapter& inExportAdapter, const VSCodeExtensionAwarenessAdapter& inExtensionAdapter);
+	explicit ZedDebugGen(const ExportAdapter& inExportAdapter);
 
 	bool saveToFile(const std::string& inFilename) const;
 
 private:
 	bool getConfiguration(Json& outConfiguration, const BuildState& inState) const;
-	std::string getCppToolsDebugName(const BuildState& inState) const;
-	std::string getCppToolsDebugType(const BuildState& inState) const;
-	std::string getDebuggerPath(const BuildState& inState) const;
 	bool setCodeLLDBOptions(Json& outJson, const BuildState& inState) const;
-	bool setCppToolsDebugOptions(Json& outJson, const BuildState& inState) const;
-	void setPreLaunchTask(Json& outJson) const;
 	std::string getWorkingDirectory(const BuildState& inState) const;
 	bool setProgramPathAndArguments(Json& outJson, const BuildState& inState) const;
 	std::string getEnvFilePath(const BuildState& inState) const;
@@ -37,6 +31,5 @@ private:
 	bool willUseGDB(const BuildState& inState) const;
 
 	const ExportAdapter& m_exportAdapter;
-	const VSCodeExtensionAwarenessAdapter& m_extensionAdapter;
 };
 }
