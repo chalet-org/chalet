@@ -749,6 +749,11 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 	auto archiveExt = m_state.environment->getArchiveExtension();
 	auto sharedExt = m_state.environment->getSharedLibraryExtension();
 
+	// Some build systems incorrectly build MSVC libraries with the wrong extension.
+	// We'll allow it here, but it the linker fails, it's on the user
+	//
+	auto archiveExtWrong = ".a";
+
 	StringList links = m_project.links();
 	for (auto& link : m_project.staticLinks())
 	{
@@ -784,7 +789,7 @@ StringList CommandAdapterMSVC::getLinks(const bool inIncludeCore) const
 
 			std::string toLink = Files::getCanonicalPath(link);
 
-			if (!String::endsWith(archiveExt, link))
+			if (!String::endsWith(archiveExt, link) && !String::endsWith(archiveExtWrong, link))
 				toLink += archiveExt;
 
 			bool isPathLinkAndSame = link.size() == toLink.size();
