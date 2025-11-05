@@ -47,8 +47,9 @@ bool PackageManager::initialize()
 	//
 	const bool hasPackages = !m_impl->packages.empty();
 	const bool hasPackagePaths = !m_impl->packagePaths.empty();
+	const bool requiresPackages = !m_impl->packageDeps.empty();
 
-	if (hasPackages || hasPackagePaths)
+	if (hasPackages || hasPackagePaths || requiresPackages)
 	{
 		if (!resolvePackagesFromSubPackagePathsAndChaletTargets())
 			return false;
@@ -64,7 +65,6 @@ bool PackageManager::initialize()
 	}
 
 	auto& route = m_state.inputs.route();
-
 	if (!route.isCheck())
 	{
 		// Clear packages at this point. in theory, we should no longer need them
