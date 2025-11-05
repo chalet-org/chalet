@@ -177,21 +177,18 @@ bool BuildEnvironmentVisualStudio::getCompilerVersionAndDescription(CompilerInfo
 		if (splitOutput.size() < 2)
 			return std::string();
 
-		auto start = splitOutput[1].find("Version");
-		auto end = splitOutput[1].find(" for ");
-		if (start != std::string::npos && end != std::string::npos)
+		// We loop through the words since this string could be a different locale
+		//
+		auto splitVersionLine = String::split(splitOutput[1], ' ');
+		for (auto& line : splitVersionLine)
 		{
-			start += 8;
-			auto version = splitOutput[1].substr(start, end - start); // cl.exe version
-			version = version.substr(0, version.find_first_not_of("0123456789."));
-			return version;
+			if (line.find_first_not_of("0123456789.") != std::string::npos)
+				continue;
 
-			// const auto arch = splitOutput[1].substr(end + 5);
+			return line;
 		}
-		else
-		{
-			return std::string();
-		}
+
+		return std::string();
 	});
 
 	if (!cachedVersion.empty())
