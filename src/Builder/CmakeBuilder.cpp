@@ -101,12 +101,12 @@ bool CmakeBuilder::run()
 
 	const auto& name = m_target.name();
 
-	const bool isNinja = usesNinja();
+	m_supportedGenerator = getSupportedGenerator();
 
 	static const char kNinjaStatus[] = "NINJA_STATUS";
 	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
 
-	auto onRunFailure = [this, &oldNinjaStatus, &isNinja](const bool inRemoveDir = true) -> bool {
+	auto onRunFailure = [this, &oldNinjaStatus](const bool inRemoveDir = true) -> bool {
 #if defined(CHALET_WIN32)
 		Output::previousLine();
 #endif
@@ -116,7 +116,7 @@ bool CmakeBuilder::run()
 
 		Output::lineBreak();
 
-		if (isNinja)
+		if (m_supportedGenerator == SupportedGenerator::Ninja)
 			Environment::set(kNinjaStatus, oldNinjaStatus);
 
 		if (Output::quietNonBuild() && Output::showCommands())
@@ -140,7 +140,7 @@ bool CmakeBuilder::run()
 		if (outDirectoryDoesNotExist)
 			Files::makeDirectory(buildDir);
 
-		if (isNinja)
+		if (m_supportedGenerator == SupportedGenerator::Ninja)
 		{
 			const auto& color = Output::getAnsiStyle(Output::theme().build);
 			Environment::set(kNinjaStatus, fmt::format("   [%f/%t] {}", color));
@@ -182,7 +182,7 @@ bool CmakeBuilder::run()
 		if (!result)
 			return onRunFailure(false);
 
-		if (isNinja)
+		if (m_supportedGenerator == SupportedGenerator::Ninja)
 			Environment::set(kNinjaStatus, oldNinjaStatus);
 
 		if (Output::quietNonBuild() && Output::showCommands())
@@ -196,19 +196,34 @@ bool CmakeBuilder::run()
 }
 
 /*****************************************************************************/
-std::string CmakeBuilder::getGenerator() const
+std::string CmakeBuilder::getGeneratorName() const
 {
-	const bool isNinja = usesNinja();
-
-	std::string ret;
-	if (isNinja)
+	switch (m_supportedGenerator)
 	{
-		ret = "Ninja";
-	}
+		case SupportedGenerator::Ninja:
+			return "Ninja";
+		case SupportedGenerator::Makefiles: {
 #if defined(CHALET_WIN32)
-	// The frustrating thing about these is that they always output files in the build configuration folder
-	//
-	/*else if (m_state.environment->isMsvc())
+			if (m_state.toolchain.makeIsJom())
+				return "NMake Makefiles JOM";
+			else if (m_state.toolchain.makeIsNMake())
+				return "NMake Makefiles";
+			else
+				return "MinGW Makefiles";
+#else
+			return "Unix Makefiles";
+#endif
+		}
+		case SupportedGenerator::None:
+		default: break;
+	}
+
+		// Old
+
+#if defined(CHALET_WIN32)
+		// The frustrating thing about these is that they always output files in the build configuration folder
+		//
+		/*if (m_state.environment->isMsvc())
 	{
 		// Validated in CMakeTarget::validate
 		const auto& version = m_state.toolchain.version();
@@ -242,38 +257,18 @@ std::string CmakeBuilder::getGenerator() const
 		}
 	}*/
 #endif
-	else
-	{
-#if defined(CHALET_WIN32)
-		if (m_state.toolchain.makeIsJom())
-		{
-			ret = "NMake Makefiles JOM";
-		}
-		else if (m_state.toolchain.makeIsNMake())
-		{
-			ret = "NMake Makefiles";
-		}
-		else
-		{
-			ret = "MinGW Makefiles";
-		}
-#else
-		ret = "Unix Makefiles";
-#endif
-	}
 
-	return ret;
+	return std::string();
 }
 
 /*****************************************************************************/
 std::string CmakeBuilder::getArchitecture() const
 {
-	const bool isNinja = usesNinja();
-
 	std::string ret;
 
 	// Note: The -A flag is only really used by VS
-	if (!isNinja && m_state.environment->isMsvc())
+	bool isVisualStudio = m_supportedGenerator == SupportedGenerator::VisualStudio;
+	if (isVisualStudio && m_state.environment->isMsvc())
 	{
 		switch (m_state.info.targetArchitecture())
 		{
@@ -312,7 +307,7 @@ StringList CmakeBuilder::getGeneratorCommand(const std::string& inLocation, cons
 {
 	auto& cmake = m_state.toolchain.cmake();
 
-	auto generator = getGenerator();
+	auto generator = getGeneratorName();
 	chalet_assert(!generator.empty(), "CMake Generator is empty");
 
 	StringList ret{ getQuotedPath(cmake), "-G", getQuotedPath(generator) };
@@ -493,13 +488,13 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 	bool needsCMakeProgram = !m_state.environment->isMsvc();
 	if (needsCMakeProgram && !isDefined["CMAKE_MAKE_PROGRAM"])
 	{
-		if (usesNinja())
+		if (m_supportedGenerator == SupportedGenerator::Ninja)
 		{
 			const auto& ninja = m_state.toolchain.ninja();
 			if (!ninja.empty())
 				outList.emplace_back(fmt::format("-DCMAKE_MAKE_PROGRAM={}", getQuotedPath(ninja)));
 		}
-		else
+		else if (m_supportedGenerator == SupportedGenerator::Makefiles)
 		{
 			const auto& make = m_state.toolchain.make();
 			if (!make.empty())
@@ -726,8 +721,6 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 {
 	auto& cmake = m_state.toolchain.cmake();
 	const auto maxJobs = m_state.info.maxJobs();
-	const bool isMake = m_state.toolchain.strategy() == StrategyType::Makefile;
-	const bool isNinja = usesNinja();
 
 	auto buildLocation = Files::getAbsolutePath(inOutputLocation);
 	StringList ret{ getQuotedPath(cmake), "--build", getQuotedPath(buildLocation), "-j", std::to_string(maxJobs) };
@@ -750,7 +743,7 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		}
 	}
 
-	if (isNinja)
+	if (m_supportedGenerator == SupportedGenerator::Ninja)
 	{
 		ret.emplace_back("--");
 
@@ -760,24 +753,27 @@ StringList CmakeBuilder::getBuildCommand(const std::string& inOutputLocation) co
 		ret.emplace_back("-k");
 		ret.emplace_back(m_state.info.keepGoing() ? "0" : "1");
 	}
-	else if (isMake)
+	else if (m_supportedGenerator == SupportedGenerator::Makefiles)
 	{
 		ret.emplace_back("--");
 
-		if (m_state.toolchain.makeVersionMajor() >= 4)
-			ret.emplace_back("--output-sync=target");
-
-		if (m_state.info.keepGoing())
-			ret.emplace_back("--keep-going");
-
-#if defined(CHALET_WIN32)
-		if (!m_state.toolchain.makeIsNMake())
+		if (m_state.toolchain.makeIsNMake())
 		{
+			if (m_state.info.keepGoing())
+				ret.emplace_back("/K");
+		}
+		else
+		{
+			if (m_state.toolchain.makeVersionMajor() >= 4)
+				ret.emplace_back("--output-sync=target");
+
+			if (m_state.info.keepGoing())
+				ret.emplace_back("--keep-going");
+
 			ret.emplace_back("--no-builtin-rules");
 			ret.emplace_back("--no-builtin-variables");
 			ret.emplace_back("--no-print-directory");
 		}
-#endif
 	}
 
 	// LOG(String::join(ret));
@@ -849,32 +845,40 @@ std::string CmakeBuilder::getQuotedPath(const std::string& inPath) const
 }
 
 /*****************************************************************************/
-bool CmakeBuilder::usesNinja() const
+CmakeBuilder::SupportedGenerator CmakeBuilder::getSupportedGenerator() const
 {
+	// If the strategy is Ninja, we've already checked the exectuable
+	auto strategy = m_state.toolchain.strategy();
+	if (strategy == StrategyType::Ninja)
+		return SupportedGenerator::Ninja;
+
 	// Note: Some CMake projects might vary between Visual Studio and Ninja generators
 	//   The MSBuild strategy doesn't actually care if Cmake projects are built with visual studio since
-	//   it just executes cmake as a script, so we'll just use Ninja in that scenario
+	//   it just executes CMake as a script, so we'll just use Ninja in that scenario
 	//
-	auto strategy = m_state.toolchain.strategy();
-	if (strategy == StrategyType::Ninja
-		|| strategy == StrategyType::MSBuild
-		|| strategy == StrategyType::XcodeBuild)
-		return true;
+	bool tryUsingNinjaAnyway = strategy == StrategyType::Native || strategy == StrategyType::MSBuild || strategy == StrategyType::XcodeBuild;
 
-	if (strategy == StrategyType::Native
+	// Additionally, on Windows, Ninja has been bundled for many years now, so we'll
+	//   try to use it, otherwise fall back to NMake
+	//
 #if defined(CHALET_WIN32)
-		|| m_state.environment->isMsvc()
+	tryUsingNinjaAnyway |= m_state.environment->isMsvc();
 #endif
-	)
+
+	if (tryUsingNinjaAnyway)
 	{
 		auto& ninjaExec = m_state.toolchain.ninja();
 		if (!ninjaExec.empty() && Files::pathExists(ninjaExec))
-			return true;
+			return SupportedGenerator::Ninja;
 	}
 
+	// Makefile variants
+	//
 	auto& makeExec = m_state.toolchain.make();
-	bool makeExists = !makeExec.empty() && Files::pathExists(makeExec);
-	return !makeExists;
+	if (!makeExec.empty() && Files::pathExists(makeExec))
+		return SupportedGenerator::Makefiles;
+
+	return SupportedGenerator::None;
 }
 
 /*****************************************************************************/

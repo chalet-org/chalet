@@ -27,12 +27,20 @@ public:
 	StringList getInstallCommand(const std::string& inOutputLocation) const;
 
 private:
+	enum class SupportedGenerator : u8
+	{
+		None,
+		Ninja,
+		Makefiles,
+		XCode,		  // Unused
+		VisualStudio, // Unused
+	};
 	bool dependencyHasUpdated() const;
 	StringList getGeneratorCommand(const std::string& inLocation, const std::string& inBuildFile) const;
 
 	std::string getLocation() const;
 
-	std::string getGenerator() const;
+	std::string getGeneratorName() const;
 	std::string getArchitecture() const;
 	void addCmakeDefines(StringList& outList) const;
 	std::string getCMakeCompatibleBuildConfiguration() const;
@@ -42,12 +50,14 @@ private:
 
 	const std::string& outputLocation() const;
 
-	bool usesNinja() const;
+	SupportedGenerator getSupportedGenerator() const;
 
 	const BuildState& m_state;
 	const CMakeTarget& m_target;
 
 	u32 m_cmakeVersionMajorMinor = 0;
+
+	SupportedGenerator m_supportedGenerator = SupportedGenerator::None;
 
 	bool m_quotedPaths = false;
 };
