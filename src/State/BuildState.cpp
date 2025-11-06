@@ -626,8 +626,7 @@ bool BuildState::initializeBuild()
 		Diagnostic::infoEllipsis("Configuring build");
 	}
 
-	auto chaletTarget = Environment::getString("__CHALET_TARGET");
-	m_isSubChaletTarget = !chaletTarget.empty() && String::equals("1", chaletTarget);
+	m_isSubChaletTarget = Environment::getChaletTargetFlag();
 
 	if (!info.initialize())
 		return false;

@@ -85,9 +85,11 @@ bool SubChaletBuilder::run()
 	const auto& name = m_target.name();
 
 	const auto oldPath = Environment::getPath();
+	const auto oldChaletParentCwd = Environment::getChaletParentWorkingDirectory();
+	const bool oldChaletTarget = Environment::getChaletTargetFlag();
 
-	Environment::set("__CHALET_PARENT_CWD", m_state.inputs.workingDirectory() + '/');
-	Environment::set("__CHALET_TARGET", "1");
+	Environment::setChaletParentWorkingDirectory(m_state.inputs.workingDirectory() + '/');
+	Environment::setChaletTargetFlag(true);
 
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("executable: {}", m_state.inputs.appPath()), false);
 	// Output::displayStyledSymbol(Output::theme().info, " ", fmt::format("name: {}", name), false);
@@ -102,10 +104,14 @@ bool SubChaletBuilder::run()
 	bool outDirectoryDoesNotExist = !Files::pathExists(outputLocation());
 	bool recheckChalet = m_target.recheck() || lastBuildFailed || dependencyUpdated;
 
-	auto onRunFailure = [&oldPath]() -> bool {
+	auto resetEnvironment = [&oldPath, &oldChaletParentCwd, &oldChaletTarget]() -> void {
 		Environment::setPath(oldPath);
-		Environment::set("__CHALET_PARENT_CWD", std::string());
-		Environment::set("__CHALET_TARGET", std::string());
+		Environment::setChaletParentWorkingDirectory(oldChaletParentCwd);
+		Environment::setChaletTargetFlag(oldChaletTarget);
+	};
+
+	auto onRunFailure = [&resetEnvironment]() -> bool {
+		resetEnvironment();
 
 		Output::lineBreak();
 		return false;
@@ -129,23 +135,17 @@ bool SubChaletBuilder::run()
 	{
 		auto cmd = getInstallCommand();
 		result = Process::run(cmd);
-		if (!result)
-			return onRunFailure();
 	}
 
-	if (result)
-	{
-		Environment::setPath(oldPath);
-
-		bool clean = m_state.inputs.route().isClean() && m_target.clean();
-		if (!clean)
-		{
-			Output::msgTargetUpToDate(name, &buildTimer);
-		}
-	}
-	else
-	{
+	if (!result)
 		return onRunFailure();
+
+	resetEnvironment();
+
+	bool clean = m_state.inputs.route().isClean() && m_target.clean();
+	if (!clean)
+	{
+		Output::msgTargetUpToDate(name, &buildTimer);
 	}
 
 	return result;
