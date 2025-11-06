@@ -187,6 +187,27 @@ std::string Environment::getProgramFilesX86()
 }
 
 /*****************************************************************************/
+std::string Environment::getChaletParentWorkingDirectory()
+{
+	return Environment::getString("__CHALET_PARENT_CWD");
+}
+void Environment::setChaletParentWorkingDirectory(const std::string& inValue)
+{
+	Environment::set("__CHALET_PARENT_CWD", inValue);
+}
+
+/*****************************************************************************/
+bool Environment::getChaletTargetFlag()
+{
+	auto result = Environment::getString("__CHALET_TARGET");
+	return !result.empty() && String::equals("1", result);
+}
+void Environment::setChaletTargetFlag(const bool inValue)
+{
+	Environment::set("__CHALET_TARGET", inValue ? "1" : std::string());
+}
+
+/*****************************************************************************/
 bool Environment::saveToEnvFile(const std::string& inOutputFile)
 {
 #if defined(CHALET_WIN32)

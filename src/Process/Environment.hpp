@@ -29,6 +29,12 @@ std::string getComSpec();
 std::string getProgramFiles();
 std::string getProgramFilesX86();
 
+std::string getChaletParentWorkingDirectory();
+void setChaletParentWorkingDirectory(const std::string& inValue);
+
+bool getChaletTargetFlag();
+void setChaletTargetFlag(const bool inValue);
+
 bool saveToEnvFile(const std::string& inOutputFile);
 void createDeltaEnvFile(const std::string& inBeforeFile, const std::string& inAfterFile, const std::string& inDeltaFile, const std::function<void(std::string&)>& onReadLine);
 void readEnvFileToDictionary(const std::string& inDeltaFile, Dictionary<std::string>& outVariables);
