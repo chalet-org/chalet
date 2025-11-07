@@ -70,8 +70,37 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 
 	const auto visualStudioVersionMajor = debugState.environment->getMajorVersion();
 
+	std::string runTargetName;
+	const IBuildTarget* runnableTarget = debugState.getFirstValidRunTarget(true);
+	if (runnableTarget != nullptr)
+	{
+		runTargetName = runnableTarget->name();
+	}
+
 	std::string vsConfigString;
 	std::string vsProjectsString;
+
+	auto addProjectToSolution = [this, &vsProjectsString](const std::string& name, const std::string& projectGUID) {
+		vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"vcxproj/{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
+			fmt::arg("projectTypeGUID", m_projectTypeGuid),
+			FMT_ARG(projectGUID),
+			FMT_ARG(name));
+
+		vsProjectsString += "EndProject\n";
+	};
+
+	bool runTargetFound = false;
+	if (!runTargetName.empty())
+	{
+		for (auto& [name, guid] : m_targetGuids)
+		{
+			if (String::equals(name, runTargetName))
+			{
+				addProjectToSolution(name, guid.toUpperCase());
+				runTargetFound = true;
+			}
+		}
+	}
 
 	if (!vsConfigs.empty())
 	{
@@ -91,12 +120,12 @@ bool VSSolutionGen::saveToFile(const std::string& inFilename)
 		for (auto& [name, guid] : m_targetGuids)
 		{
 			auto projectGUID = guid.toUpperCase();
-			vsProjectsString += fmt::format("Project(\"{{{projectTypeGUID}}}\") = \"{name}\", \"vcxproj/{name}.vcxproj\", \"{{{projectGUID}}}\"\n",
-				fmt::arg("projectTypeGUID", m_projectTypeGuid),
-				FMT_ARG(projectGUID),
-				FMT_ARG(name));
 
-			vsProjectsString += "EndProject\n";
+			bool isRunTarget = runTargetFound && String::equals(name, runTargetName);
+			if (!isRunTarget)
+			{
+				addProjectToSolution(name, projectGUID);
+			}
 
 			for (auto& conf : vsConfigs)
 			{
