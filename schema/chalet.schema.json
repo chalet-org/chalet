@@ -212,7 +212,7 @@
 						},
 						"template": {
 							"type": "string",
-							"description": "The location to an XDG Desktop Entry template. If the file does not exist, a basic one will be generated in its place.",
+							"description": "The location to an XDG Desktop Entry template. For example, 'app.desktop' If this file does not exist, a basic one will be generated in its place that can be edited later.",
 							"minLength": 1,
 							"default": "app.desktop"
 						}
