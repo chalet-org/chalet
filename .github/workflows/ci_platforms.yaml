@@ -149,7 +149,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13]
+        os: [macos-14]
         triplet: [arm64-apple-darwin, x86_64-apple-darwin, universal-apple-darwin]
         include:
           - triplet: arm64-apple-darwin
@@ -293,7 +293,7 @@ jobs:
           draft: false
           prerelease: ${{ env.IS_PRERELEASE }}
   homebrew-release:
-    runs-on: macos-13
+    runs-on: macos-14
     needs: [create-release, all-linux, all-macos, all-windows]
     steps:
       - name: "Checkout chalet-org/homebrew-chalet"
