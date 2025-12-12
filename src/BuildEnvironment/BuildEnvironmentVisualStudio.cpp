@@ -104,7 +104,7 @@ bool BuildEnvironmentVisualStudio::createFromVersion(const std::string& inVersio
 
 	m_config->setEnvVarsFileBefore(getCachePath("original.env"));
 	m_config->setEnvVarsFileAfter(getCachePath("all.env"));
-	m_config->setEnvVarsFileDelta(getVarsPath(m_config->detectedVersion()));
+	m_config->setEnvVarsFileDelta(getVarsPath(m_config->getEnvVarsHashKey()));
 
 	if (m_config->envVarsFileDeltaExists())
 		Diagnostic::infoEllipsis("Reading Microsoft{} Visual C/C++ Environment Cache", Unicode::registered());

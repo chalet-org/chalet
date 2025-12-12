@@ -225,35 +225,26 @@ std::string CmakeBuilder::getGeneratorName() const
 		//
 		/*if (m_state.environment->isMsvc())
 	{
-		// Validated in CMakeTarget::validate
-		const auto& version = m_state.toolchain.version();
-		if (String::startsWith("17.", version))
+		u32 year = m_state.inputs.getVisualStudioYear();
+		switch (year)
 		{
-			ret = "Visual Studio 17 2022";
-		}
-		else if (String::startsWith("16.", version))
-		{
-			ret = "Visual Studio 16 2019";
-		}
-		else if (String::startsWith("15.", version))
-		{
-			ret = "Visual Studio 15 2017";
-		}
-		else if (String::startsWith("14.", version))
-		{
-			ret = "Visual Studio 14 2015";
-		}
-		else if (String::startsWith("12.", version))
-		{
-			ret = "Visual Studio 12 2013";
-		}
-		else if (String::startsWith("11.", version))
-		{
-			ret = "Visual Studio 11 2012";
-		}
-		else if (String::startsWith("10.", version))
-		{
-			ret = "Visual Studio 10 2010";
+			case 2026:
+				return "Visual Studio 18 2026";
+			case 2022:
+				return "Visual Studio 17 2022";
+			case 2019:
+				return "Visual Studio 16 2019";
+			case 2017:
+				return "Visual Studio 15 2017";
+			case 2015:
+				return "Visual Studio 14 2015";
+			case 2013:
+				return "Visual Studio 12 2013";
+			case 2012:
+				return "Visual Studio 11 2012";
+			case 2010:
+				return "Visual Studio 10 2010";
+			default: break;
 		}
 	}*/
 #endif

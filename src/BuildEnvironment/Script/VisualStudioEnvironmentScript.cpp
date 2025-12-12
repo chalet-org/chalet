@@ -116,15 +116,6 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 
 	if (!m_envVarsFileDeltaExists)
 	{
-		auto getFirstVisualStudioPathFromVsWhere = [](const StringList& inCmd) -> std::string {
-			auto temp = Process::runOutput(inCmd);
-			if (temp.empty())
-				return temp;
-
-			auto split = String::split(temp, "\n");
-			return split.front();
-		};
-
 		if (isPreset())
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand(m_vsVersion);
@@ -132,7 +123,7 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
-			m_visualStudioPath = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
+			m_visualStudioPath = getVisualStudioPathFromVsWhere(vswhereCmd);
 
 			if (m_detectedVersion.empty())
 				m_detectedVersion = getVisualStudioVersion(m_vsVersion);
@@ -140,14 +131,14 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 		else if (RegexPatterns::matchesFullVersionString(m_rawVersion))
 		{
 			StringList vswhereCmd{ state.vswhere, "-nologo" };
-			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we're search for the exact version
+			vswhereCmd.emplace_back("-prerelease"); // always include prereleases in this scenario since we search for the exact version
 			vswhereCmd.emplace_back("-version");
 			vswhereCmd.push_back(m_rawVersion);
 			addProductOptions(vswhereCmd);
 			vswhereCmd.emplace_back("-property");
 			vswhereCmd.emplace_back("installationPath");
 
-			m_visualStudioPath = getFirstVisualStudioPathFromVsWhere(vswhereCmd);
+			m_visualStudioPath = getVisualStudioPathFromVsWhere(vswhereCmd);
 			if (String::startsWith("Error", m_visualStudioPath))
 				m_visualStudioPath.clear();
 
@@ -225,7 +216,7 @@ StringList VisualStudioEnvironmentScript::getStartOfVsWhereCommand(const VisualS
 {
 	StringList cmd{ state.vswhere, "-nologo" };
 	const bool isStable = inVersion == VisualStudioVersion::Stable;
-	const bool isPreview = inVersion == VisualStudioVersion::Preview;
+	const bool isPreview = inVersion == VisualStudioVersion::Preview; // or "Insiders"
 
 	if (!isStable)
 		cmd.emplace_back("-prerelease");
@@ -243,6 +234,33 @@ StringList VisualStudioEnvironmentScript::getStartOfVsWhereCommand(const VisualS
 	}
 
 	return cmd;
+}
+
+/*****************************************************************************/
+std::string VisualStudioEnvironmentScript::getVisualStudioPathFromVsWhere(const StringList& inCmd) const
+{
+	auto temp = Process::runOutput(inCmd);
+	if (temp.empty())
+		return temp;
+
+	if (temp.back() == '\n')
+		temp.pop_back();
+
+	// topmost will always be insiders / preview
+	auto split = String::split(temp, '\n');
+	bool isNotPreview = m_vsVersion != VisualStudioVersion::Preview;
+	if (split.size() > 1 && isNotPreview)
+	{
+		for (auto& path : split)
+		{
+			if (String::endsWith("\\Insiders", path) || String::endsWith("\\Preview", path))
+				continue;
+
+			return path;
+		}
+	}
+
+	return split.front();
 }
 
 /*****************************************************************************/
@@ -272,6 +290,12 @@ std::string VisualStudioEnvironmentScript::getVisualStudioVersion(const VisualSt
 	}
 
 	return result;
+}
+
+/*****************************************************************************/
+std::string VisualStudioEnvironmentScript::getEnvVarsHashKey() const
+{
+	return fmt::format("{}_{}", m_detectedVersion, static_cast<i32>(m_vsVersion));
 }
 
 /*****************************************************************************/

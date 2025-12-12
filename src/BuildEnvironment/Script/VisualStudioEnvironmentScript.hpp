@@ -28,12 +28,14 @@ struct VisualStudioEnvironmentScript final : public IEnvironmentScript
 	bool isPreset() noexcept;
 
 	std::string getVisualStudioVersion(const VisualStudioVersion inVersion);
+	std::string getEnvVarsHashKey() const;
 
 private:
 	virtual bool saveEnvironmentFromScript() final;
 	virtual StringList getAllowedArchitectures() final;
 
 	StringList getStartOfVsWhereCommand(const VisualStudioVersion inVersion);
+	std::string getVisualStudioPathFromVsWhere(const StringList& inCmd) const;
 	void addProductOptions(StringList& outCmd);
 
 	// inputs
