@@ -49,7 +49,8 @@
 			"warnings[:linux]": [
 				"no-unknown-warning-option",
 				"no-dangling-reference",
-				"no-free-nonheap-object"
+				"no-free-nonheap-object",
+				"no-deprecated-literal-operator"
 			],
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [
