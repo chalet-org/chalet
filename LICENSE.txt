@@ -1,5 +1,5 @@
 Chalet - A cross-platform JSON-based project & build tool
-Copyright (c) 2020-2025 Andrew R. King & Cosmic Road Interactive, LLC
+Copyright (c) 2020-2026 Andrew R. King & Cosmic Road Interactive, LLC
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
