@@ -50,7 +50,8 @@
 				"no-unknown-warning-option",
 				"no-dangling-reference",
 				"no-free-nonheap-object",
-				"no-deprecated-literal-operator"
+				"no-deprecated-literal-operator",
+				"no-misleading-indentation"
 			],
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [
