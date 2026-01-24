@@ -312,7 +312,10 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 				if (value.front() == '[' && value.back() == ']')
 				{
 					value = value.substr(1, value.size() - 2);
-					node[key] = parseAbbreviatedList(value);
+					if (value.find_first_not_of("0123456789., ") == std::string::npos)
+						node[key] = parseAbbreviatedNumericList(value);
+					else
+						node[key] = parseAbbreviatedStringList(value);
 					continue;
 				}
 			}
@@ -383,7 +386,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 }
 
 /*****************************************************************************/
-StringList YamlFile::parseAbbreviatedList(const std::string& inValue) const
+StringList YamlFile::parseAbbreviatedStringList(const std::string& inValue) const
 {
 	auto list = String::split(inValue, ',');
 	for (auto& item : list)
@@ -393,6 +396,31 @@ StringList YamlFile::parseAbbreviatedList(const std::string& inValue) const
 
 		while (!item.empty() && item.back() == ' ')
 			item.pop_back();
+	}
+
+	return list;
+}
+
+/*****************************************************************************/
+std::vector<f32> YamlFile::parseAbbreviatedNumericList(std::string inString) const
+{
+	std::vector<f32> list;
+
+	inString.push_back(',');
+
+	size_t comma = inString.find(',');
+	while (comma != std::string::npos)
+	{
+		auto valueString = inString.substr(0, comma);
+		list.emplace_back(String::toFloat<f32>(valueString));
+
+		auto nextNumber = inString.find_first_of("0123456789", comma + 1);
+		if (nextNumber != std::string::npos)
+			inString = inString.substr(nextNumber);
+		else
+			break;
+
+		comma = inString.find(',');
 	}
 
 	return list;
