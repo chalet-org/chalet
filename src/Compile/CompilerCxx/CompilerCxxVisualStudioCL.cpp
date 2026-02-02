@@ -487,9 +487,13 @@ void CompilerCxxVisualStudioCL::addCompileOptions(StringList& outArgList) const
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addCharsets(StringList& outArgList) const
 {
-	outArgList.emplace_back(fmt::format("/source-charset:{}", m_project.inputCharset()));
-	outArgList.emplace_back(fmt::format("/execution-charset:{}", m_project.executionCharset()));
-	outArgList.emplace_back("/validate-charset");
+	// VS 2017 or later
+	if (m_versionMajorMinor > 1900)
+	{
+		outArgList.emplace_back(fmt::format("/source-charset:{}", m_project.inputCharset()));
+		outArgList.emplace_back(fmt::format("/execution-charset:{}", m_project.executionCharset()));
+		outArgList.emplace_back("/validate-charset");
+	}
 }
 
 /*****************************************************************************/
@@ -562,8 +566,11 @@ void CompilerCxxVisualStudioCL::addSanitizerOptions(StringList& outArgList) cons
 /*****************************************************************************/
 void CompilerCxxVisualStudioCL::addDiagnostics(StringList& outArgList) const
 {
-	List::addIfDoesNotExist(outArgList, "/diagnostics:caret");
-	// List::addIfDoesNotExist(outArgList, "/diagnostics:column");
+	if (m_versionMajorMinor > 1900)
+	{
+		List::addIfDoesNotExist(outArgList, "/diagnostics:caret");
+		// List::addIfDoesNotExist(outArgList, "/diagnostics:column");
+	}
 }
 
 /*****************************************************************************/

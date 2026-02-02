@@ -41,6 +41,7 @@ private:
 	// inputs
 	std::string m_varsAllArch;
 	StringList m_varsAllArchOptions;
+	std::string m_targetArch;
 
 	// set during creation
 	std::string m_visualStudioPath;

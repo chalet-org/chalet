@@ -88,7 +88,7 @@ OrderedDictionary<VisualStudioVersion> getVisualStudioPresets()
 		// { "vs-2010", VisualStudioVersion::VisualStudio2010 }, // untested
 		// { "vs-2012", VisualStudioVersion::VisualStudio2012 }, // untested
 		// { "vs-2013", VisualStudioVersion::VisualStudio2013 }, // untested
-		// { "vs-2015", VisualStudioVersion::VisualStudio2015 }, // untested
+		{ "vs-2015", VisualStudioVersion::VisualStudio2015 },
 		{ "vs-2017", VisualStudioVersion::VisualStudio2017 },
 		{ "vs-2019", VisualStudioVersion::VisualStudio2019 },
 		{ "vs-2022", VisualStudioVersion::VisualStudio2022 },
@@ -658,6 +658,7 @@ u32 CommandLineInputs::getVisualStudioYear() const noexcept
 		case VisualStudioVersion::VisualStudio2017: return 2017;
 		case VisualStudioVersion::VisualStudio2015: return 2015;
 		case VisualStudioVersion::VisualStudio2013: return 2013;
+		case VisualStudioVersion::VisualStudio2012: return 2012;
 		case VisualStudioVersion::VisualStudio2010: return 2010;
 		default: break;
 	}

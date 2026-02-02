@@ -698,6 +698,8 @@ std::string ArgumentParser::getHelp()
 				return fmt::format("Microsoft{} Visual Studio 2019", Unicode::registered());
 			else if (String::equals("vs-2017", preset))
 				return fmt::format("Microsoft{} Visual Studio 2017", Unicode::registered());
+			else if (String::equals("vs-2015", preset))
+				return fmt::format("Microsoft{} Visual Studio 2015", Unicode::registered());
 			else if (String::equals("llvm-vs-stable", preset))
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio (latest stable)", Unicode::registered());
 			else if (String::equals("llvm-vs-preview", preset))
