@@ -132,7 +132,7 @@ bool SettingsManager::runSettingsGet(Json& node)
 		if (m_yamlOutput)
 			output = YamlFile::asString(*ptr);
 		else
-			output = ptr->dump(3, ' ');
+			output = json::dump(*ptr, 3, ' ');
 
 		std::cout.write(output.data(), output.size());
 		std::cout.put('\n');
@@ -303,7 +303,7 @@ bool SettingsManager::runSettingsSet(Json& node)
 		if (m_yamlOutput)
 			content = YamlFile::asString(*ptr);
 		else
-			content = ptr->dump(3, ' ');
+			content = json::dump(*ptr, 3, ' ');
 
 		std::string output;
 		if (ptr->is_object())
