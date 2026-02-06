@@ -16,7 +16,6 @@ enum class ExportKind : u16
 	VSCodiumJSON,
 	Xcode,
 	CLion,
-	Fleet,
 	Zed,
 	CodeEdit,
 	CodeBlocks,

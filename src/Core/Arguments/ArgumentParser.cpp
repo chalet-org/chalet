@@ -837,8 +837,6 @@ std::string ArgumentParser::getHelp()
 #endif
 			else if (String::equals("clion", preset))
 				return "Jetbrains CLion (.idea)";
-			else if (String::equals("fleet", preset))
-				return "Jetbrains Fleet (.fleet)";
 			else if (String::equals("zed", preset))
 				return "Zed (.zed)";
 			else if (String::equals("codeblocks", preset))
@@ -863,7 +861,6 @@ std::string ArgumentParser::getHelp()
 			"codeedit",
 #endif
 			"clion",
-			"fleet",
 			"zed",
 			"codeblocks",
 		};

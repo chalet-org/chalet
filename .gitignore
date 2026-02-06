@@ -9,7 +9,6 @@ dist/
 .idea/
 .vs/
 .vscode/ipch/
-.fleet/
 CMakeSettings.json
 launch.vs.json
 tasks.vs.json
