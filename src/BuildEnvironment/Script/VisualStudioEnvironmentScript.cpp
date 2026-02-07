@@ -14,6 +14,7 @@
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Path.hpp"
 #include "Utility/RegexPatterns.hpp"
 #include "Utility/String.hpp"
 
@@ -76,10 +77,12 @@ const std::string& VisualStudioEnvironmentScript::architecture() const noexcept
 /*****************************************************************************/
 void VisualStudioEnvironmentScript::setArchitecture(const std::string& inHost, const std::string& inTarget, const StringList& inOptions)
 {
-	if (inHost == inTarget)
-		m_varsAllArch = inTarget;
+	m_targetArch = inTarget;
+
+	if (inHost == m_targetArch)
+		m_varsAllArch = m_targetArch;
 	else
-		m_varsAllArch = fmt::format("{}_{}", inHost, inTarget);
+		m_varsAllArch = fmt::format("{}_{}", inHost, m_targetArch);
 
 	m_varsAllArchOptions = inOptions;
 }
@@ -110,13 +113,49 @@ bool VisualStudioEnvironmentScript::isPreset() noexcept
 bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 {
 	UNUSED(inState);
-	m_pathVariable = Environment::getPath();
 
+	m_pathVariable = Environment::getPath();
 	auto appDataPath = Environment::getString("APPDATA");
+
+	u16 vsVersion = static_cast<u16>(m_vsVersion);
+	const bool isOldVisualStudioVersion = vsVersion >= 10u && vsVersion <= 14u;
 
 	if (!m_envVarsFileDeltaExists)
 	{
-		if (isPreset())
+		if (isOldVisualStudioVersion)
+		{
+			auto programFiles = Environment::getProgramFilesX86();
+			Path::toWindows(programFiles);
+
+			// If the Windows 10 SDK is available, it will be preferred, but it may not have rc.exe, which we need from the 8.1 SDK
+			// This is a hack until there's a better way to pick the Windows SDK
+			//
+			// Note: expects x64 if x64, NOT amd64
+			//
+			auto windowsSdkDir = fmt::format("{}\\Windows Kits\\8.1\\bin\\{}", programFiles, m_targetArch);
+			if (Files::pathExists(windowsSdkDir))
+			{
+				if (m_pathVariable.back() != ';')
+					m_pathVariable += ';';
+
+				m_pathVariable += fmt::format("{};", windowsSdkDir);
+			}
+
+			String::replaceAll(m_targetArch, "x64", "amd64");
+			String::replaceAll(m_varsAllArch, "x64", "amd64");
+
+			// Note: only tested with VS 2015
+			auto commonToolsKey = fmt::format("VS{}0COMNTOOLS", vsVersion);
+			m_visualStudioPath = Environment::getString(commonToolsKey.c_str());
+			String::replaceAll(m_visualStudioPath, "\\Common7\\Tools\\", "");
+			Path::toUnix(m_visualStudioPath);
+
+			if (!Files::pathExists(m_visualStudioPath))
+				m_visualStudioPath.clear();
+
+			m_detectedVersion = fmt::format("{}.0", vsVersion);
+		}
+		else if (isPreset())
 		{
 			StringList vswhereCmd = getStartOfVsWhereCommand(m_vsVersion);
 			addProductOptions(vswhereCmd);
@@ -187,8 +226,14 @@ bool VisualStudioEnvironmentScript::makeEnvironment(const BuildState& inState)
 	}
 	else
 	{
-		if (isPreset() && m_detectedVersion.empty())
+		if (isOldVisualStudioVersion)
+		{
+			m_detectedVersion = fmt::format("{}.0", vsVersion);
+		}
+		else if (isPreset() && m_detectedVersion.empty())
+		{
 			m_detectedVersion = getVisualStudioVersion(m_vsVersion);
+		}
 	}
 
 	return true;
@@ -310,13 +355,24 @@ bool VisualStudioEnvironmentScript::saveEnvironmentFromScript()
 		return false;
 	}
 
-	// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
-	auto vcVarsAll = fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_visualStudioPath, vcvarsFile);
-	StringList cmd{ vcVarsAll, m_varsAllArch };
-
-	for (auto& arg : m_varsAllArchOptions)
+	StringList cmd;
+	if (m_vsVersion == VisualStudioVersion::VisualStudio2015)
 	{
-		cmd.push_back(arg);
+		// We want the Windows 8.1 Windows Kit only
+		cmd.emplace_back(fmt::format("\"{}\\VC\\{}.bat\"", m_visualStudioPath, vcvarsFile));
+		cmd.emplace_back(m_varsAllArch);
+	}
+	else
+	{
+		// https://docs.microsoft.com/en-us/cpp/build/building-on-the-command-line?view=msvc-160
+		cmd.emplace_back(fmt::format("\"{}\\VC\\Auxiliary\\Build\\{}.bat\"", m_visualStudioPath, vcvarsFile));
+		cmd.emplace_back(m_varsAllArch);
+
+		// TODO: This does nothing right now
+		for (auto& arg : m_varsAllArchOptions)
+		{
+			cmd.push_back(arg);
+		}
 	}
 
 	cmd.emplace_back(">");
@@ -333,31 +389,52 @@ bool VisualStudioEnvironmentScript::saveEnvironmentFromScript()
 /*****************************************************************************/
 StringList VisualStudioEnvironmentScript::getAllowedArchitectures()
 {
-	StringList ret{
-		// clang-format off
-		"x86",								// any host, x86 target
-		"x86_x64", /*"x86_amd64",*/			// any host, x64 target
-		"x86_arm",							// any host, ARM target
-		"x86_arm64",						// any host, ARM64 target
-		//
-		"x64", /*"amd64",*/					// x64 host, x64 target
-		"x64_x86", /*"amd64_x86",*/			// x64 host, x86 target
-		"x64_arm", /*"amd64_arm",*/			// x64 host, ARM target
-		"x64_arm64", /*"amd64_arm64",*/		// x64 host, ARM64 target
-		// clang-format on
-	};
+	StringList ret;
 
-	auto arch = Arch::getHostCpuArchitecture();
-	if (String::equals("arm64", arch))
+	u16 vsVersion = static_cast<u16>(m_vsVersion);
+	const bool isOldVisualStudioVersion = vsVersion >= 10u && vsVersion <= 14u;
+	if (isOldVisualStudioVersion)
 	{
-		// Note: these are untested
-		//   https://devblogs.microsoft.com/visualstudio/arm64-visual-studio
-		//
-		// clang-format off
+		ret = {
+			// clang-format off
+			"x86",								// any host, x86 target
+			"x86_amd64", 						// any host, x64 target
+			"x86_arm",							// any host, ARM target
+			//
+			"amd64", 							// x64 host, x64 target
+			"amd64_x86",						// x64 host, x86 target
+			"amd64_arm", 						// x64 host, ARM target
+			// clang-format on
+		};
+	}
+	else
+	{
+		ret = {
+			// clang-format off
+			"x86",								// any host, x86 target
+			"x86_x64", /*"x86_amd64",*/			// any host, x64 target
+			"x86_arm",							// any host, ARM target
+			"x86_arm64",						// any host, ARM64 target
+			//
+			"x64", /*"amd64",*/					// x64 host, x64 target
+			"x64_x86", /*"amd64_x86",*/			// x64 host, x86 target
+			"x64_arm", /*"amd64_arm",*/			// x64 host, ARM target
+			"x64_arm64", /*"amd64_arm64",*/		// x64 host, ARM64 target
+			// clang-format on
+		};
+
+		auto hostArch = Arch::getHostCpuArchitecture();
+		if (String::equals("arm64", hostArch))
+		{
+			// Note: these are untested
+			//   https://devblogs.microsoft.com/visualstudio/arm64-visual-studio
+			//
+			// clang-format off
 		ret.emplace_back("arm64");			// ARM64 host, ARM64 target
 		ret.emplace_back("arm64_x64");		// ARM64 host, x64 target
 		ret.emplace_back("arm64_x86");		// ARM64 host, x86 target
-		// clang-format on
+			// clang-format on
+		}
 	}
 
 	return ret;

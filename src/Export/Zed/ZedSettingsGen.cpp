@@ -11,6 +11,7 @@
 #include "System/DefinesGithub.hpp"
 #include "System/DefinesVersion.hpp"
 #include "System/Files.hpp"
+#include "Utility/String.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -28,8 +29,15 @@ bool ZedSettingsGen::saveToFile(const std::string& inFilename) const
 	jRoot = Json::object();
 	{
 		auto& jFileTypes = jRoot["file_types"] = Json::object();
-		auto& jJsonFileTypes = jFileTypes["JSON"] = Json::array();
+
+		auto& jJsonFileTypes = jFileTypes["JSONC"] = Json::array();
 		jJsonFileTypes.push_back(m_state.inputs.settingsFile());
+
+		const auto& inputFile = m_state.inputs.inputFile();
+		if (String::endsWith(".json", inputFile))
+			jJsonFileTypes.push_back(inputFile);
+		else
+			jJsonFileTypes.push_back(m_state.inputs.defaultInputFile());
 	}
 
 	// CHALET_VERSION

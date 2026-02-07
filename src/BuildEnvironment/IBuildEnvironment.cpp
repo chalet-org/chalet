@@ -471,12 +471,19 @@ bool IBuildEnvironment::getCompilerPaths(CompilerInfo& outInfo) const
 #if defined(CHALET_WIN32)
 		if (this->isMsvc())
 		{
+			// >= VS 2017
 			if (String::contains("hostx64", binDir))
 				m_state.info.setHostArchitecture("x86_64");
 			else if (String::contains("hostx86", binDir))
 				m_state.info.setHostArchitecture("i686");
 			else if (String::contains("hostarm64", binDir))
 				m_state.info.setHostArchitecture("arm64");
+
+			// < VS 2017
+			else if (String::contains("amd64_", binDir))
+				m_state.info.setHostArchitecture("x86_64");
+			else if (String::contains("x86_", binDir))
+				m_state.info.setHostArchitecture("i686");
 		}
 #elif defined(CHALET_MACOS)
 		Path::stripXcodeToolchain(path);

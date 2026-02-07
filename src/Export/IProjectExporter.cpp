@@ -11,7 +11,6 @@
 #include "Export/CLionProjectExporter.hpp"
 #include "Export/CodeBlocksProjectExporter.hpp"
 #include "Export/CodeEditProjectExporter.hpp"
-#include "Export/FleetProjectExporter.hpp"
 #include "Export/VSCodeProjectExporter.hpp"
 #include "Export/VSJsonProjectExporter.hpp"
 #include "Export/VSSolutionProjectExporter.hpp"
@@ -62,8 +61,6 @@ IProjectExporter::~IProjectExporter() = default;
 			return std::make_unique<XcodeProjectExporter>(inInputs);
 		case ExportKind::CLion:
 			return std::make_unique<CLionProjectExporter>(inInputs);
-		case ExportKind::Fleet:
-			return std::make_unique<FleetProjectExporter>(inInputs);
 		case ExportKind::Zed:
 			return std::make_unique<ZedProjectExporter>(inInputs);
 		case ExportKind::CodeEdit:

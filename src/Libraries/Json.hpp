@@ -34,7 +34,7 @@
 	#pragma GCC diagnostic pop
 #endif
 
-inline nlohmann::ordered_json operator"" _ojson(const char* s, size_t n)
+inline nlohmann::ordered_json operator""_ojson(const char* s, size_t n)
 {
 	return nlohmann::ordered_json::parse(s, s + n);
 }

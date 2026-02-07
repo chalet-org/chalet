@@ -1,6 +1,6 @@
 {
 	"name": "Chalet",
-	"version": "0.8.16",
+	"version": "0.8.17",
 	"description": "A JSON-based project & build tool",
 	"homepage": "https://www.chalet-work.space",
 	"author": "Cosmic Road Interactive, LLC.",
@@ -48,7 +48,10 @@
 			"warningsPreset": "strict",
 			"warnings[:linux]": [
 				"no-unknown-warning-option",
-				"no-dangling-reference"
+				"no-dangling-reference",
+				"no-free-nonheap-object",
+				"no-deprecated-literal-operator",
+				"no-misleading-indentation"
 			],
 			"treatWarningsAsErrors": true,
 			"defines[:debug]": [

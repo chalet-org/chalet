@@ -122,7 +122,7 @@ inline bool json::isStringInvalidOrEmpty(const Json& inNode, const char* inKey)
 inline std::string json::dump(const Json& inNode, int indent, char indentChar)
 {
 	constexpr bool ensureAscii = false;
-	constexpr auto errorHandler = nlohmann::detail::error_handler_t::strict;
+	constexpr auto errorHandler = nlohmann::detail::error_handler_t::replace;
 	return inNode.dump(indent, indentChar, ensureAscii, errorHandler);
 }
 }

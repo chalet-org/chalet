@@ -215,27 +215,47 @@ bool Output::getUserInput(const std::string& inUserQuery, std::string& outResult
 #if defined(CHALET_WIN32)
 	{
 		HANDLE kInputHandle = ::GetStdHandle(STD_INPUT_HANDLE);
+		DWORD inputMode = 0;
+		::GetConsoleMode(kInputHandle, &inputMode);
 
-		DWORD bufferSize = 256;
-		TCHAR buffer[256];
-		DWORD numberCharactersRead = 0;
-		auto readResult = ::ReadConsole(kInputHandle, buffer, bufferSize, &numberCharactersRead, NULL);
-		if (readResult == 0)
+		if ((inputMode & ENABLE_LINE_INPUT) == ENABLE_LINE_INPUT)
 		{
-			// cin clear?
-			return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
-		}
+			DWORD bufferSize = 256;
+			TCHAR buffer[256];
+			DWORD numberCharactersRead = 0;
 
-		auto result = TSTRING(buffer, static_cast<size_t>(numberCharactersRead));
-		input = FROM_WIDE(result);
-		if (String::endsWith("\r\n", input))
-		{
-			input.pop_back();
-			input.pop_back();
+			auto readResult = ::ReadConsole(kInputHandle, buffer, bufferSize, &numberCharactersRead, NULL);
+			if (readResult == FALSE)
+			{
+				// cin clear?
+				return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
+			}
+
+			auto result = TSTRING(buffer, static_cast<size_t>(numberCharactersRead));
+			input = FROM_WIDE(result);
+			if (String::endsWith("\r\n", input))
+			{
+				input.pop_back();
+				input.pop_back();
+			}
+			else if (readResult == TRUE)
+			{
+				signalHandler(SIGINT);
+			}
 		}
-		else if (readResult == 1)
+		else
 		{
-			signalHandler(SIGINT);
+			// We're most likely in standalone git bash, so we'll try this fallback
+			//
+			SignalHandler::add(SIGINT, signalHandler);
+			std::getline(std::cin, input); // get up to first line break (if applicable)
+			SignalHandler::remove(SIGINT, signalHandler);
+
+			if (std::cin.fail() || std::cin.eof())
+			{
+				std::cin.clear();
+				return getUserInput(inUserQuery, outResult, std::move(note), onValidate, inFailOnFalse);
+			}
 		}
 	}
 #else

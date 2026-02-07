@@ -215,9 +215,9 @@ bool ModuleStrategyMSVC::readIncludesFromDependencyFile(const std::string& inFil
 	}
 
 	const auto version = json::get<std::string>(jRoot, MSVCKeys::Version);
-	if (!String::equals("1.2", version))
+	if (!String::equals("1.1", version) && !String::equals("1.2", version))
 	{
-		Diagnostic::error("{}: Found version '{}', but only '1.2' is supported", inFile, version);
+		Diagnostic::error("{}: Found version '{}', but only '1.1' and '1.2' are supported", inFile, version);
 		return false;
 	}
 

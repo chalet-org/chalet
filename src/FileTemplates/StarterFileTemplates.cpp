@@ -292,7 +292,6 @@ dist/
 .idea/
 .vs/
 .vscode/
-.fleet/
 .zed/
 
 # Other

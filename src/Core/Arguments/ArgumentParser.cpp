@@ -698,6 +698,8 @@ std::string ArgumentParser::getHelp()
 				return fmt::format("Microsoft{} Visual Studio 2019", Unicode::registered());
 			else if (String::equals("vs-2017", preset))
 				return fmt::format("Microsoft{} Visual Studio 2017", Unicode::registered());
+			else if (String::equals("vs-2015", preset))
+				return fmt::format("Microsoft{} Visual Studio 2015", Unicode::registered());
 			else if (String::equals("llvm-vs-stable", preset))
 				return fmt::format("LLVM/Clang in Microsoft{} Visual Studio (latest stable)", Unicode::registered());
 			else if (String::equals("llvm-vs-preview", preset))
@@ -835,8 +837,6 @@ std::string ArgumentParser::getHelp()
 #endif
 			else if (String::equals("clion", preset))
 				return "Jetbrains CLion (.idea)";
-			else if (String::equals("fleet", preset))
-				return "Jetbrains Fleet (.fleet)";
 			else if (String::equals("zed", preset))
 				return "Zed (.zed)";
 			else if (String::equals("codeblocks", preset))
@@ -861,7 +861,6 @@ std::string ArgumentParser::getHelp()
 			"codeedit",
 #endif
 			"clion",
-			"fleet",
 			"zed",
 			"codeblocks",
 		};

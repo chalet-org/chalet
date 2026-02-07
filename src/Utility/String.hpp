@@ -9,6 +9,11 @@ namespace chalet
 {
 namespace String
 {
+template <typename T>
+inline T toInt(const std::string& inString);
+template <typename T>
+inline T toFloat(const std::string& inString);
+
 bool equals(const std::string_view inCompare, const std::string& inString);
 bool equals(const char inCompare, const std::string& inString) noexcept;
 bool equals(const StringList& inFind, const std::string& inString);
@@ -65,3 +70,5 @@ std::string eol();
 
 }
 }
+
+#include "Utility/String.inl"

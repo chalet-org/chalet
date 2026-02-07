@@ -42,7 +42,18 @@ std::string CommandAdapterMSVC::getPlatformToolset(const BuildState& inState)
 	if (majorVersion >= 1600)
 		return "142"; // VS 2019
 
-	return "141"; // VS 2017
+	if (majorVersion >= 1500)
+		return "141"; // VS 2017
+
+	if (majorVersion >= 1400)
+		return "140"; // VS 2015
+
+	// for completion...
+
+	if (majorVersion >= 1200)
+		return "120"; // VS 2013
+
+	return "110"; // VS 2012
 }
 
 /*****************************************************************************/
@@ -216,7 +227,7 @@ bool CommandAdapterMSVC::supportsEditAndContinue() const
 /*****************************************************************************/
 bool CommandAdapterMSVC::supportsJustMyCodeDebugging() const
 {
-	return m_state.configuration.debugSymbols() && m_project.justMyCodeDebugging();
+	return m_versionMajorMinor > 1900 && m_state.configuration.debugSymbols() && m_project.justMyCodeDebugging();
 }
 
 /*****************************************************************************/
@@ -664,9 +675,13 @@ StringList CommandAdapterMSVC::getAdditionalCompilerOptions(const bool inCharset
 
 	if (inCharsetFlags)
 	{
-		List::addIfDoesNotExist(ret, fmt::format("/source-charset:{}", m_project.inputCharset()));
-		List::addIfDoesNotExist(ret, fmt::format("/execution-charset:{}", m_project.executionCharset()));
-		List::addIfDoesNotExist(ret, "/validate-charset");
+		// VS 2017 or later
+		if (m_versionMajorMinor > 1900)
+		{
+			List::addIfDoesNotExist(ret, fmt::format("/source-charset:{}", m_project.inputCharset()));
+			List::addIfDoesNotExist(ret, fmt::format("/execution-charset:{}", m_project.executionCharset()));
+			List::addIfDoesNotExist(ret, "/validate-charset");
+		}
 	}
 	List::addIfDoesNotExist(ret, "/FS"); // Force Separate Program Database Writes
 
