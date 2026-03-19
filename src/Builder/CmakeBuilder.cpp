@@ -41,6 +41,8 @@ CmakeBuilder::CmakeBuilder(const BuildState& inState, const CMakeTarget& inTarge
 	m_cmakeVersionMajorMinor = m_state.toolchain.cmakeVersionMajor();
 	m_cmakeVersionMajorMinor *= 100;
 	m_cmakeVersionMajorMinor += m_state.toolchain.cmakeVersionMinor();
+
+	m_supportedGenerator = getSupportedGenerator();
 }
 
 /*****************************************************************************/
@@ -100,8 +102,6 @@ bool CmakeBuilder::run()
 	Timer buildTimer;
 
 	const auto& name = m_target.name();
-
-	m_supportedGenerator = getSupportedGenerator();
 
 	static const char kNinjaStatus[] = "NINJA_STATUS";
 	auto oldNinjaStatus = Environment::getString(kNinjaStatus);
