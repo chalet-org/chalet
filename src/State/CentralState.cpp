@@ -12,7 +12,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
 #include "SettingsJson/GlobalSettingsJsonParser.hpp"
-#include "SettingsJson/SettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFile.hpp"
 
 #include "DotEnv/DotEnvFileParser.hpp"
 #include "Platform/Arch.hpp"
@@ -96,7 +96,7 @@ bool CentralState::initialize()
 		if (!parseGlobalSettingsJson(state))
 			return false;
 
-		if (!parseLocalSettingsJson(state))
+		if (!SettingsJsonFile::parseWithFallbackSettings(m_inputs, *this, state))
 			return false;
 
 		if (m_inputs.osTargetName().empty())
@@ -599,14 +599,6 @@ bool CentralState::parseGlobalSettingsJson(IntermediateSettingsState& outState)
 	auto& settingsFile = cache.getSettings(SettingsType::Global);
 	GlobalSettingsJsonParser parser(*this, settingsFile);
 	return parser.serialize(outState);
-}
-
-/*****************************************************************************/
-bool CentralState::parseLocalSettingsJson(const IntermediateSettingsState& inState)
-{
-	auto& settingsFile = cache.getSettings(SettingsType::Local);
-	SettingsJsonParser parser(m_inputs, *this, settingsFile);
-	return parser.serialize(inState);
 }
 
 /*****************************************************************************/

@@ -8,7 +8,7 @@
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
-#include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileTheme.hpp"
 #include "State/BuildPaths.hpp"
 #include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
@@ -66,9 +66,7 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 		if (Files::moveSilent(oldGlobalSettingsFile, globalSettingsFile))
 		{
 			// Update the theme
-			ThemeSettingsJsonParser themeParser(inInputs);
-			// we don't care if this succeeded or not. we care about initializing settings below
-			themeParser.serialize();
+			SettingsJsonFileTheme::parse(inInputs);
 		}
 	}
 

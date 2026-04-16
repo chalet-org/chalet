@@ -8,7 +8,7 @@
 #include "Core/Router/Router.hpp"
 
 #include "Core/Arguments/CommandLine.hpp"
-#include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileTheme.hpp"
 #include "System/Files.hpp"
 #include "System/SignalHandler.hpp"
 #include "Terminal/Output.hpp"
@@ -31,7 +31,10 @@ i32 Application::run(const i32 argc, const char* argv[])
 	{
 		if (m_inputs == nullptr)
 			m_inputs = std::make_unique<CommandLineInputs>();
-		return onExit(Status::EarlyFailure);
+
+		SettingsJsonFileTheme::parse(*m_inputs);
+
+		return onExit(Status::Failure);
 	}
 
 	if (m_inputs->route().isHelp())
@@ -83,12 +86,6 @@ void Application::initializeTerminal()
 /*****************************************************************************/
 i32 Application::onExit(const Status inStatus)
 {
-	chalet_assert(m_inputs != nullptr, "m_inputs must be allocated.");
-	if (inStatus == Status::EarlyFailure && m_inputs != nullptr)
-	{
-		ThemeSettingsJsonParser themeParser(*m_inputs);
-		UNUSED(themeParser.serialize());
-	}
 	m_inputs.reset();
 
 	Diagnostic::printErrors();

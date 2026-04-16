@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileTheme.hpp"
 
 #include "Core/CommandLineInputs.hpp"
 #include "System/Files.hpp"
@@ -14,36 +14,32 @@
 namespace chalet
 {
 /*****************************************************************************/
-ThemeSettingsJsonParser::ThemeSettingsJsonParser(const CommandLineInputs& inInputs) :
+bool SettingsJsonFileTheme::parse(const CommandLineInputs& inInputs)
+{
+	SettingsJsonFileTheme SettingsJsonFileTheme(inInputs);
+	return SettingsJsonFileTheme.deserialize();
+}
+
+/*****************************************************************************/
+SettingsJsonFileTheme::SettingsJsonFileTheme(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
 {
 }
 
 /*****************************************************************************/
-bool ThemeSettingsJsonParser::serialize()
+bool SettingsJsonFileTheme::deserialize()
 {
-	const auto globalSettings = m_inputs.getGlobalSettingsFilePath();
-	const auto& localSettings = m_inputs.settingsFile();
-
 	m_updateTheme = false;
 	ColorTheme theme = Output::theme();
-
-	auto readFromSettings = [this](const std::string& inFile, ColorTheme& outTheme, const bool inGlobal) -> void {
-		if (!Files::pathExists(inFile))
-			return;
-
-		JsonFile jsonFile;
-		if (!jsonFile.load(inFile))
-			Diagnostic::clearErrors();
-
-		UNUSED(serializeFromJsonRoot(jsonFile.root, outTheme, inGlobal));
-	};
 
 	// Keys that aren't valid will get ingored,
 	//   so we don't need to validate much other than the json itself
 	//
-	readFromSettings(globalSettings, theme, true);
-	readFromSettings(localSettings, theme, false);
+	const auto globalSettings = m_inputs.getGlobalSettingsFilePath();
+	readFromSettings(globalSettings, theme, SettingsType::Global);
+
+	const auto& localSettings = m_inputs.settingsFile();
+	readFromSettings(localSettings, theme, SettingsType::Local);
 
 	if (!m_updateTheme)
 	{
@@ -56,7 +52,20 @@ bool ThemeSettingsJsonParser::serialize()
 }
 
 /*****************************************************************************/
-bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const bool inGlobal)
+bool SettingsJsonFileTheme::readFromSettings(const std::string& inFile, ColorTheme& outTheme, const SettingsType inType)
+{
+	if (!Files::pathExists(inFile))
+		return false;
+
+	JsonFile jsonFile;
+	if (!jsonFile.load(inFile))
+		Diagnostic::clearErrors();
+
+	return serializeFromJsonRoot(jsonFile.root, outTheme, inType);
+}
+
+/*****************************************************************************/
+bool SettingsJsonFileTheme::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const SettingsType inSettingsType)
 {
 	if (inJson.is_object() && inJson.contains(Keys::Theme))
 	{
@@ -69,7 +78,7 @@ bool ThemeSettingsJsonParser::serializeFromJsonRoot(const Json& inJson, ColorThe
 		}
 		else if (themeJson.is_object())
 		{
-			if (themeJson.empty() && inGlobal)
+			if (themeJson.empty() && inSettingsType == SettingsType::Global)
 			{
 				outTheme.setPreset(ColorTheme::getDefaultPresetName());
 				outTheme.setPreset(std::string());

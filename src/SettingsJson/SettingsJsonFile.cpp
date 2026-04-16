@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "SettingsJson/SettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFile.hpp"
 
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp" // getAllowedSDKTargets
 #include "Core/CommandLineInputs.hpp"
@@ -24,16 +24,22 @@
 
 namespace chalet
 {
-/*****************************************************************************/
-SettingsJsonParser::SettingsJsonParser(CommandLineInputs& inInputs, CentralState& inCentralState, JsonFile& inJsonFile) :
-	m_inputs(inInputs),
-	m_centralState(inCentralState),
-	m_jsonFile(inJsonFile)
+bool SettingsJsonFile::parseWithFallbackSettings(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback)
 {
+	SettingsJsonFile settingsJsonFile(inInputs, inCentralState, inFallback);
+	return settingsJsonFile.deserialize();
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
+SettingsJsonFile::SettingsJsonFile(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback) :
+	m_inputs(inInputs),
+	m_centralState(inCentralState),
+	m_jsonFile(m_centralState.cache.getSettings(SettingsType::Local)),
+	m_fallback(inFallback)
+{}
+
+/*****************************************************************************/
+bool SettingsJsonFile::deserialize()
 {
 	Json schema = SettingsJsonSchema::get(m_inputs);
 	if (m_inputs.saveSchemaToFile())
@@ -51,7 +57,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 		Diagnostic::infoEllipsis("Creating Settings [{}]", m_jsonFile.filename());
 	}*/
 
-	if (!makeSettingsJson(inState))
+	if (!makeSettingsJson())
 		return false;
 
 	if (!m_jsonFile.validate(schema))
@@ -72,7 +78,7 @@ bool SettingsJsonParser::serialize(const IntermediateSettingsState& inState)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::validatePaths(const bool inWithError)
+bool SettingsJsonFile::validatePaths(const bool inWithError)
 {
 #if defined(CHALET_MACOS)
 	bool needsUpdate = false;
@@ -126,7 +132,7 @@ bool SettingsJsonParser::validatePaths(const bool inWithError)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inState)
+bool SettingsJsonFile::makeSettingsJson()
 {
 	// Create the json cache
 	m_jsonFile.makeNode(Keys::Options, JsonDataType::object);
@@ -134,19 +140,19 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 	auto& jRoot = m_jsonFile.root;
 	if (!json::isObject(jRoot, Keys::Toolchains))
 	{
-		jRoot[Keys::Toolchains] = inState.toolchains.is_object() ? inState.toolchains : Json::object();
+		jRoot[Keys::Toolchains] = m_fallback.toolchains.is_object() ? m_fallback.toolchains : Json::object();
 	}
 
 	if (!json::isObject(jRoot, Keys::Tools))
 	{
-		jRoot[Keys::Tools] = inState.tools.is_object() ? inState.tools : Json::object();
+		jRoot[Keys::Tools] = m_fallback.tools.is_object() ? m_fallback.tools : Json::object();
 	}
 	else
 	{
-		if (inState.tools.is_object())
+		if (m_fallback.tools.is_object())
 		{
 			auto& tools = jRoot[Keys::Tools];
-			for (auto& [key, value] : inState.tools.items())
+			for (auto& [key, value] : m_fallback.tools.items())
 			{
 				if (!tools.contains(key))
 				{
@@ -159,14 +165,14 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 #if defined(CHALET_MACOS)
 	if (!json::isObject(jRoot, Keys::AppleSdks))
 	{
-		jRoot[Keys::AppleSdks] = inState.appleSdks.is_object() ? inState.appleSdks : Json::object();
+		jRoot[Keys::AppleSdks] = m_fallback.appleSdks.is_object() ? m_fallback.appleSdks : Json::object();
 	}
 	else
 	{
-		if (inState.appleSdks.is_object())
+		if (m_fallback.appleSdks.is_object())
 		{
 			auto& sdks = jRoot[Keys::AppleSdks];
-			for (auto& [key, value] : inState.appleSdks.items())
+			for (auto& [key, value] : m_fallback.appleSdks.items())
 			{
 				if (!sdks.contains(key))
 				{
@@ -189,40 +195,40 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 		}
 	}
 
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), inState.dumpAssembly);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), inState.showCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), inState.benchmark);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), inState.launchProfiler);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), inState.keepGoing);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsCompilerCache, m_inputs.compilerCache(), inState.compilerCache);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), inState.generateCompileCommands);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOnlyRequired, m_inputs.onlyRequired(), inState.onlyRequired);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), inState.maxJobs);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), inState.toolchainPreference);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), inState.buildConfiguration);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsArchitecture, m_inputs.architectureRaw(), inState.architecturePreference);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsInputFile, m_inputs.inputFile(), inState.inputFile);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsEnvFile, m_inputs.envFile(), inState.envFile);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), inState.rootDirectory);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), inState.outputDirectory);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), inState.externalDirectory);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), inState.distributionDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), m_fallback.dumpAssembly);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), m_fallback.showCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBenchmark, m_inputs.benchmark(), m_fallback.benchmark);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLaunchProfiler, m_inputs.launchProfiler(), m_fallback.launchProfiler);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsKeepGoing, m_inputs.keepGoing(), m_fallback.keepGoing);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsCompilerCache, m_inputs.compilerCache(), m_fallback.compilerCache);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsGenerateCompileCommands, m_inputs.generateCompileCommands(), m_fallback.generateCompileCommands);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOnlyRequired, m_inputs.onlyRequired(), m_fallback.onlyRequired);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsMaxJobs, m_inputs.maxJobs(), m_fallback.maxJobs);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsToolchain, m_inputs.toolchainPreferenceName(), m_fallback.toolchainPreference);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsBuildConfiguration, m_inputs.buildConfiguration(), m_fallback.buildConfiguration);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsArchitecture, m_inputs.architectureRaw(), m_fallback.architecturePreference);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsInputFile, m_inputs.inputFile(), m_fallback.inputFile);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsEnvFile, m_inputs.envFile(), m_fallback.envFile);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsRootDirectory, m_inputs.rootDirectory(), m_fallback.rootDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOutputDirectory, m_inputs.outputDirectory(), m_fallback.outputDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsExternalDirectory, m_inputs.externalDirectory(), m_fallback.externalDirectory);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsDistributionDirectory, m_inputs.distributionDirectory(), m_fallback.distributionDirectory);
 
 	// We always want to save these values
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), inState.osTargetName);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), inState.osTargetVersion);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetName, m_inputs.osTargetName(), m_fallback.osTargetName);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsOsTargetVersion, m_inputs.osTargetVersion(), m_fallback.osTargetVersion);
 
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), inState.signingIdentity);
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsProfilerConfig, m_inputs.profilerConfig(), inState.profilerConfig);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsSigningIdentity, m_inputs.signingIdentity(), m_fallback.signingIdentity);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsProfilerConfig, m_inputs.profilerConfig(), m_fallback.profilerConfig);
 
 	// if (!buildOptions.contains(Keys::OptionsSigningIdentity) || !buildOptions[Keys::OptionsSigningIdentity].is_string())
 	// {
 	// 	// Note: don't check if string is empty - empty is valid
-	// 	buildOptions[Keys::OptionsSigningIdentity] = inState.signingIdentity;
+	// 	buildOptions[Keys::OptionsSigningIdentity] = m_fallback.signingIdentity;
 	// 	m_jsonFile.setDirty(true);
 	// }
 
-	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLastTarget, m_inputs.lastTarget(), inState.lastTarget);
+	m_jsonFile.assignNodeIfEmptyWithFallback(buildOptions, Keys::OptionsLastTarget, m_inputs.lastTarget(), m_fallback.lastTarget);
 
 	if (!json::isObject(buildOptions, Keys::OptionsRunArguments))
 	{
@@ -391,7 +397,7 @@ bool SettingsJsonParser::makeSettingsJson(const IntermediateSettingsState& inSta
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
+bool SettingsJsonFile::serializeFromJsonRoot(Json& inJson)
 {
 	if (!inJson.is_object())
 	{
@@ -428,7 +434,7 @@ bool SettingsJsonParser::serializeFromJsonRoot(Json& inJson)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::parseSettings(Json& inNode)
+bool SettingsJsonFile::parseSettings(Json& inNode)
 {
 	if (!inNode.contains(Keys::Options))
 	{
@@ -621,7 +627,7 @@ bool SettingsJsonParser::parseSettings(Json& inNode)
 }
 
 /*****************************************************************************/
-bool SettingsJsonParser::parseTools(Json& inNode)
+bool SettingsJsonFile::parseTools(Json& inNode)
 {
 	if (!inNode.contains(Keys::Tools))
 	{
@@ -706,7 +712,7 @@ bool SettingsJsonParser::parseTools(Json& inNode)
 #if defined(CHALET_MACOS)
 
 /*****************************************************************************/
-bool SettingsJsonParser::detectAppleSdks(const bool inForce)
+bool SettingsJsonFile::detectAppleSdks(const bool inForce)
 {
 	// AppleTVOS.platform
 	// AppleTVSimulator.platform
@@ -736,7 +742,7 @@ bool SettingsJsonParser::detectAppleSdks(const bool inForce)
 	return true;
 }
 /*****************************************************************************/
-bool SettingsJsonParser::parseAppleSdks(Json& inNode)
+bool SettingsJsonFile::parseAppleSdks(Json& inNode)
 {
 	if (!inNode.contains(Keys::AppleSdks))
 	{
