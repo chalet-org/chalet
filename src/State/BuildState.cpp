@@ -15,7 +15,7 @@
 #include "DotEnv/DotEnvFileParser.hpp"
 #include "Export/IProjectExporter.hpp"
 #include "Process/Environment.hpp"
-#include "SettingsJson/ToolchainSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileToolchain.hpp"
 #include "State/AncillaryTools.hpp"
 #include "State/BuildConfiguration.hpp"
 #include "State/BuildInfo.hpp"
@@ -465,9 +465,7 @@ bool BuildState::checkForExceptionalToolchainCases()
 	bool isVisualStudio = preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM;
 	if (isVisualStudio)
 	{
-		auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
-		ToolchainSettingsJsonParser parser(*this, settingsFile);
-		if (!parser.validatePathsWithoutFullParseAndEraseToolchainOnFailure())
+		if (!SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure(*this))
 		{
 			auto& preferenceName = inputs.toolchainPreferenceName();
 			inputs.setToolchainPreference(std::string(preferenceName));
@@ -514,9 +512,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->checkForEnvironment = true;
 	}
 
-	auto& settingsFile = m_impl->centralState.cache.getSettings(SettingsType::Local);
-	ToolchainSettingsJsonParser parser(*this, settingsFile);
-	if (!parser.serialize())
+	if (!SettingsJsonFileToolchain::parse(*this))
 		return false;
 
 	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);
@@ -555,7 +551,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 	if (m_impl->environment != nullptr && toolchain.version().empty())
 		toolchain.setVersion(m_impl->environment->detectedVersion());
 
-	if (!parser.validatePaths())
+	if (!SettingsJsonFileToolchain::validatePaths(*this))
 		return false;
 
 	Output::setShowCommandOverride(false);

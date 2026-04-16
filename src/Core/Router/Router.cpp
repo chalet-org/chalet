@@ -20,7 +20,7 @@
 #include "Query/QueryController.hpp"
 #include "Settings/SettingsAction.hpp"
 #include "Settings/SettingsManager.hpp"
-#include "SettingsJson/ThemeSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileTheme.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildState.hpp"
 #include "State/CentralState.hpp"
@@ -59,7 +59,7 @@ Router::Router(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool Router::run()
 {
-	if (!parseTheme())
+	if (!SettingsJsonFileTheme::parse(m_inputs))
 		return false;
 
 	if (workingDirectoryIsGlobalChaletDirectory())
@@ -365,16 +365,6 @@ bool Router::routeExport(CentralState& inCentralState)
 	Output::lineBreak();
 	Output::msgBuildSuccess();
 	Output::lineBreak();
-
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::parseTheme()
-{
-	ThemeSettingsJsonParser themeParser(m_inputs);
-	if (!themeParser.serialize())
-		return false;
 
 	return true;
 }

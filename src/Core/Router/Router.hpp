@@ -33,7 +33,6 @@ private:
 
 	bool routeExport(CentralState& inCentralState);
 
-	bool parseTheme();
 	bool workingDirectoryIsGlobalChaletDirectory();
 
 #if defined(CHALET_DEBUG)

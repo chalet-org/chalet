@@ -7,6 +7,7 @@
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
+#include "Json/IJsonFileParser.hpp"
 
 namespace chalet
 {
@@ -15,15 +16,17 @@ struct JsonFile;
 struct CentralState;
 struct IntermediateSettingsState;
 
-struct SettingsJsonParser
+struct SettingsJsonFile final : public IJsonFileParser
 {
-	explicit SettingsJsonParser(CommandLineInputs& inInputs, CentralState& inCentralState, JsonFile& inJsonFile);
-
-	bool serialize(const IntermediateSettingsState& inState);
+	static bool parseWithFallbackSettings(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
 
 private:
+	explicit SettingsJsonFile(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
+
+	virtual bool deserialize() final;
+
 	bool validatePaths(const bool inWithError);
-	bool makeSettingsJson(const IntermediateSettingsState& inState);
+	bool makeSettingsJson();
 	bool serializeFromJsonRoot(Json& inJson);
 
 	bool parseSettings(Json& inNode);
@@ -37,5 +40,7 @@ private:
 	CommandLineInputs& m_inputs;
 	CentralState& m_centralState;
 	JsonFile& m_jsonFile;
+
+	const IntermediateSettingsState& m_fallback;
 };
 }

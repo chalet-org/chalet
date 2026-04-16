@@ -3,13 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "SettingsJson/ToolchainSettingsJsonParser.hpp"
+#include "SettingsJson/SettingsJsonFileToolchain.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Platform/Arch.hpp"
 #include "Process/Environment.hpp"
 #include "State/BuildState.hpp"
+#include "State/CentralState.hpp"
 #include "State/CompilerTools.hpp"
 #include "System/Files.hpp"
 #include "Terminal/Output.hpp"
@@ -21,14 +22,31 @@
 namespace chalet
 {
 /*****************************************************************************/
-ToolchainSettingsJsonParser::ToolchainSettingsJsonParser(BuildState& inState, JsonFile& inJsonFile) :
-	m_state(inState),
-	m_jsonFile(inJsonFile)
+bool SettingsJsonFileToolchain::parse(BuildState& inState)
 {
+	SettingsJsonFileToolchain settingsJsonFile(inState);
+	return settingsJsonFile.deserialize();
+}
+/*****************************************************************************/
+bool SettingsJsonFileToolchain::validatePaths(BuildState& inState)
+{
+	SettingsJsonFileToolchain settingsJsonFile(inState);
+	return settingsJsonFile.validatePaths();
+}
+bool SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure(BuildState& inState)
+{
+	SettingsJsonFileToolchain settingsJsonFile(inState);
+	return settingsJsonFile.validatePathsWithoutFullParseAndEraseToolchainOnFailure();
 }
 
 /*****************************************************************************/
-bool ToolchainSettingsJsonParser::serialize()
+SettingsJsonFileToolchain::SettingsJsonFileToolchain(BuildState& inState) :
+	m_state(inState),
+	m_jsonFile(m_state.getCentralState().cache.getSettings(SettingsType::Local))
+{}
+
+/*****************************************************************************/
+bool SettingsJsonFileToolchain::deserialize()
 {
 	Output::setShowCommandOverride(false);
 
@@ -43,8 +61,8 @@ bool ToolchainSettingsJsonParser::serialize()
 	auto& toolchains = jRoot[Keys::Toolchains];
 
 	auto envToolchainName = Environment::getString("CHALET_TOOLCHAIN_NAME");
-	m_isCustomToolchain = !envToolchainName.empty() && String::equals(preferenceName, envToolchainName);
-	if (m_isCustomToolchain)
+	bool isCustomToolchain = !envToolchainName.empty() && String::equals(preferenceName, envToolchainName);
+	if (isCustomToolchain)
 	{
 		if (!m_state.inputs.makeCustomToolchainFromEnvironment())
 		{
@@ -63,7 +81,7 @@ bool ToolchainSettingsJsonParser::serialize()
 	}
 
 	auto& toolchainNode = getToolchainNode(toolchains);
-	if (!serialize(toolchainNode))
+	if (!deserializeFromToolchainNode(toolchainNode, isCustomToolchain))
 		return onError();
 
 	Output::setShowCommandOverride(true);
@@ -71,118 +89,7 @@ bool ToolchainSettingsJsonParser::serialize()
 }
 
 /*****************************************************************************/
-// This is called from BuildState::checkForExceptionalToolchainCases()
-//   If a (Visual Studio) toolchain no longer exists, we want to refresh it
-//
-bool ToolchainSettingsJsonParser::validatePathsWithoutFullParseAndEraseToolchainOnFailure()
-{
-	bool result = true;
-
-	Output::setShowCommandOverride(false);
-
-	auto& jRoot = m_jsonFile.root;
-
-	auto& toolchains = jRoot[Keys::Toolchains];
-	if (!toolchains.empty())
-	{
-		auto& toolchain = getToolchainNode(toolchains);
-		if (!toolchain.empty())
-		{
-			auto pathFromKeyIsValid = [&toolchain](const char* inKey) {
-				auto value = json::get<std::string>(toolchain, inKey);
-				return !value.empty() && Files::pathExists(value);
-			};
-
-			// We only want to wipe the toolchain if ALL of these are not found
-
-			result = false;
-			result |= pathFromKeyIsValid(Keys::ToolchainCompilerCpp);
-			result |= pathFromKeyIsValid(Keys::ToolchainCompilerC);
-			result |= pathFromKeyIsValid(Keys::ToolchainLinker);
-			result |= pathFromKeyIsValid(Keys::ToolchainArchiver);
-			result |= pathFromKeyIsValid(Keys::ToolchainDisassembler);
-
-			if (!result)
-			{
-				// Wipe the toolchain
-				const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
-				toolchains.erase(preferenceName);
-			}
-		}
-	}
-
-	Output::setShowCommandOverride(true);
-	return result;
-}
-
-/*****************************************************************************/
-Json& ToolchainSettingsJsonParser::getToolchainNode(Json& inToolchainsNode)
-{
-	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
-	auto arch = m_state.inputs.getResolvedTargetArchitecture();
-
-	if (!json::isObject(inToolchainsNode, preferenceName.c_str()))
-		inToolchainsNode[preferenceName] = Json::object();
-
-	auto& node = inToolchainsNode[preferenceName];
-	bool isDefined = false;
-	StringList keys{
-		Keys::ToolchainCompilerC,
-		Keys::ToolchainCompilerCpp,
-		Keys::ToolchainLinker,
-		Keys::ToolchainArchiver,
-		Keys::ToolchainDisassembler,
-		Keys::ToolchainBuildStrategy,
-		Keys::ToolchainBuildPathStyle,
-		Keys::ToolchainCMake,
-		Keys::ToolchainMeson,
-		Keys::ToolchainMake,
-		Keys::ToolchainNinja,
-		Keys::ToolchainProfiler,
-		Keys::ToolchainVersion,
-	};
-	for (auto& [key, _] : node.items())
-	{
-		isDefined |= String::equals(keys, key);
-		if (isDefined)
-			break;
-	}
-	if (!isDefined && (m_state.inputs.isMultiArchToolchainPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
-	{
-		auto arch2 = Arch::from(arch);
-		if (!node.contains(arch2.str))
-		{
-			node[arch2.str] = Json::object();
-		}
-		m_state.inputs.setMultiArchToolchainPreset(true);
-
-		return node[arch2.str];
-	}
-	else
-	{
-		return node;
-	}
-}
-
-/*****************************************************************************/
-bool ToolchainSettingsJsonParser::serialize(Json& inNode)
-{
-	if (!inNode.is_object())
-		return false;
-
-	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference()))
-		return false;
-
-	// LOG(json::dump(inNode, 1, '\t'));
-
-	if (!parseToolchain(inNode))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool ToolchainSettingsJsonParser::validatePaths()
+bool SettingsJsonFileToolchain::validatePaths()
 {
 	bool result = true;
 	const auto& compilerCpp = m_state.toolchain.compilerCpp().path;
@@ -236,7 +143,162 @@ bool ToolchainSettingsJsonParser::validatePaths()
 }
 
 /*****************************************************************************/
-bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const ToolchainPreference& preference)
+// This is called from BuildState::checkForExceptionalToolchainCases()
+//   If a (Visual Studio) toolchain no longer exists, we want to refresh it
+//
+bool SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure()
+{
+	bool result = true;
+
+	Output::setShowCommandOverride(false);
+
+	auto& jRoot = m_jsonFile.root;
+
+	auto& toolchains = jRoot[Keys::Toolchains];
+	if (!toolchains.empty())
+	{
+		auto& toolchain = getToolchainNode(toolchains);
+		if (!toolchain.empty())
+		{
+			auto pathFromKeyIsValid = [&toolchain](const char* inKey) {
+				auto value = json::get<std::string>(toolchain, inKey);
+				return !value.empty() && Files::pathExists(value);
+			};
+
+			// We only want to wipe the toolchain if ALL of these are not found
+
+			result = false;
+			result |= pathFromKeyIsValid(Keys::ToolchainCompilerCpp);
+			result |= pathFromKeyIsValid(Keys::ToolchainCompilerC);
+			result |= pathFromKeyIsValid(Keys::ToolchainLinker);
+			result |= pathFromKeyIsValid(Keys::ToolchainArchiver);
+			result |= pathFromKeyIsValid(Keys::ToolchainDisassembler);
+
+			if (!result)
+			{
+				// Wipe the toolchain
+				const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
+				toolchains.erase(preferenceName);
+			}
+		}
+	}
+
+	Output::setShowCommandOverride(true);
+	return result;
+}
+
+/*****************************************************************************/
+Json& SettingsJsonFileToolchain::getToolchainNode(Json& inToolchainsNode)
+{
+	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
+	auto arch = m_state.inputs.getResolvedTargetArchitecture();
+
+	if (!json::isObject(inToolchainsNode, preferenceName.c_str()))
+		inToolchainsNode[preferenceName] = Json::object();
+
+	auto& node = inToolchainsNode[preferenceName];
+	bool isDefined = false;
+	StringList keys{
+		Keys::ToolchainCompilerC,
+		Keys::ToolchainCompilerCpp,
+		Keys::ToolchainLinker,
+		Keys::ToolchainArchiver,
+		Keys::ToolchainDisassembler,
+		Keys::ToolchainBuildStrategy,
+		Keys::ToolchainBuildPathStyle,
+		Keys::ToolchainCMake,
+		Keys::ToolchainMeson,
+		Keys::ToolchainMake,
+		Keys::ToolchainNinja,
+		Keys::ToolchainProfiler,
+		Keys::ToolchainVersion,
+	};
+	for (auto& [key, _] : node.items())
+	{
+		isDefined |= String::equals(keys, key);
+		if (isDefined)
+			break;
+	}
+	if (!isDefined && (m_state.inputs.isMultiArchToolchainPreset() || m_state.inputs.toolchainPreference().type == ToolchainType::Unknown))
+	{
+		auto arch2 = Arch::from(arch);
+		if (!node.contains(arch2.str))
+		{
+			node[arch2.str] = Json::object();
+		}
+		m_state.inputs.setMultiArchToolchainPreset(true);
+
+		return node[arch2.str];
+	}
+	else
+	{
+		return node;
+	}
+}
+
+/*****************************************************************************/
+bool SettingsJsonFileToolchain::deserializeFromToolchainNode(Json& inNode, const bool inIsCustomToolchain)
+{
+	if (!inNode.is_object())
+		return false;
+
+	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference(), inIsCustomToolchain))
+		return false;
+
+	// LOG(json::dump(inNode, 1, '\t'));
+
+	StringList removeKeys;
+	for (const auto& [key, value] : inNode.items())
+	{
+		if (value.is_string())
+		{
+			if (String::equals(Keys::ToolchainBuildStrategy, key))
+				m_state.toolchain.setStrategy(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainBuildPathStyle, key))
+				m_state.toolchain.setBuildPathStyle(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainVersion, key))
+				m_state.toolchain.setVersion(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainArchiver, key))
+				m_state.toolchain.setArchiver(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainCompilerCpp, key))
+				m_state.toolchain.setCompilerCpp(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainCompilerC, key))
+				m_state.toolchain.setCompilerC(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainCompilerWindowsResource, key))
+				m_state.toolchain.setCompilerWindowsResource(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainLinker, key))
+				m_state.toolchain.setLinker(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainProfiler, key))
+				m_state.toolchain.setProfiler(value.get<std::string>());
+			//
+			else if (String::equals(Keys::ToolchainCMake, key))
+				m_state.toolchain.setCmake(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainMeson, key))
+				m_state.toolchain.setMeson(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainMake, key))
+				m_state.toolchain.setMake(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainNinja, key))
+				m_state.toolchain.setNinja(value.get<std::string>());
+			else if (String::equals(Keys::ToolchainDisassembler, key))
+				m_state.toolchain.setDisassembler(value.get<std::string>());
+			else
+				removeKeys.push_back(key);
+		}
+	}
+
+	for (auto& key : removeKeys)
+	{
+		inNode.erase(key);
+	}
+
+	if (!removeKeys.empty())
+		m_jsonFile.setDirty(true);
+
+	return true;
+}
+
+/*****************************************************************************/
+bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPreference& preference, const bool inIsCustomToolchain)
 {
 	if (!json::isValid<std::string>(toolchain, Keys::ToolchainVersion))
 		toolchain[Keys::ToolchainVersion] = std::string();
@@ -283,7 +345,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 		std::string rc;
 		StringList searches;
 
-		if (m_isCustomToolchain)
+		if (inIsCustomToolchain)
 		{
 			if (!preference.rc.empty())
 			{
@@ -323,7 +385,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string link;
 		StringList searches;
-		if (m_isCustomToolchain)
+		if (inIsCustomToolchain)
 		{
 			if (!preference.linker.empty())
 			{
@@ -390,7 +452,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string ar;
 		StringList searches;
-		if (m_isCustomToolchain)
+		if (inIsCustomToolchain)
 		{
 			if (!preference.archiver.empty())
 			{
@@ -450,7 +512,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 			if (!String::equals("vs", preference.profiler))
 				searches.push_back(preference.profiler);
 		}
-		else if (m_isCustomToolchain || isGNU)
+		else if (inIsCustomToolchain || isGNU)
 		{
 			if (!preference.profiler.empty())
 				searches.push_back(preference.profiler);
@@ -477,7 +539,7 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		std::string disasm;
 		StringList searches;
-		if (m_isCustomToolchain)
+		if (inIsCustomToolchain)
 		{
 			if (!preference.disassembler.empty())
 			{
@@ -664,59 +726,6 @@ bool ToolchainSettingsJsonParser::makeToolchain(Json& toolchain, const Toolchain
 	{
 		toolchain[Keys::ToolchainVersion] = std::string();
 	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool ToolchainSettingsJsonParser::parseToolchain(Json& inNode)
-{
-	StringList removeKeys;
-	for (const auto& [key, value] : inNode.items())
-	{
-		if (value.is_string())
-		{
-			if (String::equals(Keys::ToolchainBuildStrategy, key))
-				m_state.toolchain.setStrategy(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainBuildPathStyle, key))
-				m_state.toolchain.setBuildPathStyle(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainVersion, key))
-				m_state.toolchain.setVersion(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainArchiver, key))
-				m_state.toolchain.setArchiver(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainCompilerCpp, key))
-				m_state.toolchain.setCompilerCpp(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainCompilerC, key))
-				m_state.toolchain.setCompilerC(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainCompilerWindowsResource, key))
-				m_state.toolchain.setCompilerWindowsResource(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainLinker, key))
-				m_state.toolchain.setLinker(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainProfiler, key))
-				m_state.toolchain.setProfiler(value.get<std::string>());
-			//
-			else if (String::equals(Keys::ToolchainCMake, key))
-				m_state.toolchain.setCmake(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainMeson, key))
-				m_state.toolchain.setMeson(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainMake, key))
-				m_state.toolchain.setMake(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainNinja, key))
-				m_state.toolchain.setNinja(value.get<std::string>());
-			else if (String::equals(Keys::ToolchainDisassembler, key))
-				m_state.toolchain.setDisassembler(value.get<std::string>());
-			else
-				removeKeys.push_back(key);
-		}
-	}
-
-	for (auto& key : removeKeys)
-	{
-		inNode.erase(key);
-	}
-
-	if (!removeKeys.empty())
-		m_jsonFile.setDirty(true);
 
 	return true;
 }

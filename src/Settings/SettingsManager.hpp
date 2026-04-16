@@ -45,7 +45,7 @@ private:
 	std::string m_value;
 
 	SettingsAction m_action = SettingsAction::Get;
-	SettingsType m_type = SettingsType::None;
+	SettingsType m_type = SettingsType::Local;
 
 	bool m_initialized = false;
 	bool m_yamlOutput = false;
