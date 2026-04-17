@@ -465,7 +465,7 @@ bool BuildState::checkForExceptionalToolchainCases()
 	bool isVisualStudio = preference.type == ToolchainType::VisualStudio || preference.type == ToolchainType::VisualStudioLLVM;
 	if (isVisualStudio)
 	{
-		if (!SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure(*this))
+		if (!SettingsJsonFileToolchain::isCurrentToolchainStillValid(*this))
 		{
 			auto& preferenceName = inputs.toolchainPreferenceName();
 			inputs.setToolchainPreference(std::string(preferenceName));
@@ -512,7 +512,7 @@ bool BuildState::parseToolchainFromSettingsJson()
 		m_impl->checkForEnvironment = true;
 	}
 
-	if (!SettingsJsonFileToolchain::parse(*this))
+	if (!SettingsJsonFileToolchain::read(*this))
 		return false;
 
 	ToolchainType type = IBuildEnvironment::detectToolchainTypeFromPath(toolchain.compilerCxxAny().path, *this);

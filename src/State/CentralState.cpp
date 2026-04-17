@@ -11,7 +11,7 @@
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
-#include "SettingsJson/GlobalSettingsJsonParser.hpp"
+#include "SettingsJson/GlobalSettingsJsonFile.hpp"
 #include "SettingsJson/SettingsJsonFile.hpp"
 
 #include "DotEnv/DotEnvFileParser.hpp"
@@ -93,10 +93,10 @@ bool CentralState::initialize()
 		state.osTargetVersion = m_inputs.getDefaultOsTargetVersion();
 		state.lastTarget = Values::All;
 
-		if (!parseGlobalSettingsJson(state))
+		if (!GlobalSettingsJsonFile::read(cache, state, m_shouldPerformUpdateCheck))
 			return false;
 
-		if (!SettingsJsonFile::parseWithFallbackSettings(m_inputs, *this, state))
+		if (!SettingsJsonFile::read(m_inputs, *this, state))
 			return false;
 
 		if (m_inputs.osTargetName().empty())
@@ -240,7 +240,7 @@ bool CentralState::createCache()
 	cache.file().checkIfAppVersionChanged(m_inputs.appPath());
 	cache.file().checkIfThemeChanged();
 
-	if (!cache.createCacheFolder(CacheType::Local))
+	if (!cache.createLocalCacheFolder())
 	{
 		Diagnostic::error("There was an error creating the build cache.");
 		return false;
@@ -593,13 +593,6 @@ bool CentralState::parseEnvFile()
 	DotEnvFileParser envParser(m_inputs);
 	return envParser.readVariablesFromInputs();
 }
-/*****************************************************************************/
-bool CentralState::parseGlobalSettingsJson(IntermediateSettingsState& outState)
-{
-	auto& settingsFile = cache.getSettings(SettingsType::Global);
-	GlobalSettingsJsonParser parser(*this, settingsFile);
-	return parser.serialize(outState);
-}
 
 /*****************************************************************************/
 bool CentralState::parseBuildFile()
@@ -669,22 +662,6 @@ void CentralState::addAllowedArchitecture(std::string&& inArch)
 bool CentralState::shouldPerformUpdateCheck() const
 {
 	return m_shouldPerformUpdateCheck;
-}
-
-/*****************************************************************************/
-void CentralState::shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent)
-{
-	time_t difference = inCurrent - inLastUpdate;
-
-	// LOG("lastUpdateCheck:", inLastUpdate);
-	// LOG("currentTime:", inCurrent);
-	// LOG("difference:", difference);
-
-	time_t checkDuration = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::hours(24)).count();
-	// time_t checkDuration = 5;
-	// LOG("checkDuration:", checkDuration);
-
-	m_shouldPerformUpdateCheck = difference < 0 || difference >= checkDuration;
 }
 
 /*****************************************************************************/

@@ -61,12 +61,11 @@ struct CentralState
 
 private:
 	friend struct CentralChaletJsonParser;
-	friend struct GlobalSettingsJsonParser;
+	friend struct GlobalSettingsJsonFile;
 
 	bool createCache();
 
 	bool parseEnvFile();
-	bool parseGlobalSettingsJson(IntermediateSettingsState& outState);
 	bool parseBuildFile();
 
 	bool validateOsTarget();
@@ -82,8 +81,6 @@ private:
 	void addBuildConfiguration(const std::string& inName, BuildConfiguration&& inConfig);
 
 	void addAllowedArchitecture(std::string&& inArch);
-
-	void shouldCheckForUpdate(const time_t inLastUpdate, const time_t inCurrent);
 
 	CommandLineInputs& m_inputs;
 

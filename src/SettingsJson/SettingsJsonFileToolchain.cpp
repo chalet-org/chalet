@@ -16,13 +16,12 @@
 #include "Terminal/Output.hpp"
 #include "Utility/List.hpp"
 #include "Utility/String.hpp"
-#include "Json/JsonFile.hpp"
 #include "Json/JsonKeys.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-bool SettingsJsonFileToolchain::parse(BuildState& inState)
+bool SettingsJsonFileToolchain::read(BuildState& inState)
 {
 	SettingsJsonFileToolchain settingsJsonFile(inState);
 	return settingsJsonFile.deserialize();
@@ -33,10 +32,10 @@ bool SettingsJsonFileToolchain::validatePaths(BuildState& inState)
 	SettingsJsonFileToolchain settingsJsonFile(inState);
 	return settingsJsonFile.validatePaths();
 }
-bool SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure(BuildState& inState)
+bool SettingsJsonFileToolchain::isCurrentToolchainStillValid(BuildState& inState)
 {
 	SettingsJsonFileToolchain settingsJsonFile(inState);
-	return settingsJsonFile.validatePathsWithoutFullParseAndEraseToolchainOnFailure();
+	return settingsJsonFile.isCurrentToolchainStillValid();
 }
 
 /*****************************************************************************/
@@ -146,7 +145,7 @@ bool SettingsJsonFileToolchain::validatePaths()
 // This is called from BuildState::checkForExceptionalToolchainCases()
 //   If a (Visual Studio) toolchain no longer exists, we want to refresh it
 //
-bool SettingsJsonFileToolchain::validatePathsWithoutFullParseAndEraseToolchainOnFailure()
+bool SettingsJsonFileToolchain::isCurrentToolchainStillValid()
 {
 	bool result = true;
 

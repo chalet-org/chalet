@@ -14,7 +14,7 @@
 namespace chalet
 {
 /*****************************************************************************/
-bool SettingsJsonFileTheme::parse(const CommandLineInputs& inInputs)
+bool SettingsJsonFileTheme::read(const CommandLineInputs& inInputs)
 {
 	SettingsJsonFileTheme SettingsJsonFileTheme(inInputs);
 	return SettingsJsonFileTheme.deserialize();
@@ -23,8 +23,7 @@ bool SettingsJsonFileTheme::parse(const CommandLineInputs& inInputs)
 /*****************************************************************************/
 SettingsJsonFileTheme::SettingsJsonFileTheme(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
-{
-}
+{}
 
 /*****************************************************************************/
 bool SettingsJsonFileTheme::deserialize()

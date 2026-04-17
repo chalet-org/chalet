@@ -32,8 +32,7 @@ i32 Application::run(const i32 argc, const char* argv[])
 		if (m_inputs == nullptr)
 			m_inputs = std::make_unique<CommandLineInputs>();
 
-		SettingsJsonFileTheme::parse(*m_inputs);
-
+		SettingsJsonFileTheme::read(*m_inputs);
 		return onExit(Status::Failure);
 	}
 

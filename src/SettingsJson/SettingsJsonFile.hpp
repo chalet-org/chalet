@@ -8,17 +8,17 @@
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
 #include "Json/IJsonFileParser.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 struct CommandLineInputs;
-struct JsonFile;
 struct CentralState;
 struct IntermediateSettingsState;
 
 struct SettingsJsonFile final : public IJsonFileParser
 {
-	static bool parseWithFallbackSettings(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
+	static bool read(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
 
 private:
 	explicit SettingsJsonFile(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);

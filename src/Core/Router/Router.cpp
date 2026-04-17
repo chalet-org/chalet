@@ -59,7 +59,7 @@ Router::Router(CommandLineInputs& inInputs) :
 /*****************************************************************************/
 bool Router::run()
 {
-	if (!SettingsJsonFileTheme::parse(m_inputs))
+	if (!SettingsJsonFileTheme::read(m_inputs))
 		return false;
 
 	if (workingDirectoryIsGlobalChaletDirectory())
