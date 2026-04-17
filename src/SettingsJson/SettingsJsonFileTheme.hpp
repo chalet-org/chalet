@@ -16,7 +16,7 @@ struct ColorTheme;
 
 struct SettingsJsonFileTheme final : public IJsonFileParser
 {
-	static bool parse(const CommandLineInputs& inInputs);
+	static bool read(const CommandLineInputs& inInputs);
 
 private:
 	explicit SettingsJsonFileTheme(const CommandLineInputs& inInputs);

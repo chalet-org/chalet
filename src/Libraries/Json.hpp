@@ -75,6 +75,24 @@ inline bool assign(T& outVariable, const Json& inNode, const char* inKey);
 inline bool isStringInvalidOrEmpty(const Json& inNode);
 inline bool isStringInvalidOrEmpty(const Json& inNode, const char* inKey);
 
+template <typename T>
+inline bool assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue);
+
+template <typename T>
+inline bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValue, const T& inFallbackValue);
+
+inline bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValue, const std::string& inFallbackValue);
+inline bool assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValue, const std::string& inFallbackValue);
+
+inline bool assignObjectNodeIfInvalid(Json& outNode, const char* inKey);
+inline bool assignObjectNodeIfInvalid(Json& outNode, const char* inKey, const Json& inObjectNode);
+inline bool assignObjectNodeIfInvalidAndIncludeMissingPairs(Json& outNode, const char* inKey, const Json& inObjectNode);
+
+inline bool removeNode(Json& outNode, const char* inKey);
+
+inline bool assignNodeFromDataType(Json& outNode, const char* inKey, const JsonDataType inType);
+inline Json initializeDataType(const JsonDataType inType);
+
 inline std::string dump(const Json& inNode, int indent = -1, char indentChar = (char)32);
 }
 }

@@ -51,7 +51,5 @@ private:
 	StringList getMetaBuildKinds() const;
 
 	const CentralState& m_centralState;
-
-	const Json kEmptyJson;
 };
 }

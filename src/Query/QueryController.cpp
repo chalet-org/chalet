@@ -176,18 +176,16 @@ StringList QueryController::getRequestedType(const QueryOption inOption) const
 /*****************************************************************************/
 const Json& QueryController::getSettingsJson() const
 {
-	if (m_centralState.cache.exists(CacheType::Local))
+	if (m_centralState.cache.exists())
 	{
 		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Local);
 		return settingsFile.root;
 	}
-	else if (m_centralState.cache.exists(CacheType::Global))
+	else
 	{
 		const auto& settingsFile = m_centralState.cache.getSettings(SettingsType::Global);
 		return settingsFile.root;
 	}
-
-	return kEmptyJson;
 }
 
 /*****************************************************************************/

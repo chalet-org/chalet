@@ -131,58 +131,7 @@ const std::string& JsonFile::filename() const noexcept
 }
 
 /*****************************************************************************/
-void JsonFile::makeNode(const char* inKey, const JsonDataType inType)
-{
-	if (root.contains(inKey))
-	{
-		if (root[inKey].type() == inType)
-			return;
-	}
-
-	root[inKey] = initializeDataType(inType);
-	setDirty(true);
-}
-
-/*****************************************************************************/
-bool JsonFile::assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
-{
-	if (!outNode.contains(inKey) || !outNode[inKey].is_string())
-	{
-		outNode[inKey] = inValueB;
-		setDirty(true);
-	}
-
-	auto value = outNode[inKey].get<std::string>();
-	if (!inValueA.empty() && inValueA != value)
-	{
-		outNode[inKey] = inValueA;
-		setDirty(true);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-bool JsonFile::assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB)
-{
-	if (!outNode.contains(inKey) || !outNode[inKey].is_string())
-	{
-		outNode[inKey] = inValueB;
-		setDirty(true);
-	}
-
-	auto value = outNode[inKey].get<std::string>();
-	if (!inValueA.empty() && !value.empty() && inValueA != value)
-	{
-		outNode[inKey] = inValueA;
-		setDirty(true);
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-std::string JsonFile::getSchema()
+std::string JsonFile::getSchema() const
 {
 	std::string ret;
 
@@ -201,7 +150,7 @@ std::string JsonFile::getSchema()
 }
 
 /*****************************************************************************/
-bool JsonFile::validate(const Json& inSchemaJson)
+bool JsonFile::validate(const Json& inSchemaJson) const
 {
 	if (m_filename.empty())
 		return false;
@@ -229,41 +178,4 @@ bool JsonFile::validate(const Json& inSchemaJson)
 
 	return true;
 }
-
-/*****************************************************************************/
-Json JsonFile::initializeDataType(const JsonDataType inType)
-{
-	switch (inType)
-	{
-		case JsonDataType::object:
-			return Json::object();
-
-		case JsonDataType::array:
-			return Json::array();
-
-		case JsonDataType::string:
-			return std::string();
-
-		case JsonDataType::binary:
-			return 0x0;
-
-		case JsonDataType::boolean:
-			return false;
-
-		case JsonDataType::number_float:
-			return 0.0f;
-
-		case JsonDataType::number_integer:
-			return 0;
-
-		case JsonDataType::number_unsigned:
-			return 0U;
-
-		default:
-			break;
-	}
-
-	return Json();
-}
-
 }

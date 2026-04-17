@@ -8,17 +8,17 @@
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
 #include "Json/IJsonFileParser.hpp"
+#include "Json/JsonFile.hpp"
 
 namespace chalet
 {
 class BuildState;
-struct JsonFile;
 
 struct SettingsJsonFileToolchain final : public IJsonFileParser
 {
-	static bool parse(BuildState& inState);
+	static bool read(BuildState& inState);
 	static bool validatePaths(BuildState& inState);
-	static bool validatePathsWithoutFullParseAndEraseToolchainOnFailure(BuildState& inState);
+	static bool isCurrentToolchainStillValid(BuildState& inState);
 
 private:
 	explicit SettingsJsonFileToolchain(BuildState& inState);
@@ -26,7 +26,7 @@ private:
 	virtual bool deserialize() final;
 
 	bool validatePaths();
-	bool validatePathsWithoutFullParseAndEraseToolchainOnFailure();
+	bool isCurrentToolchainStillValid();
 
 	Json& getToolchainNode(Json& inToolchainsNode);
 	bool deserializeFromToolchainNode(Json& inNode, const bool inIsCustomToolchain);

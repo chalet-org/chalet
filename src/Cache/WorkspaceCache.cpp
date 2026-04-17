@@ -24,14 +24,6 @@
 namespace chalet
 {
 /*****************************************************************************/
-const std::string& WorkspaceCache::getCacheRef(const CacheType inCacheType) const
-{
-	// return inCacheType == Type::Global ? m_cacheFolderGlobal : m_cacheFolderLocal;
-	UNUSED(inCacheType);
-	return m_cacheFolderLocal;
-}
-
-/*****************************************************************************/
 bool WorkspaceCache::initialize(const CommandLineInputs& inInputs)
 {
 	const auto& outputDirectory = inInputs.outputDirectory();
@@ -66,7 +58,7 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 		if (Files::moveSilent(oldGlobalSettingsFile, globalSettingsFile))
 		{
 			// Update the theme
-			SettingsJsonFileTheme::parse(inInputs);
+			SettingsJsonFileTheme::read(inInputs);
 		}
 	}
 
@@ -82,21 +74,19 @@ bool WorkspaceCache::initializeSettings(const CommandLineInputs& inInputs)
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::createCacheFolder(const CacheType inCacheType)
+bool WorkspaceCache::createLocalCacheFolder()
 {
-	const auto& cacheRef = getCacheRef(inCacheType);
-
 	if (m_removeOldCacheFolder)
 	{
-		removeCacheFolder(inCacheType);
+		removeLocalCacheFolder();
 		m_removeOldCacheFolder = false;
 	}
 
 	Output::setShowCommandOverride(false);
 
-	if (!Files::pathExists(cacheRef))
+	if (!Files::pathExists(m_cacheFolderLocal))
 	{
-		if (!Files::makeDirectory(cacheRef))
+		if (!Files::makeDirectory(m_cacheFolderLocal))
 			return false;
 	}
 
@@ -114,25 +104,16 @@ bool WorkspaceCache::settingsCreated() const noexcept
 }
 
 /*****************************************************************************/
-bool WorkspaceCache::exists(const CacheType inCacheType) const
+bool WorkspaceCache::exists() const
 {
-	if (inCacheType == CacheType::Local)
-	{
-		return Files::pathExists(m_cacheFolderLocal) || Files::pathExists(m_localSettings.filename());
-	}
-	else
-	{
-		return Files::pathExists(m_globalSettings.filename());
-	}
+	return Files::pathExists(m_cacheFolderLocal) || Files::pathExists(m_localSettings.filename());
 }
 
 /*****************************************************************************/
-void WorkspaceCache::removeCacheFolder(const CacheType inCacheType)
+void WorkspaceCache::removeLocalCacheFolder()
 {
-	const auto& cacheRef = getCacheRef(inCacheType);
-
-	if (Files::pathExists(cacheRef))
-		Files::removeRecursively(cacheRef);
+	if (Files::pathExists(m_cacheFolderLocal))
+		Files::removeRecursively(m_cacheFolderLocal);
 }
 
 /*****************************************************************************/
@@ -140,8 +121,7 @@ std::string WorkspaceCache::getHashPath(const std::string& inIdentifier) const
 {
 	std::string hash = Hash::string(inIdentifier);
 
-	const auto& cacheRef = getCacheRef(CacheType::Local);
-	std::string ret = fmt::format("{}/{}", cacheRef, hash);
+	std::string ret = fmt::format("{}/{}", m_cacheFolderLocal, hash);
 
 	// LOG(ret);
 
@@ -151,13 +131,12 @@ std::string WorkspaceCache::getHashPath(const std::string& inIdentifier) const
 /*****************************************************************************/
 std::string WorkspaceCache::getCachePath(const std::string& inIdentifier) const
 {
-	const auto& cacheRef = getCacheRef(CacheType::Local);
 	std::string ret;
 
 	if (inIdentifier.empty())
-		ret = cacheRef;
+		ret = m_cacheFolderLocal;
 	else
-		ret = fmt::format("{}/{}", cacheRef, inIdentifier);
+		ret = fmt::format("{}/{}", m_cacheFolderLocal, inIdentifier);
 
 	// LOG(ret);
 
@@ -199,17 +178,16 @@ void WorkspaceCache::saveSettings(const SettingsType inType)
 /*****************************************************************************/
 bool WorkspaceCache::removeStaleProjectCaches()
 {
-	const auto& cacheRef = getCacheRef(CacheType::Local);
 	StringList ids = m_cacheFile.getCacheIdsToNotRemove();
 
-	if (!Files::pathExists(cacheRef) || ids.empty())
+	if (!Files::pathExists(m_cacheFolderLocal) || ids.empty())
 		return true;
 
 	Output::setShowCommandOverride(false);
 
 	for (auto& id : ids)
 	{
-		auto path = fmt::format("{}/{}", cacheRef, id);
+		auto path = fmt::format("{}/{}", m_cacheFolderLocal, id);
 		if (!Files::pathExists(path))
 		{
 			if (!m_cacheFile.removeSourceCache(id))
@@ -221,7 +199,7 @@ bool WorkspaceCache::removeStaleProjectCaches()
 
 	CHALET_TRY
 	{
-		for (auto& it : fs::directory_iterator(cacheRef))
+		for (auto& it : fs::directory_iterator(m_cacheFolderLocal))
 		{
 			if (it.is_directory())
 			{
@@ -257,7 +235,6 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 {
 	bool result = m_cacheFile.save();
 
-	const auto& cacheRef = getCacheRef(CacheType::Local);
 	const auto& outputDirectory = inInputs.outputDirectory();
 
 	auto removePathIfEmpty = [](const std::string& inPath) {
@@ -265,7 +242,7 @@ bool WorkspaceCache::saveProjectCache(const CommandLineInputs& inInputs)
 			Files::removeRecursively(inPath);
 	};
 
-	removePathIfEmpty(cacheRef);
+	removePathIfEmpty(m_cacheFolderLocal);
 	removePathIfEmpty(outputDirectory);
 
 	if (!result)
