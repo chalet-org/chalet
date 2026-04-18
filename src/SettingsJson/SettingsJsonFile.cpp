@@ -70,7 +70,7 @@ bool SettingsJsonFile::makeSettingsJson()
 	auto& jRoot = m_jsonFile.root;
 
 	bool dirty = false;
-	dirty |= json::assignNodeFromDataType(jRoot, Keys::Options, JsonDataType::object);
+	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Options);
 	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Toolchains, m_fallback.toolchains);
 	dirty |= json::assignObjectNodeIfInvalidAndIncludeMissingPairs(jRoot, Keys::Tools, m_fallback.tools);
 #if defined(CHALET_MACOS)
@@ -187,64 +187,9 @@ bool SettingsJsonFile::makeSettingsJson()
 #endif
 
 #if defined(CHALET_WIN32)
-	{
-		// Try really hard to find these tools
-
-		auto& gitNode = jTools[Keys::ToolsGit];
-		auto gitPath = gitNode.get<std::string>();
-		if (gitPath.empty())
-		{
-			gitPath = AncillaryTools::getPathToGit();
-			jTools[Keys::ToolsGit] = gitPath;
-			dirty = true;
-		}
-		else
-		{
-			if (!AncillaryTools::gitIsRootPath(gitPath))
-			{
-				jTools[Keys::ToolsGit] = gitPath;
-				dirty = true;
-			}
-		}
-
-		bool gitExists = Files::pathExists(gitPath);
-		if (gitExists)
-		{
-			const auto gitBinFolder = String::getPathFolder(gitPath);
-			const auto gitRoot = String::getPathFolder(gitBinFolder);
-
-			auto& bashNode = jTools[Keys::ToolsBash];
-			auto bashPath = bashNode.get<std::string>();
-
-			// We need to ignore WSL bash
-			if (!gitPath.empty() && (bashPath.empty() || String::contains("SYSTEM32", bashPath)))
-			{
-				bashPath = fmt::format("{}/bash.exe", gitBinFolder);
-				if (Files::pathExists(bashPath))
-				{
-					jTools[Keys::ToolsBash] = bashPath;
-					dirty = true;
-				}
-			}
-
-			auto& lddNode = jTools[Keys::ToolsLdd];
-			auto lddPath = lddNode.get<std::string>();
-			if (lddPath.empty() && !gitPath.empty())
-			{
-				lddPath = fmt::format("{}/usr/bin/ldd.exe", gitRoot);
-				if (Files::pathExists(lddPath))
-				{
-					jTools[Keys::ToolsLdd] = lddPath;
-					dirty = true;
-				}
-			}
-		}
-	}
-#endif
-
-#if defined(CHALET_MACOS)
-	if (!detectAppleSdks())
-		return false;
+	dirty |= detectGitAndLLDPath(jTools);
+#elif defined(CHALET_MACOS)
+	dirty |= detectAppleSdks();
 #endif
 
 	// Removed in version 6.0.0
@@ -559,8 +504,64 @@ bool SettingsJsonFile::parseTools(Json& inNode)
 	return true;
 }
 
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+/*****************************************************************************/
+bool SettingsJsonFile::detectGitAndLLDPath(Json& jTools)
+{
+	bool dirty = false;
+	auto gitPath = jTools[Keys::ToolsGit].get<std::string>();
+	if (gitPath.empty())
+	{
+		gitPath = AncillaryTools::getPathToGit();
+		jTools[Keys::ToolsGit] = gitPath;
+		dirty = true;
+	}
+	else
+	{
+		if (!AncillaryTools::gitIsRootPath(gitPath))
+		{
+			jTools[Keys::ToolsGit] = gitPath;
+			dirty = true;
+		}
+	}
 
+	bool gitExists = Files::pathExists(gitPath);
+	if (gitExists)
+	{
+		const auto gitBinFolder = String::getPathFolder(gitPath);
+		const auto gitRoot = String::getPathFolder(gitBinFolder);
+
+		auto& bashNode = jTools[Keys::ToolsBash];
+		auto bashPath = bashNode.get<std::string>();
+
+		// We need to ignore WSL bash
+		if (!gitPath.empty() && (bashPath.empty() || String::contains("SYSTEM32", bashPath)))
+		{
+			bashPath = fmt::format("{}/bash.exe", gitBinFolder);
+			if (Files::pathExists(bashPath))
+			{
+				jTools[Keys::ToolsBash] = bashPath;
+				dirty = true;
+			}
+		}
+
+		auto& lddNode = jTools[Keys::ToolsLdd];
+		auto lddPath = lddNode.get<std::string>();
+		if (lddPath.empty() && !gitPath.empty())
+		{
+			lddPath = fmt::format("{}/usr/bin/ldd.exe", gitRoot);
+			if (Files::pathExists(lddPath))
+			{
+				jTools[Keys::ToolsLdd] = lddPath;
+				dirty = true;
+			}
+		}
+	}
+
+	return dirty;
+}
+
+#elif defined(CHALET_MACOS)
 /*****************************************************************************/
 bool SettingsJsonFile::detectAppleSdks(const bool inForce)
 {
@@ -579,17 +580,18 @@ bool SettingsJsonFile::detectAppleSdks(const bool inForce)
 	chalet_assert(jTools.contains(Keys::ToolsXcrun), "xcrun not found in tools structure");
 
 	auto xcrun = jTools[Keys::ToolsXcrun].get<std::string>();
+
 	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
 		if (inForce || !appleSkdsJson.contains(sdk))
 		{
 			appleSkdsJson[sdk] = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
-			m_jsonFile.setDirty(true);
+			return true;
 		}
 	}
 
-	return true;
+	return false;
 }
 /*****************************************************************************/
 bool SettingsJsonFile::parseAppleSdks(Json& inNode)
@@ -648,8 +650,7 @@ bool SettingsJsonFile::validatePaths(const bool inWithError)
 		m_jsonFile.dumpToTerminal();
 	#endif
 
-		if (!detectAppleSdks(true))
-			return false;
+		detectAppleSdks(true);
 
 		if (!parseAppleSdks(m_jsonFile.root))
 			return false;

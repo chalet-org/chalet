@@ -43,7 +43,6 @@ namespace chalet
 {
 using UJson = nlohmann::json;
 using Json = nlohmann::ordered_json;
-using JsonDataType = nlohmann::detail::value_t;
 namespace JsonSchema = nlohmann::json_schema;
 using JsonSchemaError = JsonSchema::error_descriptor;
 
@@ -89,9 +88,6 @@ inline bool assignObjectNodeIfInvalid(Json& outNode, const char* inKey, const Js
 inline bool assignObjectNodeIfInvalidAndIncludeMissingPairs(Json& outNode, const char* inKey, const Json& inObjectNode);
 
 inline bool removeNode(Json& outNode, const char* inKey);
-
-inline bool assignNodeFromDataType(Json& outNode, const char* inKey, const JsonDataType inType);
-inline Json initializeDataType(const JsonDataType inType);
 
 inline std::string dump(const Json& inNode, int indent = -1, char indentChar = (char)32);
 }

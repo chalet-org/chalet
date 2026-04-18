@@ -35,12 +35,12 @@ bool GlobalSettingsJsonFile::deserialize()
 		jRoot = Json::object();
 
 	bool dirty = false;
-	dirty |= json::assignNodeFromDataType(jRoot, Keys::Options, JsonDataType::object);
-	dirty |= json::assignNodeFromDataType(jRoot, Keys::Toolchains, JsonDataType::object);
-	dirty |= json::assignNodeFromDataType(jRoot, Keys::Tools, JsonDataType::object);
+	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Options);
+	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Toolchains);
+	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Tools);
 
 #if defined(CHALET_MACOS)
-	dirty |= json::assignNodeFromDataType(jRoot, Keys::AppleSdks, JsonDataType::object);
+	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::AppleSdks);
 #endif
 
 	Json& jOptions = m_jsonFile.root[Keys::Options];
@@ -80,7 +80,7 @@ bool GlobalSettingsJsonFile::deserialize()
 
 	// Root directory should never be set globally
 	jOptions[Keys::OptionsRootDirectory] = std::string();
-	dirty |= json::assignNodeFromDataType(jOptions, Keys::OptionsRunArguments, JsonDataType::object);
+	dirty |= json::assignObjectNodeIfInvalid(jOptions, Keys::OptionsRunArguments);
 
 	reassignIntermediateStateFromSettings(m_fallback, jRoot);
 

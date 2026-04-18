@@ -32,7 +32,9 @@ private:
 	bool parseSettings(Json& inNode);
 
 	bool parseTools(Json& inNode);
-#if defined(CHALET_MACOS)
+#if defined(CHALET_WIN32)
+	bool detectGitAndLLDPath(Json& inToolsNode);
+#elif defined(CHALET_MACOS)
 	bool detectAppleSdks(const bool inForce = false);
 	bool parseAppleSdks(Json& inNode);
 #endif
