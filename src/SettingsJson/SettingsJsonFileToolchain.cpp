@@ -480,7 +480,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		}
 
 #if defined(CHALET_MACOS)
-		if (m_isCustomToolchain || isLLVM || isGNU)
+		if (inIsCustomToolchain || isLLVM || isGNU)
 			searches.emplace_back("libtool");
 #endif
 
