@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Libraries/Json.hpp"
-#include "Json/IJsonFileParser.hpp"
+#include "Json/IJsonFileReader.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -14,14 +14,14 @@ namespace chalet
 struct WorkspaceCache;
 struct IntermediateSettingsState;
 
-struct GlobalSettingsJsonFile final : public IJsonFileParser
+struct GlobalSettingsJsonFile final : public IJsonFileReader
 {
 	static bool read(WorkspaceCache& inCache, IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck);
 
 private:
-	explicit GlobalSettingsJsonFile(WorkspaceCache& inCache, IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck);
+	explicit GlobalSettingsJsonFile(IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck);
 
-	virtual bool deserialize() final;
+	virtual bool readFrom(JsonFile& inJsonFile) final;
 
 	void reassignIntermediateStateFromSettings(IntermediateSettingsState& outState, const Json& inNode) const;
 
@@ -29,8 +29,6 @@ private:
 	bool assignLastUpdate(Json& outNode);
 
 	bool shouldPerformUpdateCheckBasedOnLastUpdate(const time_t inLastUpdate, const time_t inCurrent) const;
-
-	JsonFile& m_jsonFile;
 
 	IntermediateSettingsState& m_fallback;
 	bool& m_shouldPerformUpdateCheck;

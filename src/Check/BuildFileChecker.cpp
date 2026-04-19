@@ -40,7 +40,7 @@ bool BuildFileChecker::run()
 	Output::printSeparator();
 
 	{
-		auto& buildFile = m_state.getCentralState().chaletJson();
+		auto& buildFile = m_state.getCentralState().buildFile();
 		Json checked = getExpandedBuildFile();
 
 		Output::printInfo(buildFile.filename());
@@ -144,7 +144,7 @@ bool BuildFileChecker::run()
 /*****************************************************************************/
 Json BuildFileChecker::getExpandedBuildFile()
 {
-	auto& buildFile = m_state.getCentralState().chaletJson();
+	auto& buildFile = m_state.getCentralState().buildFile();
 
 	Json checked;
 	if (!checkNode(buildFile.root, checked))
@@ -243,10 +243,10 @@ bool BuildFileChecker::checkNode(const Json& inNode, Json& outJson, const std::s
 			if (condition.is_string())
 			{
 				auto result = m_parser.conditionIsValid(inLastKey, condition.get<std::string>());
-				if (!result.has_value()) // syntax error
+				if (result == TriBool::Unset) // syntax error
 					return false;
 
-				bool conditionValid = *result;
+				bool conditionValid = result == TriBool::True;
 				outJson[kCondition] = conditionValid;
 				if (!conditionValid)
 					return false;

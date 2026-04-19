@@ -5,6 +5,7 @@
 	"options": {
 		"env": {
 			"CHALET_DEBUG": "build/Debug/chalet-debug",
+			"CHALET_FLAGS": "--save-schema --no-generate-compile-commands",
 			"CMAKE_BUILD_SCRIPT": "./build.sh"
 		}
 	},
@@ -12,6 +13,7 @@
 		"options": {
 			"env": {
 				"CHALET_DEBUG": "build/msvc_Debug/chalet-debug",
+				"CHALET_FLAGS": "--save-schema --no-generate-compile-commands",
 				"CMAKE_BUILD_SCRIPT": "./build.bat"
 			}
 		}
@@ -28,138 +30,93 @@
 	"tasks": [
 		{
 			"label": "Configure",
-			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema configure",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} ${CHALET_FLAGS} configure",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			],
+			"group": "build"
 		},
 		{
 			"label": "Build & Run: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release buildrun chalet",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			],
+			"group": "build"
 		},
 		{
 			"label": "Build: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release build",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release build",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Run: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release run chalet",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release run chalet",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Rebuild: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release rebuild",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release rebuild",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Clean: Release",
-			"command": "${CHALET_DEBUG} --save-schema -c Release clean",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release clean",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Build & Run: Debug",
-			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release buildrun chalet",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} ${CHALET_FLAGS} -c Release buildrun chalet",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Build: Debug",
 			"command": "${CMAKE_BUILD_SCRIPT} Debug",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Rebuild: Debug",
 			"command": "rm -rf build/Debug && ${CMAKE_BUILD_SCRIPT} Debug",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Build & Run: Profile",
-			"command": "${CHALET_DEBUG} --save-schema -c Profile buildrun chalet 'build MinSizeRel'",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Profile buildrun chalet 'build MinSizeRel'",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Build & Run: Tests",
-			"command": "${CHALET_DEBUG} --save-schema -c Release buildrun tests",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release buildrun tests",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Run: Tests",
-			"command": "${CHALET_DEBUG} --save-schema -c Release run tests",
+			"command": "${CHALET_DEBUG} ${CHALET_FLAGS} -c Release run tests",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Debug (Chalet Command)",
-			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release debug",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} ${CHALET_FLAGS} -c Release debug",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Bundle",
-			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} --save-schema -c Release bundle",
+			"command": "${CMAKE_BUILD_SCRIPT} Debug && ${CHALET_DEBUG} ${CHALET_FLAGS} -c Release bundle",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		},
 		{
 			"label": "Clean",
 			"command": "rm -rf build dist",
 			"type": "shell",
-			"group": "build",
-			"problemMatcher": [
-				"$gcc"
-			]
+			"group": "build"
 		}
 	]
 }

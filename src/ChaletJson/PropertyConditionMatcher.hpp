@@ -7,21 +7,21 @@
 
 namespace chalet
 {
-enum class ConditionOp
+enum class ConditionOp : u8
 {
 	And,
 	Or,
 	InvalidOr,
 };
-enum class ConditionResult
+enum class ConditionResult : u8
 {
 	Fail,
 	Pass,
 	Invalid,
 };
-struct ChaletJsonParserAdapter
+struct PropertyConditionMatcher
 {
-	bool matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
+	bool match(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const;
 
 	mutable ConditionOp lastOp = ConditionOp::And;
 };

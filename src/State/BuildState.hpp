@@ -87,7 +87,6 @@ private:
 	bool initializeBuildConfiguration();
 	bool checkForExceptionalToolchainCases();
 	bool parseToolchainFromSettingsJson();
-	bool parseChaletJson();
 
 	bool initializeToolchain();
 	bool initializeBuild();

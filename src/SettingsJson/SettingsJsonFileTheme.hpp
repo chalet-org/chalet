@@ -7,27 +7,25 @@
 
 #include "Libraries/Json.hpp"
 #include "Settings/SettingsType.hpp"
-#include "Json/IJsonFileParser.hpp"
+#include "Json/IJsonFileReader.hpp"
 
 namespace chalet
 {
 struct CommandLineInputs;
 struct ColorTheme;
 
-struct SettingsJsonFileTheme final : public IJsonFileParser
+struct SettingsJsonFileTheme final : public IJsonFileReader
 {
 	static bool read(const CommandLineInputs& inInputs);
 
 private:
 	explicit SettingsJsonFileTheme(const CommandLineInputs& inInputs);
 
-	virtual bool deserialize() final;
+	virtual bool readFrom(JsonFile& inJsonFile) final;
 
-	bool readFromSettings(const std::string& inFile, ColorTheme& outTheme, const SettingsType inType);
-	bool serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const SettingsType inSettingsType);
+	bool readThemeIfExists(JsonFile& inJsonFile, const std::string& inFile, ColorTheme& outTheme, const SettingsType inType);
+	bool readThemeFromJson(const Json& inJson, ColorTheme& outTheme, const SettingsType inSettingsType);
 
 	const CommandLineInputs& m_inputs;
-
-	bool m_updateTheme = false;
 };
 }

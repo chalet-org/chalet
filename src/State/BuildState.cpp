@@ -9,7 +9,7 @@
 #include "Builder/BuildManager.hpp"
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "DotEnv/DotEnvFileGenerator.hpp"
 #include "DotEnv/DotEnvFileParser.hpp"
@@ -132,7 +132,7 @@ bool BuildState::initialize()
 		return false;
 	}
 
-	if (!parseChaletJson())
+	if (!ChaletJsonFile::read(*this))
 		return false;
 
 	// Update settings after toolchain & chalet.json have been parsed
@@ -567,13 +567,6 @@ bool BuildState::parseToolchainFromSettingsJson()
 	Output::setShowCommandOverride(true);
 
 	return true;
-}
-
-/*****************************************************************************/
-bool BuildState::parseChaletJson()
-{
-	ChaletJsonParser parser(*this);
-	return parser.serialize();
 }
 
 /*****************************************************************************/

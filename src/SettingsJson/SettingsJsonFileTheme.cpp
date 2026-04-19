@@ -16,8 +16,9 @@ namespace chalet
 /*****************************************************************************/
 bool SettingsJsonFileTheme::read(const CommandLineInputs& inInputs)
 {
+	JsonFile jsonFile;
 	SettingsJsonFileTheme SettingsJsonFileTheme(inInputs);
-	return SettingsJsonFileTheme.deserialize();
+	return SettingsJsonFileTheme.readFrom(jsonFile);
 }
 
 /*****************************************************************************/
@@ -26,21 +27,21 @@ SettingsJsonFileTheme::SettingsJsonFileTheme(const CommandLineInputs& inInputs) 
 {}
 
 /*****************************************************************************/
-bool SettingsJsonFileTheme::deserialize()
+bool SettingsJsonFileTheme::readFrom(JsonFile& inJsonFile)
 {
-	m_updateTheme = false;
+	bool updateTheme = false;
 	ColorTheme theme = Output::theme();
 
 	// Keys that aren't valid will get ingored,
 	//   so we don't need to validate much other than the json itself
 	//
 	const auto globalSettings = m_inputs.getGlobalSettingsFilePath();
-	readFromSettings(globalSettings, theme, SettingsType::Global);
+	updateTheme |= readThemeIfExists(inJsonFile, globalSettings, theme, SettingsType::Global);
 
 	const auto& localSettings = m_inputs.settingsFile();
-	readFromSettings(localSettings, theme, SettingsType::Local);
+	updateTheme |= readThemeIfExists(inJsonFile, localSettings, theme, SettingsType::Local);
 
-	if (!m_updateTheme)
+	if (!updateTheme)
 	{
 		theme.setPreset(ColorTheme::getDefaultPresetName());
 	}
@@ -51,20 +52,22 @@ bool SettingsJsonFileTheme::deserialize()
 }
 
 /*****************************************************************************/
-bool SettingsJsonFileTheme::readFromSettings(const std::string& inFile, ColorTheme& outTheme, const SettingsType inType)
+bool SettingsJsonFileTheme::readThemeIfExists(JsonFile& inJsonFile, const std::string& inFile, ColorTheme& outTheme, const SettingsType inType)
 {
 	if (!Files::pathExists(inFile))
 		return false;
 
-	JsonFile jsonFile;
-	if (!jsonFile.load(inFile))
+	if (!inJsonFile.load(inFile))
 		Diagnostic::clearErrors();
 
-	return serializeFromJsonRoot(jsonFile.root, outTheme, inType);
+	bool result = readThemeFromJson(inJsonFile.root, outTheme, inType);
+
+	inJsonFile.root.clear();
+	return result;
 }
 
 /*****************************************************************************/
-bool SettingsJsonFileTheme::serializeFromJsonRoot(const Json& inJson, ColorTheme& outTheme, const SettingsType inSettingsType)
+bool SettingsJsonFileTheme::readThemeFromJson(const Json& inJson, ColorTheme& outTheme, const SettingsType inSettingsType)
 {
 	if (inJson.is_object() && inJson.contains(Keys::Theme))
 	{
@@ -73,7 +76,8 @@ bool SettingsJsonFileTheme::serializeFromJsonRoot(const Json& inJson, ColorTheme
 		{
 			auto preset = themeJson.get<std::string>();
 			outTheme.setPreset(preset); // if invalid, goes to default theme
-			m_updateTheme = true;
+
+			return true;
 		}
 		else if (themeJson.is_object())
 		{
@@ -91,10 +95,10 @@ bool SettingsJsonFileTheme::serializeFromJsonRoot(const Json& inJson, ColorTheme
 					outTheme.set(key, str);
 				}
 			}
-			m_updateTheme = true;
+
+			return true;
 		}
 	}
-
-	return true;
+	return false;
 }
 }

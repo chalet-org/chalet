@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 #include "Libraries/Json.hpp"
 #include "State/BuildState.hpp"
 
@@ -29,7 +29,7 @@ private:
 
 	BuildState& m_state;
 
-	ChaletJsonParser m_parser;
+	ChaletJsonFile m_parser;
 };
 }
 

@@ -7,7 +7,7 @@
 
 #include <thread>
 
-#include "ChaletJson/CentralChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFileCentral.hpp"
 #include "Compile/CompilerCxx/CompilerCxxAppleClang.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Dependencies/DependencyManager.hpp"
@@ -120,7 +120,7 @@ bool CentralState::initialize()
 		return false;
 	}
 
-	if (!m_chaletJson.load(m_filename))
+	if (!m_buildFile.load(m_filename))
 		return false;
 
 	if (!cache.initialize(m_inputs))
@@ -131,7 +131,7 @@ bool CentralState::initialize()
 	bool cleanAll = route.isClean() && m_inputs.cleanAll();
 	if (route.isConfigure())
 	{
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		// if (!externalDependencies.empty())
@@ -145,7 +145,7 @@ bool CentralState::initialize()
 	}
 	else if (route.isCheck())
 	{
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		if (!createCache())
@@ -162,7 +162,7 @@ bool CentralState::initialize()
 		Timer timer;
 		Diagnostic::infoEllipsis("Reading Build File [{}]", m_filename);
 
-		if (!parseBuildFile())
+		if (!ChaletJsonFileCentral::read(*this))
 			return false;
 
 		if (!cleanAll)
@@ -212,7 +212,7 @@ bool CentralState::initializeForQuery()
 	if (!Files::pathExists(m_filename))
 		return true;
 
-	UNUSED(m_chaletJson.load(m_filename));
+	UNUSED(m_buildFile.load(m_filename));
 
 	Diagnostic::clearErrors();
 
@@ -562,21 +562,21 @@ const CommandLineInputs& CentralState::inputs() const noexcept
 }
 
 /*****************************************************************************/
-JsonFile& CentralState::chaletJson() noexcept
+JsonFile& CentralState::buildFile() noexcept
 {
-	return m_chaletJson;
+	return m_buildFile;
 }
 
 /*****************************************************************************/
-const JsonFile& CentralState::chaletJson() const noexcept
+const JsonFile& CentralState::buildFile() const noexcept
 {
-	return m_chaletJson;
+	return m_buildFile;
 }
 
 /*****************************************************************************/
 const std::string& CentralState::filename() const noexcept
 {
-	return m_chaletJson.filename();
+	return m_buildFile.filename();
 }
 
 /*****************************************************************************/
@@ -592,13 +592,6 @@ bool CentralState::parseEnvFile()
 
 	DotEnvFileParser envParser(m_inputs);
 	return envParser.readVariablesFromInputs();
-}
-
-/*****************************************************************************/
-bool CentralState::parseBuildFile()
-{
-	CentralChaletJsonParser parser(*this);
-	return parser.serialize();
 }
 
 /*****************************************************************************/

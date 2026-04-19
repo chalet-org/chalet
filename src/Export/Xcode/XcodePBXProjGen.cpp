@@ -1427,7 +1427,7 @@ Json XcodePBXProjGen::getProductBuildSettings(const BuildState& inState) const
 	ret["LD_RUNPATH_SEARCH_PATHS"] = inState.workspace.searchPaths();
 	ret["OBJROOT"] = buildOutputDir;
 	ret["PROJECT_RUN_PATH"] = inState.inputs.workingDirectory();
-	ret["SDKROOT"] = inState.tools.getApplePlatformSdk(inState.inputs.osTargetName());
+	ret["SDKROOT"] = inState.tools.getPathToPlatformSDK(inState.inputs.osTargetName());
 	ret["SHARED_PRECOMPS_DIR"] = buildOutputDir;
 
 	// ret["BUILD_ROOT"] = Files::getCanonicalPath(inState.paths.buildOutputDir());

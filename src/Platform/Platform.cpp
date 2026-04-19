@@ -30,42 +30,22 @@ std::string Platform::platform() noexcept
 #elif defined(CHALET_LINUX)
 	return "linux";
 #else
+	#error "Unknown platform"
 	return "unknown";
 #endif
 }
 
 /*****************************************************************************/
-StringList Platform::notPlatforms() noexcept
+void Platform::assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform)
 {
-	return
-	{
-#if !defined(CHALET_WIN32)
-		"windows",
-#endif
-#if !defined(CHALET_MACOS)
-			"macos",
-#endif
-#if !defined(CHALET_LINUX)
-			"linux",
-#endif
-	};
-}
-
-/*****************************************************************************/
-void Platform::assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform, StringList& outNotPlatforms)
-{
-	outNotPlatforms = Platform::notPlatforms();
-
 	bool isWeb = inInputs.toolchainPreference().type == ToolchainType::Emscripten;
 	if (isWeb)
 	{
 		outPlatform = "web";
-		outNotPlatforms.push_back(Platform::platform());
 	}
 	else
 	{
 		outPlatform = Platform::platform();
-		outNotPlatforms.push_back("web");
 	}
 }
 
@@ -73,12 +53,15 @@ void Platform::assignPlatform(const CommandLineInputs& inInputs, std::string& ou
 StringList Platform::getDefaultPlatformDefines()
 {
 	StringList ret;
+
 #if defined(CHALET_WIN32)
 	ret.emplace_back("_WIN32");
 #elif defined(CHALET_MACOS)
 	ret.emplace_back("__APPLE__");
-#else
+#elif defined(CHALET_LINUX)
 	ret.emplace_back("__linux__");
+#else
+	#error "Unknown platform"
 #endif
 
 	return ret;

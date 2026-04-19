@@ -10,7 +10,6 @@
 #include "SettingsJson/IntermediateSettingsState.hpp"
 #include "SettingsJson/SettingsJsonSchema.hpp"
 
-#include "Process/Environment.hpp"
 #include "Process/Process.hpp"
 #include "State/CentralState.hpp"
 #include "System/Files.hpp"
@@ -25,49 +24,24 @@ namespace chalet
 /*****************************************************************************/
 bool SettingsJsonFile::read(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback)
 {
+	auto& jsonFile = inCentralState.cache.getSettings(SettingsType::Local);
 	SettingsJsonFile settingsJsonFile(inInputs, inCentralState, inFallback);
-	return settingsJsonFile.deserialize();
+	return settingsJsonFile.readFrom(jsonFile);
 }
 
 /*****************************************************************************/
 SettingsJsonFile::SettingsJsonFile(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback) :
 	m_inputs(inInputs),
 	m_centralState(inCentralState),
-	m_jsonFile(m_centralState.cache.getSettings(SettingsType::Local)),
 	m_fallback(inFallback)
 {}
 
 /*****************************************************************************/
-bool SettingsJsonFile::deserialize()
+bool SettingsJsonFile::readFrom(JsonFile& inJsonFile)
 {
-	Json schema = SettingsJsonSchema::get(m_inputs);
-	if (m_inputs.saveSchemaToFile())
-	{
-		JsonFile::saveToFile(schema, "schema/chalet-settings.schema.json");
-	}
-
-	if (!makeSettingsJson())
-		return false;
-
-	if (!m_jsonFile.validate(schema))
-		return false;
-
-	if (!serializeFromJsonRoot(m_jsonFile.root))
-	{
-		Diagnostic::error("There was an error parsing {}", m_jsonFile.filename());
-		return false;
-	}
-
-	if (!validatePaths(false))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool SettingsJsonFile::makeSettingsJson()
-{
-	auto& jRoot = m_jsonFile.root;
+	auto& jRoot = inJsonFile.root;
+	if (!jRoot.is_object())
+		jRoot = Json::object();
 
 	bool dirty = false;
 	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::Options);
@@ -77,7 +51,7 @@ bool SettingsJsonFile::makeSettingsJson()
 	dirty |= json::assignObjectNodeIfInvalidAndIncludeMissingPairs(jRoot, Keys::AppleSdks, m_fallback.appleSdks);
 #endif
 
-	Json& jOptions = jRoot[Keys::Options];
+	auto& jOptions = jRoot[Keys::Options];
 
 	dirty |= json::assignNodeIfEmptyWithFallback(jOptions, Keys::OptionsDumpAssembly, m_inputs.dumpAssembly(), m_fallback.dumpAssembly);
 	dirty |= json::assignNodeIfEmptyWithFallback(jOptions, Keys::OptionsShowCommands, m_inputs.showCommands(), m_fallback.showCommands);
@@ -124,7 +98,7 @@ bool SettingsJsonFile::makeSettingsJson()
 		return false;
 	};
 
-	Json& jTools = jRoot[Keys::Tools];
+	auto& jTools = jRoot[Keys::Tools];
 
 	dirty |= detectPathAndAssignNode(jTools, Keys::ToolsBash);
 	dirty |= detectPathAndAssignNode(jTools, Keys::ToolsCcache);
@@ -187,9 +161,9 @@ bool SettingsJsonFile::makeSettingsJson()
 #endif
 
 #if defined(CHALET_WIN32)
-	dirty |= detectGitAndLLDPath(jTools);
+	dirty |= detectPathsToGitAndLLD(jTools);
 #elif defined(CHALET_MACOS)
-	dirty |= detectAppleSdks();
+	dirty |= detectPathsToPlatformSDKs(jRoot);
 #endif
 
 	// Removed in version 6.0.0
@@ -199,48 +173,46 @@ bool SettingsJsonFile::makeSettingsJson()
 	dirty |= json::removeNode(jOptions, Keys::LastUpdateCheck);
 
 	if (dirty)
-		m_jsonFile.setDirty(true);
+		inJsonFile.setDirty(true);
+
+	if (!validateFileContentsAgainstSchema(inJsonFile))
+		return false;
+
+	dirty = false;
+	dirty |= readFromSettings(jRoot);
+	dirty |= readFromTools(jRoot);
+	readFromPlatformSDKs(jRoot);
+
+	if (dirty)
+		inJsonFile.setDirty(true);
+
+	if (!validatePlatformSDKs(inJsonFile))
+		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool SettingsJsonFile::serializeFromJsonRoot(Json& inJson)
+bool SettingsJsonFile::validateFileContentsAgainstSchema(const JsonFile& inJsonFile)
 {
-	if (!inJson.is_object())
+	Json schema = SettingsJsonSchema::get(m_inputs);
+	if (m_inputs.saveSchemaToFile())
 	{
-		Diagnostic::error("{}: Json root must be an object.", m_jsonFile.filename());
-		return false;
+		JsonFile::saveToFile(schema, "schema/chalet-settings.schema.json");
 	}
 
-	if (!parseSettings(inJson))
+	if (!inJsonFile.validate(schema))
 		return false;
 
-	if (!parseTools(inJson))
-		return false;
-
-#if defined(CHALET_MACOS)
-	if (!parseAppleSdks(inJson))
-		return false;
-#endif
 	return true;
 }
 
 /*****************************************************************************/
-bool SettingsJsonFile::parseSettings(Json& inNode)
+bool SettingsJsonFile::readFromSettings(Json& inNode)
 {
-	if (!inNode.contains(Keys::Options))
-	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::Options);
-		return false;
-	}
+	chalet_assert(json::isObject(inNode, Keys::Options), "required node is invalid");
 
-	Json& jOptions = inNode[Keys::Options];
-	if (!jOptions.is_object())
-	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Options);
-		return false;
-	}
+	auto& jOptions = inNode[Keys::Options];
 
 	StringList removeKeys;
 	for (const auto& [key, value] : jOptions.items())
@@ -416,26 +388,17 @@ bool SettingsJsonFile::parseSettings(Json& inNode)
 	}
 
 	if (!removeKeys.empty())
-		m_jsonFile.setDirty(true);
+		return true;
 
-	return true;
+	return false;
 }
 
 /*****************************************************************************/
-bool SettingsJsonFile::parseTools(Json& inNode)
+bool SettingsJsonFile::readFromTools(Json& inNode)
 {
-	if (!inNode.contains(Keys::Tools))
-	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::Tools);
-		return false;
-	}
+	chalet_assert(json::isObject(inNode, Keys::Tools), "required node is invalid");
 
-	Json& jTools = inNode[Keys::Tools];
-	if (!jTools.is_object())
-	{
-		Diagnostic::error("{}: '{}' must be an object.", m_jsonFile.filename(), Keys::Tools);
-		return false;
-	}
+	auto& jTools = inNode[Keys::Tools];
 
 	StringList removeKeys;
 	for (const auto& [key, value] : jTools.items())
@@ -499,14 +462,33 @@ bool SettingsJsonFile::parseTools(Json& inNode)
 	}
 
 	if (!removeKeys.empty())
-		m_jsonFile.setDirty(true);
+		return true;
 
-	return true;
+	return false;
+}
+
+/*****************************************************************************/
+// TODO: 'appleSdks' should become 'platformSDKs'
+//
+void SettingsJsonFile::readFromPlatformSDKs(Json& inNode)
+{
+#if defined(CHALET_MACOS)
+	chalet_assert(json::isObject(inNode, Keys::AppleSdks), "required node is invalid");
+
+	Json& appleSdks = inNode[Keys::AppleSdks];
+	for (auto& [key, jPath] : appleSdks.items())
+	{
+		chalet_assert(jPath.is_string(), "sdk path should be a string by this point");
+		m_centralState.tools.addPathToPlatformSDK(key, jPath.get<std::string>());
+	}
+#else
+	UNUSED(inNode);
+#endif
 }
 
 #if defined(CHALET_WIN32)
 /*****************************************************************************/
-bool SettingsJsonFile::detectGitAndLLDPath(Json& jTools)
+bool SettingsJsonFile::detectPathsToGitAndLLD(Json& jTools)
 {
 	bool dirty = false;
 	auto gitPath = jTools[Keys::ToolsGit].get<std::string>();
@@ -563,7 +545,7 @@ bool SettingsJsonFile::detectGitAndLLDPath(Json& jTools)
 
 #elif defined(CHALET_MACOS)
 /*****************************************************************************/
-bool SettingsJsonFile::detectAppleSdks(const bool inForce)
+bool SettingsJsonFile::detectPathsToPlatformSDKs(Json& inNode, const bool inForce)
 {
 	// AppleTVOS.platform
 	// AppleTVSimulator.platform
@@ -572,104 +554,62 @@ bool SettingsJsonFile::detectAppleSdks(const bool inForce)
 	// WatchSimulator.platform
 	// iPhoneOS.platform
 	// iPhoneSimulator.platform
-	Json& appleSkdsJson = m_jsonFile.root[Keys::AppleSdks];
 
-	chalet_assert(m_jsonFile.root.contains(Keys::Tools), "tools structure was not found");
-	auto& jTools = m_jsonFile.root[Keys::Tools];
+	chalet_assert(json::isObject(inNode, Keys::Tools), "required node is invalid");
+	chalet_assert(json::isObject(inNode, Keys::AppleSdks), "required node is invalid");
+
+	auto& jTools = inNode[Keys::Tools];
+	auto& jAppleSDKs = inNode[Keys::AppleSdks];
 
 	chalet_assert(jTools.contains(Keys::ToolsXcrun), "xcrun not found in tools structure");
 
+	bool dirty = false;
 	auto xcrun = jTools[Keys::ToolsXcrun].get<std::string>();
-
 	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
 	for (const auto& sdk : sdkPaths)
 	{
-		if (inForce || !appleSkdsJson.contains(sdk))
+		if (inForce || !json::isValid<std::string>(jAppleSDKs, sdk.c_str()))
 		{
-			appleSkdsJson[sdk] = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
-			return true;
+			jAppleSDKs[sdk] = Process::runOutput({ xcrun, "--sdk", sdk, "--show-sdk-path" }, PipeOption::Pipe, PipeOption::Close);
+			dirty = true;
 		}
 	}
 
-	return false;
-}
-/*****************************************************************************/
-bool SettingsJsonFile::parseAppleSdks(Json& inNode)
-{
-	if (!inNode.contains(Keys::AppleSdks))
-	{
-		Diagnostic::error("{}: '{}' is required, but was not found.", m_jsonFile.filename(), Keys::AppleSdks);
-		return false;
-	}
-
-	Json& appleSdks = inNode[Keys::AppleSdks];
-	for (auto& [key, pathJson] : appleSdks.items())
-	{
-		if (!pathJson.is_string())
-		{
-			Diagnostic::error("{}: apple platform '{}' must be a string.", m_jsonFile.filename(), key);
-			return false;
-		}
-
-		auto path = pathJson.get<std::string>();
-		m_centralState.tools.addApplePlatformSdk(key, std::move(path));
-	}
-
-	return true;
+	return dirty;
 }
 #endif
 
 /*****************************************************************************/
-bool SettingsJsonFile::validatePaths(const bool inWithError)
+bool SettingsJsonFile::validatePlatformSDKs(JsonFile& inJsonFile)
 {
 #if defined(CHALET_MACOS)
-	bool needsUpdate = false;
-	auto sdkPaths = CompilerCxxAppleClang::getAllowedSDKTargets();
-	// const bool commandLineTools = Files::isUsingAppleCommandLineTools();
-	for (const auto& sdk : sdkPaths)
-	{
-		auto sdkPath = m_centralState.tools.getApplePlatformSdk(sdk);
-		bool found = !sdkPath.empty() && Files::pathExists(sdkPath);
-		// bool required = !found && (!commandLineTools || (commandLineTools && String::equals("macosx", sdk)));
-		bool required = !found && String::equals("macosx", sdk);
-		if (inWithError && required)
-		{
-			Diagnostic::error("{}: The '{}' SDK path was either not found or from a version of Xcode that has since been removed.", m_jsonFile.filename(), sdk);
-			return false;
-		}
-		else if (!found && required)
-		{
-			needsUpdate = true;
-			break;
-		}
-	}
-
-	if (needsUpdate)
+	auto sdkPath = m_centralState.tools.getPathToPlatformSDK("macosx");
+	if (sdkPath.empty() || !Files::pathExists(sdkPath) || !Files::pathIsDirectory(sdkPath))
 	{
 	#if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
+		json::dump(inJsonFile.root[Keys::AppleSdks], 1, '\t');
+		inJsonFile.dumpToTerminal();
 	#endif
 
-		detectAppleSdks(true);
+		detectPathsToPlatformSDKs(inJsonFile.root, true);
+		readFromPlatformSDKs(inJsonFile.root);
 
-		if (!parseAppleSdks(m_jsonFile.root))
+		sdkPath = m_centralState.tools.getPathToPlatformSDK("macosx");
+		if (sdkPath.empty() || !Files::pathExists(sdkPath) || !Files::pathIsDirectory(sdkPath))
+		{
+			Diagnostic::error("{}: The 'macosx' SDK path was not found, and one could not be detected.", inJsonFile.filename());
 			return false;
-	}
-#endif
+		}
 
-	// TODO: Find out what the purpose of this recursive call was (and remove it)
-	if (!inWithError && !validatePaths(true))
-		return false;
-
-#if defined(CHALET_MACOS)
-	if (needsUpdate)
-	{
-		// If the 2nd validation pass hasn't errored
-		// force rebuild the project - the sdks changed
+		// If the 2nd validation pass hasn't errored, force rebuild the project,
+		//   since the sdks changed
 		//
 		m_centralState.cache.file().setForceRebuild(true);
 	}
+#else
+	UNUSED(inJsonFile);
 #endif
+
 	return true;
 }
 }

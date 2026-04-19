@@ -13,8 +13,7 @@ namespace Platform
 {
 StringList validPlatforms() noexcept;
 std::string platform() noexcept;
-StringList notPlatforms() noexcept;
-void assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform, StringList& outNotPlatforms);
+void assignPlatform(const CommandLineInputs& inInputs, std::string& outPlatform);
 StringList getDefaultPlatformDefines();
 bool isLittleEndian() noexcept;
 bool isBigEndian() noexcept;

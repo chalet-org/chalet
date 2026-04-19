@@ -18,8 +18,7 @@ namespace chalet
 /*****************************************************************************/
 JsonFile::JsonFile(std::string inFilename) :
 	m_filename(std::move(inFilename))
-{
-}
+{}
 
 /*****************************************************************************/
 bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, const i32 inIndent)
@@ -46,14 +45,11 @@ bool JsonFile::saveToFile(const Json& inJson, const std::string& outFilename, co
 bool JsonFile::load(const bool inError)
 {
 	chalet_assert(!m_filename.empty(), "JsonFile::load(): No file to load");
+
 	if (String::endsWith(".yaml", m_filename))
-	{
 		return YamlFile::parse(root, m_filename, inError);
-	}
 	else
-	{
 		return JsonComments::parse(root, m_filename, inError);
-	}
 }
 
 /*****************************************************************************/
@@ -109,13 +105,9 @@ void JsonFile::dumpToTerminal()
 bool JsonFile::saveAs(const std::string& inFilename, const i32 inIndent) const
 {
 	if (String::endsWith(".yaml", inFilename))
-	{
 		return YamlFile::saveToFile(root, inFilename);
-	}
 	else
-	{
 		return JsonFile::saveToFile(root, inFilename, inIndent);
-	}
 }
 
 /*****************************************************************************/
@@ -160,19 +152,14 @@ bool JsonFile::validate(const Json& inSchemaJson) const
 		return false;
 
 	JsonValidationErrors errors;
-	// false if any errors
+
 	if (!validator.validate(root, m_filename, errors))
 	{
-		// false if fatal error
 		if (!validator.printErrors(errors))
-		{
 			Diagnostic::error("Failed to validate the file: {}", m_filename);
-		}
 		else
-		{
-			// There was an exception
 			Diagnostic::error("An internal error occurred getting the validation details for: {}", m_filename);
-		}
+
 		return false;
 	}
 
