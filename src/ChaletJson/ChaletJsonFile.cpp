@@ -144,7 +144,7 @@ bool ChaletJsonFile::readPackagesIfAvailable(const std::string& inFilename, cons
 	if (!ChaletJsonFileCentral::readPackages(m_state.getCentralState(), buildFile, outTargets))
 		return false;
 
-	if (!readFromPackage(buildFile.root, inRoot))
+	if (!readFromPackage(buildFile.root, inFilename, inRoot))
 		return false;
 
 	return true;
@@ -187,7 +187,7 @@ bool ChaletJsonFile::readFromRoot(const Json& inJson, const std::string& inFilen
 	if (!readFromTargets(inJson, inFilename))
 		return false;
 
-	if (!readFromPackage(inJson, inFilename))
+	if (!readFromPackage(inJson, inFilename, std::string()))
 		return false;
 
 	return true;

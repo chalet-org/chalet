@@ -66,7 +66,7 @@ private:
 	bool readFromMiscellaneous(const Json& inNode) const;
 	bool readFromPlatformRequires(const Json& inNode) const;
 
-	bool readFromPackage(const Json& inNode, const std::string& inFilename, const std::string& inRoot = std::string()) const;
+	bool readFromPackage(const Json& inNode, const std::string& inFilename, const std::string& inRoot) const;
 	bool readFromPackageTarget(SourcePackage& outTarget, const Json& inNode) const;
 	bool readFromPackageSettingsCxx(SourcePackage& outTarget, const Json& inNode) const;
 
