@@ -16,21 +16,21 @@ namespace chalet
 /*****************************************************************************/
 bool GlobalSettingsJsonFile::read(WorkspaceCache& inCache, IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck)
 {
-	GlobalSettingsJsonFile globalSettingsJsonFile(inCache, inFallback, outShouldPerformUpdateCheck);
-	return globalSettingsJsonFile.deserialize();
+	auto& jsonFile = inCache.getSettings(SettingsType::Global);
+	GlobalSettingsJsonFile globalSettingsJsonFile(inFallback, outShouldPerformUpdateCheck);
+	return globalSettingsJsonFile.readFrom(jsonFile);
 }
 
 /*****************************************************************************/
-GlobalSettingsJsonFile::GlobalSettingsJsonFile(WorkspaceCache& inCache, IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck) :
-	m_jsonFile(inCache.getSettings(SettingsType::Global)),
+GlobalSettingsJsonFile::GlobalSettingsJsonFile(IntermediateSettingsState& inFallback, bool& outShouldPerformUpdateCheck) :
 	m_fallback(inFallback),
 	m_shouldPerformUpdateCheck(outShouldPerformUpdateCheck)
 {}
 
 /*****************************************************************************/
-bool GlobalSettingsJsonFile::deserialize()
+bool GlobalSettingsJsonFile::readFrom(JsonFile& inJsonFile)
 {
-	auto& jRoot = m_jsonFile.root;
+	auto& jRoot = inJsonFile.root;
 	if (!jRoot.is_object())
 		jRoot = Json::object();
 
@@ -43,7 +43,7 @@ bool GlobalSettingsJsonFile::deserialize()
 	dirty |= json::assignObjectNodeIfInvalid(jRoot, Keys::AppleSdks);
 #endif
 
-	Json& jOptions = m_jsonFile.root[Keys::Options];
+	Json& jOptions = jRoot[Keys::Options];
 
 	{
 		// pre 6.0.0
@@ -88,7 +88,7 @@ bool GlobalSettingsJsonFile::deserialize()
 	dirty |= assignLastUpdate(jRoot);
 
 	if (dirty)
-		m_jsonFile.setDirty(true);
+		inJsonFile.setDirty(true);
 
 	return true;
 }
@@ -210,7 +210,7 @@ bool GlobalSettingsJsonFile::assignLastUpdate(Json& outNode)
 	{
 		if (outNode[Keys::LastUpdateCheck].is_number_unsigned())
 		{
-			lastUpdateCheck = m_jsonFile.root[Keys::LastUpdateCheck].get<time_t>();
+			lastUpdateCheck = outNode[Keys::LastUpdateCheck].get<time_t>();
 			m_shouldPerformUpdateCheck = shouldPerformUpdateCheckBasedOnLastUpdate(lastUpdateCheck, currentTime);
 		}
 	}

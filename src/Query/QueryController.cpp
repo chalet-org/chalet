@@ -202,12 +202,12 @@ StringList QueryController::getBuildConfigurationList() const
 	StringList ret;
 
 	auto defaultBuildConfigurations = BuildConfiguration::getDefaultBuildConfigurationNames();
-	const auto& chaletJson = m_centralState.chaletJson().root;
+	const auto& jRoot = m_centralState.buildFile().root;
 
 	bool addedDefaults = false;
-	if (chaletJson.contains(Keys::DefaultConfigurations))
+	if (jRoot.contains(Keys::DefaultConfigurations))
 	{
-		const Json& defaultConfigurations = chaletJson[Keys::DefaultConfigurations];
+		const Json& defaultConfigurations = jRoot[Keys::DefaultConfigurations];
 		if (defaultConfigurations.is_array())
 		{
 			addedDefaults = true;
@@ -227,9 +227,9 @@ StringList QueryController::getBuildConfigurationList() const
 		ret = defaultBuildConfigurations;
 	}
 
-	if (chaletJson.contains(Keys::Configurations))
+	if (jRoot.contains(Keys::Configurations))
 	{
-		const Json& configurations = chaletJson[Keys::Configurations];
+		const Json& configurations = jRoot[Keys::Configurations];
 		if (configurations.is_object())
 		{
 			for (auto& [name, configJson] : configurations.items())
@@ -615,13 +615,13 @@ StringList QueryController::getAllBuildTargets() const
 {
 	StringList ret{ Values::All };
 
-	const auto& chaletJson = m_centralState.chaletJson().root;
+	const auto& jRoot = m_centralState.buildFile().root;
 
-	if (chaletJson.is_object())
+	if (jRoot.is_object())
 	{
-		if (chaletJson.contains(Keys::Targets))
+		if (jRoot.contains(Keys::Targets))
 		{
-			const auto& targets = chaletJson[Keys::Targets];
+			const auto& targets = jRoot[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -644,16 +644,16 @@ StringList QueryController::getAllRunTargets() const
 {
 	StringList ret;
 
-	const auto& chaletJson = m_centralState.chaletJson().root;
+	const auto& jRoot = m_centralState.buildFile().root;
 
-	if (chaletJson.is_object())
+	if (jRoot.is_object())
 	{
-		if (chaletJson.contains(Keys::Targets))
+		if (jRoot.contains(Keys::Targets))
 		{
 			auto runnableTargets = getRunnableTargetKinds();
 			auto metaBuildProjects = getMetaBuildKinds();
 
-			const auto& targets = chaletJson[Keys::Targets];
+			const auto& targets = jRoot[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -705,17 +705,17 @@ StringList QueryController::getCurrentLastTarget() const
 	if (!ret.empty())
 		return ret;
 
-	const auto& chaletJson = m_centralState.chaletJson().root;
+	const auto& jRoot = m_centralState.buildFile().root;
 
 	StringList executableProjects;
-	if (chaletJson.is_object())
+	if (jRoot.is_object())
 	{
-		if (chaletJson.contains(Keys::Targets))
+		if (jRoot.contains(Keys::Targets))
 		{
 			auto runnableTargets = getRunnableTargetKinds();
 			auto metaBuildProjects = getMetaBuildKinds();
 
-			const auto& targets = chaletJson[Keys::Targets];
+			const auto& targets = jRoot[Keys::Targets];
 			for (auto& [key, target] : targets.items())
 			{
 				if (!target.is_object())
@@ -829,10 +829,10 @@ Json QueryController::getBuildConfigurationDetails() const
 
 	Dictionary<Json> configMap;
 
-	const auto& chaletJson = m_centralState.chaletJson().root;
-	if (chaletJson.contains(Keys::Configurations))
+	const auto& jRoot = m_centralState.buildFile().root;
+	if (jRoot.contains(Keys::Configurations))
 	{
-		const Json& configurations = chaletJson[Keys::Configurations];
+		const Json& configurations = jRoot[Keys::Configurations];
 		if (configurations.is_object())
 		{
 			for (const auto& [name, config] : configurations.items())

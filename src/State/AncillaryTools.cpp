@@ -139,16 +139,16 @@ const ScriptAdapter& AncillaryTools::scriptAdapter() const
 }
 
 /*****************************************************************************/
-std::string AncillaryTools::getApplePlatformSdk(const std::string& inKey) const
+std::string AncillaryTools::getPathToPlatformSDK(const std::string& inKey) const
 {
-	if (m_applePlatformSdk.find(inKey) == m_applePlatformSdk.end())
+	if (m_pathToPlatformSDKs.find(inKey) == m_pathToPlatformSDKs.end())
 		return std::string();
 
-	return m_applePlatformSdk.at(inKey);
+	return m_pathToPlatformSDKs.at(inKey);
 }
-void AncillaryTools::addApplePlatformSdk(const std::string& inKey, std::string&& inValue)
+void AncillaryTools::addPathToPlatformSDK(const std::string& inKey, std::string&& inValue)
 {
-	m_applePlatformSdk[inKey] = std::move(inValue);
+	m_pathToPlatformSDKs[inKey] = std::move(inValue);
 }
 
 /*****************************************************************************/

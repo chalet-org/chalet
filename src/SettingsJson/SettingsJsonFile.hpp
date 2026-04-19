@@ -7,7 +7,7 @@
 
 #include "Compile/ToolchainPreference.hpp"
 #include "Libraries/Json.hpp"
-#include "Json/IJsonFileParser.hpp"
+#include "Json/IJsonFileReader.hpp"
 #include "Json/JsonFile.hpp"
 
 namespace chalet
@@ -16,32 +16,30 @@ struct CommandLineInputs;
 struct CentralState;
 struct IntermediateSettingsState;
 
-struct SettingsJsonFile final : public IJsonFileParser
+struct SettingsJsonFile final : public IJsonFileReader
 {
 	static bool read(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
 
 private:
 	explicit SettingsJsonFile(CommandLineInputs& inInputs, CentralState& inCentralState, const IntermediateSettingsState& inFallback);
 
-	virtual bool deserialize() final;
+	virtual bool readFrom(JsonFile& inJsonFile) final;
 
-	bool validatePaths(const bool inWithError);
-	bool makeSettingsJson();
-	bool serializeFromJsonRoot(Json& inJson);
+	bool validateFileContentsAgainstSchema(const JsonFile& inJsonFile);
+	bool validatePlatformSDKs(JsonFile& inJsonFile);
 
-	bool parseSettings(Json& inNode);
+	bool readFromSettings(Json& inNode);
+	bool readFromTools(Json& inNode);
+	void readFromPlatformSDKs(Json& inNode);
 
-	bool parseTools(Json& inNode);
 #if defined(CHALET_WIN32)
-	bool detectGitAndLLDPath(Json& inToolsNode);
+	bool detectPathsToGitAndLLD(Json& inToolsNode);
 #elif defined(CHALET_MACOS)
-	bool detectAppleSdks(const bool inForce = false);
-	bool parseAppleSdks(Json& inNode);
+	bool detectPathsToPlatformSDKs(Json& inNode, const bool inForce = false);
 #endif
 
 	CommandLineInputs& m_inputs;
 	CentralState& m_centralState;
-	JsonFile& m_jsonFile;
 
 	const IntermediateSettingsState& m_fallback;
 };

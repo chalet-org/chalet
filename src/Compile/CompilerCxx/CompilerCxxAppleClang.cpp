@@ -88,7 +88,7 @@ bool CompilerCxxAppleClang::addSystemRootOption(StringList& outArgList, const Bu
 		auto kAllowedTargets = getAllowedSDKTargets();
 		if (String::equals(kAllowedTargets, osTargetName))
 		{
-			auto sdkPath = inState.tools.getApplePlatformSdk(osTargetName);
+			auto sdkPath = inState.tools.getPathToPlatformSDK(osTargetName);
 			if (!sdkPath.empty())
 			{
 				// Note: If -m(sdk)-version-min= isn't specified, the version is inferred from the SDK,

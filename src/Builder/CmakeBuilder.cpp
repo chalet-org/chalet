@@ -603,7 +603,7 @@ void CmakeBuilder::addCmakeDefines(StringList& outList) const
 				auto kAllowedTargets = CompilerCxxAppleClang::getAllowedSDKTargets();
 				if (String::equals(kAllowedTargets, osTargetName))
 				{
-					auto sdkPath = m_state.tools.getApplePlatformSdk(osTargetName);
+					auto sdkPath = m_state.tools.getPathToPlatformSDK(osTargetName);
 					if (!sdkPath.empty())
 					{
 						outList.emplace_back("-DCMAKE_OSX_SYSROOT=" + sdkPath);

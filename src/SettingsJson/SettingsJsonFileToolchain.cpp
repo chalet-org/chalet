@@ -23,29 +23,31 @@ namespace chalet
 /*****************************************************************************/
 bool SettingsJsonFileToolchain::read(BuildState& inState)
 {
+	auto& jsonFile = inState.getCentralState().cache.getSettings(SettingsType::Local);
 	SettingsJsonFileToolchain settingsJsonFile(inState);
-	return settingsJsonFile.deserialize();
+	return settingsJsonFile.readFrom(jsonFile);
 }
 /*****************************************************************************/
 bool SettingsJsonFileToolchain::validatePaths(BuildState& inState)
 {
+	auto& jsonFile = inState.getCentralState().cache.getSettings(SettingsType::Local);
 	SettingsJsonFileToolchain settingsJsonFile(inState);
-	return settingsJsonFile.validatePaths();
+	return settingsJsonFile.validatePaths(jsonFile);
 }
 bool SettingsJsonFileToolchain::isCurrentToolchainStillValid(BuildState& inState)
 {
+	auto& jsonFile = inState.getCentralState().cache.getSettings(SettingsType::Local);
 	SettingsJsonFileToolchain settingsJsonFile(inState);
-	return settingsJsonFile.isCurrentToolchainStillValid();
+	return settingsJsonFile.isCurrentToolchainStillValid(jsonFile);
 }
 
 /*****************************************************************************/
 SettingsJsonFileToolchain::SettingsJsonFileToolchain(BuildState& inState) :
-	m_state(inState),
-	m_jsonFile(m_state.getCentralState().cache.getSettings(SettingsType::Local))
+	m_state(inState)
 {}
 
 /*****************************************************************************/
-bool SettingsJsonFileToolchain::deserialize()
+bool SettingsJsonFileToolchain::readFrom(JsonFile& inJsonFile)
 {
 	Output::setShowCommandOverride(false);
 
@@ -54,7 +56,7 @@ bool SettingsJsonFileToolchain::deserialize()
 		return false;
 	};
 
-	auto& jRoot = m_jsonFile.root;
+	auto& jRoot = inJsonFile.root;
 	const auto& preferenceName = m_state.inputs.toolchainPreferenceName();
 
 	auto& toolchains = jRoot[Keys::Toolchains];
@@ -65,7 +67,7 @@ bool SettingsJsonFileToolchain::deserialize()
 	{
 		if (!m_state.inputs.makeCustomToolchainFromEnvironment())
 		{
-			Diagnostic::error("{}: The requested toolchain of '{}' could not be detected due to an internal error.", m_jsonFile.filename(), preferenceName);
+			Diagnostic::error("{}: The requested toolchain of '{}' could not be detected due to an internal error.", inJsonFile.filename(), preferenceName);
 			return onError();
 		}
 	}
@@ -74,13 +76,20 @@ bool SettingsJsonFileToolchain::deserialize()
 		bool containsPref = toolchains.contains(preferenceName);
 		if (!containsPref && !m_state.inputs.isToolchainPreset())
 		{
-			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", m_jsonFile.filename(), preferenceName);
+			Diagnostic::error("{}: The requested toolchain of '{}' was not a recognized name or preset.", inJsonFile.filename(), preferenceName);
 			return onError();
 		}
 	}
 
+	const auto& buildPathStyleFromInput = m_state.inputs.buildPathStylePreference();
+	if (!buildPathStyleFromInput.empty() && !m_state.toolchain.buildPathStyleIsValid(buildPathStyleFromInput))
+	{
+		Diagnostic::error("Invalid toolchain build path style type: {}", buildPathStyleFromInput);
+		return onError();
+	}
+
 	auto& toolchainNode = getToolchainNode(toolchains);
-	if (!deserializeFromToolchainNode(toolchainNode, isCustomToolchain))
+	if (!readFromToolchainNode(inJsonFile, toolchainNode, isCustomToolchain))
 		return onError();
 
 	Output::setShowCommandOverride(true);
@@ -88,7 +97,7 @@ bool SettingsJsonFileToolchain::deserialize()
 }
 
 /*****************************************************************************/
-bool SettingsJsonFileToolchain::validatePaths()
+bool SettingsJsonFileToolchain::validatePaths(JsonFile& inJsonFile)
 {
 	bool result = true;
 	const auto& compilerCpp = m_state.toolchain.compilerCpp().path;
@@ -107,22 +116,22 @@ bool SettingsJsonFileToolchain::validatePaths()
 	};
 
 	if (pathIsInvalid(compilerCpp))
-		Diagnostic::error("{}: The toolchain's C++ compiler was blank or could not be found.", m_jsonFile.filename());
+		Diagnostic::error("{}: The toolchain's C++ compiler was blank or could not be found.", inJsonFile.filename());
 
 	if (pathIsInvalid(compilerC))
-		Diagnostic::error("{}: The toolchain's C compiler was blank or could not be found.", m_jsonFile.filename());
+		Diagnostic::error("{}: The toolchain's C compiler was blank or could not be found.", inJsonFile.filename());
 
 	if (pathIsInvalid(archiver))
-		Diagnostic::error("{}: The toolchain's archive utility was blank or could not be found.", m_jsonFile.filename());
+		Diagnostic::error("{}: The toolchain's archive utility was blank or could not be found.", inJsonFile.filename());
 
 	if (pathIsInvalid(linker))
-		Diagnostic::error("{}: The toolchain's linker was blank or could not be found.", m_jsonFile.filename());
+		Diagnostic::error("{}: The toolchain's linker was blank or could not be found.", inJsonFile.filename());
 
 #if defined(CHALET_WIN32)
 	if (m_state.environment != nullptr && !m_state.environment->isEmscripten())
 	{
 		if (pathIsInvalid(compilerWindowsResource))
-			Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", m_jsonFile.filename());
+			Diagnostic::warn("{}: The toolchain's Windows Resource compiler was blank or could not be found.", inJsonFile.filename());
 	}
 #else
 	UNUSED(compilerWindowsResource);
@@ -130,12 +139,12 @@ bool SettingsJsonFileToolchain::validatePaths()
 	if (!result)
 	{
 #if defined(CHALET_DEBUG)
-		m_jsonFile.dumpToTerminal();
+		inJsonFile.dumpToTerminal();
 #endif
 		auto& preference = m_state.inputs.toolchainPreferenceName();
 		auto arch = m_state.inputs.getResolvedTargetArchitecture();
 
-		Diagnostic::error("{}: The requested toolchain of '{}' (arch: {}) could either not be detected from {}, or contained invalid tools.", m_jsonFile.filename(), preference, arch, Environment::getPathKey());
+		Diagnostic::error("{}: The requested toolchain of '{}' (arch: {}) could either not be detected from {}, or contained invalid tools.", inJsonFile.filename(), preference, arch, Environment::getPathKey());
 	}
 
 	return result;
@@ -145,13 +154,13 @@ bool SettingsJsonFileToolchain::validatePaths()
 // This is called from BuildState::checkForExceptionalToolchainCases()
 //   If a (Visual Studio) toolchain no longer exists, we want to refresh it
 //
-bool SettingsJsonFileToolchain::isCurrentToolchainStillValid()
+bool SettingsJsonFileToolchain::isCurrentToolchainStillValid(JsonFile& inJsonFile)
 {
 	bool result = true;
 
 	Output::setShowCommandOverride(false);
 
-	auto& jRoot = m_jsonFile.root;
+	auto& jRoot = inJsonFile.root;
 
 	auto& toolchains = jRoot[Keys::Toolchains];
 	if (!toolchains.empty())
@@ -236,13 +245,13 @@ Json& SettingsJsonFileToolchain::getToolchainNode(Json& inToolchainsNode)
 }
 
 /*****************************************************************************/
-bool SettingsJsonFileToolchain::deserializeFromToolchainNode(Json& inNode, const bool inIsCustomToolchain)
+bool SettingsJsonFileToolchain::readFromToolchainNode(JsonFile& inJsonFile, Json& inNode, const bool inIsCustomToolchain)
 {
 	if (!inNode.is_object())
 		return false;
 
-	if (!makeToolchain(inNode, m_state.inputs.toolchainPreference(), inIsCustomToolchain))
-		return false;
+	bool dirty = false;
+	dirty |= detectToolchainPaths(inNode, m_state.inputs.toolchainPreference(), inIsCustomToolchain);
 
 	// LOG(json::dump(inNode, 1, '\t'));
 
@@ -290,15 +299,18 @@ bool SettingsJsonFileToolchain::deserializeFromToolchainNode(Json& inNode, const
 		inNode.erase(key);
 	}
 
-	if (!removeKeys.empty())
-		m_jsonFile.setDirty(true);
+	dirty |= !removeKeys.empty();
+
+	if (dirty)
+		inJsonFile.setDirty(true);
 
 	return true;
 }
 
 /*****************************************************************************/
-bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPreference& preference, const bool inIsCustomToolchain)
+bool SettingsJsonFileToolchain::detectToolchainPaths(Json& toolchain, const ToolchainPreference& preference, const bool inIsCustomToolchain)
 {
+	bool dirty = false;
 	if (!json::isValid<std::string>(toolchain, Keys::ToolchainVersion))
 		toolchain[Keys::ToolchainVersion] = std::string();
 
@@ -327,7 +339,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 			cpp = Files::which(preference.cpp);
 
 		toolchain[Keys::ToolchainCompilerCpp] = cpp;
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerC))
@@ -336,7 +348,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 			cc = Files::which(preference.cc);
 
 		toolchain[Keys::ToolchainCompilerC] = cc;
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainCompilerWindowsResource))
@@ -377,7 +389,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		}
 
 		toolchain[Keys::ToolchainCompilerWindowsResource] = std::move(rc);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainLinker))
@@ -444,7 +456,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 #endif
 
 		toolchain[Keys::ToolchainLinker] = std::move(link);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainArchiver))
@@ -495,7 +507,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		}
 
 		toolchain[Keys::ToolchainArchiver] = std::move(ar);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainProfiler))
@@ -531,7 +543,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		}
 
 		toolchain[Keys::ToolchainProfiler] = std::move(prof);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainDisassembler))
@@ -582,7 +594,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		}
 
 		toolchain[Keys::ToolchainDisassembler] = std::move(disasm);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	// if (!result)
@@ -594,7 +606,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 	// 	toolchain.erase(Keys::ToolchainCompilerWindowsResource);
 	// }
 
-	auto whichAdd = [this](Json& inNode, const char* inKey) -> bool {
+	auto whichAdd = [&dirty](Json& inNode, const char* inKey) -> bool {
 		if (json::isStringInvalidOrEmpty(inNode, inKey))
 		{
 			auto path = Files::which(inKey);
@@ -602,7 +614,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 			if (res || !inNode[inKey].is_string() || inNode[inKey].get<std::string>().empty())
 			{
 				inNode[inKey] = std::move(path);
-				m_jsonFile.setDirty(true);
+				dirty = true;
 			}
 			return res;
 		}
@@ -642,7 +654,7 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 #endif
 
 		toolchain[Keys::ToolchainMake] = std::move(make);
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	whichAdd(toolchain, Keys::ToolchainNinja);
@@ -682,21 +694,16 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 			toolchain[Keys::ToolchainBuildStrategy] = "native";
 		}
 
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 	else if (!strategyFromInput.empty())
 	{
 		toolchain[Keys::ToolchainBuildStrategy] = strategyFromInput;
 
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	const auto& buildPathStyleFromInput = m_state.inputs.buildPathStylePreference();
-	if (!buildPathStyleFromInput.empty() && !m_state.toolchain.buildPathStyleIsValid(buildPathStyleFromInput))
-	{
-		Diagnostic::error("Invalid toolchain build path style type: {}", buildPathStyleFromInput);
-		return false;
-	}
 
 	if (json::isStringInvalidOrEmpty(toolchain, Keys::ToolchainBuildPathStyle))
 	{
@@ -713,12 +720,12 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		else if (preference.buildPathStyle == BuildPathStyle::ArchConfiguration)
 			toolchain[Keys::ToolchainBuildPathStyle] = "architecture";
 
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 	else if (!buildPathStyleFromInput.empty())
 	{
 		toolchain[Keys::ToolchainBuildPathStyle] = buildPathStyleFromInput;
-		m_jsonFile.setDirty(true);
+		dirty = true;
 	}
 
 	if (toolchain[Keys::ToolchainVersion].get<std::string>().empty())
@@ -726,6 +733,6 @@ bool SettingsJsonFileToolchain::makeToolchain(Json& toolchain, const ToolchainPr
 		toolchain[Keys::ToolchainVersion] = std::string();
 	}
 
-	return true;
+	return dirty;
 }
 }

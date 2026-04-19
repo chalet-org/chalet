@@ -31,8 +31,8 @@ struct CentralState
 	bool initializeForQuery();
 
 	const CommandLineInputs& inputs() const noexcept;
-	JsonFile& chaletJson() noexcept;
-	const JsonFile& chaletJson() const noexcept;
+	JsonFile& buildFile() noexcept;
+	const JsonFile& buildFile() const noexcept;
 	const std::string& filename() const noexcept;
 
 	const BuildConfigurationMap& buildConfigurations() const noexcept;
@@ -60,13 +60,12 @@ struct CentralState
 	ExternalDependencyList externalDependencies;
 
 private:
-	friend struct CentralChaletJsonParser;
+	friend struct ChaletJsonFileCentral;
 	friend struct GlobalSettingsJsonFile;
 
 	bool createCache();
 
 	bool parseEnvFile();
-	bool parseBuildFile();
 
 	bool validateOsTarget();
 	bool validateConfigurations();
@@ -93,7 +92,7 @@ private:
 
 	std::string m_filename;
 
-	JsonFile m_chaletJson;
+	JsonFile m_buildFile;
 
 	bool m_shouldPerformUpdateCheck = true;
 };
