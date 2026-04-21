@@ -40,7 +40,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 }
 
 /*****************************************************************************/
-[[nodiscard]] ModuleStrategy IModuleStrategy::make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator)
+[[nodiscard]] Unique<IModuleStrategy> IModuleStrategy::make(const ToolchainType inType, BuildState& inState, CompileCommandsGenerator& inCompileCommandsGenerator)
 {
 	switch (inType)
 	{
@@ -60,7 +60,7 @@ IModuleStrategy::IModuleStrategy(BuildState& inState, CompileCommandsGenerator& 
 			break;
 	}
 
-	Diagnostic::error("Unimplemented ModuleStrategy requested: {}", static_cast<i32>(inType));
+	Diagnostic::error("Unimplemented module strategy requested: {}", static_cast<i32>(inType));
 	return nullptr;
 }
 

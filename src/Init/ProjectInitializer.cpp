@@ -30,10 +30,16 @@
 namespace chalet
 {
 /*****************************************************************************/
+bool ProjectInitializer::run(const CommandLineInputs& inInputs)
+{
+	ProjectInitializer initializer(inInputs);
+	return initializer.run();
+}
+
+/*****************************************************************************/
 ProjectInitializer::ProjectInitializer(const CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
-{
-}
+{}
 
 /*****************************************************************************/
 bool ProjectInitializer::run()

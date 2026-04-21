@@ -10,7 +10,7 @@
 namespace chalet
 {
 struct SourceTarget;
-struct CompileToolchainController;
+struct CompileToolchain;
 
 struct CodeBlocksProjectExporter final : public IProjectExporter
 {

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Compile/CommandPool.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Compile/NativeCompileAdapter.hpp"
 #include "State/SourceFileGroup.hpp"
 #include "State/Target/SourceTarget.hpp"
@@ -21,7 +21,7 @@ class NativeGenerator
 public:
 	NativeGenerator(BuildState& inState);
 
-	bool addProject(const SourceTarget& inProject, const Unique<SourceOutputs>& inOutputs, CompileToolchain& inToolchain);
+	bool addProject(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain);
 
 	bool buildProject(const SourceTarget& inProject);
 
@@ -48,7 +48,7 @@ private:
 	Dictionary<CommandPool::JobList> m_targets;
 
 	const SourceTarget* m_project = nullptr;
-	CompileToolchainController* m_toolchain = nullptr;
+	CompileToolchain* m_toolchain = nullptr;
 
 	std::unordered_set<std::string> m_fileCache;
 

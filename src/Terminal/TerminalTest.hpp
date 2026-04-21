@@ -11,11 +11,13 @@ namespace chalet
 {
 struct TerminalTest
 {
-	TerminalTest();
-
-	bool run();
+	static bool run();
 
 private:
+	TerminalTest();
+
+	bool initializeAndRun();
+
 	void printTerminalCapabilities();
 	void printUnicodeCharacters();
 	void printChaletColorThemes(const bool inSimple = false);

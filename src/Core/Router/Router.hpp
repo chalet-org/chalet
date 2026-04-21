@@ -23,13 +23,9 @@ private:
 
 	bool routeConfigure(BuildState& inState);
 	bool routeBundle(BuildState& inState);
-	bool routeCheck(BuildState& inState);
-	bool routeInit();
-	bool routeSettings();
 	bool routeValidate();
 	bool routeQuery();
 	bool routeConvert();
-	bool routeTerminalTest();
 
 	bool routeExport(CentralState& inCentralState);
 

@@ -6,7 +6,7 @@
 #pragma once
 
 #include "Compile/CommandPool.hpp"
-#include "CompileToolchainController.hpp"
+#include "CompileToolchain.hpp"
 
 namespace chalet
 {
@@ -31,10 +31,10 @@ struct NativeCompileAdapter
 	bool anyDependenciesChanged(const std::string& dependency);
 
 	CommandPool::Settings getCommandPoolSettings() const;
-	CommandPool::CmdList getLinkCommandList(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
+	CommandPool::CmdList getLinkCommandList(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const;
 
 private:
-	CommandPool::Cmd getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const;
+	CommandPool::Cmd getLinkCommand(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const;
 
 	const BuildState& m_state;
 	SourceCache& m_sourceCache;

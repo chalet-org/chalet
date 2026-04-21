@@ -30,7 +30,7 @@ IBuildTarget::IBuildTarget(const BuildState& inState, const BuildTargetType inTy
 }
 
 /*****************************************************************************/
-[[nodiscard]] BuildTarget IBuildTarget::make(const BuildTargetType inType, const BuildState& inState)
+[[nodiscard]] Unique<IBuildTarget> IBuildTarget::make(const BuildTargetType inType, const BuildState& inState)
 {
 	switch (inType)
 	{

@@ -23,7 +23,7 @@ IExternalDependency::IExternalDependency(const CentralState& inCentralState, con
 }
 
 /*****************************************************************************/
-[[nodiscard]] ExternalDependency IExternalDependency::make(const ExternalDependencyType inType, const CentralState& inCentralState)
+[[nodiscard]] Unique<IExternalDependency> IExternalDependency::make(const ExternalDependencyType inType, const CentralState& inCentralState)
 {
 	switch (inType)
 	{

@@ -14,11 +14,13 @@ struct CommandLineInputs;
 
 struct ProjectInitializer
 {
+	static bool run(const CommandLineInputs& inInputs);
+
+private:
 	explicit ProjectInitializer(const CommandLineInputs& inInputs);
 
 	bool run();
 
-private:
 	void showExit();
 	bool initializeNormalWorkspace(ChaletJsonProps& outProps);
 	bool initializeCMakeWorkspace(ChaletJsonProps& outProps);

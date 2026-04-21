@@ -13,7 +13,6 @@ namespace chalet
 class BuildState;
 
 struct IDistTarget;
-using DistTarget = Unique<IDistTarget>;
 
 struct IDistTarget
 {
@@ -22,7 +21,7 @@ struct IDistTarget
 	explicit IDistTarget(const BuildState& inState, const DistTargetType inType);
 	virtual ~IDistTarget() = default;
 
-	[[nodiscard]] static DistTarget make(const DistTargetType inType, const BuildState& inState);
+	[[nodiscard]] static Unique<IDistTarget> make(const DistTargetType inType, const BuildState& inState);
 
 	virtual bool initialize();
 	virtual bool validate() = 0;
@@ -63,5 +62,5 @@ private:
 	bool m_includeInDistribution = true;
 };
 
-using DistributionTargetList = std::vector<DistTarget>;
+using DistributionTargetList = std::vector<Unique<IDistTarget>>;
 }

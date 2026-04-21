@@ -177,7 +177,7 @@ CommandPool::Settings NativeCompileAdapter::getCommandPoolSettings() const
 }
 
 /*****************************************************************************/
-CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const
 {
 	CommandPool::CmdList ret;
 	ret.emplace_back(getLinkCommand(inProject, inToolchain, inOutputs));
@@ -185,7 +185,7 @@ CommandPool::CmdList NativeCompileAdapter::getLinkCommandList(const SourceTarget
 }
 
 /*****************************************************************************/
-CommandPool::Cmd NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchainController& inToolchain, const SourceOutputs& inOutputs) const
+CommandPool::Cmd NativeCompileAdapter::getLinkCommand(const SourceTarget& inProject, CompileToolchain& inToolchain, const SourceOutputs& inOutputs) const
 {
 	CommandPool::Cmd cmd;
 	cmd.command = inToolchain.getOutputTargetCommand(inOutputs.target, inOutputs.objectListLinker);

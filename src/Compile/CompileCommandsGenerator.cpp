@@ -40,12 +40,12 @@ CompileCommandsGenerator::~CompileCommandsGenerator() = default;
 /*****************************************************************************/
 bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain, const SourceOutputs& inOutputs)
 {
-	bool quotedPaths = inToolchain->linker->quotedPaths();
-	bool generateDependencies = inToolchain->linker->generateDependencies();
+	bool quotedPaths = inToolchain.linker->quotedPaths();
+	bool generateDependencies = inToolchain.linker->generateDependencies();
 
-	inToolchain->setQuotedPaths(false);
-	inToolchain->setGenerateDependencies(false);
-	inToolchain->setForceActualPchPath(true);
+	inToolchain.setQuotedPaths(false);
+	inToolchain.setGenerateDependencies(false);
+	inToolchain.setForceActualPchPath(true);
 
 	std::string dummyArch;
 	for (auto& group : inOutputs.groups)
@@ -65,9 +65,9 @@ bool CompileCommandsGenerator::addCompileCommands(CompileToolchain& inToolchain,
 		}
 	}
 
-	inToolchain->setQuotedPaths(quotedPaths);
-	inToolchain->setGenerateDependencies(generateDependencies);
-	inToolchain->setForceActualPchPath(false);
+	inToolchain.setQuotedPaths(quotedPaths);
+	inToolchain.setGenerateDependencies(generateDependencies);
+	inToolchain.setForceActualPchPath(false);
 
 	return true;
 }
@@ -141,12 +141,12 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 				auto baseFolder = String::getPathFolder(object);
 				auto filename = String::getPathFilename(object);
 				auto outObject = fmt::format("{}_{}/{}", baseFolder, inArch, filename);
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, outObject, dep, inArch);
+				return inToolchain.compilerCxx->getPrecompiledHeaderCommand(source, outObject, dep, inArch);
 			}
 			else
 #endif
 			{
-				return inToolchain->compilerCxx->getPrecompiledHeaderCommand(source, object, dep, inArch);
+				return inToolchain.compilerCxx->getPrecompiledHeaderCommand(source, object, dep, inArch);
 			}
 		}
 
@@ -154,7 +154,7 @@ StringList CompileCommandsGenerator::getCommand(CompileToolchain& inToolchain, c
 		case SourceType::CPlusPlus:
 		case SourceType::ObjectiveC:
 		case SourceType::ObjectiveCPlusPlus:
-			return inToolchain->compilerCxx->getCommand(source, object, dep, inGroup.type);
+			return inToolchain.compilerCxx->getCommand(source, object, dep, inGroup.type);
 
 		case SourceType::WindowsResource:
 		case SourceType::Unknown:

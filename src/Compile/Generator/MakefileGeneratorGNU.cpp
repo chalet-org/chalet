@@ -31,7 +31,7 @@ MakefileGeneratorGNU::MakefileGeneratorGNU(const BuildState& inState) :
 void MakefileGeneratorGNU::addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
-	m_toolchain = inToolchain.get();
+	m_toolchain = &inToolchain;
 	m_hash = inTargetHash;
 
 	const auto& target = inOutputs.target;

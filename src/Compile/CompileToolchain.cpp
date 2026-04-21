@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Compile/ToolchainType.hpp"
@@ -14,13 +14,13 @@
 namespace chalet
 {
 /*****************************************************************************/
-CompileToolchainController::CompileToolchainController(const SourceTarget& inProject) :
+CompileToolchain::CompileToolchain(const SourceTarget& inProject) :
 	m_project(inProject)
 {
 }
 
 /*****************************************************************************/
-bool CompileToolchainController::initialize(const BuildState& inState)
+bool CompileToolchain::initialize(const BuildState& inState)
 {
 	ToolchainType type = inState.environment->type();
 
@@ -52,7 +52,7 @@ bool CompileToolchainController::initialize(const BuildState& inState)
 }
 
 /*****************************************************************************/
-void CompileToolchainController::setQuotedPaths(const bool inValue) noexcept
+void CompileToolchain::setQuotedPaths(const bool inValue) noexcept
 {
 	if (compilerCxx)
 		compilerCxx->setQuotedPaths(inValue);
@@ -68,7 +68,7 @@ void CompileToolchainController::setQuotedPaths(const bool inValue) noexcept
 }
 
 /*****************************************************************************/
-void CompileToolchainController::setGenerateDependencies(const bool inValue) noexcept
+void CompileToolchain::setGenerateDependencies(const bool inValue) noexcept
 {
 	if (compilerCxx)
 		compilerCxx->setGenerateDependencies(inValue);
@@ -84,14 +84,14 @@ void CompileToolchainController::setGenerateDependencies(const bool inValue) noe
 }
 
 /*****************************************************************************/
-void CompileToolchainController::setForceActualPchPath(const bool inValue) noexcept
+void CompileToolchain::setForceActualPchPath(const bool inValue) noexcept
 {
 	if (compilerCxx)
 		compilerCxx->setForceActualPchPath(inValue);
 }
 
 /*****************************************************************************/
-StringList CompileToolchainController::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
+StringList CompileToolchain::getOutputTargetCommand(const std::string& outputFile, const StringList& sourceObjs)
 {
 	chalet_assert(archiver != nullptr, "");
 	chalet_assert(linker != nullptr, "");

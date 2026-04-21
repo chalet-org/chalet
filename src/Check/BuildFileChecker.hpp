@@ -13,11 +13,13 @@ namespace chalet
 {
 struct BuildFileChecker
 {
+	static bool run(BuildState& inState);
+
+private:
 	BuildFileChecker(BuildState& inState);
 
 	bool run();
 
-private:
 	Json getExpandedBuildFile();
 
 	bool checkNode(const Json& inNode, Json& outJson, const std::string& inLastKey = std::string());

@@ -29,7 +29,7 @@ IDistTarget::IDistTarget(const BuildState& inState, const DistTargetType inType)
 }
 
 /*****************************************************************************/
-[[nodiscard]] DistTarget IDistTarget::make(const DistTargetType inType, const BuildState& inState)
+[[nodiscard]] Unique<IDistTarget> IDistTarget::make(const DistTargetType inType, const BuildState& inState)
 {
 	switch (inType)
 	{
