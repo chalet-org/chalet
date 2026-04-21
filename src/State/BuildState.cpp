@@ -59,8 +59,8 @@ struct BuildState::Impl
 	BuildPaths paths;
 	PackageManager packages;
 	BuildConfiguration configuration;
-	std::vector<BuildTarget> targets;
-	std::vector<DistTarget> distribution;
+	std::vector<Unique<IBuildTarget>> targets;
+	std::vector<Unique<IDistTarget>> distribution;
 
 	Unique<IBuildEnvironment> environment;
 
@@ -651,6 +651,7 @@ bool BuildState::initializeBuild()
 		}
 	}
 
+	std::vector<const SourceTarget*> sourceTargets;
 	for (auto& target : targets)
 	{
 		if (target->isSources())
@@ -658,6 +659,8 @@ bool BuildState::initializeBuild()
 			auto& project = static_cast<SourceTarget&>(*target);
 			paths.setBuildDirectoriesBasedOnProjectKind(project);
 			project.parseOutputFilename();
+
+			sourceTargets.emplace_back(&project);
 		}
 	}
 
@@ -714,8 +717,11 @@ bool BuildState::initializeBuild()
 #endif
 				}
 
-				if (!project.resolveLinksFromProject(targets, inputs.inputFile()))
-					return false;
+				for (auto& projectB : sourceTargets)
+				{
+					if (!project.resolveLinksFromProject(*projectB, inputs.inputFile()))
+						return false;
+				}
 			}
 
 			if (!target->isSubChalet() && !target->initialize())

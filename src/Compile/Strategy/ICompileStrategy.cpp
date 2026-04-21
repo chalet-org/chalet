@@ -17,7 +17,7 @@
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
 
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
 #include "Compile/Strategy/CompileStrategyMakefile.hpp"
 #include "Compile/Strategy/CompileStrategyNative.hpp"
@@ -36,7 +36,7 @@ ICompileStrategy::ICompileStrategy(const StrategyType inType, BuildState& inStat
 }
 
 /*****************************************************************************/
-[[nodiscard]] CompileStrategy ICompileStrategy::make(const StrategyType inType, BuildState& inState)
+[[nodiscard]] Unique<ICompileStrategy> ICompileStrategy::make(const StrategyType inType, BuildState& inState)
 {
 	switch (inType)
 	{
@@ -98,7 +98,7 @@ void ICompileStrategy::setSourceOutputs(const SourceTarget& inProject, Unique<So
 }
 
 /*****************************************************************************/
-void ICompileStrategy::setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain)
+void ICompileStrategy::setToolchainController(const SourceTarget& inProject, Unique<CompileToolchain>&& inToolchain)
 {
 	const auto& name = inProject.name();
 	m_toolchains[name] = std::move(inToolchain);
@@ -198,7 +198,7 @@ bool ICompileStrategy::addCompileCommands(const SourceTarget& inProject)
 		{
 			auto& outputs = m_outputs.at(name);
 			auto& toolchain = m_toolchains.at(name);
-			return m_compileCommandsGenerator.addCompileCommands(toolchain, *outputs);
+			return m_compileCommandsGenerator.addCompileCommands(*toolchain, *outputs);
 		}
 	}
 

@@ -508,43 +508,37 @@ void SourceTarget::addLink(std::string&& inValue)
 	List::addIfDoesNotExist(m_links, std::move(inValue));
 }
 
-bool SourceTarget::resolveLinksFromProject(const std::vector<BuildTarget>& inTargets, const std::string& inInputFile)
+/*****************************************************************************/
+bool SourceTarget::resolveLinksFromProject(const SourceTarget& inProject, const std::string& inInputFile)
 {
-	for (auto& target : inTargets)
+	const auto& projectName = inProject.name();
+	if (inProject.isStaticLibrary())
 	{
-		if (target->isSources())
+		for (auto& link : m_links)
 		{
-			auto& project = static_cast<SourceTarget&>(*target);
-			const auto& projectName = project.name();
-			if (project.isStaticLibrary())
-			{
-				for (auto& link : m_links)
-				{
-					if (!String::equals(projectName, link))
-						continue;
+			if (!String::equals(projectName, link))
+				continue;
 
-					Diagnostic::error("{}: Static library target '{}' found in links for target '{}' (move to 'staticLinks')", inInputFile, projectName, this->name());
-					return false;
-				}
+			Diagnostic::error("{}: Static library target '{}' found in links for target '{}' (move to 'staticLinks')", inInputFile, projectName, this->name());
+			return false;
+		}
 
-				for (auto& link : m_staticLinks)
-				{
-					if (!String::equals(projectName, link))
-						continue;
+		for (auto& link : m_staticLinks)
+		{
+			if (!String::equals(projectName, link))
+				continue;
 
-					List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
-				}
-			}
-			else if (project.isSharedLibrary())
-			{
-				for (auto& link : m_links)
-				{
-					if (!String::equals(projectName, link))
-						continue;
+			List::addIfDoesNotExist(m_projectStaticLinks, std::string(link));
+		}
+	}
+	else if (inProject.isSharedLibrary())
+	{
+		for (auto& link : m_links)
+		{
+			if (!String::equals(projectName, link))
+				continue;
 
-					List::addIfDoesNotExist(m_projectSharedLinks, std::string(link));
-				}
-			}
+			List::addIfDoesNotExist(m_projectSharedLinks, std::string(link));
 		}
 	}
 

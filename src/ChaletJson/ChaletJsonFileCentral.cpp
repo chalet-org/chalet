@@ -407,7 +407,7 @@ bool ChaletJsonFileCentral::readFromExternalDependencies(const Json& inNode, con
 			return false;
 		}
 
-		ExternalDependency dependency = IExternalDependency::make(type, m_centralState);
+		auto dependency = IExternalDependency::make(type, m_centralState);
 		dependency->setName(name);
 
 		TriBool conditionResult = readFromCondition(dependencyJson);

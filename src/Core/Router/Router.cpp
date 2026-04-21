@@ -50,6 +50,7 @@ namespace
 using RouteAction = std::function<bool(Router&)>;
 using RouteList = std::unordered_map<RouteType, RouteAction>;
 }
+
 /*****************************************************************************/
 Router::Router(CommandLineInputs& inInputs) :
 	m_inputs(inInputs)
@@ -82,16 +83,17 @@ bool Router::run()
 			return routeConvert();
 
 		case RouteType::TerminalTest:
-			return routeTerminalTest();
+			return TerminalTest::run();
 
 		case RouteType::Init:
-			return routeInit();
+			ProjectInitializer::run(m_inputs);
+			return true;
 
 		case RouteType::SettingsGet:
 		case RouteType::SettingsSet:
 		case RouteType::SettingsUnset:
 		case RouteType::SettingsGetKeys:
-			return routeSettings();
+			return SettingsManager::run(m_inputs);
 
 		case RouteType::Validate:
 			return routeValidate();
@@ -152,7 +154,7 @@ bool Router::runRoutesThatRequireState()
 		case RouteType::Check: {
 			// Note: we don't want to save the cache
 			chalet_assert(buildState != nullptr, "");
-			return routeCheck(*buildState);
+			return BuildFileChecker::run(*buildState);
 		}
 
 		case RouteType::BuildRun:
@@ -237,7 +239,7 @@ bool Router::routeBundle(BuildState& inState)
 
 	for (auto& target : inState.distribution)
 	{
-		if (!bundler.run(target))
+		if (!bundler.run(*target))
 		{
 			Diagnostic::error("The bundler ran into a problem on the distribution target: {}", target->name());
 			return false;
@@ -248,36 +250,6 @@ bool Router::routeBundle(BuildState& inState)
 
 	Output::msgBuildSuccess();
 	Output::lineBreak();
-
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::routeCheck(BuildState& inState)
-{
-	Output::lineBreak();
-
-	BuildFileChecker checker(inState);
-	return checker.run();
-}
-
-/*****************************************************************************/
-bool Router::routeInit()
-{
-	ProjectInitializer initializer(m_inputs);
-	initializer.run();
-
-	return true;
-}
-
-/*****************************************************************************/
-bool Router::routeSettings()
-{
-	const auto& route = m_inputs.route();
-
-	SettingsManager settingsMgr(m_inputs);
-	if (!settingsMgr.run(static_cast<SettingsAction>(route.type())))
-		return true;
 
 	return true;
 }
@@ -341,13 +313,6 @@ bool Router::routeConvert()
 
 	BuildFileConverter converter(m_inputs);
 	return converter.convertFromInputs();
-}
-
-/*****************************************************************************/
-bool Router::routeTerminalTest()
-{
-	TerminalTest termTest;
-	return termTest.run();
 }
 
 /*****************************************************************************/

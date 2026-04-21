@@ -647,7 +647,7 @@ bool ChaletJsonFile::readFromTargets(const Json& inNode, const std::string& inFi
 			return false;
 		}
 
-		BuildTarget target;
+		Unique<IBuildTarget> target;
 		if (type == BuildTargetType::Source)
 		{
 			std::string extends{ "*" };
@@ -1502,7 +1502,7 @@ bool ChaletJsonFile::readFromDistribution(const Json& inNode, const std::string&
 			return false;
 		}
 
-		DistTarget target = IDistTarget::make(type, m_state);
+		auto target = IDistTarget::make(type, m_state);
 		target->setName(name);
 
 		auto conditionResult = readFromTargetCondition(*target, targetJson);

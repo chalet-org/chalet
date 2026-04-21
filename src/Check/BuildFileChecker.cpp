@@ -24,6 +24,13 @@ constexpr const char kCondition[] = "condition";
 }
 
 /*****************************************************************************/
+bool BuildFileChecker::run(BuildState& inState)
+{
+	BuildFileChecker buildFileChecker(inState);
+	return buildFileChecker.run();
+}
+
+/*****************************************************************************/
 BuildFileChecker::BuildFileChecker(BuildState& inState) :
 	m_state(inState),
 	m_parser(m_state)
@@ -36,6 +43,7 @@ bool BuildFileChecker::run()
 	// auto& inputs = m_centralState.inputs();
 	auto& theme = Output::theme();
 
+	Output::lineBreak();
 	Output::printSeparator();
 
 	{

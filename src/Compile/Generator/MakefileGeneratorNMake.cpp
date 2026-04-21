@@ -28,7 +28,7 @@ MakefileGeneratorNMake::MakefileGeneratorNMake(const BuildState& inState) :
 void MakefileGeneratorNMake::addProjectRecipes(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain, const std::string& inTargetHash)
 {
 	m_project = &inProject;
-	m_toolchain = inToolchain.get();
+	m_toolchain = &inToolchain;
 	m_hash = inTargetHash;
 
 	m_toolchain->setGenerateDependencies(false);
