@@ -13,14 +13,13 @@ namespace chalet
 class BuildState;
 
 struct IBuildTarget;
-using BuildTarget = Unique<IBuildTarget>;
 
 struct IBuildTarget
 {
 	explicit IBuildTarget(const BuildState& inState, const BuildTargetType inType);
 	virtual ~IBuildTarget() = default;
 
-	[[nodiscard]] static BuildTarget make(const BuildTargetType inType, const BuildState& inState);
+	[[nodiscard]] static Unique<IBuildTarget> make(const BuildTargetType inType, const BuildState& inState);
 
 	virtual bool validate() = 0;
 	virtual const std::string& getHash() const = 0;

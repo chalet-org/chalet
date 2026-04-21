@@ -3,7 +3,7 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "ChaletJson/CentralChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFileCentral.hpp"
 
 #include "ChaletJson/ChaletJsonSchema.hpp"
 #include "Core/CommandLineInputs.hpp"
@@ -24,32 +24,76 @@
 namespace chalet
 {
 /*****************************************************************************/
-CentralChaletJsonParser::CentralChaletJsonParser(CentralState& inCentralState) :
-	m_centralState(inCentralState),
-	m_chaletJson(inCentralState.chaletJson()),
-	kValidPlatforms(Platform::validPlatforms())
+bool ChaletJsonFileCentral::read(CentralState& inCentralState)
 {
-	Platform::assignPlatform(m_centralState.inputs(), m_platform, m_notPlatforms);
+	auto& buildFile = inCentralState.buildFile();
+	ChaletJsonFileCentral chaletJsonFileCentral(inCentralState);
+	return chaletJsonFileCentral.readFrom(buildFile);
 }
 
 /*****************************************************************************/
-CentralChaletJsonParser::~CentralChaletJsonParser() = default;
-
-/*****************************************************************************/
-bool CentralChaletJsonParser::serialize() const
+bool ChaletJsonFileCentral::readPackages(CentralState& inCentralState, const JsonFile& inJsonFile, StringList& outTargets)
 {
-	if (!validateAgainstSchema())
+	auto& jRoot = inJsonFile.root;
+	auto& jFilename = inJsonFile.filename();
+
+	ChaletJsonFileCentral centralParser(inCentralState);
+
+	constexpr bool kForPackages = true;
+	if (!centralParser.readFromExternalDependencies(jRoot, jFilename, kForPackages))
 		return false;
 
-	const Json& jRoot = m_chaletJson.root;
-	if (!serializeRequiredFromJsonRoot(jRoot))
+	if (!centralParser.getExternalBuildTargets(jRoot, outTargets))
 		return false;
 
 	return true;
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::validateAgainstSchema() const
+ChaletJsonFileCentral::ChaletJsonFileCentral(CentralState& inCentralState) :
+	m_centralState(inCentralState),
+	kValidPlatforms(Platform::validPlatforms())
+{
+	Platform::assignPlatform(m_centralState.inputs(), m_platform);
+}
+
+/*****************************************************************************/
+ChaletJsonFileCentral::~ChaletJsonFileCentral() = default;
+
+/*****************************************************************************/
+bool ChaletJsonFileCentral::readFrom(JsonFile& inJsonFile)
+{
+	if (!validateAgainstSchema(inJsonFile))
+		return false;
+
+	auto& jRoot = inJsonFile.root;
+	auto& jFilename = inJsonFile.filename();
+	if (!readFromRoot(jRoot, jFilename))
+		return false;
+
+	if (!readFromVariables(jRoot, jFilename))
+		return false;
+
+	if (!readFromMetadata(jRoot))
+		return false;
+
+	if (!readFromAllowedArchitectures(jRoot, jFilename))
+		return false;
+
+	if (!readFromDefaultConfigurations(jRoot, jFilename))
+		return false;
+
+	if (!readFromConfigurations(jRoot, jFilename))
+		return false;
+
+	if (!readFromExternalDependencies(jRoot, jFilename))
+		return false;
+
+	return true;
+}
+
+/*****************************************************************************/
+bool ChaletJsonFileCentral::validateAgainstSchema(const JsonFile& inJsonFile) const
 {
 	Json jsonSchema;
 
@@ -65,7 +109,7 @@ bool CentralChaletJsonParser::validateAgainstSchema() const
 		if (jsonSchema.empty())
 			jsonSchema = ChaletJsonSchema::get(m_centralState.inputs());
 
-		if (!m_chaletJson.validate(jsonSchema))
+		if (!inJsonFile.validate(jsonSchema))
 			return false;
 	}
 
@@ -73,41 +117,11 @@ bool CentralChaletJsonParser::validateAgainstSchema() const
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::serializeRequiredFromJsonRoot(const Json& inNode) const
-{
-	if (!inNode.is_object())
-		return false;
-
-	if (!parseRoot(inNode))
-		return false;
-
-	if (!parseVariables(inNode))
-		return false;
-
-	if (!parseMetadata(inNode))
-		return false;
-
-	if (!parseAllowedArchitectures(inNode))
-		return false;
-
-	if (!parseDefaultConfigurations(inNode))
-		return false;
-
-	if (!parseConfigurations(inNode))
-		return false;
-
-	if (!parseExternalDependencies(inNode))
-		return false;
-
-	return true;
-}
-
-/*****************************************************************************/
-bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromRoot(const Json& inNode, const std::string& inFilename) const
 {
 	if (!inNode.is_object())
 	{
-		Diagnostic::error("{}: Json root must be an object.", m_chaletJson.filename());
+		Diagnostic::error("{}: Json root must be an object.", inFilename);
 		return false;
 	}
 
@@ -115,7 +129,7 @@ bool CentralChaletJsonParser::parseRoot(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromMetadata(const Json& inNode) const
 {
 	auto metadata = std::make_shared<TargetMetadata>();
 	for (const auto& [key, value] : inNode.items())
@@ -145,7 +159,7 @@ bool CentralChaletJsonParser::parseMetadata(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromVariables(const Json& inNode, const std::string& inFilename) const
 {
 	if (inNode.contains(Keys::Variables))
 	{
@@ -163,7 +177,7 @@ bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
 					}
 					else
 					{
-						Diagnostic::warn("Variable not set because it already exists: {}", key);
+						Diagnostic::warn("{}: Variable not set because it already exists: {}", inFilename, key);
 					}
 				}
 			}
@@ -174,7 +188,7 @@ bool CentralChaletJsonParser::parseVariables(const Json& inNode) const
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseAllowedArchitectures(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromAllowedArchitectures(const Json& inNode, const std::string& inFilename) const
 {
 	if (inNode.contains(Keys::AllowedArchitectures))
 	{
@@ -188,7 +202,7 @@ bool CentralChaletJsonParser::parseAllowedArchitectures(const Json& inNode) cons
 					auto name = archJson.get<std::string>();
 					if (name.empty())
 					{
-						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", inFilename, Keys::Configurations);
 						return false;
 					}
 
@@ -202,7 +216,7 @@ bool CentralChaletJsonParser::parseAllowedArchitectures(const Json& inNode) cons
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseDefaultConfigurations(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromDefaultConfigurations(const Json& inNode, const std::string& inFilename) const
 {
 	bool addedDefaults = false;
 	if (inNode.contains(Keys::DefaultConfigurations))
@@ -218,14 +232,14 @@ bool CentralChaletJsonParser::parseDefaultConfigurations(const Json& inNode) con
 					auto name = configJson.get<std::string>();
 					if (name.empty())
 					{
-						Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
+						Diagnostic::error("{}: '{}' cannot contain blank keys.", inFilename, Keys::Configurations);
 						return false;
 					}
 
 					BuildConfiguration config;
 					if (!BuildConfiguration::makeDefaultConfiguration(config, name))
 					{
-						Diagnostic::error("{}: Error creating the default build configuration '{}'", m_chaletJson.filename(), name);
+						Diagnostic::error("{}: Error creating the default build configuration '{}'", inFilename, name);
 						return false;
 					}
 
@@ -245,7 +259,7 @@ bool CentralChaletJsonParser::parseDefaultConfigurations(const Json& inNode) con
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
+bool ChaletJsonFileCentral::readFromConfigurations(const Json& inNode, const std::string& inFilename) const
 {
 	if (inNode.contains(Keys::Configurations))
 	{
@@ -256,13 +270,13 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 			{
 				if (!configJson.is_object())
 				{
-					Diagnostic::error("{}: configuration '{}' must be an object.", m_chaletJson.filename(), name);
+					Diagnostic::error("{}: configuration '{}' must be an object.", inFilename, name);
 					return false;
 				}
 
 				if (name.empty())
 				{
-					Diagnostic::error("{}: '{}' cannot contain blank keys.", m_chaletJson.filename(), Keys::Configurations);
+					Diagnostic::error("{}: '{}' cannot contain blank keys.", inFilename, Keys::Configurations);
 					return false;
 				}
 
@@ -305,7 +319,7 @@ bool CentralChaletJsonParser::parseConfigurations(const Json& inNode) const
 /*****************************************************************************/
 // note: just return true here for now and ignore errors in dependent build files
 //
-bool CentralChaletJsonParser::getExternalBuildTargets(const Json& inNode, StringList& outTargets) const
+bool ChaletJsonFileCentral::getExternalBuildTargets(const Json& inNode, StringList& outTargets) const
 {
 	if (!inNode.contains(Keys::Targets))
 		return true; // We don't care
@@ -341,7 +355,7 @@ bool CentralChaletJsonParser::getExternalBuildTargets(const Json& inNode, String
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, const bool inForPackages) const
+bool ChaletJsonFileCentral::readFromExternalDependencies(const Json& inNode, const std::string& inFilename, const bool inForPackages) const
 {
 	// don't care if there aren't any dependencies
 	if (!inNode.contains(Keys::ExternalDependencies))
@@ -350,7 +364,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, cons
 	const Json& externalDependencies = inNode[Keys::ExternalDependencies];
 	if (!externalDependencies.is_object() || externalDependencies.empty())
 	{
-		Diagnostic::error("{}: '{}' must contain at least one external dependency.", m_chaletJson.filename(), Keys::ExternalDependencies);
+		Diagnostic::error("{}: '{}' must contain at least one external dependency.", inFilename, Keys::ExternalDependencies);
 		return false;
 	}
 
@@ -358,7 +372,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, cons
 	{
 		if (!dependencyJson.is_object())
 		{
-			Diagnostic::error("{}: external dependency '{}' must be an object.", m_chaletJson.filename(), name);
+			Diagnostic::error("{}: external dependency '{}' must be an object.", inFilename, name);
 			return false;
 		}
 
@@ -383,56 +397,56 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, cons
 			}
 			else
 			{
-				Diagnostic::error("{}: Found unrecognized external dependency kind of '{}'", m_chaletJson.filename(), val);
+				Diagnostic::error("{}: Found unrecognized external dependency kind of '{}'", inFilename, val);
 				return false;
 			}
 		}
 		else
 		{
-			Diagnostic::error("{}: Found unrecognized external dependency of '{}'", m_chaletJson.filename(), name);
+			Diagnostic::error("{}: Found unrecognized external dependency of '{}'", inFilename, name);
 			return false;
 		}
 
-		ExternalDependency dependency = IExternalDependency::make(type, m_centralState);
+		auto dependency = IExternalDependency::make(type, m_centralState);
 		dependency->setName(name);
 
-		auto conditionResult = parseDependencyCondition(dependencyJson);
-		if (!conditionResult.has_value())
+		TriBool conditionResult = readFromCondition(dependencyJson);
+		if (conditionResult == TriBool::Unset)
 			return false;
 
-		if (!(*conditionResult))
-			continue; // true to skip project
+		if (conditionResult == TriBool::False)
+			continue; // Skip dependency
 
 		if (dependency->isGit())
 		{
-			if (!inForPackages && !parseGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !readFromGitDependency(static_cast<GitDependency&>(*dependency), dependencyJson))
 				return false;
 		}
 		else if (dependency->isLocal())
 		{
-			if (!parseLocalDependency(static_cast<LocalDependency&>(*dependency), dependencyJson))
+			if (!readFromLocalDependency(static_cast<LocalDependency&>(*dependency), dependencyJson, inFilename))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'local'.", m_chaletJson.filename(), name);
+				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'local'.", inFilename, name);
 				return false;
 			}
 		}
 		else if (dependency->isArchive())
 		{
-			if (!inForPackages && !parseArchiveDependency(static_cast<ArchiveDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !readFromArchiveDependency(static_cast<ArchiveDependency&>(*dependency), dependencyJson, inFilename))
 			{
-				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'archive'.", m_chaletJson.filename(), name);
+				Diagnostic::error("{}: Error parsing the '{}' dependency of type 'archive'.", inFilename, name);
 				return false;
 			}
 		}
 		else if (dependency->isScript())
 		{
 			// A script could be only for a specific platform
-			if (!inForPackages && !parseScriptDependency(static_cast<ScriptDependency&>(*dependency), dependencyJson))
+			if (!inForPackages && !readFromScriptDependency(static_cast<ScriptDependency&>(*dependency), dependencyJson, inFilename))
 				return false;
 		}
 		else
 		{
-			Diagnostic::error("{}: Unknown external dependency: {}", m_chaletJson.filename(), name);
+			Diagnostic::error("{}: Unknown external dependency: {}", inFilename, name);
 			return false;
 		}
 
@@ -443,7 +457,7 @@ bool CentralChaletJsonParser::parseExternalDependencies(const Json& inNode, cons
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, const Json& inNode) const
+bool ChaletJsonFileCentral::readFromGitDependency(GitDependency& outDependency, const Json& inNode) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -469,7 +483,7 @@ bool CentralChaletJsonParser::parseGitDependency(GitDependency& outDependency, c
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseLocalDependency(LocalDependency& outDependency, const Json& inNode) const
+bool ChaletJsonFileCentral::readFromLocalDependency(LocalDependency& outDependency, const Json& inNode, const std::string& inFilename) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -483,7 +497,7 @@ bool CentralChaletJsonParser::parseLocalDependency(LocalDependency& outDependenc
 	bool hasPath = !outDependency.path().empty();
 	if (!hasPath)
 	{
-		Diagnostic::error("{}: 'path' is required for local dependencies.", m_chaletJson.filename());
+		Diagnostic::error("{}: 'path' is required for local dependencies.", inFilename);
 		return false;
 	}
 
@@ -491,7 +505,7 @@ bool CentralChaletJsonParser::parseLocalDependency(LocalDependency& outDependenc
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseArchiveDependency(ArchiveDependency& outDependency, const Json& inNode) const
+bool ChaletJsonFileCentral::readFromArchiveDependency(ArchiveDependency& outDependency, const Json& inNode, const std::string& inFilename) const
 {
 	for (const auto& [key, value] : inNode.items())
 	{
@@ -507,7 +521,7 @@ bool CentralChaletJsonParser::parseArchiveDependency(ArchiveDependency& outDepen
 	bool hasPath = !outDependency.url().empty();
 	if (!hasPath)
 	{
-		Diagnostic::error("{}: 'url' is required for archive dependencies.", m_chaletJson.filename());
+		Diagnostic::error("{}: 'url' is required for archive dependencies.", inFilename);
 		return false;
 	}
 
@@ -515,7 +529,7 @@ bool CentralChaletJsonParser::parseArchiveDependency(ArchiveDependency& outDepen
 }
 
 /*****************************************************************************/
-bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDependency, const Json& inNode) const
+bool ChaletJsonFileCentral::readFromScriptDependency(ScriptDependency& outDependency, const Json& inNode, const std::string& inFilename) const
 {
 	bool valid = false;
 	for (const auto& [key, value] : inNode.items())
@@ -541,7 +555,7 @@ bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDepende
 
 	if (!valid)
 	{
-		Diagnostic::error("{}: 'file' is required for script dependencies.", m_chaletJson.filename());
+		Diagnostic::error("{}: 'file' is required for script dependencies.", inFilename);
 		return false;
 	}
 
@@ -549,42 +563,30 @@ bool CentralChaletJsonParser::parseScriptDependency(ScriptDependency& outDepende
 }
 
 /*****************************************************************************/
-std::optional<bool> CentralChaletJsonParser::parseDependencyCondition(const Json& inNode) const
+TriBool ChaletJsonFileCentral::readFromCondition(const Json& inNode) const
 {
 	if (std::string val; json::assign(val, inNode, "condition"))
 	{
-		auto res = conditionIsValid(val);
-		if (!res.has_value())
-			return std::nullopt;
-
-		return *res;
-	}
-
-	return true;
-}
-
-/*****************************************************************************/
-std::optional<bool> CentralChaletJsonParser::conditionIsValid(const std::string& inContent) const
-{
-	if (!m_adapter.matchConditionVariables(inContent, [this, &inContent](const std::string& key, const std::string& value, bool negate) {
-			auto res = checkConditionVariable(inContent, key, value, negate);
-			return res == ConditionResult::Pass;
-		}))
-	{
-		if (m_adapter.lastOp == ConditionOp::InvalidOr)
+		if (!m_propertyConditions.match(val, [this, &val](const std::string& key, const std::string& value, bool negate) {
+				auto res = checkConditionVariable(val, key, value, negate);
+				return res == ConditionResult::Pass;
+			}))
 		{
-			Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", inContent);
-			return std::nullopt;
-		}
+			if (m_propertyConditions.lastOp == ConditionOp::InvalidOr)
+			{
+				Diagnostic::error("Syntax for AND '+', OR '|' are mutually exclusive. Both found in: {}", val);
+				return TriBool::Unset;
+			}
 
-		return false;
+			return TriBool::False;
+		}
 	}
 
-	return true;
+	return TriBool::True;
 }
 
 /*****************************************************************************/
-ConditionResult CentralChaletJsonParser::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
+ConditionResult ChaletJsonFileCentral::checkConditionVariable(const std::string& inString, const std::string& key, const std::string& value, bool negate) const
 {
 	// LOG("  ", key, value, negate);
 
@@ -592,14 +594,15 @@ ConditionResult CentralChaletJsonParser::checkConditionVariable(const std::strin
 	{
 		if (String::equals(kValidPlatforms, value))
 		{
+			bool isPlatform = String::equals(m_platform, value);
 			if (negate)
 			{
-				if (String::equals(value, m_platform))
+				if (isPlatform)
 					return ConditionResult::Fail;
 			}
 			else
 			{
-				if (List::contains(m_notPlatforms, value))
+				if (!isPlatform)
 					return ConditionResult::Fail;
 			}
 		}
@@ -611,21 +614,24 @@ ConditionResult CentralChaletJsonParser::checkConditionVariable(const std::strin
 	}
 	else if (String::equals("platform", key))
 	{
-		if (!String::equals(kValidPlatforms, value))
+		if (String::equals(kValidPlatforms, value))
 		{
-			Diagnostic::error("Invalid platform '{}' found in: {}", value, inString);
-			return ConditionResult::Invalid;
-		}
-
-		if (negate)
-		{
-			if (String::equals(value, m_platform))
-				return ConditionResult::Fail;
+			bool isPlatform = String::equals(m_platform, value);
+			if (negate)
+			{
+				if (isPlatform)
+					return ConditionResult::Fail;
+			}
+			else
+			{
+				if (!isPlatform)
+					return ConditionResult::Fail;
+			}
 		}
 		else
 		{
-			if (List::contains(m_notPlatforms, value))
-				return ConditionResult::Fail;
+			Diagnostic::error("Invalid platform '{}' found in: {}", value, inString);
+			return ConditionResult::Invalid;
 		}
 	}
 	else if (String::equals("env", key))

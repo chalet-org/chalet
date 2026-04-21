@@ -21,7 +21,8 @@ elif [[ $OSTYPE == 'msys' || $OSTYPE == 'win32' ]]; then
 	PLATFORM=windows
 fi
 
-BUILD_FOLDER="build/$BUILD_CONFIGURATION"
+BUILD_ROOT_FOLDER="build"
+BUILD_FOLDER="$BUILD_ROOT_FOLDER/$BUILD_CONFIGURATION"
 mkdir -p "$BUILD_FOLDER"
 cd "$CWD/$BUILD_FOLDER"
 
@@ -45,6 +46,12 @@ else
 fi
 
 EXIT_CODE=$?
+
+cd "$CWD"
+
+if [[ $BUILD_CONFIGURATION == 'Debug' ]]; then
+	cp "$BUILD_FOLDER/compile_commands.json" "$BUILD_ROOT_FOLDER/compile_commands.json"
+fi
 
 echo
 echo "==============================================================================="

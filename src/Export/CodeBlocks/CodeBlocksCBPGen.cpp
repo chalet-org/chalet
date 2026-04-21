@@ -6,7 +6,7 @@
 #include "Export/CodeBlocks/CodeBlocksCBPGen.hpp"
 
 #include "BuildEnvironment/IBuildEnvironment.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Compile/Linker/ILinker.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Export/TargetExportAdapter.hpp"
@@ -407,7 +407,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 					{
 						auto& sourceTarget = static_cast<const SourceTarget&>(*target);
 
-						auto toolchain = std::make_unique<CompileToolchainController>(sourceTarget);
+						auto toolchain = std::make_unique<CompileToolchain>(sourceTarget);
 						if (!toolchain->initialize(*state))
 						{
 							Diagnostic::error("Error preparing the toolchain for project: {}", sourceTarget.name());
@@ -432,7 +432,7 @@ void CodeBlocksCBPGen::addBuildConfigurationForTarget(XmlElement& outNode, const
 }
 
 /*****************************************************************************/
-void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
+void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const
 {
 	TargetExportAdapter adapter(inState, inTarget);
 	inState.paths.setBuildDirectoriesBasedOnProjectKind(inTarget);
@@ -504,7 +504,7 @@ void CodeBlocksCBPGen::addSourceTarget(XmlElement& outNode, const BuildState& in
 }
 
 /*****************************************************************************/
-void CodeBlocksCBPGen::addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
+void CodeBlocksCBPGen::addSourceCompilerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const
 {
 	UNUSED(inState);
 
@@ -539,7 +539,7 @@ void CodeBlocksCBPGen::addSourceCompilerOptions(XmlElement& outNode, const Build
 }
 
 /*****************************************************************************/
-void CodeBlocksCBPGen::addSourceLinkerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchainController& inToolchain) const
+void CodeBlocksCBPGen::addSourceLinkerOptions(XmlElement& outNode, const BuildState& inState, const SourceTarget& inTarget, const CompileToolchain& inToolchain) const
 {
 	// Linker Options
 	{

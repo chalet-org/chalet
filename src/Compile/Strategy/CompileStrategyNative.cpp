@@ -53,7 +53,9 @@ bool CompileStrategyNative::addProject(const SourceTarget& inProject)
 	if (inProject.willBuild())
 	{
 		const auto& name = inProject.name();
-		if (!m_nativeGenerator.addProject(inProject, m_outputs.at(name), m_toolchains.at(name)))
+		const auto& outputs = m_outputs.at(name);
+		const auto& toolchainCtrlr = m_toolchains.at(name);
+		if (!m_nativeGenerator.addProject(inProject, *outputs, *toolchainCtrlr))
 			return false;
 	}
 

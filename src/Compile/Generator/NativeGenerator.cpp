@@ -34,12 +34,12 @@ NativeGenerator::NativeGenerator(BuildState& inState) :
 }
 
 /*****************************************************************************/
-bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<SourceOutputs>& inOutputs, CompileToolchain& inToolchain)
+bool NativeGenerator::addProject(const SourceTarget& inProject, const SourceOutputs& inOutputs, CompileToolchain& inToolchain)
 {
 	const auto& name = inProject.name();
 
 	m_project = &inProject;
-	m_toolchain = inToolchain.get();
+	m_toolchain = &inToolchain;
 
 	chalet_assert(m_project != nullptr, "");
 
@@ -50,12 +50,11 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 	m_sourcesChanged = m_pchChanged = false;
 
 	const auto pchTarget = m_state.paths.getPrecompiledHeaderTarget(*m_project);
-	const auto& outputs = inOutputs;
 
-	bool targetExists = Files::pathExists(outputs->target);
+	bool targetExists = Files::pathExists(inOutputs.target);
 	bool dependentChanged = targetExists && m_compileAdapter.checkDependentTargets(inProject);
 
-	m_fileCache.reserve(m_fileCache.size() + outputs->groups.size() + 3);
+	m_fileCache.reserve(m_fileCache.size() + inOutputs.groups.size() + 3);
 	m_compileAdapter.setDependencyCacheSize(m_fileCache.size() * 2);
 
 	{
@@ -73,7 +72,7 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 		m_linkTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || otherTargetsChanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
-			target->list = getCompileCommands(outputs->groups);
+			target->list = getCompileCommands(inOutputs.groups);
 			if (!target->list.empty() || !targetExists)
 			{
 				jobs.emplace_back(std::move(target));
@@ -81,15 +80,15 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const Unique<Sou
 			}
 		}
 
-		const auto& toCache = outputs->target;
+		const auto& toCache = inOutputs.target;
 		if (m_linkTarget && m_fileCache.find(toCache) == m_fileCache.end())
 		{
 			m_fileCache.insert(toCache);
 
-			Files::removeIfExists(outputs->target);
+			Files::removeIfExists(inOutputs.target);
 
 			auto target = std::make_unique<CommandPool::Job>();
-			target->list = m_compileAdapter.getLinkCommandList(*m_project, *m_toolchain, *outputs);
+			target->list = m_compileAdapter.getLinkCommandList(*m_project, *m_toolchain, inOutputs);
 			if (!target->list.empty())
 			{
 				jobs.emplace_back(std::move(target));

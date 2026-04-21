@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ChaletJson/ChaletJsonParser.hpp"
+#include "ChaletJson/ChaletJsonFile.hpp"
 #include "Libraries/Json.hpp"
 #include "State/BuildState.hpp"
 
@@ -13,11 +13,13 @@ namespace chalet
 {
 struct BuildFileChecker
 {
+	static bool run(BuildState& inState);
+
+private:
 	BuildFileChecker(BuildState& inState);
 
 	bool run();
 
-private:
 	Json getExpandedBuildFile();
 
 	bool checkNode(const Json& inNode, Json& outJson, const std::string& inLastKey = std::string());
@@ -29,7 +31,7 @@ private:
 
 	BuildState& m_state;
 
-	ChaletJsonParser m_parser;
+	ChaletJsonFile m_parser;
 };
 }
 

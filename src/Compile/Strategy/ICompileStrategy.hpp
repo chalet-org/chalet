@@ -15,14 +15,13 @@ namespace chalet
 {
 class BuildState;
 struct ICompileStrategy;
-using CompileStrategy = Unique<ICompileStrategy>;
 
 struct ICompileStrategy
 {
 	explicit ICompileStrategy(const StrategyType inType, BuildState& inState);
 	virtual ~ICompileStrategy() = default;
 
-	[[nodiscard]] static CompileStrategy make(const StrategyType inType, BuildState& inState);
+	[[nodiscard]] static Unique<ICompileStrategy> make(const StrategyType inType, BuildState& inState);
 
 	StrategyType type() const noexcept;
 	bool isMSBuild() const noexcept;
@@ -31,7 +30,7 @@ struct ICompileStrategy
 	bool saveCompileCommands() const;
 
 	void setSourceOutputs(const SourceTarget& inProject, Unique<SourceOutputs>&& inOutputs);
-	void setToolchainController(const SourceTarget& inProject, CompileToolchain&& inToolchain);
+	void setToolchainController(const SourceTarget& inProject, Unique<CompileToolchain>&& inToolchain);
 
 	virtual std::string name() const noexcept = 0;
 	virtual bool initialize() = 0;
@@ -50,9 +49,9 @@ protected:
 	BuildState& m_state;
 
 	Dictionary<Unique<SourceOutputs>> m_outputs;
-	Dictionary<CompileToolchain> m_toolchains;
+	Dictionary<Unique<CompileToolchain>> m_toolchains;
 
-	StrategyGenerator m_generator;
+	Unique<IStrategyGenerator> m_generator;
 	CompileCommandsGenerator m_compileCommandsGenerator;
 
 	StrategyType m_type;

@@ -3,14 +3,14 @@
 	See accompanying file LICENSE.txt for details.
 */
 
-#include "ChaletJson/ChaletJsonParserAdapter.hpp"
+#include "ChaletJson/PropertyConditionMatcher.hpp"
 
 #include "Utility/String.hpp"
 
 namespace chalet
 {
 /*****************************************************************************/
-bool ChaletJsonParserAdapter::matchConditionVariables(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const
+bool PropertyConditionMatcher::match(const std::string& inText, const std::function<bool(const std::string&, const std::string&, bool)>& onMatch) const
 {
 	auto squareBracketBegin = inText.find('[');
 	if (squareBracketBegin == std::string::npos)

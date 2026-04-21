@@ -17,7 +17,7 @@
 #include "Cache/SourceCache.hpp"
 #include "Cache/WorkspaceCache.hpp"
 #include "Compile/AssemblyDumper.hpp"
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "Process/Environment.hpp"
 #include "Process/Process.hpp"
@@ -469,7 +469,7 @@ void BuildManager::printBuildInformation() const
 /*****************************************************************************/
 bool BuildManager::addProjectToBuild(const SourceTarget& inProject)
 {
-	auto buildToolchain = std::make_unique<CompileToolchainController>(inProject);
+	auto buildToolchain = std::make_unique<CompileToolchain>(inProject);
 	auto& fileCache = m_fileCache[inProject.buildSuffix()];
 	auto outputs = m_state.paths.getOutputs(inProject, fileCache);
 

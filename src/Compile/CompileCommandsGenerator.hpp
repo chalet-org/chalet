@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "Compile/CompileToolchainController.hpp"
+#include "Compile/CompileToolchain.hpp"
 
 namespace chalet
 {

@@ -9,11 +9,11 @@
 
 namespace chalet
 {
-enum class SettingsAction : std::underlying_type_t<RouteType>
+enum class SettingsAction : u16
 {
-	Get = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsGet),
-	Set = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsSet),
-	Unset = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsUnset),
-	QueryKeys = static_cast<std::underlying_type_t<RouteType>>(RouteType::SettingsGetKeys),
+	Get,
+	Set,
+	Unset,
+	QueryKeys,
 };
 }

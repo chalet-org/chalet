@@ -32,29 +32,15 @@ struct JsonFile
 	void setContents(Json&& inJson);
 
 	const std::string& filename() const noexcept;
-	void makeNode(const char* inKey, const JsonDataType inType);
 
-	std::string getSchema();
-	bool validate(const Json& inSchemaJson);
-
-	template <typename T>
-	inline bool assignNodeIfEmpty(Json& outNode, const char* inKey, const T& inValue);
-
-	template <typename T>
-	inline bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::optional<T>& inValueA, const T& inValueB);
-
-	bool assignNodeIfEmptyWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
-	bool assignNodeWithFallback(Json& outNode, const char* inKey, const std::string& inValueA, const std::string& inValueB);
+	std::string getSchema() const;
+	bool validate(const Json& inSchemaJson) const;
 
 	Json root;
 
 private:
-	Json initializeDataType(const JsonDataType inType);
-
 	std::string m_filename;
 
 	bool m_dirty = false;
 };
 }
-
-#include "Json/JsonFile.inl"

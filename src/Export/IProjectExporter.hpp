@@ -16,7 +16,6 @@ struct IBuildTarget;
 struct CommandLineInputs;
 
 struct IProjectExporter;
-using ProjectExporter = Unique<IProjectExporter>;
 
 struct IProjectExporter
 {
@@ -24,7 +23,7 @@ struct IProjectExporter
 	CHALET_DISALLOW_COPY_MOVE(IProjectExporter);
 	virtual ~IProjectExporter();
 
-	[[nodiscard]] static ProjectExporter make(const ExportKind inKind, const CommandLineInputs& inInputs);
+	[[nodiscard]] static Unique<IProjectExporter> make(const ExportKind inKind, const CommandLineInputs& inInputs);
 	[[nodiscard]] static std::string getProjectBuildFolder(const CommandLineInputs& inInputs);
 
 	bool generate(CentralState& inCentralState, const bool inForBuild = false);
