@@ -101,10 +101,28 @@ StringList TargetExportAdapter::getFiles() const
 	{
 		const auto& validationTarget = static_cast<const ValidationBuildTarget&>(m_target);
 		auto& files = validationTarget.files();
-		for (auto& file : files)
+		for (auto& inFile : files)
 		{
-			ret.emplace_back(file);
+			auto file = Files::getCanonicalPath(inFile);
+			if (!Files::pathExists(file))
+				file = inFile;
+
+			ret.emplace_back(std::move(file));
 		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+std::string TargetExportAdapter::getExtraFile() const
+{
+	std::string ret;
+
+	if (m_target.isValidation())
+	{
+		const auto& project = static_cast<const ValidationBuildTarget&>(m_target);
+		ret = Files::getCanonicalPath(project.schema());
 	}
 
 	return ret;
