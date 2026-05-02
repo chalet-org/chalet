@@ -46,7 +46,7 @@ private:
 	bool saveScriptTargetProjectFile(const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile);
 	bool saveAllTargetProjectFile(const std::string& inName, const std::string& inFilename);
 
-	bool saveFiltersFile(XmlFile& outFile, const BuildTargetType inType);
+	bool saveFiltersFile(XmlFile& outFile, const std::string& inFilename, const BuildTargetType inType);
 	bool saveUserFile(const std::string& inFilename, const std::string& inName);
 
 	void addProjectHeader(XmlElement& outNode) const;
@@ -63,8 +63,8 @@ private:
 	void addCompileProperties(XmlElement& outNode) const;
 	void addScriptProperties(XmlElement& outNode) const;
 	void addSourceFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
-	void addTargetFiles(XmlElement& outNode, const std::string& inName, XmlFile& outFiltersFile) const;
-	void addAllTargetFiles(XmlElement& outNode) const;
+	void addTargetFiles(XmlElement& outNode, const std::string& inName, const std::string& inFilename, XmlFile& outFiltersFile) const;
+	void addAllTargetFiles(XmlElement& outNode, const std::string& inFilename) const;
 	void addProjectReferences(XmlElement& outNode, const std::string& inName) const;
 	void addAllProjectReferences(XmlElement& outNode) const;
 	void addImportMsCppTargets(XmlElement& outNode) const;
@@ -78,6 +78,7 @@ private:
 	std::string getDictionaryKey(const BuildState& inState) const;
 
 	std::string getResolvedInputFile() const;
+	std::string getRemoteSchemaPath(const std::string& inFile) const;
 
 	const std::vector<Unique<BuildState>>& m_states;
 	const std::string& m_exportPath;
