@@ -818,7 +818,8 @@ void CompilerCxxGCC::addPositionIndependentCodeOption(StringList& outArgList) co
 /*****************************************************************************/
 void CompilerCxxGCC::addNoRunTimeTypeInformationOption(StringList& outArgList) const
 {
-	if (!m_project.runtimeTypeInformation())
+	bool languageCanUseRTTI = m_project.language() == CodeLanguage::CPlusPlus || m_project.language() == CodeLanguage::ObjectiveCPlusPlus; // TODO: Also D
+	if (!m_project.runtimeTypeInformation() && languageCanUseRTTI)
 	{
 		std::string option{ "-fno-rtti" };
 		// if (isFlagSupported(option))
