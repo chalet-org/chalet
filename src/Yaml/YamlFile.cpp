@@ -336,32 +336,8 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			{
 				if (!value.empty())
 				{
-					auto foundInteger = value.find_first_not_of("0123456789");
-					if (foundInteger == std::string::npos)
-					{
-						auto numValue = ::strtoll(value.c_str(), NULL, 0);
-						node[key] = numValue;
+					if (parseNumeric(node[key], value))
 						continue;
-					}
-
-					// Check if there's a floating point number
-					auto foundFloat = value.find_first_not_of("0123456789.");
-					if (foundFloat == std::string::npos)
-					{
-						// If there's only decimals, we want to ignore it
-						auto foundNonDecimal = value.find_first_not_of(".");
-						if (foundNonDecimal != std::string::npos)
-						{
-							// If there's more than one decimal, it's a version string
-							auto firstDecimal = value.find('.');
-							if (value.find('.', firstDecimal + 1) == std::string::npos)
-							{
-								auto numValue = ::strtof(value.c_str(), NULL);
-								node[key] = numValue;
-								continue;
-							}
-						}
-					}
 				}
 
 				node[key] = std::move(value);
@@ -375,6 +351,29 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 
 			if (line.front() == '"' && line.back() == '"')
 				line = line.substr(1, line.size() - 2);
+
+			if (line.front() == '[' && line.back() == ']')
+			{
+				line = line.substr(1, line.size() - 2);
+				if (line.find_first_not_of("0123456789., ") == std::string::npos)
+					node.push_back(parseAbbreviatedNumericList(line));
+				else
+					node.push_back(parseAbbreviatedStringList(line));
+
+				continue;
+			}
+			else
+			{
+				Json numericNode;
+				if (parseNumeric(numericNode, line))
+				{
+					if (!numericNode.empty())
+					{
+						node.push_back(std::move(numericNode));
+						continue;
+					}
+				}
+			}
 
 			node.push_back(std::move(line));
 		}
@@ -402,9 +401,9 @@ StringList YamlFile::parseAbbreviatedStringList(const std::string& inValue) cons
 }
 
 /*****************************************************************************/
-std::vector<f32> YamlFile::parseAbbreviatedNumericList(std::string inString) const
+std::vector<f64> YamlFile::parseAbbreviatedNumericList(std::string inString) const
 {
-	std::vector<f32> list;
+	std::vector<f64> list;
 
 	inString.push_back(',');
 
@@ -412,7 +411,7 @@ std::vector<f32> YamlFile::parseAbbreviatedNumericList(std::string inString) con
 	while (comma != std::string::npos)
 	{
 		auto valueString = inString.substr(0, comma);
-		list.emplace_back(String::toFloat<f32>(valueString));
+		list.emplace_back(String::toFloat<f64>(valueString));
 
 		auto nextNumber = inString.find_first_of("0123456789", comma + 1);
 		if (nextNumber != std::string::npos)
@@ -462,6 +461,39 @@ Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
 }
 
 /*****************************************************************************/
+bool YamlFile::parseNumeric(Json& outNode, const std::string& inValue) const
+{
+	auto foundInteger = inValue.find_first_not_of("0123456789");
+	if (foundInteger == std::string::npos)
+	{
+		auto numValue = ::strtoll(inValue.c_str(), NULL, 0);
+		outNode = numValue;
+		return true;
+	}
+
+	// Check if there's a floating point number
+	auto foundFloat = inValue.find_first_not_of("0123456789.");
+	if (foundFloat == std::string::npos)
+	{
+		// If there's only decimals, we want to ignore it
+		auto foundNonDecimal = inValue.find_first_not_of(".");
+		if (foundNonDecimal != std::string::npos)
+		{
+			// If there's more than one decimal, it's a version string
+			auto firstDecimal = inValue.find('.');
+			if (inValue.find('.', firstDecimal + 1) == std::string::npos)
+			{
+				auto numValue = ::strtof(inValue.c_str(), NULL);
+				outNode = numValue;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+/*****************************************************************************/
 bool YamlFile::save(const Json& inJson)
 {
 	auto contents = getNodeAsString(std::string(), inJson);
@@ -499,12 +531,54 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 
 	if (node.is_array())
 	{
-		if (!root)
-			ret += '\n';
-
-		for (auto& value : node)
+		const bool isShort = node.size() <= 4u;
+		bool isNumeric = false;
+		if (isShort)
 		{
-			ret += getNodeAsString(std::string(), value, inIndent + 1, true);
+			isNumeric = true;
+			for (auto& value : node)
+			{
+				isNumeric &= value.is_number();
+			}
+		}
+
+		if (isShort && isNumeric)
+		{
+			ret += " [";
+			for (size_t i = 0; i < node.size(); ++i)
+			{
+				const auto& value = node[i];
+				if (i > 0)
+					ret += ", ";
+
+				if (value.is_number_unsigned())
+				{
+					ret += std::to_string(value.get<u64>());
+				}
+				else if (value.is_number_integer())
+				{
+					ret += std::to_string(value.get<i64>());
+				}
+				else if (value.is_number_float())
+				{
+					ret += std::to_string(value.get<f64>());
+				}
+			}
+
+			ret += ']';
+
+			if (!root)
+				ret += '\n';
+		}
+		else
+		{
+			if (!root)
+				ret += '\n';
+
+			for (auto& value : node)
+			{
+				ret += getNodeAsString(std::string(), value, inIndent + 1, true);
+			}
 		}
 	}
 	else if (node.is_object())
