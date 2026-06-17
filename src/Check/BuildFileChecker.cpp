@@ -13,6 +13,7 @@
 #include "State/Target/IBuildTarget.hpp"
 #include "Terminal/Output.hpp"
 #include "Terminal/Shell.hpp"
+#include "Utility/Path.hpp"
 #include "Yaml/YamlFile.hpp"
 #include "Json/JsonFile.hpp"
 
@@ -157,10 +158,20 @@ Json BuildFileChecker::getExpandedBuildFile()
 	if (!checkNode(buildFile.root, checked))
 		return false;
 
+	const std::string kVariables{ "variables" };
 	const std::string kExternalDependencies{ "externalDependencies" };
 	const std::string kPackage{ "package" };
+	const std::string kPackagePaths{ "packagePaths" };
 	const std::string kTargets{ "targets" };
 	const std::string kDistribution{ "distribution" };
+
+	if (checked.contains(kVariables))
+	{
+		auto& packagePathsJson = checked[kVariables];
+
+		// Note: we use the SourcePackage overload of replaceVariablesInString here, but it shouldn't matter
+		checkNodeWithTargetPtr<SourcePackage>(packagePathsJson, nullptr);
+	}
 
 	if (checked.contains(kExternalDependencies))
 	{
@@ -182,6 +193,12 @@ Json BuildFileChecker::getExpandedBuildFile()
 			if (package != nullptr)
 				checkNodeWithTargetPtr(packageJson, package);
 		}
+	}
+
+	if (checked.contains(kPackagePaths))
+	{
+		auto& packagePathsJson = checked[kPackagePaths];
+		checkNodeWithTargetPtr<SourcePackage>(packagePathsJson, nullptr);
 	}
 
 	if (checked.contains(kTargets))
