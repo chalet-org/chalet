@@ -83,7 +83,7 @@ StringList BuildEnvironmentEmscripten::getVersionCommand(const std::string& inEx
 {
 	if (String::endsWith("emcc.py", inExecutable))
 	{
-		return StringList{ m_commandInvoker, inExecutable, "--version" };
+		return StringList{ m_commandInvoker, inExecutable, "-dumpversion" };
 	}
 	else
 	{

@@ -111,7 +111,7 @@ StringList BuildEnvironmentGNU::getSystemIncludeDirectories(const std::string& i
 /*****************************************************************************/
 StringList BuildEnvironmentGNU::getVersionCommand(const std::string& inExecutable) const
 {
-	return StringList{ inExecutable, "-v" };
+	return StringList{ inExecutable, "-dumpversion" };
 }
 
 /*****************************************************************************/
@@ -163,42 +163,15 @@ bool BuildEnvironmentGNU::getCompilerVersionAndDescription(CompilerInfo& outInfo
 	std::string cachedVersion;
 	getDataWithCache(cachedVersion, "version", outInfo.path, [this, &outInfo]() {
 		// Expects:
-		// gcc version 10.2.0 (Ubuntu 10.2.0-13ubuntu1)
-		// gcc version 10.2.0 (Rev10, Built by MSYS2 project)
-		// Apple clang version 12.0.5 (clang-1205.0.22.9)
+		// 10.2.0
+		// 19.0.0git
+		// etc...
 
 		const auto exec = String::getPathBaseName(outInfo.path);
-		std::string rawOutput = Process::runOutput(getVersionCommand(outInfo.path));
+		auto version = Process::runOutput(getVersionCommand(outInfo.path));
 
-		StringList splitOutput;
-		splitOutput = String::split(rawOutput, '\n');
-
-		if (splitOutput.size() < 2)
-			return std::string();
-
-		std::string version;
-		// std::string threadModel;
-		// std::string arch;
-		for (auto& line : splitOutput)
-		{
-			parseVersionFromVersionOutput(line, version);
-			// parseArchFromVersionOutput(line, arch);
-			// parseThreadModelFromVersionOutput(line, threadModel);
-		}
-
-#if defined(CHALET_LINUX)
-		if (Shell::isWindowsSubsystemForLinux())
-		{
-			if (String::contains({ "(GCC)", "-win32 " }, version))
-				version = version.substr(0, version.find(" ("));
-			else
-				version = version.substr(0, version.find_first_not_of("0123456789."));
-		}
-		else
-#endif
-		{
-			version = version.substr(0, version.find_first_not_of("0123456789."));
-		}
+		// remvoe any suffix
+		version = version.substr(0, version.find_first_not_of("0123456789."));
 
 		return version;
 	});
@@ -318,19 +291,6 @@ bool BuildEnvironmentGNU::verifyCompilerExecutable(const std::string& inCompiler
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-void BuildEnvironmentGNU::parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const
-{
-	auto start = inLine.find("version");
-	if (start == std::string::npos)
-		return;
-
-	outVersion = inLine.substr(start + 8);
-
-	while (outVersion.back() == ' ')
-		outVersion.pop_back();
 }
 
 /*****************************************************************************/

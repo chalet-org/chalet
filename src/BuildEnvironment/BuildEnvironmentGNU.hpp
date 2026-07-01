@@ -44,7 +44,6 @@ protected:
 	virtual bool populateSupportedFlags(const std::string& inExecutable) override;
 	virtual std::string getCompilerFlavor(const std::string& inPath) const final;
 
-	virtual void parseVersionFromVersionOutput(const std::string& inLine, std::string& outVersion) const;
 	virtual void parseArchFromVersionOutput(const std::string& inLine, std::string& outArch) const;
 	virtual void parseThreadModelFromVersionOutput(const std::string& inLine, std::string& outThreadModel) const;
 	virtual bool verifyCompilerExecutable(const std::string& inCompilerExec);
