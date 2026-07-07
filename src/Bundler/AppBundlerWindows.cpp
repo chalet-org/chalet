@@ -36,16 +36,19 @@ bool AppBundlerWindows::bundleForPlatform()
 #if defined(CHALET_WIN32)
 	if (m_state.environment->isMsvc() || m_state.environment->isMsvcClang())
 	{
-		Arch::Cpu targetArch = m_state.info.targetArchitecture();
-		if (targetArch == Arch::Cpu::X86 || targetArch == Arch::Cpu::X64 || targetArch == Arch::Cpu::ARM64)
+		if (m_bundle.windowsIncludeRuntimeDlls())
 		{
-			auto vcToolsRedistDir = Environment::getString("VCToolsRedistDir");
-			auto targetArchVS = Arch::toVSArch(targetArch);
-			auto vcRedist = fmt::format("{}/vc_redist.{}.exe", vcToolsRedistDir, targetArchVS);
-			Path::toUnix(vcRedist);
+			Arch::Cpu targetArch = m_state.info.targetArchitecture();
+			if (targetArch == Arch::Cpu::X86 || targetArch == Arch::Cpu::X64 || targetArch == Arch::Cpu::ARM64)
+			{
+				auto vcToolsRedistDir = Environment::getString("VCToolsRedistDir");
+				auto targetArchVS = Arch::toVSArch(targetArch);
+				auto vcRedist = fmt::format("{}/vc_redist.{}.exe", vcToolsRedistDir, targetArchVS);
+				Path::toUnix(vcRedist);
 
-			auto& distributionDirectory = m_state.inputs.distributionDirectory();
-			Files::copy(vcRedist, distributionDirectory);
+				auto& distributionDirectory = m_state.inputs.distributionDirectory();
+				Files::copy(vcRedist, distributionDirectory);
+			}
 		}
 	}
 #endif
