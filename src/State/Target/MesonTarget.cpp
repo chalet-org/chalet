@@ -117,7 +117,7 @@ const std::string& MesonTarget::getHash() const
 
 		bool compilerCache = m_state.info.compilerCache(); // we also need to re-configure meson if the compilerCache flag was changed
 
-		auto hashable = Hash::getHashableString(this->name(), m_location, m_runExecutable, m_buildFile, m_toolset, m_install, defines, targets, compilerCache);
+		auto hashable = Hash::getHashableString(this->name(), m_location, m_buildFile, m_toolset, m_install, defines, targets, compilerCache);
 
 		m_hash = Hash::string(hashable);
 	}
