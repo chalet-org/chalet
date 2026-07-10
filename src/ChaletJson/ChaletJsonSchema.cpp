@@ -1508,7 +1508,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetCMakeRunExecutable] = R"json({
 		"type": "string",
-		"description": "The path to an executable to run, relative to the build directory.",
+		"description": "The path to an executable to run, relative to the CMake target's build directory.",
 		"minLength": 1
 	})json"_ojson;
 
@@ -1564,7 +1564,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 
 	defs[Defs::TargetMesonRunExecutable] = R"json({
 		"type": "string",
-		"description": "The path to an executable to run, relative to the build directory.",
+		"description": "The path to an executable to run, relative to the Meson target's build directory.",
 		"minLength": 1
 	})json"_ojson;
 
