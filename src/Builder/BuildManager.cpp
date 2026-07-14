@@ -1116,6 +1116,8 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		cmd.emplace_back("--serve_after_close");
 		cmd.emplace_back("--serve_after_exit");
 		cmd.emplace_back("--no_emrun_detect");
+		cmd.emplace_back("--kill_start");
+		cmd.emplace_back("--kill_exit");
 
 		if (Output::showCommands())
 			cmd.emplace_back("--verbose");
