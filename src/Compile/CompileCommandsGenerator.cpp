@@ -5,6 +5,7 @@
 
 #include "Compile/CompileCommandsGenerator.hpp"
 
+#include "BuildEnvironment/IBuildEnvironment.hpp"
 #include "Core/CommandLineInputs.hpp"
 #include "State/BuildInfo.hpp"
 #include "State/BuildPaths.hpp"
@@ -197,6 +198,7 @@ bool CompileCommandsGenerator::save() const
 		outJson.push_back(std::move(node));
 	}
 
+	const bool isExcluded = m_state.environment->isEmscripten();
 	if (!m_compileCommands.empty())
 	{
 		if (!JsonFile::saveToFile(outJson, outputFile))
@@ -205,12 +207,15 @@ bool CompileCommandsGenerator::save() const
 			return false;
 		}
 
-		if (!String::equals(String::getPathFolder(outputFile), outputDirectory))
+		if (!isExcluded)
 		{
-			if (!Files::copySilent(outputFile, outputDirectory))
+			if (!String::equals(String::getPathFolder(outputFile), outputDirectory))
 			{
-				Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
-				return false;
+				if (!Files::copySilent(outputFile, outputDirectory))
+				{
+					Diagnostic::error("{} could not be copied to: '{}'", kCompileCommandsJson, outputDirectory);
+					return false;
+				}
 			}
 		}
 	}
@@ -230,7 +235,8 @@ bool CompileCommandsGenerator::save() const
 				targetFolder = project.targetFolder();
 			}
 		}
-		if (!targetFolder.empty())
+
+		if (!targetFolder.empty() && !isExcluded)
 		{
 			auto lastCompileCommands = fmt::format("{}/{}/{}", buildOutputDir, targetFolder, kCompileCommandsJson);
 			if (Files::pathExists(lastCompileCommands))
