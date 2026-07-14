@@ -1112,7 +1112,7 @@ bool BuildManager::cmdRun(const IBuildTarget& inTarget)
 		cmd.emplace_back(std::move(pythonPath));
 		cmd.emplace_back(std::move(emrun));
 
-		cmd.emplace_back("--no_browser");
+		// cmd.emplace_back("--no_browser");
 		cmd.emplace_back("--serve_after_close");
 		cmd.emplace_back("--serve_after_exit");
 		cmd.emplace_back("--no_emrun_detect");
