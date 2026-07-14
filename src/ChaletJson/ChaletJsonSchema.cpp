@@ -1701,7 +1701,7 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 			]
 		})json"_ojson;
 		distTarget[SKeys::Properties] = Json::object();
-		addProperty(distTarget, "buildTargets", Defs::DistributionBundleBuildTargets);
+		addPropertyAndPattern(distTarget, "buildTargets", Defs::DistributionBundleBuildTargets, kPatternConditions);
 		addProperty(distTarget, "condition", Defs::DistributionCondition);
 		addPropertyAndPattern(distTarget, "exclude", Defs::DistributionBundleExclude, kPatternConditions);
 		addPropertyAndPattern(distTarget, "include", Defs::DistributionBundleInclude, kPatternConditions);
