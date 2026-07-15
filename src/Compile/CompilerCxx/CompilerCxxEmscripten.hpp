@@ -19,6 +19,7 @@ protected:
 	virtual bool addExecutable(StringList& outArgList) const final;
 
 	virtual void addThreadModelCompileOption(StringList& outArgList) const final;
+	virtual bool addSystemRootOption(StringList& outArgList) const final;
 	virtual void addPositionIndependentCodeOption(StringList& outArgList) const final;
 };
 }

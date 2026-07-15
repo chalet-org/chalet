@@ -58,6 +58,13 @@ void CompilerCxxEmscripten::addThreadModelCompileOption(StringList& outArgList) 
 }
 
 /*****************************************************************************/
+bool CompilerCxxEmscripten::addSystemRootOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+	return true;
+}
+
+/*****************************************************************************/
 void CompilerCxxEmscripten::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	List::addIfDoesNotExist(outArgList, "-fPIC");
