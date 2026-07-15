@@ -34,6 +34,7 @@ bool AppBundlerWeb::bundleForPlatform()
 
 	StringList wasmFiles;
 	StringList jsFiles;
+	StringList dataFiles;
 	for (auto& project : buildTargets)
 	{
 		auto outputFilePath = m_state.paths.getTargetFilename(*project);
@@ -42,6 +43,7 @@ bool AppBundlerWeb::bundleForPlatform()
 			auto noExtension = String::getPathFolderBaseName(outputFilePath);
 			wasmFiles.emplace_back(fmt::format("{}.wasm", noExtension));
 			jsFiles.emplace_back(fmt::format("{}.js", noExtension));
+			dataFiles.emplace_back(fmt::format("{}.data", noExtension));
 		}
 	}
 
@@ -52,6 +54,11 @@ bool AppBundlerWeb::bundleForPlatform()
 			continue;
 	}
 	for (auto& file : jsFiles)
+	{
+		if (!copyIncludedPath(file, executablePath))
+			continue;
+	}
+	for (auto& file : dataFiles)
 	{
 		if (!copyIncludedPath(file, executablePath))
 			continue;

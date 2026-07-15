@@ -92,6 +92,10 @@ void LinkerEmscripten::addLinkerOptions(StringList& outArgList) const
 void LinkerEmscripten::addThreadModelLinks(StringList& outArgList) const
 {
 	UNUSED(outArgList);
+	// if (m_project.threads())
+	// {
+	// 	List::addIfDoesNotExist(outArgList, "-pthread");
+	// }
 }
 
 /*****************************************************************************/

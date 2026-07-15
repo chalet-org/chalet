@@ -48,6 +48,16 @@ bool CompilerCxxEmscripten::addExecutable(StringList& outArgList) const
 }
 
 /*****************************************************************************/
+void CompilerCxxEmscripten::addThreadModelCompileOption(StringList& outArgList) const
+{
+	UNUSED(outArgList);
+	// if (m_project.threads())
+	// {
+	// 	List::addIfDoesNotExist(outArgList, "-pthread");
+	// }
+}
+
+/*****************************************************************************/
 void CompilerCxxEmscripten::addPositionIndependentCodeOption(StringList& outArgList) const
 {
 	List::addIfDoesNotExist(outArgList, "-fPIC");
