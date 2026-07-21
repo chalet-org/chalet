@@ -312,7 +312,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 				if (value.front() == '[' && value.back() == ']')
 				{
 					value = value.substr(1, value.size() - 2);
-					if (value.find_first_not_of("0123456789., ") == std::string::npos)
+					if (value.find_first_not_of("0123456789-., ") == std::string::npos)
 						node[key] = parseAbbreviatedNumericList(value);
 					else
 						node[key] = parseAbbreviatedStringList(value);
@@ -355,7 +355,7 @@ bool YamlFile::parseAsJson(Json& outJson, std::istream& stream) const
 			if (line.front() == '[' && line.back() == ']')
 			{
 				line = line.substr(1, line.size() - 2);
-				if (line.find_first_not_of("0123456789., ") == std::string::npos)
+				if (line.find_first_not_of("0123456789-., ") == std::string::npos)
 					node.push_back(parseAbbreviatedNumericList(line));
 				else
 					node.push_back(parseAbbreviatedStringList(line));
@@ -413,7 +413,7 @@ std::vector<f64> YamlFile::parseAbbreviatedNumericList(std::string inString) con
 		auto valueString = inString.substr(0, comma);
 		list.emplace_back(String::toFloat<f64>(valueString));
 
-		auto nextNumber = inString.find_first_of("0123456789", comma + 1);
+		auto nextNumber = inString.find_first_of("0123456789-.", comma + 1);
 		if (nextNumber != std::string::npos)
 			inString = inString.substr(nextNumber);
 		else
@@ -463,7 +463,7 @@ Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
 /*****************************************************************************/
 bool YamlFile::parseNumeric(Json& outNode, const std::string& inValue) const
 {
-	auto foundInteger = inValue.find_first_not_of("0123456789");
+	auto foundInteger = inValue.find_first_not_of("0123456789-.");
 	if (foundInteger == std::string::npos)
 	{
 		auto numValue = ::strtoll(inValue.c_str(), NULL, 0);
@@ -472,7 +472,7 @@ bool YamlFile::parseNumeric(Json& outNode, const std::string& inValue) const
 	}
 
 	// Check if there's a floating point number
-	auto foundFloat = inValue.find_first_not_of("0123456789.");
+	auto foundFloat = inValue.find_first_not_of("0123456789-.");
 	if (foundFloat == std::string::npos)
 	{
 		// If there's only decimals, we want to ignore it
@@ -599,7 +599,7 @@ std::string YamlFile::getNodeAsString(const std::string& inKey, const Json& node
 		auto val = node.get<std::string>();
 		if (!val.empty())
 		{
-			auto foundFloat = val.find_first_not_of("0123456789.");
+			auto foundFloat = val.find_first_not_of("0123456789-.");
 			auto startsWithHash = val.front() == '#';
 			auto startsWithAsterisk = val.front() == '*';
 			auto startsWithAmpersand = val.front() == '&';
