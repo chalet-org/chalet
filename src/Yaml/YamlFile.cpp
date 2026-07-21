@@ -463,7 +463,7 @@ Json YamlFile::parseAbbreviatedObject(const std::string& inValue) const
 /*****************************************************************************/
 bool YamlFile::parseNumeric(Json& outNode, const std::string& inValue) const
 {
-	auto foundInteger = inValue.find_first_not_of("0123456789-.");
+	auto foundInteger = inValue.find_first_not_of("0123456789-");
 	if (foundInteger == std::string::npos)
 	{
 		auto numValue = ::strtoll(inValue.c_str(), NULL, 0);
