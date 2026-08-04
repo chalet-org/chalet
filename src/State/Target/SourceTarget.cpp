@@ -474,8 +474,9 @@ const std::string& SourceTarget::getHash() const
 		auto configureFiles = String::join(m_configureFiles);
 		auto emscriptenEmbedFiles = String::join(m_emscriptenEmbedFiles);
 		auto emscriptenPreloadFiles = String::join(m_emscriptenPreloadFiles);
+		auto dependsOn = String::join(m_dependsOn);
 
-		auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, emscriptenEmbedFiles, emscriptenPreloadFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType, m_emscriptenShellFile);
+		auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, emscriptenEmbedFiles, emscriptenPreloadFiles, dependsOn, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType, m_emscriptenShellFile);
 
 		m_hash = Hash::string(hashable);
 	}
