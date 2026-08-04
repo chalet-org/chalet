@@ -150,15 +150,21 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 		auto resolved = Files::which(outPath);
 		if (resolved.empty())
 		{
+#if defined(CHALET_WIN32)
+			auto exe = Files::getPlatformExecutableExtension();
+			if (!exe.empty() && !String::endsWith(exe, outPath))
+			{
+				resolved = Files::getCanonicalPath(outPath + exe);
+				if (Files::pathExists(resolved))
+				{
+					outPath = std::move(resolved);
+					return true;
+				}
+			}
+#endif
+
 			if (dependsOnTargets || dependsOnBuiltFile)
 			{
-#if defined(CHALET_WIN32)
-				auto exe = Files::getPlatformExecutableExtension();
-				if (!exe.empty() && !String::endsWith(exe, outPath))
-				{
-					outPath += exe;
-				}
-#endif
 				outPath = Files::getCanonicalPath(outPath);
 			}
 			else if (!startsWithBuildDir)
