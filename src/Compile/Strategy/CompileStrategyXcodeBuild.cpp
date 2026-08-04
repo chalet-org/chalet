@@ -179,7 +179,7 @@ bool CompileStrategyXcodeBuild::doFullBuild()
 
 	if (!result)
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 	}
 	else
 	{

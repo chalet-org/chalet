@@ -67,8 +67,6 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 {
 	const auto& buildDir = m_state.paths.buildOutputDir();
 
-	bool dependsOnTargets = false;
-	bool dependsOnBuiltFile = false;
 	if (!outDepends.empty())
 	{
 		for (auto it = outDepends.begin(); it != outDepends.end();)
@@ -117,7 +115,6 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 						depends = m_state.paths.getTargetFilename(static_cast<const MesonTarget&>(*target));
 						erase = depends.empty();
 					}
-					dependsOnTargets = true;
 					found = true;
 					break;
 				}
@@ -127,7 +124,6 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 			{
 				// Assume it gets created somewhere during the build
 				erase = false;
-				dependsOnBuiltFile = true;
 				found = true;
 			}
 
@@ -146,7 +142,6 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 
 	if (!Files::pathExists(outPath))
 	{
-		bool startsWithBuildDir = String::startsWith(buildDir, outPath);
 		auto resolved = Files::which(outPath);
 		if (resolved.empty())
 		{
@@ -154,23 +149,13 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 			auto exe = Files::getPlatformExecutableExtension();
 			if (!exe.empty() && !String::endsWith(exe, outPath))
 			{
-				resolved = Files::getCanonicalPath(outPath + exe);
-				if (Files::pathExists(resolved))
-				{
-					outPath = std::move(resolved);
-					return true;
-				}
+				outPath += exe;
 			}
 #endif
-
-			if (dependsOnTargets || dependsOnBuiltFile)
+			resolved = Files::getCanonicalPath(outPath);
+			if (Files::pathExists(resolved))
 			{
-				outPath = Files::getCanonicalPath(outPath);
-			}
-			else if (!startsWithBuildDir)
-			{
-				Diagnostic::error("The path for the target '{}' doesn't exist: {}", this->name(), outPath);
-				return false;
+				outPath = std::move(resolved);
 			}
 		}
 		else
@@ -178,6 +163,13 @@ bool IBuildTarget::resolveDependentTargets(StringList& outDepends, std::string& 
 			outPath = std::move(resolved);
 		}
 	}
+
+	if (outPath.empty())
+	{
+		Diagnostic::error("The path for the target '{}' doesn't exist or could not be resolved: {}", this->name(), outPath);
+		return false;
+	}
+
 	return true;
 }
 

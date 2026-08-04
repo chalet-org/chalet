@@ -1376,6 +1376,24 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		"default": true
 	})json"_ojson;
 
+	defs[Defs::TargetSourceCxxEmscriptenPreloadFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of files to pass to assign '--preload-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--preload-file=(mydir)/', while files will be assigned the flag '--preload-file=(path)@(filename_no_directory)'",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxEmscriptenEmbedFiles] = makeArrayOrString(R"json({
+		"type": "string",
+		"description": "A list of files to pass to assign '--embed-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--embed-file=(mydir)/', while files will be assigned the flag '--embed-file=(path)@(filename_no_directory)'",
+		"minLength": 1
+	})json"_ojson);
+
+	defs[Defs::TargetSourceCxxEmscriptenShellFile] = R"json({
+		"type": "string",
+		"description": "The name of a shell html file to pass to the '--shell-file=(path)' argument during emscripten builds. If the shell file changes, the program will be relinked.",
+		"minLength": 1
+	})json"_ojson;
+
 	//
 
 	defs[Defs::TargetScriptFile] = R"json({
@@ -1902,6 +1920,9 @@ ChaletJsonSchema::DefinitionMap ChaletJsonSchema::getDefinitions()
 		addPropertyAndPattern(sourceTargetCxx, "cppStandard", Defs::TargetSourceCxxCppStandard, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "cStandard", Defs::TargetSourceCxxCStandard, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "defines", Defs::TargetSourceCxxDefines, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenPreloadFiles", Defs::TargetSourceCxxEmscriptenPreloadFiles, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenEmbedFiles", Defs::TargetSourceCxxEmscriptenEmbedFiles, kPatternConditions);
+		addPropertyAndPattern(sourceTargetCxx, "emscriptenShellFile", Defs::TargetSourceCxxEmscriptenShellFile, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "exceptions", Defs::TargetSourceCxxExceptions, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "executionCharset", Defs::TargetSourceCxxExecutionCharSet, kPatternConditions);
 		addPropertyAndPattern(sourceTargetCxx, "fastMath", Defs::TargetSourceCxxFastMath, kPatternConditions);
@@ -2360,6 +2381,9 @@ std::string ChaletJsonSchema::getDefinitionName(const Defs inDef)
 		case Defs::TargetSourceCxxWindowsSubSystem: return "target-source-cxx-windowsSubSystem";
 		case Defs::TargetSourceCxxWindowsEntryPoint: return "target-source-cxx-windowsEntryPoint";
 		case Defs::TargetSourceCxxJustMyCodeDebugging: return "target-source-cxx-justMyCodeDebugging";
+		case Defs::TargetSourceCxxEmscriptenPreloadFiles: return "target-source-cxx-emscriptenPreloadFiles";
+		case Defs::TargetSourceCxxEmscriptenEmbedFiles: return "target-source-cxx-emscriptenEmbedFiles";
+		case Defs::TargetSourceCxxEmscriptenShellFile: return "target-source-cxx-emscriptenShellFile";
 		//
 		case Defs::TargetScript: return "target-script";
 		case Defs::TargetScriptFile: return "target-script-file";

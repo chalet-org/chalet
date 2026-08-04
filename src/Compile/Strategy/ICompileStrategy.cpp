@@ -16,6 +16,7 @@
 #include "State/BuildPaths.hpp"
 #include "State/BuildState.hpp"
 #include "System/Files.hpp"
+#include "Utility/Path.hpp"
 
 #include "Compile/CompileToolchain.hpp"
 #include "Compile/Strategy/CompileStrategyMSBuild.hpp"
@@ -81,7 +82,7 @@ bool ICompileStrategy::isXcodeBuild() const noexcept
 bool ICompileStrategy::saveCompileCommands() const
 {
 	auto buildHashChanged = m_state.cache.file().buildHashChanged();
-	if (buildHashChanged || m_filesUpdated || !m_compileCommandsGenerator.fileExists())
+	if (buildHashChanged || m_anyFilesUpdated || !m_compileCommandsGenerator.fileExists())
 	{
 		if (!m_compileCommandsGenerator.save())
 			return false;
@@ -183,7 +184,7 @@ void ICompileStrategy::checkIfTargetWasUpdated(const SourceTarget& inProject)
 	auto output = m_state.paths.getTargetFilename(inProject);
 	if (sourceCache.fileChangedOrDoesNotExist(output))
 	{
-		m_filesUpdated = true;
+		m_anyFilesUpdated = true;
 	}
 }
 

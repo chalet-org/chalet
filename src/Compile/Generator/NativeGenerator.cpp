@@ -69,39 +69,44 @@ bool NativeGenerator::addProject(const SourceTarget& inProject, const SourceOutp
 			}
 		}
 
-		m_linkTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || otherTargetsChanged || !targetExists;
+		bool linkTarget = m_targetCommandChanged || m_sourcesChanged || m_pchChanged || dependentChanged || otherTargetsChanged || !targetExists;
 		{
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = getCompileCommands(inOutputs.groups);
 			if (!target->list.empty() || !targetExists)
 			{
 				jobs.emplace_back(std::move(target));
-				m_linkTarget = true;
+				linkTarget = true;
 			}
 		}
 
 		const auto& toCache = inOutputs.target;
-		if (m_linkTarget && m_fileCache.find(toCache) == m_fileCache.end())
+		if (m_fileCache.find(toCache) == m_fileCache.end())
 		{
 			m_fileCache.insert(toCache);
-
-			Files::removeIfExists(inOutputs.target);
 
 			auto target = std::make_unique<CommandPool::Job>();
 			target->list = m_compileAdapter.getLinkCommandList(*m_project, *m_toolchain, inOutputs);
 			if (!target->list.empty())
 			{
-				jobs.emplace_back(std::move(target));
+				if (linkTarget)
+				{
+					Files::removeIfExists(inOutputs.target);
+					jobs.emplace_back(std::move(target));
+				}
+				else
+				{
+					m_lateLinkCmds.emplace(name, std::move(target));
+				}
 			}
 		}
 
-		if (!jobs.empty())
+		if (m_targets.find(name) == m_targets.end())
 		{
-			if (m_targets.find(name) == m_targets.end())
-			{
-				m_targets.emplace(name, std::move(jobs));
-			}
+			m_targets.emplace(name, std::move(jobs));
 		}
+
+		m_anyFilesUpdated |= linkTarget;
 	}
 
 	m_toolchain = nullptr;
@@ -116,10 +121,26 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 	m_fileCache.clear();
 	m_compileAdapter.clearDependencyCache();
 
-	if (m_targets.find(inProject.name()) == m_targets.end())
+	const auto& projectName = inProject.name();
+	if (m_targets.find(projectName) == m_targets.end())
 		return true;
 
-	auto& buildJobs = m_targets.at(inProject.name());
+	auto& buildJobs = m_targets.at(projectName);
+	if (buildJobs.empty())
+	{
+		bool miscFilesChanged = m_compileAdapter.checkDependentMiscellaneousFiles(inProject);
+		if (miscFilesChanged && m_lateLinkCmds.find(projectName) != m_lateLinkCmds.end())
+		{
+			auto targetOutput = m_state.paths.getExecutableTargetPath(inProject);
+			Files::removeIfExists(targetOutput);
+
+			buildJobs.emplace_back(std::move(m_lateLinkCmds.at(projectName)));
+			m_lateLinkCmds.erase(projectName);
+
+			m_anyFilesUpdated |= miscFilesChanged;
+		}
+	}
+
 	if (!buildJobs.empty())
 	{
 		auto settings = m_compileAdapter.getCommandPoolSettings();
@@ -141,9 +162,9 @@ bool NativeGenerator::buildProject(const SourceTarget& inProject)
 }
 
 /*****************************************************************************/
-bool NativeGenerator::targetCompiled() const noexcept
+bool NativeGenerator::anyFilesUpdated() const noexcept
 {
-	return m_linkTarget;
+	return m_anyFilesUpdated;
 }
 
 /*****************************************************************************/

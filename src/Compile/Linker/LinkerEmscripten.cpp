@@ -12,7 +12,9 @@
 #include "State/BuildState.hpp"
 #include "State/CompilerTools.hpp"
 #include "State/Target/SourceTarget.hpp"
+#include "System/Files.hpp"
 #include "Utility/List.hpp"
+#include "Utility/String.hpp"
 
 namespace chalet
 {
@@ -69,6 +71,49 @@ void LinkerEmscripten::addRunPath(StringList& outArgList) const
 void LinkerEmscripten::addLinkerOptions(StringList& outArgList) const
 {
 	LinkerLLVMClang::addLinkerOptions(outArgList);
+
+	auto& embedFiles = m_project.emscriptenEmbedFiles();
+	auto& preloadFiles = m_project.emscriptenPreloadFiles();
+	auto& shellFile = m_project.emscriptenShellFile();
+
+	for (auto& path : embedFiles)
+	{
+		if (Files::pathIsDirectory(path))
+		{
+			auto outPath = path;
+			if (outPath.back() != '/')
+				outPath += '/';
+
+			List::addIfDoesNotExist(outArgList, fmt::format("--embed-file={}", outPath));
+		}
+		else if (Files::pathIsFile(path))
+		{
+			auto filename = String::getPathFilename(path);
+			List::addIfDoesNotExist(outArgList, fmt::format("--embed-file={}@{}", path, filename));
+		}
+	}
+
+	for (auto& path : preloadFiles)
+	{
+		if (Files::pathIsDirectory(path))
+		{
+			auto outPath = path;
+			if (outPath.back() != '/')
+				outPath += '/';
+
+			List::addIfDoesNotExist(outArgList, fmt::format("--preload-file={}", outPath));
+		}
+		else if (Files::pathIsFile(path))
+		{
+			auto filename = String::getPathFilename(path);
+			List::addIfDoesNotExist(outArgList, fmt::format("--preload-file={}@{}", path, filename));
+		}
+	}
+
+	if (!shellFile.empty())
+	{
+		List::addIfDoesNotExist(outArgList, fmt::format("--shell-file={}", shellFile));
+	}
 
 	if (m_state.configuration.debugSymbols())
 	{

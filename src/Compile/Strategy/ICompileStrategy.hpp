@@ -56,7 +56,7 @@ protected:
 
 	StrategyType m_type;
 
-	bool m_filesUpdated = false;
+	bool m_anyFilesUpdated = false;
 
 private:
 	bool addCompileCommands(const SourceTarget& inProject);

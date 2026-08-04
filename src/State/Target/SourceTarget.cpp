@@ -94,6 +94,17 @@ bool SourceTarget::initialize()
 		return false;
 	}
 
+	if (!expandGlobPatternsInList(m_emscriptenEmbedFiles, GlobMatch::FilesAndFolders))
+	{
+		Diagnostic::error("There was a problem resolving emscripten embed files for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+	if (!expandGlobPatternsInList(m_emscriptenPreloadFiles, GlobMatch::FilesAndFolders))
+	{
+		Diagnostic::error("There was a problem resolving emscripten preload files for the '{}' target. {}.", this->name(), globMessage);
+		return false;
+	}
+
 	if (!replaceVariablesInPathList(m_defines))
 		return false;
 
@@ -116,6 +127,9 @@ bool SourceTarget::initialize()
 		return false;
 
 	if (!m_state.replaceVariablesInString(m_runWorkingDirectory, this))
+		return false;
+
+	if (!m_state.replaceVariablesInString(m_emscriptenShellFile, this))
 		return false;
 
 	if (!removeExcludedFiles())
@@ -450,8 +464,10 @@ const std::string& SourceTarget::getHash() const
 		auto appleFrameworkPaths = String::join(m_appleFrameworkPaths);
 		auto appleFrameworks = String::join(m_appleFrameworks);
 		auto configureFiles = String::join(m_configureFiles);
+		auto emscriptenEmbedFiles = String::join(m_emscriptenEmbedFiles);
+		auto emscriptenPreloadFiles = String::join(m_emscriptenPreloadFiles);
 
-		auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType);
+		auto hashable = Hash::getHashableString(this->name(), files, defines, links, staticLinks, warnings, compileOptions, libDirs, includeDirs, appleFrameworkPaths, appleFrameworks, configureFiles, emscriptenEmbedFiles, emscriptenPreloadFiles, m_warningsPresetString, m_cStandard, m_cppStandard, m_precompiledHeader, m_inputCharset, m_executionCharset, m_windowsApplicationManifest, m_windowsApplicationIcon, m_buildSuffix, m_threads, m_cppFilesystem, m_cppModules, m_cppConcepts, m_runtimeTypeInformation, m_exceptions, m_fastMath, m_staticRuntimeLibrary, m_treatWarningsAsErrors, m_posixThreads, m_invalidWarningPreset, m_unityBuild, m_windowsApplicationManifestGenerationEnabled, m_mingwUnixSharedLibraryNamingConvention, m_setWindowsPrefixOutputFilename, m_windowsOutputDef, m_kind, m_language, m_warningsPreset, m_windowsSubSystem, m_windowsEntryPoint, m_picType, m_emscriptenShellFile);
 
 		m_hash = Hash::string(hashable);
 	}
@@ -756,6 +772,34 @@ void SourceTarget::addCcacheOption(std::string&& inValue)
 }
 
 /*****************************************************************************/
+const StringList& SourceTarget::emscriptenPreloadFiles() const noexcept
+{
+	return m_emscriptenPreloadFiles;
+}
+void SourceTarget::addEmscriptenPreloadFiles(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addEmscriptenPreloadFile);
+}
+void SourceTarget::addEmscriptenPreloadFile(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_emscriptenPreloadFiles, std::move(inValue));
+}
+
+/*****************************************************************************/
+const StringList& SourceTarget::emscriptenEmbedFiles() const noexcept
+{
+	return m_emscriptenEmbedFiles;
+}
+void SourceTarget::addEmscriptenEmbedFiles(StringList&& inList)
+{
+	List::forEach(inList, this, &SourceTarget::addEmscriptenEmbedFile);
+}
+void SourceTarget::addEmscriptenEmbedFile(std::string&& inValue)
+{
+	List::addIfDoesNotExist(m_emscriptenEmbedFiles, std::move(inValue));
+}
+
+/*****************************************************************************/
 const std::string& SourceTarget::outputFile() const noexcept
 {
 	return m_outputFile;
@@ -1014,6 +1058,16 @@ const std::string& SourceTarget::runWorkingDirectory() const noexcept
 void SourceTarget::setRunWorkingDirectory(std::string&& inValue) noexcept
 {
 	m_runWorkingDirectory = std::move(inValue);
+}
+
+/*****************************************************************************/
+const std::string& SourceTarget::emscriptenShellFile() const noexcept
+{
+	return m_emscriptenShellFile;
+}
+void SourceTarget::setEmscriptenShellFile(std::string&& inValue) noexcept
+{
+	m_emscriptenShellFile = std::move(inValue);
 }
 
 /*****************************************************************************/
@@ -1396,6 +1450,47 @@ StringList SourceTarget::getResolvedRunDependenciesList() const
 				ret.emplace_back(std::move(resolved));
 			}
 		}
+	}
+
+	return ret;
+}
+
+/*****************************************************************************/
+// Note: prioritize this as files that are most likely to change first
+//
+StringList SourceTarget::getLinkerDependentFiles() const
+{
+	StringList ret;
+
+	auto resolveDirectoriesInList = [&ret](const StringList inList) {
+		for (auto& path : inList)
+		{
+			if (Files::pathIsDirectory(path))
+			{
+				for (const auto& entry : fs::recursive_directory_iterator(path))
+				{
+					if (entry.is_regular_file())
+					{
+						auto p = entry.path().string();
+						Path::toUnix(p);
+						List::addIfDoesNotExist(ret, std::move(p));
+					}
+				}
+			}
+			else
+			{
+				List::addIfDoesNotExist(ret, path);
+			}
+		}
+	};
+
+	if (m_state.environment->isEmscripten())
+	{
+		if (!m_emscriptenShellFile.empty())
+			List::addIfDoesNotExist(ret, m_emscriptenShellFile);
+
+		resolveDirectoriesInList(m_emscriptenEmbedFiles);
+		resolveDirectoriesInList(m_emscriptenPreloadFiles);
 	}
 
 	return ret;

@@ -150,7 +150,7 @@ bool IModuleStrategy::buildProject(const SourceTarget& inProject)
 	bool targetExists = Files::pathExists(outputs->target);
 	bool requiredFromLinks = m_moduleCommandsChanged || m_compileAdapter.rebuildRequiredFromLinks(*m_project);
 	// LOG("modules can build:", !buildJobs.empty(), !targetExists, requiredFromLinks);
-	bool dependentChanged = targetExists && m_compileAdapter.checkDependentTargets(*m_project);
+	bool dependentChanged = targetExists && (m_compileAdapter.checkDependentTargets(*m_project) || m_compileAdapter.checkDependentMiscellaneousFiles(*m_project));
 	bool linkTarget = m_targetCommandChanged || !buildJobs.empty() || requiredFromLinks || dependentChanged || otherTargetsChanged || !targetExists;
 	if (linkTarget)
 	{

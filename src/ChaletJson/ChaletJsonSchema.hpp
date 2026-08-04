@@ -157,6 +157,9 @@ class ChaletJsonSchema
 		TargetSourceCxxJustMyCodeDebugging,
 		TargetSourceCxxWindowsSubSystem,
 		TargetSourceCxxWindowsEntryPoint,
+		TargetSourceCxxEmscriptenPreloadFiles,
+		TargetSourceCxxEmscriptenEmbedFiles,
+		TargetSourceCxxEmscriptenShellFile,
 		//
 		TargetScript,
 		TargetScriptFile,

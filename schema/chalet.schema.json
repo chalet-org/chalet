@@ -1549,6 +1549,15 @@
 				"defines": {
 					"$ref": "#/definitions/target-source-cxx-defines"
 				},
+				"emscriptenPreloadFiles": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenPreloadFiles"
+				},
+				"emscriptenEmbedFiles": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenEmbedFiles"
+				},
+				"emscriptenShellFile": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenShellFile"
+				},
 				"exceptions": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
 				},
@@ -1655,6 +1664,15 @@
 				},
 				"^defines\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-defines"
+				},
+				"^emscriptenPreloadFiles\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenPreloadFiles"
+				},
+				"^emscriptenEmbedFiles\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenEmbedFiles"
+				},
+				"^emscriptenShellFile\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
+					"$ref": "#/definitions/target-source-cxx-emscriptenShellFile"
 				},
 				"^exceptions\\[(\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\}))([\\+\\|](\\w*:(!?[\\w\\-]+|\\{!?[\\w\\-]+(,!?[\\w\\-]+)*\\})))*\\]$": {
 					"$ref": "#/definitions/target-source-cxx-exceptions"
@@ -2401,6 +2419,47 @@
 				"DllMain"
 			],
 			"default": "main"
+		},
+		"target-source-cxx-emscriptenPreloadFiles": {
+			"description": "A list of files to pass to assign '--preload-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--preload-file=(mydir)/', while files will be assigned the flag '--preload-file=(path)@(filename_no_directory)'",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-emscriptenEmbedFiles": {
+			"description": "A list of files to pass to assign '--embed-file=(path)' arguments to during emscripten builds. If any of these files change, the program will be relinked. Example: Directories will be assigned the flag '--embed-file=(mydir)/', while files will be assigned the flag '--embed-file=(path)@(filename_no_directory)'",
+			"oneOf": [
+				{
+					"type": "string",
+					"minLength": 1
+				},
+				{
+					"type": "array",
+					"uniqueItems": true,
+					"minItems": 1,
+					"items": {
+						"type": "string",
+						"minLength": 1
+					}
+				}
+			]
+		},
+		"target-source-cxx-emscriptenShellFile": {
+			"type": "string",
+			"description": "The name of a shell html file to pass to the '--shell-file=(path)' argument during emscripten builds. If the shell file changes, the program will be relinked.",
+			"minLength": 1
 		},
 		"target-script": {
 			"type": "object",
