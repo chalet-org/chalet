@@ -38,7 +38,6 @@ private:
 	bool validatePackageDependencies();
 	bool initializePackages();
 	bool readImportedPackages();
-	void resolveDependencies(const std::string& package, StringList& outPackages);
 
 	BuildState& m_state;
 

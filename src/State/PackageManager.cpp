@@ -24,6 +24,7 @@ struct PackageManager::Impl
 {
 	StringList packagePaths;
 	StringList packageExternalTargets;
+	StringList requiredPackages;
 
 	Dictionary<StringList> packageDeps;
 	Dictionary<Ref<SourcePackage>> packages;
@@ -211,6 +212,14 @@ bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 		}
 	}
 
+	m_impl->requiredPackages.clear();
+	for (auto& [name, deps] : m_impl->packageDeps)
+	{
+		m_impl->requiredPackages.emplace_back(name);
+		for (auto& dep : deps)
+			m_impl->requiredPackages.emplace_back(dep);
+	}
+
 	return true;
 }
 
@@ -218,7 +227,7 @@ bool PackageManager::resolvePackagesFromSubPackagePathsAndChaletTargets()
 bool PackageManager::validatePackageDependencies()
 {
 	bool hasError = false;
-	for (auto& [pkg, _] : m_impl->packageDeps)
+	for (auto& pkg : m_impl->requiredPackages)
 	{
 		if (m_impl->packages.find(pkg) == m_impl->packages.end())
 		{
@@ -245,7 +254,7 @@ bool PackageManager::initializePackages()
 	for (auto& [name, pkg] : m_impl->packages)
 	{
 		// We only want to initialize the required packages
-		if (m_impl->packageDeps.find(name) == m_impl->packageDeps.end())
+		if (!List::contains(m_impl->requiredPackages, name))
 			continue;
 
 		bool rootChanged = false;
@@ -288,13 +297,7 @@ bool PackageManager::readImportedPackages()
 			if (importedPackages.empty())
 				continue;
 
-			StringList packages;
-			for (auto& package : importedPackages)
-			{
-				resolveDependencies(package, packages);
-			}
-
-			for (auto& name : packages)
+			for (auto& name : m_impl->requiredPackages)
 			{
 				auto& pkg = m_impl->packages.at(name);
 
@@ -341,18 +344,5 @@ bool PackageManager::readImportedPackages()
 	}
 
 	return true;
-}
-
-/*****************************************************************************/
-void PackageManager::resolveDependencies(const std::string& package, StringList& outPackages)
-{
-	if (m_impl->packageDeps.find(package) != m_impl->packageDeps.end())
-	{
-		auto& list = m_impl->packageDeps.at(package);
-		for (auto& item : list)
-			resolveDependencies(item, outPackages);
-	}
-
-	List::addIfDoesNotExist(outPackages, package);
 }
 }
